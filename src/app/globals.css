@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #F8F5F2;
+  --fg: #241810;
+  --muted: #6E4E3B;
+  --accent: #A9826A;
+  --ring: #C9AE97;
+}
+
+html, body, #__next {
+  height: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+}
+
+.container-page {
+  @apply max-w-6xl mx-auto px-4 sm:px-6;
+}
+
+.btn {
+  @apply inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2;
+}
+.btn-primary {
+  @apply bg-coffee-700 text-white hover:bg-coffee-800 focus-visible:ring-coffee-500;
+}
+.btn-outline {
+  @apply border border-coffee-300 text-coffee-800 hover:bg-coffee-100;
+}
+
+.card {
+  @apply rounded-xl border border-coffee-100 bg-white shadow-sm;
+}
+
+.badge {
+  @apply inline-block rounded-full bg-coffee-100 text-coffee-800 px-2 py-0.5 text-xs font-medium;
+}
