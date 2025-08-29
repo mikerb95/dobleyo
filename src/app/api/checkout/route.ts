@@ -2,15 +2,18 @@ import Stripe from 'stripe'
 import { NextResponse } from 'next/server'
 import { getCoupon } from '@/data/coupons'
 import { shippingMethods } from '@/data/shipping'
+import { getBaseUrl } from '@/lib/env'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? '', {
   apiVersion: '2024-06-20',
 })
 
+export const runtime = 'nodejs'
+
 export async function POST(request: Request) {
   try {
     const { items, coupon: couponCode, shipping: shippingId, address } = await request.json()
-    const origin = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+  const origin = getBaseUrl()
 
     const shipping = shippingMethods.find(m => m.id === (shippingId || 'standard')) || shippingMethods[0]
     const coupon = getCoupon(couponCode)

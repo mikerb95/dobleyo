@@ -3,6 +3,7 @@ import { Metadata } from 'next'
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import { CartProvider } from '@/components/cart-context'
+import { getBaseUrl } from '@/lib/env'
 
 export const metadata: Metadata = {
   title: 'DobleYo — Café de especialidad colombiano',
@@ -11,7 +12,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'DobleYo — Café de especialidad colombiano',
     description: 'Café de especialidad para tu ritual con calma.',
-    url: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
+  url: getBaseUrl(),
     siteName: 'DobleYo',
     type: 'website',
     locale: 'es_CO',

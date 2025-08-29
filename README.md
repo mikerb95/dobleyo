@@ -40,6 +40,17 @@ Visita http://localhost:3000
 - Los productos están mockeados en `src/data/products.ts`.
  - Catálogo con filtros en `/catalog`, FAQ, Contacto y Políticas incluidas.
 
+## Despliegue en Vercel
+1. Conecta el repo en Vercel y selecciona el framework Next.js.
+2. Configura variables de entorno en Vercel (Production/Preview):
+	- NEXT_PUBLIC_SITE_URL (se puede omitir; Vercel usará VERCEL_URL)
+	- STRIPE_SECRET_KEY
+	- NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+	- NEXT_PUBLIC_SANITY_PROJECT_ID
+	- NEXT_PUBLIC_SANITY_DATASET
+3. Deploy. El sitemap y robots se generan automáticamente con la URL correcta.
+4. Asegúrate de configurar los webhooks de Stripe si luego deseas cumplir eventos de pago (opc.).
+
 ## CMS (Sanity)
 - Studio embebido en `/studio`.
 - Configuración en `sanity.config.ts` y esquemas en `sanity/`.
