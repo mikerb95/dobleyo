@@ -33,7 +33,9 @@ Visita http://localhost:3000
 - src/components: componentes UI
 - src/data: datos de productos
 - src/lib: utilidades
+ - robots y sitemap: `src/app/robots.ts` y `src/app/sitemap.ts`
 
 ## Notas
 - El checkout usa Stripe Checkout. Si no configuras Stripe, la ruta /api/checkout responderá error.
 - Los productos están mockeados en `src/data/products.ts`.
+ - Catálogo con filtros en `/catalog`, FAQ, Contacto y Políticas incluidas.

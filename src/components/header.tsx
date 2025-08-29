@@ -10,7 +10,11 @@ export function Header() {
         <Link href="/" className="text-xl font-semibold text-coffee-800">DobleYo</Link>
         <nav className="flex items-center gap-4 text-sm">
           <Link href="/" className="hover:underline">Inicio</Link>
+          <Link href="/catalog" className="hover:underline">Catálogo</Link>
           <Link href="/about" className="hover:underline">Nosotros</Link>
+          <Link href="/faq" className="hover:underline">FAQ</Link>
+          <Link href="/contact" className="hover:underline">Contacto</Link>
+          <Link href="/policies" className="hover:underline">Políticas</Link>
           <Link href="/cart" className="btn btn-outline">Carrito ({count})</Link>
         </nav>
       </div>
