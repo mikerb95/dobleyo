@@ -39,3 +39,8 @@ Visita http://localhost:3000
 - El checkout usa Stripe Checkout. Si no configuras Stripe, la ruta /api/checkout responderá error.
 - Los productos están mockeados en `src/data/products.ts`.
  - Catálogo con filtros en `/catalog`, FAQ, Contacto y Políticas incluidas.
+
+## CMS (Sanity)
+- Studio embebido en `/studio`.
+- Configuración en `sanity.config.ts` y esquemas en `sanity/`.
+- Variables necesarias: `NEXT_PUBLIC_SANITY_PROJECT_ID`, `NEXT_PUBLIC_SANITY_DATASET`.

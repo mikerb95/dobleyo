@@ -1,17 +1,25 @@
 'use client'
 'use client'
-import { products } from '@/data/products'
+import { products as localProducts } from '@/data/products'
+import { fetchProductsFromSanity } from '@/data/fetchProducts'
 import { ProductCard } from '@/components/product-card'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
-const origins = Array.from(new Set(products.map(p => p.origin)))
-const processes = Array.from(new Set(products.map(p => p.process)))
-const roasts = Array.from(new Set(products.map(p => p.roast)))
+function unique<T>(arr: T[]): T[] { return Array.from(new Set(arr)) }
 
 export default function CatalogPage() {
   const [origin, setOrigin] = useState<string>('')
   const [process, setProcess] = useState<string>('')
   const [roast, setRoast] = useState<string>('')
+  const [products, setProducts] = useState(localProducts)
+  useEffect(() => { (async () => {
+    const remote = await fetchProductsFromSanity()
+    if (remote.length) setProducts(remote)
+  })() }, [])
+
+  const origins = useMemo(() => unique(products.map(p => p.origin)), [products])
+  const processes = useMemo(() => unique(products.map(p => p.process)), [products])
+  const roasts = useMemo(() => unique(products.map(p => p.roast)), [products])
 
   const filtered = useMemo(() => products.filter(p => (
     (!origin || p.origin === origin) &&

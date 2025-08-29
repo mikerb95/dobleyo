@@ -1,21 +1,4 @@
-export type Variant = {
-  id: string
-  label: string // Ej: "250g / Grano" o "1kg / Molido"
-  size: '250g' | '500g' | '1kg'
-  grind: 'grano' | 'molido'
-  price: number
-}
-
-export type Product = {
-  id: string
-  name: string
-  image: string
-  tastingNotes: string[]
-  origin: 'Sierra Nevada' | 'Huila' | 'Nariño'
-  process: 'Lavado' | 'Honey' | 'Natural'
-  roast: 'Claro' | 'Medio' | 'Oscuro'
-  variants: Variant[]
-}
+export type { Product, Variant } from '@/types/product'
 
 export const products: Product[] = [
   {
