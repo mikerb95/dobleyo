@@ -53,5 +53,4 @@ Visita http://localhost:3000
 
 ## CMS (Sanity)
 - Studio embebido en `/studio`.
-- Configuración en `sanity.config.ts` y esquemas en `sanity/`.
-- Variables necesarias: `NEXT_PUBLIC_SANITY_PROJECT_ID`, `NEXT_PUBLIC_SANITY_DATASET`.Cambio automático 3 para Pull Shark
+- Configuración en `sanity.config.ts` y esquemas en `sanity/`
