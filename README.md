@@ -53,4 +53,4 @@ Visita http://localhost:3000
 
 ## CMS (Sanity)
 - Studio embebido en `/studio`.
-- Configuración en `sanity.config.ts` y esquemas en `sanity/`
+
