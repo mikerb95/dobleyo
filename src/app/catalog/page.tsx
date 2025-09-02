@@ -9,7 +9,7 @@ function unique<T>(arr: T[]): T[] { return Array.from(new Set(arr)) }
 
 export default function CatalogPage() {
   const [origin, setOrigin] = useState<string>('')
-  const [process, setProcess] = useState<string>('')
+  const [procFilter, setProcFilter] = useState<string>('')
   const [roast, setRoast] = useState<string>('')
   const [products, setProducts] = useState(localProducts)
   useEffect(() => { (async () => {
@@ -23,9 +23,9 @@ export default function CatalogPage() {
 
   const filtered = useMemo(() => products.filter(p => (
     (!origin || p.origin === origin) &&
-    (!process || p.process === process) &&
+    (!procFilter || p.process === procFilter) &&
     (!roast || p.roast === roast)
-  )), [origin, process, roast])
+  )), [origin, procFilter, roast, products])
 
   return (
     <div className="space-y-6">
@@ -35,7 +35,7 @@ export default function CatalogPage() {
           <option value="">Origen (todos)</option>
           {origins.map(o => <option key={o} value={o}>{o}</option>)}
         </select>
-        <select className="border rounded-md p-2" value={process} onChange={e => setProcess(e.target.value)}>
+  <select className="border rounded-md p-2" value={procFilter} onChange={e => setProcFilter(e.target.value)}>
           <option value="">Proceso (todos)</option>
           {processes.map(o => <option key={o} value={o}>{o}</option>)}
         </select>
