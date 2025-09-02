@@ -14,18 +14,8 @@ export default function CartPage() {
   const estimated = Math.max(0, total + shippingPrice - discount)
 
   const checkout = async () => {
-    const res = await fetch('/api/checkout', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        items: items.map(({ id, name, price, qty }) => ({ id, name, price, qty })),
-        coupon,
-        shipping,
-        address,
-      })
-    })
-    const data = await res.json()
-    if (data.url) window.location.href = data.url
+    // Simulación en Vercel sin variables: redirige a éxito
+    window.location.href = `${window.location.origin}/?success=1`
   }
 
   return (

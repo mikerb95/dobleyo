@@ -1,7 +1,6 @@
 'use client'
 'use client'
 import { products as localProducts } from '@/data/products'
-import { fetchProductsFromSanity } from '@/data/fetchProducts'
 import { ProductCard } from '@/components/product-card'
 import { useEffect, useMemo, useState } from 'react'
 
@@ -11,11 +10,7 @@ export default function CatalogPage() {
   const [origin, setOrigin] = useState<string>('')
   const [procFilter, setProcFilter] = useState<string>('')
   const [roast, setRoast] = useState<string>('')
-  const [products, setProducts] = useState(localProducts)
-  useEffect(() => { (async () => {
-    const remote = await fetchProductsFromSanity()
-    if (remote.length) setProducts(remote)
-  })() }, [])
+  const [products] = useState(localProducts)
 
   const origins = useMemo(() => unique(products.map(p => p.origin)), [products])
   const processes = useMemo(() => unique(products.map(p => p.process)), [products])

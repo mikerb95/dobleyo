@@ -1,4 +1,5 @@
-export type { Product, Variant } from '@/types/product'
+import type { Product, Variant } from '@/types/product'
+export type { Product, Variant }
 
 export const products: Product[] = [
   {
