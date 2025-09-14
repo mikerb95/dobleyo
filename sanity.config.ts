@@ -1,11 +1,7 @@
-import { defineConfig } from 'sanity'
-import { schema } from './sanity/schema'
-
-export default defineConfig({
-  name: 'default',
-  title: 'DobleYo CMS',
-  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,
-  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET || 'production',
-  plugins: [],
-  schema,
-})
+// Sanity CMS deshabilitado: archivo neutralizado para evitar dependencias externas.
+// Mantener para referencia futura si se reactiva el CMS.
+export default {
+  disabled: true,
+  name: 'disabled',
+  title: 'DobleYo CMS (disabled)'
+};

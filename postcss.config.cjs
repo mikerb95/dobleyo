@@ -1,6 +1,2 @@
-module.exports = {
-  plugins: {
-    tailwindcss: {},
-    autoprefixer: {}
-  }
-}
+// Duplicado deshabilitado: usar postcss.config.mjs
+module.exports = {};
