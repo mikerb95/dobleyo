@@ -1,0 +1,32 @@
+[
+  {
+    "lot": "DBY-2025-09-HUI",
+    "name": "Huila - Lote Sept 2025",
+    "origin": "Huila, Colombia",
+    "farm": "Finca El Bosque",
+    "producer": "Familia Rodríguez",
+    "altitude": "1800 msnm",
+    "process": "Honey",
+    "variety": "Caturra",
+    "harvestDate": "2025-07-10",
+    "roastDate": "2025-09-05",
+    "moisture": "10.5%",
+    "score": 86.5,
+    "notes": ["Panela", "Frutos rojos", "Floral"]
+  },
+  {
+    "lot": "DBY-2025-08-NAR",
+    "name": "Nariño - Lote Ago 2025",
+    "origin": "Nariño, Colombia",
+    "farm": "La Primavera",
+    "producer": "Ana Gómez",
+    "altitude": "2000 msnm",
+    "process": "Natural",
+    "variety": "Castillo",
+    "harvestDate": "2025-06-05",
+    "roastDate": "2025-08-28",
+    "moisture": "10.8%",
+    "score": 87.2,
+    "notes": ["Cítricos", "Chocolate", "Miel"]
+  }
+]
