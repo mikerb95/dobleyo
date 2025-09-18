@@ -66,6 +66,7 @@
         <div style="display:flex; gap:.5rem; margin-top:.75rem">
           <button id="startScan" class="btn" type="button">Iniciar escáner</button>
           <button id="stopScan" class="icon-btn" type="button">Detener</button>
+          <button id="restartScan" class="icon-btn" type="button" hidden>Reiniciar escaneo</button>
         </div>
         <div id="scanStatus" class="muted" style="margin-top:.35rem">Listo para escanear.</div>
         <p class="muted" style="margin-top:.5rem">Si tu navegador no permite el uso de la cámara, ingresa el código manualmente.</p>
@@ -75,6 +76,7 @@
           </label>
           <button id="lookupBtn" class="btn" type="button">Consultar</button>
         </form>
+        <div id="lotError" class="muted" style="color:#b91c1c; display:none; margin-top:.25rem"></div>
       </div>
 
       <div>
@@ -109,5 +111,6 @@
   <script src="assets/js/app.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js" defer></script>
   <script src="assets/js/trazabilidad.js" defer></script>
+  <div id="toast" class="toast" hidden>Mensaje</div>
 </body>
 </html>

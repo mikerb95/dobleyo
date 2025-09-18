@@ -26,8 +26,11 @@
   const video = $('#qrVideo');
   const startBtn = $('#startScan');
   const stopBtn = $('#stopScan');
+  const restartBtn = document.getElementById('restartScan');
   const lotInput = $('#lotInput');
   const lookupBtn = $('#lookupBtn');
+  const lotError = document.getElementById('lotError');
+  const toast = document.getElementById('toast');
 
   const resWrap = $('#result');
   const resEmpty = $('#resultEmpty');
@@ -76,10 +79,31 @@
     return lots.find(l => l.lot.toUpperCase()===c) || null;
   }
 
+  // Validación de formato de lote: DBY-YYYY-MM-XXX (letras mayúsculas en sufijo)
+  function validateLotFormat(code){
+    const re = /^DBY-20\d{2}-\d{2}-[A-Z]{3}$/; // simple: año 20xx, mes 2 dígitos, sufijo 3 letras
+    return re.test((code||'').trim().toUpperCase());
+  }
+
+  function showLotError(msg){ if (lotError){ lotError.textContent = msg; lotError.style.display = msg ? '' : 'none'; } }
+  function showToast(msg, ms=2600){
+    if (!toast) return;
+    toast.textContent = msg;
+    toast.removeAttribute('hidden');
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(()=> toast.setAttribute('hidden',''), ms);
+  }
+
   // Manual lookup
   if (lookupBtn){
     lookupBtn.addEventListener('click', ()=>{
-      renderResult(findByLot(lotInput.value));
+      const val = lotInput.value;
+      if (!validateLotFormat(val)){
+        showLotError('Formato inválido. Usa: DBY-YYYY-MM-XXX (p.ej. DBY-2025-09-HUI).');
+        return;
+      }
+      showLotError('');
+      renderResult(findByLot(val));
     });
   }
 
@@ -102,7 +126,7 @@
       }
     }catch(err){
       console.warn('No se pudo abrir la cámara', err);
-      alert('No se pudo acceder a la cámara. Usa la búsqueda manual por código.');
+      showToast('No se pudo acceder a la cámara. Usa el código manual.');
       setStatus('Permiso denegado o no disponible.');
     }
   }
@@ -111,6 +135,7 @@
     if (stream){ stream.getTracks().forEach(t=> t.stop()); stream = null; }
     if (video){ video.pause(); video.srcObject = null; }
     setStatus('Escaneo detenido.');
+    if (restartBtn) restartBtn.removeAttribute('hidden');
   }
   function tick(){
     if (!video || video.readyState !== video.HAVE_ENOUGH_DATA){ rafId = requestAnimationFrame(tick); return; }
@@ -124,10 +149,16 @@
         // Dibuja bounding box
         if (octx && overlay){
           octx.clearRect(0,0,overlay.width, overlay.height);
+          // Bounding box
           drawLine(code.location.topLeftCorner, code.location.topRightCorner, '#00ff7f');
           drawLine(code.location.topRightCorner, code.location.bottomRightCorner, '#00ff7f');
           drawLine(code.location.bottomRightCorner, code.location.bottomLeftCorner, '#00ff7f');
           drawLine(code.location.bottomLeftCorner, code.location.topLeftCorner, '#00ff7f');
+          // Corner locator marks (L-shaped)
+          drawCorner(code.location.topLeftCorner, 'tl', '#00ff7f');
+          drawCorner(code.location.topRightCorner, 'tr', '#00ff7f');
+          drawCorner(code.location.bottomRightCorner, 'br', '#00ff7f');
+          drawCorner(code.location.bottomLeftCorner, 'bl', '#00ff7f');
         }
         // Normalizamos: si el QR contiene URL con ?lote=..., extraemos; si no, usamos el texto como código.
         let val = (code.data || '').trim();
@@ -157,16 +188,48 @@
     octx.lineTo(end.x * scaleX, end.y * scaleY);
     octx.stroke();
   }
+  function drawCorner(pt, pos, color){
+    if (!octx || !overlay) return;
+    const scaleX = overlay.width / canvas.width;
+    const scaleY = overlay.height / canvas.height;
+    const x = pt.x * scaleX; const y = pt.y * scaleY;
+    const len = 18; const w = 4;
+    octx.strokeStyle = color; octx.lineWidth = w;
+    octx.beginPath();
+    if (pos==='tl' || pos==='bl') { octx.moveTo(x, y); octx.lineTo(x+len, y); } else { octx.moveTo(x, y); octx.lineTo(x-len, y); }
+    octx.stroke();
+    octx.beginPath();
+    if (pos==='tl' || pos==='tr') { octx.moveTo(x, y); octx.lineTo(x, y+len); } else { octx.moveTo(x, y); octx.lineTo(x, y-len); }
+    octx.stroke();
+  }
   if (startBtn) startBtn.addEventListener('click', startScan);
   if (stopBtn) stopBtn.addEventListener('click', stopScan);
+  if (restartBtn) restartBtn.addEventListener('click', ()=>{ restartBtn.setAttribute('hidden',''); startScan(); });
 
   // Sugerencia: si el usuario pega un valor tipo lote en el input, resolvemos.
   if (lotInput){
     lotInput.addEventListener('paste', (e)=>{
-      setTimeout(()=> renderResult(findByLot(lotInput.value)), 0);
+      setTimeout(()=>{
+        const val = lotInput.value;
+        if (!validateLotFormat(val)){
+          showLotError('Formato inválido. Usa: DBY-YYYY-MM-XXX.');
+          return;
+        }
+        showLotError('');
+        renderResult(findByLot(val));
+      }, 0);
     });
     lotInput.addEventListener('keydown', (e)=>{
-      if (e.key==='Enter') { e.preventDefault(); renderResult(findByLot(lotInput.value)); }
+      if (e.key==='Enter') {
+        e.preventDefault();
+        const val = lotInput.value;
+        if (!validateLotFormat(val)){
+          showLotError('Formato inválido. Usa: DBY-YYYY-MM-XXX.');
+          return;
+        }
+        showLotError('');
+        renderResult(findByLot(val));
+      }
     });
   }
 
