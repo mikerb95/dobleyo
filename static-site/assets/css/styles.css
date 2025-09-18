@@ -29,7 +29,7 @@ img{ max-width:100%; display:block }
 
 /* Header (floating navbar) */
 .site-header{ position:fixed; top: var(--header-top, 12px); left:0; right:0; z-index:60; background:transparent; border-bottom:0; }
-.site-header .container{ display:flex; align-items:center; justify-content:space-between; padding:1rem 1.25rem; width:min(1100px,calc(100% - 2rem)); margin-inline:auto; background:rgba(var(--coffee-rgb),.82); backdrop-filter:saturate(150%) blur(10px); border:1px solid rgba(255,255,255,.12); border-radius:.9rem; box-shadow:0 12px 36px rgba(0,0,0,.18); color:#fff }
+.site-header .container{ position:relative; overflow:hidden; display:flex; align-items:center; justify-content:space-between; padding:1.35rem 1.25rem; width:min(1100px,calc(100% - 2rem)); margin-inline:auto; background:rgba(var(--coffee-rgb),.82); backdrop-filter:saturate(150%) blur(10px); border:1px solid rgba(255,255,255,.12); border-radius:1rem; box-shadow:0 16px 42px rgba(0,0,0,.22); color:#fff }
 .brand{ display:flex; align-items:center; gap:.5rem; color:var(--coffee); text-decoration:none; font-weight:700 }
 /* Brand on dark header */
 .site-header .brand{ color:#fff }
@@ -47,6 +47,15 @@ img{ max-width:100%; display:block }
 /* Header-specific buttons */
 .site-header .icon-btn{ background:rgba(255,255,255,.12); border-color:rgba(255,255,255,.18); color:#fff }
 .site-header .icon-btn:hover{ background:rgba(255,255,255,.2) }
+
+/* Coffee beans layer inside header */
+.nav-beans{ position:absolute; inset:0; z-index:0; pointer-events:none; opacity:.12; transition: opacity .25s ease }
+.beans-active .nav-beans{ opacity:.16 }
+.nav-beans .bean{ position:absolute; width:44px; height:auto; filter: drop-shadow(0 2px 2px rgba(0,0,0,.25));
+  transform: translate(calc(var(--dx, 0px) * var(--fx, 1)), calc(var(--dy, 0px) * var(--fy, 1))) rotate(var(--rot, 0deg)) scale(var(--s, 1));
+  transition: transform .6s cubic-bezier(.2,.8,.2,1);
+}
+@media (max-width: 900px){ .nav-beans{ display:none } }
 
 /* Mobile menu */
 .mobile-menu{ display:none; flex-direction:column; gap:.5rem; padding:.5rem 1rem; border:1px solid var(--border); background:var(--card); border-radius:.5rem; width:min(1100px,calc(100% - 2rem)); margin: .5rem auto 0; position:relative; z-index:59 }
