@@ -39,6 +39,31 @@
     });
   }
 
+  // Theme: light/dark
+  (function initTheme(){
+    const root = document.documentElement;
+    const metaTheme = document.querySelector('meta[name="theme-color"]');
+    const stored = localStorage.getItem('dbyo-theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    let theme = stored || (prefersDark ? 'dark' : 'light');
+    apply(theme);
+    const btn = $('#themeToggle');
+    if (btn) {
+      updateIcon(theme, btn);
+      btn.addEventListener('click', ()=>{
+        theme = (root.classList.contains('theme-dark') ? 'light' : 'dark');
+        apply(theme);
+        updateIcon(theme, btn);
+        localStorage.setItem('dbyo-theme', theme);
+      });
+    }
+    function apply(t){
+      if (t === 'dark') root.classList.add('theme-dark'); else root.classList.remove('theme-dark');
+      if (metaTheme) metaTheme.setAttribute('content', t==='dark' ? '#0f0f0f' : '#251a14');
+    }
+    function updateIcon(t, el){ el.textContent = (t==='dark' ? '☀️' : '🌙'); }
+  })();
+
   // Búsqueda eliminada: se retira overlay y eventos
 
   // Page transition overlay logic
