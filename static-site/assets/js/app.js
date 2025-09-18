@@ -47,19 +47,24 @@
     if (!header || !layer || !nav) return;
     const beanSrc = 'assets/beans.svg';
     const beans = [];
-    const COUNT = 6;
+    const COUNT = 22; // denser field along the navbar
     for (let i=0;i<COUNT;i++){
       const img = document.createElement('img');
       img.className = 'bean';
+      // Prepare for future per-bean SVG replacement via data-src
+      img.dataset.src = beanSrc;
       img.src = beanSrc;
-      const x = 6 + Math.random()*88; // percentage
-      const y = 10 + Math.random()*70;
-      const r = -15 + Math.random()*30;
-      const s = 0.7 + Math.random()*0.5;
+      const x = (i/(COUNT-1))*92 + 4; // spread across width with slight margins
+      const y = 18 + (Math.random()*58); // avoid edges
+      const r = -25 + Math.random()*50;
+      const s = 0.7 + Math.random()*0.6;
       img.style.left = x + '%';
       img.style.top = y + '%';
       img.style.setProperty('--rot', r+'deg');
       img.style.setProperty('--s', s);
+      // variable size for depth
+      const size = 42 + Math.random()*22;
+      img.style.setProperty('--bean-size', size+'px');
       layer.appendChild(img);
       beans.push(img);
     }
@@ -68,10 +73,11 @@
     items.forEach((a, idx)=>{
       a.addEventListener('mouseenter', ()=>{
         header.classList.add('beans-active');
-        const fx = (idx - items.length/2) * 0.12; // direction factor
+        const fx = (idx - items.length/2) * 0.10; // direction factor (subtle)
         beans.forEach((b, i)=>{
-          const dx = (Math.sin((idx+i)*1.7)+Math.cos(i*2.3))*6; // px
-          const dy = (Math.cos((idx+i)*1.3))*4;
+          const wave = Math.sin((idx+i)*0.9) + Math.cos((idx-i)*1.1);
+          const dx = wave * 6; // px
+          const dy = Math.cos((idx+i)*1.15) * 4;
           b.style.setProperty('--dx', (dx* (1+i*0.07)).toFixed(2)+'px');
           b.style.setProperty('--dy', (dy* (1+i*0.05)).toFixed(2)+'px');
           b.style.setProperty('--fx', (1+fx).toFixed(2));
