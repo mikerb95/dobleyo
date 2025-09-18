@@ -4,12 +4,18 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Carrito · DobleYo</title>
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#251a14">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: { colors:{ coffee:'#251a14', cream:'#f7f3ef', accent:'#c67b4e', ink:'#1f2937' }, fontFamily:{ sans:['Inter','ui-sans-serif','system-ui','-apple-system','Segoe UI','Roboto','Helvetica','Arial'] } } } }
+  </script>
   <link rel="stylesheet" href="assets/css/styles.css">
 </head>
-<body>
+<body class="font-sans bg-cream text-ink">
   <div class="topbar" id="topbar"><div class="container"><span>Novedad: Envíos nacionales gratis desde $120.000</span><button class="topbar-close" id="topbarClose">×</button></div></div>
   <div class="transition-overlay" id="transitionOverlay" aria-hidden="true"></div>
   <header class="site-header" id="siteHeader">
