@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>DobleYo — Café de especialidad colombiano</title>
+  <meta name="description" content="Tienda de café de especialidad colombiano. Tueste fresco, origen trazable, estilo sereno y acogedor.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+  <!-- Top announcement bar -->
+  <div class="topbar" id="topbar">
+    <div class="container">
+      <span>Novedad: Envíos nacionales gratis desde $120.000 · Nuevas cosechas Huila & Nariño</span>
+      <button class="topbar-close" aria-label="Cerrar" id="topbarClose">×</button>
+    </div>
+  </div>
+
+  <!-- Page transition overlay -->
+  <div class="transition-overlay" id="transitionOverlay" aria-hidden="true"></div>
+
+  <!-- Header / Navbar -->
+  <header class="site-header" id="siteHeader">
+    <div class="container">
+      <a class="brand" href="index.html" data-link>
+        <img src="assets/logo.svg" alt="DobleYo" height="28"/>
+      </a>
+      <nav class="nav">
+        <a href="index.html" data-link>Inicio</a>
+        <a href="catalogo.html" data-link>Catálogo</a>
+        <a href="nosotros.html" data-link>Nosotros</a>
+        <a href="faq.html" data-link>FAQ</a>
+        <a href="contacto.html" data-link>Contacto</a>
+      </nav>
+      <div class="actions">
+        <button id="searchBtn" aria-label="Buscar" class="icon-btn">🔍</button>
+        <a href="carrito.html" class="icon-btn" aria-label="Carrito">🛒<span class="badge" id="cartCount">0</span></a>
+        <button id="menuBtn" class="hamburger" aria-label="Menú">☰</button>
+      </div>
+    </div>
+    <div class="mobile-menu" id="mobileMenu" hidden>
+      <a href="index.html" data-link>Inicio</a>
+      <a href="catalogo.html" data-link>Catálogo</a>
+      <a href="nosotros.html" data-link>Nosotros</a>
+      <a href="faq.html" data-link>FAQ</a>
+      <a href="contacto.html" data-link>Contacto</a>
+    </div>
+  </header>
+
+  <!-- Search overlay -->
+  <div class="search-overlay" id="searchOverlay" hidden>
+    <div class="search-box">
+      <input type="search" id="searchInput" placeholder="Buscar café, origen, notas..."/>
+      <button id="searchClose" aria-label="Cerrar">×</button>
+    </div>
+    <div class="search-results" id="searchResults"></div>
+  </div>
+
+  <main class="container">
+    <section class="hero">
+      <h1>Café de especialidad colombiano</h1>
+      <p>Tueste fresco, origen trazable y un estilo sereno y acogedor.</p>
+      <p><a class="btn" href="catalogo.html" data-link>Ver catálogo</a></p>
+    </section>
+
+    <section>
+      <h2>Nuestros cafés</h2>
+      <div class="grid" id="homeProducts"></div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>© <span id="year"></span> DobleYo · Café de especialidad colombiano</p>
+    </div>
+  </footer>
+
+  <script src="assets/js/app.js" defer></script>
+</body>
+</html>

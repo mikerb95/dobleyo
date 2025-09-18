@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>FAQ · DobleYo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+  <div class="topbar" id="topbar"><div class="container"><span>Novedad: Envíos nacionales gratis desde $120.000</span><button class="topbar-close" id="topbarClose">×</button></div></div>
+  <div class="transition-overlay" id="transitionOverlay" aria-hidden="true"></div>
+  <header class="site-header" id="siteHeader">
+    <div class="container">
+      <a class="brand" href="index.html" data-link><img src="assets/logo.svg" alt="DobleYo" height="28"/></a>
+      <nav class="nav">
+        <a href="index.html" data-link>Inicio</a>
+        <a href="catalogo.html" data-link>Catálogo</a>
+        <a href="nosotros.html" data-link>Nosotros</a>
+        <a class="active" href="faq.html" data-link>FAQ</a>
+        <a href="contacto.html" data-link>Contacto</a>
+      </nav>
+      <div class="actions">
+        <button id="searchBtn" class="icon-btn">🔍</button>
+        <a href="carrito.html" class="icon-btn">🛒<span class="badge" id="cartCount">0</span></a>
+        <button id="menuBtn" class="hamburger">☰</button>
+      </div>
+    </div>
+    <div class="mobile-menu" id="mobileMenu" hidden>
+      <a href="index.html" data-link>Inicio</a>
+      <a href="catalogo.html" data-link>Catálogo</a>
+      <a href="nosotros.html" data-link>Nosotros</a>
+      <a class="active" href="faq.html" data-link>FAQ</a>
+      <a href="contacto.html" data-link>Contacto</a>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="accordion" id="faqList">
+      <details open>
+        <summary>¿Hacen envíos a toda Colombia?</summary>
+        <p>Sí, tenemos cobertura nacional con aliados logísticos.</p>
+      </details>
+      <details>
+        <summary>¿Cada cuánto tuestan?</summary>
+        <p>Tostamos semanalmente para asegurar frescura.</p>
+      </details>
+      <details>
+        <summary>¿Puedo pedir molido?</summary>
+        <p>Claro, ofrecemos varias granulometrías según tu método.</p>
+      </details>
+    </section>
+  </main>
+
+  <footer class="site-footer"><div class="container"><p>© <span id="year"></span> DobleYo</p></div></footer>
+  <script src="assets/js/app.js" defer></script>
+</body>
+</html>
