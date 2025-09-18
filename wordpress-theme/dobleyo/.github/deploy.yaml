@@ -1,18 +1,18 @@
-name: 🚀 Deploy to cPanel
+name: 🚀 Deploy to cPanel (incremental)
 
 on:
   push:
     branches:
-      - main # o master
+      - main   # o master si tu rama principal es esa
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repo
+      - name: Checkout código
         uses: actions/checkout@v3
 
-      - name: Upload files via FTP
+      - name: Deploy con FTP (solo archivos cambiados)
         uses: SamKirkland/FTP-Deploy-Action@4.3.0
         with:
           server: ${{ secrets.FTP_SERVER }}
@@ -20,3 +20,10 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           server-dir: /public_html/
           protocol: ftp
+          # ⚡ Esto asegura que solo se suban archivos nuevos o modificados
+          exclude: |
+            **/.git*
+            **/.github/**
+            **/node_modules/**
+            **/.env
+
