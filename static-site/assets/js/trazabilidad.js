@@ -97,22 +97,55 @@
     });
   }
 
-  // QR scanning via MediaDevices + library-less fallback (decode by server ideally)
-  // Aquí sólo obtenemos video; no decodificamos QR por JS puro para mantenerlo simple.
-  // Instrucción UX: simularemos lectura si el usuario pega un texto con un patrón de lote en el input.
-  let stream;
+  // QR scanning via MediaDevices + jsQR
+  let stream, rafId, canvas, ctx;
+  const scanStatus = document.getElementById('scanStatus');
+  function setStatus(t){ if (scanStatus) scanStatus.textContent = t; }
   async function startScan(){
     try{
+      setStatus('Abriendo cámara...');
       stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio:false });
-      if (video){ video.srcObject = stream; await video.play(); }
+      if (video){
+        video.srcObject = stream;
+        await video.play();
+        if (!canvas){ canvas = document.createElement('canvas'); ctx = canvas.getContext('2d'); }
+        tick();
+        setStatus('Escaneando... Apunta al QR.');
+      }
     }catch(err){
       console.warn('No se pudo abrir la cámara', err);
       alert('No se pudo acceder a la cámara. Usa la búsqueda manual por código.');
+      setStatus('Permiso denegado o no disponible.');
     }
   }
   function stopScan(){
+    if (rafId) cancelAnimationFrame(rafId);
     if (stream){ stream.getTracks().forEach(t=> t.stop()); stream = null; }
     if (video){ video.pause(); video.srcObject = null; }
+    setStatus('Escaneo detenido.');
+  }
+  function tick(){
+    if (!video || video.readyState !== video.HAVE_ENOUGH_DATA){ rafId = requestAnimationFrame(tick); return; }
+    canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    try{
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const code = window.jsQR ? window.jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: 'dontInvert' }) : null;
+      if (code && code.data){
+        // Normalizamos: si el QR contiene URL con ?lote=..., extraemos; si no, usamos el texto como código.
+        let val = (code.data || '').trim();
+        const m = val.match(/[?&]lote=([^&#\s]+)/i);
+        if (m) val = decodeURIComponent(m[1]);
+        stopScan();
+        renderResult(findByLot(val));
+        setStatus('QR leído.');
+        return;
+      }
+      setStatus('Escaneando...');
+    }catch(e){
+      // Si getImageData falla por CORS u otro, ignoramos
+    }
+    rafId = requestAnimationFrame(tick);
   }
   if (startBtn) startBtn.addEventListener('click', startScan);
   if (stopBtn) stopBtn.addEventListener('click', stopScan);

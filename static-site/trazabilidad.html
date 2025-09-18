@@ -66,6 +66,7 @@
           <button id="startScan" class="btn" type="button">Iniciar escáner</button>
           <button id="stopScan" class="icon-btn" type="button">Detener</button>
         </div>
+        <div id="scanStatus" class="muted" style="margin-top:.35rem">Listo para escanear.</div>
         <p class="muted" style="margin-top:.5rem">Si tu navegador no permite el uso de la cámara, ingresa el código manualmente.</p>
         <form id="manualForm" class="form" onsubmit="return false" style="margin-top:.5rem">
           <label>Código de lote
@@ -105,6 +106,7 @@
 
   <footer class="site-footer"><div class="container"><p>© <span id="year"></span> DobleYo</p><div class="payments">Medios de pago: Visa · MasterCard · PSE · Nequi · Daviplata</div></div></footer>
   <script src="assets/js/app.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js" defer></script>
   <script src="assets/js/trazabilidad.js" defer></script>
 </body>
 </html>
