@@ -1,5 +1,5 @@
 /* Base */
-:root{ --coffee:#6b4f4f; --cream:#f8f5f2; --dark:#1f1f1f; --muted:#777 }
+:root{ --coffee:#251a14; --coffee-rgb:37,26,20; --cream:#f7f3ef; --dark:#1f1f1f; --muted:#777 }
 *{ box-sizing:border-box }
 html,body{ margin:0; padding:0 }
 body{ font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Arial,sans-serif; color:var(--dark); background:var(--cream) }
@@ -13,16 +13,24 @@ img{ max-width:100%; display:block }
 
 /* Header (floating navbar) */
 .site-header{ position:fixed; top: var(--header-top, 12px); left:0; right:0; z-index:60; background:transparent; border-bottom:0; }
-  .site-header .container{ display:flex; align-items:center; justify-content:space-between; padding:1rem 1.25rem; width:min(1100px,calc(100% - 2rem)); margin-inline:auto; background:rgba(255,255,255,.7); backdrop-filter:saturate(150%) blur(10px); border:1px solid #eee; border-radius:.9rem; box-shadow:0 12px 36px rgba(0,0,0,.1) }
+.site-header .container{ display:flex; align-items:center; justify-content:space-between; padding:1rem 1.25rem; width:min(1100px,calc(100% - 2rem)); margin-inline:auto; background:rgba(var(--coffee-rgb),.82); backdrop-filter:saturate(150%) blur(10px); border:1px solid rgba(255,255,255,.12); border-radius:.9rem; box-shadow:0 12px 36px rgba(0,0,0,.18); color:#fff }
 .brand{ display:flex; align-items:center; gap:.5rem; color:var(--coffee); text-decoration:none; font-weight:700 }
+/* Brand on dark header */
+.site-header .brand{ color:#fff }
 .nav{ display:flex; gap:1rem }
 .nav a{ color:var(--dark); text-decoration:none; padding:.25rem .5rem; border-radius:.375rem }
 .nav a.active, .nav a:hover{ background:#fff; box-shadow:0 1px 0 rgba(0,0,0,.05) }
+/* Header-specific link overrides for dark background */
+.site-header .nav a{ color:#fff }
+.site-header .nav a.active, .site-header .nav a:hover{ background:rgba(255,255,255,.14); box-shadow:none }
 .actions{ display:flex; align-items:center; gap:.5rem }
 .icon-btn{ background:#fff; border:1px solid #eee; padding:.4rem .6rem; border-radius:.375rem; cursor:pointer; text-decoration:none; color:var(--dark); display:inline-flex; align-items:center; gap:.25rem }
 .icon-btn.active{ border-color:var(--coffee) }
 .badge{ background:var(--coffee); color:#fff; font-size:.7rem; padding:.05rem .35rem; border-radius:999px; margin-left:.25rem }
 .hamburger{ display:none }
+/* Header-specific buttons */
+.site-header .icon-btn{ background:rgba(255,255,255,.12); border-color:rgba(255,255,255,.18); color:#fff }
+.site-header .icon-btn:hover{ background:rgba(255,255,255,.2) }
 
 /* Mobile menu */
 .mobile-menu{ display:none; flex-direction:column; gap:.5rem; padding:.5rem 1rem; border:1px solid #eee; background:#fff; border-radius:.5rem; width:min(1100px,calc(100% - 2rem)); margin: .5rem auto 0; position:relative; z-index:59 }
