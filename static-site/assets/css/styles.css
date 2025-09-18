@@ -105,3 +105,33 @@ img{ max-width:100%; display:block }
 /* Spacing to avoid overlap of fixed header */
 main.container{ padding-top: calc(var(--header-height, 96px) + 28px) }
 .filters{ display:flex; gap:.5rem; padding:1rem 0; position:sticky; top: calc(var(--header-height, 96px) + 8px); background:var(--cream); z-index:40; border-bottom:1px solid #eee }
+
+/* Evidence section (pixel-perfect) */
+.evidence-section{ background:#f5efe5; position:relative; margin:3rem 0 0 }
+.evidence-inner{ padding:3rem 0 }
+.evidence-grid{ display:grid; grid-template-columns: 1.2fr 1fr 1fr; gap:2.5rem; align-items:start }
+.e-left{ grid-column:1/2 }
+.e-title{ font-family: Georgia, "Times New Roman", Times, serif; font-weight:700; line-height:1.05; color:#3b2a1f; font-size: clamp(2rem, 5vw, 3.25rem); letter-spacing:.01em; margin: .25rem 0 1.25rem }
+.e-stat{ color:#3b2a1f }
+.e-number{ font-family: Georgia, "Times New Roman", Times, serif; color:#f27d00; font-size: clamp(2.4rem, 6vw, 4rem); line-height:1; letter-spacing:.01em; margin-bottom:.4rem }
+.e-sub{ margin:.15rem 0; font-size:1.1rem; color:#4b3a2f }
+.e-stat-a{ grid-column:2/3 }
+.e-stat-b{ grid-column:3/4 }
+.e-mid{ grid-column:2/3; border-top:1px solid rgba(0,0,0,.18); padding-top:1rem; margin-top:.75rem }
+.e-badge{ display:inline-flex; align-items:center; gap:.6rem; background:#f6d9b6; border:1px solid #f0c89a; color:#3b2a1f; border-radius:.6rem; padding:.4rem .7rem; margin:.25rem 0 1rem }
+.e-badge-num{ background:#f27d00; color:#fff; font-weight:700; border-radius:.45rem; padding:.2rem .45rem; font-size:.95rem }
+.e-badge-label{ font-size:.95rem }
+.e-desc{ color:#4b3a2f; font-size:1.05rem; line-height:1.5; max-width:38ch }
+.e-reasons{ grid-column:3/4; border-top:1px solid rgba(0,0,0,.18); padding-top:1rem; margin-top:.75rem }
+.e-reasons-title{ color:#3b2a1f; font-size:1.15rem; margin:.25rem 0 1rem; line-height:1.4 }
+.e-list{ list-style:none; padding:0; margin:0; display:grid; gap:.65rem; color:#cf6500 }
+.e-list li{ color:#cf6500; font-weight:600; display:flex; align-items:center; gap:.6rem; font-size:1.05rem }
+.e-dot{ display:inline-grid; place-items:center; width:28px; height:28px; border-radius:999px; background:#fbe3c7; color:#cf6500; font-weight:700 }
+.e-source{ grid-column:2/4; color:#6a5a50; font-size:.85rem; margin-top:1.25rem }
+
+@media (max-width: 980px){
+  .evidence-grid{ grid-template-columns: 1fr; gap:1.5rem }
+  .e-stat-a,.e-stat-b,.e-mid,.e-reasons,.e-source{ grid-column:auto }
+  .e-left{ order:-1 }
+  .e-title{ font-size: clamp(2rem, 8vw, 2.4rem) }
+}
