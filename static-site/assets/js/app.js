@@ -9,6 +9,14 @@
   // Topbar close
   const topbar = $('#topbar');
   const topbarClose = $('#topbarClose');
+  // Floating header offset depends on topbar height
+  const setHeaderTop = () => {
+    const tb = $('#topbar');
+    const top = tb ? (tb.offsetHeight + 12) : 12;
+    document.documentElement.style.setProperty('--header-top', top + 'px');
+  };
+  setHeaderTop();
+  window.addEventListener('resize', setHeaderTop);
   if (topbar && topbarClose) {
     topbarClose.addEventListener('click', ()=>{
       topbar.style.height = topbar.offsetHeight + 'px';
@@ -16,7 +24,7 @@
         topbar.style.transition = 'height .25s ease, opacity .25s ease';
         topbar.style.height = '0px';
         topbar.style.opacity = '0';
-        setTimeout(()=> topbar.remove(), 280);
+        setTimeout(()=> { topbar.remove(); setHeaderTop(); }, 300);
       });
     });
   }
@@ -31,25 +39,7 @@
     });
   }
 
-  // Search overlay
-  const searchBtn = $('#searchBtn');
-  const searchOverlay = $('#searchOverlay');
-  const searchInput = $('#searchInput');
-  const searchClose = $('#searchClose');
-  if (searchBtn && searchOverlay) {
-    searchBtn.addEventListener('click', ()=>{
-      searchOverlay.removeAttribute('hidden');
-      setTimeout(()=> searchInput && searchInput.focus(), 50);
-    });
-  }
-  if (searchClose) {
-    searchClose.addEventListener('click', ()=> searchOverlay.setAttribute('hidden',''));
-  }
-  if (searchOverlay) {
-    searchOverlay.addEventListener('click', (e)=>{
-      if (e.target === searchOverlay) searchOverlay.setAttribute('hidden','');
-    });
-  }
+  // Búsqueda eliminada: se retira overlay y eventos
 
   // Page transition overlay logic
   const overlay = $('#transitionOverlay');
@@ -117,19 +107,7 @@
 
   // Carrito eliminado: no hay página de carrito ni checkout
 
-  // Search logic (simple client-side filter)
-  if (searchInput) {
-    searchInput.addEventListener('input', ()=>{
-      const q = searchInput.value.toLowerCase();
-      const res = products.filter(p => (
-        p.name.toLowerCase().includes(q) || p.origin.toLowerCase().includes(q) || p.notes.join(' ').toLowerCase().includes(q)
-      ));
-      const resultsEl = $('#searchResults');
-      if (resultsEl) {
-        resultsEl.innerHTML = res.map(p=> cardHTML(p)).join('');
-      }
-    });
-  }
+  // Lógica de búsqueda eliminada
 
   // Helpers
   function cardHTML(p){
