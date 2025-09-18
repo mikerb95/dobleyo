@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Nosotros · DobleYo</title>
+  <title>Blog · DobleYo</title>
   <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
   <meta name="theme-color" content="#251a14">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -24,8 +24,8 @@
       <nav class="nav">
         <a href="index.html" data-link>Inicio</a>
         <a href="catalogo.html" data-link>Catálogo</a>
-        <a class="active" href="nosotros.html" data-link>Nosotros</a>
-        <a href="blog.html" data-link>Blog</a>
+        <a href="nosotros.html" data-link>Nosotros</a>
+        <a class="active" href="blog.html" data-link>Blog</a>
         <a href="contacto.html" data-link>Contacto</a>
       </nav>
       <div class="actions">
@@ -35,22 +35,39 @@
     <div class="mobile-menu" id="mobileMenu" hidden>
       <a href="index.html" data-link>Inicio</a>
       <a href="catalogo.html" data-link>Catálogo</a>
-      <a class="active" href="nosotros.html" data-link>Nosotros</a>
-      <a href="blog.html" data-link>Blog</a>
+      <a href="nosotros.html" data-link>Nosotros</a>
+      <a class="active" href="blog.html" data-link>Blog</a>
       <a href="contacto.html" data-link>Contacto</a>
     </div>
   </header>
 
   <main class="container">
     <section class="prose">
-      <h1>Nuestra historia</h1>
-      <p>DobleYo nace del amor por el café de origen colombiano. Trabajamos con productores que cultivan con dedicación y respeto por el territorio, para tostar y compartir tazas memorables.</p>
-      <h2>Valores</h2>
-      <ul>
-        <li>Transparencia y trazabilidad</li>
-        <li>Relación directa con caficultores</li>
-        <li>Tueste responsable y fresco</li>
-      </ul>
+      <h1>Blog</h1>
+      <p>Novedades, recetas y notas de origen.</p>
+      <div class="grid" id="blogGrid">
+        <article class="card">
+          <img src="https://images.unsplash.com/photo-1498804103079-a6351b050096?q=80&w=1200&auto=format&fit=crop" alt="Receta V60 Basica">
+          <div class="p">
+            <h3>Receta V60 básica</h3>
+            <div class="muted">Tiempo de lectura: 3 min</div>
+          </div>
+        </article>
+        <article class="card">
+          <img src="https://images.unsplash.com/photo-1517705008128-361805f42e86?q=80&w=1200&auto=format&fit=crop" alt="Notas de cata Huila">
+          <div class="p">
+            <h3>Notas de cata: Huila</h3>
+            <div class="muted">Tiempo de lectura: 4 min</div>
+          </div>
+        </article>
+        <article class="card">
+          <img src="https://images.unsplash.com/photo-1470337458703-46ad1756a187?q=80&w=1200&auto=format&fit=crop" alt="Guia de molienda">
+          <div class="p">
+            <h3>Guía de molienda por método</h3>
+            <div class="muted">Tiempo de lectura: 5 min</div>
+          </div>
+        </article>
+      </div>
     </section>
   </main>
 
