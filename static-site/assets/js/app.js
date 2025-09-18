@@ -143,11 +143,12 @@
   // Carrito eliminado: no se inicializa almacenamiento ni contador
 
   // Render products from embedded JSON (could be external file later)
-  const products = [
+  const productsDefault = [
     { id:'dbyo-sierra', name:'Sierra Nevada', price:42000, image:'https://images.unsplash.com/photo-1512568400610-62da28bc8a13?q=80&w=800&auto=format&fit=crop', origin:'Sierra Nevada', process:'Lavado', roast:'Medio', notes:['Cacao','Nuez','Caramelo'] },
     { id:'dbyo-huila', name:'Huila', price:45000, image:'https://images.unsplash.com/photo-1509043759401-136742328bb3?q=80&w=800&auto=format&fit=crop', origin:'Huila', process:'Honey', roast:'Claro', notes:['Panela','Frutos rojos','Floral'] },
     { id:'dbyo-narino', name:'Nariño', price:48000, image:'https://images.unsplash.com/photo-1494415859740-21e878dd929d?q=80&w=800&auto=format&fit=crop', origin:'Nariño', process:'Natural', roast:'Oscuro', notes:['Cítricos','Chocolate','Miel'] }
   ];
+  const products = (function(){ try{ const x = JSON.parse(localStorage.getItem('dbyo-products')||'null'); return Array.isArray(x)?x:productsDefault; }catch{ return productsDefault; } })();
 
   // Home grid
   const homeProducts = $('#homeProducts');

@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Admin · DobleYo</title>
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#251a14">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="assets/css/styles.css">
+  <style>
+    .admin-wrap{ padding-top: calc(var(--header-height, 96px) + 28px) }
+    .admin-grid{ display:grid; grid-template-columns: 220px 1fr; gap:1rem }
+    .admin-card{ background:var(--card); border:1px solid var(--border); border-radius:.75rem; overflow:hidden }
+    .admin-card .hd{ padding:.75rem 1rem; border-bottom:1px solid var(--border); font-weight:600 }
+    .admin-card .bd{ padding:1rem }
+    .admin-nav{ background:var(--card); border:1px solid var(--border); border-radius:.75rem; padding:.5rem }
+    .admin-nav a{ display:block; padding:.5rem .75rem; border-radius:.5rem; color:var(--fg); text-decoration:none }
+    .admin-nav a.active, .admin-nav a:hover{ background:rgba(0,0,0,.06) }
+    html.theme-dark .admin-nav a.active, html.theme-dark .admin-nav a:hover{ background:rgba(255,255,255,.08) }
+    .tbl{ width:100%; border-collapse:collapse }
+    .tbl th, .tbl td{ border-bottom:1px solid var(--border); padding:.5rem .5rem; text-align:left; vertical-align:top }
+    .tbl th{ font-size:.85rem; color:var(--muted-fg) }
+    .form-row{ display:grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap:.75rem }
+    .form-row label{ display:block; font-size:.85rem; color:var(--muted-fg) }
+    .form-row input, .form-row textarea, .form-row select{ width:100%; background:var(--card); color:var(--fg); border:1px solid var(--border); border-radius:.45rem; padding:.5rem .6rem }
+    .toolbar{ display:flex; gap:.5rem; align-items:center; justify-content:flex-end }
+    .btn-sec{ background:transparent; border:1px solid var(--border); color:var(--fg); padding:.45rem .7rem; border-radius:.45rem; cursor:pointer }
+    .btn-danger{ background:#b91c1c; color:#fff; border:1px solid #991b1b; padding:.45rem .7rem; border-radius:.45rem; cursor:pointer }
+    .login{ max-width:380px; margin: 5rem auto; background:var(--card); border:1px solid var(--border); border-radius:.75rem; padding:1rem }
+    .login h1{ margin-top:0 }
+    .muted{ color:var(--muted-fg) }
+  </style>
+</head>
+<body class="font-sans bg-cream text-ink">
+  <header class="site-header" id="siteHeader">
+    <div class="container">
+      <a class="brand" href="index.html" data-link><img src="assets/logo.svg" alt="DobleYo" height="28"/></a>
+      <nav class="nav">
+        <a href="index.html" data-link>Inicio</a>
+        <a href="catalogo.html" data-link>Catálogo</a>
+        <a href="blog.html" data-link>Blog</a>
+        <a href="trazabilidad.html" data-link>Trazabilidad</a>
+      </nav>
+      <div class="actions">
+        <button id="themeToggle" class="theme-toggle" aria-label="Cambiar tema" title="Cambiar tema">🌙</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container admin-wrap">
+    <section id="loginView" class="login">
+      <h1>Acceso administrador</h1>
+      <p class="muted" style="margin-top:-.4rem">Uso de desarrollo: este formulario es solo para pruebas en entorno estático.</p>
+      <div class="form" style="display:grid; gap:.75rem; margin-top:.75rem">
+        <label>Correo<input id="admEmail" type="email" placeholder="admin@dobleyo.local" value="admin@dobleyo.local"></label>
+        <label>Contraseña<input id="admPass" type="password" placeholder="••••••••" value="dobleyo-admin"></label>
+        <button class="btn" id="admLoginBtn" type="button">Iniciar sesión</button>
+      </div>
+      <p class="muted" style="margin-top:.5rem">Al iniciar sesión se guardará un token en tu navegador. No uses credenciales reales aquí.</p>
+    </section>
+
+    <section id="adminView" style="display:none">
+      <div class="toolbar" style="margin-bottom:.75rem">
+        <span class="muted">Sesión activa</span>
+        <button class="btn-sec" id="admLogoutBtn">Cerrar sesión</button>
+      </div>
+      <div class="admin-grid">
+        <nav class="admin-nav">
+          <a href="#lotes" data-tab class="active">Lotes</a>
+          <a href="#productos" data-tab>Productos</a>
+          <a href="#blog" data-tab>Blog</a>
+        </nav>
+        <div>
+          <!-- LOTES -->
+          <div id="tab-lotes" class="admin-card">
+            <div class="hd">Lotes de trazabilidad</div>
+            <div class="bd">
+              <div class="toolbar">
+                <button class="btn-sec" id="lotsExport">Exportar JSON</button>
+                <button class="btn" id="lotsAdd">Añadir lote</button>
+              </div>
+              <table class="tbl" id="lotsTable">
+                <thead>
+                  <tr><th>Code</th><th>Nombre</th><th>Origen</th><th>Proceso</th><th>Variedad</th><th>Acciones</th></tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+          <!-- PRODUCTOS -->
+          <div id="tab-productos" class="admin-card" style="margin-top:1rem; display:none">
+            <div class="hd">Productos del catálogo</div>
+            <div class="bd">
+              <div class="toolbar">
+                <button class="btn-sec" id="prodExport">Exportar JSON</button>
+                <button class="btn" id="prodAdd">Añadir producto</button>
+              </div>
+              <table class="tbl" id="prodTable">
+                <thead>
+                  <tr><th>Nombre</th><th>Precio</th><th>Origen</th><th>Proceso</th><th>Tueste</th><th>Acciones</th></tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+          <!-- BLOG -->
+          <div id="tab-blog" class="admin-card" style="margin-top:1rem; display:none">
+            <div class="hd">Entradas del blog</div>
+            <div class="bd">
+              <div class="toolbar">
+                <button class="btn-sec" id="blogExport">Exportar JSON</button>
+                <button class="btn" id="blogAdd">Añadir post</button>
+              </div>
+              <table class="tbl" id="blogTable">
+                <thead>
+                  <tr><th>Título</th><th>Autor</th><th>Publicado</th><th>Acciones</th></tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="assets/js/app.js" defer></script>
+  <script src="assets/js/admin.js" defer></script>
+</body>
+</html>

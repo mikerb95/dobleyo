@@ -12,6 +12,12 @@
     }
   ];
   async function loadLots(){
+    // 1) admin-provided lots from localStorage
+    try{
+      const ls = JSON.parse(localStorage.getItem('dbyo-lots')||'null');
+      if (Array.isArray(ls) && ls.length){ lots = ls; return; }
+    }catch{}
+    // 2) external JSON
     try{
       const res = await fetch('assets/data/lotes.json', { cache: 'no-store' });
       if (!res.ok) throw new Error('HTTP '+res.status);
