@@ -68,11 +68,7 @@
     });
   });
 
-  // Simple cart using localStorage
-  const CART_KEY = 'dobleyo_cart_v1';
-  const cartCount = $('#cartCount');
-  const cart = JSON.parse(localStorage.getItem(CART_KEY) || '[]');
-  if (cartCount) cartCount.textContent = cart.reduce((n,i)=> n + (i.qty||1), 0);
+  // Carrito eliminado: no se inicializa almacenamiento ni contador
 
   // Render products from embedded JSON (could be external file later)
   const products = [
@@ -85,7 +81,6 @@
   const homeProducts = $('#homeProducts');
   if (homeProducts) {
     homeProducts.innerHTML = products.map(p => cardHTML(p)).join('');
-    bindAddToCart(homeProducts);
   }
 
   // Catalog grid + filters
@@ -115,56 +110,12 @@
     }
     function renderCatalog(list){
       catalogGrid.innerHTML = list.map(p=> cardHTML(p)).join('');
-      bindAddToCart(catalogGrid);
     }
     [filterOrigin, filterProcess, filterRoast].forEach(sel => sel && sel.addEventListener('change', applyFilters));
     renderCatalog(products);
   }
 
-  // Cart page
-  const cartList = $('#cartList');
-  const cartTotal = $('#cartTotal');
-  const checkoutBtn = $('#checkoutBtn');
-  if (cartList && cartTotal) {
-    function renderCart(){
-      const items = JSON.parse(localStorage.getItem(CART_KEY) || '[]');
-      if (!items.length){
-        cartList.innerHTML = '<p>Tu carrito está vacío.</p>';
-        cartTotal.textContent = '$0';
-        return;
-      }
-      const html = items.map(i=> `
-        <div class="card">
-          <div class="p">
-            <strong>${i.name}</strong>
-            <div class="price">$${i.price.toLocaleString('es-CO')}</div>
-            <div>Cantidad: <input type="number" min="1" value="${i.qty||1}" data-id="${i.id}" class="qty-input" style="width:64px"></div>
-            <button class="icon-btn remove" data-id="${i.id}">Quitar</button>
-          </div>
-        </div>
-      `).join('');
-      cartList.innerHTML = html;
-      const total = items.reduce((sum,i)=> sum + (i.price*(i.qty||1)), 0);
-      cartTotal.textContent = '$' + total.toLocaleString('es-CO');
-      // Bind events
-      $$('.qty-input', cartList).forEach(inp=> inp.addEventListener('change', (e)=>{
-        const id = inp.getAttribute('data-id');
-        const val = Math.max(1, parseInt(inp.value||'1',10));
-        updateQty(id, val);
-        renderCart();
-        if (cartCount) cartCount.textContent = getCount();
-      }));
-      $$('.remove', cartList).forEach(btn=> btn.addEventListener('click', ()=>{
-        removeItem(btn.getAttribute('data-id'));
-        renderCart();
-        if (cartCount) cartCount.textContent = getCount();
-      }));
-    }
-    renderCart();
-    if (checkoutBtn) checkoutBtn.addEventListener('click', ()=>{
-      alert('Checkout de demostración. Integraremos pasarela más adelante.');
-    });
-  }
+  // Carrito eliminado: no hay página de carrito ni checkout
 
   // Search logic (simple client-side filter)
   if (searchInput) {
@@ -176,7 +127,6 @@
       const resultsEl = $('#searchResults');
       if (resultsEl) {
         resultsEl.innerHTML = res.map(p=> cardHTML(p)).join('');
-        bindAddToCart(resultsEl);
       }
     });
   }
@@ -190,33 +140,8 @@
         <h3>${escapeHtml(p.name)}</h3>
         <div class="muted">${p.origin} · ${p.process} · ${p.roast}</div>
         <div class="price">$${p.price.toLocaleString('es-CO')}</div>
-        <button class="btn add" data-id="${p.id}">Agregar</button>
       </div>
     </article>`;
-  }
-  function bindAddToCart(root){
-    $$('.add', root).forEach(btn=> btn.addEventListener('click', ()=>{
-      const id = btn.getAttribute('data-id');
-      const p = products.find(x=> x.id===id);
-      if (!p) return;
-      const list = JSON.parse(localStorage.getItem(CART_KEY) || '[]');
-      const found = list.find(i=> i.id===p.id);
-      if (found) found.qty = (found.qty||1)+1; else list.push({...p, qty:1});
-      localStorage.setItem(CART_KEY, JSON.stringify(list));
-      if (cartCount) cartCount.textContent = getCount();
-    }));
-  }
-  function getCount(){
-    return JSON.parse(localStorage.getItem(CART_KEY) || '[]').reduce((n,i)=> n + (i.qty||1), 0);
-  }
-  function updateQty(id, qty){
-    const list = JSON.parse(localStorage.getItem(CART_KEY) || '[]');
-    const idx = list.findIndex(i=> i.id===id);
-    if (idx>-1){ list[idx].qty = qty; localStorage.setItem(CART_KEY, JSON.stringify(list)); }
-  }
-  function removeItem(id){
-    const list = JSON.parse(localStorage.getItem(CART_KEY) || '[]').filter(i=> i.id!==id);
-    localStorage.setItem(CART_KEY, JSON.stringify(list));
   }
   function escapeHtml(str){
     return str.replace(/[&<>"]+/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[s]));
