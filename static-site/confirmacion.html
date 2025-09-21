@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Confirmacion de pago · DobleYo</title>
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#251a14">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body class="font-sans bg-cream text-ink">
+  <header class="site-header" id="siteHeader">
+    <div class="container">
+      <a class="brand" href="index.html" data-link><img src="../branding/10%20Logo%20Dobleyo%20Cafe.PNG" alt="DobleYo" height="28"/></a>
+      <nav class="nav">
+        <a href="index.html" data-link>Inicio</a>
+        <a href="tienda.html" data-link>Tienda</a>
+        <a href="cuenta.html" data-link>Mi cuenta</a>
+      </nav>
+      <div class="actions">
+        <button id="themeToggle" class="theme-toggle" aria-label="Cambiar tema" title="Cambiar tema">🌙</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container" style="padding-top: calc(var(--header-height, 96px) + 28px)">
+    <section class="card" style="margin-top:1rem">
+      <div class="p">
+        <h1>Confirmacion de pago</h1>
+        <div id="status">Consultando estado...</div>
+        <div id="details" class="muted" style="margin-top:.5rem"></div>
+        <div style="margin-top:1rem"><a class="btn" href="tienda.html" data-link>Volver a la tienda</a></div>
+      </div>
+    </section>
+  </main>
+
+  <script src="assets/js/app.js" defer></script>
+  <script>
+    (async function(){
+      function qp(name){ return new URLSearchParams(location.search).get(name)||''; }
+      const ref = qp('ref');
+      const provider = qp('provider')||'unknown';
+      const st = qp('status');
+      const statusEl = document.getElementById('status');
+      const detailsEl = document.getElementById('details');
+      try{
+        if (!ref){ statusEl.textContent = 'No se encontro referencia.'; return; }
+        const r = await fetch('/api/order/'+encodeURIComponent(ref));
+        if (!r.ok){ statusEl.textContent = 'No se encontro informacion de la orden.'; return; }
+        const ord = await r.json();
+        statusEl.textContent = 'Estado: ' + (ord.status||st||'desconocido');
+        detailsEl.textContent = 'Referencia: '+ref+' · Proveedor: '+(ord.provider||provider);
+      }catch(e){
+        statusEl.textContent = 'Error consultando estado.';
+      }
+    })();
+  </script>
+</body>
+</html>

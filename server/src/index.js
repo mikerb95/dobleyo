@@ -5,6 +5,7 @@ import fetch from 'node-fetch';
 import mercadopago from 'mercadopago';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { store } from './store.js';
 
 const app = express();
 app.use(cors());
@@ -34,15 +35,17 @@ function wompiIntegrity({ reference, amountInCents, currency, integritySecret })
 app.post('/api/mp/create_preference', async (req, res) => {
   try {
     if (!MP_ACCESS_TOKEN) return res.status(500).json({ error: 'MP_ACCESS_TOKEN no configurado' });
-    const { items = [], reference = 'order-'+Date.now(), shipping = {} } = req.body || {};
+    const { items = [], reference = 'order-'+Date.now(), shipping = {}, total = 0 } = req.body || {};
+    // guardar orden preliminar
+    store.setOrder(reference, { provider:'mercadopago', status:'created', items, total, shipping });
     const preference = {
       items: items.map(i=>({ title:i.title, quantity:i.quantity, unit_price: i.unit_price, currency_id:'COP' })),
       external_reference: reference,
       payer: { name: shipping.name, email: shipping.email },
       back_urls: {
-        success: process.env.SITE_BASE_URL ? `${process.env.SITE_BASE_URL}/checkout.html?status=success` : 'http://localhost:4000/checkout.html?status=success',
-        failure: process.env.SITE_BASE_URL ? `${process.env.SITE_BASE_URL}/checkout.html?status=failure` : 'http://localhost:4000/checkout.html?status=failure',
-        pending: process.env.SITE_BASE_URL ? `${process.env.SITE_BASE_URL}/checkout.html?status=pending` : 'http://localhost:4000/checkout.html?status=pending'
+        success: process.env.SITE_BASE_URL ? `${process.env.SITE_BASE_URL}/confirmacion.html?provider=mp&status=success&ref=${reference}` : `http://localhost:4000/confirmacion.html?provider=mp&status=success&ref=${reference}`,
+        failure: process.env.SITE_BASE_URL ? `${process.env.SITE_BASE_URL}/confirmacion.html?provider=mp&status=failure&ref=${reference}` : `http://localhost:4000/confirmacion.html?provider=mp&status=failure&ref=${reference}`,
+        pending: process.env.SITE_BASE_URL ? `${process.env.SITE_BASE_URL}/confirmacion.html?provider=mp&status=pending&ref=${reference}` : `http://localhost:4000/confirmacion.html?provider=mp&status=pending&ref=${reference}`
       },
       auto_return: 'approved'
     };
@@ -57,6 +60,7 @@ app.post('/api/wompi/checkout', async (req, res) => {
   try {
     if (!WOMPI_PUBLIC_KEY || !WOMPI_PRIVATE_KEY || !WOMPI_INTEGRITY_SECRET) return res.status(500).json({ error: 'Llaves Wompi no configuradas' });
     const { items = [], total = 0, reference = 'order-'+Date.now(), shipping = {} } = req.body || {};
+    store.setOrder(reference, { provider:'wompi', status:'created', items, total, shipping });
 
     // Wompi requiere amount_in_cents, currency, reference y firma de integridad
     const amountInCents = Math.round(Number(total||0) * 100);
@@ -72,7 +76,7 @@ app.post('/api/wompi/checkout', async (req, res) => {
       public_key: WOMPI_PUBLIC_KEY,
       signature: { integrity: integritySignature },
       customer_data: { full_name: shipping.name, email: shipping.email, phone_number: shipping.phone },
-      redirect_url: process.env.SITE_BASE_URL ? `${process.env.SITE_BASE_URL}/checkout.html` : 'http://localhost:4000/checkout.html'
+      redirect_url: process.env.SITE_BASE_URL ? `${process.env.SITE_BASE_URL}/confirmacion.html?provider=wompi&ref=${reference}` : `http://localhost:4000/confirmacion.html?provider=wompi&ref=${reference}`
     };
 
     // Wompi no siempre permite crear checkout via API publica; si falla, armamos URL directa
@@ -97,6 +101,41 @@ app.post('/api/wompi/checkout', async (req, res) => {
   } catch (e) {
     return res.status(500).json({ error: e.message });
   }
+});
+
+// Webhook Mercado Pago
+app.post('/api/mp/webhook', express.json(), async (req, res) => {
+  try{
+    const topic = req.query?.type || req.body?.type;
+    const data = req.body?.data || {};
+    // En produccion consultar al endpoint de MP para traer info completa del pago
+    const ref = req.body?.data?.id || req.body?.resource || '';
+    // Para demo, marcamos estado por el query "type" si viene y mantenemos referencia externa si llega
+    if (req.body && req.body?.external_reference){
+      store.update(req.body.external_reference, { status: (req.body.action || topic || 'updated') });
+    }
+    res.sendStatus(200);
+  }catch(e){ res.status(200).end(); }
+});
+
+// Webhook Wompi
+app.post('/api/wompi/webhook', express.json(), (req, res) => {
+  try{
+    const ev = req.body?.event || req.body; // wompi envia event/data
+    const data = req.body?.data || {};
+    const ref = data?.transaction?.reference || data?.reference;
+    const status = data?.transaction?.status || data?.status || 'updated';
+    if (ref) store.update(ref, { status, wompi: data });
+    res.sendStatus(200);
+  }catch(e){ res.status(200).end(); }
+});
+
+// Consultar estado por referencia
+app.get('/api/order/:ref', (req, res) => {
+  const ref = req.params.ref;
+  const ord = store.get(ref);
+  if (!ord) return res.status(404).json({ error: 'No existe la orden' });
+  res.json(ord);
 });
 
 const PORT = process.env.PORT || 4000;
