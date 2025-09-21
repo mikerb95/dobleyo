@@ -29,7 +29,7 @@
       <nav class="nav">
         <a href="index.html" data-link>Inicio</a>
         <a class="active" href="tienda.html" data-link>Tienda</a>
-        <a href="catalogo.html" data-link>Catálogo</a>
+        
         <a href="nosotros.html" data-link>Nosotros</a>
         <a href="blog.html" data-link>Blog</a>
         <a href="trazabilidad.html" data-link>Trazabilidad</a>
@@ -43,7 +43,7 @@
     <div class="mobile-menu" id="mobileMenu" hidden>
       <a href="index.html" data-link>Inicio</a>
       <a class="active" href="tienda.html" data-link>Tienda</a>
-      <a href="catalogo.html" data-link>Catálogo</a>
+      
       <a href="nosotros.html" data-link>Nosotros</a>
       <a href="blog.html" data-link>Blog</a>
       <a href="trazabilidad.html" data-link>Trazabilidad</a>
@@ -146,9 +146,9 @@
         <div class="footer-columns">
           <div>
             <h4>Tienda</h4>
-            <a href="catalogo.html" data-link>Cafés</a>
+            <a href="tienda.html" data-link>Cafés</a>
             <a href="#">Accesorios</a>
-            <a href="catalogo.html" data-link>Ver todo</a>
+            <a href="tienda.html" data-link>Ver todo</a>
           </div>
           <div>
             <h4>Aprende</h4>
@@ -354,20 +354,6 @@
       // init default
       $$('#shopSidebar input[type="radio"][name="rating"]').find(r=>r.value==='').checked = true;
       render();
-      // Scroll behavior: hide everything above filters when scrolling up
-      let lastY = window.scrollY, compact = false;
-      window.addEventListener('scroll', ()=>{
-        const y = window.scrollY; const dy = y - lastY; lastY = y;
-        if (dy < -12 && !compact){
-          document.documentElement.classList.add('shop-compact');
-          compact = true;
-        } else if (dy > 12 && compact){
-          document.documentElement.classList.remove('shop-compact');
-          compact = false;
-        }
-        // Always show header when near the very top
-        if (y < 20){ document.documentElement.classList.remove('shop-compact'); compact = false; }
-      }, { passive:true });
     })();
   </script>
 </body>

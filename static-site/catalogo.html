@@ -3,131 +3,17 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Catálogo · DobleYo</title>
+  <meta name="robots" content="noindex, nofollow">
+  <meta http-equiv="refresh" content="0; url=tienda.html">
+  <title>Redirigiendo a tienda…</title>
   <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
-  <meta name="theme-color" content="#251a14">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = { theme: { extend: { colors:{ coffee:'#251a14', cream:'#f7f3ef', accent:'#c67b4e', ink:'#1f2937' }, fontFamily:{ sans:['Inter','ui-sans-serif','system-ui','-apple-system','Segoe UI','Roboto','Helvetica','Arial'] } } } }
-  </script>
-  <link rel="stylesheet" href="assets/css/styles.css">
+  <style>body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; margin:2rem; color:#1f2937} .card{max-width:520px; margin:auto; border:1px solid #e5e7eb; border-radius:.75rem; padding:1rem}</style>
 </head>
-<body class="font-sans bg-cream text-ink">
-  <div class="topbar" id="topbar"><div class="container"><span>Novedad: Envíos nacionales gratis desde $120.000</span><button class="topbar-close" id="topbarClose">×</button></div></div>
-  <div class="transition-overlay" id="transitionOverlay" aria-hidden="true"></div>
-  <header class="site-header" id="siteHeader">
-    <div class="container">
-      <div class="nav-beans" aria-hidden="true"></div>
-  <a class="brand" href="index.html" data-link><img src="../branding/10%20Logo%20Dobleyo%20Cafe.PNG" alt="DobleYo" height="28"/></a>
-      <nav class="nav">
-        <a href="index.html" data-link>Inicio</a>
-        <a href="tienda.html" data-link>Tienda</a>
-        <a class="active" href="catalogo.html" data-link>Catálogo</a>
-        <a href="nosotros.html" data-link>Nosotros</a>
-        <a href="blog.html" data-link>Blog</a>
-        <a href="trazabilidad.html" data-link>Trazabilidad</a>
-        <a href="contacto.html" data-link>Contacto</a>
-      </nav>
-        <div class="actions">
-          <button id="themeToggle" class="theme-toggle" aria-label="Cambiar tema" title="Cambiar tema">🌙</button>
-          <button id="menuBtn" class="hamburger" aria-label="Menú">☰</button>
-        </div>
-    </div>
-    <div class="mobile-menu" id="mobileMenu" hidden>
-      <a href="index.html" data-link>Inicio</a>
-      <a href="tienda.html" data-link>Tienda</a>
-      <a class="active" href="catalogo.html" data-link>Catálogo</a>
-      <a href="nosotros.html" data-link>Nosotros</a>
-      <a href="blog.html" data-link>Blog</a>
-      <a href="trazabilidad.html" data-link>Trazabilidad</a>
-      <a href="contacto.html" data-link>Contacto</a>
-    </div>
-  </header>
-  
-
-  <main class="container">
-    <section class="filters">
-      <select id="filterOrigin"><option value="">Origen</option></select>
-      <select id="filterProcess"><option value="">Proceso</option></select>
-      <select id="filterRoast"><option value="">Tueste</option></select>
-    </section>
-    <section>
-      <div class="grid" id="catalogGrid"></div>
-    </section>
-  </main>
-
-  <footer class="site-footer">
-    <div class="container">
-      <div class="footer-news">
-        <div class="label">10% de descuento en tu primera compra</div>
-        <div class="input">
-          <input placeholder="Tu correo electrónico" aria-label="Correo electrónico"/>
-          <button class="arrow" aria-label="Suscribirse">→</button>
-        </div>
-      </div>
-      <div class="footer-main">
-        <div class="footer-social">
-          <a href="#" aria-label="Instagram">Instagram</a>
-          <a href="#" aria-label="YouTube">YouTube</a>
-          <a href="#" aria-label="TikTok">TikTok</a>
-          <a href="#" aria-label="Facebook">Facebook</a>
-        </div>
-        <div class="footer-columns">
-          <div>
-            <h4>Tienda</h4>
-            <a href="catalogo.html" data-link>Cafés</a>
-            <a href="#">Accesorios</a>
-            <a href="catalogo.html" data-link>Ver todo</a>
-          </div>
-          <div>
-            <h4>Aprende</h4>
-            <a href="nosotros.html" data-link>Sobre nosotros</a>
-            <a href="blog.html" data-link>Blog</a>
-            <a href="#">Guías</a>
-            <a href="#">Prensa</a>
-          </div>
-          <div>
-            <h4>Soporte</h4>
-            <a href="contacto.html" data-link>Contáctanos</a>
-            <a href="#">Envíos y devoluciones</a>
-            <a href="#">Cuenta</a>
-          </div>
-          <div>
-            <h4>Consultas</h4>
-            <a href="#">Zona de partners</a>
-            <a href="#">Programa de afiliados</a>
-            <a href="#">Mayoristas</a>
-            <a href="#">Ubicaciones</a>
-            <a href="#">Recomienda un amigo</a>
-          </div>
-        </div>
-      </div>
-      <div class="footer-locale">
-        <span>Colombia</span>
-        <select aria-label="País">
-          <option>Colombia</option>
-          <option>México</option>
-          <option>Estados Unidos</option>
-          <option>España</option>
-        </select>
-      </div>
-      <div class="footer-legal">
-        <div>© <span id="year"></span> DobleYo. Todos los derechos reservados.</div>
-        <div class="links">
-          <a href="#">Política de privacidad</a>
-          <a href="#">Términos y condiciones</a>
-          <a href="#">Accesibilidad</a>
-          <a href="#">No vender mi información personal</a>
-        </div>
-      </div>
-      <div class="footer-disclaimer">
-        Las declaraciones hechas en este sitio no son evaluadas por entidades regulatorias. Los productos ofrecidos no están destinados a diagnosticar, tratar o curar enfermedades. La información provista no reemplaza una consulta con tu profesional de salud y no debe interpretarse como consejo médico individual.
-      </div>
-    </div>
-  </footer>
-  <script src="assets/js/app.js" defer></script>
+<body>
+  <div class="card">
+    <h1>Esta página ya no está disponible</h1>
+    <p>Serás redirigido a la <a href="tienda.html">tienda</a> automáticamente.</p>
+  </div>
+  <script>location.replace('tienda.html');</script>
 </body>
 </html>
