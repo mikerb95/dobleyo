@@ -1,4 +1,4 @@
-// Blog page: read posts from localStorage (admin) or fallback to static samples
+// Pagina de blog: leer posts desde localStorage (admin) o usar muestras estaticas si no hay
 (function(){
   const $ = (s, r=document) => r.querySelector(s);
   const grid = document.getElementById('blogGrid');

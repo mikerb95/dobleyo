@@ -1,4 +1,4 @@
-// Trazabilidad por QR o código manual
+// Trazabilidad por QR o codigo manual
 (function(){
   const $ = (s, r=document) => r.querySelector(s);
 
@@ -12,12 +12,12 @@
     }
   ];
   async function loadLots(){
-    // 1) admin-provided lots from localStorage
+  // 1) lotes provistos por admin desde localStorage
     try{
       const ls = JSON.parse(localStorage.getItem('dbyo-lots')||'null');
       if (Array.isArray(ls) && ls.length){ lots = ls; return; }
     }catch{}
-    // 2) external JSON
+  // 2) JSON externo
     try{
       const res = await fetch('assets/data/lotes.json', { cache: 'no-store' });
       if (!res.ok) throw new Error('HTTP '+res.status);
@@ -28,7 +28,7 @@
     }
   }
 
-  // UI elements
+  // Elementos de UI
   const video = $('#qrVideo');
   const startBtn = $('#startScan');
   const stopBtn = $('#stopScan');
@@ -85,9 +85,9 @@
     return lots.find(l => l.lot.toUpperCase()===c) || null;
   }
 
-  // Validación de formato de lote: DBY-YYYY-MM-XXX (letras mayúsculas en sufijo)
+  // Validacion de formato de lote: DBY-YYYY-MM-XXX (letras mayusculas en sufijo)
   function validateLotFormat(code){
-    const re = /^DBY-20\d{2}-\d{2}-[A-Z]{3}$/; // simple: año 20xx, mes 2 dígitos, sufijo 3 letras
+  const re = /^DBY-20\d{2}-\d{2}-[A-Z]{3}$/; // simple: ano 20xx, mes 2 digitos, sufijo 3 letras
     return re.test((code||'').trim().toUpperCase());
   }
 
@@ -100,7 +100,7 @@
     showToast._t = setTimeout(()=> toast.setAttribute('hidden',''), ms);
   }
 
-  // Manual lookup
+  // Consulta manual
   if (lookupBtn){
     lookupBtn.addEventListener('click', ()=>{
       const val = lotInput.value;
@@ -113,7 +113,7 @@
     });
   }
 
-  // QR scanning via MediaDevices + jsQR
+  // Escaneo QR via MediaDevices + jsQR
   let stream, rafId, canvas, ctx;
   const overlay = document.getElementById('qrOverlay');
   const octx = overlay ? overlay.getContext('2d') : null;
@@ -152,21 +152,21 @@
       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
       const code = window.jsQR ? window.jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: 'dontInvert' }) : null;
       if (code && code.data){
-        // Dibuja bounding box
+  // Dibuja caja delimitadora
         if (octx && overlay){
           octx.clearRect(0,0,overlay.width, overlay.height);
-          // Bounding box
+          // Caja delimitadora
           drawLine(code.location.topLeftCorner, code.location.topRightCorner, '#00ff7f');
           drawLine(code.location.topRightCorner, code.location.bottomRightCorner, '#00ff7f');
           drawLine(code.location.bottomRightCorner, code.location.bottomLeftCorner, '#00ff7f');
           drawLine(code.location.bottomLeftCorner, code.location.topLeftCorner, '#00ff7f');
-          // Corner locator marks (L-shaped)
+          // Marcas de esquina en forma de L
           drawCorner(code.location.topLeftCorner, 'tl', '#00ff7f');
           drawCorner(code.location.topRightCorner, 'tr', '#00ff7f');
           drawCorner(code.location.bottomRightCorner, 'br', '#00ff7f');
           drawCorner(code.location.bottomLeftCorner, 'bl', '#00ff7f');
         }
-        // Normalizamos: si el QR contiene URL con ?lote=..., extraemos; si no, usamos el texto como código.
+  // Normalizamos: si el QR contiene URL con ?lote=..., extraemos; si no, usamos el texto como codigo.
         let val = (code.data || '').trim();
         const m = val.match(/[?&]lote=([^&#\s]+)/i);
         if (m) val = decodeURIComponent(m[1]);
@@ -175,18 +175,18 @@
         setStatus('QR leído.');
         return;
       }
-      // Si no hay QR válido, limpia overlay
+  // Si no hay QR valido, limpia overlay
       if (octx && overlay){ octx.clearRect(0,0,overlay.width, overlay.height); }
       setStatus('Escaneando...');
     }catch(e){
-      // Si getImageData falla por CORS u otro, ignoramos
+  // Si getImageData falla por CORS u otro, ignoramos
     }
     rafId = requestAnimationFrame(tick);
   }
 
   function drawLine(begin, end, color){
     if (!octx || !overlay) return;
-    // Convertimos coords del frame de video (canvas interno) a coords del overlay escalado al tamaño visible del video.
+  // Convertimos coords del frame de video (canvas interno) a coords del overlay escalado al tamano visible del video.
     const scaleX = overlay.width / canvas.width;
     const scaleY = overlay.height / canvas.height;
     octx.strokeStyle = color; octx.lineWidth = 3; octx.beginPath();
@@ -239,19 +239,19 @@
     });
   }
 
-  // Deep-link: ?lote=...
+  // Deep link: ?lote=...
   function preloadFromQuery(){
     const params = new URLSearchParams(location.search);
     const q = params.get('lote');
     if (q){
-      // Rendir tras asegurar que los lotes estén cargados
+  // Renderizar tras asegurar que los lotes esten cargados
       renderResult(findByLot(q));
       const input = document.getElementById('lotInput');
       if (input) input.value = q;
     }
   }
 
-  // Init: cargar lotes y luego intentar pre-cargar por query
+  // Init: cargar lotes y luego intentar precargar por query
   (async()=>{
     await loadLots();
     preloadFromQuery();

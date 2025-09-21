@@ -1,61 +1,61 @@
 /* Base */
 :root{ --coffee:#251a14; --coffee-rgb:37,26,20; --cream:#f7f3ef; --dark:#1f1f1f; --muted:#777 }
 :root{ --page-width: 1100px; --page-gutter: 2rem; --bg: var(--cream); --fg: #1f2937; --card:#ffffff; --border:#e6e6e6; --muted-fg:#6b7280; --footer-bg:#f3eee7; --footer-fg:#5a463a; --accent:#c67b4e; --accent-contrast:#ffffff; --price:#251a14 }
-/* Dark theme tokens override via class on <html> — tuned for comfortable contrast */
+/* Tokens de tema oscuro con clase en <html> ajustados para contraste comodo */
 html.theme-dark{
-  --bg:#0e0f10;           /* page background */
-  --fg:#e6e7eb;           /* primary text */
-  --card:#16181b;         /* surfaces/cards */
-  --border:#2a2f36;       /* subtle outlines */
-  --muted-fg:#a0a8b3;     /* secondary text */
-  --footer-bg:#101112;    /* footer background */
-  --footer-fg:#cbb7aa;    /* warm footer text */
-  --accent:#e08f55;       /* accent on dark */
-  --price:#f2b07d;        /* price on dark */
+  --bg:#0e0f10;           /* fondo de pagina */
+  --fg:#e6e7eb;           /* texto principal */
+  --card:#16181b;         /* tarjetas */
+  --border:#2a2f36;       /* contornos sutiles */
+  --muted-fg:#a0a8b3;     /* texto secundario */
+  --footer-bg:#101112;    /* fondo de pie */
+  --footer-fg:#cbb7aa;    /* texto calido de pie */
+  --accent:#e08f55;       /* acento en oscuro */
+  --price:#f2b07d;        /* precio en oscuro */
 }
 *{ box-sizing:border-box }
 html,body{ margin:0; padding:0 }
 body{ font-family:'Lora', Georgia, 'Times New Roman', Times, serif; color:var(--fg); background:var(--bg) }
-/* Headings and titles use Playfair Display */
+/* Encabezados y titulos usan Playfair Display */
 h1,h2,h3,h4,h5,h6, .e-title, .e-number{ font-family:'Playfair Display', Georgia, 'Times New Roman', Times, serif }
-/* Override Tailwind body classes in dark theme */
+/* Reemplazar clases de cuerpo de Tailwind en tema oscuro */
 html.theme-dark body.bg-cream{ background-color: var(--bg) !important; }
 html.theme-dark body.text-ink{ color: var(--fg) !important; }
 img{ max-width:100%; display:block }
 .container{ width:min(var(--page-width),calc(100% - var(--page-gutter))); margin-inline:auto; padding-left:1.25rem; padding-right:1.25rem }
 
-/* Topbar */
+/* Barra superior */
 .topbar{ position:fixed; top:0; left:0; right:0; z-index:75; background:var(--dark); color:#fff; font-size:.875rem; opacity:1 !important; box-shadow:0 2px 8px rgba(0,0,0,.18) }
 .topbar .container{ display:flex; align-items:center; justify-content:space-between; padding:.5rem 0 }
 .topbar .topbar-close{ background:transparent; border:0; color:#fff; font-size:1.2rem; cursor:pointer }
 
-/* Header (floating navbar) */
+/* Encabezado (navbar flotante) */
 .site-header{ position:fixed; top: var(--header-top, 12px); left:0; right:0; z-index:60; background:transparent; border-bottom:0; }
 .site-header .container{ position:relative; overflow:hidden; display:flex; align-items:center; justify-content:space-between; padding:1.5rem 1.25rem; width:min(var(--page-width),calc(100% - var(--page-gutter))); margin-inline:auto; background:rgba(255,255,255,.88); backdrop-filter:saturate(140%) blur(10px); border:1px solid rgba(0,0,0,.08); border-radius:1rem; box-shadow:0 18px 44px rgba(0,0,0,.10); color:var(--fg) }
-/* Wooden subtle texture */
+/* Textura sutil de madera */
 .site-header .container::before{ content:""; position:absolute; inset:0; z-index:0; pointer-events:none; opacity:.22; mix-blend-mode:soft-light; background:
   radial-gradient(1000px 60px at -200px 0, rgba(255,255,255,.05), transparent 60%),
   radial-gradient(1000px 60px at 120% 100%, rgba(0,0,0,.09), transparent 60%),
   repeating-linear-gradient(100deg, rgba(255,255,255,.05) 0 6px, rgba(0,0,0,.06) 6px 12px);
 }
-/* ensure content on top */
+/* Asegurar contenido por encima */
 .site-header .brand, .site-header .nav, .site-header .actions{ position:relative; z-index:2 }
 .brand{ display:flex; align-items:center; gap:.5rem; color:var(--coffee); text-decoration:none; font-weight:700 }
-/* Brand on light header */
+/* Marca en encabezado claro */
 .site-header .brand{ color:var(--coffee) }
-/* Remove any background fill behind the logo and blend whites out */
+/* Quitar relleno de fondo detras del logo y mezclar blancos */
 .site-header .brand{ background: transparent !important }
 .site-header .brand img{ background: transparent !important; mix-blend-mode: multiply }
-/* Ensure logo image keeps consistent height (desktop default) */
+/* Asegurar altura consistente del logo (escritorio por defecto) */
 .brand img{ height:36px; width:auto; display:block }
-/* Slight transparency and subtle shadow for blending over translucent header */
+/* Ligera transparencia y sombra sutil para mezclar sobre encabezado translucido */
 .site-header .brand img{ opacity:.92; filter: drop-shadow(0 1px 0 rgba(255,255,255,.15)) drop-shadow(0 2px 6px rgba(0,0,0,.25)); transition: opacity .2s ease, transform .2s ease }
 .site-header .brand:hover img{ opacity:1; transform: scale(1.02) }
 html.theme-dark .site-header .brand img{ opacity:.96 }
 .nav{ display:flex; gap:1rem }
 .nav a{ color:var(--dark); text-decoration:none; padding:.25rem .5rem; border-radius:.375rem; font-size:1.02rem; font-weight:700 }
 .nav a.active, .nav a:hover{ background:#fff; box-shadow:0 1px 0 rgba(0,0,0,.05) }
-/* Header-specific link overrides for light header */
+/* Overrides de enlaces para encabezado claro */
 .site-header .nav a{ color:var(--fg) }
 .site-header .nav a.active, .site-header .nav a:hover{ background:rgba(0,0,0,.06); box-shadow:none }
 .actions{ display:flex; align-items:center; gap:.5rem }
@@ -63,11 +63,11 @@ html.theme-dark .site-header .brand img{ opacity:.96 }
 .icon-btn.active{ border-color:var(--coffee) }
 .badge{ background:var(--coffee); color:#fff; font-size:.7rem; padding:.05rem .35rem; border-radius:999px; margin-left:.25rem }
 .hamburger{ display:none }
-/* Header-specific buttons */
+/* Botones del encabezado */
 .site-header .icon-btn{ background:#ffffff; border-color:#e5e7eb; color:var(--fg) }
 .site-header .icon-btn:hover{ background:#f9fafb }
 
-/* Coffee beans layer inside header */
+/* Capa de granos de cafe en el encabezado */
 .nav-beans{ position:absolute; inset:0; z-index:1; pointer-events:none; opacity:.26; transition: opacity .25s ease }
 .beans-active .nav-beans{ opacity:.34 }
 .nav-beans .bean{ position:absolute; width:var(--bean-size, 46px); height:auto; filter: drop-shadow(0 2px 2px rgba(0,0,0,.22)) saturate(110%) brightness(1.05);
@@ -76,18 +76,18 @@ html.theme-dark .site-header .brand img{ opacity:.96 }
 }
 @media (max-width: 900px){ .nav-beans{ display:none } }
 
-/* Mobile menu */
+/* Menu movil */
 .mobile-menu{ display:none; flex-direction:column; gap:.5rem; padding:.5rem 1rem; border:1px solid var(--border); background:var(--card); border-radius:.5rem; width:min(var(--page-width),calc(100% - var(--page-gutter))); margin: .5rem auto 0; position:relative; z-index:59 }
 .mobile-menu a{ text-decoration:none; color:var(--fg); font-weight:700; font-size:1.02rem }
 
-/* Hero */
+/* Seccion hero */
 .hero{ position:relative; padding:4rem 0; text-align:center; isolation:isolate }
-/* Above-the-fold background for medium+ viewports */
+/* Fondo above the fold para viewports medianos o mas */
 @media (min-width: 768px){
   .hero{ padding:6rem 0; min-height: calc(85vh - var(--page-offset-top, 136px)) }
   .hero::before{
     content:""; position:absolute; 
-  /* extend upward from top of page to cover topbar+header area */
+  /* extender hacia arriba desde el tope para cubrir barra superior y encabezado */
   top: calc(-1 * var(--page-offset-top, 136px));
     bottom:0; left:50%; width:100vw; transform:translateX(-50%);
     background-image: url('../img/above-the-fold/landscape1.png');
@@ -95,7 +95,7 @@ html.theme-dark .site-header .brand img{ opacity:.96 }
     z-index:-1; opacity:.95;
   }
 }
-/* Slight dark overlay in dark theme to improve text contrast */
+/* Capa oscura sutil en tema oscuro para mejorar contraste de texto */
 @media (min-width: 768px){
   html.theme-dark .hero::before{
     background-image:
@@ -106,18 +106,18 @@ html.theme-dark .site-header .brand img{ opacity:.96 }
 .btn{ background:var(--accent); color:var(--accent-contrast); padding:.6rem 1rem; border-radius:.375rem; text-decoration:none; display:inline-block; border:1px solid transparent }
 .btn:hover{ filter:brightness(1.05) }
 
-/* Grid */
+/* Cuadricula */
 .grid{ display:grid; gap:1rem; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)) }
 .card{ background:var(--card); border:1px solid var(--border); border-radius:.5rem; overflow:hidden; transition:transform .2s ease, box-shadow .2s ease }
 .card:hover{ transform:translateY(-2px); box-shadow:0 10px 20px rgba(0,0,0,.06) }
 .card .p{ padding:1rem }
 .price{ color:var(--price); font-weight:700 }
 
-/* Filters */
+/* Filtros */
 .filters{ display:flex; gap:.5rem; padding:1rem 0; position:sticky; top:96px; background:var(--bg); z-index:40; border-bottom:1px solid var(--border) }
 .filters select{ padding:.5rem; border:1px solid var(--border); border-radius:.375rem; background:var(--card); color:var(--fg) }
 
-/* Footer (rich) */
+/* Pie de pagina (rico) */
 .site-footer{ background:var(--footer-bg); color:var(--footer-fg); margin-top:4rem; border-top:1px solid rgba(0,0,0,.05) }
 .site-footer .container{ width:min(var(--page-width),calc(100% - var(--page-gutter))); margin-inline:auto }
 .footer-news{ display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:1.25rem 0; border-bottom:1px solid rgba(0,0,0,.06) }
@@ -147,39 +147,39 @@ html.theme-dark .footer-disclaimer{ color:#b9a99f }
   .footer-news .input{ max-width:100% }
 }
 
-/* Toast */
+/* Aviso emergente */
 .toast{ position:fixed; left:50%; transform:translateX(-50%); bottom:24px; background:rgba(31,41,55,.95); color:#fff; padding:.6rem .9rem; border-radius:.5rem; z-index:100; box-shadow:0 10px 25px rgba(0,0,0,.2); max-width:90vw }
 .toast[hidden]{ display:none }
 
-/* (search overlay removed) */
+/* (capa de busqueda eliminada) */
 
-/* Accordion */
+/* Acordeon */
 .accordion details{ background:var(--card); border:1px solid var(--border); border-radius:.5rem; padding: .75rem 1rem; margin:.5rem 0 }
 .accordion summary{ cursor:pointer; font-weight:600 }
 
-/* Transition overlay (wipe/fade) */
+/* Capa de transicion (barrido/desvanecer) */
 .transition-overlay{ position:fixed; inset:0; background:#fff; transform:translateY(100%); opacity:0; pointer-events:none; z-index:80 }
 .transition-overlay.active{ animation:wipe .55s ease both }
 @keyframes wipe{ 0%{ transform:translateY(100%); opacity:0 } 20%{ opacity:1 } 100%{ transform:translateY(0); opacity:1 } }
 
-/* Responsive */
+/* Adaptativo */
 @media (max-width: 900px){
   .nav{ display:none }
   .hamburger{ display:inline-flex }
   .mobile-menu{ display:flex }
-  /* Keep logo balanced on mobile */
+  /* Mantener logo balanceado en movil */
   .brand img{ height:32px }
 }
 
-/* Spacing to avoid overlap of fixed header */
-/* Ensure content pushes below the fixed topbar + header */
+/* Espaciado para evitar superposicion del encabezado fijo */
+/* Asegurar que el contenido quede debajo de barra superior y encabezado */
 main.container{ padding-top: calc(var(--header-top, 12px) + var(--header-height, 96px) + 28px) }
 .filters{ display:flex; gap:.5rem; padding:1rem 0; position:sticky; top: calc(var(--header-top, 12px) + var(--header-height, 96px) + 8px); background:var(--cream); z-index:40; border-bottom:1px solid #eee }
 
-/* Evidence section (pixel-perfect) */
+/* Seccion de evidencia (pixel perfect) */
 .evidence-section{ position:relative; margin:3rem 0 0 }
 .evidence-inner{ position:relative; z-index:0; isolation:isolate; padding:3rem 0 }
-/* Full-bleed background originating from the inner container */
+/* Fondo a ancho completo originado desde el contenedor interno */
 .evidence-inner::before{ content:""; position:absolute; top:0; bottom:0; left:50%; width:100vw; transform:translateX(-50%); background:#f5efe5; z-index:-1 }
 html.theme-dark .evidence-inner::before{ background:#1a1613 }
 .evidence-grid{ display:grid; grid-template-columns: 1.2fr 1fr 1fr; gap:2.5rem; align-items:start }
@@ -212,7 +212,7 @@ html.theme-dark .e-reasons{ border-top-color: rgba(255,255,255,.12) }
 .e-source{ grid-column:2/4; color:#6a5a50; font-size:.85rem; margin-top:1.25rem }
 html.theme-dark .e-source{ color:#b9a99f }
 
-/* Theme toggle button */
+/* Boton de tema */
 .theme-toggle{ background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.18); color:#fff; padding:.35rem .55rem; border-radius:.5rem; cursor:pointer }
 .theme-toggle:hover{ background:rgba(255,255,255,.2) }
 html.theme-dark .site-header .container{ background:rgba(20,20,20,.82); border-color:rgba(255,255,255,.08) }
@@ -229,17 +229,17 @@ html.theme-dark .nav a.active, html.theme-dark .nav a:hover{ background:rgba(255
   .e-beans-right{ right:6px; top:-12px }
 }
 
-/* Utility: muted text obeys theme */
+/* Utilidad: texto atenuado respeta el tema */
 .muted{ color:var(--muted-fg) }
 
-/* Forms (contact, manual input) */
+/* Formularios (contacto, entrada manual) */
 .form input, .form textarea{ width:100%; background:var(--card); color:var(--fg); border:1px solid var(--border); border-radius:.45rem; padding:.55rem .7rem }
 .form textarea{ resize:vertical }
 
-/* Icon button in dark surfaces */
+/* Boton de icono en superficies oscuras */
 html.theme-dark .icon-btn{ background:#1b1d21; border-color:#2a2f36; color:#e6e7eb }
 
-/* Shop (Amazon-like serious yet harmonious) */
+/* Tienda (estilo Amazon serio y armonioso) */
 .shop-topbar{ display:flex; justify-content:space-between; align-items:center; gap:1rem; padding: .75rem 0; position:sticky; top: calc(var(--header-top, 12px) + var(--header-height, 96px)); background:var(--bg); z-index:39; border-bottom:1px solid var(--border) }
 .shop-topbar .chips{ display:flex; flex-wrap:wrap; gap:.5rem }
 .chip{ background:var(--card); color:var(--fg); border:1px solid var(--border); border-radius:999px; padding:.35rem .75rem; font-size:.9rem; cursor:pointer }
@@ -275,7 +275,7 @@ html.theme-dark .icon-btn{ background:#1b1d21; border-color:#2a2f36; color:#e6e7
   .shop-topbar{ position:sticky; top: calc(var(--header-top, 12px) + var(--header-height, 96px)); z-index:50 }
 }
 
-/* Uniform sizing for shop cards */
+/* Tamano uniforme para cards de tienda */
 .shop-content .grid{ align-items: stretch }
 .shop-content .card{ display:flex; flex-direction:column; height:100%; min-height:420px }
 .shop-content .card > img{ width:100%; aspect-ratio:1 / 1; object-fit:cover }
@@ -284,4 +284,4 @@ html.theme-dark .icon-btn{ background:#1b1d21; border-color:#2a2f36; color:#e6e7
 .shop-content .card .muted{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
 .shop-content .card .price{ margin-top:auto }
 
-/* (compact mode removed) */
+/* (modo compacto eliminado) */

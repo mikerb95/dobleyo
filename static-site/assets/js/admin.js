@@ -1,4 +1,4 @@
-// Admin panel (static env): pseudo-auth + CRUD storing data in localStorage
+// Panel de admin (entorno estatico): pseudo auth y CRUD guardando datos en localStorage
 (function(){
   const $ = (s, r=document) => r.querySelector(s);
   const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
@@ -12,7 +12,7 @@
   const prodTable = $('#prodTable tbody');
   const blogTable = $('#blogTable tbody');
 
-  // demo credentials (static): admin@dobleyo.local / dobleyo-admin
+  // credenciales demo (estatico): admin@dobleyo.local / dobleyo-admin
   const KEY_AUTH = 'dbyo-admin-token';
   const KEY_LOTS = 'dbyo-lots';
   const KEY_PROD = 'dbyo-products';
@@ -25,7 +25,7 @@
   function load(key, fallback){ try{ const x = JSON.parse(localStorage.getItem(key)||'null'); return Array.isArray(x)?x:fallback; }catch{ return fallback; } }
   function save(key, data){ localStorage.setItem(key, JSON.stringify(data)); }
 
-  // Seed defaults from current site data
+  // Sembrar valores por defecto desde datos del sitio actual
   const seedProducts = [
     { id:'dbyo-sierra', name:'Sierra Nevada', price:42000, origin:'Sierra Nevada', process:'Lavado', roast:'Medio', image:'https://images.unsplash.com/photo-1512568400610-62da28bc8a13?q=80&w=800&auto=format&fit=crop' },
     { id:'dbyo-huila', name:'Huila', price:45000, origin:'Huila', process:'Honey', roast:'Claro', image:'https://images.unsplash.com/photo-1509043759401-136742328bb3?q=80&w=800&auto=format&fit=crop' },
@@ -41,7 +41,7 @@
     adminView.style.display = authed ? '' : 'none';
     if (!authed) return;
 
-    // tabs
+  // pestanas
     const tabs = $$('[data-tab]');
     tabs.forEach(a=>{
       a.onclick = (e)=>{
@@ -55,12 +55,12 @@
       };
     });
 
-    // data
+  // datos
     const lots = load(KEY_LOTS, seedLots);
     const prods = load(KEY_PROD, seedProducts);
     const posts = load(KEY_BLOG, seedBlog);
 
-    // render lots
+  // renderizar lotes
     lotsTable.innerHTML = lots.map((l, i)=>`<tr>
       <td>${esc(l.lot)}</td><td>${esc(l.name||'')}</td><td>${esc(l.origin||'')}</td><td>${esc(l.process||'')}</td><td>${esc(l.variety||'')}</td>
       <td>
@@ -69,7 +69,7 @@
       </td>
     </tr>`).join('');
 
-    // render products
+  // renderizar productos
     prodTable.innerHTML = prods.map((p, i)=>`<tr>
       <td>${esc(p.name)}</td><td>$${Number(p.price).toLocaleString('es-CO')}</td><td>${esc(p.origin||'')}</td><td>${esc(p.process||'')}</td><td>${esc(p.roast||'')}</td>
       <td>
@@ -78,7 +78,7 @@
       </td>
     </tr>`).join('');
 
-    // render blog
+  // renderizar blog
     blogTable.innerHTML = posts.map((p, i)=>`<tr>
       <td>${esc(p.title||'')}</td><td>${esc(p.author||'')}</td><td>${p.published? 'Sí':'No'}</td>
       <td>
@@ -87,7 +87,7 @@
       </td>
     </tr>`).join('');
 
-    // actions
+  // acciones
     $('#lotsAdd').onclick = ()=> editLot();
     $('#prodAdd').onclick = ()=> editProd();
     $('#blogAdd').onclick = ()=> editPost();
@@ -143,7 +143,7 @@
     save(KEY_BLOG, arr); render();
   }
 
-  // Login wiring
+  // Conexion de login
   if (loginBtn) loginBtn.onclick = login;
   if (logoutBtn) logoutBtn.onclick = logout;
   render();

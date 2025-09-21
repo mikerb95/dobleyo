@@ -52,7 +52,7 @@
   </header>
 
   <main class="container">
-    <!-- Top horizontal filters and sort -->
+  <!-- Filtros horizontales superiores y orden -->
     <section class="shop-topbar" aria-label="Filtros superiores">
       <div class="chips" id="topChips" role="toolbar" aria-label="Filtros rápidos">
         <button class="chip" data-flag="fast">Entrega rápida</button>
@@ -75,12 +75,12 @@
     </section>
 
     <section class="shop-layout" aria-label="Resultados de tienda">
-      <!-- Sidebar vertical filters -->
+  <!-- Filtros verticales lateral -->
       <aside class="shop-sidebar" id="shopSidebar">
         <div class="filter-group">
           <div class="filter-title">Categorías</div>
           <div class="filter-list" id="catList">
-            <!-- filled by script -->
+            <!-- llenado por script -->
           </div>
         </div>
         <div class="filter-group">
@@ -118,7 +118,7 @@
         </div>
       </aside>
 
-      <!-- Results area -->
+  <!-- Area de resultados -->
       <section class="shop-content">
         <div class="applied-filters" id="appliedFilters"></div>
         <div class="grid" id="shopResults"></div>
@@ -201,7 +201,7 @@
     (function(){
       const $ = (s, r=document) => r.querySelector(s);
       const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
-  // Dataset: serio y armonioso, mezcla de cafés y accesorios
+  // Dataset: serio y armonioso, mezcla de cafes y accesorios
       const products = [
         { id:'cf-sierra', name:'Sierra Nevada', category:'Cafés', origin:'Sierra Nevada', process:'Lavado', roast:'Medio', price:42000, rating:4.6, deal:true, bestseller:true, fast:true, image:'https://images.unsplash.com/photo-1512568400610-62da28bc8a13?q=80&w=800&auto=format&fit=crop' },
         { id:'cf-huila', name:'Huila', category:'Cafés', origin:'Huila', process:'Honey', roast:'Claro', price:45000, rating:4.7, new:true, fast:true, image:'https://images.unsplash.com/photo-1509043759401-136742328bb3?q=80&w=800&auto=format&fit=crop' },
@@ -210,7 +210,7 @@
         { id:'acc-chemex', name:'Chemex 6 tazas', category:'Accesorios', price:269900, rating:4.9, new:true, image:'https://images.unsplash.com/photo-1503481766315-7a586b20f66f?q=80&w=800&auto=format&fit=crop' }
       ];
 
-      // Elements
+  // Elementos
       const resultsEl = $('#shopResults');
       const pagEl = $('#shopPagination');
       const appliedEl = $('#appliedFilters');
@@ -223,7 +223,7 @@
       const priceMax = $('#priceMax');
       const applyPrice = $('#applyPrice');
 
-      // Build sidebar lists
+  // Construir listas de barra lateral
       function uniq(arr){ return Array.from(new Set(arr.filter(Boolean))); }
       function buildChecks(container, values, name){
         container.innerHTML = values.map(v=>`<label><input type="checkbox" name="${name}" value="${v}"> ${v}</label>`).join('');
@@ -237,14 +237,14 @@
       buildChecks($('#processList'), procs, 'process');
       buildChecks($('#roastList'), roasts, 'roast');
 
-      // State
+  // Estado
       let state = {
         flags: { fast:false, deal:false, new:false, bestseller:false },
         cats: new Set(), origins: new Set(), procs: new Set(), roasts: new Set(),
         price: { min:'', max:'' }, ratingMin:'', sort:'relevance', page:1, pageSize:12
       };
 
-      // Handlers
+  // Manejadores
       chipsEl.addEventListener('click', (e)=>{
         const btn = e.target.closest('.chip'); if (!btn) return;
         const f = btn.dataset.flag; state.flags[f] = !state.flags[f];
@@ -277,18 +277,18 @@
 
       function applyFilters(list){
         let out = list.slice();
-        // flags
+  // banderas
         Object.entries(state.flags).forEach(([k, on])=>{ if (on) out = out.filter(p=> p[k]); });
-        // categories/attributes
+  // categorias/atributos
         if (state.cats.size) out = out.filter(p=> state.cats.has(p.category));
         if (state.origins.size) out = out.filter(p=> state.origins.has(p.origin));
         if (state.procs.size) out = out.filter(p=> state.procs.has(p.process));
         if (state.roasts.size) out = out.filter(p=> state.roasts.has(p.roast));
-        // price
+  // precio
         const min = parseInt(state.price.min||'0',10); const max = parseInt(state.price.max||'0',10);
         if (state.price.min) out = out.filter(p=> p.price >= min);
         if (state.price.max) out = out.filter(p=> p.price <= max);
-        // rating
+  // calificacion
         if (state.ratingMin) out = out.filter(p=> (p.rating||0) >= Number(state.ratingMin));
         return out;
       }
@@ -297,7 +297,7 @@
         if (s==='price-asc') return list.sort((a,b)=> a.price - b.price);
         if (s==='price-desc') return list.sort((a,b)=> b.price - a.price);
         if (s==='rating-desc') return list.sort((a,b)=> (b.rating||0)-(a.rating||0));
-        // relevance: boost flags/new/bestseller then rating
+  // relevancia: prioriza banderas/nuevo/mas vendidos y luego calificacion
         return list.sort((a,b)=> ((b.bestseller?1:0)+(b.new?1:0)+(b.deal?1:0)+(b.rating||0)/5) - ((a.bestseller?1:0)+(a.new?1:0)+(a.deal?1:0)+(a.rating||0)/5));
       }
       function paginate(list){
@@ -335,7 +335,7 @@
         const pageItems = paginate(sorted);
         resultsEl.innerHTML = pageItems.map(card).join('');
         renderApplied();
-        // pagination
+  // paginacion
         const total = filtered.length; const pages = Math.max(1, Math.ceil(total/state.pageSize));
         pagEl.innerHTML = `
           <div class="pager">
@@ -351,7 +351,7 @@
         };
       }
       function escapeHtml(str){ return (str||'').replace(/[&<>"]+/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[s])); }
-      // init default
+  // inicio por defecto
       $$('#shopSidebar input[type="radio"][name="rating"]').find(r=>r.value==='').checked = true;
       render();
     })();
