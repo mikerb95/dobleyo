@@ -354,6 +354,20 @@
       // init default
       $$('#shopSidebar input[type="radio"][name="rating"]').find(r=>r.value==='').checked = true;
       render();
+      // Scroll behavior: hide everything above filters when scrolling up
+      let lastY = window.scrollY, compact = false;
+      window.addEventListener('scroll', ()=>{
+        const y = window.scrollY; const dy = y - lastY; lastY = y;
+        if (dy < -12 && !compact){
+          document.documentElement.classList.add('shop-compact');
+          compact = true;
+        } else if (dy > 12 && compact){
+          document.documentElement.classList.remove('shop-compact');
+          compact = false;
+        }
+        // Always show header when near the very top
+        if (y < 20){ document.documentElement.classList.remove('shop-compact'); compact = false; }
+      }, { passive:true });
     })();
   </script>
 </body>
