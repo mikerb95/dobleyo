@@ -53,7 +53,7 @@ img{ max-width:100%; display:block }
 .site-header .brand:hover img{ opacity:1; transform: scale(1.02) }
 html.theme-dark .site-header .brand img{ opacity:.96 }
 .nav{ display:flex; gap:1rem }
-.nav a{ color:var(--dark); text-decoration:none; padding:.25rem .5rem; border-radius:.375rem }
+.nav a{ color:var(--dark); text-decoration:none; padding:.25rem .5rem; border-radius:.375rem; font-size:1.02rem; font-weight:700 }
 .nav a.active, .nav a:hover{ background:#fff; box-shadow:0 1px 0 rgba(0,0,0,.05) }
 /* Header-specific link overrides for light header */
 .site-header .nav a{ color:var(--fg) }
@@ -78,7 +78,7 @@ html.theme-dark .site-header .brand img{ opacity:.96 }
 
 /* Mobile menu */
 .mobile-menu{ display:none; flex-direction:column; gap:.5rem; padding:.5rem 1rem; border:1px solid var(--border); background:var(--card); border-radius:.5rem; width:min(var(--page-width),calc(100% - var(--page-gutter))); margin: .5rem auto 0; position:relative; z-index:59 }
-.mobile-menu a{ text-decoration:none; color:var(--fg) }
+.mobile-menu a{ text-decoration:none; color:var(--fg); font-weight:700; font-size:1.02rem }
 
 /* Hero */
 .hero{ position:relative; padding:4rem 0; text-align:center; isolation:isolate }
