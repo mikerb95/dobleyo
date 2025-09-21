@@ -29,9 +29,9 @@ img{ max-width:100%; display:block }
 .topbar .container{ display:flex; align-items:center; justify-content:space-between; padding:.5rem 0 }
 .topbar .topbar-close{ background:transparent; border:0; color:#fff; font-size:1.2rem; cursor:pointer }
 
-/* Encabezado (navbar flotante) */
-.site-header{ position:fixed; top: var(--header-top, 12px); left:0; right:0; z-index:60; background:transparent; border-bottom:0; }
-.site-header .container{ position:relative; overflow:hidden; display:flex; align-items:center; justify-content:space-between; padding:1.5rem 1.25rem; width:min(var(--page-width),calc(100% - var(--page-gutter))); margin-inline:auto; background:rgba(255,255,255,.88); backdrop-filter:saturate(140%) blur(10px); border:1px solid rgba(0,0,0,.08); border-radius:1rem; box-shadow:0 18px 44px rgba(0,0,0,.10); color:var(--fg) }
+/* Encabezado (navbar fija a tope, no flotante) */
+.site-header{ position:fixed; top: var(--header-top, 0px); left:0; right:0; z-index:70; background:var(--card); border-bottom:1px solid var(--border); }
+.site-header .container{ position:relative; overflow:hidden; display:flex; align-items:center; justify-content:space-between; padding:1.5rem 1.25rem; width:min(var(--page-width),calc(100% - var(--page-gutter))); margin-inline:auto; background:transparent; backdrop-filter:none; border:0; border-radius:0; box-shadow:none; color:var(--fg) }
 /* Textura sutil de madera */
 .site-header .container::before{ content:""; position:absolute; inset:0; z-index:0; pointer-events:none; opacity:.22; mix-blend-mode:soft-light; background:
   radial-gradient(1000px 60px at -200px 0, rgba(255,255,255,.05), transparent 60%),
@@ -172,9 +172,9 @@ html.theme-dark .footer-disclaimer{ color:#b9a99f }
 }
 
 /* Espaciado para evitar superposicion del encabezado fijo */
-/* Asegurar que el contenido quede debajo de barra superior y encabezado */
-main.container{ padding-top: calc(var(--header-top, 12px) + var(--header-height, 96px) + 28px) }
-.filters{ display:flex; gap:.5rem; padding:1rem 0; position:sticky; top: calc(var(--header-top, 12px) + var(--header-height, 96px) + 8px); background:var(--cream); z-index:40; border-bottom:1px solid #eee }
+/* Asegurar que el contenido quede debajo de barra superior (si existe) y encabezado */
+main.container{ padding-top: calc(var(--header-top, 0px) + var(--header-height, 96px) + 12px) }
+.filters{ display:flex; gap:.5rem; padding:1rem 0; position:sticky; top: calc(var(--header-top, 0px) + var(--header-height, 96px) + 8px); background:var(--cream); z-index:40; border-bottom:1px solid #eee }
 
 /* Seccion de evidencia (pixel perfect) */
 .evidence-section{ position:relative; margin:3rem 0 0 }
@@ -241,7 +241,7 @@ html.theme-dark .icon-btn{ background:#1b1d21; border-color:#2a2f36; color:#e6e7
 html.theme-dark .shop-topbar .filters-toggle, html.theme-dark .pager button{ background:#1b1d21; border-color:#2a2f36; color:#e6e7eb }
 
 /* Tienda (estilo Amazon serio y armonioso) */
-.shop-topbar{ display:flex; justify-content:space-between; align-items:center; gap:1rem; padding: .75rem 0; position:sticky; top: calc(var(--header-top, 12px) + var(--header-height, 96px)); background:var(--bg); z-index:39; border-bottom:1px solid var(--border) }
+.shop-topbar{ display:flex; justify-content:space-between; align-items:center; gap:1rem; padding: .75rem 0; position:sticky; top: calc(var(--header-top, 0px) + var(--header-height, 96px)); background:var(--bg); z-index:39; border-bottom:1px solid var(--border) }
 .shop-topbar .chips{ display:flex; flex-wrap:wrap; gap:.5rem }
 .chip{ background:var(--card); color:var(--fg); border:1px solid var(--border); border-radius:999px; padding:.35rem .75rem; font-size:.9rem; cursor:pointer }
 .chip.active{ background:var(--accent); border-color:var(--accent); color:var(--accent-contrast) }
@@ -251,7 +251,7 @@ html.theme-dark .shop-topbar .filters-toggle, html.theme-dark .pager button{ bac
 .shop-topbar .sort select{ padding:.4rem .55rem; border:1px solid var(--border); background:var(--card); color:var(--fg); border-radius:.375rem }
 
 .shop-layout{ display:grid; grid-template-columns: 280px 1fr; gap:1.25rem; padding:1rem 0 }
-.shop-sidebar{ position:sticky; top: calc(var(--header-top, 12px) + var(--header-height, 96px) + 42px); align-self:start; display:flex; flex-direction:column; gap:1rem }
+.shop-sidebar{ position:sticky; top: calc(var(--header-top, 0px) + var(--header-height, 96px) + 42px); align-self:start; display:flex; flex-direction:column; gap:1rem }
 .filter-group{ background:var(--card); border:1px solid var(--border); border-radius:.5rem; padding:.9rem }
 .filter-title{ font-weight:600; margin-bottom:.5rem }
 .filter-list{ display:grid; gap:.35rem }

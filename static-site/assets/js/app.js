@@ -9,13 +9,15 @@
   // Cierre de barra superior
   const topbar = $('#topbar');
   const topbarClose = $('#topbarClose');
-  // Metricas del encabezado flotante dependen de altura de barra superior y del encabezado
+  // Metricas del encabezado fijo dependen de altura de barra superior y del encabezado
   const setHeaderMetrics = () => {
     const tb = $('#topbar');
-  const top = tb ? (tb.offsetHeight + 12) : 12; // 12px de respiro
+    // En modo fijo: top es igual a la altura de la barra superior si existe, sin respiro extra
+  const top = tb ? tb.offsetHeight : 0;
     const headerCont = document.querySelector('.site-header .container');
     const hh = headerCont ? headerCont.offsetHeight : 96;
-  const pageOffset = top + hh + 28; // coincide con padding-top de main.container
+    // Offset total para cubrir topbar + header y un margen pequeno
+  const pageOffset = top + hh + 12; // coincide con padding-top de main.container
     const root = document.documentElement;
     root.style.setProperty('--header-top', top + 'px');
     root.style.setProperty('--header-height', hh + 'px');
