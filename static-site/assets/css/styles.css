@@ -59,13 +59,13 @@ html.theme-dark .site-header .brand img{ opacity:.96 }
 .site-header .nav a{ color:var(--fg) }
 .site-header .nav a.active, .site-header .nav a:hover{ background:rgba(0,0,0,.06); box-shadow:none }
 .actions{ display:flex; align-items:center; gap:.5rem }
-.icon-btn{ background:#fff; border:1px solid #eee; padding:.4rem .6rem; border-radius:.375rem; cursor:pointer; text-decoration:none; color:var(--dark); display:inline-flex; align-items:center; gap:.25rem }
+.icon-btn{ background:var(--card); border:1px solid var(--border); padding:.5rem .8rem; border-radius:.375rem; cursor:pointer; text-decoration:none; color:var(--fg); display:inline-flex; align-items:center; gap:.35rem; font-weight:600; line-height:1.2; transition: background-color .2s ease, color .2s ease, border-color .2s ease }
 .icon-btn.active{ border-color:var(--coffee) }
 .badge{ background:var(--coffee); color:#fff; font-size:.7rem; padding:.05rem .35rem; border-radius:999px; margin-left:.25rem }
 .hamburger{ display:none }
 /* Botones del encabezado */
-.site-header .icon-btn{ background:#ffffff; border-color:#e5e7eb; color:var(--fg) }
-.site-header .icon-btn:hover{ background:#f9fafb }
+.site-header .icon-btn{ background:var(--card); border-color:var(--border); color:var(--fg) }
+.site-header .icon-btn:hover{ background:rgba(0,0,0,.06) }
 
 /* Capa de granos de cafe en el encabezado */
 .nav-beans{ position:absolute; inset:0; z-index:1; pointer-events:none; opacity:.26; transition: opacity .25s ease }
@@ -103,7 +103,7 @@ html.theme-dark .site-header .brand img{ opacity:.96 }
       url('../img/above-the-fold/landscape1.png');
   }
 }
-.btn{ background:var(--accent); color:var(--accent-contrast); padding:.6rem 1rem; border-radius:.375rem; text-decoration:none; display:inline-block; border:1px solid transparent }
+.btn{ background:var(--accent); color:var(--accent-contrast); padding:.6rem 1rem; border-radius:.375rem; text-decoration:none; display:inline-flex; align-items:center; gap:.35rem; border:1px solid transparent; font-weight:600; line-height:1.2; cursor:pointer; transition: background-color .2s ease, color .2s ease, border-color .2s ease, filter .2s ease }
 .btn:hover{ filter:brightness(1.05) }
 
 /* Cuadricula */
@@ -238,6 +238,7 @@ html.theme-dark .nav a.active, html.theme-dark .nav a:hover{ background:rgba(255
 
 /* Boton de icono en superficies oscuras */
 html.theme-dark .icon-btn{ background:#1b1d21; border-color:#2a2f36; color:#e6e7eb }
+html.theme-dark .shop-topbar .filters-toggle, html.theme-dark .pager button{ background:#1b1d21; border-color:#2a2f36; color:#e6e7eb }
 
 /* Tienda (estilo Amazon serio y armonioso) */
 .shop-topbar{ display:flex; justify-content:space-between; align-items:center; gap:1rem; padding: .75rem 0; position:sticky; top: calc(var(--header-top, 12px) + var(--header-height, 96px)); background:var(--bg); z-index:39; border-bottom:1px solid var(--border) }
@@ -245,7 +246,8 @@ html.theme-dark .icon-btn{ background:#1b1d21; border-color:#2a2f36; color:#e6e7
 .chip{ background:var(--card); color:var(--fg); border:1px solid var(--border); border-radius:999px; padding:.35rem .75rem; font-size:.9rem; cursor:pointer }
 .chip.active{ background:var(--accent); border-color:var(--accent); color:var(--accent-contrast) }
 .shop-topbar .actions{ display:flex; align-items:center; gap:.75rem }
-.shop-topbar .filters-toggle{ background:var(--card); border:1px solid var(--border); padding:.45rem .7rem; border-radius:.375rem; cursor:pointer }
+.shop-topbar .filters-toggle{ background:var(--card); border:1px solid var(--border); padding:.5rem .8rem; border-radius:.375rem; cursor:pointer; display:inline-flex; align-items:center; gap:.35rem; font-weight:600; line-height:1.2; color:var(--fg); transition: background-color .2s ease, color .2s ease, border-color .2s ease }
+.shop-topbar .filters-toggle:hover{ background:rgba(0,0,0,.06) }
 .shop-topbar .sort select{ padding:.4rem .55rem; border:1px solid var(--border); background:var(--card); color:var(--fg); border-radius:.375rem }
 
 .shop-layout{ display:grid; grid-template-columns: 280px 1fr; gap:1.25rem; padding:1rem 0 }
@@ -257,15 +259,17 @@ html.theme-dark .icon-btn{ background:#1b1d21; border-color:#2a2f36; color:#e6e7
 .price-inputs{ display:flex; align-items:center; gap:.5rem }
 .price-inputs input{ width:100%; padding:.4rem .5rem; border:1px solid var(--border); border-radius:.375rem; background:var(--card); color:var(--fg) }
 .filter-actions{ display:flex; justify-content:flex-end }
-.btn.small{ padding:.4rem .6rem; font-size:.9rem }
+.btn.small{ padding:.45rem .7rem; font-size:.9rem }
 .btn.outline{ background:transparent; color:var(--fg); border:1px solid var(--border) }
+.btn.outline:hover{ background:var(--card) }
 
 .shop-content .applied-filters{ display:flex; flex-wrap:wrap; gap:.5rem; margin-bottom:.75rem }
 .pill{ background:var(--card); color:var(--fg); border:1px solid var(--border); border-radius:999px; padding:.25rem .6rem; font-size:.85rem }
 
 .pagination{ display:flex; justify-content:center; padding:1rem 0 }
 .pager{ display:flex; align-items:center; gap:.75rem; background:var(--card); border:1px solid var(--border); border-radius:.5rem; padding:.35rem .6rem }
-.pager button{ background:var(--card); border:1px solid var(--border); border-radius:.375rem; padding:.35rem .6rem; cursor:pointer; color:var(--fg) }
+.pager button{ background:var(--card); border:1px solid var(--border); border-radius:.375rem; padding:.5rem .8rem; cursor:pointer; color:var(--fg); display:inline-flex; align-items:center; gap:.35rem; font-weight:600; line-height:1.2; transition: background-color .2s ease, color .2s ease, border-color .2s ease }
+.pager button:hover{ background:rgba(0,0,0,.06) }
 .pager button[disabled]{ opacity:.55; cursor:not-allowed }
 
 @media (max-width: 980px){
