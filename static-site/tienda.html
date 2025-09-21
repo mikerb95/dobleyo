@@ -52,14 +52,78 @@
   </header>
 
   <main class="container">
-    <section class="hero">
-      <h1>Nuestra tienda</h1>
-      <p>Descubre cafés, suscripciones y accesorios cuidadosamente seleccionados.</p>
-      <p><a class="btn" href="catalogo.html" data-link>Ver catálogo</a></p>
+    <!-- Top horizontal filters and sort -->
+    <section class="shop-topbar" aria-label="Filtros superiores">
+      <div class="chips" id="topChips" role="toolbar" aria-label="Filtros rápidos">
+        <button class="chip" data-flag="fast">Entrega rápida</button>
+        <button class="chip" data-flag="deal">En oferta</button>
+        <button class="chip" data-flag="new">Novedades</button>
+        <button class="chip" data-flag="bestseller">Más vendidos</button>
+      </div>
+      <div class="actions">
+        <button class="filters-toggle" id="filtersToggle" aria-expanded="false">Filtros</button>
+        <label class="sort">
+          <span>Ordenar por:</span>
+          <select id="shopSort" aria-label="Ordenar resultados">
+            <option value="relevance">Relevancia</option>
+            <option value="price-asc">Precio: de menor a mayor</option>
+            <option value="price-desc">Precio: de mayor a menor</option>
+            <option value="rating-desc">Mejor calificados</option>
+          </select>
+        </label>
+      </div>
     </section>
-    <section>
-      <h2>Destacados</h2>
-      <div class="grid" id="shopFeatured"></div>
+
+    <section class="shop-layout" aria-label="Resultados de tienda">
+      <!-- Sidebar vertical filters -->
+      <aside class="shop-sidebar" id="shopSidebar">
+        <div class="filter-group">
+          <div class="filter-title">Categorías</div>
+          <div class="filter-list" id="catList">
+            <!-- filled by script -->
+          </div>
+        </div>
+        <div class="filter-group">
+          <div class="filter-title">Origen</div>
+          <div class="filter-list" id="originList"></div>
+        </div>
+        <div class="filter-group">
+          <div class="filter-title">Proceso</div>
+          <div class="filter-list" id="processList"></div>
+        </div>
+        <div class="filter-group">
+          <div class="filter-title">Tueste</div>
+          <div class="filter-list" id="roastList"></div>
+        </div>
+        <div class="filter-group">
+          <div class="filter-title">Precio</div>
+          <div class="price-inputs">
+            <input type="number" id="priceMin" placeholder="Mín" min="0" step="1000" aria-label="Precio mínimo">
+            <span>–</span>
+            <input type="number" id="priceMax" placeholder="Máx" min="0" step="1000" aria-label="Precio máximo">
+          </div>
+          <button class="btn small" id="applyPrice">Aplicar</button>
+        </div>
+        <div class="filter-group">
+          <div class="filter-title">Calificación</div>
+          <div class="filter-list">
+            <label><input type="radio" name="rating" value="4"> 4★ y más</label>
+            <label><input type="radio" name="rating" value="3"> 3★ y más</label>
+            <label><input type="radio" name="rating" value="2"> 2★ y más</label>
+            <label><input type="radio" name="rating" value=""> Cualquiera</label>
+          </div>
+        </div>
+        <div class="filter-actions">
+          <button class="btn outline" id="clearFilters">Limpiar filtros</button>
+        </div>
+      </aside>
+
+      <!-- Results area -->
+      <section class="shop-content">
+        <div class="applied-filters" id="appliedFilters"></div>
+        <div class="grid" id="shopResults"></div>
+        <div class="pagination" id="shopPagination"></div>
+      </section>
     </section>
   </main>
 
@@ -135,24 +199,163 @@
   </footer>
   <script src="assets/js/app.js" defer></script>
   <script>
-    // Rellenar destacados reutilizando la lista de productos del home si existe
     (function(){
-      const el = document.getElementById('shopFeatured');
-      if (!el) return;
-      const sample = [
-        { id:'shop-1', name:'Selección Casa', price:44900, image:'https://images.unsplash.com/photo-1509043759401-136742328bb3?q=80&w=800&auto=format&fit=crop' },
-        { id:'shop-2', name:'Suscripción Mensual', price:129900, image:'https://images.unsplash.com/photo-1512568400610-62da28bc8a13?q=80&w=800&auto=format&fit=crop' },
-        { id:'shop-3', name:'Molinillo Manual', price:199900, image:'https://images.unsplash.com/photo-1507133750040-4a8f57021524?q=80&w=800&auto=format&fit=crop' }
+      const $ = (s, r=document) => r.querySelector(s);
+      const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
+      // Dataset: serio y armonioso, mezcla de cafés, suscripciones y accesorios
+      const products = [
+        { id:'cf-sierra', name:'Sierra Nevada', category:'Cafés', origin:'Sierra Nevada', process:'Lavado', roast:'Medio', price:42000, rating:4.6, deal:true, bestseller:true, fast:true, image:'https://images.unsplash.com/photo-1512568400610-62da28bc8a13?q=80&w=800&auto=format&fit=crop' },
+        { id:'cf-huila', name:'Huila', category:'Cafés', origin:'Huila', process:'Honey', roast:'Claro', price:45000, rating:4.7, new:true, fast:true, image:'https://images.unsplash.com/photo-1509043759401-136742328bb3?q=80&w=800&auto=format&fit=crop' },
+        { id:'cf-nar', name:'Nariño', category:'Cafés', origin:'Nariño', process:'Natural', roast:'Oscuro', price:48000, rating:4.5, image:'https://images.unsplash.com/photo-1494415859740-21e878dd929d?q=80&w=800&auto=format&fit=crop' },
+        { id:'sub-mensual', name:'Suscripción Mensual', category:'Suscripciones', price:129900, rating:4.8, bestseller:true, image:'https://images.unsplash.com/photo-1512568400610-62da28bc8a13?q=80&w=800&auto=format&fit=crop' },
+        { id:'acc-molinillo', name:'Molinillo Manual', category:'Accesorios', price:199900, rating:4.3, deal:true, fast:true, image:'https://images.unsplash.com/photo-1507133750040-4a8f57021524?q=80&w=800&auto=format&fit=crop' },
+        { id:'acc-chemex', name:'Chemex 6 tazas', category:'Accesorios', price:269900, rating:4.9, new:true, image:'https://images.unsplash.com/photo-1503481766315-7a586b20f66f?q=80&w=800&auto=format&fit=crop' }
       ];
-      el.innerHTML = sample.map(p => `
-        <div class="card">
-          <img src="${p.image}" alt="${p.name}">
+
+      // Elements
+      const resultsEl = $('#shopResults');
+      const pagEl = $('#shopPagination');
+      const appliedEl = $('#appliedFilters');
+      const chipsEl = $('#topChips');
+      const sortSel = $('#shopSort');
+      const filtersToggle = $('#filtersToggle');
+      const sidebar = $('#shopSidebar');
+      const clearBtn = $('#clearFilters');
+      const priceMin = $('#priceMin');
+      const priceMax = $('#priceMax');
+      const applyPrice = $('#applyPrice');
+
+      // Build sidebar lists
+      function uniq(arr){ return Array.from(new Set(arr.filter(Boolean))); }
+      function buildChecks(container, values, name){
+        container.innerHTML = values.map(v=>`<label><input type="checkbox" name="${name}" value="${v}"> ${v}</label>`).join('');
+      }
+      const cats = uniq(products.map(p=>p.category)).sort();
+      const origins = uniq(products.map(p=>p.origin)).sort();
+      const procs = uniq(products.map(p=>p.process)).sort();
+      const roasts = uniq(products.map(p=>p.roast)).sort();
+      buildChecks($('#catList'), cats, 'cat');
+      buildChecks($('#originList'), origins, 'origin');
+      buildChecks($('#processList'), procs, 'process');
+      buildChecks($('#roastList'), roasts, 'roast');
+
+      // State
+      let state = {
+        flags: { fast:false, deal:false, new:false, bestseller:false },
+        cats: new Set(), origins: new Set(), procs: new Set(), roasts: new Set(),
+        price: { min:'', max:'' }, ratingMin:'', sort:'relevance', page:1, pageSize:12
+      };
+
+      // Handlers
+      chipsEl.addEventListener('click', (e)=>{
+        const btn = e.target.closest('.chip'); if (!btn) return;
+        const f = btn.dataset.flag; state.flags[f] = !state.flags[f];
+        btn.classList.toggle('active', state.flags[f]);
+        state.page = 1; render();
+      });
+      sortSel.addEventListener('change', ()=>{ state.sort = sortSel.value; state.page = 1; render(); });
+      filtersToggle.addEventListener('click', ()=>{
+        const open = sidebar.classList.toggle('open');
+        filtersToggle.setAttribute('aria-expanded', String(open));
+      });
+      clearBtn.addEventListener('click', ()=>{ state = { ...state, flags:{fast:false,deal:false,new:false,bestseller:false}, cats:new Set(), origins:new Set(), procs:new Set(), roasts:new Set(), price:{min:'',max:''}, ratingMin:'', sort:'relevance', page:1 };
+        $$('#shopSidebar input[type="checkbox"]').forEach(i=> i.checked=false);
+        $$('#shopSidebar input[type="radio"][name="rating"]').forEach(i=> i.checked = i.value==='');
+        priceMin.value=''; priceMax.value='';
+        $$('.chip', chipsEl).forEach(c=> c.classList.remove('active'));
+        render();
+      });
+      applyPrice.addEventListener('click', ()=>{ state.price.min = priceMin.value; state.price.max = priceMax.value; state.page=1; render(); });
+      $('#shopSidebar').addEventListener('change', (e)=>{
+        const t = e.target; if (!(t instanceof HTMLInputElement)) return;
+        if (t.type==='checkbox'){
+          const set = t.name==='cat'? state.cats : t.name==='origin'? state.origins : t.name==='process'? state.procs : state.roasts;
+          t.checked ? set.add(t.value) : set.delete(t.value);
+        } else if (t.name==='rating') {
+          state.ratingMin = t.value;
+        }
+        state.page = 1; render();
+      });
+
+      function applyFilters(list){
+        let out = list.slice();
+        // flags
+        Object.entries(state.flags).forEach(([k, on])=>{ if (on) out = out.filter(p=> p[k]); });
+        // categories/attributes
+        if (state.cats.size) out = out.filter(p=> state.cats.has(p.category));
+        if (state.origins.size) out = out.filter(p=> state.origins.has(p.origin));
+        if (state.procs.size) out = out.filter(p=> state.procs.has(p.process));
+        if (state.roasts.size) out = out.filter(p=> state.roasts.has(p.roast));
+        // price
+        const min = parseInt(state.price.min||'0',10); const max = parseInt(state.price.max||'0',10);
+        if (state.price.min) out = out.filter(p=> p.price >= min);
+        if (state.price.max) out = out.filter(p=> p.price <= max);
+        // rating
+        if (state.ratingMin) out = out.filter(p=> (p.rating||0) >= Number(state.ratingMin));
+        return out;
+      }
+      function sortList(list){
+        const s = state.sort;
+        if (s==='price-asc') return list.sort((a,b)=> a.price - b.price);
+        if (s==='price-desc') return list.sort((a,b)=> b.price - a.price);
+        if (s==='rating-desc') return list.sort((a,b)=> (b.rating||0)-(a.rating||0));
+        // relevance: boost flags/new/bestseller then rating
+        return list.sort((a,b)=> ((b.bestseller?1:0)+(b.new?1:0)+(b.deal?1:0)+(b.rating||0)/5) - ((a.bestseller?1:0)+(a.new?1:0)+(a.deal?1:0)+(a.rating||0)/5));
+      }
+      function paginate(list){
+        const start = (state.page-1)*state.pageSize;
+        return list.slice(start, start+state.pageSize);
+      }
+      function renderApplied(){
+        const pills = [];
+        Object.entries(state.flags).forEach(([k,on])=>{ if(on) pills.push(labelFlag(k)); });
+        state.cats.forEach(v=> pills.push(v));
+        state.origins.forEach(v=> pills.push(v));
+        state.procs.forEach(v=> pills.push(v));
+        state.roasts.forEach(v=> pills.push(v));
+        if (state.price.min) pills.push(`≥ $${Number(state.price.min).toLocaleString('es-CO')}`);
+        if (state.price.max) pills.push(`≤ $${Number(state.price.max).toLocaleString('es-CO')}`);
+        if (state.ratingMin) pills.push(`${state.ratingMin}★+`);
+        appliedEl.innerHTML = pills.map(t=> `<span class="pill">${t}</span>`).join('');
+      }
+      function labelFlag(f){ return f==='fast'?'Entrega rápida': f==='deal'?'En oferta': f==='new'?'Novedades':'Más vendidos'; }
+      function card(p){
+        return `
+        <article class="card">
+          <img src="${p.image}" alt="${escapeHtml(p.name)}">
           <div class="p">
-            <div>${p.name}</div>
+            <div class="muted" style="font-size:.85rem">${p.category}${p.origin? ' · '+p.origin:''}</div>
+            <h3>${escapeHtml(p.name)}</h3>
+            <div class="muted" style="font-size:.85rem">${p.process||''}${p.process&&p.roast?' · ':''}${p.roast||''}</div>
             <div class="price">$${p.price.toLocaleString('es-CO')}</div>
           </div>
-        </div>
-      `).join('');
+        </article>`;
+      }
+      function render(){
+        const filtered = applyFilters(products.slice());
+        const sorted = sortList(filtered);
+        const pageItems = paginate(sorted);
+        resultsEl.innerHTML = pageItems.map(card).join('');
+        renderApplied();
+        // pagination
+        const total = filtered.length; const pages = Math.max(1, Math.ceil(total/state.pageSize));
+        pagEl.innerHTML = `
+          <div class="pager">
+            <button ${state.page<=1?'disabled':''} data-act="prev">Anterior</button>
+            <span>Página ${state.page} de ${pages}</span>
+            <button ${state.page>=pages?'disabled':''} data-act="next">Siguiente</button>
+          </div>`;
+        pagEl.onclick = (e)=>{
+          const btn = e.target.closest('button'); if (!btn) return;
+          const act = btn.dataset.act;
+          if (act==='prev' && state.page>1){ state.page--; render(); }
+          if (act==='next' && state.page<pages){ state.page++; render(); }
+        };
+      }
+      function escapeHtml(str){ return (str||'').replace(/[&<>"]+/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[s])); }
+      // init default
+      $$('#shopSidebar input[type="radio"][name="rating"]').find(r=>r.value==='').checked = true;
+      render();
     })();
   </script>
 </body>
