@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Iniciar sesión · DobleYo</title>
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#251a14">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body class="font-sans bg-cream text-ink">
+  <header class="site-header" id="siteHeader">
+    <div class="container">
+      <a class="brand" href="index.html" data-link><img src="../branding/10%20Logo%20Dobleyo%20Cafe.PNG" alt="DobleYo" height="28"/></a>
+      <nav class="nav">
+        <a href="index.html" data-link>Inicio</a>
+        <a href="tienda.html" data-link>Tienda</a>
+        <a href="nosotros.html" data-link>Nosotros</a>
+        <a href="blog.html" data-link>Blog</a>
+        <a href="trazabilidad.html" data-link>Trazabilidad</a>
+        <a href="contacto.html" data-link>Contacto</a>
+        <a href="cuenta.html" data-link>Mi cuenta</a>
+      </nav>
+      <div class="actions">
+        <button id="themeToggle" class="theme-toggle" aria-label="Cambiar tema" title="Cambiar tema">🌙</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container" style="padding-top: calc(var(--header-height, 96px) + 28px)">
+    <section class="card" style="max-width:440px; margin:2rem auto 0">
+      <div class="p">
+        <h1>Iniciar sesión</h1>
+        <p class="muted" style="margin-top:-.4rem">Accede para ver tu cuenta y pedidos.</p>
+        <form id="loginForm" class="form" onsubmit="return false" style="display:grid; gap:.75rem; margin-top:.75rem">
+          <label>Correo<input id="loginEmail" type="email" placeholder="tu@correo.com" required></label>
+          <label>Contraseña<input id="loginPass" type="password" placeholder="••••••••" required></label>
+          <button class="btn" id="loginBtn" type="submit">Entrar</button>
+        </form>
+        <div id="loginError" class="muted" style="color:#b91c1c; display:none; margin-top:.35rem"></div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // login basico con localStorage (solo demo)
+    (function(){
+      const f = document.getElementById('loginForm');
+      const err = document.getElementById('loginError');
+      f.addEventListener('submit', function(){
+        const email = (document.getElementById('loginEmail').value||'').trim();
+        const pass = (document.getElementById('loginPass').value||'').trim();
+        if(!email || !pass){ err.textContent = 'Completa todos los campos.'; err.style.display='block'; return; }
+        localStorage.setItem('dbyo_user', JSON.stringify({ email, t: Date.now() }));
+        location.href = 'cuenta.html';
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Mi cuenta · DobleYo</title>
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#251a14">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body class="font-sans bg-cream text-ink">
+  <header class="site-header" id="siteHeader">
+    <div class="container">
+      <a class="brand" href="index.html" data-link><img src="../branding/10%20Logo%20Dobleyo%20Cafe.PNG" alt="DobleYo" height="28"/></a>
+      <nav class="nav">
+        <a href="index.html" data-link>Inicio</a>
+        <a href="tienda.html" data-link>Tienda</a>
+        <a href="nosotros.html" data-link>Nosotros</a>
+        <a href="blog.html" data-link>Blog</a>
+        <a href="trazabilidad.html" data-link>Trazabilidad</a>
+        <a href="contacto.html" data-link>Contacto</a>
+        <a class="active" href="cuenta.html" data-link>Mi cuenta</a>
+      </nav>
+      <div class="actions">
+        <button id="themeToggle" class="theme-toggle" aria-label="Cambiar tema" title="Cambiar tema">🌙</button>
+        <button id="logoutBtn" class="icon-btn">Cerrar sesión</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container" style="padding-top: calc(var(--header-height, 96px) + 28px)">
+    <section class="card" style="margin-top:1rem">
+      <div class="p">
+        <h1>Mi cuenta</h1>
+        <p class="muted" id="userEmail">—</p>
+      </div>
+    </section>
+
+    <section class="card" style="margin-top:1rem">
+      <div class="p">
+        <h2>Pedidos</h2>
+        <div class="muted">Aun no hay pedidos.</div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (function(){
+      const userRaw = localStorage.getItem('dbyo_user');
+      const emailEl = document.getElementById('userEmail');
+      if(!userRaw){ location.replace('login.html'); return; }
+      try { const u = JSON.parse(userRaw); emailEl.textContent = u.email || '—'; } catch { emailEl.textContent = '—'; }
+      document.getElementById('logoutBtn').addEventListener('click', ()=>{ localStorage.removeItem('dbyo_user'); location.href='index.html'; });
+    })();
+  </script>
+</body>
+</html>
