@@ -49,7 +49,7 @@
 
   // Granos decorativos en el encabezado: granos de cafe dispersos con repulsion al puntero
   (function initNavBeans(){
-    const header = document.querySelector('.site-header .container');
+    const header = document.querySelector('.site-header');
     const layer = document.querySelector('.nav-beans');
     if (!header || !layer) return;
     const beanSrc = '../branding/coffebeannav.png';

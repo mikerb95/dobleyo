@@ -32,20 +32,12 @@ img{ max-width:100%; display:block }
 /* Encabezado (navbar fija a tope, no flotante) */
 .site-header{ position:fixed; top: var(--header-top, 0px); left:0; right:0; z-index:70; background:var(--card); border-bottom:1px solid var(--border); }
 .site-header .container{ position:relative; overflow:hidden; display:flex; align-items:center; justify-content:space-between; padding:1.5rem 1.25rem; width:min(var(--page-width),calc(100% - var(--page-gutter))); margin-inline:auto; background:transparent; backdrop-filter:none; border:0; border-radius:0; box-shadow:none; color:var(--fg) }
-/* Textura sutil de madera */
-.site-header .container::before{ content:""; position:absolute; inset:0; z-index:0; pointer-events:none; opacity:.22; mix-blend-mode:soft-light; background:
-  radial-gradient(1000px 60px at -200px 0, rgba(255,255,255,.05), transparent 60%),
-  radial-gradient(1000px 60px at 120% 100%, rgba(0,0,0,.09), transparent 60%),
-  repeating-linear-gradient(100deg, rgba(255,255,255,.05) 0 6px, rgba(0,0,0,.06) 6px 12px);
-}
+
 /* Asegurar contenido por encima */
 .site-header .brand, .site-header .nav, .site-header .actions{ position:relative; z-index:2 }
 .brand{ display:flex; align-items:center; gap:.5rem; color:var(--coffee); text-decoration:none; font-weight:700 }
 /* Marca en encabezado claro */
 .site-header .brand{ color:var(--coffee) }
-/* Quitar relleno de fondo detras del logo y mezclar blancos */
-.site-header .brand{ background: transparent !important }
-.site-header .brand img{ background: transparent !important; mix-blend-mode: multiply }
 /* Asegurar altura consistente del logo (escritorio por defecto) */
 .brand img{ height:36px; width:auto; display:block }
 /* Ligera transparencia y sombra sutil para mezclar sobre encabezado translucido */
