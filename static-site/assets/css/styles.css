@@ -15,7 +15,9 @@ html.theme-dark{
 }
 *{ box-sizing:border-box }
 html,body{ margin:0; padding:0 }
-body{ font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Arial,sans-serif; color:var(--fg); background:var(--bg) }
+body{ font-family:'Lora', Georgia, 'Times New Roman', Times, serif; color:var(--fg); background:var(--bg) }
+/* Headings and titles use Playfair Display */
+h1,h2,h3,h4,h5,h6, .e-title, .e-number{ font-family:'Playfair Display', Georgia, 'Times New Roman', Times, serif }
 /* Override Tailwind body classes in dark theme */
 html.theme-dark body.bg-cream{ background-color: var(--bg) !important; }
 html.theme-dark body.text-ink{ color: var(--fg) !important; }
