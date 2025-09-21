@@ -30,8 +30,14 @@ img{ max-width:100%; display:block }
 .topbar .topbar-close{ background:transparent; border:0; color:#fff; font-size:1.2rem; cursor:pointer }
 
 /* Encabezado (navbar fija a tope, no flotante) */
-.site-header{ position:fixed; top: var(--header-top, 0px); left:0; right:0; z-index:70; background:var(--card); border-bottom:1px solid var(--border); }
-.site-header .container{ position:relative; overflow:hidden; display:flex; align-items:center; justify-content:space-between; padding:1.5rem 1.25rem; width:min(var(--page-width),calc(100% - var(--page-gutter))); margin-inline:auto; background:transparent; backdrop-filter:none; border:0; border-radius:0; box-shadow:none; color:var(--fg) }
+.site-header{ position:fixed; top: var(--header-top, 0px); left:0; right:0; z-index:70; background:var(--card); border-bottom:1px solid var(--border); isolation:isolate }
+.site-header .container{ position:relative; overflow:visible; display:flex; align-items:center; justify-content:space-between; padding:1.5rem 1.25rem; width:min(var(--page-width),calc(100% - var(--page-gutter))); margin-inline:auto; background:transparent; backdrop-filter:none; border:0; border-radius:0; box-shadow:none; color:var(--fg) }
+/* Textura sutil a todo el ancho */
+.site-header::before{ content:""; position:absolute; top:0; bottom:0; left:50%; width:100vw; transform:translateX(-50%); z-index:0; pointer-events:none; opacity:.22; mix-blend-mode:soft-light; background:
+  radial-gradient(1000px 60px at -200px 0, rgba(255,255,255,.05), transparent 60%),
+  radial-gradient(1000px 60px at 120% 100%, rgba(0,0,0,.09), transparent 60%),
+  repeating-linear-gradient(100deg, rgba(255,255,255,.05) 0 6px, rgba(0,0,0,.06) 6px 12px);
+}
 
 /* Asegurar contenido por encima */
 .site-header .brand, .site-header .nav, .site-header .actions{ position:relative; z-index:2 }
@@ -59,8 +65,8 @@ html.theme-dark .site-header .brand img{ opacity:.96 }
 .site-header .icon-btn{ background:var(--card); border-color:var(--border); color:var(--fg) }
 .site-header .icon-btn:hover{ background:rgba(0,0,0,.06) }
 
-/* Capa de granos de cafe en el encabezado */
-.nav-beans{ position:absolute; inset:0; z-index:1; pointer-events:none; opacity:.26; transition: opacity .25s ease }
+/* Capa de granos de cafe en el encabezado: ancho completo */
+.nav-beans{ position:absolute; top:0; bottom:0; left:50%; width:100vw; transform:translateX(-50%); z-index:1; pointer-events:none; opacity:.26; transition: opacity .25s ease }
 .beans-active .nav-beans{ opacity:.34 }
 .nav-beans .bean{ position:absolute; width:var(--bean-size, 46px); height:auto; filter: drop-shadow(0 2px 2px rgba(0,0,0,.22)) saturate(110%) brightness(1.05);
   transform: translate(calc(var(--dx, 0px) * var(--fx, 1)), calc(var(--dy, 0px) * var(--fy, 1))) rotate(var(--rot, 0deg)) scale(var(--s, 1));
@@ -205,7 +211,7 @@ html.theme-dark .e-source{ color:#b9a99f }
 /* Boton de tema */
 .theme-toggle{ background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.18); color:#fff; padding:.35rem .55rem; border-radius:.5rem; cursor:pointer }
 .theme-toggle:hover{ background:rgba(255,255,255,.2) }
-html.theme-dark .site-header .container{ background:rgba(20,20,20,.82); border-color:rgba(255,255,255,.08) }
+html.theme-dark .site-header .container{ background:transparent; border-color:rgba(255,255,255,.08) }
 html.theme-dark .nav a{ color:#e5e7eb }
 html.theme-dark .nav a.active, html.theme-dark .nav a:hover{ background:rgba(255,255,255,.12) }
 
