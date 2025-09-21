@@ -193,6 +193,16 @@
   const homeProducts = $('#homeProducts');
   if (homeProducts) {
     homeProducts.innerHTML = products.map(p => cardHTML(p)).join('');
+    homeProducts.addEventListener('click', (e)=>{
+      const card = e.target.closest('article.card'); if (!card) return;
+      // accion: si se hace click en precio o cualquier CTA podemos mejorar; por ahora clic en titulo agrega 1
+      const title = card.querySelector('h3');
+      if (e.target === title){
+        const name = title.textContent;
+        const p = products.find(x => x.name === name);
+        if (p && window.Cart){ window.Cart.addToCart({ id:p.id, name:p.name, price:p.price, image:p.image, qty:1 }); }
+      }
+    });
   }
 
   // Cuadricula de catalogo y filtros
