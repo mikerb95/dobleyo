@@ -189,6 +189,7 @@
     </div>
   </footer>
   <script src="assets/js/app.js" defer></script>
+  <script src="assets/js/cart.js" defer></script>
   <script>
     (function(){
       const $ = (s, r=document) => r.querySelector(s);
@@ -318,6 +319,10 @@
             <h3>${escapeHtml(p.name)}</h3>
             <div class="muted" style="font-size:.85rem">${p.process||''}${p.process&&p.roast?' · ':''}${p.roast||''}</div>
             <div class="price">$${p.price.toLocaleString('es-CO')}</div>
+            <div style="margin-top:.35rem; display:flex; gap:.5rem">
+              <button class="btn small" data-add="${p.id}">Agregar</button>
+              <a class="btn outline small" href="carrito.html" data-link>Ver carrito</a>
+            </div>
           </div>
         </article>`;
       }
@@ -326,6 +331,13 @@
         const sorted = sortList(filtered);
         const pageItems = paginate(sorted);
         resultsEl.innerHTML = pageItems.map(card).join('');
+        // manejar clicks de agregar
+        resultsEl.onclick = (e)=>{
+          const btn = e.target.closest('button[data-add]'); if (!btn) return;
+          const id = btn.getAttribute('data-add');
+          const prod = products.find(p=>p.id===id); if (!prod) return;
+          window.Cart && window.Cart.addToCart({ id:prod.id, name:prod.name, price:prod.price, image:prod.image, qty:1 });
+        };
         renderApplied();
   // paginacion
         const total = filtered.length; const pages = Math.max(1, Math.ceil(total/state.pageSize));
