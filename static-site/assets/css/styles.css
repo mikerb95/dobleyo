@@ -29,7 +29,7 @@ img{ max-width:100%; display:block }
 
 /* Header (floating navbar) */
 .site-header{ position:fixed; top: var(--header-top, 12px); left:0; right:0; z-index:60; background:transparent; border-bottom:0; }
-.site-header .container{ position:relative; overflow:hidden; display:flex; align-items:center; justify-content:space-between; padding:1.5rem 1.25rem; width:min(var(--page-width),calc(100% - var(--page-gutter))); margin-inline:auto; background:rgba(var(--coffee-rgb),.86); backdrop-filter:saturate(140%) blur(10px); border:1px solid rgba(255,255,255,.12); border-radius:1rem; box-shadow:0 18px 44px rgba(0,0,0,.24); color:#fff }
+.site-header .container{ position:relative; overflow:hidden; display:flex; align-items:center; justify-content:space-between; padding:1.5rem 1.25rem; width:min(var(--page-width),calc(100% - var(--page-gutter))); margin-inline:auto; background:rgba(255,255,255,.88); backdrop-filter:saturate(140%) blur(10px); border:1px solid rgba(0,0,0,.08); border-radius:1rem; box-shadow:0 18px 44px rgba(0,0,0,.10); color:var(--fg) }
 /* Wooden subtle texture */
 .site-header .container::before{ content:""; position:absolute; inset:0; z-index:0; pointer-events:none; opacity:.22; mix-blend-mode:soft-light; background:
   radial-gradient(1000px 60px at -200px 0, rgba(255,255,255,.05), transparent 60%),
@@ -39,8 +39,8 @@ img{ max-width:100%; display:block }
 /* ensure content on top */
 .site-header .brand, .site-header .nav, .site-header .actions{ position:relative; z-index:2 }
 .brand{ display:flex; align-items:center; gap:.5rem; color:var(--coffee); text-decoration:none; font-weight:700 }
-/* Brand on dark header */
-.site-header .brand{ color:#fff }
+/* Brand on light header */
+.site-header .brand{ color:var(--coffee) }
 /* Remove any background fill behind the logo and blend whites out */
 .site-header .brand{ background: transparent !important }
 .site-header .brand img{ background: transparent !important; mix-blend-mode: multiply }
@@ -53,22 +53,22 @@ html.theme-dark .site-header .brand img{ opacity:.96 }
 .nav{ display:flex; gap:1rem }
 .nav a{ color:var(--dark); text-decoration:none; padding:.25rem .5rem; border-radius:.375rem }
 .nav a.active, .nav a:hover{ background:#fff; box-shadow:0 1px 0 rgba(0,0,0,.05) }
-/* Header-specific link overrides for dark background */
-.site-header .nav a{ color:#fff }
-.site-header .nav a.active, .site-header .nav a:hover{ background:rgba(255,255,255,.14); box-shadow:none }
+/* Header-specific link overrides for light header */
+.site-header .nav a{ color:var(--fg) }
+.site-header .nav a.active, .site-header .nav a:hover{ background:rgba(0,0,0,.06); box-shadow:none }
 .actions{ display:flex; align-items:center; gap:.5rem }
 .icon-btn{ background:#fff; border:1px solid #eee; padding:.4rem .6rem; border-radius:.375rem; cursor:pointer; text-decoration:none; color:var(--dark); display:inline-flex; align-items:center; gap:.25rem }
 .icon-btn.active{ border-color:var(--coffee) }
 .badge{ background:var(--coffee); color:#fff; font-size:.7rem; padding:.05rem .35rem; border-radius:999px; margin-left:.25rem }
 .hamburger{ display:none }
 /* Header-specific buttons */
-.site-header .icon-btn{ background:rgba(255,255,255,.12); border-color:rgba(255,255,255,.18); color:#fff }
-.site-header .icon-btn:hover{ background:rgba(255,255,255,.2) }
+.site-header .icon-btn{ background:#ffffff; border-color:#e5e7eb; color:var(--fg) }
+.site-header .icon-btn:hover{ background:#f9fafb }
 
 /* Coffee beans layer inside header */
-.nav-beans{ position:absolute; inset:0; z-index:1; pointer-events:none; opacity:.18; transition: opacity .25s ease }
-.beans-active .nav-beans{ opacity:.24 }
-.nav-beans .bean{ position:absolute; width:var(--bean-size, 54px); height:auto; filter: drop-shadow(0 2px 2px rgba(0,0,0,.28)) saturate(110%) brightness(1.05);
+.nav-beans{ position:absolute; inset:0; z-index:1; pointer-events:none; opacity:.26; transition: opacity .25s ease }
+.beans-active .nav-beans{ opacity:.34 }
+.nav-beans .bean{ position:absolute; width:var(--bean-size, 46px); height:auto; filter: drop-shadow(0 2px 2px rgba(0,0,0,.22)) saturate(110%) brightness(1.05);
   transform: translate(calc(var(--dx, 0px) * var(--fx, 1)), calc(var(--dy, 0px) * var(--fy, 1))) rotate(var(--rot, 0deg)) scale(var(--s, 1));
   transition: transform .6s cubic-bezier(.2,.8,.2,1);
 }

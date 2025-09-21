@@ -51,8 +51,8 @@
     const layer = document.querySelector('.nav-beans');
     if (!header || !layer) return;
     const beanSrc = '../branding/coffebeannav.png';
-    const beans = [];
-    const COUNT = 36; // more beans across width and height
+  const beans = [];
+  const COUNT = 44; // slightly more beans for visibility
     for (let i=0;i<COUNT;i++){
       const img = document.createElement('img');
       img.className = 'bean';
@@ -64,7 +64,7 @@
       const rot = -40 + Math.random()*80; // -40..40 deg
       const scale = 0.8 + Math.random()*0.6; // 0.8..1.4
       // variable size for depth
-      const size = 28 + Math.random()*24 + (Math.random() < 0.25 ? 18 : 0); // occasionally larger
+  const size = 22 + Math.random()*20 + (Math.random() < 0.20 ? 12 : 0); // slightly smaller overall
       img.style.left = xPct + '%';
       img.style.top = yPct + '%';
       img.style.setProperty('--rot', rot+'deg');
