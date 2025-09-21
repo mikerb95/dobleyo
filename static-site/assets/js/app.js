@@ -9,14 +9,20 @@
   // Topbar close
   const topbar = $('#topbar');
   const topbarClose = $('#topbarClose');
-  // Floating header offset depends on topbar height
-  const setHeaderTop = () => {
+  // Floating header metrics depend on topbar height and header size
+  const setHeaderMetrics = () => {
     const tb = $('#topbar');
-    const top = tb ? (tb.offsetHeight + 12) : 12;
-    document.documentElement.style.setProperty('--header-top', top + 'px');
+    const top = tb ? (tb.offsetHeight + 12) : 12; // 12px breathing space
+    const headerCont = document.querySelector('.site-header .container');
+    const hh = headerCont ? headerCont.offsetHeight : 96;
+    const pageOffset = top + hh + 28; // matches main.container padding-top
+    const root = document.documentElement;
+    root.style.setProperty('--header-top', top + 'px');
+    root.style.setProperty('--header-height', hh + 'px');
+    root.style.setProperty('--page-offset-top', pageOffset + 'px');
   };
-  setHeaderTop();
-  window.addEventListener('resize', setHeaderTop);
+  setHeaderMetrics();
+  window.addEventListener('resize', setHeaderMetrics);
   if (topbar && topbarClose) {
     topbarClose.addEventListener('click', ()=>{
       topbar.style.height = topbar.offsetHeight + 'px';
@@ -24,7 +30,7 @@
         topbar.style.transition = 'height .25s ease, opacity .25s ease';
         topbar.style.height = '0px';
         topbar.style.opacity = '0';
-        setTimeout(()=> { topbar.remove(); setHeaderTop(); }, 300);
+        setTimeout(()=> { topbar.remove(); setHeaderMetrics(); }, 300);
       });
     });
   }

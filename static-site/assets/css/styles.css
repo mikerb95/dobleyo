@@ -23,7 +23,7 @@ img{ max-width:100%; display:block }
 .container{ width:min(var(--page-width),calc(100% - var(--page-gutter))); margin-inline:auto; padding-left:1.25rem; padding-right:1.25rem }
 
 /* Topbar */
-.topbar{ background:var(--dark); color:#fff; font-size:.875rem }
+.topbar{ position:fixed; top:0; left:0; right:0; z-index:75; background:var(--dark); color:#fff; font-size:.875rem; opacity:1 !important; box-shadow:0 2px 8px rgba(0,0,0,.18) }
 .topbar .container{ display:flex; align-items:center; justify-content:space-between; padding:.5rem 0 }
 .topbar .topbar-close{ background:transparent; border:0; color:#fff; font-size:1.2rem; cursor:pointer }
 
@@ -41,6 +41,9 @@ img{ max-width:100%; display:block }
 .brand{ display:flex; align-items:center; gap:.5rem; color:var(--coffee); text-decoration:none; font-weight:700 }
 /* Brand on dark header */
 .site-header .brand{ color:#fff }
+/* Remove any background fill behind the logo and blend whites out */
+.site-header .brand{ background: transparent !important }
+.site-header .brand img{ background: transparent !important; mix-blend-mode: multiply }
 /* Ensure logo image keeps consistent height (desktop default) */
 .brand img{ height:36px; width:auto; display:block }
 /* Slight transparency and subtle shadow for blending over translucent header */
@@ -76,7 +79,28 @@ html.theme-dark .site-header .brand img{ opacity:.96 }
 .mobile-menu a{ text-decoration:none; color:var(--fg) }
 
 /* Hero */
-.hero{ padding:4rem 0; text-align:center }
+.hero{ position:relative; padding:4rem 0; text-align:center; isolation:isolate }
+/* Above-the-fold background for medium+ viewports */
+@media (min-width: 768px){
+  .hero{ padding:6rem 0 }
+  .hero::before{
+    content:""; position:absolute; 
+  /* extend upward from top of page to cover topbar+header area */
+  top: calc(-1 * var(--page-offset-top, 136px));
+    bottom:0; left:50%; width:100vw; transform:translateX(-50%);
+    background-image: url('../img/above-the-fold/landscape1.png');
+    background-size: cover; background-position: center; background-repeat: no-repeat;
+    z-index:-1; opacity:.95;
+  }
+}
+/* Slight dark overlay in dark theme to improve text contrast */
+@media (min-width: 768px){
+  html.theme-dark .hero::before{
+    background-image:
+      linear-gradient(180deg, rgba(0,0,0,.25), rgba(0,0,0,.25)),
+      url('../img/above-the-fold/landscape1.png');
+  }
+}
 .btn{ background:var(--accent); color:var(--accent-contrast); padding:.6rem 1rem; border-radius:.375rem; text-decoration:none; display:inline-block; border:1px solid transparent }
 .btn:hover{ filter:brightness(1.05) }
 
@@ -146,8 +170,9 @@ html.theme-dark .footer-disclaimer{ color:#b9a99f }
 }
 
 /* Spacing to avoid overlap of fixed header */
-main.container{ padding-top: calc(var(--header-height, 96px) + 28px) }
-.filters{ display:flex; gap:.5rem; padding:1rem 0; position:sticky; top: calc(var(--header-height, 96px) + 8px); background:var(--cream); z-index:40; border-bottom:1px solid #eee }
+/* Ensure content pushes below the fixed topbar + header */
+main.container{ padding-top: calc(var(--header-top, 12px) + var(--header-height, 96px) + 28px) }
+.filters{ display:flex; gap:.5rem; padding:1rem 0; position:sticky; top: calc(var(--header-top, 12px) + var(--header-height, 96px) + 8px); background:var(--cream); z-index:40; border-bottom:1px solid #eee }
 
 /* Evidence section (pixel-perfect) */
 .evidence-section{ position:relative; margin:3rem 0 0 }
