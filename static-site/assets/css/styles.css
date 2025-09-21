@@ -285,3 +285,20 @@ html.theme-dark .icon-btn{ background:#1b1d21; border-color:#2a2f36; color:#e6e7
 .shop-content .card .price{ margin-top:auto }
 
 /* (modo compacto eliminado) */
+
+/* Destacados: ocupa 1/3 de la altura de la pagina */
+.featured{ position:relative; margin:2rem 0 0; min-height: calc(100vh / 3); }
+.featured-inner{ padding:1.5rem 0 }
+.featured-title{ font-size:1.6rem; margin: .25rem 0 1rem; color:#3b2a1f }
+.featured-grid{ display:grid; grid-template-columns: repeat(3, 1fr); gap:1rem }
+.featured-card{ display:grid; grid-template-columns: 1fr 1.2fr; gap:.9rem; overflow:hidden }
+.featured-img{ width:100%; height:100%; object-fit:cover; aspect-ratio: 4 / 3 }
+.featured-body{ display:flex; flex-direction:column; gap:.5rem; padding:1rem }
+.featured-h3{ margin:.1rem 0 .2rem; font-size:1.05rem; line-height:1.35 }
+.featured-desc{ font-size:.95rem; line-height:1.45 }
+
+@media (max-width: 980px){
+  .featured-grid{ grid-template-columns: 1fr }
+  .featured-card{ grid-template-columns: 1fr; }
+  .featured-img{ aspect-ratio: 16 / 9 }
+}
