@@ -39,60 +39,91 @@
     });
   }
 
-  // Decorative beans inside header: subtle movement on nav hover
+  // Decorative beans inside header: scattered coffee beans with pointer repulsion
   (function initNavBeans(){
     const header = document.querySelector('.site-header .container');
     const layer = document.querySelector('.nav-beans');
-    const nav = document.querySelector('.site-header .nav');
-    if (!header || !layer || !nav) return;
-    const beanSrc = 'assets/beans.svg';
+    if (!header || !layer) return;
+    const beanSrc = '../branding/coffebeannav.png';
     const beans = [];
-    const COUNT = 22; // denser field along the navbar
+    const COUNT = 36; // more beans across width and height
     for (let i=0;i<COUNT;i++){
       const img = document.createElement('img');
       img.className = 'bean';
-      // Prepare for future per-bean SVG replacement via data-src
-      img.dataset.src = beanSrc;
       img.src = beanSrc;
-      const x = (i/(COUNT-1))*92 + 4; // spread across width with slight margins
-      const y = 18 + (Math.random()*58); // avoid edges
-      const r = -25 + Math.random()*50;
-      const s = 0.7 + Math.random()*0.6;
-      img.style.left = x + '%';
-      img.style.top = y + '%';
-      img.style.setProperty('--rot', r+'deg');
-      img.style.setProperty('--s', s);
+      // random position across the layer with small margins
+      const xPct = 4 + Math.random()*92;
+      const yPct = 8 + Math.random()*84;
+      // random rotation and scale
+      const rot = -40 + Math.random()*80; // -40..40 deg
+      const scale = 0.8 + Math.random()*0.6; // 0.8..1.4
       // variable size for depth
-      const size = 42 + Math.random()*22;
+      const size = 28 + Math.random()*24 + (Math.random() < 0.25 ? 18 : 0); // occasionally larger
+      img.style.left = xPct + '%';
+      img.style.top = yPct + '%';
+      img.style.setProperty('--rot', rot+'deg');
+      img.style.setProperty('--s', scale);
       img.style.setProperty('--bean-size', size+'px');
+      // stash percent pos and a random factor to vary repulsion strength
+      img._xPct = xPct / 100;
+      img._yPct = yPct / 100;
+      img._rand = Math.random();
       layer.appendChild(img);
       beans.push(img);
     }
-    // Hover interaction: move slightly depending on hovered index
-    const items = Array.from(nav.querySelectorAll('a'));
-    items.forEach((a, idx)=>{
-      a.addEventListener('mouseenter', ()=>{
-        header.classList.add('beans-active');
-        const fx = (idx - items.length/2) * 0.10; // direction factor (subtle)
-        beans.forEach((b, i)=>{
-          const wave = Math.sin((idx+i)*0.9) + Math.cos((idx-i)*1.1);
-          const dx = wave * 6; // px
-          const dy = Math.cos((idx+i)*1.15) * 4;
-          b.style.setProperty('--dx', (dx* (1+i*0.07)).toFixed(2)+'px');
-          b.style.setProperty('--dy', (dy* (1+i*0.05)).toFixed(2)+'px');
-          b.style.setProperty('--fx', (1+fx).toFixed(2));
-          b.style.setProperty('--fy', '1');
-        });
+
+    // Pointer-repel interaction over the header container
+    const pointer = { x: 0, y: 0, active: false };
+    let rafId = 0;
+    function animate(){
+      if (pointer.active){
+        const rect = layer.getBoundingClientRect();
+        const cx = pointer.x - rect.left;
+        const cy = pointer.y - rect.top;
+        for (const b of beans){
+          const bx = (b._xPct || 0.5) * rect.width;
+          const by = (b._yPct || 0.5) * rect.height;
+          const dx0 = bx - cx;
+          const dy0 = by - cy;
+          const d = Math.hypot(dx0, dy0) || 0.0001;
+          // influence radius and strength
+          const radius = 140; // px
+          const strength = 26 + (b._rand || 0)*22; // per-bean variation
+          const falloff = Math.max(0, radius - d) / radius; // 0..1
+          const repel = falloff * strength;
+          const nx = dx0 / d;
+          const ny = dy0 / d;
+          const dx = nx * repel;
+          const dy = ny * repel;
+          b.style.setProperty('--dx', dx.toFixed(2)+'px');
+          b.style.setProperty('--dy', dy.toFixed(2)+'px');
+        }
+      }
+      rafId = requestAnimationFrame(animate);
+    }
+    rafId = requestAnimationFrame(animate);
+
+    header.addEventListener('mouseenter', ()=>{
+      pointer.active = true;
+      header.classList.add('beans-active');
+    });
+    header.addEventListener('mousemove', (e)=>{
+      pointer.x = e.clientX;
+      pointer.y = e.clientY;
+    });
+    header.addEventListener('mouseleave', ()=>{
+      pointer.active = false;
+      header.classList.remove('beans-active');
+      // reset offsets
+      beans.forEach(b=>{
+        b.style.setProperty('--dx','0px');
+        b.style.setProperty('--dy','0px');
       });
-      a.addEventListener('mouseleave', ()=>{
-        header.classList.remove('beans-active');
-        beans.forEach((b)=>{
-          b.style.setProperty('--dx','0px');
-          b.style.setProperty('--dy','0px');
-          b.style.setProperty('--fx','1');
-          b.style.setProperty('--fy','1');
-        });
-      });
+    });
+    // Clean up on page hide (not strictly necessary for this static site)
+    document.addEventListener('visibilitychange', ()=>{
+      if (document.hidden && rafId){ cancelAnimationFrame(rafId); rafId = 0; }
+      else if (!rafId){ rafId = requestAnimationFrame(animate); }
     });
   })();
 
