@@ -41,6 +41,12 @@ img{ max-width:100%; display:block }
 .brand{ display:flex; align-items:center; gap:.5rem; color:var(--coffee); text-decoration:none; font-weight:700 }
 /* Brand on dark header */
 .site-header .brand{ color:#fff }
+/* Ensure logo image keeps consistent height (desktop default) */
+.brand img{ height:36px; width:auto; display:block }
+/* Slight transparency and subtle shadow for blending over translucent header */
+.site-header .brand img{ opacity:.92; filter: drop-shadow(0 1px 0 rgba(255,255,255,.15)) drop-shadow(0 2px 6px rgba(0,0,0,.25)); transition: opacity .2s ease, transform .2s ease }
+.site-header .brand:hover img{ opacity:1; transform: scale(1.02) }
+html.theme-dark .site-header .brand img{ opacity:.96 }
 .nav{ display:flex; gap:1rem }
 .nav a{ color:var(--dark); text-decoration:none; padding:.25rem .5rem; border-radius:.375rem }
 .nav a.active, .nav a:hover{ background:#fff; box-shadow:0 1px 0 rgba(0,0,0,.05) }
@@ -135,6 +141,8 @@ html.theme-dark .footer-disclaimer{ color:#b9a99f }
   .nav{ display:none }
   .hamburger{ display:inline-flex }
   .mobile-menu{ display:flex }
+  /* Keep logo balanced on mobile */
+  .brand img{ height:32px }
 }
 
 /* Spacing to avoid overlap of fixed header */
