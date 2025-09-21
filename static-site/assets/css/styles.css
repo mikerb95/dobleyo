@@ -93,6 +93,9 @@ html.theme-dark .site-header .brand img{ opacity:.96 }
   .hero .hero-media video{ width:100%; height:100%; object-fit:cover; display:block }
   /* Overlay sutil en todos los temas para legibilidad */
   .hero .hero-media::after{ content:""; position:absolute; inset:0; pointer-events:none; background: rgba(255,255,255,.04) }
+  /* Degradado superior sutil en ambos temas */
+  .hero .hero-media::before{ content:""; position:absolute; inset:0; pointer-events:none;
+    background: linear-gradient(180deg, rgba(0,0,0,.12), rgba(0,0,0,0) 35%); }
 }
 /* Capa oscura sutil en tema oscuro para mejorar contraste de texto */
 @media (min-width: 768px){
