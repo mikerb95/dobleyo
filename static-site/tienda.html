@@ -35,16 +35,20 @@
         <a href="blog.html" data-link>Blog</a>
         <a href="trazabilidad.html" data-link>Trazabilidad</a>
         <a href="contacto.html" data-link>Contacto</a>
-        <a href="cuenta.html" data-link>Mi cuenta</a>
       </nav>
       <div class="actions">
         <button id="themeToggle" class="theme-toggle" aria-label="Cambiar tema" title="Cambiar tema">🌙</button>
-        <a href="carrito.html" class="icon-btn" data-link>🛒<span class="badge" id="cartCount">0</span></a>
-        <a href="login.html" class="icon-btn" data-link>Iniciar sesión</a>
+        <a href="carrito.html" class="icon-btn" data-link aria-label="Ver carrito">🛒<span class="badge" id="cartCount">0</span></a>
+        <a href="login.html" class="icon-btn user-icon" data-link aria-label="Iniciar sesión" title="Iniciar sesión">
+          <!-- Small user silhouette SVG (decorative) -->
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+            <path d="M12 12c2.761 0 5-2.239 5-5s-2.239-5-5-5-5 2.239-5 5 2.239 5 5 5zM3 20c0-2.761 4.477-5 9-5s9 2.239 9 5v1H3v-1z" fill="currentColor"/>
+          </svg>
+        </a>
         <button id="menuBtn" class="hamburger" aria-label="Menú">☰</button>
       </div>
     </div>
-    <div class="mobile-menu" id="mobileMenu" hidden>
+      <div class="mobile-menu" id="mobileMenu" hidden>
       <a href="index.html" data-link>Inicio</a>
       <a class="active" href="tienda.html" data-link>Tienda</a>
       
@@ -52,8 +56,11 @@
       <a href="blog.html" data-link>Blog</a>
       <a href="trazabilidad.html" data-link>Trazabilidad</a>
       <a href="contacto.html" data-link>Contacto</a>
-      <a href="cuenta.html" data-link>Mi cuenta</a>
-      <a href="login.html" data-link>Iniciar sesión</a>
+      <a href="login.html" data-link class="icon-btn user-icon" aria-label="Iniciar sesión" title="Iniciar sesión">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+          <path d="M12 12c2.761 0 5-2.239 5-5s-2.239-5-5-5-5 2.239-5 5 2.239 5 5 5zM3 20c0-2.761 4.477-5 9-5s9 2.239 9 5v1H3v-1z" fill="currentColor"/>
+        </svg>
+      </a>
     </div>
   </header>
 

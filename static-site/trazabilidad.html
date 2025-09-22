@@ -15,14 +15,6 @@
     tailwind.config = { theme: { extend: { colors:{ coffee:'#251a14', cream:'#f7f3ef', accent:'#c67b4e', ink:'#1f2937' }, fontFamily:{ sans:['Inter','ui-sans-serif','system-ui','-apple-system','Segoe UI','Roboto','Helvetica','Arial'] } } } }
   </script>
   <link rel="stylesheet" href="assets/css/styles.css">
-  <style>
-    .scan-frame{ position:relative; width:min(520px,100%); aspect-ratio:1; border-radius:1rem; overflow:hidden; border:1px solid #eee; box-shadow:0 10px 30px rgba(0,0,0,.08); background:#000 }
-    .scan-overlay{ position:absolute; inset:0; pointer-events:none; box-shadow:inset 0 0 0 2px rgba(255,255,255,.15) }
-    .scan-line{ position:absolute; left:0; right:0; height:2px; background:rgba(255,255,255,.85); animation:scan 1.8s linear infinite }
-    @keyframes scan{ 0%{ top:12% } 100%{ top:88% } }
-    .chip{ font-size:.75rem; background:#fff; border:1px solid #eee; border-radius:999px; padding:.2rem .5rem }
-    .muted{ color:#777 }
-  </style>
 </head>
 <body class="font-sans bg-cream text-ink">
   <div class="topbar" id="topbar"><div class="container"><span>Novedad: Envíos nacionales gratis desde $120.000</span><button class="topbar-close" id="topbarClose">×</button></div></div>
@@ -39,12 +31,15 @@
         <a href="blog.html" data-link>Blog</a>
         <a class="active" href="trazabilidad.html" data-link>Trazabilidad</a>
         <a href="contacto.html" data-link>Contacto</a>
-        <a href="cuenta.html" data-link>Mi cuenta</a>
       </nav>
         <div class="actions">
           <button id="themeToggle" class="theme-toggle" aria-label="Cambiar tema" title="Cambiar tema">🌙</button>
-          <a href="carrito.html" class="icon-btn" data-link>🛒<span class="badge" id="cartCount">0</span></a>
-          <a href="login.html" class="icon-btn" data-link>Iniciar sesión</a>
+          <a href="carrito.html" class="icon-btn" data-link aria-label="Ver carrito">🛒<span class="badge" id="cartCount">0</span></a>
+          <a href="login.html" class="icon-btn user-icon" data-link aria-label="Iniciar sesión" title="Iniciar sesión">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+              <path d="M12 12c2.761 0 5-2.239 5-5s-2.239-5-5-5-5 2.239-5 5 2.239 5 5 5zM3 20c0-2.761 4.477-5 9-5s9 2.239 9 5v1H3v-1z" fill="currentColor"/>
+            </svg>
+          </a>
           <button id="menuBtn" class="hamburger" aria-label="Menú">☰</button>
         </div>
     </div>
@@ -56,58 +51,67 @@
       <a href="blog.html" data-link>Blog</a>
       <a class="active" href="trazabilidad.html" data-link>Trazabilidad</a>
       <a href="contacto.html" data-link>Contacto</a>
-      <a href="cuenta.html" data-link>Mi cuenta</a>
-      <a href="login.html" data-link>Iniciar sesión</a>
+      <a href="login.html" data-link class="icon-btn user-icon" aria-label="Iniciar sesión" title="Iniciar sesión">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+          <path d="M12 12c2.761 0 5-2.239 5-5s-2.239-5-5-5-5 2.239-5 5 2.239 5 5 5zM3 20c0-2.761 4.477-5 9-5s9 2.239 9 5v1H3v-1z" fill="currentColor"/>
+        </svg>
+      </a>
     </div>
   </header>
 
   <main class="container">
-    <section class="hero" style="text-align:left">
+    <section class="hero trace-hero">
       <h1>Trazabilidad de lotes por QR</h1>
       <p class="muted">Escanea el QR del empaque o ingresa el código del lote para conocer origen, finca, proceso y fecha de tueste.</p>
     </section>
 
-    <section style="display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:1.25rem; align-items:start">
-      <div>
-        <div class="scan-frame">
-          <video id="qrVideo" autoplay playsinline muted style="width:100%; height:100%; object-fit:cover"></video>
-          <canvas id="qrOverlay" style="position:absolute; inset:0; width:100%; height:100%"></canvas>
-          <div class="scan-overlay"></div>
-          <div class="scan-line"></div>
+    <section class="trace-layout" aria-label="Consulta de trazabilidad">
+      <div class="trace-left">
+        <div class="card">
+          <div class="p">
+            <div class="scan-frame">
+              <video id="qrVideo" autoplay playsinline muted class="scan-video"></video>
+              <canvas id="qrOverlay"></canvas>
+              <div class="scan-overlay"></div>
+              <div class="scan-line" aria-hidden="true"></div>
+            </div>
+            <div class="trace-controls">
+              <button id="startScan" class="btn" type="button">Iniciar escáner</button>
+              <button id="stopScan" class="icon-btn" type="button">Detener</button>
+              <button id="restartScan" class="icon-btn" type="button" hidden>Reiniciar escaneo</button>
+            </div>
+            <div id="scanStatus" class="muted trace-status">Listo para escanear.</div>
+
+            <p class="muted trace-hint">Si tu navegador no permite el uso de la cámara, ingresa el código manualmente.</p>
+            <form id="manualForm" class="form trace-form" onsubmit="return false">
+              <label for="lotInput">Código de lote</label>
+              <div class="trace-form-row">
+                <input id="lotInput" placeholder="Ej: DBY-2025-09-HUI" aria-label="Código de lote" />
+                <button id="lookupBtn" class="btn" type="button">Consultar</button>
+              </div>
+            </form>
+            <div id="lotError" class="trace-error" style="display:none"></div>
+          </div>
         </div>
-        <div style="display:flex; gap:.5rem; margin-top:.75rem">
-          <button id="startScan" class="btn" type="button">Iniciar escáner</button>
-          <button id="stopScan" class="icon-btn" type="button">Detener</button>
-          <button id="restartScan" class="icon-btn" type="button" hidden>Reiniciar escaneo</button>
-        </div>
-        <div id="scanStatus" class="muted" style="margin-top:.35rem">Listo para escanear.</div>
-        <p class="muted" style="margin-top:.5rem">Si tu navegador no permite el uso de la cámara, ingresa el código manualmente.</p>
-        <form id="manualForm" class="form" onsubmit="return false" style="margin-top:.5rem">
-          <label>Código de lote
-            <input id="lotInput" placeholder="Ej: DBY-2025-09-HUI" />
-          </label>
-          <button id="lookupBtn" class="btn" type="button">Consultar</button>
-        </form>
-        <div id="lotError" class="muted" style="color:#b91c1c; display:none; margin-top:.25rem"></div>
       </div>
 
-      <div>
-        <div class="card">
+      <div class="trace-right">
+        <div class="card trace-result">
           <div class="p">
             <h2>Resultado</h2>
             <div id="resultEmpty" class="muted">Aún no hay datos. Escanea un QR o ingresa un código.</div>
             <div id="result" style="display:none">
               <h3 id="resName">—</h3>
               <div class="muted" id="resLot">—</div>
-              <div style="display:flex; flex-wrap:wrap; gap:.5rem; margin:.5rem 0" id="resChips"></div>
-              <dl style="display:grid; grid-template-columns: max-content 1fr; gap:.35rem .75rem; margin-top:.5rem" id="resDetails"></dl>
+              <div class="trace-chips" id="resChips"></div>
+              <dl class="trace-details" id="resDetails"></dl>
             </div>
           </div>
         </div>
-        <div class="card" style="margin-top:1rem">
+
+        <div class="card">
           <div class="p">
             <h3>¿Cómo funciona?</h3>
-            <p>Inspirado en experiencias de trazabilidad de carne en Japón: cada lote posee un identificador único accesible por QR. Aquí puedes verificar el origen del café que compras.</p>
             <ul>
               <li>Escanea el QR del empaque o ingresa el código del lote.</li>
               <li>Verás finca, productor, altitud, proceso, fecha de cosecha y tueste.</li>

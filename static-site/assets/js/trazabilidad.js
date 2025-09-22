@@ -58,7 +58,7 @@
     resChips.innerHTML = '';
     [item.process, item.variety, item.altitude].filter(Boolean).forEach(ch => {
       const span = document.createElement('span');
-      span.className = 'chip';
+      span.className = 'trace-chip';
       span.textContent = ch;
       resChips.appendChild(span);
     });
