@@ -287,6 +287,17 @@ html.theme-dark .shop-topbar .filters-toggle, html.theme-dark .pager button{ bac
   .shop-topbar{ position:sticky; top: calc(var(--header-top, 12px) + var(--header-height, 96px)); z-index:50 }
 }
 
+/* Mobile: show chips as horizontal scroller for quick filters */
+@media (max-width: 700px){
+  .shop-topbar{ display:block; padding:.5rem 0 }
+  .shop-topbar .chips{ display:flex; gap:.5rem; overflow-x:auto; -webkit-overflow-scrolling:touch; padding: .25rem 0; white-space:nowrap }
+  .shop-topbar .chips .chip{ flex:0 0 auto; display:inline-flex }
+  .shop-topbar .actions{ display:flex; gap:.5rem; align-items:center; margin-top:.5rem }
+  .shop-topbar .filters-toggle{ margin-right:.25rem }
+  .shop-topbar .sort{ display:inline-block }
+  .shop-topbar .sort select{ min-width:140px }
+}
+
 /* Tamano uniforme para cards de tienda */
 .shop-content .grid{ align-items: stretch }
 .shop-content .card{ display:flex; flex-direction:column; height:100%; min-height:420px }
