@@ -168,18 +168,23 @@ main.container{ padding-top: calc(var(--header-top, 0px) + var(--header-height, 
 .filters{ display:flex; gap:.5rem; padding:1rem 0; position:sticky; top: calc(var(--header-top, 0px) + var(--header-height, 96px) + 8px); background:var(--cream); z-index:40; border-bottom:1px solid #eee }
 
 /* Banner promocional en tienda */
-.promo-banner{ margin-top:1rem; margin-bottom:1rem }
-.promo-inner{ display:grid; grid-template-columns: 1.1fr 1.6fr; align-items:stretch; gap:1rem; background:#efe9e0; border:1px solid rgba(0,0,0,.06); color:#3b2a1f; border-radius:1.25rem; overflow:hidden }
-.promo-text{ padding:1.25rem 1.5rem; display:flex; flex-direction:column; justify-content:center }
-.promo-title{ font-family:'Playfair Display', Georgia, 'Times New Roman', Times, serif; font-size: clamp(1.6rem, 3.2vw, 2.4rem); line-height:1.15; margin:.25rem 0 .35rem }
-.promo-sub{ font-size: clamp(1rem, 1.4vw, 1.15rem); line-height:1.5; opacity:.95; margin:0 }
-.promo-media{ position:relative }
+.promo-banner{ margin-top:.6rem; margin-bottom:.6rem }
+.promo-inner{ position:relative; display:block; background:transparent; border-radius:1rem; overflow:hidden; max-height:160px; border:1px solid rgba(0,0,0,.06) }
+.promo-media{ position:relative; width:100%; height:100%; min-height:120px }
 .promo-media img{ width:100%; height:100%; object-fit:cover; display:block }
+.promo-overlay{ position:absolute; inset:0; display:flex; align-items:center; justify-content:flex-start; padding:0 1.25rem; background: linear-gradient(180deg, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.05) 35%, rgba(0,0,0,0.25) 100%); color:#fff }
+.promo-text{ padding:.5rem .75rem; display:flex; flex-direction:column; justify-content:center; gap:0.1rem; max-width:60% }
+.promo-title{ font-family:'Playfair Display', Georgia, 'Times New Roman', Times, serif; font-size: clamp(1rem, 2.2vw, 1.25rem); line-height:1.06; margin:0; color:inherit }
+.promo-sub{ font-size: .85rem; line-height:1.15; opacity:0.95; margin:0; color:inherit; max-height:2.4em; overflow:hidden; text-overflow:ellipsis }
 html.theme-dark .promo-inner{ background:#1a1613; border-color: rgba(255,255,255,.08); color:#e8ded6 }
 
 @media (max-width: 980px){
-  .promo-inner{ grid-template-columns: 1fr; }
-  .promo-media{ order:-1; height: 180px }
+  .promo-inner{ max-height:none }
+  .promo-media{ height:60px; min-height:60px }
+  .promo-overlay{ padding:0 .75rem; justify-content:flex-start }
+  .promo-text{ max-width:80%; padding:.25rem .5rem }
+  .promo-title{ font-size:1rem }
+  .promo-sub{ font-size:.72rem }
 }
 
 /* Seccion de evidencia (pixel perfect) */
@@ -290,12 +295,28 @@ html.theme-dark .shop-topbar .filters-toggle, html.theme-dark .pager button{ bac
 /* Mobile: show chips as horizontal scroller for quick filters */
 @media (max-width: 700px){
   .shop-topbar{ display:block; padding:.5rem 0 }
-  .shop-topbar .chips{ display:flex; gap:.5rem; overflow-x:auto; -webkit-overflow-scrolling:touch; padding: .25rem 0; white-space:nowrap }
-  .shop-topbar .chips .chip{ flex:0 0 auto; display:inline-flex }
-  .shop-topbar .actions{ display:flex; gap:.5rem; align-items:center; margin-top:.5rem }
-  .shop-topbar .filters-toggle{ margin-right:.25rem }
+  .shop-topbar { position:relative; display:block; padding:.5rem 0 }
+  .shop-topbar .chips-wrap{ position:relative }
+  .shop-topbar .chips{ display:flex; gap:.4rem; overflow-x:auto; -webkit-overflow-scrolling:touch; padding:.25rem 0; white-space:nowrap; scroll-snap-type:x proximity }
+  .shop-topbar .chips .chip{ flex:0 0 auto; display:inline-flex; scroll-snap-align:start }
+  /* Shadow indicators for overflow */
+  .shop-topbar .chips-wrap::before,
+  .shop-topbar .chips-wrap::after{
+    content:''; position:absolute; top:0; bottom:0; width:38px; pointer-events:none; transition: opacity .2s ease; opacity:0 }
+  .shop-topbar .chips-wrap::before{ left:0; background:linear-gradient(90deg, rgba(0,0,0,.08), rgba(0,0,0,0)) }
+  .shop-topbar .chips-wrap::after{ right:0; background:linear-gradient(270deg, rgba(0,0,0,.08), rgba(0,0,0,0)) }
+  /* Dark theme adjustments */
+  html.theme-dark .shop-topbar .chips-wrap::before,
+  html.theme-dark .shop-topbar .chips-wrap::after{ background: linear-gradient(90deg, rgba(255,255,255,.06), rgba(255,255,255,0)) }
+
+  /* Sticky filters button to the right */
+  .shop-topbar .actions{ position:sticky; top: .5rem; display:flex; gap:.5rem; align-items:center; margin-top:.5rem; justify-content:flex-end }
+  .shop-topbar .filters-toggle{ position:sticky; right:0; z-index:6 }
+
+  /* Make chips smaller on mobile to show more */
+  .shop-topbar .chips .chip{ padding:.28rem .5rem; font-size:.85rem }
   .shop-topbar .sort{ display:inline-block }
-  .shop-topbar .sort select{ min-width:140px }
+  .shop-topbar .sort select{ min-width:120px }
 }
 
 /* Tamano uniforme para cards de tienda */
