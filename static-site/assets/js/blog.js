@@ -4,9 +4,9 @@
   const grid = document.getElementById('blogGrid');
   if (!grid) return;
   const sample = [
-    { id:'post-1', title:'Receta V60 básica', author:'Equipo DobleYo', cover:'https://images.unsplash.com/photo-1498804103079-a6351b050096?q=80&w=1200&auto=format&fit=crop', minutes:3 },
-    { id:'post-2', title:'Notas de cata: Huila', author:'Equipo DobleYo', cover:'https://images.unsplash.com/photo-1517705008128-361805f42e86?q=80&w=1200&auto=format&fit=crop', minutes:4 },
-    { id:'post-3', title:'Guía de molienda por método', author:'Equipo DobleYo', cover:'https://images.unsplash.com/photo-1470337458703-46ad1756a187?q=80&w=1200&auto=format&fit=crop', minutes:5 }
+  { id:'post-1', title:'Receta V60 básica', author:'Equipo DobleYo', cover:'assets/img/products/molinillo.svg', minutes:3 },
+  { id:'post-2', title:'Notas de cata: Huila', author:'Equipo DobleYo', cover:'assets/img/products/huila.svg', minutes:4 },
+  { id:'post-3', title:'Guía de molienda por método', author:'Equipo DobleYo', cover:'assets/img/products/sierra.svg', minutes:5 }
   ];
   let posts = sample;
   try{

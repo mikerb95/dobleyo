@@ -27,9 +27,9 @@
 
   // Sembrar valores por defecto desde datos del sitio actual
   const seedProducts = [
-    { id:'dbyo-sierra', name:'Sierra Nevada', price:42000, origin:'Sierra Nevada', process:'Lavado', roast:'Medio', image:'https://images.unsplash.com/photo-1512568400610-62da28bc8a13?q=80&w=800&auto=format&fit=crop' },
-    { id:'dbyo-huila', name:'Huila', price:45000, origin:'Huila', process:'Honey', roast:'Claro', image:'https://images.unsplash.com/photo-1509043759401-136742328bb3?q=80&w=800&auto=format&fit=crop' },
-    { id:'dbyo-narino', name:'Nariño', price:48000, origin:'Nariño', process:'Natural', roast:'Oscuro', image:'https://images.unsplash.com/photo-1494415859740-21e878dd929d?q=80&w=800&auto=format&fit=crop' }
+  { id:'dbyo-sierra', name:'Sierra Nevada', price:42000, origin:'Sierra Nevada', process:'Lavado', roast:'Medio', image:'assets/img/products/sierra.svg' },
+  { id:'dbyo-huila', name:'Huila', price:45000, origin:'Huila', process:'Honey', roast:'Claro', image:'assets/img/products/huila.svg' },
+  { id:'dbyo-narino', name:'Nariño', price:48000, origin:'Nariño', process:'Natural', roast:'Oscuro', image:'assets/img/products/narino.svg' }
   ];
   const seedLots = [];
   const seedBlog = [];
