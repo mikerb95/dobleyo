@@ -167,6 +167,21 @@ html.theme-dark .footer-disclaimer{ color:#b9a99f }
 main.container{ padding-top: calc(var(--header-top, 0px) + var(--header-height, 96px) + 12px) }
 .filters{ display:flex; gap:.5rem; padding:1rem 0; position:sticky; top: calc(var(--header-top, 0px) + var(--header-height, 96px) + 8px); background:var(--cream); z-index:40; border-bottom:1px solid #eee }
 
+/* Banner promocional en tienda */
+.promo-banner{ margin-top:1rem; margin-bottom:1rem }
+.promo-inner{ display:grid; grid-template-columns: 1.1fr 1.6fr; align-items:stretch; gap:1rem; background:#efe9e0; border:1px solid rgba(0,0,0,.06); color:#3b2a1f; border-radius:1.25rem; overflow:hidden }
+.promo-text{ padding:1.25rem 1.5rem; display:flex; flex-direction:column; justify-content:center }
+.promo-title{ font-family:'Playfair Display', Georgia, 'Times New Roman', Times, serif; font-size: clamp(1.6rem, 3.2vw, 2.4rem); line-height:1.15; margin:.25rem 0 .35rem }
+.promo-sub{ font-size: clamp(1rem, 1.4vw, 1.15rem); line-height:1.5; opacity:.95; margin:0 }
+.promo-media{ position:relative }
+.promo-media img{ width:100%; height:100%; object-fit:cover; display:block }
+html.theme-dark .promo-inner{ background:#1a1613; border-color: rgba(255,255,255,.08); color:#e8ded6 }
+
+@media (max-width: 980px){
+  .promo-inner{ grid-template-columns: 1fr; }
+  .promo-media{ order:-1; height: 180px }
+}
+
 /* Seccion de evidencia (pixel perfect) */
 .evidence-section{ position:relative; margin:3rem 0 0 }
 .evidence-inner{ position:relative; z-index:0; isolation:isolate; padding:3rem 0 }
