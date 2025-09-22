@@ -1,0 +1,14 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Create backup branch and commit current changes",
+			"type": "shell",
+			"command": "git -C x:\\dobleyo checkout -b backup-pre-restore-70ceaf1 ; git -C x:\\dobleyo add -A ; git -C x:\\dobleyo commit -m \"backup: save state before restoring to 70ceaf1\"",
+			"problemMatcher": [
+				"$eslint-stylish"
+			],
+			"group": "build"
+		}
+	]
+}
