@@ -12,8 +12,11 @@ app.use(cors());
 app.use(express.json());
 // servir sitio estatico para tener mismo origen que /api
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const staticDir = path.resolve(__dirname, '../../static-site');
+// Sirve desde la raiz del proyecto (..\..) donde viven los HTML (index.html, tienda.html, etc.)
+const staticDir = path.resolve(__dirname, '../../');
 app.use(express.static(staticDir));
+// Endpoint de salud
+app.get('/api/health', (req, res) => res.json({ status: 'ok', time: new Date().toISOString() }));
 
 // Configuracion de Mercado Pago
 const MP_ACCESS_TOKEN = process.env.MP_ACCESS_TOKEN || '';

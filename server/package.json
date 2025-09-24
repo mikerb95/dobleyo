@@ -1,9 +1,17 @@
 {
-  "name": "dobleyo-server",
+  "name": "dobleyo-cafe",
   "private": true,
   "type": "module",
-  "version": "0.1.0",
+  "version": "1.0.0",
+  "description": "Backend Node.js/Express para DobleYo Café",
+  "author": "Michael Rodriguez",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=18"
+  },
+  "main": "src/index.js",
   "scripts": {
+    "start": "node ./src/index.js",
     "dev": "node ./src/index.js"
   },
   "dependencies": {
