@@ -2,6 +2,6 @@
 
 Guía rápida:
 
-- Application root (cPanel): `dobleyo`
-- Startup file: `src/index.js`
-- Variables de entorno: en cPanel o `.env` de la raíz (`SITE_BASE_URL`, `WOMPI_*`, `MP_ACCESS_TOKEN`)
+> Nota: La app Node/Express ahora vive en la RAÍZ del proyecto. Usa el README de la raíz (`/README.md`) y los scripts del `package.json` de la raíz.
+
+Si quieres conservar una copia de `server/` la renombro a `server_legacy/` en lugar de eliminarla; dime si prefieres borrarla permanentemente.
