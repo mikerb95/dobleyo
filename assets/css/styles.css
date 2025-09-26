@@ -91,10 +91,16 @@ html.theme-dark .site-header .brand img{ opacity:.96 }
 }
 
   /* Capa overlay sobre el video para mejorar legibilidad del texto */
-  :root{ --hero-overlay-color: 0,0,0; --hero-overlay-opacity: 0.32; --hero-overlay-opacity-mobile: 0.45 }
+  :root{ --hero-overlay-color: 0,0,0; --hero-overlay-opacity: 0.46; --hero-overlay-opacity-mobile: 0.56 }
+  /* Overlay más oscuro para mejorar contraste del texto sobre el video */
   .hero-overlay{ position:absolute; inset:0; left:0; right:0; top:0; bottom:0; z-index:0; pointer-events:none; background: rgba(var(--hero-overlay-color), var(--hero-overlay-opacity)); transition: background-color .2s ease, opacity .2s ease }
   .hero .hero-media{ z-index:-1 }
   .hero > *{ position:relative; z-index:2 }
+  /* Clarificar la letra que aparece sobre el video: texto blanco, sombra suave y mayor contraste */
+  .hero{ color: #fff }
+  .hero h1{ color: #fff; text-shadow: 0 6px 20px rgba(0,0,0,.6); font-size: clamp(1.6rem, 5vw, 2.8rem); line-height:1.02; margin-bottom:.5rem }
+  .hero p{ color: rgba(255,255,255,.92); text-shadow: 0 3px 12px rgba(0,0,0,.45); font-size: clamp(1rem, 2.4vw, 1.15rem); margin-bottom:1rem }
+  .hero .btn{ box-shadow: 0 6px 20px rgba(0,0,0,.28) }
   @media (max-width: 900px){
     .hero-overlay{ background: rgba(var(--hero-overlay-color), var(--hero-overlay-opacity-mobile)) }
   }
