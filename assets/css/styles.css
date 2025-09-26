@@ -264,6 +264,11 @@ html.theme-dark .nav a.active, html.theme-dark .nav a:hover{ background:rgba(255
   .e-beans-right{ right:6px; top:-12px }
 }
 
+/* Aumentar el logo del footer en 100% en pantallas grandes */
+@media (min-width: 980px){
+  .site-footer .footer-social img{ height:28px; width:auto }
+}
+
 /* Utilidad: texto atenuado respeta el tema */
 .muted{ color:var(--muted-fg) }
 
