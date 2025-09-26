@@ -39,7 +39,7 @@ img{ max-width:100%; display:block }
 /* Marca en encabezado claro */
 .site-header .brand{ color:var(--coffee) }
 /* Asegurar altura consistente del logo (escritorio por defecto) */
-.brand img{ height:56px; width:auto; display:block }
+.brand img{ height:64px; width:auto; display:block }
 /* Ligera transparencia y sombra sutil para mezclar sobre encabezado translucido */
 .site-header .brand img{ opacity:.92; filter: drop-shadow(0 1px 0 rgba(255,255,255,.15)) drop-shadow(0 2px 6px rgba(0,0,0,.25)); transition: opacity .2s ease, transform .2s ease }
 .site-header .brand:hover img{ opacity:1; transform: scale(1.02) }
@@ -174,7 +174,7 @@ html.theme-dark .footer-disclaimer{ color:#b9a99f }
   .hamburger{ display:inline-flex }
   .mobile-menu{ display:flex }
   /* Mantener logo balanceado en movil */
-  .brand img{ height:32px }
+  .brand img{ height:36px }
 }
 
 /* Small user icon button styling */
