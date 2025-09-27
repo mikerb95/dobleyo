@@ -177,6 +177,14 @@ html.theme-dark .footer-disclaimer{ color:#b9a99f }
   .brand img{ height:36px }
 }
 
+/* Mostrar el toggle de tema como el último control dentro de .actions */
+.actions .theme-toggle{ order: 99 }
+
+/* En mobile, mantener el toggle visible y al final del flujo */
+@media (max-width: 900px){
+  .actions .theme-toggle{ order: 99 }
+}
+
 /* Small user icon button styling */
 .user-icon{ padding:.4rem .6rem }
 .user-icon svg{ width:18px; height:18px; display:block }
