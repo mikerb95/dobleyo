@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Gestión de Lotes · DobleYo</title>
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <style>
+    .lot-form{ display:grid; gap:.75rem; max-width:640px; margin:1rem 0; }
+    .lot-form label{ display:flex; flex-direction:column; font-weight:600; gap:.25rem; font-size:.9rem }
+    .lot-form input, .lot-form select{ padding:.55rem .7rem; border:1px solid var(--border); background:var(--card); color:var(--fg); border-radius:.45rem }
+    .lot-form button{ width:max-content }
+    .lot-list{ margin:2rem 0; display:grid; gap:1rem; }
+    .lot-card{ background:var(--card); border:1px solid var(--border); border-radius:.6rem; padding:1rem; display:grid; gap:.5rem }
+    .qr-img{ max-width:160px; background:#fff; padding:.25rem; border:1px solid var(--border); border-radius:.5rem }
+    .auth-box{ max-width:380px; margin:2rem 0; display:grid; gap:.75rem }
+    .auth-box label{ display:flex; flex-direction:column; gap:.25rem; font-size:.85rem; font-weight:600 }
+    .auth-box input{ padding:.55rem .7rem; border:1px solid var(--border); background:var(--card); color:var(--fg); border-radius:.45rem }
+  </style>
+</head>
+<body>
+  <header class="site-header" id="siteHeader">
+    <div class="container">
+      <a class="brand" href="index.html"><img src="assets/logo.png" alt="DobleYo" height="56"/></a>
+      <nav class="nav">
+        <a href="index.html">Inicio</a>
+        <a href="tienda.html">Tienda</a>
+        <a href="trazabilidad.html">Trazabilidad</a>
+        <a class="active" href="lotes.html">Lotes</a>
+      </nav>
+      <div class="actions">
+        <button id="logoutBtn" class="icon-btn" style="display:none">Cerrar sesión</button>
+      </div>
+    </div>
+  </header>
+  <main class="container" style="padding-top: calc(var(--header-height,96px) + 48px)">
+    <h1>Gestión de Lotes</h1>
+    <p class="muted">Solo para administrador. Registra lotes y genera QR para trazabilidad.</p>
+
+    <section id="authSection">
+      <form id="loginForm" class="auth-box">
+        <h2>Acceso administrador</h2>
+        <label>Usuario
+          <input id="adminUser" autocomplete="username" required>
+        </label>
+        <label>Contraseña
+          <input id="adminPass" type="password" autocomplete="current-password" required>
+        </label>
+        <button class="btn" type="submit">Entrar</button>
+        <div id="loginError" class="trace-error" style="display:none"></div>
+      </form>
+    </section>
+
+    <section id="lotesSection" style="display:none">
+      <h2>Nuevo lote</h2>
+      <form id="lotForm" class="lot-form">
+        <label>Cantidad de café tostado por género (texto libre)
+          <input name="cantidadGenero" placeholder="Ej: 40kg mujeres / 60kg hombres" />
+        </label>
+        <label>Tipo de café
+          <input name="tipoCafe" required placeholder="Ej: Caturra Honey" />
+        </label>
+        <label>Fecha de tostión
+          <input name="fechaTostion" type="date" required />
+        </label>
+        <label>Peso final tostado (kg)
+          <input name="pesoFinal" type="number" step="0.01" min="0" required placeholder="Ej: 85.4" />
+        </label>
+        <label>Finca de origen
+          <input name="finca" required placeholder="Ej: Finca El Bosque" />
+        </label>
+        <button class="btn" type="submit">Registrar lote</button>
+        <div id="lotMsg" class="muted"></div>
+      </form>
+
+      <h2>Lotes recientes</h2>
+      <div id="lotList" class="lot-list"></div>
+    </section>
+  </main>
+
+  <script>
+    const $ = s => document.querySelector(s);
+    async function login(user, pass){
+      const r = await fetch('/api/admin/login', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ user, pass }) });
+      if (!r.ok) throw new Error((await r.json()).error || 'Error');
+      return r.json();
+    }
+    async function logout(){ await fetch('/api/admin/logout', { method:'POST' }); }
+    async function createLot(payload){
+      const r = await fetch('/api/lotes', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payload) });
+      if (!r.ok) throw new Error((await r.json()).error || 'Error');
+      return r.json();
+    }
+    async function fetchLots(){
+      const r = await fetch('/api/lotes');
+      if (!r.ok) throw new Error('No autorizado');
+      return r.json();
+    }
+
+    const loginForm = $('#loginForm');
+    const lotForm = $('#lotForm');
+    const lotList = $('#lotList');
+    const authSection = $('#authSection');
+    const lotesSection = $('#lotesSection');
+    const logoutBtn = $('#logoutBtn');
+    const loginError = $('#loginError');
+    const lotMsg = $('#lotMsg');
+
+    function setAuth(on){
+      if (on){ authSection.style.display='none'; lotesSection.style.display=''; logoutBtn.style.display='inline-flex'; loadLots(); }
+      else { authSection.style.display=''; lotesSection.style.display='none'; logoutBtn.style.display='none'; }
+    }
+
+    loginForm.addEventListener('submit', async e => {
+      e.preventDefault();
+      loginError.style.display='none';
+      try {
+        await login($('#adminUser').value, $('#adminPass').value);
+        setAuth(true);
+      } catch (err){
+        loginError.textContent = err.message;
+        loginError.style.display='';
+      }
+    });
+
+    logoutBtn.addEventListener('click', async ()=>{ await logout(); setAuth(false); });
+
+    lotForm.addEventListener('submit', async e => {
+      e.preventDefault();
+      lotMsg.textContent = 'Guardando...';
+      const formData = new FormData(lotForm);
+      const payload = Object.fromEntries(formData.entries());
+      try {
+        const lot = await createLot(payload);
+        lotMsg.textContent = 'Lote creado: ' + lot.id;
+        lotForm.reset();
+        prependLot(lot);
+      } catch (err){
+        lotMsg.textContent = 'Error: ' + err.message;
+      }
+    });
+
+    function lotCard(l){
+      return `<div class="lot-card">\n        <div><strong>${l.id}</strong></div>\n        <div>${l.tipoCafe||''} — ${l.finca||''}</div>\n        <div><small>Fecha tostión: ${l.fechaTostion||'-'} · Peso final: ${l.pesoFinal||'-'} kg</small></div>\n        ${l.genero? `<div><small>Cant. por género: ${l.genero}</small></div>`:''}\n        ${l.qr? `<div><img class="qr-img" src="${l.qr.dataUrl}" alt="QR ${l.id}"/></div>`:''}\n        ${l.qr? `<div><a class="btn outline small" href="${l.qr.traceUrl}" target="_blank">Abrir trazabilidad</a></div>`:''}\n      </div>`;
+    }
+    function prependLot(l){
+      const div = document.createElement('div');
+      div.innerHTML = lotCard(l);
+      lotList.prepend(div.firstElementChild);
+    }
+    async function loadLots(){
+      lotList.innerHTML = '<p class="muted">Cargando...</p>';
+      try {
+        const list = await fetchLots();
+        lotList.innerHTML = list.map(lotCard).join('') || '<p class="muted">Sin lotes aún.</p>';
+      } catch (err){
+        lotList.innerHTML = '<p class="trace-error">No se pudieron cargar los lotes ('+err.message+').</p>';
+      }
+    }
+
+    // Intento inicial de listar para detectar si ya hay cookie valida
+    (async()=>{
+      try { await fetchLots(); setAuth(true); } catch { setAuth(false); }
+    })();
+  </script>
+</body>
+</html>
