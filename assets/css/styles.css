@@ -111,7 +111,8 @@ html.theme-dark .site-header .brand img{ opacity:.96 }
 .btn{ background:var(--accent); color:var(--accent-contrast); padding:.6rem 1rem; border-radius:.375rem; text-decoration:none; display:inline-flex; align-items:center; gap:.35rem; border:1px solid transparent; font-weight:600; line-height:1.2; cursor:pointer; transition: background-color .2s ease, color .2s ease, border-color .2s ease, filter .2s ease }
 .btn:hover{ filter:brightness(1.05) }
 
-[data-press-effect]{ position:relative; overflow:hidden; transform:translateZ(0) }
+[data-press-effect]{ position:relative; overflow:hidden; transform:translateZ(0); transition: transform .18s ease }
+[data-press-effect].press-active{ transform:translateZ(0) scale(.97) }
 [data-press-effect]::after{ content:""; position:absolute; inset:-10%; background:radial-gradient(circle at var(--press-x,50%) var(--press-y,50%), rgba(var(--coffee-rgb),.28) 0%, rgba(var(--coffee-rgb),.14) 45%, transparent 70%); opacity:0; transform:scale(0); pointer-events:none; will-change:transform,opacity }
 [data-press-effect].press-active::after{ animation:btn-press .45s ease-out }
 @keyframes btn-press{ 0%{ opacity:.32; transform:scale(0) } 60%{ opacity:.18 } 100%{ opacity:0; transform:scale(1.35) } }
