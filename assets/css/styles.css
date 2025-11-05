@@ -1,6 +1,6 @@
 /* Base */
 :root{ --coffee:#251a14; --coffee-rgb:37,26,20; --cream:#f7f3ef; --dark:#1f1f1f; --muted:#777 }
-:root{ --page-width: 1100px; --page-gutter: 2rem; --bg: var(--cream); --fg: #1f2937; --card:#ffffff; --border:#e6e6e6; --muted-fg:#6b7280; --footer-bg:#f3eee7; --footer-fg:#5a463a; --accent:#c67b4e; --accent-contrast:#ffffff; --price:#251a14 }
+:root{ --page-width: 1100px; --page-gutter: 2rem; --bg: var(--cream); --fg: #1f2937; --card:#ffffff; --border:#e6e6e6; --muted-fg:#6b7280; --footer-bg:#f3eee7; --footer-fg:#5a463a; --accent:#c67b4e; --accent-contrast:#ffffff; --price:#251a14; --footer-logo-height:14px; --footer-logo-height-lg:28px; --footer-logo-margin-bottom:.25rem }
 /* Tokens de tema oscuro con clase en <html> ajustados para contraste comodo */
 html.theme-dark{
   --bg:#0e0f10;           /* fondo de pagina */
@@ -133,7 +133,7 @@ html.theme-dark .site-header .brand img{ opacity:.96 }
 .footer-news .arrow{ border:0; background:transparent; color:#5a463a; font-size:1.2rem; cursor:pointer }
 .footer-main{ display:grid; grid-template-columns: 1fr 3fr; gap:2rem; padding:1.25rem 0 }
 .footer-social{ display:flex; flex-direction:column; align-items:flex-start; gap:.5rem; color:inherit }
-.site-footer .footer-social img{ height:14px; width:auto }
+.site-footer .footer-social img{ display:block; height:var(--footer-logo-height); width:auto; max-height:none; margin-bottom:var(--footer-logo-margin-bottom) }
 .footer-columns{ display:grid; grid-template-columns: repeat(4, minmax(140px, 1fr)); gap:2rem }
 .footer-columns h4{ font-size:.8rem; letter-spacing:.04em; text-transform:uppercase; margin:0 0 .75rem; color:inherit }
 .footer-columns a{ display:block; color:inherit; text-decoration:none; padding:.3rem 0 }
@@ -272,9 +272,9 @@ html.theme-dark .nav a.active, html.theme-dark .nav a:hover{ background:rgba(255
   .e-beans-right{ right:6px; top:-12px }
 }
 
-/* Aumentar el logo del footer en 100% en pantallas grandes */
+/* Ajustar tamano del logo en pantallas grandes */
 @media (min-width: 980px){
-  .site-footer .footer-social img{ height:28px; width:auto }
+  .site-footer .footer-social img{ height:var(--footer-logo-height-lg); }
 }
 
 /* Utilidad: texto atenuado respeta el tema */
