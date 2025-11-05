@@ -324,6 +324,24 @@ html.theme-dark .nav a.active, html.theme-dark .nav a:hover{ background:rgba(255
 .form input, .form textarea{ width:100%; background:var(--card); color:var(--fg); border:1px solid var(--border); border-radius:.45rem; padding:.55rem .7rem }
 .form textarea{ resize:vertical }
 
+/* Carrito: control de cantidad */
+.cart-item{ margin:.5rem 0 }
+.cart-item-grid{ display:grid; grid-template-columns:64px 1fr auto; gap:.75rem; align-items:center }
+.cart-item-controls{ display:flex; align-items:center; gap:.45rem; justify-content:flex-end }
+.cart-qty{ display:flex; align-items:center; gap:.35rem }
+.cart-qty .qty{ width:62px; border:1px solid var(--border); border-radius:.5rem; padding:.38rem 0; text-align:center; font-family:'Playfair Display', Georgia, 'Times New Roman', Times, serif; font-size:1.05rem; font-weight:600; background:var(--card); color:var(--fg); transition: border-color .2s ease, box-shadow .2s ease }
+.cart-qty .qty:focus{ outline:none; border-color:rgba(var(--coffee-rgb),.55); box-shadow:0 0 0 3px rgba(var(--coffee-rgb),.18) }
+.cart-qty .qty::-webkit-outer-spin-button,
+.cart-qty .qty::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0 }
+.cart-qty .qty{ appearance:textfield; -moz-appearance:textfield }
+.cart-qty .qty-steppers{ display:flex; flex-direction:column; border:1px solid var(--border); border-radius:.45rem; overflow:hidden; background:var(--card) }
+.cart-qty .qty-step{ display:grid; place-items:center; width:30px; height:26px; border:0; background:transparent; color:var(--fg); cursor:pointer; font-size:.75rem; line-height:1; transition: background-color .2s ease, color .2s ease }
+.cart-qty .qty-step:hover{ background:rgba(var(--coffee-rgb),.08) }
+.cart-qty .qty-step:active{ background:rgba(var(--coffee-rgb),.14) }
+.cart-qty .qty-step span{ pointer-events:none }
+html.theme-dark .cart-qty .qty-step:hover{ background:rgba(255,255,255,.08) }
+html.theme-dark .cart-qty .qty-step:active{ background:rgba(255,255,255,.16) }
+
 /* Boton de icono en superficies oscuras */
 html.theme-dark .icon-btn{ background:#1b1d21; border-color:#2a2f36; color:#e6e7eb }
 html.theme-dark .shop-topbar .filters-toggle, html.theme-dark .pager button{ background:#1b1d21; border-color:#2a2f36; color:#e6e7eb }

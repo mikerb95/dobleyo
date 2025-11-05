@@ -135,15 +135,21 @@
           const cart = window.Cart.getCart();
           if (!cart.length){ listEl.innerHTML = '<p class="muted">Tu carrito esta vacio.</p>'; totalEl.textContent = '$0'; return; }
           listEl.innerHTML = cart.map(p=> `
-            <article class="card" style="margin:.5rem 0">
-              <div class="p" style="display:grid; grid-template-columns: 64px 1fr auto; gap:.75rem; align-items:center">
+            <article class="card cart-item">
+              <div class="p cart-item-grid">
                 <img src="${p.image}" alt="${(p.name||'').replace(/</g,'&lt;')}">
                 <div>
                   <div>${(p.name||'')}</div>
                   <div class="muted">$${(p.price||0).toLocaleString('es-CO')}</div>
                 </div>
-                <div style="display:flex; gap:.35rem; align-items:center">
-                  <input type="number" min="1" max="99" value="${p.qty||1}" data-id="${p.id}" class="qty" style="width:64px">
+                <div class="cart-item-controls">
+                  <div class="cart-qty" data-id="${p.id}">
+                    <input type="number" min="1" max="99" value="${p.qty||1}" data-id="${p.id}" class="qty qty-input" inputmode="numeric" pattern="[0-9]*" aria-label="Cantidad">
+                    <div class="qty-steppers" role="group" aria-label="Cambiar cantidad">
+                      <button type="button" class="qty-step qty-up" data-id="${p.id}" data-dir="up" aria-label="Aumentar cantidad" title="Aumentar"><span aria-hidden="true">↑</span></button>
+                      <button type="button" class="qty-step qty-down" data-id="${p.id}" data-dir="down" aria-label="Disminuir cantidad" title="Disminuir"><span aria-hidden="true">↓</span></button>
+                    </div>
+                  </div>
                   <button class="icon-btn rm" data-id="${p.id}">Quitar</button>
                 </div>
               </div>
@@ -151,9 +157,26 @@
           const tot = window.Cart.subtotal(); totalEl.textContent = '$'+tot.toLocaleString('es-CO');
           listEl.onclick = (e)=>{
             const rm = e.target.closest('.rm'); if (rm){ window.Cart.removeFromCart(rm.dataset.id); render(); return; }
+            const step = e.target.closest('.qty-step');
+            if (step){
+              const id = step.dataset.id;
+              const input = listEl.querySelector(`input.qty[data-id="${id}"]`);
+              if (!input) return;
+              const current = parseInt(input.value, 10) || 1;
+              const delta = step.dataset.dir === 'down' ? -1 : 1;
+              const next = Math.min(99, Math.max(1, current + delta));
+              if (next !== current){ window.Cart.updateQty(id, next); render(); }
+              return;
+            }
           };
           listEl.onchange = (e)=>{
-            const q = e.target.closest('.qty'); if (q){ window.Cart.updateQty(q.dataset.id, q.value); render(); }
+            const q = e.target.closest('.qty');
+            if (q){
+              const parsed = parseInt(q.value, 10);
+              const next = Math.min(99, Math.max(1, isNaN(parsed) ? 1 : parsed));
+              window.Cart.updateQty(q.dataset.id, next);
+              render();
+            }
           };
         }
         render();
