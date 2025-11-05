@@ -239,6 +239,39 @@
       const priceMax = $('#priceMax');
       const applyPrice = $('#applyPrice');
 
+      function triggerPressEffect(el, xRatio, yRatio){
+        if (!el) return;
+        const x = Math.max(0, Math.min(1, isNaN(xRatio)? .5 : xRatio));
+        const y = Math.max(0, Math.min(1, isNaN(yRatio)? .5 : yRatio));
+        el.style.setProperty('--press-x', `${(x * 100).toFixed(2)}%`);
+        el.style.setProperty('--press-y', `${(y * 100).toFixed(2)}%`);
+        el.classList.remove('press-active');
+        void el.offsetWidth;
+        el.classList.add('press-active');
+        window.setTimeout(()=> el.classList.remove('press-active'), 460);
+      }
+
+      function attachPressEffect(el){
+        if (!el || el.dataset.pressReady) return;
+        el.dataset.pressReady = 'true';
+        el.setAttribute('data-press-effect','');
+        el.addEventListener('pointerdown', (ev)=>{
+          if (ev.button !== 0 && ev.button !== 1) return;
+          const rect = el.getBoundingClientRect();
+          const xRatio = rect.width ? (ev.clientX - rect.left) / rect.width : .5;
+          const yRatio = rect.height ? (ev.clientY - rect.top) / rect.height : .5;
+          triggerPressEffect(el, xRatio, yRatio);
+        });
+        el.addEventListener('keydown', (ev)=>{
+          if (ev.key !== 'Enter' && ev.key !== ' ') return;
+          triggerPressEffect(el, .5, .5);
+        });
+      }
+
+      function hydratePressEffects(){
+        document.querySelectorAll('.shop-topbar .chip, .shop-topbar .filters-toggle, .shop-layout .btn').forEach(attachPressEffect);
+      }
+
   // Construir listas de barra lateral
       function uniq(arr){ return Array.from(new Set(arr.filter(Boolean))); }
       function buildChecks(container, values, name){
@@ -376,6 +409,7 @@
           if (act==='prev' && state.page>1){ state.page--; render(); }
           if (act==='next' && state.page<pages){ state.page++; render(); }
         };
+        hydratePressEffects();
       }
       function escapeHtml(str){ return (str||'').replace(/[&<>"]+/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[s])); }
   // inicio por defecto
