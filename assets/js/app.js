@@ -162,22 +162,7 @@
 
   // Busqueda eliminada: se retira overlay y eventos
 
-  // Logica de capa de transicion de pagina
-  const overlay = $('#transitionOverlay');
-  const links = $$('a[data-link]');
-  function navigateWithTransition(href){
-    if (!overlay) return window.location.assign(href);
-    overlay.classList.add('active');
-    setTimeout(()=>{ window.location.assign(href); }, 420);
-  }
-  links.forEach(a=>{
-    a.addEventListener('click', (e)=>{
-      const href = a.getAttribute('href');
-      if (!href || href.startsWith('#') || a.target === '_blank') return;
-      e.preventDefault();
-      navigateWithTransition(href);
-    });
-  });
+  // Transiciones de pagina deshabilitadas para navegacion inmediata
 
   // Carrito eliminado: no se inicializa almacenamiento ni contador
 
