@@ -26,7 +26,7 @@ img{ max-width:100%; display:block }
 
 /* Barra superior */
 .topbar{ position:fixed; top:0; left:0; right:0; z-index:75; background:var(--dark); color:#fff; font-size:.875rem; opacity:1 !important; box-shadow:0 2px 8px rgba(0,0,0,.18) }
-.topbar .container{ display:flex; align-items:center; justify-content:space-between; padding:.5rem 0 }
+.topbar .container{ display:flex; align-items:center; justify-content:center; gap:.75rem; padding:.5rem 0; text-align:center }
 .topbar .topbar-close{ background:transparent; border:0; color:#fff; font-size:1.2rem; cursor:pointer }
 
 /* Encabezado (navbar fija a tope, no flotante) */
