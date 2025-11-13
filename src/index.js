@@ -7,10 +7,12 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { store } from './store.js';
 import crypto from 'crypto';
+import { stockRouter } from './routes/stock.js';
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use('/api/stock', stockRouter);
 
 // Directorio de estaticos: raiz del proyecto (un nivel arriba de src)
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
