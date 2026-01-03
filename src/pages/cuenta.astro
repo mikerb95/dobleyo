@@ -1,0 +1,45 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout>
+  <section class="card" style="margin-top:1rem">
+    <div class="p">
+      <h1>Mi cuenta</h1>
+      <p class="muted" id="userEmail">—</p>
+      <button class="btn outline" id="logoutBtn" style="margin-top:1rem"
+        >Cerrar sesión</button
+      >
+    </div>
+  </section>
+
+  <section class="card" style="margin-top:1rem">
+    <div class="p">
+      <h2>Pedidos</h2>
+      <div class="muted">Aun no hay pedidos.</div>
+    </div>
+  </section>
+
+  <script>
+    (function () {
+      const userRaw = localStorage.getItem("dbyo_user");
+      const emailEl = document.getElementById("userEmail");
+      if (!userRaw) {
+        location.replace("/login");
+        return;
+      }
+      try {
+        const u = JSON.parse(userRaw);
+        emailEl.textContent = u.email || "—";
+      } catch {
+        emailEl.textContent = "—";
+      }
+      const logoutBtn = document.getElementById("logoutBtn");
+      if (logoutBtn)
+        logoutBtn.addEventListener("click", () => {
+          localStorage.removeItem("dbyo_user");
+          location.href = "/";
+        });
+    })();
+  </script>
+</Layout>

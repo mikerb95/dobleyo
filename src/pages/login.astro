@@ -1,0 +1,66 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout>
+  <section class="card" style="max-width:440px; margin:2rem auto 0">
+    <div class="p">
+      <h1>Iniciar sesión</h1>
+      <p class="muted" style="margin-top:-.4rem">
+        Accede para ver tu cuenta y pedidos.
+      </p>
+      <form
+        id="loginForm"
+        class="form"
+        onsubmit="return false"
+        style="display:grid; gap:.75rem; margin-top:.75rem"
+      >
+        <label
+          >Correo<input
+            id="loginEmail"
+            type="email"
+            placeholder="tu@correo.com"
+            required
+          /></label
+        >
+        <label
+          >Contraseña<input
+            id="loginPass"
+            type="password"
+            placeholder="••••••••"
+            required
+          /></label
+        >
+        <button class="btn" id="loginBtn" type="submit">Entrar</button>
+      </form>
+      <div
+        id="loginError"
+        class="muted"
+        style="color:#b91c1c; display:none; margin-top:.35rem"></div>
+    </div>
+  </section>
+
+  <script>
+    // login basico con localStorage (solo demo)
+    (function () {
+      const f = document.getElementById("loginForm");
+      const err = document.getElementById("loginError");
+      f.addEventListener("submit", function () {
+        const email = (
+          document.getElementById("loginEmail").value || ""
+        ).trim();
+        const pass = (document.getElementById("loginPass").value || "").trim();
+        if (!email || !pass) {
+          err.textContent = "Completa todos los campos.";
+          err.style.display = "block";
+          return;
+        }
+        localStorage.setItem(
+          "dbyo_user",
+          JSON.stringify({ email, t: Date.now() })
+        );
+        location.href = "/cuenta";
+      });
+    })();
+  </script>
+</Layout>
