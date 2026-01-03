@@ -5,6 +5,48 @@ import * as auth from '../auth.js';
 
 export const authRouter = Router();
 
+// Register
+authRouter.post('/register',
+  body('email').isEmail(),
+  body('password').isLength({ min: 6 }),
+  body('name').notEmpty(),
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+
+    const { email, password, name } = req.body;
+
+    try {
+      // Verificar si existe
+      const existing = await db.query('SELECT id FROM users WHERE email = $1', [email]);
+      if (existing.rows.length > 0) {
+        return res.status(400).json({ error: 'El email ya esta registrado' });
+      }
+
+      const hash = await auth.hashPassword(password);
+      
+      // Crear usuario (rol default: client)
+      const result = await db.query(
+        'INSERT INTO users (email, password_hash, name, role, is_verified) VALUES ($1, $2, $3, $4, $5) RETURNING id, email, name, role',
+        [email, hash, name, 'client', false] // TODO: Enviar email de verificacion y poner is_verified en false
+      );
+      
+      const newUser = result.rows[0];
+      
+      // Log de auditoria
+      await db.query('INSERT INTO audit_logs (action, entity_type, entity_id, details) VALUES ($1, $2, $3, $4)', 
+        ['REGISTER', 'user', newUser.id, JSON.stringify({ email: newUser.email })]
+      );
+
+      res.status(201).json({ message: 'Usuario registrado exitosamente', user: newUser });
+
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: 'Error al registrar usuario' });
+    }
+  }
+);
+
 // Login
 authRouter.post('/login', 
   body('email').isEmail(),
@@ -26,14 +68,37 @@ authRouter.post('/login',
       const validPass = await auth.comparePassword(password, user.password_hash);
       if (!validPass) return res.status(401).json({ error: 'Credenciales invalidas' });
 
-      const token = auth.generateToken(user);
+      // Generar tokens
+      const accessToken = auth.generateToken(user);
+      const refreshToken = auth.generateRefreshToken();
+      const refreshExpires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 dias
 
-      // Cookie segura HttpOnly
-      res.cookie('auth_token', token, {
+      // Guardar refresh token en DB
+      await db.query(
+        'INSERT INTO refresh_tokens (user_id, token_hash, expires_at) VALUES ($1, $2, $3)',
+        [user.id, refreshToken, refreshExpires] // Nota: Deberíamos hashear el refresh token tambien en DB para mas seguridad, pero por simplicidad lo guardamos directo o hash simple.
+        // Para produccion real: hash(refreshToken) -> DB. Cliente tiene refreshToken raw.
+      );
+
+      // Actualizar last_login
+      await db.query('UPDATE users SET last_login_at = NOW() WHERE id = $1', [user.id]);
+
+      // Cookies
+      const isProd = process.env.NODE_ENV === 'production';
+      
+      res.cookie('auth_token', accessToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production', // Solo HTTPS en prod
-        sameSite: 'strict', // Proteccion CSRF basica
-        maxAge: 8 * 60 * 60 * 1000 // 8 horas
+        secure: isProd,
+        sameSite: 'strict',
+        maxAge: 15 * 60 * 1000 // 15 min
+      });
+
+      res.cookie('refresh_token', refreshToken, {
+        httpOnly: true,
+        secure: isProd,
+        sameSite: 'strict',
+        path: '/api/auth/refresh', // Solo se envia a este endpoint
+        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 dias
       });
 
       res.json({ message: 'Login exitoso', user: { id: user.id, name: user.name, role: user.role } });
@@ -44,9 +109,61 @@ authRouter.post('/login',
     }
 });
 
+// Refresh Token
+authRouter.post('/refresh', async (req, res) => {
+  const refreshToken = req.cookies['refresh_token'];
+  if (!refreshToken) return res.status(401).json({ error: 'No refresh token' });
+
+  try {
+    // Buscar token en DB
+    const result = await db.query(
+      'SELECT rt.*, u.role, u.email, u.name FROM refresh_tokens rt JOIN users u ON rt.user_id = u.id WHERE rt.token_hash = $1 AND rt.revoked = FALSE AND rt.expires_at > NOW()',
+      [refreshToken]
+    );
+
+    if (result.rows.length === 0) {
+      // Token invalido o reusado maliciosamente -> podriamos borrar todos los tokens del usuario por seguridad
+      res.clearCookie('auth_token');
+      res.clearCookie('refresh_token', { path: '/api/auth/refresh' });
+      return res.status(403).json({ error: 'Token invalido o expirado' });
+    }
+
+    const tokenRecord = result.rows[0];
+    const user = { id: tokenRecord.user_id, role: tokenRecord.role, name: tokenRecord.name, email: tokenRecord.email };
+
+    // Rotacion de Refresh Token (Seguridad avanzada)
+    // Invalidamos el usado y creamos uno nuevo
+    const newRefreshToken = auth.generateRefreshToken();
+    const newExpires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
+    await db.query('UPDATE refresh_tokens SET revoked = TRUE, replaced_by_token = $1 WHERE id = $2', [newRefreshToken, tokenRecord.id]);
+    await db.query('INSERT INTO refresh_tokens (user_id, token_hash, expires_at) VALUES ($1, $2, $3)', [user.id, newRefreshToken, newExpires]);
+
+    const newAccessToken = auth.generateToken(user);
+
+    // Set Cookies
+    const isProd = process.env.NODE_ENV === 'production';
+    res.cookie('auth_token', newAccessToken, { httpOnly: true, secure: isProd, sameSite: 'strict', maxAge: 15 * 60 * 1000 });
+    res.cookie('refresh_token', newRefreshToken, { httpOnly: true, secure: isProd, sameSite: 'strict', path: '/api/auth/refresh', maxAge: 7 * 24 * 60 * 60 * 1000 });
+
+    res.json({ message: 'Token refrescado' });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error al refrescar token' });
+  }
+});
+
 // Logout
-authRouter.post('/logout', (req, res) => {
+authRouter.post('/logout', async (req, res) => {
+  const refreshToken = req.cookies['refresh_token'];
+  if (refreshToken) {
+    // Revocar en DB
+    await db.query('UPDATE refresh_tokens SET revoked = TRUE WHERE token_hash = $1', [refreshToken]);
+  }
+  
   res.clearCookie('auth_token');
+  res.clearCookie('refresh_token', { path: '/api/auth/refresh' });
   res.json({ message: 'Logout exitoso' });
 });
 

@@ -1,19 +1,58 @@
 -- DobleYo relational schema (engine-agnostic SQL)
 -- Entities: users (admin), lots, products, blog_posts
 
--- Users
+-- Users (Base entity for authentication)
 CREATE TABLE users
 (
     id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     email VARCHAR(255) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
     name VARCHAR(120),
-    role VARCHAR(32) NOT NULL DEFAULT 'user',
-    -- 'admin'|'editor'|'user'
+    role VARCHAR(32) NOT NULL DEFAULT 'client' CHECK (role IN ('admin', 'client', 'provider')),
+    is_verified BOOLEAN NOT NULL DEFAULT FALSE,
+    last_login_at TIMESTAMP NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NULL
 );
 CREATE INDEX idx_users_role ON users(role);
+
+-- Providers Profile (Extra info for providers)
+CREATE TABLE providers
+(
+    id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    company_name VARCHAR(160) NOT NULL,
+    tax_id VARCHAR(50), -- NIT, RUT, RFC
+    phone VARCHAR(40),
+    address TEXT,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Refresh Tokens (For secure session management)
+CREATE TABLE refresh_tokens
+(
+    id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    token_hash VARCHAR(255) NOT NULL,
+    expires_at TIMESTAMP NOT NULL,
+    revoked BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    replaced_by_token VARCHAR(255) -- For rotation audit
+);
+CREATE INDEX idx_refresh_tokens_user ON refresh_tokens(user_id);
+
+-- Audit Logs (Security & Traceability)
+CREATE TABLE audit_logs
+(
+    id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    user_id BIGINT REFERENCES users(id) ON DELETE SET NULL,
+    action VARCHAR(64) NOT NULL, -- e.g., 'STOCK_UPDATE', 'LOGIN', 'PRICE_CHANGE'
+    entity_type VARCHAR(64), -- 'product', 'order'
+    entity_id VARCHAR(64),
+    details JSONB, -- Changed values, IP address, etc.
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
 
 -- Products (catalog)
 CREATE TABLE products

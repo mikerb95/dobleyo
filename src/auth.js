@@ -1,7 +1,9 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
+import crypto from 'crypto';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'supersecretkey_change_in_production';
+const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'supersecretrefreshkey_change_in_production';
 
 export const hashPassword = async (password) => {
   const salt = await bcrypt.genSalt(10);
@@ -13,7 +15,12 @@ export const comparePassword = async (password, hash) => {
 };
 
 export const generateToken = (user) => {
-  return jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: '8h' });
+  return jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: '15m' }); // Access token corto
+};
+
+export const generateRefreshToken = () => {
+  // Opaque token (random string) es mas seguro para refresh tokens que JWT si se guarda en DB
+  return crypto.randomBytes(40).toString('hex');
 };
 
 export const verifyToken = (token) => {
@@ -35,10 +42,11 @@ export const authenticateToken = (req, res, next) => {
   }
 };
 
-// Middleware para roles
-export const requireRole = (role) => {
+// Middleware para roles (soporta string unico o array de roles)
+export const requireRole = (roles) => {
   return (req, res, next) => {
-    if (req.user && req.user.role === role) {
+    const allowedRoles = Array.isArray(roles) ? roles : [roles];
+    if (req.user && allowedRoles.includes(req.user.role)) {
       next();
     } else {
       res.status(403).json({ error: 'Permisos insuficientes' });
