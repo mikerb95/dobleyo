@@ -1,0 +1,168 @@
+---
+
+---
+
+<header class="site-header" id="siteHeader">
+  <div class="container">
+    <div class="nav-beans" aria-hidden="true"></div>
+    <a class="brand" href="/" data-link>
+      <img src="/assets/logo.png" alt="DobleYo" height="56" />
+    </a>
+    <nav class="nav">
+      <a href="/" data-link>Inicio</a>
+      <a href="/tienda" data-link>Tienda</a>
+      <a href="/blog" data-link>Blog</a>
+      <a href="/trazabilidad" data-link>Trazabilidad</a>
+    </nav>
+    <div class="actions">
+      <button
+        id="themeToggle"
+        class="theme-toggle"
+        aria-label="Cambiar tema"
+        title="Cambiar tema">🌙</button
+      >
+      <a href="/carrito" class="icon-btn" data-link
+        >🛒<span class="badge" id="cartCount">0</span></a
+      >
+      <a
+        href="/login"
+        class="icon-btn user-btn"
+        aria-label="Iniciar sesión"
+        data-link
+      >
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          aria-hidden="true"
+          ><path
+            d="M12 12c2.761 0 5-2.239 5-5s-2.239-5-5-5-5 2.239-5 5 2.239 5 5 5zm0 2c-4.418 0-8 2.239-8 5v1h16v-1c0-2.761-3.582-5-8-5z"
+            fill="currentColor"></path></svg
+        >
+      </a>
+      <button id="menuBtn" class="hamburger" aria-label="Menú">☰</button>
+    </div>
+  </div>
+  <div class="mobile-menu" id="mobileMenu" hidden>
+    <a href="/" data-link>Inicio</a>
+    <a href="/tienda" data-link>Tienda</a>
+    <a href="/blog" data-link>Blog</a>
+    <a href="/trazabilidad" data-link>Trazabilidad</a>
+    <a
+      href="/login"
+      class="icon-btn user-btn"
+      aria-label="Iniciar sesión"
+      data-link
+    >
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        aria-hidden="true"
+        ><path
+          d="M12 12c2.761 0 5-2.239 5-5s-2.239-5-5-5-5 2.239-5 5 2.239 5 5 5zm0 2c-4.418 0-8 2.239-8 5v1h16v-1c0-2.761-3.582-5-8-5z"
+          fill="currentColor"></path></svg
+      >
+    </a>
+  </div>
+</header>
+
+<script>
+  // Lógica del Header (Granos y Menú)
+  (function initNavBeans() {
+    const header = document.querySelector(".site-header");
+    const layer = document.querySelector(".nav-beans");
+    if (!header || !layer) return;
+    const beanSrc = "/assets/branding/coffebeannav.png"; // Ruta absoluta desde public
+    const beans = [];
+    const COUNT = 68;
+    for (let i = 0; i < COUNT; i++) {
+      const img = document.createElement("img");
+      img.className = "bean";
+      img.src = beanSrc;
+      const xPct = 4 + Math.random() * 92;
+      const yPct = 8 + Math.random() * 84;
+      const rot = -40 + Math.random() * 80;
+      const scale = 0.8 + Math.random() * 0.6;
+      const size = 16 + Math.random() * 16 + (Math.random() < 0.15 ? 8 : 0);
+      img.style.left = xPct + "%";
+      img.style.top = yPct + "%";
+      img.style.setProperty("--rot", rot + "deg");
+      img.style.setProperty("--s", scale.toString());
+      img.style.setProperty("--bean-size", size + "px");
+      // @ts-ignore
+      img._xPct = xPct / 100;
+      // @ts-ignore
+      img._yPct = yPct / 100;
+      // @ts-ignore
+      img._rand = Math.random();
+      layer.appendChild(img);
+      beans.push(img);
+    }
+
+    const pointer = { x: 0, y: 0, active: false };
+    let rafId = 0;
+    function animate() {
+      if (pointer.active) {
+        const rect = layer.getBoundingClientRect();
+        const cx = pointer.x - rect.left;
+        const cy = pointer.y - rect.top;
+        for (const b of beans) {
+          // @ts-ignore
+          const bx = (b._xPct || 0.5) * rect.width;
+          // @ts-ignore
+          const by = (b._yPct || 0.5) * rect.height;
+          const dx0 = bx - cx;
+          const dy0 = by - cy;
+          const d = Math.hypot(dx0, dy0) || 0.0001;
+          const radius = 140;
+          // @ts-ignore
+          const strength = 26 + (b._rand || 0) * 22;
+          const falloff = Math.max(0, radius - d) / radius;
+          const repel = falloff * strength;
+          const nx = dx0 / d;
+          const ny = dy0 / d;
+          const dx = nx * repel;
+          const dy = ny * repel;
+          b.style.setProperty("--dx", dx.toFixed(2) + "px");
+          b.style.setProperty("--dy", dy.toFixed(2) + "px");
+        }
+      }
+      rafId = requestAnimationFrame(animate);
+    }
+    rafId = requestAnimationFrame(animate);
+
+    header.addEventListener("mouseenter", () => {
+      pointer.active = true;
+      header.classList.add("beans-active");
+    });
+    header.addEventListener("mousemove", (e) => {
+      pointer.x = e.clientX;
+      pointer.y = e.clientY;
+    });
+    header.addEventListener("mouseleave", () => {
+      pointer.active = false;
+      header.classList.remove("beans-active");
+      beans.forEach((b) => {
+        b.style.setProperty("--dx", "0px");
+        b.style.setProperty("--dy", "0px");
+      });
+    });
+  })();
+
+  // Menu movil
+  const menuBtn = document.getElementById("menuBtn");
+  const mobileMenu = document.getElementById("mobileMenu");
+  if (menuBtn && mobileMenu) {
+    menuBtn.addEventListener("click", () => {
+      const hidden = mobileMenu.hasAttribute("hidden");
+      hidden
+        ? mobileMenu.removeAttribute("hidden")
+        : mobileMenu.setAttribute("hidden", "");
+    });
+  }
+</script>

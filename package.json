@@ -6,17 +6,30 @@
   "description": "Sitio y backend Node.js/Express para DobleYo Café (raíz del proyecto)",
   "author": "Michael Rodriguez",
   "license": "UNLICENSED",
-  "engines": { "node": ">=18" },
-  "main": "src/index.js",
+  "engines": {
+    "node": ">=18"
+  },
+  "main": "server/index.js",
   "scripts": {
-    "start": "node ./src/index.js",
-    "dev": "node ./src/index.js"
+    "start": "node ./server/index.js",
+    "dev": "astro dev",
+    "server": "node ./server/index.js",
+    "build": "astro build",
+    "preview": "astro preview"
   },
   "dependencies": {
+    "astro": "^5.16.6",
+    "bcrypt": "^6.0.0",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
+    "express-validator": "^7.3.1",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.3",
     "mercadopago": "^2.2.7",
-    "node-fetch": "^3.3.2"
+    "node-fetch": "^3.3.2",
+    "pg": "^8.16.3",
+    "resend": "^6.6.0"
   }
 }

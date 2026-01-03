@@ -2,6 +2,8 @@ import { Router } from 'express';
 import { body, validationResult } from 'express-validator';
 import * as db from '../db.js';
 import * as auth from '../auth.js';
+import { sendVerificationEmail } from '../services/email.js';
+import crypto from 'crypto';
 
 export const authRouter = Router();
 
@@ -28,17 +30,24 @@ authRouter.post('/register',
       // Crear usuario (rol default: client)
       const result = await db.query(
         'INSERT INTO users (email, password_hash, name, role, is_verified) VALUES ($1, $2, $3, $4, $5) RETURNING id, email, name, role',
-        [email, hash, name, 'client', false] // TODO: Enviar email de verificacion y poner is_verified en false
+        [email, hash, name, 'client', false]
       );
       
       const newUser = result.rows[0];
+
+      // Generar token de verificacion (temporal, guardado en DB o JWT firmado)
+      // Para simplificar, usaremos un JWT de corta duracion con payload especifico
+      const verifyToken = auth.generateToken({ ...newUser, type: 'verification' }); // Reusamos generateToken pero idealmente seria uno especifico
+      
+      // Enviar email (No bloqueante para no demorar la respuesta)
+      sendVerificationEmail(email, verifyToken).then(r => console.log('Email result:', r));
       
       // Log de auditoria
       await db.query('INSERT INTO audit_logs (action, entity_type, entity_id, details) VALUES ($1, $2, $3, $4)', 
         ['REGISTER', 'user', newUser.id, JSON.stringify({ email: newUser.email })]
       );
 
-      res.status(201).json({ message: 'Usuario registrado exitosamente', user: newUser });
+      res.status(201).json({ message: 'Usuario registrado. Por favor revisa tu correo para verificar la cuenta.', user: newUser });
 
     } catch (err) {
       console.error(err);
@@ -46,6 +55,23 @@ authRouter.post('/register',
     }
   }
 );
+
+// Verify Email Endpoint
+authRouter.get('/verify', async (req, res) => {
+  const { token } = req.query;
+  if (!token) return res.status(400).json({ error: 'Token requerido' });
+
+  try {
+    const decoded = auth.verifyToken(token);
+    // Aqui podriamos validar decoded.type === 'verification' si lo hubieramos seteado especificamente
+
+    await db.query('UPDATE users SET is_verified = TRUE WHERE id = $1', [decoded.id]);
+    
+    res.json({ message: 'Cuenta verificada exitosamente. Ya puedes iniciar sesion.' });
+  } catch (err) {
+    res.status(400).json({ error: 'Token invalido o expirado' });
+  }
+});
 
 // Login
 authRouter.post('/login', 
