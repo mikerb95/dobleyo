@@ -32,9 +32,9 @@ app.use(cors({
 app.use('/api/auth', authRouter);
 app.use('/api/stock', stockRouter);
 
-// Directorio de estaticos: raiz del proyecto (un nivel arriba de src)
+// Directorio de estaticos: carpeta dist (generada por astro build)
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const staticDir = path.resolve(__dirname, '../');
+const staticDir = path.resolve(__dirname, '../dist');
 app.use(express.static(staticDir));
 
 // Salud

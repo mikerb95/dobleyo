@@ -1,0 +1,36 @@
+---
+import type { Product } from "../data/products";
+
+interface Props {
+  product: Product;
+}
+
+const { product } = Astro.props;
+
+function escapeHtml(str: string) {
+  return (str || "").replace(
+    /[&<>"]+/g,
+    (s) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[s]
+  );
+}
+---
+
+<article class="card">
+  <img src={product.image} alt={product.name} />
+  <div class="p">
+    <div class="muted" style="font-size:.85rem">
+      {product.category}{product.origin ? " · " + product.origin : ""}
+    </div>
+    <h3>{product.name}</h3>
+    <div class="muted" style="font-size:.85rem">
+      {product.process || ""}{product.process && product.roast ? " · " : ""}{
+        product.roast || ""
+      }
+    </div>
+    <div class="price">${product.price.toLocaleString("es-CO")}</div>
+    <div style="margin-top:.35rem; display:flex; gap:.5rem">
+      <button class="btn small" data-add={product.id}>Agregar</button>
+      <a class="btn outline small" href="/carrito" data-link>Ver carrito</a>
+    </div>
+  </div>
+</article>
