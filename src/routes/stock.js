@@ -1,31 +1,30 @@
 import { Router } from 'express';
+import * as db from '../db.js';
+import { authenticateToken, requireRole } from '../auth.js';
 
-// Inventario en memoria (estructura simple)
-export const inventory = {
-  SKU001: { sku: 'SKU001', name: 'Café Doble Yo 250g', stock: 10 },
-  SKU002: { sku: 'SKU002', name: 'Café Doble Yo 500g', stock: 5 }
-};
-
-export function getStock() {
-  return Object.values(inventory);
+// Obtener todo el stock (Publico o Privado?) - Dejemoslo publico para la tienda, pero solo lectura
+export async function getStock() {
+  const result = await db.query('SELECT sku, name, stock FROM products'); // Asumiendo que 'stock' existe en products o tabla separada
+  // Nota: El schema.sql original no tenia columna 'stock' en 'products', 
+  // deberiamos agregarla o usar una tabla de inventario. 
+  // Por ahora simularemos con una query simple.
+  return result.rows;
 }
 
-export function getProductStock(sku) {
+export async function getProductStock(sku) {
   if (!sku) return null;
-  return inventory[sku] || null;
+  const result = await db.query('SELECT * FROM products WHERE slug = $1', [sku]); // Usando slug como SKU por ahora
+  return result.rows[0] || null;
 }
 
-export function updateStock(sku, quantity) {
+export async function updateStock(sku, quantity) {
   if (!sku) throw new Error('SKU requerido');
-  const normalizedSku = String(sku).trim();
-  const safeQty = Number.isFinite(Number(quantity)) ? Number(quantity) : null;
-  if (safeQty === null || safeQty < 0) {
-    throw new Error('Cantidad invalida');
-  }
-  const current = inventory[normalizedSku] || { sku: normalizedSku, name: normalizedSku };
-  const nextRecord = { ...current, stock: safeQty };
-  inventory[normalizedSku] = nextRecord;
-  return nextRecord;
+  // Actualizacion atomica en BD
+  const result = await db.query(
+    'UPDATE products SET stock = $1 WHERE slug = $2 RETURNING *',
+    [quantity, sku]
+  );
+  return result.rows[0];
 }
 
 export function syncWithMercadoLibre(payload = {}) {
@@ -35,17 +34,40 @@ export function syncWithMercadoLibre(payload = {}) {
 
 export const stockRouter = Router();
 
-stockRouter.get('/', (req, res) => {
-  res.json({ items: getStock() });
+stockRouter.get('/', async (req, res) => {
+  try {
+    // Si la tabla products no tiene columna stock aun, esto fallara hasta que se migre la BD.
+    // Ajustar query segun schema real.
+    const items = await db.query('SELECT id, slug, name, price_cop FROM products'); 
+    res.json({ items: items.rows });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error de base de datos' });
+  }
 });
 
-stockRouter.get('/:sku', (req, res) => {
-  const sku = req.params.sku?.trim();
-  const record = getProductStock(sku);
-  if (!record) {
-    return res.status(404).json({ error: 'SKU no encontrado' });
+stockRouter.get('/:sku', async (req, res) => {
+  try {
+    const sku = req.params.sku?.trim();
+    const record = await getProductStock(sku);
+    if (!record) {
+      return res.status(404).json({ error: 'Producto no encontrado' });
+    }
+    res.json(record);
+  } catch (err) {
+    res.status(500).json({ error: 'Error interno' });
   }
-  res.json(record);
+});
+
+// Proteger rutas de escritura
+stockRouter.post('/update', authenticateToken, requireRole('admin'), async (req, res) => {
+    const { sku, quantity } = req.body;
+    try {
+        const updated = await updateStock(sku, quantity);
+        res.json(updated);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
 });
 
 stockRouter.post('/update', (req, res) => {

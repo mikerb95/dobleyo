@@ -7,11 +7,29 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { store } from './store.js';
 import crypto from 'crypto';
+import helmet from 'helmet';
+import cookieParser from 'cookie-parser';
 import { stockRouter } from './routes/stock.js';
+import { authRouter } from './routes/auth.js';
 
 const app = express();
-app.use(cors());
+
+// Seguridad: Headers HTTP seguros (Helmet)
+app.use(helmet({
+  contentSecurityPolicy: false, // Desactivar CSP estricto por ahora si hay scripts inline o externos
+}));
+
+// Seguridad: Cookies y Body Parsing
+app.use(cookieParser());
 app.use(express.json());
+
+// CORS: Configurar origenes permitidos (ajustar segun dominio real)
+app.use(cors({
+  origin: process.env.SITE_BASE_URL || 'http://localhost:4000',
+  credentials: true // Permitir cookies en CORS
+}));
+
+app.use('/api/auth', authRouter);
 app.use('/api/stock', stockRouter);
 
 // Directorio de estaticos: raiz del proyecto (un nivel arriba de src)

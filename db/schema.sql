@@ -4,7 +4,7 @@
 -- Users
 CREATE TABLE users
 (
-    id BIGINT PRIMARY KEY,
+    id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     email VARCHAR(255) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
     name VARCHAR(120),
@@ -18,10 +18,11 @@ CREATE INDEX idx_users_role ON users(role);
 -- Products (catalog)
 CREATE TABLE products
 (
-    id BIGINT PRIMARY KEY,
+    id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     slug VARCHAR(120) NOT NULL UNIQUE,
     name VARCHAR(160) NOT NULL,
     price_cop INTEGER NOT NULL,
+    stock INTEGER NOT NULL DEFAULT 0, -- Agregado para manejo de inventario
     -- price in COP cents (or unit)
     origin VARCHAR(120),
     process VARCHAR(80),
