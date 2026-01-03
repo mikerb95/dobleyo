@@ -68,7 +68,9 @@ import Layout from "../layouts/Layout.astro";
               const step = e.target.closest(".qty-step");
               if (step) {
                 const id = step.dataset.id;
-                const input = listEl.querySelector(`input.qty[data-id="${id}"]`);
+                const input = listEl.querySelector(
+                  `input.qty[data-id="${id}"]`
+                );
                 if (!input) return;
                 const current = parseInt(input.value, 10) || 1;
                 const delta = step.dataset.dir === "down" ? -1 : 1;

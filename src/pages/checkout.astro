@@ -25,8 +25,7 @@ import Layout from "../layouts/Layout.astro";
             <h2>Metodo de pago</h2>
             <div style="display:grid; gap:.5rem">
               <label
-                ><input type="radio" name="pay" value="mp" checked /> Mercado
-                Pago</label
+                ><input type="radio" name="pay" value="mp" checked /> Mercado Pago</label
               >
               <label
                 ><input type="radio" name="pay" value="wompi" /> Wompi</label
@@ -38,7 +37,9 @@ import Layout from "../layouts/Layout.astro";
             <div
               id="payError"
               class="muted"
-              style="color:#b91c1c; display:none; margin-top:.35rem"></div>
+              style="color:#b91c1c; display:none; margin-top:.35rem"
+            >
+            </div>
           </div>
         </div>
       </div>
@@ -98,7 +99,7 @@ import Layout from "../layouts/Layout.astro";
           sumList.innerHTML = cart
             .map(
               (p) =>
-                `<div style="display:flex; justify-content:space-between; gap:.5rem"><span>${p.qty}× ${(p.name || "")}</span><span>${fmt((p.price || 0) * p.qty)}</span></div>`
+                `<div style="display:flex; justify-content:space-between; gap:.5rem"><span>${p.qty}× ${p.name || ""}</span><span>${fmt((p.price || 0) * p.qty)}</span></div>`
             )
             .join("");
           const total = window.Cart.subtotal();

@@ -26,7 +26,12 @@ import Layout from "../layouts/Layout.astro";
   </section>
   <!-- Filtros horizontales superiores y orden -->
   <section class="shop-topbar" aria-label="Filtros superiores">
-    <div class="chips" id="topChips" role="toolbar" aria-label="Filtros rápidos">
+    <div
+      class="chips"
+      id="topChips"
+      role="toolbar"
+      aria-label="Filtros rápidos"
+    >
       <button class="chip" data-flag="fast">Entrega rápida</button>
       <button class="chip" data-flag="deal">En oferta</button>
       <button class="chip" data-flag="new">Novedades</button>
@@ -355,10 +360,14 @@ import Layout from "../layouts/Layout.astro";
           if (on) out = out.filter((p) => p[k]);
         });
         // categorias/atributos
-        if (state.cats.size) out = out.filter((p) => state.cats.has(p.category));
-        if (state.origins.size) out = out.filter((p) => state.origins.has(p.origin));
-        if (state.procs.size) out = out.filter((p) => state.procs.has(p.process));
-        if (state.roasts.size) out = out.filter((p) => state.roasts.has(p.roast));
+        if (state.cats.size)
+          out = out.filter((p) => state.cats.has(p.category));
+        if (state.origins.size)
+          out = out.filter((p) => state.origins.has(p.origin));
+        if (state.procs.size)
+          out = out.filter((p) => state.procs.has(p.process));
+        if (state.roasts.size)
+          out = out.filter((p) => state.roasts.has(p.roast));
         // precio
         const min = parseInt(state.price.min || "0", 10);
         const max = parseInt(state.price.max || "0", 10);
