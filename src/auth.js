@@ -35,10 +35,11 @@ export const authenticateToken = (req, res, next) => {
   }
 };
 
-// Middleware para roles
-export const requireRole = (role) => {
+// Middleware para roles (soporta string unico o array de roles)
+export const requireRole = (roles) => {
   return (req, res, next) => {
-    if (req.user && req.user.role === role) {
+    const allowedRoles = Array.isArray(roles) ? roles : [roles];
+    if (req.user && allowedRoles.includes(req.user.role)) {
       next();
     } else {
       res.status(403).json({ error: 'Permisos insuficientes' });
