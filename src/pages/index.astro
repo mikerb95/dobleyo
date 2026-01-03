@@ -1,0 +1,250 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout>
+  <section class="hero">
+    <div class="hero-media" aria-hidden="true">
+      <video
+        src="/assets/vids/hero.mp4"
+        autoplay
+        muted
+        loop
+        playsinline
+        preload="metadata"></video>
+    </div>
+    <!-- Overlay para mejorar legibilidad del texto sobre el video -->
+    <div class="hero-overlay" aria-hidden="true"></div>
+    <h1>Café de especialidad colombiano</h1>
+    <p>Tueste fresco, origen trazable y un estilo sereno y acogedor.</p>
+    <p><a class="btn" href="/tienda" data-link>Ver tienda</a></p>
+  </section>
+
+  <!-- Seccion de articulos destacados -->
+  <section class="featured" aria-labelledby="featuredTitle">
+    <div class="featured-inner container">
+      <h2 id="featuredTitle" class="featured-title">Articulos destacados</h2>
+      <div class="featured-grid">
+        <!-- Card 1 -->
+        <article class="card featured-card">
+          <img
+            class="featured-img"
+            src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?q=80&w=1200&auto=format&fit=crop"
+            alt="Origen Sierra Nevada"
+            loading="lazy"
+          />
+          <div class="p featured-body">
+            <h3 class="featured-h3">Sierra Nevada: notas a cacao y caramelo</h3>
+            <p class="featured-desc muted">
+              Un perfil equilibrado con dulzor marcado, ideal para espresso y
+              preparaciones con leche. Origen trazable y tueste fresco.
+            </p>
+            <a class="btn small" href="/tienda" data-link>Ver producto</a>
+          </div>
+        </article>
+        <!-- Card 2 -->
+        <article class="card featured-card">
+          <img
+            class="featured-img"
+            src="https://images.unsplash.com/photo-1507133750040-4a8f57021524?q=80&w=1200&auto=format&fit=crop"
+            alt="Guia de molienda"
+            loading="lazy"
+          />
+          <div class="p featured-body">
+            <h3 class="featured-h3">Guia rapida de molienda por metodo</h3>
+            <p class="featured-desc muted">
+              Mejora tu taza ajustando la molienda segun tu metodo: V60, Chemex,
+              prensa o espresso. Reglas simples para resultados consistentes.
+            </p>
+            <a class="btn outline small" href="/blog" data-link>Leer mas</a>
+          </div>
+        </article>
+        <!-- Card 3 -->
+        <article class="card featured-card">
+          <img
+            class="featured-img"
+            src="https://images.unsplash.com/photo-1529070538774-1843cb3265df?q=80&w=1200&auto=format&fit=crop"
+            alt="Productor aliado"
+            loading="lazy"
+          />
+          <div class="p featured-body">
+            <h3 class="featured-h3">
+              Productores aliados: historias de origen
+            </h3>
+            <p class="featured-desc muted">
+              Conoce a los caficultores detras de cada lote. Transparencia,
+              relaciones directas y sostenibilidad en cada paso.
+            </p>
+            <a class="btn outline small" href="/nosotros" data-link
+              >Conocer mas</a
+            >
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Seccion de evidencia (pixel perfect) -->
+  <section class="evidence-section" aria-labelledby="evidenceTitle">
+    <!-- Granos decorativos -->
+    <img
+      class="e-beans e-beans-left"
+      src="/assets/beans.svg"
+      alt=""
+      aria-hidden="true"
+    />
+    <img
+      class="e-beans e-beans-right"
+      src="/assets/beans.svg"
+      alt=""
+      aria-hidden="true"
+    />
+    <div class="evidence-inner container">
+      <div class="evidence-grid">
+        <!-- Titular izquierdo -->
+        <div class="e-left">
+          <h2 id="evidenceTitle" class="e-title">
+            A diferencia de cualquier otro café
+          </h2>
+        </div>
+
+        <!-- Estadisticas superiores -->
+        <div class="e-stat e-stat-a">
+          <div class="e-number">9 de 10</div>
+          <p class="e-sub">De los compradores de DobleYo dicen que</p>
+          <p class="e-sub">funciona</p>
+        </div>
+
+        <div class="e-stat e-stat-b">
+          <div class="e-number">94%</div>
+          <p class="e-sub">de los compradores planean</p>
+          <p class="e-sub">volver a comprar</p>
+        </div>
+
+        <!-- Texto medio con insignia -->
+        <div class="e-mid">
+          <div
+            class="e-badge"
+            role="img"
+            aria-label="#1 en satisfacción del consumidor"
+          >
+            <span class="e-badge-num">#1</span>
+            <span class="e-badge-label">en Satisfacción del Consumidor</span>
+          </div>
+          <p class="e-desc">
+            Clasificado por los compradores de DobleYo como el más alto en sabor
+            y eficacia frente a los compradores de productos competitivos.
+          </p>
+        </div>
+
+        <!-- Lista de razones -->
+        <div class="e-reasons">
+          <h3 class="e-reasons-title">
+            La gente se cambia a DobleYo<br class="md-break" /> por estas razones:
+          </h3>
+          <ol class="e-list">
+            <li><span class="e-dot">1</span> Mejor sabor</li>
+            <li><span class="e-dot">2</span> Mejores ingredientes</li>
+            <li><span class="e-dot">3</span> Mejores resultados*</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Nuestros cafés</h2>
+    <div class="grid" id="homeProducts"></div>
+  </section>
+
+  <script>
+    // Renderizar productos desde JSON embebido (podria ser archivo externo luego)
+    const productsDefault = [
+      {
+        id: "dbyo-sierra",
+        name: "Sierra Nevada",
+        price: 42000,
+        image:
+          "https://images.unsplash.com/photo-1512568400610-62da28bc8a13?q=80&w=800&auto=format&fit=crop",
+        origin: "Sierra Nevada",
+        process: "Lavado",
+        roast: "Medio",
+        notes: ["Cacao", "Nuez", "Caramelo"],
+      },
+      {
+        id: "dbyo-huila",
+        name: "Huila",
+        price: 45000,
+        image:
+          "https://images.unsplash.com/photo-1509043759401-136742328bb3?q=80&w=800&auto=format&fit=crop",
+        origin: "Huila",
+        process: "Honey",
+        roast: "Claro",
+        notes: ["Panela", "Frutos rojos", "Floral"],
+      },
+      {
+        id: "dbyo-narino",
+        name: "Nariño",
+        price: 48000,
+        image:
+          "https://images.unsplash.com/photo-1494415859740-21e878dd929d?q=80&w=800&auto=format&fit=crop",
+        origin: "Nariño",
+        process: "Natural",
+        roast: "Oscuro",
+        notes: ["Cítricos", "Chocolate", "Miel"],
+      },
+    ];
+    const products = (function () {
+      try {
+        const x = JSON.parse(localStorage.getItem("dbyo-products") || "null");
+        return Array.isArray(x) ? x : productsDefault;
+      } catch {
+        return productsDefault;
+      }
+    })();
+
+    // Cuadricula de inicio
+    const homeProducts = document.getElementById("homeProducts");
+    if (homeProducts) {
+      homeProducts.innerHTML = products.map((p) => cardHTML(p)).join("");
+      homeProducts.addEventListener("click", (e) => {
+        // @ts-ignore
+        const card = e.target.closest("article.card");
+        if (!card) return;
+        const title = card.querySelector("h3");
+        if (e.target === title) {
+          const name = title.textContent;
+          const p = products.find((x) => x.name === name);
+          // @ts-ignore
+          if (p && window.Cart) {
+            window.Cart.addToCart({
+              id: p.id,
+              name: p.name,
+              price: p.price,
+              image: p.image,
+              qty: 1,
+            });
+          }
+        }
+      });
+    }
+
+    function cardHTML(p) {
+      return `
+      <article class="card">
+        <img src="${p.image}" alt="${escapeHtml(p.name)}">
+        <div class="p">
+          <h3>${escapeHtml(p.name)}</h3>
+          <div class="muted">${p.origin} · ${p.process} · ${p.roast}</div>
+          <div class="price">$${p.price.toLocaleString("es-CO")}</div>
+        </div>
+      </article>`;
+    }
+    function escapeHtml(str) {
+      return str.replace(
+        /[&<>"]+/g,
+        (s) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[s]
+      );
+    }
+  </script>
+</Layout>

@@ -1,0 +1,162 @@
+---
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>DobleYo — Café de especialidad colombiano</title>
+    <meta
+      name="description"
+      content="Tienda de café de especialidad colombiano. Tueste fresco, origen trazable, estilo sereno y acogedor."
+    />
+    <link rel="icon" href="/assets/logo.svg" type="image/svg+xml" />
+    <meta name="theme-color" content="#251a14" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=Playfair+Display:wght@600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Tailwind por CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script is:inline>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              coffee: "#251a14",
+              cream: "#f7f3ef",
+              accent: "#c67b4e",
+              ink: "#1f2937",
+            },
+            fontFamily: {
+              sans: [
+                "Lora",
+                "ui-serif",
+                "Georgia",
+                "Cambria",
+                "Times New Roman",
+                "Times",
+                "serif",
+              ],
+            },
+            boxShadow: {
+              card: "0 8px 24px rgba(0,0,0,.08)",
+            },
+          },
+        },
+      };
+    </script>
+    <link rel="stylesheet" href="/assets/css/styles.css" />
+  </head>
+  <body class="font-sans bg-cream text-ink">
+    <!-- Barra superior de anuncio -->
+    <div class="topbar" id="topbar">
+      <div class="container">
+        <span
+          >Novedad: Envíos nacionales gratis desde $120.000 · Nuevas cosechas
+          Huila & Nariño</span
+        >
+        <button class="topbar-close" aria-label="Cerrar" id="topbarClose"
+          >×</button
+        >
+      </div>
+    </div>
+
+    <!-- Capa de transicion de pagina -->
+    <div class="transition-overlay" id="transitionOverlay" aria-hidden="true">
+    </div>
+
+    <Header />
+
+    <main class="container">
+      <slot />
+    </main>
+
+    <Footer />
+
+    <!-- Scripts globales -->
+    <script is:inline src="/assets/js/cart.js"></script>
+    <script>
+      // Utilidades globales (Metrics, Theme, Topbar)
+      (function () {
+        const $ = (s, r = document) => r.querySelector(s);
+
+        // Cierre de barra superior
+        const topbar = $("#topbar");
+        const topbarClose = $("#topbarClose");
+
+        const setHeaderMetrics = () => {
+          const tb = $("#topbar");
+          const top = tb ? tb.offsetHeight : 0;
+          const headerCont = document.querySelector(".site-header .container");
+          // @ts-ignore
+          const hh = headerCont ? headerCont.offsetHeight : 96;
+          const pageOffset = top + hh + 12;
+          const root = document.documentElement;
+          root.style.setProperty("--header-top", top + "px");
+          root.style.setProperty("--header-height", hh + "px");
+          root.style.setProperty("--page-offset-top", pageOffset + "px");
+        };
+        setHeaderMetrics();
+        window.addEventListener("resize", setHeaderMetrics);
+        if (topbar && topbarClose) {
+          topbarClose.addEventListener("click", () => {
+            topbar.style.height = topbar.offsetHeight + "px";
+            requestAnimationFrame(() => {
+              topbar.style.transition = "height .25s ease, opacity .25s ease";
+              topbar.style.height = "0px";
+              topbar.style.opacity = "0";
+              setTimeout(() => {
+                topbar.remove();
+                setHeaderMetrics();
+              }, 300);
+            });
+          });
+        }
+
+        // Tema: claro/oscuro
+        (function initTheme() {
+          const root = document.documentElement;
+          const metaTheme = document.querySelector('meta[name="theme-color"]');
+          const stored = localStorage.getItem("dbyo-theme");
+          const prefersDark = window.matchMedia(
+            "(prefers-color-scheme: dark)"
+          ).matches;
+          let theme = stored || (prefersDark ? "dark" : "light");
+          apply(theme);
+          const btn = $("#themeToggle");
+          if (btn) {
+            updateIcon(theme, btn);
+            btn.addEventListener("click", () => {
+              theme = root.classList.contains("theme-dark") ? "light" : "dark";
+              apply(theme);
+              updateIcon(theme, btn);
+              localStorage.setItem("dbyo-theme", theme);
+            });
+          }
+          function apply(t) {
+            if (t === "dark") root.classList.add("theme-dark");
+            else root.classList.remove("theme-dark");
+            if (metaTheme)
+              metaTheme.setAttribute(
+                "content",
+                t === "dark" ? "#0f0f0f" : "#251a14"
+              );
+          }
+          function updateIcon(t, el) {
+            el.textContent = t === "dark" ? "☀️" : "🌙";
+          }
+        })();
+      })();
+    </script>
+  </body>
+</html>
