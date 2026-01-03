@@ -1,0 +1,97 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout>
+  <section class="hero trace-hero">
+    <h1>Trazabilidad de lotes por QR</h1>
+    <p class="muted">
+      Escanea el QR del empaque o ingresa el código del lote para conocer
+      origen, finca, proceso y fecha de tueste.
+    </p>
+  </section>
+
+  <section class="trace-layout" aria-label="Consulta de trazabilidad">
+    <div class="trace-left">
+      <div class="card">
+        <div class="p">
+          <div class="scan-frame">
+            <video id="qrVideo" autoplay playsinline muted class="scan-video"
+            ></video>
+            <canvas id="qrOverlay"></canvas>
+            <div class="scan-overlay"></div>
+            <div class="scan-line" aria-hidden="true"></div>
+          </div>
+          <div class="trace-controls">
+            <button id="startScan" class="btn" type="button"
+              >Iniciar escáner</button
+            >
+            <button id="stopScan" class="icon-btn" type="button">Detener</button
+            >
+            <button id="restartScan" class="icon-btn" type="button" hidden
+              >Reiniciar escaneo</button
+            >
+          </div>
+          <div id="scanStatus" class="muted trace-status">
+            Listo para escanear.
+          </div>
+
+          <p class="muted trace-hint">
+            Si tu navegador no permite el uso de la cámara, ingresa el código
+            manualmente.
+          </p>
+          <form id="manualForm" class="form trace-form" onsubmit="return false">
+            <label for="lotInput">Código de lote</label>
+            <div class="trace-form-row">
+              <input
+                id="lotInput"
+                placeholder="Ej: DBY-2025-09-HUI"
+                aria-label="Código de lote"
+              />
+              <button id="lookupBtn" class="btn" type="button">Consultar</button
+              >
+            </div>
+          </form>
+          <div id="lotError" class="trace-error" style="display:none"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="trace-right">
+      <div class="card trace-result">
+        <div class="p">
+          <h2>Resultado</h2>
+          <div id="resultEmpty" class="muted">
+            Aún no hay datos. Escanea un QR o ingresa un código.
+          </div>
+          <div id="result" style="display:none">
+            <h3 id="resName">—</h3>
+            <div class="muted" id="resLot">—</div>
+            <div class="trace-chips" id="resChips"></div>
+            <div class="trace-chips" id="resChips"></div>
+            <dl class="trace-details" id="resDetails"></dl>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="p">
+          <h3>¿Cómo funciona?</h3>
+          <ul>
+            <li>Escanea el QR del empaque o ingresa el código del lote.</li>
+            <li>
+              Verás finca, productor, altitud, proceso, fecha de cosecha y
+              tueste.
+            </li>
+            <li>Transparencia y confianza en cada taza.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script
+    src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"
+    is:inline></script>
+  <script src="/assets/js/trazabilidad.js" is:inline></script>
+</Layout>
