@@ -6,7 +6,9 @@
   "description": "Sitio y backend Node.js/Express para DobleYo Café (raíz del proyecto)",
   "author": "Michael Rodriguez",
   "license": "UNLICENSED",
-  "engines": { "node": ">=18" },
+  "engines": {
+    "node": ">=18"
+  },
   "main": "src/index.js",
   "scripts": {
     "start": "node ./src/index.js",
@@ -17,6 +19,7 @@
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "mercadopago": "^2.2.7",
-    "node-fetch": "^3.3.2"
+    "node-fetch": "^3.3.2",
+    "resend": "^6.6.0"
   }
 }
