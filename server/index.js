@@ -165,8 +165,9 @@ app.get('/api/order/:ref', (req, res) => {
 
 const PORT = process.env.PORT || 4000;
 
-// Only start server if not running in Vercel (Serverless)
-if (!process.env.VERCEL) {
+// Only start server if explicitly requested via START_SERVER env var
+// This prevents Vercel from trying to bind ports during module loading
+if (process.env.START_SERVER === 'true') {
   app.listen(PORT, ()=>{
     console.log('Server listening on http://localhost:'+PORT);
   });

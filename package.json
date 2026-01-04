@@ -11,9 +11,9 @@
   },
   "main": "server/index.js",
   "scripts": {
-    "start": "node ./server/index.js",
+    "start": "START_SERVER=true node ./server/index.js",
     "dev": "astro dev",
-    "server": "node ./server/index.js",
+    "server": "START_SERVER=true node ./server/index.js",
     "build": "astro build",
     "preview": "astro preview"
   },
