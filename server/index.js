@@ -11,6 +11,7 @@ import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import { stockRouter } from './routes/stock.js';
 import { authRouter } from './routes/auth.js';
+import { setupRouter } from './routes/setup.js';
 
 const app = express();
 
@@ -31,6 +32,7 @@ app.use(cors({
 
 app.use('/api/auth', authRouter);
 app.use('/api/stock', stockRouter);
+app.use('/api/setup', setupRouter);
 
 // Directorio de estaticos: carpeta dist (generada por astro build)
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
