@@ -7,7 +7,7 @@ const pool = mysql.createPool({
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+  ssl: { rejectUnauthorized: false } // Always use SSL for Aiven
 });
 
 // Wrapper compatible con la interfaz anterior (pero params es array)
