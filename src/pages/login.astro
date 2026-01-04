@@ -43,26 +43,62 @@ import Layout from "../layouts/Layout.astro";
   </section>
 
   <script>
-    // login basico con localStorage (solo demo)
+    // Login real conectado al backend
     (function () {
       const f = document.getElementById("loginForm");
       const err = document.getElementById("loginError");
-      f.addEventListener("submit", function () {
-        const email = (
-          document.getElementById("loginEmail").value || ""
-        ).trim();
-        const pass = (document.getElementById("loginPass").value || "").trim();
-        if (!email || !pass) {
-          err.textContent = "Completa todos los campos.";
-          err.style.display = "block";
+      const btn = document.getElementById("loginBtn");
+
+      f.addEventListener("submit", async function () {
+        const email = (document.getElementById("loginEmail").value || "").trim();
+        const password = (document.getElementById("loginPass").value || "").trim();
+        
+        if (!email || !password) {
+          showError("Completa todos los campos.");
           return;
         }
-        localStorage.setItem(
-          "dbyo_user",
-          JSON.stringify({ email, t: Date.now() })
-        );
-        location.href = "/cuenta";
+
+        // UI Loading state
+        btn.disabled = true;
+        btn.textContent = "Entrando...";
+        err.style.display = "none";
+
+        try {
+          const res = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+          });
+
+          const data = await res.json();
+
+          if (!res.ok) {
+            throw new Error(data.error || 'Error al iniciar sesión');
+          }
+
+          // Guardar token y usuario
+          localStorage.setItem("dbyo_token", JSON.stringify({
+            token: data.accessToken,
+            refreshToken: data.refreshToken,
+            user: data.user
+          }));
+
+          // Redireccionar
+          const urlParams = new URLSearchParams(window.location.search);
+          const redirect = urlParams.get('redirect') || '/cuenta';
+          window.location.href = redirect;
+
+        } catch (e) {
+          showError(e.message);
+          btn.disabled = false;
+          btn.textContent = "Entrar";
+        }
       });
+
+      function showError(msg) {
+        err.textContent = msg;
+        err.style.display = "block";
+      }
     })();
   </script>
 </Layout>

@@ -2,18 +2,16 @@ import { Router } from 'express';
 import * as db from '../db.js';
 import { authenticateToken, requireRole } from '../auth.js';
 
-// Obtener todo el stock (Publico o Privado?) - Dejemoslo publico para la tienda, pero solo lectura
+// Obtener todo el stock
 export async function getStock() {
-  const result = await db.query('SELECT sku, name, stock FROM products'); // Asumiendo que 'stock' existe en products o tabla separada
-  // Nota: El schema.sql original no tenia columna 'stock' en 'products', 
-  // deberiamos agregarla o usar una tabla de inventario. 
-  // Por ahora simularemos con una query simple.
+  // Retorna lista de { sku, stock }
+  const result = await db.query('SELECT slug as sku, stock FROM products');
   return result.rows;
 }
 
 export async function getProductStock(sku) {
   if (!sku) return null;
-  const result = await db.query('SELECT * FROM products WHERE slug = $1', [sku]); // Usando slug como SKU por ahora
+  const result = await db.query('SELECT stock FROM products WHERE slug = $1', [sku]);
   return result.rows[0] || null;
 }
 
@@ -21,7 +19,7 @@ export async function updateStock(sku, quantity) {
   if (!sku) throw new Error('SKU requerido');
   // Actualizacion atomica en BD
   const result = await db.query(
-    'UPDATE products SET stock = $1 WHERE slug = $2 RETURNING *',
+    'UPDATE products SET stock = $1, updated_at = NOW() WHERE slug = $2 RETURNING slug, stock',
     [quantity, sku]
   );
   return result.rows[0];
@@ -34,11 +32,10 @@ export function syncWithMercadoLibre(payload = {}) {
 
 export const stockRouter = Router();
 
+// Endpoint publico para consultar stock (usado por el frontend)
 stockRouter.get('/', async (req, res) => {
   try {
-    // Si la tabla products no tiene columna stock aun, esto fallara hasta que se migre la BD.
-    // Ajustar query segun schema real.
-    const items = await db.query('SELECT id, slug, name, price_cop FROM products'); 
+    const items = await db.query('SELECT slug, stock, name, image_url, price_cop FROM products ORDER BY name ASC'); 
     res.json({ items: items.rows });
   } catch (err) {
     console.error(err);
@@ -46,8 +43,29 @@ stockRouter.get('/', async (req, res) => {
   }
 });
 
-stockRouter.get('/:sku', async (req, res) => {
+// Endpoint protegido para actualizar stock (usado por admin o integraciones)
+stockRouter.post('/:sku', authenticateToken, requireRole('admin'), async (req, res) => {
   try {
+    const { sku } = req.params;
+    const { stock } = req.body;
+    
+    if (stock === undefined) {
+      return res.status(400).json({ error: 'Stock quantity required' });
+    }
+
+    const updated = await updateStock(sku, stock);
+    
+    if (!updated) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+
+    res.json({ success: true, product: updated });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error updating stock' });
+  }
+});
+
     const sku = req.params.sku?.trim();
     const record = await getProductStock(sku);
     if (!record) {
