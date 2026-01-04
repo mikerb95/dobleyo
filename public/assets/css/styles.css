@@ -16,6 +16,8 @@ html.theme-dark{
 *{ box-sizing:border-box }
 html,body{ margin:0; padding:0 }
 body{ font-family:'Lora', Georgia, 'Times New Roman', Times, serif; color:var(--fg); background:var(--bg) }
+/* Reset de enlaces para evitar color morado en visitados y mantener consistencia */
+a, a:visited { color: inherit; text-decoration: none; }
 /* Encabezados y titulos usan Playfair Display */
 h1,h2,h3,h4,h5,h6, .e-title, .e-number{ font-family:'Playfair Display', Georgia, 'Times New Roman', Times, serif }
 /* Reemplazar clases de cuerpo de Tailwind en tema oscuro */
