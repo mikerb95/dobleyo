@@ -150,6 +150,12 @@ app.get('/api/order/:ref', (req, res) => {
 });
 
 const PORT = process.env.PORT || 4000;
-app.listen(PORT, ()=>{
-  console.log('Server listening on http://localhost:'+PORT);
-});
+
+// Only start server if not running in Vercel (Serverless)
+if (!process.env.VERCEL) {
+  app.listen(PORT, ()=>{
+    console.log('Server listening on http://localhost:'+PORT);
+  });
+}
+
+export default app;
