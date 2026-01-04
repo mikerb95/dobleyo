@@ -1,13 +1,19 @@
 import mysql from 'mysql2/promise';
 import 'dotenv/config';
 
-// Parse DATABASE_URL (mysql://user:pass@host:port/db)
+// Parse DATABASE_URL manually to ensure options are applied correctly
+const dbUrl = new URL(process.env.DATABASE_URL);
+
 const pool = mysql.createPool({
-  uri: process.env.DATABASE_URL,
+  host: dbUrl.hostname,
+  user: dbUrl.username,
+  password: dbUrl.password,
+  database: dbUrl.pathname.slice(1),
+  port: Number(dbUrl.port),
+  ssl: { rejectUnauthorized: false }, // Force SSL for Aiven
   waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0,
-  ssl: { rejectUnauthorized: false } // Always use SSL for Aiven
+  connectionLimit: 5, // Lower limit for serverless
+  queueLimit: 0
 });
 
 // Wrapper compatible con la interfaz anterior (pero params es array)
