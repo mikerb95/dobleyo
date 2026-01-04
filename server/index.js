@@ -34,6 +34,20 @@ app.use('/api/auth', authRouter);
 app.use('/api/stock', stockRouter);
 app.use('/api/setup', setupRouter);
 
+// Debug endpoint to check environment variables (safe version)
+app.get('/api/debug-env', (req, res) => {
+  res.json({
+    status: 'ok',
+    env: {
+      hasDatabaseUrl: !!process.env.DATABASE_URL,
+      databaseUrlLength: process.env.DATABASE_URL ? process.env.DATABASE_URL.length : 0,
+      nodeEnv: process.env.NODE_ENV,
+      vercel: process.env.VERCEL,
+      hasJwtSecret: !!process.env.JWT_SECRET
+    }
+  });
+});
+
 // Directorio de estaticos: carpeta dist (generada por astro build)
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const staticDir = path.resolve(__dirname, '../dist');
