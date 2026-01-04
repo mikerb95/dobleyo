@@ -54,20 +54,24 @@ CREATE TABLE IF NOT EXISTS audit_logs (
 
 -- Products
 CREATE TABLE IF NOT EXISTS products (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    slug VARCHAR(120) NOT NULL UNIQUE,
+    id VARCHAR(50) PRIMARY KEY,
     name VARCHAR(160) NOT NULL,
-    price_cop INTEGER NOT NULL,
-    stock INTEGER NOT NULL DEFAULT 0,
+    category VARCHAR(50),
     origin VARCHAR(120),
     process VARCHAR(80),
     roast VARCHAR(80),
+    price INTEGER NOT NULL,
+    rating DECIMAL(3,1) DEFAULT 0,
+    is_deal BOOLEAN DEFAULT FALSE,
+    is_bestseller BOOLEAN DEFAULT FALSE,
+    is_new BOOLEAN DEFAULT FALSE,
+    is_fast BOOLEAN DEFAULT FALSE,
     image_url TEXT,
+    stock INTEGER NOT NULL DEFAULT 0,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP
 );
-CREATE INDEX idx_products_origin ON products(origin);
-CREATE INDEX idx_products_roast ON products(roast);
+CREATE INDEX idx_products_category ON products(category);
 
 -- Lots
 CREATE TABLE IF NOT EXISTS lots (
@@ -85,7 +89,7 @@ CREATE TABLE IF NOT EXISTS lots (
     moisture VARCHAR(20),
     score DECIMAL(4,1),
     notes TEXT,
-    product_id BIGINT NULL,
+    product_id VARCHAR(50) NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (product_id) REFERENCES products(id)
