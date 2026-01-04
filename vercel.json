@@ -9,6 +9,10 @@
       "destination": "/api/diagnose.js"
     },
     {
+      "source": "/api/setup-standalone",
+      "destination": "/api/setup_standalone.js"
+    },
+    {
       "source": "/api/(.*)",
       "destination": "/api/index.js"
     }

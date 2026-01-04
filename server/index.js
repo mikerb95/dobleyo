@@ -58,7 +58,11 @@ app.get('/api/health', (req, res) => res.json({ status: 'ok', time: new Date().t
 
 // Mercado Pago
 const MP_ACCESS_TOKEN = process.env.MP_ACCESS_TOKEN || '';
-if (MP_ACCESS_TOKEN){ mercadopago.configure({ access_token: MP_ACCESS_TOKEN }); }
+try {
+  if (MP_ACCESS_TOKEN){ mercadopago.configure({ access_token: MP_ACCESS_TOKEN }); }
+} catch (err) {
+  console.error('Error configuring MercadoPago:', err);
+}
 
 // Wompi
 const WOMPI_PUBLIC_KEY = process.env.WOMPI_PUBLIC_KEY || '';
