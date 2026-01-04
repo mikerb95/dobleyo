@@ -50,9 +50,13 @@ import Layout from "../layouts/Layout.astro";
       const btn = document.getElementById("loginBtn");
 
       f.addEventListener("submit", async function () {
-        const email = (document.getElementById("loginEmail").value || "").trim();
-        const password = (document.getElementById("loginPass").value || "").trim();
-        
+        const email = (
+          document.getElementById("loginEmail").value || ""
+        ).trim();
+        const password = (
+          document.getElementById("loginPass").value || ""
+        ).trim();
+
         if (!email || !password) {
           showError("Completa todos los campos.");
           return;
@@ -64,30 +68,32 @@ import Layout from "../layouts/Layout.astro";
         err.style.display = "none";
 
         try {
-          const res = await fetch('/api/auth/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password })
+          const res = await fetch("/api/auth/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password }),
           });
 
           const data = await res.json();
 
           if (!res.ok) {
-            throw new Error(data.error || 'Error al iniciar sesión');
+            throw new Error(data.error || "Error al iniciar sesión");
           }
 
           // Guardar token y usuario
-          localStorage.setItem("dbyo_token", JSON.stringify({
-            token: data.accessToken,
-            refreshToken: data.refreshToken,
-            user: data.user
-          }));
+          localStorage.setItem(
+            "dbyo_token",
+            JSON.stringify({
+              token: data.accessToken,
+              refreshToken: data.refreshToken,
+              user: data.user,
+            })
+          );
 
           // Redireccionar
           const urlParams = new URLSearchParams(window.location.search);
-          const redirect = urlParams.get('redirect') || '/cuenta';
+          const redirect = urlParams.get("redirect") || "/cuenta";
           window.location.href = redirect;
-
         } catch (e) {
           showError(e.message);
           btn.disabled = false;

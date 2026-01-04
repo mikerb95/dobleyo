@@ -3,8 +3,13 @@ import Layout from "../../layouts/Layout.astro";
 ---
 
 <Layout>
-  <div class="container" style="max-width: 1000px; margin: 2rem auto; padding: 0 1rem;">
-    <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+  <div
+    class="container"
+    style="max-width: 1000px; margin: 2rem auto; padding: 0 1rem;"
+  >
+    <header
+      style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;"
+    >
       <h1>Gestión de Inventario</h1>
       <div style="display: flex; gap: 1rem;">
         <span id="userEmail" class="muted"></span>
@@ -16,7 +21,11 @@ import Layout from "../../layouts/Layout.astro";
       Cargando inventario...
     </div>
 
-    <div id="error" style="color: #b91c1c; display: none; margin-bottom: 1rem; padding: 1rem; background: #fee2e2; border-radius: 4px;"></div>
+    <div
+      id="error"
+      style="color: #b91c1c; display: none; margin-bottom: 1rem; padding: 1rem; background: #fee2e2; border-radius: 4px;"
+    >
+    </div>
 
     <div id="inventoryTable" style="display: none;">
       <div class="table-responsive">
@@ -39,16 +48,16 @@ import Layout from "../../layouts/Layout.astro";
   </div>
 
   <script>
-    const API_URL = '/api/stock';
-    const AUTH_KEY = 'dbyo_token'; // Key for storing JWT in localStorage
+    const API_URL = "/api/stock";
+    const AUTH_KEY = "dbyo_token"; // Key for storing JWT in localStorage
 
     // Elements
-    const tableBody = document.getElementById('tableBody');
-    const loadingEl = document.getElementById('loading');
-    const tableEl = document.getElementById('inventoryTable');
-    const errorEl = document.getElementById('error');
-    const userEmailEl = document.getElementById('userEmail');
-    const logoutBtn = document.getElementById('logoutBtn');
+    const tableBody = document.getElementById("tableBody");
+    const loadingEl = document.getElementById("loading");
+    const tableEl = document.getElementById("inventoryTable");
+    const errorEl = document.getElementById("error");
+    const userEmailEl = document.getElementById("userEmail");
+    const logoutBtn = document.getElementById("logoutBtn");
 
     // Auth Check
     function getAuth() {
@@ -63,46 +72,48 @@ import Layout from "../../layouts/Layout.astro";
 
     const auth = getAuth();
     if (!auth || !auth.token) {
-      window.location.href = '/login?redirect=/admin/inventario';
+      window.location.href = "/login?redirect=/admin/inventario";
     } else {
-      if (userEmailEl) userEmailEl.textContent = auth.user?.email || 'Admin';
+      if (userEmailEl) userEmailEl.textContent = auth.user?.email || "Admin";
       loadInventory();
     }
 
     // Logout
     if (logoutBtn) {
-      logoutBtn.addEventListener('click', () => {
+      logoutBtn.addEventListener("click", () => {
         localStorage.removeItem(AUTH_KEY);
-        window.location.href = '/login';
+        window.location.href = "/login";
       });
     }
 
     async function loadInventory() {
       try {
         const res = await fetch(API_URL);
-        if (!res.ok) throw new Error('Error cargando inventario');
+        if (!res.ok) throw new Error("Error cargando inventario");
         const data = await res.json();
         renderTable(data.items);
-        loadingEl.style.display = 'none';
-        tableEl.style.display = 'block';
+        loadingEl.style.display = "none";
+        tableEl.style.display = "block";
       } catch (err) {
         showError(err.message);
-        loadingEl.style.display = 'none';
+        loadingEl.style.display = "none";
       }
     }
 
     function renderTable(items) {
       if (!tableBody) return;
-      tableBody.innerHTML = items.map(item => `
+      tableBody.innerHTML = items
+        .map(
+          (item) => `
         <tr style="border-bottom: 1px solid #eee;">
           <td style="padding: 1rem; display: flex; align-items: center; gap: 1rem;">
             <img src="${item.image_url}" alt="${item.name}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px;">
             <span>${item.name}</span>
           </td>
           <td style="padding: 1rem;"><code>${item.slug}</code></td>
-          <td style="padding: 1rem;">$${(item.price_cop || 0).toLocaleString('es-CO')}</td>
+          <td style="padding: 1rem;">$${(item.price_cop || 0).toLocaleString("es-CO")}</td>
           <td style="padding: 1rem;">
-            <span class="badge ${item.stock < 10 ? 'low-stock' : ''}">${item.stock}</span>
+            <span class="badge ${item.stock < 10 ? "low-stock" : ""}">${item.stock}</span>
           </td>
           <td style="padding: 1rem;">
             <form class="update-stock-form" data-sku="${item.slug}" style="display: flex; gap: 0.5rem;">
@@ -111,11 +122,13 @@ import Layout from "../../layouts/Layout.astro";
             </form>
           </td>
         </tr>
-      `).join('');
+      `
+        )
+        .join("");
 
       // Attach event listeners to forms
-      document.querySelectorAll('.update-stock-form').forEach(form => {
-        form.addEventListener('submit', handleUpdateStock);
+      document.querySelectorAll(".update-stock-form").forEach((form) => {
+        form.addEventListener("submit", handleUpdateStock);
       });
     }
 
@@ -124,40 +137,39 @@ import Layout from "../../layouts/Layout.astro";
       const form = e.target;
       const sku = form.dataset.sku;
       const stock = form.stock.value;
-      const btn = form.querySelector('button');
-      
+      const btn = form.querySelector("button");
+
       const originalText = btn.textContent;
-      btn.textContent = '...';
+      btn.textContent = "...";
       btn.disabled = true;
 
       try {
         const res = await fetch(`${API_URL}/${sku}`, {
-          method: 'POST',
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${auth.token}`
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${auth.token}`,
           },
-          body: JSON.stringify({ stock: parseInt(stock) })
+          body: JSON.stringify({ stock: parseInt(stock) }),
         });
 
         if (!res.ok) {
           const data = await res.json();
-          throw new Error(data.error || 'Error actualizando stock');
+          throw new Error(data.error || "Error actualizando stock");
         }
 
         // Success feedback
-        btn.textContent = 'OK';
-        btn.style.backgroundColor = '#16a34a';
-        btn.style.borderColor = '#16a34a';
-        btn.style.color = 'white';
-        
+        btn.textContent = "OK";
+        btn.style.backgroundColor = "#16a34a";
+        btn.style.borderColor = "#16a34a";
+        btn.style.color = "white";
+
         setTimeout(() => {
           btn.textContent = originalText;
           btn.disabled = false;
-          btn.style = '';
+          btn.style = "";
           loadInventory(); // Reload to refresh table state
         }, 1500);
-
       } catch (err) {
         alert(err.message);
         btn.textContent = originalText;
@@ -168,7 +180,7 @@ import Layout from "../../layouts/Layout.astro";
     function showError(msg) {
       if (errorEl) {
         errorEl.textContent = msg;
-        errorEl.style.display = 'block';
+        errorEl.style.display = "block";
       }
     }
   </script>
