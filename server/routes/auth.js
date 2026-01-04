@@ -20,7 +20,7 @@ authRouter.post('/register',
 
     try {
       // Verificar si existe
-      const existing = await db.query('SELECT id FROM users WHERE email = $1', [email]);
+      const existing = await db.query('SELECT id FROM users WHERE email = ?', [email]);
       if (existing.rows.length > 0) {
         return res.status(400).json({ error: 'El email ya esta registrado' });
       }
@@ -29,11 +29,16 @@ authRouter.post('/register',
       
       // Crear usuario (rol default: client)
       const result = await db.query(
-        'INSERT INTO users (email, password_hash, name, role, is_verified) VALUES ($1, $2, $3, $4, $5) RETURNING id, email, name, role',
+        'INSERT INTO users (email, password_hash, name, role, is_verified) VALUES (?, ?, ?, ?, ?)',
         [email, hash, name, 'client', false]
       );
       
-      const newUser = result.rows[0];
+      // En MySQL, el ID insertado viene en result.rows.insertId (dependiendo del driver, pero con mysql2/promise y execute devuelve [rows, fields])
+      // Con execute de mysql2, result es [ResultSetHeader, undefined] para inserts
+      // Mi wrapper en db.js devuelve { rows, fields }. Para inserts, rows es el ResultSetHeader.
+      const insertId = result.rows.insertId;
+      
+      const newUser = { id: insertId, email, name, role: 'client' };
 
       // Generar token de verificacion (temporal, guardado en DB o JWT firmado)
       // Para simplificar, usaremos un JWT de corta duracion con payload especifico
@@ -43,8 +48,8 @@ authRouter.post('/register',
       sendVerificationEmail(email, verifyToken).then(r => console.log('Email result:', r));
       
       // Log de auditoria
-      await db.query('INSERT INTO audit_logs (action, entity_type, entity_id, details) VALUES ($1, $2, $3, $4)', 
-        ['REGISTER', 'user', newUser.id, JSON.stringify({ email: newUser.email })]
+      await db.query('INSERT INTO audit_logs (action, entity_type, entity_id, details) VALUES (?, ?, ?, ?)', 
+        ['REGISTER', 'user', String(newUser.id), JSON.stringify({ email: newUser.email })]
       );
 
       res.status(201).json({ message: 'Usuario registrado. Por favor revisa tu correo para verificar la cuenta.', user: newUser });
@@ -65,7 +70,7 @@ authRouter.get('/verify', async (req, res) => {
     const decoded = auth.verifyToken(token);
     // Aqui podriamos validar decoded.type === 'verification' si lo hubieramos seteado especificamente
 
-    await db.query('UPDATE users SET is_verified = TRUE WHERE id = $1', [decoded.id]);
+    await db.query('UPDATE users SET is_verified = TRUE WHERE id = ?', [decoded.id]);
     
     res.json({ message: 'Cuenta verificada exitosamente. Ya puedes iniciar sesion.' });
   } catch (err) {
@@ -86,7 +91,7 @@ authRouter.post('/login',
     const { email, password } = req.body;
 
     try {
-      const result = await db.query('SELECT * FROM users WHERE email = $1', [email]);
+      const result = await db.query('SELECT * FROM users WHERE email = ?', [email]);
       const user = result.rows[0];
 
       if (!user) return res.status(401).json({ error: 'Credenciales invalidas' });

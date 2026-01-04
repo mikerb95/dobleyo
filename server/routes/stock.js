@@ -11,17 +11,19 @@ export async function getStock() {
 
 export async function getProductStock(sku) {
   if (!sku) return null;
-  const result = await db.query('SELECT stock FROM products WHERE slug = $1', [sku]);
+  const result = await db.query('SELECT stock FROM products WHERE slug = ?', [sku]);
   return result.rows[0] || null;
 }
 
 export async function updateStock(sku, quantity) {
   if (!sku) throw new Error('SKU requerido');
-  // Actualizacion atomica en BD
-  const result = await db.query(
-    'UPDATE products SET stock = $1, updated_at = NOW() WHERE slug = $2 RETURNING slug, stock',
+  // Actualizacion atomica en BD (MySQL no soporta RETURNING en UPDATE)
+  await db.query(
+    'UPDATE products SET stock = ?, updated_at = NOW() WHERE slug = ?',
     [quantity, sku]
   );
+  // Fetch updated record
+  const result = await db.query('SELECT slug, stock FROM products WHERE slug = ?', [sku]);
   return result.rows[0];
 }
 

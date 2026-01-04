@@ -1,84 +1,78 @@
--- DobleYo relational schema (engine-agnostic SQL)
--- Entities: users (admin), lots, products, blog_posts
+-- DobleYo relational schema (MySQL Compatible)
 
--- Users (Base entity for authentication)
-CREATE TABLE users
-(
-    id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+-- Users
+CREATE TABLE IF NOT EXISTS users (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
     email VARCHAR(255) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
     name VARCHAR(120),
-    role VARCHAR(32) NOT NULL DEFAULT 'client' CHECK (role IN ('admin', 'client', 'provider')),
+    role ENUM('admin', 'client', 'provider') NOT NULL DEFAULT 'client',
     is_verified BOOLEAN NOT NULL DEFAULT FALSE,
     last_login_at TIMESTAMP NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NULL
+    updated_at TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP
 );
 CREATE INDEX idx_users_role ON users(role);
 
--- Providers Profile (Extra info for providers)
-CREATE TABLE providers
-(
-    id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-    user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+-- Providers Profile
+CREATE TABLE IF NOT EXISTS providers (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id BIGINT NOT NULL,
     company_name VARCHAR(160) NOT NULL,
-    tax_id VARCHAR(50), -- NIT, RUT, RFC
+    tax_id VARCHAR(50),
     phone VARCHAR(40),
     address TEXT,
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
--- Refresh Tokens (For secure session management)
-CREATE TABLE refresh_tokens
-(
-    id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-    user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+-- Refresh Tokens
+CREATE TABLE IF NOT EXISTS refresh_tokens (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id BIGINT NOT NULL,
     token_hash VARCHAR(255) NOT NULL,
     expires_at TIMESTAMP NOT NULL,
     revoked BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    replaced_by_token VARCHAR(255) -- For rotation audit
+    replaced_by_token VARCHAR(255),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 CREATE INDEX idx_refresh_tokens_user ON refresh_tokens(user_id);
 
--- Audit Logs (Security & Traceability)
-CREATE TABLE audit_logs
-(
-    id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-    user_id BIGINT REFERENCES users(id) ON DELETE SET NULL,
-    action VARCHAR(64) NOT NULL, -- e.g., 'STOCK_UPDATE', 'LOGIN', 'PRICE_CHANGE'
-    entity_type VARCHAR(64), -- 'product', 'order'
+-- Audit Logs
+CREATE TABLE IF NOT EXISTS audit_logs (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id BIGINT,
+    action VARCHAR(64) NOT NULL,
+    entity_type VARCHAR(64),
     entity_id VARCHAR(64),
-    details JSONB, -- Changed values, IP address, etc.
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    details JSON,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 );
 
--- Products (catalog)
-CREATE TABLE products
-(
-    id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+-- Products
+CREATE TABLE IF NOT EXISTS products (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
     slug VARCHAR(120) NOT NULL UNIQUE,
     name VARCHAR(160) NOT NULL,
     price_cop INTEGER NOT NULL,
-    stock INTEGER NOT NULL DEFAULT 0, -- Agregado para manejo de inventario
-    -- price in COP cents (or unit)
+    stock INTEGER NOT NULL DEFAULT 0,
     origin VARCHAR(120),
     process VARCHAR(80),
     roast VARCHAR(80),
     image_url TEXT,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NULL
+    updated_at TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP
 );
 CREATE INDEX idx_products_origin ON products(origin);
 CREATE INDEX idx_products_roast ON products(roast);
 
--- Lots (traceability)
-CREATE TABLE lots
-(
-    id BIGINT PRIMARY KEY,
+-- Lots
+CREATE TABLE IF NOT EXISTS lots (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
     code VARCHAR(40) NOT NULL UNIQUE,
-    -- e.g., DBY-2025-09-HUI
     name VARCHAR(160),
     origin VARCHAR(160),
     farm VARCHAR(160),
@@ -91,38 +85,10 @@ CREATE TABLE lots
     moisture VARCHAR(20),
     score DECIMAL(4,1),
     notes TEXT,
-    product_id BIGINT NULL REFERENCES products(id),
-    -- optional relation to product
+    product_id BIGINT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NULL
+    updated_at TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (product_id) REFERENCES products(id)
 );
 CREATE INDEX idx_lots_code ON lots(code);
 CREATE INDEX idx_lots_product ON lots(product_id);
-
--- Blog posts
-CREATE TABLE blog_posts
-(
-    id BIGINT PRIMARY KEY,
-    slug VARCHAR(160) NOT NULL UNIQUE,
-    title VARCHAR(200) NOT NULL,
-    author VARCHAR(120),
-    content_md TEXT,
-    -- markdown or HTML
-    cover_url TEXT,
-    published BOOLEAN NOT NULL DEFAULT FALSE,
-    published_at TIMESTAMP NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NULL
-);
-CREATE INDEX idx_blog_published ON blog_posts(published);
-
--- Simple sessions (optional if using JWT elsewhere)
-CREATE TABLE sessions
-(
-    id BIGINT PRIMARY KEY,
-    user_id BIGINT NOT NULL REFERENCES users(id),
-    token_hash VARCHAR(255) NOT NULL UNIQUE,
-    expires_at TIMESTAMP NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-CREATE INDEX idx_sessions_user ON sessions(user_id);
