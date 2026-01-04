@@ -71,7 +71,7 @@ dobleyo/
 
 #### 1. Prerrequisitos
 
-- Node.js (v18 o superior)
+- Node.js (v20 o superior)
 - PostgreSQL instalado y corriendo.
 
 #### 2. Instalación de Dependencias
