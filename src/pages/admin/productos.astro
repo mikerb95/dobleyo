@@ -1,0 +1,280 @@
+---
+import Layout from "../../layouts/Layout.astro";
+---
+
+<Layout>
+  <div class="container" style="max-width: 1000px; margin: 2rem auto; padding: 0 1rem;">
+    <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+      <h1>Gestión de Productos</h1>
+      <div style="display: flex; gap: 1rem;">
+        <span id="userEmail" class="muted"></span>
+        <button id="logoutBtn" class="btn outline small">Cerrar Sesión</button>
+      </div>
+    </header>
+
+    <!-- Tabs -->
+    <div style="display: flex; gap: 1rem; margin-bottom: 2rem; border-bottom: 1px solid #eee;">
+      <button class="tab-btn active" data-tab="crear" style="padding: 1rem; border: none; background: none; cursor: pointer; border-bottom: 3px solid #000;">
+        Crear Producto
+      </button>
+      <button class="tab-btn" data-tab="lista" style="padding: 1rem; border: none; background: none; cursor: pointer;">
+        Listar Productos
+      </button>
+    </div>
+
+    <!-- Tab: Crear Producto -->
+    <div id="crear-tab" class="tab-content">
+      <div class="card" style="max-width: 600px;">
+        <div class="p">
+          <h2>Nuevo Producto</h2>
+          
+          <form id="productForm" style="display: grid; gap: 1rem; margin-top: 1rem;">
+            <label>
+              ID del Producto (SKU)<br/>
+              <input type="text" id="productId" required placeholder="ej: cafe-colombia-1kg" />
+            </label>
+
+            <label>
+              Nombre<br/>
+              <input type="text" id="productName" required placeholder="ej: Café Colombia 1kg" />
+            </label>
+
+            <label>
+              Precio (COP)<br/>
+              <input type="number" id="productPrice" required placeholder="ej: 25000" />
+            </label>
+
+            <label>
+              Stock Inicial<br/>
+              <input type="number" id="productStock" value="0" />
+            </label>
+
+            <label>
+              Categoría<br/>
+              <input type="text" id="productCategory" placeholder="ej: cafe-molido" />
+            </label>
+
+            <label>
+              Origen<br/>
+              <input type="text" id="productOrigin" placeholder="ej: Huila, Colombia" />
+            </label>
+
+            <label>
+              Proceso<br/>
+              <input type="text" id="productProcess" placeholder="ej: Washed" />
+            </label>
+
+            <label>
+              Tueste<br/>
+              <input type="text" id="productRoast" placeholder="ej: Medium" />
+            </label>
+
+            <label>
+              URL de Imagen<br/>
+              <input type="url" id="productImage" placeholder="https://..." />
+            </label>
+
+            <button type="submit" class="btn" id="submitBtn">Crear Producto</button>
+          </form>
+
+          <div id="formError" style="color: #b91c1c; display: none; margin-top: 1rem; padding: 1rem; background: #fee2e2; border-radius: 4px;"></div>
+          <div id="formSuccess" style="color: #166534; display: none; margin-top: 1rem; padding: 1rem; background: #dcfce7; border-radius: 4px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: Listar Productos -->
+    <div id="lista-tab" class="tab-content" style="display: none;">
+      <div id="loading" style="text-align: center; padding: 2rem;">
+        Cargando productos...
+      </div>
+
+      <div id="productsList" style="display: none;">
+        <div class="table-responsive">
+          <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+              <tr style="border-bottom: 2px solid #eee; text-align: left;">
+                <th style="padding: 1rem;">ID</th>
+                <th style="padding: 1rem;">Nombre</th>
+                <th style="padding: 1rem;">Precio</th>
+                <th style="padding: 1rem;">Stock</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody">
+              <!-- Rows injected here -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Tab management
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tabName = btn.dataset.tab;
+        
+        // Hide all tabs
+        document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+        
+        // Show selected tab
+        document.getElementById(tabName + '-tab').style.display = 'block';
+        btn.classList.add('active');
+        
+        // Load products if lista tab
+        if (tabName === 'lista') {
+          loadProducts();
+        }
+      });
+    });
+
+    // Auth check
+    (async function () {
+      const emailEl = document.getElementById('userEmail');
+      const logoutBtn = document.getElementById('logoutBtn');
+
+      try {
+        const res = await fetch("/api/auth/me", {
+          credentials: "include",
+        });
+
+        if (!res.ok) {
+          window.location.href = "/login?redirect=/admin/productos";
+          return;
+        }
+
+        const user = await res.json();
+        
+        if (user.role !== "admin") {
+          alert("No tienes permisos para acceder a esta página");
+          window.location.href = "/";
+          return;
+        }
+
+        if (emailEl) emailEl.textContent = user.email || "Admin";
+
+        // Logout
+        if (logoutBtn) {
+          logoutBtn.addEventListener("click", async () => {
+            await fetch("/api/auth/logout", {
+              method: "POST",
+              credentials: "include",
+            });
+            window.location.href = "/";
+          });
+        }
+      } catch (err) {
+        console.error("Auth error:", err);
+        window.location.href = "/login?redirect=/admin/productos";
+      }
+    })();
+
+    // Form submission
+    document.getElementById('productForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const formError = document.getElementById('formError');
+      const formSuccess = document.getElementById('formSuccess');
+      const submitBtn = document.getElementById('submitBtn');
+
+      const data = {
+        id: document.getElementById('productId').value.trim(),
+        name: document.getElementById('productName').value.trim(),
+        price: parseInt(document.getElementById('productPrice').value),
+        stock: parseInt(document.getElementById('productStock').value) || 0,
+        category: document.getElementById('productCategory').value.trim() || null,
+        origin: document.getElementById('productOrigin').value.trim() || null,
+        process: document.getElementById('productProcess').value.trim() || null,
+        roast: document.getElementById('productRoast').value.trim() || null,
+        image_url: document.getElementById('productImage').value.trim() || null,
+      };
+
+      if (!data.id || !data.name || !data.price) {
+        formError.textContent = 'ID, Nombre y Precio son requeridos';
+        formError.style.display = 'block';
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Creando...';
+      formError.style.display = 'none';
+      formSuccess.style.display = 'none';
+
+      try {
+        const res = await fetch('/api/stock', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify(data),
+        });
+
+        const result = await res.json();
+
+        if (!res.ok) {
+          throw new Error(result.error || 'Error creando producto');
+        }
+
+        formSuccess.textContent = `✓ Producto "${result.name}" creado exitosamente`;
+        formSuccess.style.display = 'block';
+        
+        // Reset form
+        document.getElementById('productForm').reset();
+        
+        setTimeout(() => {
+          formSuccess.style.display = 'none';
+        }, 3000);
+      } catch (err) {
+        formError.textContent = err.message;
+        formError.style.display = 'block';
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Crear Producto';
+      }
+    });
+
+    // Load and display products
+    async function loadProducts() {
+      const loading = document.getElementById('loading');
+      const productsList = document.getElementById('productsList');
+      const tableBody = document.getElementById('tableBody');
+
+      try {
+        const res = await fetch('/api/stock', {
+          credentials: 'include',
+        });
+
+        if (!res.ok) throw new Error('Error cargando productos');
+
+        const data = await res.json();
+        
+        if (!data.items || data.items.length === 0) {
+          loading.textContent = 'No hay productos';
+          return;
+        }
+
+        tableBody.innerHTML = data.items.map(p => `
+          <tr style="border-bottom: 1px solid #eee;">
+            <td style="padding: 1rem;">${p.slug || '—'}</td>
+            <td style="padding: 1rem;">${p.name || '—'}</td>
+            <td style="padding: 1rem;">$${p.price_cop?.toLocaleString() || '—'}</td>
+            <td style="padding: 1rem;">${p.stock || 0}</td>
+          </tr>
+        `).join('');
+
+        loading.style.display = 'none';
+        productsList.style.display = 'block';
+      } catch (err) {
+        loading.textContent = 'Error: ' + err.message;
+      }
+    }
+  </script>
+
+  <style>
+    .tab-btn.active {
+      border-bottom-color: #000 !important;
+      font-weight: bold;
+    }
+  </style>
+</Layout>

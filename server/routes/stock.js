@@ -45,6 +45,36 @@ stockRouter.get('/', async (req, res) => {
   }
 });
 
+// Crear nuevo producto (solo admin)
+stockRouter.post('/', authenticateToken, requireRole('admin'), async (req, res) => {
+  try {
+    const { id, name, category, origin, process, roast, price, stock, image_url } = req.body;
+    
+    if (!id || !name || price === undefined) {
+      return res.status(400).json({ error: 'id, name y price son requeridos' });
+    }
+
+    // Verificar que no existe ya
+    const existing = await db.query('SELECT id FROM products WHERE id = ?', [id]);
+    if (existing.rows.length > 0) {
+      return res.status(400).json({ error: 'El producto con este ID ya existe' });
+    }
+
+    // Insertar
+    await db.query(
+      'INSERT INTO products (id, name, category, origin, process, roast, price, stock, image_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [id, name, category || null, origin || null, process || null, roast || null, price, stock || 0, image_url || null]
+    );
+
+    // Retornar el producto creado
+    const result = await db.query('SELECT * FROM products WHERE id = ?', [id]);
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error creando producto: ' + err.message });
+  }
+});
+
 // Endpoint protegido para actualizar stock (usado por admin o integraciones)
 stockRouter.post('/:sku', authenticateToken, requireRole('admin'), async (req, res) => {
   try {
