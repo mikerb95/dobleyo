@@ -84,50 +84,59 @@ export default function RoastLotSelector({ onLotSelect, onCancel }) {
 
       <style>{`
         .selector-container {
-          max-width: 1000px;
-          margin: 2rem auto;
-          padding: 2rem;
+          width: 100%;
+          padding: 2.5rem;
           background: white;
-          border-radius: 8px;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+          border-radius: 16px;
+          box-shadow: 0 10px 30px rgba(44, 24, 16, 0.06);
+          border: 1px solid rgba(139, 111, 71, 0.1);
         }
 
         h2 {
           margin-top: 0;
           color: #2c1810;
-          text-align: center;
+          text-align: left;
+          font-size: 1.5rem;
+          font-weight: 700;
+          margin-bottom: 2rem;
+          padding-bottom: 1rem;
+          border-bottom: 2px solid #f3efe6;
         }
 
         .lots-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+          grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
           gap: 1.5rem;
           margin: 2rem 0;
         }
 
         .lot-card {
           padding: 1.5rem;
-          border: 2px solid #ddd;
-          border-radius: 8px;
+          border: 1px solid #e5e5e5;
+          border-radius: 12px;
           cursor: pointer;
-          transition: all 0.3s ease;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          background: #fff;
+          position: relative;
         }
 
         .lot-card:hover {
           border-color: #8b6f47;
-          box-shadow: 0 4px 12px rgba(139, 111, 71, 0.15);
-          transform: translateY(-2px);
+          transform: translateY(-4px);
+          box-shadow: 0 12px 24px rgba(139, 111, 71, 0.12);
         }
 
         .lot-card.selected {
           border-color: #8b6f47;
-          background: rgba(139, 111, 71, 0.05);
-          box-shadow: 0 4px 12px rgba(139, 111, 71, 0.2);
+          background: #fdfbf7;
+          box-shadow: 0 0 0 2px #8b6f47;
         }
 
         .lot-card h3 {
           margin: 0 0 1rem 0;
           color: #2c1810;
+          font-size: 1.2rem;
+          font-weight: 700;
         }
 
         .lot-info {
@@ -136,56 +145,74 @@ export default function RoastLotSelector({ onLotSelect, onCancel }) {
 
         .lot-info p {
           margin: 0.5rem 0;
-          color: #666;
+          color: #555;
           font-size: 0.95rem;
+          display: flex;
+          justify-content: space-between;
+        }
+        
+        .lot-info strong {
+          color: #8b6f47;
+          font-weight: 600;
         }
 
         .button-group {
           display: flex;
           gap: 1rem;
-          justify-content: center;
-          margin-top: 2rem;
+          justify-content: flex-end;
+          margin-top: 2.5rem;
+          padding-top: 1.5rem;
+          border-top: 1px solid #f3efe6;
         }
 
         button {
-          padding: 0.75rem 1.5rem;
+          padding: 0.875rem 2rem;
           border: none;
-          border-radius: 4px;
+          border-radius: 8px;
           font-size: 1rem;
-          font-weight: bold;
+          font-weight: 600;
           cursor: pointer;
-          transition: all 0.3s ease;
+          transition: all 0.2s ease;
+          letter-spacing: 0.02em;
         }
 
         .btn-select {
-          background: linear-gradient(135deg, #8b6f47 0%, #6b5635 100%);
+          background: #2c1810;
           color: white;
         }
 
         .btn-select:hover:not(:disabled) {
-          background: linear-gradient(135deg, #6b5635 0%, #4a3a23 100%);
-          box-shadow: 0 4px 12px rgba(139, 111, 71, 0.2);
+          background: #4a2c20;
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(44, 24, 16, 0.2);
         }
 
         .btn-select:disabled {
-          opacity: 0.5;
+          background: #e0e0e0;
+          color: #999;
           cursor: not-allowed;
+          transform: none;
+          box-shadow: none;
         }
 
         .btn-cancel {
-          background: #ddd;
-          color: #333;
+          background: transparent;
+          color: #666;
+          border: 1px solid #ddd;
         }
 
         .btn-cancel:hover {
-          background: #ccc;
+          background: #f5f5f5;
+          color: #333;
+          border-color: #ccc;
         }
 
         .error {
-          color: #c33;
+          color: #d32f2f;
           padding: 1rem;
-          background: #fee;
-          border-radius: 4px;
+          background: #ffebee;
+          border-radius: 8px;
+          border: 1px solid #ffcdd2;
         }
       `}</style>
     </div>

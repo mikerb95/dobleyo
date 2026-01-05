@@ -114,91 +114,108 @@ export default function RoastForm({ lotId, onRoastSuccess }) {
 
       <style>{`
         .roast-form {
-          max-width: 500px;
-          margin: 2rem auto;
-          padding: 2rem;
+          width: 100%;
+          padding: 2.5rem;
           background: white;
-          border-radius: 8px;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+          border-radius: 16px;
+          box-shadow: 0 10px 30px rgba(44, 24, 16, 0.06);
+          border: 1px solid rgba(139, 111, 71, 0.1);
         }
 
         .form-group {
-          margin-bottom: 1.5rem;
+          margin-bottom: 2rem;
         }
 
         label {
           display: block;
-          margin-bottom: 0.5rem;
-          font-weight: bold;
-          color: #333;
+          margin-bottom: 0.75rem;
+          font-weight: 600;
+          color: #2c1810;
+          font-size: 0.95rem;
+          letter-spacing: 0.02em;
         }
 
         input {
           width: 100%;
-          padding: 0.75rem;
-          border: 1px solid #ddd;
-          border-radius: 4px;
+          padding: 1rem;
+          border: 1px solid #e0e0e0;
+          border-radius: 8px;
           font-size: 1rem;
+          transition: all 0.2s ease;
+          background: #fcfcfc;
+          color: #2c1810;
         }
 
         input:focus {
           outline: none;
           border-color: #8b6f47;
-          box-shadow: 0 0 0 3px rgba(139, 111, 71, 0.1);
+          background: white;
+          box-shadow: 0 0 0 4px rgba(139, 111, 71, 0.1);
         }
 
         input:disabled {
           background: #f5f5f5;
           cursor: not-allowed;
+          color: #999;
         }
 
         small {
           display: block;
-          margin-top: 0.25rem;
+          margin-top: 0.5rem;
           color: #666;
-          font-size: 0.9rem;
+          font-size: 0.85rem;
+          text-align: right;
         }
 
         .alert {
           padding: 1rem;
-          border-radius: 4px;
-          margin-bottom: 1rem;
+          border-radius: 8px;
+          margin-bottom: 1.5rem;
           font-weight: 500;
+          font-size: 0.95rem;
+          display: flex;
+          align-items: center;
         }
 
         .alert-error {
-          background: #fee;
-          color: #c33;
-          border: 1px solid #fcc;
+          background: #ffebee;
+          color: #d32f2f;
+          border: 1px solid #ffcdd2;
         }
 
         .alert-success {
-          background: #efe;
-          color: #3c3;
-          border: 1px solid #cfc;
+          background: #e8f5e9;
+          color: #2e7d32;
+          border: 1px solid #c8e6c9;
         }
 
         button {
           width: 100%;
-          padding: 0.75rem 1.5rem;
-          background: linear-gradient(135deg, #8b6f47 0%, #6b5635 100%);
+          padding: 1rem 1.5rem;
+          background: #2c1810;
           color: white;
           border: none;
-          border-radius: 4px;
-          font-size: 1rem;
-          font-weight: bold;
+          border-radius: 8px;
+          font-size: 1.1rem;
+          font-weight: 600;
           cursor: pointer;
-          transition: all 0.3s ease;
+          transition: all 0.2s ease;
+          letter-spacing: 0.02em;
+          margin-top: 1rem;
         }
 
         button:hover:not(:disabled) {
-          background: linear-gradient(135deg, #6b5635 0%, #4a3a23 100%);
-          box-shadow: 0 4px 12px rgba(139, 111, 71, 0.2);
+          background: #4a2c20;
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(44, 24, 16, 0.2);
         }
 
         button:disabled {
-          opacity: 0.6;
+          background: #e0e0e0;
+          color: #999;
           cursor: not-allowed;
+          transform: none;
+          box-shadow: none;
         }
       `}</style>
     </form>
