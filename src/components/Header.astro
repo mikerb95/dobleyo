@@ -1,9 +1,170 @@
 ---
-
+import AnimatedHeader from './AnimatedHeader.jsx';
 ---
 
-<header class="site-header" id="siteHeader">
-  <div class="container">
+<AnimatedHeader client:load />
+
+<script>
+  // Lógica del Header (Granos y Menú)
+  (function initNavBeans() {
+    const header = document.querySelector(".header-animated");
+    if (!header) return;
+    
+    // Crear el contenedor de granos si no existe
+    let layer = document.querySelector(".nav-beans");
+    if (!layer) {
+      layer = document.createElement("div");
+      layer.className = "nav-beans";
+      layer.setAttribute("aria-hidden", "true");
+      header.insertBefore(layer, header.firstChild);
+    }
+
+    const beanSrc = "/assets/branding/coffebeannav.png";
+    const beans = [];
+    const COUNT = 68;
+    for (let i = 0; i < COUNT; i++) {
+      const img = document.createElement("img");
+      img.className = "bean";
+      img.src = beanSrc;
+      const xPct = 4 + Math.random() * 92;
+      const yPct = 8 + Math.random() * 84;
+      const rot = -40 + Math.random() * 80;
+      const scale = 0.8 + Math.random() * 0.6;
+      const size = 16 + Math.random() * 16 + (Math.random() < 0.15 ? 8 : 0);
+      img.style.left = xPct + "%";
+      img.style.top = yPct + "%";
+      img.style.setProperty("--rot", rot + "deg");
+      img.style.setProperty("--s", scale.toString());
+      img.style.setProperty("--bean-size", size + "px");
+      img._xPct = xPct / 100;
+      img._yPct = yPct / 100;
+      img._rand = Math.random();
+      layer.appendChild(img);
+      beans.push(img);
+    }
+
+    const pointer = { x: 0, y: 0, active: false };
+    let rafId = 0;
+    function animate() {
+      if (pointer.active) {
+        const rect = layer.getBoundingClientRect();
+        const cx = pointer.x - rect.left;
+        const cy = pointer.y - rect.top;
+        for (const b of beans) {
+          const bx = (b._xPct || 0.5) * rect.width;
+          const by = (b._yPct || 0.5) * rect.height;
+          const dx0 = bx - cx;
+          const dy0 = by - cy;
+          const d = Math.hypot(dx0, dy0) || 0.0001;
+          const radius = 140;
+          const strength = 26 + (b._rand || 0) * 22;
+          const falloff = Math.max(0, radius - d) / radius;
+          const repel = falloff * strength;
+          const nx = dx0 / d;
+          const ny = dy0 / d;
+          const dx = nx * repel;
+          const dy = ny * repel;
+          b.style.setProperty("--dx", dx.toFixed(2) + "px");
+          b.style.setProperty("--dy", dy.toFixed(2) + "px");
+        }
+      }
+      rafId = requestAnimationFrame(animate);
+    }
+    rafId = requestAnimationFrame(animate);
+
+    header.addEventListener("mouseenter", () => {
+      pointer.active = true;
+      header.classList.add("beans-active");
+    });
+    header.addEventListener("mousemove", (e) => {
+      pointer.x = e.clientX;
+      pointer.y = e.clientY;
+    });
+    header.addEventListener("mouseleave", () => {
+      pointer.active = false;
+      header.classList.remove("beans-active");
+      beans.forEach((b) => {
+        b.style.setProperty("--dx", "0px");
+        b.style.setProperty("--dy", "0px");
+      });
+    });
+  })();
+
+  // Verificar sesión y actualizar botón de usuario
+  (async function checkAuthStatus() {
+    try {
+      const res = await fetch("/api/auth/me", {
+        credentials: "include",
+      });
+
+      const userBtn = document.getElementById("userNavBtn");
+      const userMobileBtn = document.getElementById("userNavMobileBtn");
+
+      if (res.ok) {
+        // Usuario logueado
+        if (userBtn) {
+          userBtn.href = "/cuenta";
+          userBtn.setAttribute("aria-label", "Mi cuenta");
+        }
+        if (userMobileBtn) {
+          userMobileBtn.href = "/cuenta";
+          userMobileBtn.setAttribute("aria-label", "Mi cuenta");
+        }
+      } else {
+        // Usuario no logueado
+        if (userBtn) {
+          userBtn.href = "/login";
+          userBtn.setAttribute("aria-label", "Iniciar sesión");
+        }
+        if (userMobileBtn) {
+          userMobileBtn.href = "/login";
+          userMobileBtn.setAttribute("aria-label", "Iniciar sesión");
+        }
+      }
+    } catch (err) {
+      // Error en la verificación, asumir no logueado
+      const userBtn = document.getElementById("userNavBtn");
+      const userMobileBtn = document.getElementById("userNavMobileBtn");
+      if (userBtn) {
+        userBtn.href = "/login";
+      }
+      if (userMobileBtn) {
+        userMobileBtn.href = "/login";
+      }
+    }
+  })();
+</script>
+
+<style>
+  .nav-beans {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 1;
+  }
+
+  .bean {
+    position: absolute;
+    width: var(--bean-size, 20px);
+    height: auto;
+    transform: rotate(var(--rot, 0deg)) scale(var(--s, 1));
+    transition: transform 0.1s ease-out;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+    translate: var(--dx, 0px) var(--dy, 0px);
+  }
+
+  .bean:not(.visible) {
+    opacity: 0.3;
+  }
+
+  .beans-active .bean {
+    transition: translate 0.1s ease-out;
+  }
+</style>
     <div class="nav-beans" aria-hidden="true"></div>
     <a class="brand" href="/" data-link>
       <img src="/assets/logo.png" alt="DobleYo" height="56" />
