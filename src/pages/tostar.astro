@@ -5,7 +5,7 @@ import RoastForm from "../components/RoastForm.jsx";
 ---
 
 <Layout title="Tostar Café | DobleYo">
-  <div class="tostar-container">
+  <div class="tostar-container" id="tostarContent" style="display: none;">
     <h1>Tostar Café</h1>
     <p class="subtitle">Selecciona un lote verde y la cantidad a tostar</p>
 
@@ -13,6 +13,10 @@ import RoastForm from "../components/RoastForm.jsx";
       <RoastLotSelector client:load />
       <RoastForm client:load />
     </div>
+  </div>
+  
+  <div id="loadingAuth" style="text-align: center; padding: 4rem 2rem;">
+    Verificando acceso...
   </div>
 </Layout>
 
@@ -62,3 +66,39 @@ import RoastForm from "../components/RoastForm.jsx";
     }
   }
 </style>
+
+<script>
+  // Auth check - Solo admin puede acceder
+  (async function () {
+    const tostarContent = document.getElementById('tostarContent');
+    const loadingAuth = document.getElementById('loadingAuth');
+
+    try {
+      const res = await fetch("/api/auth/me", {
+        credentials: "include",
+      });
+
+      if (!res.ok) {
+        // No autenticado
+        window.location.href = "/login?redirect=/tostar";
+        return;
+      }
+
+      const user = await res.json();
+      
+      if (user.role !== "admin") {
+        // No es admin
+        alert("No tienes permisos para acceder a esta página");
+        window.location.href = "/";
+        return;
+      }
+
+      // Es admin, mostrar contenido
+      if (tostarContent) tostarContent.style.display = 'block';
+      if (loadingAuth) loadingAuth.style.display = 'none';
+    } catch (err) {
+      console.error("Auth error:", err);
+      window.location.href = "/login?redirect=/tostar";
+    }
+  })();
+</script>
