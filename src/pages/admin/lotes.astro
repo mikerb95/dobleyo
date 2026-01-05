@@ -1,0 +1,329 @@
+---
+import Layout from "../../layouts/Layout.astro";
+---
+
+<Layout>
+  <div class="container" style="max-width: 1000px; margin: 2rem auto; padding: 0 1rem;">
+    <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+      <h1>Gestión de Lotes</h1>
+      <div style="display: flex; gap: 1rem;">
+        <span id="userEmail" class="muted"></span>
+        <button id="logoutBtn" class="btn outline small">Cerrar Sesión</button>
+      </div>
+    </header>
+
+    <!-- Tabs -->
+    <div style="display: flex; gap: 1rem; margin-bottom: 2rem; border-bottom: 1px solid #eee;">
+      <button class="tab-btn active" data-tab="crear" style="padding: 1rem; border: none; background: none; cursor: pointer; border-bottom: 3px solid #000;">
+        Crear Lote
+      </button>
+      <button class="tab-btn" data-tab="lista" style="padding: 1rem; border: none; background: none; cursor: pointer;">
+        Listar Lotes
+      </button>
+    </div>
+
+    <!-- Tab: Crear Lote -->
+    <div id="crear-tab" class="tab-content">
+      <div class="card" style="max-width: 700px;">
+        <div class="p">
+          <h2>Nuevo Lote</h2>
+          
+          <form id="lotForm" style="display: grid; gap: 1rem; margin-top: 1rem;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+              <label>
+                Código del Lote (único)<br/>
+                <input type="text" id="lotCode" required placeholder="ej: COL-HUI-2024-001" />
+              </label>
+
+              <label>
+                Nombre<br/>
+                <input type="text" id="lotName" required placeholder="ej: Huila Washed 2024" />
+              </label>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+              <label>
+                Origen<br/>
+                <input type="text" id="lotOrigin" placeholder="ej: Huila, Colombia" />
+              </label>
+
+              <label>
+                Finca<br/>
+                <input type="text" id="lotFarm" placeholder="ej: La Esperanza" />
+              </label>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+              <label>
+                Productor<br/>
+                <input type="text" id="lotProducer" placeholder="ej: Juan Pérez" />
+              </label>
+
+              <label>
+                Altitud<br/>
+                <input type="text" id="lotAltitude" placeholder="ej: 1800 masl" />
+              </label>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+              <label>
+                Proceso<br/>
+                <input type="text" id="lotProcess" placeholder="ej: Washed" />
+              </label>
+
+              <label>
+                Variedad<br/>
+                <input type="text" id="lotVariety" placeholder="ej: Caturra" />
+              </label>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+              <label>
+                Fecha de Cosecha<br/>
+                <input type="date" id="lotHarvestDate" />
+              </label>
+
+              <label>
+                Fecha de Tueste<br/>
+                <input type="date" id="lotRoastDate" />
+              </label>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+              <label>
+                Humedad<br/>
+                <input type="text" id="lotMoisture" placeholder="ej: 11%" />
+              </label>
+
+              <label>
+                Puntuación<br/>
+                <input type="number" id="lotScore" step="0.1" placeholder="ej: 85.5" />
+              </label>
+            </div>
+
+            <label>
+              Notas / Descripción<br/>
+              <textarea id="lotNotes" rows="3" placeholder="Notas sobre el lote..."></textarea>
+            </label>
+
+            <label>
+              Producto Asociado (opcional)<br/>
+              <input type="text" id="lotProductId" placeholder="ej: cafe-colombia-1kg" />
+            </label>
+
+            <button type="submit" class="btn" id="submitBtn">Crear Lote</button>
+          </form>
+
+          <div id="formError" style="color: #b91c1c; display: none; margin-top: 1rem; padding: 1rem; background: #fee2e2; border-radius: 4px;"></div>
+          <div id="formSuccess" style="color: #166534; display: none; margin-top: 1rem; padding: 1rem; background: #dcfce7; border-radius: 4px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: Listar Lotes -->
+    <div id="lista-tab" class="tab-content" style="display: none;">
+      <div id="loading" style="text-align: center; padding: 2rem;">
+        Cargando lotes...
+      </div>
+
+      <div id="lotsList" style="display: none;">
+        <div class="table-responsive">
+          <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+            <thead>
+              <tr style="border-bottom: 2px solid #eee; text-align: left;">
+                <th style="padding: 1rem;">Código</th>
+                <th style="padding: 1rem;">Nombre</th>
+                <th style="padding: 1rem;">Origen</th>
+                <th style="padding: 1rem;">Puntuación</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody">
+              <!-- Rows injected here -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Tab management
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tabName = btn.dataset.tab;
+        
+        // Hide all tabs
+        document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+        
+        // Show selected tab
+        document.getElementById(tabName + '-tab').style.display = 'block';
+        btn.classList.add('active');
+        
+        // Load lots if lista tab
+        if (tabName === 'lista') {
+          loadLots();
+        }
+      });
+    });
+
+    // Auth check
+    (async function () {
+      const emailEl = document.getElementById('userEmail');
+      const logoutBtn = document.getElementById('logoutBtn');
+
+      try {
+        const res = await fetch("/api/auth/me", {
+          credentials: "include",
+        });
+
+        if (!res.ok) {
+          window.location.href = "/login?redirect=/admin/lotes";
+          return;
+        }
+
+        const user = await res.json();
+        
+        if (user.role !== "admin") {
+          alert("No tienes permisos para acceder a esta página");
+          window.location.href = "/";
+          return;
+        }
+
+        if (emailEl) emailEl.textContent = user.email || "Admin";
+
+        // Logout
+        if (logoutBtn) {
+          logoutBtn.addEventListener("click", async () => {
+            await fetch("/api/auth/logout", {
+              method: "POST",
+              credentials: "include",
+            });
+            window.location.href = "/";
+          });
+        }
+      } catch (err) {
+        console.error("Auth error:", err);
+        window.location.href = "/login?redirect=/admin/lotes";
+      }
+    })();
+
+    // Form submission
+    document.getElementById('lotForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const formError = document.getElementById('formError');
+      const formSuccess = document.getElementById('formSuccess');
+      const submitBtn = document.getElementById('submitBtn');
+
+      const data = {
+        code: document.getElementById('lotCode').value.trim(),
+        name: document.getElementById('lotName').value.trim(),
+        origin: document.getElementById('lotOrigin').value.trim() || null,
+        farm: document.getElementById('lotFarm').value.trim() || null,
+        producer: document.getElementById('lotProducer').value.trim() || null,
+        altitude: document.getElementById('lotAltitude').value.trim() || null,
+        process: document.getElementById('lotProcess').value.trim() || null,
+        variety: document.getElementById('lotVariety').value.trim() || null,
+        harvest_date: document.getElementById('lotHarvestDate').value || null,
+        roast_date: document.getElementById('lotRoastDate').value || null,
+        moisture: document.getElementById('lotMoisture').value.trim() || null,
+        score: document.getElementById('lotScore').value ? parseFloat(document.getElementById('lotScore').value) : null,
+        notes: document.getElementById('lotNotes').value.trim() || null,
+        product_id: document.getElementById('lotProductId').value.trim() || null,
+      };
+
+      if (!data.code || !data.name) {
+        formError.textContent = 'Código y Nombre son requeridos';
+        formError.style.display = 'block';
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Creando...';
+      formError.style.display = 'none';
+      formSuccess.style.display = 'none';
+
+      try {
+        const res = await fetch('/api/lots', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify(data),
+        });
+
+        const result = await res.json();
+
+        if (!res.ok) {
+          throw new Error(result.error || 'Error creando lote');
+        }
+
+        formSuccess.textContent = `✓ Lote "${result.name}" creado exitosamente`;
+        formSuccess.style.display = 'block';
+        
+        // Reset form
+        document.getElementById('lotForm').reset();
+        
+        setTimeout(() => {
+          formSuccess.style.display = 'none';
+        }, 3000);
+      } catch (err) {
+        formError.textContent = err.message;
+        formError.style.display = 'block';
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Crear Lote';
+      }
+    });
+
+    // Load and display lots
+    async function loadLots() {
+      const loading = document.getElementById('loading');
+      const lotsList = document.getElementById('lotsList');
+      const tableBody = document.getElementById('tableBody');
+
+      try {
+        const res = await fetch('/api/lots', {
+          credentials: 'include',
+        });
+
+        if (!res.ok) throw new Error('Error cargando lotes');
+
+        const data = await res.json();
+        
+        if (!data.lots || data.lots.length === 0) {
+          loading.textContent = 'No hay lotes';
+          return;
+        }
+
+        tableBody.innerHTML = data.lots.map(l => `
+          <tr style="border-bottom: 1px solid #eee;">
+            <td style="padding: 1rem;"><strong>${l.code || '—'}</strong></td>
+            <td style="padding: 1rem;">${l.name || '—'}</td>
+            <td style="padding: 1rem;">${l.origin || '—'}</td>
+            <td style="padding: 1rem;">${l.score ? l.score + ' pts' : '—'}</td>
+          </tr>
+        `).join('');
+
+        loading.style.display = 'none';
+        lotsList.style.display = 'block';
+      } catch (err) {
+        loading.textContent = 'Error: ' + err.message;
+      }
+    }
+  </script>
+
+  <style>
+    .tab-btn.active {
+      border-bottom-color: #000 !important;
+      font-weight: bold;
+    }
+    
+    textarea {
+      font-family: inherit;
+      padding: 0.5rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+  </style>
+</Layout>

@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 import { stockRouter } from '../server/routes/stock.js';
 import { authRouter } from '../server/routes/auth.js';
 import { setupRouter } from '../server/routes/setup.js';
+import { lotsRouter } from '../server/routes/lots.js';
 
 const app = express();
 
@@ -21,6 +22,7 @@ app.use(cors({
 // Routes
 app.use('/api/auth', authRouter);
 app.use('/api/stock', stockRouter);
+app.use('/api/lots', lotsRouter);
 app.use('/api/setup', setupRouter);
 
 // Health Check
