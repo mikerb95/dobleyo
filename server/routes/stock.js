@@ -37,7 +37,7 @@ export const stockRouter = Router();
 // Endpoint publico para consultar stock (usado por el frontend)
 stockRouter.get('/', async (req, res) => {
   try {
-    const items = await db.query('SELECT slug, stock, name, image_url, price_cop FROM products ORDER BY name ASC'); 
+    const items = await db.query('SELECT id as slug, stock, name, image_url, price as price_cop FROM products ORDER BY name ASC'); 
     res.json({ items: items.rows });
   } catch (err) {
     console.error(err);

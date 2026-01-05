@@ -1,9 +1,14 @@
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Initialize Resend only if key is present to avoid crashes
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 const FROM_EMAIL = process.env.EMAIL_FROM || 'onboarding@resend.dev'; // Usar dominio verificado en prod
 
 export const sendVerificationEmail = async (email, token) => {
+  if (!resend) {
+    console.log('Mock Email sent to:', email, 'Token:', token);
+    return { success: true, mock: true };
+  }
   const verifyUrl = `${process.env.SITE_BASE_URL || 'http://localhost:4000'}/verify-email.html?token=${token}`;
 
   try {
