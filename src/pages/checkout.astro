@@ -101,7 +101,8 @@ import Layout from "../layouts/Layout.astro";
           sumTotal.textContent = fmt(total);
 
           async function pay() {
-            payError.textContent = "Los métodos de pago aún no están disponibles";
+            payError.textContent =
+              "Los métodos de pago aún no están disponibles";
             payError.style.display = "block";
           }
           payBtn.addEventListener("click", pay);
