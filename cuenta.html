@@ -65,12 +65,34 @@
   </main>
 
   <script>
-    (function(){
-      const userRaw = localStorage.getItem('dbyo_user');
+    (async function(){
       const emailEl = document.getElementById('userEmail');
-      if(!userRaw){ location.replace('login.html'); return; }
-      try { const u = JSON.parse(userRaw); emailEl.textContent = u.email || '—'; } catch { emailEl.textContent = '—'; }
-      document.getElementById('logoutBtn').addEventListener('click', ()=>{ localStorage.removeItem('dbyo_user'); location.href='index.html'; });
+      const logoutBtn = document.getElementById('logoutBtn');
+      
+      try {
+        const res = await fetch('/api/auth/me', {
+          credentials: 'include'
+        });
+        
+        if(!res.ok){ 
+          location.replace('login.html'); 
+          return; 
+        }
+        
+        const u = await res.json();
+        emailEl.textContent = u.email || '—';
+        
+        logoutBtn.addEventListener('click', async ()=>{ 
+          await fetch('/api/auth/logout', {
+            method: 'POST',
+            credentials: 'include'
+          });
+          location.href='index.html'; 
+        });
+      } catch(err) {
+        console.error('Auth error:', err);
+        location.replace('login.html');
+      }
     })();
   </script>
   <script src="assets/js/cart.js" defer></script>

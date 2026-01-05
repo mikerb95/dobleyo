@@ -49,7 +49,6 @@ import Layout from "../../layouts/Layout.astro";
 
   <script>
     const API_URL = "/api/stock";
-    const AUTH_KEY = "dbyo_token"; // Key for storing JWT in localStorage
 
     // Elements
     const tableBody = document.getElementById("tableBody");
@@ -59,36 +58,52 @@ import Layout from "../../layouts/Layout.astro";
     const userEmailEl = document.getElementById("userEmail");
     const logoutBtn = document.getElementById("logoutBtn");
 
-    // Auth Check
-    function getAuth() {
-      const stored = localStorage.getItem(AUTH_KEY);
-      if (!stored) return null;
+    // Auth Check - Verificar sesión con el servidor
+    (async function () {
       try {
-        return JSON.parse(stored);
-      } catch (e) {
-        return null;
-      }
-    }
+        const res = await fetch("/api/auth/me", {
+          credentials: "include",
+        });
 
-    const auth = getAuth();
-    if (!auth || !auth.token) {
-      window.location.href = "/login?redirect=/admin/inventario";
-    } else {
-      if (userEmailEl) userEmailEl.textContent = auth.user?.email || "Admin";
-      loadInventory();
-    }
+        if (!res.ok) {
+          // No logueado, redirigir a login
+          window.location.href = "/login?redirect=/admin/inventario";
+          return;
+        }
+
+        const user = await res.json();
+        
+        // Verificar que es admin
+        if (user.role !== "admin") {
+          showError("No tienes permisos para acceder a esta página");
+          loadingEl.style.display = "none";
+          return;
+        }
+
+        if (userEmailEl) userEmailEl.textContent = user.email || "Admin";
+        loadInventory();
+      } catch (err) {
+        console.error("Auth error:", err);
+        window.location.href = "/login?redirect=/admin/inventario";
+      }
+    })();
 
     // Logout
     if (logoutBtn) {
-      logoutBtn.addEventListener("click", () => {
-        localStorage.removeItem(AUTH_KEY);
-        window.location.href = "/login";
+      logoutBtn.addEventListener("click", async () => {
+        await fetch("/api/auth/logout", {
+          method: "POST",
+          credentials: "include",
+        });
+        window.location.href = "/";
       });
     }
 
     async function loadInventory() {
       try {
-        const res = await fetch(API_URL);
+        const res = await fetch(API_URL, {
+          credentials: "include",
+        });
         if (!res.ok) throw new Error("Error cargando inventario");
         const data = await res.json();
         renderTable(data.items);
