@@ -3,26 +3,26 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 ---
 
 <AdminLayout>
-  <div class="mb-8">
-    <h1 class="text-2xl font-bold text-gray-900">Dashboard</h1>
-    <p class="text-gray-600 mt-1">
+  <div class="mb-6">
+    <h1 class="text-xl font-bold text-gray-900">Dashboard</h1>
+    <p class="text-sm text-gray-600 mt-1">
       Bienvenido al panel de administración de DobleYo.
     </p>
   </div>
 
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
     <!-- Card 1: Inventario -->
     <a
       href="/admin/inventario"
-      class="block p-6 bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow group"
+      class="block p-4 bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow group"
     >
-      <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center justify-between mb-3">
         <div
-          class="p-3 rounded-lg bg-blue-50 text-blue-600 group-hover:bg-blue-100 transition-colors"
+          class="p-2 rounded-lg bg-blue-50 text-blue-600 group-hover:bg-blue-100 transition-colors"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            class="h-6 w-6"
+            class="h-5 w-5"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -49,8 +49,8 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
           </svg>
         </span>
       </div>
-      <h3 class="text-lg font-semibold text-gray-900 mb-1">Inventario</h3>
-      <p class="text-sm text-gray-500">
+      <h3 class="text-base font-semibold text-gray-900 mb-1">Inventario</h3>
+      <p class="text-xs text-gray-500">
         Gestionar stock y disponibilidad de productos.
       </p>
     </a>
@@ -58,15 +58,15 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     <!-- Card 2: Productos -->
     <a
       href="/admin/productos"
-      class="block p-6 bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow group"
+      class="block p-4 bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow group"
     >
-      <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center justify-between mb-3">
         <div
-          class="p-3 rounded-lg bg-purple-50 text-purple-600 group-hover:bg-purple-100 transition-colors"
+          class="p-2 rounded-lg bg-purple-50 text-purple-600 group-hover:bg-purple-100 transition-colors"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            class="h-6 w-6"
+            class="h-5 w-5"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -93,8 +93,8 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
           </svg>
         </span>
       </div>
-      <h3 class="text-lg font-semibold text-gray-900 mb-1">Productos</h3>
-      <p class="text-sm text-gray-500">
+      <h3 class="text-base font-semibold text-gray-900 mb-1">Productos</h3>
+      <p class="text-xs text-gray-500">
         Administrar catálogo, precios y detalles.
       </p>
     </a>
@@ -102,15 +102,15 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     <!-- Card 3: Lotes -->
     <a
       href="/admin/lotes"
-      class="block p-6 bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow group"
+      class="block p-4 bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow group"
     >
-      <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center justify-between mb-3">
         <div
-          class="p-3 rounded-lg bg-amber-50 text-amber-600 group-hover:bg-amber-100 transition-colors"
+          class="p-2 rounded-lg bg-amber-50 text-amber-600 group-hover:bg-amber-100 transition-colors"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            class="h-6 w-6"
+            class="h-5 w-5"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -126,7 +126,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         <span class="text-gray-400 group-hover:text-gray-600">
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5"
+            class="h-4 w-4"
             viewBox="0 0 20 20"
             fill="currentColor"
           >
@@ -137,14 +137,14 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
           </svg>
         </span>
       </div>
-      <h3 class="text-lg font-semibold text-gray-900 mb-1">Lotes de Café</h3>
-      <p class="text-sm text-gray-500">Control de lotes verdes y tostados.</p>
+      <h3 class="text-base font-semibold text-gray-900 mb-1">Lotes de Café</h3>
+      <p class="text-xs text-gray-500">Control de lotes verdes y tostados.</p>
     </a>
   </div>
 
-  <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-    <h2 class="text-lg font-semibold text-gray-900 mb-4">Actividad Reciente</h2>
-    <div class="text-sm text-gray-500 text-center py-8">
+  <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
+    <h2 class="text-base font-semibold text-gray-900 mb-3">Actividad Reciente</h2>
+    <div class="text-xs text-gray-500 text-center py-6">
       No hay actividad reciente para mostrar.
     </div>
   </div>

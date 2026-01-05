@@ -3,22 +3,22 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 ---
 
 <AdminLayout>
-  <div class="mb-6">
-    <h1 class="text-2xl font-bold text-gray-900">Gestión de Lotes</h1>
-    <p class="text-gray-500">Administra los lotes de café verde y tostado.</p>
+  <div class="mb-4">
+    <h1 class="text-xl font-bold text-gray-900">Gestión de Lotes</h1>
+    <p class="text-xs text-gray-500">Administra los lotes de café verde y tostado.</p>
   </div>
 
   <!-- Tabs -->
-  <div class="border-b border-gray-200 mb-6">
-    <nav class="-mb-px flex space-x-8">
+  <div class="border-b border-gray-200 mb-4">
+    <nav class="-mb-px flex space-x-4">
       <button
-        class="tab-btn active border-amber-500 text-amber-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm"
+        class="tab-btn active border-amber-500 text-amber-600 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-xs"
         data-tab="crear"
       >
         Crear Lote
       </button>
       <button
-        class="tab-btn border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm"
+        class="tab-btn border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-xs"
         data-tab="lista"
       >
         Listar Lotes
@@ -29,14 +29,14 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   <!-- Tab: Crear Lote -->
   <div id="crear-tab" class="tab-content">
     <div
-      class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 max-w-4xl"
+      class="bg-white rounded-lg border border-gray-200 shadow-sm p-4 max-w-3xl"
     >
-      <h2 class="text-lg font-semibold text-gray-900 mb-6">Nuevo Lote</h2>
+      <h2 class="text-base font-semibold text-gray-900 mb-4">Nuevo Lote</h2>
 
-      <form id="lotForm" class="space-y-6">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <form id="lotForm" class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1"
+            <label class="block text-xs font-medium text-gray-700 mb-1"
               >Código del Lote (único)</label
             >
             <input
@@ -44,12 +44,12 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
               id="lotCode"
               required
               placeholder="ej: COL-HUI-2024-001"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
+              class="w-full px-2 py-1 text-sm border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500"
             />
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1"
+            <label class="block text-xs font-medium text-gray-700 mb-1"
               >Nombre</label
             >
             <input
@@ -57,24 +57,24 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
               id="lotName"
               required
               placeholder="ej: Huila Washed 2024"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
+              class="w-full px-2 py-1 text-sm border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500"
             />
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1"
+            <label class="block text-xs font-medium text-gray-700 mb-1"
               >Origen</label
             >
             <input
               type="text"
               id="lotOrigin"
               placeholder="ej: Huila, Colombia"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
+              class="w-full px-2 py-1 text-sm border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500"
             />
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1"
+            <label class="block text-xs font-medium text-gray-700 mb-1"
               >Finca</label
             >
             <input

@@ -3,17 +3,21 @@
 ## 🎯 Problemas Identificados y Solucionados
 
 ### Problema 1: Placeholders SQL Incorrectos
+
 Tu proyecto en **Vercel** + **Aiven MySQL** tenía queries con placeholders **PostgreSQL** (`$1, $2, $3`) en lugar de **MySQL** (`?`).
 
-### Problema 2: Sintaxis Rota en stock.js  
+### Problema 2: Sintaxis Rota en stock.js
+
 Archivo `server/routes/stock.js` tenía un handler de ruta huérfano que causaba "Illegal return statement".
 
 ### Problema 3: api/index.js Incompatible con Vercel
+
 El archivo estaba intentando exportar una app de Express directamente, pero Vercel requiere una función handler.
 
 ## ✅ Cambios Realizados
 
 ### 1. **server/routes/auth.js** - 6 queries corregidas
+
 - ✅ `INSERT INTO refresh_tokens` - `$1, $2, $3` → `?, ?, ?`
 - ✅ `UPDATE users SET last_login_at` - `$1` → `?`
 - ✅ `SELECT FROM refresh_tokens JOIN users` - `$1` → `?`
@@ -23,30 +27,36 @@ El archivo estaba intentando exportar una app de Express directamente, pero Verc
 - ✅ `SELECT FROM users` (/me endpoint) - `$1` → `?`
 
 ### 2. **server/routes/stock.js** - Sintaxis reparada
+
 - ✅ Agregado handler faltante: `stockRouter.get('/:sku', ...)`
 - ✅ Eliminado código huérfano (línea 73-81)
 - ✅ Ahora compila sin errores
 
 ### 3. **api/index.js** - Refactorizado para Vercel
+
 - ✅ Incluye middleware directamente (CORS, cookieParser, express.json)
 - ✅ Carga todas las rutas correctamente
 - ✅ Compatible con serverless functions de Vercel
 
 ### 4. **.env.example** - Actualizado con variables críticas
+
 - ✅ Agregado `DATABASE_URL` para Aiven
 - ✅ Agregado `JWT_SECRET` y `JWT_REFRESH_SECRET`
 - ✅ Agregado `NODE_ENV`, `RESEND_API_KEY`, `EMAIL_FROM`
 
 ### 5. **.env** - Creado con template local
+
 - ✅ Variables de desarrollo configuradas
 - ✅ Instrucciones de dónde obtener `DATABASE_URL`
 
 ### 6. **src/pages/login.astro** - Seguridad mejorada
+
 - ✅ Removido localStorage (inseguro)
 - ✅ Implementado `credentials: 'include'` para enviar cookies
 - ✅ Confianza en HttpOnly cookies para persistencia
 
 ### 7. **src/pages/cuenta.astro** - Sesión persistente
+
 - ✅ Verificación real con `/api/auth/me` endpoint
 - ✅ Redirige a login si no está autenticado
 - ✅ Logout funcional con limpieza de cookies
@@ -57,6 +67,7 @@ El archivo estaba intentando exportar una app de Express directamente, pero Verc
 ## 🚀 STATUS ACTUAL
 
 ### ✅ **Completado:**
+
 - BD conectada y funcionando
 - API viva y respondiendo
 - Registro de usuarios funcional
@@ -65,6 +76,7 @@ El archivo estaba intentando exportar una app de Express directamente, pero Verc
 - Logout funcional
 
 ### ⏳ **Por Completar:**
+
 - Rate limiting en auth
 - Refresh tokens hasheados
 - Verificación obligatoria de email
@@ -76,6 +88,7 @@ El archivo estaba intentando exportar una app de Express directamente, pero Verc
 ## 🧪 **CÓMO TESTEAR AHORA (después del deploy)**
 
 ### **1. Registro:**
+
 ```bash
 curl -X POST https://dobleyocafe.vercel.app/api/auth/register \
   -H "Content-Type: application/json" \
@@ -83,6 +96,7 @@ curl -X POST https://dobleyocafe.vercel.app/api/auth/register \
 ```
 
 ### **2. Login + Verificar Persistencia:**
+
 ```bash
 # Login
 curl -X POST https://dobleyocafe.vercel.app/api/auth/login \
@@ -96,6 +110,7 @@ curl https://dobleyocafe.vercel.app/api/auth/me \
 ```
 
 ### **3. En el navegador:**
+
 1. Ve a https://dobleyocafe.vercel.app/login
 2. Haz login con el usuario (debería redirigir a /cuenta)
 3. **Recarga la página** → Debería mantener la sesión (ANTES NO PASABA)
@@ -113,11 +128,13 @@ curl https://dobleyocafe.vercel.app/api/auth/me \
 ## 🚀 PRÓXIMOS PASOS INMEDIATOS
 
 ### **PASO 1: Esperar deploy en Vercel**
+
 El código ya fue pusheado. Vercel está recompilando ahora (~2-5 minutos).
 
 ### **PASO 2: Testear en https://dobleyocafe.vercel.app/login**
 
 ### **PASO 3: Si funciona la persistencia, podemos continuar con:**
+
 1. **Rate limiting** - Proteger de brute force
 2. **Refresh tokens hasheados** - Seguridad en BD
 3. **Mercado Pago** - Pagos reales

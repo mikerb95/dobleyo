@@ -3,22 +3,22 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 ---
 
 <AdminLayout>
-  <div class="mb-6">
-    <h1 class="text-2xl font-bold text-gray-900">Gestión de Productos</h1>
-    <p class="text-gray-500">Administra el catálogo de productos y precios.</p>
+  <div class="mb-4">
+    <h1 class="text-xl font-bold text-gray-900">Gestión de Productos</h1>
+    <p class="text-xs text-gray-500">Administra el catálogo de productos y precios.</p>
   </div>
 
   <!-- Tabs -->
-  <div class="border-b border-gray-200 mb-6">
-    <nav class="-mb-px flex space-x-8">
+  <div class="border-b border-gray-200 mb-4">
+    <nav class="-mb-px flex space-x-4">
       <button
-        class="tab-btn active border-amber-500 text-amber-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm"
+        class="tab-btn active border-amber-500 text-amber-600 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-xs"
         data-tab="crear"
       >
         Crear Producto
       </button>
       <button
-        class="tab-btn border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm"
+        class="tab-btn border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-xs"
         data-tab="lista"
       >
         Listar Productos
@@ -29,14 +29,14 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   <!-- Tab: Crear Producto -->
   <div id="crear-tab" class="tab-content">
     <div
-      class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 max-w-3xl"
+      class="bg-white rounded-lg border border-gray-200 shadow-sm p-4 max-w-2xl"
     >
-      <h2 class="text-lg font-semibold text-gray-900 mb-6">Nuevo Producto</h2>
+      <h2 class="text-base font-semibold text-gray-900 mb-4">Nuevo Producto</h2>
 
-      <form id="productForm" class="space-y-6">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <form id="productForm" class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1"
+            <label class="block text-xs font-medium text-gray-700 mb-1"
               >ID del Producto (SKU)</label
             >
             <input
@@ -44,12 +44,12 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
               id="productId"
               required
               placeholder="ej: cafe-colombia-1kg"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
+              class="w-full px-2 py-1 text-sm border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500"
             />
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1"
+            <label class="block text-xs font-medium text-gray-700 mb-1"
               >Nombre</label
             >
             <input
@@ -57,12 +57,12 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
               id="productName"
               required
               placeholder="ej: Café Colombia 1kg"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
+              class="w-full px-2 py-1 text-sm border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500"
             />
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1"
+            <label class="block text-xs font-medium text-gray-700 mb-1"
               >Precio (COP)</label
             >
             <input
@@ -70,48 +70,48 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
               id="productPrice"
               required
               placeholder="ej: 25000"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
+              class="w-full px-2 py-1 text-sm border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500"
             />
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1"
+            <label class="block text-xs font-medium text-gray-700 mb-1"
               >Stock Inicial</label
             >
             <input
               type="number"
               id="productStock"
               value="0"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
+              class="w-full px-2 py-1 text-sm border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500"
             />
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1"
+            <label class="block text-xs font-medium text-gray-700 mb-1"
               >Categoría</label
             >
             <input
               type="text"
               id="productCategory"
               placeholder="ej: cafe-molido"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
+              class="w-full px-2 py-1 text-sm border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500"
             />
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1"
+            <label class="block text-xs font-medium text-gray-700 mb-1"
               >Origen</label
             >
             <input
               type="text"
               id="productOrigin"
               placeholder="ej: Huila, Colombia"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
+              class="w-full px-2 py-1 text-sm border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500"
             />
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1"
+            <label class="block text-xs font-medium text-gray-700 mb-1"
               >Proceso</label
             >
             <input
@@ -147,11 +147,11 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
           />
         </div>
 
-        <div class="pt-4">
+        <div class="pt-3">
           <button
             type="submit"
             id="submitBtn"
-            class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-amber-900 hover:bg-amber-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 transition-colors"
+            class="w-full flex justify-center py-2 px-3 border border-transparent rounded-md shadow-sm text-xs font-medium text-white bg-amber-900 hover:bg-amber-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 transition-colors"
           >
             Crear Producto
           </button>
@@ -160,12 +160,12 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
       <div
         id="formError"
-        class="hidden mt-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm"
+        class="hidden mt-3 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-xs"
       >
       </div>
       <div
         id="formSuccess"
-        class="hidden mt-4 p-4 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm"
+        class="hidden mt-3 p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-xs"
       >
       </div>
     </div>
@@ -173,28 +173,28 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
   <!-- Tab: Listar Productos -->
   <div id="lista-tab" class="tab-content hidden">
-    <div id="loading" class="text-center py-12">
+    <div id="loading" class="text-center py-8">
       <div
-        class="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-900 mx-auto mb-4"
+        class="animate-spin rounded-full h-6 w-6 border-b-2 border-amber-900 mx-auto mb-3"
       >
       </div>
-      <p class="text-gray-500">Cargando productos...</p>
+      <p class="text-xs text-gray-500">Cargando productos...</p>
     </div>
 
     <div
       id="productsList"
-      class="hidden bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden"
+      class="hidden bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden"
     >
       <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse">
+        <table class="w-full text-left border-collapse text-sm">
           <thead>
             <tr
               class="bg-gray-50 border-b border-gray-200 text-xs uppercase text-gray-500 font-semibold"
             >
-              <th class="px-6 py-4">ID</th>
-              <th class="px-6 py-4">Nombre</th>
-              <th class="px-6 py-4">Precio</th>
-              <th class="px-6 py-4">Stock</th>
+              <th class="px-4 py-3">ID</th>
+              <th class="px-4 py-3">Nombre</th>
+              <th class="px-4 py-3">Precio</th>
+              <th class="px-4 py-3">Stock</th>
             </tr>
           </thead>
           <tbody id="tableBody" class="divide-y divide-gray-100">
