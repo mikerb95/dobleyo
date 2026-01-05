@@ -11,14 +11,14 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   <!-- Tabs -->
   <div class="border-b border-gray-200 mb-6">
     <nav class="-mb-px flex space-x-8">
-      <button 
-        class="tab-btn active border-amber-500 text-amber-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" 
+      <button
+        class="tab-btn active border-amber-500 text-amber-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm"
         data-tab="crear"
       >
         Crear Lote
       </button>
-      <button 
-        class="tab-btn border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" 
+      <button
+        class="tab-btn border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm"
         data-tab="lista"
       >
         Listar Lotes
@@ -28,106 +28,227 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
   <!-- Tab: Crear Lote -->
   <div id="crear-tab" class="tab-content">
-    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 max-w-4xl">
+    <div
+      class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 max-w-4xl"
+    >
       <h2 class="text-lg font-semibold text-gray-900 mb-6">Nuevo Lote</h2>
-      
+
       <form id="lotForm" class="space-y-6">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Código del Lote (único)</label>
-            <input type="text" id="lotCode" required placeholder="ej: COL-HUI-2024-001" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm" />
+            <label class="block text-sm font-medium text-gray-700 mb-1"
+              >Código del Lote (único)</label
+            >
+            <input
+              type="text"
+              id="lotCode"
+              required
+              placeholder="ej: COL-HUI-2024-001"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
+            />
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
-            <input type="text" id="lotName" required placeholder="ej: Huila Washed 2024" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm" />
+            <label class="block text-sm font-medium text-gray-700 mb-1"
+              >Nombre</label
+            >
+            <input
+              type="text"
+              id="lotName"
+              required
+              placeholder="ej: Huila Washed 2024"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
+            />
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Origen</label>
-            <input type="text" id="lotOrigin" placeholder="ej: Huila, Colombia" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm" />
+            <label class="block text-sm font-medium text-gray-700 mb-1"
+              >Origen</label
+            >
+            <input
+              type="text"
+              id="lotOrigin"
+              placeholder="ej: Huila, Colombia"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
+            />
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Finca</label>
-            <input type="text" id="lotFarm" placeholder="ej: La Esperanza" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm" />
+            <label class="block text-sm font-medium text-gray-700 mb-1"
+              >Finca</label
+            >
+            <input
+              type="text"
+              id="lotFarm"
+              placeholder="ej: La Esperanza"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
+            />
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Productor</label>
-            <input type="text" id="lotProducer" placeholder="ej: Juan Pérez" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm" />
+            <label class="block text-sm font-medium text-gray-700 mb-1"
+              >Productor</label
+            >
+            <input
+              type="text"
+              id="lotProducer"
+              placeholder="ej: Juan Pérez"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
+            />
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Altitud</label>
-            <input type="text" id="lotAltitude" placeholder="ej: 1800 masl" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm" />
+            <label class="block text-sm font-medium text-gray-700 mb-1"
+              >Altitud</label
+            >
+            <input
+              type="text"
+              id="lotAltitude"
+              placeholder="ej: 1800 masl"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
+            />
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Proceso</label>
-            <input type="text" id="lotProcess" placeholder="ej: Washed" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm" />
+            <label class="block text-sm font-medium text-gray-700 mb-1"
+              >Proceso</label
+            >
+            <input
+              type="text"
+              id="lotProcess"
+              placeholder="ej: Washed"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
+            />
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Variedad</label>
-            <input type="text" id="lotVariety" placeholder="ej: Caturra" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm" />
+            <label class="block text-sm font-medium text-gray-700 mb-1"
+              >Variedad</label
+            >
+            <input
+              type="text"
+              id="lotVariety"
+              placeholder="ej: Caturra"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
+            />
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Fecha de Cosecha</label>
-            <input type="date" id="lotHarvestDate" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm" />
+            <label class="block text-sm font-medium text-gray-700 mb-1"
+              >Fecha de Cosecha</label
+            >
+            <input
+              type="date"
+              id="lotHarvestDate"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
+            />
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Fecha de Tueste</label>
-            <input type="date" id="lotRoastDate" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm" />
+            <label class="block text-sm font-medium text-gray-700 mb-1"
+              >Fecha de Tueste</label
+            >
+            <input
+              type="date"
+              id="lotRoastDate"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
+            />
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Humedad</label>
-            <input type="text" id="lotMoisture" placeholder="ej: 11%" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm" />
+            <label class="block text-sm font-medium text-gray-700 mb-1"
+              >Humedad</label
+            >
+            <input
+              type="text"
+              id="lotMoisture"
+              placeholder="ej: 11%"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
+            />
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Puntuación</label>
-            <input type="number" id="lotScore" step="0.1" placeholder="ej: 85.5" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm" />
+            <label class="block text-sm font-medium text-gray-700 mb-1"
+              >Puntuación</label
+            >
+            <input
+              type="number"
+              id="lotScore"
+              step="0.1"
+              placeholder="ej: 85.5"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
+            />
           </div>
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Notas / Descripción</label>
-          <textarea id="lotNotes" rows="3" placeholder="Notas sobre el lote..." class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm"></textarea>
+          <label class="block text-sm font-medium text-gray-700 mb-1"
+            >Notas / Descripción</label
+          >
+          <textarea
+            id="lotNotes"
+            rows="3"
+            placeholder="Notas sobre el lote..."
+            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
+          ></textarea>
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Producto Asociado (opcional)</label>
-          <input type="text" id="lotProductId" placeholder="ej: cafe-colombia-1kg" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm" />
+          <label class="block text-sm font-medium text-gray-700 mb-1"
+            >Producto Asociado (opcional)</label
+          >
+          <input
+            type="text"
+            id="lotProductId"
+            placeholder="ej: cafe-colombia-1kg"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
+          />
         </div>
 
         <div class="pt-4">
-          <button type="submit" id="submitBtn" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-amber-900 hover:bg-amber-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 transition-colors">
+          <button
+            type="submit"
+            id="submitBtn"
+            class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-amber-900 hover:bg-amber-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 transition-colors"
+          >
             Crear Lote
           </button>
         </div>
       </form>
 
-      <div id="formError" class="hidden mt-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm"></div>
-      <div id="formSuccess" class="hidden mt-4 p-4 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm"></div>
+      <div
+        id="formError"
+        class="hidden mt-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm"
+      >
+      </div>
+      <div
+        id="formSuccess"
+        class="hidden mt-4 p-4 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm"
+      >
+      </div>
     </div>
   </div>
 
   <!-- Tab: Listar Lotes -->
   <div id="lista-tab" class="tab-content hidden">
     <div id="loading" class="text-center py-12">
-      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-900 mx-auto mb-4"></div>
+      <div
+        class="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-900 mx-auto mb-4"
+      >
+      </div>
       <p class="text-gray-500">Cargando lotes...</p>
     </div>
 
-    <div id="lotsList" class="hidden bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+    <div
+      id="lotsList"
+      class="hidden bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden"
+    >
       <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse">
           <thead>
-            <tr class="bg-gray-50 border-b border-gray-200 text-xs uppercase text-gray-500 font-semibold">
+            <tr
+              class="bg-gray-50 border-b border-gray-200 text-xs uppercase text-gray-500 font-semibold"
+            >
               <th class="px-6 py-4">Código</th>
               <th class="px-6 py-4">Nombre</th>
               <th class="px-6 py-4">Origen</th>
@@ -144,130 +265,150 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
   <script is:inline>
     // Tab management
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
+    document.querySelectorAll(".tab-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
         const tabName = btn.dataset.tab;
-        
+
         // Hide all tabs
-        document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-        document.querySelectorAll('.tab-btn').forEach(el => {
-          el.classList.remove('active', 'border-amber-500', 'text-amber-600');
-          el.classList.add('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
+        document
+          .querySelectorAll(".tab-content")
+          .forEach((el) => el.classList.add("hidden"));
+        document.querySelectorAll(".tab-btn").forEach((el) => {
+          el.classList.remove("active", "border-amber-500", "text-amber-600");
+          el.classList.add(
+            "border-transparent",
+            "text-gray-500",
+            "hover:text-gray-700",
+            "hover:border-gray-300"
+          );
         });
-        
+
         // Show selected tab
-        document.getElementById(tabName + '-tab').classList.remove('hidden');
-        btn.classList.add('active', 'border-amber-500', 'text-amber-600');
-        btn.classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
-        
+        document.getElementById(tabName + "-tab").classList.remove("hidden");
+        btn.classList.add("active", "border-amber-500", "text-amber-600");
+        btn.classList.remove(
+          "border-transparent",
+          "text-gray-500",
+          "hover:text-gray-700",
+          "hover:border-gray-300"
+        );
+
         // Load lots if lista tab
-        if (tabName === 'lista') {
+        if (tabName === "lista") {
           loadLots();
         }
       });
     });
 
     // Form submission
-    document.getElementById('lotForm').addEventListener('submit', async (e) => {
+    document.getElementById("lotForm").addEventListener("submit", async (e) => {
       e.preventDefault();
 
-      const formError = document.getElementById('formError');
-      const formSuccess = document.getElementById('formSuccess');
-      const submitBtn = document.getElementById('submitBtn');
+      const formError = document.getElementById("formError");
+      const formSuccess = document.getElementById("formSuccess");
+      const submitBtn = document.getElementById("submitBtn");
 
       const data = {
-        code: document.getElementById('lotCode').value.trim(),
-        name: document.getElementById('lotName').value.trim(),
-        origin: document.getElementById('lotOrigin').value.trim() || null,
-        farm: document.getElementById('lotFarm').value.trim() || null,
-        producer: document.getElementById('lotProducer').value.trim() || null,
-        altitude: document.getElementById('lotAltitude').value.trim() || null,
-        process: document.getElementById('lotProcess').value.trim() || null,
-        variety: document.getElementById('lotVariety').value.trim() || null,
-        harvest_date: document.getElementById('lotHarvestDate').value || null,
-        roast_date: document.getElementById('lotRoastDate').value || null,
-        moisture: document.getElementById('lotMoisture').value.trim() || null,
-        score: document.getElementById('lotScore').value ? parseFloat(document.getElementById('lotScore').value) : null,
-        notes: document.getElementById('lotNotes').value.trim() || null,
-        product_id: document.getElementById('lotProductId').value.trim() || null,
+        code: document.getElementById("lotCode").value.trim(),
+        name: document.getElementById("lotName").value.trim(),
+        origin: document.getElementById("lotOrigin").value.trim() || null,
+        farm: document.getElementById("lotFarm").value.trim() || null,
+        producer: document.getElementById("lotProducer").value.trim() || null,
+        altitude: document.getElementById("lotAltitude").value.trim() || null,
+        process: document.getElementById("lotProcess").value.trim() || null,
+        variety: document.getElementById("lotVariety").value.trim() || null,
+        harvest_date: document.getElementById("lotHarvestDate").value || null,
+        roast_date: document.getElementById("lotRoastDate").value || null,
+        moisture: document.getElementById("lotMoisture").value.trim() || null,
+        score: document.getElementById("lotScore").value
+          ? parseFloat(document.getElementById("lotScore").value)
+          : null,
+        notes: document.getElementById("lotNotes").value.trim() || null,
+        product_id:
+          document.getElementById("lotProductId").value.trim() || null,
       };
 
       if (!data.code || !data.name) {
-        formError.textContent = 'Código y Nombre son requeridos';
-        formError.classList.remove('hidden');
+        formError.textContent = "Código y Nombre son requeridos";
+        formError.classList.remove("hidden");
         return;
       }
 
       submitBtn.disabled = true;
-      submitBtn.textContent = 'Creando...';
-      formError.classList.add('hidden');
-      formSuccess.classList.add('hidden');
+      submitBtn.textContent = "Creando...";
+      formError.classList.add("hidden");
+      formSuccess.classList.add("hidden");
 
       try {
-        const res = await fetch('/api/lots', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
+        const res = await fetch("/api/lots", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
           body: JSON.stringify(data),
         });
 
         const result = await res.json();
 
         if (!res.ok) {
-          throw new Error(result.error || 'Error creando lote');
+          throw new Error(result.error || "Error creando lote");
         }
 
         formSuccess.textContent = `✓ Lote "${result.name}" creado exitosamente`;
-        formSuccess.classList.remove('hidden');
-        
+        formSuccess.classList.remove("hidden");
+
         // Reset form
-        document.getElementById('lotForm').reset();
-        
+        document.getElementById("lotForm").reset();
+
         setTimeout(() => {
-          formSuccess.classList.add('hidden');
+          formSuccess.classList.add("hidden");
         }, 3000);
       } catch (err) {
         formError.textContent = err.message;
-        formError.classList.remove('hidden');
+        formError.classList.remove("hidden");
       } finally {
         submitBtn.disabled = false;
-        submitBtn.textContent = 'Crear Lote';
+        submitBtn.textContent = "Crear Lote";
       }
     });
 
     // Load and display lots
     async function loadLots() {
-      const loading = document.getElementById('loading');
-      const lotsList = document.getElementById('lotsList');
-      const tableBody = document.getElementById('tableBody');
+      const loading = document.getElementById("loading");
+      const lotsList = document.getElementById("lotsList");
+      const tableBody = document.getElementById("tableBody");
 
       try {
-        const res = await fetch('/api/lots', {
-          credentials: 'include',
+        const res = await fetch("/api/lots", {
+          credentials: "include",
         });
 
-        if (!res.ok) throw new Error('Error cargando lotes');
+        if (!res.ok) throw new Error("Error cargando lotes");
 
         const data = await res.json();
-        
+
         if (!data.lots || data.lots.length === 0) {
-          loading.innerHTML = '<p class="text-gray-500">No hay lotes registrados.</p>';
+          loading.innerHTML =
+            '<p class="text-gray-500">No hay lotes registrados.</p>';
           return;
         }
 
-        tableBody.innerHTML = data.lots.map(l => `
+        tableBody.innerHTML = data.lots
+          .map(
+            (l) => `
           <tr class="hover:bg-gray-50 transition-colors">
-            <td class="px-6 py-4 font-mono text-sm text-gray-600">${l.code || '—'}</td>
-            <td class="px-6 py-4 font-medium text-gray-900">${l.name || '—'}</td>
-            <td class="px-6 py-4 text-gray-600">${l.origin || '—'}</td>
+            <td class="px-6 py-4 font-mono text-sm text-gray-600">${l.code || "—"}</td>
+            <td class="px-6 py-4 font-medium text-gray-900">${l.name || "—"}</td>
+            <td class="px-6 py-4 text-gray-600">${l.origin || "—"}</td>
             <td class="px-6 py-4">
               ${l.score ? `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">${l.score} pts</span>` : '<span class="text-gray-400">—</span>'}
             </td>
           </tr>
-        `).join('');
+        `
+          )
+          .join("");
 
-        loading.style.display = 'none';
-        lotsList.classList.remove('hidden');
+        loading.style.display = "none";
+        lotsList.classList.remove("hidden");
       } catch (err) {
         loading.innerHTML = `<p class="text-red-500">Error: ${err.message}</p>`;
       }
