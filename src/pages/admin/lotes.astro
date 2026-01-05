@@ -135,6 +135,20 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1"
+              >Peso (kg)</label
+            >
+            <input
+              type="number"
+              id="lotWeightKg"
+              step="0.01"
+              required
+              placeholder="ej: 50.5"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1"
               >Fecha de Cosecha</label
             >
             <input
@@ -311,6 +325,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       const data = {
         code: document.getElementById("lotCode").value.trim(),
         name: document.getElementById("lotName").value.trim(),
+        weight_kg: parseFloat(document.getElementById("lotWeightKg").value),
         origin: document.getElementById("lotOrigin").value.trim() || null,
         farm: document.getElementById("lotFarm").value.trim() || null,
         producer: document.getElementById("lotProducer").value.trim() || null,
@@ -328,8 +343,8 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
           document.getElementById("lotProductId").value.trim() || null,
       };
 
-      if (!data.code || !data.name) {
-        formError.textContent = "Código y Nombre son requeridos";
+      if (!data.code || !data.name || !data.weight_kg) {
+        formError.textContent = "Código, Nombre y Peso son requeridos";
         formError.classList.remove("hidden");
         return;
       }
