@@ -68,6 +68,9 @@ stockRouter.post('/:sku', authenticateToken, requireRole('admin'), async (req, r
   }
 });
 
+// Endpoint para obtener stock de un producto específico
+stockRouter.get('/:sku', async (req, res) => {
+  try {
     const sku = req.params.sku?.trim();
     const record = await getProductStock(sku);
     if (!record) {
