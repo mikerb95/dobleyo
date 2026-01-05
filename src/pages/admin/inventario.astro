@@ -3,8 +3,8 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 ---
 
 <AdminLayout>
-  <div class="mb-4 flex justify-between items-center">
-    <h1 class="text-xl font-bold text-gray-900">Gestión de Inventario</h1>
+  <div class="mb-3 flex justify-between items-center">
+    <h1 class="text-base font-bold text-gray-900">Gestión de Inventario</h1>
     <button
       onclick="loadInventory()"
       class="text-xs text-amber-700 hover:text-amber-900 font-medium flex items-center gap-1"
@@ -27,9 +27,9 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     </button>
   </div>
 
-  <div id="loading" class="text-center py-8">
+  <div id="loading" class="text-center py-6">
     <div
-      class="animate-spin rounded-full h-6 w-6 border-b-2 border-amber-900 mx-auto mb-3"
+      class="animate-spin rounded-full h-5 w-5 border-b-2 border-amber-900 mx-auto mb-2"
     >
     </div>
     <p class="text-xs text-gray-500">Cargando inventario...</p>
@@ -37,7 +37,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
   <div
     id="error"
-    class="hidden mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-xs text-red-700"
+    class="hidden mb-3 p-2 bg-red-50 border border-red-200 rounded-lg text-xs text-red-700"
   >
   </div>
 
@@ -51,11 +51,11 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
           <tr
             class="bg-gray-50 border-b border-gray-200 text-xs uppercase text-gray-500 font-semibold"
           >
-            <th class="px-4 py-3">Producto</th>
-            <th class="px-4 py-3">SKU</th>
-            <th class="px-4 py-3">Precio</th>
-            <th class="px-4 py-3">Stock</th>
-            <th class="px-4 py-3">Acciones</th>
+            <th class="px-3 py-2 text-left text-xs">Producto</th>
+            <th class="px-3 py-2 text-left text-xs">SKU</th>
+            <th class="px-3 py-2 text-left text-xs">Precio</th>
+            <th class="px-3 py-2 text-left text-xs">Stock</th>
+            <th class="px-3 py-2 text-left text-xs">Acciones</th>
           </tr>
         </thead>
         <tbody id="tableBody" class="divide-y divide-gray-100">
