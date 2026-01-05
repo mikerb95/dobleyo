@@ -21,25 +21,39 @@ import Layout from "../layouts/Layout.astro";
   </section>
 
   <script>
-    (function () {
-      const userRaw = localStorage.getItem("dbyo_user");
+    (async function () {
       const emailEl = document.getElementById("userEmail");
-      if (!userRaw) {
-        location.replace("/login");
-        return;
-      }
-      try {
-        const u = JSON.parse(userRaw);
-        emailEl.textContent = u.email || "—";
-      } catch {
-        emailEl.textContent = "—";
-      }
       const logoutBtn = document.getElementById("logoutBtn");
-      if (logoutBtn)
-        logoutBtn.addEventListener("click", () => {
-          localStorage.removeItem("dbyo_user");
-          location.href = "/";
+
+      // Verificar si el usuario está logueado llamando a /api/auth/me
+      try {
+        const res = await fetch("/api/auth/me", {
+          credentials: "include", // Importante: enviar cookies
         });
+
+        if (!res.ok) {
+          // No logueado, redirigir a login
+          location.replace("/login");
+          return;
+        }
+
+        const user = await res.json();
+        emailEl.textContent = user.email || "—";
+
+        // Logout
+        if (logoutBtn) {
+          logoutBtn.addEventListener("click", async () => {
+            await fetch("/api/auth/logout", {
+              method: "POST",
+              credentials: "include",
+            });
+            location.href = "/";
+          });
+        }
+      } catch (err) {
+        console.error("Error checking auth:", err);
+        location.replace("/login");
+      }
     })();
   </script>
 </Layout>

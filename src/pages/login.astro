@@ -71,6 +71,7 @@ import Layout from "../layouts/Layout.astro";
           const res = await fetch("/api/auth/login", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
+            credentials: "include", // Importante: permite enviar/recibir cookies
             body: JSON.stringify({ email, password }),
           });
 
@@ -80,15 +81,8 @@ import Layout from "../layouts/Layout.astro";
             throw new Error(data.error || "Error al iniciar sesión");
           }
 
-          // Guardar token y usuario
-          localStorage.setItem(
-            "dbyo_token",
-            JSON.stringify({
-              token: data.accessToken,
-              refreshToken: data.refreshToken,
-              user: data.user,
-            })
-          );
+          // No es necesario guardar tokens en localStorage
+          // Los cookies HttpOnly se manejan automáticamente
 
           // Redireccionar
           const urlParams = new URLSearchParams(window.location.search);
