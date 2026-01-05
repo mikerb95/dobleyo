@@ -1,0 +1,80 @@
+---
+/**
+ * Reusable Head component to avoid duplication across layouts
+ * Contains all common meta tags, fonts, and CSS variables
+ */
+
+export interface Props {
+  title?: string;
+  description?: string;
+  isAdmin?: boolean;
+}
+
+const {
+  title = "DobleYo — Café de especialidad colombiano",
+  description = "Tienda de café de especialidad colombiano. Tueste fresco, origen trazable, estilo sereno y acogedor.",
+  isAdmin = false,
+} = Astro.props;
+---
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>{title}</title>
+<meta name="description" content={description} />
+<link rel="icon" href="/assets/logo.svg" type="image/svg+xml" />
+<meta name="theme-color" content="#251a14" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+{!isAdmin && (
+  <>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=Playfair+Display:wght@600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap"
+      rel="stylesheet"
+    />
+  </>
+)}
+
+{isAdmin && (
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+)}
+
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com"></script>
+
+<script is:inline define:vars={{ isAdmin }}>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          coffee: "#251a14",
+          cream: "#f7f3ef",
+          accent: "#c67b4e",
+          ink: "#1f2937",
+        },
+        fontFamily: {
+          sans: isAdmin 
+            ? ["Inter", "sans-serif"]
+            : ["Lora", "ui-serif", "Georgia", "Cambria", "Times New Roman", "Times", "serif"],
+        },
+        boxShadow: {
+          card: "0 8px 24px rgba(0,0,0,.08)",
+        },
+      },
+    },
+  };
+  
+  {isAdmin ? `
+    document.body.style.fontFamily = '"Inter", sans-serif';
+  ` : ""}
+</script>
+
+<link rel="stylesheet" href="/assets/css/styles.css" />

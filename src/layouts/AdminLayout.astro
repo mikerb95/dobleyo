@@ -1,25 +1,18 @@
 ---
-
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import Head from "../components/Head.astro";
 ---
 
 <!doctype html>
 <html lang="es">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Admin Panel - DobleYo</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
-    <style>
-      body {
-        font-family: "Inter", sans-serif;
-      }
-    </style>
+    <Head title="Admin Panel - DobleYo" isAdmin={true} />
   </head>
   <body class="bg-gray-50 text-gray-900">
+    <!-- Header -->
+    <Header />
+
     <div id="app-container" class="min-h-screen flex hidden">
       <!-- Sidebar -->
       <aside
@@ -232,5 +225,8 @@
         });
       }
     </script>
+
+    <!-- Footer -->
+    <Footer />
   </body>
 </html>

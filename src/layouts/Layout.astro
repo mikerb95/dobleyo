@@ -1,61 +1,13 @@
 ---
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
+import Head from "../components/Head.astro";
 ---
 
 <!doctype html>
 <html lang="es">
   <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>DobleYo — Café de especialidad colombiano</title>
-    <meta
-      name="description"
-      content="Tienda de café de especialidad colombiano. Tueste fresco, origen trazable, estilo sereno y acogedor."
-    />
-    <link rel="icon" href="/assets/logo.svg" type="image/svg+xml" />
-    <meta name="theme-color" content="#251a14" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=Playfair+Display:wght@600;700;800&display=swap"
-      rel="stylesheet"
-    />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap"
-      rel="stylesheet"
-    />
-    <!-- Tailwind por CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script is:inline>
-      tailwind.config = {
-        theme: {
-          extend: {
-            colors: {
-              coffee: "#251a14",
-              cream: "#f7f3ef",
-              accent: "#c67b4e",
-              ink: "#1f2937",
-            },
-            fontFamily: {
-              sans: [
-                "Lora",
-                "ui-serif",
-                "Georgia",
-                "Cambria",
-                "Times New Roman",
-                "Times",
-                "serif",
-              ],
-            },
-            boxShadow: {
-              card: "0 8px 24px rgba(0,0,0,.08)",
-            },
-          },
-        },
-      };
-    </script>
-    <link rel="stylesheet" href="/assets/css/styles.css" />
+    <Head />
   </head>
   <body class="font-sans bg-cream text-ink">
     <!-- Barra superior de anuncio -->
