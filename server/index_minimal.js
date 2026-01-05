@@ -14,7 +14,7 @@ app.use(express.json());
 
 // CORS
 app.use(cors({
-  origin: process.env.SITE_BASE_URL || 'http://localhost:4000',
+  origin: process.env.SITE_BASE_URL || 'https://dobleyo.cafe',
   credentials: true
 }));
 
@@ -30,7 +30,7 @@ app.get('/api/health', (req, res) => res.json({ status: 'ok', time: new Date().t
 const PORT = process.env.PORT || 4000;
 if (process.env.START_SERVER === 'true') {
   app.listen(PORT, ()=>{
-    console.log('Server listening on http://localhost:'+PORT);
+    console.log('Server listening on https://dobleyo.cafe');
   });
 }
 

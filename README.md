@@ -92,7 +92,7 @@ Crea un archivo `.env` en la raíz de `dobleyo/` basándote en las variables req
 ```env
 # Servidor
 PORT=4000
-SITE_BASE_URL=http://localhost:4000
+SITE_BASE_URL=https://dobleyo.cafe
 
 # Base de Datos
 DB_HOST=localhost
@@ -130,7 +130,7 @@ O para producción:
 npm start
 ```
 
-El servidor estará corriendo en `http://localhost:4000` (o el puerto que hayas configurado).
+El servidor estará corriendo en `https://dobleyo.cafe` (o el puerto que hayas configurado en producción).
 
 ### Notas Adicionales
 

@@ -15,7 +15,7 @@ app.use(express.json());
 
 // CORS
 app.use(cors({
-  origin: process.env.SITE_BASE_URL || 'http://localhost:3000',
+  origin: process.env.SITE_BASE_URL || 'https://dobleyo.cafe',
   credentials: true
 }));
 

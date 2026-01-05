@@ -164,7 +164,7 @@ git push
 
 ```bash
 # Testear después de deploy
-curl -X POST http://localhost:4000/api/auth/register \
+curl -X POST https://dobleyo.cafe/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{
     "email": "test@example.com",

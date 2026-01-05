@@ -24,7 +24,7 @@ app.use(express.json());
 
 // CORS: Configurar origenes permitidos (ajustar segun dominio real)
 app.use(cors({
-  origin: process.env.SITE_BASE_URL || 'http://localhost:4000',
+  origin: process.env.SITE_BASE_URL || 'https://dobleyo.cafe',
   credentials: true // Permitir cookies en CORS
 }));
 
@@ -95,7 +95,7 @@ const PORT = process.env.PORT || 4000;
 // This prevents Vercel from trying to bind ports during module loading
 if (process.env.START_SERVER === 'true') {
   app.listen(PORT, ()=>{
-    console.log('Server listening on http://localhost:'+PORT);
+    console.log('Server listening on https://dobleyo.cafe');
   });
 }
 
