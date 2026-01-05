@@ -65,10 +65,9 @@
           <div class="card" style="margin-top:1rem"><div class="p">
             <h2>Metodo de pago</h2>
             <div style="display:grid; gap:.5rem">
-              <label><input type="radio" name="pay" value="mp" checked> Mercado Pago</label>
-              <label><input type="radio" name="pay" value="wompi"> Wompi</label>
+              <p class="muted">Métodos de pago próximamente</p>
             </div>
-            <button class="btn" id="payBtn" style="margin-top:.75rem">Pagar ahora</button>
+            <button class="btn" id="payBtn" style="margin-top:.75rem" disabled>Pagar ahora</button>
             <div id="payError" class="muted" style="color:#b91c1c; display:none; margin-top:.35rem"></div>
           </div></div>
         </div>
@@ -90,7 +89,7 @@
   <script src="assets/js/app.js" defer></script>
   <script src="assets/js/cart.js" defer></script>
   <script>
-    // flujo de checkout: manda pedido al backend para crear preferencia (MP) o firma (Wompi)
+    // flujo de checkout: próximamente
     (function(){
       function $(s, r=document){ return r.querySelector(s); }
       function fmt(n){ return '$'+Number(n||0).toLocaleString('es-CO'); }
@@ -115,35 +114,8 @@
         sumTotal.textContent = fmt(total);
 
         async function pay(){
-          payError.style.display = 'none';
-          const payMethod = document.querySelector('input[name="pay"]:checked')?.value || 'mp';
-          const order = {
-            items: cart.map(p=>({ id:p.id, title:p.name, quantity:p.qty, unit_price:p.price })),
-            total,
-            shipping: {
-              name: $('#fName').value, email: $('#fEmail').value, phone: $('#fPhone').value,
-              address: $('#fAddr').value, city: $('#fCity').value
-            },
-            reference: 'DBYO-'+Date.now()
-          };
-          try{
-            if (payMethod === 'mp'){
-              const res = await fetch('/api/mp/create_preference', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(order) });
-              const data = await res.json();
-              if(!res.ok) throw new Error(data.error||'Error creando preferencia');
-              // redirigir a init_point
-              location.href = data.init_point;
-            } else {
-              const res = await fetch('/api/wompi/checkout', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(order) });
-              const data = await res.json();
-              if(!res.ok) throw new Error(data.error||'Error generando checkout');
-              // redirigir a la URL de wompi
-              location.href = data.checkout_url;
-            }
-          } catch (e){
-            payError.textContent = e.message;
-            payError.style.display='block';
-          }
+          payError.textContent = 'Los métodos de pago aún no están disponibles';
+          payError.style.display = 'block';
         }
         payBtn.addEventListener('click', pay);
       }));

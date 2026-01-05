@@ -93,7 +93,7 @@ git push
 
 ### **Medianos**
 
-- [ ] **Mercado Pago / Wompi aún sin integrar**
+- [x] **Mercado Pago / Wompi removidos**
 - [ ] **Email verification no bloqueante** - Usuario no verificado puede comprar
 - [ ] **Sin logging centralizado** - Agregar Winston/Pino
 - [ ] **Arquitectura confusa** - Mezcla de HTML vanilla + Astro

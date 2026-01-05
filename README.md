@@ -13,7 +13,7 @@ DobleYo Café es una tienda en línea diseñada para ofrecer una experiencia de 
 ### Funcionalidades Principales
 
 - **Catálogo de Productos**: Visualización detallada de cafés, accesorios y otros productos.
-- **Carrito de Compras y Checkout**: Proceso de compra integrado con pasarelas de pago (MercadoPago / Wompi).
+- **Carrito de Compras y Checkout**: Proceso de compra (métodos de pago próximamente).
 - **Trazabilidad**: Sección dedicada a mostrar el origen y proceso de cada lote de café.
 - **Blog**: Espacio para compartir noticias y cultura cafetera.
 - **Panel de Administración**: Herramienta interna para gestionar productos, inventario y ver pedidos.
@@ -44,7 +44,7 @@ DobleYo Café es una tienda en línea diseñada para ofrecer una experiencia de 
 
 **Servicios Externos:**
 
-- **Pagos**: MercadoPago, Wompi.
+- **Pagos**: Próximamente.
 - **Email**: Resend.
 
 ### Estructura del Proyecto
@@ -103,12 +103,6 @@ DB_PORT=5432
 
 # Seguridad
 JWT_SECRET=tu_secreto_super_seguro
-
-# Pasarelas de Pago
-MP_ACCESS_TOKEN=tu_token_mercadopago
-WOMPI_PUBLIC_KEY=tu_key_publica
-WOMPI_PRIVATE_KEY=tu_key_privada
-WOMPI_INTEGRITY_SECRET=tu_secreto_integridad
 
 # Email
 RESEND_API_KEY=tu_api_key_resend
