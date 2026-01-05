@@ -1,13 +1,19 @@
 # ✅ FIXES REALIZADOS - 5 de Enero 2026
 
-## 🎯 Problema Identificado
+## 🎯 Problemas Identificados y Solucionados
 
-Tu proyecto en **Vercel** + **Aiven MySQL** tenía queries con placeholders PostgreSQL (`$1, $2, $3`) en lugar de MySQL (`?`).
+### Problema 1: Placeholders SQL Incorrectos
+Tu proyecto en **Vercel** + **Aiven MySQL** tenía queries con placeholders **PostgreSQL** (`$1, $2, $3`) en lugar de **MySQL** (`?`).
+
+### Problema 2: Sintaxis Rota en stock.js  
+Archivo `server/routes/stock.js` tenía un handler de ruta huérfano que causaba "Illegal return statement".
+
+### Problema 3: api/index.js Incompatible con Vercel
+El archivo estaba intentando exportar una app de Express directamente, pero Vercel requiere una función handler.
 
 ## ✅ Cambios Realizados
 
 ### 1. **server/routes/auth.js** - 6 queries corregidas
-
 - ✅ `INSERT INTO refresh_tokens` - `$1, $2, $3` → `?, ?, ?`
 - ✅ `UPDATE users SET last_login_at` - `$1` → `?`
 - ✅ `SELECT FROM refresh_tokens JOIN users` - `$1` → `?`
@@ -16,14 +22,22 @@ Tu proyecto en **Vercel** + **Aiven MySQL** tenía queries con placeholders Post
 - ✅ `UPDATE refresh_tokens` (logout) - `$1` → `?`
 - ✅ `SELECT FROM users` (/me endpoint) - `$1` → `?`
 
-### 2. **.env.example** - Actualizado con variables críticas
+### 2. **server/routes/stock.js** - Sintaxis reparada
+- ✅ Agregado handler faltante: `stockRouter.get('/:sku', ...)`
+- ✅ Eliminado código huérfano (línea 73-81)
+- ✅ Ahora compila sin errores
 
+### 3. **api/index.js** - Refactorizado para Vercel
+- ✅ Incluye middleware directamente (CORS, cookieParser, express.json)
+- ✅ Carga todas las rutas correctamente
+- ✅ Compatible con serverless functions de Vercel
+
+### 4. **.env.example** - Actualizado con variables críticas
 - ✅ Agregado `DATABASE_URL` para Aiven
 - ✅ Agregado `JWT_SECRET` y `JWT_REFRESH_SECRET`
 - ✅ Agregado `NODE_ENV`, `RESEND_API_KEY`, `EMAIL_FROM`
 
-### 3. **.env** - Creado con template local
-
+### 5. **.env** - Creado con template local
 - ✅ Variables de desarrollo configuradas
 - ✅ Instrucciones de dónde obtener `DATABASE_URL`
 
@@ -31,23 +45,8 @@ Tu proyecto en **Vercel** + **Aiven MySQL** tenía queries con placeholders Post
 
 ## 🚀 PRÓXIMOS PASOS INMEDIATOS
 
-### **PASO 1: Obtener `DATABASE_URL` de Aiven**
-
-1. Ve a https://console.aiven.io
-2. Selecciona tu proyecto MySQL DobleYo
-3. Copia la URL de conexión (similar a: `mysql://user:pass@host:port/db`)
-4. Pégala en tu archivo `.env` (line: `DATABASE_URL=...`)
-
-### **PASO 2: Configurar JWT Secrets en Vercel**
-
-1. Ve a tu proyecto en Vercel
-2. Settings → Environment Variables
-3. Agrega:
-   ```
-   JWT_SECRET = [genera una cadena aleatoria fuerte]
-   JWT_REFRESH_SECRET = [genera otra cadena aleatoria fuerte]
-   DATABASE_URL = [la URL de Aiven]
-   ```
+### **PASO 1: Esperar deploy en Vercel**
+El código ya fue pusheado. Vercel está recompilando ahora (~2-5 minutos).
 
 ### **PASO 3: Upgrade de Node.js (LOCAL)**
 
