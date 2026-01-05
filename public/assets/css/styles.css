@@ -1,6 +1,6 @@
 /* Base */
 :root{ --coffee:#251a14; --coffee-rgb:37,26,20; --cream:#f7f3ef; --dark:#1f1f1f; --muted:#777 }
-:root{ --page-width: 1100px; --page-gutter: 2rem; --bg: var(--cream); --fg: #1f2937; --card:#ffffff; --border:#e6e6e6; --muted-fg:#6b7280; --footer-bg:#f3eee7; --footer-fg:#5a463a; --accent:#c67b4e; --accent-contrast:#ffffff; --price:#251a14; --footer-logo-height:14px; --footer-logo-height-lg:28px; --footer-logo-margin-bottom:.25rem }
+:root{ --page-width: 1400px; --page-gutter: 2rem; --bg: var(--cream); --fg: #1f2937; --card:#ffffff; --border:#e6e6e6; --muted-fg:#6b7280; --footer-bg:#f3eee7; --footer-fg:#5a463a; --accent:#c67b4e; --accent-contrast:#ffffff; --price:#251a14; --footer-logo-height:14px; --footer-logo-height-lg:28px; --footer-logo-margin-bottom:.25rem }
 /* Tokens de tema oscuro con clase en <html> ajustados para contraste comodo */
 html.theme-dark{
   --bg:#0e0f10;           /* fondo de pagina */
