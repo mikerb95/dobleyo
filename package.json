@@ -15,7 +15,8 @@
     "dev": "astro dev",
     "server": "START_SERVER=true node ./server/index.js",
     "build": "astro build",
-    "preview": "astro preview"
+    "preview": "astro preview",
+    "migrate": "node ./server/migrations/add_roast_fields.js"
   },
   "dependencies": {
     "@astrojs/react": "^4.4.2",

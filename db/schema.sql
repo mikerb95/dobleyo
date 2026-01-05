@@ -90,9 +90,16 @@ CREATE TABLE IF NOT EXISTS lots (
     score DECIMAL(4,1),
     notes TEXT,
     product_id VARCHAR(50) NULL,
+    estado ENUM('verde', 'tostado') NOT NULL DEFAULT 'verde',
+    fecha_tostado DATE NULL,
+    parent_lot_id BIGINT NULL,
+    weight_kg DECIMAL(10,2),
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (product_id) REFERENCES products(id)
+    FOREIGN KEY (product_id) REFERENCES products(id),
+    FOREIGN KEY (parent_lot_id) REFERENCES lots(id) ON DELETE SET NULL
 );
 CREATE INDEX idx_lots_code ON lots(code);
 CREATE INDEX idx_lots_product ON lots(product_id);
+CREATE INDEX idx_lots_estado ON lots(estado);
+CREATE INDEX idx_lots_parent ON lots(parent_lot_id);

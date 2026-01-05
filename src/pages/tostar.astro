@@ -1,0 +1,50 @@
+---
+import Layout from '../layouts/Layout.astro';
+import RoastLotSelector from '../components/RoastLotSelector.jsx';
+import RoastForm from '../components/RoastForm.jsx';
+---
+
+<Layout title="Tostar Café | DobleYo">
+  <div class="tostar-container">
+    <h1>Tostar Café</h1>
+    <p class="subtitle">Selecciona un lote verde y la cantidad a tostar</p>
+    
+    <div class="content">
+      <RoastLotSelector client:load />
+      <RoastForm client:load />
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .tostar-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+  }
+
+  h1 {
+    text-align: center;
+    color: #2c1810;
+    margin-bottom: 0.5rem;
+  }
+
+  .subtitle {
+    text-align: center;
+    color: #666;
+    margin-bottom: 2rem;
+  }
+
+  .content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    align-items: start;
+  }
+
+  @media (max-width: 768px) {
+    .content {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
