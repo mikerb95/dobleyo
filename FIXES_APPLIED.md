@@ -41,23 +41,86 @@ El archivo estaba intentando exportar una app de Express directamente, pero Verc
 - ✅ Variables de desarrollo configuradas
 - ✅ Instrucciones de dónde obtener `DATABASE_URL`
 
+### 6. **src/pages/login.astro** - Seguridad mejorada
+- ✅ Removido localStorage (inseguro)
+- ✅ Implementado `credentials: 'include'` para enviar cookies
+- ✅ Confianza en HttpOnly cookies para persistencia
+
+### 7. **src/pages/cuenta.astro** - Sesión persistente
+- ✅ Verificación real con `/api/auth/me` endpoint
+- ✅ Redirige a login si no está autenticado
+- ✅ Logout funcional con limpieza de cookies
+- ✅ Ahora persiste sesión en recarga de página
+
 ---
+
+## 🚀 STATUS ACTUAL
+
+### ✅ **Completado:**
+- BD conectada y funcionando
+- API viva y respondiendo
+- Registro de usuarios funcional
+- Login funcional
+- **Persistencia de sesión (NUEVO)**
+- Logout funcional
+
+### ⏳ **Por Completar:**
+- Rate limiting en auth
+- Refresh tokens hasheados
+- Verificación obligatoria de email
+- Mercado Pago integrado
+- Tests automatizados
+
+---
+
+## 🧪 **CÓMO TESTEAR AHORA (después del deploy)**
+
+### **1. Registro:**
+```bash
+curl -X POST https://dobleyocafe.vercel.app/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test456@example.com","password":"password123","name":"Test User"}'
+```
+
+### **2. Login + Verificar Persistencia:**
+```bash
+# Login
+curl -X POST https://dobleyocafe.vercel.app/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test456@example.com","password":"password123"}' \
+  -c cookies.txt  # Guarda cookies
+
+# Verificar sesión
+curl https://dobleyocafe.vercel.app/api/auth/me \
+  -b cookies.txt  # Envía cookies guardadas
+```
+
+### **3. En el navegador:**
+1. Ve a https://dobleyocafe.vercel.app/login
+2. Haz login con el usuario (debería redirigir a /cuenta)
+3. **Recarga la página** → Debería mantener la sesión (ANTES NO PASABA)
+4. Verifica que ve tu email en "Mi cuenta"
+
+---
+
+## 📝 **NOTAS IMPORTANTES**
+
+- Los **cookies HttpOnly** se envían automáticamente en cada request
+- **localStorage ya NO se usa** (removido por seguridad)
+- `/api/auth/me` es el endpoint para **verificar si está logueado**
+- El frontend ahora **confía en las cookies del servidor**, no en tokens locales
 
 ## 🚀 PRÓXIMOS PASOS INMEDIATOS
 
 ### **PASO 1: Esperar deploy en Vercel**
 El código ya fue pusheado. Vercel está recompilando ahora (~2-5 minutos).
 
-### **PASO 3: Upgrade de Node.js (LOCAL)**
+### **PASO 2: Testear en https://dobleyocafe.vercel.app/login**
 
-Tu sistema tiene Node 18, pero el proyecto requiere Node 20+
-
-```bash
-nvm install 20
-nvm use 20
-```
-
-### **PASO 4: Arreglar vulnerabilidades**
+### **PASO 3: Si funciona la persistencia, podemos continuar con:**
+1. **Rate limiting** - Proteger de brute force
+2. **Refresh tokens hasheados** - Seguridad en BD
+3. **Mercado Pago** - Pagos reales
 
 ```bash
 npm audit fix
