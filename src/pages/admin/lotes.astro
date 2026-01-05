@@ -1,164 +1,164 @@
 ---
-import Layout from "../../layouts/Layout.astro";
+import AdminLayout from "../../layouts/AdminLayout.astro";
 ---
 
-<Layout>
-  <div class="container" style="max-width: 1300px; margin: 2rem auto; padding: 0 1rem;">
-    <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-      <h1>Gestión de Lotes</h1>
-      <div style="display: flex; gap: 1rem;">
-        <span id="userEmail" class="muted"></span>
-        <button id="logoutBtn" class="btn outline small">Cerrar Sesión</button>
-      </div>
-    </header>
+<AdminLayout>
+  <div class="mb-6">
+    <h1 class="text-2xl font-bold text-gray-900">Gestión de Lotes</h1>
+    <p class="text-gray-500">Administra los lotes de café verde y tostado.</p>
+  </div>
 
-    <!-- Tabs -->
-    <div style="display: flex; gap: 1rem; margin-bottom: 2rem; border-bottom: 1px solid #eee;">
-      <button class="tab-btn active" data-tab="crear" style="padding: 1rem; border: none; background: none; cursor: pointer; border-bottom: 3px solid #000;">
+  <!-- Tabs -->
+  <div class="border-b border-gray-200 mb-6">
+    <nav class="-mb-px flex space-x-8">
+      <button 
+        class="tab-btn active border-amber-500 text-amber-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" 
+        data-tab="crear"
+      >
         Crear Lote
       </button>
-      <button class="tab-btn" data-tab="lista" style="padding: 1rem; border: none; background: none; cursor: pointer;">
+      <button 
+        class="tab-btn border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" 
+        data-tab="lista"
+      >
         Listar Lotes
       </button>
+    </nav>
+  </div>
+
+  <!-- Tab: Crear Lote -->
+  <div id="crear-tab" class="tab-content">
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 max-w-4xl">
+      <h2 class="text-lg font-semibold text-gray-900 mb-6">Nuevo Lote</h2>
+      
+      <form id="lotForm" class="space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Código del Lote (único)</label>
+            <input type="text" id="lotCode" required placeholder="ej: COL-HUI-2024-001" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm" />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
+            <input type="text" id="lotName" required placeholder="ej: Huila Washed 2024" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm" />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Origen</label>
+            <input type="text" id="lotOrigin" placeholder="ej: Huila, Colombia" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm" />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Finca</label>
+            <input type="text" id="lotFarm" placeholder="ej: La Esperanza" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm" />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Productor</label>
+            <input type="text" id="lotProducer" placeholder="ej: Juan Pérez" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm" />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Altitud</label>
+            <input type="text" id="lotAltitude" placeholder="ej: 1800 masl" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm" />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Proceso</label>
+            <input type="text" id="lotProcess" placeholder="ej: Washed" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm" />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Variedad</label>
+            <input type="text" id="lotVariety" placeholder="ej: Caturra" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm" />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Fecha de Cosecha</label>
+            <input type="date" id="lotHarvestDate" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm" />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Fecha de Tueste</label>
+            <input type="date" id="lotRoastDate" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm" />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Humedad</label>
+            <input type="text" id="lotMoisture" placeholder="ej: 11%" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm" />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Puntuación</label>
+            <input type="number" id="lotScore" step="0.1" placeholder="ej: 85.5" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Notas / Descripción</label>
+          <textarea id="lotNotes" rows="3" placeholder="Notas sobre el lote..." class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Producto Asociado (opcional)</label>
+          <input type="text" id="lotProductId" placeholder="ej: cafe-colombia-1kg" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm" />
+        </div>
+
+        <div class="pt-4">
+          <button type="submit" id="submitBtn" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-amber-900 hover:bg-amber-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 transition-colors">
+            Crear Lote
+          </button>
+        </div>
+      </form>
+
+      <div id="formError" class="hidden mt-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm"></div>
+      <div id="formSuccess" class="hidden mt-4 p-4 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm"></div>
+    </div>
+  </div>
+
+  <!-- Tab: Listar Lotes -->
+  <div id="lista-tab" class="tab-content hidden">
+    <div id="loading" class="text-center py-12">
+      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-900 mx-auto mb-4"></div>
+      <p class="text-gray-500">Cargando lotes...</p>
     </div>
 
-    <!-- Tab: Crear Lote -->
-    <div id="crear-tab" class="tab-content">
-      <div class="card" style="max-width: 700px;">
-        <div class="p">
-          <h2>Nuevo Lote</h2>
-          
-          <form id="lotForm" style="display: grid; gap: 1rem; margin-top: 1rem;">
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-              <label>
-                Código del Lote (único)<br/>
-                <input type="text" id="lotCode" required placeholder="ej: COL-HUI-2024-001" />
-              </label>
-
-              <label>
-                Nombre<br/>
-                <input type="text" id="lotName" required placeholder="ej: Huila Washed 2024" />
-              </label>
-            </div>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-              <label>
-                Origen<br/>
-                <input type="text" id="lotOrigin" placeholder="ej: Huila, Colombia" />
-              </label>
-
-              <label>
-                Finca<br/>
-                <input type="text" id="lotFarm" placeholder="ej: La Esperanza" />
-              </label>
-            </div>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-              <label>
-                Productor<br/>
-                <input type="text" id="lotProducer" placeholder="ej: Juan Pérez" />
-              </label>
-
-              <label>
-                Altitud<br/>
-                <input type="text" id="lotAltitude" placeholder="ej: 1800 masl" />
-              </label>
-            </div>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-              <label>
-                Proceso<br/>
-                <input type="text" id="lotProcess" placeholder="ej: Washed" />
-              </label>
-
-              <label>
-                Variedad<br/>
-                <input type="text" id="lotVariety" placeholder="ej: Caturra" />
-              </label>
-            </div>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-              <label>
-                Fecha de Cosecha<br/>
-                <input type="date" id="lotHarvestDate" />
-              </label>
-
-              <label>
-                Fecha de Tueste<br/>
-                <input type="date" id="lotRoastDate" />
-              </label>
-            </div>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-              <label>
-                Humedad<br/>
-                <input type="text" id="lotMoisture" placeholder="ej: 11%" />
-              </label>
-
-              <label>
-                Puntuación<br/>
-                <input type="number" id="lotScore" step="0.1" placeholder="ej: 85.5" />
-              </label>
-            </div>
-
-            <label>
-              Notas / Descripción<br/>
-              <textarea id="lotNotes" rows="3" placeholder="Notas sobre el lote..."></textarea>
-            </label>
-
-            <label>
-              Producto Asociado (opcional)<br/>
-              <input type="text" id="lotProductId" placeholder="ej: cafe-colombia-1kg" />
-            </label>
-
-            <button type="submit" class="btn" id="submitBtn">Crear Lote</button>
-          </form>
-
-          <div id="formError" style="color: #b91c1c; display: none; margin-top: 1rem; padding: 1rem; background: #fee2e2; border-radius: 4px;"></div>
-          <div id="formSuccess" style="color: #166534; display: none; margin-top: 1rem; padding: 1rem; background: #dcfce7; border-radius: 4px;"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Tab: Listar Lotes -->
-    <div id="lista-tab" class="tab-content" style="display: none;">
-      <div id="loading" style="text-align: center; padding: 2rem;">
-        Cargando lotes...
-      </div>
-
-      <div id="lotsList" style="display: none;">
-        <div class="table-responsive">
-          <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
-            <thead>
-              <tr style="border-bottom: 2px solid #eee; text-align: left;">
-                <th style="padding: 1rem;">Código</th>
-                <th style="padding: 1rem;">Nombre</th>
-                <th style="padding: 1rem;">Origen</th>
-                <th style="padding: 1rem;">Puntuación</th>
-              </tr>
-            </thead>
-            <tbody id="tableBody">
-              <!-- Rows injected here -->
-            </tbody>
-          </table>
-        </div>
+    <div id="lotsList" class="hidden bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-gray-50 border-b border-gray-200 text-xs uppercase text-gray-500 font-semibold">
+              <th class="px-6 py-4">Código</th>
+              <th class="px-6 py-4">Nombre</th>
+              <th class="px-6 py-4">Origen</th>
+              <th class="px-6 py-4">Puntuación</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody" class="divide-y divide-gray-100">
+            <!-- Rows injected here -->
+          </tbody>
+        </table>
       </div>
     </div>
   </div>
 
-  <script>
+  <script is:inline>
     // Tab management
     document.querySelectorAll('.tab-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const tabName = btn.dataset.tab;
         
         // Hide all tabs
-        document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
-        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+        document.querySelectorAll('.tab-btn').forEach(el => {
+          el.classList.remove('active', 'border-amber-500', 'text-amber-600');
+          el.classList.add('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
+        });
         
         // Show selected tab
-        document.getElementById(tabName + '-tab').style.display = 'block';
-        btn.classList.add('active');
+        document.getElementById(tabName + '-tab').classList.remove('hidden');
+        btn.classList.add('active', 'border-amber-500', 'text-amber-600');
+        btn.classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
         
         // Load lots if lista tab
         if (tabName === 'lista') {
@@ -166,47 +166,6 @@ import Layout from "../../layouts/Layout.astro";
         }
       });
     });
-
-    // Auth check
-    (async function () {
-      const emailEl = document.getElementById('userEmail');
-      const logoutBtn = document.getElementById('logoutBtn');
-
-      try {
-        const res = await fetch("/api/auth/me", {
-          credentials: "include",
-        });
-
-        if (!res.ok) {
-          window.location.href = "/login?redirect=/admin/lotes";
-          return;
-        }
-
-        const user = await res.json();
-        
-        if (user.role !== "admin") {
-          alert("No tienes permisos para acceder a esta página");
-          window.location.href = "/";
-          return;
-        }
-
-        if (emailEl) emailEl.textContent = user.email || "Admin";
-
-        // Logout
-        if (logoutBtn) {
-          logoutBtn.addEventListener("click", async () => {
-            await fetch("/api/auth/logout", {
-              method: "POST",
-              credentials: "include",
-            });
-            window.location.href = "/";
-          });
-        }
-      } catch (err) {
-        console.error("Auth error:", err);
-        window.location.href = "/login?redirect=/admin/lotes";
-      }
-    })();
 
     // Form submission
     document.getElementById('lotForm').addEventListener('submit', async (e) => {
@@ -235,14 +194,14 @@ import Layout from "../../layouts/Layout.astro";
 
       if (!data.code || !data.name) {
         formError.textContent = 'Código y Nombre son requeridos';
-        formError.style.display = 'block';
+        formError.classList.remove('hidden');
         return;
       }
 
       submitBtn.disabled = true;
       submitBtn.textContent = 'Creando...';
-      formError.style.display = 'none';
-      formSuccess.style.display = 'none';
+      formError.classList.add('hidden');
+      formSuccess.classList.add('hidden');
 
       try {
         const res = await fetch('/api/lots', {
@@ -259,17 +218,17 @@ import Layout from "../../layouts/Layout.astro";
         }
 
         formSuccess.textContent = `✓ Lote "${result.name}" creado exitosamente`;
-        formSuccess.style.display = 'block';
+        formSuccess.classList.remove('hidden');
         
         // Reset form
         document.getElementById('lotForm').reset();
         
         setTimeout(() => {
-          formSuccess.style.display = 'none';
+          formSuccess.classList.add('hidden');
         }, 3000);
       } catch (err) {
         formError.textContent = err.message;
-        formError.style.display = 'block';
+        formError.classList.remove('hidden');
       } finally {
         submitBtn.disabled = false;
         submitBtn.textContent = 'Crear Lote';
@@ -292,38 +251,26 @@ import Layout from "../../layouts/Layout.astro";
         const data = await res.json();
         
         if (!data.lots || data.lots.length === 0) {
-          loading.textContent = 'No hay lotes';
+          loading.innerHTML = '<p class="text-gray-500">No hay lotes registrados.</p>';
           return;
         }
 
         tableBody.innerHTML = data.lots.map(l => `
-          <tr style="border-bottom: 1px solid #eee;">
-            <td style="padding: 1rem;"><strong>${l.code || '—'}</strong></td>
-            <td style="padding: 1rem;">${l.name || '—'}</td>
-            <td style="padding: 1rem;">${l.origin || '—'}</td>
-            <td style="padding: 1rem;">${l.score ? l.score + ' pts' : '—'}</td>
+          <tr class="hover:bg-gray-50 transition-colors">
+            <td class="px-6 py-4 font-mono text-sm text-gray-600">${l.code || '—'}</td>
+            <td class="px-6 py-4 font-medium text-gray-900">${l.name || '—'}</td>
+            <td class="px-6 py-4 text-gray-600">${l.origin || '—'}</td>
+            <td class="px-6 py-4">
+              ${l.score ? `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">${l.score} pts</span>` : '<span class="text-gray-400">—</span>'}
+            </td>
           </tr>
         `).join('');
 
         loading.style.display = 'none';
-        lotsList.style.display = 'block';
+        lotsList.classList.remove('hidden');
       } catch (err) {
-        loading.textContent = 'Error: ' + err.message;
+        loading.innerHTML = `<p class="text-red-500">Error: ${err.message}</p>`;
       }
     }
   </script>
-
-  <style>
-    .tab-btn.active {
-      border-bottom-color: #000 !important;
-      font-weight: bold;
-    }
-    
-    textarea {
-      font-family: inherit;
-      padding: 0.5rem;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-    }
-  </style>
-</Layout>
+</AdminLayout>

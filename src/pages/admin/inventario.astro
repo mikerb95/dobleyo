@@ -1,55 +1,45 @@
 ---
-import Layout from "../../layouts/Layout.astro";
+import AdminLayout from "../../layouts/AdminLayout.astro";
 ---
 
-<Layout>
-  <div
-    class="container"
-    style="max-width: 1000px; margin: 2rem auto; padding: 0 1rem;"
-  >
-    <header
-      style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;"
-    >
-      <h1>Gestión de Inventario</h1>
-      <div style="display: flex; gap: 1rem; align-items: center;">
-        <a href="/admin/productos" class="btn outline small">Gestionar Productos</a>
-        <a href="/admin/lotes" class="btn outline small">Gestionar Lotes</a>
-        <span id="userEmail" class="muted"></span>
-        <button id="logoutBtn" class="btn outline small">Cerrar Sesión</button>
-      </div>
-    </header>
+<AdminLayout>
+  <div class="mb-6 flex justify-between items-center">
+    <h1 class="text-2xl font-bold text-gray-900">Gestión de Inventario</h1>
+    <button onclick="loadInventory()" class="text-sm text-amber-700 hover:text-amber-900 font-medium flex items-center gap-1">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.051M20.418 20.418A9.969 9.969 0 0112 22c-5.523 0-10-4.477-10-10S6.477 2 12 2s10 4.477 10 10a9.953 9.953 0 01-1.793 5.739M15 11l-3 3m0 0l-3-3m3 3V8" />
+      </svg>
+      Refrescar
+    </button>
+  </div>
 
-    <div id="loading" style="text-align: center; padding: 2rem;">
-      Cargando inventario...
-    </div>
+  <div id="loading" class="text-center py-12">
+    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-900 mx-auto mb-4"></div>
+    <p class="text-gray-500">Cargando inventario...</p>
+  </div>
 
-    <div
-      id="error"
-      style="color: #b91c1c; display: none; margin-bottom: 1rem; padding: 1rem; background: #fee2e2; border-radius: 4px;"
-    >
-    </div>
+  <div id="error" class="hidden mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700"></div>
 
-    <div id="inventoryTable" style="display: none;">
-      <div class="table-responsive">
-        <table style="width: 100%; border-collapse: collapse;">
-          <thead>
-            <tr style="border-bottom: 2px solid #eee; text-align: left;">
-              <th style="padding: 1rem;">Producto</th>
-              <th style="padding: 1rem;">SKU</th>
-              <th style="padding: 1rem;">Precio</th>
-              <th style="padding: 1rem;">Stock Actual</th>
-              <th style="padding: 1rem;">Acciones</th>
-            </tr>
-          </thead>
-          <tbody id="tableBody">
-            <!-- Rows will be injected here -->
-          </tbody>
-        </table>
-      </div>
+  <div id="inventoryTable" class="hidden bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="bg-gray-50 border-b border-gray-200 text-xs uppercase text-gray-500 font-semibold">
+            <th class="px-6 py-4">Producto</th>
+            <th class="px-6 py-4">SKU</th>
+            <th class="px-6 py-4">Precio</th>
+            <th class="px-6 py-4">Stock Actual</th>
+            <th class="px-6 py-4">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody" class="divide-y divide-gray-100">
+          <!-- Rows will be injected here -->
+        </tbody>
+      </table>
     </div>
   </div>
 
-  <script>
+  <script is:inline>
     const API_URL = "/api/stock";
 
     // Elements
@@ -57,51 +47,14 @@ import Layout from "../../layouts/Layout.astro";
     const loadingEl = document.getElementById("loading");
     const tableEl = document.getElementById("inventoryTable");
     const errorEl = document.getElementById("error");
-    const userEmailEl = document.getElementById("userEmail");
-    const logoutBtn = document.getElementById("logoutBtn");
 
-    // Auth Check - Verificar sesión con el servidor
-    (async function () {
-      try {
-        const res = await fetch("/api/auth/me", {
-          credentials: "include",
-        });
-
-        if (!res.ok) {
-          // No logueado, redirigir a login
-          window.location.href = "/login?redirect=/admin/inventario";
-          return;
-        }
-
-        const user = await res.json();
-        
-        // Verificar que es admin
-        if (user.role !== "admin") {
-          showError("No tienes permisos para acceder a esta página");
-          loadingEl.style.display = "none";
-          return;
-        }
-
-        if (userEmailEl) userEmailEl.textContent = user.email || "Admin";
-        loadInventory();
-      } catch (err) {
-        console.error("Auth error:", err);
-        window.location.href = "/login?redirect=/admin/inventario";
-      }
-    })();
-
-    // Logout
-    if (logoutBtn) {
-      logoutBtn.addEventListener("click", async () => {
-        await fetch("/api/auth/logout", {
-          method: "POST",
-          credentials: "include",
-        });
-        window.location.href = "/";
-      });
-    }
+    // Initial Load
+    loadInventory();
 
     async function loadInventory() {
+      if(loadingEl) loadingEl.style.display = "block";
+      if(tableEl) tableEl.style.display = "none";
+      
       try {
         const res = await fetch(API_URL, {
           credentials: "include",
@@ -109,11 +62,11 @@ import Layout from "../../layouts/Layout.astro";
         if (!res.ok) throw new Error("Error cargando inventario");
         const data = await res.json();
         renderTable(data.items);
-        loadingEl.style.display = "none";
-        tableEl.style.display = "block";
+        if(loadingEl) loadingEl.style.display = "none";
+        if(tableEl) tableEl.style.display = "block";
       } catch (err) {
         showError(err.message);
-        loadingEl.style.display = "none";
+        if(loadingEl) loadingEl.style.display = "none";
       }
     }
 
@@ -122,20 +75,38 @@ import Layout from "../../layouts/Layout.astro";
       tableBody.innerHTML = items
         .map(
           (item) => `
-        <tr style="border-bottom: 1px solid #eee;">
-          <td style="padding: 1rem; display: flex; align-items: center; gap: 1rem;">
-            <img src="${item.image_url}" alt="${item.name}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px;">
-            <span>${item.name}</span>
+        <tr class="hover:bg-gray-50 transition-colors">
+          <td class="px-6 py-4">
+            <div class="flex items-center gap-3">
+              <img src="${item.image_url}" alt="${item.name}" class="w-10 h-10 rounded object-cover bg-gray-100">
+              <span class="font-medium text-gray-900">${item.name}</span>
+            </div>
           </td>
-          <td style="padding: 1rem;"><code>${item.slug}</code></td>
-          <td style="padding: 1rem;">$${(item.price_cop || 0).toLocaleString("es-CO")}</td>
-          <td style="padding: 1rem;">
-            <span class="badge ${item.stock < 10 ? "low-stock" : ""}">${item.stock}</span>
+          <td class="px-6 py-4 text-sm text-gray-500 font-mono">${item.slug}</td>
+          <td class="px-6 py-4 text-sm text-gray-900 font-medium">$${(item.price_cop || 0).toLocaleString("es-CO")}</td>
+          <td class="px-6 py-4">
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+              item.stock < 10 ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"
+            }">
+              ${item.stock} unidades
+            </span>
           </td>
-          <td style="padding: 1rem;">
-            <form class="update-stock-form" data-sku="${item.slug}" style="display: flex; gap: 0.5rem;">
-              <input type="number" name="stock" value="${item.stock}" min="0" style="width: 80px; padding: 0.25rem;" required>
-              <button type="submit" class="btn small">Actualizar</button>
+          <td class="px-6 py-4">
+            <form class="update-stock-form flex items-center gap-2" data-sku="${item.slug}">
+              <input 
+                type="number" 
+                name="stock" 
+                value="${item.stock}" 
+                min="0" 
+                class="w-20 px-3 py-1.5 border border-gray-300 rounded-md text-sm focus:ring-amber-500 focus:border-amber-500" 
+                required
+              >
+              <button 
+                type="submit" 
+                class="px-3 py-1.5 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 transition-colors"
+              >
+                Actualizar
+              </button>
             </form>
           </td>
         </tr>
@@ -165,8 +136,8 @@ import Layout from "../../layouts/Layout.astro";
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${auth.token}`,
           },
+          credentials: "include",
           body: JSON.stringify({ stock: parseInt(stock) }),
         });
 
@@ -177,14 +148,14 @@ import Layout from "../../layouts/Layout.astro";
 
         // Success feedback
         btn.textContent = "OK";
-        btn.style.backgroundColor = "#16a34a";
-        btn.style.borderColor = "#16a34a";
-        btn.style.color = "white";
+        btn.classList.remove('bg-white', 'text-gray-700', 'border-gray-300');
+        btn.classList.add('bg-green-600', 'text-white', 'border-transparent');
 
         setTimeout(() => {
           btn.textContent = originalText;
           btn.disabled = false;
-          btn.style = "";
+          btn.classList.add('bg-white', 'text-gray-700', 'border-gray-300');
+          btn.classList.remove('bg-green-600', 'text-white', 'border-transparent');
           loadInventory(); // Reload to refresh table state
         }, 1500);
       } catch (err) {
@@ -201,19 +172,4 @@ import Layout from "../../layouts/Layout.astro";
       }
     }
   </script>
-
-  <style>
-    .badge {
-      display: inline-block;
-      padding: 0.25rem 0.5rem;
-      border-radius: 999px;
-      background: #e5e7eb;
-      font-size: 0.875rem;
-      font-weight: 500;
-    }
-    .badge.low-stock {
-      background: #fee2e2;
-      color: #b91c1c;
-    }
-  </style>
-</Layout>
+</AdminLayout>
