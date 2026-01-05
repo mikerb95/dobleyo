@@ -29,6 +29,7 @@
         class="icon-btn user-btn"
         aria-label="Iniciar sesión"
         data-link
+        id="userNavBtn"
       >
         <svg
           width="18"
@@ -55,6 +56,7 @@
       class="icon-btn user-btn"
       aria-label="Iniciar sesión"
       data-link
+      id="userNavMobileBtn"
     >
       <svg
         width="18"
@@ -165,4 +167,48 @@
         : mobileMenu.setAttribute("hidden", "");
     });
   }
+
+  // Verificar sesión y actualizar botón de usuario
+  (async function checkAuthStatus() {
+    try {
+      const res = await fetch("/api/auth/me", {
+        credentials: "include",
+      });
+
+      const userBtn = document.getElementById("userNavBtn");
+      const userMobileBtn = document.getElementById("userNavMobileBtn");
+
+      if (res.ok) {
+        // Usuario logueado
+        if (userBtn) {
+          userBtn.href = "/cuenta";
+          userBtn.setAttribute("aria-label", "Mi cuenta");
+        }
+        if (userMobileBtn) {
+          userMobileBtn.href = "/cuenta";
+          userMobileBtn.setAttribute("aria-label", "Mi cuenta");
+        }
+      } else {
+        // Usuario no logueado
+        if (userBtn) {
+          userBtn.href = "/login";
+          userBtn.setAttribute("aria-label", "Iniciar sesión");
+        }
+        if (userMobileBtn) {
+          userMobileBtn.href = "/login";
+          userMobileBtn.setAttribute("aria-label", "Iniciar sesión");
+        }
+      }
+    } catch (err) {
+      // Error en la verificación, asumir no logueado
+      const userBtn = document.getElementById("userNavBtn");
+      const userMobileBtn = document.getElementById("userNavMobileBtn");
+      if (userBtn) {
+        userBtn.href = "/login";
+      }
+      if (userMobileBtn) {
+        userMobileBtn.href = "/login";
+      }
+    }
+  })();
 </script>
