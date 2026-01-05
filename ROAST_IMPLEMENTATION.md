@@ -1,11 +1,13 @@
 # Implementación de Sistema de Tostado de Café
 
 ## Resumen
+
 Se ha implementado un nuevo flujo para tostar café que permite crear sublotes tostados a partir de lotes verdes, manteniendo la trazabilidad y controlando el inventario.
 
 ## Cambios Realizados
 
 ### 1. Base de Datos (`db/schema.sql`)
+
 - ✅ Agregados campos a tabla `lots`:
   - `estado` (ENUM: 'verde', 'tostado') - Estado del café
   - `fecha_tostado` (DATE) - Fecha cuando se tostó el café
@@ -16,7 +18,9 @@ Se ha implementado un nuevo flujo para tostar café que permite crear sublotes t
 ### 2. API Routes (`server/routes/lots.js`)
 
 #### Rutas nuevas:
+
 - **POST `/api/lots/roast/:lotId`** - Tostar café
+
   - Body: `{ weight_kg: number, fecha_tostado: date }`
   - Crea lote tostado
   - Resta peso del lote verde
@@ -27,17 +31,20 @@ Se ha implementado un nuevo flujo para tostar café que permite crear sublotes t
   - Incluye: código, nombre, finca, variedad, peso, altura
 
 #### Rutas modificadas:
+
 - **GET `/api/lots/:identifier`** - Ahora obtiene por ID o código
 - **POST `/api/lots`** - Ahora acepta `weight_kg` y establece `estado='verde'`
 
 ### 3. Componentes React (`src/components/`)
 
 #### `RoastLotSelector.jsx`
+
 - Selector visual de lotes verdes disponibles
 - Muestra: Código, Finca, Variedad, Altura, Peso
 - Valida antes de permitir seleccionar
 
 #### `RoastForm.jsx`
+
 - Formulario para ingresar:
   - Peso a tostar (con validación de máximo)
   - Fecha de tostado
@@ -45,19 +52,23 @@ Se ha implementado un nuevo flujo para tostar café que permite crear sublotes t
 - Muestra mensajes de error/éxito
 
 ### 4. Página Astro (`src/pages/tostar.astro`)
+
 - Nueva página para tostar café
 - Integra los dos componentes React
 - URL: `/tostar`
 - Requiere autenticación de admin
 
 ### 5. Migración (`server/migrations/add_roast_fields.js`)
-- Script para agregar campos a BD existente
-- Ejecutar: `npm run migrate`
-- Maneja campos duplicados con gracia
+
+- Script para agregar campos a BD en Aiven
+- **Ejecutar:** `npm run migrate` (requiere variables de ambiente DB\_\* configuradas)
+- Script maneja campos/índices duplicados con gracia
+- Debe ejecutarse una sola vez después del deploy
 
 ## Flujo de Uso
 
 1. **Admin ingresa lote verde:**
+
    ```
    POST /api/lots
    {
@@ -71,11 +82,13 @@ Se ha implementado un nuevo flujo para tostar café que permite crear sublotes t
    ```
 
 2. **Admin accede a página `/tostar`:**
+
    - Selecciona un lote verde
    - Ingresa cantidad a tostar (ej: 30kg)
    - Ingresa fecha de tostado
 
 3. **Sistema crea lote tostado:**
+
    ```
    Lote Tostado creado:
    - ID: nuevo
@@ -84,7 +97,7 @@ Se ha implementado un nuevo flujo para tostar café que permite crear sublotes t
    - Peso: 30kg
    - Parent: LOTE-001
    - Hereda: finca, variedad, altura, origen, proceso
-   
+
    Lote Verde actualizado:
    - Peso: 70kg (100 - 30)
    ```
@@ -95,6 +108,7 @@ Se ha implementado un nuevo flujo para tostar café que permite crear sublotes t
    - No expone relación con verde (solo para admin)
 
 ## Próximos Pasos
+
 - [ ] Crear página de empaquetado para generar bolsas/QR del lote tostado
 - [ ] Agregar validaciones de peso en página de inventario
 - [ ] Crear reporte de trazabilidad para admin

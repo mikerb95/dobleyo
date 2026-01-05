@@ -1,14 +1,14 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import RoastLotSelector from '../components/RoastLotSelector.jsx';
-import RoastForm from '../components/RoastForm.jsx';
+import Layout from "../layouts/Layout.astro";
+import RoastLotSelector from "../components/RoastLotSelector.jsx";
+import RoastForm from "../components/RoastForm.jsx";
 ---
 
 <Layout title="Tostar Café | DobleYo">
   <div class="tostar-container">
     <h1>Tostar Café</h1>
     <p class="subtitle">Selecciona un lote verde y la cantidad a tostar</p>
-    
+
     <div class="content">
       <RoastLotSelector client:load />
       <RoastForm client:load />
