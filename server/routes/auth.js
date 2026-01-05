@@ -106,13 +106,13 @@ authRouter.post('/login',
 
       // Guardar refresh token en DB
       await db.query(
-        'INSERT INTO refresh_tokens (user_id, token_hash, expires_at) VALUES ($1, $2, $3)',
+        'INSERT INTO refresh_tokens (user_id, token_hash, expires_at) VALUES (?, ?, ?)',
         [user.id, refreshToken, refreshExpires] // Nota: Deberíamos hashear el refresh token tambien en DB para mas seguridad, pero por simplicidad lo guardamos directo o hash simple.
         // Para produccion real: hash(refreshToken) -> DB. Cliente tiene refreshToken raw.
       );
 
       // Actualizar last_login
-      await db.query('UPDATE users SET last_login_at = NOW() WHERE id = $1', [user.id]);
+      await db.query('UPDATE users SET last_login_at = NOW() WHERE id = ?', [user.id]);
 
       // Cookies
       const isProd = process.env.NODE_ENV === 'production';
@@ -148,7 +148,7 @@ authRouter.post('/refresh', async (req, res) => {
   try {
     // Buscar token en DB
     const result = await db.query(
-      'SELECT rt.*, u.role, u.email, u.name FROM refresh_tokens rt JOIN users u ON rt.user_id = u.id WHERE rt.token_hash = $1 AND rt.revoked = FALSE AND rt.expires_at > NOW()',
+      'SELECT rt.*, u.role, u.email, u.name FROM refresh_tokens rt JOIN users u ON rt.user_id = u.id WHERE rt.token_hash = ? AND rt.revoked = FALSE AND rt.expires_at > NOW()',
       [refreshToken]
     );
 
@@ -167,8 +167,8 @@ authRouter.post('/refresh', async (req, res) => {
     const newRefreshToken = auth.generateRefreshToken();
     const newExpires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
-    await db.query('UPDATE refresh_tokens SET revoked = TRUE, replaced_by_token = $1 WHERE id = $2', [newRefreshToken, tokenRecord.id]);
-    await db.query('INSERT INTO refresh_tokens (user_id, token_hash, expires_at) VALUES ($1, $2, $3)', [user.id, newRefreshToken, newExpires]);
+    await db.query('UPDATE refresh_tokens SET revoked = TRUE, replaced_by_token = ? WHERE id = ?', [newRefreshToken, tokenRecord.id]);
+    await db.query('INSERT INTO refresh_tokens (user_id, token_hash, expires_at) VALUES (?, ?, ?)', [user.id, newRefreshToken, newExpires]);
 
     const newAccessToken = auth.generateToken(user);
 
@@ -190,7 +190,7 @@ authRouter.post('/logout', async (req, res) => {
   const refreshToken = req.cookies['refresh_token'];
   if (refreshToken) {
     // Revocar en DB
-    await db.query('UPDATE refresh_tokens SET revoked = TRUE WHERE token_hash = $1', [refreshToken]);
+    await db.query('UPDATE refresh_tokens SET revoked = TRUE WHERE token_hash = ?', [refreshToken]);
   }
   
   res.clearCookie('auth_token');
@@ -200,6 +200,6 @@ authRouter.post('/logout', async (req, res) => {
 
 // Check auth status
 authRouter.get('/me', auth.authenticateToken, async (req, res) => {
-    const result = await db.query('SELECT id, name, email, role FROM users WHERE id = $1', [req.user.id]);
+    const result = await db.query('SELECT id, name, email, role FROM users WHERE id = ?', [req.user.id]);
     res.json(result.rows[0]);
 });
