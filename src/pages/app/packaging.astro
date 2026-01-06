@@ -310,26 +310,26 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
 
     let currentRoasted = null;
 
-    // Cargar cafés tostados en inventario
-    function loadRoastedLots() {
-      const inventory = JSON.parse(
-        localStorage.getItem("roasted_inventory") || "[]"
-      );
-      const packaged = JSON.parse(localStorage.getItem("packaged") || "[]");
-      const packagedIds = packaged.map((item) => item.roastingRecordId);
+    // Cargar cafés tostados en inventario desde API
+    async function loadRoastedLots() {
+      try {
+        const response = await fetch("/api/coffee/roasted-coffee");
+        if (!response.ok) throw new Error("Error al cargar cafés");
 
-      const available = inventory.filter(
-        (item) => !packagedIds.includes(item.roastingRecordId)
-      );
+        const roastedLots = await response.json();
 
-      roastedSelect.innerHTML =
-        '<option value="">Selecciona un café...</option>';
-      available.forEach((item) => {
-        const option = document.createElement("option");
-        option.value = JSON.stringify(item);
-        option.textContent = `${item.originalLotId} - ${item.roastLevel === "LIGHT" ? "Clara" : item.roastLevel === "MEDIUM" ? "Media" : "Oscura"} (${item.quantityRoasted} kg)`;
-        roastedSelect.appendChild(option);
-      });
+        roastedSelect.innerHTML =
+          '<option value="">Selecciona un café...</option>';
+        roastedLots.forEach((item) => {
+          const option = document.createElement("option");
+          option.value = JSON.stringify(item);
+          option.textContent = `${item.lot_id} - ${item.roast_level === "LIGHT" ? "Clara" : item.roast_level === "MEDIUM" ? "Media" : "Oscura"} (${item.weight_kg} kg)`;
+          roastedSelect.appendChild(option);
+        });
+      } catch (error) {
+        console.error("Error cargando cafés:", error);
+        alert("Error al cargar cafés tostados");
+      }
     }
 
     // Actualizar información del café
@@ -343,30 +343,26 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
 
       currentRoasted = JSON.parse(roastedSelect.value);
       document.getElementById("coffeeLotId").textContent =
-        currentRoasted.originalLotId;
-      document.getElementById("coffeeVariety").textContent =
-        currentRoasted.harvest.variety;
+        currentRoasted.lot_id;
+      document.getElementById("coffeeVariety").textContent = "—";
       document.getElementById("coffeeRoastLevel").textContent =
-        currentRoasted.roastLevel === "LIGHT"
+        currentRoasted.roast_level === "LIGHT"
           ? "Clara"
-          : currentRoasted.roastLevel === "MEDIUM"
+          : currentRoasted.roast_level === "MEDIUM"
             ? "Media"
             : "Oscura";
       document.getElementById("coffeeAvailableWeight").textContent =
-        `${currentRoasted.quantityRoasted} kg`;
+        `${currentRoasted.weight_kg} kg`;
 
-      // Mostrar info de origen
-      document.getElementById("originFarm").textContent =
-        currentRoasted.harvest.farm;
-      document.getElementById("originAroma").textContent =
-        currentRoasted.harvest.aroma;
-      document.getElementById("originNotes").textContent =
-        currentRoasted.harvest.tasteNotes;
+      // Mostrar info de origen (será extraída de la BD en actualización futura)
+      document.getElementById("originFarm").textContent = "—";
+      document.getElementById("originAroma").textContent = "—";
+      document.getElementById("originNotes").textContent = "—";
       originInfo.style.display = "block";
 
       coffeeInfoCard.style.display = "block";
       document.getElementById("packageQuantity").max =
-        currentRoasted.quantityRoasted;
+        currentRoasted.weight_kg;
       updateSummary();
     });
 
@@ -459,9 +455,9 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
         ).toFixed(1);
 
         document.getElementById("summaryLot").textContent =
-          currentRoasted.originalLotId;
+          currentRoasted.lot_id;
         document.getElementById("summaryQuantity").textContent =
-          `${currentRoasted.quantityRoasted} kg`;
+          `${currentRoasted.weight_kg} kg`;
         document.getElementById("summaryPresentation").textContent =
           presentation === "GRANO"
             ? "Grano Entero"
@@ -485,8 +481,8 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
       .getElementById("unitCount")
       .addEventListener("input", updateSummary);
 
-    // Enviar formulario
-    form.addEventListener("submit", (e) => {
+    // Enviar formulario a la API
+    form.addEventListener("submit", async (e) => {
       e.preventDefault();
 
       if (!currentRoasted) {
@@ -516,44 +512,57 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
       const acidity = parseInt(document.getElementById("acidity").value);
       const body = parseInt(document.getElementById("body").value);
       const balance = parseInt(document.getElementById("balance").value);
-      const score = (acidity + body + balance) / 3;
 
-      const packageRecord = {
-        id: `PKG-${Date.now()}`,
-        roastingRecordId: currentRoasted.roastingRecordId,
-        originalLotId: currentRoasted.originalLotId,
-        quantityRoasted: currentRoasted.quantityRoasted,
-        presentation: presentation,
-        grindSize:
-          presentation === "MOLIDO"
-            ? document.getElementById("grindSize").value
-            : null,
-        packageSize: packageSize,
-        unitCount: unitCount,
-        acidity: acidity,
-        body: body,
-        balance: balance,
-        score: score.toFixed(2),
-        harvest: currentRoasted.harvest,
-        packagedAt: new Date().toISOString(),
-        status: "ready_for_sale",
-      };
+      const submitBtn = form.querySelector('button[type="submit"]');
+      const originalText = submitBtn.textContent;
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Registrando...";
 
-      // Guardar en localStorage
-      const packaged = JSON.parse(localStorage.getItem("packaged") || "[]");
-      packaged.push(packageRecord);
-      localStorage.setItem("packaged", JSON.stringify(packaged));
+      try {
+        const response = await fetch("/api/coffee/packaging", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            roastedStorageId: currentRoasted.id,
+            acidity: acidity,
+            body: body,
+            balance: balance,
+            presentation: presentation,
+            grindSize:
+              presentation === "MOLIDO"
+                ? document.getElementById("grindSize").value
+                : null,
+            packageSize: packageSize,
+            unitCount: unitCount,
+          }),
+        });
 
-      alert(
-        `✅ Café preparado para venta\n${packageRecord.originalLotId}\n${unitCount} unidades de ${packageSize}`
-      );
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || "Error al preparar café");
+        }
 
-      form.reset();
-      coffeeInfoCard.style.display = "none";
-      originInfo.style.display = "none";
-      summaryBox.style.display = "none";
-      grindingGroup.style.display = "none";
-      loadRoastedLots();
+        const data = await response.json();
+
+        alert(
+          `✅ Café preparado para venta\n${currentRoasted.lot_id}\n${unitCount} unidades de ${packageSize}\nPuntuación: ${data.score}/5`
+        );
+
+        form.reset();
+        coffeeInfoCard.style.display = "none";
+        originInfo.style.display = "none";
+        summaryBox.style.display = "none";
+        grindingGroup.style.display = "none";
+        loadRoastedLots();
+      } catch (error) {
+        console.error("Error:", error);
+        alert(`❌ Error: ${error.message || "Error desconocido"}`);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+      }
     });
 
     // Cargar cafés al iniciar

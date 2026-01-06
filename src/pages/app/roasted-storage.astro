@@ -200,26 +200,26 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
       "SACK-60": 60,
     };
 
-    // Cargar cafés tostados listos
-    function loadRoastedLots() {
-      const roasted = JSON.parse(localStorage.getItem("roasted") || "[]");
-      const stored = JSON.parse(
-        localStorage.getItem("roasted_inventory") || "[]"
-      );
-      const storedIds = stored.map((item) => item.roastingRecordId);
+    // Cargar cafés tostados listos desde API
+    async function loadRoastedLots() {
+      try {
+        const response = await fetch("/api/coffee/roasted-coffee");
+        if (!response.ok) throw new Error("Error al cargar cafés tostados");
 
-      const available = roasted.filter(
-        (r) => !storedIds.includes(r.roastingRecordId)
-      );
+        const roastedLots = await response.json();
 
-      roastedSelect.innerHTML =
-        '<option value="">Selecciona un café tostado...</option>';
-      available.forEach((record) => {
-        const option = document.createElement("option");
-        option.value = JSON.stringify(record);
-        option.textContent = `${record.originalLotId} - ${record.roastLevel === "LIGHT" ? "Clara" : record.roastLevel === "MEDIUM" ? "Media" : "Oscura"} (${record.quantityRoasted} kg)`;
-        roastedSelect.appendChild(option);
-      });
+        roastedSelect.innerHTML =
+          '<option value="">Selecciona un café tostado...</option>';
+        roastedLots.forEach((record) => {
+          const option = document.createElement("option");
+          option.value = JSON.stringify(record);
+          option.textContent = `${record.lot_id} - ${record.roast_level === "LIGHT" ? "Clara" : record.roast_level === "MEDIUM" ? "Media" : "Oscura"} (${record.weight_kg} kg)`;
+          roastedSelect.appendChild(option);
+        });
+      } catch (error) {
+        console.error("Error cargando cafés tostados:", error);
+        alert("Error al cargar cafés tostados");
+      }
     }
 
     // Establecer fecha actual
@@ -236,15 +236,14 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
 
       currentRoasted = JSON.parse(roastedSelect.value);
       document.getElementById("roastedLotId").textContent =
-        currentRoasted.originalLotId;
-      document.getElementById("roastedVariety").textContent =
-        currentRoasted.harvest.variety;
+        currentRoasted.lot_id;
+      document.getElementById("roastedVariety").textContent = "—";
       document.getElementById("roastedWeight").textContent =
-        `${currentRoasted.quantityRoasted} kg`;
+        `${currentRoasted.weight_kg} kg`;
       document.getElementById("roastLevel").textContent =
-        currentRoasted.roastLevel === "LIGHT"
+        currentRoasted.roast_level === "LIGHT"
           ? "Clara"
-          : currentRoasted.roastLevel === "MEDIUM"
+          : currentRoasted.roast_level === "MEDIUM"
             ? "Media"
             : "Oscura";
 
@@ -267,16 +266,16 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
       const count = parseInt(containerCountInput.value);
       const capacity = containerSize * count;
 
-      if (capacity < currentRoasted.quantityRoasted) {
+      if (capacity < currentRoasted.weight_kg) {
         alert("⚠️ La capacidad de los contenedores no es suficiente");
         distributionBox.style.display = "none";
         return;
       }
 
       document.getElementById("distTotal").textContent =
-        `${currentRoasted.quantityRoasted} kg`;
+        `${currentRoasted.weight_kg} kg`;
       document.getElementById("distPerContainer").textContent =
-        `${(currentRoasted.quantityRoasted / count).toFixed(2)} kg`;
+        `${(currentRoasted.weight_kg / count).toFixed(2)} kg`;
       document.getElementById("distContainers").textContent =
         `${count} × ${containerSize} kg`;
       distributionBox.style.display = "block";
@@ -293,9 +292,9 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
 
       if (location && container && count && currentRoasted) {
         document.getElementById("summaryLot").textContent =
-          currentRoasted.originalLotId;
+          currentRoasted.lot_id;
         document.getElementById("summaryWeight").textContent =
-          `${currentRoasted.quantityRoasted} kg`;
+          `${currentRoasted.weight_kg} kg`;
         document.getElementById("summaryLocation").textContent = location;
         document.getElementById("summaryContainers").textContent =
           `${count} × ${containerSizes[container]} kg`;
@@ -316,8 +315,8 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
       .addEventListener("change", updateSummary);
     containerCountInput.addEventListener("input", updateSummary);
 
-    // Enviar formulario
-    form.addEventListener("submit", (e) => {
+    // Enviar formulario a la API
+    form.addEventListener("submit", async (e) => {
       e.preventDefault();
 
       if (!currentRoasted) {
@@ -338,40 +337,52 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
         document.querySelectorAll('input[name="conditions"]:checked')
       ).map((c) => c.value);
 
-      const storageRecord = {
-        id: `ROASTED-STORAGE-${Date.now()}`,
-        roastingRecordId: currentRoasted.roastingRecordId,
-        originalLotId: currentRoasted.originalLotId,
-        quantityRoasted: currentRoasted.quantityRoasted,
-        roastLevel: currentRoasted.roastLevel,
-        location: location,
-        container: container,
-        containerCount: count,
-        conditions: conditions,
-        storageDate: storageDate.value,
-        notes: document.getElementById("notes").value,
-        storedAt: new Date().toISOString(),
-        status: "ready_for_packaging",
-        harvest: currentRoasted.harvest,
-      };
+      const submitBtn = form.querySelector('button[type="submit"]');
+      const originalText = submitBtn.textContent;
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Registrando...";
 
-      // Guardar en localStorage
-      const inventory = JSON.parse(
-        localStorage.getItem("roasted_inventory") || "[]"
-      );
-      inventory.push(storageRecord);
-      localStorage.setItem("roasted_inventory", JSON.stringify(inventory));
+      try {
+        const response = await fetch(
+          "/api/coffee/roasted-storage",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              roastedId: currentRoasted.id,
+              location: location,
+              container: container,
+              containerCount: count,
+              conditions: conditions,
+              notes: document.getElementById("notes").value,
+            }),
+          }
+        );
 
-      alert(
-        `✅ Café tostado almacenado correctamente\n${storageRecord.quantityRoasted} kg en ${storageRecord.location}`
-      );
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || "Error al almacenar café");
+        }
 
-      form.reset();
-      storageDate.value = today;
-      roastedInfoCard.style.display = "none";
-      summaryBox.style.display = "none";
-      distributionBox.style.display = "none";
-      loadRoastedLots();
+        alert(
+          `✅ Café tostado almacenado correctamente\n${currentRoasted.weight_kg} kg en ${location}`
+        );
+
+        form.reset();
+        storageDate.value = today;
+        roastedInfoCard.style.display = "none";
+        summaryBox.style.display = "none";
+        distributionBox.style.display = "none";
+        loadRoastedLots();
+      } catch (error) {
+        console.error("Error:", error);
+        alert(`❌ Error: ${error.message || "Error desconocido"}`);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+      }
     });
 
     // Cargar cafés al iniciar
