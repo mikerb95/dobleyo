@@ -237,31 +237,55 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
       radio.addEventListener("change", generateLotId);
     });
 
-    // Enviar formulario
-    form.addEventListener("submit", (e) => {
+    // Enviar formulario a la API
+    form.addEventListener("submit", async (e) => {
       e.preventDefault();
 
-      const formData = {
-        farm: farmSelect.value,
-        variety: document.getElementById("variety").value,
-        climate: document.querySelector('input[name="climate"]:checked').value,
-        process: document.querySelector('input[name="process"]:checked').value,
-        aroma: document.getElementById("aroma").value,
-        tasteNotes: document.getElementById("tasteNotes").value,
-        lotId: document.getElementById("lotId").textContent,
-        timestamp: new Date().toISOString(),
-      };
+      const submitBtn = form.querySelector('button[type="submit"]');
+      const originalText = submitBtn.textContent;
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Registrando...";
 
-      // Guardar en localStorage para simular persistencia
-      const harvests = JSON.parse(localStorage.getItem("harvests") || "[]");
-      harvests.push(formData);
-      localStorage.setItem("harvests", JSON.stringify(harvests));
+      try {
+        const response = await fetch("/api/coffee/harvest", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            farm: farmSelect.value,
+            variety: document.getElementById("variety").value,
+            climate: document.querySelector('input[name="climate"]:checked')
+              .value,
+            process: document.querySelector('input[name="process"]:checked')
+              .value,
+            aroma: document.getElementById("aroma").value,
+            tasteNotes: document.getElementById("tasteNotes").value,
+          }),
+        });
 
-      // Mostrar confirmación
-      alert(`✅ Lote ${formData.lotId} registrado correctamente`);
-      form.reset();
-      farmInfo.style.display = "none";
-      lotInfo.style.display = "none";
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || "Error al registrar lote");
+        }
+
+        const data = await response.json();
+        const lotId = data.lotId;
+
+        // Mostrar confirmación
+        alert(`✅ Lote ${lotId} registrado correctamente en la base de datos`);
+        form.reset();
+        farmInfo.style.display = "none";
+        lotInfo.style.display = "none";
+      } catch (error) {
+        console.error("Error:", error);
+        alert(
+          `❌ Error al registrar lote: ${error.message || "Error desconocido"}`
+        );
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+      }
     });
   </script>
 </MobileLayout>

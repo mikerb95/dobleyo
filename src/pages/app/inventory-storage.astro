@@ -140,21 +140,36 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
     const summaryBox = document.getElementById("summaryBox");
     const lotInfoCard = document.getElementById("lotInfoCard");
 
-    // Cargar lotes disponibles
-    function loadAvailableLots() {
-      const harvests = JSON.parse(localStorage.getItem("harvests") || "[]");
-      const stored = JSON.parse(localStorage.getItem("inventory") || "[]");
-      const storedLotIds = stored.map((item) => item.lotId);
+    // Cargar lotes disponibles desde API
+    async function loadAvailableLots() {
+      try {
+        const response = await fetch("/api/coffee/harvests");
+        if (!response.ok) throw new Error("Error al cargar lotes");
 
-      const available = harvests.filter((h) => !storedLotIds.includes(h.lotId));
+        const harvests = await response.json();
 
-      lotSelect.innerHTML = '<option value="">Selecciona un lote...</option>';
-      available.forEach((harvest) => {
-        const option = document.createElement("option");
-        option.value = JSON.stringify(harvest);
-        option.textContent = `${harvest.lotId} (${harvest.variety})`;
-        lotSelect.appendChild(option);
-      });
+        // También obtener inventario para filtrar
+        const inventoryResponse = await fetch(
+          "/api/coffee/green-inventory"
+        );
+        const inventory = inventoryResponse.ok ? await inventoryResponse.json() : [];
+        const storedLotIds = inventory.map((item) => item.lot_id);
+
+        const available = harvests.filter(
+          (h) => !storedLotIds.includes(h.lot_id)
+        );
+
+        lotSelect.innerHTML = '<option value="">Selecciona un lote...</option>';
+        available.forEach((harvest) => {
+          const option = document.createElement("option");
+          option.value = JSON.stringify(harvest);
+          option.textContent = `${harvest.lot_id} (${harvest.variety})`;
+          lotSelect.appendChild(option);
+        });
+      } catch (error) {
+        console.error("Error cargando lotes:", error);
+        alert("Error al cargar lotes disponibles");
+      }
     }
 
     // Establecer fecha actual
@@ -174,7 +189,7 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
       document.getElementById("lotProcess").textContent = harvest.process;
       document.getElementById("lotFarm").textContent = harvest.farm;
       document.getElementById("lotDate").textContent = new Date(
-        harvest.timestamp
+        harvest.created_at
       ).toLocaleDateString("es-CO");
       lotInfoCard.style.display = "block";
       updateSummary();
@@ -188,7 +203,7 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
 
       if (weight && location && lotSelect.value) {
         const harvest = JSON.parse(lotSelect.value);
-        document.getElementById("summaryLot").textContent = harvest.lotId;
+        document.getElementById("summaryLot").textContent = harvest.lot_id;
         document.getElementById("summaryWeight").textContent =
           `${weight} ${unit}`;
         document.getElementById("summaryLocation").textContent = location;
@@ -209,8 +224,8 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
       .getElementById("location")
       .addEventListener("change", updateSummary);
 
-    // Enviar formulario
-    form.addEventListener("submit", (e) => {
+    // Enviar formulario a la API
+    form.addEventListener("submit", async (e) => {
       e.preventDefault();
 
       if (!lotSelect.value) {
@@ -219,32 +234,48 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
       }
 
       const harvest = JSON.parse(lotSelect.value);
-      const storageRecord = {
-        lotId: harvest.lotId,
-        weight: parseFloat(document.getElementById("weight").value),
-        weightUnit: document.getElementById("weightUnit").value,
-        location: document.getElementById("location").value,
-        storageDate: storageDate.value,
-        notes: document.getElementById("notes").value,
-        type: "green_coffee",
-        storedAt: new Date().toISOString(),
-        harvest: harvest,
-      };
+      const submitBtn = form.querySelector('button[type="submit"]');
+      const originalText = submitBtn.textContent;
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Registrando...";
 
-      // Guardar en localStorage
-      const inventory = JSON.parse(localStorage.getItem("inventory") || "[]");
-      inventory.push(storageRecord);
-      localStorage.setItem("inventory", JSON.stringify(inventory));
+      try {
+        const response = await fetch("/api/coffee/inventory-storage", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            lotId: harvest.lot_id,
+            weight: parseFloat(document.getElementById("weight").value),
+            weightUnit: document.getElementById("weightUnit").value,
+            location: document.getElementById("location").value,
+            storageDate: storageDate.value,
+            notes: document.getElementById("notes").value,
+          }),
+        });
 
-      alert(
-        `✅ Lote ${storageRecord.lotId} almacenado correctamente\n${storageRecord.weight} ${storageRecord.weightUnit} en ${storageRecord.location}`
-      );
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || "Error al almacenar lote");
+        }
 
-      form.reset();
-      storageDate.value = today;
-      lotInfoCard.style.display = "none";
-      summaryBox.style.display = "none";
-      loadAvailableLots();
+        alert(
+          `✅ Lote ${harvest.lot_id} almacenado correctamente en la base de datos`
+        );
+
+        form.reset();
+        storageDate.value = today;
+        lotInfoCard.style.display = "none";
+        summaryBox.style.display = "none";
+        loadAvailableLots();
+      } catch (error) {
+        console.error("Error:", error);
+        alert(`❌ Error: ${error.message || "Error desconocido"}`);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+      }
     });
 
     // Cargar lotes al iniciar

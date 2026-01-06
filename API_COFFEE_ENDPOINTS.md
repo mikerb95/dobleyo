@@ -17,6 +17,7 @@ https://dobleyo.cafe/api/coffee
 Registra un nuevo lote de café recolectado en la finca.
 
 **Body:**
+
 ```json
 {
   "farm": "finca-la-sierra",
@@ -29,6 +30,7 @@ Registra un nuevo lote de café recolectado en la finca.
 ```
 
 **Response (201):**
+
 ```json
 {
   "success": true,
@@ -47,6 +49,7 @@ Registra un nuevo lote de café recolectado en la finca.
 Registra café verde en el inventario.
 
 **Body:**
+
 ```json
 {
   "lotId": "COL-HUI-1800-CAT-HUM-01",
@@ -59,6 +62,7 @@ Registra café verde en el inventario.
 ```
 
 **Response (201):**
+
 ```json
 {
   "success": true,
@@ -76,6 +80,7 @@ Registra café verde en el inventario.
 Envía café verde a proceso de tostión.
 
 **Body:**
+
 ```json
 {
   "lotId": "COL-HUI-1800-CAT-HUM-01",
@@ -86,6 +91,7 @@ Envía café verde a proceso de tostión.
 ```
 
 **Response (201):**
+
 ```json
 {
   "success": true,
@@ -103,6 +109,7 @@ Envía café verde a proceso de tostión.
 Registra café tostado después del proceso.
 
 **Body:**
+
 ```json
 {
   "roastingId": 1,
@@ -115,6 +122,7 @@ Registra café tostado después del proceso.
 ```
 
 **Response (201):**
+
 ```json
 {
   "success": true,
@@ -133,6 +141,7 @@ Registra café tostado después del proceso.
 Almacena café tostado en bodega.
 
 **Body:**
+
 ```json
 {
   "roastedId": 1,
@@ -145,6 +154,7 @@ Almacena café tostado en bodega.
 ```
 
 **Response (201):**
+
 ```json
 {
   "success": true,
@@ -162,6 +172,7 @@ Almacena café tostado en bodega.
 Configura propiedades de cata y prepara para empaque.
 
 **Body:**
+
 ```json
 {
   "roastedStorageId": 1,
@@ -177,6 +188,7 @@ Configura propiedades de cata y prepara para empaque.
 ```
 
 **Response (201):**
+
 ```json
 {
   "success": true,
@@ -197,6 +209,7 @@ Configura propiedades de cata y prepara para empaque.
 Lista todos los lotes recolectados.
 
 **Response (200):**
+
 ```json
 [
   {
@@ -222,6 +235,7 @@ Lista todos los lotes recolectados.
 Lista café verde almacenado.
 
 **Response (200):**
+
 ```json
 [
   {
@@ -245,6 +259,7 @@ Lista café verde almacenado.
 Lista lotes actualmente en proceso de tostión.
 
 **Response (200):**
+
 ```json
 [
   {
@@ -267,6 +282,7 @@ Lista lotes actualmente en proceso de tostión.
 Lista café tostado listo para almacenar.
 
 **Response (200):**
+
 ```json
 [
   {
@@ -274,7 +290,7 @@ Lista café tostado listo para almacenar.
     "roasting_id": 1,
     "roast_level": "MEDIUM",
     "weight_kg": 25.5,
-    "weight_loss_percent": 15.00,
+    "weight_loss_percent": 15.0,
     "actual_temp": 208,
     "roast_time_minutes": 12,
     "status": "ready_for_storage",
@@ -292,6 +308,7 @@ Lista café tostado listo para almacenar.
 Lista café listo para venta.
 
 **Response (200):**
+
 ```json
 [
   {
@@ -339,6 +356,7 @@ POST /packaging
 ## 🗄️ Estructura de Tablas
 
 ### coffee_harvests
+
 ```sql
 - id (PK)
 - lot_id (UNIQUE)
@@ -352,6 +370,7 @@ POST /packaging
 ```
 
 ### green_coffee_inventory
+
 ```sql
 - id (PK)
 - harvest_id (FK)
@@ -364,6 +383,7 @@ POST /packaging
 ```
 
 ### roasting_batches
+
 ```sql
 - id (PK)
 - lot_id
@@ -375,6 +395,7 @@ POST /packaging
 ```
 
 ### roasted_coffee
+
 ```sql
 - id (PK)
 - roasting_id (FK)
@@ -389,6 +410,7 @@ POST /packaging
 ```
 
 ### roasted_coffee_inventory
+
 ```sql
 - id (PK)
 - roasted_id (FK)
@@ -402,6 +424,7 @@ POST /packaging
 ```
 
 ### packaged_coffee
+
 ```sql
 - id (PK)
 - roasted_storage_id (FK)

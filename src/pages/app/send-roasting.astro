@@ -160,38 +160,25 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
     const lotInfoCard = document.getElementById("lotInfoCard");
     const quantityInput = document.getElementById("quantity");
 
-    // Cargar lotes disponibles
-    function loadAvailableLots() {
-      const inventory = JSON.parse(localStorage.getItem("inventory") || "[]");
-      const roasting = JSON.parse(localStorage.getItem("roasting") || "[]");
+    // Cargar lotes disponibles desde API
+    async function loadAvailableLots() {
+      try {
+        const response = await fetch("/api/coffee/green-inventory");
+        if (!response.ok) throw new Error("Error al cargar inventario");
 
-      // Filtrar: solo café verde que no ha sido enviado a tostión completamente
-      const available = inventory
-        .filter((item) => item.type === "green_coffee")
-        .filter((item) => {
-          const roasted = roasting.filter(
-            (r) => r.originalLotId === item.lotId
-          );
-          const totalRoasted = roasted.reduce(
-            (sum, r) => sum + r.quantitySent,
-            0
-          );
-          return item.weight > totalRoasted;
+        const inventory = await response.json();
+
+        lotSelect.innerHTML = '<option value="">Selecciona un lote...</option>';
+        inventory.forEach((item) => {
+          const option = document.createElement("option");
+          option.value = JSON.stringify(item);
+          option.textContent = `${item.lot_id} (${item.weight_kg} kg disponible)`;
+          lotSelect.appendChild(option);
         });
-
-      lotSelect.innerHTML = '<option value="">Selecciona un lote...</option>';
-      available.forEach((item) => {
-        const roasted = JSON.parse(localStorage.getItem("roasting") || "[]");
-        const totalRoasted = roasted
-          .filter((r) => r.originalLotId === item.lotId)
-          .reduce((sum, r) => sum + r.quantitySent, 0);
-        const remaining = item.weight - totalRoasted;
-
-        const option = document.createElement("option");
-        option.value = JSON.stringify(item);
-        option.textContent = `${item.lotId} (${remaining.toFixed(1)} ${item.weightUnit} disponible)`;
-        lotSelect.appendChild(option);
-      });
+      } catch (error) {
+        console.error("Error cargando inventario:", error);
+        alert("Error al cargar inventario disponible");
+      }
     }
 
     // Establecer fecha actual
@@ -207,23 +194,15 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
       }
 
       const item = JSON.parse(lotSelect.value);
-      document.getElementById("lotId").textContent = item.lotId;
-      document.getElementById("lotVariety").textContent = item.harvest.variety;
+      document.getElementById("lotId").textContent = item.lot_id;
+      document.getElementById("lotVariety").textContent = item.variety || "—";
       document.getElementById("lotLocation").textContent = item.location;
-
-      // Calcular peso disponible
-      const roasting = JSON.parse(localStorage.getItem("roasting") || "[]");
-      const totalRoasted = roasting
-        .filter((r) => r.originalLotId === item.lotId)
-        .reduce((sum, r) => sum + r.quantitySent, 0);
-      const available = item.weight - totalRoasted;
-
       document.getElementById("lotAvailableWeight").textContent =
-        `${available.toFixed(1)} ${item.weightUnit}`;
+        `${item.weight_kg} kg`;
       document.getElementById("quantityHint").textContent =
-        `Máximo disponible: ${available.toFixed(1)} ${item.weightUnit}`;
+        `Máximo disponible: ${item.weight_kg} kg`;
 
-      quantityInput.max = available;
+      quantityInput.max = item.weight_kg;
       lotInfoCard.style.display = "block";
       updateSummary();
     });
@@ -235,9 +214,9 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
       const lotItem = lotSelect.value ? JSON.parse(lotSelect.value) : null;
 
       if (quantity > 0 && lotItem) {
-        document.getElementById("summaryLot").textContent = lotItem.lotId;
+        document.getElementById("summaryLot").textContent = lotItem.lot_id;
         document.getElementById("summaryQuantity").textContent =
-          `${quantity} ${lotItem.weightUnit}`;
+          `${quantity} kg`;
         document.getElementById("summaryTemp").textContent =
           temp !== "—" ? `${temp}°C` : "No especificada";
         document.getElementById("summaryDate").textContent = new Date(
@@ -254,8 +233,8 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
       .getElementById("targetTemp")
       .addEventListener("input", updateSummary);
 
-    // Enviar formulario
-    form.addEventListener("submit", (e) => {
+    // Enviar formulario a la API
+    form.addEventListener("submit", async (e) => {
       e.preventDefault();
 
       if (!lotSelect.value) {
@@ -271,41 +250,51 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
         return;
       }
 
-      if (
-        quantity >
-        parseFloat(document.getElementById("lotAvailableWeight").textContent)
-      ) {
+      if (quantity > item.weight_kg) {
         alert("⚠️ La cantidad excede el peso disponible");
         return;
       }
 
-      const roastingRecord = {
-        id: `ROAST-${Date.now()}`,
-        originalLotId: item.lotId,
-        quantitySent: quantity,
-        weightUnit: item.weightUnit,
-        targetTemp: document.getElementById("targetTemp").value || null,
-        notes: document.getElementById("notes").value,
-        sentDate: roastingDate.value,
-        sentAt: new Date().toISOString(),
-        status: "in_roasting",
-        harvest: item.harvest,
-      };
+      const submitBtn = form.querySelector('button[type="submit"]');
+      const originalText = submitBtn.textContent;
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Registrando...";
 
-      // Guardar en localStorage
-      const roasting = JSON.parse(localStorage.getItem("roasting") || "[]");
-      roasting.push(roastingRecord);
-      localStorage.setItem("roasting", JSON.stringify(roasting));
+      try {
+        const response = await fetch("/api/coffee/send-roasting", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            lotId: item.lot_id,
+            quantitySent: quantity,
+            targetTemp: document.getElementById("targetTemp").value || null,
+            notes: document.getElementById("notes").value,
+          }),
+        });
 
-      alert(
-        `✅ Lote ${roastingRecord.originalLotId} enviado a tostión\n${quantity} ${item.weightUnit} en proceso`
-      );
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || "Error al enviar a tostión");
+        }
 
-      form.reset();
-      roastingDate.value = today;
-      lotInfoCard.style.display = "none";
-      summaryBox.style.display = "none";
-      loadAvailableLots();
+        alert(
+          `✅ Lote ${item.lot_id} enviado a tostión correctamente\n${quantity} kg en proceso`
+        );
+
+        form.reset();
+        roastingDate.value = today;
+        lotInfoCard.style.display = "none";
+        summaryBox.style.display = "none";
+        loadAvailableLots();
+      } catch (error) {
+        console.error("Error:", error);
+        alert(`❌ Error: ${error.message || "Error desconocido"}`);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+      }
     });
 
     // Cargar lotes al iniciar
