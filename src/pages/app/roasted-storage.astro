@@ -2,11 +2,16 @@
 import MobileLayout from "../../layouts/MobileLayout.astro";
 ---
 
-<MobileLayout title="Almacenar Café Tostado" description="Registra el café tostado en el inventario con su ubicación">
+<MobileLayout
+  title="Almacenar Café Tostado"
+  description="Registra el café tostado en el inventario con su ubicación"
+>
   <form id="roastedStorageForm">
     <!-- Selección de Café Tostado -->
     <div class="form-group">
-      <label for="roastedSelect">Café Tostado para Almacenar <span class="required">*</span></label>
+      <label for="roastedSelect"
+        >Café Tostado para Almacenar <span class="required">*</span></label
+      >
       <select id="roastedSelect" name="roasted" required>
         <option value="">Selecciona un café tostado...</option>
       </select>
@@ -16,7 +21,9 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
     <!-- Info del Café Tostado -->
     <div class="card" id="roastedInfoCard" style="display: none;">
       <h3>Información del Café Tostado</h3>
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 0.95rem;">
+      <div
+        style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 0.95rem;"
+      >
         <div>
           <div style="color: #666; font-size: 0.85rem;">Lote ID</div>
           <div style="font-weight: 600;" id="roastedLotId">—</div>
@@ -27,7 +34,9 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
         </div>
         <div>
           <div style="color: #666; font-size: 0.85rem;">Peso Tostado</div>
-          <div style="font-weight: 600; color: #c67b4e;" id="roastedWeight">—</div>
+          <div style="font-weight: 600; color: #c67b4e;" id="roastedWeight">
+            —
+          </div>
         </div>
         <div>
           <div style="color: #666; font-size: 0.85rem;">Nivel de Tueste</div>
@@ -38,7 +47,9 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
 
     <!-- Ubicación en Bodega -->
     <div class="form-group">
-      <label for="location">Ubicación en Bodega <span class="required">*</span></label>
+      <label for="location"
+        >Ubicación en Bodega <span class="required">*</span></label
+      >
       <select id="location" name="location" required>
         <option value="">Selecciona una ubicación</option>
         <option value="ROASTED-A-01">Sección A - Estante 01 (Tostado)</option>
@@ -53,7 +64,9 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
 
     <!-- Contenedor/Empaque -->
     <div class="form-group">
-      <label for="container">Tipo de Contenedor <span class="required">*</span></label>
+      <label for="container"
+        >Tipo de Contenedor <span class="required">*</span></label
+      >
       <select id="container" name="container" required>
         <option value="">Selecciona un contenedor</option>
         <option value="BAG-1KG">Bolsas de 1 kg (para empaque)</option>
@@ -65,7 +78,9 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
 
     <!-- Cantidad de Contenedores -->
     <div class="form-group">
-      <label for="containerCount">Cantidad de Contenedores <span class="required">*</span></label>
+      <label for="containerCount"
+        >Cantidad de Contenedores <span class="required">*</span></label
+      >
       <input
         type="number"
         id="containerCount"
@@ -82,9 +97,17 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
     <div class="info-box" id="distributionBox" style="display: none;">
       <strong>Distribución del Peso:</strong>
       <div style="margin-top: 0.75rem; font-size: 0.95rem;">
-        <div>Total: <span id="distTotal" style="font-weight: 600;">— kg</span></div>
-        <div>Por Contenedor: <span id="distPerContainer" style="font-weight: 600;">— kg</span></div>
-        <div>Contenedores: <span id="distContainers" style="font-weight: 600;">—</span></div>
+        <div>
+          Total: <span id="distTotal" style="font-weight: 600;">— kg</span>
+        </div>
+        <div>
+          Por Contenedor: <span id="distPerContainer" style="font-weight: 600;"
+            >— kg</span>
+        </div>
+        <div>
+          Contenedores: <span id="distContainers" style="font-weight: 600;"
+            >—</span>
+        </div>
       </div>
     </div>
 
@@ -92,7 +115,9 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
     <div class="form-group">
       <label for="storageDate">Fecha de Almacenamiento</label>
       <input type="date" id="storageDate" name="storageDate" disabled />
-      <div class="form-hint">Se registra automáticamente como la fecha actual</div>
+      <div class="form-hint">
+        Se registra automáticamente como la fecha actual
+      </div>
     </div>
 
     <!-- Condiciones de Almacenamiento -->
@@ -128,11 +153,24 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
     <div class="info-box" id="summaryBox" style="display: none;">
       <strong>Resumen del Almacenamiento Tostado:</strong>
       <div style="margin-top: 0.75rem; font-size: 0.95rem; line-height: 1.6;">
-        <div>📦 Lote: <span id="summaryLot" style="font-weight: 600;">—</span></div>
-        <div>⚖️ Peso: <span id="summaryWeight" style="font-weight: 600;">—</span></div>
-        <div>📍 Ubicación: <span id="summaryLocation" style="font-weight: 600;">—</span></div>
-        <div>🏠 Contenedores: <span id="summaryContainers" style="font-weight: 600;">—</span></div>
-        <div>📅 Fecha: <span id="summaryDate" style="font-weight: 600;">—</span></div>
+        <div>
+          📦 Lote: <span id="summaryLot" style="font-weight: 600;">—</span>
+        </div>
+        <div>
+          ⚖️ Peso: <span id="summaryWeight" style="font-weight: 600;">—</span>
+        </div>
+        <div>
+          📍 Ubicación: <span id="summaryLocation" style="font-weight: 600;"
+            >—</span>
+        </div>
+        <div>
+          🏠 Contenedores: <span
+            id="summaryContainers"
+            style="font-weight: 600;">—</span>
+        </div>
+        <div>
+          📅 Fecha: <span id="summaryDate" style="font-weight: 600;">—</span>
+        </div>
       </div>
     </div>
 
@@ -165,12 +203,17 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
     // Cargar cafés tostados listos
     function loadRoastedLots() {
       const roasted = JSON.parse(localStorage.getItem("roasted") || "[]");
-      const stored = JSON.parse(localStorage.getItem("roasted_inventory") || "[]");
+      const stored = JSON.parse(
+        localStorage.getItem("roasted_inventory") || "[]"
+      );
       const storedIds = stored.map((item) => item.roastingRecordId);
 
-      const available = roasted.filter((r) => !storedIds.includes(r.roastingRecordId));
+      const available = roasted.filter(
+        (r) => !storedIds.includes(r.roastingRecordId)
+      );
 
-      roastedSelect.innerHTML = '<option value="">Selecciona un café tostado...</option>';
+      roastedSelect.innerHTML =
+        '<option value="">Selecciona un café tostado...</option>';
       available.forEach((record) => {
         const option = document.createElement("option");
         option.value = JSON.stringify(record);
@@ -192,10 +235,18 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
       }
 
       currentRoasted = JSON.parse(roastedSelect.value);
-      document.getElementById("roastedLotId").textContent = currentRoasted.originalLotId;
-      document.getElementById("roastedVariety").textContent = currentRoasted.harvest.variety;
-      document.getElementById("roastedWeight").textContent = `${currentRoasted.quantityRoasted} kg`;
-      document.getElementById("roastLevel").textContent = currentRoasted.roastLevel === "LIGHT" ? "Clara" : currentRoasted.roastLevel === "MEDIUM" ? "Media" : "Oscura";
+      document.getElementById("roastedLotId").textContent =
+        currentRoasted.originalLotId;
+      document.getElementById("roastedVariety").textContent =
+        currentRoasted.harvest.variety;
+      document.getElementById("roastedWeight").textContent =
+        `${currentRoasted.quantityRoasted} kg`;
+      document.getElementById("roastLevel").textContent =
+        currentRoasted.roastLevel === "LIGHT"
+          ? "Clara"
+          : currentRoasted.roastLevel === "MEDIUM"
+            ? "Media"
+            : "Oscura";
 
       roastedInfoCard.style.display = "block";
       updateSummary();
@@ -203,7 +254,11 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
 
     // Calcular distribución
     function updateDistribution() {
-      if (!containerSelect.value || !containerCountInput.value || !currentRoasted) {
+      if (
+        !containerSelect.value ||
+        !containerCountInput.value ||
+        !currentRoasted
+      ) {
         distributionBox.style.display = "none";
         return;
       }
@@ -218,9 +273,12 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
         return;
       }
 
-      document.getElementById("distTotal").textContent = `${currentRoasted.quantityRoasted} kg`;
-      document.getElementById("distPerContainer").textContent = `${(currentRoasted.quantityRoasted / count).toFixed(2)} kg`;
-      document.getElementById("distContainers").textContent = `${count} × ${containerSize} kg`;
+      document.getElementById("distTotal").textContent =
+        `${currentRoasted.quantityRoasted} kg`;
+      document.getElementById("distPerContainer").textContent =
+        `${(currentRoasted.quantityRoasted / count).toFixed(2)} kg`;
+      document.getElementById("distContainers").textContent =
+        `${count} × ${containerSize} kg`;
       distributionBox.style.display = "block";
     }
 
@@ -234,19 +292,28 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
       const count = containerCountInput.value;
 
       if (location && container && count && currentRoasted) {
-        document.getElementById("summaryLot").textContent = currentRoasted.originalLotId;
-        document.getElementById("summaryWeight").textContent = `${currentRoasted.quantityRoasted} kg`;
+        document.getElementById("summaryLot").textContent =
+          currentRoasted.originalLotId;
+        document.getElementById("summaryWeight").textContent =
+          `${currentRoasted.quantityRoasted} kg`;
         document.getElementById("summaryLocation").textContent = location;
-        document.getElementById("summaryContainers").textContent = `${count} × ${containerSizes[container]} kg`;
-        document.getElementById("summaryDate").textContent = new Date(storageDate.value).toLocaleDateString("es-CO");
+        document.getElementById("summaryContainers").textContent =
+          `${count} × ${containerSizes[container]} kg`;
+        document.getElementById("summaryDate").textContent = new Date(
+          storageDate.value
+        ).toLocaleDateString("es-CO");
         summaryBox.style.display = "block";
       } else {
         summaryBox.style.display = "none";
       }
     }
 
-    document.getElementById("location").addEventListener("change", updateSummary);
-    document.getElementById("container").addEventListener("change", updateSummary);
+    document
+      .getElementById("location")
+      .addEventListener("change", updateSummary);
+    document
+      .getElementById("container")
+      .addEventListener("change", updateSummary);
     containerCountInput.addEventListener("input", updateSummary);
 
     // Enviar formulario
@@ -267,7 +334,9 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
         return;
       }
 
-      const conditions = Array.from(document.querySelectorAll('input[name="conditions"]:checked')).map((c) => c.value);
+      const conditions = Array.from(
+        document.querySelectorAll('input[name="conditions"]:checked')
+      ).map((c) => c.value);
 
       const storageRecord = {
         id: `ROASTED-STORAGE-${Date.now()}`,
@@ -287,11 +356,15 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
       };
 
       // Guardar en localStorage
-      const inventory = JSON.parse(localStorage.getItem("roasted_inventory") || "[]");
+      const inventory = JSON.parse(
+        localStorage.getItem("roasted_inventory") || "[]"
+      );
       inventory.push(storageRecord);
       localStorage.setItem("roasted_inventory", JSON.stringify(inventory));
 
-      alert(`✅ Café tostado almacenado correctamente\n${storageRecord.quantityRoasted} kg en ${storageRecord.location}`);
+      alert(
+        `✅ Café tostado almacenado correctamente\n${storageRecord.quantityRoasted} kg en ${storageRecord.location}`
+      );
 
       form.reset();
       storageDate.value = today;
