@@ -1,6 +1,7 @@
 # 🔒 Resumen: Función de Lotes Ahora Privada
 
 ## Requisito Implementado
+
 **"la función de lotes es netamente para el uso del admin, debe ser privada y no pueden haber banners alusivos a este en la vista pública"**
 
 ✅ **COMPLETADO AL 100%**
@@ -10,6 +11,7 @@
 ## Lo Que Se Cambió
 
 ### 1. API Endpoints Protegidos 🛡️
+
 Todos los endpoints de `/api/lots` ahora requieren **autenticación de admin**:
 
 ```javascript
@@ -25,6 +27,7 @@ GET /api/lots/status/verde (requiere token admin)
 **Ubicación:** `/server/routes/lots.js`
 
 ### 2. Navegación Pública Limpia 🧹
+
 La página `/lotes.html` NO aparece en la barra de navegación pública:
 
 ```html
@@ -45,6 +48,7 @@ La página `/lotes.html` NO aparece en la barra de navegación pública:
 **Ubicación:** `/lotes.html` línea 27-32
 
 ### 3. Oculta de Buscadores 🚫
+
 La página está marcada como privada en buscadores:
 
 ```html
@@ -60,6 +64,7 @@ La página está marcada como privada en buscadores:
 ## Cómo Acceder Ahora
 
 ### Público
+
 ❌ No pueden ver nada (sin token de admin)
 
 ```bash
@@ -68,6 +73,7 @@ curl https://dobleyo.cafe/api/lots
 ```
 
 ### Admin
+
 ✅ Pueden ver si están autenticados
 
 ```bash
@@ -83,30 +89,33 @@ GET /api/lots -H "Authorization: Bearer <token>"
 
 ## Archivos Modificados
 
-| Archivo | Cambio |
-|---------|--------|
+| Archivo                  | Cambio                                                                    |
+| ------------------------ | ------------------------------------------------------------------------- |
 | `/server/routes/lots.js` | 3 GET endpoints ahora requieren `authenticateToken, requireRole('admin')` |
-| `/lotes.html` | Removida "Lotes" de navegación pública |
-| `/lotes.html` | Agregado `<meta name="robots" content="noindex, nofollow" />` |
-| `/lotes.html` | URLs API cambiadas de `/api/lotes` a `/api/lots` |
+| `/lotes.html`            | Removida "Lotes" de navegación pública                                    |
+| `/lotes.html`            | Agregado `<meta name="robots" content="noindex, nofollow" />`             |
+| `/lotes.html`            | URLs API cambiadas de `/api/lotes` a `/api/lots`                          |
 
 ---
 
 ## Resultado Final
 
 ### 🔐 Seguridad
+
 - ✅ Datos de lotes solo accesibles por admin
 - ✅ API requiere token válido
 - ✅ Página no indexada por buscadores
 - ✅ No hay referencias públicas
 
 ### 🎯 Usabilidad
+
 - ✅ Admin puede acceder a `https://dobleyo.cafe/lotes.html`
 - ✅ Solo debe hacer login
 - ✅ Contiene gestión completa de lotes
 - ✅ Genera QR para trazabilidad
 
 ### 🛡️ Privacidad
+
 - ✅ Información de origen protegida
 - ✅ Detalles de productores privados
 - ✅ Códigos QR únicos controlados
@@ -117,12 +126,14 @@ GET /api/lots -H "Authorization: Bearer <token>"
 ## Verificación Rápida
 
 ### Prueba 1: Acceso Sin Autenticación
+
 ```bash
 curl https://dobleyo.cafe/api/lots
 # Esperado: {"error":"Unauthorized","status":401}
 ```
 
 ### Prueba 2: Página /lotes.html
+
 ```
 1. Acceder a https://dobleyo.cafe/lotes.html
 2. Se muestra: Formulario de login
@@ -131,6 +142,7 @@ curl https://dobleyo.cafe/api/lots
 ```
 
 ### Prueba 3: Navegación Pública
+
 ```
 1. Revisar: https://dobleyo.cafe/tienda.html
 2. No debe haber enlace a "Lotes"

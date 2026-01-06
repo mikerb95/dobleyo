@@ -114,3 +114,27 @@ CREATE INDEX idx_lots_code ON lots(code);
 CREATE INDEX idx_lots_product ON lots(product_id);
 CREATE INDEX idx_lots_estado ON lots(estado);
 CREATE INDEX idx_lots_parent ON lots(parent_lot_id);
+
+-- Sales Tracking (MercadoLibre)
+CREATE TABLE IF NOT EXISTS sales_tracking (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    ml_order_id BIGINT NOT NULL UNIQUE,
+    purchase_date DATETIME NOT NULL,
+    total_amount DECIMAL(12,2) NOT NULL,
+    order_status VARCHAR(80),
+    shipping_method VARCHAR(120),
+    recipient_city VARCHAR(160),
+    recipient_state VARCHAR(160),
+    recipient_country VARCHAR(120),
+    recipient_zip_code VARCHAR(20),
+    latitude DECIMAL(10,8),
+    longitude DECIMAL(10,8),
+    products JSON NOT NULL,
+    sync_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX idx_sales_ml_order_id ON sales_tracking(ml_order_id);
+CREATE INDEX idx_sales_purchase_date ON sales_tracking(purchase_date);
+CREATE INDEX idx_sales_city ON sales_tracking(recipient_city);
+CREATE INDEX idx_sales_state ON sales_tracking(recipient_state);
