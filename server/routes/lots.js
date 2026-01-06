@@ -4,8 +4,8 @@ import { authenticateToken, requireRole } from '../auth.js';
 
 export const lotsRouter = Router();
 
-// Obtener todos los lotes
-lotsRouter.get('/', async (req, res) => {
+// Obtener todos los lotes (solo admin)
+lotsRouter.get('/', authenticateToken, requireRole('admin'), async (req, res) => {
   try {
     const result = await db.query(
       'SELECT * FROM lots ORDER BY created_at DESC'
@@ -17,8 +17,8 @@ lotsRouter.get('/', async (req, res) => {
   }
 });
 
-// Obtener un lote específico por código o ID
-lotsRouter.get('/:identifier', async (req, res) => {
+// Obtener un lote específico por código o ID (solo admin)
+lotsRouter.get('/:identifier', authenticateToken, requireRole('admin'), async (req, res) => {
   try {
     const { identifier } = req.params;
     
@@ -307,8 +307,8 @@ lotsRouter.post('/roast/:lotId', authenticateToken, requireRole('admin'), async 
   }
 });
 
-// Obtener lotes verdes disponibles
-lotsRouter.get('/status/verde', async (req, res) => {
+// Obtener lotes verdes disponibles (solo admin)
+lotsRouter.get('/status/verde', authenticateToken, requireRole('admin'), async (req, res) => {
   try {
     const result = await db.query(
       'SELECT id, code, name, farm, variety, weight_kg, altitude FROM lots WHERE estado = "verde" ORDER BY created_at DESC'
