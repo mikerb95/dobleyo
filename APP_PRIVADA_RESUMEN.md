@@ -8,23 +8,28 @@
 ## Cambios Realizados
 
 ### 🗑️ 1. Banner Removido (src/pages/index.astro)
+
 - ❌ Eliminada sección "📱 DobleYo Café - App Mobile"
 - ❌ Removidos enlaces "Ir al App" y "Documentación"
 - ✅ Los usuarios públicos ya no ven referencias a la app
 
 ### 🔒 2. Meta Robots NoIndex Agregado (src/layouts/MobileLayout.astro)
+
 ```html
 <meta name="robots" content="noindex, nofollow" />
 ```
+
 - ✅ Google no indexará `/app` ni sus subpáginas
 - ✅ No aparecerá en resultados de búsqueda
 - ✅ Los buscadores respetarán la privacidad
 
 ### 🎨 3. Nuevo Layout para App (src/layouts/AppLayout.astro)
+
 ```astro
 import Head from "../components/Head.astro";
 <meta name="robots" content="noindex, nofollow" />
 ```
+
 - ✅ Página principal `/app` está protegida
 - ✅ Título: "Admin · DobleYo"
 - ✅ Consistencia con otras páginas de admin
@@ -33,19 +38,20 @@ import Head from "../components/Head.astro";
 
 ## Resultado
 
-| Aspecto | Antes | Ahora |
-|---------|-------|-------|
-| **Banner en inicio** | ✅ Visible | ❌ Removido |
-| **Referencia pública** | ✅ Sí | ❌ No |
-| **Indexado por Google** | ✅ Sí | ❌ No |
-| **Accesible por URL** | ✅ Sí | ✅ Sí |
-| **Privacidad** | ⚠️ Parcial | ✅ Total |
+| Aspecto                 | Antes      | Ahora       |
+| ----------------------- | ---------- | ----------- |
+| **Banner en inicio**    | ✅ Visible | ❌ Removido |
+| **Referencia pública**  | ✅ Sí      | ❌ No       |
+| **Indexado por Google** | ✅ Sí      | ❌ No       |
+| **Accesible por URL**   | ✅ Sí      | ✅ Sí       |
+| **Privacidad**          | ⚠️ Parcial | ✅ Total    |
 
 ---
 
 ## Protección de /app
 
 ✅ **La página `/app` ahora es:**
+
 1. 🔒 Invisible en navegación pública
 2. 🔒 No tiene banners públicos
 3. 🔒 No indexada por buscadores
@@ -53,6 +59,7 @@ import Head from "../components/Head.astro";
 5. ✅ Accesible por URL directa para admin
 
 **Todas las subpáginas están igualmente protegidas:**
+
 - `/app/harvest` → 🔒 Privada
 - `/app/inventory-storage` → 🔒 Privada
 - `/app/send-roasting` → 🔒 Privada
@@ -65,12 +72,14 @@ import Head from "../components/Head.astro";
 ## Verificación
 
 ### Búsqueda en Google
+
 ```
 site:dobleyo.cafe/app
 → ❌ No hay resultados
 ```
 
 ### Página de Inicio
+
 ```
 Inicio
 ├─ Tienda
@@ -80,6 +89,7 @@ Inicio
 ```
 
 ### Banner Removido
+
 ```
 Antes: Sección completa dedicada a "App Mobile"
 Ahora: ✂️ Completamente removida
@@ -92,10 +102,12 @@ Ahora: ✂️ Completamente removida
 **3 archivos modificados:**
 
 1. **src/pages/index.astro**
+
    - Removido: Sección de "App Mobile" (34 líneas)
    - Tamaño reducido: Más enfoque en contenido público
 
 2. **src/layouts/MobileLayout.astro**
+
    - Agregado: `<meta name="robots" content="noindex, nofollow" />`
    - Todas las páginas móviles ahora están marcadas como privadas
 
@@ -117,6 +129,7 @@ Ahora: ✂️ Completamente removida
 ✅ **"esta pagina es de uso exclusivo del admin: https://dobleyo.cafe/app"**
 
 La página `/app` es ahora completamente privada:
+
 - No visible públicamente
 - No en banners
 - No indexada por buscadores
