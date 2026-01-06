@@ -11,6 +11,7 @@
 ## 📋 Componentes Implementados
 
 ### Frontend (6 módulos actualizados)
+
 - [x] `src/pages/app/harvest.astro` - Fetch POST a `/api/coffee/harvest`
 - [x] `src/pages/app/inventory-storage.astro` - Fetch GET/POST a `/api/coffee/*`
 - [x] `src/pages/app/send-roasting.astro` - Fetch GET/POST a `/api/coffee/*`
@@ -19,6 +20,7 @@
 - [x] `src/pages/app/packaging.astro` - Fetch GET/POST a `/api/coffee/*`
 
 ### Backend (11 endpoints)
+
 - [x] `POST /api/coffee/harvest` - Crear lote con lot_id autogenerado
 - [x] `POST /api/coffee/inventory-storage` - Almacenar café verde
 - [x] `POST /api/coffee/send-roasting` - Enviar a tostión con validación
@@ -32,6 +34,7 @@
 - [x] `GET /api/coffee/packaged` - Listar empacado
 
 ### Base de Datos (6 tablas)
+
 - [x] `coffee_harvests` - Lotes recolectados con lot_id UNIQUE
 - [x] `green_coffee_inventory` - Café verde almacenado con FK a harvests
 - [x] `roasting_batches` - Lotes en tostión con FK a harvests
@@ -40,11 +43,13 @@
 - [x] `packaged_coffee` - Para venta con score calculado
 
 ### Integración del Servidor
+
 - [x] Importar `coffeeRouter` en `server/index.js`
 - [x] Registrar ruta: `app.use('/api/coffee', coffeeRouter)`
 - [x] Integrar creación de tablas en `server/routes/setup.js`
 
 ### Documentación
+
 - [x] `API_COFFEE_ENDPOINTS.md` - Referencia de endpoints
 - [x] `API_MIGRATION_SUMMARY.md` - Cambios técnicos
 - [x] `TESTING_GUIDE.md` - Guía de testing paso a paso
@@ -79,6 +84,7 @@ curl -X POST https://dobleyo.cafe/api/setup
 ```
 
 **Resultado esperado:**
+
 ```json
 {
   "success": true,
@@ -98,6 +104,7 @@ curl -X POST https://dobleyo.cafe/api/setup
 ## 🧪 Quick Test (6 Pasos)
 
 ### 1️⃣ Crear Lote
+
 ```
 URL: https://dobleyo.cafe/app/harvest
 - Selecciona: Finca, Variedad, Clima, Proceso, Aroma, Notas
@@ -106,6 +113,7 @@ URL: https://dobleyo.cafe/app/harvest
 ```
 
 ### 2️⃣ Almacenar Verde
+
 ```
 URL: https://dobleyo.cafe/app/inventory-storage
 - Dropdown muestra: lotes del paso anterior
@@ -115,6 +123,7 @@ URL: https://dobleyo.cafe/app/inventory-storage
 ```
 
 ### 3️⃣ Enviar a Tostión
+
 ```
 URL: https://dobleyo.cafe/app/send-roasting
 - Dropdown muestra: café verde disponible
@@ -124,6 +133,7 @@ URL: https://dobleyo.cafe/app/send-roasting
 ```
 
 ### 4️⃣ Recoger Tostado
+
 ```
 URL: https://dobleyo.cafe/app/roast-retrieval
 - Dropdown muestra: lotes en tostión
@@ -133,6 +143,7 @@ URL: https://dobleyo.cafe/app/roast-retrieval
 ```
 
 ### 5️⃣ Almacenar Tostado
+
 ```
 URL: https://dobleyo.cafe/app/roasted-storage
 - Dropdown muestra: café tostado listo
@@ -142,6 +153,7 @@ URL: https://dobleyo.cafe/app/roasted-storage
 ```
 
 ### 6️⃣ Preparar Venta
+
 ```
 URL: https://dobleyo.cafe/app/packaging
 - Dropdown muestra: café tostado disponible
@@ -156,21 +168,25 @@ URL: https://dobleyo.cafe/app/packaging
 ## ✨ Características Principales
 
 ### ✅ Persistencia
+
 - [x] Datos guardados permanentemente en MySQL
 - [x] No se pierden al limpiar caché
 - [x] Accesibles desde cualquier dispositivo
 
 ### ✅ Validación
+
 - [x] Validación en cliente (UX)
 - [x] Validación en servidor (Seguridad)
 - [x] Errores descriptivos
 
 ### ✅ Cálculos Automáticos
+
 - [x] Lot ID generado: `COL-REGION-HEIGHT-VARIETY-PROCESS-NUMBER`
 - [x] Weight Loss: `(original - roasted) / original * 100`
 - [x] Score: `(acidity + body + balance) / 3`
 
 ### ✅ User Experience
+
 - [x] Botones deshabilitados durante petición
 - [x] Texto "Registrando..." mientras procesa
 - [x] Alertas de confirmación claras
@@ -181,13 +197,15 @@ URL: https://dobleyo.cafe/app/packaging
 ## 🔍 Verificación en BD
 
 ### Ver todos los lotes
+
 ```sql
 SELECT * FROM coffee_harvests;
 ```
 
 ### Ver flujo completo de un lote
+
 ```sql
-SELECT 
+SELECT
     h.lot_id,
     gi.weight_kg as peso_verde,
     rb.quantity_sent_kg as enviado_tostacion,
@@ -211,18 +229,18 @@ WHERE h.lot_id = 'COL-HUI-1800-CAT-HUM-01';
 
 ## 📊 Comparativa Antes/Después
 
-| Aspecto | ANTES (localStorage) | DESPUÉS (API+BD) |
-|---------|-----------------|-----------------|
-| **Ubicación datos** | Navegador del usuario | Servidor MySQL |
-| **Duración** | 1 sesión | Permanente |
-| **Accesibilidad** | 1 dispositivo | Todos los dispositivos |
-| **Compartir datos** | Manual (copiar/pegar) | Automático |
-| **Backup** | Manual | Automático |
-| **Escalabilidad** | ~5MB max | Ilimitada |
-| **Validación** | Solo cliente | Cliente + Servidor |
-| **Seguridad** | Baja (expuesto) | Alta (BD protegida) |
-| **Integraciones** | Ninguna | Posibles (API) |
-| **Reportes** | Imposibles | Fáciles |
+| Aspecto             | ANTES (localStorage)  | DESPUÉS (API+BD)       |
+| ------------------- | --------------------- | ---------------------- |
+| **Ubicación datos** | Navegador del usuario | Servidor MySQL         |
+| **Duración**        | 1 sesión              | Permanente             |
+| **Accesibilidad**   | 1 dispositivo         | Todos los dispositivos |
+| **Compartir datos** | Manual (copiar/pegar) | Automático             |
+| **Backup**          | Manual                | Automático             |
+| **Escalabilidad**   | ~5MB max              | Ilimitada              |
+| **Validación**      | Solo cliente          | Cliente + Servidor     |
+| **Seguridad**       | Baja (expuesto)       | Alta (BD protegida)    |
+| **Integraciones**   | Ninguna               | Posibles (API)         |
+| **Reportes**        | Imposibles            | Fáciles                |
 
 ---
 
@@ -233,17 +251,20 @@ WHERE h.lot_id = 'COL-HUI-1800-CAT-HUM-01';
 **Evidencia:**
 
 1. ✅ **Sin localStorage:** Todos los módulos usan `fetch()` a API
+
    ```javascript
    // NO EXISTE localStorage.setItem en ningún módulo
    // TODO ES: await fetch("/api/coffee/*")
    ```
 
 2. ✅ **Base de datos como fuente de verdad:**
+
    - Datos se guardan en MySQL
    - No se pierden entre sesiones
    - Accesibles desde cualquier dispositivo
 
 3. ✅ **Cada operación va directamente a BD:**
+
    ```
    Harvest → POST /api/coffee/harvest → coffee_harvests
    Inventory → POST /api/coffee/inventory-storage → green_coffee_inventory
@@ -254,6 +275,7 @@ WHERE h.lot_id = 'COL-HUI-1800-CAT-HUM-01';
    ```
 
 4. ✅ **Validación en servidor:**
+
    - No confíes solo en validación del cliente
    - El servidor también valida antes de guardar
 

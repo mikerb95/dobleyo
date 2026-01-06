@@ -13,6 +13,7 @@ curl -X POST https://dobleyo.cafe/api/setup
 ```
 
 **Deberías ver:**
+
 ```json
 {
   "success": true,
@@ -42,22 +43,26 @@ O usa el menu principal de dobleyo.cafe → "Aplicación Móvil"
 ### En la página "Recoger Lote en Finca":
 
 1. **Selecciona una Finca:**
+
    - "La Sierra - Huila" (1800m)
    - "Nariño Premium" (1900m)
    - "Cauca Estate" (1750m)
 
 2. **Selecciona Variedad:**
+
    - Caturra (CAT)
    - Caturra (CAT)
    - Bourbon (BOB)
    - Geisha (GER)
 
 3. **Selecciona Clima:**
+
    - 🌞 Seco
    - 🌧️ Lluvioso
    - 🌤️ Templado
 
 4. **Selecciona Proceso:**
+
    - Natural (Secado en cereza)
    - Húmedo (Lavado)
    - Anaeróbico
@@ -69,6 +74,7 @@ O usa el menu principal de dobleyo.cafe → "Aplicación Móvil"
 7. **Click en "Crear Lote"**
 
 ### ✅ Verás:
+
 ```
 ✅ Lote COL-HUI-1800-CAT-HUM-01 registrado correctamente en la base de datos
 ```
@@ -80,28 +86,36 @@ O usa el menu principal de dobleyo.cafe → "Aplicación Móvil"
 Después de crear el lote, ve a las siguientes páginas en orden:
 
 ### 1️⃣ Almacenar en Inventario
+
 **URL:** `https://dobleyo.cafe/app/inventory-storage`
+
 - Selecciona el lote que creaste
 - Ingresa peso: **45.5** kg
 - Selecciona ubicación: **A-01**
 - Click: "Almacenar Lote"
 
 ### 2️⃣ Enviar a Tostión
+
 **URL:** `https://dobleyo.cafe/app/send-roasting`
+
 - Selecciona el lote
 - Ingresa cantidad: **30** kg
 - Ingresa temperatura: **210** °C
 - Click: "Enviar a Tostión"
 
 ### 3️⃣ Recoger del Tueste
+
 **URL:** `https://dobleyo.cafe/app/roast-retrieval`
+
 - Selecciona el lote en tostión
 - Selecciona nivel: **Tostión Media**
 - Ingresa peso tostado: **25.5** kg
 - Click: "Registrar Tueste"
 
 ### 4️⃣ Almacenar Tostado
+
 **URL:** `https://dobleyo.cafe/app/roasted-storage`
+
 - Selecciona café tostado
 - Selecciona ubicación: **ROASTED-A-01**
 - Selecciona contenedor: **Bolsas de 5 kg**
@@ -109,7 +123,9 @@ Después de crear el lote, ve a las siguientes páginas en orden:
 - Click: "Almacenar"
 
 ### 5️⃣ Preparar para Venta
+
 **URL:** `https://dobleyo.cafe/app/packaging`
+
 - Selecciona café tostado
 - Ajusta acidez: **4/5**
 - Ajusta cuerpo: **3/5**
@@ -124,6 +140,7 @@ Después de crear el lote, ve a las siguientes páginas en orden:
 ## ✨ ¡Listo! Has completado el flujo
 
 Tu café está ahora:
+
 - ✅ Registrado desde recolección
 - ✅ Almacenado en verde
 - ✅ Tostado y registrado
@@ -143,7 +160,7 @@ Para verificar que todo se guardó correctamente:
 SELECT * FROM coffee_harvests;
 
 # Ver flujo completo de un lote específico
-SELECT 
+SELECT
     h.lot_id,
     gi.weight_kg as peso_verde,
     rb.quantity_sent_kg as enviado,
@@ -163,7 +180,9 @@ LIMIT 10;
 ## 🎯 Puntos Clave
 
 ### ✅ Los datos SIEMPRE van a la Base de Datos
+
 No importa si:
+
 - Cierras el navegador
 - Limpias el caché
 - Cambias de dispositivo
@@ -172,13 +191,17 @@ No importa si:
 Los datos seguirán ahí.
 
 ### ✅ Puedes Acceder desde Cualquier Dispositivo
+
 Crea un lote desde tu iPhone, accede desde tu Mac y verás el mismo lote.
 
 ### ✅ Los Datos Están Protegidos
+
 La base de datos está en Aiven (hosting seguro en la nube).
 
 ### ✅ Validaciones Automáticas
+
 No puedes:
+
 - Enviar más café del disponible
 - Crear lotes duplicados
 - Almacenar más peso del que fue tostado
@@ -190,17 +213,23 @@ El servidor lo valida automáticamente.
 ## 💡 Tips Útiles
 
 ### Crear múltiples lotes
+
 Puedes crear cuantos lotes necesites. Cada uno tendrá:
+
 - ID único generado automáticamente
 - Historial completo de dónde vino
 
 ### Envíos parciales
+
 Si recolectas 45.5 kg, puedes:
+
 - Enviar 30 kg a tostión
 - Enviar 15.5 kg después
 
 ### Diferentes puntuaciones
+
 El mismo café tostado puede:
+
 - Empacarse como "Grano Entero"
 - Empacarse como "Molido - Media-Fina"
 - Empacarse con diferentes puntuaciones de cata
@@ -219,16 +248,19 @@ El mismo café tostado puede:
 ## ⚠️ Solución de Problemas
 
 ### "No veo datos en el dropdown"
+
 ✓ Asegúrate de haber completado el paso anterior
 ✓ Los datos necesitan estar en la BD primero
 ✓ Recarga la página (pull down)
 
 ### "Me da error al guardar"
+
 ✓ Verifica que llenaste todos los campos requeridos
 ✓ Revisa la consola del navegador (F12) para ver el error exacto
 ✓ Asegúrate que el servidor esté online
 
 ### "Pasé 1 hora y perdí los datos"
+
 ✓ No debería pasar (están en BD)
 ✓ Recarga la página
 ✓ Si persiste, contacta soporte
@@ -240,11 +272,13 @@ El mismo café tostado puede:
 Si algo no funciona:
 
 1. Verifica que las tablas existan:
+
    ```bash
    curl -X POST https://dobleyo.cafe/api/setup
    ```
 
 2. Revisa los errores en consola:
+
    - Abre DevTools (F12 en Chrome)
    - Ve a "Console"
    - Intenta crear un lote

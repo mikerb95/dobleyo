@@ -13,6 +13,7 @@
 ## 🔄 Lo Que Se Cambió
 
 ### Antes (localStorage)
+
 ```javascript
 // Datos almacenados solo en el navegador, se pierden al limpiar caché
 const harvests = JSON.parse(localStorage.getItem("harvests") || "[]");
@@ -21,12 +22,13 @@ localStorage.setItem("harvests", JSON.stringify(harvests));
 ```
 
 ### Ahora (API + Base de Datos)
+
 ```javascript
 // Datos almacenados permanentemente en MySQL (Aiven)
 const response = await fetch("/api/coffee/harvest", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
-  body: JSON.stringify(newHarvest)
+  body: JSON.stringify(newHarvest),
 });
 const data = await response.json(); // {success: true, lotId: "COL-HUI-1800-CAT-HUM-01"}
 ```
@@ -35,14 +37,14 @@ const data = await response.json(); // {success: true, lotId: "COL-HUI-1800-CAT-
 
 ## 📋 Módulos Actualizados (6 de 6)
 
-| # | Módulo | Archivo | GET Endpoints | POST Endpoint | Status |
-|---|--------|---------|---------------|---------------|--------|
-| 1 | Recoger Lote | `harvest.astro` | — | `/api/coffee/harvest` | ✅ |
-| 2 | Almacenar Verde | `inventory-storage.astro` | `/api/coffee/harvests`, `/api/coffee/green-inventory` | `/api/coffee/inventory-storage` | ✅ |
-| 3 | Enviar Tostión | `send-roasting.astro` | `/api/coffee/green-inventory` | `/api/coffee/send-roasting` | ✅ |
-| 4 | Recoger Tostado | `roast-retrieval.astro` | `/api/coffee/roasting-batches` | `/api/coffee/roast-retrieval` | ✅ |
-| 5 | Almacenar Tostado | `roasted-storage.astro` | `/api/coffee/roasted-coffee` | `/api/coffee/roasted-storage` | ✅ |
-| 6 | Preparar Venta | `packaging.astro` | `/api/coffee/roasted-coffee` | `/api/coffee/packaging` | ✅ |
+| #   | Módulo            | Archivo                   | GET Endpoints                                         | POST Endpoint                   | Status |
+| --- | ----------------- | ------------------------- | ----------------------------------------------------- | ------------------------------- | ------ |
+| 1   | Recoger Lote      | `harvest.astro`           | —                                                     | `/api/coffee/harvest`           | ✅     |
+| 2   | Almacenar Verde   | `inventory-storage.astro` | `/api/coffee/harvests`, `/api/coffee/green-inventory` | `/api/coffee/inventory-storage` | ✅     |
+| 3   | Enviar Tostión    | `send-roasting.astro`     | `/api/coffee/green-inventory`                         | `/api/coffee/send-roasting`     | ✅     |
+| 4   | Recoger Tostado   | `roast-retrieval.astro`   | `/api/coffee/roasting-batches`                        | `/api/coffee/roast-retrieval`   | ✅     |
+| 5   | Almacenar Tostado | `roasted-storage.astro`   | `/api/coffee/roasted-coffee`                          | `/api/coffee/roasted-storage`   | ✅     |
+| 6   | Preparar Venta    | `packaging.astro`         | `/api/coffee/roasted-coffee`                          | `/api/coffee/packaging`         | ✅     |
 
 ---
 
@@ -73,26 +75,31 @@ GET    /api/coffee/packaged             ← Listar empacado
 ## ✨ Mejoras Implementadas
 
 ### 1. **Persistencia Permanente**
+
 - Datos ahora en MySQL (Aiven), no desaparecen al limpiar caché
 - Backup automático de la BD
 - Accesible desde cualquier dispositivo
 
 ### 2. **Validación en Servidor**
+
 - Controles duales (cliente + servidor)
 - Evita datos inconsistentes
 - Ejemplo: No puedes enviar más café a tostión del disponible
 
 ### 3. **Cálculos Automáticos**
+
 - **Lot ID:** Formato único `COL-REGION-HEIGHT-VARIETY-PROCESS-NUMBER`
 - **Weight Loss:** Calculado automáticamente al recoger tostado
 - **Score:** Media de acidity/body/balance calculada automáticamente
 
 ### 4. **Error Handling**
+
 - Mensajes descriptivos del servidor
 - Botones deshabilitados durante petición
 - Feedback visual "Registrando..."
 
 ### 5. **UX Mobile**
+
 - Formularios optimizados para iPhone
 - Validaciones en tiempo real
 - Confirmaciones claras
@@ -154,7 +161,7 @@ const lotId = generateLotId(farm, variety, climate, process);
 // Resultado: "COL-HUI-1800-CAT-HUM-01"
 
 // 4. INSERTA EN BD
-INSERT INTO coffee_harvests 
+INSERT INTO coffee_harvests
 (lot_id, farm, variety, climate, process, aroma, taste_notes, created_at)
 VALUES ('COL-HUI-1800-CAT-HUM-01', 'finca-la-sierra', 'CAT', 'SECO', 'HUM', ...)
 
@@ -173,11 +180,13 @@ alert("✅ Lote COL-HUI-1800-CAT-HUM-01 registrado")
 ## 🚀 Inicializar Sistema
 
 ### Crear tablas (solo 1ª vez):
+
 ```bash
 curl -X POST https://dobleyo.cafe/api/setup
 ```
 
 ### Empezar a usar:
+
 1. Accede con iPhone a: `https://dobleyo.cafe/app/harvest`
 2. Completa el flujo de 6 pasos
 3. Verifica en BD: `SELECT * FROM coffee_harvests;`
@@ -186,15 +195,15 @@ curl -X POST https://dobleyo.cafe/api/setup
 
 ## 📈 Beneficios Cuantitativos
 
-| Métrica | Antes | Después |
-|---------|-------|---------|
-| **Persistencia** | 1 sesión | ∞ permanente |
-| **Usuarios simultáneos** | 1 | Ilimitados |
-| **Compartir datos** | Manual | Automático |
-| **Backup** | Manual | Automático diario |
-| **Escalabilidad** | 5 MB localStorage | Ilimitada |
-| **Accesibilidad** | 1 dispositivo | Todos los dispositivos |
-| **Integraciones** | Ninguna | REST API |
+| Métrica                  | Antes             | Después                |
+| ------------------------ | ----------------- | ---------------------- |
+| **Persistencia**         | 1 sesión          | ∞ permanente           |
+| **Usuarios simultáneos** | 1                 | Ilimitados             |
+| **Compartir datos**      | Manual            | Automático             |
+| **Backup**               | Manual            | Automático diario      |
+| **Escalabilidad**        | 5 MB localStorage | Ilimitada              |
+| **Accesibilidad**        | 1 dispositivo     | Todos los dispositivos |
+| **Integraciones**        | Ninguna           | REST API               |
 
 ---
 
@@ -239,7 +248,7 @@ grep "fetch.*api/coffee" src/pages/app/harvest.astro
 ✅ Error handling  
 ✅ Documentación completa  
 ✅ Testing guide  
-✅ API reference  
+✅ API reference
 
 ---
 
@@ -258,6 +267,7 @@ Si quieres agregar autenticación:
 **Cumplido:** ✅ "todo siempre debe ser directo a la bd"
 
 **Evidencia:**
+
 - ✅ Todos los formularios usan `fetch()` a `/api/coffee/*`
 - ✅ Todos los datos se guardan en `coffee_*` tables
 - ✅ No hay más `localStorage` en los módulos de café
