@@ -3,10 +3,15 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 ---
 
 <AdminLayout>
-  <div class="container" style="padding-top: var(--header-height, 120px) + 2rem; padding-bottom: 4rem;">
+  <div
+    class="container"
+    style="padding-top: var(--header-height, 120px) + 2rem; padding-bottom: 4rem;"
+  >
     <div style="margin-bottom: 3rem;">
       <h1>Panel de Administración</h1>
-      <p style="font-size: 1.1rem; color: #666;">Selecciona una opción para comenzar.</p>
+      <p style="font-size: 1.1rem; color: #666;">
+        Selecciona una opción para comenzar.
+      </p>
     </div>
 
     <div class="dashboard-grid">
@@ -34,8 +39,8 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         <span class="btn small">Ver Stock</span>
       </a>
 
-       <!-- Tarjeta: Pedidos (Placeholder) -->
-       <a href="/admin/pedidos" class="dashboard-card">
+      <!-- Tarjeta: Pedidos (Placeholder) -->
+      <a href="/admin/pedidos" class="dashboard-card">
         <div class="icon">🛒</div>
         <h3>Pedidos</h3>
         <p>Ver y gestionar órdenes de la tienda.</p>
@@ -59,7 +64,9 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     border-radius: 8px;
     text-decoration: none;
     color: inherit;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
@@ -67,7 +74,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
   .dashboard-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
     border-color: #ddd;
   }
 
