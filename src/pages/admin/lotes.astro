@@ -1,0 +1,18 @@
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+---
+
+<AdminLayout>
+  <div class="container" style="padding-top: 5rem; padding-bottom: 4rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+      <h1>Gestión de Lotes</h1>
+      <a href="/admin/lotes/nuevo" class="btn small">Crear Nuevo Lote</a>
+    </div>
+
+    <div class="card p-4">
+      <p class="muted">Aquí se listarán los lotes de café verde disponibles.</p>
+      <!-- TODO: Tabla de lotes -->
+      <a href="/admin" style="display: inline-block; margin-top: 1rem;">&larr; Volver al Dashboard</a>
+    </div>
+  </div>
+</AdminLayout>

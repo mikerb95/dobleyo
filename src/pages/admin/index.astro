@@ -1,0 +1,90 @@
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+---
+
+<AdminLayout>
+  <div class="container" style="padding-top: var(--header-height, 120px) + 2rem; padding-bottom: 4rem;">
+    <div style="margin-bottom: 3rem;">
+      <h1>Panel de Administración</h1>
+      <p style="font-size: 1.1rem; color: #666;">Selecciona una opción para comenzar.</p>
+    </div>
+
+    <div class="dashboard-grid">
+      <!-- Tarjeta: Lotes -->
+      <a href="/admin/lotes" class="dashboard-card">
+        <div class="icon">🌱</div>
+        <h3>Lotes de Café</h3>
+        <p>Administrar origen, crear nuevos lotes y ver detalles.</p>
+        <span class="btn small">Gestionar</span>
+      </a>
+
+      <!-- Tarjeta: Tostión -->
+      <a href="/tostar" class="dashboard-card">
+        <div class="icon">🔥</div>
+        <h3>Tostar Lotes</h3>
+        <p>Realizar proceso de tostión y registrar curvas.</p>
+        <span class="btn small">Ir a Tostador</span>
+      </a>
+
+      <!-- Tarjeta: Inventario -->
+      <a href="/admin/inventario" class="dashboard-card">
+        <div class="icon">📦</div>
+        <h3>Inventario</h3>
+        <p>Stock actual de café verde y producto terminado.</p>
+        <span class="btn small">Ver Stock</span>
+      </a>
+
+       <!-- Tarjeta: Pedidos (Placeholder) -->
+       <a href="/admin/pedidos" class="dashboard-card">
+        <div class="icon">🛒</div>
+        <h3>Pedidos</h3>
+        <p>Ver y gestionar órdenes de la tienda.</p>
+        <span class="btn small outline">Próximamente</span>
+      </a>
+    </div>
+  </div>
+</AdminLayout>
+
+<style>
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+  }
+
+  .dashboard-card {
+    background: #fff;
+    border: 1px solid #eee;
+    padding: 2rem;
+    border-radius: 8px;
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .dashboard-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+    border-color: #ddd;
+  }
+
+  .icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .dashboard-card h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.25rem;
+  }
+
+  .dashboard-card p {
+    margin: 0 0 1.5rem 0;
+    color: #666;
+    line-height: 1.5;
+    flex-grow: 1;
+  }
+</style>
