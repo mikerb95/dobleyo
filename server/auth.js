@@ -53,3 +53,7 @@ export const requireRole = (roles) => {
     }
   };
 };
+
+// Convenience aliases
+export const requireAuth = authenticateToken;
+export const requireAdmin = requireRole('admin');

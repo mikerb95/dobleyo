@@ -1,6 +1,6 @@
 ---
 import AdminLayout from "../../layouts/AdminLayout.astro";
----
+import SalesTable from "../../components/SalesTable.jsx";
 
 <AdminLayout>
   <div
@@ -39,14 +39,27 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         <span class="btn small">Ver Stock</span>
       </a>
 
-      <!-- Tarjeta: Pedidos (Placeholder) -->
-      <a href="/admin/pedidos" class="dashboard-card">
+      <!-- Tarjeta: Ventas MercadoLibre -->
+      <a href="#ventas" class="dashboard-card">
         <div class="icon">🛒</div>
-        <h3>Pedidos</h3>
-        <p>Ver y gestionar órdenes de la tienda.</p>
-        <span class="btn small outline">Próximamente</span>
+        <h3>Ventas MercadoLibre</h3>
+        <p>Sincronizar y analizar órdenes de MercadoLibre.</p>
+        <span class="btn small">Ver Ventas</span>
+      </a>
+
+      <!-- Tarjeta: Mapa de Calor -->
+      <a href="/admin/sales-map" class="dashboard-card">
+        <div class="icon">🗺️</div>
+        <h3>Mapa de Ventas</h3>
+        <p>Visualiza la distribución geográfica de tus ventas.</p>
+        <span class="btn small">Ver Mapa</span>
       </a>
     </div>
+
+    <!-- Sales Section -->
+    <div id="ventas" style="margin-top: 4rem; scroll-margin-top: 150px;">
+      <h2>Ventas desde MercadoLibre</h2>
+      <SalesTable client:load />
   </div>
 </AdminLayout>
 

@@ -1,0 +1,54 @@
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+import SalesHeatmap from "../../components/SalesHeatmap.jsx";
+---
+
+<AdminLayout>
+  <div
+    class="container"
+    style="padding-top: calc(var(--header-height, 120px) + 2rem); padding-bottom: 4rem;"
+  >
+    <div style="margin-bottom: 2rem;">
+      <a href="/admin" style="color: #c67b4e; text-decoration: none; margin-bottom: 1rem; display: inline-block;">
+        ← Volver al panel
+      </a>
+      <h1 style="margin-top: 0;">Mapa de Calor de Ventas</h1>
+      <p style="color: #666; font-size: 1rem;">
+        Visualiza la distribución geográfica de tus ventas en Argentina. El color y tamaño de cada círculo
+        representan la intensidad y volumen de pedidos en esa zona.
+      </p>
+    </div>
+
+    <div style="background: white; padding: 2rem; border-radius: 8px; border: 1px solid #e6e6e6;">
+      <SalesHeatmap client:load />
+    </div>
+
+    <div style="margin-top: 3rem; padding: 2rem; background: #f9f7f4; border-radius: 8px; border: 1px solid #e6e6e6;">
+      <h3>¿Cómo funciona este mapa?</h3>
+      <ul style="color: #666; line-height: 1.8;">
+        <li>
+          <strong>Círculos de color:</strong> Cada círculo representa una ciudad donde se han realizado ventas.
+          El color va desde amarillo claro (pocas ventas) hasta rojo oscuro (muchas ventas).
+        </li>
+        <li>
+          <strong>Tamaño del círculo:</strong> Cuanto más grande sea el círculo, más pedidos ha recibido
+          esa zona.
+        </li>
+        <li>
+          <strong>Información al hacer clic:</strong> Haz clic en cualquier círculo para ver detalles específicos
+          de esa ciudad: cantidad de pedidos y monto total de ventas.
+        </li>
+        <li>
+          <strong>Datos en tiempo real:</strong> Los datos se actualizan cada vez que sincronizas tus ventas
+          desde MercadoLibre.
+        </li>
+      </ul>
+    </div>
+  </div>
+</AdminLayout>
+
+<style>
+  :global(body) {
+    background-color: var(--bg);
+  }
+</style>

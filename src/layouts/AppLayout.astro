@@ -1,0 +1,48 @@
+---
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import Head from "../components/Head.astro";
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <Head title="Admin · DobleYo" isAdmin={true} />
+    <meta name="robots" content="noindex, nofollow" />
+  </head>
+  <body class="font-sans bg-cream text-ink">
+    <!-- Barra superior de anuncio -->
+    <div class="topbar" id="topbar">
+      <div class="container">
+        <span
+          >Novedad: Envíos nacionales gratis desde $120.000 · Nuevas cosechas
+          Huila & Nariño</span
+        >
+        <button class="topbar-close" aria-label="Cerrar" id="topbarClose"
+          >×</button
+        >
+      </div>
+    </div>
+    <!-- Animación de transición de página -->
+    <div
+      class="transition-overlay"
+      id="transitionOverlay"
+      aria-hidden="true"
+    ></div>
+    <Header />
+    <main class="container">
+      <slot />
+    </main>
+    <Footer />
+    <script>
+      document.getElementById("topbarClose")?.addEventListener("click", () => {
+        document.getElementById("topbar")!.style.display = "none";
+      });
+    </script>
+  </body>
+</html>
+
+<style is:global>
+  /* Importar estilos globales */
+  @import "../styles/global.css";
+</style>
