@@ -9,6 +9,7 @@ Tu requisito de que **"todo siempre debe ser directo a la bd"** ha sido completa
 ## 📌 ¿Qué Hice?
 
 ### Antes (Problema)
+
 ```
 Usuario llena formulario → Datos se guardan en localStorage del navegador
                        ↓
@@ -20,6 +21,7 @@ Usuario llena formulario → Datos se guardan en localStorage del navegador
 ```
 
 ### Ahora (Solución)
+
 ```
 Usuario llena formulario → fetch POST a /api/coffee/harvest
                        ↓
@@ -40,14 +42,14 @@ Usuario llena formulario → fetch POST a /api/coffee/harvest
 
 Todos los módulos móviles ahora usan **API directa a la BD**:
 
-| # | Módulo | Qué hace |
-|---|--------|----------|
-| 1️⃣ | **Recoger Lote** | Crea un lote con ID único auto-generado |
-| 2️⃣ | **Almacenar Verde** | Registra el café crudo en inventario |
-| 3️⃣ | **Enviar a Tostión** | Envía café a procesar con validación |
-| 4️⃣ | **Recoger Tostado** | Registra resultado con pérdida de peso calculada |
-| 5️⃣ | **Almacenar Tostado** | Bodega del café tostado en contenedores |
-| 6️⃣ | **Preparar Venta** | Empaca con propiedades de cata (puntuación calculada) |
+| #   | Módulo                | Qué hace                                              |
+| --- | --------------------- | ----------------------------------------------------- |
+| 1️⃣  | **Recoger Lote**      | Crea un lote con ID único auto-generado               |
+| 2️⃣  | **Almacenar Verde**   | Registra el café crudo en inventario                  |
+| 3️⃣  | **Enviar a Tostión**  | Envía café a procesar con validación                  |
+| 4️⃣  | **Recoger Tostado**   | Registra resultado con pérdida de peso calculada      |
+| 5️⃣  | **Almacenar Tostado** | Bodega del café tostado en contenedores               |
+| 6️⃣  | **Preparar Venta**    | Empaca con propiedades de cata (puntuación calculada) |
 
 **Cada uno envía datos directamente a la base de datos.**
 
@@ -56,6 +58,7 @@ Todos los módulos móviles ahora usan **API directa a la BD**:
 ## 🔌 Endpoints Creados (11 Total)
 
 ### 6 Endpoints POST (Guardar)
+
 - `POST /api/coffee/harvest` ← Crear lote
 - `POST /api/coffee/inventory-storage` ← Guardar café verde
 - `POST /api/coffee/send-roasting` ← Enviar a tostión
@@ -64,6 +67,7 @@ Todos los módulos móviles ahora usan **API directa a la BD**:
 - `POST /api/coffee/packaging` ← Preparar para venta
 
 ### 5 Endpoints GET (Leer)
+
 - `GET /api/coffee/harvests` ← Listar lotes
 - `GET /api/coffee/green-inventory` ← Listar café verde
 - `GET /api/coffee/roasting-batches` ← Listar en tostión
@@ -95,12 +99,14 @@ packaged_coffee (Para venta con score calculado)
 ## ✨ Lo que Funciona Automáticamente
 
 ### 1. **Lot ID Generation**
+
 ```
 Tu entrada: Finca La Sierra, Variedad CAT, Proceso HUM
 Sistema genera automáticamente: COL-HUI-1800-CAT-HUM-01
 ```
 
 ### 2. **Weight Loss Calculation**
+
 ```
 Verde enviado: 30 kg
 Tostado recibido: 25.5 kg
@@ -108,6 +114,7 @@ Sistema calcula: (30-25.5)/30*100 = 15% pérdida
 ```
 
 ### 3. **Scoring Calculation**
+
 ```
 Acidez: 4, Cuerpo: 3, Balance: 4
 Sistema calcula: (4+3+4)/3 = 3.67/5
@@ -118,16 +125,19 @@ Sistema calcula: (4+3+4)/3 = 3.67/5
 ## 🚀 Cómo Empezar Ahora
 
 ### Paso 1: Inicializar (una sola vez)
+
 ```bash
 curl -X POST https://dobleyo.cafe/api/setup
 ```
 
 ### Paso 2: Acceder desde iPhone
+
 ```
 https://dobleyo.cafe/app/harvest
 ```
 
 ### Paso 3: Seguir el flujo
+
 1. Crear lote → Almacenar verde → Enviar tostión
 2. Recoger tostado → Almacenar → Preparar venta
 3. ¡Listo! Los datos están en la BD
@@ -169,6 +179,7 @@ Para referencia, creé 5 documentos:
 **Status:** ✅ **100% COMPLETADO**
 
 **Evidencia:**
+
 - No hay `localStorage` en ningún módulo
 - Todo usa `fetch()` a `/api/coffee/*`
 - Base de datos es la fuente única de verdad
@@ -192,6 +203,7 @@ Para referencia, creé 5 documentos:
 ## 💡 Casos de Uso
 
 ### Escenario 1: Cosecha Parcial
+
 ```
 Recolectas: 45.5 kg
 Envías a tostión: 30 kg (primera tanda)
@@ -201,6 +213,7 @@ Después envías: 15.5 kg (segunda tanda)
 ```
 
 ### Escenario 2: Multi-dispositivo
+
 ```
 Creas lote en iPhone
 Accedes desde Mac → ves el mismo lote ✅
@@ -208,6 +221,7 @@ Accedes desde iPad → ves el mismo lote ✅
 ```
 
 ### Escenario 3: Historial Completo
+
 ```
 SELECT * FROM coffee_harvests
 WHERE lot_id = 'COL-HUI-1800-CAT-HUM-01'
@@ -232,11 +246,13 @@ Está todo listo para agregar después (sin cambiar lo que hicimos):
 ## 🆘 Si Algo No Funciona
 
 1. **Ejecuta el setup:**
+
    ```bash
    curl -X POST https://dobleyo.cafe/api/setup
    ```
 
 2. **Revisa los errores:**
+
    - Abre DevTools (F12)
    - Ve a Console
    - Intenta crear un lote
@@ -263,6 +279,7 @@ Está todo listo para agregar después (sin cambiar lo que hicimos):
 ## 🎉 Conclusión
 
 **Tu aplicación móvil de café ahora tiene:**
+
 - ✅ Persistencia permanente
 - ✅ Sincronización multi-dispositivo
 - ✅ Integridad de datos
