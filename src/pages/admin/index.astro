@@ -3,148 +3,130 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 ---
 
 <AdminLayout>
-  <div class="mb-4">
-    <h1 class="text-base font-bold text-gray-900">Dashboard</h1>
-    <p class="text-xs text-gray-600 mt-0">
-      Panel de administración de DobleYo.
-    </p>
+  <!-- Page Header -->
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold text-gray-900 mb-2">Dashboard</h1>
+    <p class="text-gray-600">Bienvenido al panel de administración de DobleYo</p>
   </div>
 
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
-    <!-- Card 1: Inventario -->
-    <a
-      href="/admin/inventario"
-      class="block p-3 bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow group"
-    >
-      <div class="flex items-center justify-between mb-2">
-        <div
-          class="p-1 rounded-lg bg-blue-50 text-blue-600 group-hover:bg-blue-100 transition-colors flex items-center justify-center"
-          style="width: 20px; height: 20px;"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-4 w-4"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
-            ></path>
+  <!-- Stats Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+    <div class="bg-white rounded-lg border border-gray-200 p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-gray-600 text-sm font-medium">Productos</p>
+          <p class="text-3xl font-bold text-gray-900 mt-2">--</p>
+        </div>
+        <div class="p-3 bg-blue-50 rounded-lg">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
           </svg>
         </div>
-        <span class="text-gray-400 group-hover:text-gray-600">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-4 w-4"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-          >
-            <path
-              fill-rule="evenodd"
-              d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-              clip-rule="evenodd"></path>
-          </svg>
-        </span>
       </div>
-      <h3 class="text-sm font-semibold text-gray-900 mb-0">Inventario</h3>
-      <p class="text-xs text-gray-500 leading-tight">Stock y disponibilidad.</p>
-    </a>
+    </div>
 
-    <!-- Card 2: Productos -->
-    <a
-      href="/admin/productos"
-      class="block p-3 bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow group"
-    >
-      <div class="flex items-center justify-between mb-2">
-        <div
-          class="p-1 rounded-lg bg-purple-50 text-purple-600 group-hover:bg-purple-100 transition-colors flex items-center justify-center"
-          style="width: 20px; height: 20px;"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-4 w-4"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
-            ></path>
+    <div class="bg-white rounded-lg border border-gray-200 p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-gray-600 text-sm font-medium">Inventario</p>
+          <p class="text-3xl font-bold text-gray-900 mt-2">--</p>
+        </div>
+        <div class="p-3 bg-green-50 rounded-lg">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
           </svg>
         </div>
-        <span class="text-gray-400 group-hover:text-gray-600">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-4 w-4"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-          >
-            <path
-              fill-rule="evenodd"
-              d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-              clip-rule="evenodd"></path>
-          </svg>
-        </span>
       </div>
-      <h3 class="text-sm font-semibold text-gray-900 mb-0">Productos</h3>
-      <p class="text-xs text-gray-500 leading-tight">Catálogo y precios.</p>
-    </a>
+    </div>
 
-    <!-- Card 3: Lotes -->
-    <a
-      href="/admin/lotes"
-      class="block p-3 bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow group"
-    >
-      <div class="flex items-center justify-between mb-2">
-        <div
-          class="p-1 rounded-lg bg-amber-50 text-amber-600 group-hover:bg-amber-100 transition-colors flex items-center justify-center"
-          style="width: 20px; height: 20px;"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-4 w-4"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
-            ></path>
+    <div class="bg-white rounded-lg border border-gray-200 p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-gray-600 text-sm font-medium">Lotes</p>
+          <p class="text-3xl font-bold text-gray-900 mt-2">--</p>
+        </div>
+        <div class="p-3 bg-amber-50 rounded-lg">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
           </svg>
         </div>
-        <span class="text-gray-400 group-hover:text-gray-600">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-4 w-4"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-          >
-            <path
-              fill-rule="evenodd"
-              d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-              clip-rule="evenodd"></path>
-          </svg>
-        </span>
       </div>
-      <h3 class="text-sm font-semibold text-gray-900 mb-0">Lotes de Café</h3>
-      <p class="text-xs text-gray-500 leading-tight">Verdes y tostados.</p>
-    </a>
+    </div>
+
+    <div class="bg-white rounded-lg border border-gray-200 p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-gray-600 text-sm font-medium">Usuarios</p>
+          <p class="text-3xl font-bold text-gray-900 mt-2">--</p>
+        </div>
+        <div class="p-3 bg-purple-50 rounded-lg">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3a6 6 0 016-6h6a6 6 0 016 6h0z" />
+          </svg>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-3">
-    <h2 class="text-sm font-semibold text-gray-900 mb-2">Actividad Reciente</h2>
-    <div class="text-xs text-gray-500 text-center py-4">
-      No hay actividad reciente para mostrar.
+  <!-- Quick Actions -->
+  <div class="bg-white rounded-lg border border-gray-200 p-6">
+    <h2 class="text-lg font-bold text-gray-900 mb-4">Acciones Rápidas</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <a href="/admin/productos" class="p-4 border border-gray-200 rounded-lg hover:border-amber-500 hover:bg-amber-50 transition-colors group">
+        <div class="flex items-center gap-3">
+          <div class="p-3 bg-blue-50 rounded-lg group-hover:bg-blue-100">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+          </div>
+          <div>
+            <p class="font-medium text-gray-900">Agregar Producto</p>
+            <p class="text-sm text-gray-600">Crear nuevo producto</p>
+          </div>
+        </div>
+      </a>
+
+      <a href="/admin/lotes" class="p-4 border border-gray-200 rounded-lg hover:border-amber-500 hover:bg-amber-50 transition-colors group">
+        <div class="flex items-center gap-3">
+          <div class="p-3 bg-amber-50 rounded-lg group-hover:bg-amber-100">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+          </div>
+          <div>
+            <p class="font-medium text-gray-900">Crear Lote</p>
+            <p class="text-sm text-gray-600">Registrar nuevo lote</p>
+          </div>
+        </div>
+      </a>
+
+      <a href="/admin/inventario" class="p-4 border border-gray-200 rounded-lg hover:border-amber-500 hover:bg-amber-50 transition-colors group">
+        <div class="flex items-center gap-3">
+          <div class="p-3 bg-green-50 rounded-lg group-hover:bg-green-100">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+            </svg>
+          </div>
+          <div>
+            <p class="font-medium text-gray-900">Ver Inventario</p>
+            <p class="text-sm text-gray-600">Gestionar stock</p>
+          </div>
+        </div>
+      </a>
+
+      <a href="/admin/productos" class="p-4 border border-gray-200 rounded-lg hover:border-amber-500 hover:bg-amber-50 transition-colors group">
+        <div class="flex items-center gap-3">
+          <div class="p-3 bg-purple-50 rounded-lg group-hover:bg-purple-100">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+            </svg>
+          </div>
+          <div>
+            <p class="font-medium text-gray-900">Gestionar Productos</p>
+            <p class="text-sm text-gray-600">Editar catálogo</p>
+          </div>
+        </div>
+      </a>
     </div>
   </div>
 </AdminLayout>
