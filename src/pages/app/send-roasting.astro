@@ -1,0 +1,258 @@
+---
+import MobileLayout from "../../layouts/MobileLayout.astro";
+---
+
+<MobileLayout title="Enviar a Tostión" description="Selecciona café verde del inventario para llevar a proceso de tostión">
+  <form id="roastingForm">
+    <!-- Selección de Lote -->
+    <div class="form-group">
+      <label for="lotSelect">Lote de Café Verde <span class="required">*</span></label>
+      <select id="lotSelect" name="lot" required>
+        <option value="">Selecciona un lote...</option>
+      </select>
+      <div class="form-hint">Solo muestra lotes sin procesar</div>
+    </div>
+
+    <!-- Info del Lote Seleccionado -->
+    <div class="card" id="lotInfoCard" style="display: none;">
+      <h3>Información del Lote</h3>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 0.95rem;">
+        <div>
+          <div style="color: #666; font-size: 0.85rem;">Lote ID</div>
+          <div style="font-weight: 600;" id="lotId">—</div>
+        </div>
+        <div>
+          <div style="color: #666; font-size: 0.85rem;">Variedad</div>
+          <div style="font-weight: 600;" id="lotVariety">—</div>
+        </div>
+        <div>
+          <div style="color: #666; font-size: 0.85rem;">Peso Disponible</div>
+          <div style="font-weight: 600; color: #c67b4e;" id="lotAvailableWeight">—</div>
+        </div>
+        <div>
+          <div style="color: #666; font-size: 0.85rem;">Ubicación Actual</div>
+          <div style="font-weight: 600;" id="lotLocation">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Selección de Cantidad -->
+    <div class="form-group">
+      <label for="quantity">Cantidad para Tostión <span class="required">*</span></label>
+      <div style="display: flex; gap: 0.5rem;">
+        <input
+          type="number"
+          id="quantity"
+          name="quantity"
+          placeholder="Ej: 25"
+          step="0.1"
+          min="0"
+          required
+          style="flex: 1;"
+        />
+        <div id="unit" style="display: flex; align-items: center; padding: 0 0.75rem; background: #f5f5f5; border-radius: 0.375rem; border: 1px solid #e6e6e6; min-width: 60px;">
+          kg
+        </div>
+      </div>
+      <div class="form-hint" id="quantityHint">Máximo disponible: —</div>
+    </div>
+
+    <!-- Opción: Parcial o Todo -->
+    <div class="info-box">
+      <strong>💡 Nota:</strong> Puedes enviar solo una parte del lote y el resto permanecerá en inventario. Si envías todo, el lote se marcará como procesado.
+    </div>
+
+    <!-- Fecha de Envío -->
+    <div class="form-group">
+      <label for="roastingDate">Fecha de Envío a Tostión</label>
+      <input type="date" id="roastingDate" name="roastingDate" disabled />
+      <div class="form-hint">Se registra automáticamente como la fecha actual</div>
+    </div>
+
+    <!-- Temperatura Target -->
+    <div class="form-group">
+      <label for="targetTemp">Temperatura Target (Opcional)</label>
+      <div style="display: flex; gap: 0.5rem;">
+        <input
+          type="number"
+          id="targetTemp"
+          name="targetTemp"
+          placeholder="Ej: 210"
+          step="1"
+          min="180"
+          max="230"
+          style="flex: 1;"
+        />
+        <div style="display: flex; align-items: center; padding: 0 0.75rem; background: #f5f5f5; border-radius: 0.375rem; border: 1px solid #e6e6e6; min-width: 60px;">
+          °C
+        </div>
+      </div>
+      <div class="form-hint">Temperatura sugerida para el desarrollo del tueste</div>
+    </div>
+
+    <!-- Notas -->
+    <div class="form-group">
+      <label for="notes">Notas (Opcional)</label>
+      <textarea
+        id="notes"
+        name="notes"
+        placeholder="Ej: Tueste medio, desarrollo lento, buscar notas de chocolate..."
+      ></textarea>
+    </div>
+
+    <!-- Resumen -->
+    <div class="info-box" id="summaryBox" style="display: none;">
+      <strong>Resumen del Envío a Tostión:</strong>
+      <div style="margin-top: 0.75rem; font-size: 0.95rem; line-height: 1.6;">
+        <div>📦 Lote: <span id="summaryLot" style="font-weight: 600;">—</span></div>
+        <div>⚖️ Cantidad: <span id="summaryQuantity" style="font-weight: 600;">—</span></div>
+        <div>🌡️ Temperatura: <span id="summaryTemp" style="font-weight: 600;">—</span></div>
+        <div>📅 Fecha: <span id="summaryDate" style="font-weight: 600;">—</span></div>
+      </div>
+    </div>
+
+    <!-- Botones de Acción -->
+    <div class="form-actions" style="margin-bottom: 2rem;">
+      <button type="reset" class="btn-secondary">Limpiar</button>
+      <button type="submit" class="btn-primary">Enviar a Tostión</button>
+    </div>
+  </form>
+
+  <script>
+    const lotSelect = document.getElementById("lotSelect");
+    const roastingDate = document.getElementById("roastingDate");
+    const form = document.getElementById("roastingForm");
+    const summaryBox = document.getElementById("summaryBox");
+    const lotInfoCard = document.getElementById("lotInfoCard");
+    const quantityInput = document.getElementById("quantity");
+
+    // Cargar lotes disponibles
+    function loadAvailableLots() {
+      const inventory = JSON.parse(localStorage.getItem("inventory") || "[]");
+      const roasting = JSON.parse(localStorage.getItem("roasting") || "[]");
+
+      // Filtrar: solo café verde que no ha sido enviado a tostión completamente
+      const available = inventory
+        .filter((item) => item.type === "green_coffee")
+        .filter((item) => {
+          const roasted = roasting.filter((r) => r.originalLotId === item.lotId);
+          const totalRoasted = roasted.reduce((sum, r) => sum + r.quantitySent, 0);
+          return item.weight > totalRoasted;
+        });
+
+      lotSelect.innerHTML = '<option value="">Selecciona un lote...</option>';
+      available.forEach((item) => {
+        const roasted = JSON.parse(localStorage.getItem("roasting") || "[]");
+        const totalRoasted = roasted.filter((r) => r.originalLotId === item.lotId).reduce((sum, r) => sum + r.quantitySent, 0);
+        const remaining = item.weight - totalRoasted;
+
+        const option = document.createElement("option");
+        option.value = JSON.stringify(item);
+        option.textContent = `${item.lotId} (${remaining.toFixed(1)} ${item.weightUnit} disponible)`;
+        lotSelect.appendChild(option);
+      });
+    }
+
+    // Establecer fecha actual
+    const today = new Date().toISOString().split("T")[0];
+    roastingDate.value = today;
+
+    // Actualizar información del lote
+    lotSelect.addEventListener("change", () => {
+      if (!lotSelect.value) {
+        lotInfoCard.style.display = "none";
+        summaryBox.style.display = "none";
+        return;
+      }
+
+      const item = JSON.parse(lotSelect.value);
+      document.getElementById("lotId").textContent = item.lotId;
+      document.getElementById("lotVariety").textContent = item.harvest.variety;
+      document.getElementById("lotLocation").textContent = item.location;
+
+      // Calcular peso disponible
+      const roasting = JSON.parse(localStorage.getItem("roasting") || "[]");
+      const totalRoasted = roasting.filter((r) => r.originalLotId === item.lotId).reduce((sum, r) => sum + r.quantitySent, 0);
+      const available = item.weight - totalRoasted;
+
+      document.getElementById("lotAvailableWeight").textContent = `${available.toFixed(1)} ${item.weightUnit}`;
+      document.getElementById("quantityHint").textContent = `Máximo disponible: ${available.toFixed(1)} ${item.weightUnit}`;
+
+      quantityInput.max = available;
+      lotInfoCard.style.display = "block";
+      updateSummary();
+    });
+
+    // Actualizar resumen
+    function updateSummary() {
+      const quantity = parseFloat(quantityInput.value) || 0;
+      const temp = document.getElementById("targetTemp").value || "—";
+      const lotItem = lotSelect.value ? JSON.parse(lotSelect.value) : null;
+
+      if (quantity > 0 && lotItem) {
+        document.getElementById("summaryLot").textContent = lotItem.lotId;
+        document.getElementById("summaryQuantity").textContent = `${quantity} ${lotItem.weightUnit}`;
+        document.getElementById("summaryTemp").textContent = temp !== "—" ? `${temp}°C` : "No especificada";
+        document.getElementById("summaryDate").textContent = new Date(roastingDate.value).toLocaleDateString("es-CO");
+        summaryBox.style.display = "block";
+      } else {
+        summaryBox.style.display = "none";
+      }
+    }
+
+    quantityInput.addEventListener("input", updateSummary);
+    document.getElementById("targetTemp").addEventListener("input", updateSummary);
+
+    // Enviar formulario
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+
+      if (!lotSelect.value) {
+        alert("⚠️ Debes seleccionar un lote");
+        return;
+      }
+
+      const item = JSON.parse(lotSelect.value);
+      const quantity = parseFloat(quantityInput.value);
+
+      if (quantity <= 0) {
+        alert("⚠️ La cantidad debe ser mayor a 0");
+        return;
+      }
+
+      if (quantity > parseFloat(document.getElementById("lotAvailableWeight").textContent)) {
+        alert("⚠️ La cantidad excede el peso disponible");
+        return;
+      }
+
+      const roastingRecord = {
+        id: `ROAST-${Date.now()}`,
+        originalLotId: item.lotId,
+        quantitySent: quantity,
+        weightUnit: item.weightUnit,
+        targetTemp: document.getElementById("targetTemp").value || null,
+        notes: document.getElementById("notes").value,
+        sentDate: roastingDate.value,
+        sentAt: new Date().toISOString(),
+        status: "in_roasting",
+        harvest: item.harvest,
+      };
+
+      // Guardar en localStorage
+      const roasting = JSON.parse(localStorage.getItem("roasting") || "[]");
+      roasting.push(roastingRecord);
+      localStorage.setItem("roasting", JSON.stringify(roasting));
+
+      alert(`✅ Lote ${roastingRecord.originalLotId} enviado a tostión\n${quantity} ${item.weightUnit} en proceso`);
+
+      form.reset();
+      roastingDate.value = today;
+      lotInfoCard.style.display = "none";
+      summaryBox.style.display = "none";
+      loadAvailableLots();
+    });
+
+    // Cargar lotes al iniciar
+    loadAvailableLots();
+  </script>
+</MobileLayout>

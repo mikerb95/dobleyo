@@ -1,0 +1,221 @@
+---
+import MobileLayout from "../../layouts/MobileLayout.astro";
+---
+
+<MobileLayout title="Recoger Lote en Finca" description="Registra los datos de recolección de café en la finca del caficultor">
+  <form id="harvestForm">
+    <!-- Selección de Finca -->
+    <div class="form-group">
+      <label for="farmSelect">Finca <span class="required">*</span></label>
+      <select id="farmSelect" name="farm" required>
+        <option value="">Selecciona una finca</option>
+        <option value="finca-la-sierra">La Sierra - Huila (1800m, Franco arcilloso)</option>
+        <option value="finca-nariño">Nariño Premium - Nariño (1900m, Franco arcilloso)</option>
+        <option value="finca-cauca">Cauca Estate - Cauca (1750m, Franco arcilloso)</option>
+      </select>
+      <div class="form-hint">La información de altura y tipo de suelo se carga automáticamente</div>
+    </div>
+
+    <!-- Info de la Finca (solo lectura) -->
+    <div class="card" id="farmInfo" style="display: none;">
+      <h3>Información de la Finca</h3>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div>
+          <div style="font-size: 0.85rem; color: #666;">Altura</div>
+          <div style="font-weight: 600; font-size: 1.1rem;" id="farmAltitude">—</div>
+        </div>
+        <div>
+          <div style="font-size: 0.85rem; color: #666;">Tipo de Suelo</div>
+          <div style="font-weight: 600; font-size: 1.1rem;" id="farmSoil">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Variedad de Café -->
+    <div class="form-group">
+      <label for="variety">Variedad de Café <span class="required">*</span></label>
+      <select id="variety" name="variety" required>
+        <option value="">Selecciona una variedad</option>
+        <option value="CAT">Caturra</option>
+        <option value="TIP">Típica</option>
+        <option value="BOB">Bourbon</option>
+        <option value="GER">Geisha</option>
+        <option value="PAC">Pacamara</option>
+      </select>
+      <div class="form-hint">Código de 3 letras (ej: CAT)</div>
+    </div>
+
+    <!-- Clima -->
+    <div class="form-group">
+      <label>Clima en la Época de Recolección <span class="required">*</span></label>
+      <div class="radio-group">
+        <label class="radio-item">
+          <input type="radio" name="climate" value="SECO" required />
+          <span>🌞 Seco</span>
+        </label>
+        <label class="radio-item">
+          <input type="radio" name="climate" value="LLUV" required />
+          <span>🌧️ Lluvioso</span>
+        </label>
+        <label class="radio-item">
+          <input type="radio" name="climate" value="TEMP" required />
+          <span>🌤️ Templado</span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Proceso -->
+    <div class="form-group">
+      <label>Proceso <span class="required">*</span></label>
+      <div class="radio-group">
+        <label class="radio-item">
+          <input type="radio" name="process" value="NAT" required />
+          <span>Natural (Secado en cereza)</span>
+        </label>
+        <label class="radio-item">
+          <input type="radio" name="process" value="HUM" required />
+          <span>Húmedo (Lavado)</span>
+        </label>
+        <label class="radio-item">
+          <input type="radio" name="process" value="ANH" required />
+          <span>Anaeróbico</span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Aroma -->
+    <div class="form-group">
+      <label for="aroma">Aroma Detectado <span class="required">*</span></label>
+      <input
+        type="text"
+        id="aroma"
+        name="aroma"
+        placeholder="Ej: Chocolate, Frutal, Floral"
+        required
+      />
+      <div class="form-hint">Describe los aromas principales</div>
+    </div>
+
+    <!-- Notas de Sabor -->
+    <div class="form-group">
+      <label for="tasteNotes">Notas de Sabor <span class="required">*</span></label>
+      <textarea
+        id="tasteNotes"
+        name="tasteNotes"
+        placeholder="Ej: Notas de chocolate amargo, cereza, avellana..."
+        required></textarea>
+      <div class="form-hint">Describe los sabores y características detectadas</div>
+    </div>
+
+    <!-- ID de Lote Generado -->
+    <div class="info-box" id="lotInfo" style="display: none;">
+      <strong>ID de Lote Generado:</strong>
+      <div style="font-size: 1.4rem; font-weight: bold; color: #251a14; margin-top: 0.5rem; font-family: 'Courier New', monospace;" id="lotId">COL-XXX-0000-XXX-XX-00</div>
+      <div style="font-size: 0.85rem; color: #666; margin-top: 0.75rem;">
+        <strong>Formato:</strong> País-Región-Altura-Variedad-Proceso-Número
+      </div>
+    </div>
+
+    <!-- Botones de Acción -->
+    <div class="form-actions">
+      <button type="reset" class="btn-secondary">Limpiar</button>
+      <button type="submit" class="btn-primary">Crear Lote</button>
+    </div>
+  </form>
+
+  <script>
+    const farmData = {
+      "finca-la-sierra": { altitude: "1800m", soil: "Franco arcilloso", region: "HUI" },
+      "finca-nariño": { altitude: "1900m", soil: "Franco arcilloso", region: "NAR" },
+      "finca-cauca": { altitude: "1750m", soil: "Franco arcilloso", region: "CAU" },
+    };
+
+    const varietyMap = {
+      CAT: "Caturra",
+      TIP: "Típica",
+      BOB: "Bourbon",
+      GER: "Geisha",
+      PAC: "Pacamara",
+    };
+
+    const processMap = {
+      NAT: "Natural",
+      HUM: "Húmedo",
+      ANH: "Anaeróbico",
+    };
+
+    const form = document.getElementById("harvestForm");
+    const farmSelect = document.getElementById("farmSelect");
+    const farmInfo = document.getElementById("farmInfo");
+    const lotInfo = document.getElementById("lotInfo");
+
+    // Actualizar información de finca
+    farmSelect.addEventListener("change", () => {
+      const selectedFarm = farmSelect.value;
+      if (selectedFarm && farmData[selectedFarm]) {
+        const farm = farmData[selectedFarm];
+        document.getElementById("farmAltitude").textContent = farm.altitude;
+        document.getElementById("farmSoil").textContent = farm.soil;
+        farmInfo.style.display = "block";
+        generateLotId();
+      } else {
+        farmInfo.style.display = "none";
+        lotInfo.style.display = "none";
+      }
+    });
+
+    // Generar ID de Lote
+    function generateLotId() {
+      const farm = farmData[farmSelect.value];
+      if (!farm) return;
+
+      const variety = document.getElementById("variety").value;
+      const process = document.querySelector('input[name="process"]:checked')?.value || "XX";
+
+      if (!variety || !process || process === "XX") {
+        lotInfo.style.display = "none";
+        return;
+      }
+
+      const altitude = farm.altitude.replace("m", "");
+      const lotNumber = String(Math.floor(Math.random() * 100) + 1).padStart(2, "0");
+
+      const lotId = `COL-${farm.region}-${altitude}-${variety}-${process}-${lotNumber}`;
+      document.getElementById("lotId").textContent = lotId;
+      lotInfo.style.display = "block";
+    }
+
+    // Regenerar ID al cambiar variedad o proceso
+    document.getElementById("variety").addEventListener("change", generateLotId);
+    document.querySelectorAll('input[name="process"]').forEach((radio) => {
+      radio.addEventListener("change", generateLotId);
+    });
+
+    // Enviar formulario
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+
+      const formData = {
+        farm: farmSelect.value,
+        variety: document.getElementById("variety").value,
+        climate: document.querySelector('input[name="climate"]:checked').value,
+        process: document.querySelector('input[name="process"]:checked').value,
+        aroma: document.getElementById("aroma").value,
+        tasteNotes: document.getElementById("tasteNotes").value,
+        lotId: document.getElementById("lotId").textContent,
+        timestamp: new Date().toISOString(),
+      };
+
+      // Guardar en localStorage para simular persistencia
+      const harvests = JSON.parse(localStorage.getItem("harvests") || "[]");
+      harvests.push(formData);
+      localStorage.setItem("harvests", JSON.stringify(harvests));
+
+      // Mostrar confirmación
+      alert(`✅ Lote ${formData.lotId} registrado correctamente`);
+      form.reset();
+      farmInfo.style.display = "none";
+      lotInfo.style.display = "none";
+    });
+  </script>
+</MobileLayout>

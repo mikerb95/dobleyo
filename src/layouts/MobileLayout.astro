@@ -1,0 +1,367 @@
+---
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description } = Astro.props;
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#251a14" />
+    <title>{title} - DobleYo Café</title>
+    <style>
+      :root {
+        --coffee: #251a14;
+        --cream: #f7f3ef;
+        --accent: #c67b4e;
+        --dark: #1f1f1f;
+        --muted: #777;
+        --border: #e6e6e6;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: "Lora", Georgia, serif;
+        background: var(--cream);
+        color: var(--dark);
+      }
+
+      body {
+        overflow-x: hidden;
+      }
+
+      /* Header móvil */
+      .mobile-header {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        background: #fff;
+        border-bottom: 1px solid var(--border);
+        padding: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .mobile-header h1 {
+        margin: 0;
+        font-size: 1.2rem;
+        font-weight: 600;
+        font-family: "Playfair Display", Georgia, serif;
+        color: var(--coffee);
+      }
+
+      .mobile-header .back-btn {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: var(--coffee);
+        padding: 0;
+        width: 2rem;
+        height: 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .mobile-header .logo {
+        width: 40px;
+        height: auto;
+      }
+
+      /* Contenedor principal */
+      .mobile-container {
+        min-height: 100vh;
+        padding-bottom: 2rem;
+      }
+
+      .mobile-content {
+        padding: 1.5rem;
+        max-width: 100%;
+      }
+
+      /* Descripción bajo el título */
+      .mobile-description {
+        color: var(--muted);
+        font-size: 0.95rem;
+        margin-bottom: 1.5rem;
+        line-height: 1.5;
+      }
+
+      /* Formularios */
+      form {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+      }
+
+      .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      label {
+        font-weight: 600;
+        font-size: 0.95rem;
+        color: var(--dark);
+      }
+
+      label .required {
+        color: #dc2626;
+      }
+
+      input,
+      select,
+      textarea {
+        padding: 0.75rem;
+        border: 1px solid var(--border);
+        border-radius: 0.375rem;
+        font-family: inherit;
+        font-size: 1rem;
+        color: var(--dark);
+      }
+
+      input:focus,
+      select:focus,
+      textarea:focus {
+        outline: none;
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(198, 123, 78, 0.1);
+      }
+
+      textarea {
+        resize: vertical;
+        min-height: 100px;
+      }
+
+      .form-hint {
+        font-size: 0.85rem;
+        color: var(--muted);
+        margin-top: 0.25rem;
+      }
+
+      /* Botones */
+      .btn-primary {
+        background: var(--accent);
+        color: #fff;
+        padding: 0.875rem 1.5rem;
+        border: none;
+        border-radius: 0.375rem;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+      }
+
+      .btn-primary:active {
+        background: #a85a3a;
+      }
+
+      .btn-primary:disabled {
+        background: var(--muted);
+        cursor: not-allowed;
+      }
+
+      .btn-secondary {
+        background: #fff;
+        color: var(--accent);
+        padding: 0.875rem 1.5rem;
+        border: 1px solid var(--accent);
+        border-radius: 0.375rem;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+      }
+
+      .btn-secondary:active {
+        background: var(--cream);
+      }
+
+      .form-actions {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1rem;
+      }
+
+      .form-actions button {
+        flex: 1;
+      }
+
+      /* Alertas y mensajes */
+      .alert {
+        padding: 1rem;
+        border-radius: 0.375rem;
+        margin-bottom: 1rem;
+        font-size: 0.95rem;
+        line-height: 1.5;
+      }
+
+      .alert-success {
+        background: #d1fae5;
+        color: #065f46;
+        border: 1px solid #a7f3d0;
+      }
+
+      .alert-error {
+        background: #fee2e2;
+        color: #7f1d1d;
+        border: 1px solid #fecaca;
+      }
+
+      .alert-info {
+        background: #dbeafe;
+        color: #1e40af;
+        border: 1px solid #93c5fd;
+      }
+
+      /* Cards */
+      .card {
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: 0.5rem;
+        padding: 1.25rem;
+        margin-bottom: 1rem;
+      }
+
+      .card h3 {
+        margin-top: 0;
+        margin-bottom: 1rem;
+        font-size: 1.1rem;
+        color: var(--coffee);
+      }
+
+      /* Selecciones múltiples */
+      .checkbox-group,
+      .radio-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+
+      .checkbox-item,
+      .radio-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem;
+        border: 1px solid var(--border);
+        border-radius: 0.375rem;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+      }
+
+      .checkbox-item input,
+      .radio-item input {
+        width: auto;
+        margin: 0;
+        cursor: pointer;
+      }
+
+      .checkbox-item:has(input:checked),
+      .radio-item:has(input:checked) {
+        background: rgba(198, 123, 78, 0.1);
+        border-color: var(--accent);
+      }
+
+      /* Info display */
+      .info-box {
+        background: rgba(198, 123, 78, 0.08);
+        padding: 1rem;
+        border-left: 4px solid var(--accent);
+        border-radius: 0.375rem;
+        margin-bottom: 1rem;
+      }
+
+      .info-box strong {
+        color: var(--coffee);
+      }
+
+      /* Footer móvil */
+      .mobile-footer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: #fff;
+        border-top: 1px solid var(--border);
+        padding: 1rem;
+        z-index: 40;
+      }
+
+      .mobile-footer button {
+        width: 100%;
+      }
+
+      /* Loading state */
+      .loading {
+        display: inline-block;
+        width: 1rem;
+        height: 1rem;
+        border: 2px solid var(--border);
+        border-top-color: var(--accent);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Responsive */
+      @media (min-width: 769px) {
+        .mobile-content {
+          max-width: 500px;
+          margin: 0 auto;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="mobile-header">
+      <a href="/" class="back-btn" title="Volver">←</a>
+      <h1>{title}</h1>
+      <div style="width: 2rem;"></div>
+    </header>
+
+    <div class="mobile-container">
+      <div class="mobile-content">
+        {description && <p class="mobile-description">{description}</p>}
+        <slot />
+      </div>
+    </div>
+
+    <script>
+      // Mantener scroll position
+      const savedScrollPos = sessionStorage.getItem("scrollPos");
+      if (savedScrollPos !== null) {
+        window.scrollTo(0, parseInt(savedScrollPos));
+        sessionStorage.removeItem("scrollPos");
+      }
+
+      // Guardar scroll position antes de navegar
+      document.querySelectorAll("a").forEach((link) => {
+        link.addEventListener("click", () => {
+          if (!link.href.includes("#")) {
+            sessionStorage.setItem("scrollPos", window.scrollY);
+          }
+        });
+      });
+    </script>
+  </body>
+</html>
