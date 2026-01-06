@@ -1,6 +1,7 @@
 import express from 'express';
 import * as db from '../db.js';
 import * as auth from '../auth.js';
+import { createCoffeeTables } from '../migrations/create_coffee_tables.js';
 
 export const setupRouter = express.Router();
 
