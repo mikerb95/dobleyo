@@ -206,7 +206,19 @@ setupRouter.get('/', async (req, res) => {
     }
     log('Schema applied.');
 
-    // 2. Seed Products
+    // 2. Create Coffee Tables
+    try {
+      await createCoffeeTables();
+      log('Coffee tables created.');
+    } catch (err) {
+      if (err.code === 'ER_TABLE_EXISTS_ERROR') {
+        log('Coffee tables already exist.');
+      } else {
+        throw err;
+      }
+    }
+
+    // 3. Seed Products
     for (const p of products) {
       const existing = await db.query('SELECT id FROM products WHERE id = ?', [p.id]);
       if (existing.rows.length === 0) {
@@ -223,7 +235,7 @@ setupRouter.get('/', async (req, res) => {
     }
     log('Products seeded.');
 
-    // 3. Create Admin
+    // 4. Create Admin
     const existingAdmin = await db.query('SELECT id FROM users WHERE email = ?', [ADMIN_EMAIL]);
     if (existingAdmin.rows.length === 0) {
       const hash = await auth.hashPassword(ADMIN_PASS);

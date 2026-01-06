@@ -164,6 +164,7 @@ img{ max-width:100%; display:block }
   .nav{ display:none }
   .hamburger{ display:inline-flex }
   .mobile-menu{ display:flex }
+  .mobile-menu[hidden]{ display:none !important }
   /* Mantener logo balanceado en movil */
   .brand img{ height:36px }
 }
