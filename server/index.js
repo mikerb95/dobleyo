@@ -10,6 +10,7 @@ import cookieParser from 'cookie-parser';
 import { stockRouter } from './routes/stock.js';
 import { authRouter } from './routes/auth.js';
 import { setupRouter } from './routes/setup.js';
+import { coffeeRouter } from './routes/coffee.js';
 
 const app = express();
 
@@ -31,6 +32,7 @@ app.use(cors({
 app.use('/api/auth', authRouter);
 app.use('/api/stock', stockRouter);
 app.use('/api/setup', setupRouter);
+app.use('/api/coffee', coffeeRouter);
 
 // Debug endpoint to check environment variables (safe version)
 app.get('/api/debug-env', (req, res) => {
