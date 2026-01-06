@@ -2,18 +2,29 @@
 import MobileLayout from "../../layouts/MobileLayout.astro";
 ---
 
-<MobileLayout title="Recoger Lote en Finca" description="Registra los datos de recolección de café en la finca del caficultor">
+<MobileLayout
+  title="Recoger Lote en Finca"
+  description="Registra los datos de recolección de café en la finca del caficultor"
+>
   <form id="harvestForm">
     <!-- Selección de Finca -->
     <div class="form-group">
       <label for="farmSelect">Finca <span class="required">*</span></label>
       <select id="farmSelect" name="farm" required>
         <option value="">Selecciona una finca</option>
-        <option value="finca-la-sierra">La Sierra - Huila (1800m, Franco arcilloso)</option>
-        <option value="finca-nariño">Nariño Premium - Nariño (1900m, Franco arcilloso)</option>
-        <option value="finca-cauca">Cauca Estate - Cauca (1750m, Franco arcilloso)</option>
+        <option value="finca-la-sierra"
+          >La Sierra - Huila (1800m, Franco arcilloso)</option
+        >
+        <option value="finca-nariño"
+          >Nariño Premium - Nariño (1900m, Franco arcilloso)</option
+        >
+        <option value="finca-cauca"
+          >Cauca Estate - Cauca (1750m, Franco arcilloso)</option
+        >
       </select>
-      <div class="form-hint">La información de altura y tipo de suelo se carga automáticamente</div>
+      <div class="form-hint">
+        La información de altura y tipo de suelo se carga automáticamente
+      </div>
     </div>
 
     <!-- Info de la Finca (solo lectura) -->
@@ -22,18 +33,24 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
         <div>
           <div style="font-size: 0.85rem; color: #666;">Altura</div>
-          <div style="font-weight: 600; font-size: 1.1rem;" id="farmAltitude">—</div>
+          <div style="font-weight: 600; font-size: 1.1rem;" id="farmAltitude">
+            —
+          </div>
         </div>
         <div>
           <div style="font-size: 0.85rem; color: #666;">Tipo de Suelo</div>
-          <div style="font-weight: 600; font-size: 1.1rem;" id="farmSoil">—</div>
+          <div style="font-weight: 600; font-size: 1.1rem;" id="farmSoil">
+            —
+          </div>
         </div>
       </div>
     </div>
 
     <!-- Variedad de Café -->
     <div class="form-group">
-      <label for="variety">Variedad de Café <span class="required">*</span></label>
+      <label for="variety"
+        >Variedad de Café <span class="required">*</span></label
+      >
       <select id="variety" name="variety" required>
         <option value="">Selecciona una variedad</option>
         <option value="CAT">Caturra</option>
@@ -47,7 +64,9 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
 
     <!-- Clima -->
     <div class="form-group">
-      <label>Clima en la Época de Recolección <span class="required">*</span></label>
+      <label
+        >Clima en la Época de Recolección <span class="required">*</span></label
+      >
       <div class="radio-group">
         <label class="radio-item">
           <input type="radio" name="climate" value="SECO" required />
@@ -98,19 +117,28 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
 
     <!-- Notas de Sabor -->
     <div class="form-group">
-      <label for="tasteNotes">Notas de Sabor <span class="required">*</span></label>
+      <label for="tasteNotes"
+        >Notas de Sabor <span class="required">*</span></label
+      >
       <textarea
         id="tasteNotes"
         name="tasteNotes"
         placeholder="Ej: Notas de chocolate amargo, cereza, avellana..."
         required></textarea>
-      <div class="form-hint">Describe los sabores y características detectadas</div>
+      <div class="form-hint">
+        Describe los sabores y características detectadas
+      </div>
     </div>
 
     <!-- ID de Lote Generado -->
     <div class="info-box" id="lotInfo" style="display: none;">
       <strong>ID de Lote Generado:</strong>
-      <div style="font-size: 1.4rem; font-weight: bold; color: #251a14; margin-top: 0.5rem; font-family: 'Courier New', monospace;" id="lotId">COL-XXX-0000-XXX-XX-00</div>
+      <div
+        style="font-size: 1.4rem; font-weight: bold; color: #251a14; margin-top: 0.5rem; font-family: 'Courier New', monospace;"
+        id="lotId"
+      >
+        COL-XXX-0000-XXX-XX-00
+      </div>
       <div style="font-size: 0.85rem; color: #666; margin-top: 0.75rem;">
         <strong>Formato:</strong> País-Región-Altura-Variedad-Proceso-Número
       </div>
@@ -125,9 +153,21 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
 
   <script>
     const farmData = {
-      "finca-la-sierra": { altitude: "1800m", soil: "Franco arcilloso", region: "HUI" },
-      "finca-nariño": { altitude: "1900m", soil: "Franco arcilloso", region: "NAR" },
-      "finca-cauca": { altitude: "1750m", soil: "Franco arcilloso", region: "CAU" },
+      "finca-la-sierra": {
+        altitude: "1800m",
+        soil: "Franco arcilloso",
+        region: "HUI",
+      },
+      "finca-nariño": {
+        altitude: "1900m",
+        soil: "Franco arcilloso",
+        region: "NAR",
+      },
+      "finca-cauca": {
+        altitude: "1750m",
+        soil: "Franco arcilloso",
+        region: "CAU",
+      },
     };
 
     const varietyMap = {
@@ -170,7 +210,8 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
       if (!farm) return;
 
       const variety = document.getElementById("variety").value;
-      const process = document.querySelector('input[name="process"]:checked')?.value || "XX";
+      const process =
+        document.querySelector('input[name="process"]:checked')?.value || "XX";
 
       if (!variety || !process || process === "XX") {
         lotInfo.style.display = "none";
@@ -178,7 +219,10 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
       }
 
       const altitude = farm.altitude.replace("m", "");
-      const lotNumber = String(Math.floor(Math.random() * 100) + 1).padStart(2, "0");
+      const lotNumber = String(Math.floor(Math.random() * 100) + 1).padStart(
+        2,
+        "0"
+      );
 
       const lotId = `COL-${farm.region}-${altitude}-${variety}-${process}-${lotNumber}`;
       document.getElementById("lotId").textContent = lotId;
@@ -186,7 +230,9 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
     }
 
     // Regenerar ID al cambiar variedad o proceso
-    document.getElementById("variety").addEventListener("change", generateLotId);
+    document
+      .getElementById("variety")
+      .addEventListener("change", generateLotId);
     document.querySelectorAll('input[name="process"]').forEach((radio) => {
       radio.addEventListener("change", generateLotId);
     });

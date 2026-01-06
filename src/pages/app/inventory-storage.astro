@@ -2,11 +2,15 @@
 import MobileLayout from "../../layouts/MobileLayout.astro";
 ---
 
-<MobileLayout title="Almacenar en Inventario" description="Registra el café verde en el inventario físico con peso y ubicación">
+<MobileLayout
+  title="Almacenar en Inventario"
+  description="Registra el café verde en el inventario físico con peso y ubicación"
+>
   <form id="inventoryForm">
     <!-- Selección de Lote -->
     <div class="form-group">
-      <label for="lotSelect">Lote de Café <span class="required">*</span></label>
+      <label for="lotSelect">Lote de Café <span class="required">*</span></label
+      >
       <select id="lotSelect" name="lot" required>
         <option value="">Selecciona un lote...</option>
       </select>
@@ -16,7 +20,9 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
     <!-- Info del Lote Seleccionado -->
     <div class="card" id="lotInfoCard" style="display: none;">
       <h3>Información del Lote</h3>
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 0.95rem;">
+      <div
+        style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 0.95rem;"
+      >
         <div>
           <div style="color: #666; font-size: 0.85rem;">Variedad</div>
           <div style="font-weight: 600;" id="lotVariety">—</div>
@@ -38,7 +44,9 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
 
     <!-- Peso Neto -->
     <div class="form-group">
-      <label for="weight">Peso Neto de Café Verde <span class="required">*</span></label>
+      <label for="weight"
+        >Peso Neto de Café Verde <span class="required">*</span></label
+      >
       <div style="display: flex; gap: 0.5rem;">
         <input
           type="number"
@@ -60,15 +68,21 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
 
     <!-- Ubicación de Almacenamiento -->
     <div class="form-group">
-      <label for="location">Ubicación en Bodega <span class="required">*</span></label>
+      <label for="location"
+        >Ubicación en Bodega <span class="required">*</span></label
+      >
       <select id="location" name="location" required>
         <option value="">Selecciona una ubicación</option>
         <option value="A-01">Sección A - Estante 01</option>
         <option value="A-02">Sección A - Estante 02</option>
         <option value="B-01">Sección B - Estante 01</option>
         <option value="B-02">Sección B - Estante 02</option>
-        <option value="C-01">Sección C - Estante 01 (Temperatura controlada)</option>
-        <option value="C-02">Sección C - Estante 02 (Temperatura controlada)</option>
+        <option value="C-01"
+          >Sección C - Estante 01 (Temperatura controlada)</option
+        >
+        <option value="C-02"
+          >Sección C - Estante 02 (Temperatura controlada)</option
+        >
       </select>
       <div class="form-hint">Elige la ubicación física de almacenamiento</div>
     </div>
@@ -77,7 +91,9 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
     <div class="form-group">
       <label for="storageDate">Fecha de Almacenamiento</label>
       <input type="date" id="storageDate" name="storageDate" disabled />
-      <div class="form-hint">Se registra automáticamente como la fecha actual</div>
+      <div class="form-hint">
+        Se registra automáticamente como la fecha actual
+      </div>
     </div>
 
     <!-- Notas Adicionales -->
@@ -94,10 +110,19 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
     <div class="info-box" id="summaryBox" style="display: none;">
       <strong>Resumen del Almacenamiento:</strong>
       <div style="margin-top: 0.75rem; font-size: 0.95rem; line-height: 1.6;">
-        <div>📦 Lote: <span id="summaryLot" style="font-weight: 600;">—</span></div>
-        <div>⚖️ Peso: <span id="summaryWeight" style="font-weight: 600;">—</span></div>
-        <div>📍 Ubicación: <span id="summaryLocation" style="font-weight: 600;">—</span></div>
-        <div>📅 Fecha: <span id="summaryDate" style="font-weight: 600;">—</span></div>
+        <div>
+          📦 Lote: <span id="summaryLot" style="font-weight: 600;">—</span>
+        </div>
+        <div>
+          ⚖️ Peso: <span id="summaryWeight" style="font-weight: 600;">—</span>
+        </div>
+        <div>
+          📍 Ubicación: <span id="summaryLocation" style="font-weight: 600;"
+            >—</span>
+        </div>
+        <div>
+          📅 Fecha: <span id="summaryDate" style="font-weight: 600;">—</span>
+        </div>
       </div>
     </div>
 
@@ -148,7 +173,9 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
       document.getElementById("lotVariety").textContent = harvest.variety;
       document.getElementById("lotProcess").textContent = harvest.process;
       document.getElementById("lotFarm").textContent = harvest.farm;
-      document.getElementById("lotDate").textContent = new Date(harvest.timestamp).toLocaleDateString("es-CO");
+      document.getElementById("lotDate").textContent = new Date(
+        harvest.timestamp
+      ).toLocaleDateString("es-CO");
       lotInfoCard.style.display = "block";
       updateSummary();
     });
@@ -162,9 +189,12 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
       if (weight && location && lotSelect.value) {
         const harvest = JSON.parse(lotSelect.value);
         document.getElementById("summaryLot").textContent = harvest.lotId;
-        document.getElementById("summaryWeight").textContent = `${weight} ${unit}`;
+        document.getElementById("summaryWeight").textContent =
+          `${weight} ${unit}`;
         document.getElementById("summaryLocation").textContent = location;
-        document.getElementById("summaryDate").textContent = new Date(storageDate.value).toLocaleDateString("es-CO");
+        document.getElementById("summaryDate").textContent = new Date(
+          storageDate.value
+        ).toLocaleDateString("es-CO");
         summaryBox.style.display = "block";
       } else {
         summaryBox.style.display = "none";
@@ -172,8 +202,12 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
     }
 
     document.getElementById("weight").addEventListener("input", updateSummary);
-    document.getElementById("weightUnit").addEventListener("change", updateSummary);
-    document.getElementById("location").addEventListener("change", updateSummary);
+    document
+      .getElementById("weightUnit")
+      .addEventListener("change", updateSummary);
+    document
+      .getElementById("location")
+      .addEventListener("change", updateSummary);
 
     // Enviar formulario
     form.addEventListener("submit", (e) => {
@@ -202,7 +236,9 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
       inventory.push(storageRecord);
       localStorage.setItem("inventory", JSON.stringify(inventory));
 
-      alert(`✅ Lote ${storageRecord.lotId} almacenado correctamente\n${storageRecord.weight} ${storageRecord.weightUnit} en ${storageRecord.location}`);
+      alert(
+        `✅ Lote ${storageRecord.lotId} almacenado correctamente\n${storageRecord.weight} ${storageRecord.weightUnit} en ${storageRecord.location}`
+      );
 
       form.reset();
       storageDate.value = today;
