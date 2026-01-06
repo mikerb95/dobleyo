@@ -118,7 +118,8 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
         </div>
         <div>
           📍 Ubicación: <span id="summaryLocation" style="font-weight: 600;"
-            >—</span>
+            >—</span
+          >
         </div>
         <div>
           📅 Fecha: <span id="summaryDate" style="font-weight: 600;">—</span>
@@ -149,10 +150,10 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
         const harvests = await response.json();
 
         // También obtener inventario para filtrar
-        const inventoryResponse = await fetch(
-          "/api/coffee/green-inventory"
-        );
-        const inventory = inventoryResponse.ok ? await inventoryResponse.json() : [];
+        const inventoryResponse = await fetch("/api/coffee/green-inventory");
+        const inventory = inventoryResponse.ok
+          ? await inventoryResponse.json()
+          : [];
         const storedLotIds = inventory.map((item) => item.lot_id);
 
         const available = harvests.filter(
