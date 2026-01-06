@@ -2,11 +2,16 @@
 import MobileLayout from "../../layouts/MobileLayout.astro";
 ---
 
-<MobileLayout title="Recoger del Tueste" description="Registra los cafés tostados con su nivel de tueste y nuevo peso">
+<MobileLayout
+  title="Recoger del Tueste"
+  description="Registra los cafés tostados con su nivel de tueste y nuevo peso"
+>
   <form id="roastRetrievalForm">
     <!-- Selección de Lote en Tostión -->
     <div class="form-group">
-      <label for="roastingLotSelect">Lote en Proceso de Tostión <span class="required">*</span></label>
+      <label for="roastingLotSelect"
+        >Lote en Proceso de Tostión <span class="required">*</span></label
+      >
       <select id="roastingLotSelect" name="roastingLot" required>
         <option value="">Selecciona un lote...</option>
       </select>
@@ -16,7 +21,9 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
     <!-- Info del Lote -->
     <div class="card" id="roastingInfoCard" style="display: none;">
       <h3>Información de Tostión</h3>
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 0.95rem;">
+      <div
+        style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 0.95rem;"
+      >
         <div>
           <div style="color: #666; font-size: 0.85rem;">Lote ID</div>
           <div style="font-weight: 600;" id="roastingLotId">—</div>
@@ -53,12 +60,16 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
           <span>☕☕☕ Tostión Oscura (Dark)</span>
         </label>
       </div>
-      <div class="form-hint">Selecciona según el color y aroma del café tostado</div>
+      <div class="form-hint">
+        Selecciona según el color y aroma del café tostado
+      </div>
     </div>
 
     <!-- Nuevo Peso Neto -->
     <div class="form-group">
-      <label for="roastedWeight">Peso Neto de Café Tostado <span class="required">*</span></label>
+      <label for="roastedWeight"
+        >Peso Neto de Café Tostado <span class="required">*</span></label
+      >
       <div style="display: flex; gap: 0.5rem;">
         <input
           type="number"
@@ -70,23 +81,38 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
           required
           style="flex: 1;"
         />
-        <div style="display: flex; align-items: center; padding: 0 0.75rem; background: #f5f5f5; border-radius: 0.375rem; border: 1px solid #e6e6e6; min-width: 60px;">
+        <div
+          style="display: flex; align-items: center; padding: 0 0.75rem; background: #f5f5f5; border-radius: 0.375rem; border: 1px solid #e6e6e6; min-width: 60px;"
+        >
           kg
         </div>
       </div>
-      <div class="form-hint">Peso después del tueste (generalmente menor por pérdida de humedad)</div>
+      <div class="form-hint">
+        Peso después del tueste (generalmente menor por pérdida de humedad)
+      </div>
     </div>
 
     <!-- Cálculo de Pérdida de Peso -->
     <div class="info-box" id="weightLossBox" style="display: none;">
-      <div style="display: flex; justify-content: space-between; align-items: center;">
+      <div
+        style="display: flex; justify-content: space-between; align-items: center;"
+      >
         <div>
           <strong>Pérdida de Peso:</strong>
-          <div style="font-size: 0.9rem; color: #666; margin-top: 0.25rem;">Humedad evaporada durante el tueste</div>
+          <div style="font-size: 0.9rem; color: #666; margin-top: 0.25rem;">
+            Humedad evaporada durante el tueste
+          </div>
         </div>
         <div style="text-align: right;">
-          <div style="font-size: 1.4rem; font-weight: bold; color: #c67b4e;" id="weightLossPercent">—</div>
-          <div style="font-size: 0.85rem; color: #666;">(<span id="weightLossAmount">—</span> kg)</div>
+          <div
+            style="font-size: 1.4rem; font-weight: bold; color: #c67b4e;"
+            id="weightLossPercent"
+          >
+            —
+          </div>
+          <div style="font-size: 0.85rem; color: #666;">
+            (<span id="weightLossAmount">—</span> kg)
+          </div>
         </div>
       </div>
     </div>
@@ -103,7 +129,9 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
         min="180"
         max="230"
       />
-      <div class="form-hint">Temperatura máxima registrada durante el tueste</div>
+      <div class="form-hint">
+        Temperatura máxima registrada durante el tueste
+      </div>
     </div>
 
     <!-- Tiempo de Tueste -->
@@ -134,10 +162,19 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
     <div class="info-box" id="summaryBox" style="display: none;">
       <strong>Resumen del Café Tostado:</strong>
       <div style="margin-top: 0.75rem; font-size: 0.95rem; line-height: 1.6;">
-        <div>📦 Lote: <span id="summaryLot" style="font-weight: 600;">—</span></div>
-        <div>☕ Nivel: <span id="summaryLevel" style="font-weight: 600;">—</span></div>
-        <div>⚖️ Peso Tostado: <span id="summaryWeight" style="font-weight: 600;">—</span></div>
-        <div>📊 Pérdida: <span id="summaryLoss" style="font-weight: 600;">—</span></div>
+        <div>
+          📦 Lote: <span id="summaryLot" style="font-weight: 600;">—</span>
+        </div>
+        <div>
+          ☕ Nivel: <span id="summaryLevel" style="font-weight: 600;">—</span>
+        </div>
+        <div>
+          ⚖️ Peso Tostado: <span id="summaryWeight" style="font-weight: 600;"
+            >—</span>
+        </div>
+        <div>
+          📊 Pérdida: <span id="summaryLoss" style="font-weight: 600;">—</span>
+        </div>
       </div>
     </div>
 
@@ -163,7 +200,8 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
       const roasting = JSON.parse(localStorage.getItem("roasting") || "[]");
       const inProcess = roasting.filter((r) => r.status === "in_roasting");
 
-      roastingLotSelect.innerHTML = '<option value="">Selecciona un lote...</option>';
+      roastingLotSelect.innerHTML =
+        '<option value="">Selecciona un lote...</option>';
       inProcess.forEach((record) => {
         const option = document.createElement("option");
         option.value = JSON.stringify(record);
@@ -181,10 +219,16 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
       }
 
       currentRoastingRecord = JSON.parse(roastingLotSelect.value);
-      document.getElementById("roastingLotId").textContent = currentRoastingRecord.originalLotId;
-      document.getElementById("roastingVariety").textContent = currentRoastingRecord.harvest.variety;
-      document.getElementById("roastingWeightSent").textContent = `${currentRoastingRecord.quantitySent} ${currentRoastingRecord.weightUnit}`;
-      document.getElementById("roastingTargetTemp").textContent = currentRoastingRecord.targetTemp ? `${currentRoastingRecord.targetTemp}°C` : "No especificada";
+      document.getElementById("roastingLotId").textContent =
+        currentRoastingRecord.originalLotId;
+      document.getElementById("roastingVariety").textContent =
+        currentRoastingRecord.harvest.variety;
+      document.getElementById("roastingWeightSent").textContent =
+        `${currentRoastingRecord.quantitySent} ${currentRoastingRecord.weightUnit}`;
+      document.getElementById("roastingTargetTemp").textContent =
+        currentRoastingRecord.targetTemp
+          ? `${currentRoastingRecord.targetTemp}°C`
+          : "No especificada";
 
       roastingInfoCard.style.display = "block";
       roastedWeightInput.max = currentRoastingRecord.quantitySent * 0.95; // Máximo 95% (considerando pérdida mínima)
@@ -204,7 +248,8 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
       const lossPercent = ((loss / original) * 100).toFixed(1);
 
       document.getElementById("weightLossAmount").textContent = loss.toFixed(2);
-      document.getElementById("weightLossPercent").textContent = `${lossPercent}%`;
+      document.getElementById("weightLossPercent").textContent =
+        `${lossPercent}%`;
       weightLossBox.style.display = "block";
 
       updateSummary();
@@ -212,7 +257,8 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
 
     // Actualizar resumen
     function updateSummary() {
-      const roastLevel = document.querySelector('input[name="roastLevel"]:checked')?.value || "";
+      const roastLevel =
+        document.querySelector('input[name="roastLevel"]:checked')?.value || "";
       const roastedWeight = roastedWeightInput.value;
 
       if (roastLevel && roastedWeight && currentRoastingRecord) {
@@ -221,10 +267,17 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
         const loss = original - roasted;
         const lossPercent = ((loss / original) * 100).toFixed(1);
 
-        document.getElementById("summaryLot").textContent = currentRoastingRecord.originalLotId;
-        document.getElementById("summaryLevel").textContent = roastLevel === "LIGHT" ? "Clara" : roastLevel === "MEDIUM" ? "Media" : "Oscura";
+        document.getElementById("summaryLot").textContent =
+          currentRoastingRecord.originalLotId;
+        document.getElementById("summaryLevel").textContent =
+          roastLevel === "LIGHT"
+            ? "Clara"
+            : roastLevel === "MEDIUM"
+              ? "Media"
+              : "Oscura";
         document.getElementById("summaryWeight").textContent = `${roasted} kg`;
-        document.getElementById("summaryLoss").textContent = `${lossPercent}% (${loss.toFixed(2)} kg)`;
+        document.getElementById("summaryLoss").textContent =
+          `${lossPercent}% (${loss.toFixed(2)} kg)`;
         summaryBox.style.display = "block";
       } else {
         summaryBox.style.display = "none";
@@ -244,10 +297,15 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
         return;
       }
 
-      const roastLevel = document.querySelector('input[name="roastLevel"]:checked').value;
+      const roastLevel = document.querySelector(
+        'input[name="roastLevel"]:checked'
+      ).value;
       const roastedWeight = parseFloat(roastedWeightInput.value);
 
-      if (roastedWeight <= 0 || roastedWeight > currentRoastingRecord.quantitySent) {
+      if (
+        roastedWeight <= 0 ||
+        roastedWeight > currentRoastingRecord.quantitySent
+      ) {
         alert("⚠️ El peso debe ser mayor a 0 y no exceder el peso enviado");
         return;
       }
@@ -270,7 +328,9 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
 
       // Actualizar estado del registro de tostión
       const roasting = JSON.parse(localStorage.getItem("roasting") || "[]");
-      const index = roasting.findIndex((r) => r.id === currentRoastingRecord.id);
+      const index = roasting.findIndex(
+        (r) => r.id === currentRoastingRecord.id
+      );
       if (index !== -1) {
         roasting[index].status = "completed";
       }
@@ -281,7 +341,9 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
       roasted.push(roastRecord);
       localStorage.setItem("roasted", JSON.stringify(roasted));
 
-      alert(`✅ Tueste registrado correctamente\n${roastRecord.quantityRoasted} kg de café ${roastRecord.roastLevel === "LIGHT" ? "claro" : roastRecord.roastLevel === "MEDIUM" ? "medio" : "oscuro"}`);
+      alert(
+        `✅ Tueste registrado correctamente\n${roastRecord.quantityRoasted} kg de café ${roastRecord.roastLevel === "LIGHT" ? "claro" : roastRecord.roastLevel === "MEDIUM" ? "medio" : "oscuro"}`
+      );
 
       form.reset();
       roastingInfoCard.style.display = "none";
