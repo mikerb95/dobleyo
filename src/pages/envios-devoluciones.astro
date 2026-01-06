@@ -1,0 +1,334 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout>
+  <section class="prose" style="margin-top: 2rem;">
+    <!-- Encabezado principal -->
+    <h1 style="font-size: clamp(1.8rem, 5vw, 2.5rem); margin-bottom: 1rem;">
+      Envíos y Devoluciones
+    </h1>
+    <p style="font-size: 1.1rem; color: #666; margin-bottom: 3rem;">
+      Información sobre políticas de envío, tiempos de entrega y proceso de
+      devoluciones en DobleYo Café.
+    </p>
+
+    <!-- Contenedor con dos columnas responsivo -->
+    <div
+      style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-bottom: 3rem;"
+    >
+      <!-- Tarjeta: Información de Envíos -->
+      <div
+        style="background: #fff; border: 1px solid #e6e6e6; border-radius: 0.5rem; padding: 2rem;"
+      >
+        <h2 style="font-size: 1.4rem; color: #251a14; margin-bottom: 1rem;">
+          📦 Envíos Nacionales
+        </h2>
+        <div style="line-height: 1.8;">
+          <h3 style="font-size: 1rem; font-weight: 600; margin-top: 1.5rem;">
+            Envío Gratis
+          </h3>
+          <p>
+            Envío gratis en ordenes superiores a <strong>$120.000</strong> en todo
+            el territorio nacional colombiano.
+          </p>
+
+          <h3 style="font-size: 1rem; font-weight: 600; margin-top: 1.5rem;">
+            Tiempo de Entrega
+          </h3>
+          <ul style="margin: 1rem 0; padding-left: 1.5rem;">
+            <li>
+              <strong>Bogotá y Área Metropolitana:</strong> 2-3 días hábiles
+            </li>
+            <li><strong>Principales ciudades:</strong> 3-5 días hábiles</li>
+            <li><strong>Resto del país:</strong> 4-7 días hábiles</li>
+          </ul>
+
+          <h3 style="font-size: 1rem; font-weight: 600; margin-top: 1.5rem;">
+            Método de Envío
+          </h3>
+          <p>
+            Utilizamos empresas de logística confiables y rastreables. Todos
+            nuestros envíos incluyen seguimiento en tiempo real.
+          </p>
+
+          <h3 style="font-size: 1rem; font-weight: 600; margin-top: 1.5rem;">
+            Envío Internacional
+          </h3>
+          <p>
+            Actualmente no realizamos envíos internacionales. Próximamente
+            expandiremos nuestro servicio a otros países.
+          </p>
+        </div>
+      </div>
+
+      <!-- Tarjeta: Políticas de Devoluciones -->
+      <div
+        style="background: #fff; border: 1px solid #e6e6e6; border-radius: 0.5rem; padding: 2rem;"
+      >
+        <h2 style="font-size: 1.4rem; color: #251a14; margin-bottom: 1rem;">
+          🔄 Devoluciones y Cambios
+        </h2>
+        <div style="line-height: 1.8;">
+          <h3 style="font-size: 1rem; font-weight: 600; margin-top: 1.5rem;">
+            Plazo para Devolver
+          </h3>
+          <p>
+            Tienes <strong>30 días</strong> desde la fecha de compra para solicitar
+            una devolución o cambio.
+          </p>
+
+          <h3 style="font-size: 1rem; font-weight: 600; margin-top: 1.5rem;">
+            Condiciones de Devolución
+          </h3>
+          <ul style="margin: 1rem 0; padding-left: 1.5rem;">
+            <li>Producto sin abrir o en condiciones originales</li>
+            <li>Con todos los accesorios y empaques originales</li>
+            <li>Debe incluir prueba de compra (recibo o factura)</li>
+            <li>Sin daños por uso o manipulación indebida</li>
+          </ul>
+
+          <h3 style="font-size: 1rem; font-weight: 600; margin-top: 1.5rem;">
+            Proceso de Devolución
+          </h3>
+          <ol style="margin: 1rem 0; padding-left: 1.5rem;">
+            <li>Contacta nuestro servicio al cliente con tu número de orden</li>
+            <li>Recibe instrucciones de envío y etiqueta de devolución</li>
+            <li>Empaca el producto de forma segura y envía a nuestra bodega</li>
+            <li>Inspeccionar producto (3-5 días hábiles)</li>
+            <li>Procesar reembolso o cambio (5-7 días hábiles)</li>
+          </ol>
+
+          <h3 style="font-size: 1rem; font-weight: 600; margin-top: 1.5rem;">
+            Reembolsos
+          </h3>
+          <p>
+            Los reembolsos se procesarán al método de pago original. El tiempo
+            de aparición en tu cuenta depende de tu banco (5-10 días hábiles).
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sección: Productos No Devolvibles -->
+    <div
+      style="background: #f3eee7; border-left: 4px solid #c67b4e; padding: 1.5rem; margin-bottom: 3rem; border-radius: 0.25rem;"
+    >
+      <h3 style="font-size: 1.1rem; color: #251a14; margin-bottom: 1rem;">
+        ⚠️ Productos No Devolvibles
+      </h3>
+      <p style="margin: 0.5rem 0;">
+        Los siguientes productos no son elegibles para devolución:
+      </p>
+      <ul style="margin: 1rem 0; padding-left: 1.5rem;">
+        <li><strong>Café molido o en grano</strong> una vez abierto</li>
+        <li><strong>Productos perecederos</strong> después de abiertos</li>
+        <li>Accesorios personalizados u hecho a pedido</li>
+        <li>Productos con daño evidente por causa del cliente</li>
+        <li>Compras realizadas durante liquidaciones o remates especiales</li>
+      </ul>
+    </div>
+
+    <!-- Sección: Contacto y Soporte -->
+    <div
+      style="background: #fff; border: 1px solid #e6e6e6; border-radius: 0.5rem; padding: 2rem; margin-bottom: 3rem;"
+    >
+      <h2 style="font-size: 1.4rem; color: #251a14; margin-bottom: 1.5rem;">
+        📞 ¿Necesitas Ayuda?
+      </h2>
+      <div
+        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;"
+      >
+        <div>
+          <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem;">
+            📧 Email
+          </h3>
+          <p>
+            <a
+              href="mailto:soporte@dobleyocafe.com"
+              style="color: #c67b4e; text-decoration: underline;"
+              >soporte@dobleyocafe.com</a
+            >
+          </p>
+          <p style="color: #666; font-size: 0.9rem;">
+            Respuesta en 24-48 horas
+          </p>
+        </div>
+        <div>
+          <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem;">
+            💬 WhatsApp
+          </h3>
+          <p>
+            <a
+              href="https://wa.me/573001234567"
+              target="_blank"
+              rel="noopener"
+              style="color: #c67b4e; text-decoration: underline;"
+              >+57 300 123 4567</a
+            >
+          </p>
+          <p style="color: #666; font-size: 0.9rem;">Lun-Vie: 9am - 6pm</p>
+        </div>
+        <div>
+          <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem;">
+            📍 Ubicación
+          </h3>
+          <p>
+            Bogotá, Colombia<br />
+            <span style="color: #666; font-size: 0.9rem;">
+              Retira tu orden en nuestro punto de venta
+            </span>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sección: FAQ -->
+    <div style="margin-bottom: 3rem;">
+      <h2
+        style="font-size: 1.4rem; color: #251a14; margin-bottom: 1.5rem; border-bottom: 2px solid #e6e6e6; padding-bottom: 0.5rem;"
+      >
+        ❓ Preguntas Frecuentes
+      </h2>
+
+      <div style="display: flex; flex-direction: column; gap: 1rem;">
+        <!-- FAQ Item 1 -->
+        <details
+          style="border: 1px solid #e6e6e6; padding: 1rem; border-radius: 0.375rem; cursor: pointer;"
+        >
+          <summary style="font-weight: 600; user-select: none;">
+            ¿Puedo cambiar mi orden antes de que sea enviada?
+          </summary>
+          <p style="margin-top: 1rem; color: #666;">
+            Sí, si contactas dentro de 2 horas después de realizar la compra.
+            Envíanos un email o WhatsApp indicando los cambios deseados. Si la
+            orden ya fue despachada, aplicarán las políticas de devolución.
+          </p>
+        </details>
+
+        <!-- FAQ Item 2 -->
+        <details
+          style="border: 1px solid #e6e6e6; padding: 1rem; border-radius: 0.375rem; cursor: pointer;"
+        >
+          <summary style="font-weight: 600; user-select: none;">
+            ¿Cómo rastreo mi pedido?
+          </summary>
+          <p style="margin-top: 1rem; color: #666;">
+            Recibirás un email con el número de seguimiento tan pronto tu orden
+            sea despachada. Puedes usar este número en el sitio de la empresa
+            logística para ver actualizaciones en tiempo real.
+          </p>
+        </details>
+
+        <!-- FAQ Item 3 -->
+        <details
+          style="border: 1px solid #e6e6e6; padding: 1rem; border-radius: 0.375rem; cursor: pointer;"
+        >
+          <summary style="font-weight: 600; user-select: none;">
+            ¿Qué pasa si mi paquete llega dañado?
+          </summary>
+          <p style="margin-top: 1rem; color: #666;">
+            Contacta inmediatamente a nuestro equipo con fotos del daño. No
+            abras el paquete más de lo necesario. Documentaremos el daño con la
+            empresa logística y procederemos a reemplazar tu orden sin costo.
+          </p>
+        </details>
+
+        <!-- FAQ Item 4 -->
+        <details
+          style="border: 1px solid #e6e6e6; padding: 1rem; border-radius: 0.375rem; cursor: pointer;"
+        >
+          <summary style="font-weight: 600; user-select: none;">
+            ¿Cuál es el costo de devolución?
+          </summary>
+          <p style="margin-top: 1rem; color: #666;">
+            Si la devolución es por defecto de fabricación o error nuestro, es
+            completamente gratis. Si es por cambio de opinión, el cliente corre
+            con los gastos de envío de retorno.
+          </p>
+        </details>
+
+        <!-- FAQ Item 5 -->
+        <details
+          style="border: 1px solid #e6e6e6; padding: 1rem; border-radius: 0.375rem; cursor: pointer;"
+        >
+          <summary style="font-weight: 600; user-select: none;">
+            ¿Aceptan reembolsos a tarjeta de crédito?
+          </summary>
+          <p style="margin-top: 1rem; color: #666;">
+            Sí, reembolsamos al método de pago original. Los reembolsos pueden
+            tardar 5-10 días hábiles en reflejarse en tu cuenta dependiendo de
+            tu banco o medio de pago.
+          </p>
+        </details>
+
+        <!-- FAQ Item 6 -->
+        <details
+          style="border: 1px solid #e6e6e6; padding: 1rem; border-radius: 0.375rem; cursor: pointer;"
+        >
+          <summary style="font-weight: 600; user-select: none;">
+            ¿Hacen reembolsos parciales?
+          </summary>
+          <p style="margin-top: 1rem; color: #666;">
+            Sí, aceptamos devoluciones parciales de órdenes con múltiples
+            productos. Evaluaremos cada producto individualmente según nuestras
+            políticas.
+          </p>
+        </details>
+      </div>
+    </div>
+
+    <!-- Sección: Compromiso -->
+    <div
+      style="background: linear-gradient(135deg, #251a14 0%, #3d2817 100%); color: #fff; padding: 3rem 2rem; border-radius: 0.5rem; text-align: center; margin-bottom: 3rem;"
+    >
+      <h2 style="font-size: 1.4rem; margin-bottom: 1rem;">
+        Tu Satisfacción es Nuestra Prioridad
+      </h2>
+      <p
+        style="margin: 0; color: rgba(255, 255, 255, 0.9); font-size: 1.05rem; max-width: 600px; margin-left: auto; margin-right: auto;"
+      >
+        En DobleYo Café nos comprometemos a brindarte una experiencia de compra
+        segura y confiable. Si tienes cualquier pregunta o inquietud, no dudes
+        en contactarnos. Estamos aquí para ayudarte.
+      </p>
+    </div>
+  </section>
+
+  <style>
+    .prose {
+      max-width: 1200px;
+      margin-left: auto;
+      margin-right: auto;
+      padding: 0 1.25rem;
+    }
+
+    details > summary::-webkit-details-marker {
+      display: none;
+    }
+
+    details > summary::before {
+      content: "▶ ";
+      display: inline-block;
+      margin-right: 0.5rem;
+      transition: transform 0.3s ease;
+      color: #c67b4e;
+    }
+
+    details[open] > summary::before {
+      transform: rotate(90deg);
+    }
+
+    details[open] {
+      background: #f9f9f9;
+    }
+
+    a {
+      transition: color 0.2s ease;
+    }
+
+    a:hover {
+      color: #a85a3a;
+    }
+  </style>
+</Layout>
