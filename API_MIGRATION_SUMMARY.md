@@ -13,6 +13,7 @@ Todas las 6 páginas del módulo móvil han sido actualizadas para usar **API di
 ## ✅ Módulos Actualizados
 
 ### 1. **Recoger Lote en Finca** (`src/pages/app/harvest.astro`)
+
 - **Cambio:** Envío POST a `/api/coffee/harvest`
 - **Anterior:** `localStorage.setItem("harvests", ...)`
 - **Ahora:** Fetch con `await response.json()` que devuelve `lotId`
@@ -20,15 +21,17 @@ Todas las 6 páginas del módulo móvil han sido actualizadas para usar **API di
 - **Estados:** Loading feedback con texto "Registrando..." mientras se procesa
 
 ### 2. **Almacenar en Inventario** (`src/pages/app/inventory-storage.astro`)
+
 - **Cambio:** POST a `/api/coffee/inventory-storage` + GET `/api/coffee/harvests`
 - **Anterior:** Leía de localStorage para llenar dropdown de lotes
-- **Ahora:** 
+- **Ahora:**
   - GET `/api/coffee/harvests` para lotes disponibles
   - GET `/api/coffee/green-inventory` para filtrar ya almacenados
   - POST envía weight, weightUnit, location, storageDate
 - **Validación:** Server valida que el lote exista
 
 ### 3. **Enviar a Tostión** (`src/pages/app/send-roasting.astro`)
+
 - **Cambio:** POST a `/api/coffee/send-roasting` + GET `/api/coffee/green-inventory`
 - **Anterior:** Filtro manual basado en localStorage
 - **Ahora:**
@@ -38,6 +41,7 @@ Todas las 6 páginas del módulo móvil han sido actualizadas para usar **API di
 - **Validación:** Cantidad no puede exceder peso disponible en BD
 
 ### 4. **Recoger del Tueste** (`src/pages/app/roast-retrieval.astro`)
+
 - **Cambio:** POST a `/api/coffee/roast-retrieval` + GET `/api/coffee/roasting-batches`
 - **Anterior:** Leía estado de tostión de localStorage
 - **Ahora:**
@@ -47,6 +51,7 @@ Todas las 6 páginas del módulo móvil han sido actualizadas para usar **API di
 - **Cálculo Automático:** `(original - roasted) / original * 100` se hace en el servidor
 
 ### 5. **Almacenar Tostado** (`src/pages/app/roasted-storage.astro`)
+
 - **Cambio:** POST a `/api/coffee/roasted-storage` + GET `/api/coffee/roasted-coffee`
 - **Anterior:** Leía de localStorage
 - **Ahora:**
@@ -56,6 +61,7 @@ Todas las 6 páginas del módulo móvil han sido actualizadas para usar **API di
 - **Validación:** Server valida que contenedores tengan capacidad suficiente
 
 ### 6. **Preparar para Venta** (`src/pages/app/packaging.astro`)
+
 - **Cambio:** POST a `/api/coffee/packaging` + GET `/api/coffee/roasted-coffee`
 - **Anterior:** Leía de localStorage para mostrar cafés disponibles
 - **Ahora:**
@@ -69,15 +75,15 @@ Todas las 6 páginas del módulo móvil han sido actualizadas para usar **API di
 
 ## 🔌 Endpoints Utilizados
 
-| Módulo | GET Endpoints | POST Endpoints |
-|--------|-------------|-------------|
-| Harvest | — | `/api/coffee/harvest` |
-| Inventory | `/api/coffee/harvests` | `/api/coffee/inventory-storage` |
-| | `/api/coffee/green-inventory` | |
-| Send Roasting | `/api/coffee/green-inventory` | `/api/coffee/send-roasting` |
-| Roast Retrieval | `/api/coffee/roasting-batches` | `/api/coffee/roast-retrieval` |
-| Roasted Storage | `/api/coffee/roasted-coffee` | `/api/coffee/roasted-storage` |
-| Packaging | `/api/coffee/roasted-coffee` | `/api/coffee/packaging` |
+| Módulo          | GET Endpoints                  | POST Endpoints                  |
+| --------------- | ------------------------------ | ------------------------------- |
+| Harvest         | —                              | `/api/coffee/harvest`           |
+| Inventory       | `/api/coffee/harvests`         | `/api/coffee/inventory-storage` |
+|                 | `/api/coffee/green-inventory`  |                                 |
+| Send Roasting   | `/api/coffee/green-inventory`  | `/api/coffee/send-roasting`     |
+| Roast Retrieval | `/api/coffee/roasting-batches` | `/api/coffee/roast-retrieval`   |
+| Roasted Storage | `/api/coffee/roasted-coffee`   | `/api/coffee/roasted-storage`   |
+| Packaging       | `/api/coffee/roasted-coffee`   | `/api/coffee/packaging`         |
 
 ---
 
@@ -87,13 +93,15 @@ Cada formulario ahora incluye:
 
 ```javascript
 try {
-  const response = await fetch("/api/coffee/endpoint", { /* ... */ });
-  
+  const response = await fetch("/api/coffee/endpoint", {
+    /* ... */
+  });
+
   if (!response.ok) {
     const error = await response.json();
     throw new Error(error.message || "Error genérico");
   }
-  
+
   // Success handling
 } catch (error) {
   alert(`❌ Error: ${error.message}`);
@@ -103,6 +111,7 @@ try {
 ```
 
 **Mejoras:**
+
 - Mensajes de error del servidor se muestran al usuario
 - Botón de submit se deshabilita durante petición
 - Texto del botón cambia a "Registrando..." durante carga
@@ -158,6 +167,7 @@ packaged_coffee
 ## 📝 Cambios Técnicos
 
 ### Antes (localStorage)
+
 ```javascript
 // Guardar
 const harvests = JSON.parse(localStorage.getItem("harvests") || "[]");
@@ -169,12 +179,13 @@ const harvests = JSON.parse(localStorage.getItem("harvests") || "[]");
 ```
 
 ### Ahora (API)
+
 ```javascript
 // Guardar
 const response = await fetch("/api/coffee/harvest", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
-  body: JSON.stringify(formData)
+  body: JSON.stringify(formData),
 });
 const data = await response.json();
 
@@ -190,25 +201,31 @@ const harvests = await response.json();
 Ciertos cálculos se han movido al servidor para garantizar consistencia:
 
 ### 1. **Lot ID Generation** (Harvest)
+
 ```
 COL-{REGION}-{HEIGHT}-{VARIETY}-{PROCESS}-{SEQUENCE}
 COL-HUI-1800-CAT-HUM-01
 ```
+
 - Generado automáticamente por el servidor
 - Se retorna en la respuesta POST
 
 ### 2. **Weight Loss Percentage** (Roast Retrieval)
+
 ```
 weight_loss_percent = ((original - roasted) / original) * 100
 ```
+
 - Calculado por el servidor
 - Se retorna en la respuesta POST
 
 ### 3. **Tasting Score** (Packaging)
+
 ```
 score = (acidity + body + balance) / 3
 score = (4 + 3 + 4) / 3 = 3.67
 ```
+
 - Calculado por el servidor
 - Se retorna en la respuesta POST
 
@@ -223,6 +240,7 @@ curl -X POST https://dobleyo.cafe/api/setup
 ```
 
 Esto crea automáticamente:
+
 1. `coffee_harvests`
 2. `green_coffee_inventory`
 3. `roasting_batches`
@@ -284,30 +302,33 @@ Esto crea automáticamente:
 
 ## ✨ Beneficios
 
-| Aspecto | localStorage | API/Database |
-|---------|-------------|------------|
-| **Persistencia** | Solo sesión actual | Permanente |
-| **Multi-dispositivo** | No | Sí ✓ |
-| **Backup** | Manual | Automático ✓ |
-| **Compartir datos** | No | Sí ✓ |
-| **Validación** | Frontend | Frontend + Server ✓ |
-| **Escalabilidad** | Limitada | Ilimitada ✓ |
-| **Seguridad** | Baja | Alta (BD protegida) ✓ |
+| Aspecto               | localStorage       | API/Database          |
+| --------------------- | ------------------ | --------------------- |
+| **Persistencia**      | Solo sesión actual | Permanente            |
+| **Multi-dispositivo** | No                 | Sí ✓                  |
+| **Backup**            | Manual             | Automático ✓          |
+| **Compartir datos**   | No                 | Sí ✓                  |
+| **Validación**        | Frontend           | Frontend + Server ✓   |
+| **Escalabilidad**     | Limitada           | Ilimitada ✓           |
+| **Seguridad**         | Baja               | Alta (BD protegida) ✓ |
 
 ---
 
 ## 🔧 Próximas Mejoras (Futura)
 
 1. **Autenticación:**
+
    - JWT verification en endpoints
    - Aislar datos por usuario/empresa
    - Roles (admin, manager, worker)
 
 2. **Relaciones Avanzadas:**
+
    - Cargar datos de origen al buscar café en packaging
    - Mostrar historial completo de cada lote
 
 3. **Optimizaciones:**
+
    - Caching de GET endpoints (Redis)
    - Paginación para listas grandes
    - Índices optimizados
