@@ -7,6 +7,7 @@ Sistema de gestión completo de cafés desde la recolección en la finca hasta l
 ### ✅ 6 Módulos Integrados
 
 1. **🌱 Recoger Lote en Finca** (`/app/harvest`)
+
    - Registra datos de recolección
    - Selecciona finca (carga automáticamente altura y tipo de suelo)
    - Especifica variedad, clima, proceso
@@ -14,6 +15,7 @@ Sistema de gestión completo de cafés desde la recolección en la finca hasta l
    - **Genera automáticamente ID de lote** en formato: `COL-HUI-1800-CAT-HN-01`
 
 2. **📦 Almacenar en Inventario Verde** (`/app/inventory-storage`)
+
    - Registra peso neto del café verde
    - Especifica ubicación de almacenamiento en bodega
    - Fecha automática (hoy)
@@ -21,6 +23,7 @@ Sistema de gestión completo de cafés desde la recolección en la finca hasta l
    - Estado: Listo para tostión
 
 3. **🔥 Enviar a Tostión** (`/app/send-roasting`)
+
    - Selecciona café verde disponible
    - Permite enviar cantidad parcial o total
    - Especifica temperatura target
@@ -28,6 +31,7 @@ Sistema de gestión completo de cafés desde la recolección en la finca hasta l
    - Rastreo automático de inventario
 
 4. **☕ Recoger del Tueste** (`/app/roast-retrieval`)
+
    - Registra café tostado
    - Especifica nivel de tueste (clara, media, oscura)
    - Nuevo peso neto (con cálculo automático de pérdida)
@@ -35,6 +39,7 @@ Sistema de gestión completo de cafés desde la recolección en la finca hasta l
    - Observaciones del proceso
 
 5. **🏠 Almacenar Café Tostado** (`/app/roasted-storage`)
+
    - Ubicación en bodega (secciones especializadas)
    - Tipo de contenedor (bolsas, cubetas, sacos)
    - Cantidad de contenedores
@@ -59,14 +64,14 @@ Formato estándar: `COL-REGION-ALTURA-VARIEDAD-PROCESO-NUMERO`
 
 **Ejemplo:** `COL-HUI-1800-CAT-HN-01`
 
-| Parte | Significado | Ejemplo |
-|-------|-------------|---------|
-| COL | País (Colombia) | COL |
-| HUI | Región | HUI, NAR, CAU |
-| 1800 | Altura en metros | 1800, 1900, 1750 |
-| CAT | Variedad (3 letras) | CAT, TIP, BOB, GER, PAC |
-| HN | Proceso (2 letras) | NAT, HUM, ANH |
-| 01 | Número de lote | 01-99 |
+| Parte | Significado         | Ejemplo                 |
+| ----- | ------------------- | ----------------------- |
+| COL   | País (Colombia)     | COL                     |
+| HUI   | Región              | HUI, NAR, CAU           |
+| 1800  | Altura en metros    | 1800, 1900, 1750        |
+| CAT   | Variedad (3 letras) | CAT, TIP, BOB, GER, PAC |
+| HN    | Proceso (2 letras)  | NAT, HUM, ANH           |
+| 01    | Número de lote      | 01-99                   |
 
 ## 📊 Flujo del Proceso
 
@@ -96,6 +101,7 @@ Formato estándar: `COL-REGION-ALTURA-VARIEDAD-PROCESO-NUMERO`
 ## 💾 Almacenamiento
 
 Los datos se guardan en **localStorage del navegador**:
+
 - `harvests` - Lotes recolectados
 - `inventory` - Café verde almacenado
 - `roasting` - Lotes en tostión
@@ -106,11 +112,13 @@ Los datos se guardan en **localStorage del navegador**:
 ## 🔄 Relaciones de Datos
 
 ### Flujo de Datos:
+
 ```
 Harvest → Inventory → Roasting → Roasted → Roasted Inventory → Packaged
 ```
 
 ### Validaciones Automáticas:
+
 - No permite enviar más café a tostión del disponible
 - No permite almacenar más peso del que fue tostado
 - Calcula automáticamente pérdida de peso en tostión
@@ -119,6 +127,7 @@ Harvest → Inventory → Roasting → Roasted → Roasted Inventory → Package
 ## 📱 Acceso
 
 ### URLs:
+
 - Dashboard: `/app`
 - Recoger lote: `/app/harvest`
 - Almacenar verde: `/app/inventory-storage`
@@ -128,6 +137,7 @@ Harvest → Inventory → Roasting → Roasted → Roasted Inventory → Package
 - Preparar venta: `/app/packaging`
 
 ### Mejor En:
+
 - ✅ iPhone 12+ (recomendado)
 - ✅ Android (navegadores modernos)
 - ✅ iPad (versión tableta)
@@ -136,6 +146,7 @@ Harvest → Inventory → Roasting → Roasted → Roasted Inventory → Package
 ## 🚀 Desarrollo
 
 ### Stack:
+
 - **Framework:** Astro
 - **Layout Mobile:** MobileLayout.astro
 - **Estilos:** CSS inline + componentes
@@ -143,6 +154,7 @@ Harvest → Inventory → Roasting → Roasted → Roasted Inventory → Package
 - **Lenguaje:** JavaScript vanilla
 
 ### Estructura:
+
 ```
 src/
 ├── layouts/
@@ -182,6 +194,7 @@ src/
 ## 📞 Soporte
 
 Para dudas o problemas:
+
 - Email: soporte@dobleyocafe.com
 - WhatsApp: +57 300 123 4567
 
