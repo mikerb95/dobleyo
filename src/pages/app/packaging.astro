@@ -2,11 +2,16 @@
 import MobileLayout from "../../layouts/MobileLayout.astro";
 ---
 
-<MobileLayout title="Preparar para Venta" description="Configura las propiedades del café y prepáralo para empaque individual">
+<MobileLayout
+  title="Preparar para Venta"
+  description="Configura las propiedades del café y prepáralo para empaque individual"
+>
   <form id="packagingForm">
     <!-- Selección de Café Tostado -->
     <div class="form-group">
-      <label for="roastedSelect">Café Tostado Disponible <span class="required">*</span></label>
+      <label for="roastedSelect"
+        >Café Tostado Disponible <span class="required">*</span></label
+      >
       <select id="roastedSelect" name="roasted" required>
         <option value="">Selecciona un café...</option>
       </select>
@@ -16,7 +21,9 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
     <!-- Info del Café -->
     <div class="card" id="coffeeInfoCard" style="display: none;">
       <h3>Información del Café</h3>
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 0.95rem;">
+      <div
+        style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 0.95rem;"
+      >
         <div>
           <div style="color: #666; font-size: 0.85rem;">Lote ID</div>
           <div style="font-weight: 600;" id="coffeeLotId">—</div>
@@ -31,14 +38,21 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
         </div>
         <div>
           <div style="color: #666; font-size: 0.85rem;">Peso Disponible</div>
-          <div style="font-weight: 600; color: #c67b4e;" id="coffeeAvailableWeight">—</div>
+          <div
+            style="font-weight: 600; color: #c67b4e;"
+            id="coffeeAvailableWeight"
+          >
+            —
+          </div>
         </div>
       </div>
     </div>
 
     <!-- Propiedades de Cata -->
     <div class="form-group" style="margin-top: 1.5rem;">
-      <label style="font-weight: 600; font-size: 1.1rem; margin-bottom: 1rem; display: block;">
+      <label
+        style="font-weight: 600; font-size: 1.1rem; margin-bottom: 1rem; display: block;"
+      >
         ☕ Propiedades de Cata
       </label>
 
@@ -46,10 +60,25 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
       <div style="margin-bottom: 1.5rem;">
         <label for="acidity">Acidez <span class="required">*</span></label>
         <div style="display: flex; gap: 0.5rem; margin: 0.75rem 0;">
-          <input type="range" id="acidity" name="acidity" min="1" max="5" value="3" style="flex: 1; cursor: pointer;" />
-          <div style="min-width: 50px; text-align: center; font-weight: 600;" id="acidityValue">3/5</div>
+          <input
+            type="range"
+            id="acidity"
+            name="acidity"
+            min="1"
+            max="5"
+            value="3"
+            style="flex: 1; cursor: pointer;"
+          />
+          <div
+            style="min-width: 50px; text-align: center; font-weight: 600;"
+            id="acidityValue"
+          >
+            3/5
+          </div>
         </div>
-        <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.25rem; font-size: 0.75rem; color: #666;">
+        <div
+          style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.25rem; font-size: 0.75rem; color: #666;"
+        >
           <div style="text-align: center;">Baja</div>
           <div></div>
           <div style="text-align: center;">Media</div>
@@ -62,10 +91,25 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
       <div style="margin-bottom: 1.5rem;">
         <label for="body">Cuerpo <span class="required">*</span></label>
         <div style="display: flex; gap: 0.5rem; margin: 0.75rem 0;">
-          <input type="range" id="body" name="body" min="1" max="5" value="3" style="flex: 1; cursor: pointer;" />
-          <div style="min-width: 50px; text-align: center; font-weight: 600;" id="bodyValue">3/5</div>
+          <input
+            type="range"
+            id="body"
+            name="body"
+            min="1"
+            max="5"
+            value="3"
+            style="flex: 1; cursor: pointer;"
+          />
+          <div
+            style="min-width: 50px; text-align: center; font-weight: 600;"
+            id="bodyValue"
+          >
+            3/5
+          </div>
         </div>
-        <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.25rem; font-size: 0.75rem; color: #666;">
+        <div
+          style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.25rem; font-size: 0.75rem; color: #666;"
+        >
           <div style="text-align: center;">Ligero</div>
           <div></div>
           <div style="text-align: center;">Medio</div>
@@ -78,10 +122,25 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
       <div style="margin-bottom: 1.5rem;">
         <label for="balance">Balance <span class="required">*</span></label>
         <div style="display: flex; gap: 0.5rem; margin: 0.75rem 0;">
-          <input type="range" id="balance" name="balance" min="1" max="5" value="3" style="flex: 1; cursor: pointer;" />
-          <div style="min-width: 50px; text-align: center; font-weight: 600;" id="balanceValue">3/5</div>
+          <input
+            type="range"
+            id="balance"
+            name="balance"
+            min="1"
+            max="5"
+            value="3"
+            style="flex: 1; cursor: pointer;"
+          />
+          <div
+            style="min-width: 50px; text-align: center; font-weight: 600;"
+            id="balanceValue"
+          >
+            3/5
+          </div>
         </div>
-        <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.25rem; font-size: 0.75rem; color: #666;">
+        <div
+          style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.25rem; font-size: 0.75rem; color: #666;"
+        >
           <div style="text-align: center;">Desbalanceado</div>
           <div></div>
           <div style="text-align: center;">Equilibrado</div>
@@ -108,7 +167,9 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
 
     <!-- Tipo de Molienda (si aplica) -->
     <div class="form-group" id="grindingGroup" style="display: none;">
-      <label for="grindSize">Tipo de Molienda <span class="required">*</span></label>
+      <label for="grindSize"
+        >Tipo de Molienda <span class="required">*</span></label
+      >
       <select id="grindSize" name="grindSize">
         <option value="">Selecciona tipo de molienda</option>
         <option value="EXTRA-FINE">Extra Fina (Espresso)</option>
@@ -117,12 +178,16 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
         <option value="MEDIUM">Media (Prensa Francesa)</option>
         <option value="COARSE">Gruesa (Cafetera de Goteo)</option>
       </select>
-      <div class="form-hint">Solo aplica si seleccionaste presentación molida</div>
+      <div class="form-hint">
+        Solo aplica si seleccionaste presentación molida
+      </div>
     </div>
 
     <!-- Cantidad para Empaque -->
     <div class="form-group">
-      <label for="packageQuantity">Cantidad para Empacar <span class="required">*</span></label>
+      <label for="packageQuantity"
+        >Cantidad para Empacar <span class="required">*</span></label
+      >
       <div style="display: flex; gap: 0.5rem;">
         <input
           type="number"
@@ -144,7 +209,10 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
 
     <!-- Tamaño de Presentación Individual -->
     <div class="form-group">
-      <label for="packageSize">Tamaño de Presentación Individual <span class="required">*</span></label>
+      <label for="packageSize"
+        >Tamaño de Presentación Individual <span class="required">*</span
+        ></label
+      >
       <select id="packageSize" name="packageSize" required>
         <option value="">Selecciona tamaño</option>
         <option value="250g">250g - Bolsa pequeña</option>
@@ -157,7 +225,9 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
 
     <!-- Cantidad de Unidades -->
     <div class="form-group">
-      <label for="unitCount">Cantidad de Unidades a Empacar <span class="required">*</span></label>
+      <label for="unitCount"
+        >Cantidad de Unidades a Empacar <span class="required">*</span></label
+      >
       <input
         type="number"
         id="unitCount"
@@ -171,7 +241,11 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
     </div>
 
     <!-- Información de Origen -->
-    <div class="card" id="originInfo" style="display: none; margin-top: 1.5rem;">
+    <div
+      class="card"
+      id="originInfo"
+      style="display: none; margin-top: 1.5rem;"
+    >
       <h3>Información de Origen</h3>
       <div style="font-size: 0.95rem; line-height: 1.6;">
         <div><strong>Finca:</strong> <span id="originFarm">—</span></div>
@@ -186,11 +260,26 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
     <div class="info-box" id="summaryBox" style="display: none;">
       <strong>Resumen de Empaque:</strong>
       <div style="margin-top: 0.75rem; font-size: 0.95rem; line-height: 1.6;">
-        <div>📦 Lote: <span id="summaryLot" style="font-weight: 600;">—</span></div>
-        <div>⚖️ Cantidad: <span id="summaryQuantity" style="font-weight: 600;">—</span></div>
-        <div>📏 Presentación: <span id="summaryPresentation" style="font-weight: 600;">—</span></div>
-        <div>🔢 Unidades: <span id="summaryUnits" style="font-weight: 600;">—</span></div>
-        <div>⭐ Puntuación: <span id="summaryScore" style="font-weight: 600;">—</span></div>
+        <div>
+          📦 Lote: <span id="summaryLot" style="font-weight: 600;">—</span>
+        </div>
+        <div>
+          ⚖️ Cantidad: <span id="summaryQuantity" style="font-weight: 600;"
+            >—</span>
+        </div>
+        <div>
+          📏 Presentación: <span
+            id="summaryPresentation"
+            style="font-weight: 600;">—</span>
+        </div>
+        <div>
+          🔢 Unidades: <span id="summaryUnits" style="font-weight: 600;"
+            >—</span>
+        </div>
+        <div>
+          ⭐ Puntuación: <span id="summaryScore" style="font-weight: 600;"
+            >—</span>
+        </div>
       </div>
     </div>
 
@@ -203,7 +292,9 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
 
   <script>
     const roastedSelect = document.getElementById("roastedSelect");
-    const presentationRadios = document.querySelectorAll('input[name="presentation"]');
+    const presentationRadios = document.querySelectorAll(
+      'input[name="presentation"]'
+    );
     const grindingGroup = document.getElementById("grindingGroup");
     const form = document.getElementById("packagingForm");
     const summaryBox = document.getElementById("summaryBox");
@@ -221,13 +312,18 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
 
     // Cargar cafés tostados en inventario
     function loadRoastedLots() {
-      const inventory = JSON.parse(localStorage.getItem("roasted_inventory") || "[]");
+      const inventory = JSON.parse(
+        localStorage.getItem("roasted_inventory") || "[]"
+      );
       const packaged = JSON.parse(localStorage.getItem("packaged") || "[]");
       const packagedIds = packaged.map((item) => item.roastingRecordId);
 
-      const available = inventory.filter((item) => !packagedIds.includes(item.roastingRecordId));
+      const available = inventory.filter(
+        (item) => !packagedIds.includes(item.roastingRecordId)
+      );
 
-      roastedSelect.innerHTML = '<option value="">Selecciona un café...</option>';
+      roastedSelect.innerHTML =
+        '<option value="">Selecciona un café...</option>';
       available.forEach((item) => {
         const option = document.createElement("option");
         option.value = JSON.stringify(item);
@@ -246,26 +342,39 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
       }
 
       currentRoasted = JSON.parse(roastedSelect.value);
-      document.getElementById("coffeeLotId").textContent = currentRoasted.originalLotId;
-      document.getElementById("coffeeVariety").textContent = currentRoasted.harvest.variety;
-      document.getElementById("coffeeRoastLevel").textContent = currentRoasted.roastLevel === "LIGHT" ? "Clara" : currentRoasted.roastLevel === "MEDIUM" ? "Media" : "Oscura";
-      document.getElementById("coffeeAvailableWeight").textContent = `${currentRoasted.quantityRoasted} kg`;
+      document.getElementById("coffeeLotId").textContent =
+        currentRoasted.originalLotId;
+      document.getElementById("coffeeVariety").textContent =
+        currentRoasted.harvest.variety;
+      document.getElementById("coffeeRoastLevel").textContent =
+        currentRoasted.roastLevel === "LIGHT"
+          ? "Clara"
+          : currentRoasted.roastLevel === "MEDIUM"
+            ? "Media"
+            : "Oscura";
+      document.getElementById("coffeeAvailableWeight").textContent =
+        `${currentRoasted.quantityRoasted} kg`;
 
       // Mostrar info de origen
-      document.getElementById("originFarm").textContent = currentRoasted.harvest.farm;
-      document.getElementById("originAroma").textContent = currentRoasted.harvest.aroma;
-      document.getElementById("originNotes").textContent = currentRoasted.harvest.tasteNotes;
+      document.getElementById("originFarm").textContent =
+        currentRoasted.harvest.farm;
+      document.getElementById("originAroma").textContent =
+        currentRoasted.harvest.aroma;
+      document.getElementById("originNotes").textContent =
+        currentRoasted.harvest.tasteNotes;
       originInfo.style.display = "block";
 
       coffeeInfoCard.style.display = "block";
-      document.getElementById("packageQuantity").max = currentRoasted.quantityRoasted;
+      document.getElementById("packageQuantity").max =
+        currentRoasted.quantityRoasted;
       updateSummary();
     });
 
     // Mostrar/ocultar opciones de molienda
     presentationRadios.forEach((radio) => {
       radio.addEventListener("change", () => {
-        grindingGroup.style.display = radio.value === "MOLIDO" ? "block" : "none";
+        grindingGroup.style.display =
+          radio.value === "MOLIDO" ? "block" : "none";
         if (radio.value === "GRANO") {
           document.getElementById("grindSize").value = "";
         }
@@ -274,7 +383,8 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
 
     // Actualizar valores de slider
     document.getElementById("acidity").addEventListener("input", (e) => {
-      document.getElementById("acidityValue").textContent = `${e.target.value}/5`;
+      document.getElementById("acidityValue").textContent =
+        `${e.target.value}/5`;
       updateSummary();
     });
 
@@ -284,14 +394,16 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
     });
 
     document.getElementById("balance").addEventListener("input", (e) => {
-      document.getElementById("balanceValue").textContent = `${e.target.value}/5`;
+      document.getElementById("balanceValue").textContent =
+        `${e.target.value}/5`;
       updateSummary();
     });
 
     // Calcular unidades automáticamente
     function updateUnitCount() {
       const packageSize = document.getElementById("packageSize").value;
-      const packageQuantity = parseFloat(document.getElementById("packageQuantity").value) || 0;
+      const packageQuantity =
+        parseFloat(document.getElementById("packageQuantity").value) || 0;
       const packageUnit = document.getElementById("packageUnit").value;
 
       if (!packageSize || packageQuantity <= 0) {
@@ -305,25 +417,35 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
       }
 
       if (packageSize === "bulk") {
-        document.getElementById("unitCount").placeholder = "Especifica la cantidad de unidades";
+        document.getElementById("unitCount").placeholder =
+          "Especifica la cantidad de unidades";
         document.getElementById("unitHint").textContent = "";
       } else {
         const sizeInKg = packageSizeWeights[packageSize];
         const units = Math.floor(quantityInKg / sizeInKg);
         document.getElementById("unitCount").value = units;
-        document.getElementById("unitHint").textContent = `${units} unidades de ${packageSize}`;
+        document.getElementById("unitHint").textContent =
+          `${units} unidades de ${packageSize}`;
       }
     }
 
-    document.getElementById("packageQuantity").addEventListener("input", updateUnitCount);
-    document.getElementById("packageUnit").addEventListener("change", updateUnitCount);
-    document.getElementById("packageSize").addEventListener("change", updateUnitCount);
+    document
+      .getElementById("packageQuantity")
+      .addEventListener("input", updateUnitCount);
+    document
+      .getElementById("packageUnit")
+      .addEventListener("change", updateUnitCount);
+    document
+      .getElementById("packageSize")
+      .addEventListener("change", updateUnitCount);
 
     // Actualizar resumen
     function updateSummary() {
       if (!currentRoasted) return;
 
-      const presentation = document.querySelector('input[name="presentation"]:checked')?.value;
+      const presentation = document.querySelector(
+        'input[name="presentation"]:checked'
+      )?.value;
       const packageSize = document.getElementById("packageSize").value;
       const unitCount = document.getElementById("unitCount").value;
       const acidity = document.getElementById("acidity").value;
@@ -331,12 +453,21 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
       const balance = document.getElementById("balance").value;
 
       if (presentation && packageSize && unitCount) {
-        const score = ((parseInt(acidity) + parseInt(body) + parseInt(balance)) / 3).toFixed(1);
+        const score = (
+          (parseInt(acidity) + parseInt(body) + parseInt(balance)) /
+          3
+        ).toFixed(1);
 
-        document.getElementById("summaryLot").textContent = currentRoasted.originalLotId;
-        document.getElementById("summaryQuantity").textContent = `${currentRoasted.quantityRoasted} kg`;
-        document.getElementById("summaryPresentation").textContent = presentation === "GRANO" ? "Grano Entero" : `Molido - ${document.getElementById("grindSize").value || "Por especificar"}`;
-        document.getElementById("summaryUnits").textContent = `${unitCount} unidades`;
+        document.getElementById("summaryLot").textContent =
+          currentRoasted.originalLotId;
+        document.getElementById("summaryQuantity").textContent =
+          `${currentRoasted.quantityRoasted} kg`;
+        document.getElementById("summaryPresentation").textContent =
+          presentation === "GRANO"
+            ? "Grano Entero"
+            : `Molido - ${document.getElementById("grindSize").value || "Por especificar"}`;
+        document.getElementById("summaryUnits").textContent =
+          `${unitCount} unidades`;
         document.getElementById("summaryScore").textContent = `${score}/5`;
         summaryBox.style.display = "block";
       } else {
@@ -347,8 +478,12 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
     presentationRadios.forEach((radio) => {
       radio.addEventListener("change", updateSummary);
     });
-    document.getElementById("packageSize").addEventListener("change", updateSummary);
-    document.getElementById("unitCount").addEventListener("input", updateSummary);
+    document
+      .getElementById("packageSize")
+      .addEventListener("change", updateSummary);
+    document
+      .getElementById("unitCount")
+      .addEventListener("input", updateSummary);
 
     // Enviar formulario
     form.addEventListener("submit", (e) => {
@@ -359,7 +494,9 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
         return;
       }
 
-      const presentation = document.querySelector('input[name="presentation"]:checked')?.value;
+      const presentation = document.querySelector(
+        'input[name="presentation"]:checked'
+      )?.value;
       const packageSize = document.getElementById("packageSize").value;
       const unitCount = parseInt(document.getElementById("unitCount").value);
 
@@ -368,7 +505,10 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
         return;
       }
 
-      if (presentation === "MOLIDO" && !document.getElementById("grindSize").value) {
+      if (
+        presentation === "MOLIDO" &&
+        !document.getElementById("grindSize").value
+      ) {
         alert("⚠️ Debes especificar el tipo de molienda");
         return;
       }
@@ -384,7 +524,10 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
         originalLotId: currentRoasted.originalLotId,
         quantityRoasted: currentRoasted.quantityRoasted,
         presentation: presentation,
-        grindSize: presentation === "MOLIDO" ? document.getElementById("grindSize").value : null,
+        grindSize:
+          presentation === "MOLIDO"
+            ? document.getElementById("grindSize").value
+            : null,
         packageSize: packageSize,
         unitCount: unitCount,
         acidity: acidity,
@@ -401,7 +544,9 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
       packaged.push(packageRecord);
       localStorage.setItem("packaged", JSON.stringify(packaged));
 
-      alert(`✅ Café preparado para venta\n${packageRecord.originalLotId}\n${unitCount} unidades de ${packageSize}`);
+      alert(
+        `✅ Café preparado para venta\n${packageRecord.originalLotId}\n${unitCount} unidades de ${packageSize}`
+      );
 
       form.reset();
       coffeeInfoCard.style.display = "none";
