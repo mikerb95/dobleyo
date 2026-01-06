@@ -12,16 +12,17 @@ import Head from "../components/Head.astro";
   <body class="bg-gray-50">
     <Header />
     
-    <div class="flex min-h-screen pt-32">
+    <!-- Sidebar + Main -->
+    <div class="flex pt-32 min-h-screen">
       <!-- Sidebar -->
-      <aside class="w-56 bg-white border-r border-gray-200 fixed h-full left-0 top-32 overflow-y-auto">
+      <aside class="w-56 bg-white border-r border-gray-200 flex-shrink-0 sticky top-32 h-fit">
         <nav class="p-4 space-y-1">
           <a href="/admin" class="block px-4 py-3 rounded text-gray-700 hover:bg-gray-100">Dashboard</a>
           <a href="/admin/inventario" class="block px-4 py-3 rounded text-gray-700 hover:bg-gray-100">Inventario</a>
           <a href="/admin/productos" class="block px-4 py-3 rounded text-gray-700 hover:bg-gray-100">Productos</a>
           <a href="/admin/lotes" class="block px-4 py-3 rounded text-gray-700 hover:bg-gray-100">Lotes</a>
         </nav>
-        <div class="p-4 border-t border-gray-200 mt-4">
+        <div class="p-4 border-t border-gray-200">
           <p class="text-sm text-gray-700 mb-3" id="adminName">Admin</p>
           <button id="logoutBtn" class="w-full px-3 py-2 text-sm bg-red-100 text-red-700 rounded hover:bg-red-200">
             Cerrar
@@ -30,7 +31,7 @@ import Head from "../components/Head.astro";
       </aside>
 
       <!-- Main -->
-      <main class="flex-1 ml-56 p-6">
+      <main class="flex-1 p-6">
         <slot />
       </main>
     </div>
