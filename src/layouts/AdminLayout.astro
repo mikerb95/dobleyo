@@ -1,0 +1,42 @@
+---
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import Head from "../components/Head.astro";
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <Head title="Admin - DobleYo" isAdmin={true} />
+  </head>
+  <body class="font-sans bg-cream text-ink">
+    <Header />
+
+    <main>
+      <slot />
+    </main>
+
+    <Footer />
+
+    <script>
+      // Utilidades de métricas para el header sticky
+      (function () {
+        const $ = (s, r = document) => r.querySelector(s);
+        const setHeaderMetrics = () => {
+          const headerCont = document.querySelector(".site-header .container");
+          // @ts-ignore
+          const hh = headerCont ? headerCont.offsetHeight : 96;
+          // Sin topbar en admin, top es 0
+          const top = 0;
+          const pageOffset = top + hh + 12;
+          const root = document.documentElement;
+          root.style.setProperty("--header-top", top + "px");
+          root.style.setProperty("--header-height", hh + "px");
+          root.style.setProperty("--page-offset-top", pageOffset + "px");
+        };
+        setHeaderMetrics();
+        window.addEventListener("resize", setHeaderMetrics);
+      })();
+    </script>
+  </body>
+</html>
