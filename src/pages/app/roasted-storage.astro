@@ -102,11 +102,13 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
         </div>
         <div>
           Por Contenedor: <span id="distPerContainer" style="font-weight: 600;"
-            >— kg</span>
+            >— kg</span
+          >
         </div>
         <div>
           Contenedores: <span id="distContainers" style="font-weight: 600;"
-            >—</span>
+            >—</span
+          >
         </div>
       </div>
     </div>
@@ -161,12 +163,14 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
         </div>
         <div>
           📍 Ubicación: <span id="summaryLocation" style="font-weight: 600;"
-            >—</span>
+            >—</span
+          >
         </div>
         <div>
           🏠 Contenedores: <span
             id="summaryContainers"
-            style="font-weight: 600;">—</span>
+            style="font-weight: 600;">—</span
+          >
         </div>
         <div>
           📅 Fecha: <span id="summaryDate" style="font-weight: 600;">—</span>
@@ -343,23 +347,20 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
       submitBtn.textContent = "Registrando...";
 
       try {
-        const response = await fetch(
-          "/api/coffee/roasted-storage",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              roastedId: currentRoasted.id,
-              location: location,
-              container: container,
-              containerCount: count,
-              conditions: conditions,
-              notes: document.getElementById("notes").value,
-            }),
-          }
-        );
+        const response = await fetch("/api/coffee/roasted-storage", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            roastedId: currentRoasted.id,
+            location: location,
+            container: container,
+            containerCount: count,
+            conditions: conditions,
+            notes: document.getElementById("notes").value,
+          }),
+        });
 
         if (!response.ok) {
           const error = await response.json();

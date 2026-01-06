@@ -265,20 +265,23 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
         </div>
         <div>
           ⚖️ Cantidad: <span id="summaryQuantity" style="font-weight: 600;"
-            >—</span>
+            >—</span
+          >
         </div>
         <div>
           📏 Presentación: <span
             id="summaryPresentation"
-            style="font-weight: 600;">—</span>
+            style="font-weight: 600;">—</span
+          >
         </div>
         <div>
-          🔢 Unidades: <span id="summaryUnits" style="font-weight: 600;"
-            >—</span>
+          🔢 Unidades: <span id="summaryUnits" style="font-weight: 600;">—</span
+          >
         </div>
         <div>
           ⭐ Puntuación: <span id="summaryScore" style="font-weight: 600;"
-            >—</span>
+            >—</span
+          >
         </div>
       </div>
     </div>
@@ -361,8 +364,7 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
       originInfo.style.display = "block";
 
       coffeeInfoCard.style.display = "block";
-      document.getElementById("packageQuantity").max =
-        currentRoasted.weight_kg;
+      document.getElementById("packageQuantity").max = currentRoasted.weight_kg;
       updateSummary();
     });
 

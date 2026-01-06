@@ -170,7 +170,8 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
         </div>
         <div>
           ⚖️ Peso Tostado: <span id="summaryWeight" style="font-weight: 600;"
-            >—</span>
+            >—</span
+          >
         </div>
         <div>
           📊 Pérdida: <span id="summaryLoss" style="font-weight: 600;">—</span>
@@ -202,7 +203,9 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
         if (!response.ok) throw new Error("Error al cargar lotes");
 
         const roastingLots = await response.json();
-        const inProcess = roastingLots.filter((r) => r.status === "in_roasting");
+        const inProcess = roastingLots.filter(
+          (r) => r.status === "in_roasting"
+        );
 
         roastingLotSelect.innerHTML =
           '<option value="">Selecciona un lote...</option>';
@@ -238,8 +241,7 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
           : "No especificada";
 
       roastingInfoCard.style.display = "block";
-      roastedWeightInput.max =
-        currentRoastingRecord.quantity_sent_kg * 0.95;
+      roastedWeightInput.max = currentRoastingRecord.quantity_sent_kg * 0.95;
       updateSummary();
     });
 
@@ -333,12 +335,9 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
             roastingId: currentRoastingRecord.id,
             roastLevel: roastLevel,
             roastedWeight: roastedWeight,
-            actualTemp:
-              document.getElementById("actualTemp").value || null,
-            roastTime:
-              document.getElementById("roastTime").value || null,
-            observations:
-              document.getElementById("observations").value,
+            actualTemp: document.getElementById("actualTemp").value || null,
+            roastTime: document.getElementById("roastTime").value || null,
+            observations: document.getElementById("observations").value,
           }),
         });
 
