@@ -36,6 +36,7 @@ Nueva tabla `sales_tracking` con los siguientes campos:
 Clase `MercadoLibreService` que proporciona:
 
 #### Métodos públicos:
+
 - `fetchOrders(sellerId)` - Obtiene órdenes del vendedor
 - `fetchOrderDetails(orderId)` - Obtiene detalles completos de una orden
 - `fetchShipment(shipmentId)` - Obtiene información de envío
@@ -45,6 +46,7 @@ Clase `MercadoLibreService` que proporciona:
 - `getSalesHeatmapData()` - Obtiene datos agregados por localidad
 
 #### Características especiales:
+
 - Base de coordenadas pre-cargada para principales ciudades argentinas
 - Fallback a Buenos Aires si la ciudad no existe
 - Manejo de errores robusto en cada nivel
@@ -52,13 +54,16 @@ Clase `MercadoLibreService` que proporciona:
 ### 3. **API Endpoints** (`server/routes/mercadolibre.js`)
 
 #### POST `/api/mercadolibre/sync`
+
 Sincroniza órdenes desde MercadoLibre a la BD local.
 
 **Requerimientos:**
+
 - Autenticación (usuario admin)
 - Variables de entorno: `ML_ACCESS_TOKEN`, `ML_SELLER_ID`
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -71,9 +76,11 @@ Sincroniza órdenes desde MercadoLibre a la BD local.
 ```
 
 #### GET `/api/mercadolibre/sales`
+
 Obtiene ventas guardadas con filtros y paginación.
 
 **Query params:**
+
 - `limit` (default: 50)
 - `offset` (default: 0)
 - `city` (opcional)
@@ -82,6 +89,7 @@ Obtiene ventas guardadas con filtros y paginación.
 - `dateTo` (opcional)
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -96,9 +104,11 @@ Obtiene ventas guardadas con filtros y paginación.
 ```
 
 #### GET `/api/mercadolibre/heatmap-data`
+
 Obtiene datos agregados por ciudad para el mapa de calor.
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -117,9 +127,11 @@ Obtiene datos agregados por ciudad para el mapa de calor.
 ```
 
 #### GET `/api/mercadolibre/stats`
+
 Obtiene estadísticas generales y top 10 ciudades.
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -139,6 +151,7 @@ Obtiene estadísticas generales y top 10 ciudades.
 ### 4. **Componente React: Tabla de Ventas** (`src/components/SalesTable.jsx`)
 
 Interfaz interactiva para:
+
 - Ver todas las ventas sincronizadas
 - Filtrar por ciudad, provincia, rango de fechas
 - Sincronizar nuevas ventas con un clic
@@ -148,6 +161,7 @@ Interfaz interactiva para:
 - Top 10 ciudades con más pedidos
 
 **Características:**
+
 - Actualización en tiempo real
 - Formateo de moneda local (ARS)
 - Estados con badges de color
@@ -158,6 +172,7 @@ Interfaz interactiva para:
 Visualización geográfica interactiva usando Leaflet:
 
 **Características:**
+
 - Círculos de tamaño proporcional al volumen de pedidos
 - Color gradual basado en intensidad de ventas:
   - 🔴 Rojo oscuro: 80%+ del máximo
@@ -173,11 +188,13 @@ Visualización geográfica interactiva usando Leaflet:
 ### 6. **Páginas Astro**
 
 #### `/admin/` - Panel principal
+
 - Card de "Ventas MercadoLibre" + acceso directo a tabla
 - Card de "Mapa de Ventas" + acceso al mapa
 - Tabla de ventas integrada en scroll
 
 #### `/admin/sales-map` - Página dedicada
+
 - Mapa de calor en tamaño completo
 - Estadísticas detalladas
 - Guía de uso interactiva
@@ -285,15 +302,15 @@ Los productos se guardan como JSON en el campo `products`:
     "id": "MLC123456789",
     "title": "Café Dobleyo - Tostado Medio 250g",
     "quantity": 2,
-    "unit_price": 350.00,
-    "full_price": 700.00
+    "unit_price": 350.0,
+    "full_price": 700.0
   },
   {
     "id": "MLC987654321",
     "title": "Café Dobleyo - Tostado Oscuro 500g",
     "quantity": 1,
-    "unit_price": 600.00,
-    "full_price": 600.00
+    "unit_price": 600.0,
+    "full_price": 600.0
   }
 ]
 ```

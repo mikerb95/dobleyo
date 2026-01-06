@@ -62,15 +62,18 @@ Sigue estos pasos:
 2. **Inicia sesión con tu cuenta de vendedor**
 
 3. **Crea una aplicación nueva (o usa una existente):**
+
    - Nombre: "DobleYo Sales Integration"
    - Tipo: "Web application"
 
 4. **En la sección "Settings" o "OAuth":**
+
    - Autoriza los scopes:
      - `orders:read` (para leer órdenes)
      - `shipments:read` (para leer envíos)
 
 5. **Genera Access Token:**
+
    - Haz click en "Generate tokens" o similar
    - Copia el Access Token
    - Úsalo en `.env` como `ML_ACCESS_TOKEN`
@@ -94,10 +97,12 @@ npm run server
 ### 6. Acceder a la interfaz
 
 1. **Panel admin:**
+
    - Ve a `http://localhost:3000/admin` (o tu URL)
    - Debe mostrarse la sección "Ventas MercadoLibre"
 
 2. **Primera sincronización:**
+
    - Haz clic en el botón "🔄 Sincronizar ventas"
    - Espera a que finalice
    - Verás el resultado en pantalla
@@ -126,21 +131,27 @@ npm run server
 ### 🐛 Si algo falla
 
 1. **Error en sincronización:**
+
    ```
    "MercadoLibre credentials not configured"
    ```
+
    → Verifica `ML_ACCESS_TOKEN` y `ML_SELLER_ID` en `.env`
 
 2. **Tabla no existe:**
+
    ```
    SQL Error: Table 'sales_tracking' doesn't exist
    ```
+
    → Ejecuta el comando SQL de la sección 2
 
 3. **Módulo 'leaflet' no encontrado:**
+
    ```
    npm ERR! Can't find module 'leaflet'
    ```
+
    → Ejecuta `npm install leaflet`
 
 4. **Mapa en blanco sin datos:**
@@ -151,14 +162,17 @@ npm run server
 ## Próximos Pasos (Opcionales)
 
 1. **Sincronización automática:**
+
    - Implementar cron job cada 6 horas
    - O usar servidor de colas (Bull, Bee-Queue)
 
 2. **Notificaciones:**
+
    - Email cuando llega orden de región específica
    - Webhook a Slack/Discord
 
 3. **Análisis avanzado:**
+
    - Gráficos de tendencias temporales
    - Predicción de demanda
 
