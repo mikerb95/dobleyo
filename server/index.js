@@ -57,11 +57,6 @@ app.get('/api/debug-env', (req, res) => {
   });
 });
 
-// Directorio de estaticos: carpeta dist (generada por astro build)
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const staticDir = path.resolve(__dirname, '../dist');
-app.use(express.static(staticDir));
-
 // Salud
 app.get('/api/health', (req, res) => res.json({ status: 'ok', time: new Date().toISOString() }));
 
@@ -101,6 +96,17 @@ app.get('/api/order/:ref', (req, res) => {
 });
 
 const PORT = process.env.PORT || 4000;
+
+// Directorio de estaticos: carpeta dist (generada por astro build)
+// DESPUÉS de todas las rutas API
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const staticDir = path.resolve(__dirname, '../dist');
+app.use(express.static(staticDir));
+
+// Fallback: servir index.html para SPA
+app.get('*', (req, res) => {
+  res.sendFile(path.resolve(staticDir, 'index.html'));
+});
 
 // Only start server if explicitly requested via START_SERVER env var
 // This prevents Vercel from trying to bind ports during module loading
