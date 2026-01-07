@@ -383,32 +383,37 @@ main.container{ padding-top: calc(var(--header-top, 0px) + var(--header-height, 
 
 /* (modo compacto eliminado) */
 
-/* Seccion de cafes en venta */
-.coffee-shop{ padding: 4rem 0; background: linear-gradient(to bottom, var(--cream) 0%, #faf8f5 100%); }
-.coffee-shop-title{ font-size: 2.5rem; text-align: center; margin: 0 0 .5rem; color: var(--coffee); }
-.coffee-shop-subtitle{ text-align: center; font-size: 1.1rem; color: var(--muted); margin: 0 0 3rem; }
-.coffee-grid{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 2rem; margin-bottom: 3rem; }
-.coffee-card{ background: var(--card); border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,.08); transition: transform .3s ease, box-shadow .3s ease; }
-.coffee-card:hover{ transform: translateY(-8px); box-shadow: 0 8px 24px rgba(0,0,0,.15); }
-.coffee-img-wrapper{ position: relative; width: 100%; aspect-ratio: 1; overflow: hidden; }
-.coffee-img{ width: 100%; height: 100%; object-fit: cover; transition: transform .3s ease; }
-.coffee-card:hover .coffee-img{ transform: scale(1.05); }
-.coffee-badge{ position: absolute; top: 12px; right: 12px; background: rgba(37,26,20,.9); color: #fff; padding: .4rem .8rem; border-radius: 20px; font-size: .75rem; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; }
+/* Seccion de cafes en venta - Franja horizontal */
+.coffee-shop{ padding: 3rem 0; background: var(--bg); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.coffee-shop-header{ display: flex; justify-content: space-between; align-items: center; max-width: var(--page-width); margin: 0 auto; padding: 0 2rem 1.5rem; }
+.coffee-shop-title{ font-size: 1.8rem; margin: 0; color: var(--coffee); }
+.coffee-shop-link{ color: var(--accent); text-decoration: none; font-weight: 600; font-size: 1rem; transition: opacity .2s ease; }
+.coffee-shop-link:hover{ opacity: .8; }
+.coffee-scroll{ display: flex; gap: 1.5rem; overflow-x: auto; padding: 0 2rem 1rem; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; }
+.coffee-scroll::-webkit-scrollbar{ height: 8px; }
+.coffee-scroll::-webkit-scrollbar-track{ background: rgba(0,0,0,.05); border-radius: 10px; }
+.coffee-scroll::-webkit-scrollbar-thumb{ background: var(--accent); border-radius: 10px; }
+.coffee-scroll::-webkit-scrollbar-thumb:hover{ background: #b06b43; }
+.coffee-card{ position: relative; flex: 0 0 280px; background: var(--card); border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,.08); transition: transform .3s ease, box-shadow .3s ease; padding: 1.2rem; }
+.coffee-card:hover{ transform: translateY(-4px); box-shadow: 0 6px 20px rgba(0,0,0,.12); }
+.coffee-img{ width: 100%; height: 200px; object-fit: cover; border-radius: 8px; margin-bottom: 1rem; }
+.coffee-badge{ position: absolute; top: 1.6rem; right: 1.6rem; background: rgba(37,26,20,.92); color: #fff; padding: .3rem .7rem; border-radius: 15px; font-size: .7rem; font-weight: 600; text-transform: uppercase; letter-spacing: .3px; }
 .coffee-badge.best-seller{ background: linear-gradient(135deg, #c67b4e 0%, #a86240 100%); }
-.coffee-content{ padding: 1.5rem; }
-.coffee-name{ font-size: 1.5rem; margin: 0 0 .5rem; color: var(--coffee); font-weight: 600; }
-.coffee-origin{ font-size: .9rem; color: var(--muted); margin: 0 0 .8rem; }
-.coffee-notes{ font-size: .95rem; color: var(--fg); margin: 0 0 1.2rem; line-height: 1.5; }
+.coffee-name{ font-size: 1.25rem; margin: 0 0 .5rem; color: var(--coffee); font-weight: 600; }
+.coffee-notes{ font-size: .9rem; color: var(--muted); margin: 0 0 1rem; line-height: 1.4; }
 .coffee-footer{ display: flex; justify-content: space-between; align-items: center; }
-.coffee-price{ font-size: 1.3rem; font-weight: 700; color: var(--coffee); }
-.btn-add{ width: 44px; height: 44px; border-radius: 50%; background: var(--accent); color: var(--accent-contrast); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 700; border: none; cursor: pointer; transition: all .3s ease; box-shadow: 0 2px 8px rgba(198,123,78,.3); }
-.btn-add:hover{ background: #d88a5f; transform: scale(1.1); box-shadow: 0 4px 16px rgba(198,123,78,.4); }
-.coffee-cta{ text-align: center; }
+.coffee-price{ font-size: 1.15rem; font-weight: 700; color: var(--coffee); }
+.btn-add{ width: 40px; height: 40px; border-radius: 50%; background: var(--accent); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; font-weight: 700; border: none; cursor: pointer; transition: all .2s ease; }
+.btn-add:hover{ background: #d88a5f; transform: scale(1.08); }
 
 /* Responsive para cafes */
-@media (max-width: 1200px){ .coffee-grid{ grid-template-columns: repeat(3, 1fr); } }
-@media (max-width: 900px){ .coffee-grid{ grid-template-columns: repeat(2, 1fr); gap: 1.5rem; } .coffee-shop-title{ font-size: 2rem; } }
-@media (max-width: 640px){ .coffee-grid{ grid-template-columns: 1fr; } .coffee-shop{ padding: 3rem 0; } }
+@media (max-width: 768px){ 
+  .coffee-shop-header{ padding: 0 1rem 1rem; }
+  .coffee-scroll{ padding: 0 1rem 1rem; gap: 1rem; }
+  .coffee-card{ flex: 0 0 240px; padding: 1rem; }
+  .coffee-img{ height: 160px; }
+  .coffee-shop-title{ font-size: 1.5rem; }
+}
 
 /* Destacados: ocupa 1/3 de la altura de la pagina */
 .featured{ position:relative; margin:2rem 0 0; min-height: calc(100vh / 3); }
