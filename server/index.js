@@ -15,6 +15,7 @@ import { coffeeRouter } from './routes/coffee.js';
 import { mercadolibreRouter } from './routes/mercadolibre.js';
 import { inventoryRouter } from './routes/inventory.js';
 import { emailRouter } from './routes/emails.js';
+import { publicProductsRouter } from './routes/public-products.js';
 
 const app = express();
 
@@ -41,6 +42,8 @@ app.use('/api/coffee', coffeeRouter);
 app.use('/api/mercadolibre', mercadolibreRouter);
 app.use('/api/inventory', inventoryRouter);
 app.use('/api/emails', emailRouter);
+// Ruta pública para productos (sin autenticación)
+app.use('/api/products', publicProductsRouter);
 
 // Debug endpoint to check environment variables (safe version)
 app.get('/api/debug-env', (req, res) => {

@@ -21,6 +21,11 @@ export default function CoffeeDetail({ product, profile }) {
     }).format(price);
   };
 
+  // Compatibilidad con ambos formatos de producto (BD y estático)
+  const productImage = product.image_url || product.image;
+  const productOrigin = product.origin || product.subcategory;
+  const productPrice = typeof product.price === 'number' ? product.price : parseInt(product.price) || 0;
+
   const handleAddToCart = () => {
     // Lógica para agregar al carrito
     console.log('Agregando al carrito:', { product, quantity, grind: selectedGrind });
@@ -56,7 +61,7 @@ export default function CoffeeDetail({ product, profile }) {
         {/* Imagen Principal */}
         <motion.div className="image-section" variants={itemVariants}>
           <div className="main-image">
-            <img src={product.image} alt={product.name} />
+            <img src={productImage} alt={product.name} />
             {product.deal && (
               <span className="deal-badge">Oferta</span>
             )}
@@ -84,7 +89,7 @@ export default function CoffeeDetail({ product, profile }) {
 
           <div className="origin-info">
             <MapPin size={18} />
-            <span>{product.origin}</span>
+            <span>{productOrigin}</span>
           </div>
 
           <div className="rating-price">
@@ -101,7 +106,7 @@ export default function CoffeeDetail({ product, profile }) {
               </div>
               <span>{product.rating} / 5.0</span>
             </div>
-            <div className="price">{formatPrice(product.price)}</div>
+            <div className="price">{formatPrice(productPrice)}</div>
           </div>
 
           {/* Información de Proceso */}
@@ -223,15 +228,21 @@ export default function CoffeeDetail({ product, profile }) {
       {/* Descripción */}
       <motion.div className="description-section" variants={itemVariants}>
         <h2>Descripción</h2>
-        <p>
-          Un café excepcional de {product.origin}, cultivado a {profile.altitude} por {profile.producer} en {profile.farm}.
-          Procesado mediante el método {product.process.toLowerCase()} y tostado a un nivel {product.roast.toLowerCase()}, 
-          este café ofrece una experiencia sensorial única con notas de {profile.flavorNotes.toLowerCase()}.
-        </p>
-        <p>
-          Ideal para quienes buscan un café con {profile.body.toLowerCase()} y {profile.acidity.toLowerCase()}, 
-          perfecto para disfrutar en cualquier momento del día.
-        </p>
+        {product.description ? (
+          <p>{product.description}</p>
+        ) : (
+          <>
+            <p>
+              Un café excepcional de {productOrigin}, cultivado a {profile.altitude} por {profile.producer} en {profile.farm}.
+              Procesado mediante el método {(product.process || profile.process).toLowerCase()} y tostado a un nivel {(product.roast || profile.roast).toLowerCase()}, 
+              este café ofrece una experiencia sensorial única con notas de {profile.flavorNotes.toLowerCase()}.
+            </p>
+            <p>
+              Ideal para quienes buscan un café con {profile.body.toLowerCase()} y {profile.acidity.toLowerCase()}, 
+              perfecto para disfrutar en cualquier momento del día.
+            </p>
+          </>
+        )}
       </motion.div>
     </motion.div>
   );

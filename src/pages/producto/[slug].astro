@@ -26,56 +26,30 @@ let accessoryDetails = null;
 
 try {
   // Intentar obtener producto de la BD
-  const response = await fetch(`${API_URL}/inventory/products/${slug}`, {
-    headers: {
-      "Content-Type": "application/json",
-      // TODO: Agregar token de autenticación si es necesario
-    },
-  });
+  const response = await fetch(`${API_URL}/products/${slug}`);
 
   if (response.ok) {
     const data = await response.json();
-    if (data.success) {
+    if (data.success && data.product) {
       product = data.product;
 
-      // Si el producto es café, buscar información del lote asociado
-      if (product.category === "cafe" && product.id) {
-        try {
-          const lotResponse = await fetch(
-            `${API_URL}/lots?product_id=${product.id}`,
-            {
-              headers: {
-                "Content-Type": "application/json",
-              },
-            }
-          );
-
-          if (lotResponse.ok) {
-            const lotData = await lotResponse.json();
-            if (lotData.lots && lotData.lots.length > 0) {
-              const lot = lotData.lots[0]; // Tomar el primer lote
-
-              // Construir perfil de taza desde la BD
-              coffeeProfile = {
-                aroma: lot.aroma || "Notas aromáticas características",
-                flavorNotes: lot.flavor_notes || "Perfil de sabor único",
-                acidity: lot.acidity || "Acidez balanceada",
-                body: lot.body || "Cuerpo medio",
-                balance: lot.balance || "Equilibrado",
-                score: lot.score || product.rating * 20,
-                altitude: lot.altitude || "Alta montaña",
-                variety: lot.variety || "Variedad especial",
-                farm: lot.farm || "Finca productora",
-                producer: lot.producer || "Productor local",
-                process:
-                  lot.process || product.process || "Procesamiento especial",
-                roast: lot.roast || product.roast || "Tueste artesanal",
-              };
-            }
-          }
-        } catch (lotError) {
-          console.error("Error fetching lot data:", lotError);
-        }
+      // Si hay información del lote (para cafés), construir perfil de taza
+      if (data.lot) {
+        const lot = data.lot;
+        coffeeProfile = {
+          aroma: lot.aroma || "Notas aromáticas características",
+          flavorNotes: lot.flavor_notes || "Perfil de sabor único",
+          acidity: lot.acidity || "Acidez balanceada",
+          body: lot.body || "Cuerpo medio",
+          balance: lot.balance || "Equilibrado",
+          score: lot.score || product.rating * 20,
+          altitude: lot.altitude || "Alta montaña",
+          variety: lot.variety || "Variedad especial",
+          farm: lot.farm || "Finca productora",
+          producer: lot.producer || "Productor local",
+          process: lot.process || product.process || "Procesamiento especial",
+          roast: lot.roast || product.roast || "Tueste artesanal",
+        };
       }
     }
   }

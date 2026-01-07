@@ -6,11 +6,15 @@ export default function AccessoryDetail({ product, details }) {
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
 
+  // Compatibilidad con ambos formatos de producto (BD y estático)
+  const productImage = product.image_url || product.image;
+  const productPrice = typeof product.price === 'number' ? product.price : parseInt(product.price) || 0;
+
   // Para demo, creamos imágenes adicionales (en producción vendrían de la BD)
   const images = [
-    product.image,
-    product.image,
-    product.image,
+    productImage,
+    productImage,
+    productImage,
   ];
 
   const formatPrice = (price) => {
@@ -104,10 +108,10 @@ export default function AccessoryDetail({ product, details }) {
           </div>
 
           <div className="price-section">
-            <div className="price">{formatPrice(product.price)}</div>
+            <div className="price">{formatPrice(productPrice)}</div>
             {product.deal && (
               <div className="savings">
-                <span className="old-price">{formatPrice(product.price * 1.2)}</span>
+                <span className="old-price">{formatPrice(productPrice * 1.2)}</span>
                 <span className="discount">Ahorra 20%</span>
               </div>
             )}
