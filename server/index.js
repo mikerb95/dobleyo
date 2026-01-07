@@ -13,6 +13,7 @@ import { setupRouter } from './routes/setup.js';
 import { coffeeRouter } from './routes/coffee.js';
 import { mercadolibreRouter } from './routes/mercadolibre.js';
 import { inventoryRouter } from './routes/inventory.js';
+import { emailRouter } from './routes/emails.js';
 
 const app = express();
 
@@ -37,6 +38,7 @@ app.use('/api/setup', setupRouter);
 app.use('/api/coffee', coffeeRouter);
 app.use('/api/mercadolibre', mercadolibreRouter);
 app.use('/api/inventory', inventoryRouter);
+app.use('/api/emails', emailRouter);
 
 // Debug endpoint to check environment variables (safe version)
 app.get('/api/debug-env', (req, res) => {
