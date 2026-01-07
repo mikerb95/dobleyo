@@ -274,7 +274,9 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
         }
 
         if (!response.ok) {
-          throw new Error(data.error || data.message || "Error al registrar lote");
+          throw new Error(
+            data.error || data.message || "Error al registrar lote"
+          );
         }
 
         const lotId = data.lotId;
