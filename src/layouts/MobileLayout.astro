@@ -348,6 +348,41 @@ const { title, description } = Astro.props;
     </div>
 
     <script>
+      // Haptic Feedback - Vibración al interactuar
+      const hapticFeedback = (pattern = 20) => {
+        if (navigator.vibrate) {
+          navigator.vibrate(pattern);
+        }
+      };
+
+      // Vibración en botones
+      document.querySelectorAll("button").forEach((button) => {
+        button.addEventListener("click", () => {
+          hapticFeedback(15);
+        });
+      });
+
+      // Vibración en radio buttons y checkboxes
+      document.querySelectorAll('input[type="radio"], input[type="checkbox"]').forEach((input) => {
+        input.addEventListener("change", () => {
+          hapticFeedback([10, 5, 10]);
+        });
+      });
+
+      // Vibración en selects
+      document.querySelectorAll("select").forEach((select) => {
+        select.addEventListener("change", () => {
+          hapticFeedback([10, 5, 10]);
+        });
+      });
+
+      // Vibración leve en inputs de texto
+      document.querySelectorAll('input[type="text"], input[type="number"], input[type="email"], textarea').forEach((input) => {
+        input.addEventListener("focus", () => {
+          hapticFeedback(5);
+        });
+      });
+
       // Mantener scroll position
       const savedScrollPos = sessionStorage.getItem("scrollPos");
       if (savedScrollPos !== null) {
