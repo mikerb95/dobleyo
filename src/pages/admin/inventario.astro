@@ -3,20 +3,1283 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 ---
 
 <AdminLayout>
-  <div
-    class="container"
-    style="padding-top: calc(var(--header-height, 120px) + 2rem); padding-bottom: 4rem;"
-  >
-    <h1>Inventario</h1>
+  <div class="admin-inventory">
+    <!-- Header con estadísticas -->
+    <section class="inventory-header">
+      <div class="container">
+        <div class="header-top">
+          <h1>Gestión de Inventario</h1>
+          <div class="header-actions">
+            <button id="btnRefresh" class="btn-secondary" title="Actualizar">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <polyline points="23 4 23 10 17 10"></polyline>
+                <polyline points="1 20 1 14 7 14"></polyline>
+                <path
+                  d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"
+                ></path>
+              </svg>
+            </button>
+            <button id="btnAddProduct" class="btn-primary">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              Nuevo Producto
+            </button>
+          </div>
+        </div>
 
-    <div class="card p-4">
-      <p class="muted">
-        Aquí se mostrará el inventario actual de café (Verde y Tostado).
-      </p>
-      <!-- TODO: Tabla de inventario -->
-      <a href="/admin" style="display: inline-block; margin-top: 1rem;"
-        >&larr; Volver al Dashboard</a
-      >
+        <!-- Stats Cards -->
+        <div class="stats-grid" id="statsGrid">
+          <div class="stat-card">
+            <div class="stat-label">Total Productos</div>
+            <div class="stat-value" id="statTotalProducts">-</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Valor Inventario</div>
+            <div class="stat-value" id="statTotalValue">-</div>
+          </div>
+          <div class="stat-card alert">
+            <div class="stat-label">Stock Bajo</div>
+            <div class="stat-value" id="statLowStock">-</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Movimientos (7d)</div>
+            <div class="stat-value" id="statMovements">-</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Filtros y búsqueda -->
+    <section class="inventory-filters">
+      <div class="container">
+        <div class="filters-row">
+          <div class="search-box">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
+            <input
+              type="text"
+              id="searchInput"
+              placeholder="Buscar por nombre, SKU o descripción..."
+            />
+          </div>
+
+          <select id="filterCategory" class="filter-select">
+            <option value="">Todas las categorías</option>
+            <option value="cafe">Café</option>
+            <option value="accesorio">Accesorio</option>
+            <option value="merchandising">Merchandising</option>
+          </select>
+
+          <select id="filterActive" class="filter-select">
+            <option value="">Todos los estados</option>
+            <option value="true">Activos</option>
+            <option value="false">Inactivos</option>
+          </select>
+
+          <select id="sortBy" class="filter-select">
+            <option value="name">Nombre</option>
+            <option value="stock_quantity">Stock</option>
+            <option value="price">Precio</option>
+            <option value="created_at">Fecha creación</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tabla de productos -->
+    <section class="inventory-table-section">
+      <div class="container">
+        <div class="table-container">
+          <table class="inventory-table" id="productsTable">
+            <thead>
+              <tr>
+                <th>Imagen</th>
+                <th>ID/SKU</th>
+                <th>Nombre</th>
+                <th>Categoría</th>
+                <th class="text-right">Precio</th>
+                <th class="text-right">Stock</th>
+                <th class="text-center">Estado</th>
+                <th class="text-center">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="productsTableBody">
+              <tr>
+                <td colspan="8" class="text-center loading">
+                  <div class="spinner"></div>
+                  Cargando productos...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Modal: Nuevo/Editar Producto -->
+  <div id="productModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modalTitle">Nuevo Producto</h2>
+        <button class="modal-close" id="modalClose">&times;</button>
+      </div>
+
+      <form id="productForm">
+        <input type="hidden" id="productId" />
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="productName"
+              >Nombre <span class="required">*</span></label
+            >
+            <input type="text" id="productName" required />
+          </div>
+
+          <div class="form-group">
+            <label for="productSku">SKU</label>
+            <input type="text" id="productSku" placeholder="Ej: ACC-001" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="productDescription">Descripción</label>
+          <textarea id="productDescription" rows="3"></textarea>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="productCategory"
+              >Categoría <span class="required">*</span></label
+            >
+            <select id="productCategory" required>
+              <option value="">Selecciona...</option>
+              <option value="cafe">Café</option>
+              <option value="accesorio">Accesorio</option>
+              <option value="merchandising">Merchandising</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="productSubcategory">Subcategoría</label>
+            <input
+              type="text"
+              id="productSubcategory"
+              placeholder="Ej: Prensa, Chemex, V60..."
+            />
+          </div>
+        </div>
+
+        <!-- Campos específicos para café -->
+        <div id="coffeeFields" style="display: none;">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="productOrigin">Origen</label>
+              <input
+                type="text"
+                id="productOrigin"
+                placeholder="Ej: Huila, Nariño..."
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="productProcess">Proceso</label>
+              <input
+                type="text"
+                id="productProcess"
+                placeholder="Ej: Lavado, Honey..."
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="productRoast">Tueste</label>
+              <input
+                type="text"
+                id="productRoast"
+                placeholder="Ej: Claro, Medio..."
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="productPrice"
+              >Precio (COP) <span class="required">*</span></label
+            >
+            <input type="number" id="productPrice" required min="0" />
+          </div>
+
+          <div class="form-group">
+            <label for="productCost">Costo</label>
+            <input type="number" id="productCost" min="0" />
+          </div>
+
+          <div class="form-group">
+            <label for="productStockMin">Stock Mínimo</label>
+            <input type="number" id="productStockMin" min="0" value="0" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="productWeight">Peso</label>
+            <input type="number" id="productWeight" step="0.01" min="0" />
+          </div>
+
+          <div class="form-group">
+            <label for="productWeightUnit">Unidad</label>
+            <select id="productWeightUnit">
+              <option value="g">Gramos (g)</option>
+              <option value="kg">Kilogramos (kg)</option>
+              <option value="ml">Mililitros (ml)</option>
+              <option value="l">Litros (l)</option>
+              <option value="unidad">Unidad</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="productImageUrl">URL Imagen</label>
+            <input type="url" id="productImageUrl" placeholder="https://..." />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="productActive" checked />
+            Producto activo (visible en tienda)
+          </label>
+        </div>
+
+        <div class="form-row checkbox-row">
+          <label class="checkbox-label">
+            <input type="checkbox" id="productDeal" />
+            En oferta
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="productNew" />
+            Novedad
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="productBestseller" />
+            Más vendido
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="productFast" />
+            Entrega rápida
+          </label>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" id="btnCancel"
+            >Cancelar</button
+          >
+          <button type="submit" class="btn-primary" id="btnSave">Guardar</button
+          >
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Movimiento de Stock -->
+  <div id="movementModal" class="modal">
+    <div class="modal-content modal-small">
+      <div class="modal-header">
+        <h2>Movimiento de Stock</h2>
+        <button class="modal-close" id="movementModalClose">&times;</button>
+      </div>
+
+      <form id="movementForm">
+        <input type="hidden" id="movementProductId" />
+
+        <div class="form-group">
+          <label>Producto</label>
+          <div id="movementProductName" class="readonly-field"></div>
+          <div class="form-hint">
+            Stock actual: <strong id="movementCurrentStock">-</strong>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="movementType"
+            >Tipo de movimiento <span class="required">*</span></label
+          >
+          <select id="movementType" required>
+            <option value="entrada">Entrada (compra, producción)</option>
+            <option value="salida">Salida (venta, uso)</option>
+            <option value="ajuste">Ajuste (corrección)</option>
+            <option value="merma">Merma (pérdida)</option>
+            <option value="devolucion">Devolución</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="movementQuantity"
+            >Cantidad <span class="required">*</span></label
+          >
+          <input type="number" id="movementQuantity" required min="1" />
+        </div>
+
+        <div class="form-group">
+          <label for="movementReason">Motivo</label>
+          <input
+            type="text"
+            id="movementReason"
+            placeholder="Ej: Compra a proveedor, venta online..."
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="movementReference">Referencia</label>
+          <input
+            type="text"
+            id="movementReference"
+            placeholder="Nº factura, pedido, etc."
+          />
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" id="btnCancelMovement"
+            >Cancelar</button
+          >
+          <button type="submit" class="btn-primary">Registrar</button>
+        </div>
+      </form>
     </div>
   </div>
 </AdminLayout>
+
+<style>
+  .admin-inventory {
+    min-height: 100vh;
+    background: #f5f1e8;
+    padding-top: calc(var(--header-height, 120px) + 2rem);
+    padding-bottom: 4rem;
+  }
+
+  .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+  }
+
+  /* Header */
+  .inventory-header {
+    margin-bottom: 2rem;
+  }
+
+  .header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+
+  .header-top h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0;
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 0.75rem;
+  }
+
+  /* Stats Grid */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+  }
+
+  .stat-card {
+    background: white;
+    padding: 1.25rem;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  .stat-card.alert {
+    background: #fff5f5;
+    border-left: 4px solid #e53e3e;
+  }
+
+  .stat-label {
+    font-size: 0.875rem;
+    color: #666;
+    margin-bottom: 0.5rem;
+  }
+
+  .stat-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #1a1a1a;
+  }
+
+  /* Filters */
+  .inventory-filters {
+    background: white;
+    padding: 1.25rem 0;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  .filters-row {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .search-box {
+    flex: 1;
+    min-width: 250px;
+    position: relative;
+  }
+
+  .search-box svg {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #666;
+  }
+
+  .search-box input {
+    width: 100%;
+    padding: 0.75rem 0.75rem 0.75rem 2.75rem;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 0.95rem;
+  }
+
+  .filter-select {
+    padding: 0.75rem 1rem;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    background: white;
+    cursor: pointer;
+  }
+
+  /* Table */
+  .table-container {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  .inventory-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .inventory-table thead {
+    background: #8b6f47;
+    color: white;
+  }
+
+  .inventory-table th {
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .inventory-table td {
+    padding: 1rem;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  .inventory-table tbody tr:hover {
+    background: #fafafa;
+  }
+
+  .product-img {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 6px;
+  }
+
+  .product-id-cell {
+    font-family: "Courier New", monospace;
+    font-size: 0.85rem;
+  }
+
+  .product-sku {
+    color: #666;
+    font-size: 0.8rem;
+  }
+
+  .category-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 500;
+  }
+
+  .category-cafe {
+    background: #e6f4ea;
+    color: #1e7e34;
+  }
+  .category-accesorio {
+    background: #e3f2fd;
+    color: #1565c0;
+  }
+  .category-merchandising {
+    background: #fce4ec;
+    color: #c2185b;
+  }
+
+  .stock-badge {
+    display: inline-block;
+    padding: 0.375rem 0.75rem;
+    border-radius: 6px;
+    font-weight: 600;
+  }
+
+  .stock-ok {
+    background: #e6f4ea;
+    color: #1e7e34;
+  }
+  .stock-low {
+    background: #fff3cd;
+    color: #856404;
+  }
+  .stock-out {
+    background: #f8d7da;
+    color: #721c24;
+  }
+
+  .status-badge {
+    display: inline-block;
+    padding: 0.375rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+  }
+
+  .status-active {
+    background: #e6f4ea;
+    color: #1e7e34;
+  }
+  .status-inactive {
+    background: #f0f0f0;
+    color: #666;
+  }
+
+  .text-right {
+    text-align: right;
+  }
+  .text-center {
+    text-align: center;
+  }
+
+  /* Buttons */
+  .btn-primary,
+  .btn-secondary,
+  .btn-icon {
+    padding: 0.625rem 1.25rem;
+    border-radius: 6px;
+    font-weight: 500;
+    font-size: 0.95rem;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+  }
+
+  .btn-primary {
+    background: #8b6f47;
+    color: white;
+  }
+
+  .btn-primary:hover {
+    background: #6d5636;
+  }
+
+  .btn-secondary {
+    background: #f0f0f0;
+    color: #333;
+  }
+
+  .btn-secondary:hover {
+    background: #e0e0e0;
+  }
+
+  .btn-icon {
+    padding: 0.5rem;
+    background: transparent;
+  }
+
+  .btn-icon:hover {
+    background: #f0f0f0;
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+  }
+
+  /* Modal */
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    overflow-y: auto;
+  }
+
+  .modal.active {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 2rem;
+  }
+
+  .modal-content {
+    background: white;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 800px;
+    margin: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  }
+
+  .modal-content.modal-small {
+    max-width: 500px;
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid #e0e0e0;
+  }
+
+  .modal-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+  }
+
+  .modal-close {
+    background: transparent;
+    border: none;
+    font-size: 2rem;
+    cursor: pointer;
+    color: #666;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+  }
+
+  .modal-close:hover {
+    background: #f0f0f0;
+  }
+
+  #productForm,
+  #movementForm {
+    padding: 1.5rem;
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .form-row.checkbox-row {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+
+  .form-group {
+    margin-bottom: 1rem;
+  }
+
+  .form-group label {
+    display: block;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: #333;
+  }
+
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-family: inherit;
+  }
+
+  .form-group textarea {
+    resize: vertical;
+  }
+
+  .form-hint {
+    font-size: 0.85rem;
+    color: #666;
+    margin-top: 0.25rem;
+  }
+
+  .required {
+    color: #e53e3e;
+  }
+
+  .checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    font-weight: 400;
+  }
+
+  .checkbox-label input[type="checkbox"] {
+    width: auto;
+    cursor: pointer;
+  }
+
+  .readonly-field {
+    padding: 0.75rem;
+    background: #f5f5f5;
+    border-radius: 6px;
+    font-weight: 600;
+  }
+
+  .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e0e0e0;
+  }
+
+  /* Loading & Empty States */
+  .loading {
+    padding: 3rem !important;
+    color: #666;
+  }
+
+  .spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid #f0f0f0;
+    border-top-color: #8b6f47;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 1rem;
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .header-top {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+
+    .filters-row {
+      flex-direction: column;
+    }
+
+    .search-box {
+      width: 100%;
+    }
+
+    .filter-select {
+      width: 100%;
+    }
+
+    .inventory-table {
+      font-size: 0.875rem;
+    }
+
+    .inventory-table th,
+    .inventory-table td {
+      padding: 0.75rem 0.5rem;
+    }
+
+    .modal.active {
+      padding: 1rem;
+    }
+
+    .form-row {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<script>
+  const API_BASE = "/api/inventory";
+
+  let products = [];
+  let editingProductId = null;
+
+  // Elements
+  const productsTableBody = document.getElementById("productsTableBody");
+  const productModal = document.getElementById("productModal");
+  const movementModal = document.getElementById("movementModal");
+  const productForm = document.getElementById("productForm");
+  const movementForm = document.getElementById("movementForm");
+  const searchInput = document.getElementById("searchInput");
+  const filterCategory = document.getElementById("filterCategory");
+  const filterActive = document.getElementById("filterActive");
+  const sortBy = document.getElementById("sortBy");
+
+  // Initialize
+  loadDashboardStats();
+  loadProducts();
+
+  // Event Listeners
+  document.getElementById("btnRefresh").addEventListener("click", () => {
+    loadDashboardStats();
+    loadProducts();
+  });
+
+  document.getElementById("btnAddProduct").addEventListener("click", () => {
+    openProductModal();
+  });
+
+  document
+    .getElementById("modalClose")
+    .addEventListener("click", closeProductModal);
+  document
+    .getElementById("btnCancel")
+    .addEventListener("click", closeProductModal);
+  document
+    .getElementById("movementModalClose")
+    .addEventListener("click", closeMovementModal);
+  document
+    .getElementById("btnCancelMovement")
+    .addEventListener("click", closeMovementModal);
+
+  productForm.addEventListener("submit", handleProductSubmit);
+  movementForm.addEventListener("submit", handleMovementSubmit);
+
+  searchInput.addEventListener("input", debounce(loadProducts, 300));
+  filterCategory.addEventListener("change", loadProducts);
+  filterActive.addEventListener("change", loadProducts);
+  sortBy.addEventListener("change", loadProducts);
+
+  // Category change handler - show/hide coffee fields
+  document.getElementById("productCategory").addEventListener("change", (e) => {
+    const coffeeFields = document.getElementById("coffeeFields");
+    coffeeFields.style.display = e.target.value === "cafe" ? "block" : "none";
+  });
+
+  // Functions
+  async function loadDashboardStats() {
+    try {
+      const res = await fetch(`${API_BASE}/stats/dashboard`);
+      const data = await res.json();
+
+      if (data.success) {
+        document.getElementById("statTotalProducts").textContent =
+          data.stats.totalProducts;
+        document.getElementById("statTotalValue").textContent = formatCurrency(
+          data.stats.totalValue
+        );
+        document.getElementById("statLowStock").textContent =
+          data.stats.lowStockAlerts;
+
+        const totalMovements = data.stats.recentMovements.reduce(
+          (sum, m) => sum + parseInt(m.count),
+          0
+        );
+        document.getElementById("statMovements").textContent = totalMovements;
+      }
+    } catch (error) {
+      console.error("Error loading stats:", error);
+    }
+  }
+
+  async function loadProducts() {
+    try {
+      const params = new URLSearchParams({
+        search: searchInput.value,
+        category: filterCategory.value,
+        active: filterActive.value,
+        sortBy: sortBy.value,
+      });
+
+      productsTableBody.innerHTML = `
+        <tr><td colspan="8" class="text-center loading">
+          <div class="spinner"></div>
+          Cargando productos...
+        </td></tr>
+      `;
+
+      const res = await fetch(`${API_BASE}/products?${params}`);
+      const data = await res.json();
+
+      if (data.success) {
+        products = data.products;
+        renderProducts();
+      }
+    } catch (error) {
+      console.error("Error loading products:", error);
+      productsTableBody.innerHTML = `
+        <tr><td colspan="8" class="text-center" style="padding: 3rem; color: #e53e3e;">
+          Error al cargar productos
+        </td></tr>
+      `;
+    }
+  }
+
+  function renderProducts() {
+    if (products.length === 0) {
+      productsTableBody.innerHTML = `
+        <tr><td colspan="8" class="text-center" style="padding: 3rem; color: #666;">
+          No se encontraron productos
+        </td></tr>
+      `;
+      return;
+    }
+
+    productsTableBody.innerHTML = products
+      .map((p) => {
+        const stockClass =
+          p.stock_quantity === 0
+            ? "stock-out"
+            : p.stock_quantity <= p.stock_min
+              ? "stock-low"
+              : "stock-ok";
+
+        const categoryClass = `category-${p.category}`;
+
+        return `
+        <tr>
+          <td>
+            <img src="${p.image_url || "/assets/img/placeholder.jpg"}" 
+                 alt="${p.name}" 
+                 class="product-img" 
+                 onerror="this.src='/assets/img/placeholder.jpg'" />
+          </td>
+          <td class="product-id-cell">
+            ${p.id}<br>
+            ${p.sku ? `<span class="product-sku">${p.sku}</span>` : ""}
+          </td>
+          <td><strong>${p.name}</strong></td>
+          <td>
+            <span class="category-badge ${categoryClass}">${p.category}</span>
+          </td>
+          <td class="text-right">${formatCurrency(p.price)}</td>
+          <td class="text-right">
+            <span class="stock-badge ${stockClass}">${p.stock_quantity}</span>
+          </td>
+          <td class="text-center">
+            <span class="status-badge status-${p.is_active ? "active" : "inactive"}">
+              ${p.is_active ? "Activo" : "Inactivo"}
+            </span>
+          </td>
+          <td class="text-center">
+            <div class="action-buttons">
+              <button class="btn-icon" onclick="openMovementModal('${p.id}')" title="Movimiento stock">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="16 16 12 12 8 16"></polyline>
+                  <line x1="12" y1="12" x2="12" y2="21"></line>
+                  <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"></path>
+                </svg>
+              </button>
+              <button class="btn-icon" onclick="editProduct('${p.id}')" title="Editar">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
+              </button>
+              <button class="btn-icon" onclick="deleteProduct('${p.id}')" title="Desactivar">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                </svg>
+              </button>
+            </div>
+          </td>
+        </tr>
+      `;
+      })
+      .join("");
+  }
+
+  function openProductModal(product = null) {
+    editingProductId = product?.id || null;
+    document.getElementById("modalTitle").textContent = product
+      ? "Editar Producto"
+      : "Nuevo Producto";
+
+    if (product) {
+      document.getElementById("productId").value = product.id;
+      document.getElementById("productName").value = product.name;
+      document.getElementById("productSku").value = product.sku || "";
+      document.getElementById("productDescription").value =
+        product.description || "";
+      document.getElementById("productCategory").value = product.category;
+      document.getElementById("productSubcategory").value =
+        product.subcategory || "";
+      document.getElementById("productOrigin").value = product.origin || "";
+      document.getElementById("productProcess").value = product.process || "";
+      document.getElementById("productRoast").value = product.roast || "";
+      document.getElementById("productPrice").value = product.price;
+      document.getElementById("productCost").value = product.cost || "";
+      document.getElementById("productStockMin").value = product.stock_min || 0;
+      document.getElementById("productWeight").value = product.weight || "";
+      document.getElementById("productWeightUnit").value =
+        product.weight_unit || "g";
+      document.getElementById("productImageUrl").value =
+        product.image_url || "";
+      document.getElementById("productActive").checked = product.is_active;
+      document.getElementById("productDeal").checked = product.is_deal;
+      document.getElementById("productNew").checked = product.is_new;
+      document.getElementById("productBestseller").checked =
+        product.is_bestseller;
+      document.getElementById("productFast").checked = product.is_fast;
+
+      // Show coffee fields if category is cafe
+      document.getElementById("coffeeFields").style.display =
+        product.category === "cafe" ? "block" : "none";
+    } else {
+      productForm.reset();
+      document.getElementById("productActive").checked = true;
+      document.getElementById("coffeeFields").style.display = "none";
+    }
+
+    productModal.classList.add("active");
+  }
+
+  function closeProductModal() {
+    productModal.classList.remove("active");
+    productForm.reset();
+    editingProductId = null;
+  }
+
+  async function handleProductSubmit(e) {
+    e.preventDefault();
+
+    const formData = {
+      id: editingProductId || generateProductId(),
+      sku: document.getElementById("productSku").value,
+      name: document.getElementById("productName").value,
+      description: document.getElementById("productDescription").value,
+      category: document.getElementById("productCategory").value,
+      subcategory: document.getElementById("productSubcategory").value,
+      origin: document.getElementById("productOrigin").value,
+      process: document.getElementById("productProcess").value,
+      roast: document.getElementById("productRoast").value,
+      price: parseInt(document.getElementById("productPrice").value),
+      cost: parseInt(document.getElementById("productCost").value) || null,
+      stock_min:
+        parseInt(document.getElementById("productStockMin").value) || 0,
+      weight:
+        parseFloat(document.getElementById("productWeight").value) || null,
+      weight_unit: document.getElementById("productWeightUnit").value,
+      image_url: document.getElementById("productImageUrl").value,
+      is_active: document.getElementById("productActive").checked,
+      is_deal: document.getElementById("productDeal").checked,
+      is_new: document.getElementById("productNew").checked,
+      is_bestseller: document.getElementById("productBestseller").checked,
+      is_fast: document.getElementById("productFast").checked,
+    };
+
+    try {
+      const method = editingProductId ? "PUT" : "POST";
+      const url = editingProductId
+        ? `${API_BASE}/products/${editingProductId}`
+        : `${API_BASE}/products`;
+
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        alert(editingProductId ? "Producto actualizado" : "Producto creado");
+        closeProductModal();
+        loadProducts();
+        loadDashboardStats();
+      } else {
+        alert("Error: " + data.error);
+      }
+    } catch (error) {
+      console.error("Error saving product:", error);
+      alert("Error al guardar producto");
+    }
+  }
+
+  function generateProductId() {
+    const category = document.getElementById("productCategory").value;
+    const prefix =
+      category === "cafe" ? "CF" : category === "accesorio" ? "ACC" : "MER";
+    const random = Math.random().toString(36).substring(2, 8).toUpperCase();
+    return `${prefix}-${random}`;
+  }
+
+  window.editProduct = async function (id) {
+    try {
+      const res = await fetch(`${API_BASE}/products/${id}`);
+      const data = await res.json();
+
+      if (data.success) {
+        openProductModal(data.product);
+      }
+    } catch (error) {
+      console.error("Error loading product:", error);
+      alert("Error al cargar producto");
+    }
+  };
+
+  window.deleteProduct = async function (id) {
+    if (!confirm("¿Desactivar este producto?")) return;
+
+    try {
+      const res = await fetch(`${API_BASE}/products/${id}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        loadProducts();
+        loadDashboardStats();
+      } else {
+        alert("Error: " + data.error);
+      }
+    } catch (error) {
+      console.error("Error deleting product:", error);
+      alert("Error al desactivar producto");
+    }
+  };
+
+  window.openMovementModal = async function (productId) {
+    try {
+      const res = await fetch(`${API_BASE}/products/${productId}`);
+      const data = await res.json();
+
+      if (data.success) {
+        document.getElementById("movementProductId").value = productId;
+        document.getElementById("movementProductName").textContent =
+          data.product.name;
+        document.getElementById("movementCurrentStock").textContent =
+          data.product.stock_quantity;
+        movementModal.classList.add("active");
+      }
+    } catch (error) {
+      console.error("Error loading product:", error);
+      alert("Error al cargar producto");
+    }
+  };
+
+  function closeMovementModal() {
+    movementModal.classList.remove("active");
+    movementForm.reset();
+  }
+
+  async function handleMovementSubmit(e) {
+    e.preventDefault();
+
+    const formData = {
+      product_id: document.getElementById("movementProductId").value,
+      movement_type: document.getElementById("movementType").value,
+      quantity: parseInt(document.getElementById("movementQuantity").value),
+      reason: document.getElementById("movementReason").value,
+      reference: document.getElementById("movementReference").value,
+    };
+
+    try {
+      const res = await fetch(`${API_BASE}/movements`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        alert(
+          `Movimiento registrado. Stock: ${data.stockBefore} → ${data.stockAfter}`
+        );
+        closeMovementModal();
+        loadProducts();
+        loadDashboardStats();
+      } else {
+        alert("Error: " + data.error);
+      }
+    } catch (error) {
+      console.error("Error recording movement:", error);
+      alert("Error al registrar movimiento");
+    }
+  }
+
+  // Utilities
+  function formatCurrency(amount) {
+    return new Intl.NumberFormat("es-CO", {
+      style: "currency",
+      currency: "COP",
+      minimumFractionDigits: 0,
+    }).format(amount);
+  }
+
+  function debounce(func, wait) {
+    let timeout;
+    return function (...args) {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => func.apply(this, args), wait);
+    };
+  }
+</script>
