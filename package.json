@@ -30,9 +30,9 @@
     "framer-motion": "^12.23.26",
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.3",
+    "leaflet": "^1.9.4",
     "mysql2": "^3.16.0",
     "node-fetch": "^3.3.2",
-    "leaflet": "^1.9.4",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "resend": "^6.6.0"

@@ -60,52 +60,53 @@ import SalesTable from "../../components/SalesTable.jsx";
     <!-- Sales Section -->
     <div id="ventas" style="margin-top: 4rem; scroll-margin-top: 150px;">
       <h2>Ventas desde MercadoLibre</h2>
-      <SalesTable client:load />
+      <!-- <SalesTable client:load /> -->
+    </div>
   </div>
+
+  <style>
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 2rem;
+    }
+
+    .dashboard-card {
+      background: #fff;
+      border: 1px solid #eee;
+      padding: 2rem;
+      border-radius: 8px;
+      text-decoration: none;
+      color: inherit;
+      transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .dashboard-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+      border-color: #ddd;
+    }
+
+    .icon {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .dashboard-card h3 {
+      margin: 0 0 0.5rem 0;
+      font-size: 1.25rem;
+    }
+
+    .dashboard-card p {
+      margin: 0 0 1.5rem 0;
+      color: #666;
+      line-height: 1.5;
+      flex-grow: 1;
+    }
+  </style>
 </AdminLayout>
-
-<style>
-  .dashboard-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 2rem;
-  }
-
-  .dashboard-card {
-    background: #fff;
-    border: 1px solid #eee;
-    padding: 2rem;
-    border-radius: 8px;
-    text-decoration: none;
-    color: inherit;
-    transition:
-      transform 0.2s ease,
-      box-shadow 0.2s ease;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .dashboard-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
-    border-color: #ddd;
-  }
-
-  .icon {
-    font-size: 2.5rem;
-    margin-bottom: 1rem;
-  }
-
-  .dashboard-card h3 {
-    margin: 0 0 0.5rem 0;
-    font-size: 1.25rem;
-  }
-
-  .dashboard-card p {
-    margin: 0 0 1.5rem 0;
-    color: #666;
-    line-height: 1.5;
-    flex-grow: 1;
-  }
-</style>
