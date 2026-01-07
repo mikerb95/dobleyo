@@ -1,0 +1,446 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<!-- Botón para volver a versión desktop si el usuario lo prefiere -->
+<script is:inline>
+  // Permitir que el usuario vuelva a desktop
+  window.viewDesktop = function() {
+    sessionStorage.setItem('skipMobileRedirect', 'true');
+    window.location.href = '/';
+  };
+</script>
+
+<Layout>
+  <!-- Hero móvil optimizado -->
+  <section class="mobile-hero">
+    <div class="mobile-hero-bg"></div>
+    <div class="mobile-hero-content">
+      <h1>Café de especialidad colombiano</h1>
+      <p>Tueste fresco y trazable</p>
+      <a class="btn-mobile" href="/tienda">Ver tienda</a>
+    </div>
+  </section>
+
+  <!-- Productos destacados móvil -->
+  <section class="mobile-featured">
+    <h2>Destacados</h2>
+    
+    <div class="mobile-card">
+      <img
+        src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?q=80&w=600&auto=format&fit=crop"
+        alt="Sierra Nevada"
+        loading="lazy"
+      />
+      <div class="mobile-card-body">
+        <h3>Sierra Nevada</h3>
+        <p>Notas a cacao y caramelo. Perfil equilibrado.</p>
+        <div class="mobile-card-footer">
+          <span class="mobile-price">$42.000</span>
+          <a class="btn-small" href="/tienda">Ver</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-card">
+      <img
+        src="https://images.unsplash.com/photo-1507133750040-4a8f57021524?q=80&w=600&auto=format&fit=crop"
+        alt="Guía de molienda"
+        loading="lazy"
+      />
+      <div class="mobile-card-body">
+        <h3>Guía de molienda</h3>
+        <p>Mejora tu taza ajustando según tu método.</p>
+        <div class="mobile-card-footer">
+          <a class="btn-small outline" href="/blog">Leer</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-card">
+      <img
+        src="https://images.unsplash.com/photo-1529070538774-1843cb3265df?q=80&w=600&auto=format&fit=crop"
+        alt="Productores"
+        loading="lazy"
+      />
+      <div class="mobile-card-body">
+        <h3>Productores aliados</h3>
+        <p>Conoce las historias de origen.</p>
+        <div class="mobile-card-footer">
+          <a class="btn-small outline" href="/nosotros">Conocer</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats móvil -->
+  <section class="mobile-stats">
+    <div class="mobile-stat">
+      <div class="mobile-stat-number">9/10</div>
+      <p>Clientes satisfechos</p>
+    </div>
+    <div class="mobile-stat">
+      <div class="mobile-stat-number">94%</div>
+      <p>Recompran</p>
+    </div>
+    <div class="mobile-stat">
+      <div class="mobile-stat-number">#1</div>
+      <p>En satisfacción</p>
+    </div>
+  </section>
+
+  <!-- Productos móvil -->
+  <section class="mobile-products">
+    <h2>Nuestros cafés</h2>
+    <div class="mobile-products-grid" id="mobileProducts"></div>
+  </section>
+
+  <!-- Botón para ver versión desktop (footer) -->
+  <div class="mobile-footer-action">
+    <button onclick="viewDesktop()" class="btn-desktop">Ver versión escritorio</button>
+  </div>
+
+  <script>
+    const productsDefault = [
+      {
+        id: "dbyo-sierra",
+        name: "Sierra Nevada",
+        price: 42000,
+        image: "https://images.unsplash.com/photo-1512568400610-62da28bc8a13?q=80&w=400&auto=format&fit=crop",
+        origin: "Sierra Nevada",
+        notes: ["Cacao", "Caramelo"]
+      },
+      {
+        id: "dbyo-huila",
+        name: "Huila",
+        price: 45000,
+        image: "https://images.unsplash.com/photo-1509043759401-136742328bb3?q=80&w=400&auto=format&fit=crop",
+        origin: "Huila",
+        notes: ["Panela", "Frutos rojos"]
+      },
+      {
+        id: "dbyo-narino",
+        name: "Nariño",
+        price: 48000,
+        image: "https://images.unsplash.com/photo-1494415859740-21e878dd929d?q=80&w=400&auto=format&fit=crop",
+        origin: "Nariño",
+        notes: ["Cítricos", "Chocolate"]
+      }
+    ];
+
+    const products = (function() {
+      try {
+        const x = JSON.parse(localStorage.getItem("dbyo-products") || "null");
+        return Array.isArray(x) ? x : productsDefault;
+      } catch {
+        return productsDefault;
+      }
+    })();
+
+    const mobileProducts = document.getElementById("mobileProducts");
+    if (mobileProducts) {
+      mobileProducts.innerHTML = products.map(p => `
+        <div class="mobile-product-card">
+          <img src="${p.image}" alt="${p.name}">
+          <div class="mobile-product-info">
+            <h3>${p.name}</h3>
+            <p class="mobile-product-origin">${p.origin}</p>
+            <div class="mobile-product-footer">
+              <span class="mobile-price">$${p.price.toLocaleString("es-CO")}</span>
+              <button class="btn-add" data-id="${p.id}">+</button>
+            </div>
+          </div>
+        </div>
+      `).join("");
+
+      mobileProducts.addEventListener("click", (e) => {
+        const btn = e.target.closest(".btn-add");
+        if (!btn) return;
+        const id = btn.dataset.id;
+        const p = products.find(x => x.id === id);
+        if (p && window.Cart) {
+          window.Cart.addToCart({
+            id: p.id,
+            name: p.name,
+            price: p.price,
+            image: p.image,
+            qty: 1
+          });
+        }
+      });
+    }
+  </script>
+</Layout>
+
+<style>
+  /* Reset para móvil */
+  .mobile-hero,
+  .mobile-featured,
+  .mobile-stats,
+  .mobile-products {
+    padding: 1.5rem 1rem;
+  }
+
+  /* Hero móvil */
+  .mobile-hero {
+    position: relative;
+    min-height: 60vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    overflow: hidden;
+    margin-top: calc(var(--header-height, 96px) + var(--header-top, 0px));
+  }
+
+  .mobile-hero-bg {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, #8B6F47 0%, #5a4a3a 100%);
+    opacity: 0.95;
+  }
+
+  .mobile-hero-bg::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: url('https://images.unsplash.com/photo-1447933601403-0c6688de566e?q=80&w=800') center/cover;
+    opacity: 0.15;
+  }
+
+  .mobile-hero-content {
+    position: relative;
+    z-index: 2;
+    color: white;
+    padding: 0 1.5rem;
+  }
+
+  .mobile-hero h1 {
+    font-size: 2rem;
+    line-height: 1.2;
+    margin-bottom: 0.75rem;
+    font-weight: 700;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  }
+
+  .mobile-hero p {
+    font-size: 1.1rem;
+    margin-bottom: 1.5rem;
+    opacity: 0.95;
+  }
+
+  .btn-mobile {
+    display: inline-block;
+    background: white;
+    color: #8B6F47;
+    padding: 0.875rem 2rem;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .btn-mobile:active {
+    transform: scale(0.98);
+  }
+
+  /* Featured móvil */
+  .mobile-featured {
+    background: #f5f1e8;
+  }
+
+  .mobile-featured h2 {
+    font-size: 1.75rem;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    color: #1a1a1a;
+  }
+
+  .mobile-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 1.25rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+
+  .mobile-card img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+  }
+
+  .mobile-card-body {
+    padding: 1.25rem;
+  }
+
+  .mobile-card h3 {
+    font-size: 1.25rem;
+    margin-bottom: 0.5rem;
+    color: #1a1a1a;
+  }
+
+  .mobile-card p {
+    color: #666;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin-bottom: 1rem;
+  }
+
+  .mobile-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .mobile-price {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #8B6F47;
+  }
+
+  .btn-small {
+    padding: 0.5rem 1.25rem;
+    background: #8B6F47;
+    color: white;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: background 0.2s;
+  }
+
+  .btn-small:active {
+    background: #6d5636;
+  }
+
+  .btn-small.outline {
+    background: transparent;
+    color: #8B6F47;
+    border: 2px solid #8B6F47;
+  }
+
+  /* Stats móvil */
+  .mobile-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    background: white;
+    padding: 2rem 1rem;
+  }
+
+  .mobile-stat {
+    text-align: center;
+  }
+
+  .mobile-stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #8B6F47;
+    margin-bottom: 0.5rem;
+    font-family: 'Playfair Display', serif;
+  }
+
+  .mobile-stat p {
+    font-size: 0.85rem;
+    color: #666;
+    line-height: 1.3;
+  }
+
+  /* Productos móvil */
+  .mobile-products {
+    background: #f5f1e8;
+    padding-bottom: 3rem;
+  }
+
+  .mobile-products h2 {
+    font-size: 1.75rem;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    color: #1a1a1a;
+  }
+
+  .mobile-products-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  .mobile-product-card {
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+
+  .mobile-product-card img {
+    width: 100%;
+    height: 140px;
+    object-fit: cover;
+  }
+
+  .mobile-product-info {
+    padding: 0.875rem;
+  }
+
+  .mobile-product-info h3 {
+    font-size: 1rem;
+    margin-bottom: 0.25rem;
+    color: #1a1a1a;
+  }
+
+  .mobile-product-origin {
+    font-size: 0.8rem;
+    color: #888;
+    margin-bottom: 0.75rem;
+  }
+
+  .mobile-product-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .btn-add {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #8B6F47;
+    color: white;
+    border: none;
+    font-size: 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .btn-add:active {
+    background: #6d5636;
+  }
+
+  /* Footer action */
+  .mobile-footer-action {
+    background: white;
+    padding: 1.5rem;
+    text-align: center;
+    border-top: 1px solid #e0e0e0;
+  }
+
+  .btn-desktop {
+    background: transparent;
+    color: #666;
+    border: 2px solid #ddd;
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-desktop:active {
+    background: #f5f5f5;
+  }
+</style>

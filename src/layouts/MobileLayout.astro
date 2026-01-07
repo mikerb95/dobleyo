@@ -363,11 +363,13 @@ const { title, description } = Astro.props;
       });
 
       // Vibración en radio buttons y checkboxes
-      document.querySelectorAll('input[type="radio"], input[type="checkbox"]').forEach((input) => {
-        input.addEventListener("change", () => {
-          hapticFeedback([10, 5, 10]);
+      document
+        .querySelectorAll('input[type="radio"], input[type="checkbox"]')
+        .forEach((input) => {
+          input.addEventListener("change", () => {
+            hapticFeedback([10, 5, 10]);
+          });
         });
-      });
 
       // Vibración en selects
       document.querySelectorAll("select").forEach((select) => {
@@ -377,11 +379,15 @@ const { title, description } = Astro.props;
       });
 
       // Vibración leve en inputs de texto
-      document.querySelectorAll('input[type="text"], input[type="number"], input[type="email"], textarea').forEach((input) => {
-        input.addEventListener("focus", () => {
-          hapticFeedback(5);
+      document
+        .querySelectorAll(
+          'input[type="text"], input[type="number"], input[type="email"], textarea'
+        )
+        .forEach((input) => {
+          input.addEventListener("focus", () => {
+            hapticFeedback(5);
+          });
         });
-      });
 
       // Mantener scroll position
       const savedScrollPos = sessionStorage.getItem("scrollPos");

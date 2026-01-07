@@ -2,6 +2,24 @@
 import Layout from "../layouts/Layout.astro";
 ---
 
+<!-- Redirección automática a móvil si es necesario -->
+<script is:inline>
+  // Detectar si es dispositivo móvil y redirigir
+  if (typeof window !== 'undefined') {
+    const isMobile = /iPhone|iPad|iPod|Android|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) 
+                     || window.innerWidth < 768;
+    
+    // Solo redirigir si estamos en la raíz y es móvil
+    if (isMobile && window.location.pathname === '/') {
+      // Guardar preferencia para no redirigir constantemente si el usuario vuelve
+      const skipMobile = sessionStorage.getItem('skipMobileRedirect');
+      if (!skipMobile) {
+        window.location.href = '/mobile';
+      }
+    }
+  }
+</script>
+
 <Layout>
   <section class="hero">
     <div class="hero-media" aria-hidden="true">
