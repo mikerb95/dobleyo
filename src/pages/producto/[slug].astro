@@ -18,7 +18,7 @@ export async function getStaticPaths() {
 }
 
 const { slug } = Astro.params;
-const API_URL = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000/api';
+const API_URL = import.meta.env.PUBLIC_API_URL || "http://localhost:3000/api";
 
 let product = null;
 let coffeeProfile = null;
@@ -28,62 +28,66 @@ try {
   // Intentar obtener producto de la BD
   const response = await fetch(`${API_URL}/inventory/products/${slug}`, {
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       // TODO: Agregar token de autenticación si es necesario
-    }
+    },
   });
 
   if (response.ok) {
     const data = await response.json();
     if (data.success) {
       product = data.product;
-      
+
       // Si el producto es café, buscar información del lote asociado
-      if (product.category === 'cafe' && product.id) {
+      if (product.category === "cafe" && product.id) {
         try {
-          const lotResponse = await fetch(`${API_URL}/lots?product_id=${product.id}`, {
-            headers: {
-              'Content-Type': 'application/json',
+          const lotResponse = await fetch(
+            `${API_URL}/lots?product_id=${product.id}`,
+            {
+              headers: {
+                "Content-Type": "application/json",
+              },
             }
-          });
-          
+          );
+
           if (lotResponse.ok) {
             const lotData = await lotResponse.json();
             if (lotData.lots && lotData.lots.length > 0) {
               const lot = lotData.lots[0]; // Tomar el primer lote
-              
+
               // Construir perfil de taza desde la BD
               coffeeProfile = {
-                aroma: lot.aroma || 'Notas aromáticas características',
-                flavorNotes: lot.flavor_notes || 'Perfil de sabor único',
-                acidity: lot.acidity || 'Acidez balanceada',
-                body: lot.body || 'Cuerpo medio',
-                balance: lot.balance || 'Equilibrado',
-                score: lot.score || (product.rating * 20),
-                altitude: lot.altitude || 'Alta montaña',
-                variety: lot.variety || 'Variedad especial',
-                farm: lot.farm || 'Finca productora',
-                producer: lot.producer || 'Productor local',
-                process: lot.process || product.process || 'Procesamiento especial',
-                roast: lot.roast || product.roast || 'Tueste artesanal',
+                aroma: lot.aroma || "Notas aromáticas características",
+                flavorNotes: lot.flavor_notes || "Perfil de sabor único",
+                acidity: lot.acidity || "Acidez balanceada",
+                body: lot.body || "Cuerpo medio",
+                balance: lot.balance || "Equilibrado",
+                score: lot.score || product.rating * 20,
+                altitude: lot.altitude || "Alta montaña",
+                variety: lot.variety || "Variedad especial",
+                farm: lot.farm || "Finca productora",
+                producer: lot.producer || "Productor local",
+                process:
+                  lot.process || product.process || "Procesamiento especial",
+                roast: lot.roast || product.roast || "Tueste artesanal",
               };
             }
           }
         } catch (lotError) {
-          console.error('Error fetching lot data:', lotError);
+          console.error("Error fetching lot data:", lotError);
         }
       }
     }
   }
 } catch (error) {
-  console.error('Error fetching product from API:', error);
+  console.error("Error fetching product from API:", error);
 }
 
 // Fallback: Si no se pudo obtener de la BD, usar datos estáticos
 if (!product) {
-  product = products.find(p => p.id === slug);
+  product = products.find((p) => p.id === slug);
   if (!product) {
-    return Astro.redirect('/404');
+    return Astro.redirect("/404");
   }
 }
 
