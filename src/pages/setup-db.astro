@@ -2,259 +2,272 @@
 // Página de configuración de base de datos
 ---
 
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Setup Base de Datos - DobleYo</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 2rem;
-    }
-    .container {
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 20px 60px rgba(0,0,0,.3);
-      max-width: 800px;
-      width: 100%;
-      padding: 3rem;
-    }
-    h1 {
-      color: #333;
-      margin-bottom: 0.5rem;
-      font-size: 2rem;
-    }
-    .subtitle {
-      color: #666;
-      margin-bottom: 2rem;
-      font-size: 1rem;
-    }
-    .warning {
-      background: #fff3cd;
-      border: 1px solid #ffc107;
-      border-radius: 8px;
-      padding: 1rem;
-      margin-bottom: 2rem;
-      color: #856404;
-    }
-    .warning strong {
-      display: block;
-      margin-bottom: 0.5rem;
-    }
-    .form-group {
-      margin-bottom: 1.5rem;
-    }
-    label {
-      display: block;
-      margin-bottom: 0.5rem;
-      font-weight: 600;
-      color: #333;
-    }
-    input {
-      width: 100%;
-      padding: 0.75rem;
-      border: 2px solid #ddd;
-      border-radius: 8px;
-      font-size: 1rem;
-      transition: border-color 0.2s;
-    }
-    input:focus {
-      outline: none;
-      border-color: #667eea;
-    }
-    .btn {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      border: none;
-      padding: 1rem 2rem;
-      border-radius: 8px;
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-      width: 100%;
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-    .btn:hover:not(:disabled) {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
-    }
-    .btn:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-    .logs {
-      margin-top: 2rem;
-      background: #f8f9fa;
-      border-radius: 8px;
-      padding: 1.5rem;
-      max-height: 400px;
-      overflow-y: auto;
-      font-family: 'Courier New', monospace;
-      font-size: 0.9rem;
-      line-height: 1.6;
-      display: none;
-    }
-    .logs.show {
-      display: block;
-    }
-    .log-line {
-      margin-bottom: 0.25rem;
-    }
-    .log-success {
-      color: #28a745;
-    }
-    .log-error {
-      color: #dc3545;
-      font-weight: 600;
-    }
-    .log-warning {
-      color: #ffc107;
-    }
-    .log-info {
-      color: #17a2b8;
-    }
-    .result {
-      margin-top: 2rem;
-      padding: 1.5rem;
-      border-radius: 8px;
-      display: none;
-    }
-    .result.success {
-      background: #d4edda;
-      border: 1px solid #c3e6cb;
-      color: #155724;
-      display: block;
-    }
-    .result.error {
-      background: #f8d7da;
-      border: 1px solid #f5c6cb;
-      color: #721c24;
-      display: block;
-    }
-    .credentials {
-      margin-top: 1rem;
-      background: #fff;
-      padding: 1rem;
-      border-radius: 6px;
-      border: 2px solid #28a745;
-    }
-    .credentials strong {
-      display: block;
-      margin-bottom: 0.5rem;
-    }
-    code {
-      background: #f1f1f1;
-      padding: 0.2rem 0.5rem;
-      border-radius: 4px;
-      font-family: 'Courier New', monospace;
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h1>🚀 Configuración de Base de Datos</h1>
-    <p class="subtitle">Configura todas las tablas necesarias para DobleYo</p>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Setup Base de Datos - DobleYo</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+      }
+      .container {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        max-width: 800px;
+        width: 100%;
+        padding: 3rem;
+      }
+      h1 {
+        color: #333;
+        margin-bottom: 0.5rem;
+        font-size: 2rem;
+      }
+      .subtitle {
+        color: #666;
+        margin-bottom: 2rem;
+        font-size: 1rem;
+      }
+      .warning {
+        background: #fff3cd;
+        border: 1px solid #ffc107;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 2rem;
+        color: #856404;
+      }
+      .warning strong {
+        display: block;
+        margin-bottom: 0.5rem;
+      }
+      .form-group {
+        margin-bottom: 1.5rem;
+      }
+      label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: #333;
+      }
+      input {
+        width: 100%;
+        padding: 0.75rem;
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: border-color 0.2s;
+      }
+      input:focus {
+        outline: none;
+        border-color: #667eea;
+      }
+      .btn {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 1rem 2rem;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        width: 100%;
+        transition:
+          transform 0.2s,
+          box-shadow 0.2s;
+      }
+      .btn:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+      }
+      .btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+      .logs {
+        margin-top: 2rem;
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 1.5rem;
+        max-height: 400px;
+        overflow-y: auto;
+        font-family: "Courier New", monospace;
+        font-size: 0.9rem;
+        line-height: 1.6;
+        display: none;
+      }
+      .logs.show {
+        display: block;
+      }
+      .log-line {
+        margin-bottom: 0.25rem;
+      }
+      .log-success {
+        color: #28a745;
+      }
+      .log-error {
+        color: #dc3545;
+        font-weight: 600;
+      }
+      .log-warning {
+        color: #ffc107;
+      }
+      .log-info {
+        color: #17a2b8;
+      }
+      .result {
+        margin-top: 2rem;
+        padding: 1.5rem;
+        border-radius: 8px;
+        display: none;
+      }
+      .result.success {
+        background: #d4edda;
+        border: 1px solid #c3e6cb;
+        color: #155724;
+        display: block;
+      }
+      .result.error {
+        background: #f8d7da;
+        border: 1px solid #f5c6cb;
+        color: #721c24;
+        display: block;
+      }
+      .credentials {
+        margin-top: 1rem;
+        background: #fff;
+        padding: 1rem;
+        border-radius: 6px;
+        border: 2px solid #28a745;
+      }
+      .credentials strong {
+        display: block;
+        margin-bottom: 0.5rem;
+      }
+      code {
+        background: #f1f1f1;
+        padding: 0.2rem 0.5rem;
+        border-radius: 4px;
+        font-family: "Courier New", monospace;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🚀 Configuración de Base de Datos</h1>
+      <p class="subtitle">Configura todas las tablas necesarias para DobleYo</p>
 
-    <div class="warning">
-      <strong>⚠️ Importante:</strong>
-      Esta página debe usarse solo una vez para configurar la base de datos inicial.
-      Necesitas la clave secreta de setup configurada en las variables de entorno.
-    </div>
-
-    <form id="setupForm">
-      <div class="form-group">
-        <label for="setupKey">Clave de Setup</label>
-        <input 
-          type="password" 
-          id="setupKey" 
-          name="setupKey" 
-          placeholder="Ingresa la clave secreta"
-          required
-        >
-        <small style="color: #666; display: block; margin-top: 0.5rem;">
-          Define SETUP_KEY en tus variables de entorno (default: dobleyo-setup-2026)
-        </small>
+      <div class="warning">
+        <strong>⚠️ Importante:</strong>
+        Esta página debe usarse solo una vez para configurar la base de datos inicial.
+        Necesitas la clave secreta de setup configurada en las variables de entorno.
       </div>
 
-      <button type="submit" class="btn" id="submitBtn">
-        Iniciar Configuración
-      </button>
-    </form>
+      <form id="setupForm">
+        <div class="form-group">
+          <label for="setupKey">Clave de Setup</label>
+          <input
+            type="password"
+            id="setupKey"
+            name="setupKey"
+            placeholder="Ingresa la clave secreta"
+            required
+          />
+          <small style="color: #666; display: block; margin-top: 0.5rem;">
+            Define SETUP_KEY en tus variables de entorno (default:
+            dobleyo-setup-2026)
+          </small>
+        </div>
 
-    <div id="result" class="result"></div>
+        <button type="submit" class="btn" id="submitBtn">
+          Iniciar Configuración
+        </button>
+      </form>
 
-    <div id="logs" class="logs"></div>
-  </div>
+      <div id="result" class="result"></div>
 
-  <script>
-    const form = document.getElementById('setupForm');
-    const submitBtn = document.getElementById('submitBtn');
-    const resultDiv = document.getElementById('result');
-    const logsDiv = document.getElementById('logs');
+      <div id="logs" class="logs"></div>
+    </div>
 
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      
-      const setupKey = document.getElementById('setupKey').value;
-      
-      // Limpiar resultados previos
-      resultDiv.className = 'result';
-      resultDiv.textContent = '';
-      logsDiv.className = 'logs';
-      logsDiv.innerHTML = '';
-      
-      // Deshabilitar botón
-      submitBtn.disabled = true;
-      submitBtn.textContent = 'Configurando... Por favor espera';
+    <script>
+      const form = document.getElementById("setupForm");
+      const submitBtn = document.getElementById("submitBtn");
+      const resultDiv = document.getElementById("result");
+      const logsDiv = document.getElementById("logs");
 
-      try {
-        const response = await fetch('/api/setup/full-setup', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Setup-Key': setupKey
-          },
-          body: JSON.stringify({})
-        });
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
 
-        const data = await response.json();
+        const setupKey = document.getElementById("setupKey").value;
 
-        // Mostrar logs
-        if (data.logs && data.logs.length > 0) {
-          logsDiv.classList.add('show');
-          data.logs.forEach(log => {
-            const line = document.createElement('div');
-            line.className = 'log-line';
-            
-            if (log.includes('✅') || log.includes('✓')) {
-              line.classList.add('log-success');
-            } else if (log.includes('❌')) {
-              line.classList.add('log-error');
-            } else if (log.includes('⚠')) {
-              line.classList.add('log-warning');
-            } else if (log.includes('🚀') || log.includes('📡') || log.includes('📦')) {
-              line.classList.add('log-info');
-            }
-            
-            line.textContent = log;
-            logsDiv.appendChild(line);
+        // Limpiar resultados previos
+        resultDiv.className = "result";
+        resultDiv.textContent = "";
+        logsDiv.className = "logs";
+        logsDiv.innerHTML = "";
+
+        // Deshabilitar botón
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Configurando... Por favor espera";
+
+        try {
+          const response = await fetch("/api/setup/full-setup", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-Setup-Key": setupKey,
+            },
+            body: JSON.stringify({}),
           });
-        }
 
-        if (response.ok && data.success) {
-          resultDiv.className = 'result success';
-          resultDiv.innerHTML = `
+          const data = await response.json();
+
+          // Mostrar logs
+          if (data.logs && data.logs.length > 0) {
+            logsDiv.classList.add("show");
+            data.logs.forEach((log) => {
+              const line = document.createElement("div");
+              line.className = "log-line";
+
+              if (log.includes("✅") || log.includes("✓")) {
+                line.classList.add("log-success");
+              } else if (log.includes("❌")) {
+                line.classList.add("log-error");
+              } else if (log.includes("⚠")) {
+                line.classList.add("log-warning");
+              } else if (
+                log.includes("🚀") ||
+                log.includes("📡") ||
+                log.includes("📦")
+              ) {
+                line.classList.add("log-info");
+              }
+
+              line.textContent = log;
+              logsDiv.appendChild(line);
+            });
+          }
+
+          if (response.ok && data.success) {
+            resultDiv.className = "result success";
+            resultDiv.innerHTML = `
             <strong>✅ Configuración Completada Exitosamente</strong>
-            <p>${data.message || 'La base de datos ha sido configurada correctamente.'}</p>
-            ${data.credentials ? `
+            <p>${data.message || "La base de datos ha sido configurada correctamente."}</p>
+            ${
+              data.credentials
+                ? `
               <div class="credentials">
                 <strong>🔑 Credenciales de Administrador:</strong>
                 <p><strong>Email:</strong> <code>${data.credentials.email}</code></p>
@@ -263,21 +276,22 @@
                   ⚠️ ${data.credentials.hint}
                 </p>
               </div>
-            ` : ''}
+            `
+                : ""
+            }
             <p style="margin-top: 1rem;">
               <a href="/login" style="color: #667eea; font-weight: 600;">
                 → Ir al panel de administración
               </a>
             </p>
           `;
-        } else {
-          throw new Error(data.error || 'Error desconocido');
-        }
-
-      } catch (error) {
-        console.error('Error:', error);
-        resultDiv.className = 'result error';
-        resultDiv.innerHTML = `
+          } else {
+            throw new Error(data.error || "Error desconocido");
+          }
+        } catch (error) {
+          console.error("Error:", error);
+          resultDiv.className = "result error";
+          resultDiv.innerHTML = `
           <strong>❌ Error en la Configuración</strong>
           <p>${error.message}</p>
           <p style="margin-top: 1rem;">
@@ -289,11 +303,11 @@
             </ul>
           </p>
         `;
-      } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Iniciar Configuración';
-      }
-    });
-  </script>
-</body>
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Iniciar Configuración";
+        }
+      });
+    </script>
+  </body>
 </html>
