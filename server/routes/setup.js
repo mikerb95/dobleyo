@@ -2,11 +2,27 @@ import express from 'express';
 import * as db from '../db.js';
 import * as auth from '../auth.js';
 import { createCoffeeTables } from '../migrations/create_coffee_tables.js';
+import crypto from 'crypto';
 
 export const setupRouter = express.Router();
 
 const ADMIN_EMAIL = 'admin@dobleyo.com';
 const ADMIN_PASS = 'admin123';
+
+// Middleware de seguridad: requiere clave secreta
+const requireSetupKey = (req, res, next) => {
+  const setupKey = req.headers['x-setup-key'] || req.query.key;
+  const expectedKey = process.env.SETUP_KEY || 'dobleyo-setup-2026';
+  
+  if (setupKey !== expectedKey) {
+    return res.status(403).json({ 
+      error: 'Acceso denegado. Clave de setup inválida',
+      hint: 'Usa el header X-Setup-Key o el parámetro ?key=CLAVE'
+    });
+  }
+  
+  next();
+};
 
 // Embed schema directly to avoid file reading issues in Vercel
 const SCHEMA_SQL = `

@@ -1,0 +1,273 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout>
+  <section class="card" style="max-width:600px; margin:2rem auto 0">
+    <div class="p">
+      <h1>Solicitar rol de Caficultor</h1>
+      <p class="muted" style="margin-top:-.4rem">
+        Comparte los detalles de tu finca y nos pondremos en contacto para verificar tu solicitud.
+      </p>
+      <form
+        id="caficulorForm"
+        class="form"
+        onsubmit="return false"
+        style="display:grid; gap:.75rem; margin-top:.75rem"
+      >
+        <label
+          >Nombre de la finca<input
+            id="farmName"
+            type="text"
+            placeholder="Ej: Finca La Aurora"
+            required
+          /></label
+        >
+        <label
+          >Región<select id="region" required>
+            <option value="">Selecciona tu región</option>
+            <option value="Huila">Huila</option>
+            <option value="Nariño">Nariño</option>
+            <option value="Cauca">Cauca</option>
+            <option value="Tolima">Tolima</option>
+            <option value="Risaralda">Risaralda</option>
+            <option value="Caldas">Caldas</option>
+            <option value="Quindío">Quindío</option>
+            <option value="Otra">Otra</option>
+          </select></label
+        >
+        <label
+          >Altitud (msnm)<input
+            id="altitude"
+            type="number"
+            placeholder="Ej: 1500"
+            step="1"
+          /></label
+        >
+        <label
+          >Extensión (hectáreas)<input
+            id="hectares"
+            type="number"
+            placeholder="Ej: 5.5"
+            step="0.1"
+          /></label
+        >
+        <label
+          >Variedades de café cultivadas<textarea
+            id="varieties"
+            placeholder="Ej: Geisha, Bourbon, Typica"
+            rows="3"
+          ></textarea></label
+        >
+        <label
+          >Certificaciones (si aplica)<textarea
+            id="certifications"
+            placeholder="Ej: Orgánico, Fair Trade, etc."
+            rows="2"
+          ></textarea></label
+        >
+        <label
+          >Cuéntanos sobre tu finca<textarea
+            id="description"
+            placeholder="Historia, métodos de cultivo, etc."
+            rows="4"
+            required
+          ></textarea></label
+        >
+        <button class="btn" id="submitBtn" type="submit">Enviar solicitud</button>
+      </form>
+      <div
+        id="formError"
+        class="muted"
+        style="color:#b91c1c; display:none; margin-top:.35rem"
+      >
+      </div>
+      <p style="text-align:center; margin-top:1rem; font-size:0.9rem">
+        <a href="/cuenta" style="color:#c67b4e">Volver a mi cuenta</a>
+      </p>
+    </div>
+  </section>
+
+  <script>
+    (function () {
+      const f = document.getElementById("caficulorForm");
+      const err = document.getElementById("formError");
+      const btn = document.getElementById("submitBtn");
+
+      // Verificar autenticación
+      async function checkAuth() {
+        try {
+          const res = await fetch("/api/auth/me", {
+            credentials: "include",
+          });
+          if (!res.ok) {
+            window.location.href = "/login?redirect=/solicitar-caficultor";
+          }
+        } catch (e) {
+          console.error("Auth check failed:", e);
+        }
+      }
+
+      checkAuth();
+
+      f.addEventListener("submit", async function () {
+        const farmName = (document.getElementById("farmName").value || "").trim();
+        const region = (document.getElementById("region").value || "").trim();
+        const altitude = document.getElementById("altitude").value
+          ? parseInt(document.getElementById("altitude").value)
+          : null;
+        const hectares = document.getElementById("hectares").value
+          ? parseFloat(document.getElementById("hectares").value)
+          : null;
+        const varieties = (document.getElementById("varieties").value || "").trim();
+        const certifications = (document.getElementById("certifications").value || "").trim();
+        const description = (document.getElementById("description").value || "").trim();
+
+        if (!farmName || !region || !description) {
+          showError("Completa los campos obligatorios.");
+          return;
+        }
+
+        btn.disabled = true;
+        btn.textContent = "Enviando...";
+        err.style.display = "none";
+
+        try {
+          const res = await fetch("/api/auth/request-caficultor", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({
+              farm_name: farmName,
+              region,
+              altitude,
+              hectares,
+              varieties_cultivated: varieties,
+              certifications,
+              description,
+            }),
+          });
+
+          const data = await res.json();
+
+          if (!res.ok) {
+            throw new Error(data.error || "Error al enviar solicitud");
+          }
+
+          showError("✓ Solicitud enviada. Te notificaremos pronto.", true);
+          setTimeout(() => {
+            window.location.href = "/cuenta";
+          }, 2000);
+        } catch (e) {
+          showError(e.message);
+          btn.disabled = false;
+          btn.textContent = "Enviar solicitud";
+        }
+      });
+
+      function showError(msg, isSuccess = false) {
+        err.textContent = msg;
+        err.style.color = isSuccess ? "#16a34a" : "#b91c1c";
+        err.style.display = "block";
+      }
+    })();
+  </script>
+
+  <style>
+    .card {
+      background: #f7f3ef;
+      border: 1px solid #e8dfd6;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .p {
+      padding: 2rem;
+    }
+
+    h1 {
+      color: #251a14;
+      font-size: 1.75rem;
+      font-family: "Playfair Display", serif;
+      margin: 0 0 0.5rem;
+    }
+
+    .muted {
+      color: #6b5d54;
+      font-size: 0.95rem;
+    }
+
+    .form {
+      margin: 1.5rem 0;
+    }
+
+    label {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      color: #251a14;
+      font-weight: 500;
+      font-size: 0.9rem;
+    }
+
+    input,
+    select,
+    textarea {
+      padding: 0.75rem;
+      border: 1px solid #d4ccc4;
+      border-radius: 6px;
+      font-size: 1rem;
+      background: white;
+      color: #251a14;
+      transition: border-color 0.2s;
+      font-family: inherit;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      outline: none;
+      border-color: #c67b4e;
+      box-shadow: 0 0 0 3px rgba(198, 123, 78, 0.1);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .btn {
+      background: #251a14;
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 6px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn:hover:not(:disabled) {
+      background: #3d2d23;
+    }
+
+    .btn:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+
+    p {
+      margin: 0;
+    }
+
+    a {
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    a:hover {
+      color: #a0602a;
+    }
+  </style>
+</Layout>

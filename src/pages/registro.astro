@@ -56,7 +56,9 @@ import Layout from "../layouts/Layout.astro";
       >
       </div>
       <p style="text-align:center; margin-top:1rem; font-size:0.9rem">
-        ¿Ya tienes cuenta? <a href="/login" style="color:#c67b4e">Inicia sesión</a>
+        ¿Ya tienes cuenta? <a href="/login" style="color:#c67b4e"
+          >Inicia sesión</a
+        >
       </p>
     </div>
   </section>
@@ -70,8 +72,12 @@ import Layout from "../layouts/Layout.astro";
       f.addEventListener("submit", async function () {
         const name = (document.getElementById("regName").value || "").trim();
         const email = (document.getElementById("regEmail").value || "").trim();
-        const password = (document.getElementById("regPass").value || "").trim();
-        const passConfirm = (document.getElementById("regPassConfirm").value || "").trim();
+        const password = (
+          document.getElementById("regPass").value || ""
+        ).trim();
+        const passConfirm = (
+          document.getElementById("regPassConfirm").value || ""
+        ).trim();
 
         // Validaciones básicas
         if (!name || !email || !password || !passConfirm) {

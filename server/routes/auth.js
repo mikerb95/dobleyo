@@ -208,6 +208,79 @@ authRouter.post('/logout', async (req, res) => {
 
 // Check auth status
 authRouter.get('/me', auth.authenticateToken, async (req, res) => {
-    const result = await db.query('SELECT id, name, email, role FROM users WHERE id = ?', [req.user.id]);
+    const result = await db.query('SELECT id, name, email, role, caficultor_status FROM users WHERE id = ?', [req.user.id]);
     res.json(result.rows[0]);
 });
+
+// Request Caficultor Role
+authRouter.post('/request-caficultor',
+  auth.authenticateToken,
+  body('farm_name').notEmpty(),
+  body('region').notEmpty(),
+  body('description').notEmpty(),
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+
+    const { farm_name, region, altitude, hectares, varieties_cultivated, certifications, description } = req.body;
+    const userId = req.user.id;
+
+    try {
+      // Verificar si ya existe una solicitud activa
+      const existing = await db.query(
+        'SELECT id FROM caficultor_applications WHERE user_id = ? AND status = "pending"',
+        [userId]
+      );
+      if (existing.rows.length > 0) {
+        return res.status(400).json({ error: 'Ya tienes una solicitud pendiente de revisión' });
+      }
+
+      // Insertar solicitud
+      const result = await db.query(
+        'INSERT INTO caficultor_applications (user_id, farm_name, region, altitude, hectares, varieties_cultivated, certifications, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+        [userId, farm_name, region, altitude || null, hectares || null, varieties_cultivated || null, certifications || null, description]
+      );
+
+      // Actualizar estado del usuario
+      await db.query(
+        'UPDATE users SET caficultor_status = "pending" WHERE id = ?',
+        [userId]
+      );
+
+      // Log de auditoria
+      await db.query(
+        'INSERT INTO audit_logs (user_id, action, entity_type, entity_id, details) VALUES (?, ?, ?, ?, ?)',
+        [userId, 'REQUEST_CAFICULTOR', 'caficultor_applications', String(result.rows.insertId), JSON.stringify({ farm_name })]
+      );
+
+      res.status(201).json({ 
+        message: 'Solicitud enviada. El administrador revisará tu perfil pronto.',
+        application_id: result.rows.insertId
+      });
+
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: 'Error al enviar solicitud' });
+    }
+  }
+);
+
+// Get caficultor application status (para que el usuario vea el estado de su solicitud)
+authRouter.get('/caficultor-status',
+  auth.authenticateToken,
+  async (req, res) => {
+    try {
+      const result = await db.query(
+        'SELECT id, status, admin_notes, reviewed_at FROM caficultor_applications WHERE user_id = ? ORDER BY created_at DESC LIMIT 1',
+        [req.user.id]
+      );
+      if (result.rows.length === 0) {
+        return res.json({ hasApplication: false });
+      }
+      res.json({ hasApplication: true, application: result.rows[0] });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: 'Error al obtener estado' });
+    }
+  }
+);

@@ -20,7 +20,11 @@ coffeeRouter.post('/harvest', async (req, res) => {
 
     // Validaciones
     if (!farm || !variety || !climate || !process || !aroma || !tasteNotes) {
-      return res.status(400).json({ success: false, error: 'Faltan campos requeridos' });
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Faltan campos requeridos',
+        details: { farm, variety, climate, process, aroma: !!aroma, tasteNotes: !!tasteNotes }
+      });
     }
 
     // Generar ID de lote
@@ -53,10 +57,22 @@ coffeeRouter.post('/harvest', async (req, res) => {
     });
   } catch (err) {
     console.error('Error en harvest:', err);
+    
+    // Detectar si es un error de tabla no existente
+    if (err.code === 'ER_NO_SUCH_TABLE' || err.message?.includes('coffee_harvests')) {
+      return res.status(500).json({ 
+        success: false, 
+        error: 'La tabla coffee_harvests no existe. Ejecuta la migración primero',
+        message: err.message,
+        hint: 'Ejecuta: node server/migrations/create_coffee_tables.js'
+      });
+    }
+    
     return res.status(500).json({ 
       success: false, 
       error: 'Error al registrar lote',
-      message: err.message 
+      message: err.message,
+      code: err.code
     });
   }
 });
