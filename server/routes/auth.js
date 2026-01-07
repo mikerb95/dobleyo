@@ -4,11 +4,13 @@ import * as db from '../db.js';
 import * as auth from '../auth.js';
 import { sendVerificationEmail } from '../services/email.js';
 import crypto from 'crypto';
+import { loginLimiter, registerLimiter, refreshLimiter } from '../middleware/rateLimit.js';
 
 export const authRouter = Router();
 
 // Register
 authRouter.post('/register',
+  registerLimiter,
   body('email').isEmail(),
   body('password').isLength({ min: 6 }),
   body('name').notEmpty(),
@@ -79,7 +81,8 @@ authRouter.get('/verify', async (req, res) => {
 });
 
 // Login
-authRouter.post('/login', 
+authRouter.post('/login',
+  loginLimiter,
   body('email').isEmail(),
   body('password').isLength({ min: 6 }),
   async (req, res) => {
@@ -104,11 +107,11 @@ authRouter.post('/login',
       const refreshToken = auth.generateRefreshToken();
       const refreshExpires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 dias
 
-      // Guardar refresh token en DB
+      // Guardar refresh token hasheado en DB (seguridad)
+      const hashedRefreshToken = auth.hashRefreshToken(refreshToken);
       await db.query(
         'INSERT INTO refresh_tokens (user_id, token_hash, expires_at) VALUES (?, ?, ?)',
-        [user.id, refreshToken, refreshExpires] // Nota: Deberíamos hashear el refresh token tambien en DB para mas seguridad, pero por simplicidad lo guardamos directo o hash simple.
-        // Para produccion real: hash(refreshToken) -> DB. Cliente tiene refreshToken raw.
+        [user.id, hashedRefreshToken, refreshExpires]
       );
 
       // Actualizar last_login
@@ -141,15 +144,18 @@ authRouter.post('/login',
 });
 
 // Refresh Token
-authRouter.post('/refresh', async (req, res) => {
+authRouter.post('/refresh', refreshLimiter, async (req, res) => {
   const refreshToken = req.cookies['refresh_token'];
   if (!refreshToken) return res.status(401).json({ error: 'No refresh token' });
 
   try {
-    // Buscar token en DB
+    // Hashear token antes de buscar en BD
+    const hashedToken = auth.hashRefreshToken(refreshToken);
+    
+    // Buscar token hasheado en DB
     const result = await db.query(
       'SELECT rt.*, u.role, u.email, u.name FROM refresh_tokens rt JOIN users u ON rt.user_id = u.id WHERE rt.token_hash = ? AND rt.revoked = FALSE AND rt.expires_at > NOW()',
-      [refreshToken]
+      [hashedToken]
     );
 
     if (result.rows.length === 0) {
@@ -165,10 +171,11 @@ authRouter.post('/refresh', async (req, res) => {
     // Rotacion de Refresh Token (Seguridad avanzada)
     // Invalidamos el usado y creamos uno nuevo
     const newRefreshToken = auth.generateRefreshToken();
+    const newRefreshTokenHash = auth.hashRefreshToken(newRefreshToken);
     const newExpires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
-    await db.query('UPDATE refresh_tokens SET revoked = TRUE, replaced_by_token = ? WHERE id = ?', [newRefreshToken, tokenRecord.id]);
-    await db.query('INSERT INTO refresh_tokens (user_id, token_hash, expires_at) VALUES (?, ?, ?)', [user.id, newRefreshToken, newExpires]);
+    await db.query('UPDATE refresh_tokens SET revoked = TRUE, replaced_by_token = ? WHERE id = ?', [newRefreshTokenHash, tokenRecord.id]);
+    await db.query('INSERT INTO refresh_tokens (user_id, token_hash, expires_at) VALUES (?, ?, ?)', [user.id, newRefreshTokenHash, newExpires]);
 
     const newAccessToken = auth.generateToken(user);
 
@@ -189,8 +196,9 @@ authRouter.post('/refresh', async (req, res) => {
 authRouter.post('/logout', async (req, res) => {
   const refreshToken = req.cookies['refresh_token'];
   if (refreshToken) {
-    // Revocar en DB
-    await db.query('UPDATE refresh_tokens SET revoked = TRUE WHERE token_hash = ?', [refreshToken]);
+    // Revocar en DB (hasheado)
+    const hashedToken = auth.hashRefreshToken(refreshToken);
+    await db.query('UPDATE refresh_tokens SET revoked = TRUE WHERE token_hash = ?', [hashedToken]);
   }
   
   res.clearCookie('auth_token');
