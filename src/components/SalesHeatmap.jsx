@@ -56,8 +56,8 @@ export default function SalesHeatmap() {
   useEffect(() => {
     if (!mapRef.current) return;
 
-    // Create map instance
-    const map = L.map(mapRef.current).setView([-32, -63], 4);
+    // Create map instance - Centrado en Colombia
+    const map = L.map(mapRef.current).setView([4.5, -74], 6);
 
     // Add tile layer
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -114,7 +114,7 @@ export default function SalesHeatmap() {
             <hr style="margin: 0.5em 0; border: none; border-top: 1px solid #ddd;">
             <div style="margin: 0.5em 0;">
               <div><strong>Pedidos:</strong> ${location.order_count}</div>
-              <div><strong>Total ventas:</strong> ARS ${parseFloat(location.total_sales).toLocaleString('es-AR', { maximumFractionDigits: 2 })}</div>
+              <div><strong>Total ventas:</strong> $${parseFloat(location.total_sales).toLocaleString('es-CO', { maximumFractionDigits: 0 })} COP</div>
             </div>
           </div>
         `;

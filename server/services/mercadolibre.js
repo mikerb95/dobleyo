@@ -114,7 +114,7 @@ class MercadoLibreService {
       // Determine city and state
       let city = shippingAddress.city?.name || 'Unknown';
       let state = shippingAddress.state?.name || 'Unknown';
-      let country = 'AR'; // Default to Argentina
+      let country = 'CO'; // Default to Colombia
       let zipCode = shippingAddress.zip_code || '';
 
       // Get shipping method
@@ -164,33 +164,35 @@ class MercadoLibreService {
     // In production, integrate with Nominatim or similar geocoding service
     
     const cityCoordinates = {
-      // Argentina - Major Cities
-      'buenos aires': { lat: -34.6037, lng: -58.3816 },
-      'córdoba': { lat: -31.4135, lng: -64.1811 },
-      'rosario': { lat: -32.9468, lng: -60.6393 },
-      'mendoza': { lat: -32.8897, lng: -68.8459 },
-      'la plata': { lat: -34.9205, lng: -57.9543 },
-      'mar del plata': { lat: -38.0055, lng: -57.5604 },
-      'san juan': { lat: -31.5375, lng: -68.5186 },
-      'tucumán': { lat: -26.8241, lng: -65.2226 },
-      'catamarca': { lat: -28.4696, lng: -65.4848 },
-      'corrientes': { lat: -27.4805, lng: -58.8345 },
-      'posadas': { lat: -27.3622, lng: -55.5038 },
-      'puerto iguazú': { lat: -25.5951, lng: -54.5775 },
-      'salta': { lat: -24.7859, lng: -65.4060 },
-      'jujuy': { lat: -23.8105, lng: -65.2995 },
-      'formosa': { lat: -25.5601, lng: -60.9993 },
-      'resistencia': { lat: -27.4614, lng: -58.9863 },
-      'santiago del estero': { lat: -27.7951, lng: -64.2637 },
-      'santa fe': { lat: -31.6333, lng: -60.7000 },
-      'paraná': { lat: -31.7333, lng: -60.5236 },
-      'la rioja': { lat: -29.4122, lng: -66.3572 },
-      'san luis': { lat: -33.2793, lng: -66.3350 },
-      'neuquén': { lat: -38.9516, lng: -68.0591 },
-      'viedma': { lat: -40.8087, lng: -63.0013 },
-      'comodrivadavia': { lat: -43.3008, lng: -65.4858 },
-      'rawson': { lat: -43.2987, lng: -65.1009 },
-      'ushuaia': { lat: -54.8019, lng: -68.3030 }
+      // Colombia - Principales ciudades
+      'bogotá': { lat: 4.7110, lng: -74.0721 },
+      'bogota': { lat: 4.7110, lng: -74.0721 },
+      'medellín': { lat: 6.2476, lng: -75.5658 },
+      'medellin': { lat: 6.2476, lng: -75.5658 },
+      'cali': { lat: 3.4516, lng: -76.5320 },
+      'barranquilla': { lat: 10.9685, lng: -74.7813 },
+      'cartagena': { lat: 10.3910, lng: -75.4794 },
+      'cúcuta': { lat: 7.8891, lng: -72.4967 },
+      'cucuta': { lat: 7.8891, lng: -72.4967 },
+      'bucaramanga': { lat: 7.1193, lng: -73.1227 },
+      'pereira': { lat: 4.8133, lng: -75.6961 },
+      'santa marta': { lat: 11.2408, lng: -74.1990 },
+      'ibagué': { lat: 4.4389, lng: -75.2322 },
+      'ibague': { lat: 4.4389, lng: -75.2322 },
+      'manizales': { lat: 5.0700, lng: -75.5138 },
+      'pasto': { lat: 1.2136, lng: -77.2811 },
+      'neiva': { lat: 2.9273, lng: -75.2819 },
+      'villavicencio': { lat: 4.1420, lng: -73.6266 },
+      'armenia': { lat: 4.5339, lng: -75.6811 },
+      'valledupar': { lat: 10.4631, lng: -73.2532 },
+      'montería': { lat: 8.7479, lng: -75.8814 },
+      'monteria': { lat: 8.7479, lng: -75.8814 },
+      'sincelejo': { lat: 9.3047, lng: -75.3978 },
+      'popayán': { lat: 2.4448, lng: -76.6147 },
+      'popayan': { lat: 2.4448, lng: -76.6147 },
+      'tunja': { lat: 5.5353, lng: -73.3678 },
+      'florencia': { lat: 1.6144, lng: -75.6062 },
+      'riohacha': { lat: 11.5444, lng: -72.9071 }
     };
 
     const key = city.toLowerCase().trim();
