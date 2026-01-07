@@ -24,6 +24,7 @@ npm install resend
 **POST** `/api/emails/account-confirmation`
 
 **Body:**
+
 ```json
 {
   "email": "usuario@example.com",
@@ -33,6 +34,7 @@ npm install resend
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -49,6 +51,7 @@ npm install resend
 **POST** `/api/emails/order-confirmation`
 
 **Body:**
+
 ```json
 {
   "email": "cliente@example.com",
@@ -74,6 +77,7 @@ npm install resend
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -90,6 +94,7 @@ npm install resend
 **POST** `/api/emails/contact`
 
 **Body:**
+
 ```json
 {
   "name": "Carlos López",
@@ -102,6 +107,7 @@ npm install resend
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -118,6 +124,7 @@ npm install resend
 **POST** `/api/emails/contact-reply`
 
 **Body:**
+
 ```json
 {
   "email": "carlos@example.com",
@@ -127,6 +134,7 @@ npm install resend
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -143,6 +151,7 @@ npm install resend
 **GET** `/api/emails/health`
 
 **Response:**
+
 ```json
 {
   "status": "ok",
@@ -160,23 +169,23 @@ npm install resend
 ```javascript
 async function registerUser(email, name, password) {
   // 1. Registrar usuario en tu BD
-  const userResponse = await fetch('/api/auth/register', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, name, password })
+  const userResponse = await fetch("/api/auth/register", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, name, password }),
   });
 
   const user = await userResponse.json();
 
   // 2. Enviar email de confirmación
-  await fetch('/api/emails/account-confirmation', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+  await fetch("/api/emails/account-confirmation", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       email: user.email,
       name: user.name,
-      confirmationToken: user.confirmationToken
-    })
+      confirmationToken: user.confirmationToken,
+    }),
   });
 
   return user;
@@ -188,18 +197,18 @@ async function registerUser(email, name, password) {
 ```javascript
 async function completeOrder(orderData) {
   // 1. Guardar pedido en BD
-  const orderResponse = await fetch('/api/orders', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(orderData)
+  const orderResponse = await fetch("/api/orders", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(orderData),
   });
 
   const order = await orderResponse.json();
 
   // 2. Enviar email de confirmación
-  await fetch('/api/emails/order-confirmation', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+  await fetch("/api/emails/order-confirmation", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       email: orderData.customerEmail,
       customerName: orderData.customerName,
@@ -208,8 +217,8 @@ async function completeOrder(orderData) {
       subtotal: orderData.subtotal,
       shipping: orderData.shipping,
       total: orderData.total,
-      shippingAddress: orderData.address
-    })
+      shippingAddress: orderData.address,
+    }),
   });
 
   return order;
@@ -220,24 +229,24 @@ async function completeOrder(orderData) {
 
 ```javascript
 async function submitContact(formData) {
-  const response = await fetch('/api/emails/contact', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+  const response = await fetch("/api/emails/contact", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       name: formData.name,
       email: formData.email,
       phone: formData.phone,
       subject: formData.subject,
-      message: formData.message
-    })
+      message: formData.message,
+    }),
   });
 
   const result = await response.json();
-  
+
   if (result.success) {
-    alert('✅ Tu mensaje ha sido enviado. Nos pondremos en contacto pronto.');
+    alert("✅ Tu mensaje ha sido enviado. Nos pondremos en contacto pronto.");
   } else {
-    alert('❌ Error al enviar el mensaje.');
+    alert("❌ Error al enviar el mensaje.");
   }
 
   return result;
@@ -249,6 +258,7 @@ async function submitContact(formData) {
 ## Plantillas de Email
 
 Todos los emails incluyen:
+
 - ☕ Branding de DobleYo (colores: #251a14, #c67b4e, #f7f3ef)
 - Responsive design (funciona en móvil, tablet, desktop)
 - Información clara y estructurada
@@ -260,16 +270,19 @@ Todos los emails incluyen:
 ## Troubleshooting
 
 ### "Error: RESEND_API_KEY no configurada"
+
 - Verifica que tu `.env` tiene la API key de Resend
 - La API key debe comenzar con `re_`
 
 ### "Error: Dominio no verificado"
+
 - Ingresa a tu dashboard de Resend
 - Agrega tu dominio `dobleyo.cafe`
 - Configura los registros DNS que Resend te proporciona
 - Espera a que se verifique (puede tomar 24-48 horas)
 
 ### "Email se envía pero no llega a la bandeja de entrada"
+
 - Verifica que el dominio está verificado en Resend
 - Revisa la carpeta de spam
 - Confirma que el email del destinatario es correcto
