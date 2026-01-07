@@ -1,6 +1,11 @@
 import mysql from 'mysql2/promise';
 
 export default async function handler(req, res) {
+  // Proteger en producción
+  if (process.env.NODE_ENV === 'production') {
+    return res.status(403).json({ error: 'Endpoint no disponible en producción' });
+  }
+
   const logs = [];
   const log = (msg) => logs.push({ time: new Date().toISOString(), msg });
 

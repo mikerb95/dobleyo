@@ -40,6 +40,11 @@ app.use('/api/inventory', inventoryRouter);
 
 // Debug endpoint to check environment variables (safe version)
 app.get('/api/debug-env', (req, res) => {
+  // Proteger en producción
+  if (process.env.NODE_ENV === 'production') {
+    return res.status(403).json({ error: 'Endpoint no disponible en producción' });
+  }
+
   res.json({
     status: 'ok',
     env: {
