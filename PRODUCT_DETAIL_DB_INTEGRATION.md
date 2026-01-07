@@ -17,6 +17,7 @@ Este endpoint **no requiere autenticación** y está diseñado para ser consumid
 - Solo productos activos (`is_active = 1`)
 
 **Endpoints disponibles:**
+
 - `GET /api/products/:id` - Obtener un producto por ID
 - `GET /api/products?category=cafe&limit=50` - Listar productos activos
 
@@ -25,6 +26,7 @@ Este endpoint **no requiere autenticación** y está diseñado para ser consumid
 **Archivo:** `src/pages/producto/[slug].astro`
 
 **Configuración:**
+
 ```astro
 export const prerender = false; // SSR habilitado
 ```
@@ -32,11 +34,13 @@ export const prerender = false; // SSR habilitado
 **Flujo de datos:**
 
 1. **Intenta obtener datos de la API:**
+
    ```javascript
    const response = await fetch(`${API_URL}/products/${slug}`);
    ```
 
 2. **Si es café, obtiene perfil de taza desde la tabla `lots`:**
+
    - Aroma (`aroma`)
    - Notas de sabor (`flavor_notes`)
    - Acidez (`acidity`)
@@ -50,12 +54,14 @@ export const prerender = false; // SSR habilitado
 ### 3. Componentes de Vista
 
 **Para Cafés:** `CoffeeDetail.jsx`
+
 - Muestra perfil de taza completo desde BD
 - Información de trazabilidad
 - Selector de molido
 - Compatible con datos de BD y estáticos
 
 **Para Accesorios:** `AccessoryDetail.jsx`
+
 - Vista estilo Amazon
 - Especificaciones técnicas
 - Características y beneficios
@@ -65,40 +71,40 @@ export const prerender = false; // SSR habilitado
 
 ### Productos (tabla `products`)
 
-| Campo BD | Propiedad Frontend | Notas |
-|----------|-------------------|-------|
-| `id` | `id` | Identificador único |
-| `name` | `name` | Nombre del producto |
-| `description` | `description` | Descripción larga |
-| `category` | `category` | 'cafe', 'accesorio', 'merchandising' |
-| `subcategory` | `origin` (cafés) | Para cafés: región de origen |
-| `origin` | `origin` | Origen del café |
-| `process` | `process` | Método de procesamiento |
-| `roast` | `roast` | Nivel de tueste |
-| `price` | `price` | Precio en COP (entero) |
-| `rating` | `rating` | Calificación (decimal 0-5) |
-| `is_deal` | `deal` | Producto en oferta |
-| `is_bestseller` | `bestseller` | Producto más vendido |
-| `is_new` | `new` | Producto nuevo |
-| `is_fast` | `fast` | Envío rápido |
-| `image_url` | `image` | URL de imagen principal |
+| Campo BD        | Propiedad Frontend | Notas                                |
+| --------------- | ------------------ | ------------------------------------ |
+| `id`            | `id`               | Identificador único                  |
+| `name`          | `name`             | Nombre del producto                  |
+| `description`   | `description`      | Descripción larga                    |
+| `category`      | `category`         | 'cafe', 'accesorio', 'merchandising' |
+| `subcategory`   | `origin` (cafés)   | Para cafés: región de origen         |
+| `origin`        | `origin`           | Origen del café                      |
+| `process`       | `process`          | Método de procesamiento              |
+| `roast`         | `roast`            | Nivel de tueste                      |
+| `price`         | `price`            | Precio en COP (entero)               |
+| `rating`        | `rating`           | Calificación (decimal 0-5)           |
+| `is_deal`       | `deal`             | Producto en oferta                   |
+| `is_bestseller` | `bestseller`       | Producto más vendido                 |
+| `is_new`        | `new`              | Producto nuevo                       |
+| `is_fast`       | `fast`             | Envío rápido                         |
+| `image_url`     | `image`            | URL de imagen principal              |
 
 ### Lotes (tabla `lots`)
 
-| Campo BD | Uso en Frontend |
-|----------|----------------|
-| `aroma` | Perfil de taza - Aroma |
+| Campo BD       | Uso en Frontend                 |
+| -------------- | ------------------------------- |
+| `aroma`        | Perfil de taza - Aroma          |
 | `flavor_notes` | Perfil de taza - Notas de sabor |
-| `acidity` | Perfil de taza - Acidez |
-| `body` | Perfil de taza - Cuerpo |
-| `balance` | Perfil de taza - Balance |
-| `score` | Puntuación (0-100) |
-| `farm` | Trazabilidad - Finca |
-| `producer` | Trazabilidad - Productor |
-| `altitude` | Trazabilidad - Altura |
-| `variety` | Trazabilidad - Variedad |
-| `process` | Proceso de café |
-| `roast` | Nivel de tueste |
+| `acidity`      | Perfil de taza - Acidez         |
+| `body`         | Perfil de taza - Cuerpo         |
+| `balance`      | Perfil de taza - Balance        |
+| `score`        | Puntuación (0-100)              |
+| `farm`         | Trazabilidad - Finca            |
+| `producer`     | Trazabilidad - Productor        |
+| `altitude`     | Trazabilidad - Altura           |
+| `variety`      | Trazabilidad - Variedad         |
+| `process`      | Proceso de café                 |
+| `roast`        | Nivel de tueste                 |
 
 ## Variables de Entorno
 
@@ -107,6 +113,7 @@ PUBLIC_API_URL=http://localhost:3000/api  # URL de la API
 ```
 
 Para producción en Vercel:
+
 ```bash
 PUBLIC_API_URL=https://tu-dominio.vercel.app/api
 ```
@@ -219,6 +226,7 @@ DELETE /api/inventory/products/:id
 ## Estado Actual
 
 ✅ **Implementado:**
+
 - Endpoint API público sin autenticación
 - Página dinámica con SSR
 - Obtención de datos de productos desde BD
@@ -227,6 +235,7 @@ DELETE /api/inventory/products/:id
 - Compatibilidad con ambos formatos de datos
 
 ⚠️ **Pendiente:**
+
 - Sincronizar datos estáticos con BD al desplegar
 - Agregar caché para mejorar rendimiento
 - Implementar búsqueda de productos relacionados
@@ -237,17 +246,20 @@ DELETE /api/inventory/products/:id
 Para probar la integración:
 
 1. **Iniciar servidor:**
+
    ```bash
    cd server
    npm run dev
    ```
 
 2. **Iniciar Astro:**
+
    ```bash
    npm run dev
    ```
 
 3. **Probar endpoints:**
+
    ```bash
    curl http://localhost:3000/api/products/cf-sierra
    ```
