@@ -1,0 +1,147 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout>
+  <div class="error-container">
+    <div class="error-content">
+      <div class="error-code">404</div>
+      <h1 class="error-title">Página no encontrada</h1>
+      <p class="error-message">
+        Lo sentimos, la página que buscas no existe o ha sido movida.
+      </p>
+      
+      <div class="error-suggestions">
+        <p class="suggestion-title">¿Qué puedes hacer?</p>
+        <ul class="suggestion-list">
+          <li><a href="/">Volver al inicio</a></li>
+          <li><a href="/tienda">Ir a la tienda</a></li>
+          <li><a href="/contacto.html">Contactarnos</a></li>
+        </ul>
+      </div>
+
+      <div class="error-illustration">
+        <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+          <!-- Taza de café rota -->
+          <g opacity="0.7">
+            <circle cx="100" cy="100" r="60" fill="none" stroke="#8B6F47" stroke-width="3"/>
+            <path d="M 70 80 Q 100 110 130 80" fill="none" stroke="#8B6F47" stroke-width="2"/>
+            <line x1="100" y1="60" x2="100" y2="140" stroke="#8B6F47" stroke-width="2" stroke-dasharray="5,5"/>
+            <circle cx="80" cy="100" r="8" fill="#8B6F47" opacity="0.5"/>
+            <circle cx="120" cy="95" r="6" fill="#8B6F47" opacity="0.5"/>
+          </g>
+        </svg>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .error-container {
+    min-height: 60vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    text-align: center;
+  }
+
+  .error-content {
+    max-width: 500px;
+  }
+
+  .error-code {
+    font-size: 8rem;
+    font-weight: 900;
+    color: #8B6F47;
+    opacity: 0.1;
+    line-height: 1;
+    margin-bottom: 1rem;
+    letter-spacing: -0.05em;
+  }
+
+  .error-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 1rem;
+  }
+
+  .error-message {
+    font-size: 1.1rem;
+    color: #666;
+    margin-bottom: 2rem;
+    line-height: 1.6;
+  }
+
+  .error-illustration {
+    margin: 2rem 0;
+    opacity: 0.6;
+  }
+
+  .error-illustration svg {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto;
+  }
+
+  .suggestion-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #333;
+    margin: 2rem 0 1rem 0;
+  }
+
+  .suggestion-list {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .suggestion-list a {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    background-color: #8B6F47;
+    color: #F5F1E8;
+    text-decoration: none;
+    border-radius: 4px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    border: 2px solid #8B6F47;
+  }
+
+  .suggestion-list a:hover {
+    background-color: transparent;
+    color: #8B6F47;
+  }
+
+  @media (max-width: 640px) {
+    .error-container {
+      min-height: 50vh;
+      padding: 1.5rem;
+    }
+
+    .error-code {
+      font-size: 5rem;
+    }
+
+    .error-title {
+      font-size: 1.75rem;
+    }
+
+    .error-message {
+      font-size: 1rem;
+    }
+
+    .suggestion-list {
+      gap: 0.5rem;
+    }
+
+    .suggestion-list a {
+      padding: 0.6rem 1.2rem;
+      font-size: 0.95rem;
+    }
+  }
+</style>
