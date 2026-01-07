@@ -4,6 +4,31 @@
 
 Las páginas de detalle de producto ahora están **configuradas para obtener datos de la base de datos** en lugar de usar solo datos estáticos.
 
+## Configuración de Despliegue
+
+### Adaptador de Vercel
+
+Para soportar SSR (Server-Side Rendering) en Vercel, se instaló el adaptador oficial:
+
+```bash
+npm install @astrojs/vercel
+```
+
+**Configuración en `astro.config.mjs`:**
+
+```javascript
+import { defineConfig } from 'astro/config';
+import react from '@astrojs/react';
+import vercel from '@astrojs/vercel';
+
+export default defineConfig({
+  integrations: [react()],
+  adapter: vercel(),
+});
+```
+
+El modo por defecto (`output: "static"`) ahora permite mezclar páginas estáticas (pre-renderizadas) y páginas con SSR. Las páginas que tienen `export const prerender = false` usarán SSR automáticamente.
+
 ## Arquitectura
 
 ### 1. Endpoint API Público (`/api/products/:id`)
