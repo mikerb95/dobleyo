@@ -335,7 +335,7 @@ const { title, description } = Astro.props;
   </head>
   <body>
     <header class="mobile-header">
-      <a href="/" class="back-btn" title="Volver">←</a>
+      <button class="back-btn" title="Volver atrás" onclick="window.history.back()">←</button>
       <h1>{title}</h1>
       <div style="width: 2rem;"></div>
     </header>
