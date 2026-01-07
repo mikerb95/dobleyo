@@ -9,21 +9,6 @@ export const setupRouter = express.Router();
 const ADMIN_EMAIL = 'admin@dobleyo.com';
 const ADMIN_PASS = 'admin123';
 
-// Middleware de seguridad: requiere clave secreta
-const requireSetupKey = (req, res, next) => {
-  const setupKey = req.headers['x-setup-key'] || req.query.key;
-  const expectedKey = process.env.SETUP_KEY || 'dobleyo-setup-2026';
-  
-  if (setupKey !== expectedKey) {
-    return res.status(403).json({ 
-      error: 'Acceso denegado. Clave de setup inválida',
-      hint: 'Usa el header X-Setup-Key o el parámetro ?key=CLAVE'
-    });
-  }
-  
-  next();
-};
-
 // Embed schema directly to avoid file reading issues in Vercel
 const SCHEMA_SQL = `
 -- Users
@@ -272,7 +257,7 @@ setupRouter.get('/', async (req, res) => {
   }
 });
 // Nuevo endpoint completo con verificación detallada
-setupRouter.post('/full-setup', requireSetupKey, async (req, res) => {
+setupRouter.post('/full-setup', async (req, res) => {
   const logs = [];
   const log = (msg) => {
     console.log(msg);
