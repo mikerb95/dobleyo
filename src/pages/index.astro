@@ -41,6 +41,116 @@ import Layout from "../layouts/Layout.astro";
     <p><a class="btn" href="/tienda" data-link>Ver tienda</a></p>
   </section>
 
+  <!-- Seccion de cafes en venta -->
+  <section class="coffee-shop" aria-labelledby="coffeeShopTitle">
+    <div class="container">
+      <h2 id="coffeeShopTitle" class="coffee-shop-title">Cafés en venta</h2>
+      <p class="coffee-shop-subtitle">Explora nuestra selección de cafés de especialidad</p>
+      
+      <div class="coffee-grid">
+        <!-- Café 1 -->
+        <article class="coffee-card">
+          <div class="coffee-img-wrapper">
+            <img 
+              src="https://images.unsplash.com/photo-1512568400610-62da28bc8a13?q=80&w=600&auto=format&fit=crop" 
+              alt="Café Sierra Nevada"
+              class="coffee-img"
+              loading="lazy"
+            />
+            <span class="coffee-badge">Tueste Medio</span>
+          </div>
+          <div class="coffee-content">
+            <h3 class="coffee-name">Sierra Nevada</h3>
+            <p class="coffee-origin">Sierra Nevada de Santa Marta</p>
+            <p class="coffee-notes">Notas: Cacao, Nuez, Caramelo</p>
+            <div class="coffee-footer">
+              <span class="coffee-price">$42.000</span>
+              <a href="/tienda" class="btn-add" data-link>
+                <span>+</span>
+              </a>
+            </div>
+          </div>
+        </article>
+
+        <!-- Café 2 -->
+        <article class="coffee-card">
+          <div class="coffee-img-wrapper">
+            <img 
+              src="https://images.unsplash.com/photo-1509042239860-f550ce710b93?q=80&w=600&auto=format&fit=crop" 
+              alt="Café Huila"
+              class="coffee-img"
+              loading="lazy"
+            />
+            <span class="coffee-badge">Tueste Claro</span>
+          </div>
+          <div class="coffee-content">
+            <h3 class="coffee-name">Huila</h3>
+            <p class="coffee-origin">Huila, Colombia</p>
+            <p class="coffee-notes">Notas: Cítricos, Miel, Floral</p>
+            <div class="coffee-footer">
+              <span class="coffee-price">$45.000</span>
+              <a href="/tienda" class="btn-add" data-link>
+                <span>+</span>
+              </a>
+            </div>
+          </div>
+        </article>
+
+        <!-- Café 3 -->
+        <article class="coffee-card">
+          <div class="coffee-img-wrapper">
+            <img 
+              src="https://images.unsplash.com/photo-1511920170033-f8396924c348?q=80&w=600&auto=format&fit=crop" 
+              alt="Café Nariño"
+              class="coffee-img"
+              loading="lazy"
+            />
+            <span class="coffee-badge">Tueste Medio</span>
+          </div>
+          <div class="coffee-content">
+            <h3 class="coffee-name">Nariño</h3>
+            <p class="coffee-origin">Nariño, Colombia</p>
+            <p class="coffee-notes">Notas: Frutas Rojas, Chocolate</p>
+            <div class="coffee-footer">
+              <span class="coffee-price">$48.000</span>
+              <a href="/tienda" class="btn-add" data-link>
+                <span>+</span>
+              </a>
+            </div>
+          </div>
+        </article>
+
+        <!-- Café 4 -->
+        <article class="coffee-card">
+          <div class="coffee-img-wrapper">
+            <img 
+              src="https://images.unsplash.com/photo-1447933601403-0c6688de566e?q=80&w=600&auto=format&fit=crop" 
+              alt="Café Antioquia"
+              class="coffee-img"
+              loading="lazy"
+            />
+            <span class="coffee-badge best-seller">Más Vendido</span>
+          </div>
+          <div class="coffee-content">
+            <h3 class="coffee-name">Antioquia</h3>
+            <p class="coffee-origin">Antioquia, Colombia</p>
+            <p class="coffee-notes">Notas: Panela, Nuez, Dulce</p>
+            <div class="coffee-footer">
+              <span class="coffee-price">$44.000</span>
+              <a href="/tienda" class="btn-add" data-link>
+                <span>+</span>
+              </a>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <div class="coffee-cta">
+        <a href="/tienda" class="btn" data-link>Ver todos los cafés</a>
+      </div>
+    </div>
+  </section>
+
   <!-- Seccion de articulos destacados -->
   <section class="featured" aria-labelledby="featuredTitle">
     <div class="featured-inner container">

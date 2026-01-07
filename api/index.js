@@ -7,6 +7,8 @@ import { authRouter } from '../server/routes/auth.js';
 import { setupRouter } from '../server/routes/setup.js';
 import { lotsRouter } from '../server/routes/lots.js';
 import { mercadolibreRouter } from '../server/routes/mercadolibre.js';
+import { coffeeRouter } from '../server/routes/coffee.js';
+import { inventoryRouter } from '../server/routes/inventory.js';
 
 const app = express();
 
@@ -26,6 +28,8 @@ app.use('/api/stock', stockRouter);
 app.use('/api/lots', lotsRouter);
 app.use('/api/setup', setupRouter);
 app.use('/api/mercadolibre', mercadolibreRouter);
+app.use('/api/coffee', coffeeRouter);
+app.use('/api/inventory', inventoryRouter);
 
 // Health Check
 app.get('/api/health', (req, res) => res.json({ status: 'ok', time: new Date().toISOString() }));
