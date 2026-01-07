@@ -55,23 +55,93 @@ CREATE TABLE IF NOT EXISTS audit_logs (
 -- Products
 CREATE TABLE IF NOT EXISTS products (
     id VARCHAR(50) PRIMARY KEY,
+    sku VARCHAR(100) UNIQUE,
     name VARCHAR(160) NOT NULL,
-    category VARCHAR(50),
-    origin VARCHAR(120),
-    process VARCHAR(80),
-    roast VARCHAR(80),
+    description TEXT,
+    category ENUM('cafe', 'accesorio', 'merchandising') NOT NULL DEFAULT 'cafe',
+    subcategory VARCHAR(80), -- Para cafés: origen. Para accesorios: tipo (prensa, chemex, filtros, etc)
+    origin VARCHAR(120), -- Para cafés
+    process VARCHAR(80), -- Para cafés: lavado, honey, natural
+    roast VARCHAR(80), -- Para cafés: claro, medio, oscuro
     price INTEGER NOT NULL,
+    cost INTEGER, -- Costo de adquisición/producción
     rating DECIMAL(3,1) DEFAULT 0,
     is_deal BOOLEAN DEFAULT FALSE,
     is_bestseller BOOLEAN DEFAULT FALSE,
     is_new BOOLEAN DEFAULT FALSE,
     is_fast BOOLEAN DEFAULT FALSE,
+    is_active BOOLEAN DEFAULT TRUE, -- Producto visible en tienda
     image_url TEXT,
-    stock INTEGER NOT NULL DEFAULT 0,
+    images JSON, -- Array de URLs de imágenes adicionales
+    stock_quantity INTEGER NOT NULL DEFAULT 0, -- Stock actual disponible
+    stock_reserved INTEGER NOT NULL DEFAULT 0, -- Stock reservado en pedidos
+    stock_min INTEGER DEFAULT 0, -- Stock mínimo antes de alertar
+    weight DECIMAL(10,2), -- Peso del producto
+    weight_unit ENUM('g', 'kg', 'ml', 'l', 'unidad') DEFAULT 'g',
+    dimensions VARCHAR(100), -- Dimensiones para accesorios
+    meta_keywords TEXT, -- SEO
+    meta_description TEXT, -- SEO
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP
 );
 CREATE INDEX idx_products_category ON products(category);
+CREATE INDEX idx_products_active ON products(is_active);
+CREATE INDEX idx_products_sku ON products(sku);
+
+-- Inventory Movements (Trazabilidad de movimientos de stock)
+CREATE TABLE IF NOT EXISTS inventory_movements (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    product_id VARCHAR(50) NOT NULL,
+    movement_type ENUM('entrada', 'salida', 'ajuste', 'merma', 'devolucion') NOT NULL,
+    quantity INTEGER NOT NULL,
+    quantity_before INTEGER NOT NULL,
+    quantity_after INTEGER NOT NULL,
+    reason VARCHAR(255),
+    reference VARCHAR(100), -- Número de orden, lote, factura, etc
+    notes TEXT,
+    user_id BIGINT,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+);
+CREATE INDEX idx_inv_movements_product ON inventory_movements(product_id);
+CREATE INDEX idx_inv_movements_type ON inventory_movements(movement_type);
+CREATE INDEX idx_inv_movements_date ON inventory_movements(created_at);
+
+-- Product Suppliers (Proveedores de productos)
+CREATE TABLE IF NOT EXISTS product_suppliers (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(160) NOT NULL,
+    contact_name VARCHAR(120),
+    email VARCHAR(255),
+    phone VARCHAR(40),
+    address TEXT,
+    tax_id VARCHAR(50),
+    payment_terms VARCHAR(255), -- Términos de pago
+    notes TEXT,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Product-Supplier relationship
+CREATE TABLE IF NOT EXISTS product_supplier_prices (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    product_id VARCHAR(50) NOT NULL,
+    supplier_id BIGINT NOT NULL,
+    cost_price INTEGER NOT NULL,
+    currency VARCHAR(3) DEFAULT 'COP',
+    minimum_order_quantity INTEGER DEFAULT 1,
+    lead_time_days INTEGER, -- Días de entrega
+    last_order_date DATE,
+    is_preferred BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+    FOREIGN KEY (supplier_id) REFERENCES product_suppliers(id) ON DELETE CASCADE
+);
+CREATE INDEX idx_prod_supplier_product ON product_supplier_prices(product_id);
+CREATE INDEX idx_prod_supplier_supplier ON product_supplier_prices(supplier_id);
 
 -- Lots
 CREATE TABLE IF NOT EXISTS lots (
