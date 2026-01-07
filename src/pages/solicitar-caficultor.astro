@@ -7,7 +7,8 @@ import Layout from "../layouts/Layout.astro";
     <div class="p">
       <h1>Solicitar rol de Caficultor</h1>
       <p class="muted" style="margin-top:-.4rem">
-        Comparte los detalles de tu finca y nos pondremos en contacto para verificar tu solicitud.
+        Comparte los detalles de tu finca y nos pondremos en contacto para
+        verificar tu solicitud.
       </p>
       <form
         id="caficulorForm"
@@ -56,25 +57,24 @@ import Layout from "../layouts/Layout.astro";
           >Variedades de café cultivadas<textarea
             id="varieties"
             placeholder="Ej: Geisha, Bourbon, Typica"
-            rows="3"
-          ></textarea></label
+            rows="3"></textarea></label
         >
         <label
           >Certificaciones (si aplica)<textarea
             id="certifications"
             placeholder="Ej: Orgánico, Fair Trade, etc."
-            rows="2"
-          ></textarea></label
+            rows="2"></textarea></label
         >
         <label
           >Cuéntanos sobre tu finca<textarea
             id="description"
             placeholder="Historia, métodos de cultivo, etc."
             rows="4"
-            required
-          ></textarea></label
+            required></textarea></label
         >
-        <button class="btn" id="submitBtn" type="submit">Enviar solicitud</button>
+        <button class="btn" id="submitBtn" type="submit"
+          >Enviar solicitud</button
+        >
       </form>
       <div
         id="formError"
@@ -111,7 +111,9 @@ import Layout from "../layouts/Layout.astro";
       checkAuth();
 
       f.addEventListener("submit", async function () {
-        const farmName = (document.getElementById("farmName").value || "").trim();
+        const farmName = (
+          document.getElementById("farmName").value || ""
+        ).trim();
         const region = (document.getElementById("region").value || "").trim();
         const altitude = document.getElementById("altitude").value
           ? parseInt(document.getElementById("altitude").value)
@@ -119,9 +121,15 @@ import Layout from "../layouts/Layout.astro";
         const hectares = document.getElementById("hectares").value
           ? parseFloat(document.getElementById("hectares").value)
           : null;
-        const varieties = (document.getElementById("varieties").value || "").trim();
-        const certifications = (document.getElementById("certifications").value || "").trim();
-        const description = (document.getElementById("description").value || "").trim();
+        const varieties = (
+          document.getElementById("varieties").value || ""
+        ).trim();
+        const certifications = (
+          document.getElementById("certifications").value || ""
+        ).trim();
+        const description = (
+          document.getElementById("description").value || ""
+        ).trim();
 
         if (!farmName || !region || !description) {
           showError("Completa los campos obligatorios.");

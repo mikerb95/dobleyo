@@ -3,12 +3,14 @@
 ## ✅ Completado
 
 ### Base de Datos
+
 - ✅ Tabla `users`: Agregado enum `caficultor` al campo `role`
 - ✅ Tabla `users`: Agregado campo `caficultor_status` (none, pending, approved, rejected)
 - ✅ Tabla `caficultor_applications`: Creada con todos los campos necesarios
 - ✅ Índices: Creados para optimizar búsquedas por user_id y status
 
 ### Páginas Frontend
+
 - ✅ `/src/pages/registro.astro` - Página de registro para nuevos usuarios
 - ✅ `/src/pages/solicitar-caficultor.astro` - Página para solicitar rol de caficultor
 - ✅ `/src/pages/login.astro` - Actualizado con link a registro
@@ -16,6 +18,7 @@
 ### Backend - Endpoints de API
 
 #### Autenticación (`/api/auth/`)
+
 - ✅ `POST /register` - Crear cuenta con rol `client`
 - ✅ `GET /verify` - Verificar email con token
 - ✅ `POST /login` - Iniciar sesión
@@ -26,12 +29,14 @@
 - ✅ `GET /caficultor-status` - Ver estado de la solicitud del usuario
 
 #### Gestión de Caficultor (`/api/caficultor/`)
+
 - ✅ `GET /applications` - Admin: listar todas las solicitudes (con paginación implícita)
 - ✅ `GET /applications/:id` - Admin: ver detalles de una solicitud
 - ✅ `POST /applications/:id/approve` - Admin: aprobar solicitud
 - ✅ `POST /applications/:id/reject` - Admin: rechazar solicitud
 
 ### Seguridad
+
 - ✅ Autenticación requerida en endpoints sensibles
 - ✅ Validación de role `admin` en endpoints de gestión
 - ✅ Rate limiting en registro y login
@@ -39,6 +44,7 @@
 - ✅ Auditoría de acciones en `audit_logs`
 
 ### Documentación
+
 - ✅ `CAFICULTOR_SYSTEM.md` - Documentación completa del sistema
 - ✅ Ejemplos de uso en curl
 - ✅ Estructura de requests/responses
@@ -71,6 +77,7 @@ Usuario actualizado: role = "caficultor" (si aprueba)
 ## 🔄 Flujos de Datos
 
 ### Registro de Usuario
+
 1. Usuario va a `/registro`
 2. Completa: nombre, email, contraseña
 3. POST `/api/auth/register` → Usuario creado con rol `client`
@@ -79,6 +86,7 @@ Usuario actualizado: role = "caficultor" (si aprueba)
 6. Usuario puede login en `/login`
 
 ### Solicitud de Caficultor
+
 1. Usuario (autenticado) va a `/solicitar-caficultor`
 2. Completa detalles de finca
 3. POST `/api/auth/request-caficultor` → Crea `caficultor_application`
@@ -86,6 +94,7 @@ Usuario actualizado: role = "caficultor" (si aprueba)
 5. Admin recibe notificación (próximo paso)
 
 ### Revisión Admin
+
 1. Admin accede a dashboard (próximo paso)
 2. GET `/api/caficultor/applications` → Ve lista de solicitudes
 3. GET `/api/caficultor/applications/:id` → Ve detalles
@@ -95,6 +104,7 @@ Usuario actualizado: role = "caficultor" (si aprueba)
 ## 🎯 Próximos Pasos (Por Hacer)
 
 ### Priority 1: Dashboard Admin
+
 - [ ] Crear `/src/pages/admin/caficultor.astro` - Panel de gestión
 - [ ] Tabla con solicitudes pendientes
 - [ ] Modal para ver detalles completos
@@ -102,6 +112,7 @@ Usuario actualizado: role = "caficultor" (si aprueba)
 - [ ] Filtros por estado
 
 ### Priority 2: Notificaciones por Email
+
 - [ ] Email cuando solicitud es aprobada
 - [ ] Email cuando solicitud es rechazada (con motivo)
 - [ ] Email de bienvenida al rol caficultor
@@ -109,18 +120,21 @@ Usuario actualizado: role = "caficultor" (si aprueba)
 - [ ] Triggers en endpoints de aprobación/rechazo
 
 ### Priority 3: Perfil de Usuario Mejorado
+
 - [ ] `/src/pages/cuenta.astro` - Mostrar datos del usuario
 - [ ] Sección de estado de solicitud caficultor
 - [ ] Link a `/solicitar-caficultor` si es eligible
 - [ ] Ver razón de rechazo si fue rechazado
 
 ### Priority 4: Página Pública de Caficultores
+
 - [ ] `/src/pages/caficultores.astro` - Listar caficultores aprobados
 - [ ] Filtros por región, altitud, variedades
 - [ ] Perfil público de cada caficultor
 - [ ] Sistema de reseñas/ratings
 
 ### Priority 5: Marketplace
+
 - [ ] Caficultores pueden crear lotes
 - [ ] Clientes pueden comprar directamente
 - [ ] Sistema de órdenes
@@ -128,19 +142,20 @@ Usuario actualizado: role = "caficultor" (si aprueba)
 
 ## 📊 Estadísticas de Implementación
 
-| Componente | Líneas | Estado |
-|-----------|--------|--------|
-| `/src/pages/registro.astro` | 170 | ✅ |
-| `/src/pages/solicitar-caficultor.astro` | 210 | ✅ |
-| `/server/routes/auth.js` (nuevos endpoints) | 120+ | ✅ |
-| `/server/routes/caficultor.js` | 210 | ✅ |
-| `db/schema.sql` (cambios) | 30 | ✅ |
-| `CAFICULTOR_SYSTEM.md` | 400+ | ✅ |
-| **Total** | **1,140+** | **✅ 100%** |
+| Componente                                  | Líneas     | Estado      |
+| ------------------------------------------- | ---------- | ----------- |
+| `/src/pages/registro.astro`                 | 170        | ✅          |
+| `/src/pages/solicitar-caficultor.astro`     | 210        | ✅          |
+| `/server/routes/auth.js` (nuevos endpoints) | 120+       | ✅          |
+| `/server/routes/caficultor.js`              | 210        | ✅          |
+| `db/schema.sql` (cambios)                   | 30         | ✅          |
+| `CAFICULTOR_SYSTEM.md`                      | 400+       | ✅          |
+| **Total**                                   | **1,140+** | **✅ 100%** |
 
 ## 🧪 Testing
 
 ### Manual Testing Checklist
+
 - [ ] Registro de usuario con datos válidos
 - [ ] Rechazo de registro con email duplicado
 - [ ] Rechazo de registro con contraseña < 6 caracteres
@@ -159,6 +174,7 @@ Usuario actualizado: role = "caficultor" (si aprueba)
 - [ ] Auditoría registra todas las acciones
 
 ### Endpoints a Testear
+
 ```bash
 # 1. Registro
 curl -X POST http://localhost:3000/api/auth/register \
@@ -208,6 +224,7 @@ curl -X POST http://localhost:3000/api/caficultor/applications/1/approve \
 ## 📋 Cambios en Base de Datos
 
 Ejecutar después de desplegar:
+
 ```sql
 -- Si tabla users no tiene estos campos
 ALTER TABLE users MODIFY COLUMN role ENUM('admin', 'client', 'provider', 'caficultor') NOT NULL DEFAULT 'client';
@@ -241,12 +258,14 @@ CREATE INDEX idx_caficultor_apps_status ON caficultor_applications(status);
 ## ✨ Archivos Creados/Modificados
 
 ### Creados
+
 - ✅ `/src/pages/registro.astro`
 - ✅ `/src/pages/solicitar-caficultor.astro`
 - ✅ `/server/routes/caficultor.js`
 - ✅ `/CAFICULTOR_SYSTEM.md`
 
 ### Modificados
+
 - ✅ `/db/schema.sql` - Agregado rol y tabla
 - ✅ `/server/routes/auth.js` - Nuevos endpoints
 - ✅ `/server/index.js` - Importar y registrar caficultor router

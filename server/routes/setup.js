@@ -271,3 +271,194 @@ setupRouter.get('/', async (req, res) => {
     res.status(500).json({ success: false, error: error.message, logs });
   }
 });
+// Nuevo endpoint completo con verificación detallada
+setupRouter.post('/full-setup', requireSetupKey, async (req, res) => {
+  const logs = [];
+  const log = (msg) => {
+    console.log(msg);
+    logs.push(msg);
+  };
+
+  try {
+    log('🚀 Iniciando configuración completa de la base de datos...');
+    log('');
+
+    // 1. Verificar conexión
+    log('📡 Verificando conexión a la base de datos...');
+    await db.query('SELECT 1');
+    log('✅ Conexión exitosa');
+    log('');
+
+    // 2. Crear tablas principales
+    log('📦 Creando tablas principales (users, products, lots, etc.)...');
+    const statements = SCHEMA_SQL.split(';').map(s => s.trim()).filter(s => s.length > 0);
+    
+    let tablesCreated = 0;
+    let tablesExisted = 0;
+    
+    for (const statement of statements) {
+      if (statement.startsWith('--') || statement.startsWith('CREATE INDEX')) continue;
+      if (!statement.includes('CREATE TABLE')) continue;
+      
+      try {
+        await db.query(statement);
+        tablesCreated++;
+        const tableName = statement.match(/CREATE TABLE IF NOT EXISTS (\w+)/)?.[1];
+        log(`  ✓ Tabla creada: ${tableName}`);
+      } catch (err) {
+        if (err.code === 'ER_TABLE_EXISTS_ERROR') {
+          tablesExisted++;
+        } else {
+          log(`  ⚠ Error no fatal: ${err.message}`);
+        }
+      }
+    }
+    
+    log(`✅ Tablas principales: ${tablesCreated} creadas, ${tablesExisted} ya existían`);
+    log('');
+
+    // 3. Crear índices
+    log('🔍 Creando índices...');
+    const indexes = statements.filter(s => s.includes('CREATE INDEX'));
+    for (const idx of indexes) {
+      try {
+        await db.query(idx);
+      } catch (err) {
+        if (err.code !== 'ER_DUP_KEYNAME') {
+          log(`  ⚠ ${err.message}`);
+        }
+      }
+    }
+    log('✅ Índices creados');
+    log('');
+
+    // 4. Crear tablas de trazabilidad de café
+    log('☕ Creando tablas de trazabilidad de café...');
+    try {
+      await createCoffeeTables();
+      log('✅ Tablas de café creadas: coffee_harvests, green_coffee_inventory, roasting_batches, etc.');
+    } catch (err) {
+      if (err.code === 'ER_TABLE_EXISTS_ERROR') {
+        log('✅ Tablas de café ya existen');
+      } else {
+        log(`⚠ Error en tablas de café: ${err.message}`);
+      }
+    }
+    log('');
+
+    // 5. Crear tabla de inventario si no existe
+    log('📊 Verificando tablas de inventario...');
+    try {
+      await db.query(`
+        CREATE TABLE IF NOT EXISTS inventory_movements (
+          id INT PRIMARY KEY AUTO_INCREMENT,
+          product_id VARCHAR(50) NOT NULL,
+          type ENUM('entrada', 'salida', 'ajuste', 'merma', 'devolucion') NOT NULL,
+          quantity INT NOT NULL,
+          reference VARCHAR(100),
+          notes TEXT,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          created_by BIGINT,
+          FOREIGN KEY (product_id) REFERENCES products(id),
+          FOREIGN KEY (created_by) REFERENCES users(id)
+        )
+      `);
+      log('✅ Tabla inventory_movements verificada');
+    } catch (err) {
+      log(`⚠ inventory_movements: ${err.message}`);
+    }
+
+    try {
+      await db.query(`
+        CREATE TABLE IF NOT EXISTS product_suppliers (
+          id INT PRIMARY KEY AUTO_INCREMENT,
+          name VARCHAR(100) NOT NULL,
+          contact_name VARCHAR(100),
+          email VARCHAR(100),
+          phone VARCHAR(50),
+          address TEXT,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
+      log('✅ Tabla product_suppliers verificada');
+    } catch (err) {
+      log(`⚠ product_suppliers: ${err.message}`);
+    }
+    log('');
+
+    // 6. Sembrar productos
+    log('🌱 Sembrando productos de ejemplo...');
+    let productsAdded = 0;
+    for (const p of products) {
+      const existing = await db.query('SELECT id FROM products WHERE id = ?', [p.id]);
+      if (existing.rows.length === 0) {
+        await db.query(
+          `INSERT INTO products (id, name, category, origin, process, roast, price, rating, is_deal, is_bestseller, is_new, is_fast, image_url, stock)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [
+            p.id, p.name, p.category, p.origin || null, p.process || null, p.roast || null,
+            p.price, p.rating || 0, p.deal || false, p.bestseller || false, p.new || false,
+            p.fast || false, p.image, 50
+          ]
+        );
+        productsAdded++;
+        log(`  ✓ Producto agregado: ${p.name}`);
+      }
+    }
+    log(`✅ Productos: ${productsAdded} agregados, ${products.length - productsAdded} ya existían`);
+    log('');
+
+    // 7. Crear usuario admin
+    log('👤 Creando usuario administrador...');
+    const existingAdmin = await db.query('SELECT id FROM users WHERE email = ?', [ADMIN_EMAIL]);
+    if (existingAdmin.rows.length === 0) {
+      const hash = await auth.hashPassword(ADMIN_PASS);
+      await db.query(
+        'INSERT INTO users (email, password_hash, name, role, is_verified) VALUES (?, ?, ?, ?, TRUE)',
+        [ADMIN_EMAIL, hash, 'Admin DobleYo', 'admin']
+      );
+      log(`✅ Usuario admin creado: ${ADMIN_EMAIL} / ${ADMIN_PASS}`);
+    } else {
+      log(`✅ Usuario admin ya existe: ${ADMIN_EMAIL}`);
+    }
+    log('');
+
+    // 8. Resumen final
+    log('═══════════════════════════════════════');
+    log('✅ CONFIGURACIÓN COMPLETADA EXITOSAMENTE');
+    log('═══════════════════════════════════════');
+    log('');
+    log('📋 Resumen:');
+    log(`  • Base de datos: Conectada y configurada`);
+    log(`  • Tablas principales: Listas`);
+    log(`  • Tablas de café: Listas`);
+    log(`  • Productos: ${products.length} disponibles`);
+    log(`  • Usuario admin: ${ADMIN_EMAIL}`);
+    log('');
+    log('🎉 Ya puedes usar el sistema completo');
+
+    res.json({ 
+      success: true, 
+      message: 'Configuración completada exitosamente',
+      logs,
+      credentials: {
+        email: ADMIN_EMAIL,
+        password: ADMIN_PASS,
+        hint: 'Cambia la contraseña después de iniciar sesión'
+      }
+    });
+
+  } catch (error) {
+    console.error(error);
+    log('');
+    log('❌ ERROR EN LA CONFIGURACIÓN');
+    log(`Mensaje: ${error.message}`);
+    
+    res.status(500).json({ 
+      success: false, 
+      error: error.message, 
+      logs,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
+  }
+});

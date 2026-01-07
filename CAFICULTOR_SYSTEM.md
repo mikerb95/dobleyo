@@ -7,6 +7,7 @@ DobleYo implementa un sistema de roles con un flujo especial para el rol de **Ca
 ## Flujo de Usuarios
 
 ### 1. Registro Inicial (Todos los usuarios)
+
 - Usuario accede a `/registro`
 - Completa formulario con: nombre, email, contraseña
 - Se crea cuenta con rol `client` por defecto
@@ -15,6 +16,7 @@ DobleYo implementa un sistema de roles con un flujo especial para el rol de **Ca
 - Puede iniciar sesión en `/login`
 
 ### 2. Solicitud de Rol Caficultor (Opcional)
+
 - Usuario accede a `/solicitar-caficultor` (requiere estar autenticado)
 - Completa formulario con detalles de la finca:
   - Nombre de la finca (obligatorio)
@@ -29,6 +31,7 @@ DobleYo implementa un sistema de roles con un flujo especial para el rol de **Ca
 - Campo `users.caficultor_status` cambia a `pending`
 
 ### 3. Revisión Admin
+
 - Admin accede a dashboard para ver solicitudes pendientes
 - Admin revisa detalles de la finca
 - Admin puede:
@@ -38,12 +41,14 @@ DobleYo implementa un sistema de roles con un flujo especial para el rol de **Ca
 ### 4. Estados del Usuario
 
 #### Campo `role` en tabla `users`
+
 - `admin` - Administrador
 - `client` - Cliente estándar (puede comprar)
 - `provider` - Proveedor externo
 - `caficultor` - Productor de café registrado
 
 #### Campo `caficultor_status` en tabla `users`
+
 - `none` - No tiene solicitud (valor por defecto)
 - `pending` - Solicitud enviada, en revisión
 - `approved` - Solicitud aprobada, es caficultor
@@ -54,6 +59,7 @@ DobleYo implementa un sistema de roles con un flujo especial para el rol de **Ca
 ### Registro e Autenticación
 
 #### `POST /api/auth/register`
+
 ```json
 {
   "name": "Juan Pérez",
@@ -61,12 +67,15 @@ DobleYo implementa un sistema de roles con un flujo especial para el rol de **Ca
   "password": "segura123"
 }
 ```
+
 Response: Usuario creado con rol `client`
 
 #### `GET /api/auth/verify?token=...`
+
 Verifica el email del usuario
 
 #### `POST /api/auth/login`
+
 ```json
 {
   "email": "juan@example.com",
@@ -75,11 +84,13 @@ Verifica el email del usuario
 ```
 
 #### `GET /api/auth/me`
+
 Retorna datos del usuario autenticado incluyendo `caficultor_status`
 
 ### Solicitudes de Caficultor
 
 #### `POST /api/auth/request-caficultor`
+
 Requiere autenticación. Usuario solicita rol de caficultor.
 
 ```json
@@ -95,6 +106,7 @@ Requiere autenticación. Usuario solicita rol de caficultor.
 ```
 
 Response:
+
 ```json
 {
   "message": "Solicitud enviada...",
@@ -103,9 +115,11 @@ Response:
 ```
 
 #### `GET /api/auth/caficultor-status`
+
 Requiere autenticación. Usuario consulta el estado de su solicitud.
 
 Response:
+
 ```json
 {
   "hasApplication": true,
@@ -121,9 +135,11 @@ Response:
 ### Admin - Gestión de Solicitudes
 
 #### `GET /api/caficultor/applications`
+
 Requiere rol `admin`. Lista todas las solicitudes.
 
 Response:
+
 ```json
 {
   "applications": [
@@ -143,9 +159,11 @@ Response:
 ```
 
 #### `GET /api/caficultor/applications/:id`
+
 Requiere rol `admin`. Detalle de una solicitud específica.
 
 #### `POST /api/caficultor/applications/:id/approve`
+
 Requiere rol `admin`. Aprueba la solicitud de caficultor.
 
 ```json
@@ -155,11 +173,13 @@ Requiere rol `admin`. Aprueba la solicitud de caficultor.
 ```
 
 Resultado:
+
 - Usuario obtiene rol `caficultor`
 - `caficultor_status` pasa a `approved`
 - Aplicación queda con status `approved`
 
 #### `POST /api/caficultor/applications/:id/reject`
+
 Requiere rol `admin`. Rechaza la solicitud.
 
 ```json
@@ -169,6 +189,7 @@ Requiere rol `admin`. Rechaza la solicitud.
 ```
 
 Resultado:
+
 - Usuario mantiene rol `client`
 - `caficultor_status` pasa a `rejected`
 - Aplicación queda con status `rejected` con el motivo
@@ -176,6 +197,7 @@ Resultado:
 ## Base de Datos
 
 ### Tabla `users` (cambios)
+
 ```sql
 ALTER TABLE users MODIFY COLUMN role ENUM('admin', 'client', 'provider', 'caficultor');
 ALTER TABLE users ADD COLUMN caficultor_status ENUM('none', 'pending', 'approved', 'rejected') DEFAULT 'none';
@@ -183,6 +205,7 @@ ALTER TABLE users ADD INDEX idx_users_caficultor_status ON caficultor_status;
 ```
 
 ### Tabla `caficultor_applications` (nueva)
+
 ```sql
 CREATE TABLE caficultor_applications (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
@@ -210,24 +233,28 @@ CREATE INDEX idx_caficultor_apps_status ON caficultor_applications(status);
 ## Páginas Públicas
 
 ### `/registro` - Registro de Usuarios
+
 - Acceso público
 - Formulario: nombre, email, contraseña, confirmar contraseña
 - Crea usuario con rol `client`
 - Redirecciona a login después del éxito
 
 ### `/login` - Iniciar Sesión
+
 - Acceso público
 - Formulario: email, contraseña
 - Link para ir a registro si no tiene cuenta
 - Redirecciona a `/cuenta` después del éxito
 
 ### `/solicitar-caficultor` - Solicitud de Caficultor
+
 - Requiere estar autenticado (redirecciona a login si no)
 - Formulario con detalles de la finca
 - Validación: no permite múltiples solicitudes pendientes
 - Redirecciona a `/cuenta` después del envío
 
 ### `/cuenta` - Perfil de Usuario
+
 - Requiere estar autenticado
 - Muestra datos del usuario
 - **Próxima fase**: Agregar sección para ver estado de solicitud de caficultor
@@ -236,18 +263,21 @@ CREATE INDEX idx_caficultor_apps_status ON caficultor_applications(status);
 ## Flujo de Integración en Frontend (Próximas Fases)
 
 ### En `/cuenta`:
+
 ```javascript
 // Obtener datos del usuario
-const user = await fetch('/api/auth/me').then(r => r.json());
+const user = await fetch("/api/auth/me").then((r) => r.json());
 
 // Mostrar botón "Solicitar Rol de Caficultor" si es client
-if (user.role === 'client' && user.caficultor_status === 'none') {
+if (user.role === "client" && user.caficultor_status === "none") {
   showButton("Solicitar Rol de Caficultor", "/solicitar-caficultor");
 }
 
 // Mostrar estado si tiene solicitud
-if (user.caficultor_status !== 'none') {
-  const status = await fetch('/api/auth/caficultor-status').then(r => r.json());
+if (user.caficultor_status !== "none") {
+  const status = await fetch("/api/auth/caficultor-status").then((r) =>
+    r.json()
+  );
   if (status.hasApplication) {
     showStatus(status.application);
   }
@@ -257,6 +287,7 @@ if (user.caficultor_status !== 'none') {
 ## Testing
 
 ### Test 1: Flujo Completo de Registro a Caficultor
+
 ```bash
 # 1. Registrar usuario
 curl -X POST http://localhost:3000/api/auth/register \
@@ -309,21 +340,25 @@ curl -X POST http://localhost:3000/api/caficultor/applications/1/approve \
 ## Próximas Fases
 
 1. **Dashboard Admin de Caficultor**
+
    - Página para ver todas las solicitudes
    - Interfaz para aprobar/rechazar
    - Filtros por estado, región, fecha
 
 2. **Notificaciones por Email**
+
    - Email cuando solicitud sea aprobada
    - Email cuando solicitud sea rechazada con motivo
    - Email de bienvenida a caficultor
 
 3. **Perfil Público de Caficultor**
+
    - Página pública mostrando caficultores registrados
    - Detalles de la finca (región, altitud, variedades)
    - Sistema de reseñas/ratings
 
 4. **Marketplace de Lotes**
+
    - Caficultores pueden listar sus lotes
    - Precios desde el agricultor
    - Sistema de órdenes directas
