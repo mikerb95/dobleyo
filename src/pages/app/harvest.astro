@@ -264,12 +264,19 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
           }),
         });
 
-        if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.message || "Error al registrar lote");
+        let data;
+        const contentType = response.headers.get("content-type");
+        if (contentType && contentType.includes("application/json")) {
+          data = await response.json();
+        } else {
+          const text = await response.text();
+          throw new Error(`Respuesta inválida del servidor: ${text}`);
         }
 
-        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.error || data.message || "Error al registrar lote");
+        }
+
         const lotId = data.lotId;
 
         // Mostrar confirmación

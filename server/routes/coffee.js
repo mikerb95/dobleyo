@@ -14,12 +14,13 @@ coffeeRouter.use(authMiddleware);
 
 // 1. CREAR LOTE (Recolección en Finca)
 coffeeRouter.post('/harvest', async (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
   try {
     const { farm, variety, climate, process, aroma, tasteNotes } = req.body;
 
     // Validaciones
     if (!farm || !variety || !climate || !process || !aroma || !tasteNotes) {
-      return res.status(400).json({ error: 'Faltan campos requeridos' });
+      return res.status(400).json({ success: false, error: 'Faltan campos requeridos' });
     }
 
     // Generar ID de lote
@@ -31,7 +32,7 @@ coffeeRouter.post('/harvest', async (req, res) => {
 
     const farmInfo = farmMap[farm];
     if (!farmInfo) {
-      return res.status(400).json({ error: 'Finca inválida' });
+      return res.status(400).json({ success: false, error: 'Finca inválida' });
     }
 
     const lotNumber = String(Math.floor(Math.random() * 100) + 1).padStart(2, '0');
@@ -44,15 +45,19 @@ coffeeRouter.post('/harvest', async (req, res) => {
       [lotId, farm, variety, climate, process, aroma, tasteNotes]
     );
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
-      lotId,
-      harvestId: result.rows.insertId,
-      message: 'Lote registrado correctamente'
+      message: 'Lote registrado correctamente',
+      lotId: lotId,
+      harvestId: result.insertId || result.rows?.[0]?.insertId
     });
   } catch (err) {
     console.error('Error en harvest:', err);
-    res.status(500).json({ error: err.message });
+    return res.status(500).json({ 
+      success: false, 
+      error: 'Error al registrar lote',
+      message: err.message 
+    });
   }
 });
 
