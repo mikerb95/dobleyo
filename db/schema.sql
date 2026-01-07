@@ -6,13 +6,38 @@ CREATE TABLE IF NOT EXISTS users (
     email VARCHAR(255) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
     name VARCHAR(120),
-    role ENUM('admin', 'client', 'provider') NOT NULL DEFAULT 'client',
+    role ENUM('admin', 'client', 'provider', 'caficultor') NOT NULL DEFAULT 'client',
     is_verified BOOLEAN NOT NULL DEFAULT FALSE,
+    caficultor_status ENUM('none', 'pending', 'approved', 'rejected') NOT NULL DEFAULT 'none',
     last_login_at TIMESTAMP NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP
 );
 CREATE INDEX idx_users_role ON users(role);
+CREATE INDEX idx_users_caficultor_status ON users(caficultor_status);
+
+-- Caficultor Applications
+CREATE TABLE IF NOT EXISTS caficultor_applications (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id BIGINT NOT NULL,
+    farm_name VARCHAR(160) NOT NULL,
+    region VARCHAR(80) NOT NULL,
+    altitude INT,
+    hectares DECIMAL(10,2),
+    varieties_cultivated TEXT,
+    certifications TEXT,
+    description TEXT,
+    status ENUM('pending', 'approved', 'rejected') NOT NULL DEFAULT 'pending',
+    admin_notes TEXT,
+    reviewed_by BIGINT,
+    reviewed_at TIMESTAMP NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (reviewed_by) REFERENCES users(id) ON DELETE SET NULL
+);
+CREATE INDEX idx_caficultor_apps_user ON caficultor_applications(user_id);
+CREATE INDEX idx_caficultor_apps_status ON caficultor_applications(status);
 
 -- Providers Profile
 CREATE TABLE IF NOT EXISTS providers (

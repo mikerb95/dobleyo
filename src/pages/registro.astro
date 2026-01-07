@@ -1,0 +1,218 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout>
+  <section class="card" style="max-width:440px; margin:2rem auto 0">
+    <div class="p">
+      <h1>Crear cuenta</h1>
+      <p class="muted" style="margin-top:-.4rem">
+        Únete a DobleYo y comienza tu viaje con café de calidad.
+      </p>
+      <form
+        id="registerForm"
+        class="form"
+        onsubmit="return false"
+        style="display:grid; gap:.75rem; margin-top:.75rem"
+      >
+        <label
+          >Nombre completo<input
+            id="regName"
+            type="text"
+            placeholder="Tu nombre"
+            required
+          /></label
+        >
+        <label
+          >Correo<input
+            id="regEmail"
+            type="email"
+            placeholder="tu@correo.com"
+            required
+          /></label
+        >
+        <label
+          >Contraseña<input
+            id="regPass"
+            type="password"
+            placeholder="Mínimo 6 caracteres"
+            required
+          /></label
+        >
+        <label
+          >Confirmar contraseña<input
+            id="regPassConfirm"
+            type="password"
+            placeholder="••••••••"
+            required
+          /></label
+        >
+        <button class="btn" id="regBtn" type="submit">Crear cuenta</button>
+      </form>
+      <div
+        id="regError"
+        class="muted"
+        style="color:#b91c1c; display:none; margin-top:.35rem"
+      >
+      </div>
+      <p style="text-align:center; margin-top:1rem; font-size:0.9rem">
+        ¿Ya tienes cuenta? <a href="/login" style="color:#c67b4e">Inicia sesión</a>
+      </p>
+    </div>
+  </section>
+
+  <script>
+    (function () {
+      const f = document.getElementById("registerForm");
+      const err = document.getElementById("regError");
+      const btn = document.getElementById("regBtn");
+
+      f.addEventListener("submit", async function () {
+        const name = (document.getElementById("regName").value || "").trim();
+        const email = (document.getElementById("regEmail").value || "").trim();
+        const password = (document.getElementById("regPass").value || "").trim();
+        const passConfirm = (document.getElementById("regPassConfirm").value || "").trim();
+
+        // Validaciones básicas
+        if (!name || !email || !password || !passConfirm) {
+          showError("Completa todos los campos.");
+          return;
+        }
+
+        if (password.length < 6) {
+          showError("La contraseña debe tener al menos 6 caracteres.");
+          return;
+        }
+
+        if (password !== passConfirm) {
+          showError("Las contraseñas no coinciden.");
+          return;
+        }
+
+        // UI Loading state
+        btn.disabled = true;
+        btn.textContent = "Creando cuenta...";
+        err.style.display = "none";
+
+        try {
+          const res = await fetch("/api/auth/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({ name, email, password }),
+          });
+
+          const data = await res.json();
+
+          if (!res.ok) {
+            throw new Error(data.error || data.message || "Error al registrar");
+          }
+
+          // Mostrar éxito y redirigir
+          showError("✓ Cuenta creada. Revisa tu correo para verificar.", true);
+          setTimeout(() => {
+            window.location.href = "/login";
+          }, 2000);
+        } catch (e) {
+          showError(e.message);
+          btn.disabled = false;
+          btn.textContent = "Crear cuenta";
+        }
+      });
+
+      function showError(msg, isSuccess = false) {
+        err.textContent = msg;
+        err.style.color = isSuccess ? "#16a34a" : "#b91c1c";
+        err.style.display = "block";
+      }
+    })();
+  </script>
+
+  <style>
+    .card {
+      background: #f7f3ef;
+      border: 1px solid #e8dfd6;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .p {
+      padding: 2rem;
+    }
+
+    h1 {
+      color: #251a14;
+      font-size: 1.75rem;
+      font-family: "Playfair Display", serif;
+      margin: 0 0 0.5rem;
+    }
+
+    .muted {
+      color: #6b5d54;
+      font-size: 0.95rem;
+    }
+
+    .form {
+      margin: 1.5rem 0;
+    }
+
+    label {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      color: #251a14;
+      font-weight: 500;
+      font-size: 0.9rem;
+    }
+
+    input {
+      padding: 0.75rem;
+      border: 1px solid #d4ccc4;
+      border-radius: 6px;
+      font-size: 1rem;
+      background: white;
+      color: #251a14;
+      transition: border-color 0.2s;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #c67b4e;
+      box-shadow: 0 0 0 3px rgba(198, 123, 78, 0.1);
+    }
+
+    .btn {
+      background: #251a14;
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 6px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn:hover:not(:disabled) {
+      background: #3d2d23;
+    }
+
+    .btn:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+
+    p {
+      margin: 0;
+    }
+
+    a {
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    a:hover {
+      color: #a0602a;
+    }
+  </style>
+</Layout>
