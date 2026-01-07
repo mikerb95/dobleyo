@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import '../../../public/assets/css/sales-table.css';
+// import '../../../public/assets/css/sales-table.css';
 
 export default function SalesTable() {
   const [sales, setSales] = useState([]);

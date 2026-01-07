@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+
+let L;
 
 export default function SalesHeatmap() {
   const mapRef = useRef(null);
@@ -9,6 +10,15 @@ export default function SalesHeatmap() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [maxOrders, setMaxOrders] = useState(1);
+
+  // Importar leaflet dinámicamente
+  useEffect(() => {
+    if (typeof window !== 'undefined' && !L) {
+      import('leaflet').then(module => {
+        L = module.default;
+      });
+    }
+  }, []);
 
   // Fetch heatmap data
   useEffect(() => {
