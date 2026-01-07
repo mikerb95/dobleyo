@@ -16,21 +16,46 @@ function escapeHtml(str: string) {
 ---
 
 <article class="card">
-  <img src={product.image} alt={product.name} />
-  <div class="p">
-    <div class="muted" style="font-size:.85rem">
-      {product.category}{product.origin ? " · " + product.origin : ""}
+  <a href={`/producto/${product.id}`} class="card-link">
+    <img src={product.image} alt={product.name} />
+    <div class="p">
+      <div class="muted" style="font-size:.85rem">
+        {product.category}{product.origin ? " · " + product.origin : ""}
+      </div>
+      <h3>{product.name}</h3>
+      <div class="muted" style="font-size:.85rem">
+        {product.process || ""}{product.process && product.roast ? " · " : ""}{
+          product.roast || ""
+        }
+      </div>
+      <div class="price">${product.price.toLocaleString("es-CO")}</div>
     </div>
-    <h3>{product.name}</h3>
-    <div class="muted" style="font-size:.85rem">
-      {product.process || ""}{product.process && product.roast ? " · " : ""}{
-        product.roast || ""
-      }
-    </div>
-    <div class="price">${product.price.toLocaleString("es-CO")}</div>
-    <div style="margin-top:.35rem; display:flex; gap:.5rem">
+  </a>
+  <div class="card-actions">
+    <div style="display:flex; gap:.5rem; padding: 0 1rem 1rem;">
       <button class="btn small" data-add={product.id}>Agregar</button>
       <a class="btn outline small" href="/carrito" data-link>Ver carrito</a>
     </div>
   </div>
 </article>
+
+<style>
+  .card-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+  }
+  
+  .card-link:hover h3 {
+    color: #8b6f47;
+  }
+  
+  .card {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .card-actions {
+    margin-top: auto;
+  }
+</style>

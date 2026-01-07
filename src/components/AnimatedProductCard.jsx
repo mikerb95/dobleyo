@@ -55,47 +55,51 @@ export default function AnimatedProductCard({ product, index }) {
       variants={cardVariants}
     >
       <motion.div className="card-inner" variants={hoverVariants}>
-        <motion.div 
-          className="product-image"
-          whileHover="hover"
-          variants={imageVariants}
-        >
-          {product.image ? (
-            <img src={product.image} alt={product.name} />
-          ) : (
-            <div className="placeholder">
-              {product.name.charAt(0)}
-            </div>
-          )}
-          
-          {product.badge && (
-            <motion.span
-              className="badge"
-              variants={badgeVariants}
-              initial="hidden"
-              animate="visible"
-            >
-              {product.badge}
-            </motion.span>
-          )}
-        </motion.div>
-
-        <div className="product-content">
-          <h3>{product.name}</h3>
-          <p className="description">{product.description}</p>
-          
-          <motion.div
-            className="price-section"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
+        <a href={`/producto/${product.id}`} className="product-link">
+          <motion.div 
+            className="product-image"
+            whileHover="hover"
+            variants={imageVariants}
           >
-            <span className="price">${product.price}</span>
-            {product.discount && (
-              <span className="discount">{product.discount}% OFF</span>
+            {product.image ? (
+              <img src={product.image} alt={product.name} />
+            ) : (
+              <div className="placeholder">
+                {product.name.charAt(0)}
+              </div>
+            )}
+            
+            {product.badge && (
+              <motion.span
+                className="badge"
+                variants={badgeVariants}
+                initial="hidden"
+                animate="visible"
+              >
+                {product.badge}
+              </motion.span>
             )}
           </motion.div>
 
+          <div className="product-content">
+            <h3>{product.name}</h3>
+            <p className="description">{product.description}</p>
+            
+            <motion.div
+              className="price-section"
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              transition={{ delay: 0.2 }}
+            >
+              <span className="price">${product.price}</span>
+              {product.discount && (
+                <span className="discount">{product.discount}% OFF</span>
+              )}
+            </motion.div>
+          </div>
+        </a>
+
+        <div className="card-actions">
           <motion.button
             className="btn-add-cart"
             whileHover={{ scale: 1.05 }}
@@ -122,6 +126,14 @@ export default function AnimatedProductCard({ product, index }) {
           display: flex;
           flex-direction: column;
           height: 100%;
+        }
+
+        .product-link {
+          text-decoration: none;
+          color: inherit;
+          display: flex;
+          flex-direction: column;
+          flex: 1;
         }
 
         .product-image {
@@ -161,8 +173,13 @@ export default function AnimatedProductCard({ product, index }) {
           color: white;
           padding: 0.4rem 0.8rem;
           border-radius: 20px;
-          font-size: 0.75rem;
-          font-weight: bold;
+          padding-bottom: 0;
+          display: flex;
+          flex-direction: column;
+        }
+
+        .card-actions {
+          padding: 0 1.5rem 1.5rem
           text-transform: uppercase;
         }
 

@@ -1,0 +1,106 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import CoffeeDetail from '../../components/CoffeeDetail.jsx';
+import AccessoryDetail from '../../components/AccessoryDetail.jsx';
+import { products } from '../../data/products.ts';
+
+// Import CSS
+import '../../../public/assets/css/product-detail.css';
+
+export async function getStaticPaths() {
+  return products.map((product) => ({
+    params: { slug: product.id },
+    props: { product },
+  }));
+}
+
+const { product } = Astro.props;
+const isCoffee = product.category === 'Cafés';
+
+// Para cafés, vamos a simular datos del perfil de taza por ahora
+// En producción esto vendría de la base de datos (tabla lots)
+const coffeeProfile = isCoffee ? {
+  aroma: product.id === 'cf-sierra' ? 'Floral, cítrico' : 
+         product.id === 'cf-huila' ? 'Frutal, caramelo' :
+         'Chocolate, nuez',
+  flavorNotes: product.id === 'cf-sierra' ? 'Naranja, jazmín, panela' :
+               product.id === 'cf-huila' ? 'Frutas rojas, miel, durazno' :
+               'Chocolate oscuro, caramelo, almendra',
+  acidity: product.id === 'cf-sierra' ? 'Alta, brillante' :
+           product.id === 'cf-huila' ? 'Media-alta, dulce' :
+           'Baja, suave',
+  body: product.id === 'cf-sierra' ? 'Medio, sedoso' :
+        product.id === 'cf-huila' ? 'Medio-alto, cremoso' :
+        'Alto, intenso',
+  balance: 'Excelente',
+  score: product.rating * 20, // Convertir rating de 5 a 100
+  altitude: product.origin === 'Sierra Nevada' ? '1600-2000 msnm' :
+            product.origin === 'Huila' ? '1500-1900 msnm' :
+            '1700-2100 msnm',
+  variety: product.id === 'cf-sierra' ? 'Caturra, Castillo' :
+           product.id === 'cf-huila' ? 'Caturra, Colombia' :
+           'Típica, Caturra',
+  farm: product.id === 'cf-sierra' ? 'Finca La Esperanza' :
+        product.id === 'cf-huila' ? 'Finca El Paraíso' :
+        'Finca Los Alpes',
+  producer: product.id === 'cf-sierra' ? 'José Martínez' :
+            product.id === 'cf-huila' ? 'María Rodríguez' :
+            'Carlos López',
+} : null;
+
+// Para accesorios, datos adicionales
+const accessoryDetails = !isCoffee ? {
+  brand: product.id === 'acc-molinillo' ? 'Hario' : 'Chemex',
+  material: product.id === 'acc-molinillo' ? 'Acero inoxidable, cerámica' : 'Vidrio borosilicato, madera',
+  dimensions: product.id === 'acc-molinillo' ? '15 x 10 x 20 cm' : '20 x 13 x 23 cm',
+  weight: product.id === 'acc-molinillo' ? '450g' : '680g',
+  capacity: product.id === 'acc-chemex' ? '6 tazas (900ml)' : null,
+  features: product.id === 'acc-molinillo' ? [
+    'Molido ajustable de fino a grueso',
+    'Muelas de cerámica para mayor durabilidad',
+    'Capacidad de 30g de café',
+    'Fácil limpieza',
+    'Diseño ergonómico',
+  ] : [
+    'Vidrio resistente al calor',
+    'Collar de madera natural',
+    'Filtros de papel incluidos (100 unidades)',
+    'Diseño icónico',
+    'Fácil de limpiar',
+  ],
+  inBox: product.id === 'acc-molinillo' ? [
+    '1 Molinillo manual',
+    'Cepillo de limpieza',
+    'Manual de instrucciones',
+  ] : [
+    '1 Chemex 6 tazas',
+    '100 filtros de papel',
+    'Manual de preparación',
+  ],
+} : null;
+---
+
+<Layout title={`${product.name} - DobleYo`}>
+  <div class="product-detail-page">
+    {isCoffee ? (
+      <CoffeeDetail 
+        client:load
+        product={product} 
+        profile={coffeeProfile}
+      />
+    ) : (
+      <AccessoryDetail 
+        client:load
+        product={product}
+        details={accessoryDetails}
+      />
+    )}
+  </div>
+</Layout>
+
+<style>
+  .product-detail-page {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f8f4ed 0%, #faf7f2 100%);
+  }
+</style>
