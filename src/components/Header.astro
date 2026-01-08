@@ -342,13 +342,4 @@
       }
     });
   })();
-
-    // Cerrar dropdown al hacer click fuera
-    document.addEventListener('click', (e) => {
-      if (!userDropdown.contains(e.target) && !userBtn.contains(e.target)) {
-        userDropdown.classList.remove('active');
-        userBtn.setAttribute('aria-expanded', 'false');
-      }
-    });
-  })();
 </script>
