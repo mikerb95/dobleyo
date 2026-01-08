@@ -1,4 +1,4 @@
-// Panel de admin (entorno estatico): pseudo auth y CRUD guardando datos en localStorage
+// Panel de admin con autenticacion JWT real
 (function(){
   const $ = (s, r=document) => r.querySelector(s);
   const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
@@ -12,15 +12,45 @@
   const prodTable = $('#prodTable tbody');
   const blogTable = $('#blogTable tbody');
 
-  // credenciales demo (estatico): admin@dobleyo.local / dobleyo-admin
-  const KEY_AUTH = 'dbyo-admin-token';
   const KEY_LOTS = 'dbyo-lots';
   const KEY_PROD = 'dbyo-products';
   const KEY_BLOG = 'dbyo-blog';
 
-  function isAuth(){ return !!localStorage.getItem(KEY_AUTH); }
-  function login(){ localStorage.setItem(KEY_AUTH, '1'); render(); }
-  function logout(){ localStorage.removeItem(KEY_AUTH); render(); }
+  // Verificar autenticacion con el backend
+  async function checkAuth() {
+    const token = localStorage.getItem('adminToken');
+    if (!token) return false;
+
+    try {
+      const response = await fetch('/api/auth/me', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      
+      if (!response.ok) {
+        localStorage.removeItem('adminToken');
+        return false;
+      }
+
+      const user = await response.json();
+      // Verificar que sea admin
+      if (user.role !== 'admin') {
+        localStorage.removeItem('adminToken');
+        alert('Acceso denegado. Solo administradores pueden acceder.');
+        window.location.href = '/login';
+        return false;
+      }
+      
+      return true;
+    } catch (error) {
+      localStorage.removeItem('adminToken');
+      return false;
+    }
+  }
+
+  function logout() {
+    localStorage.removeItem('adminToken');
+    window.location.href = '/admin/login';
+  }
 
   function load(key, fallback){ try{ const x = JSON.parse(localStorage.getItem(key)||'null'); return Array.isArray(x)?x:fallback; }catch{ return fallback; } }
   function save(key, data){ localStorage.setItem(key, JSON.stringify(data)); }
@@ -34,12 +64,18 @@
   const seedLots = [];
   const seedBlog = [];
 
-  function render(){
-    const authed = isAuth();
+  async function render(){
+    const authed = await checkAuth();
     if (!loginView || !adminView) return;
-    loginView.style.display = authed ? 'none' : '';
-    adminView.style.display = authed ? '' : 'none';
-    if (!authed) return;
+    
+    if (!authed) {
+      // Redirigir a login si no esta autenticado
+      window.location.href = '/admin/login';
+      return;
+    }
+    
+    loginView.style.display = 'none';
+    adminView.style.display = '';
 
   // pestanas
     const tabs = $$('[data-tab]');
@@ -143,8 +179,13 @@
     save(KEY_BLOG, arr); render();
   }
 
-  // Conexion de login
-  if (loginBtn) loginBtn.onclick = login;
+  // Conexion de login - redirigir a pagina de login
+  if (loginBtn) {
+    loginBtn.onclick = () => {
+      window.location.href = '/admin/login';
+    };
+  }
   if (logoutBtn) logoutBtn.onclick = logout;
+  
   render();
 })();

@@ -59,15 +59,11 @@
   </header>
 
   <main class="container admin-wrap">
-    <section id="loginView" class="login">
-      <h1>Acceso administrador</h1>
-      <p class="muted" style="margin-top:-.4rem">Uso de desarrollo: este formulario es solo para pruebas en entorno estático.</p>
-      <div class="form" style="display:grid; gap:.75rem; margin-top:.75rem">
-        <label>Correo<input id="admEmail" type="email" placeholder="admin@dobleyo.local" value="admin@dobleyo.local"></label>
-        <label>Contraseña<input id="admPass" type="password" placeholder="••••••••" value="dobleyo-admin"></label>
-        <button class="btn" id="admLoginBtn" type="button">Iniciar sesión</button>
+    <section id="loginView" style="display:none">
+      <div class="login">
+        <h1>Acceso administrador</h1>
+        <p class="muted">Verificando autenticación...</p>
       </div>
-      <p class="muted" style="margin-top:.5rem">Al iniciar sesión se guardará un token en tu navegador. No uses credenciales reales aquí.</p>
     </section>
 
     <section id="adminView" style="display:none">

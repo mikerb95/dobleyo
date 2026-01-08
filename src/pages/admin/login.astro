@@ -1,0 +1,206 @@
+---
+import Layout from "../../layouts/Layout.astro";
+---
+
+<Layout title="Admin Login - DobleYo">
+  <div class="admin-login-page">
+    <div class="login-container">
+      <div class="login-card">
+        <h1>Panel de Administración</h1>
+        <p class="login-subtitle">DobleYo Café</p>
+
+        <form id="adminLoginForm">
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              required
+              placeholder="admin@dobleyo.cafe"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="password">Contraseña</label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              required
+              placeholder="••••••••"
+            />
+          </div>
+
+          <div id="errorMessage" class="error-message" style="display: none;"></div>
+
+          <button type="submit" class="login-button">
+            Iniciar Sesión
+          </button>
+        </form>
+
+        <p class="form-note">
+          Solo usuarios con rol de administrador pueden acceder
+        </p>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .admin-login-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #8b6f47 0%, #6b5637 100%);
+    padding: 2rem;
+  }
+
+  .login-container {
+    width: 100%;
+    max-width: 400px;
+  }
+
+  .login-card {
+    background: white;
+    padding: 3rem;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  }
+
+  .login-card h1 {
+    font-size: 1.875rem;
+    color: #1f2937;
+    margin: 0 0 0.5rem 0;
+    text-align: center;
+    font-weight: 700;
+  }
+
+  .login-subtitle {
+    text-align: center;
+    color: #8b6f47;
+    margin: 0 0 2rem 0;
+    font-weight: 600;
+  }
+
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+
+  .form-group label {
+    display: block;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+  }
+
+  .form-group input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.3s;
+  }
+
+  .form-group input:focus {
+    outline: none;
+    border-color: #8b6f47;
+    box-shadow: 0 0 0 3px rgba(139, 111, 71, 0.1);
+  }
+
+  .form-group input:disabled {
+    background: #f3f4f6;
+    cursor: not-allowed;
+  }
+
+  .error-message {
+    background: #fee2e2;
+    color: #991b1b;
+    padding: 0.75rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    font-size: 0.875rem;
+    text-align: center;
+  }
+
+  .login-button {
+    width: 100%;
+    padding: 0.875rem;
+    background: linear-gradient(135deg, #8b6f47 0%, #6b5637 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 1rem;
+  }
+
+  .login-button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(139, 111, 71, 0.3);
+  }
+
+  .login-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .form-note {
+    font-size: 0.8125rem;
+    color: #6b7280;
+    text-align: center;
+    margin: 1rem 0 0;
+  }
+</style>
+
+<script>
+  const form = document.getElementById('adminLoginForm') as HTMLFormElement;
+  const errorDiv = document.getElementById('errorMessage') as HTMLDivElement;
+  const submitBtn = form?.querySelector('button[type="submit"]') as HTMLButtonElement;
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const formData = new FormData(form);
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Iniciando sesión...';
+    errorDiv.style.display = 'none';
+
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Error al iniciar sesión');
+      }
+
+      // Verificar rol de admin
+      if (data.user && data.user.role !== 'admin') {
+        throw new Error('Acceso denegado. Solo administradores pueden acceder.');
+      }
+
+      // Guardar token
+      localStorage.setItem('adminToken', data.token);
+
+      // Redirigir a admin.html
+      window.location.href = '/admin.html';
+    } catch (error) {
+      errorDiv.textContent = error.message;
+      errorDiv.style.display = 'block';
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Iniciar Sesión';
+    }
+  });
+</script>
