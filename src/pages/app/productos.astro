@@ -893,12 +893,6 @@ import AppLayout from "../../layouts/AppLayout.astro";
         category === "cafe" ? "block" : "none";
     }
 
-    function updateCoffeeFieldsVisibility() {
-      const category = document.getElementById("productCategory").value;
-      document.getElementById("coffeeFields").style.display =
-        category === "cafe" ? "block" : "none";
-    }
-
     document
       .getElementById("productCategory")
       .addEventListener("change", updateCoffeeFieldsVisibility);
