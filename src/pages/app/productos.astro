@@ -769,19 +769,21 @@ import AppLayout from "../../layouts/AppLayout.astro";
         product.image_url || "";
       document.getElementById("productDimensions").value =
         product.dimensions || "";
-      
+
       // Convertir array de imágenes a string separado por comas
       if (product.images) {
         try {
-          const imagesArray = typeof product.images === 'string' 
-            ? JSON.parse(product.images) 
-            : product.images;
-          document.getElementById("productImages").value = imagesArray.join(", ");
+          const imagesArray =
+            typeof product.images === "string"
+              ? JSON.parse(product.images)
+              : product.images;
+          document.getElementById("productImages").value =
+            imagesArray.join(", ");
         } catch (e) {
           document.getElementById("productImages").value = product.images;
         }
       }
-      
+
       document.getElementById("productRating").value = product.rating || "0";
       document.getElementById("productDeal").checked = product.is_deal || false;
       document.getElementById("productBestseller").checked =
@@ -871,19 +873,25 @@ import AppLayout from "../../layouts/AppLayout.astro";
             : null,
           weight_unit: document.getElementById("productWeightUnit").value,
           image_url: document.getElementById("productImageUrl").value || null,
-          dimensions: document.getElementById("productDimensions").value || null,
-          rating: parseFloat(document.getElementById("productRating").value) || 0,
+          dimensions:
+            document.getElementById("productDimensions").value || null,
+          rating:
+            parseFloat(document.getElementById("productRating").value) || 0,
           is_deal: document.getElementById("productDeal").checked,
           is_bestseller: document.getElementById("productBestseller").checked,
           is_new: document.getElementById("productNew").checked,
           is_fast: document.getElementById("productFast").checked,
           is_active: document.getElementById("productActive").checked,
-          meta_keywords: document.getElementById("productMetaKeywords").value || null,
-          meta_description: document.getElementById("productMetaDescription").value || null,
+          meta_keywords:
+            document.getElementById("productMetaKeywords").value || null,
+          meta_description:
+            document.getElementById("productMetaDescription").value || null,
         };
 
         // Procesar imágenes adicionales (convertir CSV a JSON array)
-        const imagesInput = document.getElementById("productImages").value.trim();
+        const imagesInput = document
+          .getElementById("productImages")
+          .value.trim();
         if (imagesInput) {
           productData.images = imagesInput
             .split(",")
