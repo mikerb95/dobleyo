@@ -250,6 +250,72 @@ import AppLayout from "../../layouts/AppLayout.astro";
                 placeholder="ej: Claro, Medio, Oscuro"
               />
             </div>
+
+            <!-- Checkbox Es Trazable -->
+            <div style="margin-bottom: 1rem;">
+              <label style="display: flex; align-items: center; font-weight: 500;">
+                <input
+                  type="checkbox"
+                  id="productTraceable"
+                  style="margin-right: 0.5rem; cursor: pointer;"
+                />
+                Es trazable
+              </label>
+            </div>
+
+            <!-- Campos Trazabilidad (condicionales) -->
+            <div id="traceabilityFields" style="display: none; border: 1px solid #e5d5c8; border-radius: 6px; padding: 1rem; background: #faf8f5; margin-bottom: 1rem;">
+              <div style="margin-bottom: 1rem;">
+                <label
+                  style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
+                  >Finca:</label
+                >
+                <input
+                  type="text"
+                  id="productFarm"
+                  style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;"
+                  placeholder="Nombre de la finca"
+                />
+              </div>
+
+              <div style="margin-bottom: 1rem;">
+                <label
+                  style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
+                  >Variedad:</label
+                >
+                <input
+                  type="text"
+                  id="productVariety"
+                  style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;"
+                  placeholder="ej: Bourbon, Geisha, Typica"
+                />
+              </div>
+
+              <div style="margin-bottom: 1rem;">
+                <label
+                  style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
+                  >Fecha de Tostión:</label
+                >
+                <input
+                  type="date"
+                  id="productRoastDate"
+                  style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;"
+                />
+              </div>
+
+              <div style="margin-bottom: 0;">
+                <label
+                  style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
+                  >Aroma:</label
+                >
+                <input
+                  type="text"
+                  id="productAroma"
+                  style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;"
+                  placeholder="ej: Florales, Frutas, Chocolate"
+                />
+              </div>
+            </div>
           </div>
 
           <!-- Precio y Costo -->
@@ -680,7 +746,16 @@ import AppLayout from "../../layouts/AppLayout.astro";
       document.getElementById("productMetaDescription").value =
         product.meta_description || "";
 
+      // Campos de trazabilidad
+      const isTraceable = product.farm || product.variety || product.roast_date || product.aroma;
+      document.getElementById("productTraceable").checked = !!isTraceable;
+      document.getElementById("productFarm").value = product.farm || "";
+      document.getElementById("productVariety").value = product.variety || "";
+      document.getElementById("productRoastDate").value = product.roast_date || "";
+      document.getElementById("productAroma").value = product.aroma || "";
+
       updateCoffeeFieldsVisibility();
+      updateTraceabilityFieldsVisibility();
       document.getElementById("productModal").style.display = "flex";
     };
 
@@ -891,11 +966,24 @@ import AppLayout from "../../layouts/AppLayout.astro";
       const category = document.getElementById("productCategory").value;
       document.getElementById("coffeeFields").style.display =
         category === "cafe" ? "block" : "none";
+      // Reset traceability when changing category
+      document.getElementById("productTraceable").checked = false;
+      document.getElementById("traceabilityFields").style.display = "none";
+    }
+
+    function updateTraceabilityFieldsVisibility() {
+      const isTraceable = document.getElementById("productTraceable").checked;
+      document.getElementById("traceabilityFields").style.display =
+        isTraceable ? "block" : "none";
     }
 
     document
       .getElementById("productCategory")
       .addEventListener("change", updateCoffeeFieldsVisibility);
+
+    document
+      .getElementById("productTraceable")
+      .addEventListener("change", updateTraceabilityFieldsVisibility);
 
     document
       .getElementById("productForm")
@@ -939,6 +1027,10 @@ import AppLayout from "../../layouts/AppLayout.astro";
             document.getElementById("productMetaKeywords").value || null,
           meta_description:
             document.getElementById("productMetaDescription").value || null,
+          farm: document.getElementById("productFarm").value || null,
+          variety: document.getElementById("productVariety").value || null,
+          roast_date: document.getElementById("productRoastDate").value || null,
+          aroma: document.getElementById("productAroma").value || null,
         };
 
         // Procesar imágenes adicionales (convertir CSV a JSON array)
