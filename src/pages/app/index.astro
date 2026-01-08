@@ -289,15 +289,21 @@ import AppLayout from "../../layouts/AppLayout.astro";
 
         const adminOptions = document.getElementById("adminOptions");
         const caficultorOptions = document.getElementById("caficultorOptions");
+        const usersLink = document.getElementById("usersLink");
+        const productsLink = document.getElementById("productsLink");
 
         if (window.userRole === "admin") {
           // Admin ve todo
           if (adminOptions) adminOptions.style.display = "block";
           if (caficultorOptions) caficultorOptions.style.display = "block";
+          if (usersLink) usersLink.style.display = "block";
+          if (productsLink) productsLink.style.display = "block";
         } else if (window.userRole === "caficultor") {
           // Caficultor solo ve sus opciones
           if (adminOptions) adminOptions.style.display = "none";
           if (caficultorOptions) caficultorOptions.style.display = "block";
+          if (usersLink) usersLink.style.display = "none";
+          if (productsLink) productsLink.style.display = "none";
         }
       }
     }, 50);
