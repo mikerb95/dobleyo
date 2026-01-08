@@ -478,7 +478,7 @@ main.container{ padding-top: calc(var(--header-top, 0px) + var(--header-height, 
   border-radius: 8px;
   min-width: 160px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.12);
-  z-index: 1000;
+  z-index: 9999;
   margin-top: 8px;
 }
 

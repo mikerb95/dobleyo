@@ -155,6 +155,29 @@ import AppLayout from "../../layouts/AppLayout.astro";
             </p>
           </div>
         </a>
+        
+        <!-- Gestión de Usuarios (Solo Admin) -->
+        <a
+          href="/app/usuarios"
+          style="text-decoration: none; color: inherit;"
+          id="usersLink"
+        >
+          <div
+            style="background: white; border: 1px solid #e5e7eb; border-radius: 0.75rem; padding: 1.5rem; transition: all 0.3s; cursor: pointer;"
+            onmouseover="this.style.borderColor='#8b6f47'; this.style.boxShadow='0 4px 12px rgba(139,111,71,0.15)'"
+            onmouseout="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none'"
+          >
+            <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">👥</div>
+            <h3
+              style="font-weight: 600; margin-bottom: 0.5rem; color: #251a14;"
+            >
+              Gestión de Usuarios
+            </h3>
+            <p style="color: #666; font-size: 0.95rem;">
+              Ver y administrar todos los usuarios del sistema
+            </p>
+          </div>
+        </a>
       </div>
     </div>
 
