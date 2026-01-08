@@ -608,7 +608,7 @@ import AppLayout from "../../layouts/AppLayout.astro";
     let currentEditProductId = null;
 
     // Exponer funciones al objeto window para que sean accesibles desde onclick
-    window.openCreateModal = function() {
+    window.openCreateModal = function () {
       currentEditProductId = null;
       document.getElementById("modalTitle").textContent = "Nuevo Producto";
       document.getElementById("idFieldContainer").style.display = "block";
@@ -618,7 +618,7 @@ import AppLayout from "../../layouts/AppLayout.astro";
       document.getElementById("productModal").style.display = "flex";
     };
 
-    window.openEditModal = function(productId) {
+    window.openEditModal = function (productId) {
       const product = allProducts.find((p) => p.id === productId);
       if (!product) return;
 
@@ -684,13 +684,13 @@ import AppLayout from "../../layouts/AppLayout.astro";
       document.getElementById("productModal").style.display = "flex";
     };
 
-    window.openDeleteModal = function(productId, productName) {
+    window.openDeleteModal = function (productId, productName) {
       currentEditProductId = productId;
       document.getElementById("deleteProductName").textContent = productName;
       document.getElementById("deleteModal").style.display = "flex";
     };
 
-    window.confirmDelete = async function() {
+    window.confirmDelete = async function () {
       if (!currentEditProductId) return;
 
       try {
@@ -717,16 +717,16 @@ import AppLayout from "../../layouts/AppLayout.astro";
       }
     };
 
-    window.closeModal = function(modalId) {
+    window.closeModal = function (modalId) {
       document.getElementById(modalId).style.display = "none";
     };
 
-    window.closeDeleteModal = function() {
+    window.closeDeleteModal = function () {
       document.getElementById("deleteModal").style.display = "none";
     };
 
     // Hacer funciones globales para onclick handlers
-    window.openCreateModal = function() {
+    window.openCreateModal = function () {
       currentEditProductId = null;
       document.getElementById("modalTitle").textContent = "Nuevo Producto";
       document.getElementById("idFieldContainer").style.display = "block";
@@ -736,13 +736,13 @@ import AppLayout from "../../layouts/AppLayout.astro";
       document.getElementById("productModal").style.display = "flex";
     };
 
-    window.openDeleteModal = function(productId, productName) {
+    window.openDeleteModal = function (productId, productName) {
       currentEditProductId = productId;
       document.getElementById("deleteProductName").textContent = productName;
       document.getElementById("deleteModal").style.display = "flex";
     };
 
-    window.confirmDelete = async function() {
+    window.confirmDelete = async function () {
       if (!currentEditProductId) return;
 
       try {
@@ -756,9 +756,7 @@ import AppLayout from "../../layouts/AppLayout.astro";
 
         if (!response.ok) {
           const data = await response.json();
-          alert(
-            "Error: " + (data.error || "No se pudo eliminar el producto")
-          );
+          alert("Error: " + (data.error || "No se pudo eliminar el producto"));
           return;
         }
 
