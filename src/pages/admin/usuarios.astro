@@ -535,7 +535,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   }
 
   // Edit user
-  function editUser(userId) {
+  window.editUser = function(userId) {
     const user = allUsers.find((u) => u.id === userId);
     if (!user) return;
 
@@ -552,14 +552,14 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     document.getElementById("emailInput").readOnly = true;
 
     document.getElementById("userModal").style.display = "flex";
-  }
+  };
 
   // Delete user
-  function deleteUser(userId, userEmail) {
+  window.deleteUser = function(userId, userEmail) {
     currentDeleteId = userId;
     document.getElementById("deleteUserName").textContent = userEmail;
     document.getElementById("deleteModal").style.display = "flex";
-  }
+  };
 
   // Close modals
   function closeUserModal() {
