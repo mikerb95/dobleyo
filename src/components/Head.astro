@@ -51,46 +51,5 @@ const {
   )
 }
 
-<!-- Tailwind CSS -->
-<script src="https://cdn.tailwindcss.com"></script>
-
-<script is:inline define:vars={{ isAdmin }}>
-  tailwind.config = {
-    theme: {
-      extend: {
-        colors: {
-          coffee: "#251a14",
-          cream: "#f7f3ef",
-          accent: "#c67b4e",
-          ink: "#1f2937",
-        },
-        fontFamily: {
-          sans: isAdmin
-            ? ["Inter", "sans-serif"]
-            : [
-                "Lora",
-                "ui-serif",
-                "Georgia",
-                "Cambria",
-                "Times New Roman",
-                "Times",
-                "serif",
-              ],
-        },
-        boxShadow: {
-          card: "0 8px 24px rgba(0,0,0,.08)",
-        },
-      },
-    },
-  };
-
-  {
-    isAdmin
-      ? `
-    document.body.style.fontFamily = '"Inter", sans-serif';
-  `
-      : "";
-  }
-</script>
-
+<!-- CSS Custom -->
 <link rel="stylesheet" href="/assets/css/styles.css" />

@@ -452,3 +452,12 @@ main.container{ padding-top: calc(var(--header-top, 0px) + var(--header-height, 
   .traceability-text h2{ font-size: 2rem; }
   .feature-item{ padding: 1.25rem; }
 }
+
+/* Clases de utilidad para layouts admin */
+.font-sans { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+.bg-cream { background-color: var(--cream); }
+.text-ink { color: var(--ink); }
+.text-right { text-align: right; }
+.text-center { text-align: center; }
+.text-left { text-align: left; }
+.p-4 { padding: 1rem; }
