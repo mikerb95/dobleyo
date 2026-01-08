@@ -246,7 +246,7 @@ coffeeRouter.post('/roasted-storage', async (req, res) => {
 // 6. PREPARAR PARA VENTA (Packaging)
 coffeeRouter.post('/packaging', async (req, res) => {
   try {
-    const { roastedStorageId, acidity, body, balance, presentation, grindSize, packageSize, unitCount, notes } = req.body;
+    const { roastedStorageId, acidity, body, balance, presentation, grindSize, packageSize, unitCount, notes, addToInventory } = req.body;
 
     if (!roastedStorageId || !acidity || !body || !balance || !presentation || !packageSize || !unitCount) {
       return res.status(400).json({ error: 'Faltan campos requeridos' });
@@ -259,6 +259,18 @@ coffeeRouter.post('/packaging', async (req, res) => {
     // Calcular puntuación
     const score = ((parseInt(acidity) + parseInt(body) + parseInt(balance)) / 3).toFixed(2);
 
+    // Obtener información del café tostado para crear el SKU
+    const roastedResult = await query(
+      'SELECT * FROM roasted_coffee_inventory WHERE id = ?',
+      [roastedStorageId]
+    );
+
+    if (!roastedResult.rows.length) {
+      return res.status(404).json({ error: 'Café tostado no encontrado' });
+    }
+
+    const roastedInfo = roastedResult.rows[0];
+
     // Guardar en BD
     const result = await query(
       `INSERT INTO packaged_coffee (roasted_storage_id, acidity, body, balance, score, presentation, grind_size, package_size, unit_count, notes, status, created_at)
@@ -266,17 +278,49 @@ coffeeRouter.post('/packaging', async (req, res) => {
       [roastedStorageId, acidity, body, balance, score, presentation, grindSize || null, packageSize, unitCount, notes || null]
     );
 
-    // Actualizar estado
+    // Actualizar estado del café tostado
     await query(
       'UPDATE roasted_coffee_inventory SET status = ? WHERE id = ?',
       ['packaged', roastedStorageId]
     );
 
+    let productId = null;
+    let inventoryMovementCreated = false;
+
+    // Si se marcó la opción de sumar al inventario disponible
+    if (addToInventory === true) {
+      // Generar SKU basado en información del café
+      const timestamp = Date.now().toString().slice(-6);
+      productId = `CAFE-${roastedInfo.lot_id || 'GEN'}-${packageSize.replace(/[^0-9]/g, '')}-${timestamp}`.substring(0, 50);
+      
+      // Crear producto en la tabla products
+      const productName = `Café ${roastedInfo.lot_id || 'Premium'} - ${packageSize} (${presentation === 'GRANO' ? 'Grano' : 'Molido'})`;
+      
+      await query(
+        `INSERT INTO products (id, name, category, origin, process, roast, price, cost, is_active, stock_quantity, stock_min, weight, weight_unit, created_at)
+         VALUES (?, ?, 'cafe', ?, ?, ?, 0, 0, 1, ?, 0, ?, ?, NOW())`,
+        [productId, productName, roastedInfo.region || 'Colombia', roastedInfo.process || 'unknown', roastedInfo.roast_level || 'medium', unitCount, packageSize, 'unidad']
+      );
+
+      // Registrar movimiento de inventario
+      await query(
+        `INSERT INTO inventory_movements (product_id, movement_type, quantity, quantity_before, quantity_after, reason, reference, created_at)
+         VALUES (?, 'entrada', ?, 0, ?, 'Café empacado para venta', ?, NOW())`,
+        [productId, unitCount, unitCount, roastedInfo.lot_id || 'packaging']
+      );
+
+      inventoryMovementCreated = true;
+    }
+
     res.status(201).json({
       success: true,
       packagedId: result.rows.insertId,
+      productId: productId,
       score,
-      message: 'Café preparado para venta correctamente'
+      inventoryUpdated: inventoryMovementCreated,
+      message: inventoryMovementCreated 
+        ? `Café preparado para venta y ${unitCount} unidades agregadas al inventario`
+        : 'Café preparado para venta correctamente'
     });
   } catch (err) {
     console.error('Error en packaging:', err);
