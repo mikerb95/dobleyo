@@ -110,7 +110,10 @@ import Layout from "../layouts/Layout.astro";
                 btn.textContent = "Entrar";
                 return;
               }
-            } else if (redirect.startsWith("/admin") || redirect.includes("admin.html")) {
+            } else if (
+              redirect.startsWith("/admin") ||
+              redirect.includes("admin.html")
+            ) {
               // /admin y /admin.html solo para admin
               if (role === "admin") {
                 window.location.href = redirect;

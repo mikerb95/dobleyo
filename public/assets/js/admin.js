@@ -182,7 +182,7 @@
   // Conexion de login - redirigir a pagina de login
   if (loginBtn) {
     loginBtn.onclick = () => {
-      window.location.href = '/admin/login';
+      window.location.href = '/login?redirect=/admin.html';
     };
   }
   if (logoutBtn) logoutBtn.onclick = logout;
