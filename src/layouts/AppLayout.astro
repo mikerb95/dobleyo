@@ -37,7 +37,10 @@ import Head from "../components/Head.astro";
         const token = localStorage.getItem("adminToken");
         const currentPath = window.location.pathname;
 
+        console.log("[AppLayout] Verificando autenticación...", { token: token ? "presente" : "ausente" });
+
         if (!token) {
+          console.log("[AppLayout] No hay token, redirigiendo a login");
           window.location.href =
             "/login?redirect=" + encodeURIComponent(currentPath);
           return;
@@ -49,7 +52,11 @@ import Head from "../components/Head.astro";
             credentials: "include",
           });
 
+          console.log("[AppLayout] Respuesta /api/auth/me:", response.status);
+
           if (!response.ok) {
+            const errorText = await response.text();
+            console.error("[AppLayout] Error en /api/auth/me:", errorText);
             localStorage.removeItem("adminToken");
             window.location.href =
               "/login?redirect=" + encodeURIComponent(currentPath);
@@ -57,6 +64,7 @@ import Head from "../components/Head.astro";
           }
 
           const user = await response.json();
+          console.log("[AppLayout] Usuario autenticado:", user);
 
           // Verificar que sea caficultor o admin
           if (user.role !== "caficultor" && user.role !== "admin") {
@@ -73,7 +81,9 @@ import Head from "../components/Head.astro";
 
           // Usuario autenticado correctamente, mostrar contenido
           document.body.style.visibility = "visible";
+          console.log("[AppLayout] Contenido visible");
         } catch (error) {
+          console.error("[AppLayout] Error de red o parsing:", error);
           localStorage.removeItem("adminToken");
           window.location.href =
             "/login?redirect=" + encodeURIComponent(currentPath);
