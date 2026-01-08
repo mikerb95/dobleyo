@@ -1,0 +1,183 @@
+---
+import AppLayout from "../../layouts/AppLayout.astro";
+---
+
+<AppLayout>
+  <div style="max-width: 1200px; margin: 0 auto; padding: 1.5rem;">
+    <h1 style="font-size: 2rem; font-weight: 700; margin-bottom: 1.5rem; color: #8b6f47;">
+      👥 Gestión de Usuarios
+    </h1>
+
+    <!-- Filtros -->
+    <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+      <select id="roleFilter" style="padding: 0.5rem 1rem; border: 1px solid #ddd; border-radius: 6px; font-size: 0.95rem;">
+        <option value="">Todos los roles</option>
+        <option value="admin">Admin</option>
+        <option value="caficultor">Caficultor</option>
+        <option value="client">Cliente</option>
+      </select>
+      
+      <input 
+        type="search" 
+        id="searchInput" 
+        placeholder="Buscar por nombre o email..."
+        style="padding: 0.5rem 1rem; border: 1px solid #ddd; border-radius: 6px; font-size: 0.95rem; flex: 1; min-width: 250px;"
+      />
+    </div>
+
+    <!-- Loading -->
+    <div id="loading" style="text-align: center; padding: 2rem; color: #666;">
+      Cargando usuarios...
+    </div>
+
+    <!-- Error -->
+    <div id="error" style="display: none; background: #fee; border: 1px solid #fcc; border-radius: 6px; padding: 1rem; color: #c00;">
+    </div>
+
+    <!-- Tabla de usuarios -->
+    <div style="overflow-x: auto; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+      <table id="usersTable" style="width: 100%; border-collapse: collapse; display: none;">
+        <thead>
+          <tr style="background: #f9fafb; border-bottom: 2px solid #e5e7eb;">
+            <th style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;">ID</th>
+            <th style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;">Nombre</th>
+            <th style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;">Email</th>
+            <th style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;">Teléfono</th>
+            <th style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;">Rol</th>
+            <th style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;">Estado</th>
+            <th style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;">Último login</th>
+            <th style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;">Registrado</th>
+          </tr>
+        </thead>
+        <tbody id="usersTableBody">
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Estadísticas -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 2rem;">
+      <div style="background: #dbeafe; border-radius: 8px; padding: 1.5rem; text-align: center;">
+        <div style="font-size: 2rem; font-weight: 700; color: #1e40af;" id="totalUsers">0</div>
+        <div style="color: #1e40af; font-size: 0.9rem; margin-top: 0.5rem;">Total Usuarios</div>
+      </div>
+      <div style="background: #fef3c7; border-radius: 8px; padding: 1.5rem; text-align: center;">
+        <div style="font-size: 2rem; font-weight: 700; color: #92400e;" id="totalAdmins">0</div>
+        <div style="color: #92400e; font-size: 0.9rem; margin-top: 0.5rem;">Administradores</div>
+      </div>
+      <div style="background: #d1fae5; border-radius: 8px; padding: 1.5rem; text-align: center;">
+        <div style="font-size: 2rem; font-weight: 700; color: #065f46;" id="totalCaficultores">0</div>
+        <div style="color: #065f46; font-size: 0.9rem; margin-top: 0.5rem;">Caficultores</div>
+      </div>
+      <div style="background: #e0e7ff; border-radius: 8px; padding: 1.5rem; text-align: center;">
+        <div style="font-size: 2rem; font-weight: 700; color: #3730a3;" id="totalClients">0</div>
+        <div style="color: #3730a3; font-size: 0.9rem; margin-top: 0.5rem;">Clientes</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let allUsers = [];
+
+    async function loadUsers() {
+      try {
+        const response = await fetch('/api/users', {
+          credentials: 'include'
+        });
+
+        if (!response.ok) {
+          throw new Error('Error al cargar usuarios');
+        }
+
+        const data = await response.json();
+        allUsers = data.users || [];
+        
+        displayUsers(allUsers);
+        updateStats(allUsers);
+        
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('usersTable').style.display = 'table';
+      } catch (err) {
+        console.error('Error:', err);
+        document.getElementById('loading').style.display = 'none';
+        const errorDiv = document.getElementById('error');
+        errorDiv.textContent = 'Error al cargar los usuarios. Intenta recargar la página.';
+        errorDiv.style.display = 'block';
+      }
+    }
+
+    function displayUsers(users) {
+      const tbody = document.getElementById('usersTableBody');
+      tbody.innerHTML = '';
+
+      if (users.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="padding: 2rem; text-align: center; color: #666;">No se encontraron usuarios</td></tr>';
+        return;
+      }
+
+      users.forEach(user => {
+        const row = document.createElement('tr');
+        row.style.borderBottom = '1px solid #e5e7eb';
+        row.style.transition = 'background-color 0.2s';
+        row.onmouseenter = () => row.style.backgroundColor = '#f9fafb';
+        row.onmouseleave = () => row.style.backgroundColor = 'transparent';
+
+        const roleBadgeColors = {
+          admin: 'background: #fef3c7; color: #92400e;',
+          caficultor: 'background: #d1fae5; color: #065f46;',
+          client: 'background: #e0e7ff; color: #3730a3;'
+        };
+
+        const verifiedBadge = user.is_verified 
+          ? '<span style="background: #d1fae5; color: #065f46; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">✓ Verificado</span>'
+          : '<span style="background: #fee; color: #c00; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">Sin verificar</span>';
+
+        row.innerHTML = `
+          <td style="padding: 1rem;">${user.id}</td>
+          <td style="padding: 1rem; font-weight: 500;">${user.name || '—'}</td>
+          <td style="padding: 1rem;">${user.email}</td>
+          <td style="padding: 1rem;">${user.mobile_phone || '—'}</td>
+          <td style="padding: 1rem;">
+            <span style="${roleBadgeColors[user.role] || ''} padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.85rem; font-weight: 500;">
+              ${user.role}
+            </span>
+          </td>
+          <td style="padding: 1rem;">${verifiedBadge}</td>
+          <td style="padding: 1rem; font-size: 0.85rem; color: #666;">${user.last_login_at ? new Date(user.last_login_at).toLocaleDateString('es-ES') : 'Nunca'}</td>
+          <td style="padding: 1rem; font-size: 0.85rem; color: #666;">${new Date(user.created_at).toLocaleDateString('es-ES')}</td>
+        `;
+
+        tbody.appendChild(row);
+      });
+    }
+
+    function updateStats(users) {
+      document.getElementById('totalUsers').textContent = users.length;
+      document.getElementById('totalAdmins').textContent = users.filter(u => u.role === 'admin').length;
+      document.getElementById('totalCaficultores').textContent = users.filter(u => u.role === 'caficultor').length;
+      document.getElementById('totalClients').textContent = users.filter(u => u.role === 'client').length;
+    }
+
+    function filterUsers() {
+      const roleFilter = document.getElementById('roleFilter').value;
+      const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+
+      const filtered = allUsers.filter(user => {
+        const matchesRole = !roleFilter || user.role === roleFilter;
+        const matchesSearch = !searchTerm || 
+          user.name?.toLowerCase().includes(searchTerm) ||
+          user.email.toLowerCase().includes(searchTerm);
+        
+        return matchesRole && matchesSearch;
+      });
+
+      displayUsers(filtered);
+    }
+
+    // Event listeners
+    document.getElementById('roleFilter').addEventListener('change', filterUsers);
+    document.getElementById('searchInput').addEventListener('input', filterUsers);
+
+    // Cargar usuarios al inicio
+    loadUsers();
+  </script>
+</AppLayout>
