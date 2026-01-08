@@ -37,7 +37,9 @@ import Head from "../components/Head.astro";
         const token = localStorage.getItem("adminToken");
         const currentPath = window.location.pathname;
 
-        console.log("[AppLayout] Verificando autenticación...", { token: token ? "presente" : "ausente" });
+        console.log("[AppLayout] Verificando autenticación...", {
+          token: token ? "presente" : "ausente",
+        });
 
         if (!token) {
           console.log("[AppLayout] No hay token, redirigiendo a login");
