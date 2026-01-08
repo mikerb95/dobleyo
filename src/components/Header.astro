@@ -52,6 +52,13 @@
             data-link
             style="display: none;">Panel de apps</a
           >
+          <a
+            href="/app/productos"
+            class="dropdown-item"
+            id="productosLink"
+            data-link
+            style="display: none;">Productos</a
+          >
           <button class="dropdown-item" id="logoutBtn">Cerrar sesión</button>
         </div>
       </div>
@@ -194,6 +201,7 @@
       "userNameMobileDisplay"
     );
     const appsLink = document.getElementById("appsLink");
+    const productosLink = document.getElementById("productosLink");
 
     // Primero intentar con token en localStorage
     const token = localStorage.getItem("adminToken");
@@ -230,6 +238,11 @@
         // Mostrar "Panel de apps" solo si es admin
         if (appsLink && user.role === "admin") {
           appsLink.style.display = "block";
+        }
+
+        // Mostrar "Productos" solo si es admin
+        if (productosLink && user.role === "admin") {
+          productosLink.style.display = "block";
         }
 
         // Guardar nombre en localStorage para persistencia
