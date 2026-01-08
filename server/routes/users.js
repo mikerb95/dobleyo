@@ -11,8 +11,13 @@ usersRouter.get('/', auth.authenticateToken, auth.requireRole('admin'), async (r
       `SELECT 
         id, 
         email, 
-        name, 
+        name,
+        first_name,
+        last_name, 
         mobile_phone, 
+        landline_phone,
+        tax_id,
+        address,
         city, 
         state_province, 
         country, 
@@ -36,7 +41,7 @@ usersRouter.get('/', auth.authenticateToken, auth.requireRole('admin'), async (r
 usersRouter.put('/:id', auth.authenticateToken, auth.requireRole('admin'), async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, mobile_phone, city, state_province, country, role, is_verified } = req.body;
+    const { name, first_name, last_name, mobile_phone, city, state_province, country, role, is_verified } = req.body;
 
     // Validar que el usuario existe
     const userResult = await query('SELECT id FROM users WHERE id = ?', [id]);
@@ -49,6 +54,8 @@ usersRouter.put('/:id', auth.authenticateToken, auth.requireRole('admin'), async
       UPDATE users 
       SET 
         name = COALESCE(?, name),
+        first_name = COALESCE(?, first_name),
+        last_name = COALESCE(?, last_name),
         mobile_phone = COALESCE(?, mobile_phone),
         city = COALESCE(?, city),
         state_province = COALESCE(?, state_province),
@@ -58,14 +65,16 @@ usersRouter.put('/:id', auth.authenticateToken, auth.requireRole('admin'), async
       WHERE id = ?
     `;
 
-    await query(updateQuery, [name, mobile_phone, city, state_province, country, role, is_verified, id]);
+    await query(updateQuery, [name, first_name, last_name, mobile_phone, city, state_province, country, role, is_verified, id]);
 
     // Retornar usuario actualizado
     const updated = await query(
       `SELECT 
         id, 
         email, 
-        name, 
+        name,
+        first_name,
+        last_name, 
         mobile_phone, 
         city, 
         state_province, 
