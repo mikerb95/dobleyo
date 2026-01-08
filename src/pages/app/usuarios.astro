@@ -107,7 +107,8 @@ import AppLayout from "../../layouts/AppLayout.astro";
         <h2 style="margin-bottom: 1.5rem; color: #251a14;">Editar Usuario</h2>
         <form id="editForm">
           <div style="margin-bottom: 1rem;">
-            <label style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
+            <label
+              style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
               >Nombre:</label
             >
             <input
@@ -118,7 +119,8 @@ import AppLayout from "../../layouts/AppLayout.astro";
           </div>
 
           <div style="margin-bottom: 1rem;">
-            <label style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
+            <label
+              style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
               >Email:</label
             >
             <input
@@ -130,7 +132,8 @@ import AppLayout from "../../layouts/AppLayout.astro";
           </div>
 
           <div style="margin-bottom: 1rem;">
-            <label style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
+            <label
+              style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
               >Teléfono:</label
             >
             <input
@@ -141,7 +144,8 @@ import AppLayout from "../../layouts/AppLayout.astro";
           </div>
 
           <div style="margin-bottom: 1rem;">
-            <label style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
+            <label
+              style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
               >Rol:</label
             >
             <select
@@ -155,7 +159,8 @@ import AppLayout from "../../layouts/AppLayout.astro";
           </div>
 
           <div style="margin-bottom: 1rem;">
-            <label style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
+            <label
+              style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
               >Ciudad:</label
             >
             <input
@@ -166,7 +171,8 @@ import AppLayout from "../../layouts/AppLayout.astro";
           </div>
 
           <div style="margin-bottom: 1rem;">
-            <label style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
+            <label
+              style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
               >Departamento/Estado:</label
             >
             <input
@@ -177,7 +183,8 @@ import AppLayout from "../../layouts/AppLayout.astro";
           </div>
 
           <div style="margin-bottom: 1.5rem;">
-            <label style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
+            <label
+              style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
               >País:</label
             >
             <input
@@ -188,8 +195,14 @@ import AppLayout from "../../layouts/AppLayout.astro";
           </div>
 
           <div style="margin-bottom: 1.5rem;">
-            <label style="display: flex; align-items: center; font-weight: 500;">
-              <input type="checkbox" id="editVerified" style="margin-right: 0.5rem;" />
+            <label
+              style="display: flex; align-items: center; font-weight: 500;"
+            >
+              <input
+                type="checkbox"
+                id="editVerified"
+                style="margin-right: 0.5rem;"
+              />
               Verificado
             </label>
           </div>
@@ -223,9 +236,12 @@ import AppLayout from "../../layouts/AppLayout.astro";
       >
         <h2 style="margin-bottom: 1rem; color: #c00;">Eliminar Usuario</h2>
         <p style="margin-bottom: 1rem; color: #666;">
-          ¿Estás seguro de que deseas eliminar este usuario? Esta acción no se puede deshacer.
+          ¿Estás seguro de que deseas eliminar este usuario? Esta acción no se
+          puede deshacer.
         </p>
-        <p style="margin-bottom: 1.5rem; background: #fee; padding: 1rem; border-radius: 4px; color: #c00;">
+        <p
+          style="margin-bottom: 1.5rem; background: #fee; padding: 1rem; border-radius: 4px; color: #c00;"
+        >
           Email: <strong id="deleteUserEmail"></strong>
         </p>
         <div style="display: flex; gap: 1rem;">
@@ -466,45 +482,49 @@ import AppLayout from "../../layouts/AppLayout.astro";
       }
     }
 
-    document.getElementById("editForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
+    document
+      .getElementById("editForm")
+      .addEventListener("submit", async (e) => {
+        e.preventDefault();
 
-      if (!currentEditUserId) return;
+        if (!currentEditUserId) return;
 
-      const userData = {
-        name: document.getElementById("editName").value,
-        mobile_phone: document.getElementById("editPhone").value,
-        city: document.getElementById("editCity").value,
-        state_province: document.getElementById("editState").value,
-        country: document.getElementById("editCountry").value,
-        role: document.getElementById("editRole").value,
-        is_verified: document.getElementById("editVerified").checked ? 1 : 0,
-      };
+        const userData = {
+          name: document.getElementById("editName").value,
+          mobile_phone: document.getElementById("editPhone").value,
+          city: document.getElementById("editCity").value,
+          state_province: document.getElementById("editState").value,
+          country: document.getElementById("editCountry").value,
+          role: document.getElementById("editRole").value,
+          is_verified: document.getElementById("editVerified").checked ? 1 : 0,
+        };
 
-      try {
-        const response = await fetch(`/api/users/${currentEditUserId}`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify(userData),
-        });
+        try {
+          const response = await fetch(`/api/users/${currentEditUserId}`, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            credentials: "include",
+            body: JSON.stringify(userData),
+          });
 
-        if (!response.ok) {
-          const data = await response.json();
-          alert("Error: " + (data.error || "No se pudo actualizar el usuario"));
-          return;
+          if (!response.ok) {
+            const data = await response.json();
+            alert(
+              "Error: " + (data.error || "No se pudo actualizar el usuario")
+            );
+            return;
+          }
+
+          alert("Usuario actualizado exitosamente");
+          document.getElementById("editModal").style.display = "none";
+          loadUsers();
+        } catch (err) {
+          console.error("Error:", err);
+          alert("Error al actualizar el usuario");
         }
-
-        alert("Usuario actualizado exitosamente");
-        document.getElementById("editModal").style.display = "none";
-        loadUsers();
-      } catch (err) {
-        console.error("Error:", err);
-        alert("Error al actualizar el usuario");
-      }
-    });
+      });
 
     // Cerrar modales al hacer clic fuera
     document.getElementById("editModal").addEventListener("click", (e) => {
