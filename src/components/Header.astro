@@ -59,6 +59,13 @@
             data-link
             style="display: none;">Productos</a
           >
+          <a
+            href="/app/auditoria"
+            class="dropdown-item"
+            id="auditLink"
+            data-link
+            style="display: none;">📋 Auditoría</a
+          >
           <button class="dropdown-item" id="logoutBtn">Cerrar sesión</button>
         </div>
       </div>
@@ -243,6 +250,12 @@
         // Mostrar "Productos" solo si es admin
         if (productosLink && user.role === "admin") {
           productosLink.style.display = "block";
+        }
+
+        // Mostrar "Auditoría" solo si es admin
+        const auditLink = document.getElementById("auditLink");
+        if (auditLink && user.role === "admin") {
+          auditLink.style.display = "block";
         }
 
         // Guardar nombre en localStorage para persistencia

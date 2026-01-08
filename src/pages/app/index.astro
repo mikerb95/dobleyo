@@ -196,6 +196,36 @@ import AppLayout from "../../layouts/AppLayout.astro";
       </div>
     </div>
 
+    <!-- Auditoría (Solo Admin) -->
+    <div id="auditSection" style="display: none;">
+      <h2
+        style="font-size: 1.5rem; font-weight: 600; margin-bottom: 1rem; color: #8b6f47;"
+      >
+        🔐 Seguridad y Auditoría
+      </h2>
+      <div
+        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;"
+      >
+        <!-- Auditoría -->
+        <a
+          href="/app/auditoria"
+          style="display: block; padding: 2rem; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-decoration: none; color: inherit; transition: transform 0.2s, box-shadow 0.2s;"
+          onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 16px rgba(0,0,0,0.15)';"
+          onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.1)';"
+        >
+          <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">📋</div>
+          <h3
+            style="font-weight: 600; margin-bottom: 0.5rem; color: #251a14;"
+          >
+            Auditoría del Sistema
+          </h3>
+          <p style="color: #666; font-size: 0.95rem;">
+            Registros de todas las acciones realizadas en el sistema
+          </p>
+        </a>
+      </div>
+    </div>
+
     <!-- Opciones para CAFICULTOR y ADMIN -->
     <div id="caficultorOptions">
       <h2
