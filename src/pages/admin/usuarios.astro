@@ -4,7 +4,9 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
 <AdminLayout>
   <div style="max-width: 1400px; margin: 0 auto; padding: 2rem 1.5rem;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <div
+      style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;"
+    >
       <h1 style="font-size: 2.5rem; font-weight: 700; color: #251a14;">
         👥 Gestor de Usuarios
       </h1>
@@ -19,11 +21,21 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     </div>
 
     <!-- Filtros y búsqueda -->
-    <div style="background: white; border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
-      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+    <div
+      style="background: white; border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08);"
+    >
+      <div
+        style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1rem;"
+      >
         <div>
-          <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #251a14;">Rol</label>
-          <select id="roleFilter" style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px;">
+          <label
+            style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #251a14;"
+            >Rol</label
+          >
+          <select
+            id="roleFilter"
+            style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px;"
+          >
             <option value="">Todos</option>
             <option value="admin">Admin</option>
             <option value="caficultor">Caficultor</option>
@@ -32,16 +44,28 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
           </select>
         </div>
         <div>
-          <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #251a14;">Verificación</label>
-          <select id="verifiedFilter" style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px;">
+          <label
+            style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #251a14;"
+            >Verificación</label
+          >
+          <select
+            id="verifiedFilter"
+            style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px;"
+          >
             <option value="">Todos</option>
             <option value="true">Verificado</option>
             <option value="false">No verificado</option>
           </select>
         </div>
         <div>
-          <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #251a14;">Estado Caficultor</label>
-          <select id="caficultorFilter" style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px;">
+          <label
+            style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #251a14;"
+            >Estado Caficultor</label
+          >
+          <select
+            id="caficultorFilter"
+            style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px;"
+          >
             <option value="">Todos</option>
             <option value="none">Sin solicitud</option>
             <option value="pending">Pendiente</option>
@@ -50,7 +74,10 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
           </select>
         </div>
         <div>
-          <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #251a14;">Búsqueda</label>
+          <label
+            style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #251a14;"
+            >Búsqueda</label
+          >
           <input
             type="search"
             id="searchInput"
@@ -62,44 +89,112 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     </div>
 
     <!-- Estadísticas -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
-      <div style="background: #e0e7ff; border-radius: 8px; padding: 1.5rem; text-align: center;">
-        <div style="font-size: 2.5rem; font-weight: 700; color: #3730a3;" id="totalCount">0</div>
-        <div style="color: #3730a3; margin-top: 0.5rem; font-weight: 600;">Total Usuarios</div>
+    <div
+      style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;"
+    >
+      <div
+        style="background: #e0e7ff; border-radius: 8px; padding: 1.5rem; text-align: center;"
+      >
+        <div
+          style="font-size: 2.5rem; font-weight: 700; color: #3730a3;"
+          id="totalCount"
+        >
+          0
+        </div>
+        <div style="color: #3730a3; margin-top: 0.5rem; font-weight: 600;">
+          Total Usuarios
+        </div>
       </div>
-      <div style="background: #fef3c7; border-radius: 8px; padding: 1.5rem; text-align: center;">
-        <div style="font-size: 2.5rem; font-weight: 700; color: #92400e;" id="adminCount">0</div>
-        <div style="color: #92400e; margin-top: 0.5rem; font-weight: 600;">Administradores</div>
+      <div
+        style="background: #fef3c7; border-radius: 8px; padding: 1.5rem; text-align: center;"
+      >
+        <div
+          style="font-size: 2.5rem; font-weight: 700; color: #92400e;"
+          id="adminCount"
+        >
+          0
+        </div>
+        <div style="color: #92400e; margin-top: 0.5rem; font-weight: 600;">
+          Administradores
+        </div>
       </div>
-      <div style="background: #d1fae5; border-radius: 8px; padding: 1.5rem; text-align: center;">
-        <div style="font-size: 2.5rem; font-weight: 700; color: #065f46;" id="caficultorCount">0</div>
-        <div style="color: #065f46; margin-top: 0.5rem; font-weight: 600;">Caficultores</div>
+      <div
+        style="background: #d1fae5; border-radius: 8px; padding: 1.5rem; text-align: center;"
+      >
+        <div
+          style="font-size: 2.5rem; font-weight: 700; color: #065f46;"
+          id="caficultorCount"
+        >
+          0
+        </div>
+        <div style="color: #065f46; margin-top: 0.5rem; font-weight: 600;">
+          Caficultores
+        </div>
       </div>
-      <div style="background: #fed7aa; border-radius: 8px; padding: 1.5rem; text-align: center;">
-        <div style="font-size: 2.5rem; font-weight: 700; color: #7c2d12;" id="verifiedCount">0</div>
-        <div style="color: #7c2d12; margin-top: 0.5rem; font-weight: 600;">Verificados</div>
+      <div
+        style="background: #fed7aa; border-radius: 8px; padding: 1.5rem; text-align: center;"
+      >
+        <div
+          style="font-size: 2.5rem; font-weight: 700; color: #7c2d12;"
+          id="verifiedCount"
+        >
+          0
+        </div>
+        <div style="color: #7c2d12; margin-top: 0.5rem; font-weight: 600;">
+          Verificados
+        </div>
       </div>
     </div>
 
     <!-- Tabla -->
-    <div style="background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden;">
+    <div
+      style="background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden;"
+    >
       <div style="overflow-x: auto;">
         <table style="width: 100%; border-collapse: collapse;">
           <thead>
             <tr style="background: #f9fafb; border-bottom: 2px solid #e5e7eb;">
-              <th style="padding: 1rem; text-align: left; font-weight: 600; color: #251a14;">ID</th>
-              <th style="padding: 1rem; text-align: left; font-weight: 600; color: #251a14;">Nombre</th>
-              <th style="padding: 1rem; text-align: left; font-weight: 600; color: #251a14;">Email</th>
-              <th style="padding: 1rem; text-align: left; font-weight: 600; color: #251a14;">Rol</th>
-              <th style="padding: 1rem; text-align: left; font-weight: 600; color: #251a14;">Verificado</th>
-              <th style="padding: 1rem; text-align: left; font-weight: 600; color: #251a14;">Caficultor</th>
-              <th style="padding: 1rem; text-align: left; font-weight: 600; color: #251a14;">Último Login</th>
-              <th style="padding: 1rem; text-align: center; font-weight: 600; color: #251a14;">Acciones</th>
+              <th
+                style="padding: 1rem; text-align: left; font-weight: 600; color: #251a14;"
+                >ID</th
+              >
+              <th
+                style="padding: 1rem; text-align: left; font-weight: 600; color: #251a14;"
+                >Nombre</th
+              >
+              <th
+                style="padding: 1rem; text-align: left; font-weight: 600; color: #251a14;"
+                >Email</th
+              >
+              <th
+                style="padding: 1rem; text-align: left; font-weight: 600; color: #251a14;"
+                >Rol</th
+              >
+              <th
+                style="padding: 1rem; text-align: left; font-weight: 600; color: #251a14;"
+                >Verificado</th
+              >
+              <th
+                style="padding: 1rem; text-align: left; font-weight: 600; color: #251a14;"
+                >Caficultor</th
+              >
+              <th
+                style="padding: 1rem; text-align: left; font-weight: 600; color: #251a14;"
+                >Último Login</th
+              >
+              <th
+                style="padding: 1rem; text-align: center; font-weight: 600; color: #251a14;"
+                >Acciones</th
+              >
             </tr>
           </thead>
           <tbody id="usersTableBody">
             <tr style="border-bottom: 1px solid #e5e7eb;">
-              <td colspan="8" style="padding: 2rem; text-align: center; color: #666;">Cargando usuarios...</td>
+              <td
+                colspan="8"
+                style="padding: 2rem; text-align: center; color: #666;"
+                >Cargando usuarios...</td
+              >
             </tr>
           </tbody>
         </table>
@@ -108,15 +203,26 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   </div>
 
   <!-- Modal Crear/Editar Usuario -->
-  <div id="userModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
-    <div style="background: white; border-radius: 12px; padding: 2rem; width: 90%; max-width: 500px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
-      <h2 id="modalTitle" style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem; color: #251a14;">
+  <div
+    id="userModal"
+    style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;"
+  >
+    <div
+      style="background: white; border-radius: 12px; padding: 2rem; width: 90%; max-width: 500px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);"
+    >
+      <h2
+        id="modalTitle"
+        style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem; color: #251a14;"
+      >
         Nuevo Usuario
       </h2>
 
       <form id="userForm" style="display: grid; gap: 1rem;">
         <div>
-          <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #251a14;">Email</label>
+          <label
+            style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #251a14;"
+            >Email</label
+          >
           <input
             id="emailInput"
             type="email"
@@ -127,7 +233,10 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         </div>
 
         <div>
-          <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #251a14;">Nombre</label>
+          <label
+            style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #251a14;"
+            >Nombre</label
+          >
           <input
             id="nameInput"
             type="text"
@@ -138,7 +247,10 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         </div>
 
         <div>
-          <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #251a14;">Teléfono</label>
+          <label
+            style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #251a14;"
+            >Teléfono</label
+          >
           <input
             id="phoneInput"
             type="tel"
@@ -148,7 +260,10 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         </div>
 
         <div>
-          <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #251a14;">Rol</label>
+          <label
+            style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #251a14;"
+            >Rol</label
+          >
           <select
             id="roleInput"
             style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px; font-size: 1rem;"
@@ -162,7 +277,10 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         </div>
 
         <div>
-          <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #251a14;">Ciudad</label>
+          <label
+            style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #251a14;"
+            >Ciudad</label
+          >
           <input
             id="cityInput"
             type="text"
@@ -172,7 +290,10 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         </div>
 
         <div>
-          <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #251a14;">Departamento/Estado</label>
+          <label
+            style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #251a14;"
+            >Departamento/Estado</label
+          >
           <input
             id="stateInput"
             type="text"
@@ -182,7 +303,10 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         </div>
 
         <div>
-          <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #251a14;">País</label>
+          <label
+            style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #251a14;"
+            >País</label
+          >
           <input
             id="countryInput"
             type="text"
@@ -191,7 +315,9 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
           />
         </div>
 
-        <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: 600; color: #251a14;">
+        <label
+          style="display: flex; align-items: center; gap: 0.5rem; font-weight: 600; color: #251a14;"
+        >
           <input
             id="verifiedInput"
             type="checkbox"
@@ -200,7 +326,9 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
           Verificado
         </label>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1.5rem;">
+        <div
+          style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1.5rem;"
+        >
           <button
             type="button"
             id="cancelBtn"
@@ -224,13 +352,21 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   </div>
 
   <!-- Modal Eliminar -->
-  <div id="deleteModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
-    <div style="background: white; border-radius: 12px; padding: 2rem; width: 90%; max-width: 400px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
-      <h2 style="font-size: 1.3rem; font-weight: 700; margin-bottom: 1rem; color: #251a14;">
+  <div
+    id="deleteModal"
+    style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;"
+  >
+    <div
+      style="background: white; border-radius: 12px; padding: 2rem; width: 90%; max-width: 400px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);"
+    >
+      <h2
+        style="font-size: 1.3rem; font-weight: 700; margin-bottom: 1rem; color: #251a14;"
+      >
         Eliminar Usuario
       </h2>
       <p style="color: #666; margin-bottom: 1.5rem;">
-        ¿Estás seguro de que deseas eliminar a <strong id="deleteUserName"></strong>? Esta acción no se puede deshacer.
+        ¿Estás seguro de que deseas eliminar a <strong id="deleteUserName"
+        ></strong>? Esta acción no se puede deshacer.
       </p>
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
         <button
@@ -261,71 +397,72 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     // Load users
     async function loadUsers() {
       try {
-        const response = await fetch('/api/users', {
-          credentials: 'include'
+        const response = await fetch("/api/users", {
+          credentials: "include",
         });
 
-        if (!response.ok) throw new Error('Error al cargar usuarios');
+        if (!response.ok) throw new Error("Error al cargar usuarios");
 
         const data = await response.json();
         allUsers = data.users || [];
         displayUsers(allUsers);
         updateStats(allUsers);
       } catch (err) {
-        console.error('Error:', err);
-        alert('Error al cargar usuarios: ' + err.message);
+        console.error("Error:", err);
+        alert("Error al cargar usuarios: " + err.message);
       }
     }
 
     // Display users table
     function displayUsers(users) {
-      const tbody = document.getElementById('usersTableBody');
-      tbody.innerHTML = '';
+      const tbody = document.getElementById("usersTableBody");
+      tbody.innerHTML = "";
 
       if (users.length === 0) {
-        tbody.innerHTML = '<tr style="border-bottom: 1px solid #e5e7eb;"><td colspan="8" style="padding: 2rem; text-align: center; color: #666;">No se encontraron usuarios</td></tr>';
+        tbody.innerHTML =
+          '<tr style="border-bottom: 1px solid #e5e7eb;"><td colspan="8" style="padding: 2rem; text-align: center; color: #666;">No se encontraron usuarios</td></tr>';
         return;
       }
 
-      users.forEach(user => {
-        const row = document.createElement('tr');
-        row.style.borderBottom = '1px solid #e5e7eb';
+      users.forEach((user) => {
+        const row = document.createElement("tr");
+        row.style.borderBottom = "1px solid #e5e7eb";
 
         const formatDate = (date) => {
-          if (!date) return 'Nunca';
-          return new Date(date).toLocaleDateString('es-ES');
+          if (!date) return "Nunca";
+          return new Date(date).toLocaleDateString("es-ES");
         };
 
         const roleColors = {
-          admin: 'background: #fef3c7; color: #92400e;',
-          caficultor: 'background: #d1fae5; color: #065f46;',
-          client: 'background: #e0e7ff; color: #3730a3;',
-          provider: 'background: #ede9fe; color: #5b21b6;'
+          admin: "background: #fef3c7; color: #92400e;",
+          caficultor: "background: #d1fae5; color: #065f46;",
+          client: "background: #e0e7ff; color: #3730a3;",
+          provider: "background: #ede9fe; color: #5b21b6;",
         };
 
         const caficultorStatusText = {
-          none: 'Sin solicitud',
-          pending: 'Pendiente',
-          approved: 'Aprobado',
-          rejected: 'Rechazado'
+          none: "Sin solicitud",
+          pending: "Pendiente",
+          approved: "Aprobado",
+          rejected: "Rechazado",
         };
 
         row.innerHTML = `
           <td style="padding: 1rem; color: #666;">${user.id}</td>
-          <td style="padding: 1rem; color: #251a14; font-weight: 500;">${user.name || 'N/A'}</td>
+          <td style="padding: 1rem; color: #251a14; font-weight: 500;">${user.name || "N/A"}</td>
           <td style="padding: 1rem; color: #666;">${user.email}</td>
           <td style="padding: 1rem;">
-            <span style="display: inline-block; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.85rem; font-weight: 600; ${roleColors[user.role] || 'background: #f3f4f6; color: #6b7280;'}">
+            <span style="display: inline-block; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.85rem; font-weight: 600; ${roleColors[user.role] || "background: #f3f4f6; color: #6b7280;"}">
               ${user.role}
             </span>
           </td>
           <td style="padding: 1rem;">
-            <span style="display: inline-block; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.85rem; font-weight: 600; background: ${user.is_verified ? '#d1fae5' : '#fee2e2'}; color: ${user.is_verified ? '#065f46' : '#991b1b'};">
-              ${user.is_verified ? '✓ Sí' : '✗ No'}
+            <span style="display: inline-block; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.85rem; font-weight: 600; background: ${user.is_verified ? "#d1fae5" : "#fee2e2"}; color: ${user.is_verified ? "#065f46" : "#991b1b"};">
+              ${user.is_verified ? "✓ Sí" : "✗ No"}
             </span>
           </td>
           <td style="padding: 1rem; color: #666;">
-            ${caficultorStatusText[user.caficultor_status] || 'N/A'}
+            ${caficultorStatusText[user.caficultor_status] || "N/A"}
           </td>
           <td style="padding: 1rem; color: #666; font-size: 0.9rem;">
             ${formatDate(user.last_login_at)}
@@ -341,24 +478,35 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
     // Update stats
     function updateStats(users) {
-      document.getElementById('totalCount').textContent = users.length;
-      document.getElementById('adminCount').textContent = users.filter(u => u.role === 'admin').length;
-      document.getElementById('caficultorCount').textContent = users.filter(u => u.role === 'caficultor').length;
-      document.getElementById('verifiedCount').textContent = users.filter(u => u.is_verified).length;
+      document.getElementById("totalCount").textContent = users.length;
+      document.getElementById("adminCount").textContent = users.filter(
+        (u) => u.role === "admin"
+      ).length;
+      document.getElementById("caficultorCount").textContent = users.filter(
+        (u) => u.role === "caficultor"
+      ).length;
+      document.getElementById("verifiedCount").textContent = users.filter(
+        (u) => u.is_verified
+      ).length;
     }
 
     // Filter users
     function applyFilters() {
-      const role = document.getElementById('roleFilter').value;
-      const verified = document.getElementById('verifiedFilter').value;
-      const caficultor = document.getElementById('caficultorFilter').value;
-      const search = document.getElementById('searchInput').value.toLowerCase();
+      const role = document.getElementById("roleFilter").value;
+      const verified = document.getElementById("verifiedFilter").value;
+      const caficultor = document.getElementById("caficultorFilter").value;
+      const search = document.getElementById("searchInput").value.toLowerCase();
 
-      const filtered = allUsers.filter(user => {
+      const filtered = allUsers.filter((user) => {
         const matchRole = !role || user.role === role;
-        const matchVerified = verified === '' || String(user.is_verified) === verified;
-        const matchCaficultor = !caficultor || user.caficultor_status === caficultor;
-        const matchSearch = !search || user.email.toLowerCase().includes(search) || (user.name && user.name.toLowerCase().includes(search));
+        const matchVerified =
+          verified === "" || String(user.is_verified) === verified;
+        const matchCaficultor =
+          !caficultor || user.caficultor_status === caficultor;
+        const matchSearch =
+          !search ||
+          user.email.toLowerCase().includes(search) ||
+          (user.name && user.name.toLowerCase().includes(search));
         return matchRole && matchVerified && matchCaficultor && matchSearch;
       });
 
@@ -367,148 +515,167 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
     // Edit user
     function editUser(userId) {
-      const user = allUsers.find(u => u.id === userId);
+      const user = allUsers.find((u) => u.id === userId);
       if (!user) return;
 
       currentEditId = userId;
-      document.getElementById('modalTitle').textContent = 'Editar Usuario';
-      document.getElementById('emailInput').value = user.email;
-      document.getElementById('nameInput').value = user.name || '';
-      document.getElementById('phoneInput').value = user.mobile_phone || '';
-      document.getElementById('roleInput').value = user.role;
-      document.getElementById('cityInput').value = user.city || '';
-      document.getElementById('stateInput').value = user.state_province || '';
-      document.getElementById('countryInput').value = user.country || '';
-      document.getElementById('verifiedInput').checked = user.is_verified;
-      document.getElementById('emailInput').readOnly = true;
+      document.getElementById("modalTitle").textContent = "Editar Usuario";
+      document.getElementById("emailInput").value = user.email;
+      document.getElementById("nameInput").value = user.name || "";
+      document.getElementById("phoneInput").value = user.mobile_phone || "";
+      document.getElementById("roleInput").value = user.role;
+      document.getElementById("cityInput").value = user.city || "";
+      document.getElementById("stateInput").value = user.state_province || "";
+      document.getElementById("countryInput").value = user.country || "";
+      document.getElementById("verifiedInput").checked = user.is_verified;
+      document.getElementById("emailInput").readOnly = true;
 
-      document.getElementById('userModal').style.display = 'flex';
+      document.getElementById("userModal").style.display = "flex";
     }
 
     // Delete user
     function deleteUser(userId, userEmail) {
       currentDeleteId = userId;
-      document.getElementById('deleteUserName').textContent = userEmail;
-      document.getElementById('deleteModal').style.display = 'flex';
+      document.getElementById("deleteUserName").textContent = userEmail;
+      document.getElementById("deleteModal").style.display = "flex";
     }
 
     // Close modals
     function closeUserModal() {
-      document.getElementById('userModal').style.display = 'none';
+      document.getElementById("userModal").style.display = "none";
       currentEditId = null;
-      document.getElementById('emailInput').readOnly = false;
-      document.getElementById('userForm').reset();
-      document.getElementById('modalTitle').textContent = 'Nuevo Usuario';
+      document.getElementById("emailInput").readOnly = false;
+      document.getElementById("userForm").reset();
+      document.getElementById("modalTitle").textContent = "Nuevo Usuario";
     }
 
     function closeDeleteModal() {
-      document.getElementById('deleteModal').style.display = 'none';
+      document.getElementById("deleteModal").style.display = "none";
       currentDeleteId = null;
     }
 
     // Save user
-    document.getElementById('userForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
+    document
+      .getElementById("userForm")
+      .addEventListener("submit", async (e) => {
+        e.preventDefault();
 
-      const userData = {
-        email: document.getElementById('emailInput').value,
-        name: document.getElementById('nameInput').value,
-        mobile_phone: document.getElementById('phoneInput').value,
-        role: document.getElementById('roleInput').value,
-        city: document.getElementById('cityInput').value,
-        state_province: document.getElementById('stateInput').value,
-        country: document.getElementById('countryInput').value,
-        is_verified: document.getElementById('verifiedInput').checked
-      };
+        const userData = {
+          email: document.getElementById("emailInput").value,
+          name: document.getElementById("nameInput").value,
+          mobile_phone: document.getElementById("phoneInput").value,
+          role: document.getElementById("roleInput").value,
+          city: document.getElementById("cityInput").value,
+          state_province: document.getElementById("stateInput").value,
+          country: document.getElementById("countryInput").value,
+          is_verified: document.getElementById("verifiedInput").checked,
+        };
 
-      try {
-        let endpoint, method;
-        
-        if (currentEditId) {
-          // Editar - no puede cambiar email
-          delete userData.email;
-          endpoint = `/api/users/${currentEditId}`;
-          method = 'PUT';
-        } else {
-          // Crear nuevo usuario
-          endpoint = '/api/users';
-          method = 'POST';
+        try {
+          let endpoint, method;
+
+          if (currentEditId) {
+            // Editar - no puede cambiar email
+            delete userData.email;
+            endpoint = `/api/users/${currentEditId}`;
+            method = "PUT";
+          } else {
+            // Crear nuevo usuario
+            endpoint = "/api/users";
+            method = "POST";
+          }
+
+          const response = await fetch(endpoint, {
+            method,
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify(userData),
+          });
+
+          if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || "Error al guardar usuario");
+          }
+
+          const result = await response.json();
+
+          closeUserModal();
+          loadUsers();
+
+          if (method === "POST") {
+            alert(
+              `Usuario creado exitosamente.\n\nContraseña temporal: ${result.tempPassword}\n\nAsegúrate de que el usuario cambie su contraseña en el siguiente login.`
+            );
+          } else {
+            alert("Usuario actualizado exitosamente");
+          }
+        } catch (err) {
+          alert("Error: " + err.message);
         }
-
-        const response = await fetch(endpoint, {
-          method,
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify(userData)
-        });
-
-        if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.error || 'Error al guardar usuario');
-        }
-
-        const result = await response.json();
-
-        closeUserModal();
-        loadUsers();
-
-        if (method === 'POST') {
-          alert(`Usuario creado exitosamente.\n\nContraseña temporal: ${result.tempPassword}\n\nAsegúrate de que el usuario cambie su contraseña en el siguiente login.`);
-        } else {
-          alert('Usuario actualizado exitosamente');
-        }
-      } catch (err) {
-        alert('Error: ' + err.message);
-      }
-    });
+      });
 
     // Confirm delete
-    document.getElementById('deleteConfirm').addEventListener('click', async () => {
-      try {
-        const response = await fetch(`/api/users/${currentDeleteId}`, {
-          method: 'DELETE',
-          credentials: 'include'
-        });
+    document
+      .getElementById("deleteConfirm")
+      .addEventListener("click", async () => {
+        try {
+          const response = await fetch(`/api/users/${currentDeleteId}`, {
+            method: "DELETE",
+            credentials: "include",
+          });
 
-        if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.error || 'Error al eliminar usuario');
+          if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || "Error al eliminar usuario");
+          }
+
+          closeDeleteModal();
+          loadUsers();
+          alert("Usuario eliminado exitosamente");
+        } catch (err) {
+          alert("Error: " + err.message);
         }
-
-        closeDeleteModal();
-        loadUsers();
-        alert('Usuario eliminado exitosamente');
-      } catch (err) {
-        alert('Error: ' + err.message);
-      }
-    });
+      });
 
     // Event listeners
-    document.getElementById('cancelBtn').addEventListener('click', closeUserModal);
-    document.getElementById('deleteCancel').addEventListener('click', closeDeleteModal);
-    document.getElementById('addUserBtn').addEventListener('click', () => {
+    document
+      .getElementById("cancelBtn")
+      .addEventListener("click", closeUserModal);
+    document
+      .getElementById("deleteCancel")
+      .addEventListener("click", closeDeleteModal);
+    document.getElementById("addUserBtn").addEventListener("click", () => {
       currentEditId = null;
-      document.getElementById('userForm').reset();
-      document.getElementById('modalTitle').textContent = 'Nuevo Usuario';
-      document.getElementById('emailInput').readOnly = false;
-      document.getElementById('userModal').style.display = 'flex';
+      document.getElementById("userForm").reset();
+      document.getElementById("modalTitle").textContent = "Nuevo Usuario";
+      document.getElementById("emailInput").readOnly = false;
+      document.getElementById("userModal").style.display = "flex";
     });
 
-    document.getElementById('roleFilter').addEventListener('change', applyFilters);
-    document.getElementById('verifiedFilter').addEventListener('change', applyFilters);
-    document.getElementById('caficultorFilter').addEventListener('change', applyFilters);
-    document.getElementById('searchInput').addEventListener('input', applyFilters);
+    document
+      .getElementById("roleFilter")
+      .addEventListener("change", applyFilters);
+    document
+      .getElementById("verifiedFilter")
+      .addEventListener("change", applyFilters);
+    document
+      .getElementById("caficultorFilter")
+      .addEventListener("change", applyFilters);
+    document
+      .getElementById("searchInput")
+      .addEventListener("input", applyFilters);
 
     // Close modal when clicking outside
-    document.getElementById('userModal').addEventListener('click', (e) => {
-      if (e.target === document.getElementById('userModal')) closeUserModal();
+    document.getElementById("userModal").addEventListener("click", (e) => {
+      if (e.target === document.getElementById("userModal")) closeUserModal();
     });
 
-    document.getElementById('deleteModal').addEventListener('click', (e) => {
-      if (e.target === document.getElementById('deleteModal')) closeDeleteModal();
+    document.getElementById("deleteModal").addEventListener("click", (e) => {
+      if (e.target === document.getElementById("deleteModal"))
+        closeDeleteModal();
     });
 
     // Load on init
     loadUsers();
   </script>
-</AppLayout>
+</AdminLayout>
