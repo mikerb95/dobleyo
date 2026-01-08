@@ -28,10 +28,30 @@ app.use(helmet({
 app.use(cookieParser());
 app.use(express.json());
 
-// CORS: Configurar origenes permitidos (ajustar segun dominio real)
+// CORS - permitir múltiples orígenes
+const allowedOrigins = [
+  'https://dobleyo.cafe',
+  'https://www.dobleyo.cafe',
+  'https://dobleyo.vercel.app',
+  'http://localhost:4321',
+  'http://localhost:3000'
+];
+if (process.env.SITE_BASE_URL && !allowedOrigins.includes(process.env.SITE_BASE_URL)) {
+  allowedOrigins.push(process.env.SITE_BASE_URL);
+}
+
 app.use(cors({
-  origin: process.env.SITE_BASE_URL || 'https://dobleyo.cafe',
-  credentials: true // Permitir cookies en CORS
+  origin: function(origin, callback) {
+    // Permitir requests sin origin (como mobile apps o curl)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.warn('[CORS] Origen bloqueado:', origin);
+      callback(new Error('No permitido por CORS'));
+    }
+  },
+  credentials: true
 }));
 
 app.use('/api/auth', authRouter);
