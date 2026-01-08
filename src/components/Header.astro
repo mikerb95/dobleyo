@@ -215,8 +215,10 @@
 
         // Guardar nombre en localStorage para persistencia
         localStorage.setItem("userName", firstName);
-      } else {
-        // Usuario no logueado - limpiar localStorage
+      } else if (res.status === 401) {
+        // Solo borrar localStorage si es un error de autenticación (401)
+        // Otros errores (500, 503) no deben cerrar la sesión del usuario
+        localStorage.removeItem("adminToken");
         localStorage.removeItem("userName");
         if (userBtn) {
           userBtn.href = "/login";
@@ -225,6 +227,25 @@
         if (userMobileBtn) {
           userMobileBtn.href = "/login";
           userMobileBtn.setAttribute("aria-label", "Iniciar sesión");
+        }
+      } else {
+        // Error del servidor (500, etc) - mantener sesión con datos guardados
+        console.warn("[Header] Error del servidor en /api/auth/me:", res.status);
+        const savedName = localStorage.getItem("userName");
+        if (savedName && token) {
+          if (userNameDisplay) {
+            userNameDisplay.textContent = savedName;
+            userNameDisplay.style.display = "inline";
+          }
+          if (userNameMobileDisplay) {
+            userNameMobileDisplay.textContent = savedName;
+            userNameMobileDisplay.style.display = "inline";
+          }
+          if (userBtn) userBtn.href = "/cuenta";
+          if (userMobileBtn) userMobileBtn.href = "/cuenta";
+        } else {
+          if (userBtn) userBtn.href = "/login";
+          if (userMobileBtn) userMobileBtn.href = "/login";
         }
       }
     } catch (err) {

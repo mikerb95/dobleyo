@@ -117,20 +117,20 @@ authRouter.post('/login',
       // Actualizar last_login
       await db.query('UPDATE users SET last_login_at = NOW() WHERE id = ?', [user.id]);
 
-      // Cookies
+      // Cookies - usar 'lax' para permitir navegación normal
       const isProd = process.env.NODE_ENV === 'production';
       
       res.cookie('auth_token', accessToken, {
         httpOnly: true,
         secure: isProd,
-        sameSite: 'strict',
+        sameSite: 'lax', // Cambiado de 'strict' a 'lax' para mejor compatibilidad
         maxAge: 15 * 60 * 1000 // 15 min
       });
 
       res.cookie('refresh_token', refreshToken, {
         httpOnly: true,
         secure: isProd,
-        sameSite: 'strict',
+        sameSite: 'lax', // Cambiado de 'strict' a 'lax' para mejor compatibilidad
         path: '/api/auth/refresh', // Solo se envia a este endpoint
         maxAge: 7 * 24 * 60 * 60 * 1000 // 7 dias
       });
@@ -184,10 +184,10 @@ authRouter.post('/refresh', refreshLimiter, async (req, res) => {
 
     const newAccessToken = auth.generateToken(user);
 
-    // Set Cookies
+    // Set Cookies - usar 'lax' para mejor compatibilidad
     const isProd = process.env.NODE_ENV === 'production';
-    res.cookie('auth_token', newAccessToken, { httpOnly: true, secure: isProd, sameSite: 'strict', maxAge: 15 * 60 * 1000 });
-    res.cookie('refresh_token', newRefreshToken, { httpOnly: true, secure: isProd, sameSite: 'strict', path: '/api/auth/refresh', maxAge: 7 * 24 * 60 * 60 * 1000 });
+    res.cookie('auth_token', newAccessToken, { httpOnly: true, secure: isProd, sameSite: 'lax', maxAge: 15 * 60 * 1000 });
+    res.cookie('refresh_token', newRefreshToken, { httpOnly: true, secure: isProd, sameSite: 'lax', path: '/api/auth/refresh', maxAge: 7 * 24 * 60 * 60 * 1000 });
 
     // Devolver también el token en JSON para actualizar localStorage
     res.json({ 

@@ -6,6 +6,13 @@ CREATE TABLE IF NOT EXISTS users (
     email VARCHAR(255) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
     name VARCHAR(120),
+    mobile_phone VARCHAR(20),
+    landline_phone VARCHAR(20),
+    tax_id VARCHAR(50), -- Cédula o NIT
+    city VARCHAR(120),
+    state_province VARCHAR(120), -- Departamento
+    country VARCHAR(120) DEFAULT 'Colombia',
+    address TEXT,
     role ENUM('admin', 'client', 'provider', 'caficultor') NOT NULL DEFAULT 'client',
     is_verified BOOLEAN NOT NULL DEFAULT FALSE,
     caficultor_status ENUM('none', 'pending', 'approved', 'rejected') NOT NULL DEFAULT 'none',
