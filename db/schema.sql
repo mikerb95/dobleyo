@@ -5,6 +5,8 @@ CREATE TABLE IF NOT EXISTS users (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     email VARCHAR(255) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
+    first_name VARCHAR(80),
+    last_name VARCHAR(80),
     name VARCHAR(120),
     mobile_phone VARCHAR(20),
     landline_phone VARCHAR(20),
