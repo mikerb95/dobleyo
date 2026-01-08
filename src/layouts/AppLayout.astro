@@ -54,11 +54,7 @@ import Head from "../components/Head.astro";
           
           const response = await fetch("/api/auth/me", {
             method: "GET",
-            headers: { 
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json"
-            },
-            credentials: "include",
+            credentials: "include", // Solo usar cookies, sin Authorization header
           });
 
           console.log("[AppLayout] Respuesta /api/auth/me:", response.status, response.statusText);
