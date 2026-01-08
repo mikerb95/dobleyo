@@ -5,7 +5,9 @@ import AppLayout from "../../layouts/AppLayout.astro";
 <AppLayout>
   <div style="max-width: 1400px; margin: 0 auto; padding: 1.5rem;">
     <div style="margin-bottom: 1.5rem;">
-      <h1 style="font-size: 2rem; font-weight: 700; color: #8b6f47; margin-bottom: 1rem;">
+      <h1
+        style="font-size: 2rem; font-weight: 700; color: #8b6f47; margin-bottom: 1rem;"
+      >
         📋 Auditoría y Logs
       </h1>
       <p style="color: #666; margin: 0;">
@@ -14,8 +16,13 @@ import AppLayout from "../../layouts/AppLayout.astro";
     </div>
 
     <!-- Filtros -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; background: white; padding: 1rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-      <select id="actionFilter" style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+    <div
+      style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; background: white; padding: 1rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);"
+    >
+      <select
+        id="actionFilter"
+        style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;"
+      >
         <option value="">Todas las acciones</option>
       </select>
 
@@ -39,7 +46,7 @@ import AppLayout from "../../layouts/AppLayout.astro";
       >
         🔍 Filtrar
       </button>
-      
+
       <button
         onclick="resetFilters()"
         style="padding: 0.5rem 1rem; background: #ddd; color: #333; border: none; border-radius: 4px; font-weight: 600; cursor: pointer;"
@@ -54,16 +61,39 @@ import AppLayout from "../../layouts/AppLayout.astro";
     </div>
 
     <!-- Tabla de logs -->
-    <div style="overflow-x: auto; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-      <table id="logsTable" style="width: 100%; border-collapse: collapse; display: none;">
+    <div
+      style="overflow-x: auto; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);"
+    >
+      <table
+        id="logsTable"
+        style="width: 100%; border-collapse: collapse; display: none;"
+      >
         <thead>
           <tr style="background: #f9fafb; border-bottom: 2px solid #e5e7eb;">
-            <th style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;">Fecha</th>
-            <th style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;">Usuario</th>
-            <th style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;">Acción</th>
-            <th style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;">Tipo</th>
-            <th style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;">ID Entidad</th>
-            <th style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;">Detalles</th>
+            <th
+              style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;"
+              >Fecha</th
+            >
+            <th
+              style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;"
+              >Usuario</th
+            >
+            <th
+              style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;"
+              >Acción</th
+            >
+            <th
+              style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;"
+              >Tipo</th
+            >
+            <th
+              style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;"
+              >ID Entidad</th
+            >
+            <th
+              style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;"
+              >Detalles</th
+            >
           </tr>
         </thead>
         <tbody id="logsTableBody"></tbody>
@@ -71,25 +101,58 @@ import AppLayout from "../../layouts/AppLayout.astro";
     </div>
 
     <!-- Paginación -->
-    <div id="pagination" style="display: flex; justify-content: center; gap: 1rem; margin-top: 1.5rem; align-items: center;">
+    <div
+      id="pagination"
+      style="display: flex; justify-content: center; gap: 1rem; margin-top: 1.5rem; align-items: center;"
+    >
     </div>
 
     <!-- Estadísticas -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 2rem;">
-      <div style="background: #f0f9ff; border-radius: 8px; padding: 1.5rem; text-align: center;">
-        <div style="font-size: 2rem; font-weight: 700; color: #0369a1;" id="statTotal">0</div>
+    <div
+      style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 2rem;"
+    >
+      <div
+        style="background: #f0f9ff; border-radius: 8px; padding: 1.5rem; text-align: center;"
+      >
+        <div
+          style="font-size: 2rem; font-weight: 700; color: #0369a1;"
+          id="statTotal"
+        >
+          0
+        </div>
         <div style="color: #666; font-size: 0.9rem;">Total de registros</div>
       </div>
-      <div style="background: #f0fdf4; border-radius: 8px; padding: 1.5rem; text-align: center;">
-        <div style="font-size: 2rem; font-weight: 700; color: #15803d;" id="statCreates">0</div>
+      <div
+        style="background: #f0fdf4; border-radius: 8px; padding: 1.5rem; text-align: center;"
+      >
+        <div
+          style="font-size: 2rem; font-weight: 700; color: #15803d;"
+          id="statCreates"
+        >
+          0
+        </div>
         <div style="color: #666; font-size: 0.9rem;">Creaciones</div>
       </div>
-      <div style="background: #fef3c7; border-radius: 8px; padding: 1.5rem; text-align: center;">
-        <div style="font-size: 2rem; font-weight: 700; color: #b45309;" id="statUpdates">0</div>
+      <div
+        style="background: #fef3c7; border-radius: 8px; padding: 1.5rem; text-align: center;"
+      >
+        <div
+          style="font-size: 2rem; font-weight: 700; color: #b45309;"
+          id="statUpdates"
+        >
+          0
+        </div>
         <div style="color: #666; font-size: 0.9rem;">Actualizaciones</div>
       </div>
-      <div style="background: #fee2e2; border-radius: 8px; padding: 1.5rem; text-align: center;">
-        <div style="font-size: 2rem; font-weight: 700; color: #991b1b;" id="statDeletes">0</div>
+      <div
+        style="background: #fee2e2; border-radius: 8px; padding: 1.5rem; text-align: center;"
+      >
+        <div
+          style="font-size: 2rem; font-weight: 700; color: #991b1b;"
+          id="statDeletes"
+        >
+          0
+        </div>
         <div style="color: #666; font-size: 0.9rem;">Eliminaciones</div>
       </div>
     </div>
@@ -121,7 +184,8 @@ import AppLayout from "../../layouts/AppLayout.astro";
         document.getElementById("logsTable").style.display = "table";
       } catch (err) {
         console.error("Error:", err);
-        document.getElementById("loading").textContent = "Error al cargar los logs de auditoría";
+        document.getElementById("loading").textContent =
+          "Error al cargar los logs de auditoría";
       }
     }
 
@@ -135,8 +199,8 @@ import AppLayout from "../../layouts/AppLayout.astro";
 
         const data = await response.json();
         const select = document.getElementById("actionFilter");
-        
-        data.actions.forEach(action => {
+
+        data.actions.forEach((action) => {
           const option = document.createElement("option");
           option.value = action;
           option.textContent = action.charAt(0).toUpperCase() + action.slice(1);
@@ -152,7 +216,8 @@ import AppLayout from "../../layouts/AppLayout.astro";
       tbody.innerHTML = "";
 
       if (allLogs.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="padding: 2rem; text-align: center; color: #666;">No hay registros de auditoría</td></tr>';
+        tbody.innerHTML =
+          '<tr><td colspan="6" style="padding: 2rem; text-align: center; color: #666;">No hay registros de auditoría</td></tr>';
         return;
       }
 
@@ -168,7 +233,10 @@ import AppLayout from "../../layouts/AppLayout.astro";
         row.onmouseleave = () => (row.style.backgroundColor = "transparent");
 
         const date = new Date(log.created_at);
-        const dateStr = date.toLocaleDateString("es-ES") + " " + date.toLocaleTimeString("es-ES");
+        const dateStr =
+          date.toLocaleDateString("es-ES") +
+          " " +
+          date.toLocaleTimeString("es-ES");
 
         const actionColors = {
           create: "#10b981",
@@ -177,18 +245,19 @@ import AppLayout from "../../layouts/AppLayout.astro";
           harvest: "#3b82f6",
           store: "#8b5cf6",
           roast_send: "#ec4899",
-          roast_receive: "#06b6d4"
+          roast_receive: "#06b6d4",
         };
 
-        const userName = log.first_name || log.last_name 
-          ? `${log.first_name || ""} ${log.last_name || ""}`.trim()
-          : log.user_email || "Sistema";
+        const userName =
+          log.first_name || log.last_name
+            ? `${log.first_name || ""} ${log.last_name || ""}`.trim()
+            : log.user_email || "Sistema";
 
         row.innerHTML = `
           <td style="padding: 1rem; font-size: 0.85rem; color: #666;">${dateStr}</td>
           <td style="padding: 1rem; font-weight: 500;">${userName}</td>
           <td style="padding: 1rem;">
-            <span style="background: ${actionColors[log.action] || '#6b7280'}; color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.85rem; font-weight: 500;">
+            <span style="background: ${actionColors[log.action] || "#6b7280"}; color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.85rem; font-weight: 500;">
               ${log.action}
             </span>
           </td>
@@ -219,7 +288,8 @@ import AppLayout from "../../layouts/AppLayout.astro";
       if (currentPage > 1) {
         const prevBtn = document.createElement("button");
         prevBtn.textContent = "← Anterior";
-        prevBtn.style.cssText = "padding: 0.5rem 1rem; background: #8b6f47; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;";
+        prevBtn.style.cssText =
+          "padding: 0.5rem 1rem; background: #8b6f47; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;";
         prevBtn.onclick = () => {
           currentPage--;
           displayLogs();
@@ -236,7 +306,8 @@ import AppLayout from "../../layouts/AppLayout.astro";
       if (currentPage < totalPages) {
         const nextBtn = document.createElement("button");
         nextBtn.textContent = "Siguiente →";
-        nextBtn.style.cssText = "padding: 0.5rem 1rem; background: #8b6f47; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;";
+        nextBtn.style.cssText =
+          "padding: 0.5rem 1rem; background: #8b6f47; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;";
         nextBtn.onclick = () => {
           currentPage++;
           displayLogs();
@@ -249,9 +320,9 @@ import AppLayout from "../../layouts/AppLayout.astro";
     function updateStats() {
       const stats = {
         total: allLogs.length,
-        create: allLogs.filter(l => l.action === 'create').length,
-        update: allLogs.filter(l => l.action === 'update').length,
-        delete: allLogs.filter(l => l.action === 'delete').length
+        create: allLogs.filter((l) => l.action === "create").length,
+        update: allLogs.filter((l) => l.action === "update").length,
+        delete: allLogs.filter((l) => l.action === "delete").length,
       };
 
       document.getElementById("statTotal").textContent = stats.total;
@@ -262,14 +333,21 @@ import AppLayout from "../../layouts/AppLayout.astro";
 
     function applyFilters() {
       const action = document.getElementById("actionFilter").value;
-      const entityId = document.getElementById("entityIdFilter").value.toLowerCase();
+      const entityId = document
+        .getElementById("entityIdFilter")
+        .value.toLowerCase();
       const user = document.getElementById("userFilter").value.toLowerCase();
 
-      const filtered = allLogs.filter(log => {
+      const filtered = allLogs.filter((log) => {
         const matchAction = !action || log.action === action;
-        const matchEntity = !entityId || log.entity_id.toLowerCase().includes(entityId);
-        const matchUser = !user || (log.user_email || "").toLowerCase().includes(user) || 
-                         `${log.first_name || ""} ${log.last_name || ""}`.toLowerCase().includes(user);
+        const matchEntity =
+          !entityId || log.entity_id.toLowerCase().includes(entityId);
+        const matchUser =
+          !user ||
+          (log.user_email || "").toLowerCase().includes(user) ||
+          `${log.first_name || ""} ${log.last_name || ""}`
+            .toLowerCase()
+            .includes(user);
         return matchAction && matchEntity && matchUser;
       });
 
@@ -290,7 +368,9 @@ import AppLayout from "../../layouts/AppLayout.astro";
       try {
         const details = JSON.parse(atob(encodedDetails));
         const detailsStr = JSON.stringify(details, null, 2);
-        alert(`Detalles de la acción:\n\nAcción: ${action}\nTipo: ${entityType}\nID: ${entityId}\n\n${detailsStr}`);
+        alert(
+          `Detalles de la acción:\n\nAcción: ${action}\nTipo: ${entityType}\nID: ${entityId}\n\n${detailsStr}`
+        );
       } catch (err) {
         alert("No hay detalles adicionales para esta acción");
       }
