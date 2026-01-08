@@ -22,20 +22,22 @@ import Head from "../components/Head.astro";
       // Verificar autenticación de admin
       (async function () {
         const token = localStorage.getItem("adminToken");
+        const currentPath = window.location.pathname;
 
         if (!token) {
-          window.location.href = "/admin/login";
+          window.location.href = "/login?redirect=" + encodeURIComponent(currentPath);
           return;
         }
 
         try {
           const response = await fetch("/api/auth/me", {
             headers: { Authorization: `Bearer ${token}` },
+            credentials: "include",
           });
 
           if (!response.ok) {
             localStorage.removeItem("adminToken");
-            window.location.href = "/admin/login";
+            window.location.href = "/login?redirect=" + encodeURIComponent(currentPath);
             return;
           }
 
@@ -52,7 +54,7 @@ import Head from "../components/Head.astro";
           document.body.style.visibility = "visible";
         } catch (error) {
           localStorage.removeItem("adminToken");
-          window.location.href = "/admin/login";
+          window.location.href = "/login?redirect=" + encodeURIComponent(currentPath);
         }
       })();
 
