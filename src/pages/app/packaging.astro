@@ -566,8 +566,12 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
 
         const data = await response.json();
 
+        const inventoryMessage = data.inventoryUpdated
+          ? `\n✅ ${unitCount} unidades agregadas al inventario disponible`
+          : "";
+
         alert(
-          `✅ Café preparado para venta\n${currentRoasted.lot_id}\n${unitCount} unidades de ${packageSize}\nPuntuación: ${data.score}/5`
+          `✅ Café preparado para venta\n${currentRoasted.lot_id}\n${unitCount} unidades de ${packageSize}\nPuntuación: ${data.score}/5${inventoryMessage}`
         );
 
         form.reset();
