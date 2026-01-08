@@ -123,17 +123,8 @@ stockRouter.post('/update', authenticateToken, requireRole('admin'), async (req,
     }
 });
 
-stockRouter.post('/update', (req, res) => {
-  const { sku, quantity } = req.body || {};
-  try {
-    const record = updateStock(sku, quantity);
-    res.json({ message: 'Stock actualizado', record });
-  } catch (err) {
-    res.status(400).json({ error: err.message || 'Error actualizando stock' });
-  }
-});
-
-stockRouter.post('/sync/mercadolibre', (req, res) => {
+// Sincronizar con MercadoLibre (solo admin)
+stockRouter.post('/sync/mercadolibre', authenticateToken, requireRole('admin'), (req, res) => {
   const result = syncWithMercadoLibre(req.body);
   res.json(result);
 });
