@@ -193,6 +193,29 @@ import AppLayout from "../../layouts/AppLayout.astro";
             </p>
           </div>
         </a>
+
+        <!-- Mapa de Calor de Ventas (Solo Admin) -->
+        <a
+          href="/app/ventas"
+          id="salesMapLink"
+          style="display: none;"
+        >
+          <div
+            style="background: white; border: 1px solid #e5e7eb; border-radius: 0.75rem; padding: 1.5rem; transition: all 0.3s; cursor: pointer;"
+            onmouseover="this.style.borderColor='#8b6f47'; this.style.boxShadow='0 4px 12px rgba(139,111,71,0.15)'"
+            onmouseout="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none'"
+          >
+            <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">🗺️</div>
+            <h3
+              style="font-weight: 600; margin-bottom: 0.5rem; color: #251a14;"
+            >
+              Mapa de Ventas
+            </h3>
+            <p style="color: #666; font-size: 0.95rem;">
+              Visualiza la distribución geográfica de tus ventas en Colombia
+            </p>
+          </div>
+        </a>
       </div>
     </div>
 
@@ -214,9 +237,7 @@ import AppLayout from "../../layouts/AppLayout.astro";
           onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.1)';"
         >
           <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">📋</div>
-          <h3
-            style="font-weight: 600; margin-bottom: 0.5rem; color: #251a14;"
-          >
+          <h3 style="font-weight: 600; margin-bottom: 0.5rem; color: #251a14;">
             Auditoría del Sistema
           </h3>
           <p style="color: #666; font-size: 0.95rem;">
@@ -321,6 +342,7 @@ import AppLayout from "../../layouts/AppLayout.astro";
         const caficultorOptions = document.getElementById("caficultorOptions");
         const usersLink = document.getElementById("usersLink");
         const productsLink = document.getElementById("productsLink");
+        const salesMapLink = document.getElementById("salesMapLink");
         const auditSection = document.getElementById("auditSection");
 
         if (window.userRole === "admin") {
@@ -329,6 +351,7 @@ import AppLayout from "../../layouts/AppLayout.astro";
           if (caficultorOptions) caficultorOptions.style.display = "block";
           if (usersLink) usersLink.style.display = "block";
           if (productsLink) productsLink.style.display = "block";
+          if (salesMapLink) salesMapLink.style.display = "block";
           if (auditSection) auditSection.style.display = "block";
         } else if (window.userRole === "caficultor") {
           // Caficultor solo ve sus opciones
