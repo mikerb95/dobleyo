@@ -59,16 +59,21 @@ import Head from "../components/Head.astro";
 
           if (!response.ok) {
             const errorText = await response.text();
-            console.error("[AppLayout] Error en /api/auth/me:", response.status, errorText);
-            
+            console.error(
+              "[AppLayout] Error en /api/auth/me:",
+              response.status,
+              errorText
+            );
+
             // Solo redirigir a login si es error de autenticación (401/403)
             if (response.status === 401 || response.status === 403) {
               localStorage.removeItem("adminToken");
               localStorage.removeItem("userName");
-              window.location.href = "/login?redirect=" + encodeURIComponent(currentPath);
+              window.location.href =
+                "/login?redirect=" + encodeURIComponent(currentPath);
               return;
             }
-            
+
             // Error del servidor (500, etc) - mostrar mensaje pero no cerrar sesión
             document.body.innerHTML = `
               <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;font-family:system-ui;">

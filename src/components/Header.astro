@@ -230,7 +230,10 @@
         }
       } else {
         // Error del servidor (500, etc) - mantener sesión con datos guardados
-        console.warn("[Header] Error del servidor en /api/auth/me:", res.status);
+        console.warn(
+          "[Header] Error del servidor en /api/auth/me:",
+          res.status
+        );
         const savedName = localStorage.getItem("userName");
         if (savedName && token) {
           if (userNameDisplay) {

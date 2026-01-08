@@ -54,5 +54,32 @@ app.use('/api/inventory', inventoryRouter);
 // Health Check
 app.get('/api/health', (req, res) => res.json({ status: 'ok', time: new Date().toISOString() }));
 
+// Debug endpoint - verificar configuración (solo en desarrollo o con clave)
+app.get('/api/debug/config', (req, res) => {
+  const debugKey = req.query.key;
+  const expectedKey = process.env.SETUP_SECRET_KEY;
+  
+  // Permitir acceso solo con clave correcta o en desarrollo
+  if (process.env.NODE_ENV !== 'development' && debugKey !== expectedKey) {
+    return res.status(403).json({ error: 'Acceso denegado' });
+  }
+  
+  res.json({
+    status: 'ok',
+    time: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'not-set',
+    config: {
+      JWT_SECRET: process.env.JWT_SECRET ? '✓ configurado' : '✗ FALTA',
+      JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET ? '✓ configurado' : '✗ FALTA',
+      DATABASE_URL: process.env.DATABASE_URL ? '✓ configurado' : '✗ FALTA',
+      SITE_BASE_URL: process.env.SITE_BASE_URL || 'no configurado (usando default)',
+      SETUP_SECRET_KEY: process.env.SETUP_SECRET_KEY ? '✓ configurado' : '✗ FALTA',
+      ADMIN_EMAIL: process.env.ADMIN_EMAIL ? '✓ configurado' : '✗ FALTA',
+      ADMIN_PASSWORD: process.env.ADMIN_PASSWORD ? '✓ configurado' : '✗ FALTA',
+    },
+    allowedOrigins: allowedOrigins
+  });
+});
+
 // Export for Vercel serverless
 export default app;
