@@ -1,6 +1,7 @@
 # Cambios - Administrador de Usuarios
 
 ## Resumen
+
 Se ha agregado la funcionalidad de editar y eliminar usuarios en el administrador de usuarios de la app privada.
 
 ## Cambios Realizados
@@ -8,6 +9,7 @@ Se ha agregado la funcionalidad de editar y eliminar usuarios en el administrado
 ### 1. Backend - Nuevos Endpoints en `/server/routes/users.js`
 
 #### PUT `/api/users/:id` - Editar usuario
+
 - **Autenticación**: Requerida (solo admin)
 - **Descripción**: Permite editar los datos de un usuario
 - **Campos editables**:
@@ -20,6 +22,7 @@ Se ha agregado la funcionalidad de editar y eliminar usuarios en el administrado
   - `is_verified`: Estado de verificación
 
 **Ejemplo de solicitud**:
+
 ```bash
 PUT /api/users/5
 Authorization: Bearer <token>
@@ -34,11 +37,13 @@ Content-Type: application/json
 ```
 
 #### DELETE `/api/users/:id` - Eliminar usuario
+
 - **Autenticación**: Requerida (solo admin)
 - **Descripción**: Elimina un usuario del sistema
 - **Restricción**: No se puede eliminar al usuario actual (admin que hace la solicitud)
 
 **Ejemplo de solicitud**:
+
 ```bash
 DELETE /api/users/5
 Authorization: Bearer <token>
@@ -47,11 +52,14 @@ Authorization: Bearer <token>
 ### 2. Frontend - Página `/src/pages/app/usuarios.astro`
 
 #### Nuevas características:
+
 1. **Columna de Acciones**: Se agregó una nueva columna en la tabla con dos botones:
+
    - ✏️ **Editar**: Abre un modal para editar los datos del usuario
    - 🗑️ **Eliminar**: Abre un modal de confirmación antes de eliminar
 
 2. **Modal Editar Usuario**:
+
    - Formulario con los siguientes campos:
      - Nombre (editable)
      - Email (solo lectura, informativo)
@@ -65,6 +73,7 @@ Authorization: Bearer <token>
    - Se cierra al hacer clic fuera
 
 3. **Modal Eliminar Usuario**:
+
    - Solicita confirmación antes de eliminar
    - Muestra el email del usuario a eliminar
    - Botones: Eliminar y Cancelar
@@ -77,6 +86,7 @@ Authorization: Bearer <token>
 ## Flujo de Uso
 
 ### Editar Usuario
+
 1. Admin accede a `/app/usuarios`
 2. Hace clic en el botón "✏️ Editar" de cualquier usuario
 3. Se abre el modal con los datos actuales del usuario
@@ -86,6 +96,7 @@ Authorization: Bearer <token>
 7. Si es exitoso, la tabla se actualiza automáticamente
 
 ### Eliminar Usuario
+
 1. Admin accede a `/app/usuarios`
 2. Hace clic en el botón "🗑️ Eliminar" de cualquier usuario
 3. Se abre un modal de confirmación
@@ -112,12 +123,14 @@ Authorization: Bearer <token>
 Recomendaciones para probar:
 
 1. **Editar usuario**:
+
    - Cambiar nombre, email, teléfono
    - Cambiar rol de usuario
    - Marcar/desmarcar como verificado
    - Verificar que la tabla se actualice
 
 2. **Eliminar usuario**:
+
    - Intentar eliminar un usuario regular
    - Intentar eliminar al admin actual (debería fallar con mensaje)
    - Verificar que la tabla se actualice
