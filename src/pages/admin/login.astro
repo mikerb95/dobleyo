@@ -32,11 +32,10 @@ import Layout from "../../layouts/Layout.astro";
             />
           </div>
 
-          <div id="errorMessage" class="error-message" style="display: none;"></div>
+          <div id="errorMessage" class="error-message" style="display: none;">
+          </div>
 
-          <button type="submit" class="login-button">
-            Iniciar Sesión
-          </button>
+          <button type="submit" class="login-button"> Iniciar Sesión </button>
         </form>
 
         <p class="form-note">
@@ -158,49 +157,53 @@ import Layout from "../../layouts/Layout.astro";
 </style>
 
 <script>
-  const form = document.getElementById('adminLoginForm') as HTMLFormElement;
-  const errorDiv = document.getElementById('errorMessage') as HTMLDivElement;
-  const submitBtn = form?.querySelector('button[type="submit"]') as HTMLButtonElement;
+  const form = document.getElementById("adminLoginForm") as HTMLFormElement;
+  const errorDiv = document.getElementById("errorMessage") as HTMLDivElement;
+  const submitBtn = form?.querySelector(
+    'button[type="submit"]'
+  ) as HTMLButtonElement;
 
-  form?.addEventListener('submit', async (e) => {
+  form?.addEventListener("submit", async (e) => {
     e.preventDefault();
-    
+
     const formData = new FormData(form);
-    const email = formData.get('email') as string;
-    const password = formData.get('password') as string;
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
 
     submitBtn.disabled = true;
-    submitBtn.textContent = 'Iniciando sesión...';
-    errorDiv.style.display = 'none';
+    submitBtn.textContent = "Iniciando sesión...";
+    errorDiv.style.display = "none";
 
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Error al iniciar sesión');
+        throw new Error(data.error || "Error al iniciar sesión");
       }
 
       // Verificar rol de admin
-      if (data.user && data.user.role !== 'admin') {
-        throw new Error('Acceso denegado. Solo administradores pueden acceder.');
+      if (data.user && data.user.role !== "admin") {
+        throw new Error(
+          "Acceso denegado. Solo administradores pueden acceder."
+        );
       }
 
       // Guardar token
-      localStorage.setItem('adminToken', data.token);
+      localStorage.setItem("adminToken", data.token);
 
       // Redirigir a admin.html
-      window.location.href = '/admin.html';
+      window.location.href = "/admin.html";
     } catch (error) {
       errorDiv.textContent = error.message;
-      errorDiv.style.display = 'block';
+      errorDiv.style.display = "block";
       submitBtn.disabled = false;
-      submitBtn.textContent = 'Iniciar Sesión';
+      submitBtn.textContent = "Iniciar Sesión";
     }
   });
 </script>
