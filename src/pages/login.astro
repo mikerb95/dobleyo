@@ -90,7 +90,7 @@ import Layout from "../layouts/Layout.astro";
           if (data.token) {
             localStorage.setItem("adminToken", data.token);
           }
-          
+
           // Guardar nombre del usuario para mostrar en navbar
           if (data.user?.name) {
             const firstName = data.user.name.split(" ")[0];

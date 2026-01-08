@@ -26,7 +26,10 @@
         data-link
         id="userNavBtn"
       >
-        <span id="userNameDisplay" style="display: none; margin-right: 0.5rem; font-size: 0.9rem; font-weight: 500;"></span>
+        <span
+          id="userNameDisplay"
+          style="display: none; margin-right: 0.5rem; font-size: 0.9rem; font-weight: 500;"
+        ></span>
         <svg
           width="18"
           height="18"
@@ -55,7 +58,10 @@
       data-link
       id="userNavMobileBtn"
     >
-      <span id="userNameMobileDisplay" style="display: none; margin-right: 0.5rem; font-size: 0.9rem; font-weight: 500;"></span>
+      <span
+        id="userNameMobileDisplay"
+        style="display: none; margin-right: 0.5rem; font-size: 0.9rem; font-weight: 500;"
+      ></span>
       <svg
         width="18"
         height="18"
@@ -171,11 +177,13 @@
     const userBtn = document.getElementById("userNavBtn");
     const userMobileBtn = document.getElementById("userNavMobileBtn");
     const userNameDisplay = document.getElementById("userNameDisplay");
-    const userNameMobileDisplay = document.getElementById("userNameMobileDisplay");
+    const userNameMobileDisplay = document.getElementById(
+      "userNameMobileDisplay"
+    );
 
     // Primero intentar con token en localStorage
     const token = localStorage.getItem("adminToken");
-    
+
     try {
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
       const res = await fetch("/api/auth/me", {
@@ -187,7 +195,7 @@
         const user = await res.json();
         // Usuario logueado - mostrar nombre
         const firstName = user.name ? user.name.split(" ")[0] : "Usuario";
-        
+
         if (userNameDisplay) {
           userNameDisplay.textContent = firstName;
           userNameDisplay.style.display = "inline";
@@ -204,7 +212,7 @@
           userMobileBtn.href = "/cuenta";
           userMobileBtn.setAttribute("aria-label", `Cuenta de ${firstName}`);
         }
-        
+
         // Guardar nombre en localStorage para persistencia
         localStorage.setItem("userName", firstName);
       } else {
