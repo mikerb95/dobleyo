@@ -112,7 +112,7 @@ import Head from "../components/Head.astro";
 
           // Guardar rol en variable global para uso posterior
           window.userRole = user.role;
-          window.userName = user.name;
+          window.userName = user.first_name || user.name;
 
           // Usuario autenticado correctamente, mostrar contenido
           document.body.style.visibility = "visible";

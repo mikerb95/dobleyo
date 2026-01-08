@@ -19,29 +19,35 @@
       <a href="/carrito" class="icon-btn" data-link
         >🛒<span class="badge" id="cartCount">0</span></a
       >
-      <a
-        href="/login"
-        class="icon-btn user-btn"
-        aria-label="Iniciar sesión"
-        data-link
-        id="userNavBtn"
-      >
-        <span
-          id="userNameDisplay"
-          style="display: none; margin-right: 0.5rem; font-size: 0.9rem; font-weight: 500;"
-        ></span>
-        <svg
-          width="18"
-          height="18"
-          viewBox="0 0 24 24"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          aria-hidden="true"
-          ><path
-            d="M12 12c2.761 0 5-2.239 5-5s-2.239-5-5-5-5 2.239-5 5 2.239 5 5 5zm0 2c-4.418 0-8 2.239-8 5v1h16v-1c0-2.761-3.582-5-8-5z"
-            fill="currentColor"></path></svg
+      <div class="user-dropdown" id="userDropdown">
+        <button
+          class="icon-btn user-btn"
+          aria-label="Menú de usuario"
+          aria-haspopup="true"
+          aria-expanded="false"
+          id="userNavBtn"
         >
-      </a>
+          <span
+            id="userNameDisplay"
+            style="display: none; margin-right: 0.5rem; font-size: 0.9rem; font-weight: 500;"
+          ></span>
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+            ><path
+              d="M12 12c2.761 0 5-2.239 5-5s-2.239-5-5-5-5 2.239-5 5 2.239 5 5 5zm0 2c-4.418 0-8 2.239-8 5v1h16v-1c0-2.761-3.582-5-8-5z"
+              fill="currentColor"></path></svg
+          >
+        </button>
+        <div class="dropdown-menu" id="userDropdownMenu">
+          <a href="/cuenta" class="dropdown-item" data-link>Perfil</a>
+          <button class="dropdown-item" id="logoutBtn">Cerrar sesión</button>
+        </div>
+      </div>
       <button id="menuBtn" class="hamburger" aria-label="Menú">☰</button>
     </div>
   </div>
@@ -194,7 +200,7 @@
       if (res.ok) {
         const user = await res.json();
         // Usuario logueado - mostrar nombre
-        const firstName = user.name ? user.name.split(" ")[0] : "Usuario";
+        const firstName = user.first_name || "Usuario";
 
         if (userNameDisplay) {
           userNameDisplay.textContent = firstName;
@@ -270,5 +276,60 @@
         if (userMobileBtn) userMobileBtn.href = "/login";
       }
     }
+  })();
+
+  // Dropdown menu logic
+  (function initUserDropdown() {
+    const userDropdown = document.getElementById('userDropdown');
+    const userBtn = document.getElementById('userNavBtn');
+    const dropdownMenu = document.getElementById('userDropdownMenu');
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    if (!userBtn || !userDropdown || !dropdownMenu) return;
+
+    // Toggle dropdown al hacer click en el botón
+    userBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      userDropdown.classList.toggle('active');
+      userBtn.setAttribute('aria-expanded', userDropdown.classList.contains('active'));
+    });
+
+    // Cerrar dropdown al hacer click en un item
+    dropdownMenu.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        userDropdown.classList.remove('active');
+        userBtn.setAttribute('aria-expanded', 'false');
+      });
+    });
+
+    // Logout
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        try {
+          const response = await fetch('/api/auth/logout', {
+            method: 'POST',
+            credentials: 'include'
+          });
+          
+          if (response.ok) {
+            localStorage.removeItem('adminToken');
+            localStorage.removeItem('userName');
+            window.location.href = '/login';
+          }
+        } catch (err) {
+          console.error('Error al cerrar sesión:', err);
+        }
+      });
+    }
+
+    // Cerrar dropdown al hacer click fuera
+    document.addEventListener('click', (e) => {
+      if (!userDropdown.contains(e.target) && !userBtn.contains(e.target)) {
+        userDropdown.classList.remove('active');
+        userBtn.setAttribute('aria-expanded', 'false');
+      }
+    });
   })();
 </script>

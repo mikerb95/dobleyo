@@ -92,9 +92,8 @@ import Layout from "../layouts/Layout.astro";
           }
 
           // Guardar nombre del usuario para mostrar en navbar
-          if (data.user?.name) {
-            const firstName = data.user.name.split(" ")[0];
-            localStorage.setItem("userName", firstName);
+          if (data.user?.first_name) {
+            localStorage.setItem("userName", data.user.first_name);
           }
 
           // Obtener parámetro de redirección

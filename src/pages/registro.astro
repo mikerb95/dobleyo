@@ -78,8 +78,12 @@ import Layout from "../layouts/Layout.astro";
       const btn = document.getElementById("regBtn");
 
       f.addEventListener("submit", async function () {
-        const firstName = (document.getElementById("regFirstName").value || "").trim();
-        const lastName = (document.getElementById("regLastName").value || "").trim();
+        const firstName = (
+          document.getElementById("regFirstName").value || ""
+        ).trim();
+        const lastName = (
+          document.getElementById("regLastName").value || ""
+        ).trim();
         const email = (document.getElementById("regEmail").value || "").trim();
         const password = (
           document.getElementById("regPass").value || ""
@@ -114,7 +118,12 @@ import Layout from "../layouts/Layout.astro";
             method: "POST",
             headers: { "Content-Type": "application/json" },
             credentials: "include",
-            body: JSON.stringify({ first_name: firstName, last_name: lastName, email, password }),
+            body: JSON.stringify({
+              first_name: firstName,
+              last_name: lastName,
+              email,
+              password,
+            }),
           });
 
           const data = await res.json();
