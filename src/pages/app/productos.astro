@@ -1,0 +1,916 @@
+---
+import AppLayout from "../../layouts/AppLayout.astro";
+---
+
+<AppLayout>
+  <div style="max-width: 1400px; margin: 0 auto; padding: 1.5rem;">
+    <div
+      style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;"
+    >
+      <h1 style="font-size: 2rem; font-weight: 700; color: #8b6f47;">
+        📦 Gestión de Productos
+      </h1>
+      <button
+        onclick="openCreateModal()"
+        style="background: #8b6f47; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 6px; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: background 0.2s;"
+        onmouseover="this.style.background='#6b5437'"
+        onmouseout="this.style.background='#8b6f47'"
+      >
+        ➕ Nuevo Producto
+      </button>
+    </div>
+
+    <!-- Filtros -->
+    <div
+      style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;"
+    >
+      <select
+        id="categoryFilter"
+        style="padding: 0.5rem 1rem; border: 1px solid #ddd; border-radius: 6px; font-size: 0.95rem;"
+      >
+        <option value="">Todas las categorías</option>
+        <option value="cafe">Café</option>
+        <option value="accesorio">Accesorio</option>
+        <option value="merchandising">Merchandising</option>
+      </select>
+
+      <select
+        id="activeFilter"
+        style="padding: 0.5rem 1rem; border: 1px solid #ddd; border-radius: 6px; font-size: 0.95rem;"
+      >
+        <option value="">Todos los productos</option>
+        <option value="true">Activos</option>
+        <option value="false">Inactivos</option>
+      </select>
+
+      <input
+        type="search"
+        id="searchInput"
+        placeholder="Buscar por nombre, SKU o descripción..."
+        style="padding: 0.5rem 1rem; border: 1px solid #ddd; border-radius: 6px; font-size: 0.95rem; flex: 1; min-width: 250px;"
+      />
+    </div>
+
+    <!-- Loading -->
+    <div id="loading" style="text-align: center; padding: 2rem; color: #666;">
+      Cargando productos...
+    </div>
+
+    <!-- Error -->
+    <div
+      id="error"
+      style="display: none; background: #fee; border: 1px solid #fcc; border-radius: 6px; padding: 1rem; color: #c00;"
+    >
+    </div>
+
+    <!-- Tabla de productos -->
+    <div
+      style="overflow-x: auto; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);"
+    >
+      <table
+        id="productsTable"
+        style="width: 100%; border-collapse: collapse; display: none;"
+      >
+        <thead>
+          <tr style="background: #f9fafb; border-bottom: 2px solid #e5e7eb;">
+            <th
+              style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;"
+              >ID</th
+            >
+            <th
+              style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;"
+              >Nombre</th
+            >
+            <th
+              style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;"
+              >SKU</th
+            >
+            <th
+              style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;"
+              >Categoría</th
+            >
+            <th
+              style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;"
+              >Precio</th
+            >
+            <th
+              style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;"
+              >Stock</th
+            >
+            <th
+              style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;"
+              >Estado</th
+            >
+            <th
+              style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;"
+              >Creado</th
+            >
+            <th
+              style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;"
+              >Acciones</th
+            >
+          </tr>
+        </thead>
+        <tbody id="productsTableBody"> </tbody>
+      </table>
+    </div>
+
+    <!-- Modal Crear/Editar Producto -->
+    <div
+      id="productModal"
+      style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; overflow-y: auto;"
+    >
+      <div
+        style="background: white; border-radius: 8px; padding: 2rem; max-width: 700px; width: 90%; margin: 2rem auto;"
+      >
+        <h2 id="modalTitle" style="margin-bottom: 1.5rem; color: #251a14;">
+          Nuevo Producto
+        </h2>
+        <form id="productForm">
+          <!-- ID (solo para crear) -->
+          <div id="idFieldContainer" style="margin-bottom: 1rem;">
+            <label
+              style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
+              >ID del Producto:</label
+            >
+            <input
+              type="text"
+              id="productId"
+              style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;"
+              placeholder="ej: cafe-001"
+            />
+          </div>
+
+          <!-- Nombre -->
+          <div style="margin-bottom: 1rem;">
+            <label
+              style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
+              >Nombre:</label
+            >
+            <input
+              type="text"
+              id="productName"
+              style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;"
+              required
+            />
+          </div>
+
+          <!-- SKU -->
+          <div style="margin-bottom: 1rem;">
+            <label
+              style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
+              >SKU:</label
+            >
+            <input
+              type="text"
+              id="productSku"
+              style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;"
+            />
+          </div>
+
+          <!-- Descripción -->
+          <div style="margin-bottom: 1rem;">
+            <label
+              style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
+              >Descripción:</label
+            >
+            <textarea
+              id="productDescription"
+              style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; font-family: inherit; resize: vertical; min-height: 80px;"
+            ></textarea>
+          </div>
+
+          <!-- Categoría -->
+          <div style="margin-bottom: 1rem;">
+            <label
+              style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
+              >Categoría:</label
+            >
+            <select
+              id="productCategory"
+              style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;"
+              required
+            >
+              <option value="cafe">Café</option>
+              <option value="accesorio">Accesorio</option>
+              <option value="merchandising">Merchandising</option>
+            </select>
+          </div>
+
+          <!-- Subcategoría -->
+          <div style="margin-bottom: 1rem;">
+            <label
+              style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
+              >Subcategoría:</label
+            >
+            <input
+              type="text"
+              id="productSubcategory"
+              style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;"
+              placeholder="ej: Origen, Tipo de accesorio, etc"
+            />
+          </div>
+
+          <!-- Campos específicos para Café -->
+          <div id="coffeeFields" style="display: none;">
+            <div style="margin-bottom: 1rem;">
+              <label
+                style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
+                >Origen:</label
+              >
+              <input
+                type="text"
+                id="productOrigin"
+                style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;"
+              />
+            </div>
+
+            <div style="margin-bottom: 1rem;">
+              <label
+                style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
+                >Proceso:</label
+              >
+              <input
+                type="text"
+                id="productProcess"
+                style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;"
+                placeholder="ej: Lavado, Honey, Natural"
+              />
+            </div>
+
+            <div style="margin-bottom: 1rem;">
+              <label
+                style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
+                >Tostado:</label
+              >
+              <input
+                type="text"
+                id="productRoast"
+                style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;"
+                placeholder="ej: Claro, Medio, Oscuro"
+              />
+            </div>
+          </div>
+
+          <!-- Precio y Costo -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+            <div>
+              <label
+                style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
+                >Precio (COP):</label
+              >
+              <input
+                type="number"
+                id="productPrice"
+                style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;"
+                required
+                min="0"
+              />
+            </div>
+            <div>
+              <label
+                style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
+                >Costo (COP):</label
+              >
+              <input
+                type="number"
+                id="productCost"
+                style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;"
+                min="0"
+              />
+            </div>
+          </div>
+
+          <!-- Stock -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+            <div>
+              <label
+                style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
+                >Stock Actual:</label
+              >
+              <input
+                type="number"
+                id="productStock"
+                style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;"
+                min="0"
+              />
+            </div>
+            <div>
+              <label
+                style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
+                >Stock Mínimo:</label
+              >
+              <input
+                type="number"
+                id="productStockMin"
+                style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;"
+                min="0"
+              />
+            </div>
+          </div>
+
+          <!-- Peso -->
+          <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+            <div>
+              <label
+                style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
+                >Peso:</label
+              >
+              <input
+                type="number"
+                id="productWeight"
+                style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;"
+                step="0.01"
+                min="0"
+              />
+            </div>
+            <div>
+              <label
+                style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
+                >Unidad:</label
+              >
+              <select
+                id="productWeightUnit"
+                style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;"
+              >
+                <option value="g">g</option>
+                <option value="kg">kg</option>
+                <option value="ml">ml</option>
+                <option value="l">l</option>
+                <option value="unidad">unidad</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- URL Imagen -->
+          <div style="margin-bottom: 1rem;">
+            <label
+              style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
+              >URL de Imagen Principal:</label
+            >
+            <input
+              type="url"
+              id="productImageUrl"
+              style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;"
+            />
+          </div>
+
+          <!-- Dimensiones -->
+          <div style="margin-bottom: 1rem;">
+            <label
+              style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
+              >Dimensiones:</label
+            >
+            <input
+              type="text"
+              id="productDimensions"
+              style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;"
+              placeholder="ej: 10x10x5 cm"
+            />
+          </div>
+
+          <!-- Flags -->
+          <div
+            style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;"
+          >
+            <label style="display: flex; align-items: center; font-weight: 500;">
+              <input type="checkbox" id="productDeal" style="margin-right: 0.5rem;" />
+              Es Oferta
+            </label>
+            <label style="display: flex; align-items: center; font-weight: 500;">
+              <input
+                type="checkbox"
+                id="productBestseller"
+                style="margin-right: 0.5rem;"
+              />
+              Best Seller
+            </label>
+            <label style="display: flex; align-items: center; font-weight: 500;">
+              <input
+                type="checkbox"
+                id="productNew"
+                style="margin-right: 0.5rem;"
+              />
+              Nuevo
+            </label>
+            <label style="display: flex; align-items: center; font-weight: 500;">
+              <input type="checkbox" id="productFast" style="margin-right: 0.5rem;" />
+              Entrega Rápida
+            </label>
+          </div>
+
+          <!-- Activo -->
+          <div style="margin-bottom: 1.5rem;">
+            <label style="display: flex; align-items: center; font-weight: 500;">
+              <input
+                type="checkbox"
+                id="productActive"
+                checked
+                style="margin-right: 0.5rem;"
+              />
+              Producto Activo (visible en tienda)
+            </label>
+          </div>
+
+          <!-- SEO -->
+          <div style="margin-bottom: 1rem;">
+            <label
+              style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
+              >Meta Keywords (SEO):</label
+            >
+            <input
+              type="text"
+              id="productMetaKeywords"
+              style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;"
+            />
+          </div>
+
+          <div style="margin-bottom: 1.5rem;">
+            <label
+              style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
+              >Meta Descripción (SEO):</label
+            >
+            <textarea
+              id="productMetaDescription"
+              style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; font-family: inherit; resize: vertical; min-height: 60px;"
+            ></textarea>
+          </div>
+
+          <div style="display: flex; gap: 1rem;">
+            <button
+              type="submit"
+              style="flex: 1; padding: 0.75rem; background: #8b6f47; color: white; border: none; border-radius: 4px; font-weight: 500; cursor: pointer;"
+            >
+              Guardar Producto
+            </button>
+            <button
+              type="button"
+              onclick="document.getElementById('productModal').style.display = 'none'"
+              style="flex: 1; padding: 0.75rem; background: #ddd; color: #333; border: none; border-radius: 4px; font-weight: 500; cursor: pointer;"
+            >
+              Cancelar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal Eliminar Producto -->
+    <div
+      id="deleteModal"
+      style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;"
+    >
+      <div
+        style="background: white; border-radius: 8px; padding: 2rem; max-width: 400px; width: 90%;"
+      >
+        <h2 style="margin-bottom: 1rem; color: #c00;">Eliminar Producto</h2>
+        <p style="margin-bottom: 1rem; color: #666;">
+          ¿Estás seguro de que deseas eliminar este producto? Esta acción no se
+          puede deshacer.
+        </p>
+        <p
+          style="margin-bottom: 1.5rem; background: #fee; padding: 1rem; border-radius: 4px; color: #c00;"
+        >
+          Producto: <strong id="deleteProductName"></strong>
+        </p>
+        <div style="display: flex; gap: 1rem;">
+          <button
+            onclick="confirmDelete()"
+            style="flex: 1; padding: 0.75rem; background: #c00; color: white; border: none; border-radius: 4px; font-weight: 500; cursor: pointer;"
+          >
+            Eliminar
+          </button>
+          <button
+            onclick="document.getElementById('deleteModal').style.display = 'none'"
+            style="flex: 1; padding: 0.75rem; background: #ddd; color: #333; border: none; border-radius: 4px; font-weight: 500; cursor: pointer;"
+          >
+            Cancelar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Estadísticas -->
+    <div
+      style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 2rem;"
+    >
+      <div
+        style="background: #dbeafe; border-radius: 8px; padding: 1.5rem; text-align: center;"
+      >
+        <div
+          style="font-size: 2rem; font-weight: 700; color: #1e40af;"
+          id="totalProducts"
+        >
+          0
+        </div>
+        <div style="color: #1e40af; font-size: 0.9rem; margin-top: 0.5rem;">
+          Total Productos
+        </div>
+      </div>
+      <div
+        style="background: #fef3c7; border-radius: 8px; padding: 1.5rem; text-align: center;"
+      >
+        <div
+          style="font-size: 2rem; font-weight: 700; color: #92400e;"
+          id="totalCafe"
+        >
+          0
+        </div>
+        <div style="color: #92400e; font-size: 0.9rem; margin-top: 0.5rem;">
+          Cafés
+        </div>
+      </div>
+      <div
+        style="background: #d1fae5; border-radius: 8px; padding: 1.5rem; text-align: center;"
+      >
+        <div
+          style="font-size: 2rem; font-weight: 700; color: #065f46;"
+          id="totalAccesorios"
+        >
+          0
+        </div>
+        <div style="color: #065f46; font-size: 0.9rem; margin-top: 0.5rem;">
+          Accesorios
+        </div>
+      </div>
+      <div
+        style="background: #e0e7ff; border-radius: 8px; padding: 1.5rem; text-align: center;"
+      >
+        <div
+          style="font-size: 2rem; font-weight: 700; color: #3730a3;"
+          id="totalMerchandising"
+        >
+          0
+        </div>
+        <div style="color: #3730a3; font-size: 0.9rem; margin-top: 0.5rem;">
+          Merchandising
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let allProducts = [];
+    let currentEditProductId = null;
+
+    async function loadProducts() {
+      try {
+        const response = await fetch("/api/inventory/products", {
+          credentials: "include",
+        });
+
+        if (!response.ok) {
+          throw new Error("Error al cargar productos");
+        }
+
+        const data = await response.json();
+        allProducts = data.products || [];
+
+        displayProducts(allProducts);
+        updateStats(allProducts);
+
+        document.getElementById("loading").style.display = "none";
+        document.getElementById("productsTable").style.display = "table";
+      } catch (err) {
+        console.error("Error:", err);
+        document.getElementById("loading").style.display = "none";
+        const errorDiv = document.getElementById("error");
+        errorDiv.textContent =
+          "Error al cargar los productos. Intenta recargar la página.";
+        errorDiv.style.display = "block";
+      }
+    }
+
+    function displayProducts(products) {
+      const tbody = document.getElementById("productsTableBody");
+      tbody.innerHTML = "";
+
+      if (products.length === 0) {
+        tbody.innerHTML =
+          '<tr><td colspan="9" style="padding: 2rem; text-align: center; color: #666;">No se encontraron productos</td></tr>';
+        return;
+      }
+
+      products.forEach((product) => {
+        const row = document.createElement("tr");
+        row.style.borderBottom = "1px solid #e5e7eb";
+        row.style.transition = "background-color 0.2s";
+        row.onmouseenter = () => (row.style.backgroundColor = "#f9fafb");
+        row.onmouseleave = () => (row.style.backgroundColor = "transparent");
+
+        const categoryBadgeColors = {
+          cafe: "background: #fef3c7; color: #92400e;",
+          accesorio: "background: #d1fae5; color: #065f46;",
+          merchandising: "background: #e0e7ff; color: #3730a3;",
+        };
+
+        const statusBadge = product.is_active
+          ? '<span style="background: #d1fae5; color: #065f46; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">✓ Activo</span>'
+          : '<span style="background: #fee; color: #c00; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">Inactivo</span>';
+
+        row.innerHTML = `
+          <td style="padding: 1rem; font-size: 0.85rem; color: #666;">${product.id}</td>
+          <td style="padding: 1rem; font-weight: 500;">${product.name || "—"}</td>
+          <td style="padding: 1rem; font-size: 0.85rem; color: #666;">${product.sku || "—"}</td>
+          <td style="padding: 1rem;">
+            <span style="${categoryBadgeColors[product.category] || ""} padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.85rem; font-weight: 500;">
+              ${product.category}
+            </span>
+          </td>
+          <td style="padding: 1rem; font-weight: 500;">\$${product.price.toLocaleString("es-CO")}</td>
+          <td style="padding: 1rem; text-align: center; font-weight: 500;">${product.stock_quantity}</td>
+          <td style="padding: 1rem;">${statusBadge}</td>
+          <td style="padding: 1rem; font-size: 0.85rem; color: #666;">${new Date(product.created_at).toLocaleDateString("es-ES")}</td>
+          <td style="padding: 1rem; white-space: nowrap;">
+            <button class="editBtn" data-product-id="${product.id}" style="padding: 0.4rem 0.8rem; background: #8b6f47; color: white; border: none; border-radius: 4px; font-size: 0.85rem; cursor: pointer; margin-right: 0.5rem;">✏️ Editar</button>
+            <button class="deleteBtn" data-product-id="${product.id}" data-product-name="${product.name}" style="padding: 0.4rem 0.8rem; background: #c00; color: white; border: none; border-radius: 4px; font-size: 0.85rem; cursor: pointer;">🗑️ Eliminar</button>
+          </td>
+        `;
+
+        tbody.appendChild(row);
+      });
+
+      attachButtonListeners();
+    }
+
+    function updateStats(products) {
+      document.getElementById("totalProducts").textContent = products.length;
+      document.getElementById("totalCafe").textContent = products.filter(
+        (p) => p.category === "cafe"
+      ).length;
+      document.getElementById("totalAccesorios").textContent = products.filter(
+        (p) => p.category === "accesorio"
+      ).length;
+      document.getElementById("totalMerchandising").textContent = products.filter(
+        (p) => p.category === "merchandising"
+      ).length;
+    }
+
+    function filterProducts() {
+      const categoryFilter = document.getElementById("categoryFilter").value;
+      const activeFilter = document.getElementById("activeFilter").value;
+      const searchTerm = document
+        .getElementById("searchInput")
+        .value.toLowerCase();
+
+      const filtered = allProducts.filter((product) => {
+        const matchesCategory =
+          !categoryFilter || product.category === categoryFilter;
+        const matchesActive =
+          activeFilter === ""
+            ? true
+            : product.is_active === (activeFilter === "true");
+        const matchesSearch =
+          !searchTerm ||
+          product.name?.toLowerCase().includes(searchTerm) ||
+          product.sku?.toLowerCase().includes(searchTerm) ||
+          product.description?.toLowerCase().includes(searchTerm);
+
+        return matchesCategory && matchesActive && matchesSearch;
+      });
+
+      displayProducts(filtered);
+    }
+
+    function openCreateModal() {
+      currentEditProductId = null;
+      document.getElementById("modalTitle").textContent = "Nuevo Producto";
+      document.getElementById("idFieldContainer").style.display = "block";
+      document.getElementById("productId").disabled = false;
+      document.getElementById("productForm").reset();
+      document.getElementById("productActive").checked = true;
+      document.getElementById("productModal").style.display = "flex";
+    }
+
+    function openEditModal(productId) {
+      const product = allProducts.find((p) => p.id === productId);
+      if (!product) return;
+
+      currentEditProductId = productId;
+      document.getElementById("modalTitle").textContent =
+        "Editar Producto: " + product.name;
+      document.getElementById("idFieldContainer").style.display = "none";
+      document.getElementById("productId").value = product.id;
+      document.getElementById("productId").disabled = true;
+
+      document.getElementById("productName").value = product.name || "";
+      document.getElementById("productSku").value = product.sku || "";
+      document.getElementById("productDescription").value =
+        product.description || "";
+      document.getElementById("productCategory").value = product.category;
+      document.getElementById("productSubcategory").value =
+        product.subcategory || "";
+      document.getElementById("productOrigin").value = product.origin || "";
+      document.getElementById("productProcess").value = product.process || "";
+      document.getElementById("productRoast").value = product.roast || "";
+      document.getElementById("productPrice").value = product.price || "";
+      document.getElementById("productCost").value = product.cost || "";
+      document.getElementById("productStock").value =
+        product.stock_quantity || "";
+      document.getElementById("productStockMin").value = product.stock_min || "";
+      document.getElementById("productWeight").value = product.weight || "";
+      document.getElementById("productWeightUnit").value =
+        product.weight_unit || "g";
+      document.getElementById("productImageUrl").value =
+        product.image_url || "";
+      document.getElementById("productDimensions").value =
+        product.dimensions || "";
+      document.getElementById("productDeal").checked = product.is_deal || false;
+      document.getElementById("productBestseller").checked =
+        product.is_bestseller || false;
+      document.getElementById("productNew").checked = product.is_new || false;
+      document.getElementById("productFast").checked = product.is_fast || false;
+      document.getElementById("productActive").checked =
+        product.is_active !== false;
+      document.getElementById("productMetaKeywords").value =
+        product.meta_keywords || "";
+      document.getElementById("productMetaDescription").value =
+        product.meta_description || "";
+
+      updateCoffeeFieldsVisibility();
+      document.getElementById("productModal").style.display = "flex";
+    }
+
+    function openDeleteModal(productId, productName) {
+      currentEditProductId = productId;
+      document.getElementById("deleteProductName").textContent = productName;
+      document.getElementById("deleteModal").style.display = "flex";
+    }
+
+    async function confirmDelete() {
+      if (!currentEditProductId) return;
+
+      try {
+        const response = await fetch(
+          `/api/inventory/products/${currentEditProductId}`,
+          {
+            method: "DELETE",
+            credentials: "include",
+          }
+        );
+
+        if (!response.ok) {
+          const data = await response.json();
+          alert(
+            "Error: " + (data.error || "No se pudo eliminar el producto")
+          );
+          return;
+        }
+
+        alert("Producto eliminado exitosamente");
+        document.getElementById("deleteModal").style.display = "none";
+        loadProducts();
+      } catch (err) {
+        console.error("Error:", err);
+        alert("Error al eliminar el producto");
+      }
+    }
+
+    function updateCoffeeFieldsVisibility() {
+      const category = document.getElementById("productCategory").value;
+      document.getElementById("coffeeFields").style.display =
+        category === "cafe" ? "block" : "none";
+    }
+
+    document
+      .getElementById("productCategory")
+      .addEventListener("change", updateCoffeeFieldsVisibility);
+
+    document
+      .getElementById("productForm")
+      .addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const productData = {
+          name: document.getElementById("productName").value,
+          sku: document.getElementById("productSku").value || null,
+          description: document.getElementById("productDescription").value,
+          category: document.getElementById("productCategory").value,
+          subcategory: document.getElementById("productSubcategory").value,
+          origin: document.getElementById("productOrigin").value || null,
+          process: document.getElementById("productProcess").value || null,
+          roast: document.getElementById("productRoast").value || null,
+          price: parseInt(document.getElementById("productPrice").value),
+          cost: document.getElementById("productCost").value
+            ? parseInt(document.getElementById("productCost").value)
+            : null,
+          stock_quantity: document.getElementById("productStock").value
+            ? parseInt(document.getElementById("productStock").value)
+            : 0,
+          stock_min: document.getElementById("productStockMin").value
+            ? parseInt(document.getElementById("productStockMin").value)
+            : 0,
+          weight: document.getElementById("productWeight").value || null,
+          weight_unit: document.getElementById("productWeightUnit").value,
+          image_url: document.getElementById("productImageUrl").value || null,
+          dimensions: document.getElementById("productDimensions").value || null,
+          is_deal: document.getElementById("productDeal").checked,
+          is_bestseller: document.getElementById("productBestseller").checked,
+          is_new: document.getElementById("productNew").checked,
+          is_fast: document.getElementById("productFast").checked,
+          is_active: document.getElementById("productActive").checked,
+          meta_keywords: document.getElementById("productMetaKeywords").value,
+          meta_description:
+            document.getElementById("productMetaDescription").value,
+        };
+
+        try {
+          let response;
+          if (currentEditProductId) {
+            // Editar
+            response = await fetch(
+              `/api/inventory/products/${currentEditProductId}`,
+              {
+                method: "PUT",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                credentials: "include",
+                body: JSON.stringify(productData),
+              }
+            );
+          } else {
+            // Crear
+            const productId = document.getElementById("productId").value;
+            if (!productId) {
+              alert("El ID del producto es requerido");
+              return;
+            }
+            productData.id = productId;
+
+            response = await fetch("/api/inventory/products", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              credentials: "include",
+              body: JSON.stringify(productData),
+            });
+          }
+
+          if (!response.ok) {
+            const data = await response.json();
+            alert(
+              "Error: " + (data.error || "No se pudo guardar el producto")
+            );
+            return;
+          }
+
+          alert(
+            currentEditProductId
+              ? "Producto actualizado exitosamente"
+              : "Producto creado exitosamente"
+          );
+          document.getElementById("productModal").style.display = "none";
+          loadProducts();
+        } catch (err) {
+          console.error("Error:", err);
+          alert("Error al guardar el producto");
+        }
+      });
+
+    function attachButtonListeners() {
+      document.querySelectorAll(".editBtn").forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+          const productId = e.target.dataset.productId;
+          openEditModal(productId);
+        });
+      });
+
+      document.querySelectorAll(".deleteBtn").forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+          const productId = e.target.dataset.productId;
+          const productName = e.target.dataset.productName;
+          openDeleteModal(productId, productName);
+        });
+      });
+    }
+
+    // Cerrar modales al hacer clic fuera
+    document.getElementById("productModal").addEventListener("click", (e) => {
+      if (e.target.id === "productModal") {
+        e.target.style.display = "none";
+      }
+    });
+
+    document.getElementById("deleteModal").addEventListener("click", (e) => {
+      if (e.target.id === "deleteModal") {
+        e.target.style.display = "none";
+      }
+    });
+
+    // Event listeners
+    document
+      .getElementById("categoryFilter")
+      .addEventListener("change", filterProducts);
+    document
+      .getElementById("activeFilter")
+      .addEventListener("change", filterProducts);
+    document
+      .getElementById("searchInput")
+      .addEventListener("input", filterProducts);
+
+    // Cargar productos al inicio
+    loadProducts();
+  </script>
+</AppLayout>
