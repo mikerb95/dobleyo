@@ -321,6 +321,7 @@ import AppLayout from "../../layouts/AppLayout.astro";
         const caficultorOptions = document.getElementById("caficultorOptions");
         const usersLink = document.getElementById("usersLink");
         const productsLink = document.getElementById("productsLink");
+        const auditSection = document.getElementById("auditSection");
 
         if (window.userRole === "admin") {
           // Admin ve todo
@@ -328,12 +329,14 @@ import AppLayout from "../../layouts/AppLayout.astro";
           if (caficultorOptions) caficultorOptions.style.display = "block";
           if (usersLink) usersLink.style.display = "block";
           if (productsLink) productsLink.style.display = "block";
+          if (auditSection) auditSection.style.display = "block";
         } else if (window.userRole === "caficultor") {
           // Caficultor solo ve sus opciones
           if (adminOptions) adminOptions.style.display = "none";
           if (caficultorOptions) caficultorOptions.style.display = "block";
           if (usersLink) usersLink.style.display = "none";
           if (productsLink) productsLink.style.display = "none";
+          if (auditSection) auditSection.style.display = "none";
         }
       }
     }, 50);
