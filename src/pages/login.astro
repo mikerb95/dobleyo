@@ -97,7 +97,7 @@ import Layout from "../layouts/Layout.astro";
 
           // Redireccionar según rol y origen
           const role = data.user?.role;
-          
+
           if (redirect) {
             // Si hay redirect específico, validar acceso según rol
             if (redirect.startsWith("/app")) {

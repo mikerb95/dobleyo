@@ -49,7 +49,7 @@
 
   function logout() {
     localStorage.removeItem('adminToken');
-    window.location.href = '/admin/login';
+    window.location.href = '/login';
   }
 
   function load(key, fallback){ try{ const x = JSON.parse(localStorage.getItem(key)||'null'); return Array.isArray(x)?x:fallback; }catch{ return fallback; } }
@@ -70,7 +70,7 @@
     
     if (!authed) {
       // Redirigir a login si no esta autenticado
-      window.location.href = '/admin/login';
+      window.location.href = '/login?redirect=/admin.html';
       return;
     }
     

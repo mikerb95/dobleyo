@@ -38,7 +38,8 @@ import Head from "../components/Head.astro";
         const currentPath = window.location.pathname;
 
         if (!token) {
-          window.location.href = "/login?redirect=" + encodeURIComponent(currentPath);
+          window.location.href =
+            "/login?redirect=" + encodeURIComponent(currentPath);
           return;
         }
 
@@ -50,7 +51,8 @@ import Head from "../components/Head.astro";
 
           if (!response.ok) {
             localStorage.removeItem("adminToken");
-            window.location.href = "/login?redirect=" + encodeURIComponent(currentPath);
+            window.location.href =
+              "/login?redirect=" + encodeURIComponent(currentPath);
             return;
           }
 
@@ -73,7 +75,8 @@ import Head from "../components/Head.astro";
           document.body.style.visibility = "visible";
         } catch (error) {
           localStorage.removeItem("adminToken");
-          window.location.href = "/login?redirect=" + encodeURIComponent(currentPath);
+          window.location.href =
+            "/login?redirect=" + encodeURIComponent(currentPath);
         }
       })();
 
