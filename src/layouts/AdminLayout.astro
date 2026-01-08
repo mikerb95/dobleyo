@@ -38,6 +38,7 @@ import Head from "../components/Head.astro";
 
           if (!response.ok) {
             localStorage.removeItem("adminToken");
+            localStorage.removeItem("userName");
             window.location.href =
               "/login?redirect=" + encodeURIComponent(currentPath);
             return;
@@ -47,6 +48,7 @@ import Head from "../components/Head.astro";
 
           if (user.role !== "admin") {
             localStorage.removeItem("adminToken");
+            localStorage.removeItem("userName");
             alert("Acceso denegado. Solo administradores pueden acceder.");
             window.location.href = "/";
             return;
@@ -56,6 +58,7 @@ import Head from "../components/Head.astro";
           document.body.style.visibility = "visible";
         } catch (error) {
           localStorage.removeItem("adminToken");
+          localStorage.removeItem("userName");
           window.location.href =
             "/login?redirect=" + encodeURIComponent(currentPath);
         }

@@ -25,10 +25,15 @@ import Layout from "../layouts/Layout.astro";
       const emailEl = document.getElementById("userEmail");
       const logoutBtn = document.getElementById("logoutBtn");
 
+      // Intentar con token en localStorage
+      const token = localStorage.getItem("adminToken");
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
       // Verificar si el usuario está logueado llamando a /api/auth/me
       try {
         const res = await fetch("/api/auth/me", {
-          credentials: "include", // Importante: enviar cookies
+          credentials: "include",
+          headers: headers,
         });
 
         if (!res.ok) {
@@ -47,6 +52,9 @@ import Layout from "../layouts/Layout.astro";
               method: "POST",
               credentials: "include",
             });
+            // Limpiar localStorage
+            localStorage.removeItem("adminToken");
+            localStorage.removeItem("userName");
             location.href = "/";
           });
         }
