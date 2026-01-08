@@ -32,9 +32,17 @@ export const verifyToken = (token) => {
   return jwt.verify(token, JWT_SECRET);
 };
 
-// Middleware para validar JWT en cookies (HttpOnly)
+// Middleware para validar JWT en cookies (HttpOnly) o Authorization header
 export const authenticateToken = (req, res, next) => {
-  const token = req.cookies['auth_token'];
+  // Primero intentar cookie, luego Authorization header
+  let token = req.cookies['auth_token'];
+  
+  if (!token) {
+    const authHeader = req.headers['authorization'];
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.substring(7);
+    }
+  }
   
   if (!token) return res.status(401).json({ error: 'Acceso denegado' });
 

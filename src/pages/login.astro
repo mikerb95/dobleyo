@@ -76,7 +76,7 @@ import Layout from "../layouts/Layout.astro";
           const res = await fetch("/api/auth/login", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            credentials: "include", // Importante: permite enviar/recibir cookies
+            credentials: "include",
             body: JSON.stringify({ email, password }),
           });
 
@@ -86,13 +86,53 @@ import Layout from "../layouts/Layout.astro";
             throw new Error(data.error || "Error al iniciar sesión");
           }
 
-          // No es necesario guardar tokens en localStorage
-          // Los cookies HttpOnly se manejan automáticamente
+          // Guardar token en localStorage para uso en paneles protegidos
+          if (data.token) {
+            localStorage.setItem("adminToken", data.token);
+          }
 
-          // Redireccionar
+          // Obtener parámetro de redirección
           const urlParams = new URLSearchParams(window.location.search);
-          const redirect = urlParams.get("redirect") || "/cuenta";
-          window.location.href = redirect;
+          const redirect = urlParams.get("redirect");
+
+          // Redireccionar según rol y origen
+          const role = data.user?.role;
+          
+          if (redirect) {
+            // Si hay redirect específico, validar acceso según rol
+            if (redirect.startsWith("/app")) {
+              // /app solo para caficultor y admin
+              if (role === "caficultor" || role === "admin") {
+                window.location.href = redirect;
+              } else {
+                showError("No tienes permisos para acceder a esa sección.");
+                btn.disabled = false;
+                btn.textContent = "Entrar";
+                return;
+              }
+            } else if (redirect.startsWith("/admin")) {
+              // /admin solo para admin
+              if (role === "admin") {
+                window.location.href = redirect;
+              } else {
+                showError("Solo administradores pueden acceder a esa sección.");
+                btn.disabled = false;
+                btn.textContent = "Entrar";
+                return;
+              }
+            } else {
+              window.location.href = redirect;
+            }
+          } else {
+            // Sin redirect: ir según rol
+            if (role === "admin") {
+              window.location.href = "/admin.html";
+            } else if (role === "caficultor") {
+              window.location.href = "/app";
+            } else {
+              window.location.href = "/cuenta";
+            }
+          }
         } catch (e) {
           showError(e.message);
           btn.disabled = false;

@@ -35,20 +35,22 @@ import Head from "../components/Head.astro";
       // Verificar autenticación y rol (caficultor o admin)
       (async function () {
         const token = localStorage.getItem("adminToken");
+        const currentPath = window.location.pathname;
 
         if (!token) {
-          window.location.href = "/login";
+          window.location.href = "/login?redirect=" + encodeURIComponent(currentPath);
           return;
         }
 
         try {
           const response = await fetch("/api/auth/me", {
             headers: { Authorization: `Bearer ${token}` },
+            credentials: "include",
           });
 
           if (!response.ok) {
             localStorage.removeItem("adminToken");
-            window.location.href = "/login";
+            window.location.href = "/login?redirect=" + encodeURIComponent(currentPath);
             return;
           }
 
@@ -65,12 +67,13 @@ import Head from "../components/Head.astro";
 
           // Guardar rol en variable global para uso posterior
           window.userRole = user.role;
+          window.userName = user.name;
 
           // Usuario autenticado correctamente, mostrar contenido
           document.body.style.visibility = "visible";
         } catch (error) {
           localStorage.removeItem("adminToken");
-          window.location.href = "/login";
+          window.location.href = "/login?redirect=" + encodeURIComponent(currentPath);
         }
       })();
 

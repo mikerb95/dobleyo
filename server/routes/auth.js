@@ -135,7 +135,12 @@ authRouter.post('/login',
         maxAge: 7 * 24 * 60 * 60 * 1000 // 7 dias
       });
 
-      res.json({ message: 'Login exitoso', user: { id: user.id, name: user.name, role: user.role } });
+      // Devolver token también en JSON para clientes que usen localStorage
+      res.json({ 
+        message: 'Login exitoso', 
+        token: accessToken,
+        user: { id: user.id, name: user.name, role: user.role } 
+      });
 
     } catch (err) {
       console.error(err);
