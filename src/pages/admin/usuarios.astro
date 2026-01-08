@@ -3,7 +3,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 ---
 
 <AdminLayout>
-  <div style="max-width: 1400px; margin: 0 auto; padding: 2rem 1.5rem;">
+  <div style="margin: 0; padding: 2rem 1.5rem;">
     <div
       style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;"
     >
@@ -489,8 +489,8 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
             ${formatDate(user.last_login_at)}
           </td>
           <td style="padding: 1rem; text-align: center;">
-            <button onclick="editUser(${user.id})" style="padding: 0.4rem 0.8rem; background: #8b6f47; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; margin-right: 0.5rem;">✏️ Editar</button>
-            <button onclick="deleteUser(${user.id}, '${user.email.replace(/'/g, "\\'")}')" style="padding: 0.4rem 0.8rem; background: #dc2626; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem;">🗑️ Eliminar</button>
+            <button onclick="window.editUser(${user.id})" style="padding: 0.4rem 0.8rem; background: #8b6f47; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; margin-right: 0.5rem;">✏️ Editar</button>
+            <button onclick="window.deleteUser(${user.id}, '${user.email.replace(/'/g, "\\'")}')" style="padding: 0.4rem 0.8rem; background: #dc2626; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem;">🗑️ Eliminar</button>
           </td>
         `;
       tbody.appendChild(row);
