@@ -189,7 +189,12 @@ authRouter.post('/refresh', refreshLimiter, async (req, res) => {
     res.cookie('auth_token', newAccessToken, { httpOnly: true, secure: isProd, sameSite: 'strict', maxAge: 15 * 60 * 1000 });
     res.cookie('refresh_token', newRefreshToken, { httpOnly: true, secure: isProd, sameSite: 'strict', path: '/api/auth/refresh', maxAge: 7 * 24 * 60 * 60 * 1000 });
 
-    res.json({ message: 'Token refrescado' });
+    // Devolver también el token en JSON para actualizar localStorage
+    res.json({ 
+      message: 'Token refrescado',
+      token: newAccessToken,
+      user: { id: user.id, name: user.name, role: user.role }
+    });
 
   } catch (err) {
     console.error(err);
