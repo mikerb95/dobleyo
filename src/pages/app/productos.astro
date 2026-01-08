@@ -253,7 +253,9 @@ import AppLayout from "../../layouts/AppLayout.astro";
           </div>
 
           <!-- Precio y Costo -->
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+          <div
+            style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;"
+          >
             <div>
               <label
                 style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
@@ -282,7 +284,9 @@ import AppLayout from "../../layouts/AppLayout.astro";
           </div>
 
           <!-- Stock -->
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+          <div
+            style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;"
+          >
             <div>
               <label
                 style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
@@ -310,7 +314,9 @@ import AppLayout from "../../layouts/AppLayout.astro";
           </div>
 
           <!-- Peso -->
-          <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+          <div
+            style="display: grid; grid-template-columns: 2fr 1fr; gap: 1rem; margin-bottom: 1rem;"
+          >
             <div>
               <label
                 style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
@@ -373,11 +379,19 @@ import AppLayout from "../../layouts/AppLayout.astro";
           <div
             style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;"
           >
-            <label style="display: flex; align-items: center; font-weight: 500;">
-              <input type="checkbox" id="productDeal" style="margin-right: 0.5rem;" />
+            <label
+              style="display: flex; align-items: center; font-weight: 500;"
+            >
+              <input
+                type="checkbox"
+                id="productDeal"
+                style="margin-right: 0.5rem;"
+              />
               Es Oferta
             </label>
-            <label style="display: flex; align-items: center; font-weight: 500;">
+            <label
+              style="display: flex; align-items: center; font-weight: 500;"
+            >
               <input
                 type="checkbox"
                 id="productBestseller"
@@ -385,7 +399,9 @@ import AppLayout from "../../layouts/AppLayout.astro";
               />
               Best Seller
             </label>
-            <label style="display: flex; align-items: center; font-weight: 500;">
+            <label
+              style="display: flex; align-items: center; font-weight: 500;"
+            >
               <input
                 type="checkbox"
                 id="productNew"
@@ -393,15 +409,23 @@ import AppLayout from "../../layouts/AppLayout.astro";
               />
               Nuevo
             </label>
-            <label style="display: flex; align-items: center; font-weight: 500;">
-              <input type="checkbox" id="productFast" style="margin-right: 0.5rem;" />
+            <label
+              style="display: flex; align-items: center; font-weight: 500;"
+            >
+              <input
+                type="checkbox"
+                id="productFast"
+                style="margin-right: 0.5rem;"
+              />
               Entrega Rápida
             </label>
           </div>
 
           <!-- Activo -->
           <div style="margin-bottom: 1.5rem;">
-            <label style="display: flex; align-items: center; font-weight: 500;">
+            <label
+              style="display: flex; align-items: center; font-weight: 500;"
+            >
               <input
                 type="checkbox"
                 id="productActive"
@@ -641,9 +665,8 @@ import AppLayout from "../../layouts/AppLayout.astro";
       document.getElementById("totalAccesorios").textContent = products.filter(
         (p) => p.category === "accesorio"
       ).length;
-      document.getElementById("totalMerchandising").textContent = products.filter(
-        (p) => p.category === "merchandising"
-      ).length;
+      document.getElementById("totalMerchandising").textContent =
+        products.filter((p) => p.category === "merchandising").length;
     }
 
     function filterProducts() {
@@ -707,7 +730,8 @@ import AppLayout from "../../layouts/AppLayout.astro";
       document.getElementById("productCost").value = product.cost || "";
       document.getElementById("productStock").value =
         product.stock_quantity || "";
-      document.getElementById("productStockMin").value = product.stock_min || "";
+      document.getElementById("productStockMin").value =
+        product.stock_min || "";
       document.getElementById("productWeight").value = product.weight || "";
       document.getElementById("productWeightUnit").value =
         product.weight_unit || "g";
@@ -751,9 +775,7 @@ import AppLayout from "../../layouts/AppLayout.astro";
 
         if (!response.ok) {
           const data = await response.json();
-          alert(
-            "Error: " + (data.error || "No se pudo eliminar el producto")
-          );
+          alert("Error: " + (data.error || "No se pudo eliminar el producto"));
           return;
         }
 
@@ -803,15 +825,16 @@ import AppLayout from "../../layouts/AppLayout.astro";
           weight: document.getElementById("productWeight").value || null,
           weight_unit: document.getElementById("productWeightUnit").value,
           image_url: document.getElementById("productImageUrl").value || null,
-          dimensions: document.getElementById("productDimensions").value || null,
+          dimensions:
+            document.getElementById("productDimensions").value || null,
           is_deal: document.getElementById("productDeal").checked,
           is_bestseller: document.getElementById("productBestseller").checked,
           is_new: document.getElementById("productNew").checked,
           is_fast: document.getElementById("productFast").checked,
           is_active: document.getElementById("productActive").checked,
           meta_keywords: document.getElementById("productMetaKeywords").value,
-          meta_description:
-            document.getElementById("productMetaDescription").value,
+          meta_description: document.getElementById("productMetaDescription")
+            .value,
         };
 
         try {
@@ -850,9 +873,7 @@ import AppLayout from "../../layouts/AppLayout.astro";
 
           if (!response.ok) {
             const data = await response.json();
-            alert(
-              "Error: " + (data.error || "No se pudo guardar el producto")
-            );
+            alert("Error: " + (data.error || "No se pudo guardar el producto"));
             return;
           }
 
