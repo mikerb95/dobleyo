@@ -1,0 +1,206 @@
+---
+import AppLayout from "../../layouts/AppLayout.astro";
+---
+
+<AppLayout>
+  <div style="max-width: 1200px; margin: 0 auto; padding: 2rem 1.5rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+      <h1 style="font-size: 2rem; font-weight: 700; color: #251a14; margin: 0;">
+        🌱 Gestión de Lotes
+      </h1>
+    </div>
+
+    <!-- Filtros -->
+    <div style="background: white; border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem; box-shadow: 0 2px 4px rgba(0,0,0,0.08);">
+      <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+        <input
+          type="search"
+          id="searchInput"
+          placeholder="Buscar por nombre o ID..."
+          style="flex: 1; min-width: 250px; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px; font-size: 0.95rem;"
+        />
+        <select
+          id="statusFilter"
+          style="padding: 0.75rem 1rem; border: 1px solid #ddd; border-radius: 6px; font-size: 0.95rem;"
+        >
+          <option value="">Todos los estados</option>
+          <option value="verde">Verde</option>
+          <option value="tostado">Tostado</option>
+          <option value="entregado">Entregado</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Estadísticas -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+      <div style="background: white; border-radius: 8px; padding: 1.5rem; box-shadow: 0 2px 4px rgba(0,0,0,0.08);">
+        <div style="font-size: 2rem; font-weight: 700; color: #251a14;" id="totalLotes">0</div>
+        <div style="color: #666; margin-top: 0.5rem; font-size: 0.9rem;">Lotes Totales</div>
+      </div>
+      <div style="background: white; border-radius: 8px; padding: 1.5rem; box-shadow: 0 2px 4px rgba(0,0,0,0.08);">
+        <div style="font-size: 2rem; font-weight: 700; color: #4a6741;" id="totalVerde">0</div>
+        <div style="color: #666; margin-top: 0.5rem; font-size: 0.9rem;">Verde</div>
+      </div>
+      <div style="background: white; border-radius: 8px; padding: 1.5rem; box-shadow: 0 2px 4px rgba(0,0,0,0.08);">
+        <div style="font-size: 2rem; font-weight: 700; color: #8b6f47;" id="totalTostado">0</div>
+        <div style="color: #666; margin-top: 0.5rem; font-size: 0.9rem;">Tostado</div>
+      </div>
+      <div style="background: white; border-radius: 8px; padding: 1.5rem; box-shadow: 0 2px 4px rgba(0,0,0,0.08);">
+        <div style="font-size: 2rem; font-weight: 700; color: #065f46;" id="totalEntregado">0</div>
+        <div style="color: #666; margin-top: 0.5rem; font-size: 0.9rem;">Entregado</div>
+      </div>
+    </div>
+
+    <!-- Tabla -->
+    <div style="background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.08); overflow: hidden;">
+      <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse;">
+          <thead>
+            <tr style="background: #f9fafb; border-bottom: 2px solid #e5e7eb;">
+              <th style="padding: 1rem; text-align: left; font-weight: 600; color: #251a14;">ID Lote</th>
+              <th style="padding: 1rem; text-align: left; font-weight: 600; color: #251a14;">Finca</th>
+              <th style="padding: 1rem; text-align: left; font-weight: 600; color: #251a14;">Variedad</th>
+              <th style="padding: 1rem; text-align: center; font-weight: 600; color: #251a14;">Peso (kg)</th>
+              <th style="padding: 1rem; text-align: center; font-weight: 600; color: #251a14;">Estado</th>
+              <th style="padding: 1rem; text-align: left; font-weight: 600; color: #251a14;">Fecha</th>
+            </tr>
+          </thead>
+          <tbody id="lotesTable">
+            <tr>
+              <td colspan="6" style="padding: 2rem; text-align: center; color: #666;">Cargando lotes...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Solo admins pueden ver esta página
+    (async function() {
+      try {
+        const response = await fetch("/api/auth/me", {
+          headers: { Authorization: `Bearer ${localStorage.getItem("adminToken")}` },
+          credentials: "include"
+        });
+
+        if (!response.ok || response.status === 401) {
+          alert("Acceso denegado. Solo administradores pueden ver esta página.");
+          window.location.href = "/app";
+          return;
+        }
+
+        const user = await response.json();
+        if (user.role !== "admin") {
+          alert("Acceso denegado. Solo administradores pueden ver esta página.");
+          window.location.href = "/app";
+          return;
+        }
+
+        // Cargar lotes
+        loadLotes();
+
+        // Event listeners
+        document.getElementById("searchInput").addEventListener("input", filterLotes);
+        document.getElementById("statusFilter").addEventListener("change", filterLotes);
+      } catch (error) {
+        console.error("Error:", error);
+        window.location.href = "/app";
+      }
+    })();
+
+    let allLotes = [];
+
+    async function loadLotes() {
+      try {
+        const response = await fetch("/api/coffee/lots", {
+          credentials: "include"
+        });
+
+        if (!response.ok) {
+          throw new Error("Error al cargar lotes");
+        }
+
+        const data = await response.json();
+        allLotes = data.lots || [];
+        displayLotes(allLotes);
+        updateStats(allLotes);
+      } catch (error) {
+        console.error("Error:", error);
+        document.getElementById("lotesTable").innerHTML = `
+          <tr>
+            <td colspan="6" style="padding: 2rem; text-align: center; color: #c00;">
+              Error al cargar los lotes
+            </td>
+          </tr>
+        `;
+      }
+    }
+
+    function displayLotes(lotes) {
+      const tbody = document.getElementById("lotesTable");
+
+      if (lotes.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" style="padding: 2rem; text-align: center; color: #666;">
+              No hay lotes disponibles
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      const statusColors = {
+        verde: "background: #d1fae5; color: #065f46;",
+        tostado: "background: #fed7aa; color: #92400e;",
+        entregado: "background: #dbeafe; color: #1e40af;"
+      };
+
+      tbody.innerHTML = lotes.map(lote => {
+        const statusStyle = statusColors[lote.status] || "";
+
+        return `
+          <tr style="border-bottom: 1px solid #e5e7eb; transition: background 0.2s;" onmouseover="this.style.backgroundColor='#f9fafb'" onmouseout="this.style.backgroundColor='transparent'">
+            <td style="padding: 1rem; font-family: monospace; font-weight: 600; color: #251a14;">${lote.lot_id || "—"}</td>
+            <td style="padding: 1rem;">${lote.farm_name || "—"}</td>
+            <td style="padding: 1rem;">${lote.variety || "—"}</td>
+            <td style="padding: 1rem; text-align: center;">${(lote.weight || 0).toFixed(2)}</td>
+            <td style="padding: 1rem; text-align: center;">
+              <span style="display: inline-block; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.85rem; font-weight: 600; ${statusStyle}">
+                ${lote.status || "Pendiente"}
+              </span>
+            </td>
+            <td style="padding: 1rem; font-size: 0.9rem; color: #666;">
+              ${lote.created_at ? new Date(lote.created_at).toLocaleDateString("es-ES") : "—"}
+            </td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    function filterLotes() {
+      const searchTerm = document.getElementById("searchInput").value.toLowerCase();
+      const status = document.getElementById("statusFilter").value;
+
+      const filtered = allLotes.filter(lote => {
+        const matchesSearch = !searchTerm || 
+          (lote.lot_id && lote.lot_id.toLowerCase().includes(searchTerm)) ||
+          (lote.farm_name && lote.farm_name.toLowerCase().includes(searchTerm));
+        
+        const matchesStatus = !status || lote.status === status;
+
+        return matchesSearch && matchesStatus;
+      });
+
+      displayLotes(filtered);
+    }
+
+    function updateStats(lotes) {
+      document.getElementById("totalLotes").textContent = lotes.length;
+      document.getElementById("totalVerde").textContent = lotes.filter(l => l.status === "verde").length;
+      document.getElementById("totalTostado").textContent = lotes.filter(l => l.status === "tostado").length;
+      document.getElementById("totalEntregado").textContent = lotes.filter(l => l.status === "entregado").length;
+    }
+  </script>
+</AppLayout>
