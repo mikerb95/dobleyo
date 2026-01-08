@@ -1,6 +1,16 @@
 {
   "rewrites": [
     {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "en.dobleyo.cafe"
+        }
+      ],
+      "destination": "/en/:path*"
+    },
+    {
       "source": "/api/minimal",
       "destination": "/api/minimal.js"
     },
