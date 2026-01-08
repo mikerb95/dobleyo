@@ -470,16 +470,13 @@ main.container{ padding-top: calc(var(--header-top, 0px) + var(--header-height, 
 
 .dropdown-menu {
   display: none;
-  position: absolute;
-  right: 0;
-  top: 100%;
+  position: fixed;
   background: white;
   border: 1px solid var(--border);
   border-radius: 8px;
   min-width: 160px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.12);
   z-index: 9999;
-  margin-top: 8px;
 }
 
 .user-dropdown.active .dropdown-menu {

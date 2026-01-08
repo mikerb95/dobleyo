@@ -287,12 +287,22 @@
 
     if (!userBtn || !userDropdown || !dropdownMenu) return;
 
+    // Función para posicionar el dropdown
+    function positionDropdown() {
+      const rect = userBtn.getBoundingClientRect();
+      dropdownMenu.style.top = (rect.bottom + 8) + 'px';
+      dropdownMenu.style.right = (window.innerWidth - rect.right) + 'px';
+    }
+
     // Toggle dropdown al hacer click en el botón
     userBtn.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
       userDropdown.classList.toggle('active');
       userBtn.setAttribute('aria-expanded', userDropdown.classList.contains('active'));
+      if (userDropdown.classList.contains('active')) {
+        positionDropdown();
+      }
     });
 
     // Cerrar dropdown al hacer click en un item
@@ -323,6 +333,15 @@
         }
       });
     }
+
+    // Cerrar dropdown al hacer clic fuera
+    document.addEventListener('click', (e) => {
+      if (!userDropdown.contains(e.target)) {
+        userDropdown.classList.remove('active');
+        userBtn.setAttribute('aria-expanded', 'false');
+      }
+    });
+  })();
 
     // Cerrar dropdown al hacer click fuera
     document.addEventListener('click', (e) => {

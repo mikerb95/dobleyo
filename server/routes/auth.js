@@ -220,7 +220,7 @@ authRouter.post('/logout', async (req, res) => {
 // Check auth status
 authRouter.get('/me', auth.authenticateToken, async (req, res) => {
   try {
-    const result = await db.query('SELECT id, name, email, role, caficultor_status FROM users WHERE id = ?', [req.user.id]);
+    const result = await db.query('SELECT id, first_name, last_name, email, role, caficultor_status FROM users WHERE id = ?', [req.user.id]);
     
     if (!result.rows || result.rows.length === 0) {
       return res.status(404).json({ error: 'Usuario no encontrado' });

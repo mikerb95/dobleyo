@@ -86,10 +86,163 @@ import AppLayout from "../../layouts/AppLayout.astro";
               style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;"
               >Registrado</th
             >
+            <th
+              style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;"
+              >Acciones</th
+            >
           </tr>
         </thead>
         <tbody id="usersTableBody"> </tbody>
       </table>
+    </div>
+
+    <!-- Modal Editar Usuario -->
+    <div
+      id="editModal"
+      style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;"
+    >
+      <div
+        style="background: white; border-radius: 8px; padding: 2rem; max-width: 500px; width: 90%;"
+      >
+        <h2 style="margin-bottom: 1.5rem; color: #251a14;">Editar Usuario</h2>
+        <form id="editForm">
+          <div style="margin-bottom: 1rem;">
+            <label style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
+              >Nombre:</label
+            >
+            <input
+              type="text"
+              id="editName"
+              style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;"
+            />
+          </div>
+
+          <div style="margin-bottom: 1rem;">
+            <label style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
+              >Email:</label
+            >
+            <input
+              type="email"
+              id="editEmail"
+              disabled
+              style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; background: #f5f5f5;"
+            />
+          </div>
+
+          <div style="margin-bottom: 1rem;">
+            <label style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
+              >Teléfono:</label
+            >
+            <input
+              type="text"
+              id="editPhone"
+              style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;"
+            />
+          </div>
+
+          <div style="margin-bottom: 1rem;">
+            <label style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
+              >Rol:</label
+            >
+            <select
+              id="editRole"
+              style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;"
+            >
+              <option value="client">Cliente</option>
+              <option value="caficultor">Caficultor</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+
+          <div style="margin-bottom: 1rem;">
+            <label style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
+              >Ciudad:</label
+            >
+            <input
+              type="text"
+              id="editCity"
+              style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;"
+            />
+          </div>
+
+          <div style="margin-bottom: 1rem;">
+            <label style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
+              >Departamento/Estado:</label
+            >
+            <input
+              type="text"
+              id="editState"
+              style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;"
+            />
+          </div>
+
+          <div style="margin-bottom: 1.5rem;">
+            <label style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
+              >País:</label
+            >
+            <input
+              type="text"
+              id="editCountry"
+              style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;"
+            />
+          </div>
+
+          <div style="margin-bottom: 1.5rem;">
+            <label style="display: flex; align-items: center; font-weight: 500;">
+              <input type="checkbox" id="editVerified" style="margin-right: 0.5rem;" />
+              Verificado
+            </label>
+          </div>
+
+          <div style="display: flex; gap: 1rem;">
+            <button
+              type="submit"
+              style="flex: 1; padding: 0.75rem; background: #8b6f47; color: white; border: none; border-radius: 4px; font-weight: 500; cursor: pointer;"
+            >
+              Guardar
+            </button>
+            <button
+              type="button"
+              onclick="document.getElementById('editModal').style.display = 'none'"
+              style="flex: 1; padding: 0.75rem; background: #ddd; color: #333; border: none; border-radius: 4px; font-weight: 500; cursor: pointer;"
+            >
+              Cancelar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal Eliminar Usuario -->
+    <div
+      id="deleteModal"
+      style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;"
+    >
+      <div
+        style="background: white; border-radius: 8px; padding: 2rem; max-width: 400px; width: 90%;"
+      >
+        <h2 style="margin-bottom: 1rem; color: #c00;">Eliminar Usuario</h2>
+        <p style="margin-bottom: 1rem; color: #666;">
+          ¿Estás seguro de que deseas eliminar este usuario? Esta acción no se puede deshacer.
+        </p>
+        <p style="margin-bottom: 1.5rem; background: #fee; padding: 1rem; border-radius: 4px; color: #c00;">
+          Email: <strong id="deleteUserEmail"></strong>
+        </p>
+        <div style="display: flex; gap: 1rem;">
+          <button
+            onclick="confirmDelete()"
+            style="flex: 1; padding: 0.75rem; background: #c00; color: white; border: none; border-radius: 4px; font-weight: 500; cursor: pointer;"
+          >
+            Eliminar
+          </button>
+          <button
+            onclick="document.getElementById('deleteModal').style.display = 'none'"
+            style="flex: 1; padding: 0.75rem; background: #ddd; color: #333; border: none; border-radius: 4px; font-weight: 500; cursor: pointer;"
+          >
+            Cancelar
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- Estadísticas -->
@@ -188,7 +341,7 @@ import AppLayout from "../../layouts/AppLayout.astro";
 
       if (users.length === 0) {
         tbody.innerHTML =
-          '<tr><td colspan="8" style="padding: 2rem; text-align: center; color: #666;">No se encontraron usuarios</td></tr>';
+          '<tr><td colspan="9" style="padding: 2rem; text-align: center; color: #666;">No se encontraron usuarios</td></tr>';
         return;
       }
 
@@ -222,6 +375,10 @@ import AppLayout from "../../layouts/AppLayout.astro";
           <td style="padding: 1rem;">${verifiedBadge}</td>
           <td style="padding: 1rem; font-size: 0.85rem; color: #666;">${user.last_login_at ? new Date(user.last_login_at).toLocaleDateString("es-ES") : "Nunca"}</td>
           <td style="padding: 1rem; font-size: 0.85rem; color: #666;">${new Date(user.created_at).toLocaleDateString("es-ES")}</td>
+          <td style="padding: 1rem; white-space: nowrap;">
+            <button onclick="openEditModal(${user.id})" style="padding: 0.4rem 0.8rem; background: #8b6f47; color: white; border: none; border-radius: 4px; font-size: 0.85rem; cursor: pointer; margin-right: 0.5rem;">✏️ Editar</button>
+            <button onclick="openDeleteModal(${user.id}, '${user.email}')" style="padding: 0.4rem 0.8rem; background: #c00; color: white; border: none; border-radius: 4px; font-size: 0.85rem; cursor: pointer;">🗑️ Eliminar</button>
+          </td>
         `;
 
         tbody.appendChild(row);
@@ -259,6 +416,108 @@ import AppLayout from "../../layouts/AppLayout.astro";
 
       displayUsers(filtered);
     }
+
+    let currentEditUserId = null;
+
+    function openEditModal(userId) {
+      const user = allUsers.find((u) => u.id === userId);
+      if (!user) return;
+
+      currentEditUserId = userId;
+      document.getElementById("editName").value = user.name || "";
+      document.getElementById("editEmail").value = user.email;
+      document.getElementById("editPhone").value = user.mobile_phone || "";
+      document.getElementById("editRole").value = user.role;
+      document.getElementById("editCity").value = user.city || "";
+      document.getElementById("editState").value = user.state_province || "";
+      document.getElementById("editCountry").value = user.country || "";
+      document.getElementById("editVerified").checked = user.is_verified;
+
+      document.getElementById("editModal").style.display = "flex";
+    }
+
+    function openDeleteModal(userId, email) {
+      currentEditUserId = userId;
+      document.getElementById("deleteUserEmail").textContent = email;
+      document.getElementById("deleteModal").style.display = "flex";
+    }
+
+    async function confirmDelete() {
+      if (!currentEditUserId) return;
+
+      try {
+        const response = await fetch(`/api/users/${currentEditUserId}`, {
+          method: "DELETE",
+          credentials: "include",
+        });
+
+        if (!response.ok) {
+          const data = await response.json();
+          alert("Error: " + (data.error || "No se pudo eliminar el usuario"));
+          return;
+        }
+
+        alert("Usuario eliminado exitosamente");
+        document.getElementById("deleteModal").style.display = "none";
+        loadUsers();
+      } catch (err) {
+        console.error("Error:", err);
+        alert("Error al eliminar el usuario");
+      }
+    }
+
+    document.getElementById("editForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      if (!currentEditUserId) return;
+
+      const userData = {
+        name: document.getElementById("editName").value,
+        mobile_phone: document.getElementById("editPhone").value,
+        city: document.getElementById("editCity").value,
+        state_province: document.getElementById("editState").value,
+        country: document.getElementById("editCountry").value,
+        role: document.getElementById("editRole").value,
+        is_verified: document.getElementById("editVerified").checked ? 1 : 0,
+      };
+
+      try {
+        const response = await fetch(`/api/users/${currentEditUserId}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify(userData),
+        });
+
+        if (!response.ok) {
+          const data = await response.json();
+          alert("Error: " + (data.error || "No se pudo actualizar el usuario"));
+          return;
+        }
+
+        alert("Usuario actualizado exitosamente");
+        document.getElementById("editModal").style.display = "none";
+        loadUsers();
+      } catch (err) {
+        console.error("Error:", err);
+        alert("Error al actualizar el usuario");
+      }
+    });
+
+    // Cerrar modales al hacer clic fuera
+    document.getElementById("editModal").addEventListener("click", (e) => {
+      if (e.target.id === "editModal") {
+        e.target.style.display = "none";
+      }
+    });
+
+    document.getElementById("deleteModal").addEventListener("click", (e) => {
+      if (e.target.id === "deleteModal") {
+        e.target.style.display = "none";
+      }
+    });
 
     // Event listeners
     document

@@ -32,4 +32,90 @@ usersRouter.get('/', auth.authenticateToken, auth.requireRole('admin'), async (r
   }
 });
 
+// PUT /api/users/:id - Editar usuario (solo admin)
+usersRouter.put('/:id', auth.authenticateToken, auth.requireRole('admin'), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, mobile_phone, city, state_province, country, role, is_verified } = req.body;
+
+    // Validar que el usuario existe
+    const userResult = await query('SELECT id FROM users WHERE id = ?', [id]);
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Usuario no encontrado' });
+    }
+
+    // Actualizar usuario
+    const updateQuery = `
+      UPDATE users 
+      SET 
+        name = COALESCE(?, name),
+        mobile_phone = COALESCE(?, mobile_phone),
+        city = COALESCE(?, city),
+        state_province = COALESCE(?, state_province),
+        country = COALESCE(?, country),
+        role = COALESCE(?, role),
+        is_verified = COALESCE(?, is_verified)
+      WHERE id = ?
+    `;
+
+    await query(updateQuery, [name, mobile_phone, city, state_province, country, role, is_verified, id]);
+
+    // Retornar usuario actualizado
+    const updated = await query(
+      `SELECT 
+        id, 
+        email, 
+        name, 
+        mobile_phone, 
+        city, 
+        state_province, 
+        country, 
+        role, 
+        is_verified, 
+        caficultor_status,
+        last_login_at, 
+        created_at 
+      FROM users 
+      WHERE id = ?`,
+      [id]
+    );
+
+    res.json({ user: updated.rows[0] });
+  } catch (err) {
+    console.error('[PUT /api/users/:id] Error:', err);
+    res.status(500).json({ error: 'Error al actualizar usuario' });
+  }
+});
+
+// DELETE /api/users/:id - Eliminar usuario (solo admin)
+usersRouter.delete('/:id', auth.authenticateToken, auth.requireRole('admin'), async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // No permitir eliminar al usuario actual
+    if (req.user.id === parseInt(id)) {
+      return res.status(400).json({ error: 'No puedes eliminar tu propio usuario' });
+    }
+
+    // Validar que el usuario existe
+    const userResult = await query('SELECT email FROM users WHERE id = ?', [id]);
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Usuario no encontrado' });
+    }
+
+    const userEmail = userResult.rows[0].email;
+
+    // Eliminar usuario
+    await query('DELETE FROM users WHERE id = ?', [id]);
+
+    res.json({ 
+      message: `Usuario ${userEmail} eliminado exitosamente`,
+      deletedId: id
+    });
+  } catch (err) {
+    console.error('[DELETE /api/users/:id] Error:', err);
+    res.status(500).json({ error: 'Error al eliminar usuario' });
+  }
+});
+
 export { usersRouter };
