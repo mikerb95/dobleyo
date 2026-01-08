@@ -1,8 +1,20 @@
 import * as db from './db.js';
 import * as auth from './auth.js';
 
-const ADMIN_EMAIL = 'admin@dobleyo.com';
-const ADMIN_PASS = 'admin123'; // Change this in production!
+// Las credenciales deben pasarse por variables de entorno
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
+const ADMIN_PASS = process.env.ADMIN_PASSWORD;
+
+if (!ADMIN_EMAIL || !ADMIN_PASS) {
+  console.error('ERROR: Debes configurar ADMIN_EMAIL y ADMIN_PASSWORD en las variables de entorno.');
+  console.error('Ejemplo: ADMIN_EMAIL=admin@dobleyo.cafe ADMIN_PASSWORD=tu_contraseña_segura node server/create_admin.js');
+  process.exit(1);
+}
+
+if (ADMIN_PASS.length < 8) {
+  console.error('ERROR: La contraseña debe tener al menos 8 caracteres.');
+  process.exit(1);
+}
 
 async function createAdmin() {
   console.log('Creating admin user...');

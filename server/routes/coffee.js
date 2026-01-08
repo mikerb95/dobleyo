@@ -1,16 +1,15 @@
 import express from 'express';
 import { query } from '../db.js';
 import crypto from 'crypto';
+import { authenticateToken, requireRole } from '../auth.js';
+import { apiLimiter } from '../middleware/rateLimit.js';
 
 export const coffeeRouter = express.Router();
 
-// Middleware de autenticación básica
-const authMiddleware = async (req, res, next) => {
-  // Por ahora permitir todos, en producción verificar token
-  next();
-};
-
-coffeeRouter.use(authMiddleware);
+// Aplicar rate limiting y autenticación a todas las rutas
+coffeeRouter.use(apiLimiter);
+coffeeRouter.use(authenticateToken);
+coffeeRouter.use(requireRole(['admin', 'caficultor']));
 
 // 1. CREAR LOTE (Recolección en Finca)
 coffeeRouter.post('/harvest', async (req, res) => {

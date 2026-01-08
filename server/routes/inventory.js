@@ -1,15 +1,14 @@
 import express from 'express';
 import { query } from '../db.js';
+import { authenticateToken, requireRole } from '../auth.js';
+import { apiLimiter } from '../middleware/rateLimit.js';
 
 export const inventoryRouter = express.Router();
 
-// Middleware de autenticación (solo admin)
-const authMiddleware = async (req, res, next) => {
-  // TODO: Verificar token y rol de admin
-  next();
-};
-
-inventoryRouter.use(authMiddleware);
+// Aplicar rate limiting y autenticación (solo admin)
+inventoryRouter.use(apiLimiter);
+inventoryRouter.use(authenticateToken);
+inventoryRouter.use(requireRole('admin'));
 
 // ============================================
 // PRODUCTOS - CRUD

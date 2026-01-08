@@ -6,8 +6,10 @@ import crypto from 'crypto';
 
 export const setupRouter = express.Router();
 
-const ADMIN_EMAIL = 'admin@dobleyo.com';
-const ADMIN_PASS = 'admin123';
+// Credenciales de admin deben venir de variables de entorno
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
+const ADMIN_PASS = process.env.ADMIN_PASSWORD;
+const SETUP_KEY = process.env.SETUP_SECRET_KEY;
 
 // Embed schema directly to avoid file reading issues in Vercel
 const SCHEMA_SQL = `
@@ -176,9 +178,9 @@ const products = [
 ];
 
 setupRouter.get('/', async (req, res) => {
-  // Simple protection
-  if (req.query.key !== 'dobleyo_setup_2026') {
-    return res.status(403).json({ error: 'Unauthorized. Provide correct key.' });
+  // Protection via environment variable
+  if (!SETUP_KEY || req.query.key !== SETUP_KEY) {
+    return res.status(403).json({ error: 'Unauthorized. Set SETUP_SECRET_KEY env var and pass ?key=<value>' });
   }
 
   const logs = [];
@@ -236,17 +238,23 @@ setupRouter.get('/', async (req, res) => {
     }
     log('Products seeded.');
 
-    // 4. Create Admin
-    const existingAdmin = await db.query('SELECT id FROM users WHERE email = ?', [ADMIN_EMAIL]);
-    if (existingAdmin.rows.length === 0) {
-      const hash = await auth.hashPassword(ADMIN_PASS);
-      await db.query(
-        'INSERT INTO users (email, password_hash, name, role, is_verified) VALUES (?, ?, ?, ?, TRUE)',
-        [ADMIN_EMAIL, hash, 'Admin DobleYo', 'admin']
-      );
-      log('Admin user created.');
+    // 4. Create Admin (only if credentials are provided via env vars)
+    if (!ADMIN_EMAIL || !ADMIN_PASS) {
+      log('Skipping admin creation: ADMIN_EMAIL and ADMIN_PASSWORD env vars not set.');
+    } else if (ADMIN_PASS.length < 8) {
+      log('Skipping admin creation: Password must be at least 8 characters.');
     } else {
-      log('Admin user already exists.');
+      const existingAdmin = await db.query('SELECT id FROM users WHERE email = ?', [ADMIN_EMAIL]);
+      if (existingAdmin.rows.length === 0) {
+        const hash = await auth.hashPassword(ADMIN_PASS);
+        await db.query(
+          'INSERT INTO users (email, password_hash, name, role, is_verified) VALUES (?, ?, ?, ?, TRUE)',
+          [ADMIN_EMAIL, hash, 'Admin DobleYo', 'admin']
+        );
+        log('Admin user created.');
+      } else {
+        log('Admin user already exists.');
+      }
     }
 
     res.json({ success: true, logs });

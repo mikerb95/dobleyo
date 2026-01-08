@@ -5,11 +5,16 @@ import {
   sendContactReplyEmail,
   sendVerificationEmail
 } from '../services/email.js';
+import { apiLimiter } from '../middleware/rateLimit.js';
+import { authenticateToken, requireRole } from '../auth.js';
 
 export const emailRouter = express.Router();
 
-// POST /api/emails/account-confirmation
-emailRouter.post('/account-confirmation', async (req, res) => {
+// Rate limiting para prevenir spam
+emailRouter.use(apiLimiter);
+
+// POST /api/emails/account-confirmation (solo sistema interno)
+emailRouter.post('/account-confirmation', authenticateToken, async (req, res) => {
   try {
     const { email, name, confirmationToken } = req.body;
 
@@ -31,8 +36,8 @@ emailRouter.post('/account-confirmation', async (req, res) => {
   }
 });
 
-// POST /api/emails/order-confirmation
-emailRouter.post('/order-confirmation', async (req, res) => {
+// POST /api/emails/order-confirmation (solo admin o sistema)
+emailRouter.post('/order-confirmation', authenticateToken, async (req, res) => {
   try {
     const { email, customerName, orderId, items, subtotal, shipping, total, shippingAddress } = req.body;
 
@@ -94,8 +99,8 @@ emailRouter.post('/contact', async (req, res) => {
   }
 });
 
-// POST /api/emails/contact-reply
-emailRouter.post('/contact-reply', async (req, res) => {
+// POST /api/emails/contact-reply (solo admin)
+emailRouter.post('/contact-reply', authenticateToken, requireRole('admin'), async (req, res) => {
   try {
     const { email, clientName, message } = req.body;
 

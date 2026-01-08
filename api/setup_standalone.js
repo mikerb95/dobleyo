@@ -5,9 +5,10 @@ export default async function handler(req, res) {
   const logs = [];
   const log = (msg) => logs.push({ time: new Date().toISOString(), msg });
 
-  // Simple protection
-  if (req.query.key !== 'dobleyo_setup_2026') {
-    return res.status(403).json({ error: 'Unauthorized' });
+  // Protection via environment variable
+  const SETUP_KEY = process.env.SETUP_SECRET_KEY;
+  if (!SETUP_KEY || req.query.key !== SETUP_KEY) {
+    return res.status(403).json({ error: 'Unauthorized. Set SETUP_SECRET_KEY env var and pass ?key=<value>' });
   }
 
   let connection;
@@ -152,22 +153,28 @@ export default async function handler(req, res) {
     }
     log("Products seeded.");
 
-    // 4. Create Admin
-    const ADMIN_EMAIL = 'admin@dobleyo.com';
-    const ADMIN_PASS = 'admin123';
+    // 4. Create Admin (only if credentials are provided via env vars)
+    const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
+    const ADMIN_PASS = process.env.ADMIN_PASSWORD;
     
-    const [users] = await connection.query('SELECT id FROM users WHERE email = ?', [ADMIN_EMAIL]);
-    if (users.length === 0) {
-      const salt = await bcrypt.genSalt(10);
-      const hash = await bcrypt.hash(ADMIN_PASS, salt);
-      
-      await connection.query(
-        'INSERT INTO users (email, password_hash, name, role, is_verified) VALUES (?, ?, ?, ?, TRUE)',
-        [ADMIN_EMAIL, hash, 'Admin DobleYo', 'admin']
-      );
-      log("Admin user created.");
+    if (!ADMIN_EMAIL || !ADMIN_PASS) {
+      log("Skipping admin creation: ADMIN_EMAIL and ADMIN_PASSWORD env vars not set.");
+    } else if (ADMIN_PASS.length < 8) {
+      log("Skipping admin creation: Password must be at least 8 characters.");
     } else {
-      log("Admin user already exists.");
+      const [users] = await connection.query('SELECT id FROM users WHERE email = ?', [ADMIN_EMAIL]);
+      if (users.length === 0) {
+        const salt = await bcrypt.genSalt(10);
+        const hash = await bcrypt.hash(ADMIN_PASS, salt);
+        
+        await connection.query(
+          'INSERT INTO users (email, password_hash, name, role, is_verified) VALUES (?, ?, ?, ?, TRUE)',
+          [ADMIN_EMAIL, hash, 'Admin DobleYo', 'admin']
+        );
+        log("Admin user created.");
+      } else {
+        log("Admin user already exists.");
+      }
     }
 
     res.status(200).json({ status: "Success", logs });
