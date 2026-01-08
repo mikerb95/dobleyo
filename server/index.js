@@ -16,6 +16,7 @@ import { mercadolibreRouter } from './routes/mercadolibre.js';
 import { inventoryRouter } from './routes/inventory.js';
 import { emailRouter } from './routes/emails.js';
 import { contactRouter } from './routes/contact.js';
+import { usersRouter } from './routes/users.js';
 
 const app = express();
 
@@ -66,6 +67,7 @@ app.use('/api/mercadolibre', mercadolibreRouter);
 app.use('/api/inventory', inventoryRouter);
 app.use('/api/emails', emailRouter);
 app.use('/api/contact', contactRouter);
+app.use('/api/users', usersRouter);
 
 // Debug endpoint to check environment variables (safe version)
 app.get('/api/debug-env', (req, res) => {

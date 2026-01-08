@@ -118,4 +118,64 @@ usersRouter.delete('/:id', auth.authenticateToken, auth.requireRole('admin'), as
   }
 });
 
+// POST /api/users - Crear nuevo usuario (solo admin)
+usersRouter.post('/', auth.authenticateToken, auth.requireRole('admin'), async (req, res) => {
+  try {
+    const { email, name, mobile_phone, city, state_province, country, role, is_verified } = req.body;
+
+    // Validar campos requeridos
+    if (!email || !name) {
+      return res.status(400).json({ error: 'Email y nombre son requeridos' });
+    }
+
+    // Validar que el email no exista
+    const existingUser = await query('SELECT id FROM users WHERE email = ?', [email]);
+    if (existingUser.rows.length > 0) {
+      return res.status(400).json({ error: 'El email ya está registrado' });
+    }
+
+    // Generar contraseña temporal aleatoria
+    const tempPassword = Math.random().toString(36).slice(-12);
+    const passwordHash = await auth.hashPassword(tempPassword);
+
+    // Crear usuario
+    const result = await query(
+      `INSERT INTO users 
+        (email, password_hash, name, mobile_phone, city, state_province, country, role, is_verified) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [email, passwordHash, name, mobile_phone || null, city || null, state_province || null, country || null, role || 'client', is_verified || false]
+    );
+
+    const newUserId = result.rows.insertId;
+
+    // Obtener usuario creado
+    const newUser = await query(
+      `SELECT 
+        id, 
+        email, 
+        name, 
+        mobile_phone, 
+        city, 
+        state_province, 
+        country, 
+        role, 
+        is_verified, 
+        caficultor_status,
+        created_at 
+      FROM users 
+      WHERE id = ?`,
+      [newUserId]
+    );
+
+    res.status(201).json({ 
+      message: 'Usuario creado exitosamente',
+      tempPassword: tempPassword,
+      user: newUser.rows[0]
+    });
+  } catch (err) {
+    console.error('[POST /api/users] Error:', err);
+    res.status(500).json({ error: 'Error al crear usuario' });
+  }
+});
+
 export { usersRouter };
