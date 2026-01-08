@@ -5,10 +5,15 @@ import AppLayout from "../../layouts/AppLayout.astro";
 <AppLayout>
   <section style="max-width: 1200px; margin: 0 auto; padding: 2rem 1.25rem;">
     <div style="margin-bottom: 2rem;">
-      <a href="/app" style="color: #8b6f47; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+      <a
+        href="/app"
+        style="color: #8b6f47; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;"
+      >
         ← Volver al Inicio
       </a>
-      <h1 style="font-size: 2rem; font-weight: bold; margin-bottom: 0.5rem; color: #251a14;">
+      <h1
+        style="font-size: 2rem; font-weight: bold; margin-bottom: 0.5rem; color: #251a14;"
+      >
         📋 Lotes Entregados
       </h1>
       <p style="color: #666; font-size: 1.05rem;">
@@ -17,19 +22,43 @@ import AppLayout from "../../layouts/AppLayout.astro";
     </div>
 
     <!-- Filtros -->
-    <div style="background: white; border: 1px solid #e5e7eb; border-radius: 0.75rem; padding: 1.5rem; margin-bottom: 2rem;">
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+    <div
+      style="background: white; border: 1px solid #e5e7eb; border-radius: 0.75rem; padding: 1.5rem; margin-bottom: 2rem;"
+    >
+      <div
+        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;"
+      >
         <div>
-          <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #374151;">Fecha Desde</label>
-          <input type="date" id="fechaDesde" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.5rem;" />
+          <label
+            style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #374151;"
+            >Fecha Desde</label
+          >
+          <input
+            type="date"
+            id="fechaDesde"
+            style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.5rem;"
+          />
         </div>
         <div>
-          <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #374151;">Fecha Hasta</label>
-          <input type="date" id="fechaHasta" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.5rem;" />
+          <label
+            style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #374151;"
+            >Fecha Hasta</label
+          >
+          <input
+            type="date"
+            id="fechaHasta"
+            style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.5rem;"
+          />
         </div>
         <div>
-          <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #374151;">Estado</label>
-          <select id="estadoFilter" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.5rem;">
+          <label
+            style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #374151;"
+            >Estado</label
+          >
+          <select
+            id="estadoFilter"
+            style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.5rem;"
+          >
             <option value="">Todos</option>
             <option value="recibido">Recibido</option>
             <option value="almacenado">Almacenado</option>
@@ -41,40 +70,90 @@ import AppLayout from "../../layouts/AppLayout.astro";
     </div>
 
     <!-- Resumen -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
-      <div style="background: linear-gradient(135deg, #8b6f47 0%, #6b5637 100%); color: white; padding: 1.5rem; border-radius: 0.75rem;">
-        <div style="font-size: 0.875rem; opacity: 0.9; margin-bottom: 0.5rem;">Total Lotes</div>
+    <div
+      style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;"
+    >
+      <div
+        style="background: linear-gradient(135deg, #8b6f47 0%, #6b5637 100%); color: white; padding: 1.5rem; border-radius: 0.75rem;"
+      >
+        <div style="font-size: 0.875rem; opacity: 0.9; margin-bottom: 0.5rem;">
+          Total Lotes
+        </div>
         <div style="font-size: 2rem; font-weight: bold;" id="totalLotes">0</div>
       </div>
-      <div style="background: white; border: 1px solid #e5e7eb; padding: 1.5rem; border-radius: 0.75rem;">
-        <div style="font-size: 0.875rem; color: #666; margin-bottom: 0.5rem;">Kg Totales</div>
-        <div style="font-size: 2rem; font-weight: bold; color: #8b6f47;" id="totalKg">0</div>
+      <div
+        style="background: white; border: 1px solid #e5e7eb; padding: 1.5rem; border-radius: 0.75rem;"
+      >
+        <div style="font-size: 0.875rem; color: #666; margin-bottom: 0.5rem;">
+          Kg Totales
+        </div>
+        <div
+          style="font-size: 2rem; font-weight: bold; color: #8b6f47;"
+          id="totalKg"
+        >
+          0
+        </div>
       </div>
-      <div style="background: white; border: 1px solid #e5e7eb; padding: 1.5rem; border-radius: 0.75rem;">
-        <div style="font-size: 0.875rem; color: #666; margin-bottom: 0.5rem;">Valor Total</div>
-        <div style="font-size: 2rem; font-weight: bold; color: #2d6a4f;" id="totalValor">$0</div>
+      <div
+        style="background: white; border: 1px solid #e5e7eb; padding: 1.5rem; border-radius: 0.75rem;"
+      >
+        <div style="font-size: 0.875rem; color: #666; margin-bottom: 0.5rem;">
+          Valor Total
+        </div>
+        <div
+          style="font-size: 2rem; font-weight: bold; color: #2d6a4f;"
+          id="totalValor"
+        >
+          $0
+        </div>
       </div>
     </div>
 
     <!-- Tabla de Lotes -->
-    <div style="background: white; border: 1px solid #e5e7eb; border-radius: 0.75rem; overflow: hidden;">
+    <div
+      style="background: white; border: 1px solid #e5e7eb; border-radius: 0.75rem; overflow: hidden;"
+    >
       <div style="overflow-x: auto;">
         <table style="width: 100%; border-collapse: collapse;">
           <thead>
             <tr style="background: #f9fafb; border-bottom: 1px solid #e5e7eb;">
-              <th style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;">Código</th>
-              <th style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;">Fecha</th>
-              <th style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;">Variedad</th>
-              <th style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;">Peso (kg)</th>
-              <th style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;">Precio/kg</th>
-              <th style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;">Total</th>
-              <th style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;">Estado</th>
+              <th
+                style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;"
+                >Código</th
+              >
+              <th
+                style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;"
+                >Fecha</th
+              >
+              <th
+                style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;"
+                >Variedad</th
+              >
+              <th
+                style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;"
+                >Peso (kg)</th
+              >
+              <th
+                style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;"
+                >Precio/kg</th
+              >
+              <th
+                style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;"
+                >Total</th
+              >
+              <th
+                style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;"
+                >Estado</th
+              >
             </tr>
           </thead>
           <tbody id="lotesTableBody">
             <!-- Datos cargados dinámicamente -->
             <tr>
-              <td colspan="7" style="padding: 3rem; text-align: center; color: #9ca3af;">
+              <td
+                colspan="7"
+                style="padding: 3rem; text-align: center; color: #9ca3af;"
+              >
                 Cargando lotes...
               </td>
             </tr>
@@ -89,78 +168,91 @@ import AppLayout from "../../layouts/AppLayout.astro";
   // Simular datos de lotes (en producción vendrían de la API)
   const lotesEjemplo = [
     {
-      codigo: 'DBY-2026-001',
-      fecha: '2026-01-05',
-      variedad: 'Caturra',
+      codigo: "DBY-2026-001",
+      fecha: "2026-01-05",
+      variedad: "Caturra",
       peso: 250,
       precioKg: 12000,
-      estado: 'almacenado'
+      estado: "almacenado",
     },
     {
-      codigo: 'DBY-2025-089',
-      fecha: '2025-12-28',
-      variedad: 'Castillo',
+      codigo: "DBY-2025-089",
+      fecha: "2025-12-28",
+      variedad: "Castillo",
       peso: 180,
       precioKg: 11500,
-      estado: 'tostado'
+      estado: "tostado",
     },
     {
-      codigo: 'DBY-2025-076',
-      fecha: '2025-12-15',
-      variedad: 'Pink Bourbon',
+      codigo: "DBY-2025-076",
+      fecha: "2025-12-15",
+      variedad: "Pink Bourbon",
       peso: 120,
       precioKg: 15000,
-      estado: 'vendido'
-    }
+      estado: "vendido",
+    },
   ];
 
   function renderLotes(lotes) {
-    const tbody = document.getElementById('lotesTableBody');
-    
+    const tbody = document.getElementById("lotesTableBody");
+
     if (lotes.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="7" style="padding: 3rem; text-align: center; color: #9ca3af;">No hay lotes para mostrar</td></tr>';
+      tbody.innerHTML =
+        '<tr><td colspan="7" style="padding: 3rem; text-align: center; color: #9ca3af;">No hay lotes para mostrar</td></tr>';
       return;
     }
 
-    tbody.innerHTML = lotes.map(lote => `
+    tbody.innerHTML = lotes
+      .map(
+        (lote) => `
       <tr style="border-bottom: 1px solid #f3f4f6;">
         <td style="padding: 1rem; font-weight: 500;">${lote.codigo}</td>
-        <td style="padding: 1rem; color: #666;">${new Date(lote.fecha).toLocaleDateString('es-CO')}</td>
+        <td style="padding: 1rem; color: #666;">${new Date(lote.fecha).toLocaleDateString("es-CO")}</td>
         <td style="padding: 1rem;">${lote.variedad}</td>
         <td style="padding: 1rem;">${lote.peso} kg</td>
-        <td style="padding: 1rem;">$${lote.precioKg.toLocaleString('es-CO')}</td>
-        <td style="padding: 1rem; font-weight: 600; color: #2d6a4f;">$${(lote.peso * lote.precioKg).toLocaleString('es-CO')}</td>
+        <td style="padding: 1rem;">$${lote.precioKg.toLocaleString("es-CO")}</td>
+        <td style="padding: 1rem; font-weight: 600; color: #2d6a4f;">$${(lote.peso * lote.precioKg).toLocaleString("es-CO")}</td>
         <td style="padding: 1rem;">
           <span style="padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.875rem; font-weight: 500; ${getEstadoStyle(lote.estado)}">
             ${lote.estado.charAt(0).toUpperCase() + lote.estado.slice(1)}
           </span>
         </td>
       </tr>
-    `).join('');
+    `
+      )
+      .join("");
 
     // Actualizar resumen
-    document.getElementById('totalLotes').textContent = lotes.length;
-    document.getElementById('totalKg').textContent = lotes.reduce((sum, l) => sum + l.peso, 0).toLocaleString('es-CO');
-    document.getElementById('totalValor').textContent = '$' + lotes.reduce((sum, l) => sum + (l.peso * l.precioKg), 0).toLocaleString('es-CO');
+    document.getElementById("totalLotes").textContent = lotes.length;
+    document.getElementById("totalKg").textContent = lotes
+      .reduce((sum, l) => sum + l.peso, 0)
+      .toLocaleString("es-CO");
+    document.getElementById("totalValor").textContent =
+      "$" +
+      lotes
+        .reduce((sum, l) => sum + l.peso * l.precioKg, 0)
+        .toLocaleString("es-CO");
   }
 
   function getEstadoStyle(estado) {
     const styles = {
-      recibido: 'background: #dbeafe; color: #1e40af;',
-      almacenado: 'background: #fef3c7; color: #92400e;',
-      tostado: 'background: #fed7aa; color: #9a3412;',
-      vendido: 'background: #d1fae5; color: #065f46;'
+      recibido: "background: #dbeafe; color: #1e40af;",
+      almacenado: "background: #fef3c7; color: #92400e;",
+      tostado: "background: #fed7aa; color: #9a3412;",
+      vendido: "background: #d1fae5; color: #065f46;",
     };
-    return styles[estado] || 'background: #f3f4f6; color: #6b7280;';
+    return styles[estado] || "background: #f3f4f6; color: #6b7280;";
   }
 
   // Cargar datos al iniciar
   renderLotes(lotesEjemplo);
 
   // Filtros (placeholder para implementación futura)
-  document.getElementById('estadoFilter')?.addEventListener('change', (e) => {
+  document.getElementById("estadoFilter")?.addEventListener("change", (e) => {
     const estado = e.target.value;
-    const filtered = estado ? lotesEjemplo.filter(l => l.estado === estado) : lotesEjemplo;
+    const filtered = estado
+      ? lotesEjemplo.filter((l) => l.estado === estado)
+      : lotesEjemplo;
     renderLotes(filtered);
   });
 </script>

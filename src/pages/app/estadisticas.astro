@@ -5,10 +5,15 @@ import AppLayout from "../../layouts/AppLayout.astro";
 <AppLayout>
   <section style="max-width: 1200px; margin: 0 auto; padding: 2rem 1.25rem;">
     <div style="margin-bottom: 2rem;">
-      <a href="/app" style="color: #8b6f47; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+      <a
+        href="/app"
+        style="color: #8b6f47; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;"
+      >
         ← Volver al Inicio
       </a>
-      <h1 style="font-size: 2rem; font-weight: bold; margin-bottom: 0.5rem; color: #251a14;">
+      <h1
+        style="font-size: 2rem; font-weight: bold; margin-bottom: 0.5rem; color: #251a14;"
+      >
         📈 Estadísticas de Producción
       </h1>
       <p style="color: #666; font-size: 1.05rem;">
@@ -17,9 +22,17 @@ import AppLayout from "../../layouts/AppLayout.astro";
     </div>
 
     <!-- Período -->
-    <div style="background: white; border: 1px solid #e5e7eb; border-radius: 0.75rem; padding: 1.5rem; margin-bottom: 2rem;">
-      <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #374151;">Período</label>
-      <select id="periodoSelect" style="padding: 0.5rem 1rem; border: 1px solid #d1d5db; border-radius: 0.5rem; font-size: 1rem;">
+    <div
+      style="background: white; border: 1px solid #e5e7eb; border-radius: 0.75rem; padding: 1.5rem; margin-bottom: 2rem;"
+    >
+      <label
+        style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #374151;"
+        >Período</label
+      >
+      <select
+        id="periodoSelect"
+        style="padding: 0.5rem 1rem; border: 1px solid #d1d5db; border-radius: 0.5rem; font-size: 1rem;"
+      >
         <option value="mes">Último Mes</option>
         <option value="trimestre">Último Trimestre</option>
         <option value="semestre">Último Semestre</option>
@@ -28,89 +41,173 @@ import AppLayout from "../../layouts/AppLayout.astro";
     </div>
 
     <!-- KPIs Principales -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 3rem;">
-      <div style="background: linear-gradient(135deg, #8b6f47 0%, #6b5637 100%); color: white; padding: 2rem; border-radius: 0.75rem;">
-        <div style="font-size: 0.875rem; opacity: 0.9; margin-bottom: 0.5rem;">Producción Total</div>
-        <div style="font-size: 2.5rem; font-weight: bold; margin-bottom: 0.25rem;">550</div>
+    <div
+      style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 3rem;"
+    >
+      <div
+        style="background: linear-gradient(135deg, #8b6f47 0%, #6b5637 100%); color: white; padding: 2rem; border-radius: 0.75rem;"
+      >
+        <div style="font-size: 0.875rem; opacity: 0.9; margin-bottom: 0.5rem;">
+          Producción Total
+        </div>
+        <div
+          style="font-size: 2.5rem; font-weight: bold; margin-bottom: 0.25rem;"
+        >
+          550
+        </div>
         <div style="font-size: 0.875rem; opacity: 0.8;">kg entregados</div>
       </div>
 
-      <div style="background: white; border: 1px solid #e5e7eb; padding: 2rem; border-radius: 0.75rem;">
-        <div style="font-size: 0.875rem; color: #666; margin-bottom: 0.5rem;">Calidad Promedio</div>
-        <div style="font-size: 2.5rem; font-weight: bold; color: #2d6a4f; margin-bottom: 0.25rem;">87.5</div>
+      <div
+        style="background: white; border: 1px solid #e5e7eb; padding: 2rem; border-radius: 0.75rem;"
+      >
+        <div style="font-size: 0.875rem; color: #666; margin-bottom: 0.5rem;">
+          Calidad Promedio
+        </div>
+        <div
+          style="font-size: 2.5rem; font-weight: bold; color: #2d6a4f; margin-bottom: 0.25rem;"
+        >
+          87.5
+        </div>
         <div style="font-size: 0.875rem; color: #666;">puntos SCA</div>
       </div>
 
-      <div style="background: white; border: 1px solid #e5e7eb; padding: 2rem; border-radius: 0.75rem;">
-        <div style="font-size: 0.875rem; color: #666; margin-bottom: 0.5rem;">Precio Promedio</div>
-        <div style="font-size: 2.5rem; font-weight: bold; color: #8b6f47; margin-bottom: 0.25rem;">$12,500</div>
+      <div
+        style="background: white; border: 1px solid #e5e7eb; padding: 2rem; border-radius: 0.75rem;"
+      >
+        <div style="font-size: 0.875rem; color: #666; margin-bottom: 0.5rem;">
+          Precio Promedio
+        </div>
+        <div
+          style="font-size: 2.5rem; font-weight: bold; color: #8b6f47; margin-bottom: 0.25rem;"
+        >
+          $12,500
+        </div>
         <div style="font-size: 0.875rem; color: #666;">por kilogramo</div>
       </div>
 
-      <div style="background: white; border: 1px solid #e5e7eb; padding: 2rem; border-radius: 0.75rem;">
-        <div style="font-size: 0.875rem; color: #666; margin-bottom: 0.5rem;">Lotes Entregados</div>
-        <div style="font-size: 2.5rem; font-weight: bold; color: #251a14; margin-bottom: 0.25rem;">3</div>
+      <div
+        style="background: white; border: 1px solid #e5e7eb; padding: 2rem; border-radius: 0.75rem;"
+      >
+        <div style="font-size: 0.875rem; color: #666; margin-bottom: 0.5rem;">
+          Lotes Entregados
+        </div>
+        <div
+          style="font-size: 2.5rem; font-weight: bold; color: #251a14; margin-bottom: 0.25rem;"
+        >
+          3
+        </div>
         <div style="font-size: 0.875rem; color: #666;">en el período</div>
       </div>
     </div>
 
     <!-- Gráficas -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 2rem; margin-bottom: 3rem;">
+    <div
+      style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 2rem; margin-bottom: 3rem;"
+    >
       <!-- Producción por Mes -->
-      <div style="background: white; border: 1px solid #e5e7eb; border-radius: 0.75rem; padding: 1.5rem;">
-        <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 1.5rem; color: #251a14;">
+      <div
+        style="background: white; border: 1px solid #e5e7eb; border-radius: 0.75rem; padding: 1.5rem;"
+      >
+        <h3
+          style="font-size: 1.25rem; font-weight: 600; margin-bottom: 1.5rem; color: #251a14;"
+        >
           📊 Producción Mensual
         </h3>
-        <div style="height: 250px; display: flex; align-items: flex-end; justify-content: space-between; gap: 0.5rem; border-bottom: 2px solid #e5e7eb; padding-bottom: 1rem;">
-          <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.5rem;">
-            <div style="width: 100%; background: #8b6f47; border-radius: 0.25rem 0.25rem 0 0; height: 60%;"></div>
+        <div
+          style="height: 250px; display: flex; align-items: flex-end; justify-content: space-between; gap: 0.5rem; border-bottom: 2px solid #e5e7eb; padding-bottom: 1rem;"
+        >
+          <div
+            style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.5rem;"
+          >
+            <div
+              style="width: 100%; background: #8b6f47; border-radius: 0.25rem 0.25rem 0 0; height: 60%;"
+            >
+            </div>
             <span style="font-size: 0.75rem; color: #666;">Ene</span>
           </div>
-          <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.5rem;">
-            <div style="width: 100%; background: #8b6f47; border-radius: 0.25rem 0.25rem 0 0; height: 80%;"></div>
+          <div
+            style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.5rem;"
+          >
+            <div
+              style="width: 100%; background: #8b6f47; border-radius: 0.25rem 0.25rem 0 0; height: 80%;"
+            >
+            </div>
             <span style="font-size: 0.75rem; color: #666;">Feb</span>
           </div>
-          <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.5rem;">
-            <div style="width: 100%; background: #8b6f47; border-radius: 0.25rem 0.25rem 0 0; height: 45%;"></div>
+          <div
+            style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.5rem;"
+          >
+            <div
+              style="width: 100%; background: #8b6f47; border-radius: 0.25rem 0.25rem 0 0; height: 45%;"
+            >
+            </div>
             <span style="font-size: 0.75rem; color: #666;">Mar</span>
           </div>
-          <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.5rem;">
-            <div style="width: 100%; background: #8b6f47; border-radius: 0.25rem 0.25rem 0 0; height: 70%;"></div>
+          <div
+            style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.5rem;"
+          >
+            <div
+              style="width: 100%; background: #8b6f47; border-radius: 0.25rem 0.25rem 0 0; height: 70%;"
+            >
+            </div>
             <span style="font-size: 0.75rem; color: #666;">Abr</span>
           </div>
         </div>
       </div>
 
       <!-- Distribución de Calidad -->
-      <div style="background: white; border: 1px solid #e5e7eb; border-radius: 0.75rem; padding: 1.5rem;">
-        <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 1.5rem; color: #251a14;">
+      <div
+        style="background: white; border: 1px solid #e5e7eb; border-radius: 0.75rem; padding: 1.5rem;"
+      >
+        <h3
+          style="font-size: 1.25rem; font-weight: 600; margin-bottom: 1.5rem; color: #251a14;"
+        >
           ⭐ Distribución de Calidad
         </h3>
         <div style="display: flex; flex-direction: column; gap: 1rem;">
           <div>
-            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-              <span style="font-size: 0.875rem; color: #666;">85+ pts (Excelente)</span>
+            <div
+              style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;"
+            >
+              <span style="font-size: 0.875rem; color: #666;"
+                >85+ pts (Excelente)</span
+              >
               <span style="font-weight: 600;">67%</span>
             </div>
-            <div style="background: #e5e7eb; border-radius: 9999px; height: 0.5rem; overflow: hidden;">
+            <div
+              style="background: #e5e7eb; border-radius: 9999px; height: 0.5rem; overflow: hidden;"
+            >
               <div style="background: #2d6a4f; width: 67%; height: 100%;"></div>
             </div>
           </div>
           <div>
-            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-              <span style="font-size: 0.875rem; color: #666;">80-84 pts (Muy Bueno)</span>
+            <div
+              style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;"
+            >
+              <span style="font-size: 0.875rem; color: #666;"
+                >80-84 pts (Muy Bueno)</span
+              >
               <span style="font-weight: 600;">25%</span>
             </div>
-            <div style="background: #e5e7eb; border-radius: 9999px; height: 0.5rem; overflow: hidden;">
+            <div
+              style="background: #e5e7eb; border-radius: 9999px; height: 0.5rem; overflow: hidden;"
+            >
               <div style="background: #8b6f47; width: 25%; height: 100%;"></div>
             </div>
           </div>
           <div>
-            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-              <span style="font-size: 0.875rem; color: #666;">75-79 pts (Bueno)</span>
+            <div
+              style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;"
+            >
+              <span style="font-size: 0.875rem; color: #666;"
+                >75-79 pts (Bueno)</span
+              >
               <span style="font-weight: 600;">8%</span>
             </div>
-            <div style="background: #e5e7eb; border-radius: 9999px; height: 0.5rem; overflow: hidden;">
+            <div
+              style="background: #e5e7eb; border-radius: 9999px; height: 0.5rem; overflow: hidden;"
+            >
               <div style="background: #d4a017; width: 8%; height: 100%;"></div>
             </div>
           </div>
@@ -119,21 +216,35 @@ import AppLayout from "../../layouts/AppLayout.astro";
     </div>
 
     <!-- Variedades Producidas -->
-    <div style="background: white; border: 1px solid #e5e7eb; border-radius: 0.75rem; padding: 1.5rem;">
-      <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 1.5rem; color: #251a14;">
+    <div
+      style="background: white; border: 1px solid #e5e7eb; border-radius: 0.75rem; padding: 1.5rem;"
+    >
+      <h3
+        style="font-size: 1.25rem; font-weight: 600; margin-bottom: 1.5rem; color: #251a14;"
+      >
         🌱 Variedades Cultivadas
       </h3>
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-        <div style="padding: 1rem; border: 1px solid #e5e7eb; border-radius: 0.5rem;">
+      <div
+        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;"
+      >
+        <div
+          style="padding: 1rem; border: 1px solid #e5e7eb; border-radius: 0.5rem;"
+        >
           <div style="font-weight: 600; margin-bottom: 0.5rem;">Caturra</div>
           <div style="color: #666; font-size: 0.875rem;">250 kg (45%)</div>
         </div>
-        <div style="padding: 1rem; border: 1px solid #e5e7eb; border-radius: 0.5rem;">
+        <div
+          style="padding: 1rem; border: 1px solid #e5e7eb; border-radius: 0.5rem;"
+        >
           <div style="font-weight: 600; margin-bottom: 0.5rem;">Castillo</div>
           <div style="color: #666; font-size: 0.875rem;">180 kg (33%)</div>
         </div>
-        <div style="padding: 1rem; border: 1px solid #e5e7eb; border-radius: 0.5rem;">
-          <div style="font-weight: 600; margin-bottom: 0.5rem;">Pink Bourbon</div>
+        <div
+          style="padding: 1rem; border: 1px solid #e5e7eb; border-radius: 0.5rem;"
+        >
+          <div style="font-weight: 600; margin-bottom: 0.5rem;">
+            Pink Bourbon
+          </div>
           <div style="color: #666; font-size: 0.875rem;">120 kg (22%)</div>
         </div>
       </div>
