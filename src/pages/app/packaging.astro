@@ -240,6 +240,21 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
       <div class="form-hint" id="unitHint">Será calculado automáticamente</div>
     </div>
 
+    <!-- Sumar al Inventario -->
+    <div class="form-group" style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #eee;">
+      <label class="checkbox-item">
+        <input 
+          type="checkbox" 
+          id="addToInventory" 
+          name="addToInventory"
+        />
+        <span style="font-weight: 600; font-size: 1rem;">📦 Sumar unidades al inventario disponible</span>
+      </label>
+      <div class="form-hint" style="margin-top: 0.5rem;">
+        Marca esta opción para crear un producto y registrar el stock inmediatamente en el inventario disponible
+      </div>
+    </div>
+
     <!-- Información de Origen -->
     <div
       class="card"
@@ -538,6 +553,7 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
                 : null,
             packageSize: packageSize,
             unitCount: unitCount,
+            addToInventory: document.getElementById("addToInventory").checked,
           }),
         });
 
@@ -684,6 +700,37 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
       accent-color: var(--accent);
       width: 1.15rem;
       height: 1.15rem;
+    }
+
+    .checkbox-item {
+      display: flex;
+      align-items: center;
+      padding: 0.875rem;
+      border: 1px solid #e0e0e0;
+      border-radius: 0.5rem;
+      background: #fff;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+    }
+
+    .checkbox-item:hover {
+      border-color: #d0d0d0;
+      background: #fafafa;
+    }
+
+    .checkbox-item:has(input:checked) {
+      border-color: var(--accent);
+      background: #fff8f3;
+      color: var(--coffee);
+    }
+
+    .checkbox-item input {
+      margin-right: 0.75rem;
+      accent-color: var(--accent);
+      width: 1.15rem;
+      height: 1.15rem;
+      cursor: pointer;
     }
 
     .card,
