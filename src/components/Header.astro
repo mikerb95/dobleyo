@@ -45,6 +45,7 @@
         </button>
         <div class="dropdown-menu" id="userDropdownMenu">
           <a href="/cuenta" class="dropdown-item" data-link>Perfil</a>
+          <a href="/app" class="dropdown-item" id="appsLink" data-link style="display: none;">Panel de apps</a>
           <button class="dropdown-item" id="logoutBtn">Cerrar sesión</button>
         </div>
       </div>
@@ -186,6 +187,7 @@
     const userNameMobileDisplay = document.getElementById(
       "userNameMobileDisplay"
     );
+    const appsLink = document.getElementById("appsLink");
 
     // Primero intentar con token en localStorage
     const token = localStorage.getItem("adminToken");
@@ -217,6 +219,11 @@
         if (userMobileBtn) {
           userMobileBtn.href = "/cuenta";
           userMobileBtn.setAttribute("aria-label", `Cuenta de ${firstName}`);
+        }
+
+        // Mostrar "Panel de apps" solo si es admin
+        if (appsLink && user.role === "admin") {
+          appsLink.style.display = "block";
         }
 
         // Guardar nombre en localStorage para persistencia
