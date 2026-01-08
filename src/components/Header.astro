@@ -280,65 +280,68 @@
 
   // Dropdown menu logic
   (function initUserDropdown() {
-    const userDropdown = document.getElementById('userDropdown');
-    const userBtn = document.getElementById('userNavBtn');
-    const dropdownMenu = document.getElementById('userDropdownMenu');
-    const logoutBtn = document.getElementById('logoutBtn');
+    const userDropdown = document.getElementById("userDropdown");
+    const userBtn = document.getElementById("userNavBtn");
+    const dropdownMenu = document.getElementById("userDropdownMenu");
+    const logoutBtn = document.getElementById("logoutBtn");
 
     if (!userBtn || !userDropdown || !dropdownMenu) return;
 
     // Función para posicionar el dropdown
     function positionDropdown() {
       const rect = userBtn.getBoundingClientRect();
-      dropdownMenu.style.top = (rect.bottom + 8) + 'px';
-      dropdownMenu.style.right = (window.innerWidth - rect.right) + 'px';
+      dropdownMenu.style.top = rect.bottom + 8 + "px";
+      dropdownMenu.style.right = window.innerWidth - rect.right + "px";
     }
 
     // Toggle dropdown al hacer click en el botón
-    userBtn.addEventListener('click', (e) => {
+    userBtn.addEventListener("click", (e) => {
       e.preventDefault();
       e.stopPropagation();
-      userDropdown.classList.toggle('active');
-      userBtn.setAttribute('aria-expanded', userDropdown.classList.contains('active'));
-      if (userDropdown.classList.contains('active')) {
+      userDropdown.classList.toggle("active");
+      userBtn.setAttribute(
+        "aria-expanded",
+        userDropdown.classList.contains("active")
+      );
+      if (userDropdown.classList.contains("active")) {
         positionDropdown();
       }
     });
 
     // Cerrar dropdown al hacer click en un item
-    dropdownMenu.querySelectorAll('a').forEach(link => {
-      link.addEventListener('click', () => {
-        userDropdown.classList.remove('active');
-        userBtn.setAttribute('aria-expanded', 'false');
+    dropdownMenu.querySelectorAll("a").forEach((link) => {
+      link.addEventListener("click", () => {
+        userDropdown.classList.remove("active");
+        userBtn.setAttribute("aria-expanded", "false");
       });
     });
 
     // Logout
     if (logoutBtn) {
-      logoutBtn.addEventListener('click', async (e) => {
+      logoutBtn.addEventListener("click", async (e) => {
         e.preventDefault();
         try {
-          const response = await fetch('/api/auth/logout', {
-            method: 'POST',
-            credentials: 'include'
+          const response = await fetch("/api/auth/logout", {
+            method: "POST",
+            credentials: "include",
           });
-          
+
           if (response.ok) {
-            localStorage.removeItem('adminToken');
-            localStorage.removeItem('userName');
-            window.location.href = '/login';
+            localStorage.removeItem("adminToken");
+            localStorage.removeItem("userName");
+            window.location.href = "/login";
           }
         } catch (err) {
-          console.error('Error al cerrar sesión:', err);
+          console.error("Error al cerrar sesión:", err);
         }
       });
     }
 
     // Cerrar dropdown al hacer clic fuera
-    document.addEventListener('click', (e) => {
+    document.addEventListener("click", (e) => {
       if (!userDropdown.contains(e.target)) {
-        userDropdown.classList.remove('active');
-        userBtn.setAttribute('aria-expanded', 'false');
+        userDropdown.classList.remove("active");
+        userBtn.setAttribute("aria-expanded", "false");
       }
     });
   })();
