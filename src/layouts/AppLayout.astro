@@ -11,18 +11,6 @@ import Head from "../components/Head.astro";
     <meta name="robots" content="noindex, nofollow" />
   </head>
   <body class="font-sans bg-cream text-ink" style="visibility: hidden;">
-    <!-- Barra superior de anuncio -->
-    <div class="topbar" id="topbar">
-      <div class="container">
-        <span
-          >Novedad: Envíos nacionales gratis desde $120.000 · Nuevas cosechas
-          Huila & Nariño</span
-        >
-        <button class="topbar-close" aria-label="Cerrar" id="topbarClose"
-          >×</button
-        >
-      </div>
-    </div>
     <!-- Animación de transición de página -->
     <div class="transition-overlay" id="transitionOverlay" aria-hidden="true">
     </div>
@@ -153,9 +141,7 @@ import Head from "../components/Head.astro";
         }
       })();
 
-      document.getElementById("topbarClose")?.addEventListener("click", () => {
-        document.getElementById("topbar")!.style.display = "none";
-      });
+
     </script>
   </body>
 </html>
