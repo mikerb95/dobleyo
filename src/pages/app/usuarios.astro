@@ -414,8 +414,8 @@ import AppLayout from "../../layouts/AppLayout.astro";
           <td style="padding: 1rem; font-size: 0.85rem; color: #666;">${user.last_login_at ? new Date(user.last_login_at).toLocaleDateString("es-ES") : "Nunca"}</td>
           <td style="padding: 1rem; font-size: 0.85rem; color: #666;">${new Date(user.created_at).toLocaleDateString("es-ES")}</td>
           <td style="padding: 1rem; white-space: nowrap;">
-            <button onclick="openEditModal(${user.id})" style="padding: 0.4rem 0.8rem; background: #8b6f47; color: white; border: none; border-radius: 4px; font-size: 0.85rem; cursor: pointer; margin-right: 0.5rem;">✏️ Editar</button>
-            <button onclick="openDeleteModal(${user.id}, '${user.email}')" style="padding: 0.4rem 0.8rem; background: #c00; color: white; border: none; border-radius: 4px; font-size: 0.85rem; cursor: pointer;">🗑️ Eliminar</button>
+            <button class="editBtn" data-user-id="${user.id}" style="padding: 0.4rem 0.8rem; background: #8b6f47; color: white; border: none; border-radius: 4px; font-size: 0.85rem; cursor: pointer; margin-right: 0.5rem;">✏️ Editar</button>
+            <button class="deleteBtn" data-user-id="${user.id}" data-user-email="${user.email}" style="padding: 0.4rem 0.8rem; background: #c00; color: white; border: none; border-radius: 4px; font-size: 0.85rem; cursor: pointer;">🗑️ Eliminar</button>
           </td>
         `;
 
@@ -560,6 +560,31 @@ import AppLayout from "../../layouts/AppLayout.astro";
         e.target.style.display = "none";
       }
     });
+
+    // Event listeners para botones de editar y eliminar
+    function attachButtonListeners() {
+      document.querySelectorAll(".editBtn").forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+          const userId = parseInt(e.target.dataset.userId);
+          openEditModal(userId);
+        });
+      });
+
+      document.querySelectorAll(".deleteBtn").forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+          const userId = parseInt(e.target.dataset.userId);
+          const email = e.target.dataset.userEmail;
+          openDeleteModal(userId, email);
+        });
+      });
+    }
+
+    // Llamar después de mostrar la tabla
+    const originalDisplayUsers = displayUsers;
+    displayUsers = function (users) {
+      originalDisplayUsers(users);
+      attachButtonListeners();
+    };
 
     // Event listeners
     document

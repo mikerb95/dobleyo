@@ -1,6 +1,7 @@
 # Cambios: Sumar Unidades al Inventario en Empaquetado
 
 ## Descripción
+
 Se agregó la funcionalidad para que durante el proceso de empaquetado (/app/packaging) los usuarios puedan seleccionar si desean sumar las unidades empacadas al inventario disponible automáticamente.
 
 ## Cambios Realizados
@@ -8,17 +9,20 @@ Se agregó la funcionalidad para que durante el proceso de empaquetado (/app/pac
 ### 1. Frontend - `src/pages/app/packaging.astro`
 
 #### 1.1 Interfaz de Usuario
+
 - Agregado **checkbox** después de "Cantidad de Unidades a Empacar"
 - El checkbox permite marcar la opción "📦 Sumar unidades al inventario disponible"
 - Incluye texto descriptivo que explica la función
 
 #### 1.2 Estilos CSS
+
 - Agregada clase `.checkbox-item` con estilos personalizados
 - Cambio de color de fondo a `#fff8f3` (beige) cuando está marcado
 - Borde se vuelve del color `var(--accent)` (café)
 - Hover effect para mejor UX
 
 #### 1.3 Lógica JavaScript
+
 - Modificado el evento `submit` para enviar el flag `addToInventory`
 - El valor se toma de `document.getElementById("addToInventory").checked`
 - Actualizado el mensaje de confirmación para mostrar si se agregó al inventario
@@ -27,18 +31,22 @@ Se agregó la funcionalidad para que durante el proceso de empaquetado (/app/pac
 ### 2. Backend - `server/routes/coffee.js`
 
 #### 2.1 Ruta POST `/api/coffee/packaging`
+
 - Agregado parámetro `addToInventory` al destructuring de `req.body`
 - Implementada lógica condicional cuando `addToInventory === true`:
 
 #### 2.2 Creación de Producto
+
 Cuando se marca la opción, se ejecutan las siguientes operaciones:
 
 1. **Generación de SKU único**
+
    - Formato: `CAFE-{lot_id}-{packageSize}-{timestamp}`
    - Ejemplo: `CAFE-COL-HUI-1800-250-456789`
    - Máximo 50 caracteres
 
 2. **Inserción en tabla `products`**
+
    - `id`: SKU generado
    - `name`: Nombre descriptivo del café empacado
    - `category`: 'cafe'
@@ -59,6 +67,7 @@ Cuando se marca la opción, se ejecutan las siguientes operaciones:
    - `reference`: ID del lote de café
 
 #### 2.3 Respuesta JSON
+
 ```json
 {
   "success": true,
