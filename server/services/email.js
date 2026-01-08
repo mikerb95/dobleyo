@@ -10,7 +10,7 @@ export const sendVerificationEmail = async (email, token) => {
     console.log('Mock Email sent to:', email, 'Token:', token);
     return { success: true, mock: true };
   }
-  const verifyUrl = `${process.env.SITE_BASE_URL || 'https://dobleyo.cafe'}/verify-email.html?token=${token}`;
+  const verifyUrl = `${process.env.SITE_BASE_URL || 'https://dobleyo.cafe'}/verify-email?token=${token}`;
 
   try {
     const data = await resend.emails.send({

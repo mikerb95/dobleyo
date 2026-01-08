@@ -1,0 +1,105 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout>
+  <section class="card" style="max-width:540px; margin:4rem auto">
+    <div class="p">
+      <div id="loadingState" style="text-align:center">
+        <div style="display:inline-block; width:40px; height:40px; border:4px solid #f3f4f6; border-top:4px solid #c67b4e; border-radius:50%; animation:spin 1s linear infinite"></div>
+        <p style="margin-top:1rem; color:#6b7280">Verificando tu cuenta...</p>
+      </div>
+
+      <div id="successState" style="display:none; text-align:center">
+        <div style="width:64px; height:64px; margin:0 auto; background:#10b981; border-radius:50%; display:flex; align-items:center; justify-content:center">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+        </div>
+        <h1 style="margin-top:1.5rem; color:#251a14">¡Cuenta verificada!</h1>
+        <p style="margin-top:0.5rem; color:#6b7280">
+          Tu cuenta ha sido verificada exitosamente. Ya puedes iniciar sesión.
+        </p>
+        <a href="/login" class="btn" style="display:inline-block; margin-top:1.5rem">
+          Iniciar sesión
+        </a>
+      </div>
+
+      <div id="errorState" style="display:none; text-align:center">
+        <div style="width:64px; height:64px; margin:0 auto; background:#ef4444; border-radius:50%; display:flex; align-items:center; justify-content:center">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="15" y1="9" x2="9" y2="15"></line>
+            <line x1="9" y1="9" x2="15" y2="15"></line>
+          </svg>
+        </div>
+        <h1 style="margin-top:1.5rem; color:#251a14">Error de verificación</h1>
+        <p id="errorMessage" style="margin-top:0.5rem; color:#6b7280">
+          El enlace de verificación es inválido o ha expirado.
+        </p>
+        <div style="display:flex; gap:1rem; justify-content:center; margin-top:1.5rem; flex-wrap:wrap">
+          <a href="/registro" class="btn" style="background:#6b7280">
+            Registrarse nuevamente
+          </a>
+          <a href="/" class="btn" style="background:#c67b4e">
+            Volver al inicio
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <style>
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+
+  <script>
+    // Extraer token de la URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+
+    const loadingState = document.getElementById('loadingState');
+    const successState = document.getElementById('successState');
+    const errorState = document.getElementById('errorState');
+    const errorMessage = document.getElementById('errorMessage');
+
+    async function verifyEmail() {
+      if (!token) {
+        showError('No se proporcionó un token de verificación.');
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/auth/verify?token=${encodeURIComponent(token)}`);
+        const data = await response.json();
+
+        if (response.ok) {
+          showSuccess();
+        } else {
+          showError(data.error || 'Error al verificar la cuenta.');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        showError('Error de conexión. Por favor intenta nuevamente.');
+      }
+    }
+
+    function showSuccess() {
+      if (loadingState) loadingState.style.display = 'none';
+      if (errorState) errorState.style.display = 'none';
+      if (successState) successState.style.display = 'block';
+    }
+
+    function showError(message: string) {
+      if (loadingState) loadingState.style.display = 'none';
+      if (successState) successState.style.display = 'none';
+      if (errorState) errorState.style.display = 'block';
+      if (errorMessage) errorMessage.textContent = message;
+    }
+
+    // Verificar inmediatamente al cargar la página
+    verifyEmail();
+  </script>
+</Layout>
