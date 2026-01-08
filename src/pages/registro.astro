@@ -16,10 +16,18 @@ import Layout from "../layouts/Layout.astro";
         style="display:grid; gap:.75rem; margin-top:.75rem"
       >
         <label
-          >Nombre completo<input
-            id="regName"
+          >Nombre<input
+            id="regFirstName"
             type="text"
             placeholder="Tu nombre"
+            required
+          /></label
+        >
+        <label
+          >Apellido<input
+            id="regLastName"
+            type="text"
+            placeholder="Tu apellido"
             required
           /></label
         >
@@ -70,7 +78,8 @@ import Layout from "../layouts/Layout.astro";
       const btn = document.getElementById("regBtn");
 
       f.addEventListener("submit", async function () {
-        const name = (document.getElementById("regName").value || "").trim();
+        const firstName = (document.getElementById("regFirstName").value || "").trim();
+        const lastName = (document.getElementById("regLastName").value || "").trim();
         const email = (document.getElementById("regEmail").value || "").trim();
         const password = (
           document.getElementById("regPass").value || ""
@@ -80,7 +89,7 @@ import Layout from "../layouts/Layout.astro";
         ).trim();
 
         // Validaciones básicas
-        if (!name || !email || !password || !passConfirm) {
+        if (!firstName || !lastName || !email || !password || !passConfirm) {
           showError("Completa todos los campos.");
           return;
         }
@@ -105,7 +114,7 @@ import Layout from "../layouts/Layout.astro";
             method: "POST",
             headers: { "Content-Type": "application/json" },
             credentials: "include",
-            body: JSON.stringify({ name, email, password }),
+            body: JSON.stringify({ first_name: firstName, last_name: lastName, email, password }),
           });
 
           const data = await res.json();

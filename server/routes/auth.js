@@ -13,12 +13,13 @@ authRouter.post('/register',
   registerLimiter,
   body('email').isEmail(),
   body('password').isLength({ min: 6 }),
-  body('name').notEmpty(),
+  body('first_name').notEmpty(),
+  body('last_name').notEmpty(),
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
-    const { email, password, name } = req.body;
+    const { email, password, first_name, last_name } = req.body;
 
     try {
       // Verificar si existe
@@ -31,8 +32,8 @@ authRouter.post('/register',
       
       // Crear usuario (rol default: client)
       const result = await db.query(
-        'INSERT INTO users (email, password_hash, name, role, is_verified) VALUES (?, ?, ?, ?, ?)',
-        [email, hash, name, 'client', false]
+        'INSERT INTO users (email, password_hash, first_name, last_name, role, is_verified) VALUES (?, ?, ?, ?, ?, ?)',
+        [email, hash, first_name, last_name, 'client', false]
       );
       
       // En MySQL, el ID insertado viene en result.rows.insertId (dependiendo del driver, pero con mysql2/promise y execute devuelve [rows, fields])
@@ -40,7 +41,7 @@ authRouter.post('/register',
       // Mi wrapper en db.js devuelve { rows, fields }. Para inserts, rows es el ResultSetHeader.
       const insertId = result.rows.insertId;
       
-      const newUser = { id: insertId, email, name, role: 'client' };
+      const newUser = { id: insertId, email, first_name, last_name, role: 'client' };
 
       // Generar token de verificacion (temporal, guardado en DB o JWT firmado)
       // Para simplificar, usaremos un JWT de corta duracion con payload especifico
@@ -139,7 +140,7 @@ authRouter.post('/login',
       res.json({ 
         message: 'Login exitoso', 
         token: accessToken,
-        user: { id: user.id, name: user.name, role: user.role } 
+        user: { id: user.id, first_name: user.first_name, last_name: user.last_name, role: user.role } 
       });
 
     } catch (err) {
@@ -193,7 +194,7 @@ authRouter.post('/refresh', refreshLimiter, async (req, res) => {
     res.json({ 
       message: 'Token refrescado',
       token: newAccessToken,
-      user: { id: user.id, name: user.name, role: user.role }
+      user: { id: user.id, first_name: user.first_name, last_name: user.last_name, role: user.role }
     });
 
   } catch (err) {
