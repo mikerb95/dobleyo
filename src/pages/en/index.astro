@@ -84,9 +84,7 @@ import Layout from "../../layouts/Layout.astro";
     <section id="specifications" class="specs-section">
       <div class="container">
         <h2 class="section-title">Green Coffee Specifications</h2>
-        <p class="section-subtitle">
-          Current offerings from our partner farms
-        </p>
+        <p class="section-subtitle">Current offerings from our partner farms</p>
 
         <div class="specs-grid">
           <!-- Lot 1 -->
@@ -127,7 +125,9 @@ import Layout from "../../layouts/Layout.astro";
 
             <div class="spec-notes">
               <h4>Cupping Notes</h4>
-              <p>Red apple, caramel, milk chocolate. Bright acidity, medium body.</p>
+              <p>
+                Red apple, caramel, milk chocolate. Bright acidity, medium body.
+              </p>
             </div>
 
             <a href="#contact" class="btn btn-secondary">Request Sample</a>
@@ -171,7 +171,9 @@ import Layout from "../../layouts/Layout.astro";
 
             <div class="spec-notes">
               <h4>Cupping Notes</h4>
-              <p>Tropical fruit, jasmine, honey. Complex acidity, silky body.</p>
+              <p>
+                Tropical fruit, jasmine, honey. Complex acidity, silky body.
+              </p>
             </div>
 
             <a href="#contact" class="btn btn-secondary">Request Sample</a>
@@ -237,27 +239,41 @@ import Layout from "../../layouts/Layout.astro";
           <div class="process-step">
             <div class="step-number">01</div>
             <h3>Initial Consultation</h3>
-            <p>Tell us about your roasting profile, volume needs, and target price point.</p>
+            <p>
+              Tell us about your roasting profile, volume needs, and target
+              price point.
+            </p>
           </div>
           <div class="process-step">
             <div class="step-number">02</div>
             <h3>Sample Selection</h3>
-            <p>We send pre-shipment samples from our curated lot selection for your evaluation.</p>
+            <p>
+              We send pre-shipment samples from our curated lot selection for
+              your evaluation.
+            </p>
           </div>
           <div class="process-step">
             <div class="step-number">03</div>
             <h3>Contract & Booking</h3>
-            <p>Finalize pricing, shipping terms (FOB/CIF), and delivery schedule.</p>
+            <p>
+              Finalize pricing, shipping terms (FOB/CIF), and delivery schedule.
+            </p>
           </div>
           <div class="process-step">
             <div class="step-number">04</div>
             <h3>Quality Control</h3>
-            <p>Third-party pre-shipment inspection, moisture analysis, and final cupping.</p>
+            <p>
+              Third-party pre-shipment inspection, moisture analysis, and final
+              cupping.
+            </p>
           </div>
           <div class="process-step">
             <div class="step-number">05</div>
             <h3>Export & Delivery</h3>
-            <p>Full documentation, phytosanitary certificates, and real-time shipment tracking.</p>
+            <p>
+              Full documentation, phytosanitary certificates, and real-time
+              shipment tracking.
+            </p>
           </div>
         </div>
       </div>
@@ -458,7 +474,11 @@ import Layout from "../../layouts/Layout.astro";
 
   /* Reset & Base */
   .en-page {
-    font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family:
+      "Inter",
+      -apple-system,
+      BlinkMacSystemFont,
+      sans-serif;
     color: var(--text);
     line-height: 1.6;
   }
@@ -1059,44 +1079,48 @@ import Layout from "../../layouts/Layout.astro";
 
 <script>
   // Form submission handler
-  document.getElementById("exportForm")?.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const form = e.target as HTMLFormElement;
-    const btn = form.querySelector("button[type='submit']") as HTMLButtonElement;
-    
-    btn.disabled = true;
-    btn.textContent = "Sending...";
+  document
+    .getElementById("exportForm")
+    ?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const form = e.target as HTMLFormElement;
+      const btn = form.querySelector(
+        "button[type='submit']"
+      ) as HTMLButtonElement;
 
-    const formData = new FormData(form);
-    const data = Object.fromEntries(formData.entries());
+      btn.disabled = true;
+      btn.textContent = "Sending...";
 
-    try {
-      const response = await fetch("/api/contact/export", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
+      const formData = new FormData(form);
+      const data = Object.fromEntries(formData.entries());
 
-      if (response.ok) {
-        btn.textContent = "Inquiry Sent ✓";
-        btn.style.background = "#2d6a4f";
-        form.reset();
+      try {
+        const response = await fetch("/api/contact/export", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
+
+        if (response.ok) {
+          btn.textContent = "Inquiry Sent ✓";
+          btn.style.background = "#2d6a4f";
+          form.reset();
+          setTimeout(() => {
+            btn.disabled = false;
+            btn.textContent = "Submit Inquiry";
+            btn.style.background = "";
+          }, 3000);
+        } else {
+          throw new Error("Failed to send");
+        }
+      } catch (error) {
+        btn.textContent = "Error - Try Again";
+        btn.style.background = "#dc2626";
         setTimeout(() => {
           btn.disabled = false;
           btn.textContent = "Submit Inquiry";
           btn.style.background = "";
         }, 3000);
-      } else {
-        throw new Error("Failed to send");
       }
-    } catch (error) {
-      btn.textContent = "Error - Try Again";
-      btn.style.background = "#dc2626";
-      setTimeout(() => {
-        btn.disabled = false;
-        btn.textContent = "Submit Inquiry";
-        btn.style.background = "";
-      }, 3000);
-    }
-  });
+    });
 </script>
