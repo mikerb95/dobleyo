@@ -21,13 +21,178 @@ import AppLayout from "../../layouts/AppLayout.astro";
       iPhone y dispositivos móviles. Accede desde tu teléfono para mejor experiencia.
     </div>
 
-    <!-- Grid de Páginas -->
-    <div
-      style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 3rem;"
-    >
-      <!-- 1. Recoger Lote en Finca -->
-      <a href="/app/harvest" style="text-decoration: none; color: inherit;">
-        <div
+    <!-- Opciones para ADMIN -->
+    <div id="adminOptions" style="display: none;">
+      <h2 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 1rem; color: #8b6f47;">
+        🔧 Gestión Operativa (Admin)
+      </h2>
+      <div
+        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 3rem;"
+      >
+        <!-- 1. Recoger Lote en Finca -->
+        <a href="/app/harvest" style="text-decoration: none; color: inherit;">
+          <div
+            style="background: white; border: 1px solid #e5e7eb; border-radius: 0.75rem; padding: 1.5rem; transition: all 0.3s; cursor: pointer;"
+            onmouseover="this.style.borderColor='#8b6f47'; this.style.boxShadow='0 4px 12px rgba(139,111,71,0.15)'"
+            onmouseout="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none'"
+          >
+            <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">🌱</div>
+            <h3 style="font-weight: 600; margin-bottom: 0.5rem; color: #251a14;">
+              1. Recoger Lote en Finca
+            </h3>
+            <p style="color: #666; font-size: 0.95rem;">
+              Registrar nuevo lote recién cosechado desde la finca
+            </p>
+          </div>
+        </a>
+
+        <!-- 2. Almacenar en Inventario -->
+        <a href="/app/inventory-storage" style="text-decoration: none; color: inherit;">
+          <div
+            style="background: white; border: 1px solid #e5e7eb; border-radius: 0.75rem; padding: 1.5rem; transition: all 0.3s; cursor: pointer;"
+            onmouseover="this.style.borderColor='#8b6f47'; this.style.boxShadow='0 4px 12px rgba(139,111,71,0.15)'"
+            onmouseout="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none'"
+          >
+            <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">📦</div>
+            <h3 style="font-weight: 600; margin-bottom: 0.5rem; color: #251a14;">
+              2. Almacenar en Inventario
+            </h3>
+            <p style="color: #666; font-size: 0.95rem;">
+              Registrar entrada de café verde al almacén
+            </p>
+          </div>
+        </a>
+
+        <!-- 3. Enviar a Tostión -->
+        <a href="/app/send-roasting" style="text-decoration: none; color: inherit;">
+          <div
+            style="background: white; border: 1px solid #e5e7eb; border-radius: 0.75rem; padding: 1.5rem; transition: all 0.3s; cursor: pointer;"
+            onmouseover="this.style.borderColor='#8b6f47'; this.style.boxShadow='0 4px 12px rgba(139,111,71,0.15)'"
+            onmouseout="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none'"
+          >
+            <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">🔥</div>
+            <h3 style="font-weight: 600; margin-bottom: 0.5rem; color: #251a14;">
+              3. Enviar a Tostión
+            </h3>
+            <p style="color: #666; font-size: 0.95rem;">
+              Preparar y enviar lote al proceso de tueste
+            </p>
+          </div>
+        </a>
+
+        <!-- 4. Recoger del Tueste -->
+        <a href="/app/roast-retrieval" style="text-decoration: none; color: inherit;">
+          <div
+            style="background: white; border: 1px solid #e5e7eb; border-radius: 0.75rem; padding: 1.5rem; transition: all 0.3s; cursor: pointer;"
+            onmouseover="this.style.borderColor='#8b6f47'; this.style.boxShadow='0 4px 12px rgba(139,111,71,0.15)'"
+            onmouseout="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none'"
+          >
+            <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">☕</div>
+            <h3 style="font-weight: 600; margin-bottom: 0.5rem; color: #251a14;">
+              4. Recoger del Tueste
+            </h3>
+            <p style="color: #666; font-size: 0.95rem;">
+              Recibir café tostado y verificar calidad
+            </p>
+          </div>
+        </a>
+
+        <!-- 5. Almacenar Tostado -->
+        <a href="/app/roasted-storage" style="text-decoration: none; color: inherit;">
+          <div
+            style="background: white; border: 1px solid #e5e7eb; border-radius: 0.75rem; padding: 1.5rem; transition: all 0.3s; cursor: pointer;"
+            onmouseover="this.style.borderColor='#8b6f47'; this.style.boxShadow='0 4px 12px rgba(139,111,71,0.15)'"
+            onmouseout="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none'"
+          >
+            <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">🏺</div>
+            <h3 style="font-weight: 600; margin-bottom: 0.5rem; color: #251a14;">
+              5. Almacenar Tostado
+            </h3>
+            <p style="color: #666; font-size: 0.95rem;">
+              Guardar café tostado en inventario de producto terminado
+            </p>
+          </div>
+        </a>
+
+        <!-- 6. Preparar para Venta -->
+        <a href="/app/packaging" style="text-decoration: none; color: inherit;">
+          <div
+            style="background: white; border: 1px solid #e5e7eb; border-radius: 0.75rem; padding: 1.5rem; transition: all 0.3s; cursor: pointer;"
+            onmouseover="this.style.borderColor='#8b6f47'; this.style.boxShadow='0 4px 12px rgba(139,111,71,0.15)'"
+            onmouseout="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none'"
+          >
+            <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">📦</div>
+            <h3 style="font-weight: 600; margin-bottom: 0.5rem; color: #251a14;">
+              6. Preparar para Venta
+            </h3>
+            <p style="color: #666; font-size: 0.95rem;">
+              Empacar y etiquetar producto final para venta
+            </p>
+          </div>
+        </a>
+      </div>
+    </div>
+
+    <!-- Opciones para CAFICULTOR y ADMIN -->
+    <div id="caficultorOptions">
+      <h2 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 1rem; color: #8b6f47;">
+        📊 Gestión y Reportes
+      </h2>
+      <div
+        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;"
+      >
+        <!-- Ver Lotes Entregados -->
+        <a href="/app/lotes-entregados" style="text-decoration: none; color: inherit;">
+          <div
+            style="background: white; border: 1px solid #e5e7eb; border-radius: 0.75rem; padding: 1.5rem; transition: all 0.3s; cursor: pointer;"
+            onmouseover="this.style.borderColor='#8b6f47'; this.style.boxShadow='0 4px 12px rgba(139,111,71,0.15)'"
+            onmouseout="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none'"
+          >
+            <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">📋</div>
+            <h3 style="font-weight: 600; margin-bottom: 0.5rem; color: #251a14;">
+              Ver Lotes Entregados
+            </h3>
+            <p style="color: #666; font-size: 0.95rem;">
+              Historial de lotes entregados y su estado
+            </p>
+          </div>
+        </a>
+
+        <!-- Estadísticas -->
+        <a href="/app/estadisticas" style="text-decoration: none; color: inherit;">
+          <div
+            style="background: white; border: 1px solid #e5e7eb; border-radius: 0.75rem; padding: 1.5rem; transition: all 0.3s; cursor: pointer;"
+            onmouseover="this.style.borderColor='#8b6f47'; this.style.boxShadow='0 4px 12px rgba(139,111,71,0.15)'"
+            onmouseout="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none'"
+          >
+            <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">📈</div>
+            <h3 style="font-weight: 600; margin-bottom: 0.5rem; color: #251a14;">
+              Estadísticas
+            </h3>
+            <p style="color: #666; font-size: 0.95rem;">
+              Métricas de producción y calidad
+            </p>
+          </div>
+        </a>
+
+        <!-- Finanzas -->
+        <a href="/app/finanzas" style="text-decoration: none; color: inherit;">
+          <div
+            style="background: white; border: 1px solid #e5e7eb; border-radius: 0.75rem; padding: 1.5rem; transition: all 0.3s; cursor: pointer;"
+            onmouseover="this.style.borderColor='#8b6f47'; this.style.boxShadow='0 4px 12px rgba(139,111,71,0.15)'"
+            onmouseout="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none'"
+          >
+            <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">💰</div>
+            <h3 style="font-weight: 600; margin-bottom: 0.5rem; color: #251a14;">
+              Finanzas
+            </h3>
+            <p style="color: #666; font-size: 0.95rem;">
+              Pagos, ingresos y balance general
+            </p>
+          </div>
+        </a>
+      </div>
+    </div>
           style="background: white; border: 1px solid #e6e6e6; border-radius: 0.5rem; padding: 1.5rem; transition: all 0.3s ease; cursor: pointer; height: 100%;"
           onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'; this.style.borderColor='#c67b4e'"
           onmouseout="this.style.boxShadow='none'; this.style.borderColor='#e6e6e6'"
@@ -378,3 +543,31 @@ import AppLayout from "../../layouts/AppLayout.astro";
     text-decoration: none;
   }
 </style>
+
+<script>
+  // Mostrar opciones según rol del usuario
+  (function() {
+    // Esperar a que el rol esté disponible (seteado por AppLayout)
+    const checkRole = setInterval(() => {
+      if (window.userRole) {
+        clearInterval(checkRole);
+        
+        const adminOptions = document.getElementById('adminOptions');
+        const caficultorOptions = document.getElementById('caficultorOptions');
+        
+        if (window.userRole === 'admin') {
+          // Admin ve todo
+          if (adminOptions) adminOptions.style.display = 'block';
+          if (caficultorOptions) caficultorOptions.style.display = 'block';
+        } else if (window.userRole === 'caficultor') {
+          // Caficultor solo ve sus opciones
+          if (adminOptions) adminOptions.style.display = 'none';
+          if (caficultorOptions) caficultorOptions.style.display = 'block';
+        }
+      }
+    }, 50);
+    
+    // Timeout después de 5 segundos
+    setTimeout(() => clearInterval(checkRole), 5000);
+  })();
+</script>

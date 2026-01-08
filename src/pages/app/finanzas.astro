@@ -1,0 +1,133 @@
+---
+import AppLayout from "../../layouts/AppLayout.astro";
+---
+
+<AppLayout>
+  <section style="max-width: 1200px; margin: 0 auto; padding: 2rem 1.25rem;">
+    <div style="margin-bottom: 2rem;">
+      <a href="/app" style="color: #8b6f47; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+        ← Volver al Inicio
+      </a>
+      <h1 style="font-size: 2rem; font-weight: bold; margin-bottom: 0.5rem; color: #251a14;">
+        💰 Finanzas y Pagos
+      </h1>
+      <p style="color: #666; font-size: 1.05rem;">
+        Seguimiento de ingresos y pagos de tus entregas
+      </p>
+    </div>
+
+    <!-- Balance General -->
+    <div style="background: linear-gradient(135deg, #2d6a4f 0%, #1e5a3f 100%); color: white; padding: 2rem; border-radius: 0.75rem; margin-bottom: 2rem;">
+      <div style="font-size: 0.875rem; opacity: 0.9; margin-bottom: 0.5rem;">Balance Total</div>
+      <div style="font-size: 3rem; font-weight: bold; margin-bottom: 0.5rem;">$6.875.000</div>
+      <div style="font-size: 0.875rem; opacity: 0.8;">Total acumulado este año</div>
+    </div>
+
+    <!-- Resumen Financiero -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 3rem;">
+      <div style="background: white; border: 1px solid #e5e7eb; padding: 1.5rem; border-radius: 0.75rem;">
+        <div style="font-size: 0.875rem; color: #666; margin-bottom: 0.5rem;">Ingresos Este Mes</div>
+        <div style="font-size: 2rem; font-weight: bold; color: #2d6a4f;">$2.150.000</div>
+      </div>
+
+      <div style="background: white; border: 1px solid #e5e7eb; padding: 1.5rem; border-radius: 0.75rem;">
+        <div style="font-size: 0.875rem; color: #666; margin-bottom: 0.5rem;">Pagos Pendientes</div>
+        <div style="font-size: 2rem; font-weight: bold; color: #d4a017;">$425.000</div>
+      </div>
+
+      <div style="background: white; border: 1px solid #e5e7eb; padding: 1.5rem; border-radius: 0.75rem;">
+        <div style="font-size: 0.875rem; color: #666; margin-bottom: 0.5rem;">Kg Vendidos</div>
+        <div style="font-size: 2rem; font-weight: bold; color: #8b6f47;">550</div>
+      </div>
+
+      <div style="background: white; border: 1px solid #e5e7eb; padding: 1.5rem; border-radius: 0.75rem;">
+        <div style="font-size: 0.875rem; color: #666; margin-bottom: 0.5rem;">Precio Promedio</div>
+        <div style="font-size: 2rem; font-weight: bold; color: #251a14;">$12.500</div>
+      </div>
+    </div>
+
+    <!-- Historial de Pagos -->
+    <div style="background: white; border: 1px solid #e5e7eb; border-radius: 0.75rem; padding: 1.5rem; margin-bottom: 2rem;">
+      <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 1.5rem; color: #251a14;">
+        📋 Historial de Pagos
+      </h3>
+      <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse;">
+          <thead>
+            <tr style="border-bottom: 1px solid #e5e7eb;">
+              <th style="padding: 0.75rem; text-align: left; font-weight: 600; color: #374151;">Fecha</th>
+              <th style="padding: 0.75rem; text-align: left; font-weight: 600; color: #374151;">Lote</th>
+              <th style="padding: 0.75rem; text-align: left; font-weight: 600; color: #374151;">Cantidad</th>
+              <th style="padding: 0.75rem; text-align: left; font-weight: 600; color: #374151;">Precio/kg</th>
+              <th style="padding: 0.75rem; text-align: left; font-weight: 600; color: #374151;">Total</th>
+              <th style="padding: 0.75rem; text-align: left; font-weight: 600; color: #374151;">Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom: 1px solid #f3f4f6;">
+              <td style="padding: 0.75rem;">05 Ene 2026</td>
+              <td style="padding: 0.75rem; font-weight: 500;">DBY-2026-001</td>
+              <td style="padding: 0.75rem;">250 kg</td>
+              <td style="padding: 0.75rem;">$12.000</td>
+              <td style="padding: 0.75rem; font-weight: 600; color: #2d6a4f;">$3.000.000</td>
+              <td style="padding: 0.75rem;">
+                <span style="padding: 0.25rem 0.75rem; background: #fef3c7; color: #92400e; border-radius: 9999px; font-size: 0.875rem; font-weight: 500;">
+                  Pendiente
+                </span>
+              </td>
+            </tr>
+            <tr style="border-bottom: 1px solid #f3f4f6;">
+              <td style="padding: 0.75rem;">28 Dic 2025</td>
+              <td style="padding: 0.75rem; font-weight: 500;">DBY-2025-089</td>
+              <td style="padding: 0.75rem;">180 kg</td>
+              <td style="padding: 0.75rem;">$11.500</td>
+              <td style="padding: 0.75rem; font-weight: 600; color: #2d6a4f;">$2.070.000</td>
+              <td style="padding: 0.75rem;">
+                <span style="padding: 0.25rem 0.75rem; background: #d1fae5; color: #065f46; border-radius: 9999px; font-size: 0.875rem; font-weight: 500;">
+                  Pagado
+                </span>
+              </td>
+            </tr>
+            <tr style="border-bottom: 1px solid #f3f4f6;">
+              <td style="padding: 0.75rem;">15 Dic 2025</td>
+              <td style="padding: 0.75rem; font-weight: 500;">DBY-2025-076</td>
+              <td style="padding: 0.75rem;">120 kg</td>
+              <td style="padding: 0.75rem;">$15.000</td>
+              <td style="padding: 0.75rem; font-weight: 600; color: #2d6a4f;">$1.800.000</td>
+              <td style="padding: 0.75rem;">
+                <span style="padding: 0.25rem 0.75rem; background: #d1fae5; color: #065f46; border-radius: 9999px; font-size: 0.875rem; font-weight: 500;">
+                  Pagado
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Gráfica de Ingresos -->
+    <div style="background: white; border: 1px solid #e5e7eb; border-radius: 0.75rem; padding: 1.5rem;">
+      <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 1.5rem; color: #251a14;">
+        📈 Evolución de Ingresos
+      </h3>
+      <div style="height: 300px; display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; border-bottom: 2px solid #e5e7eb; padding-bottom: 1rem;">
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.5rem;">
+          <div style="width: 100%; background: linear-gradient(to top, #2d6a4f, #4ade80); border-radius: 0.25rem 0.25rem 0 0; height: 45%;"></div>
+          <span style="font-size: 0.75rem; color: #666;">Oct</span>
+        </div>
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.5rem;">
+          <div style="width: 100%; background: linear-gradient(to top, #2d6a4f, #4ade80); border-radius: 0.25rem 0.25rem 0 0; height: 60%;"></div>
+          <span style="font-size: 0.75rem; color: #666;">Nov</span>
+        </div>
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.5rem;">
+          <div style="width: 100%; background: linear-gradient(to top, #2d6a4f, #4ade80); border-radius: 0.25rem 0.25rem 0 0; height: 70%;"></div>
+          <span style="font-size: 0.75rem; color: #666;">Dic</span>
+        </div>
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.5rem;">
+          <div style="width: 100%; background: linear-gradient(to top, #2d6a4f, #4ade80); border-radius: 0.25rem 0.25rem 0 0; height: 85%;"></div>
+          <span style="font-size: 0.75rem; color: #666;">Ene</span>
+        </div>
+      </div>
+    </div>
+  </section>
+</AppLayout>

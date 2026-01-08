@@ -10,7 +10,7 @@ import Head from "../components/Head.astro";
     <Head title="Admin · DobleYo" isAdmin={true} />
     <meta name="robots" content="noindex, nofollow" />
   </head>
-  <body class="font-sans bg-cream text-ink">
+  <body class="font-sans bg-cream text-ink" style="visibility: hidden;">
     <!-- Barra superior de anuncio -->
     <div class="topbar" id="topbar">
       <div class="container">
@@ -32,6 +32,46 @@ import Head from "../components/Head.astro";
     </main>
     <Footer />
     <script>
+      // Verificar autenticación y rol (caficultor o admin)
+      (async function() {
+        const token = localStorage.getItem('adminToken');
+        
+        if (!token) {
+          window.location.href = '/login';
+          return;
+        }
+
+        try {
+          const response = await fetch('/api/auth/me', {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+
+          if (!response.ok) {
+            localStorage.removeItem('adminToken');
+            window.location.href = '/login';
+            return;
+          }
+
+          const user = await response.json();
+          
+          // Verificar que sea caficultor o admin
+          if (user.role !== 'caficultor' && user.role !== 'admin') {
+            alert('Acceso denegado. Esta app es solo para caficultores y administradores.');
+            window.location.href = '/';
+            return;
+          }
+          
+          // Guardar rol en variable global para uso posterior
+          window.userRole = user.role;
+          
+          // Usuario autenticado correctamente, mostrar contenido
+          document.body.style.visibility = 'visible';
+        } catch (error) {
+          localStorage.removeItem('adminToken');
+          window.location.href = '/login';
+        }
+      })();
+      
       document.getElementById("topbarClose")?.addEventListener("click", () => {
         document.getElementById("topbar")!.style.display = "none";
       });
