@@ -299,6 +299,123 @@ import AppLayout from "../../layouts/AppLayout.astro";
       </div>
     </div>
 
+    <!-- Modal Ver Detalles del Usuario -->
+    <div
+      id="viewModal"
+      style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: flex-start; overflow-y: auto; padding: 2rem 0;"
+    >
+      <div
+        style="background: white; border-radius: 8px; padding: 2rem; max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto; margin: 2rem auto;"
+      >
+        <h2 style="margin-bottom: 1.5rem; color: #251a14;">Detalles del Usuario</h2>
+        
+        <div style="background: #f9fafb; border-radius: 6px; padding: 1.5rem; margin-bottom: 1.5rem;">
+          <!-- ID y Email -->
+          <div style="margin-bottom: 1rem;">
+            <label style="display: block; font-weight: 600; color: #374151; font-size: 0.85rem; margin-bottom: 0.25rem;">ID:</label>
+            <p id="viewUserId" style="margin: 0; color: #666;"></p>
+          </div>
+          
+          <div style="margin-bottom: 1rem;">
+            <label style="display: block; font-weight: 600; color: #374151; font-size: 0.85rem; margin-bottom: 0.25rem;">Email:</label>
+            <p id="viewUserEmail" style="margin: 0; color: #666; word-break: break-all;"></p>
+          </div>
+
+          <!-- Nombre y Apellido -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+            <div>
+              <label style="display: block; font-weight: 600; color: #374151; font-size: 0.85rem; margin-bottom: 0.25rem;">Nombre:</label>
+              <p id="viewUserFirstName" style="margin: 0; color: #666;"></p>
+            </div>
+            <div>
+              <label style="display: block; font-weight: 600; color: #374151; font-size: 0.85rem; margin-bottom: 0.25rem;">Apellido:</label>
+              <p id="viewUserLastName" style="margin: 0; color: #666;"></p>
+            </div>
+          </div>
+
+          <!-- Teléfonos -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+            <div>
+              <label style="display: block; font-weight: 600; color: #374151; font-size: 0.85rem; margin-bottom: 0.25rem;">Teléfono Móvil:</label>
+              <p id="viewUserMobilePhone" style="margin: 0; color: #666;"></p>
+            </div>
+            <div>
+              <label style="display: block; font-weight: 600; color: #374151; font-size: 0.85rem; margin-bottom: 0.25rem;">Teléfono Fijo:</label>
+              <p id="viewUserLandlinePhone" style="margin: 0; color: #666;"></p>
+            </div>
+          </div>
+
+          <!-- Ubicación -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+            <div>
+              <label style="display: block; font-weight: 600; color: #374151; font-size: 0.85rem; margin-bottom: 0.25rem;">Ciudad:</label>
+              <p id="viewUserCity" style="margin: 0; color: #666;"></p>
+            </div>
+            <div>
+              <label style="display: block; font-weight: 600; color: #374151; font-size: 0.85rem; margin-bottom: 0.25rem;">Departamento:</label>
+              <p id="viewUserState" style="margin: 0; color: #666;"></p>
+            </div>
+          </div>
+
+          <div style="margin-bottom: 1rem;">
+            <label style="display: block; font-weight: 600; color: #374151; font-size: 0.85rem; margin-bottom: 0.25rem;">País:</label>
+            <p id="viewUserCountry" style="margin: 0; color: #666;"></p>
+          </div>
+
+          <!-- Dirección -->
+          <div style="margin-bottom: 1rem;">
+            <label style="display: block; font-weight: 600; color: #374151; font-size: 0.85rem; margin-bottom: 0.25rem;">Dirección:</label>
+            <p id="viewUserAddress" style="margin: 0; color: #666;"></p>
+          </div>
+
+          <!-- Cédula/NIT -->
+          <div style="margin-bottom: 1rem;">
+            <label style="display: block; font-weight: 600; color: #374151; font-size: 0.85rem; margin-bottom: 0.25rem;">Cédula/NIT:</label>
+            <p id="viewUserTaxId" style="margin: 0; color: #666;"></p>
+          </div>
+
+          <!-- Rol y Estado -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+            <div>
+              <label style="display: block; font-weight: 600; color: #374151; font-size: 0.85rem; margin-bottom: 0.25rem;">Rol:</label>
+              <p id="viewUserRole" style="margin: 0; color: #666;"></p>
+            </div>
+            <div>
+              <label style="display: block; font-weight: 600; color: #374151; font-size: 0.85rem; margin-bottom: 0.25rem;">Estado:</label>
+              <p id="viewUserVerified" style="margin: 0; color: #666;"></p>
+            </div>
+          </div>
+
+          <!-- Caficultor Status -->
+          <div style="margin-bottom: 1rem;">
+            <label style="display: block; font-weight: 600; color: #374151; font-size: 0.85rem; margin-bottom: 0.25rem;">Estado Caficultor:</label>
+            <p id="viewUserCaficultorStatus" style="margin: 0; color: #666;"></p>
+          </div>
+
+          <!-- Fechas -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div>
+              <label style="display: block; font-weight: 600; color: #374151; font-size: 0.85rem; margin-bottom: 0.25rem;">Registrado:</label>
+              <p id="viewUserCreatedAt" style="margin: 0; color: #666; font-size: 0.85rem;"></p>
+            </div>
+            <div>
+              <label style="display: block; font-weight: 600; color: #374151; font-size: 0.85rem; margin-bottom: 0.25rem;">Último Login:</label>
+              <p id="viewUserLastLogin" style="margin: 0; color: #666; font-size: 0.85rem;"></p>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 1rem;">
+          <button
+            onclick="document.getElementById('viewModal').style.display = 'none'"
+            style="flex: 1; padding: 0.75rem; background: #8b6f47; color: white; border: none; border-radius: 4px; font-weight: 500; cursor: pointer;"
+          >
+            Cerrar
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Estadísticas -->
     <div
       style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 2rem;"
@@ -431,6 +548,7 @@ import AppLayout from "../../layouts/AppLayout.astro";
           <td style="padding: 1rem; font-size: 0.85rem; color: #666;">${user.last_login_at ? new Date(user.last_login_at).toLocaleDateString("es-ES") : "Nunca"}</td>
           <td style="padding: 1rem; font-size: 0.85rem; color: #666;">${new Date(user.created_at).toLocaleDateString("es-ES")}</td>
           <td style="padding: 1rem; white-space: nowrap;">
+            <button class="viewBtn" data-user-id="${user.id}" style="padding: 0.4rem 0.8rem; background: #6366f1; color: white; border: none; border-radius: 4px; font-size: 0.85rem; cursor: pointer; margin-right: 0.5rem;">👁️ Ver todo</button>
             <button class="editBtn" data-user-id="${user.id}" style="padding: 0.4rem 0.8rem; background: #8b6f47; color: white; border: none; border-radius: 4px; font-size: 0.85rem; cursor: pointer; margin-right: 0.5rem;">✏️ Editar</button>
             <button class="deleteBtn" data-user-id="${user.id}" data-user-email="${user.email}" style="padding: 0.4rem 0.8rem; background: #c00; color: white; border: none; border-radius: 4px; font-size: 0.85rem; cursor: pointer;">🗑️ Eliminar</button>
           </td>
@@ -497,6 +615,34 @@ import AppLayout from "../../layouts/AppLayout.astro";
       currentEditUserId = userId;
       document.getElementById("deleteUserEmail").textContent = email;
       document.getElementById("deleteModal").style.display = "flex";
+    }
+
+    function openViewModal(userId) {
+      const user = allUsers.find((u) => u.id === userId);
+      if (!user) return;
+
+      document.getElementById("viewUserId").textContent = user.id;
+      document.getElementById("viewUserEmail").textContent = user.email;
+      document.getElementById("viewUserFirstName").textContent = user.first_name || "—";
+      document.getElementById("viewUserLastName").textContent = user.last_name || "—";
+      document.getElementById("viewUserMobilePhone").textContent = user.mobile_phone || "—";
+      document.getElementById("viewUserLandlinePhone").textContent = user.landline_phone || "—";
+      document.getElementById("viewUserCity").textContent = user.city || "—";
+      document.getElementById("viewUserState").textContent = user.state_province || "—";
+      document.getElementById("viewUserCountry").textContent = user.country || "—";
+      document.getElementById("viewUserAddress").textContent = user.address || "—";
+      document.getElementById("viewUserTaxId").textContent = user.tax_id || "—";
+      document.getElementById("viewUserRole").textContent = user.role || "—";
+      document.getElementById("viewUserVerified").textContent = user.is_verified ? "✓ Verificado" : "Sin verificar";
+      document.getElementById("viewUserCaficultorStatus").textContent = user.caficultor_status || "none";
+      document.getElementById("viewUserCreatedAt").textContent = user.created_at 
+        ? new Date(user.created_at).toLocaleDateString("es-ES", { year: 'numeric', month: 'long', day: 'numeric' })
+        : "—";
+      document.getElementById("viewUserLastLogin").textContent = user.last_login_at
+        ? new Date(user.last_login_at).toLocaleDateString("es-ES", { year: 'numeric', month: 'long', day: 'numeric' })
+        : "Nunca";
+
+      document.getElementById("viewModal").style.display = "flex";
     }
 
     async function confirmDelete() {

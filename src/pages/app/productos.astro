@@ -253,7 +253,9 @@ import AppLayout from "../../layouts/AppLayout.astro";
 
             <!-- Checkbox Es Trazable -->
             <div style="margin-bottom: 1rem;">
-              <label style="display: flex; align-items: center; font-weight: 500;">
+              <label
+                style="display: flex; align-items: center; font-weight: 500;"
+              >
                 <input
                   type="checkbox"
                   id="productTraceable"
@@ -264,7 +266,10 @@ import AppLayout from "../../layouts/AppLayout.astro";
             </div>
 
             <!-- Campos Trazabilidad (condicionales) -->
-            <div id="traceabilityFields" style="display: none; border: 1px solid #e5d5c8; border-radius: 6px; padding: 1rem; background: #faf8f5; margin-bottom: 1rem;">
+            <div
+              id="traceabilityFields"
+              style="display: none; border: 1px solid #e5d5c8; border-radius: 6px; padding: 1rem; background: #faf8f5; margin-bottom: 1rem;"
+            >
               <div style="margin-bottom: 1rem;">
                 <label
                   style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
@@ -747,11 +752,13 @@ import AppLayout from "../../layouts/AppLayout.astro";
         product.meta_description || "";
 
       // Campos de trazabilidad
-      const isTraceable = product.farm || product.variety || product.roast_date || product.aroma;
+      const isTraceable =
+        product.farm || product.variety || product.roast_date || product.aroma;
       document.getElementById("productTraceable").checked = !!isTraceable;
       document.getElementById("productFarm").value = product.farm || "";
       document.getElementById("productVariety").value = product.variety || "";
-      document.getElementById("productRoastDate").value = product.roast_date || "";
+      document.getElementById("productRoastDate").value =
+        product.roast_date || "";
       document.getElementById("productAroma").value = product.aroma || "";
 
       updateCoffeeFieldsVisibility();
@@ -973,8 +980,9 @@ import AppLayout from "../../layouts/AppLayout.astro";
 
     function updateTraceabilityFieldsVisibility() {
       const isTraceable = document.getElementById("productTraceable").checked;
-      document.getElementById("traceabilityFields").style.display =
-        isTraceable ? "block" : "none";
+      document.getElementById("traceabilityFields").style.display = isTraceable
+        ? "block"
+        : "none";
     }
 
     document
