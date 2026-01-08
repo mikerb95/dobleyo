@@ -39,19 +39,23 @@ import Head from "../components/Head.astro";
 
         try {
           console.log("[AppLayout] Haciendo fetch a /api/auth/me...");
-          
+
           // Agregar timeout de 10 segundos
           const controller = new AbortController();
           const timeoutId = setTimeout(() => controller.abort(), 10000);
-          
+
           const response = await fetch("/api/auth/me", {
             method: "GET",
             credentials: "include",
-            signal: controller.signal
+            signal: controller.signal,
           });
-          
+
           clearTimeout(timeoutId);
-          console.log("[AppLayout] Respuesta /api/auth/me:", response.status, response.statusText);
+          console.log(
+            "[AppLayout] Respuesta /api/auth/me:",
+            response.status,
+            response.statusText
+          );
 
           if (!response.ok) {
             const errorText = await response.text();
@@ -109,9 +113,9 @@ import Head from "../components/Head.astro";
           console.error("[AppLayout] Error:", error);
           console.error("[AppLayout] Error name:", error.name);
           console.error("[AppLayout] Error message:", error.message);
-          
+
           // Si es timeout, mostrar mensaje específico
-          if (error.name === 'AbortError') {
+          if (error.name === "AbortError") {
             document.body.innerHTML = `
               <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;font-family:system-ui;">
                 <h1 style="color:#d32f2f;margin-bottom:1rem;">Timeout</h1>
@@ -140,8 +144,6 @@ import Head from "../components/Head.astro";
           document.body.style.visibility = "visible";
         }
       })();
-
-
     </script>
   </body>
 </html>
