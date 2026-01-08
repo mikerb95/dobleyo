@@ -128,9 +128,7 @@ import Layout from "../layouts/Layout.astro";
             }
           } else {
             // Sin redirect: ir según rol
-            if (role === "admin") {
-              window.location.href = "/admin.html";
-            } else if (role === "caficultor") {
+            if (role === "admin" || role === "caficultor") {
               window.location.href = "/app";
             } else {
               window.location.href = "/cuenta";
