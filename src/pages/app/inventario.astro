@@ -4,43 +4,92 @@ import AppLayout from "../../layouts/AppLayout.astro";
 
 <AppLayout>
   <div style="max-width: 1400px; margin: 0 auto; padding: 2rem 1.5rem;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <div
+      style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;"
+    >
       <h1 style="font-size: 2rem; font-weight: 700; color: #251a14; margin: 0;">
         📦 Gestión de Inventario
       </h1>
     </div>
 
     <!-- Estadísticas -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
-      <div style="background: white; border-radius: 8px; padding: 1.5rem; box-shadow: 0 2px 4px rgba(0,0,0,0.08);">
-        <div style="font-size: 2.5rem; font-weight: 700; color: #251a14;" id="totalProducts">0</div>
-        <div style="color: #666; margin-top: 0.5rem; font-size: 0.9rem;">Total Productos</div>
+    <div
+      style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;"
+    >
+      <div
+        style="background: white; border-radius: 8px; padding: 1.5rem; box-shadow: 0 2px 4px rgba(0,0,0,0.08);"
+      >
+        <div
+          style="font-size: 2.5rem; font-weight: 700; color: #251a14;"
+          id="totalProducts"
+        >
+          0
+        </div>
+        <div style="color: #666; margin-top: 0.5rem; font-size: 0.9rem;">
+          Total Productos
+        </div>
       </div>
-      <div style="background: white; border-radius: 8px; padding: 1.5rem; box-shadow: 0 2px 4px rgba(0,0,0,0.08);">
-        <div style="font-size: 2.5rem; font-weight: 700; color: #251a14;" id="totalValue">$0</div>
-        <div style="color: #666; margin-top: 0.5rem; font-size: 0.9rem;">Valor Total</div>
+      <div
+        style="background: white; border-radius: 8px; padding: 1.5rem; box-shadow: 0 2px 4px rgba(0,0,0,0.08);"
+      >
+        <div
+          style="font-size: 2.5rem; font-weight: 700; color: #251a14;"
+          id="totalValue"
+        >
+          $0
+        </div>
+        <div style="color: #666; margin-top: 0.5rem; font-size: 0.9rem;">
+          Valor Total
+        </div>
       </div>
-      <div style="background: white; border-radius: 8px; padding: 1.5rem; box-shadow: 0 2px 4px rgba(0,0,0,0.08);">
-        <div style="font-size: 2.5rem; font-weight: 700; color: #c00;" id="lowStock">0</div>
-        <div style="color: #666; margin-top: 0.5rem; font-size: 0.9rem;">Stock Bajo</div>
+      <div
+        style="background: white; border-radius: 8px; padding: 1.5rem; box-shadow: 0 2px 4px rgba(0,0,0,0.08);"
+      >
+        <div
+          style="font-size: 2.5rem; font-weight: 700; color: #c00;"
+          id="lowStock"
+        >
+          0
+        </div>
+        <div style="color: #666; margin-top: 0.5rem; font-size: 0.9rem;">
+          Stock Bajo
+        </div>
       </div>
     </div>
 
     <!-- Tabla -->
-    <div style="background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.08); overflow: hidden;">
+    <div
+      style="background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.08); overflow: hidden;"
+    >
       <div style="overflow-x: auto;">
         <table style="width: 100%; border-collapse: collapse;">
           <thead>
             <tr style="background: #f9fafb; border-bottom: 1px solid #e5e7eb;">
-              <th style="padding: 1rem; text-align: left; font-weight: 600; color: #251a14;">Producto</th>
-              <th style="padding: 1rem; text-align: left; font-weight: 600; color: #251a14;">Categoría</th>
-              <th style="padding: 1rem; text-align: right; font-weight: 600; color: #251a14;">Precio</th>
-              <th style="padding: 1rem; text-align: right; font-weight: 600; color: #251a14;">Stock</th>
+              <th
+                style="padding: 1rem; text-align: left; font-weight: 600; color: #251a14;"
+                >Producto</th
+              >
+              <th
+                style="padding: 1rem; text-align: left; font-weight: 600; color: #251a14;"
+                >Categoría</th
+              >
+              <th
+                style="padding: 1rem; text-align: right; font-weight: 600; color: #251a14;"
+                >Precio</th
+              >
+              <th
+                style="padding: 1rem; text-align: right; font-weight: 600; color: #251a14;"
+                >Stock</th
+              >
             </tr>
           </thead>
           <tbody id="inventoryTable" style="min-height: 200px;">
             <tr>
-              <td colspan="4" style="padding: 2rem; text-align: center; color: #666;">Cargando inventario...</td>
+              <td
+                colspan="4"
+                style="padding: 2rem; text-align: center; color: #666;"
+                >Cargando inventario...</td
+              >
             </tr>
           </tbody>
         </table>
@@ -50,22 +99,28 @@ import AppLayout from "../../layouts/AppLayout.astro";
 
   <script>
     // Solo admins pueden ver esta página
-    (async function() {
+    (async function () {
       try {
         const response = await fetch("/api/auth/me", {
-          headers: { Authorization: `Bearer ${localStorage.getItem("adminToken")}` },
-          credentials: "include"
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+          },
+          credentials: "include",
         });
 
         if (!response.ok || response.status === 401) {
-          alert("Acceso denegado. Solo administradores pueden ver esta página.");
+          alert(
+            "Acceso denegado. Solo administradores pueden ver esta página."
+          );
           window.location.href = "/app";
           return;
         }
 
         const user = await response.json();
         if (user.role !== "admin") {
-          alert("Acceso denegado. Solo administradores pueden ver esta página.");
+          alert(
+            "Acceso denegado. Solo administradores pueden ver esta página."
+          );
           window.location.href = "/app";
           return;
         }
@@ -81,7 +136,7 @@ import AppLayout from "../../layouts/AppLayout.astro";
     async function loadInventory() {
       try {
         const response = await fetch("/api/inventory/products", {
-          credentials: "include"
+          credentials: "include",
         });
 
         if (!response.ok) {
@@ -119,18 +174,20 @@ import AppLayout from "../../layouts/AppLayout.astro";
       let totalValue = 0;
       let lowStockCount = 0;
 
-      tbody.innerHTML = products.map(product => {
-        const stockClass = product.stock_quantity <= (product.stock_min || 10) 
-          ? "background: #fff5f5; color: #c00;" 
-          : "";
-        
-        if (product.stock_quantity <= (product.stock_min || 10)) {
-          lowStockCount++;
-        }
-        
-        totalValue += (product.price || 0) * (product.stock_quantity || 0);
+      tbody.innerHTML = products
+        .map((product) => {
+          const stockClass =
+            product.stock_quantity <= (product.stock_min || 10)
+              ? "background: #fff5f5; color: #c00;"
+              : "";
 
-        return `
+          if (product.stock_quantity <= (product.stock_min || 10)) {
+            lowStockCount++;
+          }
+
+          totalValue += (product.price || 0) * (product.stock_quantity || 0);
+
+          return `
           <tr style="border-bottom: 1px solid #e5e7eb; ${stockClass}">
             <td style="padding: 1rem; font-weight: 500;">${product.name || "—"}</td>
             <td style="padding: 1rem; font-size: 0.9rem;">${product.category || "—"}</td>
@@ -138,11 +195,13 @@ import AppLayout from "../../layouts/AppLayout.astro";
             <td style="padding: 1rem; text-align: right; font-weight: 600;">${product.stock_quantity || 0}</td>
           </tr>
         `;
-      }).join("");
+        })
+        .join("");
 
       // Actualizar estadísticas
       document.getElementById("totalProducts").textContent = products.length;
-      document.getElementById("totalValue").textContent = "$" + new Intl.NumberFormat("es-CO").format(totalValue);
+      document.getElementById("totalValue").textContent =
+        "$" + new Intl.NumberFormat("es-CO").format(totalValue);
       document.getElementById("lowStock").textContent = lowStockCount;
     }
   </script>
