@@ -607,6 +607,170 @@ import AppLayout from "../../layouts/AppLayout.astro";
     let allProducts = [];
     let currentEditProductId = null;
 
+    // Exponer funciones al objeto window para que sean accesibles desde onclick
+    window.openCreateModal = function() {
+      currentEditProductId = null;
+      document.getElementById("modalTitle").textContent = "Nuevo Producto";
+      document.getElementById("idFieldContainer").style.display = "block";
+      document.getElementById("productId").disabled = false;
+      document.getElementById("productForm").reset();
+      document.getElementById("productActive").checked = true;
+      document.getElementById("productModal").style.display = "flex";
+    };
+
+    window.openEditModal = function(productId) {
+      const product = allProducts.find((p) => p.id === productId);
+      if (!product) return;
+
+      currentEditProductId = productId;
+      document.getElementById("modalTitle").textContent =
+        "Editar Producto: " + product.name;
+      document.getElementById("idFieldContainer").style.display = "none";
+      document.getElementById("productId").value = product.id;
+      document.getElementById("productId").disabled = true;
+
+      document.getElementById("productName").value = product.name || "";
+      document.getElementById("productSku").value = product.sku || "";
+      document.getElementById("productDescription").value =
+        product.description || "";
+      document.getElementById("productCategory").value = product.category;
+      document.getElementById("productSubcategory").value =
+        product.subcategory || "";
+      document.getElementById("productOrigin").value = product.origin || "";
+      document.getElementById("productProcess").value = product.process || "";
+      document.getElementById("productRoast").value = product.roast || "";
+      document.getElementById("productPrice").value = product.price || "";
+      document.getElementById("productCost").value = product.cost || "";
+      document.getElementById("productStock").value =
+        product.stock_quantity || "";
+      document.getElementById("productStockMin").value =
+        product.stock_min || "";
+      document.getElementById("productWeight").value = product.weight || "";
+      document.getElementById("productWeightUnit").value =
+        product.weight_unit || "g";
+      document.getElementById("productImageUrl").value =
+        product.image_url || "";
+      document.getElementById("productDimensions").value =
+        product.dimensions || "";
+
+      // Convertir array de imágenes a string separado por comas
+      if (product.images) {
+        try {
+          const imagesArray =
+            typeof product.images === "string"
+              ? JSON.parse(product.images)
+              : product.images;
+          document.getElementById("productImages").value =
+            imagesArray.join(", ");
+        } catch (e) {
+          document.getElementById("productImages").value = product.images;
+        }
+      }
+
+      document.getElementById("productRating").value = product.rating || "0";
+      document.getElementById("productDeal").checked = product.is_deal || false;
+      document.getElementById("productBestseller").checked =
+        product.is_bestseller || false;
+      document.getElementById("productNew").checked = product.is_new || false;
+      document.getElementById("productFast").checked = product.is_fast || false;
+      document.getElementById("productActive").checked =
+        product.is_active !== false;
+      document.getElementById("productMetaKeywords").value =
+        product.meta_keywords || "";
+      document.getElementById("productMetaDescription").value =
+        product.meta_description || "";
+
+      updateCoffeeFieldsVisibility();
+      document.getElementById("productModal").style.display = "flex";
+    };
+
+    window.openDeleteModal = function(productId, productName) {
+      currentEditProductId = productId;
+      document.getElementById("deleteProductName").textContent = productName;
+      document.getElementById("deleteModal").style.display = "flex";
+    };
+
+    window.confirmDelete = async function() {
+      if (!currentEditProductId) return;
+
+      try {
+        const response = await fetch(
+          `/api/inventory/products/${currentEditProductId}`,
+          {
+            method: "DELETE",
+            credentials: "include",
+          }
+        );
+
+        if (!response.ok) {
+          const data = await response.json();
+          alert("Error: " + (data.error || "No se pudo eliminar el producto"));
+          return;
+        }
+
+        alert("Producto eliminado exitosamente");
+        document.getElementById("deleteModal").style.display = "none";
+        loadProducts();
+      } catch (err) {
+        console.error("Error:", err);
+        alert("Error al eliminar el producto");
+      }
+    };
+
+    window.closeModal = function(modalId) {
+      document.getElementById(modalId).style.display = "none";
+    };
+
+    window.closeDeleteModal = function() {
+      document.getElementById("deleteModal").style.display = "none";
+    };
+
+    // Hacer funciones globales para onclick handlers
+    window.openCreateModal = function() {
+      currentEditProductId = null;
+      document.getElementById("modalTitle").textContent = "Nuevo Producto";
+      document.getElementById("idFieldContainer").style.display = "block";
+      document.getElementById("productId").disabled = false;
+      document.getElementById("productForm").reset();
+      document.getElementById("productActive").checked = true;
+      document.getElementById("productModal").style.display = "flex";
+    };
+
+    window.openDeleteModal = function(productId, productName) {
+      currentEditProductId = productId;
+      document.getElementById("deleteProductName").textContent = productName;
+      document.getElementById("deleteModal").style.display = "flex";
+    };
+
+    window.confirmDelete = async function() {
+      if (!currentEditProductId) return;
+
+      try {
+        const response = await fetch(
+          `/api/inventory/products/${currentEditProductId}`,
+          {
+            method: "DELETE",
+            credentials: "include",
+          }
+        );
+
+        if (!response.ok) {
+          const data = await response.json();
+          alert(
+            "Error: " + (data.error || "No se pudo eliminar el producto")
+          );
+          return;
+        }
+
+        alert("Producto eliminado exitosamente");
+        document.getElementById("deleteModal").style.display = "none";
+        loadProducts();
+      } catch (err) {
+        console.error("Error:", err);
+        alert("Error al eliminar el producto");
+      }
+    };
+
     async function loadProducts() {
       try {
         const response = await fetch("/api/inventory/products", {
@@ -725,113 +889,10 @@ import AppLayout from "../../layouts/AppLayout.astro";
       displayProducts(filtered);
     }
 
-    function openCreateModal() {
-      currentEditProductId = null;
-      document.getElementById("modalTitle").textContent = "Nuevo Producto";
-      document.getElementById("idFieldContainer").style.display = "block";
-      document.getElementById("productId").disabled = false;
-      document.getElementById("productForm").reset();
-      document.getElementById("productActive").checked = true;
-      document.getElementById("productModal").style.display = "flex";
-    }
-
-    function openEditModal(productId) {
-      const product = allProducts.find((p) => p.id === productId);
-      if (!product) return;
-
-      currentEditProductId = productId;
-      document.getElementById("modalTitle").textContent =
-        "Editar Producto: " + product.name;
-      document.getElementById("idFieldContainer").style.display = "none";
-      document.getElementById("productId").value = product.id;
-      document.getElementById("productId").disabled = true;
-
-      document.getElementById("productName").value = product.name || "";
-      document.getElementById("productSku").value = product.sku || "";
-      document.getElementById("productDescription").value =
-        product.description || "";
-      document.getElementById("productCategory").value = product.category;
-      document.getElementById("productSubcategory").value =
-        product.subcategory || "";
-      document.getElementById("productOrigin").value = product.origin || "";
-      document.getElementById("productProcess").value = product.process || "";
-      document.getElementById("productRoast").value = product.roast || "";
-      document.getElementById("productPrice").value = product.price || "";
-      document.getElementById("productCost").value = product.cost || "";
-      document.getElementById("productStock").value =
-        product.stock_quantity || "";
-      document.getElementById("productStockMin").value =
-        product.stock_min || "";
-      document.getElementById("productWeight").value = product.weight || "";
-      document.getElementById("productWeightUnit").value =
-        product.weight_unit || "g";
-      document.getElementById("productImageUrl").value =
-        product.image_url || "";
-      document.getElementById("productDimensions").value =
-        product.dimensions || "";
-
-      // Convertir array de imágenes a string separado por comas
-      if (product.images) {
-        try {
-          const imagesArray =
-            typeof product.images === "string"
-              ? JSON.parse(product.images)
-              : product.images;
-          document.getElementById("productImages").value =
-            imagesArray.join(", ");
-        } catch (e) {
-          document.getElementById("productImages").value = product.images;
-        }
-      }
-
-      document.getElementById("productRating").value = product.rating || "0";
-      document.getElementById("productDeal").checked = product.is_deal || false;
-      document.getElementById("productBestseller").checked =
-        product.is_bestseller || false;
-      document.getElementById("productNew").checked = product.is_new || false;
-      document.getElementById("productFast").checked = product.is_fast || false;
-      document.getElementById("productActive").checked =
-        product.is_active !== false;
-      document.getElementById("productMetaKeywords").value =
-        product.meta_keywords || "";
-      document.getElementById("productMetaDescription").value =
-        product.meta_description || "";
-
-      updateCoffeeFieldsVisibility();
-      document.getElementById("productModal").style.display = "flex";
-    }
-
-    function openDeleteModal(productId, productName) {
-      currentEditProductId = productId;
-      document.getElementById("deleteProductName").textContent = productName;
-      document.getElementById("deleteModal").style.display = "flex";
-    }
-
-    async function confirmDelete() {
-      if (!currentEditProductId) return;
-
-      try {
-        const response = await fetch(
-          `/api/inventory/products/${currentEditProductId}`,
-          {
-            method: "DELETE",
-            credentials: "include",
-          }
-        );
-
-        if (!response.ok) {
-          const data = await response.json();
-          alert("Error: " + (data.error || "No se pudo eliminar el producto"));
-          return;
-        }
-
-        alert("Producto eliminado exitosamente");
-        document.getElementById("deleteModal").style.display = "none";
-        loadProducts();
-      } catch (err) {
-        console.error("Error:", err);
-        alert("Error al eliminar el producto");
-      }
+    function updateCoffeeFieldsVisibility() {
+      const category = document.getElementById("productCategory").value;
+      document.getElementById("coffeeFields").style.display =
+        category === "cafe" ? "block" : "none";
     }
 
     function updateCoffeeFieldsVisibility() {
