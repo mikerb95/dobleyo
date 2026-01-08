@@ -361,6 +361,36 @@ import AppLayout from "../../layouts/AppLayout.astro";
             />
           </div>
 
+          <!-- Imágenes Adicionales (JSON) -->
+          <div style="margin-bottom: 1rem;">
+            <label
+              style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
+              >Imágenes Adicionales (URLs separadas por comas):</label
+            >
+            <textarea
+              id="productImages"
+              style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; font-family: inherit; resize: vertical; min-height: 60px;"
+              placeholder="ej: https://ejemplo.com/img1.jpg, https://ejemplo.com/img2.jpg"
+            ></textarea>
+          </div>
+
+          <!-- Rating -->
+          <div style="margin-bottom: 1rem;">
+            <label
+              style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
+              >Calificación (0-5):</label
+            >
+            <input
+              type="number"
+              id="productRating"
+              style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;"
+              min="0"
+              max="5"
+              step="0.1"
+              value="0"
+            />
+          </div>
+
           <!-- Dimensiones -->
           <div style="margin-bottom: 1rem;">
             <label
@@ -739,6 +769,20 @@ import AppLayout from "../../layouts/AppLayout.astro";
         product.image_url || "";
       document.getElementById("productDimensions").value =
         product.dimensions || "";
+      
+      // Convertir array de imágenes a string separado por comas
+      if (product.images) {
+        try {
+          const imagesArray = typeof product.images === 'string' 
+            ? JSON.parse(product.images) 
+            : product.images;
+          document.getElementById("productImages").value = imagesArray.join(", ");
+        } catch (e) {
+          document.getElementById("productImages").value = product.images;
+        }
+      }
+      
+      document.getElementById("productRating").value = product.rating || "0";
       document.getElementById("productDeal").checked = product.is_deal || false;
       document.getElementById("productBestseller").checked =
         product.is_bestseller || false;
@@ -822,20 +866,32 @@ import AppLayout from "../../layouts/AppLayout.astro";
           stock_min: document.getElementById("productStockMin").value
             ? parseInt(document.getElementById("productStockMin").value)
             : 0,
-          weight: document.getElementById("productWeight").value || null,
+          weight: document.getElementById("productWeight").value
+            ? parseFloat(document.getElementById("productWeight").value)
+            : null,
           weight_unit: document.getElementById("productWeightUnit").value,
           image_url: document.getElementById("productImageUrl").value || null,
-          dimensions:
-            document.getElementById("productDimensions").value || null,
+          dimensions: document.getElementById("productDimensions").value || null,
+          rating: parseFloat(document.getElementById("productRating").value) || 0,
           is_deal: document.getElementById("productDeal").checked,
           is_bestseller: document.getElementById("productBestseller").checked,
           is_new: document.getElementById("productNew").checked,
           is_fast: document.getElementById("productFast").checked,
           is_active: document.getElementById("productActive").checked,
-          meta_keywords: document.getElementById("productMetaKeywords").value,
-          meta_description: document.getElementById("productMetaDescription")
-            .value,
+          meta_keywords: document.getElementById("productMetaKeywords").value || null,
+          meta_description: document.getElementById("productMetaDescription").value || null,
         };
+
+        // Procesar imágenes adicionales (convertir CSV a JSON array)
+        const imagesInput = document.getElementById("productImages").value.trim();
+        if (imagesInput) {
+          productData.images = imagesInput
+            .split(",")
+            .map((img) => img.trim())
+            .filter((img) => img.length > 0);
+        } else {
+          productData.images = null;
+        }
 
         try {
           let response;
