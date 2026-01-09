@@ -151,13 +151,106 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
     </div>
   </form>
 
+  <!-- Modal de Confirmación -->
+  <div
+    id="successModal"
+    style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; padding: 1rem;"
+  >
+    <div
+      style="background: white; border-radius: 12px; padding: 2.5rem; max-width: 500px; width: 100%; box-shadow: 0 10px 40px rgba(0,0,0,0.2);"
+    >
+      <!-- Ícono de éxito -->
+      <div style="text-align: center; margin-bottom: 1.5rem;">
+        <div
+          style="font-size: 3.5rem; color: #4a6741; animation: scaleIn 0.5s ease;"
+        >
+          ✅
+        </div>
+      </div>
+
+      <!-- Título -->
+      <h2
+        style="text-align: center; color: #251a14; margin: 0 0 0.5rem 0; font-size: 1.5rem;"
+      >
+        ¡Lote Creado!
+      </h2>
+
+      <!-- Mensaje -->
+      <div
+        style="text-align: center; color: #666; margin-bottom: 1.5rem; font-size: 1rem;"
+      >
+        <p id="successMessage" style="margin: 0.5rem 0;">
+          El lote <strong id="newLotId"></strong> ha sido registrado correctamente.
+        </p>
+        <p style="margin: 0.5rem 0; font-size: 0.9rem; color: #999;">
+          Ahora está disponible en la sección de café verde.
+        </p>
+      </div>
+
+      <!-- Información del lote -->
+      <div
+        id="lotDetailsInfo"
+        style="background: #f9fafb; border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem; display: none;"
+      >
+        <div style="font-size: 0.85rem; color: #666;">
+          <div style="margin-bottom: 0.75rem;">
+            <strong>Finca:</strong> <span id="detailFinca"></span>
+          </div>
+          <div style="margin-bottom: 0.75rem;">
+            <strong>Variedad:</strong> <span id="detailVariedad"></span>
+          </div>
+          <div style="margin-bottom: 0.75rem;">
+            <strong>Clima:</strong> <span id="detailClima"></span>
+          </div>
+          <div>
+            <strong>Proceso:</strong> <span id="detailProceso"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Botones de acción -->
+      <div style="display: flex; gap: 1rem; flex-direction: column-reverse;">
+        <button
+          onclick="document.getElementById('successModal').style.display = 'none'; document.getElementById('harvestForm').reset(); document.getElementById('farmInfo').style.display = 'none'; document.getElementById('lotInfo').style.display = 'none';"
+          style="padding: 0.75rem 1.5rem; background: #ddd; color: #333; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.95rem; transition: background 0.2s;"
+          onmouseover="this.style.background='#ccc'"
+          onmouseout="this.style.background='#ddd'"
+        >
+          Cerrar
+        </button>
+        <button
+          onclick="window.location.href='/app/lotes';"
+          style="padding: 0.75rem 1.5rem; background: #4a6741; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.95rem; transition: background 0.2s;"
+          onmouseover="this.style.background='#3a5431'"
+          onmouseout="this.style.background='#4a6741'"
+        >
+          Ver Lotes de Café Verde
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script>
     const farmData = {
       "finca-la-sierra": {
         altitude: "1800m",
         soil: "Franco arcilloso",
         region: "HUI",
+        displayName: "La Sierra - Huila",
       },
+      "finca-nariño": {
+        altitude: "1900m",
+        soil: "Franco arcilloso",
+        region: "NAR",
+        displayName: "Nariño Premium",
+      },
+      "finca-cauca": {
+        altitude: "1750m",
+        soil: "Franco arcilloso",
+        region: "CAU",
+        displayName: "Cauca Estate",
+      },
+    };
       "finca-nariño": {
         altitude: "1900m",
         soil: "Franco arcilloso",
@@ -281,11 +374,45 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
 
         const lotId = data.lotId;
 
-        // Mostrar confirmación
-        alert(`✅ Lote ${lotId} registrado correctamente en la base de datos`);
-        form.reset();
-        farmInfo.style.display = "none";
-        lotInfo.style.display = "none";
+        // Llenar datos del modal
+        document.getElementById("newLotId").textContent = lotId;
+        
+        // Llenar información del lote
+        const varietyMap = {
+          CAT: "Caturra",
+          TIP: "Típica",
+          BOB: "Bourbon",
+          GER: "Geisha",
+          PAC: "Pacamara",
+        };
+        const climateMap = {
+          SECO: "🌞 Seco",
+          LLUV: "🌧️ Lluvioso",
+          TEMP: "🌤️ Templado",
+        };
+        const processMap = {
+          NAT: "Natural (Secado en cereza)",
+          HUM: "Húmedo (Lavado)",
+          ANH: "Anaeróbico",
+        };
+
+        document.getElementById("detailFinca").textContent =
+          farmData[farmSelect.value]?.displayName || farmSelect.value;
+        document.getElementById("detailVariedad").textContent =
+          varietyMap[document.getElementById("variety").value] ||
+          document.getElementById("variety").value;
+        document.getElementById("detailClima").textContent =
+          climateMap[
+            document.querySelector('input[name="climate"]:checked').value
+          ];
+        document.getElementById("detailProceso").textContent =
+          processMap[
+            document.querySelector('input[name="process"]:checked').value
+          ];
+
+        // Mostrar modal de éxito
+        document.getElementById("lotDetailsInfo").style.display = "block";
+        document.getElementById("successModal").style.display = "flex";
       } catch (error) {
         console.error("Error:", error);
         alert(
@@ -465,6 +592,18 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
       background-position: right 0.75rem center;
       background-size: 1em;
       padding-right: 2.5rem;
+    }
+
+    /* Animación de éxito */
+    @keyframes scaleIn {
+      from {
+        transform: scale(0);
+        opacity: 0;
+      }
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
     }
   </style>
 </MobileLayout>
