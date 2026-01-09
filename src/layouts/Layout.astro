@@ -2,12 +2,14 @@
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import Head from "../components/Head.astro";
+import Analytics from "@vercel/analytics/astro";
 ---
 
 <!doctype html>
 <html lang="es">
   <head>
     <Head />
+    <Analytics />
   </head>
   <body class="font-sans bg-cream text-ink">
     <!-- Barra superior de anuncio -->
