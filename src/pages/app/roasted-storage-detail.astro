@@ -1,0 +1,485 @@
+---
+import MobileLayout from "../../layouts/MobileLayout.astro";
+---
+
+<MobileLayout
+  title="Detalle de Café Almacenado"
+  description="Información completa del café tostado en almacén"
+>
+  <div id="detailContainer" style="display: none;">
+    <!-- Header con Lote ID -->
+    <div class="detail-header">
+      <h2 id="headerTitle">Café Tostado Almacenado</h2>
+      <div class="header-badge" id="statusBadge">En Almacén</div>
+    </div>
+
+    <!-- Información del Lote -->
+    <div class="card">
+      <h3>Información del Lote de Café</h3>
+      <div class="detail-grid">
+        <div class="detail-item">
+          <div class="detail-label">ID del Lote</div>
+          <div class="detail-value" id="detailLotId">—</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">Variedad</div>
+          <div class="detail-value" id="detailVariety">—</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">Clima de Cultivo</div>
+          <div class="detail-value" id="detailClimate">—</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">Región Productora</div>
+          <div class="detail-value" id="detailRegion">—</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">Altitud</div>
+          <div class="detail-value" id="detailAltitude">—</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">Método de Procesamiento</div>
+          <div class="detail-value" id="detailProcess">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Características del Café -->
+    <div class="card">
+      <h3>Perfil Sensorial</h3>
+      <div class="detail-grid">
+        <div class="detail-item">
+          <div class="detail-label">Aroma</div>
+          <div class="detail-value" id="detailAroma">—</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">Notas de Sabor</div>
+          <div class="detail-value" id="detailTaste">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Información de Tostión -->
+    <div class="card">
+      <h3>Detalles de la Tostión</h3>
+      <div class="detail-grid">
+        <div class="detail-item">
+          <div class="detail-label">Nivel de Tueste</div>
+          <div class="detail-value detail-roast" id="detailRoastLevel">—</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">Peso Tostado</div>
+          <div class="detail-value" id="detailWeight">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Información de Almacenamiento -->
+    <div class="card">
+      <h3>Información de Almacenamiento</h3>
+      <div class="detail-grid">
+        <div class="detail-item">
+          <div class="detail-label">Ubicación en Bodega</div>
+          <div class="detail-value" id="detailLocation">—</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">Tipo de Contenedor</div>
+          <div class="detail-value" id="detailContainer">—</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">Cantidad de Contenedores</div>
+          <div class="detail-value" id="detailContainerCount">—</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">Fecha de Almacenamiento</div>
+          <div class="detail-value" id="detailStorageDate">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Condiciones de Almacenamiento -->
+    <div class="card" id="conditionsCard" style="display: none;">
+      <h3>Condiciones de Almacenamiento</h3>
+      <div class="conditions-list" id="conditionsList"></div>
+    </div>
+
+    <!-- Notas -->
+    <div class="card" id="notesCard" style="display: none;">
+      <h3>Notas</h3>
+      <div class="notes-content" id="notesContent"></div>
+    </div>
+
+    <!-- Botones de Acción -->
+    <div class="action-buttons">
+      <button
+        type="button"
+        class="btn-secondary"
+        onclick="window.location.href='/app/roasted-storage'"
+      >
+        ← Volver a Almacenar
+      </button>
+      <button
+        type="button"
+        class="btn-primary"
+        id="goToPackagingBtn"
+        onclick="goToPackaging()"
+      >
+        Ir a Empaquetado →
+      </button>
+    </div>
+  </div>
+
+  <!-- Estado de Carga -->
+  <div id="loadingState">
+    <div class="loading-spinner"></div>
+    <p>Cargando detalles del café almacenado...</p>
+  </div>
+
+  <!-- Estado de Error -->
+  <div id="errorState" style="display: none;">
+    <div class="error-box">
+      <p id="errorMessage">Error al cargar los detalles</p>
+      <button
+        type="button"
+        class="btn-secondary"
+        onclick="window.location.href='/app/roasted-storage'"
+      >
+        Volver
+      </button>
+    </div>
+  </div>
+
+  <script>
+    let currentStorageId = null;
+
+    async function loadStorageDetail() {
+      // Obtener el ID de almacenamiento de la URL
+      const params = new URLSearchParams(window.location.search);
+      const storageId = params.get("id");
+
+      if (!storageId) {
+        showError("No se especificó un café para mostrar");
+        return;
+      }
+
+      currentStorageId = storageId;
+
+      try {
+        // Obtener detalles del almacenamiento
+        const response = await fetch(
+          `/api/coffee/roasted-storage/${storageId}`,
+          {
+            credentials: "include",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Error al cargar los detalles");
+        }
+
+        const data = await response.json();
+        populateDetails(data);
+      } catch (error) {
+        console.error("Error:", error);
+        showError(error.message || "Error al cargar los detalles");
+      }
+    }
+
+    function populateDetails(data) {
+      // Información del lote
+      document.getElementById("detailLotId").textContent = data.lot_id || "—";
+      document.getElementById("detailVariety").textContent =
+        data.variety || "—";
+      document.getElementById("detailClimate").textContent =
+        data.climate || "—";
+      document.getElementById("detailRegion").textContent = data.region || "—";
+      document.getElementById("detailAltitude").textContent = data.altitude
+        ? `${data.altitude} msnm`
+        : "—";
+      document.getElementById("detailProcess").textContent =
+        data.process || "—";
+
+      // Perfil sensorial
+      document.getElementById("detailAroma").textContent = data.aroma || "—";
+      document.getElementById("detailTaste").textContent =
+        data.taste_notes || "—";
+
+      // Tostión
+      const roastLevels = {
+        LIGHT: "Clara",
+        MEDIUM: "Media",
+        DARK: "Oscura",
+      };
+      document.getElementById("detailRoastLevel").textContent =
+        roastLevels[data.roast_level] || data.roast_level || "—";
+      document.getElementById("detailWeight").textContent = data.weight_kg
+        ? `${data.weight_kg} kg`
+        : "—";
+
+      // Almacenamiento
+      document.getElementById("detailLocation").textContent =
+        data.location || "—";
+
+      const containerLabels = {
+        "BAG-1KG": "Bolsas de 1 kg",
+        "BAG-5KG": "Bolsas de 5 kg",
+        "BUCKET-25": "Cubeta de 25 kg",
+        "SACK-60": "Saco de 60 kg",
+      };
+      document.getElementById("detailContainer").textContent =
+        containerLabels[data.container] || data.container || "—";
+      document.getElementById("detailContainerCount").textContent =
+        data.container_count || "—";
+      document.getElementById("detailStorageDate").textContent = data.storage_date
+        ? new Date(data.storage_date).toLocaleDateString("es-CO", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          })
+        : "—";
+
+      // Condiciones
+      if (data.conditions && data.conditions.length > 0) {
+        const conditionLabels = {
+          sealed: "✓ Sellado herméticas",
+          cool: "✓ Lugar fresco y seco",
+          dark: "✓ Protegido de luz directa",
+        };
+        const conditionsList = document.getElementById("conditionsList");
+        conditionsList.innerHTML = data.conditions
+          .map((c) => `<div class="condition-item">${conditionLabels[c] || c}</div>`)
+          .join("");
+        document.getElementById("conditionsCard").style.display = "block";
+      }
+
+      // Notas
+      if (data.notes) {
+        document.getElementById("notesContent").textContent = data.notes;
+        document.getElementById("notesCard").style.display = "block";
+      }
+
+      // Mostrar detalles y ocultar carga
+      document.getElementById("detailContainer").style.display = "block";
+      document.getElementById("loadingState").style.display = "none";
+      document.getElementById("headerTitle").textContent =
+        `Café ${data.lot_id} - Almacenado`;
+    }
+
+    function showError(message) {
+      document.getElementById("errorMessage").textContent = message;
+      document.getElementById("errorState").style.display = "block";
+      document.getElementById("loadingState").style.display = "none";
+      document.getElementById("detailContainer").style.display = "none";
+    }
+
+    function goToPackaging() {
+      window.location.href = `/app/packaging?storage=${currentStorageId}`;
+    }
+
+    loadStorageDetail();
+  </script>
+
+  <style>
+    .detail-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 2px solid #f0ede5;
+    }
+
+    .detail-header h2 {
+      color: var(--coffee);
+      font-family: "Playfair Display", serif;
+      font-size: 1.8rem;
+      margin: 0;
+    }
+
+    .header-badge {
+      background: #e8f5e9;
+      color: #2e7d32;
+      padding: 0.5rem 1rem;
+      border-radius: 2rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .card {
+      background: #fff;
+      border: 1px solid #e6e6e6;
+      border-radius: 0.75rem;
+      padding: 1.25rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      margin-bottom: 1.5rem;
+    }
+
+    .card h3 {
+      font-family: "Playfair Display", serif;
+      margin: 0 0 1rem 0;
+      color: var(--coffee);
+      font-size: 1.1rem;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 0.5rem;
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .detail-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .detail-label {
+      font-size: 0.8rem;
+      color: #888;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .detail-value {
+      font-size: 1.05rem;
+      color: var(--dark);
+      font-weight: 600;
+      word-break: break-word;
+    }
+
+    .detail-roast {
+      display: inline-block;
+      padding: 0.5rem 1rem;
+      border-radius: 2rem;
+      background: #f5ede3;
+      color: #8b6a4d;
+      text-align: center;
+      width: fit-content;
+    }
+
+    .conditions-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .condition-item {
+      padding: 0.75rem;
+      background: #fffbf7;
+      border-left: 3px solid #2e7d32;
+      border-radius: 0.25rem;
+      color: #2e7d32;
+      font-weight: 500;
+    }
+
+    .notes-content {
+      padding: 1rem;
+      background: #fffbf7;
+      border-left: 3px solid var(--accent);
+      border-radius: 0.25rem;
+      line-height: 1.6;
+      color: #333;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 1rem;
+      margin-top: 2rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid #eee;
+    }
+
+    .btn-primary,
+    .btn-secondary {
+      flex: 1;
+      padding: 1rem;
+      border: none;
+      border-radius: 0.5rem;
+      font-family: inherit;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .btn-primary {
+      background: var(--coffee);
+      color: #fff;
+      box-shadow: 0 4px 6px -1px rgba(37, 26, 20, 0.2);
+    }
+
+    .btn-primary:hover {
+      background: #3a2a22;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 8px -1px rgba(37, 26, 20, 0.3);
+    }
+
+    .btn-secondary {
+      background: #fff;
+      border: 1px solid #d1d1d1;
+      color: #666;
+    }
+
+    .btn-secondary:hover {
+      background: #f5f5f5;
+      color: #333;
+      border-color: #bbb;
+    }
+
+    #loadingState {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 1rem;
+      text-align: center;
+    }
+
+    .loading-spinner {
+      width: 2.5rem;
+      height: 2.5rem;
+      border: 3px solid #f0ede5;
+      border-top-color: var(--coffee);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 1rem;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    #loadingState p {
+      color: #666;
+      margin: 0;
+    }
+
+    .error-box {
+      background: #ffebee;
+      border: 1px solid #ef5350;
+      border-radius: 0.75rem;
+      padding: 2rem;
+      text-align: center;
+      margin: 2rem 0;
+    }
+
+    #errorMessage {
+      color: #c62828;
+      margin: 0 0 1.5rem 0;
+      font-size: 1.05rem;
+    }
+  </style>
+</MobileLayout>

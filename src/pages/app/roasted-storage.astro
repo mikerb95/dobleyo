@@ -185,6 +185,49 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
     </div>
   </form>
 
+  <!-- Modal de Éxito -->
+  <div id="successModal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header success">
+        <div class="success-icon">✓</div>
+      </div>
+      <h2 class="modal-title">¡Café Almacenado Correctamente!</h2>
+      <div class="modal-body">
+        <div class="success-details">
+          <div class="success-item">
+            <span class="success-label">Lote:</span>
+            <span class="success-value" id="modalLot">—</span>
+          </div>
+          <div class="success-item">
+            <span class="success-label">Peso:</span>
+            <span class="success-value" id="modalWeight">—</span>
+          </div>
+          <div class="success-item">
+            <span class="success-label">Ubicación:</span>
+            <span class="success-value" id="modalLocation">—</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button
+          type="button"
+          class="btn-secondary"
+          onclick="closeSuccessModal(); document.getElementById('roastedStorageForm').reset(); document.getElementById('roastedInfoCard').style.display = 'none'; document.getElementById('summaryBox').style.display = 'none';"
+        >
+          Almacenar Otro
+        </button>
+        <button
+          type="button"
+          class="btn-primary"
+          id="viewDetailBtn"
+          onclick="viewStorageDetail()"
+        >
+          Ver Detalle →
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script>
     const roastedSelect = document.getElementById("roastedSelect");
     const storageDate = document.getElementById("storageDate");
@@ -374,9 +417,14 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
           throw new Error(error.message || "Error al almacenar café");
         }
 
-        alert(
-          `✅ Café tostado almacenado correctamente\n${currentRoasted.weight_kg} kg en ${location}`
-        );
+        const result = await response.json();
+        
+        // Mostrar modal de éxito
+        document.getElementById("modalLot").textContent = currentRoasted.lot_id;
+        document.getElementById("modalWeight").textContent = `${currentRoasted.weight_kg} kg`;
+        document.getElementById("modalLocation").textContent = location;
+        document.getElementById("viewDetailBtn").onclick = () => viewStorageDetail(result.storageId);
+        document.getElementById("successModal").style.display = "flex";
 
         form.reset();
         storageDate.value = today;
@@ -395,6 +443,15 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
 
     // Cargar cafés al iniciar
     loadRoastedLots();
+
+    // Funciones del modal
+    function closeSuccessModal() {
+      document.getElementById("successModal").style.display = "none";
+    }
+
+    function viewStorageDetail(storageId) {
+      window.location.href = `/app/roasted-storage-detail?id=${storageId}`;
+    }
   </script>
 
   <style>
@@ -566,6 +623,150 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
       background-position: right 0.75rem center;
       background-size: 1em;
       padding-right: 2.5rem;
+    }
+
+    /* Estilos del Modal */
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 1rem;
+      z-index: 1000;
+    }
+
+    .modal-content {
+      background: #fff;
+      border-radius: 1rem;
+      overflow: hidden;
+      max-width: 400px;
+      width: 100%;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15);
+      animation: slideUp 0.3s ease;
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateY(2rem);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .modal-header {
+      padding: 2rem 1.5rem 1rem;
+      text-align: center;
+      background: linear-gradient(135deg, #f5ede3 0%, #fffbf7 100%);
+    }
+
+    .modal-header.success {
+      background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%);
+    }
+
+    .success-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 3rem;
+      height: 3rem;
+      background: #4caf50;
+      color: white;
+      border-radius: 50%;
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+
+    .modal-title {
+      margin: 1rem 0 0;
+      color: var(--coffee);
+      font-family: "Playfair Display", serif;
+      font-size: 1.4rem;
+      text-align: center;
+    }
+
+    .modal-body {
+      padding: 1.5rem;
+    }
+
+    .success-details {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .success-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.75rem;
+      background: #fafafa;
+      border-radius: 0.5rem;
+      border-left: 3px solid var(--accent);
+    }
+
+    .success-label {
+      font-size: 0.85rem;
+      color: #666;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .success-value {
+      font-size: 0.95rem;
+      color: var(--coffee);
+      font-weight: 600;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 0.75rem;
+      padding: 1.5rem;
+      border-top: 1px solid #eee;
+    }
+
+    .modal-actions .btn-primary,
+    .modal-actions .btn-secondary {
+      flex: 1;
+      padding: 0.875rem;
+      border: none;
+      border-radius: 0.5rem;
+      font-family: inherit;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .modal-actions .btn-primary {
+      background: var(--coffee);
+      color: #fff;
+      box-shadow: 0 4px 6px -1px rgba(37, 26, 20, 0.2);
+    }
+
+    .modal-actions .btn-primary:hover {
+      background: #3a2a22;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 8px -1px rgba(37, 26, 20, 0.3);
+    }
+
+    .modal-actions .btn-secondary {
+      background: #fff;
+      border: 1px solid #d1d1d1;
+      color: #666;
+    }
+
+    .modal-actions .btn-secondary:hover {
+      background: #f5f5f5;
+      color: #333;
+      border-color: #bbb;
     }
   </style>
 </MobileLayout>

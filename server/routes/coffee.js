@@ -250,6 +250,77 @@ coffeeRouter.post('/roasted-storage', async (req, res) => {
   }
 });
 
+// 5.1 OBTENER DETALLE DE ALMACENAMIENTO DE TOSTADO
+coffeeRouter.get('/roasted-storage/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({ error: 'ID de almacenamiento requerido' });
+    }
+
+    // Obtener información completa del almacenamiento
+    const result = await query(
+      `SELECT 
+        rci.id,
+        rci.location,
+        rci.container_type as container,
+        rci.container_count,
+        rci.storage_conditions as conditions,
+        rci.notes,
+        rci.created_at as storage_date,
+        rc.weight_kg,
+        rc.roast_level,
+        rb.lot_id,
+        ch.variety,
+        ch.climate,
+        ch.region,
+        ch.altitude,
+        ch.process,
+        ch.aroma,
+        ch.taste_notes
+       FROM roasted_coffee_inventory rci
+       INNER JOIN roasted_coffee rc ON rci.roasted_id = rc.id
+       INNER JOIN roasting_batches rb ON rc.roasting_id = rb.id
+       INNER JOIN coffee_harvests ch ON rb.lot_id = ch.lot_id
+       WHERE rci.id = ?`,
+      [id]
+    );
+
+    if (!result.rows.length) {
+      return res.status(404).json({ error: 'Almacenamiento no encontrado' });
+    }
+
+    const data = result.rows[0];
+    
+    // Parsear condiciones si existen
+    const conditions = data.conditions ? data.conditions.split(',') : [];
+
+    res.json({
+      id: data.id,
+      lot_id: data.lot_id,
+      variety: data.variety,
+      climate: data.climate,
+      region: data.region,
+      altitude: data.altitude,
+      process: data.process,
+      aroma: data.aroma,
+      taste_notes: data.taste_notes,
+      weight_kg: data.weight_kg,
+      roast_level: data.roast_level,
+      location: data.location,
+      container: data.container,
+      container_count: data.container_count,
+      conditions: conditions,
+      notes: data.notes,
+      storage_date: data.storage_date
+    });
+  } catch (err) {
+    console.error('Error obteniendo detalle de almacenamiento:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // 6. PREPARAR PARA VENTA (Packaging)
 coffeeRouter.post('/packaging', async (req, res) => {
   try {
