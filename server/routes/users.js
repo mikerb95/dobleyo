@@ -49,23 +49,60 @@ usersRouter.put('/:id', auth.authenticateToken, auth.requireRole('admin'), async
       return res.status(404).json({ error: 'Usuario no encontrado' });
     }
 
-    // Actualizar usuario
-    const updateQuery = `
-      UPDATE users 
-      SET 
-        name = COALESCE(?, name),
-        first_name = COALESCE(?, first_name),
-        last_name = COALESCE(?, last_name),
-        mobile_phone = COALESCE(?, mobile_phone),
-        city = COALESCE(?, city),
-        state_province = COALESCE(?, state_province),
-        country = COALESCE(?, country),
-        role = COALESCE(?, role),
-        is_verified = COALESCE(?, is_verified)
-      WHERE id = ?
-    `;
+    // Construir dinámicamente los campos a actualizar
+    const updates = [];
+    const values = [];
 
-    await query(updateQuery, [name, first_name, last_name, mobile_phone, city, state_province, country, role, is_verified, id]);
+    if (first_name !== undefined && first_name !== null) {
+      updates.push('first_name = ?');
+      values.push(first_name);
+    }
+    if (last_name !== undefined && last_name !== null) {
+      updates.push('last_name = ?');
+      values.push(last_name);
+    }
+    if (name !== undefined && name !== null) {
+      updates.push('name = ?');
+      values.push(name);
+    }
+    if (mobile_phone !== undefined && mobile_phone !== null) {
+      updates.push('mobile_phone = ?');
+      values.push(mobile_phone);
+    }
+    if (city !== undefined && city !== null) {
+      updates.push('city = ?');
+      values.push(city);
+    }
+    if (state_province !== undefined && state_province !== null) {
+      updates.push('state_province = ?');
+      values.push(state_province);
+    }
+    if (country !== undefined && country !== null) {
+      updates.push('country = ?');
+      values.push(country);
+    }
+    if (role !== undefined && role !== null) {
+      updates.push('role = ?');
+      values.push(role);
+    }
+    if (is_verified !== undefined && is_verified !== null) {
+      updates.push('is_verified = ?');
+      values.push(is_verified);
+    }
+
+    if (updates.length === 0) {
+      return res.status(400).json({ error: 'No hay campos para actualizar' });
+    }
+
+    // Agregar el ID al final de los valores
+    values.push(parseInt(id));
+
+    const updateQuery = `UPDATE users SET ${updates.join(', ')} WHERE id = ?`;
+    console.log('[PUT /api/users/:id] Query:', updateQuery);
+    console.log('[PUT /api/users/:id] Values:', values);
+
+    const result = await query(updateQuery, values);
+    console.log('[PUT /api/users/:id] Update result:', result);
 
     // Retornar usuario actualizado
     const updated = await query(
@@ -76,6 +113,9 @@ usersRouter.put('/:id', auth.authenticateToken, auth.requireRole('admin'), async
         first_name,
         last_name, 
         mobile_phone, 
+        landline_phone,
+        tax_id,
+        address,
         city, 
         state_province, 
         country, 
@@ -86,13 +126,14 @@ usersRouter.put('/:id', auth.authenticateToken, auth.requireRole('admin'), async
         created_at 
       FROM users 
       WHERE id = ?`,
-      [id]
+      [parseInt(id)]
     );
 
+    console.log('[PUT /api/users/:id] Updated user:', updated.rows[0]);
     res.json({ user: updated.rows[0] });
   } catch (err) {
     console.error('[PUT /api/users/:id] Error:', err);
-    res.status(500).json({ error: 'Error al actualizar usuario' });
+    res.status(500).json({ error: 'Error al actualizar usuario', details: err.message });
   }
 });
 

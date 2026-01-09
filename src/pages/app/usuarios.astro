@@ -770,16 +770,20 @@ import AppLayout from "../../layouts/AppLayout.astro";
 
         if (!currentEditUserId) return;
 
+        const isVerified = document.getElementById("editVerified").checked ? 1 : 0;
+
         const userData = {
-          first_name: document.getElementById("editFirstName").value,
-          last_name: document.getElementById("editLastName").value,
-          mobile_phone: document.getElementById("editPhone").value,
-          city: document.getElementById("editCity").value,
-          state_province: document.getElementById("editState").value,
-          country: document.getElementById("editCountry").value,
+          first_name: document.getElementById("editFirstName").value || null,
+          last_name: document.getElementById("editLastName").value || null,
+          mobile_phone: document.getElementById("editPhone").value || null,
+          city: document.getElementById("editCity").value || null,
+          state_province: document.getElementById("editState").value || null,
+          country: document.getElementById("editCountry").value || null,
           role: document.getElementById("editRole").value,
-          is_verified: document.getElementById("editVerified").checked ? 1 : 0,
+          is_verified: isVerified,
         };
+
+        console.log("Enviando datos:", userData);
 
         try {
           const response = await fetch(`/api/users/${currentEditUserId}`, {
@@ -791,8 +795,10 @@ import AppLayout from "../../layouts/AppLayout.astro";
             body: JSON.stringify(userData),
           });
 
+          const data = await response.json();
+          console.log("Respuesta:", data);
+
           if (!response.ok) {
-            const data = await response.json();
             alert(
               "Error: " + (data.error || "No se pudo actualizar el usuario")
             );
@@ -804,7 +810,7 @@ import AppLayout from "../../layouts/AppLayout.astro";
           loadUsers();
         } catch (err) {
           console.error("Error:", err);
-          alert("Error al actualizar el usuario");
+          alert("Error al actualizar el usuario: " + err.message);
         }
       });
 
