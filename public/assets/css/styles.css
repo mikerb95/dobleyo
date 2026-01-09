@@ -41,7 +41,9 @@ img{ max-width:100%; display:block }
 .icon-btn{ background:var(--card); border:1px solid var(--border); padding:.5rem .8rem; border-radius:.375rem; cursor:pointer; text-decoration:none; color:var(--fg); display:inline-flex; align-items:center; gap:.35rem; font-weight:600; line-height:1.2; transition: background-color .2s ease, color .2s ease, border-color .2s ease }
 .icon-btn.active{ border-color:var(--coffee) }
 .badge{ background:var(--coffee); color:#fff; font-size:.7rem; padding:.05rem .35rem; border-radius:999px; margin-left:.25rem }
-.hamburger{ display:none }
+.hamburger{ display:none; background:transparent; border:0; padding:.5rem; cursor:pointer; color:var(--fg); font-size:1.5rem; width:2.5rem; height:2.5rem; display:flex; align-items:center; justify-content:center; border-radius:.375rem; transition:background-color .2s ease, transform .2s ease; position:relative; z-index:100 }
+.hamburger:hover{ background:rgba(0,0,0,.04) }
+.hamburger.active{ background:rgba(0,0,0,.08); transform:scale(1.05) }
 /* Botones del encabezado */
 .site-header .icon-btn{ background:var(--card); border-color:var(--border); color:var(--fg) }
 .site-header .icon-btn:hover{ background:rgba(0,0,0,.06) }
@@ -56,8 +58,15 @@ img{ max-width:100%; display:block }
 @media (max-width: 900px){ .nav-beans{ display:none } }
 
 /* Menu movil */
-.mobile-menu{ display:none; flex-direction:column; gap:.5rem; padding:.5rem 1rem; border:1px solid var(--border); background:var(--card); border-radius:.5rem; width:min(var(--page-width),calc(100% - var(--page-gutter))); margin: .5rem auto 0; position:relative; z-index:59 }
-.mobile-menu a{ text-decoration:none; color:var(--fg); font-weight:700; font-size:1.12rem; font-family:'Montserrat', Arial, Helvetica, sans-serif }
+.mobile-menu{ display:none; flex-direction:column; gap:0; padding:0; border:0; background:var(--card); border-radius:0; width:100%; margin:0; position:fixed; z-index:59; top:var(--header-height, 96px); left:0; right:0; bottom:0; overflow-y:auto; transform:translateY(-100%); transition:transform .3s ease-out, opacity .3s ease-out; opacity:0; will-change:transform,opacity }
+.mobile-menu[hidden]{ display:none !important }
+.mobile-menu:not([hidden]){ display:flex; transform:translateY(0); opacity:1 }
+.mobile-menu a{ text-decoration:none; color:var(--fg); font-weight:700; font-size:1.25rem; font-family:'Montserrat', Arial, Helvetica, sans-serif; padding:1rem 1.5rem; border-bottom:1px solid var(--border); display:block; transition:background-color .2s ease }
+.mobile-menu a:hover{ background:rgba(0,0,0,.04) }
+.mobile-menu a:last-of-type{ border-bottom:none }
+.mobile-menu a[data-link]:not(.user-btn){ padding:1.2rem 1.5rem; font-size:1.1rem }
+.mobile-menu a.user-btn{ display:flex; align-items:center; gap:.5rem; padding:1rem 1.5rem; background:rgba(0,0,0,.02); border-bottom:1px solid var(--border) }
+.mobile-menu a.user-btn svg{ width:20px; height:20px }
 
 /* Seccion hero */
 .hero{ position:relative; padding:4rem 0; text-align:center; isolation:isolate }
@@ -161,8 +170,6 @@ img{ max-width:100%; display:block }
 
 /* Adaptativo */
 @media (max-width: 900px){
-  .nav{ display:none }
-  .hamburger{ display:inline-flex }
   .mobile-menu{ display:flex }
   .mobile-menu[hidden]{ display:none !important }
   /* Mantener logo balanceado en movil */
@@ -185,6 +192,20 @@ img{ max-width:100%; display:block }
 /* Asegurar que el contenido quede debajo de barra superior (si existe) y encabezado */
 main.container{ padding-top: calc(var(--header-top, 0px) + var(--header-height, 96px) + 12px) }
 .filters{ display:flex; gap:.5rem; padding:1rem 0; position:sticky; top: calc(var(--header-top, 0px) + var(--header-height, 96px) + 8px); background:var(--cream); z-index:40; border-bottom:1px solid #eee }
+
+/* Mobile Menu Overlay (evitar scroll) */
+body.menu-open { overflow: hidden; }
+.mobile-menu:not([hidden]) { animation: slideDown .3s ease-out; }
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
 
 /* Banner promocional en tienda */
 .promo-banner{ margin-top:.6rem; margin-bottom:.6rem }

@@ -251,10 +251,10 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
     async function loadRoastedLots() {
       try {
         const response = await fetch("/api/coffee/roasted-for-storage", {
-          credentials: 'include',
+          credentials: "include",
           headers: {
-            'Content-Type': 'application/json',
-          }
+            "Content-Type": "application/json",
+          },
         });
         if (!response.ok) throw new Error("Error al cargar cafés tostados");
 
@@ -398,7 +398,7 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
       try {
         const response = await fetch("/api/coffee/roasted-storage", {
           method: "POST",
-          credentials: 'include',
+          credentials: "include",
           headers: {
             "Content-Type": "application/json",
           },
@@ -418,12 +418,14 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
         }
 
         const result = await response.json();
-        
+
         // Mostrar modal de éxito
         document.getElementById("modalLot").textContent = currentRoasted.lot_id;
-        document.getElementById("modalWeight").textContent = `${currentRoasted.weight_kg} kg`;
+        document.getElementById("modalWeight").textContent =
+          `${currentRoasted.weight_kg} kg`;
         document.getElementById("modalLocation").textContent = location;
-        document.getElementById("viewDetailBtn").onclick = () => viewStorageDetail(result.storageId);
+        document.getElementById("viewDetailBtn").onclick = () =>
+          viewStorageDetail(result.storageId);
         document.getElementById("successModal").style.display = "flex";
 
         form.reset();

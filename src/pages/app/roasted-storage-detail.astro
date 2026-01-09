@@ -233,13 +233,14 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
         containerLabels[data.container] || data.container || "—";
       document.getElementById("detailContainerCount").textContent =
         data.container_count || "—";
-      document.getElementById("detailStorageDate").textContent = data.storage_date
-        ? new Date(data.storage_date).toLocaleDateString("es-CO", {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-          })
-        : "—";
+      document.getElementById("detailStorageDate").textContent =
+        data.storage_date
+          ? new Date(data.storage_date).toLocaleDateString("es-CO", {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            })
+          : "—";
 
       // Condiciones
       if (data.conditions && data.conditions.length > 0) {
@@ -250,7 +251,10 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
         };
         const conditionsList = document.getElementById("conditionsList");
         conditionsList.innerHTML = data.conditions
-          .map((c) => `<div class="condition-item">${conditionLabels[c] || c}</div>`)
+          .map(
+            (c) =>
+              `<div class="condition-item">${conditionLabels[c] || c}</div>`
+          )
           .join("");
         document.getElementById("conditionsCard").style.display = "block";
       }
