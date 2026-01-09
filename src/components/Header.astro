@@ -96,10 +96,7 @@
           d="M12 12c2.761 0 5-2.239 5-5s-2.239-5-5-5-5 2.239-5 5 2.239 5 5 5zm0 2c-4.418 0-8 2.239-8 5v1h16v-1c0-2.761-3.582-5-8-5z"
           fill="currentColor"></path></svg
       >
-      <span
-        id="userNameMobileDisplay"
-        style="display: none;"
-      ></span>
+      <span id="userNameMobileDisplay" style="display: none;"></span>
       <span id="userMobileLabel">Mi Cuenta</span>
     </a>
   </div>
@@ -191,7 +188,7 @@
   // Menu movil
   const menuBtn = document.getElementById("menuBtn");
   const mobileMenu = document.getElementById("mobileMenu");
-  
+
   if (menuBtn && mobileMenu) {
     // Toggle del menú
     menuBtn.addEventListener("click", () => {
@@ -206,7 +203,7 @@
         document.body.classList.remove("menu-open");
       }
     });
-    
+
     // Cerrar menú al hacer click en un enlace
     mobileMenu.querySelectorAll("a").forEach((link) => {
       link.addEventListener("click", () => {
@@ -215,7 +212,7 @@
         document.body.classList.remove("menu-open");
       });
     });
-    
+
     // Cerrar menú al hacer click fuera
     document.addEventListener("click", (e) => {
       if (!menuBtn.contains(e.target) && !mobileMenu.contains(e.target)) {
@@ -417,5 +414,22 @@
         userBtn.setAttribute("aria-expanded", "false");
       }
     });
+  })();
+
+  // Establecer altura dinámica del header para usar en CSS
+  (function setHeaderHeight() {
+    const header = document.querySelector(".site-header");
+    if (!header) return;
+    
+    function updateHeaderHeight() {
+      const height = header.offsetHeight;
+      document.documentElement.style.setProperty("--header-height", height + "px");
+    }
+    
+    // Ejecutar al cargar
+    updateHeaderHeight();
+    
+    // Actualizar cuando se redimensiona la ventana
+    window.addEventListener("resize", updateHeaderHeight);
   })();
 </script>
