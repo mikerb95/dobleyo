@@ -41,7 +41,7 @@ usersRouter.get('/', auth.authenticateToken, auth.requireRole('admin'), async (r
 usersRouter.put('/:id', auth.authenticateToken, auth.requireRole('admin'), async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, first_name, last_name, mobile_phone, city, state_province, country, role, is_verified } = req.body;
+    const { name, first_name, last_name, mobile_phone, city, state_province, country, role, is_verified, tax_id } = req.body;
 
     // Validar que el usuario existe
     const userResult = await query('SELECT id FROM users WHERE id = ?', [id]);
@@ -80,6 +80,10 @@ usersRouter.put('/:id', auth.authenticateToken, auth.requireRole('admin'), async
     if (country !== undefined && country !== null) {
       updates.push('country = ?');
       values.push(country);
+    }
+    if (tax_id !== undefined && tax_id !== null) {
+      updates.push('tax_id = ?');
+      values.push(tax_id);
     }
     if (role !== undefined && role !== null) {
       updates.push('role = ?');

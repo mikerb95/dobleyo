@@ -223,11 +223,11 @@ import AppLayout from "../../layouts/AppLayout.astro";
           <div style="margin-bottom: 1.5rem;">
             <label
               style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
-              >País:</label
+              >Cédula/NIT:</label
             >
             <input
               type="text"
-              id="editCountry"
+              id="editTaxId"
               style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;"
             />
           </div>
@@ -681,6 +681,7 @@ import AppLayout from "../../layouts/AppLayout.astro";
       document.getElementById("editCity").value = user.city || "";
       document.getElementById("editState").value = user.state_province || "";
       document.getElementById("editCountry").value = user.country || "";
+      document.getElementById("editTaxId").value = user.tax_id || "";
       document.getElementById("editVerified").checked = user.is_verified;
 
       document.getElementById("editModal").style.display = "flex";
@@ -781,6 +782,7 @@ import AppLayout from "../../layouts/AppLayout.astro";
           city: document.getElementById("editCity").value || null,
           state_province: document.getElementById("editState").value || null,
           country: document.getElementById("editCountry").value || null,
+          tax_id: document.getElementById("editTaxId").value || null,
           role: document.getElementById("editRole").value,
           is_verified: isVerified,
         };
