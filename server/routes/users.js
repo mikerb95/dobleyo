@@ -1,9 +1,9 @@
 import { Router } from 'express';
 import * as auth from '../auth.js';
 import { query } from '../db.js';
+import { logAudit } from '../services/audit.js';
 
 const usersRouter = Router();
-const { logAudit } = require('../services/audit');
 
 // GET /api/users - Obtener todos los usuarios (solo admin)
 usersRouter.get('/', auth.authenticateToken, auth.requireRole('admin'), async (req, res) => {

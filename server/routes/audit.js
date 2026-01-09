@@ -1,8 +1,9 @@
-const express = require('express');
+import express from 'express';
+import * as auth from '../auth.js';
+import { query } from '../db.js';
+import { logAudit, getAuditLogs, getAuditStats } from '../services/audit.js';
+
 const auditRouter = express.Router();
-const { logAudit, getAuditLogs, getAuditStats } = require('../services/audit');
-const auth = require('../auth');
-const { query } = require('../db');
 
 // GET /api/audit/logs - Obtener logs de auditoría (solo admin)
 auditRouter.get('/logs', auth.authenticateToken, auth.requireRole('admin'), async (req, res) => {
@@ -77,4 +78,4 @@ auditRouter.get('/actions', auth.authenticateToken, auth.requireRole('admin'), a
   }
 });
 
-module.exports = auditRouter;
+export default auditRouter;

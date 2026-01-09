@@ -1,4 +1,4 @@
-const db = require('../db');
+import { query } from '../db.js';
 
 /**
  * Registrar una acción en el audit_logs
@@ -14,8 +14,6 @@ async function logAudit(userId, action, entityType, entityId, details = {}) {
       console.warn('[Audit] Missing required parameters:', { userId, action, entityType, entityId });
       return null;
     }
-
-    const { query } = require('../db');
     
     const result = await query(
       `INSERT INTO audit_logs (user_id, action, entity_type, entity_id, details)
@@ -23,6 +21,7 @@ async function logAudit(userId, action, entityType, entityId, details = {}) {
       [userId, action, entityType, entityId, JSON.stringify(details)]
     );
 
+    console.log('[Audit] Action logged:', { userId, action, entityType, entityId });
     return result;
   } catch (err) {
     console.error('[Audit] Error logging action:', err);
@@ -36,7 +35,6 @@ async function logAudit(userId, action, entityType, entityId, details = {}) {
  */
 async function getAuditLogs(filters = {}) {
   try {
-    const { query } = require('../db');
     const { action, entityType, userId, limit = 100, offset = 0 } = filters;
 
     let sql = `
@@ -89,8 +87,6 @@ async function getAuditLogs(filters = {}) {
  */
 async function getAuditStats() {
   try {
-    const { query } = require('../db');
-
     const result = await query(`
       SELECT 
         action,
@@ -109,8 +105,4 @@ async function getAuditStats() {
   }
 }
 
-module.exports = {
-  logAudit,
-  getAuditLogs,
-  getAuditStats
-};
+export { logAudit, getAuditLogs, getAuditStats };
