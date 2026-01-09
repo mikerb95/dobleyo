@@ -2,6 +2,7 @@
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import Head from "../components/Head.astro";
+import SpeedInsights from "@vercel/speed-insights/astro";
 ---
 
 <!doctype html>
@@ -85,5 +86,6 @@ import Head from "../components/Head.astro";
         window.addEventListener("resize", setHeaderMetrics);
       })();
     </script>
+    <SpeedInsights />
   </body>
 </html>
