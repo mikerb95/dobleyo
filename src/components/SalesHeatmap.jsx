@@ -158,9 +158,12 @@ export default function SalesHeatmap() {
         <div style={{
           textAlign: 'center',
           padding: '2rem',
-          color: '#999'
+          color: '#999',
+          background: '#f5f5f5',
+          borderRadius: '8px',
+          marginBottom: '1rem'
         }}>
-          No hay datos de ventas disponibles
+          ℹ️ No hay datos de ventas disponibles en este momento
         </div>
       )}
 
@@ -172,7 +175,7 @@ export default function SalesHeatmap() {
           borderRadius: '8px',
           overflow: 'hidden',
           border: '1px solid #ddd',
-          display: loading || data.length === 0 ? 'none' : 'block'
+          display: loading ? 'none' : 'block'
         }}
       />
 

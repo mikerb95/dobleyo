@@ -770,7 +770,9 @@ import AppLayout from "../../layouts/AppLayout.astro";
 
         if (!currentEditUserId) return;
 
-        const isVerified = document.getElementById("editVerified").checked ? 1 : 0;
+        const isVerified = document.getElementById("editVerified").checked
+          ? 1
+          : 0;
 
         const userData = {
           first_name: document.getElementById("editFirstName").value || null,
