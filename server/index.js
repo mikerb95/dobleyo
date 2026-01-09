@@ -17,6 +17,7 @@ import { inventoryRouter } from './routes/inventory.js';
 import { emailRouter } from './routes/emails.js';
 import { contactRouter } from './routes/contact.js';
 import { usersRouter } from './routes/users.js';
+import auditRouter from './routes/audit.js';
 
 const app = express();
 
@@ -68,6 +69,7 @@ app.use('/api/inventory', inventoryRouter);
 app.use('/api/emails', emailRouter);
 app.use('/api/contact', contactRouter);
 app.use('/api/users', usersRouter);
+app.use('/api/audit', auditRouter);
 
 // Debug endpoint to check environment variables (safe version)
 app.get('/api/debug-env', (req, res) => {

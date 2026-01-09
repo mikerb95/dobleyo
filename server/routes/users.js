@@ -3,6 +3,7 @@ import * as auth from '../auth.js';
 import { query } from '../db.js';
 
 const usersRouter = Router();
+const { logAudit } = require('../services/audit');
 
 // GET /api/users - Obtener todos los usuarios (solo admin)
 usersRouter.get('/', auth.authenticateToken, auth.requireRole('admin'), async (req, res) => {
@@ -134,6 +135,20 @@ usersRouter.put('/:id', auth.authenticateToken, auth.requireRole('admin'), async
     );
 
     console.log('[PUT /api/users/:id] Updated user:', updated.rows[0]);
+    
+    // Registrar en auditoría
+    await logAudit(
+      req.user.id,
+      'update_user',
+      'user',
+      parseInt(id),
+      {
+        fields_updated: Object.keys(req.body).filter(k => 
+          req.body[k] !== undefined && req.body[k] !== null
+        )
+      }
+    );
+    
     res.json({ user: updated.rows[0] });
   } catch (err) {
     console.error('[PUT /api/users/:id] Error:', err);
