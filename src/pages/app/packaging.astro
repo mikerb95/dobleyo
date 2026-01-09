@@ -348,7 +348,14 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
         roastedLots.forEach((item) => {
           const option = document.createElement("option");
           option.value = JSON.stringify(item);
-          option.textContent = `${item.lot_id} - ${item.roast_level === "LIGHT" ? "Clara" : item.roast_level === "MEDIUM" ? "Media" : "Oscura"} (${item.weight_kg} kg)`;
+          const lotId = item.lot_id || "Desconocido";
+          const roastText = 
+            item.roast_level === "LIGHT" ? "Clara" : 
+            item.roast_level === "MEDIUM" ? "Media" : 
+            item.roast_level === "DARK" ? "Oscura" : 
+            item.roast_level || "Por especificar";
+          const weight = item.weight_kg || item.remaining_weight || 0;
+          option.textContent = `${lotId} - ${roastText} (${weight} kg)`;
           roastedSelect.appendChild(option);
         });
       } catch (error) {
@@ -367,26 +374,41 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
       }
 
       currentRoasted = JSON.parse(roastedSelect.value);
+      
+      // Información del café tostado
       document.getElementById("coffeeLotId").textContent =
-        currentRoasted.lot_id;
-      document.getElementById("coffeeVariety").textContent = "—";
+        currentRoasted.lot_id || "—";
+      document.getElementById("coffeeVariety").textContent = 
+        currentRoasted.variety || "—";
       document.getElementById("coffeeRoastLevel").textContent =
         currentRoasted.roast_level === "LIGHT"
           ? "Clara"
           : currentRoasted.roast_level === "MEDIUM"
             ? "Media"
-            : "Oscura";
+            : currentRoasted.roast_level === "DARK"
+              ? "Oscura"
+              : "—";
+      
+      // Usar weight_kg o remaining_weight
+      const availableWeight = currentRoasted.weight_kg || currentRoasted.remaining_weight || 0;
       document.getElementById("coffeeAvailableWeight").textContent =
-        `${currentRoasted.weight_kg} kg`;
+        `${availableWeight} kg`;
 
-      // Mostrar info de origen (será extraída de la BD en actualización futura)
-      document.getElementById("originFarm").textContent = "—";
-      document.getElementById("originAroma").textContent = "—";
-      document.getElementById("originNotes").textContent = "—";
+      // Actualizar máximo en input
+      document.getElementById("packageQuantity").max = availableWeight;
+      document.getElementById("quantityHint").textContent = 
+        `Máximo disponible: ${availableWeight} kg`;
+
+      // Información de origen (traer del objeto o desde la base de datos)
+      document.getElementById("originFarm").textContent = 
+        currentRoasted.farm_name || currentRoasted.farm || "—";
+      document.getElementById("originAroma").textContent = 
+        currentRoasted.aroma || "—";
+      document.getElementById("originNotes").textContent = 
+        currentRoasted.taste_notes || currentRoasted.notes || "—";
+      
       originInfo.style.display = "block";
-
       coffeeInfoCard.style.display = "block";
-      document.getElementById("packageQuantity").max = currentRoasted.weight_kg;
       updateSummary();
     });
 
@@ -436,6 +458,14 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
         quantityInKg = packageQuantity / 1000;
       }
 
+      // Validar que no exceda el máximo
+      const maxKg = currentRoasted ? (currentRoasted.weight_kg || currentRoasted.remaining_weight || 0) : 0;
+      if (quantityInKg > maxKg) {
+        alert(`⚠️ La cantidad no puede exceder ${maxKg} kg disponibles`);
+        document.getElementById("packageQuantity").value = maxKg;
+        return;
+      }
+
       if (packageSize === "bulk") {
         document.getElementById("unitCount").placeholder =
           "Especifica la cantidad de unidades";
@@ -478,10 +508,11 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
           3
         ).toFixed(1);
 
+        const weight = currentRoasted.weight_kg || currentRoasted.remaining_weight || 0;
         document.getElementById("summaryLot").textContent =
-          currentRoasted.lot_id;
+          currentRoasted.lot_id || "—";
         document.getElementById("summaryQuantity").textContent =
-          `${currentRoasted.weight_kg} kg`;
+          `${weight} kg`;
         document.getElementById("summaryPresentation").textContent =
           presentation === "GRANO"
             ? "Grano Entero"
@@ -503,6 +534,18 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
       .addEventListener("change", updateSummary);
     document
       .getElementById("unitCount")
+      .addEventListener("input", updateSummary);
+    document
+      .getElementById("grindSize")
+      .addEventListener("change", updateSummary);
+    document
+      .getElementById("acidity")
+      .addEventListener("input", updateSummary);
+    document
+      .getElementById("body")
+      .addEventListener("input", updateSummary);
+    document
+      .getElementById("balance")
       .addEventListener("input", updateSummary);
 
     // Enviar formulario a la API
