@@ -420,15 +420,18 @@
   (function setHeaderHeight() {
     const header = document.querySelector(".site-header");
     if (!header) return;
-    
+
     function updateHeaderHeight() {
       const height = header.offsetHeight;
-      document.documentElement.style.setProperty("--header-height", height + "px");
+      document.documentElement.style.setProperty(
+        "--header-height",
+        height + "px"
+      );
     }
-    
+
     // Ejecutar al cargar
     updateHeaderHeight();
-    
+
     // Actualizar cuando se redimensiona la ventana
     window.addEventListener("resize", updateHeaderHeight);
   })();
