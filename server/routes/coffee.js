@@ -15,7 +15,7 @@ coffeeRouter.use(requireRole(['admin', 'caficultor']));
 coffeeRouter.post('/harvest', async (req, res) => {
   res.setHeader('Content-Type', 'application/json');
   try {
-    const { farm, variety, climate, process, aroma, tasteNotes } = req.body;
+    const { farm, region, altitude, variety, climate, process, aroma, tasteNotes } = req.body;
 
     // Validaciones
     if (!farm || !variety || !climate || !process || !aroma || !tasteNotes) {
@@ -26,26 +26,33 @@ coffeeRouter.post('/harvest', async (req, res) => {
       });
     }
 
-    // Generar ID de lote
-    const farmMap = {
-      'finca-la-sierra': { region: 'HUI', altitude: '1800' },
-      'finca-nariño': { region: 'NAR', altitude: '1900' },
-      'finca-cauca': { region: 'CAU', altitude: '1750' }
-    };
+    // Usar región y altura proporcionados o usar defaults
+    let farmRegion = region;
+    let farmAltitude = altitude;
 
-    const farmInfo = farmMap[farm];
-    if (!farmInfo) {
-      return res.status(400).json({ success: false, error: 'Finca inválida' });
+    if (!farmRegion || !farmAltitude) {
+      // Fallback a valores por defecto si no se proporcionan
+      const farmMap = {
+        'finca-la-sierra': { region: 'HUI', altitude: 1800 },
+        'finca-nariño': { region: 'NAR', altitude: 1900 },
+        'finca-cauca': { region: 'CAU', altitude: 1750 }
+      };
+
+      const farmInfo = farmMap[farm];
+      if (farmInfo) {
+        farmRegion = farmInfo.region;
+        farmAltitude = farmInfo.altitude;
+      }
     }
 
     const lotNumber = String(Math.floor(Math.random() * 100) + 1).padStart(2, '0');
-    const lotId = `COL-${farmInfo.region}-${farmInfo.altitude}-${variety}-${process}-${lotNumber}`;
+    const lotId = `COL-${farmRegion}-${farmAltitude}-${variety}-${process}-${lotNumber}`;
 
     // Guardar en BD
     const result = await query(
-      `INSERT INTO coffee_harvests (lot_id, farm, variety, climate, process, aroma, taste_notes, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, NOW())`,
-      [lotId, farm, variety, climate, process, aroma, tasteNotes]
+      `INSERT INTO coffee_harvests (lot_id, farm, region, altitude, variety, climate, process, aroma, taste_notes, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
+      [lotId, farm, farmRegion, farmAltitude, variety, climate, process, aroma, tasteNotes]
     );
 
     return res.status(201).json({
@@ -296,10 +303,23 @@ coffeeRouter.post('/packaging', async (req, res) => {
       // Crear producto en la tabla products
       const productName = `Café ${roastedInfo.lot_id || 'Premium'} - ${packageSize} (${presentation === 'GRANO' ? 'Grano' : 'Molido'})`;
       
+      // Get the full roasted coffee data including harvest info for region/roast level
+      const fullRoastedResult = await query(
+        `SELECT rc.roast_level, ch.region 
+         FROM roasted_coffee rc 
+         INNER JOIN roasting_batches rb ON rc.roasting_id = rb.id 
+         INNER JOIN coffee_harvests ch ON rb.lot_id = ch.lot_id 
+         WHERE rc.id = ?`,
+        [roastedInfo.roasted_id]
+      );
+      
+      const roastLevel = fullRoastedResult.rows[0]?.roast_level || 'medium';
+      const region = fullRoastedResult.rows[0]?.region || 'Colombia';
+      
       await query(
         `INSERT INTO products (id, name, category, origin, process, roast, price, cost, is_active, stock_quantity, stock_min, weight, weight_unit, created_at)
          VALUES (?, ?, 'cafe', ?, ?, ?, 0, 0, 1, ?, 0, ?, ?, NOW())`,
-        [productId, productName, roastedInfo.region || 'Colombia', roastedInfo.process || 'unknown', roastedInfo.roast_level || 'medium', unitCount, packageSize, 'unidad']
+        [productId, productName, region, roastedInfo.process || 'unknown', roastLevel, unitCount, packageSize, 'unidad']
       );
 
       // Registrar movimiento de inventario
@@ -371,8 +391,35 @@ coffeeRouter.get('/roasting-batches', async (req, res) => {
 coffeeRouter.get('/roasted-coffee', async (req, res) => {
   try {
     const result = await query(
-      'SELECT * FROM roasted_coffee WHERE status = ? ORDER BY created_at DESC LIMIT 100',
-      ['ready_for_storage']
+      `SELECT 
+        rci.id,
+        rci.roasted_id,
+        rci.location,
+        rci.container_type,
+        rci.container_count,
+        rci.status,
+        rc.roast_level,
+        rc.weight_kg,
+        rc.weight_loss_percent,
+        rb.lot_id,
+        ch.farm,
+        ch.farm as farm_name,
+        ch.region,
+        ch.altitude,
+        ch.variety,
+        ch.climate,
+        ch.process,
+        ch.aroma,
+        ch.taste_notes,
+        ch.taste_notes as notes
+      FROM roasted_coffee_inventory rci
+      INNER JOIN roasted_coffee rc ON rci.roasted_id = rc.id
+      INNER JOIN roasting_batches rb ON rc.roasting_id = rb.id
+      INNER JOIN coffee_harvests ch ON rb.lot_id = ch.lot_id
+      WHERE rci.status = ? 
+      ORDER BY rci.created_at DESC 
+      LIMIT 100`,
+      ['ready_for_packaging']
     );
     res.json(result.rows);
   } catch (err) {

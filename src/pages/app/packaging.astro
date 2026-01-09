@@ -406,6 +406,10 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
       // Información de origen (traer del objeto o desde la base de datos)
       document.getElementById("originFarm").textContent =
         currentRoasted.farm_name || currentRoasted.farm || "—";
+      document.getElementById("originRegion").textContent =
+        currentRoasted.region || "—";
+      document.getElementById("originAltitude").textContent =
+        currentRoasted.altitude ? `${currentRoasted.altitude} m` : "—";
       document.getElementById("originAroma").textContent =
         currentRoasted.aroma || "—";
       document.getElementById("originNotes").textContent =

@@ -194,16 +194,20 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
       >
         <div style="font-size: 0.85rem; color: #666;">
           <div style="margin-bottom: 0.75rem;">
-            <strong>Finca:</strong> <span id="detailFinca"></span>
+            <strong>Finca:</strong>
+            <span id="detailFinca"></span>
           </div>
           <div style="margin-bottom: 0.75rem;">
-            <strong>Variedad:</strong> <span id="detailVariedad"></span>
+            <strong>Variedad:</strong>
+            <span id="detailVariedad"></span>
           </div>
           <div style="margin-bottom: 0.75rem;">
-            <strong>Clima:</strong> <span id="detailClima"></span>
+            <strong>Clima:</strong>
+            <span id="detailClima"></span>
           </div>
           <div>
-            <strong>Proceso:</strong> <span id="detailProceso"></span>
+            <strong>Proceso:</strong>
+            <span id="detailProceso"></span>
           </div>
         </div>
       </div>
@@ -336,6 +340,8 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
           },
           body: JSON.stringify({
             farm: farmSelect.value,
+            region: farmData[farmSelect.value]?.region || "",
+            altitude: parseInt(farmData[farmSelect.value]?.altitude || "0"),
             variety: document.getElementById("variety").value,
             climate: document.querySelector('input[name="climate"]:checked')
               .value,
@@ -365,7 +371,7 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
 
         // Llenar datos del modal
         document.getElementById("newLotId").textContent = lotId;
-        
+
         // Llenar información del lote
         const varietyMap = {
           CAT: "Caturra",

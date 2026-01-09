@@ -17,7 +17,7 @@ import { inventoryRouter } from './routes/inventory.js';
 import { emailRouter } from './routes/emails.js';
 import { contactRouter } from './routes/contact.js';
 import { usersRouter } from './routes/users.js';
-import auditRouter from './routes/audit.js';
+import { query } from './db.js';
 
 const app = express();
 
@@ -69,7 +69,116 @@ app.use('/api/inventory', inventoryRouter);
 app.use('/api/emails', emailRouter);
 app.use('/api/contact', contactRouter);
 app.use('/api/users', usersRouter);
-app.use('/api/audit', auditRouter);
+
+// Endpoint de auditoría - Obtener logs
+app.get('/api/audit/logs', async (req, res) => {
+  try {
+    const { action, entity_type, user_id, limit = 100, offset = 0 } = req.query;
+
+    let sql = `
+      SELECT 
+        al.id,
+        al.user_id,
+        u.email as user_email,
+        u.first_name,
+        u.last_name,
+        al.action,
+        al.entity_type,
+        al.entity_id,
+        al.details,
+        al.created_at
+      FROM audit_logs al
+      LEFT JOIN users u ON al.user_id = u.id
+      WHERE 1=1
+    `;
+    
+    const params = [];
+
+    if (action) {
+      sql += ` AND al.action = ?`;
+      params.push(action);
+    }
+    if (entity_type) {
+      sql += ` AND al.entity_type = ?`;
+      params.push(entity_type);
+    }
+    if (user_id) {
+      sql += ` AND al.user_id = ?`;
+      params.push(user_id);
+    }
+
+    sql += ` ORDER BY al.created_at DESC LIMIT ? OFFSET ?`;
+    params.push(parseInt(limit) || 100, parseInt(offset) || 0);
+
+    const result = await query(sql, params);
+
+    // Contar total
+    let countSql = 'SELECT COUNT(*) as total FROM audit_logs WHERE 1=1';
+    const countParams = [];
+
+    if (action) {
+      countSql += ` AND action = ?`;
+      countParams.push(action);
+    }
+    if (entity_type) {
+      countSql += ` AND entity_type = ?`;
+      countParams.push(entity_type);
+    }
+    if (user_id) {
+      countSql += ` AND user_id = ?`;
+      countParams.push(user_id);
+    }
+
+    const countResult = await query(countSql, countParams);
+    const total = countResult.rows[0].total;
+
+    res.json({
+      logs: result.rows,
+      total,
+      limit: parseInt(limit) || 100,
+      offset: parseInt(offset) || 0
+    });
+  } catch (err) {
+    console.error('[GET /api/audit/logs] Error:', err);
+    res.status(500).json({ error: 'Error al obtener logs de auditoría' });
+  }
+});
+
+// Endpoint de auditoría - Estadísticas
+app.get('/api/audit/stats', async (req, res) => {
+  try {
+    const result = await query(`
+      SELECT 
+        action,
+        entity_type,
+        COUNT(*) as count
+      FROM audit_logs
+      WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      GROUP BY action, entity_type
+      ORDER BY count DESC
+    `);
+
+    res.json({ stats: result.rows });
+  } catch (err) {
+    console.error('[GET /api/audit/stats] Error:', err);
+    res.status(500).json({ error: 'Error al obtener estadísticas' });
+  }
+});
+
+// Endpoint de auditoría - Lista de acciones
+app.get('/api/audit/actions', async (req, res) => {
+  try {
+    const result = await query(
+      `SELECT DISTINCT action FROM audit_logs ORDER BY action`
+    );
+
+    const actions = result.rows.map(r => r.action);
+    res.json({ actions });
+  } catch (err) {
+    console.error('[GET /api/audit/actions] Error:', err);
+    res.status(500).json({ error: 'Error al obtener acciones' });
+  }
+});
 
 // Debug endpoint to check environment variables (safe version)
 app.get('/api/debug-env', (req, res) => {
