@@ -338,7 +338,12 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
     // Cargar cafés tostados en inventario desde API
     async function loadRoastedLots() {
       try {
-        const response = await fetch("/api/coffee/roasted-coffee");
+        const response = await fetch("/api/coffee/roasted-coffee", {
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        });
         if (!response.ok) throw new Error("Error al cargar cafés");
 
         const roastedLots = await response.json();
@@ -592,6 +597,7 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
       try {
         const response = await fetch("/api/coffee/packaging", {
           method: "POST",
+          credentials: 'include',
           headers: {
             "Content-Type": "application/json",
           },
