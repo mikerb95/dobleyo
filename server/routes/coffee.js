@@ -268,7 +268,12 @@ coffeeRouter.post('/packaging', async (req, res) => {
 
     // Obtener información del café tostado para crear el SKU
     const roastedResult = await query(
-      'SELECT * FROM roasted_coffee_inventory WHERE id = ?',
+      `SELECT rci.*, rc.roast_level, rb.lot_id, ch.region
+       FROM roasted_coffee_inventory rci
+       INNER JOIN roasted_coffee rc ON rci.roasted_id = rc.id
+       INNER JOIN roasting_batches rb ON rc.roasting_id = rb.id
+       INNER JOIN coffee_harvests ch ON rb.lot_id = ch.lot_id
+       WHERE rci.id = ?`,
       [roastedStorageId]
     );
 
@@ -303,23 +308,13 @@ coffeeRouter.post('/packaging', async (req, res) => {
       // Crear producto en la tabla products
       const productName = `Café ${roastedInfo.lot_id || 'Premium'} - ${packageSize} (${presentation === 'GRANO' ? 'Grano' : 'Molido'})`;
       
-      // Get the full roasted coffee data including harvest info for region/roast level
-      const fullRoastedResult = await query(
-        `SELECT rc.roast_level, ch.region 
-         FROM roasted_coffee rc 
-         INNER JOIN roasting_batches rb ON rc.roasting_id = rb.id 
-         INNER JOIN coffee_harvests ch ON rb.lot_id = ch.lot_id 
-         WHERE rc.id = ?`,
-        [roastedInfo.roasted_id]
-      );
-      
-      const roastLevel = fullRoastedResult.rows[0]?.roast_level || 'medium';
-      const region = fullRoastedResult.rows[0]?.region || 'Colombia';
+      const roastLevel = roastedInfo.roast_level || 'medium';
+      const region = roastedInfo.region || 'Colombia';
       
       await query(
         `INSERT INTO products (id, name, category, origin, process, roast, price, cost, is_active, stock_quantity, stock_min, weight, weight_unit, created_at)
          VALUES (?, ?, 'cafe', ?, ?, ?, 0, 0, 1, ?, 0, ?, ?, NOW())`,
-        [productId, productName, region, roastedInfo.process || 'unknown', roastLevel, unitCount, packageSize, 'unidad']
+        [productId, productName, region, 'unknown', roastLevel, unitCount, packageSize, 'unidad']
       );
 
       // Registrar movimiento de inventario
