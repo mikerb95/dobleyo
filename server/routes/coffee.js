@@ -428,6 +428,46 @@ coffeeRouter.get('/roasted-coffee', async (req, res) => {
   }
 });
 
+// GET: Lotes tostados listos para almacenar
+coffeeRouter.get('/roasted-for-storage', async (req, res) => {
+  try {
+    const result = await query(
+      `SELECT 
+        rc.id,
+        rc.roasting_id,
+        rc.roast_level,
+        rc.weight_kg,
+        rc.weight_loss_percent,
+        rc.actual_temp,
+        rc.roast_time_minutes,
+        rc.observations,
+        rc.status,
+        rb.lot_id,
+        ch.farm,
+        ch.farm as farm_name,
+        ch.region,
+        ch.altitude,
+        ch.variety,
+        ch.climate,
+        ch.process,
+        ch.aroma,
+        ch.taste_notes,
+        ch.taste_notes as notes
+      FROM roasted_coffee rc
+      INNER JOIN roasting_batches rb ON rc.roasting_id = rb.id
+      INNER JOIN coffee_harvests ch ON rb.lot_id = ch.lot_id
+      WHERE rc.status = ? 
+      ORDER BY rc.created_at DESC 
+      LIMIT 100`,
+      ['ready_for_storage']
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error en GET roasted-for-storage:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 coffeeRouter.get('/packaged', async (req, res) => {
   try {
     const result = await query(

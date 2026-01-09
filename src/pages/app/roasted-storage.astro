@@ -207,7 +207,7 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
     // Cargar cafés tostados listos desde API
     async function loadRoastedLots() {
       try {
-        const response = await fetch("/api/coffee/roasted-coffee");
+        const response = await fetch("/api/coffee/roasted-for-storage");
         if (!response.ok) throw new Error("Error al cargar cafés tostados");
 
         const roastedLots = await response.json();
@@ -241,7 +241,8 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
       currentRoasted = JSON.parse(roastedSelect.value);
       document.getElementById("roastedLotId").textContent =
         currentRoasted.lot_id;
-      document.getElementById("roastedVariety").textContent = "—";
+      document.getElementById("roastedVariety").textContent =
+        currentRoasted.variety || "—";
       document.getElementById("roastedWeight").textContent =
         `${currentRoasted.weight_kg} kg`;
       document.getElementById("roastLevel").textContent =
