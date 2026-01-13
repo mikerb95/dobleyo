@@ -574,29 +574,55 @@ coffeeRouter.get('/lots', async (req, res) => {
   try {
     console.log('[GET /lots] Iniciando carga de lotes');
     
-    const result = await query(
+    // Intentar desde coffee_harvests primero (lotes de recolección)
+    let result = await query(
       `SELECT 
         id,
-        code as lot_id,
-        name,
+        lot_id,
         farm as farm_name,
         variety,
-        weight,
-        weight_unit,
-        estado as status,
-        harvest_date,
-        roast_date as created_at,
-        score,
-        aroma,
-        flavor_notes,
+        region,
+        altitude,
+        climate,
         process,
-        roast as roast_level
-      FROM lots 
+        aroma,
+        taste_notes as notes,
+        created_at,
+        'verde' as status,
+        NULL as weight
+      FROM coffee_harvests 
       ORDER BY created_at DESC 
       LIMIT 500`
     );
 
-    console.log(`[GET /lots] Se cargaron ${result.rows?.length || 0} lotes`);
+    console.log(`[GET /lots] Lotes de recolección: ${result.rows?.length || 0}`);
+
+    // Si no hay en coffee_harvests, intentar desde lots
+    if (!result.rows || result.rows.length === 0) {
+      console.log('[GET /lots] Intentando desde tabla lots');
+      result = await query(
+        `SELECT 
+          id,
+          code as lot_id,
+          name,
+          farm as farm_name,
+          variety,
+          weight,
+          estado as status,
+          harvest_date,
+          roast_date as created_at,
+          process,
+          roast as roast_level,
+          aroma,
+          flavor_notes as notes
+        FROM lots 
+        ORDER BY created_at DESC 
+        LIMIT 500`
+      );
+      console.log(`[GET /lots] Lotes de tabla lots: ${result.rows?.length || 0}`);
+    }
+
+    console.log(`[GET /lots] Total lotes cargados: ${result.rows?.length || 0}`);
     
     res.json({
       lots: result.rows || [],

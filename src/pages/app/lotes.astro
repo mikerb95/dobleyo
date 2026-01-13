@@ -189,24 +189,33 @@ import AppLayout from "../../layouts/AppLayout.astro";
 
     async function loadLotes() {
       try {
+        console.log('[Lotes Page] Iniciando carga desde /api/coffee/lots');
+        
         const response = await fetch("/api/coffee/lots", {
           credentials: "include",
         });
 
+        console.log('[Lotes Page] Response status:', response.status);
+
         if (!response.ok) {
-          throw new Error("Error al cargar lotes");
+          console.error('[Lotes Page] Response error:', response.status, response.statusText);
+          throw new Error(`Error al cargar lotes: ${response.status}`);
         }
 
         const data = await response.json();
+        console.log('[Lotes Page] Data recibida:', data);
+        
         allLotes = data.lots || [];
+        console.log('[Lotes Page] Total lotes cargados:', allLotes.length);
+        
         displayLotes(allLotes);
         updateStats(allLotes);
       } catch (error) {
-        console.error("Error:", error);
+        console.error('[Lotes Page] Error completo:', error);
         document.getElementById("lotesTable").innerHTML = `
           <tr>
             <td colspan="6" style="padding: 2rem; text-align: center; color: #c00;">
-              Error al cargar los lotes
+              Error al cargar los lotes: ${error.message}
             </td>
           </tr>
         `;
