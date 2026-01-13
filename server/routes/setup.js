@@ -240,7 +240,7 @@ setupRouter.get('/', async (req, res) => {
       const existing = await db.query('SELECT id FROM products WHERE id = ?', [p.id]);
       if (existing.rows.length === 0) {
         await db.query(
-          `INSERT INTO products (id, name, category, origin, process, roast, price, rating, is_deal, is_bestseller, is_new, is_fast, image_url, stock)
+          `INSERT INTO products (id, name, category, origin, process, roast, price, rating, is_deal, is_bestseller, is_new, is_fast, image_url, stock_quantity)
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [
             p.id, p.name, p.category, p.origin || null, p.process || null, p.roast || null,
@@ -413,7 +413,7 @@ setupRouter.post('/full-setup', async (req, res) => {
       const existing = await db.query('SELECT id FROM products WHERE id = ?', [p.id]);
       if (existing.rows.length === 0) {
         await db.query(
-          `INSERT INTO products (id, name, category, origin, process, roast, price, rating, is_deal, is_bestseller, is_new, is_fast, image_url, stock)
+          `INSERT INTO products (id, name, category, origin, process, roast, price, rating, is_deal, is_bestseller, is_new, is_fast, image_url, stock_quantity)
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [
             p.id, p.name, p.category, p.origin || null, p.process || null, p.roast || null,
