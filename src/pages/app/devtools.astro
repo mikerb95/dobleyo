@@ -46,6 +46,8 @@ import AppLayout from "../../layouts/AppLayout.astro";
           </div>
           <button
             id="cleanUsersBtn"
+            data-endpoint="/api/devtools/clean-users"
+            data-status="cleanUsersStatus"
             style="padding: 0.75rem 1.5rem; background: #dc2626; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background 0.2s;"
             onmouseover="this.style.background='#b91c1c'"
             onmouseout="this.style.background='#dc2626'"
@@ -77,6 +79,8 @@ import AppLayout from "../../layouts/AppLayout.astro";
           </div>
           <button
             id="cleanLotsBtn"
+            data-endpoint="/api/devtools/clean-lots"
+            data-status="cleanLotsStatus"
             style="padding: 0.75rem 1.5rem; background: #dc2626; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background 0.2s;"
             onmouseover="this.style.background='#b91c1c'"
             onmouseout="this.style.background='#dc2626'"
@@ -107,6 +111,8 @@ import AppLayout from "../../layouts/AppLayout.astro";
           </div>
           <button
             id="cleanProductsBtn"
+            data-endpoint="/api/devtools/clean-products"
+            data-status="cleanProductsStatus"
             style="padding: 0.75rem 1.5rem; background: #dc2626; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background 0.2s;"
             onmouseover="this.style.background='#b91c1c'"
             onmouseout="this.style.background='#dc2626'"
@@ -222,13 +228,18 @@ import AppLayout from "../../layouts/AppLayout.astro";
 
     async function executeCleanup(endpoint, statusElementId) {
       const statusEl = document.getElementById(statusElementId);
-      const button = document.querySelector(
-        `button[data-endpoint="${endpoint}"]`
-      );
+      let button = null;
+      
+      // Encontrar el botón asociado a este status
+      document.querySelectorAll("button[data-status]").forEach(btn => {
+        if (btn.dataset.status === statusElementId) {
+          button = btn;
+        }
+      });
 
-      button.disabled = true;
+      if (button) button.disabled = true;
       statusEl.innerHTML =
-        '<span style="color: #3b82f6;">⏳ Procesando...</span>';
+        '<div style="color: #3b82f6; font-weight: 600;">⏳ Procesando...</div>';
 
       try {
         const response = await fetch(endpoint, {
@@ -242,30 +253,38 @@ import AppLayout from "../../layouts/AppLayout.astro";
           throw new Error(result.error || "Error en la respuesta del servidor");
         }
 
-        // Mostrar mensaje principal
-        let html = `<div style="color: #16a34a; font-weight: 600;">✅ ${result.message}</div>`;
+        // Mostrar mensaje principal con estilo mejorado
+        let html = `<div style="color: #16a34a; font-weight: 700; font-size: 1rem; margin-bottom: 1rem;">
+          ${result.message}
+        </div>`;
 
-        // Mostrar detalles si existen
+        // Mostrar detalles si existen (el log de acciones)
         if (result.details && Array.isArray(result.details)) {
-          html +=
-            '<div style="margin-top: 0.75rem; font-size: 0.85rem; color: #555;">';
+          html += '<div style="background: #f9fafb; border-left: 4px solid #16a34a; padding: 1rem; border-radius: 4px; font-size: 0.85rem; color: #333; font-family: monospace;">';
           result.details.forEach((detail) => {
-            html += `<div style="padding: 0.25rem 0;">${detail}</div>`;
+            // Colorear según si es éxito (✓), advertencia (⚠) o info
+            let color = "#666";
+            if (detail.includes("✓")) color = "#16a34a";
+            else if (detail.includes("⚠")) color = "#d97706";
+            
+            html += `<div style="padding: 0.4rem 0; color: ${color}; line-height: 1.5;">${detail}</div>`;
           });
           html += "</div>";
         }
 
         // Mostrar count si existe
         if (result.deletedCount !== undefined) {
-          html += `<div style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">Total eliminado: ${result.deletedCount}</div>`;
+          html += `<div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e5e7eb; font-size: 0.9rem; color: #666;">
+            <strong>Tablas procesadas:</strong> ${result.deletedCount}
+          </div>`;
         }
 
         statusEl.innerHTML = html;
       } catch (error) {
-        statusEl.innerHTML = `<div style="color: #dc2626;">❌ Error: ${error.message}</div>`;
+        statusEl.innerHTML = `<div style="background: #fee2e2; border-left: 4px solid #dc2626; padding: 1rem; border-radius: 4px; color: #dc2626; font-weight: 600;">❌ Error: ${error.message}</div>`;
         console.error(error);
       } finally {
-        button.disabled = false;
+        if (button) button.disabled = false;
       }
     }
 
