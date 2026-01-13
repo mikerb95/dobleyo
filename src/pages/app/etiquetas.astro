@@ -560,7 +560,7 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
     // Cargar lotes preparados
     async function loadPreparedLots() {
       try {
-        const response = await fetch("/api/coffee/prepared-lots");
+        const response = await fetch("/api/labels/prepared-lots");
         if (!response.ok) throw new Error("Error al cargar lotes");
 
         const lots = await response.json();
