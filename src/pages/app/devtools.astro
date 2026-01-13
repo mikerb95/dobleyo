@@ -151,16 +151,17 @@ import AppLayout from "../../layouts/AppLayout.astro";
 
         // Mostrar mensaje principal
         let html = `<div style="color: #16a34a; font-weight: 600;">✅ ${result.message}</div>`;
-        
+
         // Mostrar detalles si existen
         if (result.details && Array.isArray(result.details)) {
-          html += '<div style="margin-top: 0.75rem; font-size: 0.85rem; color: #555;">';
+          html +=
+            '<div style="margin-top: 0.75rem; font-size: 0.85rem; color: #555;">';
           result.details.forEach((detail) => {
             html += `<div style="padding: 0.25rem 0;">${detail}</div>`;
           });
-          html += '</div>';
+          html += "</div>";
         }
-        
+
         // Mostrar count si existe
         if (result.deletedCount !== undefined) {
           html += `<div style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">Total eliminado: ${result.deletedCount}</div>`;
