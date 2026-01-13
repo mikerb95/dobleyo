@@ -13,759 +13,784 @@ import AppLayout from "../../layouts/AppLayout.astro";
     </div>
 
     <div style="margin-bottom: 2rem;">
-    <div
-      style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;"
-    >
-      <button
-        id="tabLotes"
-        onclick="switchTab('lotes')"
-        style="flex: 1; padding: 0.75rem 1rem; background: #8b6f47; color: white; border: none; border-radius: 6px; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: all 0.2s;"
-        onmouseover="if(this.id !== 'tabLotes' || this.style.background === '#6b5437') this.style.background='#6b5437'"
-        onmouseout="if(this.id !== 'tabLotes' || this.style.background !== '#8b6f47') this.style.background='#8b6f47'"
+      <div
+        style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;"
       >
-        📦 Desde Lotes Preparados
-      </button>
-      <button
-        id="tabCero"
-        onclick="switchTab('cero')"
-        style="flex: 1; padding: 0.75rem 1rem; background: #ddd; color: #333; border: none; border-radius: 6px; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: all 0.2s;"
-        onmouseover="this.style.background='#ccc'"
-        onmouseout="this.style.background='#ddd'"
-      >
-        ✏️ Crear de Cero
-      </button>
-    </div>
+        <button
+          id="tabLotes"
+          onclick="switchTab('lotes')"
+          style="flex: 1; padding: 0.75rem 1rem; background: #8b6f47; color: white; border: none; border-radius: 6px; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: all 0.2s;"
+          onmouseover="if(this.id !== 'tabLotes' || this.style.background === '#6b5437') this.style.background='#6b5437'"
+          onmouseout="if(this.id !== 'tabLotes' || this.style.background !== '#8b6f47') this.style.background='#8b6f47'"
+        >
+          📦 Desde Lotes Preparados
+        </button>
+        <button
+          id="tabCero"
+          onclick="switchTab('cero')"
+          style="flex: 1; padding: 0.75rem 1rem; background: #ddd; color: #333; border: none; border-radius: 6px; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: all 0.2s;"
+          onmouseover="this.style.background='#ccc'"
+          onmouseout="this.style.background='#ddd'"
+        >
+          ✏️ Crear de Cero
+        </button>
+      </div>
 
-    <!-- TAB 1: Desde Lotes Preparados -->
-    <div id="tabLotesContent">
-      <form id="labelsFromLotsForm">
-        <!-- Selección de Lote Preparado -->
-        <div class="form-group">
-          <label for="preparedLotSelect"
-            >Lote Preparado para Venta <span class="required">*</span></label
-          >
-          <select id="preparedLotSelect" name="preparedLot" required>
-            <option value="">Selecciona un lote preparado...</option>
-          </select>
-          <div class="form-hint">
-            Cafés ya procesados con perfil de taza definido
-          </div>
-        </div>
-
-        <!-- Información del Lote -->
-        <div class="card" id="lotInfoCard" style="display: none;">
-          <h3>Información del Café</h3>
-          <div
-            style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 0.95rem; margin-bottom: 1.5rem;"
-          >
-            <div>
-              <div style="color: #666; font-size: 0.85rem;">Lote ID</div>
-              <div style="font-weight: 600;" id="lotIdDisplay">—</div>
-            </div>
-            <div>
-              <div style="color: #666; font-size: 0.85rem;">Origen</div>
-              <div style="font-weight: 600;" id="lotOriginDisplay">—</div>
-            </div>
-            <div>
-              <div style="color: #666; font-size: 0.85rem;">Variedad</div>
-              <div style="font-weight: 600;" id="lotVarietyDisplay">—</div>
-            </div>
-            <div>
-              <div style="color: #666; font-size: 0.85rem;">Tueste</div>
-              <div style="font-weight: 600;" id="lotRoastDisplay">—</div>
-            </div>
-            <div>
-              <div style="color: #666; font-size: 0.85rem;">Presentación</div>
-              <div style="font-weight: 600;" id="lotPresentationDisplay">—</div>
-            </div>
-            <div>
-              <div style="color: #666; font-size: 0.85rem;">
-                Peso Disponible
-              </div>
-              <div
-                style="font-weight: 600; color: #c67b4e;"
-                id="lotWeightDisplay"
-              >
-                —
-              </div>
+      <!-- TAB 1: Desde Lotes Preparados -->
+      <div id="tabLotesContent">
+        <form id="labelsFromLotsForm">
+          <!-- Selección de Lote Preparado -->
+          <div class="form-group">
+            <label for="preparedLotSelect"
+              >Lote Preparado para Venta <span class="required">*</span></label
+            >
+            <select id="preparedLotSelect" name="preparedLot" required>
+              <option value="">Selecciona un lote preparado...</option>
+            </select>
+            <div class="form-hint">
+              Cafés ya procesados con perfil de taza definido
             </div>
           </div>
 
-          <!-- Propiedades de Cata (Mostradas) -->
-          <div
-            style="margin-top: 1.5rem; padding: 1rem; background: #f9f7f4; border-radius: 6px; border-left: 4px solid #c67b4e;"
-          >
-            <h4 style="margin: 0 0 1rem 0; color: #251a14;">
-              ☕ Perfil de Taza
-            </h4>
+          <!-- Información del Lote -->
+          <div class="card" id="lotInfoCard" style="display: none;">
+            <h3>Información del Café</h3>
             <div
-              style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 0.95rem;"
+              style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 0.95rem; margin-bottom: 1.5rem;"
             >
               <div>
-                <div style="color: #666; font-size: 0.85rem;">Acidez</div>
-                <div style="font-weight: 600;" id="lotAcidityDisplay">—</div>
+                <div style="color: #666; font-size: 0.85rem;">Lote ID</div>
+                <div style="font-weight: 600;" id="lotIdDisplay">—</div>
               </div>
               <div>
-                <div style="color: #666; font-size: 0.85rem;">Cuerpo</div>
-                <div style="font-weight: 600;" id="lotBodyDisplay">—</div>
+                <div style="color: #666; font-size: 0.85rem;">Origen</div>
+                <div style="font-weight: 600;" id="lotOriginDisplay">—</div>
               </div>
               <div>
-                <div style="color: #666; font-size: 0.85rem;">Balance</div>
-                <div style="font-weight: 600;" id="lotBalanceDisplay">—</div>
+                <div style="color: #666; font-size: 0.85rem;">Variedad</div>
+                <div style="font-weight: 600;" id="lotVarietyDisplay">—</div>
               </div>
               <div>
-                <div style="color: #666; font-size: 0.85rem;">Puntuación</div>
+                <div style="color: #666; font-size: 0.85rem;">Tueste</div>
+                <div style="font-weight: 600;" id="lotRoastDisplay">—</div>
+              </div>
+              <div>
+                <div style="color: #666; font-size: 0.85rem;">Presentación</div>
+                <div style="font-weight: 600;" id="lotPresentationDisplay">
+                  —
+                </div>
+              </div>
+              <div>
+                <div style="color: #666; font-size: 0.85rem;">
+                  Peso Disponible
+                </div>
                 <div
                   style="font-weight: 600; color: #c67b4e;"
-                  id="lotScoreDisplay"
+                  id="lotWeightDisplay"
                 >
                   —
                 </div>
               </div>
             </div>
+
+            <!-- Propiedades de Cata (Mostradas) -->
+            <div
+              style="margin-top: 1.5rem; padding: 1rem; background: #f9f7f4; border-radius: 6px; border-left: 4px solid #c67b4e;"
+            >
+              <h4 style="margin: 0 0 1rem 0; color: #251a14;">
+                ☕ Perfil de Taza
+              </h4>
+              <div
+                style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 0.95rem;"
+              >
+                <div>
+                  <div style="color: #666; font-size: 0.85rem;">Acidez</div>
+                  <div style="font-weight: 600;" id="lotAcidityDisplay">—</div>
+                </div>
+                <div>
+                  <div style="color: #666; font-size: 0.85rem;">Cuerpo</div>
+                  <div style="font-weight: 600;" id="lotBodyDisplay">—</div>
+                </div>
+                <div>
+                  <div style="color: #666; font-size: 0.85rem;">Balance</div>
+                  <div style="font-weight: 600;" id="lotBalanceDisplay">—</div>
+                </div>
+                <div>
+                  <div style="color: #666; font-size: 0.85rem;">Puntuación</div>
+                  <div
+                    style="font-weight: 600; color: #c67b4e;"
+                    id="lotScoreDisplay"
+                  >
+                    —
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
 
-        <!-- Cantidad de Etiquetas -->
-        <div class="form-group" style="margin-top: 1.5rem;">
-          <label for="quantityLots"
-            >Cantidad de Etiquetas a Generar <span class="required">*</span
-            ></label
-          >
-          <input
-            type="number"
-            id="quantityLots"
-            name="quantityLots"
-            placeholder="Ej: 25"
-            min="1"
-            max="1000"
-            required
-            style="width: 100%;"
-          />
-          <div class="form-hint">¿Cuántas etiquetas deseas imprimir?</div>
-        </div>
-
-        <!-- Incluir código QR -->
-        <div class="form-group">
-          <label
-            style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;"
-          >
+          <!-- Cantidad de Etiquetas -->
+          <div class="form-group" style="margin-top: 1.5rem;">
+            <label for="quantityLots"
+              >Cantidad de Etiquetas a Generar <span class="required">*</span
+              ></label
+            >
             <input
-              type="checkbox"
-              id="includeQRLots"
-              name="includeQR"
-              checked
-              style="cursor: pointer;"
+              type="number"
+              id="quantityLots"
+              name="quantityLots"
+              placeholder="Ej: 25"
+              min="1"
+              max="1000"
+              required
+              style="width: 100%;"
             />
-            <span>Incluir Código QR de Trazabilidad</span>
-          </label>
-          <div class="form-hint">
-            Permite a los clientes escanear información del café
+            <div class="form-hint">¿Cuántas etiquetas deseas imprimir?</div>
           </div>
-        </div>
 
-        <!-- Resumen -->
-        <div
-          class="info-box"
-          id="summaryBoxLots"
-          style="display: none; margin-top: 1.5rem;"
-        >
-          <strong>Resumen de Etiquetas:</strong>
-          <div
-            style="margin-top: 0.75rem; font-size: 0.95rem; line-height: 1.6;"
-          >
-            <div>
-              📦 Lote: <span id="summaryCoffeeLot" style="font-weight: 600;"
-                >—</span
-              >
-            </div>
-            <div>
-              🏷️ Cantidad: <span
-                id="summaryLabelCount"
-                style="font-weight: 600;">—</span
-              >
-            </div>
-            <div>
-              ☕ Perfil: <span id="summaryProfile" style="font-weight: 600;"
-                >—</span
-              >
-            </div>
-          </div>
-        </div>
-
-        <!-- Botón Submit -->
-        <button
-          type="submit"
-          style="width: 100%; padding: 0.875rem; background: #8b6f47; color: white; border: none; border-radius: 6px; font-size: 1rem; font-weight: 600; cursor: pointer; margin-top: 1.5rem; transition: background 0.2s;"
-          onmouseover="this.style.background='#6b5437'"
-          onmouseout="this.style.background='#8b6f47'"
-        >
-          Generar Etiquetas
-        </button>
-      </form>
-    </div>
-
-    <!-- TAB 2: Crear de Cero -->
-    <div id="tabCeroContent" style="display: none;">
-      <form id="labelFromScratchForm">
-        <!-- Información General -->
-        <div class="form-group">
-          <label for="customCoffeeOrigin"
-            >Origen del Café <span class="required">*</span></label
-          >
-          <input
-            type="text"
-            id="customCoffeeOrigin"
-            name="origin"
-            placeholder="Ej: Sierra Nevada, Huila"
-            required
-            style="width: 100%;"
-          />
-        </div>
-
-        <div class="form-group">
-          <label for="customCoffeeFarm">Finca (Opcional)</label>
-          <input
-            type="text"
-            id="customCoffeeFarm"
-            name="farm"
-            placeholder="Ej: Finca La Aurora"
-            style="width: 100%;"
-          />
-        </div>
-
-        <!-- Variedad y Tueste -->
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <!-- Incluir código QR -->
           <div class="form-group">
-            <label for="customVariety"
-              >Variedad <span class="required">*</span></label
+            <label
+              style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;"
+            >
+              <input
+                type="checkbox"
+                id="includeQRLots"
+                name="includeQR"
+                checked
+                style="cursor: pointer;"
+              />
+              <span>Incluir Código QR de Trazabilidad</span>
+            </label>
+            <div class="form-hint">
+              Permite a los clientes escanear información del café
+            </div>
+          </div>
+
+          <!-- Resumen -->
+          <div
+            class="info-box"
+            id="summaryBoxLots"
+            style="display: none; margin-top: 1.5rem;"
+          >
+            <strong>Resumen de Etiquetas:</strong>
+            <div
+              style="margin-top: 0.75rem; font-size: 0.95rem; line-height: 1.6;"
+            >
+              <div>
+                📦 Lote: <span id="summaryCoffeeLot" style="font-weight: 600;"
+                  >—</span
+                >
+              </div>
+              <div>
+                🏷️ Cantidad: <span
+                  id="summaryLabelCount"
+                  style="font-weight: 600;">—</span
+                >
+              </div>
+              <div>
+                ☕ Perfil: <span id="summaryProfile" style="font-weight: 600;"
+                  >—</span
+                >
+              </div>
+            </div>
+          </div>
+
+          <!-- Botón Submit -->
+          <button
+            type="submit"
+            style="width: 100%; padding: 0.875rem; background: #8b6f47; color: white; border: none; border-radius: 6px; font-size: 1rem; font-weight: 600; cursor: pointer; margin-top: 1.5rem; transition: background 0.2s;"
+            onmouseover="this.style.background='#6b5437'"
+            onmouseout="this.style.background='#8b6f47'"
+          >
+            Generar Etiquetas
+          </button>
+        </form>
+      </div>
+
+      <!-- TAB 2: Crear de Cero -->
+      <div id="tabCeroContent" style="display: none;">
+        <form id="labelFromScratchForm">
+          <!-- Información General -->
+          <div class="form-group">
+            <label for="customCoffeeOrigin"
+              >Origen del Café <span class="required">*</span></label
             >
             <input
               type="text"
-              id="customVariety"
-              name="variety"
-              placeholder="Ej: Caturra, Bourbon"
+              id="customCoffeeOrigin"
+              name="origin"
+              placeholder="Ej: Sierra Nevada, Huila"
               required
               style="width: 100%;"
             />
           </div>
-          <div class="form-group">
-            <label for="customRoast"
-              >Nivel de Tueste <span class="required">*</span></label
-            >
-            <select id="customRoast" name="roast" required style="width: 100%;">
-              <option value="">Selecciona...</option>
-              <option value="Claro">Claro (Light)</option>
-              <option value="Medio">Medio (Medium)</option>
-              <option value="Oscuro">Oscuro (Dark)</option>
-            </select>
-          </div>
-        </div>
 
-        <!-- Proceso y Altitud -->
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
           <div class="form-group">
-            <label for="customProcess">Proceso (Opcional)</label>
-            <select id="customProcess" name="process" style="width: 100%;">
-              <option value="">Sin especificar</option>
-              <option value="Lavado">Lavado</option>
-              <option value="Natural">Natural</option>
-              <option value="Honey">Honey</option>
-              <option value="Anaeróbico">Anaeróbico</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="customAltitude">Altitud (Opcional)</label>
+            <label for="customCoffeeFarm">Finca (Opcional)</label>
             <input
               type="text"
-              id="customAltitude"
-              name="altitude"
-              placeholder="Ej: 1800 m"
+              id="customCoffeeFarm"
+              name="farm"
+              placeholder="Ej: Finca La Aurora"
               style="width: 100%;"
             />
           </div>
-        </div>
 
-        <!-- Perfil de Taza -->
-        <div
-          style="margin: 2rem 0 1.5rem 0; padding: 1rem; background: #f9f7f4; border-radius: 6px; border-left: 4px solid #c67b4e;"
-        >
-          <h4 style="margin: 0 0 1rem 0; color: #251a14;">☕ Perfil de Taza</h4>
-
-          <!-- Acidez -->
-          <div style="margin-bottom: 1.5rem;">
-            <label for="customAcidity"
-              >Acidez <span class="required">*</span></label
-            >
-            <div style="display: flex; gap: 0.5rem; margin: 0.75rem 0;">
-              <input
-                type="range"
-                id="customAcidity"
-                name="acidity"
-                min="1"
-                max="5"
-                value="3"
-                style="flex: 1; cursor: pointer;"
-              />
-              <div
-                style="min-width: 50px; text-align: center; font-weight: 600;"
-                id="customAcidityValue"
-              >
-                3/5
-              </div>
-            </div>
-            <div
-              style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.25rem; font-size: 0.75rem; color: #666;"
-            >
-              <div style="text-align: center;">Baja</div>
-              <div></div>
-              <div style="text-align: center;">Media</div>
-              <div></div>
-              <div style="text-align: center;">Alta</div>
-            </div>
-          </div>
-
-          <!-- Cuerpo -->
-          <div style="margin-bottom: 1.5rem;">
-            <label for="customBody"
-              >Cuerpo <span class="required">*</span></label
-            >
-            <div style="display: flex; gap: 0.5rem; margin: 0.75rem 0;">
-              <input
-                type="range"
-                id="customBody"
-                name="body"
-                min="1"
-                max="5"
-                value="3"
-                style="flex: 1; cursor: pointer;"
-              />
-              <div
-                style="min-width: 50px; text-align: center; font-weight: 600;"
-                id="customBodyValue"
-              >
-                3/5
-              </div>
-            </div>
-            <div
-              style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.25rem; font-size: 0.75rem; color: #666;"
-            >
-              <div style="text-align: center;">Ligero</div>
-              <div></div>
-              <div style="text-align: center;">Medio</div>
-              <div></div>
-              <div style="text-align: center;">Pesado</div>
-            </div>
-          </div>
-
-          <!-- Balance -->
-          <div style="margin-bottom: 1.5rem;">
-            <label for="customBalance"
-              >Balance <span class="required">*</span></label
-            >
-            <div style="display: flex; gap: 0.5rem; margin: 0.75rem 0;">
-              <input
-                type="range"
-                id="customBalance"
-                name="balance"
-                min="1"
-                max="5"
-                value="3"
-                style="flex: 1; cursor: pointer;"
-              />
-              <div
-                style="min-width: 50px; text-align: center; font-weight: 600;"
-                id="customBalanceValue"
-              >
-                3/5
-              </div>
-            </div>
-            <div
-              style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.25rem; font-size: 0.75rem; color: #666;"
-            >
-              <div style="text-align: center;">Desbalanceado</div>
-              <div></div>
-              <div style="text-align: center;">Balanceado</div>
-              <div></div>
-              <div style="text-align: center;">Muy Balanceado</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Notas de Sabor -->
-        <div class="form-group">
-          <label for="customFlavorNotes">Notas de Sabor (Opcional)</label>
-          <textarea
-            id="customFlavorNotes"
-            name="flavorNotes"
-            placeholder="Ej: Chocolate, Nueces, Caramelo, Frutas tropicales"
-            style="width: 100%; min-height: 80px;"></textarea>
-          <div class="form-hint">Describe los sabores principales del café</div>
-        </div>
-
-        <!-- Cantidad de Etiquetas -->
-        <div class="form-group">
-          <label for="quantityCero"
-            >Cantidad de Etiquetas <span class="required">*</span></label
-          >
-          <input
-            type="number"
-            id="quantityCero"
-            name="quantityCero"
-            placeholder="Ej: 25"
-            min="1"
-            max="1000"
-            required
-            style="width: 100%;"
-          />
-        </div>
-
-        <!-- Resumen Cero -->
-        <div
-          class="info-box"
-          id="summaryBoxCero"
-          style="display: none; margin-top: 1.5rem;"
-        >
-          <strong>Resumen de Etiquetas:</strong>
+          <!-- Variedad y Tueste -->
           <div
-            style="margin-top: 0.75rem; font-size: 0.95rem; line-height: 1.6;"
+            style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;"
           >
-            <div>
-              ☕ Café: <span
-                id="summaryCoffeeOriginCero"
-                style="font-weight: 600;">—</span
+            <div class="form-group">
+              <label for="customVariety"
+                >Variedad <span class="required">*</span></label
               >
+              <input
+                type="text"
+                id="customVariety"
+                name="variety"
+                placeholder="Ej: Caturra, Bourbon"
+                required
+                style="width: 100%;"
+              />
             </div>
-            <div>
-              🌱 Variedad: <span
-                id="summaryCoffeeVarietyCero"
-                style="font-weight: 600;">—</span
+            <div class="form-group">
+              <label for="customRoast"
+                >Nivel de Tueste <span class="required">*</span></label
               >
-            </div>
-            <div>
-              🔥 Tueste: <span
-                id="summaryCoffeeRoastCero"
-                style="font-weight: 600;">—</span
+              <select
+                id="customRoast"
+                name="roast"
+                required
+                style="width: 100%;"
               >
-            </div>
-            <div>
-              🏷️ Cantidad: <span
-                id="summaryLabelCountCero"
-                style="font-weight: 600;">—</span
-              >
+                <option value="">Selecciona...</option>
+                <option value="Claro">Claro (Light)</option>
+                <option value="Medio">Medio (Medium)</option>
+                <option value="Oscuro">Oscuro (Dark)</option>
+              </select>
             </div>
           </div>
-        </div>
 
-        <!-- Botón Submit -->
-        <button
-          type="submit"
-          style="width: 100%; padding: 0.875rem; background: #8b6f47; color: white; border: none; border-radius: 6px; font-size: 1rem; font-weight: 600; cursor: pointer; margin-top: 1.5rem; transition: background 0.2s;"
-          onmouseover="this.style.background='#6b5437'"
-          onmouseout="this.style.background='#8b6f47'"
-        >
-          Generar Etiquetas
-        </button>
-      </form>
+          <!-- Proceso y Altitud -->
+          <div
+            style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;"
+          >
+            <div class="form-group">
+              <label for="customProcess">Proceso (Opcional)</label>
+              <select id="customProcess" name="process" style="width: 100%;">
+                <option value="">Sin especificar</option>
+                <option value="Lavado">Lavado</option>
+                <option value="Natural">Natural</option>
+                <option value="Honey">Honey</option>
+                <option value="Anaeróbico">Anaeróbico</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="customAltitude">Altitud (Opcional)</label>
+              <input
+                type="text"
+                id="customAltitude"
+                name="altitude"
+                placeholder="Ej: 1800 m"
+                style="width: 100%;"
+              />
+            </div>
+          </div>
+
+          <!-- Perfil de Taza -->
+          <div
+            style="margin: 2rem 0 1.5rem 0; padding: 1rem; background: #f9f7f4; border-radius: 6px; border-left: 4px solid #c67b4e;"
+          >
+            <h4 style="margin: 0 0 1rem 0; color: #251a14;">
+              ☕ Perfil de Taza
+            </h4>
+
+            <!-- Acidez -->
+            <div style="margin-bottom: 1.5rem;">
+              <label for="customAcidity"
+                >Acidez <span class="required">*</span></label
+              >
+              <div style="display: flex; gap: 0.5rem; margin: 0.75rem 0;">
+                <input
+                  type="range"
+                  id="customAcidity"
+                  name="acidity"
+                  min="1"
+                  max="5"
+                  value="3"
+                  style="flex: 1; cursor: pointer;"
+                />
+                <div
+                  style="min-width: 50px; text-align: center; font-weight: 600;"
+                  id="customAcidityValue"
+                >
+                  3/5
+                </div>
+              </div>
+              <div
+                style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.25rem; font-size: 0.75rem; color: #666;"
+              >
+                <div style="text-align: center;">Baja</div>
+                <div></div>
+                <div style="text-align: center;">Media</div>
+                <div></div>
+                <div style="text-align: center;">Alta</div>
+              </div>
+            </div>
+
+            <!-- Cuerpo -->
+            <div style="margin-bottom: 1.5rem;">
+              <label for="customBody"
+                >Cuerpo <span class="required">*</span></label
+              >
+              <div style="display: flex; gap: 0.5rem; margin: 0.75rem 0;">
+                <input
+                  type="range"
+                  id="customBody"
+                  name="body"
+                  min="1"
+                  max="5"
+                  value="3"
+                  style="flex: 1; cursor: pointer;"
+                />
+                <div
+                  style="min-width: 50px; text-align: center; font-weight: 600;"
+                  id="customBodyValue"
+                >
+                  3/5
+                </div>
+              </div>
+              <div
+                style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.25rem; font-size: 0.75rem; color: #666;"
+              >
+                <div style="text-align: center;">Ligero</div>
+                <div></div>
+                <div style="text-align: center;">Medio</div>
+                <div></div>
+                <div style="text-align: center;">Pesado</div>
+              </div>
+            </div>
+
+            <!-- Balance -->
+            <div style="margin-bottom: 1.5rem;">
+              <label for="customBalance"
+                >Balance <span class="required">*</span></label
+              >
+              <div style="display: flex; gap: 0.5rem; margin: 0.75rem 0;">
+                <input
+                  type="range"
+                  id="customBalance"
+                  name="balance"
+                  min="1"
+                  max="5"
+                  value="3"
+                  style="flex: 1; cursor: pointer;"
+                />
+                <div
+                  style="min-width: 50px; text-align: center; font-weight: 600;"
+                  id="customBalanceValue"
+                >
+                  3/5
+                </div>
+              </div>
+              <div
+                style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.25rem; font-size: 0.75rem; color: #666;"
+              >
+                <div style="text-align: center;">Desbalanceado</div>
+                <div></div>
+                <div style="text-align: center;">Balanceado</div>
+                <div></div>
+                <div style="text-align: center;">Muy Balanceado</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Notas de Sabor -->
+          <div class="form-group">
+            <label for="customFlavorNotes">Notas de Sabor (Opcional)</label>
+            <textarea
+              id="customFlavorNotes"
+              name="flavorNotes"
+              placeholder="Ej: Chocolate, Nueces, Caramelo, Frutas tropicales"
+              style="width: 100%; min-height: 80px;"></textarea>
+            <div class="form-hint">
+              Describe los sabores principales del café
+            </div>
+          </div>
+
+          <!-- Cantidad de Etiquetas -->
+          <div class="form-group">
+            <label for="quantityCero"
+              >Cantidad de Etiquetas <span class="required">*</span></label
+            >
+            <input
+              type="number"
+              id="quantityCero"
+              name="quantityCero"
+              placeholder="Ej: 25"
+              min="1"
+              max="1000"
+              required
+              style="width: 100%;"
+            />
+          </div>
+
+          <!-- Resumen Cero -->
+          <div
+            class="info-box"
+            id="summaryBoxCero"
+            style="display: none; margin-top: 1.5rem;"
+          >
+            <strong>Resumen de Etiquetas:</strong>
+            <div
+              style="margin-top: 0.75rem; font-size: 0.95rem; line-height: 1.6;"
+            >
+              <div>
+                ☕ Café: <span
+                  id="summaryCoffeeOriginCero"
+                  style="font-weight: 600;">—</span
+                >
+              </div>
+              <div>
+                🌱 Variedad: <span
+                  id="summaryCoffeeVarietyCero"
+                  style="font-weight: 600;">—</span
+                >
+              </div>
+              <div>
+                🔥 Tueste: <span
+                  id="summaryCoffeeRoastCero"
+                  style="font-weight: 600;">—</span
+                >
+              </div>
+              <div>
+                🏷️ Cantidad: <span
+                  id="summaryLabelCountCero"
+                  style="font-weight: 600;">—</span
+                >
+              </div>
+            </div>
+          </div>
+
+          <!-- Botón Submit -->
+          <button
+            type="submit"
+            style="width: 100%; padding: 0.875rem; background: #8b6f47; color: white; border: none; border-radius: 6px; font-size: 1rem; font-weight: 600; cursor: pointer; margin-top: 1.5rem; transition: background 0.2s;"
+            onmouseover="this.style.background='#6b5437'"
+            onmouseout="this.style.background='#8b6f47'"
+          >
+            Generar Etiquetas
+          </button>
+        </form>
+      </div>
     </div>
-  </div>
 
-  <!-- Estilos -->
-  <style is:inline>
-    .form-group {
-      margin-bottom: 1rem;
-    }
-
-    .form-group label {
-      display: block;
-      margin-bottom: 0.5rem;
-      font-weight: 600;
-      color: #251a14;
-    }
-
-    .form-group input[type="text"],
-    .form-group input[type="number"],
-    .form-group input[type="email"],
-    .form-group select,
-    .form-group textarea {
-      width: 100%;
-      padding: 0.75rem;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      font-size: 0.95rem;
-      font-family: inherit;
-    }
-
-    .form-group textarea {
-      resize: vertical;
-    }
-
-    .form-hint {
-      font-size: 0.85rem;
-      color: #666;
-      margin-top: 0.25rem;
-    }
-
-    .required {
-      color: #c67b4e;
-    }
-
-    .card {
-      background: white;
-      border-radius: 8px;
-      padding: 1.5rem;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
-      margin-top: 1.5rem;
-    }
-
-    .card h3 {
-      margin: 0 0 1rem 0;
-      color: #251a14;
-      font-size: 1.1rem;
-    }
-
-    .info-box {
-      background: #e0f2f1;
-      border: 1px solid #b2dfdb;
-      border-radius: 6px;
-      padding: 1rem;
-      color: #00695c;
-    }
-
-    .info-box strong {
-      color: #004d40;
-    }
-  </style>
-
-  <!-- Scripts -->
-  <script is:inline>
-    // Cambiar entre tabs
-    function switchTab(tab) {
-      const tabLotesContent = document.getElementById("tabLotesContent");
-      const tabCeroContent = document.getElementById("tabCeroContent");
-      const tabLotes = document.getElementById("tabLotes");
-      const tabCero = document.getElementById("tabCero");
-
-      if (tab === "lotes") {
-        tabLotesContent.style.display = "block";
-        tabCeroContent.style.display = "none";
-        tabLotes.style.background = "#8b6f47";
-        tabLotes.style.color = "white";
-        tabCero.style.background = "#ddd";
-        tabCero.style.color = "#333";
-      } else {
-        tabLotesContent.style.display = "none";
-        tabCeroContent.style.display = "block";
-        tabLotes.style.background = "#ddd";
-        tabLotes.style.color = "#333";
-        tabCero.style.background = "#8b6f47";
-        tabCero.style.color = "white";
+    <!-- Estilos -->
+    <style is:inline>
+      .form-group {
+        margin-bottom: 1rem;
       }
-    }
 
-    // Cargar lotes preparados
-    async function loadPreparedLots() {
-      try {
-        const response = await fetch("/api/labels/prepared-lots");
-        if (!response.ok) throw new Error("Error al cargar lotes");
+      .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: #251a14;
+      }
 
-        const lots = await response.json();
-        const select = document.getElementById("preparedLotSelect");
-        select.innerHTML =
-          '<option value="">Selecciona un lote preparado...</option>';
+      .form-group input[type="text"],
+      .form-group input[type="number"],
+      .form-group input[type="email"],
+      .form-group select,
+      .form-group textarea {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 0.95rem;
+        font-family: inherit;
+      }
 
-        lots.forEach((lot) => {
-          const option = document.createElement("option");
-          option.value = JSON.stringify(lot);
-          option.textContent = `${lot.code} - ${lot.variety} (${lot.weight}kg)`;
-          select.appendChild(option);
+      .form-group textarea {
+        resize: vertical;
+      }
+
+      .form-hint {
+        font-size: 0.85rem;
+        color: #666;
+        margin-top: 0.25rem;
+      }
+
+      .required {
+        color: #c67b4e;
+      }
+
+      .card {
+        background: white;
+        border-radius: 8px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+        margin-top: 1.5rem;
+      }
+
+      .card h3 {
+        margin: 0 0 1rem 0;
+        color: #251a14;
+        font-size: 1.1rem;
+      }
+
+      .info-box {
+        background: #e0f2f1;
+        border: 1px solid #b2dfdb;
+        border-radius: 6px;
+        padding: 1rem;
+        color: #00695c;
+      }
+
+      .info-box strong {
+        color: #004d40;
+      }
+    </style>
+
+    <!-- Scripts -->
+    <script is:inline>
+      // Cambiar entre tabs
+      function switchTab(tab) {
+        const tabLotesContent = document.getElementById("tabLotesContent");
+        const tabCeroContent = document.getElementById("tabCeroContent");
+        const tabLotes = document.getElementById("tabLotes");
+        const tabCero = document.getElementById("tabCero");
+
+        if (tab === "lotes") {
+          tabLotesContent.style.display = "block";
+          tabCeroContent.style.display = "none";
+          tabLotes.style.background = "#8b6f47";
+          tabLotes.style.color = "white";
+          tabCero.style.background = "#ddd";
+          tabCero.style.color = "#333";
+        } else {
+          tabLotesContent.style.display = "none";
+          tabCeroContent.style.display = "block";
+          tabLotes.style.background = "#ddd";
+          tabLotes.style.color = "#333";
+          tabCero.style.background = "#8b6f47";
+          tabCero.style.color = "white";
+        }
+      }
+
+      // Cargar lotes preparados
+      async function loadPreparedLots() {
+        try {
+          const response = await fetch("/api/labels/prepared-lots");
+          if (!response.ok) throw new Error("Error al cargar lotes");
+
+          const lots = await response.json();
+          const select = document.getElementById("preparedLotSelect");
+          select.innerHTML =
+            '<option value="">Selecciona un lote preparado...</option>';
+
+          lots.forEach((lot) => {
+            const option = document.createElement("option");
+            option.value = JSON.stringify(lot);
+            option.textContent = `${lot.code} - ${lot.variety} (${lot.weight}kg)`;
+            select.appendChild(option);
+          });
+        } catch (error) {
+          console.error("Error cargando lotes:", error);
+        }
+      }
+
+      // Mostrar información del lote seleccionado
+      document
+        .getElementById("preparedLotSelect")
+        ?.addEventListener("change", (e) => {
+          if (!e.target.value) {
+            document.getElementById("lotInfoCard").style.display = "none";
+            document.getElementById("summaryBoxLots").style.display = "none";
+            return;
+          }
+
+          const lot = JSON.parse(e.target.value);
+          document.getElementById("lotIdDisplay").textContent = lot.code;
+          document.getElementById("lotOriginDisplay").textContent =
+            lot.origin || "—";
+          document.getElementById("lotVarietyDisplay").textContent =
+            lot.variety || "—";
+          document.getElementById("lotRoastDisplay").textContent =
+            lot.roast || "—";
+          document.getElementById("lotPresentationDisplay").textContent =
+            lot.presentation || "—";
+          document.getElementById("lotWeightDisplay").textContent =
+            `${lot.weight} kg`;
+          document.getElementById("lotAcidityDisplay").textContent =
+            `${lot.acidity || "—"}/5`;
+          document.getElementById("lotBodyDisplay").textContent =
+            `${lot.body || "—"}/5`;
+          document.getElementById("lotBalanceDisplay").textContent =
+            `${lot.balance || "—"}/5`;
+          document.getElementById("lotScoreDisplay").textContent = lot.score
+            ? lot.score.toFixed(1)
+            : "—";
+
+          document.getElementById("lotInfoCard").style.display = "block";
         });
-      } catch (error) {
-        console.error("Error cargando lotes:", error);
-      }
-    }
 
-    // Mostrar información del lote seleccionado
-    document
-      .getElementById("preparedLotSelect")
-      ?.addEventListener("change", (e) => {
-        if (!e.target.value) {
-          document.getElementById("lotInfoCard").style.display = "none";
-          document.getElementById("summaryBoxLots").style.display = "none";
-          return;
-        }
+      // Actualizar cantidad de etiquetas (Tab 1)
+      document
+        .getElementById("quantityLots")
+        ?.addEventListener("change", (e) => {
+          if (document.getElementById("preparedLotSelect").value) {
+            const lot = JSON.parse(
+              document.getElementById("preparedLotSelect").value
+            );
+            document.getElementById("summaryCoffeeLot").textContent = lot.code;
+            document.getElementById("summaryLabelCount").textContent =
+              e.target.value;
+            document.getElementById("summaryProfile").textContent =
+              `Acidez ${lot.acidity || "—"}, Cuerpo ${lot.body || "—"}, Balance ${lot.balance || "—"}`;
+            document.getElementById("summaryBoxLots").style.display = "block";
+          }
+        });
 
-        const lot = JSON.parse(e.target.value);
-        document.getElementById("lotIdDisplay").textContent = lot.code;
-        document.getElementById("lotOriginDisplay").textContent =
-          lot.origin || "—";
-        document.getElementById("lotVarietyDisplay").textContent =
-          lot.variety || "—";
-        document.getElementById("lotRoastDisplay").textContent =
-          lot.roast || "—";
-        document.getElementById("lotPresentationDisplay").textContent =
-          lot.presentation || "—";
-        document.getElementById("lotWeightDisplay").textContent =
-          `${lot.weight} kg`;
-        document.getElementById("lotAcidityDisplay").textContent =
-          `${lot.acidity || "—"}/5`;
-        document.getElementById("lotBodyDisplay").textContent =
-          `${lot.body || "—"}/5`;
-        document.getElementById("lotBalanceDisplay").textContent =
-          `${lot.balance || "—"}/5`;
-        document.getElementById("lotScoreDisplay").textContent = lot.score
-          ? lot.score.toFixed(1)
-          : "—";
+      // Actualizar sliders de acidez (Tab 2)
+      document
+        .getElementById("customAcidity")
+        ?.addEventListener("input", (e) => {
+          document.getElementById("customAcidityValue").textContent =
+            `${e.target.value}/5`;
+          updateCeroSummary();
+        });
 
-        document.getElementById("lotInfoCard").style.display = "block";
+      // Actualizar sliders de cuerpo (Tab 2)
+      document.getElementById("customBody")?.addEventListener("input", (e) => {
+        document.getElementById("customBodyValue").textContent =
+          `${e.target.value}/5`;
+        updateCeroSummary();
       });
 
-    // Actualizar cantidad de etiquetas (Tab 1)
-    document.getElementById("quantityLots")?.addEventListener("change", (e) => {
-      if (document.getElementById("preparedLotSelect").value) {
-        const lot = JSON.parse(
-          document.getElementById("preparedLotSelect").value
-        );
-        document.getElementById("summaryCoffeeLot").textContent = lot.code;
-        document.getElementById("summaryLabelCount").textContent =
-          e.target.value;
-        document.getElementById("summaryProfile").textContent =
-          `Acidez ${lot.acidity || "—"}, Cuerpo ${lot.body || "—"}, Balance ${lot.balance || "—"}`;
-        document.getElementById("summaryBoxLots").style.display = "block";
+      // Actualizar sliders de balance (Tab 2)
+      document
+        .getElementById("customBalance")
+        ?.addEventListener("input", (e) => {
+          document.getElementById("customBalanceValue").textContent =
+            `${e.target.value}/5`;
+          updateCeroSummary();
+        });
+
+      // Actualizar cantidad (Tab 2)
+      document
+        .getElementById("quantityCero")
+        ?.addEventListener("change", updateCeroSummary);
+      document
+        .getElementById("customCoffeeOrigin")
+        ?.addEventListener("change", updateCeroSummary);
+      document
+        .getElementById("customVariety")
+        ?.addEventListener("change", updateCeroSummary);
+      document
+        .getElementById("customRoast")
+        ?.addEventListener("change", updateCeroSummary);
+
+      function updateCeroSummary() {
+        const origin = document.getElementById("customCoffeeOrigin").value;
+        const variety = document.getElementById("customVariety").value;
+        const roast = document.getElementById("customRoast").value;
+        const quantity = document.getElementById("quantityCero").value;
+
+        if (origin && variety && roast && quantity) {
+          document.getElementById("summaryCoffeeOriginCero").textContent =
+            origin;
+          document.getElementById("summaryCoffeeVarietyCero").textContent =
+            variety;
+          document.getElementById("summaryCoffeeRoastCero").textContent = roast;
+          document.getElementById("summaryLabelCountCero").textContent =
+            quantity;
+          document.getElementById("summaryBoxCero").style.display = "block";
+        }
       }
-    });
 
-    // Actualizar sliders de acidez (Tab 2)
-    document.getElementById("customAcidity")?.addEventListener("input", (e) => {
-      document.getElementById("customAcidityValue").textContent =
-        `${e.target.value}/5`;
-      updateCeroSummary();
-    });
+      // Enviar formulario Tab 1
+      document
+        .getElementById("labelsFromLotsForm")
+        ?.addEventListener("submit", async (e) => {
+          e.preventDefault();
 
-    // Actualizar sliders de cuerpo (Tab 2)
-    document.getElementById("customBody")?.addEventListener("input", (e) => {
-      document.getElementById("customBodyValue").textContent =
-        `${e.target.value}/5`;
-      updateCeroSummary();
-    });
+          const lotValue = document.getElementById("preparedLotSelect").value;
+          if (!lotValue) {
+            alert("Selecciona un lote preparado");
+            return;
+          }
 
-    // Actualizar sliders de balance (Tab 2)
-    document.getElementById("customBalance")?.addEventListener("input", (e) => {
-      document.getElementById("customBalanceValue").textContent =
-        `${e.target.value}/5`;
-      updateCeroSummary();
-    });
+          const lot = JSON.parse(lotValue);
+          const quantity = document.getElementById("quantityLots").value;
+          const includeQR = document.getElementById("includeQRLots").checked;
 
-    // Actualizar cantidad (Tab 2)
-    document
-      .getElementById("quantityCero")
-      ?.addEventListener("change", updateCeroSummary);
-    document
-      .getElementById("customCoffeeOrigin")
-      ?.addEventListener("change", updateCeroSummary);
-    document
-      .getElementById("customVariety")
-      ?.addEventListener("change", updateCeroSummary);
-    document
-      .getElementById("customRoast")
-      ?.addEventListener("change", updateCeroSummary);
+          try {
+            const response = await fetch("/api/labels/generate-from-lot", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                lotId: lot.id,
+                quantity: parseInt(quantity),
+                includeQR: includeQR,
+              }),
+            });
 
-    function updateCeroSummary() {
-      const origin = document.getElementById("customCoffeeOrigin").value;
-      const variety = document.getElementById("customVariety").value;
-      const roast = document.getElementById("customRoast").value;
-      const quantity = document.getElementById("quantityCero").value;
+            if (!response.ok) throw new Error("Error al generar etiquetas");
 
-      if (origin && variety && roast && quantity) {
-        document.getElementById("summaryCoffeeOriginCero").textContent = origin;
-        document.getElementById("summaryCoffeeVarietyCero").textContent =
-          variety;
-        document.getElementById("summaryCoffeeRoastCero").textContent = roast;
-        document.getElementById("summaryLabelCountCero").textContent = quantity;
-        document.getElementById("summaryBoxCero").style.display = "block";
-      }
-    }
+            const result = await response.json();
+            alert(`✅ ${quantity} etiquetas generadas exitosamente`);
+            document.getElementById("labelsFromLotsForm").reset();
+            document.getElementById("lotInfoCard").style.display = "none";
+            document.getElementById("summaryBoxLots").style.display = "none";
+          } catch (error) {
+            alert(`❌ Error: ${error.message}`);
+            console.error(error);
+          }
+        });
 
-    // Enviar formulario Tab 1
-    document
-      .getElementById("labelsFromLotsForm")
-      ?.addEventListener("submit", async (e) => {
-        e.preventDefault();
+      // Enviar formulario Tab 2
+      document
+        .getElementById("labelFromScratchForm")
+        ?.addEventListener("submit", async (e) => {
+          e.preventDefault();
 
-        const lotValue = document.getElementById("preparedLotSelect").value;
-        if (!lotValue) {
-          alert("Selecciona un lote preparado");
-          return;
-        }
+          const formData = {
+            origin: document.getElementById("customCoffeeOrigin").value,
+            farm: document.getElementById("customCoffeeFarm").value,
+            variety: document.getElementById("customVariety").value,
+            roast: document.getElementById("customRoast").value,
+            process: document.getElementById("customProcess").value,
+            altitude: document.getElementById("customAltitude").value,
+            acidity: parseInt(document.getElementById("customAcidity").value),
+            body: parseInt(document.getElementById("customBody").value),
+            balance: parseInt(document.getElementById("customBalance").value),
+            flavorNotes: document.getElementById("customFlavorNotes").value,
+            quantity: parseInt(document.getElementById("quantityCero").value),
+          };
+  </div>
+</AppLayout>
+          try {
+            const response = await fetch("/api/labels/generate-from-scratch", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(formData),
+            });
 
-        const lot = JSON.parse(lotValue);
-        const quantity = document.getElementById("quantityLots").value;
-        const includeQR = document.getElementById("includeQRLots").checked;
+            if (!response.ok) throw new Error("Error al generar etiquetas");
 
-        try {
-          const response = await fetch("/api/labels/generate-from-lot", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              lotId: lot.id,
-              quantity: parseInt(quantity),
-              includeQR: includeQR,
-            }),
-          });
+            const result = await response.json();
+            alert(`✅ ${formData.quantity} etiquetas generadas exitosamente`);
+            document.getElementById("labelFromScratchForm").reset();
+            document.getElementById("summaryBoxCero").style.display = "none";
+          } catch (error) {
+            alert(`❌ Error: ${error.message}`);
+            console.error(error);
+          }
+        });
 
-          if (!response.ok) throw new Error("Error al generar etiquetas");
-
-          const result = await response.json();
-          alert(`✅ ${quantity} etiquetas generadas exitosamente`);
-          document.getElementById("labelsFromLotsForm").reset();
-          document.getElementById("lotInfoCard").style.display = "none";
-          document.getElementById("summaryBoxLots").style.display = "none";
-        } catch (error) {
-          alert(`❌ Error: ${error.message}`);
-          console.error(error);
-        }
-      });
-
-    // Enviar formulario Tab 2
-    document
-      .getElementById("labelFromScratchForm")
-      ?.addEventListener("submit", async (e) => {
-        e.preventDefault();
-
-        const formData = {
-          origin: document.getElementById("customCoffeeOrigin").value,
-          farm: document.getElementById("customCoffeeFarm").value,
-          variety: document.getElementById("customVariety").value,
-          roast: document.getElementById("customRoast").value,
-          process: document.getElementById("customProcess").value,
-          altitude: document.getElementById("customAltitude").value,
-          acidity: parseInt(document.getElementById("customAcidity").value),
-          body: parseInt(document.getElementById("customBody").value),
-          balance: parseInt(document.getElementById("customBalance").value),
-          flavorNotes: document.getElementById("customFlavorNotes").value,
-          quantity: parseInt(document.getElementById("quantityCero").value),
-        };
-
-        try {
-          const response = await fetch("/api/labels/generate-from-scratch", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(formData),
-          });
-
-          if (!response.ok) throw new Error("Error al generar etiquetas");
-
-          const result = await response.json();
-          alert(`✅ ${formData.quantity} etiquetas generadas exitosamente`);
-          document.getElementById("labelFromScratchForm").reset();
-          document.getElementById("summaryBoxCero").style.display = "none";
-        } catch (error) {
-          alert(`❌ Error: ${error.message}`);
-          console.error(error);
-        }
-      });
-
-    // Cargar datos al iniciar
-    document.addEventListener("DOMContentLoaded", loadPreparedLots);
-  </script>
-</MobileLayout>
+      // Cargar datos al iniciar
+      document.addEventListener("DOMContentLoaded", loadPreparedLots);
+    </script>
+  </div>
+</AppLayout>
