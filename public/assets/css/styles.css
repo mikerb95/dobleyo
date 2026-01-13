@@ -41,7 +41,7 @@ img{ max-width:100%; display:block }
 .icon-btn{ background:var(--card); border:1px solid var(--border); padding:.5rem .8rem; border-radius:.375rem; cursor:pointer; text-decoration:none; color:var(--fg); display:inline-flex; align-items:center; gap:.35rem; font-weight:600; line-height:1.2; transition: background-color .2s ease, color .2s ease, border-color .2s ease }
 .icon-btn.active{ border-color:var(--coffee) }
 .badge{ background:var(--coffee); color:#fff; font-size:.7rem; padding:.05rem .35rem; border-radius:999px; margin-left:.25rem }
-.hamburger{ display:none; background:transparent; border:0; padding:.5rem; cursor:pointer; color:var(--fg); font-size:1.5rem; width:2.5rem; height:2.5rem; display:flex; align-items:center; justify-content:center; border-radius:.375rem; transition:background-color .2s ease, transform .2s ease; position:relative; z-index:100 }
+.hamburger{ display:none; background:transparent; border:0; padding:.5rem; cursor:pointer; color:var(--fg); font-size:1.5rem; width:2.5rem; height:2.5rem; align-items:center; justify-content:center; border-radius:.375rem; transition:background-color .2s ease, transform .2s ease; position:relative; z-index:100 }
 .hamburger:hover{ background:rgba(0,0,0,.04) }
 .hamburger.active{ background:rgba(0,0,0,.08); transform:scale(1.05) }
 /* Botones del encabezado */
@@ -171,6 +171,8 @@ img{ max-width:100%; display:block }
 
 /* Adaptativo */
 @media (max-width: 900px){
+  .nav{ display:none }
+  .hamburger{ display:inline-flex }
   .mobile-menu{ display:flex }
   .mobile-menu[hidden]{ display:none !important }
   /* Mantener logo balanceado en movil */
