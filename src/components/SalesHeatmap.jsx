@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import 'leaflet/dist/leaflet.css';
 
-let L;
-
 export default function SalesHeatmap() {
   const mapRef = useRef(null);
   const [mapInstance, setMapInstance] = useState(null);
@@ -10,12 +8,14 @@ export default function SalesHeatmap() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [maxOrders, setMaxOrders] = useState(1);
+  const [leafletReady, setLeafletReady] = useState(false);
 
   // Importar leaflet dinámicamente
   useEffect(() => {
-    if (typeof window !== 'undefined' && !L) {
+    if (typeof window !== 'undefined') {
       import('leaflet').then(module => {
-        L = module.default;
+        window.L = module.default;
+        setLeafletReady(true);
       });
     }
   }, []);
@@ -54,7 +54,9 @@ export default function SalesHeatmap() {
 
   // Initialize map
   useEffect(() => {
-    if (!mapRef.current) return;
+    if (!mapRef.current || !leafletReady || !window.L) return;
+
+    const L = window.L;
 
     // Create map instance - Centrado en Colombia
     const map = L.map(mapRef.current).setView([4.5, -74], 6);
@@ -71,11 +73,13 @@ export default function SalesHeatmap() {
     return () => {
       map.remove();
     };
-  }, []);
+  }, [leafletReady]);
 
   // Add markers and circles when data is loaded
   useEffect(() => {
-    if (!mapInstance || data.length === 0) return;
+    if (!mapInstance || data.length === 0 || !leafletReady || !window.L) return;
+
+    const L = window.L;
 
     // Clear existing layers (except tile layer)
     mapInstance.eachLayer((layer) => {
@@ -127,7 +131,7 @@ export default function SalesHeatmap() {
         });
       }
     });
-  }, [mapInstance, data, maxOrders]);
+  }, [mapInstance, data, maxOrders, leafletReady]);
 
   return (
     <div style={{ width: '100%' }}>
