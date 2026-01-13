@@ -135,9 +135,12 @@ import AppLayout from "../../layouts/AppLayout.astro";
         ⚠️ Confirma esta acción destructiva
       </h2>
       <p style="color: #666; line-height: 1.6; margin: 1rem 0;">
-        Esta acción <strong>no se puede deshacer</strong>. Para confirmar que realmente deseas proceder, ingresa el link del repositorio de GitHub:
+        Esta acción <strong>no se puede deshacer</strong>. Para confirmar que
+        realmente deseas proceder, ingresa el link del repositorio de GitHub:
       </p>
-      <p style="background: #f3f4f6; padding: 0.75rem; border-radius: 6px; font-family: monospace; font-size: 0.9rem; color: #333; margin: 1rem 0;">
+      <p
+        style="background: #f3f4f6; padding: 0.75rem; border-radius: 6px; font-family: monospace; font-size: 0.9rem; color: #333; margin: 1rem 0;"
+      >
         github.com/mikerb95/dobleyo
       </p>
       <input
@@ -186,32 +189,42 @@ import AppLayout from "../../layouts/AppLayout.astro";
       pendingAction = null;
     }
 
-    document.getElementById("cancelBtn")?.addEventListener("click", hideConfirmModal);
+    document
+      .getElementById("cancelBtn")
+      ?.addEventListener("click", hideConfirmModal);
 
-    document.getElementById("confirmBtn")?.addEventListener("click", async () => {
-      const input = document.getElementById("confirmInput");
-      if (input.value.trim() !== REPO_LINK) {
-        alert("❌ El link del repositorio no es correcto. Por favor, intenta nuevamente.");
-        input.focus();
-        return;
-      }
+    document
+      .getElementById("confirmBtn")
+      ?.addEventListener("click", async () => {
+        const input = document.getElementById("confirmInput");
+        if (input.value.trim() !== REPO_LINK) {
+          alert(
+            "❌ El link del repositorio no es correcto. Por favor, intenta nuevamente."
+          );
+          input.focus();
+          return;
+        }
 
-      hideConfirmModal();
-      if (pendingAction) {
-        await executeCleanup(pendingAction.endpoint, pendingAction.statusId);
-      }
-    });
+        hideConfirmModal();
+        if (pendingAction) {
+          await executeCleanup(pendingAction.endpoint, pendingAction.statusId);
+        }
+      });
 
     // Permitir Enter en el input
-    document.getElementById("confirmInput")?.addEventListener("keypress", (e) => {
-      if (e.key === "Enter") {
-        document.getElementById("confirmBtn").click();
-      }
-    });
+    document
+      .getElementById("confirmInput")
+      ?.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") {
+          document.getElementById("confirmBtn").click();
+        }
+      });
 
     async function executeCleanup(endpoint, statusElementId) {
       const statusEl = document.getElementById(statusElementId);
-      const button = document.querySelector(`button[data-endpoint="${endpoint}"]`);
+      const button = document.querySelector(
+        `button[data-endpoint="${endpoint}"]`
+      );
 
       button.disabled = true;
       statusEl.innerHTML =
