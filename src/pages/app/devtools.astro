@@ -123,15 +123,95 @@ import AppLayout from "../../layouts/AppLayout.astro";
     </div>
   </div>
 
-  <script is:inline>
-    async function executeCleanup(endpoint, statusElementId) {
-      const statusEl = document.getElementById(statusElementId);
-      const button = event.target;
+  <!-- Modal de Confirmación -->
+  <div
+    id="confirmModal"
+    style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;"
+  >
+    <div
+      style="background: white; border-radius: 12px; padding: 2rem; max-width: 500px; box-shadow: 0 20px 25px rgba(0,0,0,0.15);"
+    >
+      <h2 style="color: #dc2626; margin-top: 0; font-size: 1.5rem;">
+        ⚠️ Confirma esta acción destructiva
+      </h2>
+      <p style="color: #666; line-height: 1.6; margin: 1rem 0;">
+        Esta acción <strong>no se puede deshacer</strong>. Para confirmar que realmente deseas proceder, ingresa el link del repositorio de GitHub:
+      </p>
+      <p style="background: #f3f4f6; padding: 0.75rem; border-radius: 6px; font-family: monospace; font-size: 0.9rem; color: #333; margin: 1rem 0;">
+        github.com/mikerb95/dobleyo
+      </p>
+      <input
+        id="confirmInput"
+        type="text"
+        placeholder="Pega el link del repositorio aquí..."
+        style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px; font-family: monospace; font-size: 0.9rem; box-sizing: border-box; margin-bottom: 1rem;"
+      />
+      <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+        <button
+          id="cancelBtn"
+          style="padding: 0.75rem 1.5rem; background: #e5e7eb; color: #333; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background 0.2s;"
+          onmouseover="this.style.background='#d1d5db'"
+          onmouseout="this.style.background='#e5e7eb'"
+        >
+          Cancelar
+        </button>
+        <button
+          id="confirmBtn"
+          style="padding: 0.75rem 1.5rem; background: #dc2626; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background 0.2s;"
+          onmouseover="this.style.background='#b91c1c'"
+          onmouseout="this.style.background='#dc2626'"
+        >
+          Confirmar y Ejecutar
+        </button>
+      </div>
+    </div>
+  </div>
 
-      // Confirmar acción
-      if (!confirm("⚠️ Esta acción es irreversible. ¿Estás seguro?")) {
+  <script is:inline>
+    const REPO_LINK = "github.com/mikerb95/dobleyo";
+    let pendingAction = null;
+
+    function showConfirmModal(action) {
+      pendingAction = action;
+      const modal = document.getElementById("confirmModal");
+      const input = document.getElementById("confirmInput");
+      modal.style.display = "flex";
+      input.value = "";
+      input.focus();
+    }
+
+    function hideConfirmModal() {
+      const modal = document.getElementById("confirmModal");
+      modal.style.display = "none";
+      pendingAction = null;
+    }
+
+    document.getElementById("cancelBtn")?.addEventListener("click", hideConfirmModal);
+
+    document.getElementById("confirmBtn")?.addEventListener("click", async () => {
+      const input = document.getElementById("confirmInput");
+      if (input.value.trim() !== REPO_LINK) {
+        alert("❌ El link del repositorio no es correcto. Por favor, intenta nuevamente.");
+        input.focus();
         return;
       }
+
+      hideConfirmModal();
+      if (pendingAction) {
+        await executeCleanup(pendingAction.endpoint, pendingAction.statusId);
+      }
+    });
+
+    // Permitir Enter en el input
+    document.getElementById("confirmInput")?.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") {
+        document.getElementById("confirmBtn").click();
+      }
+    });
+
+    async function executeCleanup(endpoint, statusElementId) {
+      const statusEl = document.getElementById(statusElementId);
+      const button = document.querySelector(`button[data-endpoint="${endpoint}"]`);
 
       button.disabled = true;
       statusEl.innerHTML =
@@ -177,17 +257,26 @@ import AppLayout from "../../layouts/AppLayout.astro";
     }
 
     document.getElementById("cleanUsersBtn")?.addEventListener("click", () => {
-      executeCleanup("/api/devtools/clean-users", "cleanUsersStatus");
+      showConfirmModal({
+        endpoint: "/api/devtools/clean-users",
+        statusId: "cleanUsersStatus",
+      });
     });
 
     document.getElementById("cleanLotsBtn")?.addEventListener("click", () => {
-      executeCleanup("/api/devtools/clean-lots", "cleanLotsStatus");
+      showConfirmModal({
+        endpoint: "/api/devtools/clean-lots",
+        statusId: "cleanLotsStatus",
+      });
     });
 
     document
       .getElementById("cleanProductsBtn")
       ?.addEventListener("click", () => {
-        executeCleanup("/api/devtools/clean-products", "cleanProductsStatus");
+        showConfirmModal({
+          endpoint: "/api/devtools/clean-products",
+          statusId: "cleanProductsStatus",
+        });
       });
   </script>
 </AppLayout>
