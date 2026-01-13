@@ -145,16 +145,34 @@ import AppLayout from "../../layouts/AppLayout.astro";
     </div>
 
     <!-- Modal de confirmación para eliminar -->
-    <div id="deleteModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center;">
-      <div style="background: white; border-radius: 12px; padding: 2rem; max-width: 500px; margin: 2rem; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);">
-        <h3 style="margin: 0 0 1rem 0; font-size: 1.5rem; color: #251a14;">⚠️ Confirmar Eliminación</h3>
-        <p style="color: #666; margin-bottom: 1.5rem;">¿Estás seguro de que deseas eliminar el lote <strong id="deleteLotId"></strong>?</p>
-        <p style="color: #ef4444; font-size: 0.9rem; margin-bottom: 1.5rem;">Esta acción no se puede deshacer.</p>
+    <div
+      id="deleteModal"
+      style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center;"
+    >
+      <div
+        style="background: white; border-radius: 12px; padding: 2rem; max-width: 500px; margin: 2rem; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);"
+      >
+        <h3 style="margin: 0 0 1rem 0; font-size: 1.5rem; color: #251a14;">
+          ⚠️ Confirmar Eliminación
+        </h3>
+        <p style="color: #666; margin-bottom: 1.5rem;">
+          ¿Estás seguro de que deseas eliminar el lote <strong id="deleteLotId"
+          ></strong>?
+        </p>
+        <p style="color: #ef4444; font-size: 0.9rem; margin-bottom: 1.5rem;">
+          Esta acción no se puede deshacer.
+        </p>
         <div style="display: flex; gap: 1rem; justify-content: flex-end;">
-          <button onclick="closeDeleteModal()" style="padding: 0.75rem 1.5rem; background: #e5e7eb; color: #374151; border: none; border-radius: 6px; cursor: pointer; font-weight: 500;">
+          <button
+            onclick="closeDeleteModal()"
+            style="padding: 0.75rem 1.5rem; background: #e5e7eb; color: #374151; border: none; border-radius: 6px; cursor: pointer; font-weight: 500;"
+          >
             Cancelar
           </button>
-          <button id="confirmDeleteBtn" style="padding: 0.75rem 1.5rem; background: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500;">
+          <button
+            id="confirmDeleteBtn"
+            style="padding: 0.75rem 1.5rem; background: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500;"
+          >
             Sí, Eliminar
           </button>
         </div>
@@ -354,14 +372,14 @@ import AppLayout from "../../layouts/AppLayout.astro";
 
     // Función para editar lote
     function editLote(lotId, status, id) {
-      console.log('[Editar Lote]', { lotId, status, id });
-      
+      console.log("[Editar Lote]", { lotId, status, id });
+
       // Redirigir a la página de edición según el estado del lote
-      if (status === 'verde') {
+      if (status === "verde") {
         window.location.href = `/app/edit-harvest?lotId=${encodeURIComponent(lotId)}`;
-      } else if (status === 'tostado') {
+      } else if (status === "tostado") {
         window.location.href = `/app/edit-roasted-storage?id=${id}`;
-      } else if (status === 'pendiente') {
+      } else if (status === "pendiente") {
         window.location.href = `/app/edit-roasted?id=${id}`;
       }
     }
@@ -372,63 +390,67 @@ import AppLayout from "../../layouts/AppLayout.astro";
     // Función para mostrar modal de confirmación
     function confirmDelete(lotId, status, id) {
       deleteTarget = { lotId, status, id };
-      document.getElementById('deleteLotId').textContent = lotId;
-      const modal = document.getElementById('deleteModal');
-      modal.style.display = 'flex';
+      document.getElementById("deleteLotId").textContent = lotId;
+      const modal = document.getElementById("deleteModal");
+      modal.style.display = "flex";
     }
 
     // Función para cerrar modal
     function closeDeleteModal() {
-      document.getElementById('deleteModal').style.display = 'none';
+      document.getElementById("deleteModal").style.display = "none";
       deleteTarget = null;
     }
 
     // Función para confirmar y ejecutar eliminación
-    document.getElementById('confirmDeleteBtn').addEventListener('click', async function() {
-      if (!deleteTarget) return;
+    document
+      .getElementById("confirmDeleteBtn")
+      .addEventListener("click", async function () {
+        if (!deleteTarget) return;
 
-      try {
-        console.log('[Eliminar Lote]', deleteTarget);
-        
-        const { lotId, status, id } = deleteTarget;
-        let endpoint = '';
-        
-        // Determinar el endpoint según el estado
-        if (status === 'verde') {
-          endpoint = `/api/coffee/harvest/${encodeURIComponent(lotId)}`;
-        } else if (status === 'tostado') {
-          endpoint = `/api/coffee/roasted-storage/${id}`;
-        } else if (status === 'pendiente') {
-          endpoint = `/api/coffee/roasted-coffee/${id}`;
+        try {
+          console.log("[Eliminar Lote]", deleteTarget);
+
+          const { lotId, status, id } = deleteTarget;
+          let endpoint = "";
+
+          // Determinar el endpoint según el estado
+          if (status === "verde") {
+            endpoint = `/api/coffee/harvest/${encodeURIComponent(lotId)}`;
+          } else if (status === "tostado") {
+            endpoint = `/api/coffee/roasted-storage/${id}`;
+          } else if (status === "pendiente") {
+            endpoint = `/api/coffee/roasted-coffee/${id}`;
+          }
+
+          const response = await fetch(endpoint, {
+            method: "DELETE",
+            credentials: "include",
+          });
+
+          if (!response.ok) {
+            throw new Error("Error al eliminar el lote");
+          }
+
+          // Cerrar modal
+          closeDeleteModal();
+
+          // Recargar lotes
+          await loadLotes();
+
+          alert("✓ Lote eliminado correctamente");
+        } catch (error) {
+          console.error("[Eliminar Lote] Error:", error);
+          alert("Error al eliminar el lote: " + error.message);
         }
-
-        const response = await fetch(endpoint, {
-          method: 'DELETE',
-          credentials: 'include'
-        });
-
-        if (!response.ok) {
-          throw new Error('Error al eliminar el lote');
-        }
-
-        // Cerrar modal
-        closeDeleteModal();
-        
-        // Recargar lotes
-        await loadLotes();
-        
-        alert('✓ Lote eliminado correctamente');
-      } catch (error) {
-        console.error('[Eliminar Lote] Error:', error);
-        alert('Error al eliminar el lote: ' + error.message);
-      }
-    });
+      });
 
     // Cerrar modal al hacer clic fuera
-    document.getElementById('deleteModal').addEventListener('click', function(e) {
-      if (e.target === this) {
-        closeDeleteModal();
-      }
-    });
+    document
+      .getElementById("deleteModal")
+      .addEventListener("click", function (e) {
+        if (e.target === this) {
+          closeDeleteModal();
+        }
+      });
   </script>
 </AppLayout>

@@ -687,3 +687,114 @@ coffeeRouter.get('/lots', async (req, res) => {
     });
   }
 });
+
+// DELETE: Eliminar lote de café verde (coffee_harvests)
+coffeeRouter.delete('/harvest/:lotId', async (req, res) => {
+  try {
+    const { lotId } = req.params;
+    console.log(`[DELETE /harvest] Eliminando lote verde: ${lotId}`);
+
+    // Verificar si el lote existe
+    const checkResult = await query(
+      'SELECT id FROM coffee_harvests WHERE lot_id = ?',
+      [lotId]
+    );
+
+    if (!checkResult.rows || checkResult.rows.length === 0) {
+      return res.status(404).json({ 
+        success: false, 
+        error: 'Lote no encontrado' 
+      });
+    }
+
+    // Eliminar de coffee_inventory primero (si existe)
+    await query('DELETE FROM coffee_inventory WHERE lot_id = ?', [lotId]);
+
+    // Eliminar el lote
+    await query('DELETE FROM coffee_harvests WHERE lot_id = ?', [lotId]);
+
+    console.log(`[DELETE /harvest] Lote ${lotId} eliminado correctamente`);
+    res.json({ 
+      success: true, 
+      message: 'Lote eliminado correctamente' 
+    });
+  } catch (err) {
+    console.error('[DELETE /harvest] Error:', err);
+    res.status(500).json({ 
+      success: false, 
+      error: err.message 
+    });
+  }
+});
+
+// DELETE: Eliminar café tostado almacenado
+coffeeRouter.delete('/roasted-storage/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    console.log(`[DELETE /roasted-storage] Eliminando tostado almacenado ID: ${id}`);
+
+    // Verificar si existe
+    const checkResult = await query(
+      'SELECT id FROM roasted_coffee_inventory WHERE id = ?',
+      [id]
+    );
+
+    if (!checkResult.rows || checkResult.rows.length === 0) {
+      return res.status(404).json({ 
+        success: false, 
+        error: 'Registro no encontrado' 
+      });
+    }
+
+    // Eliminar
+    await query('DELETE FROM roasted_coffee_inventory WHERE id = ?', [id]);
+
+    console.log(`[DELETE /roasted-storage] ID ${id} eliminado correctamente`);
+    res.json({ 
+      success: true, 
+      message: 'Café tostado almacenado eliminado correctamente' 
+    });
+  } catch (err) {
+    console.error('[DELETE /roasted-storage] Error:', err);
+    res.status(500).json({ 
+      success: false, 
+      error: err.message 
+    });
+  }
+});
+
+// DELETE: Eliminar café tostado pendiente de almacenar
+coffeeRouter.delete('/roasted-coffee/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    console.log(`[DELETE /roasted-coffee] Eliminando tostado pendiente ID: ${id}`);
+
+    // Verificar si existe
+    const checkResult = await query(
+      'SELECT id FROM roasted_coffee WHERE id = ?',
+      [id]
+    );
+
+    if (!checkResult.rows || checkResult.rows.length === 0) {
+      return res.status(404).json({ 
+        success: false, 
+        error: 'Registro no encontrado' 
+      });
+    }
+
+    // Eliminar
+    await query('DELETE FROM roasted_coffee WHERE id = ?', [id]);
+
+    console.log(`[DELETE /roasted-coffee] ID ${id} eliminado correctamente`);
+    res.json({ 
+      success: true, 
+      message: 'Café tostado pendiente eliminado correctamente' 
+    });
+  } catch (err) {
+    console.error('[DELETE /roasted-coffee] Error:', err);
+    res.status(500).json({ 
+      success: false, 
+      error: err.message 
+    });
+  }
+});
