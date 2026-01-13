@@ -18,8 +18,9 @@ import AppLayout from "../../layouts/AppLayout.astro";
     >
       <strong style="color: #dc2626; font-size: 1.1rem;">⚠️ ADVERTENCIA</strong>
       <p style="color: #991b1b; margin-top: 0.5rem; line-height: 1.6;">
-        Estas herramientas son destructivas y no pueden deshacerse. Solo para desarrollo y testing.
-        Úsalas en bases de datos de prueba, no en producción.
+        Estas herramientas son destructivas y no pueden deshacerse. Solo para
+        desarrollo y testing. Úsalas en bases de datos de prueba, no en
+        producción.
       </p>
     </div>
 
@@ -29,13 +30,18 @@ import AppLayout from "../../layouts/AppLayout.astro";
       <div
         style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 1.5rem;"
       >
-        <div style="display: flex; justify-content: space-between; align-items: start;">
+        <div
+          style="display: flex; justify-content: space-between; align-items: start;"
+        >
           <div>
-            <h2 style="font-size: 1.25rem; font-weight: 600; color: #251a14; margin: 0;">
+            <h2
+              style="font-size: 1.25rem; font-weight: 600; color: #251a14; margin: 0;"
+            >
               🗑️ Limpiar Usuarios
             </h2>
             <p style="color: #666; margin-top: 0.5rem; font-size: 0.95rem;">
-              Elimina todos los usuarios excepto los 2 primeros (admins). Mantiene la integridad del sistema.
+              Elimina todos los usuarios excepto los 2 primeros (admins).
+              Mantiene la integridad del sistema.
             </p>
           </div>
           <button
@@ -47,20 +53,26 @@ import AppLayout from "../../layouts/AppLayout.astro";
             Ejecutar
           </button>
         </div>
-        <div id="cleanUsersStatus" style="margin-top: 1rem; font-size: 0.9rem;"></div>
+        <div id="cleanUsersStatus" style="margin-top: 1rem; font-size: 0.9rem;">
+        </div>
       </div>
 
       <!-- Limpiar Lotes de Café -->
       <div
         style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 1.5rem;"
       >
-        <div style="display: flex; justify-content: space-between; align-items: start;">
+        <div
+          style="display: flex; justify-content: space-between; align-items: start;"
+        >
           <div>
-            <h2 style="font-size: 1.25rem; font-weight: 600; color: #251a14; margin: 0;">
+            <h2
+              style="font-size: 1.25rem; font-weight: 600; color: #251a14; margin: 0;"
+            >
               🗑️ Limpiar Lotes de Café
             </h2>
             <p style="color: #666; margin-top: 0.5rem; font-size: 0.95rem;">
-              Elimina todos los lotes de café registrados en el sistema (cosechas, inventarios, tostiones).
+              Elimina todos los lotes de café registrados en el sistema
+              (cosechas, inventarios, tostiones).
             </p>
           </div>
           <button
@@ -72,16 +84,21 @@ import AppLayout from "../../layouts/AppLayout.astro";
             Ejecutar
           </button>
         </div>
-        <div id="cleanLotsStatus" style="margin-top: 1rem; font-size: 0.9rem;"></div>
+        <div id="cleanLotsStatus" style="margin-top: 1rem; font-size: 0.9rem;">
+        </div>
       </div>
 
       <!-- Limpiar Productos -->
       <div
         style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 1.5rem;"
       >
-        <div style="display: flex; justify-content: space-between; align-items: start;">
+        <div
+          style="display: flex; justify-content: space-between; align-items: start;"
+        >
           <div>
-            <h2 style="font-size: 1.25rem; font-weight: 600; color: #251a14; margin: 0;">
+            <h2
+              style="font-size: 1.25rem; font-weight: 600; color: #251a14; margin: 0;"
+            >
               🗑️ Limpiar Productos
             </h2>
             <p style="color: #666; margin-top: 0.5rem; font-size: 0.95rem;">
@@ -97,7 +114,11 @@ import AppLayout from "../../layouts/AppLayout.astro";
             Ejecutar
           </button>
         </div>
-        <div id="cleanProductsStatus" style="margin-top: 1rem; font-size: 0.9rem;"></div>
+        <div
+          id="cleanProductsStatus"
+          style="margin-top: 1rem; font-size: 0.9rem;"
+        >
+        </div>
       </div>
     </div>
   </div>
@@ -106,14 +127,15 @@ import AppLayout from "../../layouts/AppLayout.astro";
     async function executeCleanup(endpoint, statusElementId) {
       const statusEl = document.getElementById(statusElementId);
       const button = event.target;
-      
+
       // Confirmar acción
       if (!confirm("⚠️ Esta acción es irreversible. ¿Estás seguro?")) {
         return;
       }
 
       button.disabled = true;
-      statusEl.innerHTML = '<span style="color: #3b82f6;">⏳ Procesando...</span>';
+      statusEl.innerHTML =
+        '<span style="color: #3b82f6;">⏳ Procesando...</span>';
 
       try {
         const response = await fetch(endpoint, {
@@ -143,8 +165,10 @@ import AppLayout from "../../layouts/AppLayout.astro";
       executeCleanup("/api/devtools/clean-lots", "cleanLotsStatus");
     });
 
-    document.getElementById("cleanProductsBtn")?.addEventListener("click", () => {
-      executeCleanup("/api/devtools/clean-products", "cleanProductsStatus");
-    });
+    document
+      .getElementById("cleanProductsBtn")
+      ?.addEventListener("click", () => {
+        executeCleanup("/api/devtools/clean-products", "cleanProductsStatus");
+      });
   </script>
 </AppLayout>

@@ -404,12 +404,9 @@ import AppLayout from "../../layouts/AppLayout.astro";
           if (websiteManagementSection)
             websiteManagementSection.style.display = "block";
           if (auditSection) auditSection.style.display = "block";
-          
-          // Mostrar DevTools solo si no es producción
-          if (devtoolsLink && 
-              (window.location.hostname === 'localhost' || 
-               window.location.hostname === '127.0.0.1' ||
-               window.location.hostname === 'dobleyo.vercel.app')) {
+
+          // Mostrar DevTools para admins en cualquier ambiente
+          if (devtoolsLink) {
             devtoolsLink.style.display = "block";
           }
         } else if (window.userRole === "caficultor") {

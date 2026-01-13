@@ -14,11 +14,6 @@ devtoolsRouter.use(requireRole(['admin'])); // Solo admin puede usar estas herra
 devtoolsRouter.post('/clean-users', async (req, res) => {
   res.setHeader('Content-Type', 'application/json');
   try {
-    // Verificar ambiente (no permitir en producción si es necesario)
-    if (process.env.NODE_ENV === 'production') {
-      return res.status(403).json({ error: 'No permitido en producción' });
-    }
-
     // Obtener los IDs de los 2 primeros usuarios
     const firstTwoUsers = await query(`
       SELECT id FROM users ORDER BY id ASC LIMIT 2
@@ -52,10 +47,6 @@ devtoolsRouter.post('/clean-users', async (req, res) => {
 devtoolsRouter.post('/clean-lots', async (req, res) => {
   res.setHeader('Content-Type', 'application/json');
   try {
-    if (process.env.NODE_ENV === 'production') {
-      return res.status(403).json({ error: 'No permitido en producción' });
-    }
-
     // Eliminar en orden de dependencias (de más específico a más general)
     // Primero las tablas que dependen de coffee_harvests
     await query('DELETE FROM roasted_coffee_inventory');
@@ -78,10 +69,6 @@ devtoolsRouter.post('/clean-lots', async (req, res) => {
 devtoolsRouter.post('/clean-products', async (req, res) => {
   res.setHeader('Content-Type', 'application/json');
   try {
-    if (process.env.NODE_ENV === 'production') {
-      return res.status(403).json({ error: 'No permitido en producción' });
-    }
-
     // Eliminar en orden de dependencias
     await query('DELETE FROM packaged_coffee');
     await query('DELETE FROM products');
