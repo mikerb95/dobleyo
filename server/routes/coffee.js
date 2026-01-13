@@ -665,6 +665,36 @@ coffeeRouter.get('/lots', async (req, res) => {
       console.error('[GET /lots] Error cargando tostados pendientes:', err.message);
     }
 
+    // 4. Lotes en proceso de tostado (roasting_batches)
+    try {
+      const roastingResult = await query(
+        `SELECT 
+          rb.id,
+          rb.lot_id,
+          ch.farm as farm_name,
+          ch.variety,
+          ch.region,
+          ch.altitude,
+          ch.climate,
+          ch.process,
+          ch.aroma,
+          ch.taste_notes as notes,
+          rb.created_at,
+          'en_tostado' as status,
+          rb.quantity_sent_kg as weight
+        FROM roasting_batches rb
+        LEFT JOIN coffee_harvests ch ON rb.lot_id = ch.lot_id
+        WHERE rb.status = 'in_roasting'
+        ORDER BY rb.created_at DESC`
+      );
+      if (roastingResult.rows) {
+        allLots.push(...roastingResult.rows);
+        console.log(`[GET /lots] Lotes en tostado: ${roastingResult.rows.length}`);
+      }
+    } catch (err) {
+      console.error('[GET /lots] Error cargando lotes en tostado:', err.message);
+    }
+
     // Ordenar todos los lotes por fecha (más recientes primero)
     allLots.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
@@ -675,6 +705,7 @@ coffeeRouter.get('/lots', async (req, res) => {
       total: allLots.length,
       breakdown: {
         verde: allLots.filter(l => l.status === 'verde').length,
+        en_tostado: allLots.filter(l => l.status === 'en_tostado').length,
         tostado: allLots.filter(l => l.status === 'tostado').length,
         pendiente: allLots.filter(l => l.status === 'pendiente').length
       }

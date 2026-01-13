@@ -29,6 +29,7 @@ import AppLayout from "../../layouts/AppLayout.astro";
         >
           <option value="">Todos los estados</option>
           <option value="verde">Verde</option>
+          <option value="en_tostado">En Tostado</option>
           <option value="tostado">Tostado (Almacenado)</option>
           <option value="pendiente">Pendiente de Almacenar</option>
         </select>
@@ -63,6 +64,19 @@ import AppLayout from "../../layouts/AppLayout.astro";
         </div>
         <div style="color: #666; margin-top: 0.5rem; font-size: 0.9rem;">
           Verde
+        </div>
+      </div>
+      <div
+        style="background: white; border-radius: 8px; padding: 1.5rem; box-shadow: 0 2px 4px rgba(0,0,0,0.08);"
+      >
+        <div
+          style="font-size: 2rem; font-weight: 700; color: #7c2d12;"
+          id="totalEnTostado"
+        >
+          0
+        </div>
+        <div style="color: #666; margin-top: 0.5rem; font-size: 0.9rem;">
+          En Tostado
         </div>
       </div>
       <div
@@ -281,12 +295,14 @@ import AppLayout from "../../layouts/AppLayout.astro";
 
       const statusColors = {
         verde: "background: #d1fae5; color: #065f46;",
+        en_tostado: "background: #fef3c7; color: #92400e;",
         tostado: "background: #fed7aa; color: #92400e;",
         pendiente: "background: #fef3c7; color: #ea580c;",
       };
 
       const statusLabels = {
         verde: "Verde",
+        en_tostado: "En Tostado",
         tostado: "Tostado",
         pendiente: "Pendiente",
       };
@@ -361,6 +377,9 @@ import AppLayout from "../../layouts/AppLayout.astro";
       document.getElementById("totalLotes").textContent = lotes.length;
       document.getElementById("totalVerde").textContent = lotes.filter(
         (l) => l.status === "verde"
+      ).length;
+      document.getElementById("totalEnTostado").textContent = lotes.filter(
+        (l) => l.status === "en_tostado"
       ).length;
       document.getElementById("totalTostado").textContent = lotes.filter(
         (l) => l.status === "tostado"
