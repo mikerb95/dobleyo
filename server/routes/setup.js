@@ -116,7 +116,7 @@ const products = [
   {
     id: "cf-sierra",
     name: "Sierra Nevada",
-    category: "Cafés",
+    category: "cafe",
     origin: "Sierra Nevada",
     process: "Lavado",
     roast: "Medio",
@@ -130,7 +130,7 @@ const products = [
   {
     id: "cf-huila",
     name: "Huila",
-    category: "Cafés",
+    category: "cafe",
     origin: "Huila",
     process: "Honey",
     roast: "Claro",
@@ -143,7 +143,7 @@ const products = [
   {
     id: "cf-nar",
     name: "Nariño",
-    category: "Cafés",
+    category: "cafe",
     origin: "Nariño",
     process: "Natural",
     roast: "Oscuro",
@@ -154,7 +154,7 @@ const products = [
   {
     id: "acc-molinillo",
     name: "Molinillo Manual",
-    category: "Accesorios",
+    category: "accesorio",
     price: 199900,
     rating: 4.3,
     image: "https://images.unsplash.com/photo-1517080319694-66f5353725c8?q=80&w=800&auto=format&fit=crop",
@@ -162,7 +162,7 @@ const products = [
   {
     id: "acc-prensa",
     name: "Prensa Francesa",
-    category: "Accesorios",
+    category: "accesorio",
     price: 89900,
     rating: 4.8,
     bestseller: true,
@@ -171,7 +171,7 @@ const products = [
   {
     id: "acc-chemex",
     name: "Chemex 6 Tazas",
-    category: "Accesorios",
+    category: "accesorio",
     price: 245000,
     rating: 4.9,
     image: "https://images.unsplash.com/photo-1565452344054-01369143d9d5?q=80&w=800&auto=format&fit=crop",
