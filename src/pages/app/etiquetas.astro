@@ -418,6 +418,41 @@ import AppLayout from "../../layouts/AppLayout.astro";
             </div>
           </div>
 
+          <!-- Fecha de Tostión -->
+          <div class="form-group">
+            <label for="customRoastDate">Fecha de Tostión (Opcional)</label>
+            <input
+              type="date"
+              id="customRoastDate"
+              name="roastDate"
+              style="width: 100%;"
+            />
+          </div>
+
+          <!-- Región y Ubicación -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label for="customRegion">Región (Opcional)</label>
+              <select id="customRegion" name="region" style="width: 100%;">
+                <option value="">Selecciona...</option>
+                <option value="Huila">Huila</option>
+                <option value="Nariño">Nariño</option>
+                <option value="Cauca">Cauca</option>
+                <option value="Tolima">Tolima</option>
+                <option value="Cundinamarca">Cundinamarca</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="customClimate">Clima (Opcional)</label>
+              <select id="customClimate" name="climate" style="width: 100%;">
+                <option value="">Selecciona...</option>
+                <option value="Seco">Seco</option>
+                <option value="Lluvioso">Lluvioso</option>
+                <option value="Templado">Templado</option>
+              </select>
+            </div>
+          </div>
+
           <!-- Cantidad de Etiquetas -->
           <div class="form-group">
             <label for="quantityCero"
@@ -760,6 +795,9 @@ import AppLayout from "../../layouts/AppLayout.astro";
             farm: document.getElementById("customCoffeeFarm").value,
             variety: document.getElementById("customVariety").value,
             roast: document.getElementById("customRoast").value,
+            roastDate: document.getElementById("customRoastDate").value,
+            region: document.getElementById("customRegion").value,
+            climate: document.getElementById("customClimate").value,
             process: document.getElementById("customProcess").value,
             altitude: document.getElementById("customAltitude").value,
             acidity: parseInt(document.getElementById("customAcidity").value),
@@ -768,8 +806,7 @@ import AppLayout from "../../layouts/AppLayout.astro";
             flavorNotes: document.getElementById("customFlavorNotes").value,
             quantity: parseInt(document.getElementById("quantityCero").value),
           };
-  </div>
-</AppLayout>
+
           try {
             const response = await fetch("/api/labels/generate-from-scratch", {
               method: "POST",

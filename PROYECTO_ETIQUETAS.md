@@ -3,6 +3,7 @@
 ## 📋 Especificación Cumplida
 
 ### Requisito Original
+
 > Crea una página para crear etiquetas, que lleve la lógica de las páginas en /app.
 > Esta página deberá dar la opción de escoger entre los lotes que ya se prepararon para la venta, o para crear etiquetas de cero con la información de un perfil de taza de café.
 
@@ -63,7 +64,7 @@ Frontend (etiquetas.astro)
     │   └─ Datos de presentación
     │
     ├─ Usuario ingresa cantidad
-    │ 
+    │
     ├─ POST /api/labels/generate-from-lot
     │   │
     │   └─ Backend (labels.js)
@@ -158,6 +159,7 @@ Frontend (etiquetas.astro)
 ## 📡 API Endpoints
 
 ### GET `/api/labels/prepared-lots`
+
 ```
 Retorna: Array de cafés preparados
 Ejemplo:
@@ -175,6 +177,7 @@ Ejemplo:
 ```
 
 ### POST `/api/labels/generate-from-lot`
+
 ```
 Input:
 {
@@ -192,6 +195,7 @@ Output:
 ```
 
 ### POST `/api/labels/generate-from-scratch`
+
 ```
 Input:
 {
@@ -213,17 +217,20 @@ Output:
 ```
 
 ### GET `/api/labels/list`
+
 ```
 Query: ?type=all&limit=100&offset=0
 Retorna: Lista paginada de etiquetas
 ```
 
 ### GET `/api/labels/:labelId`
+
 ```
 Retorna: Datos de una etiqueta específica
 ```
 
 ### DELETE `/api/labels/:labelId`
+
 ```
 Elimina una etiqueta de la BD
 ```
@@ -232,16 +239,16 @@ Elimina una etiqueta de la BD
 
 ## 📊 Estadísticas del Proyecto
 
-| Métrica | Valor |
-|---------|-------|
-| Archivos Creados | 5 |
-| Archivos Modificados | 2 |
-| Líneas de Código Frontend | 797 |
-| Líneas de Código Backend | 400+ |
-| Tablas de BD | 2 |
-| Endpoints API | 6 |
-| Documentos | 4 |
-| Tiempo Estimado | 2-3 hrs |
+| Métrica                   | Valor   |
+| ------------------------- | ------- |
+| Archivos Creados          | 5       |
+| Archivos Modificados      | 2       |
+| Líneas de Código Frontend | 797     |
+| Líneas de Código Backend  | 400+    |
+| Tablas de BD              | 2       |
+| Endpoints API             | 6       |
+| Documentos                | 4       |
+| Tiempo Estimado           | 2-3 hrs |
 
 ---
 
@@ -267,17 +274,20 @@ Elimina una etiqueta de la BD
 ## 📚 Documentación Entregada
 
 1. **LABELS_SYSTEM.md** (Técnica)
+
    - Descripción del sistema
    - Endpoints documentados
    - Ejemplos de uso
    - Tablas de BD
 
 2. **GUIA_ETIQUETAS.md** (Usuario)
+
    - Instrucciones paso a paso
    - Tips y trucos
    - Preguntas frecuentes
 
 3. **IMPLEMENTATION_LABELS.md** (Desarrollo)
+
    - Resumen de implementación
    - Archivos creados
    - Modificaciones realizadas
@@ -292,6 +302,7 @@ Elimina una etiqueta de la BD
 ## 🎯 Características Implementadas
 
 ### Funcionales
+
 - ✅ Crear etiquetas desde lotes preparados
 - ✅ Crear etiquetas personalizadas
 - ✅ Cálculo automático de puntuación
@@ -301,6 +312,7 @@ Elimina una etiqueta de la BD
 - ✅ Listado de etiquetas
 
 ### De Seguridad
+
 - ✅ Autenticación requerida
 - ✅ Control de roles
 - ✅ Rate limiting
@@ -308,6 +320,7 @@ Elimina una etiqueta de la BD
 - ✅ Auditoría de acciones
 
 ### De UX
+
 - ✅ Interfaz intuitiva
 - ✅ Dos opciones claras (tabs)
 - ✅ Información cargada automáticamente
@@ -371,15 +384,19 @@ Modified:
 ## 🎓 Decisiones de Diseño
 
 1. **AppLayout vs MobileLayout**
+
    - Elegí AppLayout para consistencia con dashboard
 
 2. **Dos Tabs**
+
    - Separa casos de uso (existente vs personalizado)
 
 3. **Sliders para perfil**
+
    - Interfaz intuitiva y visual
 
 4. **Cálculo automático de score**
+
    - Reduce entrada de datos
 
 5. **QR opcional**
@@ -390,6 +407,7 @@ Modified:
 ## 📞 Contacto y Soporte
 
 Para preguntas técnicas:
+
 - Ver `LABELS_SYSTEM.md`
 - Revisar `server/routes/labels.js`
 - Consultar `src/pages/app/etiquetas.astro`
