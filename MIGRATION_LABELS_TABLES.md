@@ -3,16 +3,19 @@
 Las tablas `product_labels` y `generated_labels` son necesarias para que funcione la funcionalidad de etiquetas (`/app/etiquetas`).
 
 ## ¿Por qué?
+
 Estas tablas fueron agregadas al schema pero pueden no existir en la base de datos de producción.
 
 ## Cómo ejecutar
 
 ### Opción 1: Localmente (desarrollo)
+
 ```bash
 node server/migrations/create_labels_tables.js
 ```
 
 ### Opción 2: En Vercel/Production
+
 Si tienes acceso SSH a la base de datos:
 
 ```bash
@@ -83,6 +86,7 @@ CREATE INDEX IF NOT EXISTS idx_generated_labels_created ON generated_labels(crea
 ## Después de ejecutar
 
 Una vez ejecutada, estas tablas estarán disponibles y podrá usarse completamente:
+
 - ✅ Página `/app/etiquetas` funcionará
 - ✅ Crear etiquetas desde lotes
 - ✅ Crear etiquetas personalizadas
