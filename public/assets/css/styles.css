@@ -71,6 +71,10 @@ img{ max-width:100%; display:block }
 
 /* Seccion hero */
 .hero{ position:relative; padding:4rem 0; text-align:center; isolation:isolate }
+/* Ocultar hero en móvil */
+@media (max-width: 767px){
+  .hero{ display:none }
+}
 /* Fondo above the fold con video para viewports medianos o mas */
 @media (min-width: 768px){
   .hero{ padding:6rem 0; min-height: calc(85vh - var(--page-offset-top, 136px)) }
@@ -124,7 +128,7 @@ img{ max-width:100%; display:block }
 .filters{ display:flex; gap:.5rem; padding:1rem 0; position:sticky; top:96px; background:var(--bg); z-index:40; border-bottom:1px solid var(--border) }
 .filters select{ padding:.5rem; border:1px solid var(--border); border-radius:.375rem; background:var(--card); color:var(--fg) }
 
-/* Pie de pagina (rico) */
+/* Pie de pagina */
 .site-footer{ background:var(--footer-bg); color:var(--footer-fg); margin-top:4rem; border-top:1px solid rgba(0,0,0,.05) }
 .site-footer .container{ width:min(var(--page-width),calc(100% - var(--page-gutter))); margin-inline:auto }
 .footer-news{ display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:1.25rem 0; border-bottom:1px solid rgba(0,0,0,.06) }
@@ -158,7 +162,6 @@ img{ max-width:100%; display:block }
 .toast{ position:fixed; left:50%; transform:translateX(-50%); bottom:24px; background:rgba(31,41,55,.95); color:#fff; padding:.6rem .9rem; border-radius:.5rem; z-index:100; box-shadow:0 10px 25px rgba(0,0,0,.2); max-width:90vw }
 .toast[hidden]{ display:none }
 
-/* (capa de busqueda eliminada) */
 
 /* Acordeon */
 .accordion details{ background:var(--card); border:1px solid var(--border); border-radius:.5rem; padding: .75rem 1rem; margin:.5rem 0 }
