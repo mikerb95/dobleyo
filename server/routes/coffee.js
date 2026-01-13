@@ -569,67 +569,118 @@ coffeeRouter.get('/packaged', async (req, res) => {
   }
 });
 
-// GET: Todos los lotes
+// GET: Todos los lotes (verde, tostado almacenado, tostado pendiente)
 coffeeRouter.get('/lots', async (req, res) => {
   try {
-    console.log('[GET /lots] Iniciando carga de lotes');
+    console.log('[GET /lots] Iniciando carga de todos los lotes');
+    const allLots = [];
     
-    // Intentar desde coffee_harvests primero (lotes de recolección)
-    let result = await query(
-      `SELECT 
-        id,
-        lot_id,
-        farm as farm_name,
-        variety,
-        region,
-        altitude,
-        climate,
-        process,
-        aroma,
-        taste_notes as notes,
-        created_at,
-        'verde' as status,
-        NULL as weight
-      FROM coffee_harvests 
-      ORDER BY created_at DESC 
-      LIMIT 500`
-    );
-
-    console.log(`[GET /lots] Lotes de recolección: ${result.rows?.length || 0}`);
-
-    // Si no hay en coffee_harvests, intentar desde lots
-    if (!result.rows || result.rows.length === 0) {
-      console.log('[GET /lots] Intentando desde tabla lots');
-      result = await query(
+    // 1. Lotes de café verde (coffee_harvests)
+    try {
+      const greenResult = await query(
         `SELECT 
-          id,
-          code as lot_id,
-          name,
-          farm as farm_name,
-          variety,
-          weight,
-          estado as status,
-          harvest_date,
-          roast_date as created_at,
-          process,
-          roast as roast_level,
-          aroma,
-          flavor_notes as notes
-        FROM lots 
-        ORDER BY created_at DESC 
-        LIMIT 500`
+          ch.id,
+          ch.lot_id,
+          ch.farm as farm_name,
+          ch.variety,
+          ch.region,
+          ch.altitude,
+          ch.climate,
+          ch.process,
+          ch.aroma,
+          ch.taste_notes as notes,
+          ch.created_at,
+          'verde' as status,
+          COALESCE(ci.weight_kg, 0) as weight
+        FROM coffee_harvests ch
+        LEFT JOIN coffee_inventory ci ON ch.lot_id = ci.lot_id
+        ORDER BY ch.created_at DESC`
       );
-      console.log(`[GET /lots] Lotes de tabla lots: ${result.rows?.length || 0}`);
+      if (greenResult.rows) {
+        allLots.push(...greenResult.rows);
+        console.log(`[GET /lots] Lotes verdes: ${greenResult.rows.length}`);
+      }
+    } catch (err) {
+      console.error('[GET /lots] Error cargando lotes verdes:', err.message);
     }
 
-    console.log(`[GET /lots] Total lotes cargados: ${result.rows?.length || 0}`);
+    // 2. Lotes de café tostado almacenado (roasted_coffee_inventory)
+    try {
+      const storedResult = await query(
+        `SELECT 
+          rci.id,
+          rci.lot_id,
+          ch.farm as farm_name,
+          ch.variety,
+          ch.region,
+          ch.altitude,
+          ch.climate,
+          ch.process,
+          ch.aroma,
+          ch.taste_notes as notes,
+          rci.storage_date as created_at,
+          'tostado' as status,
+          rci.weight_kg as weight
+        FROM roasted_coffee_inventory rci
+        LEFT JOIN roasting_batches rb ON rci.lot_id = rb.lot_id
+        LEFT JOIN coffee_harvests ch ON rb.lot_id = ch.lot_id
+        ORDER BY rci.storage_date DESC`
+      );
+      if (storedResult.rows) {
+        allLots.push(...storedResult.rows);
+        console.log(`[GET /lots] Lotes tostados almacenados: ${storedResult.rows.length}`);
+      }
+    } catch (err) {
+      console.error('[GET /lots] Error cargando tostados almacenados:', err.message);
+    }
+
+    // 3. Lotes de café tostado pendiente de almacenar (roasted_coffee)
+    try {
+      const pendingResult = await query(
+        `SELECT 
+          rc.id,
+          rb.lot_id,
+          ch.farm as farm_name,
+          ch.variety,
+          ch.region,
+          ch.altitude,
+          ch.climate,
+          ch.process,
+          ch.aroma,
+          ch.taste_notes as notes,
+          rc.created_at,
+          'pendiente' as status,
+          rc.weight_kg as weight
+        FROM roasted_coffee rc
+        LEFT JOIN roasting_batches rb ON rc.roasting_id = rb.id
+        LEFT JOIN coffee_harvests ch ON rb.lot_id = ch.lot_id
+        WHERE rc.status = 'ready_for_storage'
+        ORDER BY rc.created_at DESC`
+      );
+      if (pendingResult.rows) {
+        allLots.push(...pendingResult.rows);
+        console.log(`[GET /lots] Lotes tostados pendientes: ${pendingResult.rows.length}`);
+      }
+    } catch (err) {
+      console.error('[GET /lots] Error cargando tostados pendientes:', err.message);
+    }
+
+    // Ordenar todos los lotes por fecha (más recientes primero)
+    allLots.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+    console.log(`[GET /lots] Total lotes cargados: ${allLots.length}`);
     
     res.json({
-      lots: result.rows || [],
-      total: result.rows?.length || 0
+      lots: allLots,
+      total: allLots.length,
+      breakdown: {
+        verde: allLots.filter(l => l.status === 'verde').length,
+        tostado: allLots.filter(l => l.status === 'tostado').length,
+        pendiente: allLots.filter(l => l.status === 'pendiente').length
+      }
     });
   } catch (err) {
-    console.error('[GET /lots] Error:', err);
+    console.error('[GET /lots] Error general:', err);
     res.status(500).json({ 
       error: err.message,
       lots: []
