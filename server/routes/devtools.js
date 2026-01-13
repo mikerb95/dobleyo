@@ -31,15 +31,16 @@ devtoolsRouter.post('/clean-users', async (req, res) => {
       placeholders += ',?';
     }
 
-    await query(`DELETE FROM users WHERE id NOT IN (${placeholders})`, firstTwoIds);
+    const result = await query(`DELETE FROM users WHERE id NOT IN (${placeholders})`, firstTwoIds);
 
     res.json({
       success: true,
-      message: `✅ Usuarios eliminados. Se preservaron los 2 primeros admins.`
+      message: `✅ Usuarios eliminados. Se preservaron los 2 primeros admins.`,
+      deletedCount: result.affectedRows || 0
     });
   } catch (error) {
     console.error('Error al limpiar usuarios:', error);
-    res.status(500).json({ error: 'Error al limpiar usuarios' });
+    res.status(500).json({ error: `Error al limpiar usuarios: ${error.message}` });
   }
 });
 
@@ -47,21 +48,35 @@ devtoolsRouter.post('/clean-users', async (req, res) => {
 devtoolsRouter.post('/clean-lots', async (req, res) => {
   res.setHeader('Content-Type', 'application/json');
   try {
-    // Eliminar en orden de dependencias (de más específico a más general)
-    // Primero las tablas que dependen de coffee_harvests
-    await query('DELETE FROM roasted_coffee_inventory');
-    await query('DELETE FROM roasted_coffee');
-    await query('DELETE FROM roasting_batches');
-    await query('DELETE FROM green_coffee_inventory');
-    await query('DELETE FROM coffee_harvests');
+    // Eliminar en orden de dependencias - primero las referencias, luego los lotes
+    const tablesToDelete = [
+      'generated_labels',  // Depende de users (opcional)
+      'product_labels',    // Depende de lots
+      'lots'               // Tabla principal de lotes
+    ];
+
+    let deletedCount = 0;
+    let details = [];
+    
+    for (const table of tablesToDelete) {
+      try {
+        const result = await query(`DELETE FROM ${table}`);
+        deletedCount++;
+        details.push(`✓ ${table}: ${result.affectedRows || 0} registros`);
+      } catch (tableError) {
+        details.push(`⚠ ${table}: ${tableError.message}`);
+        console.warn(`Error limpiando ${table}:`, tableError.message);
+      }
+    }
 
     res.json({
       success: true,
-      message: '✅ Todos los lotes de café y sus datos relacionados han sido eliminados.'
+      message: `✅ Limpiza completada. Se procesaron ${deletedCount} tablas.`,
+      details: details
     });
   } catch (error) {
-    console.error('Error al limpiar lotes:', error);
-    res.status(500).json({ error: 'Error al limpiar lotes de café' });
+    console.error('Error general al limpiar lotes:', error);
+    res.status(500).json({ error: `Error al limpiar lotes: ${error.message}` });
   }
 });
 
@@ -69,16 +84,35 @@ devtoolsRouter.post('/clean-lots', async (req, res) => {
 devtoolsRouter.post('/clean-products', async (req, res) => {
   res.setHeader('Content-Type', 'application/json');
   try {
-    // Eliminar en orden de dependencias
-    await query('DELETE FROM packaged_coffee');
-    await query('DELETE FROM products');
+    const tablesToDelete = [
+      'product_supplier_prices',   // Depende de products
+      'product_suppliers',         // Depende de products y users
+      'inventory_movements',       // Depende de products
+      'product_labels',            // Depende de lots y products (indirectamente)
+      'products'                   // Tabla principal
+    ];
+
+    let deletedCount = 0;
+    let details = [];
+    
+    for (const table of tablesToDelete) {
+      try {
+        const result = await query(`DELETE FROM ${table}`);
+        deletedCount++;
+        details.push(`✓ ${table}: ${result.affectedRows || 0} registros`);
+      } catch (tableError) {
+        details.push(`⚠ ${table}: ${tableError.message}`);
+        console.warn(`Error limpiando ${table}:`, tableError.message);
+      }
+    }
 
     res.json({
       success: true,
-      message: '✅ Todos los productos han sido eliminados.'
+      message: `✅ Productos eliminados. Se procesaron ${deletedCount} tablas.`,
+      details: details
     });
   } catch (error) {
-    console.error('Error al limpiar productos:', error);
-    res.status(500).json({ error: 'Error al limpiar productos' });
+    console.error('Error general al limpiar productos:', error);
+    res.status(500).json({ error: `Error al limpiar productos: ${error.message}` });
   }
 });
