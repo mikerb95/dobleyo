@@ -17,6 +17,7 @@ Página de aplicación para crear etiquetas de productos con dos opciones:
 ### 1. Tab: Desde Lotes Preparados
 
 **Flujo:**
+
 1. Selecciona un lote que ya ha pasado por el proceso de packaging
 2. Se cargan automáticamente:
    - Información del café (origen, variedad, tueste)
@@ -26,6 +27,7 @@ Página de aplicación para crear etiquetas de productos con dos opciones:
 4. Opción de incluir Código QR de trazabilidad
 
 **Datos que se generan:**
+
 - Código único de etiqueta
 - Información completa del lote
 - Perfil de taza
@@ -34,7 +36,9 @@ Página de aplicación para crear etiquetas de productos con dos opciones:
 ### 2. Tab: Crear de Cero
 
 **Flujo:**
+
 1. Ingresa información del café:
+
    - Origen (requerido)
    - Finca (opcional)
    - Variedad (requerido)
@@ -43,6 +47,7 @@ Página de aplicación para crear etiquetas de productos con dos opciones:
    - Altitud (opcional)
 
 2. Define el Perfil de Taza:
+
    - Acidez (1-5)
    - Cuerpo (1-5)
    - Balance (1-5)
@@ -52,6 +57,7 @@ Página de aplicación para crear etiquetas de productos con dos opciones:
 4. Cantidad de etiquetas
 
 **Datos que se generan:**
+
 - Código temporal único para el lote
 - Etiquetas con información personalizada
 - QR con perfil completo
@@ -59,9 +65,11 @@ Página de aplicación para crear etiquetas de productos con dos opciones:
 ## API Endpoints
 
 ### GET `/api/labels/prepared-lots`
+
 Obtiene lista de cafés preparados para venta (packaging completado)
 
 **Respuesta:**
+
 ```json
 [
   {
@@ -87,9 +95,11 @@ Obtiene lista de cafés preparados para venta (packaging completado)
 ```
 
 ### POST `/api/labels/generate-from-lot`
+
 Genera etiquetas desde un lote preparado
 
 **Body:**
+
 ```json
 {
   "lotId": 1,
@@ -99,6 +109,7 @@ Genera etiquetas desde un lote preparado
 ```
 
 **Respuesta:**
+
 ```json
 {
   "success": true,
@@ -125,9 +136,11 @@ Genera etiquetas desde un lote preparado
 ```
 
 ### POST `/api/labels/generate-from-scratch`
+
 Genera etiquetas con un perfil personalizado
 
 **Body:**
+
 ```json
 {
   "origin": "Sierra Nevada",
@@ -145,6 +158,7 @@ Genera etiquetas con un perfil personalizado
 ```
 
 **Respuesta:**
+
 ```json
 {
   "success": true,
@@ -172,14 +186,17 @@ Genera etiquetas con un perfil personalizado
 ```
 
 ### GET `/api/labels/list`
+
 Obtiene todas las etiquetas generadas
 
 **Query params:**
+
 - `type`: 'all' | 'lots' | 'custom'
 - `limit`: número de resultados (default: 100)
 - `offset`: número de registros a saltar (default: 0)
 
 **Respuesta:**
+
 ```json
 {
   "success": true,
@@ -194,9 +211,11 @@ Obtiene todas las etiquetas generadas
 ```
 
 ### GET `/api/labels/:labelId`
+
 Obtiene una etiqueta específica
 
 **Respuesta:**
+
 ```json
 {
   "success": true,
@@ -219,11 +238,13 @@ Obtiene una etiqueta específica
 ```
 
 ### DELETE `/api/labels/:labelId`
+
 Elimina una etiqueta
 
 ## Tablas de Base de Datos
 
 ### `generated_labels`
+
 Almacena todas las etiquetas generadas
 
 ```sql
@@ -254,6 +275,7 @@ CREATE TABLE generated_labels (
 ```
 
 ### `product_labels`
+
 Etiquetas vinculadas a lotes específicos (backup/historial)
 
 ```sql
@@ -315,11 +337,13 @@ Etiquetas generadas con información personalizada
 ## Próximos Pasos
 
 1. **Impresión de Etiquetas**
+
    - Generador PDF para etiquetas
    - Plantillas de diseño personalizable
    - Códigos de barras y QR
 
 2. **Gestión Avanzada**
+
    - Historial de etiquetas generadas
    - Edición de etiquetas antes de imprimir
    - Descarga masiva en lote
@@ -348,6 +372,7 @@ Etiquetas generadas con información personalizada
 ## Testing
 
 Verificar que:
+
 1. ✅ Endpoint GET `/api/labels/prepared-lots` retorna lotes correctamente
 2. ✅ POST genera etiquetas desde lote existente
 3. ✅ POST genera etiquetas de cero con perfil personalizado

@@ -10,6 +10,7 @@ Se ha implementado un sistema completo para crear etiquetas de productos en Dobl
 ## 📁 Archivos Creados
 
 ### Frontend
+
 - ✅ **`src/pages/app/etiquetas.astro`** (766 líneas)
   - Página completa con dos tabs
   - Interfaz responsiva usando MobileLayout
@@ -17,6 +18,7 @@ Se ha implementado un sistema completo para crear etiquetas de productos en Dobl
   - Gestión de estado interactiva
 
 ### Backend
+
 - ✅ **`server/routes/labels.js`** (Nueva ruta API completa)
   - `GET /prepared-lots` - Obtiene cafés preparados para venta
   - `POST /generate-from-lot` - Genera etiquetas desde lote
@@ -26,7 +28,9 @@ Se ha implementado un sistema completo para crear etiquetas de productos en Dobl
   - `DELETE /:labelId` - Elimina una etiqueta
 
 ### Base de Datos
+
 - ✅ **`db/schema.sql`** (Actualizado)
+
   - Tabla `generated_labels` - Almacena etiquetas generadas
   - Tabla `product_labels` - Vinculación con lotes (backup)
   - Índices para optimización
@@ -35,6 +39,7 @@ Se ha implementado un sistema completo para crear etiquetas de productos en Dobl
   - Migración para crear tablas de etiquetas
 
 ### Documentación
+
 - ✅ **`LABELS_SYSTEM.md`**
   - Guía completa del sistema
   - Endpoints API documentados
@@ -44,15 +49,18 @@ Se ha implementado un sistema completo para crear etiquetas de productos en Dobl
 ## 🔧 Modificaciones a Archivos Existentes
 
 ### `server/index.js`
+
 - ✅ Importado `labelsRouter` desde `./routes/labels.js`
 - ✅ Registrado en rutas: `app.use('/api/labels', labelsRouter)`
 
 ### `db/schema.sql`
+
 - ✅ Añadidas dos nuevas tablas con índices
 
 ## 📊 Estructura de Datos
 
 ### Tabla: `generated_labels`
+
 ```
 - id: BIGINT (PK)
 - label_code: VARCHAR UNIQUE
@@ -68,6 +76,7 @@ Se ha implementado un sistema completo para crear etiquetas de productos en Dobl
 ```
 
 ### Tabla: `product_labels`
+
 ```
 - id: BIGINT (PK)
 - lot_id: BIGINT (FK → lots)
@@ -81,6 +90,7 @@ Se ha implementado un sistema completo para crear etiquetas de productos en Dobl
 ## 🎯 Características Principales
 
 ### Tab 1: Desde Lotes Preparados
+
 - ✅ Dropdown con cafés preparados para venta
 - ✅ Información automática del lote cargada
 - ✅ Perfil de taza mostrado en tarjeta informativa
@@ -89,6 +99,7 @@ Se ha implementado un sistema completo para crear etiquetas de productos en Dobl
 - ✅ Resumen antes de generar
 
 ### Tab 2: Crear de Cero
+
 - ✅ Formulario completo para café personalizado
 - ✅ Sliders interactivos para acidez, cuerpo, balance
 - ✅ Puntuación calculada automáticamente
@@ -97,6 +108,7 @@ Se ha implementado un sistema completo para crear etiquetas de productos en Dobl
 - ✅ Resumen actualizado en tiempo real
 
 ### Característica General
+
 - ✅ Interfaz de dos tabs limpia y moderna
 - ✅ Responsiva (MobileLayout)
 - ✅ Validación de formularios
@@ -109,27 +121,33 @@ Se ha implementado un sistema completo para crear etiquetas de productos en Dobl
 ### Endpoints Disponibles
 
 **GET** `/api/labels/prepared-lots`
+
 - Retorna cafés preparados para venta
 - Conecta con `packaged_coffee` + joins a `roasted_coffee`, `coffee_harvests`
 
 **POST** `/api/labels/generate-from-lot`
+
 - Genera etiquetas desde lote existente
 - Guarda en `generated_labels`
 - Registra auditoría
 
 **POST** `/api/labels/generate-from-scratch`
+
 - Genera etiquetas con perfil personalizado
 - Crea código temporal único
 - Guarda datos completos en BD
 
 **GET** `/api/labels/list`
+
 - Listado paginado de todas las etiquetas
 - Filtrable por tipo
 
 **GET** `/api/labels/:labelId`
+
 - Obtiene una etiqueta específica
 
 **DELETE** `/api/labels/:labelId`
+
 - Elimina una etiqueta
 
 ## 🔐 Seguridad
@@ -146,6 +164,7 @@ Se ha implementado un sistema completo para crear etiquetas de productos en Dobl
 **Ruta interna**: `/app/etiquetas`
 
 **Requisitos:**
+
 - Usuario autenticado
 - Rol: `admin` o `caficultor`
 - Token JWT válido
@@ -153,6 +172,7 @@ Se ha implementado un sistema completo para crear etiquetas de productos en Dobl
 ## 🧪 Testing
 
 Verificar:
+
 1. ✅ Página carga correctamente
 2. ✅ Dropdown muestra lotes preparados
 3. ✅ Cambiar entre tabs funciona
@@ -192,6 +212,7 @@ Verificar:
 ## 📞 Soporte
 
 Para issues o preguntas, consultar:
+
 - `LABELS_SYSTEM.md` - Documentación técnica completa
 - `server/routes/labels.js` - Implementación API
 - `src/pages/app/etiquetas.astro` - UI/UX
