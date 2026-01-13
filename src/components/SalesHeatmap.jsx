@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
 
 export default function SalesHeatmap() {
   const mapRef = useRef(null);
@@ -9,15 +10,17 @@ export default function SalesHeatmap() {
   const [error, setError] = useState(null);
   const [leafletReady, setLeafletReady] = useState(false);
 
-  // Importar leaflet y leaflet.heat dinámicamente
+  // Cargar leaflet.heat después de que el componente esté listo
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      Promise.all([
-        import('leaflet'),
-        import('leaflet.heat')
-      ]).then(([leafletModule]) => {
-        window.L = leafletModule.default;
+      // Asignar L globalmente para leaflet.heat
+      window.L = L;
+      
+      import('leaflet.heat').then(() => {
         setLeafletReady(true);
+      }).catch(err => {
+        console.error('Error loading leaflet.heat:', err);
+        setError('Error cargando el mapa de calor');
       });
     }
   }, []);
@@ -87,8 +90,8 @@ export default function SalesHeatmap() {
     ]);
 
     // Add heatmap layer
-    if (window.L.heatLayer) {
-      L.heatLayer(heatmapData, {
+    if (window.L && window.L.heatLayer) {
+      window.L.heatLayer(heatmapData, {
         radius: 50,
         blur: 25,
         maxZoom: 17,
