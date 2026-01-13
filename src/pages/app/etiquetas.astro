@@ -430,7 +430,9 @@ import AppLayout from "../../layouts/AppLayout.astro";
           </div>
 
           <!-- Región y Ubicación -->
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div
+            style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;"
+          >
             <div class="form-group">
               <label for="customRegion">Región (Opcional)</label>
               <select id="customRegion" name="region" style="width: 100%;">
@@ -823,6 +825,82 @@ import AppLayout from "../../layouts/AppLayout.astro";
           } catch (error) {
             alert(`❌ Error: ${error.message}`);
             console.error(error);
+          }
+        });
+
+      // Actualizar sliders de acidez (Tab 2)
+      document
+        .getElementById("customAcidity")
+        ?.addEventListener("input", (e) => {
+          document.getElementById("customAcidityValue").textContent =
+            `${e.target.value}/5`;
+          updateCeroSummary();
+        });
+
+      // Actualizar sliders de cuerpo (Tab 2)
+      document
+        .getElementById("customBody")
+        ?.addEventListener("input", (e) => {
+          document.getElementById("customBodyValue").textContent =
+            `${e.target.value}/5`;
+          updateCeroSummary();
+        });
+
+      // Actualizar sliders de balance (Tab 2)
+      document
+        .getElementById("customBalance")
+        ?.addEventListener("input", (e) => {
+          document.getElementById("customBalanceValue").textContent =
+            `${e.target.value}/5`;
+          updateCeroSummary();
+        });
+
+      // Actualizar cantidad (Tab 2)
+      document
+        .getElementById("quantityCero")
+        ?.addEventListener("change", updateCeroSummary);
+      document
+        .getElementById("customCoffeeOrigin")
+        ?.addEventListener("change", updateCeroSummary);
+      document
+        .getElementById("customVariety")
+        ?.addEventListener("change", updateCeroSummary);
+      document
+        .getElementById("customRoast")
+        ?.addEventListener("change", updateCeroSummary);
+
+      function updateCeroSummary() {
+        const origin = document.getElementById("customCoffeeOrigin").value;
+        const variety = document.getElementById("customVariety").value;
+        const roast = document.getElementById("customRoast").value;
+        const quantity = document.getElementById("quantityCero").value;
+
+        if (origin && variety && roast && quantity) {
+          document.getElementById("summaryCoffeeOriginCero").textContent =
+            origin;
+          document.getElementById("summaryCoffeeVarietyCero").textContent =
+            variety;
+          document.getElementById("summaryCoffeeRoastCero").textContent = roast;
+          document.getElementById("summaryLabelCountCero").textContent =
+            quantity;
+          document.getElementById("summaryBoxCero").style.display = "block";
+        }
+      }
+
+      // Actualizar cantidad de etiquetas (Tab 1)
+      document
+        .getElementById("quantityLots")
+        ?.addEventListener("change", (e) => {
+          if (document.getElementById("preparedLotSelect").value) {
+            const lot = JSON.parse(
+              document.getElementById("preparedLotSelect").value
+            );
+            document.getElementById("summaryCoffeeLot").textContent = lot.code;
+            document.getElementById("summaryLabelCount").textContent =
+              e.target.value;
+            document.getElementById("summaryProfile").textContent =
+              `Acidez ${lot.acidity || "—"}, Cuerpo ${lot.body || "—"}, Balance ${lot.balance || "—"}`;
+            document.getElementById("summaryBoxLots").style.display = "block";
           }
         });
 
