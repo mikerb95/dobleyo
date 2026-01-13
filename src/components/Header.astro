@@ -44,29 +44,37 @@
           >
         </button>
         <div class="dropdown-menu" id="userDropdownMenu">
-          <a href="/cuenta" class="dropdown-item" data-link>Perfil</a>
-          <a
-            href="/app"
-            class="dropdown-item"
-            id="appsLink"
-            data-link
-            style="display: none;">Panel de apps</a
-          >
-          <a
-            href="/app/productos"
-            class="dropdown-item"
-            id="productosLink"
-            data-link
-            style="display: none;">Productos</a
-          >
-          <a
-            href="/app/auditoria"
-            class="dropdown-item"
-            id="auditLink"
-            data-link
-            style="display: none;">📋 Auditoría</a
-          >
-          <button class="dropdown-item" id="logoutBtn">Cerrar sesión</button>
+          <!-- Opciones autenticado -->
+          <div id="authenticatedMenu" style="display: none;">
+            <a href="/cuenta" class="dropdown-item" data-link>Perfil</a>
+            <a
+              href="/app"
+              class="dropdown-item"
+              id="appsLink"
+              data-link
+              style="display: none;">Panel de apps</a
+            >
+            <a
+              href="/app/productos"
+              class="dropdown-item"
+              id="productosLink"
+              data-link
+              style="display: none;">Productos</a
+            >
+            <a
+              href="/app/auditoria"
+              class="dropdown-item"
+              id="auditLink"
+              data-link
+              style="display: none;">📋 Auditoría</a
+            >
+            <button class="dropdown-item" id="logoutBtn">Cerrar sesión</button>
+          </div>
+          <!-- Opciones no autenticado -->
+          <div id="unauthenticatedMenu" style="display: flex; flex-direction: column;">
+            <a href="/login" class="dropdown-item" data-link>Iniciar sesión</a>
+            <a href="/register" class="dropdown-item" data-link>Registrarse</a>
+          </div>
         </div>
       </div>
       <button id="menuBtn" class="hamburger" aria-label="Menú">☰</button>
@@ -78,27 +86,57 @@
     <a href="/blog" data-link>Blog</a>
     <a href="/trazabilidad" data-link>Trazabilidad</a>
     <a href="/envios-devoluciones" data-link>Envíos y Devoluciones</a>
-    <a
-      href="/login"
-      class="user-btn"
-      aria-label="Iniciar sesión"
-      data-link
-      id="userNavMobileBtn"
-    >
-      <svg
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        aria-hidden="true"
-        ><path
-          d="M12 12c2.761 0 5-2.239 5-5s-2.239-5-5-5-5 2.239-5 5 2.239 5 5 5zm0 2c-4.418 0-8 2.239-8 5v1h16v-1c0-2.761-3.582-5-8-5z"
-          fill="currentColor"></path></svg
-      >
-      <span id="userNameMobileDisplay" style="display: none;"></span>
-      <span id="userMobileLabel">Mi Cuenta</span>
-    </a>
+    
+    <!-- Opciones autenticado en móvil -->
+    <div id="mobileAuthenticatedMenu" style="display: none;">
+      <a href="/cuenta" class="user-btn" data-link>
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          aria-hidden="true"
+          ><path
+            d="M12 12c2.761 0 5-2.239 5-5s-2.239-5-5-5-5 2.239-5 5 2.239 5 5 5zm0 2c-4.418 0-8 2.239-8 5v1h16v-1c0-2.761-3.582-5-8-5z"
+            fill="currentColor"></path></svg
+        >
+        <span id="userNameMobileDisplay" style="display: none;"></span>
+        <span id="userMobileLabel">Mi Cuenta</span>
+      </a>
+    </div>
+    
+    <!-- Opciones no autenticado en móvil -->
+    <div id="mobileUnauthenticatedMenu" style="display: flex; flex-direction: column;">
+      <a href="/login" class="user-btn" data-link>
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          aria-hidden="true"
+          ><path
+            d="M12 12c2.761 0 5-2.239 5-5s-2.239-5-5-5-5 2.239-5 5 2.239 5 5 5zm0 2c-4.418 0-8 2.239-8 5v1h16v-1c0-2.761-3.582-5-8-5z"
+            fill="currentColor"></path></svg
+        >
+        <span>Iniciar sesión</span>
+      </a>
+      <a href="/register" class="user-btn" data-link>
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          aria-hidden="true"
+          ><path
+            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8m3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5m-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11m3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"
+            fill="currentColor"></path></svg
+        >
+        <span>Registrarse</span>
+      </a>
+    </div>
   </div>
 </header>
 
@@ -229,14 +267,18 @@
   // Verificar sesión y actualizar botón de usuario
   (async function checkAuthStatus() {
     const userBtn = document.getElementById("userNavBtn");
-    const userMobileBtn = document.getElementById("userNavMobileBtn");
     const userNameDisplay = document.getElementById("userNameDisplay");
-    const userNameMobileDisplay = document.getElementById(
-      "userNameMobileDisplay"
-    );
     const userMobileLabel = document.getElementById("userMobileLabel");
     const appsLink = document.getElementById("appsLink");
     const productosLink = document.getElementById("productosLink");
+    const auditLink = document.getElementById("auditLink");
+    const logoutBtn = document.getElementById("logoutBtn");
+    
+    // Elementos del dropdown y menú móvil
+    const authenticatedMenu = document.getElementById("authenticatedMenu");
+    const unauthenticatedMenu = document.getElementById("unauthenticatedMenu");
+    const mobileAuthenticatedMenu = document.getElementById("mobileAuthenticatedMenu");
+    const mobileUnauthenticatedMenu = document.getElementById("mobileUnauthenticatedMenu");
 
     // Primero intentar con token en localStorage
     const token = localStorage.getItem("adminToken");
@@ -250,16 +292,12 @@
 
       if (res.ok) {
         const user = await res.json();
-        // Usuario logueado - mostrar nombre
+        // Usuario logueado - mostrar menú autenticado
         const firstName = user.first_name || "Usuario";
 
         if (userNameDisplay) {
           userNameDisplay.textContent = firstName;
           userNameDisplay.style.display = "inline";
-        }
-        if (userNameMobileDisplay) {
-          userNameMobileDisplay.textContent = firstName;
-          userNameMobileDisplay.style.display = "inline";
         }
         if (userMobileLabel) {
           userMobileLabel.textContent = firstName;
@@ -268,23 +306,20 @@
           userBtn.href = "/cuenta";
           userBtn.setAttribute("aria-label", `Cuenta de ${firstName}`);
         }
-        if (userMobileBtn) {
-          userMobileBtn.href = "/cuenta";
-          userMobileBtn.setAttribute("aria-label", `Cuenta de ${firstName}`);
-        }
 
-        // Mostrar "Panel de apps" solo si es admin
+        // Mostrar opciones de autenticado, ocultar no autenticado
+        if (authenticatedMenu) authenticatedMenu.style.display = "block";
+        if (unauthenticatedMenu) unauthenticatedMenu.style.display = "none";
+        if (mobileAuthenticatedMenu) mobileAuthenticatedMenu.style.display = "flex";
+        if (mobileUnauthenticatedMenu) mobileUnauthenticatedMenu.style.display = "none";
+
+        // Mostrar opciones admin
         if (appsLink && user.role === "admin") {
           appsLink.style.display = "block";
         }
-
-        // Mostrar "Productos" solo si es admin
         if (productosLink && user.role === "admin") {
           productosLink.style.display = "block";
         }
-
-        // Mostrar "Auditoría" solo si es admin
-        const auditLink = document.getElementById("auditLink");
         if (auditLink && user.role === "admin") {
           auditLink.style.display = "block";
         }
@@ -292,20 +327,20 @@
         // Guardar nombre en localStorage para persistencia
         localStorage.setItem("userName", firstName);
       } else if (res.status === 401) {
-        // Solo borrar localStorage si es un error de autenticación (401)
-        // Otros errores (500, 503) no deben cerrar la sesión del usuario
+        // No autenticado - mostrar menú de login/registro
         localStorage.removeItem("adminToken");
         localStorage.removeItem("userName");
+        
+        if (authenticatedMenu) authenticatedMenu.style.display = "none";
+        if (unauthenticatedMenu) unauthenticatedMenu.style.display = "flex";
+        if (mobileAuthenticatedMenu) mobileAuthenticatedMenu.style.display = "none";
+        if (mobileUnauthenticatedMenu) mobileUnauthenticatedMenu.style.display = "flex";
+        
         if (userBtn) {
-          userBtn.href = "/login";
-          userBtn.setAttribute("aria-label", "Iniciar sesión");
-        }
-        if (userMobileBtn) {
-          userMobileBtn.href = "/login";
-          userMobileBtn.setAttribute("aria-label", "Iniciar sesión");
+          userBtn.setAttribute("aria-label", "Menú de usuario");
         }
       } else {
-        // Error del servidor (500, etc) - mantener sesión con datos guardados
+        // Error del servidor - mantener sesión con datos guardados
         console.warn(
           "[Header] Error del servidor en /api/auth/me:",
           res.status
@@ -316,35 +351,63 @@
             userNameDisplay.textContent = savedName;
             userNameDisplay.style.display = "inline";
           }
-          if (userNameMobileDisplay) {
-            userNameMobileDisplay.textContent = savedName;
-            userNameMobileDisplay.style.display = "inline";
+          if (userMobileLabel) {
+            userMobileLabel.textContent = savedName;
           }
-          if (userBtn) userBtn.href = "/cuenta";
-          if (userMobileBtn) userMobileBtn.href = "/cuenta";
+          if (authenticatedMenu) authenticatedMenu.style.display = "block";
+          if (unauthenticatedMenu) unauthenticatedMenu.style.display = "none";
+          if (mobileAuthenticatedMenu) mobileAuthenticatedMenu.style.display = "flex";
+          if (mobileUnauthenticatedMenu) mobileUnauthenticatedMenu.style.display = "none";
         } else {
-          if (userBtn) userBtn.href = "/login";
-          if (userMobileBtn) userMobileBtn.href = "/login";
+          if (authenticatedMenu) authenticatedMenu.style.display = "none";
+          if (unauthenticatedMenu) unauthenticatedMenu.style.display = "flex";
+          if (mobileAuthenticatedMenu) mobileAuthenticatedMenu.style.display = "none";
+          if (mobileUnauthenticatedMenu) mobileUnauthenticatedMenu.style.display = "flex";
         }
       }
     } catch (err) {
-      // Error en la verificación - intentar mostrar nombre guardado
+      // Error en la verificación - mostrar menú no autenticado
+      console.error("[Header] Error checking auth status:", err);
       const savedName = localStorage.getItem("userName");
       if (savedName) {
         if (userNameDisplay) {
           userNameDisplay.textContent = savedName;
           userNameDisplay.style.display = "inline";
         }
-        if (userNameMobileDisplay) {
-          userNameMobileDisplay.textContent = savedName;
-          userNameMobileDisplay.style.display = "inline";
+        if (userMobileLabel) {
+          userMobileLabel.textContent = savedName;
         }
-        if (userBtn) userBtn.href = "/cuenta";
-        if (userMobileBtn) userMobileBtn.href = "/cuenta";
+        if (authenticatedMenu) authenticatedMenu.style.display = "block";
+        if (unauthenticatedMenu) unauthenticatedMenu.style.display = "none";
+        if (mobileAuthenticatedMenu) mobileAuthenticatedMenu.style.display = "flex";
+        if (mobileUnauthenticatedMenu) mobileUnauthenticatedMenu.style.display = "none";
       } else {
-        if (userBtn) userBtn.href = "/login";
-        if (userMobileBtn) userMobileBtn.href = "/login";
+        if (authenticatedMenu) authenticatedMenu.style.display = "none";
+        if (unauthenticatedMenu) unauthenticatedMenu.style.display = "flex";
+        if (mobileAuthenticatedMenu) mobileAuthenticatedMenu.style.display = "none";
+        if (mobileUnauthenticatedMenu) mobileUnauthenticatedMenu.style.display = "flex";
       }
+    }
+    
+    // Logout
+    if (logoutBtn) {
+      logoutBtn.addEventListener("click", async (e) => {
+        e.preventDefault();
+        try {
+          const response = await fetch("/api/auth/logout", {
+            method: "POST",
+            credentials: "include",
+          });
+
+          if (response.ok) {
+            localStorage.removeItem("adminToken");
+            localStorage.removeItem("userName");
+            window.location.href = "/login";
+          }
+        } catch (err) {
+          console.error("Error al cerrar sesión:", err);
+        }
+      });
     }
   })();
 
