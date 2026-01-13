@@ -16,29 +16,58 @@ labelsRouter.get('/prepared-lots', async (req, res) => {
   try {
     const results = await query(
       `SELECT 
-        id,
-        code,
-        name,
-        origin,
-        farm,
-        variety,
-        roast,
-        weight,
-        presentation,
-        grind,
-        acidity,
-        body,
-        balance,
-        score,
-        flavor_notes
-       FROM lots 
-       WHERE product_id IS NOT NULL 
-       AND presentation IS NOT NULL
-       ORDER BY created_at DESC 
+        pc.id,
+        pc.roasted_storage_id,
+        pc.acidity,
+        pc.body,
+        pc.balance,
+        pc.score,
+        pc.presentation,
+        pc.grind_size,
+        pc.package_size,
+        pc.unit_count,
+        rc.roast_level,
+        rc.weight_kg,
+        rb.lot_id,
+        ch.code as lot_code,
+        ch.region,
+        ch.farm,
+        ch.variety,
+        ch.process,
+        ch.flavor_notes,
+        ch.weight as lot_weight
+       FROM packaged_coffee pc
+       LEFT JOIN roasted_coffee_inventory rci ON pc.roasted_storage_id = rci.id
+       LEFT JOIN roasted_coffee rc ON rci.roasted_id = rc.id
+       LEFT JOIN roasting_batches rb ON rc.roasting_id = rb.id
+       LEFT JOIN coffee_harvests ch ON rb.lot_id = ch.lot_id
+       WHERE pc.status = 'ready_for_sale' 
+       ORDER BY pc.created_at DESC 
        LIMIT 100`
     );
 
-    res.json(results);
+    // Transformar resultados al formato esperado
+    const lots = results.map(row => ({
+      id: row.id,
+      code: row.lot_code || `LOT-${row.roasted_storage_id}`,
+      origin: row.region || 'Colombia',
+      farm: row.farm,
+      variety: row.variety,
+      roast: row.roast_level || 'Medio',
+      process: row.process,
+      presentation: row.presentation,
+      grind: row.grind_size,
+      acidity: row.acidity,
+      body: row.body,
+      balance: row.balance,
+      score: row.score,
+      flavorNotes: row.flavor_notes,
+      weight: row.weight_kg,
+      packageSize: row.package_size,
+      unitCount: row.unit_count
+    }));
+
+    res.json(lots);
   } catch (error) {
     console.error('Error al obtener lotes preparados:', error);
     res.status(500).json({ error: 'Error al obtener lotes preparados' });
@@ -58,63 +87,78 @@ labelsRouter.post('/generate-from-lot', async (req, res) => {
       });
     }
 
-    // Obtener información del lote
-    const lotResults = await query(
-      `SELECT * FROM lots WHERE id = ?`,
+    // Obtener información del café empacado
+    const coffeeResults = await query(
+      `SELECT pc.*, rc.roast_level, rc.weight_kg, rb.lot_id, ch.code as lot_code, ch.region, ch.farm, 
+              ch.variety, ch.process, ch.flavor_notes, ch.weight as lot_weight
+       FROM packaged_coffee pc
+       LEFT JOIN roasted_coffee_inventory rci ON pc.roasted_storage_id = rci.id
+       LEFT JOIN roasted_coffee rc ON rci.roasted_id = rc.id
+       LEFT JOIN roasting_batches rb ON rc.roasting_id = rb.id
+       LEFT JOIN coffee_harvests ch ON rb.lot_id = ch.lot_id
+       WHERE pc.id = ?`,
       [lotId]
     );
 
-    if (lotResults.length === 0) {
+    if (coffeeResults.length === 0) {
       return res.status(404).json({
         success: false,
-        error: 'Lote no encontrado'
+        error: 'Café empacado no encontrado'
       });
     }
 
-    const lot = lotResults[0];
-
-    // Verificar que el lote esté preparado para venta
-    if (!lot.product_id || !lot.presentation) {
-      return res.status(400).json({
-        success: false,
-        error: 'El lote no está preparado para venta. Debe tener presentación definida.'
-      });
-    }
+    const coffee = coffeeResults[0];
 
     // Generar etiquetas
     const labels = [];
-    const baseCode = `LBL-${lot.code}`;
+    const baseCode = `LBL-${coffee.lot_code || `PKG-${lotId}`}`;
 
     for (let i = 1; i <= quantity; i++) {
       const labelId = `${baseCode}-${String(i).padStart(4, '0')}`;
-      const qrCode = includeQR ? generateQRData(lot, labelId) : null;
+      const qrData = includeQR ? generateQRData(coffee, labelId) : null;
 
       labels.push({
         id: labelId,
-        lotId: lot.id,
-        lotCode: lot.code,
-        origin: lot.origin,
-        farm: lot.farm,
-        variety: lot.variety,
-        roast: lot.roast,
-        process: lot.process,
-        presentation: lot.presentation,
-        grind: lot.grind,
-        acidity: lot.acidity,
-        body: lot.body,
-        balance: lot.balance,
-        score: lot.score,
-        flavorNotes: lot.flavor_notes,
-        qrCode: qrCode,
+        packagedCoffeeId: coffee.id,
+        lotCode: coffee.lot_code,
+        origin: coffee.region,
+        farm: coffee.farm,
+        variety: coffee.variety,
+        roast: coffee.roast_level,
+        process: coffee.process,
+        presentation: coffee.presentation,
+        grind: coffee.grind_size,
+        acidity: coffee.acidity,
+        body: coffee.body,
+        balance: coffee.balance,
+        score: coffee.score,
+        flavorNotes: coffee.flavor_notes,
+        qrCode: qrData,
         generatedAt: new Date(),
         sequence: i
       });
 
       // Guardar en BD
       await query(
-        `INSERT INTO product_labels (lot_id, label_code, sequence, qr_data, created_at)
-         VALUES (?, ?, ?, ?, NOW())`,
-        [lot.id, labelId, i, qrCode]
+        `INSERT INTO generated_labels (label_code, lot_code, origin, variety, roast, 
+                                       acidity, body, balance, score, flavor_notes, 
+                                       qr_data, sequence, user_id, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
+        [
+          labelId,
+          coffee.lot_code || `PKG-${lotId}`,
+          coffee.region,
+          coffee.variety,
+          coffee.roast_level,
+          coffee.acidity,
+          coffee.body,
+          coffee.balance,
+          coffee.score,
+          coffee.flavor_notes,
+          qrData,
+          i,
+          req.user.id
+        ]
       );
     }
 
@@ -122,7 +166,7 @@ labelsRouter.post('/generate-from-lot', async (req, res) => {
     await query(
       `INSERT INTO audit_logs (user_id, action, entity_type, entity_id, details, created_at)
        VALUES (?, ?, ?, ?, ?, NOW())`,
-      [req.user.id, 'generate_labels', 'lot', lot.id, JSON.stringify({ quantity, includeQR })]
+      [req.user.id, 'generate_labels', 'packaged_coffee', lotId, JSON.stringify({ quantity, includeQR })]
     );
 
     res.json({

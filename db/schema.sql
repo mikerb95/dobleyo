@@ -242,3 +242,50 @@ CREATE INDEX idx_sales_ml_order_id ON sales_tracking(ml_order_id);
 CREATE INDEX idx_sales_purchase_date ON sales_tracking(purchase_date);
 CREATE INDEX idx_sales_city ON sales_tracking(recipient_city);
 CREATE INDEX idx_sales_state ON sales_tracking(recipient_state);
+-- Product Labels (Etiquetas para productos)
+CREATE TABLE IF NOT EXISTS product_labels (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    lot_id BIGINT,
+    label_code VARCHAR(100) NOT NULL UNIQUE,
+    sequence INT,
+    qr_data JSON,
+    printed BOOLEAN DEFAULT FALSE,
+    printed_at TIMESTAMP NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (lot_id) REFERENCES lots(id) ON DELETE CASCADE
+);
+CREATE INDEX idx_product_labels_lot ON product_labels(lot_id);
+CREATE INDEX idx_product_labels_code ON product_labels(label_code);
+CREATE INDEX idx_product_labels_printed ON product_labels(printed);
+
+-- Generated Labels (Etiquetas generadas - desde lotes o de cero)
+CREATE TABLE IF NOT EXISTS generated_labels (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    label_code VARCHAR(100) NOT NULL UNIQUE,
+    lot_code VARCHAR(100),
+    origin VARCHAR(160),
+    variety VARCHAR(120),
+    roast VARCHAR(80),
+    process VARCHAR(80),
+    altitude VARCHAR(60),
+    farm VARCHAR(160),
+    acidity INT,
+    body INT,
+    balance INT,
+    score DECIMAL(4,1),
+    flavor_notes TEXT,
+    qr_data JSON,
+    user_id BIGINT,
+    printed BOOLEAN DEFAULT FALSE,
+    printed_at TIMESTAMP NULL,
+    sequence INT,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+);
+CREATE INDEX idx_generated_labels_code ON generated_labels(label_code);
+CREATE INDEX idx_generated_labels_lot_code ON generated_labels(lot_code);
+CREATE INDEX idx_generated_labels_user ON generated_labels(user_id);
+CREATE INDEX idx_generated_labels_printed ON generated_labels(printed);
+CREATE INDEX idx_generated_labels_created ON generated_labels(created_at);
