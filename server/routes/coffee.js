@@ -568,3 +568,45 @@ coffeeRouter.get('/packaged', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+// GET: Todos los lotes
+coffeeRouter.get('/lots', async (req, res) => {
+  try {
+    console.log('[GET /lots] Iniciando carga de lotes');
+    
+    const result = await query(
+      `SELECT 
+        id,
+        code as lot_id,
+        name,
+        farm as farm_name,
+        variety,
+        weight,
+        weight_unit,
+        estado as status,
+        harvest_date,
+        roast_date as created_at,
+        score,
+        aroma,
+        flavor_notes,
+        process,
+        roast as roast_level
+      FROM lots 
+      ORDER BY created_at DESC 
+      LIMIT 500`
+    );
+
+    console.log(`[GET /lots] Se cargaron ${result.rows?.length || 0} lotes`);
+    
+    res.json({
+      lots: result.rows || [],
+      total: result.rows?.length || 0
+    });
+  } catch (err) {
+    console.error('[GET /lots] Error:', err);
+    res.status(500).json({ 
+      error: err.message,
+      lots: []
+    });
+  }
+});
