@@ -48,9 +48,12 @@ devtoolsRouter.post('/clean-users', async (req, res) => {
 devtoolsRouter.post('/clean-lots', async (req, res) => {
   res.setHeader('Content-Type', 'application/json');
   try {
+    // Primero desactivar verificación de claves foráneas para poder eliminar en cualquier orden
+    await query('SET FOREIGN_KEY_CHECKS = 0;');
+
     // Eliminar en orden de dependencias - primero las referencias, luego los lotes
     const tablesToDelete = [
-      'generated_labels',  // Depende de users (opcional)
+      'generated_labels',  // Depende de users
       'product_labels',    // Depende de lots
       'lots'               // Tabla principal de lotes
     ];
@@ -69,13 +72,18 @@ devtoolsRouter.post('/clean-lots', async (req, res) => {
       }
     }
 
+    // Reactivar verificación de claves foráneas
+    await query('SET FOREIGN_KEY_CHECKS = 1;');
+
     res.json({
       success: true,
-      message: `✅ Limpiza completada. Se procesaron ${deletedCount} tablas.`,
+      message: `✅ Limpiza completada. Se eliminaron registros de ${deletedCount} tablas.`,
       details: details
     });
   } catch (error) {
     console.error('Error general al limpiar lotes:', error);
+    // Asegurar que reactivamos las claves foráneas en caso de error
+    await query('SET FOREIGN_KEY_CHECKS = 1;').catch(() => {});
     res.status(500).json({ error: `Error al limpiar lotes: ${error.message}` });
   }
 });
@@ -84,6 +92,9 @@ devtoolsRouter.post('/clean-lots', async (req, res) => {
 devtoolsRouter.post('/clean-products', async (req, res) => {
   res.setHeader('Content-Type', 'application/json');
   try {
+    // Desactivar verificación de claves foráneas temporalmente
+    await query('SET FOREIGN_KEY_CHECKS = 0;');
+
     const tablesToDelete = [
       'product_supplier_prices',   // Depende de products
       'product_suppliers',         // Depende de products y users
@@ -106,13 +117,18 @@ devtoolsRouter.post('/clean-products', async (req, res) => {
       }
     }
 
+    // Reactivar verificación de claves foráneas
+    await query('SET FOREIGN_KEY_CHECKS = 1;');
+
     res.json({
       success: true,
-      message: `✅ Productos eliminados. Se procesaron ${deletedCount} tablas.`,
+      message: `✅ Productos eliminados. Se eliminaron registros de ${deletedCount} tablas.`,
       details: details
     });
   } catch (error) {
     console.error('Error general al limpiar productos:', error);
+    // Asegurar que reactivamos las claves foráneas en caso de error
+    await query('SET FOREIGN_KEY_CHECKS = 1;').catch(() => {});
     res.status(500).json({ error: `Error al limpiar productos: ${error.message}` });
   }
 });
