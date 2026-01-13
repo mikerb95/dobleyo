@@ -135,27 +135,36 @@ import AppLayout from "../../layouts/AppLayout.astro";
     style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;"
   >
     <div
-      style="background: white; border-radius: 12px; padding: 2rem; max-width: 500px; box-shadow: 0 20px 25px rgba(0,0,0,0.15);"
+      id="modalContent"
+      style="background: white; border-radius: 12px; padding: 2rem; max-width: 600px; max-height: 80vh; overflow-y: auto; box-shadow: 0 20px 25px rgba(0,0,0,0.15);"
     >
-      <h2 style="color: #dc2626; margin-top: 0; font-size: 1.5rem;">
+      <h2 id="modalTitle" style="color: #dc2626; margin-top: 0; font-size: 1.5rem;">
         ⚠️ Confirma esta acción destructiva
       </h2>
-      <p style="color: #666; line-height: 1.6; margin: 1rem 0;">
-        Esta acción <strong>no se puede deshacer</strong>. Para confirmar que
-        realmente deseas proceder, ingresa el link del repositorio de GitHub:
-      </p>
-      <p
-        style="background: #f3f4f6; padding: 0.75rem; border-radius: 6px; font-family: monospace; font-size: 0.9rem; color: #333; margin: 1rem 0;"
-      >
-        github.com/mikerb95/dobleyo
-      </p>
-      <input
-        id="confirmInput"
-        type="text"
-        placeholder="Pega el link del repositorio aquí..."
-        style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px; font-family: monospace; font-size: 0.9rem; box-sizing: border-box; margin-bottom: 1rem;"
-      />
-      <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+      
+      <div id="confirmContent">
+        <p style="color: #666; line-height: 1.6; margin: 1rem 0;">
+          Esta acción <strong>no se puede deshacer</strong>. Para confirmar que
+          realmente deseas proceder, ingresa el link del repositorio de GitHub:
+        </p>
+        <p
+          style="background: #f3f4f6; padding: 0.75rem; border-radius: 6px; font-family: monospace; font-size: 0.9rem; color: #333; margin: 1rem 0;"
+        >
+          github.com/mikerb95/dobleyo
+        </p>
+        <input
+          id="confirmInput"
+          type="text"
+          placeholder="Pega el link del repositorio aquí..."
+          style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px; font-family: monospace; font-size: 0.9rem; box-sizing: border-box; margin-bottom: 1rem;"
+        />
+      </div>
+
+      <div id="logContent" style="display: none;">
+        <!-- Aquí se mostrará el log en tiempo real -->
+      </div>
+
+      <div id="modalButtons" style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
         <button
           id="cancelBtn"
           style="padding: 0.75rem 1.5rem; background: #e5e7eb; color: #333; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background 0.2s;"
@@ -184,6 +193,22 @@ import AppLayout from "../../layouts/AppLayout.astro";
       pendingAction = action;
       const modal = document.getElementById("confirmModal");
       const input = document.getElementById("confirmInput");
+      const confirmContent = document.getElementById("confirmContent");
+      const logContent = document.getElementById("logContent");
+      const modalTitle = document.getElementById("modalTitle");
+      const cancelBtn = document.getElementById("cancelBtn");
+      const confirmBtn = document.getElementById("confirmBtn");
+
+      // Reset modal to initial state
+      modalTitle.textContent = "⚠️ Confirma esta acción destructiva";
+      modalTitle.style.color = "#dc2626";
+      confirmContent.style.display = "block";
+      logContent.style.display = "none";
+      logContent.innerHTML = "";
+      cancelBtn.textContent = "Cancelar";
+      confirmBtn.textContent = "Confirmar y Ejecutar";
+      confirmBtn.style.display = "block";
+
       modal.style.display = "flex";
       input.value = "";
       input.focus();
@@ -195,51 +220,47 @@ import AppLayout from "../../layouts/AppLayout.astro";
       pendingAction = null;
     }
 
-    document
-      .getElementById("cancelBtn")
-      ?.addEventListener("click", hideConfirmModal);
+    document.getElementById("cancelBtn")?.addEventListener("click", hideConfirmModal);
 
-    document
-      .getElementById("confirmBtn")
-      ?.addEventListener("click", async () => {
-        const input = document.getElementById("confirmInput");
-        if (input.value.trim() !== REPO_LINK) {
-          alert(
-            "❌ El link del repositorio no es correcto. Por favor, intenta nuevamente."
-          );
-          input.focus();
-          return;
-        }
+    document.getElementById("confirmBtn")?.addEventListener("click", async () => {
+      const input = document.getElementById("confirmInput");
+      if (input.value.trim() !== REPO_LINK) {
+        alert("❌ El link del repositorio no es correcto. Por favor, intenta nuevamente.");
+        input.focus();
+        return;
+      }
 
-        hideConfirmModal();
-        if (pendingAction) {
-          await executeCleanup(pendingAction.endpoint, pendingAction.statusId);
-        }
-      });
+      // Ejecutar dentro de la modal
+      if (pendingAction) {
+        await executeCleanupInModal(pendingAction.endpoint);
+      }
+    });
 
     // Permitir Enter en el input
-    document
-      .getElementById("confirmInput")
-      ?.addEventListener("keypress", (e) => {
-        if (e.key === "Enter") {
-          document.getElementById("confirmBtn").click();
-        }
-      });
+    document.getElementById("confirmInput")?.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") {
+        document.getElementById("confirmBtn").click();
+      }
+    });
 
-    async function executeCleanup(endpoint, statusElementId) {
-      const statusEl = document.getElementById(statusElementId);
-      let button = null;
-      
-      // Encontrar el botón asociado a este status
-      document.querySelectorAll("button[data-status]").forEach(btn => {
-        if (btn.dataset.status === statusElementId) {
-          button = btn;
-        }
-      });
+    async function executeCleanupInModal(endpoint) {
+      const confirmContent = document.getElementById("confirmContent");
+      const logContent = document.getElementById("logContent");
+      const modalTitle = document.getElementById("modalTitle");
+      const cancelBtn = document.getElementById("cancelBtn");
+      const confirmBtn = document.getElementById("confirmBtn");
 
-      if (button) button.disabled = true;
-      statusEl.innerHTML =
-        '<div style="color: #3b82f6; font-weight: 600;">⏳ Procesando...</div>';
+      // Ocultar formulario de confirmación
+      confirmContent.style.display = "none";
+      confirmBtn.style.display = "none";
+
+      // Mostrar área de log
+      logContent.style.display = "block";
+      modalTitle.textContent = "⏳ Ejecutando operación...";
+      modalTitle.style.color = "#3b82f6";
+
+      // Mensaje inicial
+      logContent.innerHTML = '<div style="color: #3b82f6; font-weight: 600; margin-bottom: 1rem;">⏳ Procesando...</div>';
 
       try {
         const response = await fetch(endpoint, {
@@ -253,6 +274,10 @@ import AppLayout from "../../layouts/AppLayout.astro";
           throw new Error(result.error || "Error en la respuesta del servidor");
         }
 
+        // Cambiar título a éxito
+        modalTitle.textContent = "✅ Operación completada";
+        modalTitle.style.color = "#16a34a";
+
         // Mostrar mensaje principal con estilo mejorado
         let html = `<div style="color: #16a34a; font-weight: 700; font-size: 1rem; margin-bottom: 1rem;">
           ${result.message}
@@ -262,11 +287,10 @@ import AppLayout from "../../layouts/AppLayout.astro";
         if (result.details && Array.isArray(result.details)) {
           html += '<div style="background: #f9fafb; border-left: 4px solid #16a34a; padding: 1rem; border-radius: 4px; font-size: 0.85rem; color: #333; font-family: monospace;">';
           result.details.forEach((detail) => {
-            // Colorear según si es éxito (✓), advertencia (⚠) o info
             let color = "#666";
             if (detail.includes("✓")) color = "#16a34a";
             else if (detail.includes("⚠")) color = "#d97706";
-            
+
             html += `<div style="padding: 0.4rem 0; color: ${color}; line-height: 1.5;">${detail}</div>`;
           });
           html += "</div>";
@@ -279,12 +303,15 @@ import AppLayout from "../../layouts/AppLayout.astro";
           </div>`;
         }
 
-        statusEl.innerHTML = html;
+        logContent.innerHTML = html;
       } catch (error) {
-        statusEl.innerHTML = `<div style="background: #fee2e2; border-left: 4px solid #dc2626; padding: 1rem; border-radius: 4px; color: #dc2626; font-weight: 600;">❌ Error: ${error.message}</div>`;
+        modalTitle.textContent = "❌ Error en la operación";
+        modalTitle.style.color = "#dc2626";
+        logContent.innerHTML = `<div style="background: #fee2e2; border-left: 4px solid #dc2626; padding: 1rem; border-radius: 4px; color: #dc2626; font-weight: 600;">❌ Error: ${error.message}</div>`;
         console.error(error);
       } finally {
-        if (button) button.disabled = false;
+        // Cambiar botón a "Cerrar"
+        cancelBtn.textContent = "Cerrar";
       }
     }
 
@@ -302,13 +329,11 @@ import AppLayout from "../../layouts/AppLayout.astro";
       });
     });
 
-    document
-      .getElementById("cleanProductsBtn")
-      ?.addEventListener("click", () => {
-        showConfirmModal({
-          endpoint: "/api/devtools/clean-products",
-          statusId: "cleanProductsStatus",
-        });
+    document.getElementById("cleanProductsBtn")?.addEventListener("click", () => {
+      showConfirmModal({
+        endpoint: "/api/devtools/clean-products",
+        statusId: "cleanProductsStatus",
       });
+    });
   </script>
 </AppLayout>
