@@ -84,7 +84,7 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
         </div>
         <div class="detail-item">
           <div class="detail-label">Tipo de Contenedor</div>
-          <div class="detail-value" id="detailContainer">—</div>
+          <div class="detail-value" id="detailContainerType">—</div>
         </div>
         <div class="detail-item">
           <div class="detail-label">Cantidad de Contenedores</div>
@@ -189,6 +189,15 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
     }
 
     function populateDetails(data) {
+      // Validar que los datos existan
+      if (!data) {
+        console.error("[Roasted Storage Detail] Data is null or undefined");
+        showError("Los datos del café almacenado no se cargaron correctamente");
+        return;
+      }
+
+      console.log("[Roasted Storage Detail] Populating with data:", data);
+
       // Información del lote
       document.getElementById("detailLotId").textContent = data.lot_id || "—";
       document.getElementById("detailVariety").textContent =
@@ -229,7 +238,7 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
         "BUCKET-25": "Cubeta de 25 kg",
         "SACK-60": "Saco de 60 kg",
       };
-      document.getElementById("detailContainer").textContent =
+      document.getElementById("detailContainerType").textContent =
         containerLabels[data.container] || data.container || "—";
       document.getElementById("detailContainerCount").textContent =
         data.container_count || "—";
