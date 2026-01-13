@@ -10,6 +10,7 @@ import { mercadolibreRouter } from '../server/routes/mercadolibre.js';
 import { coffeeRouter } from '../server/routes/coffee.js';
 import { inventoryRouter } from '../server/routes/inventory.js';
 import { usersRouter } from '../server/routes/users.js';
+import { labelsRouter } from '../server/routes/labels.js';
 
 const app = express();
 
@@ -51,6 +52,7 @@ app.use('/api/auth', authRouter);
 app.use('/api/stock', stockRouter);
 app.use('/api/lots', lotsRouter);
 app.use('/api/setup', setupRouter);
+app.use('/api/labels', labelsRouter);
 app.use('/api/mercadolibre', mercadolibreRouter);
 app.use('/api/coffee', coffeeRouter);
 app.use('/api/inventory', inventoryRouter);
