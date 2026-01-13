@@ -166,8 +166,20 @@ import AppLayout from "../../layouts/AppLayout.astro";
             </p>
           </div>
         </a>
+      </div>
+    </div>
 
-        <!-- Gestión de Usuarios (Solo Admin) -->
+    <!-- Gestión del Website (Solo Admin) -->
+    <div id="websiteManagementSection" style="display: none;">
+      <h2
+        style="font-size: 1.5rem; font-weight: 600; margin-bottom: 1rem; color: #8b6f47;"
+      >
+        🌐 Gestión del Website
+      </h2>
+      <div
+        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 3rem;"
+      >
+        <!-- Gestión de Usuarios -->
         <a
           href="/app/usuarios"
           style="text-decoration: none; color: inherit;"
@@ -190,7 +202,7 @@ import AppLayout from "../../layouts/AppLayout.astro";
           </div>
         </a>
 
-        <!-- Gestión de Productos (Solo Admin) -->
+        <!-- Gestión de Productos -->
         <a
           href="/app/productos"
           style="text-decoration: none; color: inherit;"
@@ -213,8 +225,12 @@ import AppLayout from "../../layouts/AppLayout.astro";
           </div>
         </a>
 
-        <!-- Mapa de Calor de Ventas (Solo Admin) -->
-        <a href="/app/ventas" id="salesMapLink" style="display: none;">
+        <!-- Mapa de Ventas -->
+        <a
+          href="/app/ventas"
+          id="salesMapLink"
+          style="text-decoration: none; color: inherit;"
+        >
           <div
             style="background: white; border: 1px solid #e5e7eb; border-radius: 0.75rem; padding: 1.5rem; transition: all 0.3s; cursor: pointer;"
             onmouseover="this.style.borderColor='#8b6f47'; this.style.boxShadow='0 4px 12px rgba(139,111,71,0.15)'"
@@ -355,6 +371,7 @@ import AppLayout from "../../layouts/AppLayout.astro";
 
         const adminOptions = document.getElementById("adminOptions");
         const caficultorOptions = document.getElementById("caficultorOptions");
+        const websiteManagementSection = document.getElementById("websiteManagementSection");
         const usersLink = document.getElementById("usersLink");
         const productsLink = document.getElementById("productsLink");
         const salesMapLink = document.getElementById("salesMapLink");
@@ -364,16 +381,13 @@ import AppLayout from "../../layouts/AppLayout.astro";
           // Admin ve todo
           if (adminOptions) adminOptions.style.display = "block";
           if (caficultorOptions) caficultorOptions.style.display = "block";
-          if (usersLink) usersLink.style.display = "block";
-          if (productsLink) productsLink.style.display = "block";
-          if (salesMapLink) salesMapLink.style.display = "block";
+          if (websiteManagementSection) websiteManagementSection.style.display = "block";
           if (auditSection) auditSection.style.display = "block";
         } else if (window.userRole === "caficultor") {
           // Caficultor solo ve sus opciones
           if (adminOptions) adminOptions.style.display = "none";
           if (caficultorOptions) caficultorOptions.style.display = "block";
-          if (usersLink) usersLink.style.display = "none";
-          if (productsLink) productsLink.style.display = "none";
+          if (websiteManagementSection) websiteManagementSection.style.display = "none";
           if (auditSection) auditSection.style.display = "none";
         }
       }
