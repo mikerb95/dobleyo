@@ -17,6 +17,7 @@ import { inventoryRouter } from './routes/inventory.js';
 import { emailRouter } from './routes/emails.js';
 import { contactRouter } from './routes/contact.js';
 import { usersRouter } from './routes/users.js';
+import { labelsRouter } from './routes/labels.js';
 import { query } from './db.js';
 
 const app = express();
@@ -64,6 +65,7 @@ app.use('/api/stock', stockRouter);
 app.use('/api/caficultor', caficultorRouter);
 app.use('/api/setup', setupRouter);
 app.use('/api/coffee', coffeeRouter);
+app.use('/api/labels', labelsRouter);
 app.use('/api/mercadolibre', mercadolibreRouter);
 app.use('/api/inventory', inventoryRouter);
 app.use('/api/emails', emailRouter);
