@@ -143,14 +143,32 @@ import AppLayout from "../../layouts/AppLayout.astro";
           headers: { "Content-Type": "application/json" },
         });
 
+        const result = await response.json();
+
         if (!response.ok) {
-          throw new Error("Error en la respuesta del servidor");
+          throw new Error(result.error || "Error en la respuesta del servidor");
         }
 
-        const result = await response.json();
-        statusEl.innerHTML = `<span style="color: #16a34a;">✅ ${result.message}</span>`;
+        // Mostrar mensaje principal
+        let html = `<div style="color: #16a34a; font-weight: 600;">✅ ${result.message}</div>`;
+        
+        // Mostrar detalles si existen
+        if (result.details && Array.isArray(result.details)) {
+          html += '<div style="margin-top: 0.75rem; font-size: 0.85rem; color: #555;">';
+          result.details.forEach((detail) => {
+            html += `<div style="padding: 0.25rem 0;">${detail}</div>`;
+          });
+          html += '</div>';
+        }
+        
+        // Mostrar count si existe
+        if (result.deletedCount !== undefined) {
+          html += `<div style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">Total eliminado: ${result.deletedCount}</div>`;
+        }
+
+        statusEl.innerHTML = html;
       } catch (error) {
-        statusEl.innerHTML = `<span style="color: #dc2626;">❌ Error: ${error.message}</span>`;
+        statusEl.innerHTML = `<div style="color: #dc2626;">❌ Error: ${error.message}</div>`;
         console.error(error);
       } finally {
         button.disabled = false;
