@@ -338,36 +338,42 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
     // Cargar cafés tostados en inventario desde API
     async function loadRoastedLots() {
       try {
-        console.log('[Packaging] Cargando lotes tostados...');
+        console.log("[Packaging] Cargando lotes tostados...");
         const response = await fetch("/api/coffee/roasted-coffee", {
-          credentials: 'include',
+          credentials: "include",
           headers: {
-            'Content-Type': 'application/json',
-          }
+            "Content-Type": "application/json",
+          },
         });
-        
+
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
-          console.error('[Packaging] Error del servidor:', errorData);
+          console.error("[Packaging] Error del servidor:", errorData);
           throw new Error(errorData.error || "Error al cargar cafés");
         }
 
         const roastedLots = await response.json();
-        console.log('[Packaging] Lotes recibidos:', roastedLots.length, roastedLots);
+        console.log(
+          "[Packaging] Lotes recibidos:",
+          roastedLots.length,
+          roastedLots
+        );
 
         roastedSelect.innerHTML =
           '<option value="">Selecciona un café...</option>';
-        
+
         if (roastedLots.length === 0) {
           const option = document.createElement("option");
           option.value = "";
           option.textContent = "No hay cafés tostados disponibles";
           option.disabled = true;
           roastedSelect.appendChild(option);
-          console.warn('[Packaging] No se encontraron lotes tostados listos para empacar');
+          console.warn(
+            "[Packaging] No se encontraron lotes tostados listos para empacar"
+          );
           return;
         }
-        
+
         roastedLots.forEach((item) => {
           const option = document.createElement("option");
           option.value = JSON.stringify(item);
@@ -384,8 +390,12 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
           option.textContent = `${lotId} - ${roastText} (${weight} kg)`;
           roastedSelect.appendChild(option);
         });
-        
-        console.log('[Packaging] Select actualizado con', roastedLots.length, 'opciones');
+
+        console.log(
+          "[Packaging] Select actualizado con",
+          roastedLots.length,
+          "opciones"
+        );
       } catch (error) {
         console.error("[Packaging] Error cargando cafés:", error);
         alert("Error al cargar cafés tostados");
@@ -617,7 +627,7 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
       try {
         const response = await fetch("/api/coffee/packaging", {
           method: "POST",
-          credentials: 'include',
+          credentials: "include",
           headers: {
             "Content-Type": "application/json",
           },
