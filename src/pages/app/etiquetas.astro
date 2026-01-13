@@ -838,13 +838,11 @@ import AppLayout from "../../layouts/AppLayout.astro";
         });
 
       // Actualizar sliders de cuerpo (Tab 2)
-      document
-        .getElementById("customBody")
-        ?.addEventListener("input", (e) => {
-          document.getElementById("customBodyValue").textContent =
-            `${e.target.value}/5`;
-          updateCeroSummary();
-        });
+      document.getElementById("customBody")?.addEventListener("input", (e) => {
+        document.getElementById("customBodyValue").textContent =
+          `${e.target.value}/5`;
+        updateCeroSummary();
+      });
 
       // Actualizar sliders de balance (Tab 2)
       document
