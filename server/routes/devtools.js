@@ -53,9 +53,15 @@ devtoolsRouter.post('/clean-lots', async (req, res) => {
 
     // Eliminar en orden de dependencias - primero las referencias, luego los lotes
     const tablesToDelete = [
-      'generated_labels',  // Depende de users
-      'product_labels',    // Depende de lots
-      'lots'               // Tabla principal de lotes
+      'generated_labels',           // Etiquetas generadas
+      'product_labels',             // Etiquetas de productos
+      'packaged_coffee',            // Café empaquetado
+      'roasted_coffee_inventory',   // Inventario de café tostado
+      'roasted_coffee',             // Café tostado (lotes de tostado)
+      'roasting_batches',           // Lotes de tostión
+      'coffee_inventory',           // Inventario de café verde
+      'coffee_harvests',            // Cosechas de café (lotes verdes)
+      'lots'                        // Tabla genérica de lotes
     ];
 
     let deletedCount = 0;
