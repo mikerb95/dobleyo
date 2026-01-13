@@ -7,14 +7,16 @@ export default function SalesHeatmap() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [maxOrders, setMaxOrders] = useState(1);
   const [leafletReady, setLeafletReady] = useState(false);
 
-  // Importar leaflet dinámicamente
+  // Importar leaflet y leaflet.heat dinámicamente
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      import('leaflet').then(module => {
-        window.L = module.default;
+      Promise.all([
+        import('leaflet'),
+        import('leaflet.heat')
+      ]).then(([leafletModule]) => {
+        window.L = leafletModule.default;
         setLeafletReady(true);
       });
     }
@@ -35,12 +37,6 @@ export default function SalesHeatmap() {
 
         const result = await response.json();
         setData(result.data || []);
-
-        // Find max order count for color scaling
-        if (result.data && result.data.length > 0) {
-          const max = Math.max(...result.data.map(d => d.order_count));
-          setMaxOrders(max);
-        }
       } catch (err) {
         setError(err.message);
         console.error('Error fetching heatmap data:', err);
@@ -75,39 +71,47 @@ export default function SalesHeatmap() {
     };
   }, [leafletReady]);
 
-  // Add markers and circles when data is loaded
+  // Add heatmap layer when data is loaded
   useEffect(() => {
     if (!mapInstance || data.length === 0 || !leafletReady || !window.L) return;
 
     const L = window.L;
 
-    // Clear existing layers (except tile layer)
-    mapInstance.eachLayer((layer) => {
-      if (layer instanceof L.CircleMarker || layer instanceof L.Popup) {
-        mapInstance.removeLayer(layer);
-      }
-    });
+    // Convert data to heatmap format: [[lat, lng, intensity], ...]
+    // Normalize intensity based on order count
+    const maxOrders = Math.max(...data.map(d => d.order_count));
+    const heatmapData = data.map(location => [
+      location.latitude,
+      location.longitude,
+      location.order_count / maxOrders // Normalize to 0-1
+    ]);
 
-    // Function to get color based on order count
-    const getColor = (count) => {
-      const ratio = count / maxOrders;
-      if (ratio > 0.8) return '#8B0000'; // Dark red
-      if (ratio > 0.6) return '#DC143C'; // Crimson
-      if (ratio > 0.4) return '#FF6347'; // Tomato
-      if (ratio > 0.2) return '#FFA07A'; // Light salmon
-      return '#FFE4B5'; // Moccasin
-    };
+    // Add heatmap layer
+    if (window.L.heatLayer) {
+      L.heatLayer(heatmapData, {
+        radius: 50,
+        blur: 25,
+        maxZoom: 17,
+        gradient: {
+          0.0: '#FFE4B5',   // Very light (moccasin) - few orders
+          0.25: '#FFA07A',  // Light salmon
+          0.5: '#FF6347',   // Tomato
+          0.75: '#DC143C',  // Crimson
+          1.0: '#8B0000'    // Dark red - many orders
+        }
+      }).addTo(mapInstance);
+    }
 
-    // Add circle markers for each city
+    // Also add city markers for reference
     data.forEach((location) => {
       if (location.latitude && location.longitude) {
         const circle = L.circleMarker([location.latitude, location.longitude], {
-          radius: Math.sqrt(location.order_count) * 3,
-          fillColor: getColor(location.order_count),
-          color: '#000',
-          weight: 2,
-          opacity: 1,
-          fillOpacity: 0.7
+          radius: 5,
+          fillColor: '#c67b4e',
+          color: '#8b6f47',
+          weight: 1,
+          opacity: 0.8,
+          fillOpacity: 0.5
         }).addTo(mapInstance);
 
         // Create popup content
@@ -124,14 +128,9 @@ export default function SalesHeatmap() {
         `;
 
         circle.bindPopup(popupContent);
-
-        // Click to open popup
-        circle.on('click', function() {
-          this.openPopup();
-        });
       }
     });
-  }, [mapInstance, data, maxOrders, leafletReady]);
+  }, [mapInstance, data, leafletReady]);
 
   return (
     <div style={{ width: '100%' }}>
@@ -192,62 +191,34 @@ export default function SalesHeatmap() {
           borderRadius: '8px',
           border: '1px solid #e6e6e6'
         }}>
-          <h3 style={{ marginTop: 0 }}>Leyenda</h3>
+          <h3 style={{ marginTop: 0 }}>Leyenda - Mapa de Calor</h3>
           <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-            gap: '1rem'
+            display: 'flex',
+            alignItems: 'flex-end',
+            gap: '0.5rem',
+            justifyContent: 'space-between',
+            background: 'white',
+            padding: '1rem',
+            borderRadius: '6px',
+            border: '1px solid #ddd'
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <div style={{
-                width: '20px',
-                height: '20px',
-                borderRadius: '50%',
-                backgroundColor: '#8B0000',
-                border: '1px solid #000'
-              }} />
-              <span>Muy alto (80%+)</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <div style={{
-                width: '20px',
-                height: '20px',
-                borderRadius: '50%',
-                backgroundColor: '#DC143C',
-                border: '1px solid #000'
-              }} />
-              <span>Alto (60-80%)</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <div style={{
-                width: '20px',
-                height: '20px',
-                borderRadius: '50%',
-                backgroundColor: '#FF6347',
-                border: '1px solid #000'
-              }} />
-              <span>Medio (40-60%)</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <div style={{
-                width: '20px',
-                height: '20px',
-                borderRadius: '50%',
-                backgroundColor: '#FFA07A',
-                border: '1px solid #000'
-              }} />
-              <span>Bajo (20-40%)</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <div style={{
-                width: '20px',
-                height: '20px',
-                borderRadius: '50%',
-                backgroundColor: '#FFE4B5',
-                border: '1px solid #000'
-              }} />
-              <span>Muy bajo (&lt;20%)</span>
-            </div>
+            <span style={{ fontSize: '0.9rem', color: '#666' }}>Pocas ventas</span>
+            {[0, 0.25, 0.5, 0.75, 1.0].map((value, idx) => {
+              const colors = ['#FFE4B5', '#FFA07A', '#FF6347', '#DC143C', '#8B0000'];
+              return (
+                <div
+                  key={idx}
+                  style={{
+                    width: '40px',
+                    height: `${20 + value * 30}px`,
+                    backgroundColor: colors[idx],
+                    borderRadius: '2px',
+                    border: '1px solid #999'
+                  }}
+                />
+              );
+            })}
+            <span style={{ fontSize: '0.9rem', color: '#666' }}>Muchas ventas</span>
           </div>
           <p style={{
             fontSize: '0.9rem',
@@ -255,8 +226,8 @@ export default function SalesHeatmap() {
             marginTop: '1rem',
             marginBottom: 0
           }}>
-            El tamaño del círculo representa la cantidad de pedidos. El color representa la intensidad de ventas en esa zona.
-            Haz clic en cualquier círculo para ver detalles.
+            El mapa de calor muestra la intensidad de ventas en cada zona de Colombia.
+            Las áreas más rojas indican mayor volumen de pedidos. Los pequeños puntos marcan las ciudades con datos detallados.
           </p>
         </div>
       )}

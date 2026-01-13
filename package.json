@@ -33,6 +33,7 @@
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.3",
     "leaflet": "^1.9.4",
+    "leaflet.heat": "^0.2.0",
     "mysql2": "^3.16.0",
     "node-fetch": "^3.3.2",
     "react": "^19.2.3",
