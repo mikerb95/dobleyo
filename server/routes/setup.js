@@ -2,6 +2,7 @@ import express from 'express';
 import * as db from '../db.js';
 import * as auth from '../auth.js';
 import { createCoffeeTables } from '../migrations/create_coffee_tables.js';
+import { addOriginFieldsToCoffeeHarvests } from '../migrations/add_origin_fields_to_coffee_harvests.js';
 import crypto from 'crypto';
 
 export const setupRouter = express.Router();
@@ -221,6 +222,19 @@ setupRouter.get('/', async (req, res) => {
       }
     }
 
+    // 2b. Add Origin Fields
+    try {
+      await addOriginFieldsToCoffeeHarvests();
+      log('Origin fields added to coffee_harvests.');
+    } catch (err) {
+      if (err.code === 'ER_DUP_FIELDNAME') {
+        log('Origin fields already exist.');
+      } else {
+        // Non-fatal error, continue
+        log('Warning: ' + err.message);
+      }
+    }
+
     // 3. Seed Products
     for (const p of products) {
       const existing = await db.query('SELECT id FROM products WHERE id = ?', [p.id]);
@@ -335,6 +349,19 @@ setupRouter.post('/full-setup', async (req, res) => {
         log('✅ Tablas de café ya existen');
       } else {
         log(`⚠ Error en tablas de café: ${err.message}`);
+      }
+    }
+    
+    // 4b. Agregar campos de origen a coffee_harvests
+    log('📍 Agregando campos de origen a coffee_harvests...');
+    try {
+      await addOriginFieldsToCoffeeHarvests();
+      log('✅ Campos de origen agregados: region, altitude');
+    } catch (err) {
+      if (err.code === 'ER_DUP_FIELDNAME') {
+        log('✅ Campos de origen ya existen');
+      } else {
+        log(`⚠ Error agregando campos de origen: ${err.message}`);
       }
     }
     log('');

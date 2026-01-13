@@ -476,16 +476,16 @@ coffeeRouter.get('/roasted-coffee', async (req, res) => {
         rc.weight_kg,
         rc.weight_loss_percent,
         rb.lot_id,
-        ch.farm,
-        ch.farm as farm_name,
-        ch.region,
-        ch.altitude,
-        ch.variety,
-        ch.climate,
-        ch.process,
-        ch.aroma,
-        ch.taste_notes,
-        ch.taste_notes as notes
+        COALESCE(ch.farm, '') as farm,
+        COALESCE(ch.farm, '') as farm_name,
+        COALESCE(ch.region, '') as region,
+        COALESCE(ch.altitude, 0) as altitude,
+        COALESCE(ch.variety, '') as variety,
+        COALESCE(ch.climate, '') as climate,
+        COALESCE(ch.process, '') as process,
+        COALESCE(ch.aroma, '') as aroma,
+        COALESCE(ch.taste_notes, '') as taste_notes,
+        COALESCE(ch.taste_notes, '') as notes
       FROM roasted_coffee_inventory rci
       INNER JOIN roasted_coffee rc ON rci.roasted_id = rc.id
       LEFT JOIN roasting_batches rb ON rc.roasting_id = rb.id
@@ -497,6 +497,17 @@ coffeeRouter.get('/roasted-coffee', async (req, res) => {
     );
     
     console.log('[roasted-coffee] Resultados encontrados:', result.rows.length);
+    
+    // Log para debugging
+    if (result.rows.length > 0) {
+      console.log('[roasted-coffee] Primer resultado (datos de origen):', {
+        lot_id: result.rows[0].lot_id,
+        farm: result.rows[0].farm,
+        region: result.rows[0].region,
+        altitude: result.rows[0].altitude,
+        aroma: result.rows[0].aroma
+      });
+    }
     
     res.json(result.rows);
   } catch (err) {
