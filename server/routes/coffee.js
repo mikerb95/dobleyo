@@ -829,3 +829,42 @@ coffeeRouter.delete('/roasted-coffee/:id', async (req, res) => {
     });
   }
 });
+
+// DELETE: Eliminar lote en proceso de tostado
+coffeeRouter.delete('/roasting-batch/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    console.log(`[DELETE /roasting-batch] Eliminando lote en tostado ID: ${id}`);
+
+    // Verificar si existe
+    const checkResult = await query(
+      'SELECT id FROM roasting_batches WHERE id = ?',
+      [id]
+    );
+
+    if (!checkResult.rows || checkResult.rows.length === 0) {
+      return res.status(404).json({ 
+        success: false, 
+        error: 'Lote en tostado no encontrado' 
+      });
+    }
+
+    // Eliminar registros relacionados en roasted_coffee primero
+    await query('DELETE FROM roasted_coffee WHERE roasting_id = ?', [id]);
+
+    // Eliminar el lote en tostado
+    await query('DELETE FROM roasting_batches WHERE id = ?', [id]);
+
+    console.log(`[DELETE /roasting-batch] ID ${id} eliminado correctamente`);
+    res.json({ 
+      success: true, 
+      message: 'Lote en proceso de tostado eliminado correctamente' 
+    });
+  } catch (err) {
+    console.error('[DELETE /roasting-batch] Error:', err);
+    res.status(500).json({ 
+      success: false, 
+      error: err.message 
+    });
+  }
+});

@@ -396,6 +396,8 @@ import AppLayout from "../../layouts/AppLayout.astro";
       // Redirigir a la página de edición según el estado del lote
       if (status === "verde") {
         window.location.href = `/app/edit-harvest?lotId=${encodeURIComponent(lotId)}`;
+      } else if (status === "en_tostado") {
+        window.location.href = `/app/edit-roasting?id=${id}`;
       } else if (status === "tostado") {
         window.location.href = `/app/edit-roasted-storage?id=${id}`;
       } else if (status === "pendiente") {
@@ -435,6 +437,8 @@ import AppLayout from "../../layouts/AppLayout.astro";
           // Determinar el endpoint según el estado
           if (status === "verde") {
             endpoint = `/api/coffee/harvest/${encodeURIComponent(lotId)}`;
+          } else if (status === "en_tostado") {
+            endpoint = `/api/coffee/roasting-batch/${id}`;
           } else if (status === "tostado") {
             endpoint = `/api/coffee/roasted-storage/${id}`;
           } else if (status === "pendiente") {
