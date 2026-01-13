@@ -1,0 +1,150 @@
+---
+import AppLayout from "../../layouts/AppLayout.astro";
+---
+
+<AppLayout>
+  <div style="max-width: 1000px; margin: 0 auto; padding: 2rem 1.5rem;">
+    <div
+      style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;"
+    >
+      <h1 style="font-size: 2rem; font-weight: 700; color: #251a14; margin: 0;">
+        ⚙️ DevTools
+      </h1>
+    </div>
+
+    <!-- Advertencia -->
+    <div
+      style="background: #fee2e2; border: 2px solid #fca5a5; border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem;"
+    >
+      <strong style="color: #dc2626; font-size: 1.1rem;">⚠️ ADVERTENCIA</strong>
+      <p style="color: #991b1b; margin-top: 0.5rem; line-height: 1.6;">
+        Estas herramientas son destructivas y no pueden deshacerse. Solo para desarrollo y testing.
+        Úsalas en bases de datos de prueba, no en producción.
+      </p>
+    </div>
+
+    <!-- Opciones de Limpieza -->
+    <div style="display: grid; gap: 1.5rem;">
+      <!-- Limpiar Usuarios -->
+      <div
+        style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 1.5rem;"
+      >
+        <div style="display: flex; justify-content: space-between; align-items: start;">
+          <div>
+            <h2 style="font-size: 1.25rem; font-weight: 600; color: #251a14; margin: 0;">
+              🗑️ Limpiar Usuarios
+            </h2>
+            <p style="color: #666; margin-top: 0.5rem; font-size: 0.95rem;">
+              Elimina todos los usuarios excepto los 2 primeros (admins). Mantiene la integridad del sistema.
+            </p>
+          </div>
+          <button
+            id="cleanUsersBtn"
+            style="padding: 0.75rem 1.5rem; background: #dc2626; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background 0.2s;"
+            onmouseover="this.style.background='#b91c1c'"
+            onmouseout="this.style.background='#dc2626'"
+          >
+            Ejecutar
+          </button>
+        </div>
+        <div id="cleanUsersStatus" style="margin-top: 1rem; font-size: 0.9rem;"></div>
+      </div>
+
+      <!-- Limpiar Lotes de Café -->
+      <div
+        style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 1.5rem;"
+      >
+        <div style="display: flex; justify-content: space-between; align-items: start;">
+          <div>
+            <h2 style="font-size: 1.25rem; font-weight: 600; color: #251a14; margin: 0;">
+              🗑️ Limpiar Lotes de Café
+            </h2>
+            <p style="color: #666; margin-top: 0.5rem; font-size: 0.95rem;">
+              Elimina todos los lotes de café registrados en el sistema (cosechas, inventarios, tostiones).
+            </p>
+          </div>
+          <button
+            id="cleanLotsBtn"
+            style="padding: 0.75rem 1.5rem; background: #dc2626; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background 0.2s;"
+            onmouseover="this.style.background='#b91c1c'"
+            onmouseout="this.style.background='#dc2626'"
+          >
+            Ejecutar
+          </button>
+        </div>
+        <div id="cleanLotsStatus" style="margin-top: 1rem; font-size: 0.9rem;"></div>
+      </div>
+
+      <!-- Limpiar Productos -->
+      <div
+        style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 1.5rem;"
+      >
+        <div style="display: flex; justify-content: space-between; align-items: start;">
+          <div>
+            <h2 style="font-size: 1.25rem; font-weight: 600; color: #251a14; margin: 0;">
+              🗑️ Limpiar Productos
+            </h2>
+            <p style="color: #666; margin-top: 0.5rem; font-size: 0.95rem;">
+              Elimina todos los productos disponibles en la tienda en línea.
+            </p>
+          </div>
+          <button
+            id="cleanProductsBtn"
+            style="padding: 0.75rem 1.5rem; background: #dc2626; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background 0.2s;"
+            onmouseover="this.style.background='#b91c1c'"
+            onmouseout="this.style.background='#dc2626'"
+          >
+            Ejecutar
+          </button>
+        </div>
+        <div id="cleanProductsStatus" style="margin-top: 1rem; font-size: 0.9rem;"></div>
+      </div>
+    </div>
+  </div>
+
+  <script is:inline>
+    async function executeCleanup(endpoint, statusElementId) {
+      const statusEl = document.getElementById(statusElementId);
+      const button = event.target;
+      
+      // Confirmar acción
+      if (!confirm("⚠️ Esta acción es irreversible. ¿Estás seguro?")) {
+        return;
+      }
+
+      button.disabled = true;
+      statusEl.innerHTML = '<span style="color: #3b82f6;">⏳ Procesando...</span>';
+
+      try {
+        const response = await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+        });
+
+        if (!response.ok) {
+          throw new Error("Error en la respuesta del servidor");
+        }
+
+        const result = await response.json();
+        statusEl.innerHTML = `<span style="color: #16a34a;">✅ ${result.message}</span>`;
+      } catch (error) {
+        statusEl.innerHTML = `<span style="color: #dc2626;">❌ Error: ${error.message}</span>`;
+        console.error(error);
+      } finally {
+        button.disabled = false;
+      }
+    }
+
+    document.getElementById("cleanUsersBtn")?.addEventListener("click", () => {
+      executeCleanup("/api/devtools/clean-users", "cleanUsersStatus");
+    });
+
+    document.getElementById("cleanLotsBtn")?.addEventListener("click", () => {
+      executeCleanup("/api/devtools/clean-lots", "cleanLotsStatus");
+    });
+
+    document.getElementById("cleanProductsBtn")?.addEventListener("click", () => {
+      executeCleanup("/api/devtools/clean-products", "cleanProductsStatus");
+    });
+  </script>
+</AppLayout>

@@ -11,6 +11,7 @@ import { coffeeRouter } from '../server/routes/coffee.js';
 import { inventoryRouter } from '../server/routes/inventory.js';
 import { usersRouter } from '../server/routes/users.js';
 import { labelsRouter } from '../server/routes/labels.js';
+import { devtoolsRouter } from '../server/routes/devtools.js';
 
 const app = express();
 
@@ -57,6 +58,7 @@ app.use('/api/mercadolibre', mercadolibreRouter);
 app.use('/api/coffee', coffeeRouter);
 app.use('/api/inventory', inventoryRouter);
 app.use('/api/users', usersRouter);
+app.use('/api/devtools', devtoolsRouter);
 
 // Health Check
 app.get('/api/health', (req, res) => res.json({ status: 'ok', time: new Date().toISOString() }));

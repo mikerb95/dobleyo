@@ -258,7 +258,7 @@ import AppLayout from "../../layouts/AppLayout.astro";
         🔐 Seguridad y Auditoría
       </h2>
       <div
-        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;"
+        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 3rem;"
       >
         <!-- Auditoría -->
         <a
@@ -273,6 +273,23 @@ import AppLayout from "../../layouts/AppLayout.astro";
           </h3>
           <p style="color: #666; font-size: 0.95rem;">
             Registros de todas las acciones realizadas en el sistema
+          </p>
+        </a>
+
+        <!-- DevTools (Solo desarrollo) -->
+        <a
+          href="/app/devtools"
+          id="devtoolsLink"
+          style="display: none; padding: 2rem; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-decoration: none; color: inherit; transition: transform 0.2s, box-shadow 0.2s;"
+          onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 16px rgba(0,0,0,0.15)';"
+          onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.1)';"
+        >
+          <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">⚙️</div>
+          <h3 style="font-weight: 600; margin-bottom: 0.5rem; color: #251a14;">
+            DevTools
+          </h3>
+          <p style="color: #666; font-size: 0.95rem;">
+            Herramientas de desarrollo para limpiar datos de prueba
           </p>
         </a>
       </div>
@@ -378,6 +395,7 @@ import AppLayout from "../../layouts/AppLayout.astro";
         const productsLink = document.getElementById("productsLink");
         const salesMapLink = document.getElementById("salesMapLink");
         const auditSection = document.getElementById("auditSection");
+        const devtoolsLink = document.getElementById("devtoolsLink");
 
         if (window.userRole === "admin") {
           // Admin ve todo
@@ -386,6 +404,14 @@ import AppLayout from "../../layouts/AppLayout.astro";
           if (websiteManagementSection)
             websiteManagementSection.style.display = "block";
           if (auditSection) auditSection.style.display = "block";
+          
+          // Mostrar DevTools solo si no es producción
+          if (devtoolsLink && 
+              (window.location.hostname === 'localhost' || 
+               window.location.hostname === '127.0.0.1' ||
+               window.location.hostname === 'dobleyo.vercel.app')) {
+            devtoolsLink.style.display = "block";
+          }
         } else if (window.userRole === "caficultor") {
           // Caficultor solo ve sus opciones
           if (adminOptions) adminOptions.style.display = "none";
