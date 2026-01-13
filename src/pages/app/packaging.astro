@@ -439,11 +439,19 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
         `Máximo disponible: ${availableWeight} kg`;
 
       // Información de origen (traer del objeto o desde la base de datos)
-      const farm = (currentRoasted.farm_name || currentRoasted.farm || "").trim();
+      const farm = (
+        currentRoasted.farm_name ||
+        currentRoasted.farm ||
+        ""
+      ).trim();
       const region = (currentRoasted.region || "").trim();
       const altitude = currentRoasted.altitude || 0;
       const aroma = (currentRoasted.aroma || "").trim();
-      const notes = (currentRoasted.taste_notes || currentRoasted.notes || "").trim();
+      const notes = (
+        currentRoasted.taste_notes ||
+        currentRoasted.notes ||
+        ""
+      ).trim();
 
       document.getElementById("originFarm").textContent = farm || "—";
       document.getElementById("originRegion").textContent = region || "—";
@@ -454,7 +462,11 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
 
       // Debug log
       console.log("[Packaging] Datos de origen cargados:", {
-        farm, region, altitude, aroma, notes
+        farm,
+        region,
+        altitude,
+        aroma,
+        notes,
       });
 
       originInfo.style.display = "block";
