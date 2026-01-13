@@ -456,6 +456,14 @@ coffeeRouter.get('/roasting-batches', async (req, res) => {
 
 coffeeRouter.get('/roasted-coffee', async (req, res) => {
   try {
+    // Primero verificar si hay lotes en roasted_coffee_inventory
+    const checkResult = await query(
+      `SELECT COUNT(*) as count FROM roasted_coffee_inventory WHERE status = ?`,
+      ['ready_for_packaging']
+    );
+    
+    console.log('[roasted-coffee] Lotes con status ready_for_packaging:', checkResult.rows[0]?.count || 0);
+
     const result = await query(
       `SELECT 
         rci.id,
@@ -480,13 +488,16 @@ coffeeRouter.get('/roasted-coffee', async (req, res) => {
         ch.taste_notes as notes
       FROM roasted_coffee_inventory rci
       INNER JOIN roasted_coffee rc ON rci.roasted_id = rc.id
-      INNER JOIN roasting_batches rb ON rc.roasting_id = rb.id
-      INNER JOIN coffee_harvests ch ON rb.lot_id = ch.lot_id
+      LEFT JOIN roasting_batches rb ON rc.roasting_id = rb.id
+      LEFT JOIN coffee_harvests ch ON rb.lot_id = ch.lot_id
       WHERE rci.status = ? 
       ORDER BY rci.created_at DESC 
       LIMIT 100`,
       ['ready_for_packaging']
     );
+    
+    console.log('[roasted-coffee] Resultados encontrados:', result.rows.length);
+    
     res.json(result.rows);
   } catch (err) {
     console.error('Error en GET roasted-coffee:', err);

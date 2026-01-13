@@ -71,7 +71,10 @@
             <button class="dropdown-item" id="logoutBtn">Cerrar sesión</button>
           </div>
           <!-- Opciones no autenticado -->
-          <div id="unauthenticatedMenu" style="display: flex; flex-direction: column;">
+          <div
+            id="unauthenticatedMenu"
+            style="display: flex; flex-direction: column;"
+          >
             <a href="/login" class="dropdown-item" data-link>Iniciar sesión</a>
             <a href="/register" class="dropdown-item" data-link>Registrarse</a>
           </div>
@@ -86,7 +89,7 @@
     <a href="/blog" data-link>Blog</a>
     <a href="/trazabilidad" data-link>Trazabilidad</a>
     <a href="/envios-devoluciones" data-link>Envíos y Devoluciones</a>
-    
+
     <!-- Opciones autenticado en móvil -->
     <div id="mobileAuthenticatedMenu" style="display: none;">
       <a href="/cuenta" class="user-btn" data-link>
@@ -105,9 +108,12 @@
         <span id="userMobileLabel">Mi Cuenta</span>
       </a>
     </div>
-    
+
     <!-- Opciones no autenticado en móvil -->
-    <div id="mobileUnauthenticatedMenu" style="display: flex; flex-direction: column;">
+    <div
+      id="mobileUnauthenticatedMenu"
+      style="display: flex; flex-direction: column;"
+    >
       <a href="/login" class="user-btn" data-link>
         <svg
           width="20"
@@ -273,12 +279,16 @@
     const productosLink = document.getElementById("productosLink");
     const auditLink = document.getElementById("auditLink");
     const logoutBtn = document.getElementById("logoutBtn");
-    
+
     // Elementos del dropdown y menú móvil
     const authenticatedMenu = document.getElementById("authenticatedMenu");
     const unauthenticatedMenu = document.getElementById("unauthenticatedMenu");
-    const mobileAuthenticatedMenu = document.getElementById("mobileAuthenticatedMenu");
-    const mobileUnauthenticatedMenu = document.getElementById("mobileUnauthenticatedMenu");
+    const mobileAuthenticatedMenu = document.getElementById(
+      "mobileAuthenticatedMenu"
+    );
+    const mobileUnauthenticatedMenu = document.getElementById(
+      "mobileUnauthenticatedMenu"
+    );
 
     // Primero intentar con token en localStorage
     const token = localStorage.getItem("adminToken");
@@ -310,8 +320,10 @@
         // Mostrar opciones de autenticado, ocultar no autenticado
         if (authenticatedMenu) authenticatedMenu.style.display = "block";
         if (unauthenticatedMenu) unauthenticatedMenu.style.display = "none";
-        if (mobileAuthenticatedMenu) mobileAuthenticatedMenu.style.display = "flex";
-        if (mobileUnauthenticatedMenu) mobileUnauthenticatedMenu.style.display = "none";
+        if (mobileAuthenticatedMenu)
+          mobileAuthenticatedMenu.style.display = "flex";
+        if (mobileUnauthenticatedMenu)
+          mobileUnauthenticatedMenu.style.display = "none";
 
         // Mostrar opciones admin
         if (appsLink && user.role === "admin") {
@@ -330,12 +342,14 @@
         // No autenticado - mostrar menú de login/registro
         localStorage.removeItem("adminToken");
         localStorage.removeItem("userName");
-        
+
         if (authenticatedMenu) authenticatedMenu.style.display = "none";
         if (unauthenticatedMenu) unauthenticatedMenu.style.display = "flex";
-        if (mobileAuthenticatedMenu) mobileAuthenticatedMenu.style.display = "none";
-        if (mobileUnauthenticatedMenu) mobileUnauthenticatedMenu.style.display = "flex";
-        
+        if (mobileAuthenticatedMenu)
+          mobileAuthenticatedMenu.style.display = "none";
+        if (mobileUnauthenticatedMenu)
+          mobileUnauthenticatedMenu.style.display = "flex";
+
         if (userBtn) {
           userBtn.setAttribute("aria-label", "Menú de usuario");
         }
@@ -356,13 +370,17 @@
           }
           if (authenticatedMenu) authenticatedMenu.style.display = "block";
           if (unauthenticatedMenu) unauthenticatedMenu.style.display = "none";
-          if (mobileAuthenticatedMenu) mobileAuthenticatedMenu.style.display = "flex";
-          if (mobileUnauthenticatedMenu) mobileUnauthenticatedMenu.style.display = "none";
+          if (mobileAuthenticatedMenu)
+            mobileAuthenticatedMenu.style.display = "flex";
+          if (mobileUnauthenticatedMenu)
+            mobileUnauthenticatedMenu.style.display = "none";
         } else {
           if (authenticatedMenu) authenticatedMenu.style.display = "none";
           if (unauthenticatedMenu) unauthenticatedMenu.style.display = "flex";
-          if (mobileAuthenticatedMenu) mobileAuthenticatedMenu.style.display = "none";
-          if (mobileUnauthenticatedMenu) mobileUnauthenticatedMenu.style.display = "flex";
+          if (mobileAuthenticatedMenu)
+            mobileAuthenticatedMenu.style.display = "none";
+          if (mobileUnauthenticatedMenu)
+            mobileUnauthenticatedMenu.style.display = "flex";
         }
       }
     } catch (err) {
@@ -379,16 +397,20 @@
         }
         if (authenticatedMenu) authenticatedMenu.style.display = "block";
         if (unauthenticatedMenu) unauthenticatedMenu.style.display = "none";
-        if (mobileAuthenticatedMenu) mobileAuthenticatedMenu.style.display = "flex";
-        if (mobileUnauthenticatedMenu) mobileUnauthenticatedMenu.style.display = "none";
+        if (mobileAuthenticatedMenu)
+          mobileAuthenticatedMenu.style.display = "flex";
+        if (mobileUnauthenticatedMenu)
+          mobileUnauthenticatedMenu.style.display = "none";
       } else {
         if (authenticatedMenu) authenticatedMenu.style.display = "none";
         if (unauthenticatedMenu) unauthenticatedMenu.style.display = "flex";
-        if (mobileAuthenticatedMenu) mobileAuthenticatedMenu.style.display = "none";
-        if (mobileUnauthenticatedMenu) mobileUnauthenticatedMenu.style.display = "flex";
+        if (mobileAuthenticatedMenu)
+          mobileAuthenticatedMenu.style.display = "none";
+        if (mobileUnauthenticatedMenu)
+          mobileUnauthenticatedMenu.style.display = "flex";
       }
     }
-    
+
     // Logout
     if (logoutBtn) {
       logoutBtn.addEventListener("click", async (e) => {
