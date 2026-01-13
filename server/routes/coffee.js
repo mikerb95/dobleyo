@@ -280,9 +280,9 @@ coffeeRouter.get('/roasted-storage/:id', async (req, res) => {
         ch.aroma,
         ch.taste_notes
        FROM roasted_coffee_inventory rci
-       INNER JOIN roasted_coffee rc ON rci.roasted_id = rc.id
-       INNER JOIN roasting_batches rb ON rc.roasting_id = rb.id
-       INNER JOIN coffee_harvests ch ON rb.lot_id = ch.lot_id
+       LEFT JOIN roasted_coffee rc ON rci.roasted_id = rc.id
+       LEFT JOIN roasting_batches rb ON rc.roasting_id = rb.id
+       LEFT JOIN coffee_harvests ch ON rb.lot_id = ch.lot_id
        WHERE rci.id = ?`,
       [id]
     );
@@ -338,21 +338,38 @@ coffeeRouter.post('/packaging', async (req, res) => {
     const score = ((parseInt(acidity) + parseInt(body) + parseInt(balance)) / 3).toFixed(2);
 
     // Obtener información del café tostado para crear el SKU
+    // Primero verificar que existe el registro en roasted_coffee_inventory
+    const rciCheck = await query(
+      'SELECT * FROM roasted_coffee_inventory WHERE id = ?',
+      [roastedStorageId]
+    );
+
+    if (!rciCheck.rows.length) {
+      console.error('[packaging] Error: roasted_coffee_inventory no encontrado, id:', roastedStorageId);
+      return res.status(404).json({ error: 'Café tostado no encontrado en inventario' });
+    }
+
+    const rciData = rciCheck.rows[0];
+    console.log('[packaging] rciData:', { id: rciData.id, roasted_id: rciData.roasted_id, status: rciData.status });
+
+    // Ahora obtener la información con LEFT JOINs para mejor compatibilidad
     const roastedResult = await query(
-      `SELECT rci.*, rc.roast_level, rb.lot_id, ch.region
+      `SELECT rci.*, rc.roast_level, rc.weight_kg, rb.lot_id, ch.region, ch.farm, ch.variety
        FROM roasted_coffee_inventory rci
-       INNER JOIN roasted_coffee rc ON rci.roasted_id = rc.id
-       INNER JOIN roasting_batches rb ON rc.roasting_id = rb.id
-       INNER JOIN coffee_harvests ch ON rb.lot_id = ch.lot_id
+       LEFT JOIN roasted_coffee rc ON rci.roasted_id = rc.id
+       LEFT JOIN roasting_batches rb ON rc.roasting_id = rb.id
+       LEFT JOIN coffee_harvests ch ON rb.lot_id = ch.lot_id
        WHERE rci.id = ?`,
       [roastedStorageId]
     );
 
     if (!roastedResult.rows.length) {
+      console.error('[packaging] Error: No se pudo obtener información del café tostado');
       return res.status(404).json({ error: 'Café tostado no encontrado' });
     }
 
     const roastedInfo = roastedResult.rows[0];
+    console.log('[packaging] roastedInfo:', { lot_id: roastedInfo.lot_id, roast_level: roastedInfo.roast_level, region: roastedInfo.region });
 
     // Guardar en BD
     const result = await query(
@@ -410,7 +427,12 @@ coffeeRouter.post('/packaging', async (req, res) => {
     });
   } catch (err) {
     console.error('Error en packaging:', err);
-    res.status(500).json({ error: err.message });
+    console.error('Stack:', err.stack);
+    console.error('Body enviado:', { roastedStorageId, acidity, body, balance, presentation });
+    res.status(500).json({ 
+      error: err.message || 'Error al preparar café',
+      details: process.env.NODE_ENV === 'development' ? err.stack : undefined
+    });
   }
 });
 
@@ -542,8 +564,8 @@ coffeeRouter.get('/roasted-for-storage', async (req, res) => {
         ch.taste_notes,
         ch.taste_notes as notes
       FROM roasted_coffee rc
-      INNER JOIN roasting_batches rb ON rc.roasting_id = rb.id
-      INNER JOIN coffee_harvests ch ON rb.lot_id = ch.lot_id
+      LEFT JOIN roasting_batches rb ON rc.roasting_id = rb.id
+      LEFT JOIN coffee_harvests ch ON rb.lot_id = ch.lot_id
       WHERE rc.status = ? 
       ORDER BY rc.created_at DESC 
       LIMIT 100`,

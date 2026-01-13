@@ -316,7 +316,7 @@ import AppLayout from "../../layouts/AppLayout.astro";
             <td style="padding: 1rem; font-family: monospace; font-weight: 600; color: #251a14;">${lote.lot_id || "—"}</td>
             <td style="padding: 1rem;">${lote.farm_name || "—"}</td>
             <td style="padding: 1rem;">${lote.variety || "—"}</td>
-            <td style="padding: 1rem; text-align: center;">${(lote.weight || 0).toFixed(2)}</td>
+            <td style="padding: 1rem; text-align: center;">${(parseFloat(lote.weight) || 0).toFixed(2)}</td>
             <td style="padding: 1rem; text-align: center;">
               <span style="display: inline-block; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.85rem; font-weight: 600; ${statusStyle}">
                 ${statusLabels[lote.status] || lote.status || "Desconocido"}
