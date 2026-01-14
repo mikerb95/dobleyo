@@ -15,11 +15,11 @@ devtoolsRouter.post('/clean-users', async (req, res) => {
   res.setHeader('Content-Type', 'application/json');
   try {
     // Obtener los IDs de los 2 primeros usuarios
-    const firstTwoUsers = await query(`
+    const result = await query(`
       SELECT id FROM users ORDER BY id ASC LIMIT 2
     `);
 
-    const firstTwoIds = firstTwoUsers.map(u => u.id);
+    const firstTwoIds = (result.rows || result).map(u => u.id);
 
     if (firstTwoIds.length === 0) {
       return res.status(400).json({ error: 'No hay usuarios para preservar' });
@@ -31,12 +31,12 @@ devtoolsRouter.post('/clean-users', async (req, res) => {
       placeholders += ',?';
     }
 
-    const result = await query(`DELETE FROM users WHERE id NOT IN (${placeholders})`, firstTwoIds);
+    const deleteResult = await query(`DELETE FROM users WHERE id NOT IN (${placeholders})`, firstTwoIds);
 
     res.json({
       success: true,
       message: `✅ Usuarios eliminados. Se preservaron los 2 primeros admins.`,
-      deletedCount: result.affectedRows || 0
+      deletedCount: deleteResult.affectedRows || 0
     });
   } catch (error) {
     console.error('Error al limpiar usuarios:', error);
