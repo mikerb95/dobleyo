@@ -755,3 +755,328 @@ CREATE TABLE IF NOT EXISTS tax_rates (
     FOREIGN KEY (accounting_account_id) REFERENCES accounting_accounts(id) ON DELETE SET NULL
 );
 CREATE INDEX idx_tax_rates_type ON tax_rates(tax_type);
+
+-- ==========================================
+-- MÓDULO DE MANUFACTURA/PRODUCCIÓN
+-- ==========================================
+
+-- Estaciones de Trabajo / Equipos (Work Centers)
+CREATE TABLE IF NOT EXISTS work_centers (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    code VARCHAR(20) NOT NULL UNIQUE,
+    name VARCHAR(160) NOT NULL,
+    work_center_type ENUM('tostado', 'molido', 'empaque', 'control_calidad', 'almacen', 'otro') NOT NULL,
+    capacity_per_hour DECIMAL(10,2), -- Capacidad en kg/hora o unidades/hora
+    capacity_unit ENUM('kg', 'unidades', 'lotes') DEFAULT 'kg',
+    cost_per_hour DECIMAL(10,2), -- Costo operativo por hora
+    is_active BOOLEAN DEFAULT TRUE,
+    description TEXT,
+    location VARCHAR(255),
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP
+);
+CREATE INDEX idx_work_centers_type ON work_centers(work_center_type);
+CREATE INDEX idx_work_centers_active ON work_centers(is_active);
+
+-- Equipos de Tostado (Roasting Equipment)
+CREATE TABLE IF NOT EXISTS roasting_equipment (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    work_center_id BIGINT NOT NULL,
+    equipment_code VARCHAR(50) NOT NULL UNIQUE,
+    equipment_name VARCHAR(160) NOT NULL,
+    brand VARCHAR(100),
+    model VARCHAR(100),
+    batch_capacity_kg DECIMAL(10,2) NOT NULL, -- Capacidad por batch en kg
+    min_batch_kg DECIMAL(10,2), -- Carga mínima
+    max_batch_kg DECIMAL(10,2), -- Carga máxima
+    fuel_type ENUM('gas', 'electrico', 'lena', 'hibrido') NOT NULL,
+    roast_time_minutes INT, -- Tiempo promedio de tostado
+    cooling_time_minutes INT, -- Tiempo de enfriamiento
+    last_maintenance_date DATE,
+    next_maintenance_date DATE,
+    is_operational BOOLEAN DEFAULT TRUE,
+    notes TEXT,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (work_center_id) REFERENCES work_centers(id) ON DELETE RESTRICT
+);
+CREATE INDEX idx_roasting_equipment_work_center ON roasting_equipment(work_center_id);
+CREATE INDEX idx_roasting_equipment_operational ON roasting_equipment(is_operational);
+
+-- Lista de Materiales (Bill of Materials - BOM)
+CREATE TABLE IF NOT EXISTS bill_of_materials (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    bom_code VARCHAR(50) NOT NULL UNIQUE,
+    product_id VARCHAR(50) NOT NULL, -- Producto final (café tostado)
+    product_qty DECIMAL(10,2) NOT NULL DEFAULT 1, -- Cantidad producida
+    product_unit ENUM('kg', 'g', 'unidad') NOT NULL DEFAULT 'kg',
+    bom_type ENUM('tostado', 'molido', 'empaque', 'combinado') NOT NULL DEFAULT 'tostado',
+    work_center_id BIGINT NULL, -- Estación donde se produce
+    estimated_time_minutes INT, -- Tiempo estimado de producción
+    loss_percentage DECIMAL(5,2) DEFAULT 15.00, -- % de merma esperado (15% típico en tostado)
+    is_active BOOLEAN DEFAULT TRUE,
+    notes TEXT,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE RESTRICT,
+    FOREIGN KEY (work_center_id) REFERENCES work_centers(id) ON DELETE SET NULL
+);
+CREATE INDEX idx_bom_product ON bill_of_materials(product_id);
+CREATE INDEX idx_bom_type ON bill_of_materials(bom_type);
+CREATE INDEX idx_bom_active ON bill_of_materials(is_active);
+
+-- Componentes de la Lista de Materiales (BOM Components)
+CREATE TABLE IF NOT EXISTS bom_components (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    bom_id BIGINT NOT NULL,
+    component_product_id VARCHAR(50) NOT NULL, -- Producto componente (café verde, empaque, etc)
+    quantity DECIMAL(10,2) NOT NULL, -- Cantidad requerida
+    quantity_unit ENUM('kg', 'g', 'unidad', 'ml', 'l') NOT NULL DEFAULT 'kg',
+    component_type ENUM('materia_prima', 'empaque', 'consumible', 'otro') NOT NULL DEFAULT 'materia_prima',
+    scrap_percentage DECIMAL(5,2) DEFAULT 0, -- % adicional de merma para este componente
+    notes TEXT,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (bom_id) REFERENCES bill_of_materials(id) ON DELETE CASCADE,
+    FOREIGN KEY (component_product_id) REFERENCES products(id) ON DELETE RESTRICT
+);
+CREATE INDEX idx_bom_components_bom ON bom_components(bom_id);
+CREATE INDEX idx_bom_components_product ON bom_components(component_product_id);
+
+-- Órdenes de Producción (Manufacturing Orders)
+CREATE TABLE IF NOT EXISTS production_orders (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    order_number VARCHAR(50) NOT NULL UNIQUE,
+    bom_id BIGINT NOT NULL,
+    product_id VARCHAR(50) NOT NULL, -- Producto a producir
+    lot_id BIGINT NULL, -- Lote asociado si aplica
+    planned_quantity DECIMAL(10,2) NOT NULL, -- Cantidad planeada a producir
+    produced_quantity DECIMAL(10,2) DEFAULT 0, -- Cantidad realmente producida
+    quantity_unit ENUM('kg', 'g', 'unidad') NOT NULL DEFAULT 'kg',
+    work_center_id BIGINT NULL,
+    roasting_equipment_id BIGINT NULL,
+    state ENUM('borrador', 'confirmada', 'en_progreso', 'pausada', 'completada', 'cancelada') NOT NULL DEFAULT 'borrador',
+    priority ENUM('baja', 'normal', 'alta', 'urgente') NOT NULL DEFAULT 'normal',
+    scheduled_date DATE NOT NULL,
+    start_date DATETIME NULL,
+    end_date DATETIME NULL,
+    expected_loss_percentage DECIMAL(5,2) DEFAULT 15.00,
+    actual_loss_percentage DECIMAL(5,2),
+    production_cost DECIMAL(15,2) DEFAULT 0, -- Costo total de producción
+    responsible_user_id BIGINT NULL, -- Operador responsable
+    notes TEXT,
+    user_id BIGINT, -- Quien creó la orden
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (bom_id) REFERENCES bill_of_materials(id) ON DELETE RESTRICT,
+    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE RESTRICT,
+    FOREIGN KEY (lot_id) REFERENCES lots(id) ON DELETE SET NULL,
+    FOREIGN KEY (work_center_id) REFERENCES work_centers(id) ON DELETE SET NULL,
+    FOREIGN KEY (roasting_equipment_id) REFERENCES roasting_equipment(id) ON DELETE SET NULL,
+    FOREIGN KEY (responsible_user_id) REFERENCES users(id) ON DELETE SET NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+);
+CREATE INDEX idx_production_orders_bom ON production_orders(bom_id);
+CREATE INDEX idx_production_orders_product ON production_orders(product_id);
+CREATE INDEX idx_production_orders_lot ON production_orders(lot_id);
+CREATE INDEX idx_production_orders_state ON production_orders(state);
+CREATE INDEX idx_production_orders_scheduled_date ON production_orders(scheduled_date);
+CREATE INDEX idx_production_orders_work_center ON production_orders(work_center_id);
+
+-- Consumos de Materiales en Producción (Material Consumption)
+CREATE TABLE IF NOT EXISTS production_material_consumption (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    production_order_id BIGINT NOT NULL,
+    product_id VARCHAR(50) NOT NULL, -- Material consumido
+    lot_id BIGINT NULL, -- Lote del material si aplica
+    planned_quantity DECIMAL(10,2) NOT NULL, -- Cantidad planeada
+    consumed_quantity DECIMAL(10,2) NOT NULL, -- Cantidad realmente consumida
+    quantity_unit ENUM('kg', 'g', 'unidad', 'ml', 'l') NOT NULL DEFAULT 'kg',
+    consumption_date DATETIME NOT NULL,
+    inventory_movement_id BIGINT NULL, -- Referencia al movimiento de inventario
+    notes TEXT,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (production_order_id) REFERENCES production_orders(id) ON DELETE CASCADE,
+    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE RESTRICT,
+    FOREIGN KEY (lot_id) REFERENCES lots(id) ON DELETE SET NULL,
+    FOREIGN KEY (inventory_movement_id) REFERENCES inventory_movements(id) ON DELETE SET NULL
+);
+CREATE INDEX idx_prod_material_consumption_order ON production_material_consumption(production_order_id);
+CREATE INDEX idx_prod_material_consumption_product ON production_material_consumption(product_id);
+CREATE INDEX idx_prod_material_consumption_date ON production_material_consumption(consumption_date);
+
+-- Perfiles de Tostado (Roast Profiles)
+CREATE TABLE IF NOT EXISTS roast_profiles (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    profile_code VARCHAR(50) NOT NULL UNIQUE,
+    profile_name VARCHAR(160) NOT NULL,
+    roast_level ENUM('ligero', 'medio_ligero', 'medio', 'medio_oscuro', 'oscuro', 'muy_oscuro') NOT NULL,
+    target_temperature_celsius INT, -- Temperatura objetivo
+    roast_duration_minutes INT, -- Duración total del tostado
+    first_crack_time_minutes INT, -- Tiempo al primer crack
+    second_crack_time_minutes INT, -- Tiempo al segundo crack si aplica
+    development_time_ratio DECIMAL(5,2), -- DTR (Development Time Ratio)
+    color_agtron INT, -- Medida de color Agtron
+    suitable_for_varieties TEXT, -- Variedades recomendadas
+    flavor_profile TEXT, -- Perfil de sabor esperado
+    roasting_equipment_id BIGINT NULL, -- Equipo específico si aplica
+    curve_data JSON, -- Datos de la curva de tostado (temperatura vs tiempo)
+    is_active BOOLEAN DEFAULT TRUE,
+    notes TEXT,
+    created_by BIGINT,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (roasting_equipment_id) REFERENCES roasting_equipment(id) ON DELETE SET NULL,
+    FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
+);
+CREATE INDEX idx_roast_profiles_level ON roast_profiles(roast_level);
+CREATE INDEX idx_roast_profiles_active ON roast_profiles(is_active);
+
+-- Registros de Tostado (Roast Batches / Roast Logs)
+CREATE TABLE IF NOT EXISTS roast_batches (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    batch_number VARCHAR(50) NOT NULL UNIQUE,
+    production_order_id BIGINT NOT NULL,
+    roast_profile_id BIGINT NULL,
+    roasting_equipment_id BIGINT NOT NULL,
+    green_coffee_lot_id BIGINT NOT NULL, -- Lote de café verde usado
+    green_coffee_weight_kg DECIMAL(10,2) NOT NULL, -- Peso verde inicial
+    roasted_coffee_weight_kg DECIMAL(10,2), -- Peso tostado final
+    weight_loss_percentage DECIMAL(5,2), -- % de merma real
+    roast_date DATETIME NOT NULL,
+    roast_start_time DATETIME NOT NULL,
+    roast_end_time DATETIME,
+    actual_duration_minutes INT,
+    inlet_temperature_celsius INT, -- Temperatura de entrada
+    first_crack_time_minutes INT,
+    first_crack_temperature_celsius INT,
+    second_crack_time_minutes INT,
+    drop_temperature_celsius INT, -- Temperatura de descarga
+    development_time_ratio DECIMAL(5,2),
+    color_agtron INT,
+    roast_level_achieved ENUM('ligero', 'medio_ligero', 'medio', 'medio_oscuro', 'oscuro', 'muy_oscuro'),
+    ambient_temperature_celsius INT,
+    humidity_percentage INT,
+    operator_id BIGINT NOT NULL, -- Operador que realizó el tostado
+    quality_score DECIMAL(3,1), -- Puntuación de calidad (0-10)
+    quality_notes TEXT,
+    defects_found TEXT,
+    curve_data JSON, -- Datos reales de la curva de tostado
+    is_approved BOOLEAN DEFAULT FALSE,
+    approved_by BIGINT NULL,
+    approved_at TIMESTAMP NULL,
+    notes TEXT,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (production_order_id) REFERENCES production_orders(id) ON DELETE RESTRICT,
+    FOREIGN KEY (roast_profile_id) REFERENCES roast_profiles(id) ON DELETE SET NULL,
+    FOREIGN KEY (roasting_equipment_id) REFERENCES roasting_equipment(id) ON DELETE RESTRICT,
+    FOREIGN KEY (green_coffee_lot_id) REFERENCES lots(id) ON DELETE RESTRICT,
+    FOREIGN KEY (operator_id) REFERENCES users(id) ON DELETE RESTRICT,
+    FOREIGN KEY (approved_by) REFERENCES users(id) ON DELETE SET NULL
+);
+CREATE INDEX idx_roast_batches_production_order ON roast_batches(production_order_id);
+CREATE INDEX idx_roast_batches_profile ON roast_batches(roast_profile_id);
+CREATE INDEX idx_roast_batches_equipment ON roast_batches(roasting_equipment_id);
+CREATE INDEX idx_roast_batches_green_lot ON roast_batches(green_coffee_lot_id);
+CREATE INDEX idx_roast_batches_date ON roast_batches(roast_date);
+CREATE INDEX idx_roast_batches_operator ON roast_batches(operator_id);
+CREATE INDEX idx_roast_batches_approved ON roast_batches(is_approved);
+
+-- Control de Calidad en Producción
+CREATE TABLE IF NOT EXISTS production_quality_checks (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    check_number VARCHAR(50) NOT NULL UNIQUE,
+    production_order_id BIGINT NULL,
+    roast_batch_id BIGINT NULL,
+    check_type ENUM('recepcion_verde', 'pre_tostado', 'post_tostado', 'catacion', 'empaque', 'final') NOT NULL,
+    check_date DATETIME NOT NULL,
+    inspector_id BIGINT NOT NULL,
+    passed BOOLEAN NOT NULL DEFAULT FALSE,
+    overall_score DECIMAL(4,1), -- Puntuación general (0-100)
+    -- Atributos de catación
+    aroma_score DECIMAL(3,1),
+    flavor_score DECIMAL(3,1),
+    acidity_score DECIMAL(3,1),
+    body_score DECIMAL(3,1),
+    balance_score DECIMAL(3,1),
+    aftertaste_score DECIMAL(3,1),
+    sweetness_score DECIMAL(3,1),
+    uniformity_score DECIMAL(3,1),
+    clean_cup_score DECIMAL(3,1),
+    -- Defectos
+    defects_found TEXT,
+    defects_count INT DEFAULT 0,
+    moisture_percentage DECIMAL(5,2),
+    color_agtron INT,
+    grind_test_result ENUM('aprobado', 'rechazado', 'no_aplica') DEFAULT 'no_aplica',
+    packaging_test_result ENUM('aprobado', 'rechazado', 'no_aplica') DEFAULT 'no_aplica',
+    observations TEXT,
+    corrective_actions TEXT,
+    images JSON, -- URLs de imágenes del control
+    approved_by BIGINT NULL,
+    approved_at TIMESTAMP NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (production_order_id) REFERENCES production_orders(id) ON DELETE SET NULL,
+    FOREIGN KEY (roast_batch_id) REFERENCES roast_batches(id) ON DELETE SET NULL,
+    FOREIGN KEY (inspector_id) REFERENCES users(id) ON DELETE RESTRICT,
+    FOREIGN KEY (approved_by) REFERENCES users(id) ON DELETE SET NULL
+);
+CREATE INDEX idx_quality_checks_production_order ON production_quality_checks(production_order_id);
+CREATE INDEX idx_quality_checks_roast_batch ON production_quality_checks(roast_batch_id);
+CREATE INDEX idx_quality_checks_type ON production_quality_checks(check_type);
+CREATE INDEX idx_quality_checks_date ON production_quality_checks(check_date);
+CREATE INDEX idx_quality_checks_inspector ON production_quality_checks(inspector_id);
+CREATE INDEX idx_quality_checks_passed ON production_quality_checks(passed);
+
+-- Mermas y Subproductos
+CREATE TABLE IF NOT EXISTS production_waste_byproducts (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    production_order_id BIGINT NOT NULL,
+    roast_batch_id BIGINT NULL,
+    waste_type ENUM('merma_tostado', 'merma_molido', 'defectos', 'chaff', 'rechazo_calidad', 'otro') NOT NULL,
+    quantity DECIMAL(10,2) NOT NULL,
+    quantity_unit ENUM('kg', 'g', 'unidad') NOT NULL DEFAULT 'kg',
+    waste_date DATETIME NOT NULL,
+    disposal_method ENUM('descartado', 'compost', 'reutilizado', 'vendido', 'donado') NOT NULL DEFAULT 'descartado',
+    estimated_value_loss DECIMAL(10,2), -- Pérdida de valor estimada
+    reason TEXT,
+    notes TEXT,
+    recorded_by BIGINT,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (production_order_id) REFERENCES production_orders(id) ON DELETE CASCADE,
+    FOREIGN KEY (roast_batch_id) REFERENCES roast_batches(id) ON DELETE SET NULL,
+    FOREIGN KEY (recorded_by) REFERENCES users(id) ON DELETE SET NULL
+);
+CREATE INDEX idx_waste_byproducts_production_order ON production_waste_byproducts(production_order_id);
+CREATE INDEX idx_waste_byproducts_roast_batch ON production_waste_byproducts(roast_batch_id);
+CREATE INDEX idx_waste_byproducts_type ON production_waste_byproducts(waste_type);
+CREATE INDEX idx_waste_byproducts_date ON production_waste_byproducts(waste_date);
+
+-- Mantenimiento de Equipos
+CREATE TABLE IF NOT EXISTS equipment_maintenance (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    maintenance_number VARCHAR(50) NOT NULL UNIQUE,
+    roasting_equipment_id BIGINT NOT NULL,
+    maintenance_type ENUM('preventivo', 'correctivo', 'calibracion', 'limpieza', 'emergencia') NOT NULL,
+    scheduled_date DATE NOT NULL,
+    start_date DATETIME NULL,
+    end_date DATETIME NULL,
+    state ENUM('programado', 'en_progreso', 'completado', 'cancelado') NOT NULL DEFAULT 'programado',
+    maintenance_description TEXT NOT NULL,
+    parts_replaced TEXT,
+    maintenance_cost DECIMAL(10,2),
+    performed_by VARCHAR(255), -- Técnico o empresa
+    technician_user_id BIGINT NULL, -- Si es interno
+    next_maintenance_date DATE,
+    downtime_hours DECIMAL(5,2), -- Horas de inactividad
+    notes TEXT,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (roasting_equipment_id) REFERENCES roasting_equipment(id) ON DELETE CASCADE,
+    FOREIGN KEY (technician_user_id) REFERENCES users(id) ON DELETE SET NULL
+);
+CREATE INDEX idx_equipment_maintenance_equipment ON equipment_maintenance(roasting_equipment_id);
+CREATE INDEX idx_equipment_maintenance_type ON equipment_maintenance(maintenance_type);
+CREATE INDEX idx_equipment_maintenance_state ON equipment_maintenance(state);
+CREATE INDEX idx_equipment_maintenance_scheduled_date ON equipment_maintenance(scheduled_date);
