@@ -3,26 +3,25 @@
 // Router principal que integra subrutas
 // ==========================================
 
-const express = require('express');
-const router = express.Router();
+import express from 'express';
+import { ordersRouter } from './production/orders.js';
+import { batchesRouter } from './production/batches.js';
+import { qualityRouter } from './production/quality.js';
+import { dashboardRouter } from './production/dashboard.js';
 
-// Importar subrutas
-const ordersRouter = require('./production/orders');
-const batchesRouter = require('./production/batches');
-const qualityRouter = require('./production/quality');
-const dashboardRouter = require('./production/dashboard');
+export const productionRouter = express.Router();
 
 // Middleware para logging (opcional)
-router.use((req, res, next) => {
+productionRouter.use((req, res, next) => {
   console.log(`[PRODUCTION API] ${req.method} ${req.path}`);
   next();
 });
 
 // Montar subrutas
-router.use('/orders', ordersRouter);
-router.use('/batches', batchesRouter);
-router.use('/quality', qualityRouter);
-router.use('/dashboard', dashboardRouter);
+productionRouter.use('/orders', ordersRouter);
+productionRouter.use('/batches', batchesRouter);
+productionRouter.use('/quality', qualityRouter);
+productionRouter.use('/dashboard', dashboardRouter);
 
 // ==========================================
 // ENDPOINTS ADICIONALES
@@ -32,7 +31,7 @@ router.use('/dashboard', dashboardRouter);
  * GET /api/production
  * Información general del módulo
  */
-router.get('/', (req, res) => {
+productionRouter.get('/', (req, res) => {
   res.json({
     success: true,
     module: 'Production',
@@ -45,5 +44,3 @@ router.get('/', (req, res) => {
     version: '1.0.0'
   });
 });
-
-module.exports = router;

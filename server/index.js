@@ -19,7 +19,7 @@ import { contactRouter } from './routes/contact.js';
 import { usersRouter } from './routes/users.js';
 import { labelsRouter } from './routes/labels.js';
 import { devtoolsRouter } from './routes/devtools.js';
-import { productionRouter } from './routes/production/index.js';
+import { productionRouter } from './routes/production.js';
 import { query } from './db.js';
 
 const app = express();
