@@ -21,6 +21,7 @@
 ## 📦 DELIVERABLES
 
 ### 1️⃣ CÓDIGO BACKEND (5 Archivos)
+
 ```
 ✅ server/routes/production/orders.js         (11 endpoints)
 ✅ server/routes/production/batches.js        (8 endpoints)
@@ -30,6 +31,7 @@
 ```
 
 ### 2️⃣ BASE DE DATOS (3 Archivos)
+
 ```
 ✅ db/schema.sql                              (42 tablas)
 ✅ db/seed_data.sql                           (Datos iniciales)
@@ -37,6 +39,7 @@
 ```
 
 ### 3️⃣ DOCUMENTACIÓN (4 Archivos)
+
 ```
 ✅ PRODUCTION_API_DOCS.md                     (Referencia completa)
 ✅ PRODUCTION_SUMMARY.md                      (Resumen ejecutivo)
@@ -45,12 +48,14 @@
 ```
 
 ### 4️⃣ TESTING (2 Archivos)
+
 ```
 ✅ test_production_apis.sh                    (19 pruebas)
 ✅ DobleYo_Production_APIs.postman_collection.json
 ```
 
 ### 5️⃣ INTEGRACIÓN (1 Archivo)
+
 ```
 ✅ server/index_with_production.js            (Ejemplo de integración)
 ```
@@ -60,6 +65,7 @@
 ## 🎯 FUNCIONALIDADES PRINCIPALES
 
 ### 🏭 GESTIÓN DE ÓRDENES
+
 ```
 Crear Orden (borrador)
   ↓
@@ -71,11 +77,13 @@ Iniciar (en_progreso)
   ↓
 Cancelar (en cualquier momento)
 ```
+
 ✅ 11 endpoints | ✅ 6 transiciones de estado | ✅ Validaciones automáticas
 
 ---
 
 ### 🔥 MONITOREO DE TOSTADO
+
 ```
 Crear Batch
   ↓
@@ -90,11 +98,13 @@ Completar Tostado (peso, temperatura, etc)
   ├─ Comparación con perfil objetivo
   └─ Aprobación/Rechazo
 ```
+
 ✅ 8 endpoints | ✅ Cálculos automáticos | ✅ Comparaciones en tiempo real
 
 ---
 
 ### ✅ CONTROL DE CALIDAD
+
 ```
 Inspecciones Múltiples:
   ├─ Recepción Verde
@@ -114,15 +124,17 @@ Catación:
   ├─ Sweetness  → 0-10
   ├─ Uniformity → 0-10
   └─ Clean Cup  → 0-10
-  
+
 Score = (suma de atributos) / 9
 Aprobado si: Score >= 80
 ```
+
 ✅ 6 endpoints | ✅ Metodología SCA | ✅ Puntuación automática
 
 ---
 
 ### 📊 DASHBOARDS & KPIs
+
 ```
 🎯 Dashboard Principal (10+ KPIs)
   ├─ Órdenes hoy (total/completadas/en progreso/pendientes)
@@ -153,6 +165,7 @@ Aprobado si: Score >= 80
   ├─ Pérdida anómala (>16%)
   └─ Inspecciones fallidas
 ```
+
 ✅ 4 endpoints | ✅ Análisis complejos | ✅ Alertas inteligentes
 
 ---
@@ -160,6 +173,7 @@ Aprobado si: Score >= 80
 ## 📈 CÁLCULOS IMPLEMENTADOS
 
 ### Pérdida de Peso (Loss %)
+
 ```
 Fórmula: (peso_verde - peso_tostado) / peso_verde * 100
 Esperado: 14-15%
@@ -173,6 +187,7 @@ Ejemplo:
 ```
 
 ### Development Time Ratio (DTR)
+
 ```
 Fórmula: (tiempo_desarrollo / primer_crack_time) * 100
 Desarrollo = segundo_crack_time - primer_crack_time
@@ -187,8 +202,9 @@ Ejemplo:
 ```
 
 ### Puntuación de Catación
+
 ```
-Fórmula: (aroma + flavor + acidity + body + balance + 
+Fórmula: (aroma + flavor + acidity + body + balance +
          aftertaste + sweetness + uniformity + clean_cup) / 9
 
 Puntuación: 0-100 (escala x10 de atributos 0-10)
@@ -202,6 +218,7 @@ Ejemplo:
 ```
 
 ### Tasa de Aprobación
+
 ```
 Fórmula: (inspecciones_aprobadas / total_inspecciones) * 100
 
@@ -213,6 +230,7 @@ Ejemplo:
 ```
 
 ### Tasa de Completación de Órdenes
+
 ```
 Fórmula: (órdenes_completadas / total_órdenes) * 100
 
@@ -229,29 +247,34 @@ Ejemplo:
 ## 🧮 DATOS INICIALES
 
 ### Usuarios (10)
+
 - 1 Admin (Luis)
 - 3 Operarios (José, Pedro, María)
 - 3 Caficultores (Juan, Rosa, Carlos)
 - 2 Clientes (Tienda A, Tienda B)
 
 ### Equipos (3)
+
 - Tostadora Giratoria 1 (50kg/batch)
 - Tostadora Giratoria 2 (50kg/batch)
 - Tostadora Giratoria 3 (30kg/batch)
 
 ### Productos (13)
+
 - 3 Cafés Verdes (Colombiano, Ecuatoriano, Etíope)
 - 4 Tostados (Ligero, Medio, Oscuro, Medio-Oscuro)
 - 3 Empaques (250g, 500g, 1kg)
 - 3 Accesorios (Moledor, Prensa, Filtro)
 
 ### Perfiles de Tostado (4)
+
 - Ligero (8-9 min crack, 190°C drop)
 - Medio (9-10 min crack, 200°C drop)
 - Oscuro (10-12 min crack, 210°C drop)
 - Medio-Oscuro (9-11 min crack, 205°C drop)
 
 ### Recetas (BOMs) (3)
+
 - Colombiano Ligero (100kg verde → 86kg tostado)
 - Ecuatoriano Medio (100kg verde → 85.5kg tostado)
 - Etíope Oscuro (100kg verde → 84kg tostado)
@@ -261,6 +284,7 @@ Ejemplo:
 ## 🔍 EJEMPLOS DE USO
 
 ### Ejemplo 1: Crear y Ejecutar Orden Completa (5 minutos)
+
 ```bash
 # 1. Crear orden
 ORDER_ID=$(curl -s -X POST http://localhost:3000/api/production/orders \
@@ -296,6 +320,7 @@ echo "✅ Orden completada: $ORDER_ID"
 ```
 
 ### Ejemplo 2: Pausar y Reanudar
+
 ```bash
 # Pausar orden en progreso
 curl -X POST http://localhost:3000/api/production/orders/1/pause
@@ -306,6 +331,7 @@ curl -X POST http://localhost:3000/api/production/orders/1/resume
 ```
 
 ### Ejemplo 3: Ver Dashboard
+
 ```bash
 curl http://localhost:3000/api/production/dashboard | jq '.'
 ```
@@ -349,30 +375,35 @@ En cualquier momento:
 ## ✨ CARACTERÍSTICAS ESPECIALES
 
 ### 1. Integridad Referencial
+
 ✅ Foreign keys en todas las relaciones  
 ✅ Validación de entidades antes de operaciones  
-✅ Cascadas controladas  
+✅ Cascadas controladas
 
 ### 2. Auditoría
+
 ✅ Timestamps en todas las tablas  
 ✅ Tracking de usuario responsable  
-✅ Histórico de cambios de estado  
+✅ Histórico de cambios de estado
 
 ### 3. Performance
+
 ✅ Índices en campos filtrados  
 ✅ Queries optimizadas  
-✅ Agregaciones eficientes  
+✅ Agregaciones eficientes
 
 ### 4. Escalabilidad
+
 ✅ Diseño modular por rutas  
 ✅ Separación de responsabilidades  
-✅ Reutilización de queries  
+✅ Reutilización de queries
 
 ---
 
 ## 📞 CÓMO EMPEZAR
 
 ### Inicio en 5 Minutos
+
 ```bash
 # 1. Cargar datos
 mysql -u root -p dobleyo < db/schema.sql
@@ -388,13 +419,15 @@ curl http://localhost:3000/api/production/orders
 ```
 
 ### Documentación Completa
+
 📖 [PRODUCTION_API_DOCS.md](PRODUCTION_API_DOCS.md) - Todos los endpoints  
 ⚡ [QUICK_START_PRODUCTION.md](QUICK_START_PRODUCTION.md) - Guía rápida  
-📊 [PRODUCTION_SUMMARY.md](PRODUCTION_SUMMARY.md) - Resumen técnico  
+📊 [PRODUCTION_SUMMARY.md](PRODUCTION_SUMMARY.md) - Resumen técnico
 
 ### Testing
+
 🧪 [test_production_apis.sh](test_production_apis.sh) - Suite automática  
-📮 [DobleYo_Production_APIs.postman_collection.json](DobleYo_Production_APIs.postman_collection.json) - Para Postman  
+📮 [DobleYo_Production_APIs.postman_collection.json](DobleYo_Production_APIs.postman_collection.json) - Para Postman
 
 ---
 
@@ -428,13 +461,14 @@ curl http://localhost:3000/api/production/orders
 ✅ MySQL 5.7+  
 ✅ npm o yarn  
 ✅ Puerto 3000 disponible  
-✅ ~50MB de espacio en disco  
+✅ ~50MB de espacio en disco
 
 ---
 
 ## 🔒 RECOMENDACIONES SEGURIDAD
 
 Para producción, agregar:
+
 1. ✅ JWT Authentication
 2. ✅ Role-Based Access Control (RBAC)
 3. ✅ Rate Limiting
@@ -449,16 +483,19 @@ Para producción, agregar:
 ## 📊 PRÓXIMOS PASOS
 
 ### Esta Semana
+
 - [ ] Ejecutar seed_data.sql
 - [ ] Probar todos los endpoints
 - [ ] Revisar documentación
 
 ### Este Mes
+
 - [ ] Agregar autenticación JWT
 - [ ] Crear frontend (React/Vue)
 - [ ] Implementar WebSockets
 
 ### Próximo Mes
+
 - [ ] Módulo Financiero (facturas, pagos)
 - [ ] Integración MercadoLibre
 - [ ] Reportes PDF/Excel
