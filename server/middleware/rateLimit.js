@@ -15,11 +15,7 @@ export const loginLimiter = rateLimit({
   standardHeaders: true, // Enviar info en headers RateLimit-*
   legacyHeaders: false, // Deshabilitar headers X-RateLimit-*
   skipSuccessfulRequests: false, // Contar todos los intentos
-  keyGenerator: (req) => {
-    // Usar IP + email para identificar al usuario
-    const email = req.body?.email || 'unknown';
-    return `${req.ip}-${email}`;
-  }
+  keyGenerator: ipKeyGenerator
 });
 
 // Limiter para registro - moderado (3 registros por hora)
