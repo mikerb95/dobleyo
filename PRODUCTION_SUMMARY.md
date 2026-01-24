@@ -11,12 +11,14 @@
 ## 🎯 OBJETIVOS ALCANZADOS
 
 ### ✅ 1. Gestión de Órdenes de Producción
+
 - **11 endpoints** para crear, actualizar, eliminar órdenes
 - **6 transiciones de estado** (borrador → confirmada → en progreso → completada)
 - **Validaciones** automáticas basadas en estado actual
 - **Auditoría** de usuario responsable y fechas
 
 ### ✅ 2. Monitoreo de Batches de Tostado
+
 - **8 endpoints** para seguimiento en tiempo real
 - **Registro de eventos**: primer crack, segundo crack, finalización
 - **Cálculos automáticos**:
@@ -26,6 +28,7 @@
 - **Comparación** contra perfiles objetivo
 
 ### ✅ 3. Control de Calidad
+
 - **6 endpoints** para inspecciones y catación
 - **Metodología SCA** (Specialty Coffee Association) con 9 atributos:
   - Aroma, Flavor, Acidity, Body, Balance, Aftertaste, Sweetness, Uniformity, Clean Cup
@@ -34,6 +37,7 @@
 - **Estadísticas** por tipo de inspección
 
 ### ✅ 4. Dashboard Operativo
+
 - **4 endpoints** de analytics
 - **10+ KPIs** en tiempo real:
   - Órdenes hoy (total/completadas/en progreso/pendientes)
@@ -75,17 +79,20 @@ Documentación:
 ## 🚀 CÓMO EMPEZAR
 
 ### Paso 1: Preparar Base de Datos
+
 ```bash
 # Ejecutar script de datos iniciales
 mysql -u root -p dobleyo < db/seed_data.sql
 ```
 
 ### Paso 2: Iniciar Servidor
+
 ```bash
 node server/index.js
 ```
 
 ### Paso 3: Verificar Endpoints
+
 ```bash
 # Ver todos los endpoints disponibles
 curl http://localhost:3000/api
@@ -102,56 +109,61 @@ bash test_production_apis.sh
 ## 📋 ENDPOINTS POR MÓDULO
 
 ### 🏭 ÓRDENES (11 endpoints)
-| Método | Endpoint | Descripción |
-|--------|----------|-------------|
-| GET | `/orders` | Listar órdenes con filtros |
-| GET | `/orders/:id` | Obtener detalle de orden |
-| POST | `/orders` | Crear nueva orden |
-| PUT | `/orders/:id` | Actualizar orden |
-| DELETE | `/orders/:id` | Eliminar orden (solo borrador) |
-| POST | `/orders/:id/confirm` | Confirmar: borrador → confirmada |
-| POST | `/orders/:id/start` | Iniciar: confirmada → en_progreso |
-| POST | `/orders/:id/pause` | Pausar: en_progreso → pausada |
-| POST | `/orders/:id/resume` | Reanudar: pausada → en_progreso |
-| POST | `/orders/:id/complete` | Completar: en_progreso → completada |
-| POST | `/orders/:id/cancel` | Cancelar desde cualquier estado |
+
+| Método | Endpoint               | Descripción                         |
+| ------ | ---------------------- | ----------------------------------- |
+| GET    | `/orders`              | Listar órdenes con filtros          |
+| GET    | `/orders/:id`          | Obtener detalle de orden            |
+| POST   | `/orders`              | Crear nueva orden                   |
+| PUT    | `/orders/:id`          | Actualizar orden                    |
+| DELETE | `/orders/:id`          | Eliminar orden (solo borrador)      |
+| POST   | `/orders/:id/confirm`  | Confirmar: borrador → confirmada    |
+| POST   | `/orders/:id/start`    | Iniciar: confirmada → en_progreso   |
+| POST   | `/orders/:id/pause`    | Pausar: en_progreso → pausada       |
+| POST   | `/orders/:id/resume`   | Reanudar: pausada → en_progreso     |
+| POST   | `/orders/:id/complete` | Completar: en_progreso → completada |
+| POST   | `/orders/:id/cancel`   | Cancelar desde cualquier estado     |
 
 ### 🔥 BATCHES (8 endpoints)
-| Método | Endpoint | Descripción |
-|--------|----------|-------------|
-| GET | `/batches` | Listar batches |
-| GET | `/batches/:id` | Detalle de batch |
-| POST | `/batches` | Crear batch |
-| POST | `/batches/:id/first-crack` | Registrar primer crack |
-| POST | `/batches/:id/second-crack` | Registrar segundo crack |
-| POST | `/batches/:id/complete` | Finalizar tostado |
-| POST | `/batches/:id/approve` | Aprobar batch |
-| GET | `/batches/:id/comparison` | Comparar con perfil |
+
+| Método | Endpoint                    | Descripción             |
+| ------ | --------------------------- | ----------------------- |
+| GET    | `/batches`                  | Listar batches          |
+| GET    | `/batches/:id`              | Detalle de batch        |
+| POST   | `/batches`                  | Crear batch             |
+| POST   | `/batches/:id/first-crack`  | Registrar primer crack  |
+| POST   | `/batches/:id/second-crack` | Registrar segundo crack |
+| POST   | `/batches/:id/complete`     | Finalizar tostado       |
+| POST   | `/batches/:id/approve`      | Aprobar batch           |
+| GET    | `/batches/:id/comparison`   | Comparar con perfil     |
 
 ### ✅ CALIDAD (6 endpoints)
-| Método | Endpoint | Descripción |
-|--------|----------|-------------|
-| GET | `/quality` | Listar inspecciones |
-| GET | `/quality/:id` | Detalle de inspección |
-| POST | `/quality` | Crear inspección |
-| POST | `/quality/cupping` | Registrar catación |
-| PUT | `/quality/:id` | Actualizar inspección |
-| POST | `/quality/:id/approve` | Aprobar inspección |
-| GET | `/quality/stats/summary` | Estadísticas por tipo |
+
+| Método | Endpoint                 | Descripción           |
+| ------ | ------------------------ | --------------------- |
+| GET    | `/quality`               | Listar inspecciones   |
+| GET    | `/quality/:id`           | Detalle de inspección |
+| POST   | `/quality`               | Crear inspección      |
+| POST   | `/quality/cupping`       | Registrar catación    |
+| PUT    | `/quality/:id`           | Actualizar inspección |
+| POST   | `/quality/:id/approve`   | Aprobar inspección    |
+| GET    | `/quality/stats/summary` | Estadísticas por tipo |
 
 ### 📊 DASHBOARD (4 endpoints)
-| Método | Endpoint | Descripción |
-|--------|----------|-------------|
-| GET | `/dashboard` | Dashboard principal (10 KPIs) |
-| GET | `/dashboard/efficiency` | Análisis de eficiencia |
-| GET | `/dashboard/operators` | Performance de operadores |
-| GET | `/dashboard/alerts` | Alertas activas |
+
+| Método | Endpoint                | Descripción                   |
+| ------ | ----------------------- | ----------------------------- |
+| GET    | `/dashboard`            | Dashboard principal (10 KPIs) |
+| GET    | `/dashboard/efficiency` | Análisis de eficiencia        |
+| GET    | `/dashboard/operators`  | Performance de operadores     |
+| GET    | `/dashboard/alerts`     | Alertas activas               |
 
 ---
 
 ## 🔄 FLUJOS PRINCIPALES
 
 ### Flujo de Producción Completo
+
 ```
 1. Crear Orden (borrador)
    ↓
@@ -174,6 +186,7 @@ bash test_production_apis.sh
 ```
 
 ### Flujo de Pausas y Retrasos
+
 ```
 Orden en_progreso
    ↓
@@ -208,30 +221,34 @@ El script `db/seed_data.sql` inserta automáticamente:
 ## 🔐 SEGURIDAD Y VALIDACIONES
 
 ### Validaciones Implementadas
+
 ✅ Verificación de estado antes de transiciones  
 ✅ Validación de cantidades (no negativos)  
 ✅ Verificación de disponibilidad de materias primas  
 ✅ Validación de IDs de relaciones (FK)  
 ✅ Validación de tipos de dato  
-✅ Cálculos verificados contra fórmulas  
+✅ Cálculos verificados contra fórmulas
 
 ### Recomendaciones Futuras
+
 ⚠️ Agregar autenticación JWT  
 ⚠️ Agregar autorización por rol  
 ⚠️ Agregar rate limiting  
 ⚠️ Agregar encriptación de datos sensibles  
-⚠️ Agregar auditoría de cambios  
+⚠️ Agregar auditoría de cambios
 
 ---
 
 ## 🧪 PRUEBAS
 
 ### Ejecutar Suite Completa
+
 ```bash
 bash test_production_apis.sh
 ```
 
 ### Pruebas Manuales con cURL
+
 ```bash
 # Listar órdenes
 curl http://localhost:3000/api/production/orders
@@ -246,6 +263,7 @@ curl -X POST http://localhost:3000/api/production/orders \
 ```
 
 ### Con Postman
+
 1. Importar endpoints en Postman
 2. Crear colección "DobleYo - Producción"
 3. Usar variables para IDs (order_id, batch_id, etc)
@@ -256,6 +274,7 @@ curl -X POST http://localhost:3000/api/production/orders \
 ## 📈 KPIs DEL DASHBOARD
 
 ### KPI 1: Órdenes Hoy
+
 ```json
 {
   "total": 8,
@@ -267,6 +286,7 @@ curl -X POST http://localhost:3000/api/production/orders \
 ```
 
 ### KPI 2: Producción Hoy
+
 ```json
 {
   "total_kg": 125.5,
@@ -276,6 +296,7 @@ curl -X POST http://localhost:3000/api/production/orders \
 ```
 
 ### KPI 3: Calidad Hoy
+
 ```json
 {
   "total_checks": 8,
@@ -291,6 +312,7 @@ curl -X POST http://localhost:3000/api/production/orders \
 ## 💡 EJEMPLOS DE USO
 
 ### Crear y Completar Orden (Flujo Completo)
+
 ```bash
 # 1. Crear
 curl -X POST http://localhost:3000/api/production/orders \
@@ -332,6 +354,7 @@ curl -X POST http://localhost:3000/api/production/orders/1/complete \
 ## 🔄 PRÓXIMAS FASES
 
 ### Fase 2: Módulo Financiero
+
 - APIs para facturas (ventas/compras)
 - APIs para pagos
 - APIs para asientos contables
@@ -339,6 +362,7 @@ curl -X POST http://localhost:3000/api/production/orders/1/complete \
 - Reportes financieros
 
 ### Fase 3: Frontend
+
 - Dashboard de producción (React/Vue)
 - Formulario de órdenes
 - Monitor de batches (real-time)
@@ -346,6 +370,7 @@ curl -X POST http://localhost:3000/api/production/orders/1/complete \
 - Reportes y exportación
 
 ### Fase 4: Integraciones
+
 - WebSockets para actualizaciones en tiempo real
 - Integración MercadoLibre API
 - Envíos de correo
@@ -353,6 +378,7 @@ curl -X POST http://localhost:3000/api/production/orders/1/complete \
 - Backup automático
 
 ### Fase 5: Análisis y BI
+
 - Reportes avanzados
 - Predicciones de demanda
 - Análisis de tendencias
@@ -364,16 +390,19 @@ curl -X POST http://localhost:3000/api/production/orders/1/complete \
 ## 📞 SOPORTE
 
 ### Base de Datos
+
 - Archivo: `db/schema.sql` (42 tablas)
 - Datos iniciales: `db/seed_data.sql`
 - Usuario: root (cambiar en producción)
 
 ### Código
+
 - Framework: Express.js
 - Lenguaje: JavaScript (Node.js)
 - DB Driver: mysql2
 
 ### Documentación
+
 - API: [PRODUCTION_API_DOCS.md](PRODUCTION_API_DOCS.md)
 - Pruebas: [test_production_apis.sh](test_production_apis.sh)
 
@@ -382,6 +411,7 @@ curl -X POST http://localhost:3000/api/production/orders/1/complete \
 ## ✨ RESUMEN
 
 Se ha implementado **exitosamente** un módulo completo de producción con:
+
 - ✅ 27 endpoints REST funcionales
 - ✅ Gestión de órdenes con máquina de estados
 - ✅ Monitoreo en tiempo real de batches
