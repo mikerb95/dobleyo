@@ -19,6 +19,7 @@ import { contactRouter } from './routes/contact.js';
 import { usersRouter } from './routes/users.js';
 import { labelsRouter } from './routes/labels.js';
 import { devtoolsRouter } from './routes/devtools.js';
+import { productionRouter } from './routes/production/index.js';
 import { query } from './db.js';
 
 const app = express();
@@ -73,6 +74,7 @@ app.use('/api/emails', emailRouter);
 app.use('/api/contact', contactRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/devtools', devtoolsRouter);
+app.use('/api/production', productionRouter);
 
 // Endpoint de auditoría - Obtener logs
 app.get('/api/audit/logs', async (req, res) => {
