@@ -1,0 +1,659 @@
+{
+  "info": {
+    "_postman_id": "dobleyo-production-apis",
+    "name": "DobleYo - Production Module",
+    "description": "Collection de endpoints para el módulo de producción de DobleYo",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "🏭 Production Orders",
+      "item": [
+        {
+          "name": "GET - List Orders",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function() {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Response has success flag', function() {",
+                  "  pm.expect(pm.response.json().success).to.equal(true);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/production/orders?state=&work_center_id=&limit=50&offset=0",
+              "host": ["{{base_url}}"],
+              "path": ["api", "production", "orders"],
+              "query": [
+                {
+                  "key": "state",
+                  "value": ""
+                },
+                {
+                  "key": "work_center_id",
+                  "value": ""
+                },
+                {
+                  "key": "limit",
+                  "value": "50"
+                },
+                {
+                  "key": "offset",
+                  "value": "0"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET - Order Detail",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/production/orders/{{order_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "production", "orders", "{{order_id}}"]
+            }
+          }
+        },
+        {
+          "name": "POST - Create Order",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "pm.environment.set('order_id', jsonData.data.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"bom_id\": 1, \"product_id\": \"CAFE-TOSTADO-001\", \"planned_quantity\": 50, \"quantity_unit\": \"kg\", \"scheduled_date\": \"2026-01-24\", \"work_center_id\": 1, \"roasting_equipment_id\": 1, \"responsible_user_id\": 4, \"priority\": \"normal\", \"notes\": \"Pedido de prueba\"}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/production/orders",
+              "host": ["{{base_url}}"],
+              "path": ["api", "production", "orders"]
+            }
+          }
+        },
+        {
+          "name": "PUT - Update Order",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"planned_quantity\": 60, \"priority\": \"alta\", \"notes\": \"Cantidad aumentada\"}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/production/orders/{{order_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "production", "orders", "{{order_id}}"]
+            }
+          }
+        },
+        {
+          "name": "POST - Confirm Order",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/production/orders/{{order_id}}/confirm",
+              "host": ["{{base_url}}"],
+              "path": ["api", "production", "orders", "{{order_id}}", "confirm"]
+            }
+          }
+        },
+        {
+          "name": "POST - Start Order",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/production/orders/{{order_id}}/start",
+              "host": ["{{base_url}}"],
+              "path": ["api", "production", "orders", "{{order_id}}", "start"]
+            }
+          }
+        },
+        {
+          "name": "POST - Pause Order",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/production/orders/{{order_id}}/pause",
+              "host": ["{{base_url}}"],
+              "path": ["api", "production", "orders", "{{order_id}}", "pause"]
+            }
+          }
+        },
+        {
+          "name": "POST - Resume Order",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/production/orders/{{order_id}}/resume",
+              "host": ["{{base_url}}"],
+              "path": ["api", "production", "orders", "{{order_id}}", "resume"]
+            }
+          }
+        },
+        {
+          "name": "POST - Complete Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"produced_quantity\": 42.75}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/production/orders/{{order_id}}/complete",
+              "host": ["{{base_url}}"],
+              "path": ["api", "production", "orders", "{{order_id}}", "complete"]
+            }
+          }
+        },
+        {
+          "name": "POST - Cancel Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"reason\": \"Equipo averiado\"}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/production/orders/{{order_id}}/cancel",
+              "host": ["{{base_url}}"],
+              "path": ["api", "production", "orders", "{{order_id}}", "cancel"]
+            }
+          }
+        },
+        {
+          "name": "DELETE - Delete Order",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/production/orders/{{order_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "production", "orders", "{{order_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔥 Roast Batches",
+      "item": [
+        {
+          "name": "GET - List Batches",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/production/batches?production_order_id=&limit=50&offset=0",
+              "host": ["{{base_url}}"],
+              "path": ["api", "production", "batches"],
+              "query": [
+                {
+                  "key": "production_order_id",
+                  "value": ""
+                },
+                {
+                  "key": "limit",
+                  "value": "50"
+                },
+                {
+                  "key": "offset",
+                  "value": "0"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET - Batch Detail",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/production/batches/{{batch_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "production", "batches", "{{batch_id}}"]
+            }
+          }
+        },
+        {
+          "name": "POST - Create Batch",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "pm.environment.set('batch_id', jsonData.data.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"production_order_id\": {{order_id}}, \"roast_profile_id\": 2, \"roasting_equipment_id\": 1, \"green_coffee_lot_id\": 1, \"green_coffee_weight_kg\": 50, \"operator_id\": 4}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/production/batches",
+              "host": ["{{base_url}}"],
+              "path": ["api", "production", "batches"]
+            }
+          }
+        },
+        {
+          "name": "POST - First Crack",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"time_minutes\": 8, \"temperature_celsius\": 195}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/production/batches/{{batch_id}}/first-crack",
+              "host": ["{{base_url}}"],
+              "path": ["api", "production", "batches", "{{batch_id}}", "first-crack"]
+            }
+          }
+        },
+        {
+          "name": "POST - Second Crack",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"time_minutes\": 11}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/production/batches/{{batch_id}}/second-crack",
+              "host": ["{{base_url}}"],
+              "path": ["api", "production", "batches", "{{batch_id}}", "second-crack"]
+            }
+          }
+        },
+        {
+          "name": "POST - Complete Batch",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"roasted_coffee_weight_kg\": 42.75, \"drop_temperature_celsius\": 205, \"color_agtron\": 65, \"quality_score\": 8.5, \"quality_notes\": \"Excelente desarrollo\", \"ambient_temperature_celsius\": 24, \"humidity_percentage\": 55}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/production/batches/{{batch_id}}/complete",
+              "host": ["{{base_url}}"],
+              "path": ["api", "production", "batches", "{{batch_id}}", "complete"]
+            }
+          }
+        },
+        {
+          "name": "POST - Approve Batch",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"approved_by_user_id\": 3}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/production/batches/{{batch_id}}/approve",
+              "host": ["{{base_url}}"],
+              "path": ["api", "production", "batches", "{{batch_id}}", "approve"]
+            }
+          }
+        },
+        {
+          "name": "POST - Reject Batch",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"rejected_by_user_id\": 3, \"rejection_reason\": \"Defecto en el tostado\"}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/production/batches/{{batch_id}}/reject",
+              "host": ["{{base_url}}"],
+              "path": ["api", "production", "batches", "{{batch_id}}", "reject"]
+            }
+          }
+        },
+        {
+          "name": "GET - Batch Comparison",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/production/batches/{{batch_id}}/comparison",
+              "host": ["{{base_url}}"],
+              "path": ["api", "production", "batches", "{{batch_id}}", "comparison"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "✅ Quality Control",
+      "item": [
+        {
+          "name": "GET - List Quality Checks",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/production/quality?check_type=&limit=50&offset=0",
+              "host": ["{{base_url}}"],
+              "path": ["api", "production", "quality"],
+              "query": [
+                {
+                  "key": "check_type",
+                  "value": ""
+                },
+                {
+                  "key": "limit",
+                  "value": "50"
+                },
+                {
+                  "key": "offset",
+                  "value": "0"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET - Quality Check Detail",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/production/quality/{{quality_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "production", "quality", "{{quality_id}}"]
+            }
+          }
+        },
+        {
+          "name": "POST - Create Quality Check",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"roast_batch_id\": {{batch_id}}, \"check_type\": \"post_tostado\", \"inspector_id\": 3, \"observations\": \"Café de buena calidad\"}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/production/quality",
+              "host": ["{{base_url}}"],
+              "path": ["api", "production", "quality"]
+            }
+          }
+        },
+        {
+          "name": "POST - Cupping/Catation",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "pm.environment.set('quality_id', jsonData.data.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"roast_batch_id\": {{batch_id}}, \"inspector_id\": 3, \"aroma_score\": 8.5, \"flavor_score\": 8.75, \"acidity_score\": 8.5, \"body_score\": 8.25, \"balance_score\": 8.5, \"aftertaste_score\": 8.25, \"sweetness_score\": 8, \"uniformity_score\": 8.75, \"clean_cup_score\": 9, \"moisture_percentage\": 11.2, \"observations\": \"Café de excelente calidad\"}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/production/quality/cupping",
+              "host": ["{{base_url}}"],
+              "path": ["api", "production", "quality", "cupping"]
+            }
+          }
+        },
+        {
+          "name": "PUT - Update Quality Check",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"observations\": \"Revisado - Excelente\"}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/production/quality/{{quality_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "production", "quality", "{{quality_id}}"]
+            }
+          }
+        },
+        {
+          "name": "POST - Approve Quality Check",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"approved_by_user_id\": 3}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/production/quality/{{quality_id}}/approve",
+              "host": ["{{base_url}}"],
+              "path": ["api", "production", "quality", "{{quality_id}}", "approve"]
+            }
+          }
+        },
+        {
+          "name": "GET - Quality Statistics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/production/quality/stats/summary",
+              "host": ["{{base_url}}"],
+              "path": ["api", "production", "quality", "stats", "summary"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📊 Dashboard & Analytics",
+      "item": [
+        {
+          "name": "GET - Main Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/production/dashboard",
+              "host": ["{{base_url}}"],
+              "path": ["api", "production", "dashboard"]
+            }
+          }
+        },
+        {
+          "name": "GET - Efficiency Analysis",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/production/dashboard/efficiency?date_from=2026-01-15&date_to=2026-01-25",
+              "host": ["{{base_url}}"],
+              "path": ["api", "production", "dashboard", "efficiency"],
+              "query": [
+                {
+                  "key": "date_from",
+                  "value": "2026-01-15"
+                },
+                {
+                  "key": "date_to",
+                  "value": "2026-01-25"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET - Operators Performance",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/production/dashboard/operators",
+              "host": ["{{base_url}}"],
+              "path": ["api", "production", "dashboard", "operators"]
+            }
+          }
+        },
+        {
+          "name": "GET - System Alerts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/production/dashboard/alerts",
+              "host": ["{{base_url}}"],
+              "path": ["api", "production", "dashboard", "alerts"]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "order_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "batch_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "quality_id",
+      "value": "1",
+      "type": "string"
+    }
+  ]
+}

@@ -3,6 +3,7 @@
 ## ⚡ Inicio en 5 Minutos
 
 ### 1️⃣ Preparar Base de Datos (2 minutos)
+
 ```bash
 # Conectar a MySQL y ejecutar schema
 mysql -u root -p
@@ -15,12 +16,14 @@ SOURCE db/verify_production_module.sql;
 ```
 
 ### 2️⃣ Verificar Datos (1 minuto)
+
 ```bash
 # Abrir navegador y verificar:
 mysql -u root -p dobleyo < db/verify_production_module.sql
 ```
 
 ### 3️⃣ Iniciar Servidor (1 minuto)
+
 ```bash
 # Terminal 1: Iniciar servidor Node.js
 cd /home/mike/dev/work/github.com/dobleyo
@@ -33,6 +36,7 @@ node server/index.js
 ```
 
 ### 4️⃣ Verificar API (1 minuto)
+
 ```bash
 # Terminal 2: Probar endpoints
 curl http://localhost:3000/api/production/orders | jq
@@ -45,6 +49,7 @@ curl http://localhost:3000/api/production/orders | jq
 ## 🧪 Testing
 
 ### Ejecutar Suite de Pruebas Completa
+
 ```bash
 # Terminal 2
 bash test_production_apis.sh
@@ -54,6 +59,7 @@ bash test_production_apis.sh
 ```
 
 ### Probar Endpoint Individual
+
 ```bash
 # Listar órdenes
 curl http://localhost:3000/api/production/orders
@@ -77,6 +83,7 @@ curl -X POST http://localhost:3000/api/production/orders \
 ## 📊 Monitoreo
 
 ### Dashboard del Sistema
+
 ```bash
 # Terminal 3: Monitorar logs
 tail -f server.log
@@ -86,6 +93,7 @@ watch -n 2 "mysql -u root -p dobleyo -e 'SELECT COUNT(*) as orders FROM producti
 ```
 
 ### Estadísticas en Tiempo Real
+
 ```bash
 # Ver órdenes activas
 curl http://localhost:3000/api/production/orders?state=en_progreso
@@ -105,6 +113,7 @@ curl http://localhost:3000/api/production/dashboard | jq .data
 ## 🔧 Troubleshooting
 
 ### Error: "Cannot find module 'express'"
+
 ```bash
 # Instalar dependencias
 npm install
@@ -112,6 +121,7 @@ npm install express mysql2 uuid cors
 ```
 
 ### Error: "Connection refused"
+
 ```bash
 # Verificar MySQL está running
 sudo systemctl status mysql
@@ -121,6 +131,7 @@ sudo systemctl start mysql
 ```
 
 ### Error: "Table doesn't exist"
+
 ```bash
 # Re-ejecutar schema
 mysql -u root -p dobleyo < db/schema.sql
@@ -128,6 +139,7 @@ mysql -u root -p dobleyo < db/seed_data.sql
 ```
 
 ### Error: "Port 3000 in use"
+
 ```bash
 # Cambiar puerto en server/index.js
 # O matar proceso anterior
@@ -164,6 +176,7 @@ sudo kill -9 <PID>
 ## 🎯 Casos de Uso Principales
 
 ### Caso 1: Crear Orden y Ejecutarla
+
 ```bash
 # 1. Crear
 ORDER_ID=$(curl -s -X POST http://localhost:3000/api/production/orders \
@@ -232,6 +245,7 @@ curl -X POST http://localhost:3000/api/production/orders/$ORDER_ID/complete \
 ```
 
 ### Caso 2: Pausar y Reanudar Orden
+
 ```bash
 # Pausar
 curl -X POST http://localhost:3000/api/production/orders/1/pause
@@ -242,6 +256,7 @@ curl -X POST http://localhost:3000/api/production/orders/1/resume
 ```
 
 ### Caso 3: Cancelar Orden
+
 ```bash
 curl -X POST http://localhost:3000/api/production/orders/1/cancel \
   -H "Content-Type: application/json" \
@@ -253,6 +268,7 @@ curl -X POST http://localhost:3000/api/production/orders/1/cancel \
 ## 📊 Ejemplos de Respuestas
 
 ### GET /orders
+
 ```json
 {
   "success": true,
@@ -272,6 +288,7 @@ curl -X POST http://localhost:3000/api/production/orders/1/cancel \
 ```
 
 ### GET /dashboard
+
 ```json
 {
   "success": true,
@@ -313,16 +330,20 @@ curl -X POST http://localhost:3000/api/production/orders/1/cancel \
 ## 🆘 Soporte
 
 ### Documentación
+
 - [PRODUCTION_API_DOCS.md](PRODUCTION_API_DOCS.md) - Referencia completa de endpoints
 - [PRODUCTION_SUMMARY.md](PRODUCTION_SUMMARY.md) - Resumen ejecutivo
 
 ### Testing
+
 - [test_production_apis.sh](test_production_apis.sh) - Suite de pruebas automáticas
 
 ### Verificación
+
 - [verify_production_module.sql](verify_production_module.sql) - Queries de diagnóstico
 
 ### Logs
+
 ```bash
 # Ver logs en tiempo real
 tail -f server.log
