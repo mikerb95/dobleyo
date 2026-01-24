@@ -1,6 +1,7 @@
 # 🏭 APIs de Producción - Documentación Completa
 
 ## 📍 Base URL
+
 ```
 http://localhost:3000/api/production
 ```
@@ -10,6 +11,7 @@ http://localhost:3000/api/production
 ## 📋 ÍNDICE DE ENDPOINTS
 
 ### Órdenes de Producción
+
 - [GET /orders](#get-ordenes)
 - [GET /orders/:id](#get-orden-detalle)
 - [POST /orders](#post-crear-orden)
@@ -23,6 +25,7 @@ http://localhost:3000/api/production
 - [POST /orders/:id/cancel](#post-cancelar-orden)
 
 ### Batches de Tostado
+
 - [GET /batches](#get-batches)
 - [GET /batches/:id](#get-batch-detalle)
 - [POST /batches](#post-crear-batch)
@@ -34,6 +37,7 @@ http://localhost:3000/api/production
 - [GET /batches/:id/comparison](#get-comparacion-batch)
 
 ### Control de Calidad
+
 - [GET /quality](#get-inspecciones)
 - [GET /quality/:id](#get-inspeccion-detalle)
 - [POST /quality](#post-crear-inspeccion)
@@ -43,6 +47,7 @@ http://localhost:3000/api/production
 - [GET /quality/stats/summary](#get-estadisticas-calidad)
 
 ### Dashboard
+
 - [GET /dashboard](#get-dashboard-principal)
 - [GET /dashboard/efficiency](#get-eficiencia)
 - [GET /dashboard/operators](#get-operadores)
@@ -57,9 +62,11 @@ http://localhost:3000/api/production
 ### ÓRDENES DE PRODUCCIÓN
 
 #### <a name="get-ordenes"></a> GET /orders
+
 Lista órdenes de producción con filtros
 
 **Query Parameters:**
+
 ```
 - state: 'borrador' | 'confirmada' | 'en_progreso' | 'pausada' | 'completada' | 'cancelada'
 - work_center_id: número
@@ -70,11 +77,13 @@ Lista órdenes de producción con filtros
 ```
 
 **Ejemplo:**
+
 ```bash
 curl -X GET 'http://localhost:3000/api/production/orders?state=en_progreso&limit=10'
 ```
 
 **Respuesta:**
+
 ```json
 {
   "success": true,
@@ -100,14 +109,17 @@ curl -X GET 'http://localhost:3000/api/production/orders?state=en_progreso&limit
 ---
 
 #### <a name="get-orden-detalle"></a> GET /orders/:id
+
 Obtiene detalle completo de una orden
 
 **Ejemplo:**
+
 ```bash
 curl -X GET 'http://localhost:3000/api/production/orders/1'
 ```
 
 **Respuesta:**
+
 ```json
 {
   "success": true,
@@ -154,9 +166,11 @@ curl -X GET 'http://localhost:3000/api/production/orders/1'
 ---
 
 #### <a name="post-crear-orden"></a> POST /orders
+
 Crea nueva orden de producción
 
 **Body:**
+
 ```json
 {
   "bom_id": 1,
@@ -173,6 +187,7 @@ Crea nueva orden de producción
 ```
 
 **Ejemplo:**
+
 ```bash
 curl -X POST 'http://localhost:3000/api/production/orders' \
   -H 'Content-Type: application/json' \
@@ -187,6 +202,7 @@ curl -X POST 'http://localhost:3000/api/production/orders' \
 ```
 
 **Respuesta:**
+
 ```json
 {
   "success": true,
@@ -202,9 +218,11 @@ curl -X POST 'http://localhost:3000/api/production/orders' \
 ---
 
 #### <a name="put-actualizar-orden"></a> PUT /orders/:id
+
 Actualiza orden de producción
 
 **Body:**
+
 ```json
 {
   "planned_quantity": 60,
@@ -217,14 +235,17 @@ Actualiza orden de producción
 ---
 
 #### <a name="delete-eliminar-orden"></a> DELETE /orders/:id
+
 Elimina orden (solo si está en borrador)
 
 ---
 
 #### <a name="post-confirmar-orden"></a> POST /orders/:id/confirm
+
 Confirma orden: `borrador` → `confirmada`
 
 **Respuesta:**
+
 ```json
 {
   "success": true,
@@ -236,24 +257,29 @@ Confirma orden: `borrador` → `confirmada`
 ---
 
 #### <a name="post-iniciar-orden"></a> POST /orders/:id/start
+
 Inicia orden: `confirmada` → `en_progreso`
 
 ---
 
 #### <a name="post-pausar-orden"></a> POST /orders/:id/pause
+
 Pausa orden: `en_progreso` → `pausada`
 
 ---
 
 #### <a name="post-reanudar-orden"></a> POST /orders/:id/resume
+
 Reanuda orden: `pausada` → `en_progreso`
 
 ---
 
 #### <a name="post-completar-orden"></a> POST /orders/:id/complete
+
 Completa orden: `en_progreso` → `completada`
 
 **Body:**
+
 ```json
 {
   "produced_quantity": 48.5
@@ -263,9 +289,11 @@ Completa orden: `en_progreso` → `completada`
 ---
 
 #### <a name="post-cancelar-orden"></a> POST /orders/:id/cancel
+
 Cancela orden desde cualquier estado
 
 **Body:**
+
 ```json
 {
   "reason": "Equipo averiado"
@@ -277,9 +305,11 @@ Cancela orden desde cualquier estado
 ### BATCHES DE TOSTADO
 
 #### <a name="get-batches"></a> GET /batches
+
 Lista batches de tostado
 
 **Query Parameters:**
+
 ```
 - production_order_id: número
 - operator_id: número
@@ -293,9 +323,11 @@ Lista batches de tostado
 ---
 
 #### <a name="post-crear-batch"></a> POST /batches
+
 Crea nuevo batch de tostado
 
 **Body:**
+
 ```json
 {
   "production_order_id": 1,
@@ -308,6 +340,7 @@ Crea nuevo batch de tostado
 ```
 
 **Ejemplo:**
+
 ```bash
 curl -X POST 'http://localhost:3000/api/production/batches' \
   -H 'Content-Type: application/json' \
@@ -323,9 +356,11 @@ curl -X POST 'http://localhost:3000/api/production/batches' \
 ---
 
 #### <a name="post-primer-crack"></a> POST /batches/:id/first-crack
+
 Registra primer crack
 
 **Body:**
+
 ```json
 {
   "time_minutes": 8,
@@ -336,9 +371,11 @@ Registra primer crack
 ---
 
 #### <a name="post-segundo-crack"></a> POST /batches/:id/second-crack
+
 Registra segundo crack
 
 **Body:**
+
 ```json
 {
   "time_minutes": 11
@@ -348,9 +385,11 @@ Registra segundo crack
 ---
 
 #### <a name="post-completar-batch"></a> POST /batches/:id/complete
+
 Finaliza tostado
 
 **Body:**
+
 ```json
 {
   "roasted_coffee_weight_kg": 42.75,
@@ -364,13 +403,14 @@ Finaliza tostado
 ```
 
 **Respuesta:**
+
 ```json
 {
   "success": true,
   "message": "Roast completed",
   "data": {
     "roasted_weight": 42.75,
-    "weight_loss_percentage": 14.50,
+    "weight_loss_percentage": 14.5,
     "actual_duration_minutes": 15,
     "development_time_ratio": 28.57
   }
@@ -380,9 +420,11 @@ Finaliza tostado
 ---
 
 #### <a name="post-aprobar-batch"></a> POST /batches/:id/approve
+
 Aprueba batch
 
 **Body:**
+
 ```json
 {
   "approved_by_user_id": 3
@@ -392,9 +434,11 @@ Aprueba batch
 ---
 
 #### <a name="get-comparacion-batch"></a> GET /batches/:id/comparison
+
 Compara batch con perfil objetivo
 
 **Respuesta:**
+
 ```json
 {
   "success": true,
@@ -433,9 +477,11 @@ Compara batch con perfil objetivo
 ### CONTROL DE CALIDAD
 
 #### <a name="post-catacion"></a> POST /quality/cupping
+
 Registra catación (cupping)
 
 **Body:**
+
 ```json
 {
   "roast_batch_id": 1,
@@ -455,6 +501,7 @@ Registra catación (cupping)
 ```
 
 **Respuesta:**
+
 ```json
 {
   "success": true,
@@ -473,9 +520,11 @@ Registra catación (cupping)
 ### DASHBOARD
 
 #### <a name="get-dashboard-principal"></a> GET /dashboard
+
 Dashboard operativo completo
 
 **Respuesta:**
+
 ```json
 {
   "success": true,
@@ -539,15 +588,18 @@ Dashboard operativo completo
 ---
 
 #### <a name="get-eficiencia"></a> GET /dashboard/efficiency
+
 Análisis de eficiencia por período
 
 **Query Parameters:**
+
 ```
 - date_from: YYYY-MM-DD
 - date_to: YYYY-MM-DD
 ```
 
 **Ejemplo:**
+
 ```bash
 curl -X GET 'http://localhost:3000/api/production/dashboard/efficiency?date_from=2026-01-15&date_to=2026-01-23'
 ```
@@ -555,11 +607,13 @@ curl -X GET 'http://localhost:3000/api/production/dashboard/efficiency?date_from
 ---
 
 #### <a name="get-operadores"></a> GET /dashboard/operators
+
 Performance de operadores
 
 ---
 
 #### <a name="get-alertas"></a> GET /dashboard/alerts
+
 Alertas y anomalías del sistema
 
 ---
@@ -567,6 +621,7 @@ Alertas y anomalías del sistema
 ## 🔄 FLUJO DE PRODUCCIÓN TÍPICO
 
 ### 1. Crear Orden
+
 ```bash
 POST /orders
 {
@@ -579,18 +634,21 @@ POST /orders
 ```
 
 ### 2. Confirmar Orden
+
 ```bash
 POST /orders/1/confirm
 → state = "confirmada"
 ```
 
 ### 3. Iniciar Orden
+
 ```bash
 POST /orders/1/start
 → state = "en_progreso"
 ```
 
 ### 4. Crear Batch de Tostado
+
 ```bash
 POST /batches
 {
@@ -604,6 +662,7 @@ POST /batches
 ```
 
 ### 5. Registrar Primer Crack
+
 ```bash
 POST /batches/1/first-crack
 {
@@ -613,6 +672,7 @@ POST /batches/1/first-crack
 ```
 
 ### 6. Registrar Segundo Crack
+
 ```bash
 POST /batches/1/second-crack
 {
@@ -621,6 +681,7 @@ POST /batches/1/second-crack
 ```
 
 ### 7. Completar Tostado
+
 ```bash
 POST /batches/1/complete
 {
@@ -632,6 +693,7 @@ POST /batches/1/complete
 ```
 
 ### 8. Control de Calidad (Catación)
+
 ```bash
 POST /quality/cupping
 {
@@ -644,6 +706,7 @@ POST /quality/cupping
 ```
 
 ### 9. Aprobar Batch
+
 ```bash
 POST /batches/1/approve
 {
@@ -652,6 +715,7 @@ POST /batches/1/approve
 ```
 
 ### 10. Completar Orden
+
 ```bash
 POST /orders/1/complete
 {
@@ -667,11 +731,13 @@ POST /orders/1/complete
 ⚠️ **ANTES DE USAR ESTOS ENDPOINTS:**
 
 Ejecuta el script de datos iniciales:
+
 ```bash
 mysql -u root -p dobleyo < db/seed_data.sql
 ```
 
 Esto insertará:
+
 - Usuarios de prueba
 - Equipos de tostado
 - Productos y BOMs
