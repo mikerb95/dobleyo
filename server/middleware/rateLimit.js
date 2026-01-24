@@ -1,4 +1,4 @@
-import rateLimit from 'express-rate-limit';
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 
 /**
  * Rate limiters para endpoints críticos de autenticación
@@ -33,9 +33,7 @@ export const registerLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   skipSuccessfulRequests: true, // Solo contar fallos
-  keyGenerator: (req) => {
-    return req.ip;
-  }
+  keyGenerator: ipKeyGenerator
 });
 
 // Limiter para refresh token - detectar uso abusivo
@@ -48,9 +46,7 @@ export const refreshLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req) => {
-    return req.ip;
-  }
+  keyGenerator: ipKeyGenerator
 });
 
 // Limiter general para API - prevenir abuso general
@@ -63,7 +59,5 @@ export const apiLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req) => {
-    return req.ip;
-  }
+  keyGenerator: ipKeyGenerator
 });
