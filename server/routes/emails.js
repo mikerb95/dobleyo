@@ -13,8 +13,8 @@ export const emailRouter = express.Router();
 // Rate limiting para prevenir spam
 emailRouter.use(apiLimiter);
 
-// POST /api/emails/account-confirmation (solo sistema interno)
-emailRouter.post('/account-confirmation', authenticateToken, async (req, res) => {
+// POST /api/emails/account-confirmation (PROTEGIDO: solo admin)
+emailRouter.post('/account-confirmation', authenticateToken, requireRole('admin'), async (req, res) => {
   try {
     const { email, name, confirmationToken } = req.body;
 
@@ -36,8 +36,8 @@ emailRouter.post('/account-confirmation', authenticateToken, async (req, res) =>
   }
 });
 
-// POST /api/emails/order-confirmation (solo admin o sistema)
-emailRouter.post('/order-confirmation', authenticateToken, async (req, res) => {
+// POST /api/emails/order-confirmation (PROTEGIDO: solo admin)
+emailRouter.post('/order-confirmation', authenticateToken, requireRole('admin'), async (req, res) => {
   try {
     const { email, customerName, orderId, items, subtotal, shipping, total, shippingAddress } = req.body;
 

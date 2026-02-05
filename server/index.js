@@ -76,8 +76,8 @@ app.use('/api/users', usersRouter);
 app.use('/api/devtools', devtoolsRouter);
 app.use('/api/production', productionRouter);
 
-// Endpoint de auditoría - Obtener logs
-app.get('/api/audit/logs', async (req, res) => {
+// Endpoint de auditoría - Obtener logs (PROTEGIDO: solo admin)
+app.get('/api/audit/logs', authenticateToken, requireRole('admin'), async (req, res) => {
   try {
     const { action, entity_type, user_id, limit = 100, offset = 0 } = req.query;
 
@@ -150,8 +150,8 @@ app.get('/api/audit/logs', async (req, res) => {
   }
 });
 
-// Endpoint de auditoría - Estadísticas
-app.get('/api/audit/stats', async (req, res) => {
+// Endpoint de auditoría - Estadísticas (PROTEGIDO: solo admin)
+app.get('/api/audit/stats', authenticateToken, requireRole('admin'), async (req, res) => {
   try {
     const result = await query(`
       SELECT 
@@ -171,8 +171,8 @@ app.get('/api/audit/stats', async (req, res) => {
   }
 });
 
-// Endpoint de auditoría - Lista de acciones
-app.get('/api/audit/actions', async (req, res) => {
+// Endpoint de auditoría - Lista de acciones (PROTEGIDO: solo admin)
+app.get('/api/audit/actions', authenticateToken, requireRole('admin'), async (req, res) => {
   try {
     const result = await query(
       `SELECT DISTINCT action FROM audit_logs ORDER BY action`

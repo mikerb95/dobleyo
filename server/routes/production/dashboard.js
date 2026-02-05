@@ -1,6 +1,12 @@
-const express = require('express');
+import express from 'express';
+import { query as db } from '../../db.js';
+import { authenticateToken, requireRole } from '../../auth.js';
+
 const router = express.Router();
-const db = require('../../db');
+
+// PROTECCIÓN: Requerir autenticación y rol admin/caficultor para todas las rutas de producción
+router.use(authenticateToken);
+router.use(requireRole(['admin', 'caficultor']));
 
 // ==========================================
 // DASHBOARD OPERATIVO

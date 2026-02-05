@@ -178,10 +178,14 @@ const products = [
   }
 ];
 
-setupRouter.get('/', async (req, res) => {
-  // Protection via environment variable
-  if (!SETUP_KEY || req.query.key !== SETUP_KEY) {
-    return res.status(403).json({ error: 'Unauthorized. Set SETUP_SECRET_KEY env var and pass ?key=<value>' });
+// PROTECCIÓN: Setup debe ser POST con secreto en header, nunca GET
+setupRouter.post('/', async (req, res) => {
+  // Requerir secreto en header Authorization, no en query string
+  const authHeader = req.headers['authorization'] || '';
+  const providedKey = authHeader.replace('Bearer ', '');
+  
+  if (!SETUP_KEY || providedKey !== SETUP_KEY) {
+    return res.status(403).json({ error: 'Unauthorized. Set SETUP_SECRET_KEY env var and pass Authorization: Bearer <value>' });
   }
 
   const logs = [];
@@ -279,7 +283,14 @@ setupRouter.get('/', async (req, res) => {
   }
 });
 // Nuevo endpoint completo con verificación detallada
+// PROTECCIÓN: Full setup también require secreto en header
 setupRouter.post('/full-setup', async (req, res) => {
+  const authHeader = req.headers['authorization'] || '';
+  const providedKey = authHeader.replace('Bearer ', '');
+  
+  if (!SETUP_KEY || providedKey !== SETUP_KEY) {
+    return res.status(403).json({ error: 'Unauthorized. Set SETUP_SECRET_KEY env var and pass Authorization: Bearer <value>' });
+  }
   const logs = [];
   const log = (msg) => {
     console.log(msg);

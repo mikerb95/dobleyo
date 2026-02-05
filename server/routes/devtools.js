@@ -5,7 +5,13 @@ import { apiLimiter } from '../middleware/rateLimit.js';
 
 export const devtoolsRouter = express.Router();
 
-// Aplicar seguridad y autenticación a todas las rutas
+// PROTECCIÓN: Bloquear devtools en producción, forzar autenticación admin
+devtoolsRouter.use((req, res, next) => {
+  if (process.env.NODE_ENV === 'production') {
+    return res.status(403).json({ error: 'Developer tools are disabled in production' });
+  }
+  next();
+});
 devtoolsRouter.use(apiLimiter);
 devtoolsRouter.use(authenticateToken);
 devtoolsRouter.use(requireRole(['admin'])); // Solo admin puede usar estas herramientas

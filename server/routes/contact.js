@@ -1,9 +1,11 @@
 import express from 'express';
+import { apiLimiter } from '../middleware/rateLimit.js';
 
 export const contactRouter = express.Router();
 
+// PROTECCIÓN: Rate limit en contacto público
 // POST - Enviar mensaje de contacto
-contactRouter.post('/', async (req, res) => {
+contactRouter.post('/', apiLimiter, async (req, res) => {
   try {
     const { name, email, phone, subject, message } = req.body;
 

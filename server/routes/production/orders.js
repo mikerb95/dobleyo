@@ -1,8 +1,13 @@
 import express from 'express';
 import { query } from '../../db.js';
+import { authenticateToken, requireRole } from '../../auth.js';
 import { v4 as uuidv4 } from 'uuid';
 
 export const ordersRouter = express.Router();
+
+// PROTECCIÓN: Requerir autenticación y rol admin/caficultor para todas las rutas de producción
+ordersRouter.use(authenticateToken);
+ordersRouter.use(requireRole(['admin', 'caficultor']));
 
 // ==========================================
 // ÓRDENES DE PRODUCCIÓN - CRUD
