@@ -2,6 +2,43 @@
 
 ---
 
+## 📅 2026-03-01 — Fase 1: Estabilización PostgreSQL y Bug Fixes (Agente: Claude)
+
+### Archivos Modificados
+
+- `server/db.js` — Migración completa de mysql2/promise a `pg` (node-postgres). Pool con SSL, max 5 conexiones, wrapper `query(text, params)` compatible con `$1, $2` placeholders de PostgreSQL.
+- `package.json` — Reemplaza dependencia `mysql2` por `pg@^8.13.1`. Sin UUID (no es necesario con PG IDENTITY).
+- `api/index.js` — Sincronización de routers: se agregan caficultorRouter, emailRouter, contactRouter, productionRouter y auditRouter que existían en `server/index.js` pero no en el serverless de Vercel.
+- `public/assets/css/styles.css` — Corrige llave `}` extra (BUG-005) en bloque `.dropdown-item` línea 543.
+- `server/routes/production/batches.js` — Reescritura completa: exporta `batchesRouter`, convierte todos los placeholders `?` a `$n`, cambia `await db.query()` a `await query()`, `[rows]` destructuring a `{ rows }`. Placeholders dinámicos usan `$${params.length + 1}`.
+- `server/routes/production/orders.js` — Reescritura completa: corrige BUG-001 (todas las rutas usaban `router.` no declarado, ahora usan `ordersRouter.`), elimina import de uuid no usado, convierte placeholders a `$n`, usa `COALESCE(...) ||` en lugar de `CONCAT(IFNULL(...))`.
+- `server/routes/production/quality.js` — Reescritura completa: exporta `qualityRouter`, convierte placeholders, convierte `passed = 1` a `passed = TRUE`.
+- `server/routes/production/dashboard.js` — Reescritura completa: exporta `dashboardRouter`, convierte todas las funciones MySQL a PostgreSQL: `DATE(field)` → `field::date`, `DATE_SUB(?, INTERVAL n DAY)` → `NOW() - INTERVAL 'n days'`, `CURDATE()` → `CURRENT_DATE`, `GROUP_CONCAT` → `STRING_AGG`.
+
+### Archivos Creados
+
+- `server/migrations/convert-pg-placeholders.js` — Script utilitario para convertir placeholders MySQL (`?`) a PostgreSQL (`$n`) en template literals SQL.
+
+### Bugs Corregidos
+
+- **BUG-001** 🔴: `orders.js` declaraba `ordersRouter` pero usaba `router.` (no declarado) en todas las rutas — crash en runtime. Resuelto.
+- **BUG-002** 🔴: `api/index.js` no montaba caficultorRouter, emailRouter, contactRouter, productionRouter ni audit. Resuelto.
+- **BUG-005** 🟡: `}` extra en styles.css línea 543. Resuelto.
+- **DEBT-001** 🟡: README decía PostgreSQL pero código usaba MySQL — migración completa a pg. Resuelto.
+
+### Decisiones Técnicas
+
+- Driver `pg` (node-postgres) en lugar de mysql2: estándar para PostgreSQL, compatible con Supabase/Neon/Railway/Vercel Postgres.
+- Placeholders dinámicos (`$${params.length + 1}`) para queries con filtros opcionales — evita re-numeración manual al agregar/quitar condiciones.
+- `RETURNING id` en INSERTs — aprovecha el retorno nativo de PostgreSQL en lugar de `insertId` de MySQL.
+- `field::date` para comparar fechas sin tiempo — más idiomático en PostgreSQL que `DATE()`.
+
+### Impacto
+
+El módulo de producción es ahora funcional en PostgreSQL. La API de Vercel (`api/index.js`) tiene paridad completa con el servidor standalone. La base de datos está migrada al driver correcto con placeholders seguros.
+
+---
+
 ## 📅 2026-03-01 — Fase 0: Fundamentos Documentales y Gobernanza IA (Agente: Claude)
 
 ### Archivos Creados

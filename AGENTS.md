@@ -287,11 +287,11 @@ Todo agente que cree o modifique páginas DEBE cumplir:
 
 | ID | Severidad | Descripción | Estado |
 |---|---|---|---|
-| BUG-001 | 🔴 Crítico | Módulo production usa CommonJS (`require`) en proyecto ESM | Pendiente Fase 1 |
-| BUG-002 | 🔴 Crítico | `api/index.js` no monta productionRouter, emailRouter, contactRouter, caficultorRouter, audit endpoints | Pendiente Fase 1 |
+| BUG-001 | 🔴 Crítico | Módulo production usa CommonJS (`require`) en proyecto ESM | ✅ Resuelto Fase 1 |
+| BUG-002 | 🔴 Crítico | `api/index.js` no monta productionRouter, emailRouter, contactRouter, caficultorRouter, audit endpoints | ✅ Resuelto Fase 1 |
 | BUG-003 | 🔴 Crítico | 3 fuentes de datos de productos desincronizadas (products.ts, index.astro hardcoded, mobile.astro hardcoded) | Pendiente Fase 1 |
 | BUG-004 | 🟡 Mayor | `/en/` hereda `<html lang="es">` de Layout.astro | Pendiente Fase 9 |
-| BUG-005 | 🟡 Mayor | Error CSS en styles.css — llave `}` extra | Pendiente Fase 1 |
+| BUG-005 | 🟡 Mayor | Error CSS en styles.css — llave `}` extra | ✅ Resuelto Fase 1 |
 | BUG-006 | 🟡 Mayor | Checkout no funcional — sin pasarela de pagos, sin órdenes | Pendiente Fase 4 |
 | BUG-007 | 🟠 Moderado | store.js es in-memory Map — órdenes se pierden al reiniciar | Pendiente Fase 4 |
 | BUG-008 | 🟠 Moderado | Formulario de contacto solo hace console.log | Pendiente Fase 4 |
@@ -299,7 +299,7 @@ Todo agente que cree o modifique páginas DEBE cumplir:
 | BUG-010 | 🟠 Moderado | Links legales apuntan a `#` | Pendiente Fase 3 |
 | BUG-011 | 🟠 Moderado | CSP deshabilitado en Helmet | Pendiente Fase 11 |
 | BUG-012 | 🟠 Moderado | Auth mixto: HttpOnly cookies + localStorage adminToken | Pendiente Fase 1 |
-| DEBT-001 | 🟡 | README dice PostgreSQL pero código usa MySQL — migrar a PG | Pendiente Fase 1 |
+| DEBT-001 | 🟡 | README dice PostgreSQL pero código usa MySQL — migrar a PG | ✅ Resuelto Fase 1 |
 | DEBT-002 | 🟡 | Breakpoints CSS inconsistentes (700, 768, 900, 980px) | Pendiente Fase 2 |
 | DEBT-003 | 🟡 | Página mobile separada con UA sniffing — eliminar | Pendiente Fase 2 |
 | DEBT-004 | 🟡 | Trazabilidad usa datos hardcodeados, no BD | Pendiente Fase 5 |
@@ -314,7 +314,7 @@ Todo agente que cree o modifique páginas DEBE cumplir:
 | Fase | Nombre | Estado |
 |---|---|---|
 | 0 | Fundamentos documentales y gobernanza IA | ✅ En progreso |
-| 1 | Estabilización, bug fixes, migración PostgreSQL | ⏳ Pendiente |
+| 1 | Estabilización, bug fixes, migración PostgreSQL | ✅ Completo |
 | 2 | Diseño mobile-first y armonía visual | ⏳ Pendiente |
 | 3 | Normativa colombiana y compliance legal | ⏳ Pendiente |
 | 4 | Sistema de órdenes y pasarelas de pago | ⏳ Pendiente |
