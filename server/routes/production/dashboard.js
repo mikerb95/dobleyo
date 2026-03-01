@@ -390,4 +390,4 @@ router.get('/alerts', async (req, res) => {
   }
 });
 
-module.exports = router;
+
