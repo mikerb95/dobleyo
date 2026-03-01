@@ -37,7 +37,7 @@ if (process.env.SITE_BASE_URL && !allowedOrigins.includes(process.env.SITE_BASE_
 }
 
 app.use(cors({
-  origin: function(origin, callback) {
+  origin: function (origin, callback) {
     // Permitir requests sin origin (como mobile apps o curl)
     if (!origin) return callback(null, true);
     if (allowedOrigins.includes(origin)) {
@@ -77,12 +77,12 @@ app.get('/api/health', (req, res) => res.json({ status: 'ok', time: new Date().t
 app.get('/api/debug/config', (req, res) => {
   const debugKey = req.query.key;
   const expectedKey = process.env.SETUP_SECRET_KEY;
-  
+
   // Permitir acceso solo con clave correcta o en desarrollo
   if (process.env.NODE_ENV !== 'development' && debugKey !== expectedKey) {
     return res.status(403).json({ error: 'Acceso denegado' });
   }
-  
+
   res.json({
     status: 'ok',
     time: new Date().toISOString(),

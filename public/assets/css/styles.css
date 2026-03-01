@@ -535,7 +535,6 @@ body.menu-open { overflow: hidden; }
   font-family: inherit;
   transition: background-color 0.2s;
 }
-}
 
 .dropdown-item:hover {
   background-color: var(--cream);
