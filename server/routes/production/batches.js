@@ -1,12 +1,12 @@
 import express from 'express';
-import { query as db } from '../../db.js';
+import { query } from '../../db.js';
 import { authenticateToken, requireRole } from '../../auth.js';
 
-const router = express.Router();
+export const batchesRouter = express.Router();
 
-// PROTECCIÓN: Requerir autenticación y rol admin/caficultor para todas las rutas de producción
-router.use(authenticateToken);
-router.use(requireRole(['admin', 'caficultor']));
+// Requerir autenticación y rol admin/caficultor para todas las rutas
+batchesRouter.use(authenticateToken);
+batchesRouter.use(requireRole(['admin', 'caficultor']));
 
 // ==========================================
 // BATCHES DE TOSTADO
@@ -14,75 +14,71 @@ router.use(requireRole(['admin', 'caficultor']));
 
 /**
  * GET /api/production/batches
- * Lista batches de tostado
+ * Lista batches de tostado con filtros opcionales
  */
-router.get('/', async (req, res) => {
+batchesRouter.get('/', async (req, res) => {
   try {
-    const { 
-      production_order_id, 
-      operator_id, 
-      date_from, 
+    const {
+      production_order_id,
+      operator_id,
+      date_from,
       date_to,
       is_approved,
-      limit = 50, 
-      offset = 0 
+      limit = 50,
+      offset = 0
     } = req.query;
 
-    let query = `
-      SELECT 
+    let sql = `
+      SELECT
         rb.id, rb.batch_number, rb.production_order_id,
         rb.green_coffee_weight_kg, rb.roasted_coffee_weight_kg,
         rb.weight_loss_percentage, rb.roast_level_achieved,
-        rb.roast_date, rb.actual_duration_minutes,
-        rb.is_approved, rb.quality_score,
+        rb.roast_date, rb.roast_start_time, rb.roast_end_time,
+        rb.actual_duration_minutes, rb.first_crack_time_minutes,
+        rb.quality_score, rb.is_approved, rb.approved_at,
         u.name as operator_name,
-        l.code as green_lot_code, l.origin,
-        rp.profile_name, rp.roast_level as target_roast_level,
-        re.equipment_name
+        po.order_number
       FROM roast_batches rb
       LEFT JOIN users u ON rb.operator_id = u.id
-      LEFT JOIN lots l ON rb.green_coffee_lot_id = l.id
-      LEFT JOIN roast_profiles rp ON rb.roast_profile_id = rp.id
-      LEFT JOIN roasting_equipment re ON rb.roasting_equipment_id = re.id
+      LEFT JOIN production_orders po ON rb.production_order_id = po.id
       WHERE 1=1
     `;
-
     const params = [];
 
     if (production_order_id) {
-      query += ` AND rb.production_order_id = ?`;
+      sql += ` AND rb.production_order_id = $${params.length + 1}`;
       params.push(production_order_id);
     }
 
     if (operator_id) {
-      query += ` AND rb.operator_id = ?`;
+      sql += ` AND rb.operator_id = $${params.length + 1}`;
       params.push(operator_id);
     }
 
     if (date_from) {
-      query += ` AND DATE(rb.roast_date) >= ?`;
+      sql += ` AND rb.roast_date::date >= $${params.length + 1}`;
       params.push(date_from);
     }
 
     if (date_to) {
-      query += ` AND DATE(rb.roast_date) <= ?`;
+      sql += ` AND rb.roast_date::date <= $${params.length + 1}`;
       params.push(date_to);
     }
 
     if (is_approved !== undefined) {
-      query += ` AND rb.is_approved = ?`;
-      params.push(is_approved === 'true' ? 1 : 0);
+      sql += ` AND rb.is_approved = $${params.length + 1}`;
+      params.push(is_approved === 'true');
     }
 
-    query += ` ORDER BY rb.roast_date DESC LIMIT ? OFFSET ?`;
+    sql += ` ORDER BY rb.roast_date DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
     params.push(parseInt(limit), parseInt(offset));
 
-    const [batches] = await db.query(query, params);
+    const { rows: batches } = await query(sql, params);
 
     res.json({
       success: true,
       data: batches,
-      pagination: { limit, offset, total: batches.length }
+      pagination: { limit: parseInt(limit), offset: parseInt(offset), total: batches.length }
     });
   } catch (error) {
     console.error('Error fetching roast batches:', error);
@@ -92,14 +88,14 @@ router.get('/', async (req, res) => {
 
 /**
  * GET /api/production/batches/:id
- * Obtiene detalle de un batch
+ * Obtiene detalle de un batch con QC y mermas
  */
-router.get('/:id', async (req, res) => {
+batchesRouter.get('/:id', async (req, res) => {
   try {
     const { id } = req.params;
 
-    const [batch] = await db.query(`
-      SELECT 
+    const { rows: batchRows } = await query(`
+      SELECT
         rb.*,
         u.name as operator_name, u.email as operator_email,
         l.code as green_lot_code, l.origin, l.variety,
@@ -113,33 +109,31 @@ router.get('/:id', async (req, res) => {
       LEFT JOIN roast_profiles rp ON rb.roast_profile_id = rp.id
       LEFT JOIN roasting_equipment re ON rb.roasting_equipment_id = re.id
       LEFT JOIN production_orders po ON rb.production_order_id = po.id
-      WHERE rb.id = ?
+      WHERE rb.id = $1
     `, [id]);
 
-    if (!batch.length) {
+    if (!batchRows.length) {
       return res.status(404).json({ success: false, error: 'Batch not found' });
     }
 
-    // Obtener QC relacionado
-    const [qc] = await db.query(`
+    const { rows: qcRows } = await query(`
       SELECT * FROM production_quality_checks
-      WHERE roast_batch_id = ?
+      WHERE roast_batch_id = $1
       ORDER BY check_date DESC
       LIMIT 1
     `, [id]);
 
-    // Obtener mermas
-    const [waste] = await db.query(`
+    const { rows: wasteRows } = await query(`
       SELECT * FROM production_waste_byproducts
-      WHERE roast_batch_id = ?
+      WHERE roast_batch_id = $1
     `, [id]);
 
     res.json({
       success: true,
       data: {
-        ...batch[0],
-        quality_check: qc.length ? qc[0] : null,
-        waste: waste
+        ...batchRows[0],
+        quality_check: qcRows.length ? qcRows[0] : null,
+        waste: wasteRows
       }
     });
   } catch (error) {
@@ -152,7 +146,7 @@ router.get('/:id', async (req, res) => {
  * POST /api/production/batches
  * Crea nuevo batch de tostado
  */
-router.post('/', async (req, res) => {
+batchesRouter.post('/', async (req, res) => {
   try {
     const {
       production_order_id,
@@ -163,21 +157,20 @@ router.post('/', async (req, res) => {
       operator_id
     } = req.body;
 
-    // Validación
     if (!production_order_id || !roasting_equipment_id || !green_coffee_lot_id || !green_coffee_weight_kg || !operator_id) {
       return res.status(400).json({ success: false, error: 'Missing required fields' });
     }
 
-    // Generar número de batch
     const timestamp = Date.now().toString().slice(-6);
     const batch_number = `BATCH-${timestamp}`;
 
-    const [result] = await db.query(`
+    const { rows } = await query(`
       INSERT INTO roast_batches (
         batch_number, production_order_id, roast_profile_id,
         roasting_equipment_id, green_coffee_lot_id, green_coffee_weight_kg,
         roast_date, roast_start_time, operator_id
-      ) VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW(), ?)
+      ) VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW(), $7)
+      RETURNING id
     `, [
       batch_number, production_order_id, roast_profile_id || null,
       roasting_equipment_id, green_coffee_lot_id, green_coffee_weight_kg,
@@ -187,11 +180,7 @@ router.post('/', async (req, res) => {
     res.status(201).json({
       success: true,
       message: 'Roast batch created',
-      data: {
-        id: result.insertId,
-        batch_number,
-        production_order_id
-      }
+      data: { id: rows[0].id, batch_number, production_order_id }
     });
   } catch (error) {
     console.error('Error creating roast batch:', error);
@@ -203,7 +192,7 @@ router.post('/', async (req, res) => {
  * POST /api/production/batches/:id/first-crack
  * Registra primer crack
  */
-router.post('/:id/first-crack', async (req, res) => {
+batchesRouter.post('/:id/first-crack', async (req, res) => {
   try {
     const { id } = req.params;
     const { time_minutes, temperature_celsius } = req.body;
@@ -212,14 +201,14 @@ router.post('/:id/first-crack', async (req, res) => {
       return res.status(400).json({ success: false, error: 'Time and temperature required' });
     }
 
-    await db.query(`
-      UPDATE roast_batches 
-      SET first_crack_time_minutes = ?, first_crack_temperature_celsius = ?, updated_at = NOW()
-      WHERE id = ?
+    await query(`
+      UPDATE roast_batches
+      SET first_crack_time_minutes = $1, first_crack_temperature_celsius = $2, updated_at = NOW()
+      WHERE id = $3
     `, [time_minutes, temperature_celsius, id]);
 
-    res.json({ 
-      success: true, 
+    res.json({
+      success: true,
       message: 'First crack recorded',
       first_crack: { time: time_minutes, temperature: temperature_celsius }
     });
@@ -233,7 +222,7 @@ router.post('/:id/first-crack', async (req, res) => {
  * POST /api/production/batches/:id/second-crack
  * Registra segundo crack
  */
-router.post('/:id/second-crack', async (req, res) => {
+batchesRouter.post('/:id/second-crack', async (req, res) => {
   try {
     const { id } = req.params;
     const { time_minutes } = req.body;
@@ -242,16 +231,13 @@ router.post('/:id/second-crack', async (req, res) => {
       return res.status(400).json({ success: false, error: 'Time required' });
     }
 
-    await db.query(`
-      UPDATE roast_batches 
-      SET second_crack_time_minutes = ?, updated_at = NOW()
-      WHERE id = ?
+    await query(`
+      UPDATE roast_batches
+      SET second_crack_time_minutes = $1, updated_at = NOW()
+      WHERE id = $2
     `, [time_minutes, id]);
 
-    res.json({ 
-      success: true, 
-      message: 'Second crack recorded'
-    });
+    res.json({ success: true, message: 'Second crack recorded' });
   } catch (error) {
     console.error('Error recording second crack:', error);
     res.status(500).json({ success: false, error: error.message });
@@ -262,7 +248,7 @@ router.post('/:id/second-crack', async (req, res) => {
  * POST /api/production/batches/:id/complete
  * Finaliza tostado y registra pesos finales
  */
-router.post('/:id/complete', async (req, res) => {
+batchesRouter.post('/:id/complete', async (req, res) => {
   try {
     const { id } = req.params;
     const {
@@ -279,72 +265,59 @@ router.post('/:id/complete', async (req, res) => {
       return res.status(400).json({ success: false, error: 'Roasted weight and drop temperature required' });
     }
 
-    // Obtener verde weight para calcular merma
-    const [batch] = await db.query(`
-      SELECT green_coffee_weight_kg, first_crack_time_minutes
+    const { rows: batchRows } = await query(`
+      SELECT green_coffee_weight_kg, first_crack_time_minutes, roast_start_time
       FROM roast_batches
-      WHERE id = ?
+      WHERE id = $1
     `, [id]);
 
-    if (!batch.length) {
+    if (!batchRows.length) {
       return res.status(404).json({ success: false, error: 'Batch not found' });
     }
 
-    const green_weight = batch[0].green_coffee_weight_kg;
+    const green_weight = batchRows[0].green_coffee_weight_kg;
     const roasted_weight = parseFloat(roasted_coffee_weight_kg);
     const weight_loss_percentage = ((green_weight - roasted_weight) / green_weight * 100).toFixed(2);
 
-    // Calcular DTR si hay primer crack
     let dtr = null;
-    if (batch[0].first_crack_time_minutes) {
-      const total_time = Math.ceil((new Date() - new Date(batch[0].roast_start_time)) / 1000 / 60);
-      const development_time = total_time - batch[0].first_crack_time_minutes;
-      dtr = (development_time / batch[0].first_crack_time_minutes * 100).toFixed(2);
+    if (batchRows[0].first_crack_time_minutes) {
+      const total_time = Math.ceil((Date.now() - new Date(batchRows[0].roast_start_time).getTime()) / 60000);
+      const development_time = total_time - batchRows[0].first_crack_time_minutes;
+      dtr = (development_time / batchRows[0].first_crack_time_minutes * 100).toFixed(2);
     }
 
     const actual_duration_minutes = Math.ceil(
-      (new Date() - new Date(batch[0].roast_start_time)) / 1000 / 60
+      (Date.now() - new Date(batchRows[0].roast_start_time).getTime()) / 60000
     );
 
-    await db.query(`
-      UPDATE roast_batches 
-      SET 
+    await query(`
+      UPDATE roast_batches
+      SET
         roast_end_time = NOW(),
-        actual_duration_minutes = ?,
-        roasted_coffee_weight_kg = ?,
-        weight_loss_percentage = ?,
-        drop_temperature_celsius = ?,
-        color_agtron = ?,
-        development_time_ratio = ?,
-        quality_score = ?,
-        quality_notes = ?,
-        ambient_temperature_celsius = ?,
-        humidity_percentage = ?,
+        actual_duration_minutes = $1,
+        roasted_coffee_weight_kg = $2,
+        weight_loss_percentage = $3,
+        drop_temperature_celsius = $4,
+        color_agtron = $5,
+        development_time_ratio = $6,
+        quality_score = $7,
+        quality_notes = $8,
+        ambient_temperature_celsius = $9,
+        humidity_percentage = $10,
         updated_at = NOW()
-      WHERE id = ?
+      WHERE id = $11
     `, [
-      actual_duration_minutes,
-      roasted_weight,
-      weight_loss_percentage,
-      drop_temperature_celsius,
-      color_agtron || null,
-      dtr,
-      quality_score || null,
-      quality_notes || null,
-      ambient_temperature_celsius || null,
-      humidity_percentage || null,
+      actual_duration_minutes, roasted_weight, weight_loss_percentage,
+      drop_temperature_celsius, color_agtron || null, dtr,
+      quality_score || null, quality_notes || null,
+      ambient_temperature_celsius || null, humidity_percentage || null,
       id
     ]);
 
     res.json({
       success: true,
       message: 'Roast completed',
-      data: {
-        roasted_weight: roasted_weight,
-        weight_loss_percentage: weight_loss_percentage,
-        actual_duration_minutes: actual_duration_minutes,
-        development_time_ratio: dtr
-      }
+      data: { roasted_weight, weight_loss_percentage, actual_duration_minutes, development_time_ratio: dtr }
     });
   } catch (error) {
     console.error('Error completing roast batch:', error);
@@ -356,7 +329,7 @@ router.post('/:id/complete', async (req, res) => {
  * POST /api/production/batches/:id/approve
  * Aprueba batch (QC)
  */
-router.post('/:id/approve', async (req, res) => {
+batchesRouter.post('/:id/approve', async (req, res) => {
   try {
     const { id } = req.params;
     const { approved_by_user_id } = req.body;
@@ -365,17 +338,13 @@ router.post('/:id/approve', async (req, res) => {
       return res.status(400).json({ success: false, error: 'Approved by user required' });
     }
 
-    await db.query(`
-      UPDATE roast_batches 
-      SET is_approved = TRUE, approved_by = ?, approved_at = NOW(), updated_at = NOW()
-      WHERE id = ?
+    await query(`
+      UPDATE roast_batches
+      SET is_approved = TRUE, approved_by = $1, approved_at = NOW(), updated_at = NOW()
+      WHERE id = $2
     `, [approved_by_user_id, id]);
 
-    res.json({
-      success: true,
-      message: 'Batch approved',
-      is_approved: true
-    });
+    res.json({ success: true, message: 'Batch approved', is_approved: true });
   } catch (error) {
     console.error('Error approving batch:', error);
     res.status(500).json({ success: false, error: error.message });
@@ -386,7 +355,7 @@ router.post('/:id/approve', async (req, res) => {
  * POST /api/production/batches/:id/reject
  * Rechaza batch (QC)
  */
-router.post('/:id/reject', async (req, res) => {
+batchesRouter.post('/:id/reject', async (req, res) => {
   try {
     const { id } = req.params;
     const { reason, approved_by_user_id } = req.body;
@@ -395,17 +364,13 @@ router.post('/:id/reject', async (req, res) => {
       return res.status(400).json({ success: false, error: 'Reason and approved by user required' });
     }
 
-    await db.query(`
-      UPDATE roast_batches 
-      SET defects_found = ?, notes = ?, updated_at = NOW()
-      WHERE id = ?
+    await query(`
+      UPDATE roast_batches
+      SET defects_found = $1, notes = $2, updated_at = NOW()
+      WHERE id = $3
     `, [`Rechazado: ${reason}`, `Rechazado por: ${approved_by_user_id}`, id]);
 
-    res.json({
-      success: true,
-      message: 'Batch rejected',
-      reason: reason
-    });
+    res.json({ success: true, message: 'Batch rejected', reason });
   } catch (error) {
     console.error('Error rejecting batch:', error);
     res.status(500).json({ success: false, error: error.message });
@@ -416,12 +381,12 @@ router.post('/:id/reject', async (req, res) => {
  * GET /api/production/batches/:id/comparison
  * Compara batch actual con perfil objetivo
  */
-router.get('/:id/comparison', async (req, res) => {
+batchesRouter.get('/:id/comparison', async (req, res) => {
   try {
     const { id } = req.params;
 
-    const [batch] = await db.query(`
-      SELECT 
+    const { rows } = await query(`
+      SELECT
         rb.roast_level_achieved, rb.actual_duration_minutes,
         rb.first_crack_time_minutes, rb.development_time_ratio,
         rb.color_agtron, rb.drop_temperature_celsius,
@@ -431,16 +396,14 @@ router.get('/:id/comparison', async (req, res) => {
         rp.target_temperature_celsius
       FROM roast_batches rb
       LEFT JOIN roast_profiles rp ON rb.roast_profile_id = rp.id
-      WHERE rb.id = ?
+      WHERE rb.id = $1
     `, [id]);
 
-    if (!batch.length) {
+    if (!rows.length) {
       return res.status(404).json({ success: false, error: 'Batch not found' });
     }
 
-    const b = batch[0];
-
-    // Calcular variaciones
+    const b = rows[0];
     const comparison = {
       roast_level: {
         target: b.target_roast_level,
@@ -469,14 +432,9 @@ router.get('/:id/comparison', async (req, res) => {
       }
     };
 
-    res.json({
-      success: true,
-      data: comparison
-    });
+    res.json({ success: true, data: comparison });
   } catch (error) {
     console.error('Error comparing batch:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });
-
-
