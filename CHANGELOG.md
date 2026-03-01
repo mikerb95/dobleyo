@@ -1,6 +1,36 @@
-# 📋 REGISTRO DE CAMBIOS - API Coffee Migration
+# 📋 REGISTRO DE CAMBIOS — DobleYo Café
 
-## 📅 Fecha: 6 de Enero, 2026
+---
+
+## 📅 2026-03-01 — Fase 0: Fundamentos Documentales y Gobernanza IA (Agente: Claude)
+
+### Archivos Creados
+
+- `AGENTS.md` — Reglas y convenciones para agentes de IA: convenciones de código (ESM, CSS mobile-first, SQL PG, API REST), SEO obligatorio, accesibilidad, seguridad, mobile-first, i18n, testing, deployment. Incluye tabla de bugs conocidos y deuda técnica (17 ítems catalogados).
+- `CLAUDE.md` — Instrucciones específicas para Claude: mapa de archivos clave, stack tecnológico, patrones de código aprobados, variables de entorno requeridas, modelo de datos resumido, orden de fases.
+- `docs/HISTORIAS_USUARIO.md` — 36 historias de usuario (HU-001 a HU-036) cubriendo: tienda online, carrito, checkout, auth, trazabilidad, producción, finanzas, fincas, mapa de calor, admin, compliance legal, i18n, SEO, seguridad. Plus 6 historias aspiracionales (HU-100 a HU-105: quiz, suscripción, guías preparación, reviews, gift cards, lealtad).
+- `docs/REQUISITOS_FUNCIONALES.md` — 79 requisitos funcionales (RF-001 a RF-146) agrupados en 14 módulos, con trazabilidad a historias de usuario, prioridad (P1/P2/P3) y fase de implementación.
+- `docs/REQUISITOS_NO_FUNCIONALES.md` — 42 requisitos no funcionales (RNF-001 a RNF-103) en 11 categorías: rendimiento, disponibilidad, seguridad, usabilidad, compatibilidad, SEO, i18n, mantenibilidad, escalabilidad, compliance legal, observabilidad.
+- `docs/ANALISIS_REQUERIMIENTOS.md` — Análisis de viabilidad técnica y de recursos, mapa de dependencias entre fases (con diagrama ASCII), 10 riesgos catalogados (técnicos, negocio, UX), 5 decisiones técnicas documentadas (PG sobre MySQL, stack vs Odoo, Wompi primero, i18n manual, HttpOnly cookies), estimación de esfuerzo (65-90 días totales), criterios de aceptación por fase.
+- `docs/ARQUITECTURA_TECNICA.md` — Diagramas ASCII de: arquitectura general, capas de aplicación, flujo de compra, flujo de trazabilidad QR, flujo de producción, modelo de autenticación, modelo de deployment. Design system con variables CSS. Convenciones de API y códigos de error.
+
+### Decisiones Técnicas
+
+- PostgreSQL como BD definitiva (migración desde MySQL en Fase 1)
+- Stack actual (Astro/Express/PG) sobre Odoo — control de UX + código ya avanzado
+- Wompi antes que MercadoPago — más popular en Colombia para e-commerce
+- HttpOnly cookies como único mecanismo de auth (eliminar localStorage tokens)
+- i18n con JSON files + helper function (no framework pesado)
+- Mobile-first CSS con breakpoints 480/768/1024/1400px
+- Conventional Commits para mensajes de commit
+
+### Impacto
+
+Base documental completa para que cualquier agente de IA o desarrollador pueda contribuir al proyecto con contexto completo, reglas claras y trazabilidad de requerimientos.
+
+---
+
+## 📅 2026-01-06 — API Coffee Migration
 
 ---
 
