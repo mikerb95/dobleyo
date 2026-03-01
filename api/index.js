@@ -12,6 +12,11 @@ import { inventoryRouter } from '../server/routes/inventory.js';
 import { usersRouter } from '../server/routes/users.js';
 import { labelsRouter } from '../server/routes/labels.js';
 import { devtoolsRouter } from '../server/routes/devtools.js';
+import { caficultorRouter } from '../server/routes/caficultor.js';
+import { emailRouter } from '../server/routes/emails.js';
+import { contactRouter } from '../server/routes/contact.js';
+import { productionRouter } from '../server/routes/production.js';
+import auditRouter from '../server/routes/audit.js';
 
 const app = express();
 
@@ -59,6 +64,11 @@ app.use('/api/coffee', coffeeRouter);
 app.use('/api/inventory', inventoryRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/devtools', devtoolsRouter);
+app.use('/api/caficultor', caficultorRouter);
+app.use('/api/emails', emailRouter);
+app.use('/api/contact', contactRouter);
+app.use('/api/production', productionRouter);
+app.use('/api/audit', auditRouter);
 
 // Health Check
 app.get('/api/health', (req, res) => res.json({ status: 'ok', time: new Date().toISOString() }));

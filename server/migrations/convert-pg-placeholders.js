@@ -11,8 +11,8 @@ import { resolve } from 'path';
 
 const filePath = process.argv[2];
 if (!filePath) {
-  console.error('Uso: node convert-pg-placeholders.js <archivo.js>');
-  process.exit(1);
+    console.error('Uso: node convert-pg-placeholders.js <archivo.js>');
+    process.exit(1);
 }
 
 const absPath = resolve(filePath);
@@ -27,25 +27,25 @@ const SQL_KEYWORDS = /\b(SELECT|INSERT|UPDATE|DELETE|FROM|WHERE|JOIN|SET|VALUES|
 
 // Reemplaza template literals completos
 content = content.replace(/`([^`]*)`/g, (match, inner) => {
-  // Solo procesar strings que parecen SQL
-  if (!SQL_KEYWORDS.test(inner)) return match;
+    // Solo procesar strings que parecen SQL
+    if (!SQL_KEYWORDS.test(inner)) return match;
 
-  let counter = 0;
-  const converted = inner.replace(/\?/g, () => {
-    counter++;
-    return `$${counter}`;
-  });
+    let counter = 0;
+    const converted = inner.replace(/\?/g, () => {
+        counter++;
+        return `$${counter}`;
+    });
 
-  if (counter > 0) changeCount += counter;
-  return `\`${converted}\``;
+    if (counter > 0) changeCount += counter;
+    return `\`${converted}\``;
 });
 
 // También manejar strings normales con comillas simples que contengan SQL (poco común pero posible)
 content = content.replace(/'([^']*SELECT[^']*)'/gi, (match, inner) => {
-  let counter = 0;
-  const converted = inner.replace(/\?/g, () => `$${++counter}`);
-  if (counter > 0) changeCount += counter;
-  return `'${converted}'`;
+    let counter = 0;
+    const converted = inner.replace(/\?/g, () => `$${++counter}`);
+    if (counter > 0) changeCount += counter;
+    return `'${converted}'`;
 });
 
 writeFileSync(absPath, content, 'utf8');
