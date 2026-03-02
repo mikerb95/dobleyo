@@ -1,0 +1,857 @@
+---
+// Panel de Finanzas — Vista de Administrador
+// Dashboard financiero: KPIs, facturas, gastos, pagos a caficultores
+import AdminLayout from "../../layouts/AdminLayout.astro";
+
+// Fetch del dashboard financiero
+let dashboard = {
+  month_revenue: 0, month_costs: 0, month_expenses: 0, month_balance: 0,
+  pending_payables: 0, pending_invoices_count: 0,
+  recent_invoices: [], recent_expenses: [],
+};
+let fetchError = null;
+
+try {
+  const resp = await fetch(`${Astro.url.origin}/api/finance/dashboard`, {
+    headers: { cookie: Astro.request.headers.get("cookie") ?? "" },
+  });
+  if (resp.ok) {
+    const json = await resp.json();
+    if (json.success) dashboard = json.data;
+    else fetchError = json.error;
+  } else {
+    fetchError = resp.status === 401 ? null : `Error del servidor (${resp.status})`;
+  }
+} catch (e) {
+  fetchError = "No se pudo conectar con la base de datos";
+}
+
+// Helpers
+function fmtCOP(val) {
+  return new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(Number(val ?? 0));
+}
+function fmtDate(d) {
+  if (!d) return "—";
+  return new Date(d).toLocaleDateString("es-CO", { day: "2-digit", month: "short", year: "numeric" });
+}
+function stateBadge(state) {
+  const map = {
+    borrador:      { text: "Borrador",         bg: "#f3f4f6", color: "#374151" },
+    confirmada:    { text: "Confirmada",        bg: "#fef3c7", color: "#92400e" },
+    pagada_parcial:{ text: "Pago parcial",      bg: "#dbeafe", color: "#1e40af" },
+    pagada:        { text: "Pagada",            bg: "#d1fae5", color: "#065f46" },
+    cancelada:     { text: "Cancelada",         bg: "#fee2e2", color: "#991b1b" },
+    aprobado:      { text: "Aprobado",          bg: "#d1fae5", color: "#065f46" },
+    pagado:        { text: "Pagado",            bg: "#d1fae5", color: "#065f46" },
+    rechazado:     { text: "Rechazado",         bg: "#fee2e2", color: "#991b1b" },
+  };
+  return map[state] ?? { text: state, bg: "#f3f4f6", color: "#374151" };
+}
+const balancePositive = dashboard.month_balance >= 0;
+---
+
+<AdminLayout>
+  <section class="adm-fin">
+    <!-- Encabezado -->
+    <div class="adm-fin__header">
+      <div>
+        <h1 class="adm-fin__title">💰 Finanzas</h1>
+        <p class="adm-fin__subtitle">Dashboard financiero del mes</p>
+      </div>
+      <div class="adm-fin__header-actions">
+        <a href="/admin/finanzas?tab=gastos" class="adm-btn adm-btn--outline">+ Gasto</a>
+        <a href="/admin/finanzas?tab=facturas-compra" class="adm-btn adm-btn--outline">+ Factura de compra</a>
+        <a href="/admin/finanzas?tab=facturas-venta" class="adm-btn adm-btn--primary">+ Factura de venta</a>
+      </div>
+    </div>
+
+    {fetchError && (
+      <div class="adm-fin__error">
+        <strong>Error:</strong> {fetchError}
+      </div>
+    )}
+
+    <!-- KPIs -->
+    <div class="adm-kpis">
+      <div class="adm-kpi adm-kpi--green">
+        <div class="adm-kpi__icon">📈</div>
+        <div class="adm-kpi__label">Ingresos del mes</div>
+        <div class="adm-kpi__value">{fmtCOP(dashboard.month_revenue)}</div>
+      </div>
+      <div class="adm-kpi adm-kpi--red">
+        <div class="adm-kpi__icon">📦</div>
+        <div class="adm-kpi__label">Costos del mes</div>
+        <div class="adm-kpi__value">{fmtCOP(dashboard.month_costs)}</div>
+      </div>
+      <div class="adm-kpi adm-kpi--amber">
+        <div class="adm-kpi__icon">🧾</div>
+        <div class="adm-kpi__label">Gastos del mes</div>
+        <div class="adm-kpi__value">{fmtCOP(dashboard.month_expenses)}</div>
+      </div>
+      <div class={`adm-kpi ${balancePositive ? 'adm-kpi--blue' : 'adm-kpi--red'}`}>
+        <div class="adm-kpi__icon">{balancePositive ? '✅' : '⚠️'}</div>
+        <div class="adm-kpi__label">Balance del mes</div>
+        <div class="adm-kpi__value">{fmtCOP(dashboard.month_balance)}</div>
+      </div>
+    </div>
+
+    <!-- Alertas rápidas -->
+    {dashboard.pending_invoices_count > 0 && (
+      <div class="adm-alert">
+        ⚠️ Tienes <strong>{dashboard.pending_invoices_count}</strong> factura(s) de compra pendiente(s) de pago
+        por un total de <strong>{fmtCOP(dashboard.pending_payables)}</strong>.
+        <a href="#purchase-invoices" class="adm-alert__link">Ver →</a>
+      </div>
+    )}
+
+    <!-- Navegación por pestañas (JS) -->
+    <div class="adm-tabs" id="tabNav">
+      <button class="adm-tab adm-tab--active" data-tab="overview">Resumen</button>
+      <button class="adm-tab" data-tab="purchase-invoices">Facturas de compra</button>
+      <button class="adm-tab" data-tab="sales-invoices">Facturas de venta</button>
+      <button class="adm-tab" data-tab="expenses">Gastos</button>
+      <button class="adm-tab" data-tab="payments">Pagos</button>
+    </div>
+
+    <!-- Panel: Resumen -->
+    <div class="adm-panel" id="panel-overview">
+      <div class="adm-panel-grid">
+        <!-- Últimas facturas de venta -->
+        <div class="adm-table-card">
+          <h2 class="adm-table-card__title">Últimas facturas de venta</h2>
+          {dashboard.recent_invoices.length === 0
+            ? <p class="adm-empty">Sin facturas recientes</p>
+            : (
+              <table class="adm-table">
+                <thead>
+                  <tr>
+                    <th>Número</th>
+                    <th>Cliente</th>
+                    <th>Fecha</th>
+                    <th>Total</th>
+                    <th>Estado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {dashboard.recent_invoices.map((inv) => {
+                    const b = stateBadge(inv.state);
+                    return (
+                      <tr>
+                        <td class="adm-table__mono">{inv.invoice_number}</td>
+                        <td>{inv.customer_name}</td>
+                        <td>{fmtDate(inv.invoice_date)}</td>
+                        <td class="adm-table__amount">{fmtCOP(inv.total_amount)}</td>
+                        <td>
+                          <span class="adm-badge" style={`background:${b.bg};color:${b.color}`}>{b.text}</span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            )
+          }
+          <a href="#" class="adm-link" data-switch-tab="sales-invoices">Ver todas →</a>
+        </div>
+
+        <!-- Últimos gastos -->
+        <div class="adm-table-card">
+          <h2 class="adm-table-card__title">Últimos gastos</h2>
+          {dashboard.recent_expenses.length === 0
+            ? <p class="adm-empty">Sin gastos recientes</p>
+            : (
+              <table class="adm-table">
+                <thead>
+                  <tr>
+                    <th>N°</th>
+                    <th>Descripción</th>
+                    <th>Categoría</th>
+                    <th>Monto</th>
+                    <th>Estado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {dashboard.recent_expenses.map((exp) => {
+                    const b = stateBadge(exp.state);
+                    return (
+                      <tr>
+                        <td class="adm-table__mono">{exp.expense_number}</td>
+                        <td>{exp.description}</td>
+                        <td class="adm-table__cat">{exp.category}</td>
+                        <td class="adm-table__amount">{fmtCOP(exp.amount)}</td>
+                        <td>
+                          <span class="adm-badge" style={`background:${b.bg};color:${b.color}`}>{b.text}</span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            )
+          }
+          <a href="#" class="adm-link" data-switch-tab="expenses">Ver todos →</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel: Facturas de compra (cargadas por JS) -->
+    <div class="adm-panel adm-panel--hidden" id="panel-purchase-invoices">
+      <div class="adm-panel-actions">
+        <button class="adm-btn adm-btn--primary" id="btnNewPurchaseInvoice">+ Nueva factura de compra</button>
+      </div>
+      <div id="purchaseInvoicesTable">
+        <div class="adm-loading">Cargando facturas de compra…</div>
+      </div>
+    </div>
+
+    <!-- Panel: Facturas de venta (cargadas por JS) -->
+    <div class="adm-panel adm-panel--hidden" id="panel-sales-invoices">
+      <div class="adm-panel-actions">
+        <button class="adm-btn adm-btn--primary" id="btnNewSalesInvoice">+ Nueva factura de venta</button>
+      </div>
+      <div id="salesInvoicesTable">
+        <div class="adm-loading">Cargando facturas de venta…</div>
+      </div>
+    </div>
+
+    <!-- Panel: Gastos (cargados por JS) -->
+    <div class="adm-panel adm-panel--hidden" id="panel-expenses">
+      <div class="adm-panel-actions">
+        <button class="adm-btn adm-btn--primary" id="btnNewExpense">+ Registrar gasto</button>
+      </div>
+      <div id="expensesTable">
+        <div class="adm-loading">Cargando gastos…</div>
+      </div>
+    </div>
+
+    <!-- Panel: Pagos (cargados por JS) -->
+    <div class="adm-panel adm-panel--hidden" id="panel-payments">
+      <div class="adm-panel-actions">
+        <button class="adm-btn adm-btn--primary" id="btnNewPayment">+ Registrar pago</button>
+      </div>
+      <div id="paymentsTable">
+        <div class="adm-loading">Cargando pagos…</div>
+      </div>
+    </div>
+
+    <!-- Modal: Nuevo Gasto -->
+    <dialog id="modalExpense" class="adm-modal">
+      <form id="formExpense" class="adm-modal__form">
+        <h2 class="adm-modal__title">Registrar Gasto</h2>
+        <div class="adm-form-grid">
+          <label class="adm-field">
+            <span>Fecha *</span>
+            <input type="date" name="expense_date" required />
+          </label>
+          <label class="adm-field">
+            <span>Categoría *</span>
+            <select name="category" required>
+              <option value="">— Seleccionar —</option>
+              <option value="operativo">Operativo</option>
+              <option value="administrativo">Administrativo</option>
+              <option value="venta">Venta</option>
+              <option value="financiero">Financiero</option>
+              <option value="otro">Otro</option>
+            </select>
+          </label>
+          <label class="adm-field adm-field--full">
+            <span>Descripción *</span>
+            <input type="text" name="description" required maxlength="255" />
+          </label>
+          <label class="adm-field">
+            <span>Monto (COP) *</span>
+            <input type="number" name="amount" min="1" step="1" required />
+          </label>
+          <label class="adm-field">
+            <span>N° Recibo / Factura</span>
+            <input type="text" name="receipt_number" maxlength="100" />
+          </label>
+          <label class="adm-field adm-field--full">
+            <span>Notas</span>
+            <textarea name="notes" rows="2"></textarea>
+          </label>
+        </div>
+        <div class="adm-modal__actions">
+          <button type="button" class="adm-btn adm-btn--outline" id="closeModalExpense">Cancelar</button>
+          <button type="submit" class="adm-btn adm-btn--primary">Guardar gasto</button>
+        </div>
+        <p class="adm-modal__msg" id="expenseMsg"></p>
+      </form>
+    </dialog>
+
+    <!-- Modal: Nueva Factura de Compra -->
+    <dialog id="modalPurchaseInvoice" class="adm-modal adm-modal--wide">
+      <form id="formPurchaseInvoice" class="adm-modal__form">
+        <h2 class="adm-modal__title">Nueva Factura de Compra (Pago a Caficultor)</h2>
+        <div class="adm-form-grid">
+          <label class="adm-field">
+            <span>Fecha factura *</span>
+            <input type="date" name="invoice_date" required />
+          </label>
+          <label class="adm-field">
+            <span>Fecha vencimiento *</span>
+            <input type="date" name="due_date" required />
+          </label>
+          <label class="adm-field">
+            <span>ID Caficultor</span>
+            <input type="number" name="caficultor_id" placeholder="User ID del caficultor" />
+          </label>
+          <label class="adm-field">
+            <span>N° Factura proveedor</span>
+            <input type="text" name="supplier_invoice_number" maxlength="100" />
+          </label>
+          <label class="adm-field adm-field--full">
+            <span>Notas</span>
+            <textarea name="notes" rows="2"></textarea>
+          </label>
+        </div>
+
+        <!-- Líneas -->
+        <h3 class="adm-lines__title">Líneas de la factura</h3>
+        <div id="purchaseLines">
+          <div class="adm-line-row">
+            <input type="text" name="lines[0][description]" placeholder="Descripción (ej: Café verde Huila)" required />
+            <input type="text" name="lines[0][lot_reference]" placeholder="Referencia lote" />
+            <input type="number" name="lines[0][quantity]" placeholder="Kg" min="0.01" step="0.01" required />
+            <input type="number" name="lines[0][unit_price]" placeholder="$/kg" min="0" step="1" required />
+            <span class="adm-line-remove" onclick="this.parentElement.remove()">✕</span>
+          </div>
+        </div>
+        <button type="button" class="adm-btn adm-btn--outline adm-btn--sm" id="addPurchaseLine">+ Agregar línea</button>
+
+        <div class="adm-modal__actions">
+          <button type="button" class="adm-btn adm-btn--outline" id="closeModalPurchaseInvoice">Cancelar</button>
+          <button type="submit" class="adm-btn adm-btn--primary">Crear factura</button>
+        </div>
+        <p class="adm-modal__msg" id="purchaseInvoiceMsg"></p>
+      </form>
+    </dialog>
+  </section>
+</AdminLayout>
+
+<style>
+  .adm-fin {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1.25rem;
+  }
+
+  /* Encabezado */
+  .adm-fin__header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+  .adm-fin__title {
+    font-size: 1.875rem;
+    font-weight: 700;
+    color: var(--ink, #251a14);
+    margin: 0 0 0.25rem;
+  }
+  .adm-fin__subtitle { color: #6b7280; margin: 0; }
+  .adm-fin__header-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+  .adm-fin__error {
+    background: #fef2f2;
+    border: 1px solid #fca5a5;
+    color: #991b1b;
+    padding: 1rem 1.25rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  /* KPIs */
+  .adm-kpis {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  @media (min-width: 768px) {
+    .adm-kpis { grid-template-columns: repeat(4, 1fr); }
+  }
+  .adm-kpi {
+    padding: 1.25rem;
+    border-radius: 0.75rem;
+    color: white;
+  }
+  .adm-kpi--green { background: linear-gradient(135deg, #2d6a4f, #1e5a3f); }
+  .adm-kpi--red   { background: linear-gradient(135deg, #dc2626, #b91c1c); }
+  .adm-kpi--amber { background: linear-gradient(135deg, #d97706, #b45309); }
+  .adm-kpi--blue  { background: linear-gradient(135deg, #1d4ed8, #1e40af); }
+  .adm-kpi__icon  { font-size: 1.5rem; margin-bottom: 0.25rem; }
+  .adm-kpi__label { font-size: 0.75rem; opacity: 0.85; margin-bottom: 0.25rem; }
+  .adm-kpi__value { font-size: 1.5rem; font-weight: 700; }
+
+  /* Alerta */
+  .adm-alert {
+    background: #fef3c7;
+    border: 1px solid #fde68a;
+    color: #92400e;
+    padding: 0.875rem 1.25rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+  }
+  .adm-alert__link { color: #92400e; font-weight: 600; margin-left: 0.5rem; }
+
+  /* Tabs */
+  .adm-tabs {
+    display: flex;
+    gap: 0.25rem;
+    border-bottom: 2px solid #e5e7eb;
+    margin-bottom: 1.5rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .adm-tab {
+    padding: 0.625rem 1.125rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: #6b7280;
+    white-space: nowrap;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+  }
+  .adm-tab--active { color: var(--coffee, #8b6f47); border-bottom-color: var(--coffee, #8b6f47); font-weight: 600; }
+
+  /* Panels */
+  .adm-panel--hidden { display: none; }
+
+  .adm-panel-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  @media (min-width: 1024px) {
+    .adm-panel-grid { grid-template-columns: 1fr 1fr; }
+  }
+
+  .adm-panel-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+    flex-wrap: wrap;
+  }
+
+  /* Tabla genérica */
+  .adm-table-card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.75rem;
+    padding: 1.25rem;
+    overflow: hidden;
+  }
+  .adm-table-card__title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--ink, #251a14);
+    margin: 0 0 1rem;
+  }
+  .adm-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+  }
+  .adm-table th {
+    padding: 0.5rem 0.625rem;
+    text-align: left;
+    font-weight: 600;
+    color: #374151;
+    border-bottom: 1px solid #e5e7eb;
+    white-space: nowrap;
+  }
+  .adm-table td {
+    padding: 0.5rem 0.625rem;
+    border-bottom: 1px solid #f9fafb;
+    color: #374151;
+    vertical-align: middle;
+  }
+  .adm-table__mono   { font-family: monospace; font-size: 0.8rem; }
+  .adm-table__amount { font-weight: 600; color: #2d6a4f; }
+  .adm-table__cat    { text-transform: capitalize; }
+
+  .adm-badge {
+    padding: 0.2rem 0.6rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .adm-empty {
+    color: #9ca3af;
+    font-size: 0.875rem;
+    text-align: center;
+    padding: 2rem;
+  }
+  .adm-link {
+    display: block;
+    margin-top: 0.75rem;
+    font-size: 0.875rem;
+    color: var(--coffee, #8b6f47);
+    text-decoration: none;
+    text-align: right;
+  }
+  .adm-loading {
+    text-align: center;
+    padding: 2rem;
+    color: #9ca3af;
+    font-size: 0.875rem;
+  }
+
+  /* Botones */
+  .adm-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    text-decoration: none;
+    min-height: 44px;
+    white-space: nowrap;
+  }
+  .adm-btn--primary  { background: var(--coffee, #8b6f47); color: white; }
+  .adm-btn--outline  { background: white; color: var(--ink, #251a14); border: 1px solid #d1d5db; }
+  .adm-btn--sm       { min-height: 36px; padding: 0.375rem 0.75rem; font-size: 0.8rem; }
+  .adm-btn:hover     { opacity: 0.9; }
+
+  /* Modal */
+  .adm-modal {
+    border: none;
+    border-radius: 0.75rem;
+    padding: 0;
+    max-width: 560px;
+    width: 95vw;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+  }
+  .adm-modal--wide { max-width: 750px; }
+  .adm-modal::backdrop { background: rgba(0,0,0,0.5); }
+  .adm-modal__form { padding: 1.75rem; }
+  .adm-modal__title { font-size: 1.25rem; font-weight: 700; color: var(--ink, #251a14); margin: 0 0 1.25rem; }
+  .adm-modal__actions { display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.25rem; flex-wrap: wrap; }
+  .adm-modal__msg { margin-top: 0.75rem; font-size: 0.875rem; min-height: 1.25rem; }
+
+  .adm-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.875rem;
+  }
+  .adm-field { display: flex; flex-direction: column; gap: 0.375rem; }
+  .adm-field--full { grid-column: 1 / -1; }
+  .adm-field span  { font-size: 0.8rem; font-weight: 500; color: #374151; }
+  .adm-field input, .adm-field select, .adm-field textarea {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    background: white;
+    min-height: 40px;
+  }
+  .adm-field textarea { resize: vertical; min-height: 64px; }
+
+  /* Líneas de factura */
+  .adm-lines__title { font-size: 0.95rem; font-weight: 600; margin: 1rem 0 0.5rem; color: #374151; }
+  .adm-line-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 0.75fr 0.75fr auto;
+    gap: 0.5rem;
+    align-items: center;
+    margin-bottom: 0.5rem;
+  }
+  .adm-line-row input {
+    padding: 0.4rem 0.6rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    font-size: 0.8rem;
+    min-height: 36px;
+  }
+  .adm-line-remove {
+    cursor: pointer;
+    color: #ef4444;
+    font-size: 1.1rem;
+    padding: 0 0.25rem;
+    user-select: none;
+  }
+</style>
+
+<script>
+// ================================================================
+// Lógica de pestañas
+// ================================================================
+document.querySelectorAll('.adm-tab').forEach(tab => {
+  tab.addEventListener('click', () => switchTab(tab.dataset.tab));
+});
+document.querySelectorAll('[data-switch-tab]').forEach(link => {
+  link.addEventListener('click', (e) => { e.preventDefault(); switchTab(link.dataset.switchTab); });
+});
+
+let loadedTabs = new Set(['overview']);
+
+function switchTab(name) {
+  document.querySelectorAll('.adm-tab').forEach(t => t.classList.toggle('adm-tab--active', t.dataset.tab === name));
+  document.querySelectorAll('.adm-panel').forEach(p => p.classList.add('adm-panel--hidden'));
+  const panel = document.getElementById(`panel-${name}`);
+  if (panel) panel.classList.remove('adm-panel--hidden');
+  if (!loadedTabs.has(name)) { loadedTabs.add(name); loadPanelData(name); }
+}
+
+// ================================================================
+// Formateo compartido
+// ================================================================
+const fmtCOP = v => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(Number(v ?? 0));
+const fmtDate = d => d ? new Date(d).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
+const badges = {
+  borrador:       ['#f3f4f6','#374151','Borrador'],
+  confirmada:     ['#fef3c7','#92400e','Confirmada'],
+  pagada_parcial: ['#dbeafe','#1e40af','Pago parcial'],
+  pagada:         ['#d1fae5','#065f46','Pagada'],
+  cancelada:      ['#fee2e2','#991b1b','Cancelada'],
+  aprobado:       ['#d1fae5','#065f46','Aprobado'],
+  pagado:         ['#d1fae5','#065f46','Pagado'],
+  rechazado:      ['#fee2e2','#991b1b','Rechazado'],
+};
+function badge(state) {
+  const [bg, color, text] = badges[state] ?? ['#f3f4f6','#374151', state];
+  return `<span class="adm-badge" style="background:${bg};color:${color}">${text}</span>`;
+}
+
+// ================================================================
+// Cargar datos de paneles
+// ================================================================
+async function loadPanelData(name) {
+  const loaders = {
+    'purchase-invoices': loadPurchaseInvoices,
+    'sales-invoices':    loadSalesInvoices,
+    'expenses':          loadExpenses,
+    'payments':          loadPayments,
+  };
+  if (loaders[name]) await loaders[name]();
+}
+
+async function loadPurchaseInvoices() {
+  const el = document.getElementById('purchaseInvoicesTable');
+  try {
+    const r = await fetch('/api/finance/purchase-invoices?limit=50', { credentials: 'include' });
+    const json = await r.json();
+    if (!json.success) { el.innerHTML = `<p class="adm-empty">Error: ${json.error}</p>`; return; }
+    if (!json.data.length) { el.innerHTML = '<p class="adm-empty">Sin facturas de compra</p>'; return; }
+    el.innerHTML = `<div style="overflow-x:auto"><table class="adm-table">
+      <thead><tr><th>Número</th><th>Caficultor</th><th>Fecha</th><th>Vence</th><th>Total</th><th>Por Pagar</th><th>Estado</th><th>Acción</th></tr></thead>
+      <tbody>${json.data.map(inv => `<tr>
+        <td class="adm-table__mono">${inv.invoice_number}</td>
+        <td>${inv.caficultor_name ?? '—'}</td>
+        <td>${fmtDate(inv.invoice_date)}</td>
+        <td>${fmtDate(inv.due_date)}</td>
+        <td class="adm-table__amount">${fmtCOP(inv.total_amount)}</td>
+        <td class="adm-table__amount">${fmtCOP(inv.amount_due)}</td>
+        <td>${badge(inv.state)}</td>
+        <td>${inv.state !== 'pagada' && inv.state !== 'cancelada'
+          ? `<button class="adm-btn adm-btn--sm adm-btn--primary" onclick="markInvoicePaid(${inv.id})">Marcar pagada</button>`
+          : ''
+        }</td>
+      </tr>`).join('')}</tbody>
+    </table></div>`;
+  } catch (e) { el.innerHTML = '<p class="adm-empty">Error al cargar</p>'; }
+}
+
+async function loadSalesInvoices() {
+  const el = document.getElementById('salesInvoicesTable');
+  try {
+    const r = await fetch('/api/finance/sales-invoices?limit=50', { credentials: 'include' });
+    const json = await r.json();
+    if (!json.success) { el.innerHTML = `<p class="adm-empty">Error: ${json.error}</p>`; return; }
+    if (!json.data.length) { el.innerHTML = '<p class="adm-empty">Sin facturas de venta</p>'; return; }
+    el.innerHTML = `<div style="overflow-x:auto"><table class="adm-table">
+      <thead><tr><th>Número</th><th>Cliente</th><th>Fecha</th><th>Total</th><th>Por Cobrar</th><th>Estado</th></tr></thead>
+      <tbody>${json.data.map(inv => `<tr>
+        <td class="adm-table__mono">${inv.invoice_number}</td>
+        <td>${inv.customer_name ?? '—'}</td>
+        <td>${fmtDate(inv.invoice_date)}</td>
+        <td class="adm-table__amount">${fmtCOP(inv.total_amount)}</td>
+        <td class="adm-table__amount">${fmtCOP(inv.amount_due)}</td>
+        <td>${badge(inv.state)}</td>
+      </tr>`).join('')}</tbody>
+    </table></div>`;
+  } catch (e) { el.innerHTML = '<p class="adm-empty">Error al cargar</p>'; }
+}
+
+async function loadExpenses() {
+  const el = document.getElementById('expensesTable');
+  try {
+    const r = await fetch('/api/finance/expenses?limit=50', { credentials: 'include' });
+    const json = await r.json();
+    if (!json.success) { el.innerHTML = `<p class="adm-empty">Error: ${json.error}</p>`; return; }
+    if (!json.data.length) { el.innerHTML = '<p class="adm-empty">Sin gastos registrados</p>'; return; }
+    el.innerHTML = `<div style="overflow-x:auto"><table class="adm-table">
+      <thead><tr><th>Número</th><th>Fecha</th><th>Categoría</th><th>Descripción</th><th>Monto</th><th>Estado</th><th>Acción</th></tr></thead>
+      <tbody>${json.data.map(exp => `<tr>
+        <td class="adm-table__mono">${exp.expense_number}</td>
+        <td>${fmtDate(exp.expense_date)}</td>
+        <td class="adm-table__cat">${exp.category}</td>
+        <td>${exp.description}</td>
+        <td class="adm-table__amount">${fmtCOP(exp.amount)}</td>
+        <td>${badge(exp.state)}</td>
+        <td>${exp.state === 'borrador'
+          ? `<button class="adm-btn adm-btn--sm adm-btn--outline" onclick="approveExpense(${exp.id})">Aprobar</button>`
+          : ''
+        }</td>
+      </tr>`).join('')}</tbody>
+    </table></div>`;
+  } catch (e) { el.innerHTML = '<p class="adm-empty">Error al cargar</p>'; }
+}
+
+async function loadPayments() {
+  const el = document.getElementById('paymentsTable');
+  try {
+    const r = await fetch('/api/finance/payments?limit=50', { credentials: 'include' });
+    const json = await r.json();
+    if (!json.success) { el.innerHTML = `<p class="adm-empty">Error: ${json.error}</p>`; return; }
+    if (!json.data.length) { el.innerHTML = '<p class="adm-empty">Sin pagos registrados</p>'; return; }
+    el.innerHTML = `<div style="overflow-x:auto"><table class="adm-table">
+      <thead><tr><th>Número</th><th>Tipo</th><th>Fecha</th><th>Socio</th><th>Monto</th><th>Referencia</th><th>Estado</th></tr></thead>
+      <tbody>${json.data.map(p => `<tr>
+        <td class="adm-table__mono">${p.payment_number}</td>
+        <td>${p.payment_type === 'recibido' ? '📥 Cobro' : '📤 Pago'}</td>
+        <td>${fmtDate(p.payment_date)}</td>
+        <td>${p.partner_name ?? '—'}</td>
+        <td class="adm-table__amount">${fmtCOP(p.amount)}</td>
+        <td class="adm-table__mono">${p.reference ?? '—'}</td>
+        <td>${badge(p.state)}</td>
+      </tr>`).join('')}</tbody>
+    </table></div>`;
+  } catch (e) { el.innerHTML = '<p class="adm-empty">Error al cargar</p>'; }
+}
+
+// ================================================================
+// Acciones rápidas
+// ================================================================
+async function markInvoicePaid(id) {
+  if (!confirm('¿Marcar esta factura como pagada?')) return;
+  const r = await fetch(`/api/finance/purchase-invoices/${id}/state`, {
+    method: 'PATCH', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+    body: JSON.stringify({ state: 'pagada' }),
+  });
+  const json = await r.json();
+  if (json.success) { loadedTabs.delete('purchase-invoices'); loadPurchaseInvoices(); }
+  else alert('Error: ' + json.error);
+}
+
+async function approveExpense(id) {
+  if (!confirm('¿Aprobar este gasto?')) return;
+  const r = await fetch(`/api/finance/expenses/${id}/state`, {
+    method: 'PATCH', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+    body: JSON.stringify({ state: 'aprobado' }),
+  });
+  const json = await r.json();
+  if (json.success) { loadedTabs.delete('expenses'); loadExpenses(); }
+  else alert('Error: ' + json.error);
+}
+
+// ================================================================
+// Modales
+// ================================================================
+function openModal(id) { document.getElementById(id).showModal(); }
+function closeModal(id) { document.getElementById(id).close(); }
+
+document.getElementById('btnNewExpense').addEventListener('click', () => openModal('modalExpense'));
+document.getElementById('closeModalExpense').addEventListener('click', () => closeModal('modalExpense'));
+document.getElementById('btnNewPurchaseInvoice').addEventListener('click', () => openModal('modalPurchaseInvoice'));
+document.getElementById('closeModalPurchaseInvoice').addEventListener('click', () => closeModal('modalPurchaseInvoice'));
+
+// Agregar línea en factura de compra
+let lineCount = 1;
+document.getElementById('addPurchaseLine').addEventListener('click', () => {
+  const n = lineCount++;
+  const row = document.createElement('div');
+  row.className = 'adm-line-row';
+  row.innerHTML = `
+    <input type="text" name="lines[${n}][description]" placeholder="Descripción" required />
+    <input type="text" name="lines[${n}][lot_reference]" placeholder="Referencia lote" />
+    <input type="number" name="lines[${n}][quantity]" placeholder="Kg" min="0.01" step="0.01" required />
+    <input type="number" name="lines[${n}][unit_price]" placeholder="$/kg" min="0" step="1" required />
+    <span class="adm-line-remove" onclick="this.parentElement.remove()">✕</span>
+  `;
+  document.getElementById('purchaseLines').appendChild(row);
+});
+
+// Enviar formulario de gasto
+document.getElementById('formExpense').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const msgEl = document.getElementById('expenseMsg');
+  const form = e.target;
+  const data = Object.fromEntries(new FormData(form));
+  msgEl.textContent = 'Guardando…';
+  try {
+    const r = await fetch('/api/finance/expenses', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+      body: JSON.stringify({ ...data, amount: parseFloat(data.amount) }),
+    });
+    const json = await r.json();
+    if (json.success) {
+      msgEl.style.color = '#065f46';
+      msgEl.textContent = `✅ Gasto ${json.data.expense_number} registrado`;
+      form.reset();
+      setTimeout(() => { closeModal('modalExpense'); msgEl.textContent = ''; loadedTabs.delete('expenses'); }, 1800);
+    } else {
+      msgEl.style.color = '#991b1b';
+      msgEl.textContent = 'Error: ' + json.error;
+    }
+  } catch { msgEl.textContent = 'Error de conexión'; }
+});
+
+// Enviar formulario de factura de compra
+document.getElementById('formPurchaseInvoice').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const msgEl = document.getElementById('purchaseInvoiceMsg');
+  const form = e.target;
+  const rawData = Object.fromEntries(new FormData(form));
+
+  // Reconstruir líneas
+  const linesMap = {};
+  for (const [key, val] of Object.entries(rawData)) {
+    const m = key.match(/^lines\[(\d+)\]\[(\w+)\]$/);
+    if (m) {
+      const [, idx, field] = m;
+      if (!linesMap[idx]) linesMap[idx] = {};
+      linesMap[idx][field] = field === 'quantity' || field === 'unit_price' ? parseFloat(val) : val;
+      delete rawData[key];
+    }
+  }
+  rawData.lines = Object.values(linesMap).filter(l => l.description && l.quantity > 0);
+  if (rawData.caficultor_id) rawData.caficultor_id = parseInt(rawData.caficultor_id, 10);
+
+  msgEl.textContent = 'Creando factura…';
+  try {
+    const r = await fetch('/api/finance/purchase-invoices', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+      body: JSON.stringify(rawData),
+    });
+    const json = await r.json();
+    if (json.success) {
+      msgEl.style.color = '#065f46';
+      msgEl.textContent = `✅ Factura ${json.data.invoice_number} creada`;
+      form.reset();
+      document.getElementById('purchaseLines').innerHTML = `<div class="adm-line-row">
+        <input type="text" name="lines[0][description]" placeholder="Descripción" required />
+        <input type="text" name="lines[0][lot_reference]" placeholder="Referencia lote" />
+        <input type="number" name="lines[0][quantity]" placeholder="Kg" min="0.01" step="0.01" required />
+        <input type="number" name="lines[0][unit_price]" placeholder="$/kg" min="0" step="1" required />
+        <span class="adm-line-remove" onclick="this.parentElement.remove()">✕</span>
+      </div>`;
+      lineCount = 1;
+      setTimeout(() => { closeModal('modalPurchaseInvoice'); msgEl.textContent = ''; loadedTabs.delete('purchase-invoices'); }, 1800);
+    } else {
+      msgEl.style.color = '#991b1b';
+      msgEl.textContent = 'Error: ' + (json.errors?.[0]?.msg ?? json.error);
+    }
+  } catch { msgEl.textContent = 'Error de conexión'; }
+});
+</script>
