@@ -63,7 +63,7 @@ inventoryRouter.get('/products/:id', async (req, res) => {
   try {
     const { id } = req.params;
     
-    const result = await query('SELECT * FROM products WHERE id = $1', [id]);
+    const result = await query('SELECT * FROM products WHERE id = ?', [id]);
     
     if (result.rows.length === 0) {
       return res.status(404).json({ success: false, error: 'Producto no encontrado' });
@@ -72,7 +72,7 @@ inventoryRouter.get('/products/:id', async (req, res) => {
     // Obtener movimientos recientes
     const movements = await query(
       `SELECT * FROM inventory_movements 
-       WHERE product_id = $1 
+       WHERE product_id = ? 
        ORDER BY created_at DESC 
        LIMIT 10`,
       [id]
@@ -83,7 +83,7 @@ inventoryRouter.get('/products/:id', async (req, res) => {
       `SELECT psp.*, ps.name as supplier_name 
        FROM product_supplier_prices psp
        JOIN product_suppliers ps ON psp.supplier_id = ps.id
-       WHERE psp.product_id = $1
+       WHERE psp.product_id = ?
        ORDER BY psp.is_preferred DESC`,
       [id]
     );
@@ -121,7 +121,7 @@ inventoryRouter.post('/products', async (req, res) => {
     }
 
     // Verificar que el ID no exista
-    const existing = await query('SELECT id FROM products WHERE id = $1', [id]);
+    const existing = await query('SELECT id FROM products WHERE id = ?', [id]);
     if (existing.rows.length > 0) {
       return res.status(409).json({ 
         success: false, 
@@ -137,7 +137,7 @@ inventoryRouter.post('/products', async (req, res) => {
         image_url, images, stock_quantity, stock_min,
         weight, weight_unit, dimensions,
         meta_keywords, meta_description
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25)`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         id, sku, name, description, category, subcategory,
         origin, process, roast, price, cost,
@@ -156,7 +156,7 @@ inventoryRouter.post('/products', async (req, res) => {
         `INSERT INTO inventory_movements (
           product_id, movement_type, quantity, quantity_before, quantity_after,
           reason, reference
-        ) VALUES ($1, 'entrada', $2, 0, $3, 'Stock inicial', 'INIT')`,
+        ) VALUES (?, 'entrada', ?, 0, ?, 'Stock inicial', 'INIT')`,
         [id, stock_quantity, stock_quantity]
       );
     }
@@ -179,7 +179,7 @@ inventoryRouter.put('/products/:id', async (req, res) => {
     const updateData = req.body;
 
     // Verificar que el producto existe
-    const existing = await query('SELECT * FROM products WHERE id = $1', [id]);
+    const existing = await query('SELECT * FROM products WHERE id = ?', [id]);
     if (existing.rows.length === 0) {
       return res.status(404).json({ success: false, error: 'Producto no encontrado' });
     }
@@ -214,7 +214,7 @@ inventoryRouter.put('/products/:id', async (req, res) => {
     values.push(id);
 
     await query(
-      `UPDATE products SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = $1`,
+      `UPDATE products SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
       values
     );
 
@@ -234,17 +234,17 @@ inventoryRouter.delete('/products/:id', async (req, res) => {
     const { id } = req.params;
     const { hard } = req.query; // ?hard=true para eliminación física
 
-    const existing = await query('SELECT * FROM products WHERE id = $1', [id]);
+    const existing = await query('SELECT * FROM products WHERE id = ?', [id]);
     if (existing.rows.length === 0) {
       return res.status(404).json({ success: false, error: 'Producto no encontrado' });
     }
 
     if (hard === 'true') {
       // Eliminación física
-      await query('DELETE FROM products WHERE id = $1', [id]);
+      await query('DELETE FROM products WHERE id = ?', [id]);
     } else {
       // Soft delete
-      await query('UPDATE products SET is_active = FALSE WHERE id = $1', [id]);
+      await query('UPDATE products SET is_active = FALSE WHERE id = ?', [id]);
     }
 
     res.json({
@@ -283,7 +283,7 @@ inventoryRouter.post('/movements', async (req, res) => {
 
     // Obtener stock actual
     const productResult = await query(
-      'SELECT stock_quantity FROM products WHERE id = $1',
+      'SELECT stock_quantity FROM products WHERE id = ?',
       [product_id]
     );
 
@@ -324,7 +324,7 @@ inventoryRouter.post('/movements', async (req, res) => {
       `INSERT INTO inventory_movements (
         product_id, movement_type, quantity, quantity_before, quantity_after,
         reason, reference, notes, user_id
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         product_id, movement_type,
         movement_type === 'ajuste' ? newStock - currentStock : quantity,
@@ -335,7 +335,7 @@ inventoryRouter.post('/movements', async (req, res) => {
 
     // Actualizar stock del producto
     await query(
-      'UPDATE products SET stock_quantity = $1 WHERE id = $2',
+      'UPDATE products SET stock_quantity = ? WHERE id = ?',
       [newStock, product_id]
     );
 

@@ -23,7 +23,7 @@ authRouter.post('/register',
 
     try {
       // Verificar si existe
-      const existing = await db.query('SELECT id FROM users WHERE email = $1', [email]);
+      const existing = await db.query('SELECT id FROM users WHERE email = ?', [email]);
       if (existing.rows.length > 0) {
         return res.status(400).json({ error: 'El email ya esta registrado' });
       }
@@ -32,7 +32,7 @@ authRouter.post('/register',
       
       // Crear usuario (rol default: client)
       const result = await db.query(
-        'INSERT INTO users (email, password_hash, first_name, last_name, role, is_verified) VALUES ($1, $2, $3, $4, $5, $6)',
+        'INSERT INTO users (email, password_hash, first_name, last_name, role, is_verified) VALUES (?, ?, ?, ?, ?, ?)',
         [email, hash, first_name, last_name, 'client', false]
       );
       
@@ -51,7 +51,7 @@ authRouter.post('/register',
       sendVerificationEmail(email, verifyToken).then(r => console.log('Email result:', r));
       
       // Log de auditoria
-      await db.query('INSERT INTO audit_logs (action, entity_type, entity_id, details) VALUES ($1, $2, $3, $4)', 
+      await db.query('INSERT INTO audit_logs (action, entity_type, entity_id, details) VALUES (?, ?, ?, ?)', 
         ['REGISTER', 'user', String(newUser.id), JSON.stringify({ email: newUser.email })]
       );
 
@@ -73,7 +73,7 @@ authRouter.get('/verify', async (req, res) => {
     const decoded = auth.verifyToken(token);
     // Aqui podriamos validar decoded.type === 'verification' si lo hubieramos seteado especificamente
 
-    await db.query('UPDATE users SET is_verified = TRUE WHERE id = $1', [decoded.id]);
+    await db.query('UPDATE users SET is_verified = TRUE WHERE id = ?', [decoded.id]);
     
     res.json({ message: 'Cuenta verificada exitosamente. Ya puedes iniciar sesion.' });
   } catch (err) {
@@ -95,7 +95,7 @@ authRouter.post('/login',
     const { email, password } = req.body;
 
     try {
-      const result = await db.query('SELECT * FROM users WHERE email = $1', [email]);
+      const result = await db.query('SELECT * FROM users WHERE email = ?', [email]);
       const user = result.rows[0];
 
       if (!user) return res.status(401).json({ error: 'Credenciales invalidas' });
@@ -111,12 +111,12 @@ authRouter.post('/login',
       // Guardar refresh token hasheado en DB (seguridad)
       const hashedRefreshToken = auth.hashRefreshToken(refreshToken);
       await db.query(
-        'INSERT INTO refresh_tokens (user_id, token_hash, expires_at) VALUES ($1, $2, $3)',
+        'INSERT INTO refresh_tokens (user_id, token_hash, expires_at) VALUES (?, ?, ?)',
         [user.id, hashedRefreshToken, refreshExpires]
       );
 
       // Actualizar last_login
-      await db.query('UPDATE users SET last_login_at = NOW() WHERE id = $1', [user.id]);
+      await db.query('UPDATE users SET last_login_at = NOW() WHERE id = ?', [user.id]);
 
       // Cookies - usar 'lax' para permitir navegación normal
       const isProd = process.env.NODE_ENV === 'production';
@@ -160,7 +160,7 @@ authRouter.post('/refresh', refreshLimiter, async (req, res) => {
     
     // Buscar token hasheado en DB
     const result = await db.query(
-      'SELECT rt.*, u.role, u.email, u.name FROM refresh_tokens rt JOIN users u ON rt.user_id = u.id WHERE rt.token_hash = $1 AND rt.revoked = FALSE AND rt.expires_at > NOW()',
+      'SELECT rt.*, u.role, u.email, u.name FROM refresh_tokens rt JOIN users u ON rt.user_id = u.id WHERE rt.token_hash = ? AND rt.revoked = FALSE AND rt.expires_at > NOW()',
       [hashedToken]
     );
 
@@ -180,8 +180,8 @@ authRouter.post('/refresh', refreshLimiter, async (req, res) => {
     const newRefreshTokenHash = auth.hashRefreshToken(newRefreshToken);
     const newExpires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
-    await db.query('UPDATE refresh_tokens SET revoked = TRUE, replaced_by_token = $1 WHERE id = $2', [newRefreshTokenHash, tokenRecord.id]);
-    await db.query('INSERT INTO refresh_tokens (user_id, token_hash, expires_at) VALUES ($1, $2, $3)', [user.id, newRefreshTokenHash, newExpires]);
+    await db.query('UPDATE refresh_tokens SET revoked = TRUE, replaced_by_token = ? WHERE id = ?', [newRefreshTokenHash, tokenRecord.id]);
+    await db.query('INSERT INTO refresh_tokens (user_id, token_hash, expires_at) VALUES (?, ?, ?)', [user.id, newRefreshTokenHash, newExpires]);
 
     const newAccessToken = auth.generateToken(user);
 
@@ -209,7 +209,7 @@ authRouter.post('/logout', async (req, res) => {
   if (refreshToken) {
     // Revocar en DB (hasheado)
     const hashedToken = auth.hashRefreshToken(refreshToken);
-    await db.query('UPDATE refresh_tokens SET revoked = TRUE WHERE token_hash = $1', [hashedToken]);
+    await db.query('UPDATE refresh_tokens SET revoked = TRUE WHERE token_hash = ?', [hashedToken]);
   }
   
   res.clearCookie('auth_token');
@@ -220,7 +220,7 @@ authRouter.post('/logout', async (req, res) => {
 // Check auth status
 authRouter.get('/me', auth.authenticateToken, async (req, res) => {
   try {
-    const result = await db.query('SELECT id, first_name, last_name, email, role, caficultor_status FROM users WHERE id = $1', [req.user.id]);
+    const result = await db.query('SELECT id, first_name, last_name, email, role, caficultor_status FROM users WHERE id = ?', [req.user.id]);
     
     if (!result.rows || result.rows.length === 0) {
       return res.status(404).json({ error: 'Usuario no encontrado' });
@@ -249,7 +249,7 @@ authRouter.post('/request-caficultor',
     try {
       // Verificar si ya existe una solicitud activa
       const existing = await db.query(
-        'SELECT id FROM caficultor_applications WHERE user_id = $1 AND status = "pending"',
+        'SELECT id FROM caficultor_applications WHERE user_id = ? AND status = "pending"',
         [userId]
       );
       if (existing.rows.length > 0) {
@@ -258,19 +258,19 @@ authRouter.post('/request-caficultor',
 
       // Insertar solicitud
       const result = await db.query(
-        'INSERT INTO caficultor_applications (user_id, farm_name, region, altitude, hectares, varieties_cultivated, certifications, description) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',
+        'INSERT INTO caficultor_applications (user_id, farm_name, region, altitude, hectares, varieties_cultivated, certifications, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
         [userId, farm_name, region, altitude || null, hectares || null, varieties_cultivated || null, certifications || null, description]
       );
 
       // Actualizar estado del usuario
       await db.query(
-        'UPDATE users SET caficultor_status = "pending" WHERE id = $1',
+        'UPDATE users SET caficultor_status = "pending" WHERE id = ?',
         [userId]
       );
 
       // Log de auditoria
       await db.query(
-        'INSERT INTO audit_logs (user_id, action, entity_type, entity_id, details) VALUES ($1, $2, $3, $4, $5)',
+        'INSERT INTO audit_logs (user_id, action, entity_type, entity_id, details) VALUES (?, ?, ?, ?, ?)',
         [userId, 'REQUEST_CAFICULTOR', 'caficultor_applications', String(result.rows.insertId), JSON.stringify({ farm_name })]
       );
 
@@ -292,7 +292,7 @@ authRouter.get('/caficultor-status',
   async (req, res) => {
     try {
       const result = await db.query(
-        'SELECT id, status, admin_notes, reviewed_at FROM caficultor_applications WHERE user_id = $1 ORDER BY created_at DESC LIMIT 1',
+        'SELECT id, status, admin_notes, reviewed_at FROM caficultor_applications WHERE user_id = ? ORDER BY created_at DESC LIMIT 1',
         [req.user.id]
       );
       if (result.rows.length === 0) {

@@ -45,7 +45,7 @@ usersRouter.put('/:id', auth.authenticateToken, auth.requireRole('admin'), async
     const { name, first_name, last_name, mobile_phone, city, state_province, country, role, is_verified, tax_id } = req.body;
 
     // Validar que el usuario existe
-    const userResult = await query('SELECT id FROM users WHERE id = $1', [id]);
+    const userResult = await query('SELECT id FROM users WHERE id = ?', [id]);
     if (userResult.rows.length === 0) {
       return res.status(404).json({ error: 'Usuario no encontrado' });
     }
@@ -130,7 +130,7 @@ usersRouter.put('/:id', auth.authenticateToken, auth.requireRole('admin'), async
         last_login_at, 
         created_at 
       FROM users 
-      WHERE id = $1`,
+      WHERE id = ?`,
       [parseInt(id)]
     );
 
@@ -167,7 +167,7 @@ usersRouter.delete('/:id', auth.authenticateToken, auth.requireRole('admin'), as
     }
 
     // Validar que el usuario existe
-    const userResult = await query('SELECT email FROM users WHERE id = $1', [id]);
+    const userResult = await query('SELECT email FROM users WHERE id = ?', [id]);
     if (userResult.rows.length === 0) {
       return res.status(404).json({ error: 'Usuario no encontrado' });
     }
@@ -175,7 +175,7 @@ usersRouter.delete('/:id', auth.authenticateToken, auth.requireRole('admin'), as
     const userEmail = userResult.rows[0].email;
 
     // Eliminar usuario
-    await query('DELETE FROM users WHERE id = $1', [id]);
+    await query('DELETE FROM users WHERE id = ?', [id]);
 
     res.json({ 
       message: `Usuario ${userEmail} eliminado exitosamente`,
@@ -198,7 +198,7 @@ usersRouter.post('/', auth.authenticateToken, auth.requireRole('admin'), async (
     }
 
     // Validar que el email no exista
-    const existingUser = await query('SELECT id FROM users WHERE email = $1', [email]);
+    const existingUser = await query('SELECT id FROM users WHERE email = ?', [email]);
     if (existingUser.rows.length > 0) {
       return res.status(400).json({ error: 'El email ya está registrado' });
     }
@@ -211,7 +211,7 @@ usersRouter.post('/', auth.authenticateToken, auth.requireRole('admin'), async (
     const result = await query(
       `INSERT INTO users 
         (email, password_hash, name, mobile_phone, city, state_province, country, role, is_verified) 
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [email, passwordHash, name, mobile_phone || null, city || null, state_province || null, country || null, role || 'client', is_verified || false]
     );
 
@@ -232,7 +232,7 @@ usersRouter.post('/', auth.authenticateToken, auth.requireRole('admin'), async (
         caficultor_status,
         created_at 
       FROM users 
-      WHERE id = $1`,
+      WHERE id = ?`,
       [newUserId]
     );
 

@@ -241,11 +241,11 @@ setupRouter.post('/', async (req, res) => {
 
     // 3. Seed Products
     for (const p of products) {
-      const existing = await db.query('SELECT id FROM products WHERE id = $1', [p.id]);
+      const existing = await db.query('SELECT id FROM products WHERE id = ?', [p.id]);
       if (existing.rows.length === 0) {
         await db.query(
           `INSERT INTO products (id, name, category, origin, process, roast, price, rating, is_deal, is_bestseller, is_new, is_fast, image_url, stock_quantity)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)`,
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [
             p.id, p.name, p.category, p.origin || null, p.process || null, p.roast || null,
             p.price, p.rating || 0, p.deal || false, p.bestseller || false, p.new || false,
@@ -262,11 +262,11 @@ setupRouter.post('/', async (req, res) => {
     } else if (ADMIN_PASS.length < 8) {
       log('Skipping admin creation: Password must be at least 8 characters.');
     } else {
-      const existingAdmin = await db.query('SELECT id FROM users WHERE email = $1', [ADMIN_EMAIL]);
+      const existingAdmin = await db.query('SELECT id FROM users WHERE email = ?', [ADMIN_EMAIL]);
       if (existingAdmin.rows.length === 0) {
         const hash = await auth.hashPassword(ADMIN_PASS);
         await db.query(
-          'INSERT INTO users (email, password_hash, name, role, is_verified) VALUES ($1, $2, $3, $4, TRUE)',
+          'INSERT INTO users (email, password_hash, name, role, is_verified) VALUES (?, ?, ?, ?, TRUE)',
           [ADMIN_EMAIL, hash, 'Admin DobleYo', 'admin']
         );
         log('Admin user created.');
@@ -421,11 +421,11 @@ setupRouter.post('/full-setup', async (req, res) => {
     log('🌱 Sembrando productos de ejemplo...');
     let productsAdded = 0;
     for (const p of products) {
-      const existing = await db.query('SELECT id FROM products WHERE id = $1', [p.id]);
+      const existing = await db.query('SELECT id FROM products WHERE id = ?', [p.id]);
       if (existing.rows.length === 0) {
         await db.query(
           `INSERT INTO products (id, name, category, origin, process, roast, price, rating, is_deal, is_bestseller, is_new, is_fast, image_url, stock_quantity)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)`,
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [
             p.id, p.name, p.category, p.origin || null, p.process || null, p.roast || null,
             p.price, p.rating || 0, p.deal || false, p.bestseller || false, p.new || false,
@@ -441,11 +441,11 @@ setupRouter.post('/full-setup', async (req, res) => {
 
     // 7. Crear usuario admin
     log('👤 Creando usuario administrador...');
-    const existingAdmin = await db.query('SELECT id FROM users WHERE email = $1', [ADMIN_EMAIL]);
+    const existingAdmin = await db.query('SELECT id FROM users WHERE email = ?', [ADMIN_EMAIL]);
     if (existingAdmin.rows.length === 0) {
       const hash = await auth.hashPassword(ADMIN_PASS);
       await db.query(
-        'INSERT INTO users (email, password_hash, name, role, is_verified) VALUES ($1, $2, $3, $4, TRUE)',
+        'INSERT INTO users (email, password_hash, name, role, is_verified) VALUES (?, ?, ?, ?, TRUE)',
         [ADMIN_EMAIL, hash, 'Admin DobleYo', 'admin']
       );
       log(`✅ Usuario admin creado: ${ADMIN_EMAIL} / ${ADMIN_PASS}`);

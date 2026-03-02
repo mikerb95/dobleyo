@@ -53,7 +53,7 @@ caficultorRouter.get('/applications/:id',
         FROM caficultor_applications ca
         JOIN users u ON ca.user_id = u.id
         LEFT JOIN users reviewer ON ca.reviewed_by = reviewer.id
-        WHERE ca.id = $1
+        WHERE ca.id = ?
       `, [req.params.id]);
       
       if (result.rows.length === 0) {
@@ -83,7 +83,7 @@ caficultorRouter.post('/applications/:id/approve',
     try {
       // Obtener la aplicación y el usuario
       const appResult = await db.query(
-        'SELECT user_id FROM caficultor_applications WHERE id = $1',
+        'SELECT user_id FROM caficultor_applications WHERE id = ?',
         [appId]
       );
       
@@ -95,19 +95,19 @@ caficultorRouter.post('/applications/:id/approve',
 
       // Actualizar aplicación
       await db.query(
-        'UPDATE caficultor_applications SET status = "approved", reviewed_by = $1, reviewed_at = NOW(), admin_notes = $2 WHERE id = $3',
+        'UPDATE caficultor_applications SET status = "approved", reviewed_by = ?, reviewed_at = NOW(), admin_notes = ? WHERE id = ?',
         [adminId, notes || null, appId]
       );
 
       // Actualizar usuario: cambiar role a caficultor y status a approved
       await db.query(
-        'UPDATE users SET role = "caficultor", caficultor_status = "approved" WHERE id = $1',
+        'UPDATE users SET role = "caficultor", caficultor_status = "approved" WHERE id = ?',
         [userId]
       );
 
       // Log de auditoria
       await db.query(
-        'INSERT INTO audit_logs (user_id, action, entity_type, entity_id, details) VALUES ($1, $2, $3, $4, $5)',
+        'INSERT INTO audit_logs (user_id, action, entity_type, entity_id, details) VALUES (?, ?, ?, ?, ?)',
         [adminId, 'APPROVE_CAFICULTOR', 'caficultor_applications', String(appId), JSON.stringify({ approved_user_id: userId })]
       );
 
@@ -135,7 +135,7 @@ caficultorRouter.post('/applications/:id/reject',
     try {
       // Obtener la aplicación
       const appResult = await db.query(
-        'SELECT user_id FROM caficultor_applications WHERE id = $1',
+        'SELECT user_id FROM caficultor_applications WHERE id = ?',
         [appId]
       );
       
@@ -147,19 +147,19 @@ caficultorRouter.post('/applications/:id/reject',
 
       // Actualizar aplicación
       await db.query(
-        'UPDATE caficultor_applications SET status = "rejected", reviewed_by = $1, reviewed_at = NOW(), admin_notes = $2 WHERE id = $3',
+        'UPDATE caficultor_applications SET status = "rejected", reviewed_by = ?, reviewed_at = NOW(), admin_notes = ? WHERE id = ?',
         [adminId, reason, appId]
       );
 
       // Actualizar usuario: cambiar status a rejected (mantiene role client)
       await db.query(
-        'UPDATE users SET caficultor_status = "rejected" WHERE id = $1',
+        'UPDATE users SET caficultor_status = "rejected" WHERE id = ?',
         [userId]
       );
 
       // Log de auditoria
       await db.query(
-        'INSERT INTO audit_logs (user_id, action, entity_type, entity_id, details) VALUES ($1, $2, $3, $4, $5)',
+        'INSERT INTO audit_logs (user_id, action, entity_type, entity_id, details) VALUES (?, ?, ?, ?, ?)',
         [adminId, 'REJECT_CAFICULTOR', 'caficultor_applications', String(appId), JSON.stringify({ rejected_user_id: userId, reason })]
       );
 
