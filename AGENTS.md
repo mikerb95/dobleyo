@@ -302,7 +302,7 @@ Todo agente que cree o modifique páginas DEBE cumplir:
 | DEBT-001 | 🟡 | README dice PostgreSQL pero código usa MySQL — migrar a PG | ✅ Resuelto Fase 1 |
 | DEBT-002 | 🟡 | Breakpoints CSS inconsistentes (700, 768, 900, 980px) | ✅ Resuelto Fase 2 |
 | DEBT-003 | 🟡 | Página mobile separada con UA sniffing — eliminar | ✅ Resuelto Fase 2 |
-| DEBT-004 | 🟡 | Trazabilidad usa datos hardcodeados, no BD | Pendiente Fase 5 |
+| DEBT-004 | 🟡 | Trazabilidad usa datos hardcodeados, no BD | ✅ Resuelto Fase 5 |
 | DEBT-005 | 🟡 | Esquema contable (35+ tablas) sin rutas/servicios implementados | Pendiente Fase 6 |
 | DEBT-006 | 🟡 | admin.html legacy coexiste con páginas Astro admin/ | Pendiente Fase 10 |
 | DEBT-007 | 🟡 | Zero tests automatizados | Pendiente Fase 12 |
@@ -318,7 +318,7 @@ Todo agente que cree o modifique páginas DEBE cumplir:
 | 2 | Diseño mobile-first y armonía visual | ✅ Completo |
 | 3 | Normativa colombiana y compliance legal | ✅ Completo |
 | 4 | Sistema de órdenes y pasarelas de pago | ✅ Completo |
-| 5 | Trazabilidad completa y QR | ⏳ Pendiente |
+| 5 | Trazabilidad completa y QR | ✅ Completo |
 | 6 | Módulo de finanzas de producción | ⏳ Pendiente |
 | 7 | Landing pages de fincas y caficultores | ⏳ Pendiente |
 | 8 | Mapa de calor de ventas | ⏳ Pendiente |

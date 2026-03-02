@@ -2,6 +2,42 @@
 
 ---
 
+## 📅 2026-03-03 — Fase 5: Trazabilidad Completa y QR (Agente: Claude)
+
+### Archivos Creados
+
+- `server/routes/traceability.js` — Endpoint público `GET /api/traceability/:code` que acepta `label_code` (desde `generated_labels`) o `lot_id` (desde `coffee_harvests`). Realiza JOIN completo a lo largo de todo el pipeline de café: cosecha → almacenamiento verde → lote de tueste → café tostado → almacenamiento tostado → empaquetado. `formatRow()` estructura la respuesta en `{ harvest, storage, roasting, roasted, packaged, label }`. Sin autenticación (endpoint público para QR en empaques).
+- `src/pages/t/[code].astro` — Página SSR de destino QR: clientes escanean el QR del empaque y aterrizan aquí. Fetch server-side a `/api/traceability/:code`. 5 estados: sin código, error de API, no encontrado, traza completa. Timeline visual de 4 etapas: Cosecha 🌱 (verde), Almacenamiento 🏭 (azul), Tueste 🔥 (ámbar), Empaque 📦 (morado). Badge de puntaje SCA, notas de sabor, diseño responsive desde 320px. Botones de pie: "Comprar este café" → /tienda, "Consultar otro lote" → /trazabilidad.
+
+### Archivos Modificados
+
+- `public/assets/js/trazabilidad.js` — Reescritura completa: elimina array de lotes hardcodeados, fallback localStorage y fetch de `lotes.json`. Agrega `lookupCode(code)` que consulta `/api/traceability/:code`, `renderResult(data)` que mapea la respuesta al DOM, `handleLookup(val)` como handler async con manejo de errores. El scanner QR ahora decodifica URLs `/t/{code}` además del formato `?lote=`. 226 líneas, patrón IIFE preservado.
+- `src/layouts/Layout.astro` — **Bug fix**: `<Head />` era llamado sin props, ignorando el `title` y `description` pasados a `<Layout>`. Agrega interfaz Props `{ title?: string; description?: string; }` y los retransmite a `<Head title={title} description={description} />`. Impacto: todas las páginas públicas ahora tienen títulos y descripciones correctas.
+- `src/pages/trazabilidad.astro` — Agrega props de SEO a `<Layout>`: title "Trazabilidad de café — DobleYo Café", description completa. Actualiza placeholder del input al formato real de códigos `"Ej: COL-HUI-1800 o LBL-LOT-0001-0001"`.
+- `server/index.js` — Monta `traceabilityRouter` en `/api/traceability`.
+- `api/index.js` — Paridad: monta `traceabilityRouter` en `/api/traceability`.
+
+### Decisiones Técnicas
+
+- **Endpoint público sin auth**: La rastreabilidad es un beneficio de marketing/confianza — el cliente no necesita login para ver de dónde viene su café.
+- **Doble estrategia de lookup**: Intenta `label_code` primero (formato QR canónico), luego fallback a `lot_id` para compatibilidad con búsquedas manuales desde `/trazabilidad`.
+- **SSR para la página `/t/[code]`**: Permite SEO y muestra la data inmediatamente sin parpadeo de carga del lado del cliente. `export const prerender = false`.
+- **Formato URL QR**: `https://dobleyo.cafe/t/{label_code}` mapeado a `src/pages/t/[code].astro` — URLs cortas y limpias para los QR físicos.
+- **Sin nueva migración de BD**: Todas las tablas del pipeline de café ya existían (`coffee_harvests`, `green_coffee_inventory`, `roasting_batches`, `roasted_coffee`, `roasted_coffee_inventory`, `packaged_coffee`, `generated_labels`).
+
+### Bugs/Deuda Resuelta
+
+- **DEBT-004** 🟡: Trazabilidad usaba datos hardcodeados → ahora conectada a BD real vía `/api/traceability/:code`.
+- **Layout title/description bug**: `<Head />` no recibía props de página → corregido con interfaz Props.
+
+### Impacto
+
+- Los clientes pueden escanear el QR del empaque y ver el historial completo del café: finca, almacenamiento, tueste (nivel, temperatura, tiempo, pérdida de peso), empaque (acidez, cuerpo, balance, puntaje SCA, notas de sabor).
+- La página `/trazabilidad` ahora usa datos reales de la BD en lugar de datos ficticios hardcodeados.
+- SEO corregido: todos los títulos y meta descriptions de páginas públicas ahora funcionan correctamente.
+
+---
+
 ## 📅 2026-03-02 — Fase 4: Sistema de Órdenes y Pasarelas de Pago (Agente: Claude)
 
 ### Archivos Creados
