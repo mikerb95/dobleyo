@@ -14,7 +14,7 @@ async function logAudit(userId, action, entityType, entityId, details = {}) {
       console.warn('[Audit] Missing required parameters:', { userId, action, entityType, entityId });
       return null;
     }
-    
+
     const result = await query(
       `INSERT INTO audit_logs (user_id, action, entity_type, entity_id, details)
        VALUES ($1, $2, $3, $4, $5)`,
@@ -53,7 +53,7 @@ async function getAuditLogs(filters = {}) {
       LEFT JOIN users u ON al.user_id = u.id
       WHERE 1=1
     `;
-    
+
     const params = [];
 
     if (action) {
