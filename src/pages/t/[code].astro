@@ -1,0 +1,369 @@
+---
+import Layout from "../../layouts/Layout.astro";
+
+export const prerender = false;
+
+const { code } = Astro.params;
+
+// Obtener datos de trazabilidad desde la API
+let traceData: any = null;
+let apiError = false;
+
+if (code) {
+  try {
+    const apiBase = Astro.url.origin;
+    const res = await fetch(`${apiBase}/api/traceability/${encodeURIComponent(code)}`);
+    if (res.ok) {
+      const json = await res.json();
+      if (json.success) traceData = json.data;
+    }
+  } catch {
+    apiError = true;
+  }
+}
+
+const h = traceData?.harvest;
+
+function regionLabel(c: string | undefined) {
+  const m: Record<string, string> = {
+    HUI: "Huila", NAR: "Nariño", CAU: "Cauca", ANT: "Antioquia",
+    CUN: "Cundinamarca", TOL: "Tolima", BOY: "Boyacá", MAG: "Magdalena",
+    SAN: "Santander", RIS: "Risaralda", CAL: "Caldas", QUI: "Quindío",
+  };
+  return m[(c || "").toUpperCase()] || c || "Colombia";
+}
+
+function fmtDate(d: string | undefined) {
+  if (!d) return null;
+  return new Date(d).toLocaleDateString("es-CO", { year: "numeric", month: "long", day: "numeric" });
+}
+
+function scoreLabel(n: number | undefined) {
+  if (n == null) return null;
+  const m: Record<number, string> = { 1: "Bajo", 2: "Medio-bajo", 3: "Medio", 4: "Alto", 5: "Excepcional" };
+  return `${m[n] || n} (${n}/5)`;
+}
+
+const lotName = h
+  ? [regionLabel(h.region), h.variety, h.date && new Date(h.date).getFullYear()].filter(Boolean).join(" · ")
+  : code;
+
+const pageTitle = traceData
+  ? `${lotName} — Trazabilidad DobleYo Café`
+  : "Trazabilidad — DobleYo Café";
+
+const pageDesc = traceData && h
+  ? `Conoce el origen de tu café: finca ${h.farm}, ${regionLabel(h.region)}, Colombia. Variedad ${h.variety}, proceso ${h.process}.`
+  : "Escanea el QR de tu empaque para conocer la historia de tu café desde la finca hasta tu taza.";
+---
+
+<Layout title={pageTitle} description={pageDesc}>
+  <article class="trace-page">
+
+    {!code && (
+      <div class="trace-msg card p">
+        <h1>Código no válido</h1>
+        <p class="muted">No se proporcionó un código de lote. Escanea el QR del empaque.</p>
+        <a href="/" class="btn" data-link>Ir al inicio</a>
+      </div>
+    )}
+
+    {code && apiError && (
+      <div class="trace-msg card p">
+        <h1>Error de conexión</h1>
+        <p class="muted">No fue posible obtener los datos de trazabilidad. Inténtalo de nuevo.</p>
+        <a href={`/t/${code}`} class="btn">Reintentar</a>
+      </div>
+    )}
+
+    {code && !apiError && !traceData && (
+      <div class="trace-msg card p">
+        <h1>Lote no encontrado</h1>
+        <p class="muted">No se encontró información para el código <strong>{code}</strong>.</p>
+        <a href="/trazabilidad" class="btn" data-link>Consultar otro lote</a>
+      </div>
+    )}
+
+    {traceData && h && (
+      <>
+        <!-- Hero -->
+        <header class="trace-hero">
+          <div class="trace-hero-inner">
+            <p class="trace-tag">🌿 De la finca a tu taza</p>
+            <h1>{lotName}</h1>
+            <p class="trace-code muted">Código: {traceData.lot_code || traceData.code}</p>
+            <div class="trace-chips">
+              {h.process    && <span class="trace-chip">{h.process}</span>}
+              {h.variety    && <span class="trace-chip">{h.variety}</span>}
+              {h.altitude   && <span class="trace-chip">{h.altitude} msnm</span>}
+            </div>
+          </div>
+        </header>
+
+        <!-- Línea de tiempo -->
+        <section class="trace-timeline" aria-label="Historia del lote">
+
+          <!-- Etapa 1: Cosecha -->
+          <div class="trace-step trace-step--harvest">
+            <div class="trace-step-icon" aria-hidden="true">🌱</div>
+            <div class="trace-step-body">
+              <h2>Cosecha en finca</h2>
+              <dl class="trace-dl">
+                {h.farm       && <><dt>Finca</dt><dd>{h.farm}</dd></>}
+                {h.region     && <><dt>Región</dt><dd>{regionLabel(h.region)}, Colombia</dd></>}
+                {h.altitude   && <><dt>Altitud</dt><dd>{h.altitude} msnm</dd></>}
+                {h.variety    && <><dt>Variedad</dt><dd>{h.variety}</dd></>}
+                {h.process    && <><dt>Proceso</dt><dd>{h.process}</dd></>}
+                {h.climate    && <><dt>Clima</dt><dd>{h.climate}</dd></>}
+                {h.date       && <><dt>Fecha</dt><dd>{fmtDate(h.date)}</dd></>}
+              </dl>
+            </div>
+          </div>
+
+          <!-- Etapa 2: Almacenamiento verde -->
+          {traceData.storage && (
+            <div class="trace-step trace-step--storage">
+              <div class="trace-step-icon" aria-hidden="true">🏭</div>
+              <div class="trace-step-body">
+                <h2>Almacenamiento café verde</h2>
+                <dl class="trace-dl">
+                  {traceData.storage.location  && <><dt>Bodega</dt><dd>{traceData.storage.location}</dd></>}
+                  {traceData.storage.weight_kg && <><dt>Peso</dt><dd>{traceData.storage.weight_kg} kg</dd></>}
+                  {traceData.storage.date      && <><dt>Fecha</dt><dd>{fmtDate(traceData.storage.date)}</dd></>}
+                </dl>
+              </div>
+            </div>
+          )}
+
+          <!-- Etapa 3: Tostión -->
+          {traceData.roasted && (
+            <div class="trace-step trace-step--roast">
+              <div class="trace-step-icon" aria-hidden="true">🔥</div>
+              <div class="trace-step-body">
+                <h2>Tueste</h2>
+                <dl class="trace-dl">
+                  {traceData.roasted.roast_level         && <><dt>Nivel</dt><dd>{traceData.roasted.roast_level}</dd></>}
+                  {traceData.roasted.actual_temp         && <><dt>Temperatura</dt><dd>{traceData.roasted.actual_temp} °C</dd></>}
+                  {traceData.roasted.roast_time_minutes  && <><dt>Tiempo</dt><dd>{traceData.roasted.roast_time_minutes} min</dd></>}
+                  {traceData.roasted.weight_kg           && <><dt>Peso tostado</dt><dd>{traceData.roasted.weight_kg} kg</dd></>}
+                  {traceData.roasted.date                && <><dt>Fecha</dt><dd>{fmtDate(traceData.roasted.date)}</dd></>}
+                </dl>
+              </div>
+            </div>
+          )}
+
+          <!-- Etapa 4: Empaque / Cupping -->
+          {traceData.packaged && traceData.packaged.score && (
+            <div class="trace-step trace-step--pack">
+              <div class="trace-step-icon" aria-hidden="true">📦</div>
+              <div class="trace-step-body">
+                <h2>Control de calidad y empaque</h2>
+                <div class="trace-score">
+                  <span class="trace-score-num">{traceData.packaged.score}</span>
+                  <span class="trace-score-label">puntos SCA</span>
+                </div>
+                <dl class="trace-dl">
+                  {traceData.packaged.acidity    && <><dt>Acidez</dt><dd>{scoreLabel(traceData.packaged.acidity)}</dd></>}
+                  {traceData.packaged.body       && <><dt>Cuerpo</dt><dd>{scoreLabel(traceData.packaged.body)}</dd></>}
+                  {traceData.packaged.balance    && <><dt>Balance</dt><dd>{scoreLabel(traceData.packaged.balance)}</dd></>}
+                  {traceData.packaged.presentation && <><dt>Presentación</dt><dd>{traceData.packaged.presentation}</dd></>}
+                  {traceData.packaged.package_size && <><dt>Empaque</dt><dd>{traceData.packaged.package_size}</dd></>}
+                </dl>
+                {traceData.label?.flavor_notes && (
+                  <div class="trace-flavor">
+                    <p class="trace-flavor-label">Notas de sabor</p>
+                    <p class="trace-flavor-notes">{traceData.label.flavor_notes}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          <!-- Notas de sabor (sin cupping completo) -->
+          {traceData.label?.flavor_notes && !(traceData.packaged?.score) && (
+            <div class="trace-step trace-step--pack">
+              <div class="trace-step-icon" aria-hidden="true">☕</div>
+              <div class="trace-step-body">
+                <h2>Notas de sabor</h2>
+                <p class="trace-flavor-notes">{traceData.label.flavor_notes}</p>
+              </div>
+            </div>
+          )}
+
+        </section>
+
+        <!-- Aromas / notas descriptivas -->
+        {h.aroma && (
+          <section class="trace-aromas card p">
+            <h2>Perfil aromático</h2>
+            <p>{h.aroma}</p>
+            {h.taste_notes && <p class="muted">{h.taste_notes}</p>}
+          </section>
+        )}
+
+        <!-- Footer acciones -->
+        <footer class="trace-footer">
+          <a href="/tienda" class="btn" data-link>Comprar este café</a>
+          <a href="/trazabilidad" class="btn btn--outline" data-link>Consultar otro lote</a>
+        </footer>
+      </>
+    )}
+
+  </article>
+
+  <style>
+    /* ─── Layout ─────────────────────────────────────────────────── */
+    .trace-page {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 1rem 1rem 4rem;
+    }
+    .trace-msg {
+      margin: 3rem auto;
+      max-width: 480px;
+      text-align: center;
+    }
+    .trace-msg h1 { margin-bottom: .75rem; }
+    .trace-msg .muted { margin-bottom: 1.5rem; }
+
+    /* ─── Hero ───────────────────────────────────────────────────── */
+    .trace-hero {
+      text-align: center;
+      padding: 2.5rem 1rem 2rem;
+    }
+    .trace-tag {
+      font-size: .85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--accent);
+      margin-bottom: .5rem;
+    }
+    .trace-hero h1 {
+      font-size: clamp(1.6rem, 5vw, 2.4rem);
+      color: var(--coffee);
+      margin: .25rem 0 .5rem;
+    }
+    .trace-code { font-size: .85rem; margin-bottom: 1rem; }
+    .trace-chips { display: flex; flex-wrap: wrap; justify-content: center; gap: .5rem; margin-top: .75rem; }
+    .trace-chip {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: .25rem .75rem;
+      font-size: .8rem;
+      font-weight: 500;
+    }
+
+    /* ─── Timeline ───────────────────────────────────────────────── */
+    .trace-timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      position: relative;
+      margin: 1.5rem 0;
+    }
+    .trace-timeline::before {
+      content: '';
+      position: absolute;
+      left: 1.45rem;
+      top: 0; bottom: 0;
+      width: 2px;
+      background: var(--border);
+      z-index: 0;
+    }
+    .trace-step {
+      display: flex;
+      gap: 1rem;
+      position: relative;
+      padding-bottom: 1.5rem;
+    }
+    .trace-step-icon {
+      width: 2.875rem;
+      height: 2.875rem;
+      border-radius: 50%;
+      background: var(--card);
+      border: 2px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 1;
+    }
+    .trace-step--harvest  .trace-step-icon { border-color: #16a34a; background: #dcfce7; }
+    .trace-step--storage  .trace-step-icon { border-color: #2563eb; background: #dbeafe; }
+    .trace-step--roast    .trace-step-icon { border-color: #d97706; background: #fef3c7; }
+    .trace-step--pack     .trace-step-icon { border-color: #9333ea; background: #f3e8ff; }
+
+    .trace-step-body {
+      flex: 1;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: .625rem;
+      padding: 1rem 1.125rem;
+    }
+    .trace-step-body h2 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--coffee);
+      margin: 0 0 .75rem;
+    }
+
+    /* ─── Definition list ────────────────────────────────────────── */
+    .trace-dl {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: .25rem .75rem;
+      font-size: .875rem;
+      margin: 0;
+    }
+    .trace-dl dt { color: var(--muted-fg); font-weight: 500; }
+    .trace-dl dd { margin: 0; }
+
+    /* ─── Score badge ─────────────────────────────────────────────── */
+    .trace-score {
+      display: inline-flex;
+      align-items: baseline;
+      gap: .35rem;
+      background: var(--accent);
+      color: #fff;
+      padding: .25rem .875rem .25rem .625rem;
+      border-radius: .5rem;
+      margin-bottom: .75rem;
+    }
+    .trace-score-num  { font-size: 1.5rem; font-weight: 800; line-height: 1; }
+    .trace-score-label { font-size: .8rem; font-weight: 500; opacity: .9; }
+
+    /* ─── Flavor notes ────────────────────────────────────────────── */
+    .trace-flavor { margin-top: .75rem; }
+    .trace-flavor-label { font-size: .8rem; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--muted-fg); margin-bottom: .25rem; }
+    .trace-flavor-notes { font-style: italic; color: var(--coffee); }
+
+    /* ─── Aromas section ─────────────────────────────────────────── */
+    .trace-aromas { margin: 1rem 0; }
+    .trace-aromas h2 { font-size: 1rem; margin-bottom: .5rem; }
+
+    /* ─── Footer ─────────────────────────────────────────────────── */
+    .trace-footer {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding-top: 1.5rem;
+    }
+    .btn--outline {
+      background: transparent;
+      border: 2px solid var(--accent);
+      color: var(--accent);
+    }
+    .btn--outline:hover { background: var(--accent); color: #fff; }
+
+    /* ─── Responsive ─────────────────────────────────────────────── */
+    @media (max-width: 480px) {
+      .trace-timeline::before { left: 1.3rem; }
+      .trace-step-icon { width: 2.625rem; height: 2.625rem; font-size: 1rem; }
+    }
+  </style>
+</Layout>
