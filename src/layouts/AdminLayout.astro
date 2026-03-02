@@ -1,72 +1,336 @@
 ---
-import Header from "../components/Header.astro";
-import Footer from "../components/Footer.astro";
 import Head from "../components/Head.astro";
+
+export interface Props {
+  title?: string;
+  section?: string;
+}
+
+const { title = "Admin — DobleYo Café", section = "" } = Astro.props;
 ---
 
 <!doctype html>
 <html lang="es">
   <head>
-    <Head title="Admin - DobleYo" isAdmin={true} />
+    <Head title={title} isAdmin={true} />
+    <style>
+      /* ── Variables ─────────────────────────────────────── */
+      :root {
+        --sidebar-w: 260px;
+        --sidebar-bg: #1a1008;
+        --sidebar-text: #d4c4b0;
+        --sidebar-active: #c8a96e;
+        --sidebar-hover: rgba(200,169,110,0.12);
+        --topbar-h: 56px;
+      }
+      *, *::before, *::after { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: 'Crimson Pro', Georgia, serif;
+        background: #f7f3ef;
+        color: #251a14;
+        min-height: 100vh;
+        visibility: hidden;
+      }
+
+      /* ── Sidebar ─────────────────────────────────────── */
+      .admin-sidebar {
+        position: fixed;
+        inset: 0 auto 0 0;
+        width: var(--sidebar-w);
+        background: var(--sidebar-bg);
+        color: var(--sidebar-text);
+        display: flex;
+        flex-direction: column;
+        z-index: 200;
+        transform: translateX(calc(-1 * var(--sidebar-w)));
+        transition: transform 0.28s ease;
+        overflow-y: auto;
+      }
+      .admin-sidebar.open { transform: translateX(0); }
+      @media (min-width: 1024px) { .admin-sidebar { transform: translateX(0); } }
+
+      .sidebar-brand {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 1.5rem 1.25rem 1rem;
+        text-decoration: none;
+        color: var(--sidebar-active);
+        font-size: 1.15rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        border-bottom: 1px solid rgba(255,255,255,0.08);
+        flex-shrink: 0;
+      }
+      .sidebar-nav { flex: 1; padding: 0.75rem 0; overflow-y: auto; }
+      .nav-section-label {
+        font-size: 0.65rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: rgba(212,196,176,0.4);
+        padding: 0.9rem 1.25rem 0.3rem;
+        display: block;
+      }
+      .nav-link {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.6rem 1.25rem;
+        color: var(--sidebar-text);
+        text-decoration: none;
+        font-size: 0.88rem;
+        transition: background 0.15s, color 0.15s;
+        position: relative;
+      }
+      .nav-link:hover { background: var(--sidebar-hover); color: #fff; }
+      .nav-link.active { color: var(--sidebar-active); background: var(--sidebar-hover); }
+      .nav-link.active::before {
+        content: '';
+        position: absolute;
+        left: 0; top: 0; bottom: 0;
+        width: 3px;
+        background: var(--sidebar-active);
+        border-radius: 0 2px 2px 0;
+      }
+      .nav-link svg { flex-shrink: 0; opacity: 0.7; }
+      .nav-link.active svg, .nav-link:hover svg { opacity: 1; }
+      .sidebar-footer {
+        padding: 1rem 1.25rem;
+        border-top: 1px solid rgba(255,255,255,0.08);
+        font-size: 0.8rem;
+        color: rgba(212,196,176,0.55);
+      }
+      .sidebar-footer a { display: block; color: rgba(212,196,176,0.55); text-decoration: none; padding: 0.3rem 0; transition: color 0.15s; }
+      .sidebar-footer a:hover { color: var(--sidebar-text); }
+      #adminUserName { font-weight: 600; color: var(--sidebar-text); margin-bottom: 0.4rem; font-size: 0.85rem; }
+
+      /* ── Topbar (mobile) ──────────────────────────────── */
+      .admin-topbar {
+        position: fixed;
+        top: 0; left: 0; right: 0;
+        height: var(--topbar-h);
+        background: var(--sidebar-bg);
+        display: flex;
+        align-items: center;
+        padding: 0 1rem;
+        z-index: 190;
+        gap: 1rem;
+      }
+      @media (min-width: 1024px) { .admin-topbar { display: none; } }
+      .topbar-title { color: var(--sidebar-active); font-size: 1rem; font-weight: 700; flex: 1; }
+      .btn-hamburger {
+        background: none; border: none; cursor: pointer;
+        color: var(--sidebar-text); display: grid; place-items: center; padding: 0.3rem;
+      }
+
+      /* ── Overlay ──────────────────────────────────────── */
+      .sidebar-overlay {
+        display: none;
+        position: fixed; inset: 0;
+        background: rgba(0,0,0,0.55);
+        z-index: 199;
+      }
+      .sidebar-overlay.visible { display: block; }
+      @media (min-width: 1024px) { .sidebar-overlay { display: none !important; } }
+
+      /* ── Main ─────────────────────────────────────────── */
+      .admin-main { min-height: 100vh; padding-top: var(--topbar-h); }
+      @media (min-width: 1024px) { .admin-main { padding-left: var(--sidebar-w); padding-top: 0; } }
+      .admin-content { padding: 1.75rem 1.25rem; }
+      @media (min-width: 768px) { .admin-content { padding: 2rem 1.75rem; } }
+      @media (min-width: 1024px) { .admin-content { padding: 2.5rem 2.5rem; } }
+    </style>
   </head>
-  <body class="font-sans bg-cream text-ink" style="visibility: hidden;">
-    <Header />
+  <body>
+    <!-- Mobile topbar -->
+    <div class="admin-topbar">
+      <button class="btn-hamburger" id="sidebarToggle" aria-label="Abrir menú">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+      <span class="topbar-title">DobleYo Admin</span>
+    </div>
 
-    <main>
-      <slot />
-    </main>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-    <Footer />
+    <aside class="admin-sidebar" id="adminSidebar">
+      <a href="/admin" class="sidebar-brand">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+        DobleYo Café
+      </a>
+
+      <nav class="sidebar-nav" aria-label="Admin">
+        <span class="nav-section-label">Principal</span>
+        <a href="/admin" class="nav-link" data-section="dashboard">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+            <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+          </svg>
+          Dashboard
+        </a>
+        <a href="/admin/pedidos" class="nav-link" data-section="pedidos">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+            <line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>
+          </svg>
+          Pedidos
+        </a>
+
+        <span class="nav-section-label">Catálogo</span>
+        <a href="/admin/inventario" class="nav-link" data-section="inventario">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+          </svg>
+          Inventario
+        </a>
+        <a href="/admin/lotes" class="nav-link" data-section="lotes">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+            <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+          </svg>
+          Lotes
+        </a>
+
+        <span class="nav-section-label">Producción</span>
+        <a href="/app/harvest" class="nav-link">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+          Cosechas
+        </a>
+        <a href="/app/send-roasting" class="nav-link">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="5"/>
+            <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+            <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+          </svg>
+          Tostión
+        </a>
+        <a href="/app/packaging" class="nav-link">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/>
+            <line x1="10" y1="12" x2="14" y2="12"/>
+          </svg>
+          Empaque
+        </a>
+
+        <span class="nav-section-label">Analítica</span>
+        <a href="/admin/sales-map" class="nav-link" data-section="sales-map">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
+            <line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/>
+          </svg>
+          Mapa de ventas
+        </a>
+        <a href="/admin/finanzas" class="nav-link" data-section="finanzas">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="1" x2="12" y2="23"/>
+            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+          </svg>
+          Finanzas
+        </a>
+        <a href="/app/auditoria" class="nav-link">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+          </svg>
+          Auditoría
+        </a>
+
+        <span class="nav-section-label">Gestión</span>
+        <a href="/admin/usuarios" class="nav-link" data-section="usuarios">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+          Usuarios
+        </a>
+        <a href="/" class="nav-link" target="_blank" rel="noreferrer">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+            <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+          </svg>
+          Ver tienda
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div id="adminUserName">—</div>
+        <a href="#" id="adminLogout">Cerrar sesión</a>
+      </div>
+    </aside>
+
+    <div class="admin-main">
+      <div class="admin-content">
+        <slot />
+      </div>
+    </div>
 
     <script is:inline src="/assets/js/auth-refresh.js"></script>
-
     <script>
-      // Verificar autenticación de admin usando HttpOnly cookie
+      // Auth check
       (async function () {
-        const currentPath = window.location.pathname;
+        const path = window.location.pathname;
         try {
-          // La cookie auth_token se envía automáticamente con credentials: 'include'
-          const response = await fetch("/api/auth/me", { credentials: "include" });
-
-          if (!response.ok) {
-            window.location.href =
-              "/login?redirect=" + encodeURIComponent(currentPath);
+          const res = await fetch("/api/auth/me", { credentials: "include" });
+          if (!res.ok) {
+            window.location.href = "/login?redirect=" + encodeURIComponent(path);
             return;
           }
-
-          const user = await response.json();
-
+          const user = await res.json();
           if (user.role !== "admin") {
-            alert("Acceso denegado. Solo administradores pueden acceder.");
+            alert("Acceso denegado. Solo administradores.");
             window.location.href = "/";
             return;
           }
-
           document.body.style.visibility = "visible";
+          const el = document.getElementById("adminUserName");
+          if (el) el.textContent = user.name || user.email;
         } catch {
-          window.location.href =
-            "/login?redirect=" + encodeURIComponent(currentPath);
+          window.location.href = "/login?redirect=" + encodeURIComponent(path);
         }
       })();
 
-      // Utilidades de métricas para el header sticky
+      // Active nav
       (function () {
-        const $ = (s, r = document) => r.querySelector(s);
-        const setHeaderMetrics = () => {
-          const headerCont = document.querySelector(".site-header .container");
-          // @ts-ignore
-          const hh = headerCont ? headerCont.offsetHeight : 96;
-          // Sin topbar en admin, top es 0
-          const top = 0;
-          const pageOffset = top + hh + 12;
-          const root = document.documentElement;
-          root.style.setProperty("--header-top", top + "px");
-          root.style.setProperty("--header-height", hh + "px");
-          root.style.setProperty("--page-offset-top", pageOffset + "px");
-        };
-        setHeaderMetrics();
-        window.addEventListener("resize", setHeaderMetrics);
+        const seg = window.location.pathname.split("/").filter(Boolean);
+        const section = seg[1] ?? "dashboard";
+        document.querySelectorAll(".nav-link[data-section]").forEach((a) => {
+          if ((a as HTMLAnchorElement).getAttribute("data-section") === section)
+            a.classList.add("active");
+        });
       })();
+
+      // Sidebar toggle
+      (function () {
+        const sidebar = document.getElementById("adminSidebar");
+        const overlay = document.getElementById("sidebarOverlay");
+        const toggle = document.getElementById("sidebarToggle");
+        const close = () => {
+          sidebar?.classList.remove("open");
+          overlay?.classList.remove("visible");
+        };
+        toggle?.addEventListener("click", () => {
+          sidebar?.classList.toggle("open");
+          overlay?.classList.toggle("visible");
+        });
+        overlay?.addEventListener("click", close);
+      })();
+
+      // Logout
+      document.getElementById("adminLogout")?.addEventListener("click", async (e) => {
+        e.preventDefault();
+        await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+        window.location.href = "/login";
+      });
     </script>
   </body>
 </html>
