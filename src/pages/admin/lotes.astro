@@ -355,7 +355,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
       const code = getVal("fCode");
       const name = getVal("fName");
-      if (code --version || !name) {
+      if (!code || !name) {
         msg.textContent = "⚠️ Código y nombre son obligatorios.";
         msg.style.color = "#856404";
         return;
