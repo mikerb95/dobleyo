@@ -3,8 +3,8 @@
 import { query } from '../db.js';
 
 export async function createFarmsTable() {
-  // Tabla principal de fincas
-  await query(`
+    // Tabla principal de fincas
+    await query(`
     CREATE TABLE IF NOT EXISTS farms (
       id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
       caficultor_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -31,17 +31,17 @@ export async function createFarmsTable() {
     )
   `, []);
 
-  await query(`CREATE INDEX IF NOT EXISTS idx_farms_caficultor ON farms(caficultor_id)`, []);
-  await query(`CREATE INDEX IF NOT EXISTS idx_farms_region ON farms(region)`, []);
-  await query(`CREATE INDEX IF NOT EXISTS idx_farms_slug ON farms(slug)`, []);
-  await query(`CREATE INDEX IF NOT EXISTS idx_farms_published ON farms(is_published)`, []);
+    await query(`CREATE INDEX IF NOT EXISTS idx_farms_caficultor ON farms(caficultor_id)`, []);
+    await query(`CREATE INDEX IF NOT EXISTS idx_farms_region ON farms(region)`, []);
+    await query(`CREATE INDEX IF NOT EXISTS idx_farms_slug ON farms(slug)`, []);
+    await query(`CREATE INDEX IF NOT EXISTS idx_farms_published ON farms(is_published)`, []);
 
-  console.log('[Farms Migration] Tabla farms creada correctamente.');
+    console.log('[Farms Migration] Tabla farms creada correctamente.');
 }
 
 // Ejecutar directamente como script
 if (process.argv[1] === new URL(import.meta.url).pathname) {
-  createFarmsTable()
-    .then(() => { console.log('Migración de fincas completada.'); process.exit(0); })
-    .catch(err => { console.error('Error en migración:', err); process.exit(1); });
+    createFarmsTable()
+        .then(() => { console.log('Migración de fincas completada.'); process.exit(0); })
+        .catch(err => { console.error('Error en migración:', err); process.exit(1); });
 }
