@@ -64,7 +64,7 @@ def convert_file(filepath: str) -> tuple[int, str]:
     # (?=\s*[,)])                  → lookahead: seguido de coma o paréntesis cierre
     
     pattern = re.compile(
-        r'((?:\w+\.)?query\s*\(\s*)([`\'"'])(.*?)\2(?=\s*[,)])',
+        r"""((?:\w+\.)?query\s*\(\s*)([`'"])(.*?)\2(?=\s*[,)])""",
         re.DOTALL
     )
     
