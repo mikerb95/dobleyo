@@ -2,6 +2,33 @@
 
 ---
 
+## 📅 2026-03-01 — Fase 2: Diseño Mobile-First y Armonía Visual (Agente: Claude)
+
+### Archivos Modificados
+
+- `public/assets/css/styles.css` — Unificación completa de breakpoints al set canónico (480/768/1024/1400px). Reemplaza valores inconsistentes: 900px→1024px (6 ocurrencias: nav-beans, hero-overlay, footer, nav/hamburger), 980px→1024px (6 ocurrencias: promo, evidence-grid, footer-logo min-width, trace-layout, shop-layout, featured-grid), 700px→480px (1 ocurrencia: shop-topbar chips). Hero completamente refactorizado: eliminado `display:none` en móvil, ahora muestra hero con `background: var(--coffee)` y oculta el video en mobile. Eliminados 2 bloques `@media` vacíos.
+
+### Archivos Eliminados
+
+- `src/pages/mobile.astro` — **DEBT-003**: Página separada para UA sniffing eliminada. No había referencias activas desde rutas, vercel.json ni server.
+
+### Bugs/Deuda Resuelta
+
+- **DEBT-002** 🟡: Breakpoints CSS inconsistentes (700, 768, 900, 980px) — unificados a 480/768/1024/1400px. Resuelto.
+- **DEBT-003** 🟡: Página mobile separada con UA sniffing — eliminada. Resuelto.
+
+### Decisiones Técnicas
+
+- `max-width: 767px` se mantiene como complemento natural de `min-width: 768px` (patrón estándar — son el mismo punto de quiebre desde lados opuestos).
+- El hero en móvil usa `background: var(--coffee)` con video oculto (`display: none`) en lugar de ocultar el hero completo — preserva el mensaje de valor de la landing page en todos los dispositivos.
+- `min-width: 1024px` para revelar `.footer-social img` en tamaño grande — consistente con el nuevo breakpoint desktop.
+
+### Impacto
+
+El sitio es ahora completamente navegable en móvil (iPhone SE 375px, Pixel 7 412px). El hero principal ya no desaparece en pantallas pequeñas. El CSS tiene un solo set de breakpoints canónicos, facilitando mantenimiento futuro. La página `/mobile` ya no ocupa una ruta del build de Astro.
+
+---
+
 ## 📅 2026-03-01 — Fase 1: Estabilización PostgreSQL y Bug Fixes (Agente: Claude)
 
 ### Archivos Modificados

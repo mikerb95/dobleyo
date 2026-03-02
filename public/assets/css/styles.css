@@ -314,7 +314,7 @@ img {
   transition: transform .6s cubic-bezier(.2, .8, .2, 1);
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1024px) {
   .nav-beans {
     display: none
   }
@@ -436,10 +436,20 @@ img {
   isolation: isolate
 }
 
-/* Ocultar hero en móvil */
+/* Hero responsivo en móvil — fondo sólido y sin video */
 @media (max-width: 767px) {
   .hero {
+    padding: 3rem 0;
+    min-height: calc(60vh - var(--page-offset-top, 96px));
+    background: var(--coffee)
+  }
+
+  .hero .hero-media {
     display: none
+  }
+
+  .hero-overlay {
+    background: transparent
   }
 }
 
@@ -543,14 +553,13 @@ img {
   box-shadow: 0 6px 20px rgba(0, 0, 0, .28)
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1024px) {
   .hero-overlay {
     background: rgba(var(--hero-overlay-color), var(--hero-overlay-opacity-mobile))
   }
 }
 
-/* Capa oscura sutil en tema oscuro para mejorar contraste de texto */
-@media (min-width: 768px) {}
+
 
 .btn {
   background: var(--accent);
@@ -814,7 +823,7 @@ img {
   padding-bottom: 1.5rem
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1024px) {
   .footer-main {
     grid-template-columns: 1fr;
   }
@@ -900,7 +909,7 @@ img {
 }
 
 /* Adaptativo */
-@media (max-width: 900px) {
+@media (max-width: 1024px) {
   .nav {
     display: none
   }
@@ -924,9 +933,6 @@ img {
 }
 
 /* Mostrar el toggle de tema como el último control dentro de .actions */
-
-/* En mobile, mantener el toggle visible y al final del flujo */
-@media (max-width: 900px) {}
 
 /* Small user icon button styling */
 .user-icon {
@@ -1057,7 +1063,7 @@ body.menu-open {
   text-overflow: ellipsis
 }
 
-@media (max-width: 980px) {
+@media (max-width: 1024px) {
   .promo-inner {
     max-height: none
   }
@@ -1272,7 +1278,7 @@ body.menu-open {
 
 /* Boton de tema */
 
-@media (max-width: 980px) {
+@media (max-width: 1024px) {
   .evidence-grid {
     grid-template-columns: 1fr;
     gap: 1.5rem
@@ -1311,7 +1317,7 @@ body.menu-open {
 }
 
 /* Ajustar tamano del logo en pantallas grandes */
-@media (min-width: 980px) {
+@media (min-width: 1024px) {
   .site-footer .footer-social img {
     height: var(--footer-logo-height-lg);
   }
@@ -1461,7 +1467,7 @@ body.menu-open {
   color: var(--muted-fg)
 }
 
-@media (max-width: 980px) {
+@media (max-width: 1024px) {
   .trace-layout {
     grid-template-columns: 1fr;
   }
@@ -1780,7 +1786,7 @@ body.menu-open {
   cursor: not-allowed
 }
 
-@media (max-width: 980px) {
+@media (max-width: 1024px) {
   .shop-layout {
     grid-template-columns: 1fr
   }
@@ -1802,7 +1808,7 @@ body.menu-open {
 }
 
 /* Mobile: show chips as horizontal scroller for quick filters */
-@media (max-width: 700px) {
+@media (max-width: 480px) {
   .shop-topbar {
     display: block;
     padding: .5rem 0
@@ -2171,7 +2177,7 @@ body.menu-open {
   line-height: 1.45
 }
 
-@media (max-width: 980px) {
+@media (max-width: 1024px) {
   .featured-grid {
     grid-template-columns: 1fr
   }

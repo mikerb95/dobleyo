@@ -300,8 +300,8 @@ Todo agente que cree o modifique páginas DEBE cumplir:
 | BUG-011 | 🟠 Moderado | CSP deshabilitado en Helmet | Pendiente Fase 11 |
 | BUG-012 | 🟠 Moderado | Auth mixto: HttpOnly cookies + localStorage adminToken | ✅ Resuelto Fase 1 |
 | DEBT-001 | 🟡 | README dice PostgreSQL pero código usa MySQL — migrar a PG | ✅ Resuelto Fase 1 |
-| DEBT-002 | 🟡 | Breakpoints CSS inconsistentes (700, 768, 900, 980px) | Pendiente Fase 2 |
-| DEBT-003 | 🟡 | Página mobile separada con UA sniffing — eliminar | Pendiente Fase 2 |
+| DEBT-002 | 🟡 | Breakpoints CSS inconsistentes (700, 768, 900, 980px) | ✅ Resuelto Fase 2 |
+| DEBT-003 | 🟡 | Página mobile separada con UA sniffing — eliminar | ✅ Resuelto Fase 2 |
 | DEBT-004 | 🟡 | Trazabilidad usa datos hardcodeados, no BD | Pendiente Fase 5 |
 | DEBT-005 | 🟡 | Esquema contable (35+ tablas) sin rutas/servicios implementados | Pendiente Fase 6 |
 | DEBT-006 | 🟡 | admin.html legacy coexiste con páginas Astro admin/ | Pendiente Fase 10 |
@@ -315,7 +315,7 @@ Todo agente que cree o modifique páginas DEBE cumplir:
 |---|---|---|
 | 0 | Fundamentos documentales y gobernanza IA | ✅ En progreso |
 | 1 | Estabilización, bug fixes, migración PostgreSQL | ✅ Completo |
-| 2 | Diseño mobile-first y armonía visual | ⏳ Pendiente |
+| 2 | Diseño mobile-first y armonía visual | ✅ Completo |
 | 3 | Normativa colombiana y compliance legal | ⏳ Pendiente |
 | 4 | Sistema de órdenes y pasarelas de pago | ⏳ Pendiente |
 | 5 | Trazabilidad completa y QR | ⏳ Pendiente |
