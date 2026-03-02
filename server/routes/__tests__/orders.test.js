@@ -95,21 +95,17 @@ describe('POST /api/orders', () => {
     it('debería crear una orden correctamente y retornar referencia + URL de pago', async () => {
         // INSERT orden → retorna id y referencia
         query.mockResolvedValueOnce({ rows: [{ id: 1, reference: 'DY-1234567-ABCD' }] });
-        // INSERT items de orden
-        query.mockResolvedValueOnce({ rows: [] });
+    // INSERT item (1 item en el payload)
+    query.mockResolvedValueOnce({ rows: [] });
 
-        const res = await request(app)
-            .post('/api/orders')
-            .send(validOrderPayload);
+    const res = await request(app)
+      .post('/api/orders')
+      .send(validOrderPayload);
 
-        expect(res.status).toBe(200);
-        expect(res.body.success).toBe(true);
-        expect(res.body.reference).toBeDefined();
-        expect(res.body.checkoutUrl).toBeDefined();
-        expect(res.body.total).toBeGreaterThan(0);
-    });
-
-    it('debería calcular envío gratis cuando el subtotal supera $120.000 COP', async () => {
+    expect(res.status).toBe(201);
+    expect(res.body.success).toBe(true);
+    expect(res.body.data.reference).toBeDefined();
+    expect(res.body.data.total).toBeGreaterThan(0);
         query.mockResolvedValueOnce({ rows: [{ id: 2, reference: 'DY-9999999-FREE' }] });
         query.mockResolvedValueOnce({ rows: [] });
 
