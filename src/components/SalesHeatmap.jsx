@@ -24,9 +24,9 @@ function downloadCSV(data) {
   ];
   const csv = rows.map((r) => r.map((v) => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')).join('\n');
   const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  a.href     = url;
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
   a.download = `ventas-heatmap-${new Date().toISOString().slice(0, 10)}.csv`;
   a.click();
   URL.revokeObjectURL(url);
@@ -76,19 +76,19 @@ export default function SalesHeatmap() {
   // Cargar leaflet y leaflet.heat dinámicamente después de que el componente esté en el cliente
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    
+
     (async () => {
       try {
         // Importar leaflet primero
         const leafletModule = await import('leaflet');
         window.L = leafletModule.default;
-        
+
         // Esperar un tick para asegurar que L está disponible
         await new Promise(resolve => setTimeout(resolve, 0));
-        
+
         // Ahora cargar leaflet.heat que extenderá L
         await import('leaflet.heat');
-        
+
         setLeafletReady(true);
       } catch (err) {
         console.error('Error loading leaflet or leaflet.heat:', err);
