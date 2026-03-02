@@ -95,17 +95,17 @@ describe('POST /api/orders', () => {
     it('debería crear una orden correctamente y retornar referencia + URL de pago', async () => {
         // INSERT orden → retorna id y referencia
         query.mockResolvedValueOnce({ rows: [{ id: 1, reference: 'DY-1234567-ABCD' }] });
-    // INSERT item (1 item en el payload)
-    query.mockResolvedValueOnce({ rows: [] });
+        // INSERT item (1 item en el payload)
+        query.mockResolvedValueOnce({ rows: [] });
 
-    const res = await request(app)
-      .post('/api/orders')
-      .send(validOrderPayload);
+        const res = await request(app)
+            .post('/api/orders')
+            .send(validOrderPayload);
 
-    expect(res.status).toBe(201);
-    expect(res.body.success).toBe(true);
-    expect(res.body.data.reference).toBeDefined();
-    expect(res.body.data.total).toBeGreaterThan(0);
+        expect(res.status).toBe(201);
+        expect(res.body.success).toBe(true);
+        expect(res.body.data.reference).toBeDefined();
+        expect(res.body.data.total).toBeGreaterThan(0);
         query.mockResolvedValueOnce({ rows: [{ id: 2, reference: 'DY-9999999-FREE' }] });
         query.mockResolvedValueOnce({ rows: [] });
 
@@ -118,8 +118,8 @@ describe('POST /api/orders', () => {
                 ],
             });
 
-        expect(res.status).toBe(200);
-        expect(res.body.shipping).toBe(0);
+        expect(res.status).toBe(201);
+        expect(res.body.data.shipping).toBe(0);
     });
 
     it('debería retornar 500 si la BD falla al insertar', async () => {
@@ -159,6 +159,6 @@ describe('GET /api/orders/:ref', () => {
         const res = await request(app).get('/api/orders/DY-1234567-ABCD');
 
         expect(res.status).toBe(200);
-        expect(res.body.order.reference).toBe('DY-1234567-ABCD');
+        expect(res.body.data.reference).toBe('DY-1234567-ABCD');
     });
 });
