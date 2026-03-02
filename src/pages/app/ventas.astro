@@ -5,129 +5,40 @@ import SalesHeatmap from "../../components/SalesHeatmap.jsx";
 
 <AppLayout>
   <div style="max-width: 1400px; margin: 0 auto; padding: 1.5rem;">
-
     <!-- Encabezado -->
     <div style="margin-bottom: 1.5rem;">
-      <h1 style="font-size: 1.7rem; font-weight: 700; color: var(--coffee, #251a14); margin-bottom: 0.4rem;">
+      <h1
+        style="font-size: 1.7rem; font-weight: 700; color: var(--coffee, #251a14); margin-bottom: 0.4rem;"
+      >
         🗺️ Mapa de Calor de Ventas
       </h1>
       <p style="color: #666; margin: 0; font-size: 0.95rem;">
-        Distribución geográfica combinada — tienda web y MercadoLibre.
-        Filtra por período, canal o producto y exporta los datos como CSV.
+        Distribución geográfica combinada — tienda web y MercadoLibre. Filtra
+        por período, canal o producto y exporta los datos como CSV.
       </p>
     </div>
 
     <!-- Mapa interactivo -->
-    <div style="background: white; padding: 1.5rem; border-radius: 10px; border: 1px solid #e6e6e6; margin-bottom: 1.5rem;">
+    <div
+      style="background: white; padding: 1.5rem; border-radius: 10px; border: 1px solid #e6e6e6; margin-bottom: 1.5rem;"
+    >
       <SalesHeatmap client:load />
     </div>
 
     <!-- Tips rápidos -->
-    <div style="background: #f9f7f4; border-radius: 8px; padding: 1.25rem 1.5rem; border: 1px solid #e6e6e6;">
-      <h3 style="color: #251a14; margin: 0 0 0.8rem; font-size: 0.95rem;">Guía rápida</h3>
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.9rem;">
-        {[
-          { icon: '🎨', title: 'Intensidad de calor', desc: 'Amarillo = pocas ventas → Rojo oscuro = muchas ventas.' },
-          { icon: '📌', title: 'Marcadores', desc: 'Clic en un círculo para ver pedidos, ventas en COP y canal (web/ML).' },
-          { icon: '🔍', title: 'Filtros', desc: 'Filtra por período, canal de venta o nombre de producto.' },
-          { icon: '💾', title: 'Exportar', desc: 'Descarga los datos del filtro activo con el botón ↓ CSV.' },
-        ].map(({ icon, title, desc }) => (
-          <div style="background: white; border: 1px solid #e6e6e6; border-radius: 6px; padding: 0.85rem 1rem;">
-            <strong style="font-size: 0.9rem; color: #251a14;">{icon} {title}</strong>
-            <p style="color: #666; margin: 0.3rem 0 0; font-size: 0.84rem; line-height: 1.5;">{desc}</p>
-          </div>
-        ))}
-      </div>
-    </div>
-
-  </div>
-</AppLayout>
-
-
-    <!-- Descripción -->
     <div
-      style="background: #f9fafb; border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem; border-left: 4px solid #8b6f47;"
+      style="background: #f9f7f4; border-radius: 8px; padding: 1.25rem 1.5rem; border: 1px solid #e6e6e6;"
     >
-      <p style="margin: 0; color: #666; font-size: 0.95rem;">
-        El color y tamaño de cada círculo representan la intensidad y volumen de
-        pedidos en esa zona.
-        <strong>Amarillo claro</strong> = pocas ventas, <strong
-          >Rojo oscuro</strong
-        > = muchas ventas.
-      </p>
-    </div>
-
-    <!-- Mapa -->
-    <div
-      style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 1.5rem;"
-    >
-      <SalesHeatmap client:load />
-    </div>
-
-    <!-- Información -->
-    <div
-      style="background: white; border-radius: 8px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1);"
-    >
-      <h3 style="color: #251a14; margin-top: 0;">¿Cómo funciona?</h3>
+      <h3 style="color: #251a14; margin: 0 0 0.8rem; font-size: 0.95rem;">
+        Guía rápida
+      </h3>
       <div
-        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;"
+        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.9rem;"
       >
-        <div>
-          <h4 style="color: #8b6f47; margin-bottom: 0.5rem;">
-            🎨 Círculos de Color
-          </h4>
-          <p style="color: #666; margin: 0; font-size: 0.9rem;">
-            Cada círculo representa una ciudad donde se han realizado ventas. El
-            color indica la intensidad: desde amarillo claro (pocas ventas)
-            hasta rojo oscuro (muchas ventas).
-          </p>
-        </div>
-        <div>
-          <h4 style="color: #8b6f47; margin-bottom: 0.5rem;">
-            📏 Tamaño del Círculo
-          </h4>
-          <p style="color: #666; margin: 0; font-size: 0.9rem;">
-            Cuanto más grande sea el círculo, más pedidos ha recibido esa zona.
-            El tamaño es proporcional al volumen de ventas.
-          </p>
-        </div>
-        <div>
-          <h4 style="color: #8b6f47; margin-bottom: 0.5rem;">
-            📊 Información Detallada
-          </h4>
-          <p style="color: #666; margin: 0; font-size: 0.9rem;">
-            Haz clic en cualquier círculo para ver detalles específicos de esa
-            ciudad: cantidad de pedidos y monto total de ventas.
-          </p>
-        </div>
-        <div>
-          <h4 style="color: #8b6f47; margin-bottom: 0.5rem;">
-            🔄 Datos en Tiempo Real
-          </h4>
-          <p style="color: #666; margin: 0; font-size: 0.9rem;">
-            Los datos se actualizan cada vez que sincronizas tus ventas desde
-            MercadoLibre.
-          </p>
-        </div>
-        <div>
-          <h4 style="color: #8b6f47; margin-bottom: 0.5rem;">
-            📍 Cobertura Geográfica
-          </h4>
-          <p style="color: #666; margin: 0; font-size: 0.9rem;">
-            El mapa cubre todo Colombia, mostrando la distribución de tus
-            clientes en cada región.
-          </p>
-        </div>
-        <div>
-          <h4 style="color: #8b6f47; margin-bottom: 0.5rem;">
-            💡 Análisis Estratégico
-          </h4>
-          <p style="color: #666; margin: 0; font-size: 0.9rem;">
-            Identifica zonas de alto desempeño y oportunidades de crecimiento en
-            nuevas regiones.
-          </p>
-        </div>
-      </div>
-    </div>
-  </div>
-</AppLayout>
+        {
+          [
+            {
+              icon: "🎨",
+              title: "Intensidad de calor",
+              desc: "Amarillo = pocas ventas → Rojo oscuro = muchas ventas.",
+            },
