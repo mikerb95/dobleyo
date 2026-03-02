@@ -1,0 +1,452 @@
+---
+// Página de Mi Finca — Caficultor gestiona su perfil de finca — Fase 7
+import AppLayout from "../../layouts/AppLayout.astro";
+
+// Cargar la finca del caficultor autenticado (si existe)
+let farm: any = null;
+let fetchError: string | null = null;
+
+try {
+  const res = await fetch(`${Astro.url.origin}/api/farms/my`, {
+    headers: { cookie: Astro.request.headers.get("cookie") ?? "" },
+  });
+  if (res.ok) {
+    const json = await res.json();
+    farm = json.data ?? null;
+  } else if (res.status !== 401) {
+    fetchError = "No se pudo cargar la información de tu finca.";
+  }
+} catch (_) {
+  fetchError = "Error de conexión. Intenta de nuevo.";
+}
+
+const isNew = farm === null;
+const displayDate = farm?.created_at
+  ? new Date(farm.created_at).toLocaleDateString("es-CO", { year: "numeric", month: "long", day: "numeric" })
+  : "";
+---
+
+<AppLayout>
+  <div class="mf-page">
+
+    <!-- Encabezado de sección -->
+    <header class="mf-header">
+      <div>
+        <h1 class="mf-header__title">Mi Finca</h1>
+        <p class="mf-header__sub">
+          {isNew
+            ? "Crea el perfil público de tu finca para aparecer en el catálogo de DobleYo."
+            : `Finca registrada el ${displayDate}.`}
+        </p>
+      </div>
+      {!isNew && farm.is_published && (
+        <a
+          href={`/finca/${farm.slug}`}
+          class="mf-view-btn"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Ver página pública de tu finca"
+        >
+          Ver página pública ↗
+        </a>
+      )}
+    </header>
+
+    <!-- Error de carga -->
+    {fetchError && (
+      <div class="alert alert--error" role="alert">{fetchError}</div>
+    )}
+
+    <!-- Indicador de publicación -->
+    {!isNew && (
+      <div class:list={["status-banner", farm.is_published ? "status-banner--published" : "status-banner--draft"]}>
+        {farm.is_published
+          ? "✅ Tu finca está publicada y visible en el catálogo."
+          : "⏳ Tu finca está en borrador — pendiente de revisión por el equipo DobleYo."}
+      </div>
+    )}
+
+    <!-- Formulario principal -->
+    <form id="farmForm" class="farm-form" novalidate>
+      <!-- Información básica -->
+      <section class="form-section">
+        <h2 class="form-section__title">Información Básica</h2>
+        <div class="form-grid">
+          <div class="form-group form-group--wide">
+            <label for="name">Nombre de la finca <span class="required" aria-hidden="true">*</span></label>
+            <input type="text" id="name" name="name" required maxlength="160"
+              value={farm?.name ?? ""} placeholder="Ej: Finca El Paraíso" />
+          </div>
+          <div class="form-group">
+            <label for="region">Región / Departamento <span class="required" aria-hidden="true">*</span></label>
+            <input type="text" id="region" name="region" required maxlength="80"
+              value={farm?.region ?? ""} placeholder="Ej: Huila" />
+          </div>
+          <div class="form-group">
+            <label for="municipality">Municipio</label>
+            <input type="text" id="municipality" name="municipality" maxlength="120"
+              value={farm?.municipality ?? ""} placeholder="Ej: Pitalito" />
+          </div>
+          <div class="form-group">
+            <label for="altitude_min">Altitud mínima (msnm)</label>
+            <input type="number" id="altitude_min" name="altitude_min" min="0" max="4000"
+              value={farm?.altitude_min ?? ""} placeholder="1600" inputmode="numeric" />
+          </div>
+          <div class="form-group">
+            <label for="altitude_max">Altitud máxima (msnm)</label>
+            <input type="number" id="altitude_max" name="altitude_max" min="0" max="4000"
+              value={farm?.altitude_max ?? ""} placeholder="1900" inputmode="numeric" />
+          </div>
+          <div class="form-group">
+            <label for="hectares">Extensión (hectáreas)</label>
+            <input type="number" id="hectares" name="hectares" min="0" step="0.1"
+              value={farm?.hectares ?? ""} placeholder="12.5" inputmode="decimal" />
+          </div>
+          <div class="form-group">
+            <label for="soil_type">Tipo de suelo</label>
+            <input type="text" id="soil_type" name="soil_type" maxlength="100"
+              value={farm?.soil_type ?? ""} placeholder="Ej: Franco arcilloso" />
+          </div>
+        </div>
+      </section>
+
+      <!-- Arrays: variedades, procesos, certificaciones -->
+      <section class="form-section">
+        <h2 class="form-section__title">Caficultura</h2>
+        <div class="form-grid">
+          <div class="form-group form-group--wide">
+            <label for="varieties">Variedades (separadas por coma)</label>
+            <input type="text" id="varieties" name="varieties"
+              value={farm?.varieties?.join(", ") ?? ""}
+              placeholder="Ej: Geisha, Bourbon, Caturra" />
+            <span class="form-hint">Escribe las variedades separadas por comas</span>
+          </div>
+          <div class="form-group form-group--wide">
+            <label for="processes">Procesos de beneficio (separados por coma)</label>
+            <input type="text" id="processes" name="processes"
+              value={farm?.processes?.join(", ") ?? ""}
+              placeholder="Ej: Lavado, Natural, Honey" />
+          </div>
+          <div class="form-group form-group--wide">
+            <label for="certifications">Certificaciones (separadas por coma)</label>
+            <input type="text" id="certifications" name="certifications"
+              value={farm?.certifications?.join(", ") ?? ""}
+              placeholder="Ej: Rainforest Alliance, UTZ, Orgánico" />
+          </div>
+        </div>
+      </section>
+
+      <!-- Historia y descripción -->
+      <section class="form-section">
+        <h2 class="form-section__title">Historia y Descripción</h2>
+        <div class="form-grid">
+          <div class="form-group form-group--wide">
+            <label for="short_description">Descripción corta (máx. 300 caracteres)</label>
+            <textarea id="short_description" name="short_description" rows="3" maxlength="300"
+              placeholder="Una finca de alta montaña en los Andes colombianos, reconocida por sus cafés de perfiles florales y frutales.">
+              {farm?.short_description ?? ""}
+            </textarea>
+            <span class="form-hint" id="desc-count">0 / 300 caracteres</span>
+          </div>
+          <div class="form-group form-group--wide">
+            <label for="story">Historia completa</label>
+            <textarea id="story" name="story" rows="8"
+              placeholder="Cuéntanos la historia de tu finca, qué la hace especial, tu familia, las generaciones que la han trabajado...">
+              {farm?.story ?? ""}
+            </textarea>
+          </div>
+        </div>
+      </section>
+
+      <!-- Media -->
+      <section class="form-section">
+        <h2 class="form-section__title">Imagen de Portada</h2>
+        <div class="form-grid">
+          <div class="form-group form-group--wide">
+            <label for="cover_image_url">URL de imagen de portada</label>
+            <input type="url" id="cover_image_url" name="cover_image_url"
+              value={farm?.cover_image_url ?? ""}
+              placeholder="https://..." />
+            <span class="form-hint">Usa una imagen horizontal de al menos 1200×600 px en formato WebP o JPG.</span>
+          </div>
+          {farm?.cover_image_url && (
+            <div class="form-group form-group--wide">
+              <img
+                src={farm.cover_image_url}
+                alt={`Vista previa de portada — ${farm.name}`}
+                class="cover-preview"
+                loading="lazy"
+              />
+            </div>
+          )}
+        </div>
+      </section>
+
+      <!-- Ubicación -->
+      <section class="form-section">
+        <h2 class="form-section__title">Ubicación (opcional)</h2>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="latitude">Latitud</label>
+            <input type="number" id="latitude" name="latitude" step="0.0000001" min="-90" max="90"
+              value={farm?.latitude ?? ""} placeholder="1.8653" inputmode="decimal" />
+          </div>
+          <div class="form-group">
+            <label for="longitude">Longitud</label>
+            <input type="number" id="longitude" name="longitude" step="0.0000001" min="-180" max="180"
+              value={farm?.longitude ?? ""} placeholder="-76.0353" inputmode="decimal" />
+          </div>
+        </div>
+      </section>
+
+      <!-- Botones de acción -->
+      <div class="form-actions">
+        <button type="submit" class="btn-save" id="saveBtn">
+          {isNew ? "Crear mi finca" : "Guardar cambios"}
+        </button>
+        {!isNew && (
+          <a href={`/finca/${farm.slug}`} target="_blank" rel="noopener" class="btn-preview">
+            Ver página pública
+          </a>
+        )}
+      </div>
+    </form>
+
+    <!-- Mensaje de resultado -->
+    <div id="resultMsg" class="result-msg" aria-live="polite" hidden></div>
+  </div>
+</AppLayout>
+
+<script define:vars={{ currentFarm: farm }}>
+// Estado: si ya existe la finca o no
+const farmId = currentFarm?.id ?? null;
+const isNew = farmId === null;
+
+// Contador de caracteres para descripción corta
+const descTextarea = document.getElementById('short_description');
+const descCount = document.getElementById('desc-count');
+if (descTextarea && descCount) {
+  const update = () => { descCount.textContent = `${descTextarea.value.length} / 300 caracteres`; };
+  descTextarea.addEventListener('input', update);
+  update();
+}
+
+// Parsear array desde input de texto (coma-separated)
+function parseCommaSeparated(val) {
+  return val ? val.split(',').map(s => s.trim()).filter(Boolean) : [];
+}
+
+// Función para leer el formulario como objeto
+function readForm() {
+  const fd = new FormData(document.getElementById('farmForm'));
+  return {
+    name: fd.get('name')?.trim(),
+    region: fd.get('region')?.trim(),
+    municipality: fd.get('municipality')?.trim() || undefined,
+    altitude_min: fd.get('altitude_min') ? parseInt(fd.get('altitude_min'), 10) : undefined,
+    altitude_max: fd.get('altitude_max') ? parseInt(fd.get('altitude_max'), 10) : undefined,
+    hectares: fd.get('hectares') ? parseFloat(fd.get('hectares')) : undefined,
+    soil_type: fd.get('soil_type')?.trim() || undefined,
+    varieties: parseCommaSeparated(fd.get('varieties')),
+    processes: parseCommaSeparated(fd.get('processes')),
+    certifications: parseCommaSeparated(fd.get('certifications')),
+    short_description: fd.get('short_description')?.trim() || undefined,
+    story: fd.get('story')?.trim() || undefined,
+    cover_image_url: fd.get('cover_image_url')?.trim() || undefined,
+    latitude: fd.get('latitude') ? parseFloat(fd.get('latitude')) : undefined,
+    longitude: fd.get('longitude') ? parseFloat(fd.get('longitude')) : undefined,
+  };
+}
+
+// Enviar formulario
+document.getElementById('farmForm')?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const saveBtn = document.getElementById('saveBtn');
+  const resultMsg = document.getElementById('resultMsg');
+  saveBtn.disabled = true;
+  saveBtn.textContent = 'Guardando...';
+  resultMsg.hidden = true;
+
+  const body = readForm();
+
+  try {
+    const url = isNew ? '/api/farms' : `/api/farms/${farmId}`;
+    const method = isNew ? 'POST' : 'PATCH';
+    const res = await fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify(body),
+    });
+    const json = await res.json();
+
+    if (res.ok && json.success) {
+      resultMsg.className = 'result-msg result-msg--success';
+      resultMsg.textContent = isNew
+        ? `¡Finca creada exitosamente! (Pendiente de publicación por el equipo DobleYo)`
+        : '¡Cambios guardados correctamente!';
+      resultMsg.hidden = false;
+      resultMsg.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+      // Si es nueva, recargar para mostrar el formulario de edición
+      if (isNew) {
+        setTimeout(() => { window.location.reload(); }, 1800);
+      }
+    } else {
+      const errMsg = json.errors
+        ? json.errors.map(e => e.msg).join(' | ')
+        : (json.error ?? 'Error desconocido');
+      resultMsg.className = 'result-msg result-msg--error';
+      resultMsg.textContent = `Error: ${errMsg}`;
+      resultMsg.hidden = false;
+    }
+  } catch (err) {
+    resultMsg.className = 'result-msg result-msg--error';
+    resultMsg.textContent = 'Error de conexión. Intenta de nuevo.';
+    resultMsg.hidden = false;
+  } finally {
+    saveBtn.disabled = false;
+    saveBtn.textContent = isNew ? 'Crear mi finca' : 'Guardar cambios';
+  }
+});
+</script>
+
+<style>
+  .mf-page { max-width: 900px; margin: 0 auto; padding: 1.5rem 1.25rem 4rem; }
+
+  /* Header */
+  .mf-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+  }
+  .mf-header__title { font-size: 1.7rem; color: var(--coffee); margin: 0 0 0.3rem; }
+  .mf-header__sub { color: #666; font-size: 0.95rem; margin: 0; }
+  .mf-view-btn {
+    display: inline-flex; align-items: center;
+    gap: 0.3rem; padding: 0.55rem 1.1rem;
+    background: var(--accent); color: #fff;
+    border-radius: 8px; font-size: 0.88rem; font-weight: 700;
+    text-decoration: none; white-space: nowrap;
+    min-height: 44px;
+  }
+  .mf-view-btn:hover { background: #b06030; }
+
+  /* Alerts */
+  .alert { padding: 0.75rem 1rem; border-radius: 8px; font-size: 0.9rem; margin-bottom: 1rem; }
+  .alert--error { background: #fde8e8; color: #c00; border: 1px solid #f9c6c6; }
+
+  .status-banner {
+    padding: 0.7rem 1rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+  }
+  .status-banner--published { background: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7; }
+  .status-banner--draft { background: #fff8e1; color: #7c5700; border: 1px solid #ffe082; }
+
+  /* Form sections */
+  .form-section {
+    background: #fff;
+    border: 1px solid rgba(0,0,0,0.08);
+    border-radius: 10px;
+    padding: 1.4rem;
+    margin-bottom: 1.25rem;
+  }
+  .form-section__title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--coffee);
+    margin: 0 0 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1.5px solid rgba(0,0,0,0.07);
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  @media (min-width: 600px) {
+    .form-grid { grid-template-columns: repeat(2, 1fr); }
+    .form-group--wide { grid-column: 1 / -1; }
+  }
+
+  .form-group { display: flex; flex-direction: column; gap: 0.3rem; }
+  .form-group label { font-size: 0.88rem; font-weight: 600; color: var(--coffee); }
+  .required { color: #c00; margin-left: 2px; }
+  .form-hint { font-size: 0.78rem; color: #888; }
+
+  input[type="text"],
+  input[type="url"],
+  input[type="number"],
+  textarea {
+    width: 100%;
+    padding: 0.6rem 0.8rem;
+    border: 1.5px solid #ddd;
+    border-radius: 7px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    background: #fafafa;
+    color: var(--coffee);
+    transition: border-color 0.15s;
+    box-sizing: border-box;
+    min-height: 44px;
+  }
+  input:focus, textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    background: #fff;
+  }
+  textarea { resize: vertical; min-height: 90px; }
+
+  .cover-preview {
+    width: 100%;
+    max-height: 200px;
+    object-fit: cover;
+    border-radius: 8px;
+    display: block;
+  }
+
+  /* Actions */
+  .form-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: 0.5rem;
+  }
+  .btn-save {
+    background: var(--coffee);
+    color: var(--cream);
+    border: none;
+    padding: 0.75rem 2rem;
+    font-size: 1rem;
+    font-weight: 700;
+    border-radius: 8px;
+    cursor: pointer;
+    min-height: 48px;
+    transition: background 0.15s;
+  }
+  .btn-save:hover:not(:disabled) { background: #3d2419; }
+  .btn-save:disabled { opacity: 0.6; cursor: not-allowed; }
+  .btn-preview {
+    color: var(--accent);
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .btn-preview:hover { text-decoration: underline; }
+
+  .result-msg {
+    padding: 0.9rem 1.1rem;
+    border-radius: 8px;
+    margin-top: 1.25rem;
+    font-size: 0.95rem;
+  }
+  .result-msg--success { background: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7; }
+  .result-msg--error { background: #fde8e8; color: #c00; border: 1px solid #f9c6c6; }
+</style>

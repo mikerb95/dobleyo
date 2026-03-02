@@ -1,0 +1,459 @@
+---
+// Landing page dinámica de finca — Fase 7
+// Ruta: /finca/[slug]
+import Layout from "../../layouts/Layout.astro";
+
+export const prerender = false;
+
+const { slug } = Astro.params;
+
+let farm = null;
+let notFound = false;
+
+try {
+  const res = await fetch(`${Astro.url.origin}/api/farms/${slug}`);
+  if (res.status === 404) {
+    notFound = true;
+  } else if (res.ok) {
+    const data = await res.json();
+    farm = data.data;
+  }
+} catch (_) {
+  notFound = true;
+}
+
+if (notFound) {
+  return Astro.redirect("/fincas", 302);
+}
+
+// Datos derivados para SEO
+const altText = [farm.altitude_min, farm.altitude_max]
+  .filter(Boolean)
+  .join("–") + (farm.altitude_min ? " msnm" : "");
+const pageTitle = `${farm.name} — Finca en ${farm.region} | DobleYo Café`;
+const pageDesc = farm.short_description
+  ?? `Conoce la finca ${farm.name} en ${farm.region}${altText ? ` a ${altText}` : ""}. Café de especialidad colombiano con trazabilidad completa.`;
+const canonicalUrl = `https://dobleyo.cafe/finca/${slug}`;
+const coverImg = farm.cover_image_url ?? "https://dobleyo.cafe/assets/img/og-fincas.jpg";
+
+// Structured data: Product de tipo Place/FarmPlace adaptado
+const structuredData = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": farm.name,
+  "description": pageDesc,
+  "url": canonicalUrl,
+  "address": {
+    "@type": "PostalAddress",
+    "addressRegion": farm.region,
+    "addressCountry": "CO",
+    ...(farm.municipality ? { "addressLocality": farm.municipality } : {}),
+  },
+  ...(farm.latitude && farm.longitude ? {
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": farm.latitude,
+      "longitude": farm.longitude,
+    }
+  } : {}),
+};
+
+// Breadcrumb structured data
+const breadcrumbData = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Inicio", "item": "https://dobleyo.cafe" },
+    { "@type": "ListItem", "position": 2, "name": "Fincas", "item": "https://dobleyo.cafe/fincas" },
+    { "@type": "ListItem", "position": 3, "name": farm.name, "item": canonicalUrl },
+  ],
+};
+
+const galleryUrls: string[] = Array.isArray(farm.gallery_urls) ? farm.gallery_urls : [];
+---
+
+<Layout title={pageTitle} description={pageDesc}>
+  <head slot="head">
+    <link rel="canonical" href={canonicalUrl} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={pageDesc} />
+    <meta property="og:image" content={coverImg} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:type" content="website" />
+    <meta name="robots" content="index, follow" />
+    <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
+    <script type="application/ld+json" set:html={JSON.stringify(breadcrumbData)} />
+  </head>
+
+  <!-- Breadcrumb accesible -->
+  <nav class="breadcrumb" aria-label="Ruta de navegación">
+    <div class="container">
+      <ol class="breadcrumb__list">
+        <li><a href="/">Inicio</a></li>
+        <li aria-hidden="true">›</li>
+        <li><a href="/fincas">Fincas</a></li>
+        <li aria-hidden="true">›</li>
+        <li aria-current="page">{farm.name}</li>
+      </ol>
+    </div>
+  </nav>
+
+  <!-- Hero con imagen de portada -->
+  <section class="farm-hero" aria-label={`Finca ${farm.name}`}>
+    {farm.cover_image_url ? (
+      <img
+        src={farm.cover_image_url}
+        alt={`Vista de la finca ${farm.name} en ${farm.region}`}
+        class="farm-hero__bg"
+        loading="eager"
+      />
+    ) : (
+      <div class="farm-hero__bg farm-hero__bg--fallback" aria-hidden="true"></div>
+    )}
+    <div class="farm-hero__overlay">
+      <div class="container">
+        <div class="farm-hero__meta">
+          <span class="farm-hero__region">{farm.region}{farm.municipality ? `, ${farm.municipality}` : ""}</span>
+        </div>
+        <h1 class="farm-hero__title">{farm.name}</h1>
+        <p class="farm-hero__caficultor">Caficultor: {farm.caficultor_name}</p>
+        {(farm.altitude_min || farm.altitude_max) && (
+          <p class="farm-hero__alt">⛰ {altText}</p>
+        )}
+      </div>
+    </div>
+  </section>
+
+  <div class="farm-layout container">
+    <!-- Columna principal -->
+    <main class="farm-main">
+
+      <!-- Historia -->
+      {farm.story && (
+        <section class="farm-section" aria-labelledby="farm-story-heading">
+          <h2 id="farm-story-heading" class="section-title">La Historia</h2>
+          <div class="farm-story">
+            {farm.story.split("\n").filter(Boolean).map((p: string) => (
+              <p>{p}</p>
+            ))}
+          </div>
+        </section>
+      )}
+
+      <!-- Lotes recientes -->
+      {farm.recent_lots?.length > 0 && (
+        <section class="farm-section" aria-labelledby="farm-lots-heading">
+          <h2 id="farm-lots-heading" class="section-title">Cosechas Recientes</h2>
+          <ul class="lots-list" role="list">
+            {farm.recent_lots.map((lot: any) => (
+              <li class="lot-item">
+                <div class="lot-item__header">
+                  <span class="lot-item__code">{lot.lot_id}</span>
+                  {lot.label_code && (
+                    <a href={`/t/${lot.label_code}`} class="lot-item__trace-link" aria-label={`Ver trazabilidad del lote ${lot.lot_id}`}>
+                      Ver trazabilidad →
+                    </a>
+                  )}
+                </div>
+                <dl class="lot-item__meta">
+                  {lot.variety && (
+                    <div><dt>Variedad</dt><dd>{lot.variety}</dd></div>
+                  )}
+                  {lot.process && (
+                    <div><dt>Proceso</dt><dd>{lot.process}</dd></div>
+                  )}
+                  {lot.altitude && (
+                    <div><dt>Altitud</dt><dd>{lot.altitude} msnm</dd></div>
+                  )}
+                </dl>
+                {lot.flavor_notes && (
+                  <p class="lot-item__notes">🫘 {lot.flavor_notes}</p>
+                )}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      <!-- Galería -->
+      {galleryUrls.length > 0 && (
+        <section class="farm-section" aria-labelledby="farm-gallery-heading">
+          <h2 id="farm-gallery-heading" class="section-title">Galería</h2>
+          <ul class="gallery" role="list" aria-label="Fotos de la finca">
+            {galleryUrls.map((url: string, i: number) => (
+              <li>
+                <img
+                  src={url}
+                  alt={`Finca ${farm.name} — foto ${i + 1}`}
+                  loading="lazy"
+                  class="gallery__img"
+                  width="400"
+                  height="300"
+                />
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+    </main>
+
+    <!-- Sidebar de datos -->
+    <aside class="farm-sidebar" aria-label="Datos de la finca">
+
+      <!-- Ficha técnica -->
+      <div class="sidebar-card">
+        <h2 class="sidebar-card__title">Ficha Técnica</h2>
+        <dl class="spec-list">
+          <div class="spec-item">
+            <dt>Región</dt>
+            <dd>{farm.region}{farm.municipality ? `, ${farm.municipality}` : ""}</dd>
+          </div>
+          {(farm.altitude_min || farm.altitude_max) && (
+            <div class="spec-item">
+              <dt>Altitud</dt>
+              <dd>{altText}</dd>
+            </div>
+          )}
+          {farm.hectares && (
+            <div class="spec-item">
+              <dt>Extensión</dt>
+              <dd>{parseFloat(farm.hectares).toFixed(1)} ha</dd>
+            </div>
+          )}
+          {farm.soil_type && (
+            <div class="spec-item">
+              <dt>Tipo de suelo</dt>
+              <dd>{farm.soil_type}</dd>
+            </div>
+          )}
+        </dl>
+      </div>
+
+      <!-- Variedades -->
+      {farm.varieties?.length > 0 && (
+        <div class="sidebar-card">
+          <h2 class="sidebar-card__title">Variedades</h2>
+          <ul class="tag-list" aria-label="Variedades de café">
+            {farm.varieties.map((v: string) => (
+              <li class="tag tag--variety">{v}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <!-- Procesos -->
+      {farm.processes?.length > 0 && (
+        <div class="sidebar-card">
+          <h2 class="sidebar-card__title">Procesos</h2>
+          <ul class="tag-list" aria-label="Procesos de beneficio">
+            {farm.processes.map((p: string) => (
+              <li class="tag tag--process">{p}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <!-- Certificaciones -->
+      {farm.certifications?.length > 0 && (
+        <div class="sidebar-card">
+          <h2 class="sidebar-card__title">Certificaciones</h2>
+          <ul class="tag-list" aria-label="Certificaciones">
+            {farm.certifications.map((c: string) => (
+              <li class="tag tag--cert">{c}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <!-- CTA: Comprar -->
+      <div class="sidebar-card sidebar-card--cta">
+        <h2 class="sidebar-card__title">¿Te interesa este café?</h2>
+        <p>Cada lote es trazable desde la finca hasta tu taza.</p>
+        <a href="/tienda" class="btn btn--primary">Ver en tienda</a>
+        <a href="/trazabilidad" class="btn btn--outline">Trazar un lote</a>
+      </div>
+
+    </aside>
+  </div>
+</Layout>
+
+<style>
+  /* === Breadcrumb === */
+  .breadcrumb {
+    background: var(--cream, #f7f3ef);
+    border-bottom: 1px solid rgba(0,0,0,0.07);
+    padding: 0.6rem 0;
+    font-size: 0.82rem;
+  }
+  .breadcrumb__list {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    flex-wrap: wrap;
+  }
+  .breadcrumb__list a { color: var(--accent); text-decoration: none; }
+  .breadcrumb__list a:hover { text-decoration: underline; }
+  .breadcrumb__list li[aria-current] { color: var(--coffee); }
+
+  /* === Hero === */
+  .farm-hero {
+    position: relative;
+    min-height: 320px;
+    display: flex;
+    align-items: flex-end;
+    overflow: hidden;
+  }
+  @media (min-width: 768px) { .farm-hero { min-height: 460px; } }
+
+  .farm-hero__bg {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .farm-hero__bg--fallback {
+    background: linear-gradient(135deg, var(--coffee) 0%, #5b3a2a 100%);
+  }
+  .farm-hero__overlay {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    background: linear-gradient(to top, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.1) 80%, transparent 100%);
+    padding: 2.5rem 0 1.5rem;
+    color: #fff;
+  }
+  .farm-hero__meta { margin-bottom: 0.4rem; }
+  .farm-hero__region {
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent, #c67b4e);
+    background: rgba(0,0,0,0.35);
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+  }
+  .farm-hero__title {
+    font-size: clamp(1.8rem, 6vw, 3.2rem);
+    font-family: var(--font-heading, serif);
+    margin: 0.3rem 0 0.4rem;
+    text-shadow: 0 2px 12px rgba(0,0,0,0.45);
+  }
+  .farm-hero__caficultor {
+    font-size: 1rem;
+    opacity: 0.9;
+    margin: 0;
+  }
+  .farm-hero__alt {
+    font-size: 0.9rem;
+    opacity: 0.8;
+    margin: 0.2rem 0 0;
+  }
+
+  /* === Layout === */
+  .container { max-width: 1200px; margin: 0 auto; padding: 0 1.25rem; }
+  .farm-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    padding-top: 2rem;
+    padding-bottom: 3rem;
+  }
+  @media (min-width: 1024px) {
+    .farm-layout { grid-template-columns: 1fr 320px; }
+  }
+
+  /* === Sections === */
+  .farm-section { margin-bottom: 2.5rem; }
+  .section-title {
+    font-size: 1.3rem;
+    color: var(--coffee);
+    border-bottom: 2px solid var(--accent);
+    padding-bottom: 0.4rem;
+    margin-bottom: 1rem;
+    display: inline-block;
+  }
+  .farm-story p { line-height: 1.75; color: #444; margin-bottom: 0.75rem; }
+
+  /* === Lots === */
+  .lots-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 1rem; }
+  .lot-item {
+    background: #fff;
+    border: 1px solid rgba(0,0,0,0.08);
+    border-radius: 8px;
+    padding: 1rem 1.1rem;
+  }
+  .lot-item__header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.5rem; }
+  .lot-item__code { font-weight: 700; font-size: 0.95rem; color: var(--coffee); font-family: monospace; }
+  .lot-item__trace-link { font-size: 0.82rem; color: var(--accent); text-decoration: none; font-weight: 600; }
+  .lot-item__trace-link:hover { text-decoration: underline; }
+  .lot-item__meta { display: flex; flex-wrap: wrap; gap: 0.75rem 1.25rem; font-size: 0.82rem; margin: 0 0 0.4rem; }
+  .lot-item__meta div { display: flex; flex-direction: column; gap: 0.1rem; }
+  .lot-item__meta dt { color: #888; font-size: 0.74rem; }
+  .lot-item__meta dd { color: var(--coffee); font-weight: 600; margin: 0; }
+  .lot-item__notes { font-size: 0.85rem; color: #555; margin: 0.4rem 0 0; }
+
+  /* === Gallery === */
+  .gallery {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  @media (min-width: 768px) { .gallery { grid-template-columns: repeat(3, 1fr); } }
+  .gallery__img { width: 100%; aspect-ratio: 4/3; object-fit: cover; border-radius: 8px; display: block; }
+
+  /* === Sidebar === */
+  .farm-sidebar { display: flex; flex-direction: column; gap: 1.25rem; }
+  .sidebar-card {
+    background: #fff;
+    border: 1px solid rgba(0,0,0,0.08);
+    border-radius: 10px;
+    padding: 1.25rem;
+  }
+  .sidebar-card__title { font-size: 1rem; font-weight: 700; color: var(--coffee); margin: 0 0 0.8rem; }
+  .sidebar-card--cta { background: var(--coffee); color: var(--cream); }
+  .sidebar-card--cta .sidebar-card__title { color: var(--cream); }
+  .sidebar-card--cta p { font-size: 0.9rem; opacity: 0.85; margin-bottom: 1rem; }
+
+  .spec-list { display: flex; flex-direction: column; gap: 0.6rem; margin: 0; }
+  .spec-item { display: grid; grid-template-columns: 1fr 1fr; font-size: 0.88rem; }
+  .spec-item dt { color: #777; }
+  .spec-item dd { font-weight: 600; color: var(--coffee); margin: 0; text-align: right; }
+
+  .tag-list { display: flex; flex-wrap: wrap; gap: 0.5rem; list-style: none; padding: 0; margin: 0; }
+  .tag {
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 0.3rem 0.7rem;
+    border-radius: 999px;
+  }
+  .tag--variety { background: rgba(198,123,78,0.12); color: var(--accent); border: 1px solid rgba(198,123,78,0.3); }
+  .tag--process { background: rgba(37,26,20,0.07); color: var(--coffee); border: 1px solid rgba(37,26,20,0.15); }
+  .tag--cert { background: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7; }
+
+  .btn {
+    display: block;
+    text-align: center;
+    padding: 0.7rem 1rem;
+    border-radius: 8px;
+    font-weight: 700;
+    text-decoration: none;
+    font-size: 0.95rem;
+    margin-bottom: 0.6rem;
+    min-height: 44px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .btn--primary { background: var(--accent); color: #fff; }
+  .btn--primary:hover { background: #b06030; }
+  .btn--outline { background: transparent; color: var(--cream); border: 1.5px solid var(--cream); }
+  .btn--outline:hover { background: rgba(255,255,255,0.12); }
+</style>

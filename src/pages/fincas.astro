@@ -1,0 +1,329 @@
+---
+// Página pública de listado de fincas — Fase 7
+import Layout from "../layouts/Layout.astro";
+
+export const prerender = false;
+
+// Cargar fincas publicadas desde la API
+let farms = [];
+let regions = [];
+let total = 0;
+const regionFilter = Astro.url.searchParams.get("region") ?? "";
+
+try {
+  const params = new URLSearchParams({ limit: "24", offset: "0" });
+  if (regionFilter) params.set("region", regionFilter);
+
+  const [farmsRes, regionsRes] = await Promise.all([
+    fetch(`${Astro.url.origin}/api/farms?${params}`),
+    fetch(`${Astro.url.origin}/api/farms/regions`),
+  ]);
+
+  if (farmsRes.ok) {
+    const data = await farmsRes.json();
+    farms = data.data ?? [];
+    total = data.total ?? 0;
+  }
+  if (regionsRes.ok) {
+    const data = await regionsRes.json();
+    regions = data.data ?? [];
+  }
+} catch (_) {
+  // Errores de conexión no interrumpen el render
+}
+
+const pageTitle = "Nuestras Fincas — DobleYo Café";
+const pageDescription =
+  "Conoce las fincas cafeteras de donde proviene tu café de especialidad. Origen, altitud, variedades y procesos de cada cosecha.";
+---
+
+<Layout title={pageTitle} description={pageDescription}>
+  <head slot="head">
+    <link rel="canonical" href="https://dobleyo.cafe/fincas" />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={pageDescription} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://dobleyo.cafe/fincas" />
+    <meta
+      property="og:image"
+      content="https://dobleyo.cafe/assets/img/og-fincas.jpg"
+    />
+    <meta name="robots" content="index, follow" />
+    <!-- Datos estructurados: Lista de colección -->
+    <script type="application/ld+json" set:html={JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      "name": "Fincas Cafeteras — DobleYo Café",
+      "description": pageDescription,
+      "url": "https://dobleyo.cafe/fincas",
+    })} />
+  </head>
+
+  <!-- Encabezado hero -->
+  <section class="fincas-hero">
+    <div class="fincas-hero__inner">
+      <h1 class="fincas-hero__title">Nuestras Fincas</h1>
+      <p class="fincas-hero__sub">
+        Del grano a tu taza — conoce los caficultores y fincas que hacen
+        posible cada sorbo de DobleYo.
+      </p>
+    </div>
+  </section>
+
+  <!-- Filtros por región -->
+  {regions.length > 0 && (
+    <section class="fincas-filters" aria-label="Filtrar por región">
+      <div class="container">
+        <nav class="filter-chips" role="navigation" aria-label="Regiones">
+          <a
+            href="/fincas"
+            class:list={["chip", { active: !regionFilter }]}
+          >
+            Todas
+          </a>
+          {regions.map((r) => (
+            <a
+              href={`/fincas?region=${encodeURIComponent(r.region)}`}
+              class:list={["chip", { active: regionFilter === r.region }]}
+            >
+              {r.region}
+              <span class="chip__count">{r.count}</span>
+            </a>
+          ))}
+        </nav>
+      </div>
+    </section>
+  )}
+
+  <!-- Grid de fincas -->
+  <section class="fincas-grid-section" aria-label="Listado de fincas">
+    <div class="container">
+      {farms.length === 0 ? (
+        <p class="empty-state">
+          {regionFilter
+            ? `No hay fincas publicadas en ${regionFilter}.`
+            : "Próximamente más fincas. ¡Vuelve pronto!"}
+        </p>
+      ) : (
+        <>
+          <p class="result-count">
+            {total} {total === 1 ? "finca" : "fincas"}
+            {regionFilter ? ` en ${regionFilter}` : ""}
+          </p>
+          <ul class="fincas-grid" role="list">
+            {farms.map((farm) => (
+              <li class="farm-card">
+                <a href={`/finca/${farm.slug}`} class="farm-card__link" aria-label={`Ver finca ${farm.name}`}>
+                  <div class="farm-card__img-wrap">
+                    {farm.cover_image_url ? (
+                      <img
+                        src={farm.cover_image_url}
+                        alt={`Finca ${farm.name} — ${farm.region}`}
+                        loading="lazy"
+                        class="farm-card__img"
+                        width="400"
+                        height="260"
+                      />
+                    ) : (
+                      <div class="farm-card__img farm-card__img--placeholder" aria-hidden="true">
+                        <span>🌿</span>
+                      </div>
+                    )}
+                  </div>
+                  <div class="farm-card__body">
+                    <p class="farm-card__region">{farm.region}{farm.municipality ? `, ${farm.municipality}` : ""}</p>
+                    <h2 class="farm-card__name">{farm.name}</h2>
+                    <p class="farm-card__caficultor">Por {farm.caficultor_name}</p>
+                    {farm.short_description && (
+                      <p class="farm-card__desc">{farm.short_description}</p>
+                    )}
+                    <dl class="farm-card__meta">
+                      {(farm.altitude_min || farm.altitude_max) && (
+                        <div class="farm-card__meta-item">
+                          <dt>Altitud</dt>
+                          <dd>
+                            {farm.altitude_min}
+                            {farm.altitude_max && farm.altitude_max !== farm.altitude_min
+                              ? `–${farm.altitude_max}`
+                              : ""} msnm
+                          </dd>
+                        </div>
+                      )}
+                      {farm.varieties?.length > 0 && (
+                        <div class="farm-card__meta-item">
+                          <dt>Variedades</dt>
+                          <dd>{farm.varieties.slice(0, 2).join(", ")}{farm.varieties.length > 2 ? "…" : ""}</dd>
+                        </div>
+                      )}
+                    </dl>
+                    {farm.certifications?.length > 0 && (
+                      <ul class="farm-card__badges" aria-label="Certificaciones">
+                        {farm.certifications.slice(0, 3).map((c) => (
+                          <li class="badge">{c}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                  <span class="farm-card__cta" aria-hidden="true">Ver finca →</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+    </div>
+  </section>
+</Layout>
+
+<style>
+  /* === Hero === */
+  .fincas-hero {
+    background: var(--coffee);
+    color: var(--cream);
+    padding: 3rem 1.5rem 2.5rem;
+    text-align: center;
+  }
+  .fincas-hero__inner { max-width: 640px; margin: 0 auto; }
+  .fincas-hero__title {
+    font-size: clamp(1.8rem, 5vw, 3rem);
+    font-family: var(--font-heading, serif);
+    margin: 0 0 0.75rem;
+  }
+  .fincas-hero__sub {
+    font-size: 1.05rem;
+    opacity: 0.85;
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  /* === Filtros === */
+  .fincas-filters {
+    background: var(--cream);
+    border-bottom: 1px solid rgba(0,0,0,0.08);
+    padding: 0.75rem 0;
+  }
+  .filter-chips {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    padding: 0 0.25rem;
+  }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.4rem 0.9rem;
+    border-radius: 999px;
+    border: 1.5px solid var(--coffee);
+    color: var(--coffee);
+    font-size: 0.875rem;
+    font-weight: 500;
+    background: transparent;
+    text-decoration: none;
+    transition: background 0.15s, color 0.15s;
+    min-height: 44px;
+  }
+  .chip:hover, .chip.active {
+    background: var(--coffee);
+    color: var(--cream);
+  }
+  .chip__count {
+    background: rgba(255,255,255,0.25);
+    border-radius: 999px;
+    padding: 0 0.35rem;
+    font-size: 0.75rem;
+  }
+
+  /* === Grid === */
+  .fincas-grid-section { padding: 2rem 0 4rem; background: var(--cream); }
+  .container { max-width: 1200px; margin: 0 auto; padding: 0 1.25rem; }
+  .result-count { color: var(--ink, #444); font-size: 0.9rem; margin-bottom: 1.25rem; }
+  .empty-state {
+    text-align: center;
+    color: var(--ink, #555);
+    font-size: 1.05rem;
+    padding: 3rem 0;
+  }
+
+  .fincas-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  @media (min-width: 480px) {
+    .fincas-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (min-width: 1024px) {
+    .fincas-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+
+  /* === Farm Card === */
+  .farm-card { position: relative; }
+  .farm-card__link {
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    text-decoration: none;
+    color: inherit;
+    height: 100%;
+    transition: box-shadow 0.2s, transform 0.2s;
+  }
+  .farm-card__link:hover {
+    box-shadow: 0 6px 24px rgba(37,26,20,0.14);
+    transform: translateY(-2px);
+  }
+
+  .farm-card__img-wrap { aspect-ratio: 3/2; overflow: hidden; }
+  .farm-card__img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.4s;
+  }
+  .farm-card__link:hover .farm-card__img { transform: scale(1.04); }
+  .farm-card__img--placeholder {
+    background: linear-gradient(135deg, var(--coffee) 0%, var(--accent) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+  }
+
+  .farm-card__body { padding: 1.1rem 1.25rem 0.75rem; flex: 1; }
+  .farm-card__region { font-size: 0.78rem; color: var(--accent); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; margin: 0 0 0.3rem; }
+  .farm-card__name { font-size: 1.2rem; font-weight: 700; color: var(--coffee); margin: 0 0 0.2rem; }
+  .farm-card__caficultor { font-size: 0.85rem; color: #666; margin: 0 0 0.6rem; }
+  .farm-card__desc { font-size: 0.9rem; color: #555; line-height: 1.5; margin: 0 0 0.75rem; }
+
+  .farm-card__meta { display: flex; gap: 1rem; flex-wrap: wrap; margin: 0 0 0.6rem; font-size: 0.82rem; }
+  .farm-card__meta-item { display: flex; flex-direction: column; gap: 0.1rem; }
+  .farm-card__meta-item dt { color: #888; font-size: 0.75rem; }
+  .farm-card__meta-item dd { color: var(--coffee); font-weight: 600; margin: 0; }
+
+  .farm-card__badges { display: flex; flex-wrap: wrap; gap: 0.4rem; list-style: none; padding: 0; margin: 0; }
+  .badge {
+    font-size: 0.72rem; font-weight: 600;
+    padding: 0.2rem 0.55rem;
+    border-radius: 999px;
+    background: rgba(198, 123, 78, 0.12);
+    color: var(--accent);
+    border: 1px solid rgba(198, 123, 78, 0.3);
+  }
+
+  .farm-card__cta {
+    display: block;
+    padding: 0.75rem 1.25rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--accent);
+    border-top: 1px solid rgba(0,0,0,0.06);
+    transition: color 0.15s;
+  }
+  .farm-card__link:hover .farm-card__cta { color: var(--coffee); }
+</style>
