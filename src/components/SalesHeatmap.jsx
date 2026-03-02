@@ -1,5 +1,69 @@
-import React, { useState, useEffect, useRef } from 'react';
+// Componente de Mapa de Calor de Ventas — Fase 8
+// Combina ventas web directas + MercadoLibre con filtros de período, canal y producto
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import 'leaflet/dist/leaflet.css';
+
+/* ────────────────────────────────────────────────
+   Helpers
+──────────────────────────────────────────────── */
+const copFormat = (n) =>
+  new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(n ?? 0);
+
+const HEAT_COLORS = ['#FFE4B5', '#FFA07A', '#FF6347', '#DC143C', '#8B0000'];
+
+/** Convertir datos a CSV y descargarlo */
+function downloadCSV(data) {
+  const rows = [
+    ['Ciudad', 'Departamento', 'Pedidos', 'Total ventas COP', 'Canal Web', 'Canal ML', 'Latitud', 'Longitud'],
+    ...data.map((d) => [
+      d.city, d.state, d.order_count,
+      Math.round(d.total_sales),
+      d.channels?.web ?? 0, d.channels?.ml ?? 0,
+      d.latitude, d.longitude,
+    ]),
+  ];
+  const csv = rows.map((r) => r.map((v) => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')).join('\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `ventas-heatmap-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+/* Estilos inline reutilizables */
+const selectStyle = {
+  padding: '0.5rem 0.75rem',
+  border: '1.5px solid #d0c8c0',
+  borderRadius: '7px',
+  fontSize: '0.88rem',
+  background: '#fff',
+  color: '#251a14',
+  minHeight: '38px',
+};
+const btnPrimary = {
+  padding: '0.5rem 1.2rem',
+  background: '#251a14',
+  color: '#f7f3ef',
+  border: 'none',
+  borderRadius: '7px',
+  fontWeight: 700,
+  fontSize: '0.875rem',
+  cursor: 'pointer',
+  minHeight: '38px',
+};
+const btnOutline = {
+  padding: '0.5rem 0.9rem',
+  background: 'transparent',
+  color: '#251a14',
+  border: '1.5px solid #d0c8c0',
+  borderRadius: '7px',
+  fontWeight: 600,
+  fontSize: '0.875rem',
+  cursor: 'pointer',
+  minHeight: '38px',
+};
 
 export default function SalesHeatmap() {
   const mapRef = useRef(null);
