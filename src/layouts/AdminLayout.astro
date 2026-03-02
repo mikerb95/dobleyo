@@ -21,26 +21,14 @@ import Head from "../components/Head.astro";
     <script is:inline src="/assets/js/auth-refresh.js"></script>
 
     <script>
-      // Verificar autenticación de admin
+      // Verificar autenticación de admin usando HttpOnly cookie
       (async function () {
-        const token = localStorage.getItem("adminToken");
         const currentPath = window.location.pathname;
-
-        if (!token) {
-          window.location.href =
-            "/login?redirect=" + encodeURIComponent(currentPath);
-          return;
-        }
-
         try {
-          const response = await fetch("/api/auth/me", {
-            headers: { Authorization: `Bearer ${token}` },
-            credentials: "include",
-          });
+          // La cookie auth_token se envía automáticamente con credentials: 'include'
+          const response = await fetch("/api/auth/me", { credentials: "include" });
 
           if (!response.ok) {
-            localStorage.removeItem("adminToken");
-            localStorage.removeItem("userName");
             window.location.href =
               "/login?redirect=" + encodeURIComponent(currentPath);
             return;
@@ -49,18 +37,13 @@ import Head from "../components/Head.astro";
           const user = await response.json();
 
           if (user.role !== "admin") {
-            localStorage.removeItem("adminToken");
-            localStorage.removeItem("userName");
             alert("Acceso denegado. Solo administradores pueden acceder.");
             window.location.href = "/";
             return;
           }
 
-          // Usuario autenticado correctamente, mostrar contenido
           document.body.style.visibility = "visible";
-        } catch (error) {
-          localStorage.removeItem("adminToken");
-          localStorage.removeItem("userName");
+        } catch {
           window.location.href =
             "/login?redirect=" + encodeURIComponent(currentPath);
         }

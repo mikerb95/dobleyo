@@ -5,6 +5,7 @@ export interface Product {
   origin?: string;
   process?: string;
   roast?: string;
+  notes?: string[];
   price: number;
   rating: number;
   deal?: boolean;
@@ -22,6 +23,7 @@ export const products: Product[] = [
     origin: "Sierra Nevada",
     process: "Lavado",
     roast: "Medio",
+    notes: ["Cacao", "Nuez", "Caramelo"],
     price: 42000,
     rating: 4.6,
     deal: true,
@@ -37,6 +39,7 @@ export const products: Product[] = [
     origin: "Huila",
     process: "Honey",
     roast: "Claro",
+    notes: ["C\u00edtricos", "Miel", "Floral"],
     price: 45000,
     rating: 4.7,
     new: true,
@@ -51,6 +54,7 @@ export const products: Product[] = [
     origin: "Nariño",
     process: "Natural",
     roast: "Oscuro",
+    notes: ["Frutas Rojas", "Chocolate", "Té Negro"],
     price: 48000,
     rating: 4.5,
     image:

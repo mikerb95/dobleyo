@@ -1,26 +1,10 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import { products } from "../data/products.ts";
+
+// Fuente única: productos desde src/data/products.ts
+const coffeeProducts = products.filter((p) => p.category === "Cafés");
 ---
-
-<!-- Redirección automática a móvil si es necesario -->
-<script is:inline>
-  // Detectar si es dispositivo móvil y redirigir
-  if (typeof window !== "undefined") {
-    const isMobile =
-      /iPhone|iPad|iPod|Android|webOS|BlackBerry|IEMobile|Opera Mini/i.test(
-        navigator.userAgent
-      ) || window.innerWidth < 768;
-
-    // Solo redirigir si estamos en la raíz y es móvil
-    if (isMobile && window.location.pathname === "/") {
-      // Guardar preferencia para no redirigir constantemente si el usuario vuelve
-      const skipMobile = sessionStorage.getItem("skipMobileRedirect");
-      if (!skipMobile) {
-        window.location.href = "/mobile";
-      }
-    }
-  }
-</script>
 
 <Layout>
   <section class="hero">
@@ -34,7 +18,6 @@ import Layout from "../layouts/Layout.astro";
         disablePictureInPicture
         preload="metadata"></video>
     </div>
-    <!-- Overlay para mejorar legibilidad del texto sobre el video -->
     <div class="hero-overlay" aria-hidden="true"></div>
     <h1>Más que café, una herencia en cada taza.</h1>
     <p>
@@ -45,7 +28,7 @@ import Layout from "../layouts/Layout.astro";
     <p><a class="btn" href="/tienda" data-link>Ver tienda</a></p>
   </section>
 
-  <!-- Seccion de cafes en venta -->
+  <!-- Sección de cafés en venta — datos desde src/data/products.ts -->
   <section class="coffee-shop" aria-labelledby="coffeeShopTitle">
     <div class="coffee-shop-header">
       <h2 id="coffeeShopTitle" class="coffee-shop-title">Cafés en venta</h2>
@@ -53,90 +36,30 @@ import Layout from "../layouts/Layout.astro";
     </div>
 
     <div class="coffee-scroll">
-      <!-- Café 1 -->
-      <article class="coffee-card">
-        <img
-          src="https://images.unsplash.com/photo-1512568400610-62da28bc8a13?q=80&w=400&auto=format&fit=crop"
-          alt="Café Sierra Nevada"
-          class="coffee-img"
-          loading="lazy"
-        />
-        <span class="coffee-badge">Tueste Medio</span>
-        <h3 class="coffee-name">Sierra Nevada</h3>
-        <p class="coffee-notes">Cacao, Nuez, Caramelo</p>
-        <div class="coffee-footer">
-          <span class="coffee-price">$42.000</span>
-          <button class="btn-add" aria-label="Agregar al carrito">+</button>
-        </div>
-      </article>
-
-      <!-- Café 2 -->
-      <article class="coffee-card">
-        <img
-          src="https://images.unsplash.com/photo-1509042239860-f550ce710b93?q=80&w=400&auto=format&fit=crop"
-          alt="Café Huila"
-          class="coffee-img"
-          loading="lazy"
-        />
-        <span class="coffee-badge">Tueste Claro</span>
-        <h3 class="coffee-name">Huila</h3>
-        <p class="coffee-notes">Cítricos, Miel, Floral</p>
-        <div class="coffee-footer">
-          <span class="coffee-price">$45.000</span>
-          <button class="btn-add" aria-label="Agregar al carrito">+</button>
-        </div>
-      </article>
-
-      <!-- Café 3 -->
-      <article class="coffee-card">
-        <img
-          src="https://images.unsplash.com/photo-1511920170033-f8396924c348?q=80&w=400&auto=format&fit=crop"
-          alt="Café Nariño"
-          class="coffee-img"
-          loading="lazy"
-        />
-        <span class="coffee-badge">Tueste Medio</span>
-        <h3 class="coffee-name">Nariño</h3>
-        <p class="coffee-notes">Frutas Rojas, Chocolate</p>
-        <div class="coffee-footer">
-          <span class="coffee-price">$48.000</span>
-          <button class="btn-add" aria-label="Agregar al carrito">+</button>
-        </div>
-      </article>
-
-      <!-- Café 4 -->
-      <article class="coffee-card">
-        <img
-          src="https://images.unsplash.com/photo-1447933601403-0c6688de566e?q=80&w=400&auto=format&fit=crop"
-          alt="Café Antioquia"
-          class="coffee-img"
-          loading="lazy"
-        />
-        <span class="coffee-badge best-seller">Más Vendido</span>
-        <h3 class="coffee-name">Antioquia</h3>
-        <p class="coffee-notes">Panela, Nuez, Dulce</p>
-        <div class="coffee-footer">
-          <span class="coffee-price">$44.000</span>
-          <button class="btn-add" aria-label="Agregar al carrito">+</button>
-        </div>
-      </article>
-
-      <!-- Café 5 -->
-      <article class="coffee-card">
-        <img
-          src="https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?q=80&w=400&auto=format&fit=crop"
-          alt="Café Cauca"
-          class="coffee-img"
-          loading="lazy"
-        />
-        <span class="coffee-badge">Tueste Oscuro</span>
-        <h3 class="coffee-name">Cauca</h3>
-        <p class="coffee-notes">Chocolate, Especias</p>
-        <div class="coffee-footer">
-          <span class="coffee-price">$46.000</span>
-          <button class="btn-add" aria-label="Agregar al carrito">+</button>
-        </div>
-      </article>
+      {coffeeProducts.map((p) => (
+        <article class="coffee-card">
+          <img
+            src={p.image}
+            alt={p.name}
+            class="coffee-img"
+            loading="lazy"
+          />
+          <span class="coffee-badge">{p.bestseller ? "Más Vendido" : `Tueste ${p.roast}`}</span>
+          <h3 class="coffee-name">{p.name}</h3>
+          <p class="coffee-notes">{p.notes?.join(", ")}</p>
+          <div class="coffee-footer">
+            <span class="coffee-price">${p.price.toLocaleString("es-CO")}</span>
+            <button
+              class="btn-add"
+              aria-label={`Agregar ${p.name} al carrito`}
+              data-id={p.id}
+              data-name={p.name}
+              data-price={p.price}
+              data-image={p.image}
+            >+</button>
+          </div>
+        </article>
+      ))}
     </div>
   </section>
 
@@ -209,12 +132,11 @@ import Layout from "../layouts/Layout.astro";
     </div>
   </section>
 
-  <!-- Seccion de articulos destacados -->
+  <!-- Artículos destacados -->
   <section class="featured" aria-labelledby="featuredTitle">
     <div class="featured-inner container">
-      <h2 id="featuredTitle" class="featured-title">Articulos destacados</h2>
+      <h2 id="featuredTitle" class="featured-title">Artículos destacados</h2>
       <div class="featured-grid">
-        <!-- Card 1 -->
         <article class="card featured-card">
           <img
             class="featured-img"
@@ -231,24 +153,22 @@ import Layout from "../layouts/Layout.astro";
             <a class="btn small" href="/tienda" data-link>Ver producto</a>
           </div>
         </article>
-        <!-- Card 2 -->
         <article class="card featured-card">
           <img
             class="featured-img"
             src="https://images.unsplash.com/photo-1507133750040-4a8f57021524?q=80&w=1200&auto=format&fit=crop"
-            alt="Guia de molienda"
+            alt="Guía de molienda"
             loading="lazy"
           />
           <div class="p featured-body">
-            <h3 class="featured-h3">Guia rapida de molienda por metodo</h3>
+            <h3 class="featured-h3">Guía rápida de molienda por método</h3>
             <p class="featured-desc muted">
-              Mejora tu taza ajustando la molienda segun tu metodo: V60, Chemex,
+              Mejora tu taza ajustando la molienda según tu método: V60, Chemex,
               prensa o espresso. Reglas simples para resultados consistentes.
             </p>
-            <a class="btn outline small" href="/blog" data-link>Leer mas</a>
+            <a class="btn outline small" href="/blog" data-link>Leer más</a>
           </div>
         </article>
-        <!-- Card 3 -->
         <article class="card featured-card">
           <img
             class="featured-img"
@@ -257,47 +177,30 @@ import Layout from "../layouts/Layout.astro";
             loading="lazy"
           />
           <div class="p featured-body">
-            <h3 class="featured-h3">
-              Productores aliados: historias de origen
-            </h3>
+            <h3 class="featured-h3">Productores aliados: historias de origen</h3>
             <p class="featured-desc muted">
-              Conoce a los caficultores detras de cada lote. Transparencia,
+              Conoce a los caficultores detrás de cada lote. Transparencia,
               relaciones directas y sostenibilidad en cada paso.
             </p>
-            <a class="btn outline small" href="/nosotros" data-link
-              >Conocer mas</a
-            >
+            <a class="btn outline small" href="/nosotros" data-link>Conocer más</a>
           </div>
         </article>
       </div>
     </div>
   </section>
 
-  <!-- Seccion de evidencia (pixel perfect) -->
+  <!-- Evidencia social -->
   <section class="evidence-section" aria-labelledby="evidenceTitle">
-    <!-- Granos decorativos -->
-    <img
-      class="e-beans e-beans-left"
-      src="/assets/beans.svg"
-      alt=""
-      aria-hidden="true"
-    />
-    <img
-      class="e-beans e-beans-right"
-      src="/assets/beans.svg"
-      alt=""
-      aria-hidden="true"
-    />
+    <img class="e-beans e-beans-left" src="/assets/beans.svg" alt="" aria-hidden="true" />
+    <img class="e-beans e-beans-right" src="/assets/beans.svg" alt="" aria-hidden="true" />
     <div class="evidence-inner container">
       <div class="evidence-grid">
-        <!-- Titular izquierdo -->
         <div class="e-left">
           <h2 id="evidenceTitle" class="e-title">
             A diferencia de cualquier otro café
           </h2>
         </div>
 
-        <!-- Estadisticas superiores -->
         <div class="e-stat e-stat-a">
           <div class="e-number">9 de 10</div>
           <p class="e-sub">De los compradores de DobleYo dicen que</p>
@@ -310,13 +213,8 @@ import Layout from "../layouts/Layout.astro";
           <p class="e-sub">volver a comprar</p>
         </div>
 
-        <!-- Texto medio con insignia -->
         <div class="e-mid">
-          <div
-            class="e-badge"
-            role="img"
-            aria-label="#1 en satisfacción del consumidor"
-          >
+          <div class="e-badge" role="img" aria-label="#1 en satisfacción del consumidor">
             <span class="e-badge-num">#1</span>
             <span class="e-badge-label">en Satisfacción del Consumidor</span>
           </div>
@@ -326,7 +224,6 @@ import Layout from "../layouts/Layout.astro";
           </p>
         </div>
 
-        <!-- Lista de razones -->
         <div class="e-reasons">
           <h3 class="e-reasons-title">
             La gente se cambia a DobleYo<br class="md-break" /> por estas razones:
@@ -341,99 +238,21 @@ import Layout from "../layouts/Layout.astro";
     </div>
   </section>
 
-  <section>
-    <h2>Nuestros cafés</h2>
-    <div class="grid" id="homeProducts"></div>
-  </section>
-
+  <!-- Script: conectar botones "+" al carrito -->
   <script>
-    // Renderizar productos desde JSON embebido (podria ser archivo externo luego)
-    const productsDefault = [
-      {
-        id: "dbyo-sierra",
-        name: "Sierra Nevada",
-        price: 42000,
-        image:
-          "https://images.unsplash.com/photo-1512568400610-62da28bc8a13?q=80&w=800&auto=format&fit=crop",
-        origin: "Sierra Nevada",
-        process: "Lavado",
-        roast: "Medio",
-        notes: ["Cacao", "Nuez", "Caramelo"],
-      },
-      {
-        id: "dbyo-huila",
-        name: "Huila",
-        price: 45000,
-        image:
-          "https://images.unsplash.com/photo-1509043759401-136742328bb3?q=80&w=800&auto=format&fit=crop",
-        origin: "Huila",
-        process: "Honey",
-        roast: "Claro",
-        notes: ["Panela", "Frutos rojos", "Floral"],
-      },
-      {
-        id: "dbyo-narino",
-        name: "Nariño",
-        price: 48000,
-        image:
-          "https://images.unsplash.com/photo-1494415859740-21e878dd929d?q=80&w=800&auto=format&fit=crop",
-        origin: "Nariño",
-        process: "Natural",
-        roast: "Oscuro",
-        notes: ["Cítricos", "Chocolate", "Miel"],
-      },
-    ];
-    const products = (function () {
-      try {
-        const x = JSON.parse(localStorage.getItem("dbyo-products") || "null");
-        return Array.isArray(x) ? x : productsDefault;
-      } catch {
-        return productsDefault;
+    document.querySelector('.coffee-scroll')?.addEventListener('click', (e) => {
+      const btn = (e.target as HTMLElement).closest('.btn-add') as HTMLButtonElement | null;
+      if (!btn) return;
+      const { id, name, price, image } = btn.dataset;
+      if (id && name && price && image && (window as any).Cart) {
+        (window as any).Cart.addToCart({
+          id,
+          name,
+          price: parseInt(price, 10),
+          image,
+          qty: 1,
+        });
       }
-    })();
-
-    // Cuadricula de inicio
-    const homeProducts = document.getElementById("homeProducts");
-    if (homeProducts) {
-      homeProducts.innerHTML = products.map((p) => cardHTML(p)).join("");
-      homeProducts.addEventListener("click", (e) => {
-        // @ts-ignore
-        const card = e.target.closest("article.card");
-        if (!card) return;
-        const title = card.querySelector("h3");
-        if (e.target === title) {
-          const name = title.textContent;
-          const p = products.find((x) => x.name === name);
-          // @ts-ignore
-          if (p && window.Cart) {
-            window.Cart.addToCart({
-              id: p.id,
-              name: p.name,
-              price: p.price,
-              image: p.image,
-              qty: 1,
-            });
-          }
-        }
-      });
-    }
-
-    function cardHTML(p) {
-      return `
-      <article class="card">
-        <img src="${p.image}" alt="${escapeHtml(p.name)}">
-        <div class="p">
-          <h3>${escapeHtml(p.name)}</h3>
-          <div class="muted">${p.origin} · ${p.process} · ${p.roast}</div>
-          <div class="price">$${p.price.toLocaleString("es-CO")}</div>
-        </div>
-      </article>`;
-    }
-    function escapeHtml(str) {
-      return str.replace(
-        /[&<>"]+/g,
-        (s) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[s]
-      );
-    }
+    });
   </script>
 </Layout>

@@ -21,54 +21,26 @@ import Head from "../components/Head.astro";
     <Footer />
     <script is:inline src="/assets/js/auth-refresh.js"></script>
     <script>
-      // Verificar autenticación y rol (caficultor o admin)
+      // Verificar autenticación por HttpOnly cookie (sin localStorage)
       (async function () {
-        const token = localStorage.getItem("adminToken");
         const currentPath = window.location.pathname;
 
-        console.log("[AppLayout] Verificando autenticación...", {
-          token: token ? "presente" : "ausente",
-        });
-
-        if (!token) {
-          console.log("[AppLayout] No hay token, redirigiendo a login");
-          window.location.href =
-            "/login?redirect=" + encodeURIComponent(currentPath);
-          return;
-        }
-
         try {
-          console.log("[AppLayout] Haciendo fetch a /api/auth/me...");
-
-          // Agregar timeout de 10 segundos
+          // Timeout de 10 segundos para entornos serverless lentos
           const controller = new AbortController();
           const timeoutId = setTimeout(() => controller.abort(), 10000);
 
+          // La cookie auth_token se envía automáticamente con credentials: 'include'
           const response = await fetch("/api/auth/me", {
-            method: "GET",
             credentials: "include",
             signal: controller.signal,
           });
 
           clearTimeout(timeoutId);
-          console.log(
-            "[AppLayout] Respuesta /api/auth/me:",
-            response.status,
-            response.statusText
-          );
 
           if (!response.ok) {
-            const errorText = await response.text();
-            console.error(
-              "[AppLayout] Error en /api/auth/me:",
-              response.status,
-              errorText
-            );
-
-            // Solo redirigir a login si es error de autenticación (401/403)
+            // Redirigir a login solo en errores de autenticación
             if (response.status === 401 || response.status === 403) {
-              localStorage.removeItem("adminToken");
-              localStorage.removeItem("userName");
               window.location.href =
                 "/login?redirect=" + encodeURIComponent(currentPath);
               return;
