@@ -12,6 +12,7 @@ export interface Props {
   canonical?: string;
   hreflangEs?: string;
   hreflangEn?: string;
+  jsonLd?: Record<string, unknown> | Record<string, unknown>[];
 }
 
 const {
@@ -21,6 +22,7 @@ const {
   canonical,
   hreflangEs,
   hreflangEn,
+  jsonLd,
 } = Astro.props;
 ---
 
