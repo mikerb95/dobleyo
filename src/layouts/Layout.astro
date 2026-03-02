@@ -3,19 +3,24 @@ import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import Head from "../components/Head.astro";
 import CookieBanner from "../components/CookieBanner.astro";
+import type { Lang } from "../i18n/index.ts";
 
 export interface Props {
   title?: string;
   description?: string;
+  lang?: Lang;
+  canonical?: string;
+  hreflangEs?: string;
+  hreflangEn?: string;
 }
 
-const { title, description } = Astro.props;
+const { title, description, lang = 'es', canonical, hreflangEs, hreflangEn } = Astro.props;
 ---
 
 <!doctype html>
-<html lang="es">
+<html lang={lang}>
   <head>
-    <Head title={title} description={description} />
+    <Head title={title} description={description} lang={lang} canonical={canonical} hreflangEs={hreflangEs} hreflangEn={hreflangEn} />
   </head>
   <body class="font-sans bg-cream text-ink">
     <!-- Barra superior de anuncio -->

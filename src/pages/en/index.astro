@@ -1,8 +1,18 @@
 ---
 import Layout from "../../layouts/Layout.astro";
+import { getCanonicalUrl, getHreflangPair } from "../../i18n/index.ts";
+
+const hreflang = getHreflangPair('/');
 ---
 
-<Layout title="DobleYo - Premium Colombian Coffee | Direct Sourcing & Export">
+<Layout
+  title="DobleYo - Premium Colombian Coffee | Direct Sourcing & Export"
+  description="Colombian specialty coffee, farm-to-cup. We connect roasters worldwide with exceptional Colombian producers. Traceable lots, consistent quality."
+  lang="en"
+  canonical={getCanonicalUrl('/', 'en')}
+  hreflangEs={hreflang?.es}
+  hreflangEn={hreflang?.en}
+>
   <div class="en-page">
     <!-- Hero Section -->
     <section class="hero">

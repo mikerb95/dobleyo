@@ -1,12 +1,18 @@
 export interface Product {
   id: string;
   name: string;
+  nameEn?: string;
   category: string;
+  categoryEn?: string;
   origin?: string;
   process?: string;
+  processEn?: string;
   roast?: string;
+  roastEn?: string;
   notes?: string[];
+  notesEn?: string[];
   price: number;
+  priceUsd?: number;
   rating: number;
   deal?: boolean;
   bestseller?: boolean;
@@ -24,7 +30,9 @@ export const products: Product[] = [
     process: "Lavado",
     roast: "Medio",
     notes: ["Cacao", "Nuez", "Caramelo"],
+    notesEn: ["Cocoa", "Hazelnut", "Caramel"],
     price: 42000,
+    priceUsd: 11,
     rating: 4.6,
     deal: true,
     bestseller: true,
@@ -39,8 +47,10 @@ export const products: Product[] = [
     origin: "Huila",
     process: "Honey",
     roast: "Claro",
-    notes: ["C\u00edtricos", "Miel", "Floral"],
+    notes: ["Cítricos", "Miel", "Floral"],
+    notesEn: ["Citrus", "Honey", "Floral"],
     price: 45000,
+    priceUsd: 12,
     rating: 4.7,
     new: true,
     fast: true,
@@ -55,7 +65,9 @@ export const products: Product[] = [
     process: "Natural",
     roast: "Oscuro",
     notes: ["Frutas Rojas", "Chocolate", "Té Negro"],
+    notesEn: ["Red Fruits", "Chocolate", "Black Tea"],
     price: 48000,
+    priceUsd: 13,
     rating: 4.5,
     image:
       "https://images.unsplash.com/photo-1494415859740-21e878dd929d?q=80&w=800&auto=format&fit=crop",
@@ -63,8 +75,11 @@ export const products: Product[] = [
   {
     id: "acc-molinillo",
     name: "Molinillo Manual",
+    nameEn: "Manual Coffee Grinder",
     category: "Accesorios",
+    categoryEn: "Accessories",
     price: 199900,
+    priceUsd: 52,
     rating: 4.3,
     deal: true,
     fast: true,
@@ -74,8 +89,11 @@ export const products: Product[] = [
   {
     id: "acc-chemex",
     name: "Chemex 6 tazas",
+    nameEn: "Chemex 6-cup",
     category: "Accesorios",
+    categoryEn: "Accessories",
     price: 269900,
+    priceUsd: 70,
     rating: 4.9,
     new: true,
     image:

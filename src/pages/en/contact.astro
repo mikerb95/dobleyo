@@ -1,0 +1,158 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { getCanonicalUrl, getHreflangPair } from "../../i18n/index.ts";
+
+const hreflang = getHreflangPair('/contacto');
+---
+
+<Layout
+  title="Contact Us — DobleYo Café"
+  description="Get in touch with DobleYo Café. Questions about orders, products, or wholesale? We're here to help."
+  lang="en"
+  canonical={getCanonicalUrl('/contact', 'en')}
+  hreflangEs={hreflang?.es}
+  hreflangEn={hreflang?.en}
+>
+  <div class="contact-page">
+    <section class="contact-hero">
+      <div class="container">
+        <h1>Contact Us</h1>
+        <p>We're here to answer your questions and hear your feedback</p>
+      </div>
+    </section>
+
+    <section class="contact-content">
+      <div class="container">
+        <div class="contact-grid">
+          <!-- Contact Information -->
+          <div class="contact-info">
+            <h2>Contact Information</h2>
+
+            <div class="contact-item">
+              <div class="contact-icon">📧</div>
+              <div>
+                <h3>Email</h3>
+                <a href="mailto:hello@dobleyo.cafe">hello@dobleyo.cafe</a>
+              </div>
+            </div>
+
+            <div class="contact-item">
+              <div class="contact-icon">📱</div>
+              <div>
+                <h3>WhatsApp</h3>
+                <a href="https://wa.me/573001234567" target="_blank" rel="noopener">+57 300 123 4567</a>
+              </div>
+            </div>
+
+            <div class="contact-item">
+              <div class="contact-icon">📍</div>
+              <div>
+                <h3>Location</h3>
+                <p>Bogotá, Colombia</p>
+              </div>
+            </div>
+
+            <div class="contact-item">
+              <div class="contact-icon">⏰</div>
+              <div>
+                <h3>Business Hours</h3>
+                <p>Monday to Friday: 9:00 AM – 6:00 PM (COT)</p>
+                <p>Saturday: 10:00 AM – 2:00 PM (COT)</p>
+              </div>
+            </div>
+
+            <div class="contact-item">
+              <div class="contact-icon">☕</div>
+              <div>
+                <h3>Wholesale & Export</h3>
+                <p>Interested in B2B sourcing or export orders? Reach us by email for sample requests and pricing.</p>
+                <a href="mailto:export@dobleyo.cafe" class="btn" style="margin-top:.6rem;display:inline-block">
+                  Request Samples
+                </a>
+              </div>
+            </div>
+
+            <div class="social-links">
+              <h3>Follow us</h3>
+              <div class="social-icons">
+                <a href="https://instagram.com/dobleyo.cafe" target="_blank" rel="noopener" aria-label="Instagram">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"></path>
+                  </svg>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Contact Form -->
+          <div class="contact-form-container">
+            <h2>Send us a Message</h2>
+            <form id="contactForm" class="contact-form">
+              <div class="form-group">
+                <label for="name">Full name *</label>
+                <input type="text" id="name" name="name" required placeholder="Your name" />
+              </div>
+              <div class="form-group">
+                <label for="email">Email address *</label>
+                <input type="email" id="email" name="email" required placeholder="you@example.com" />
+              </div>
+              <div class="form-group">
+                <label for="subject">Subject</label>
+                <select id="subject" name="subject">
+                  <option value="order">Inquiry about my order</option>
+                  <option value="product">Product information</option>
+                  <option value="wholesale">Wholesale / B2B</option>
+                  <option value="export">Export / Sourcing</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="message">Message *</label>
+                <textarea id="message" name="message" rows="5" required placeholder="How can we help you?"></textarea>
+              </div>
+              <button type="submit" class="btn btn-primary" id="submitBtn">Send message</button>
+              <div id="formStatus" style="margin-top:1rem;display:none;padding:.75rem 1rem;border-radius:6px;font-size:.9rem;"></div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</Layout>
+
+<script>
+  document.getElementById('contactForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const form   = e.target as HTMLFormElement;
+    const btn    = document.getElementById('submitBtn') as HTMLButtonElement;
+    const status = document.getElementById('formStatus') as HTMLElement;
+    btn.disabled = true;
+    btn.textContent = 'Sending...';
+    status.style.display = 'none';
+
+    try {
+      const body = Object.fromEntries(new FormData(form).entries());
+      const res  = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...body, lang: 'en' }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? 'Error');
+      status.style.background = '#f0fdf4';
+      status.style.border     = '1px solid #bbf7d0';
+      status.style.color      = '#166534';
+      status.textContent      = "✓ Message sent! We'll reply within 24 hours.";
+      form.reset();
+    } catch {
+      status.style.background = '#fef2f2';
+      status.style.border     = '1px solid #fecaca';
+      status.style.color      = '#991b1b';
+      status.textContent      = '✕ Error sending message. Please try again.';
+    } finally {
+      status.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Send message';
+    }
+  });
+</script>

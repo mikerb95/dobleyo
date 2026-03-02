@@ -24,6 +24,22 @@ const {
 <link rel="icon" href="/assets/logo.svg" type="image/svg+xml" />
 <meta name="theme-color" content="#251a14" />
 
+{/* Canonical URL */}
+{canonical && <link rel="canonical" href={canonical} />}
+
+{/* hreflang — idiomas alternativos */}
+{hreflangEs && <link rel="alternate" hreflang="es" href={hreflangEs} />}
+{hreflangEn && <link rel="alternate" hreflang="en" href={hreflangEn} />}
+{hreflangEs && hreflangEn && <link rel="alternate" hreflang="x-default" href={hreflangEs} />}
+
+{/* Open Graph */}
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="DobleYo Café" />
+{canonical && <meta property="og:url" content={canonical} />}
+<meta property="og:locale" content={lang === 'en' ? 'en_US' : 'es_CO'} />
+
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
