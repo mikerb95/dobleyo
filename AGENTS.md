@@ -297,9 +297,9 @@ Todo agente que cree o modifique páginas DEBE cumplir:
 | BUG-008 | 🟠 Moderado | Formulario de contacto solo hace console.log | ✅ Resuelto Fase 4 |
 | BUG-009 | 🟠 Moderado | Newsletter del footer sin handler de submit | ✅ Resuelto Fase 1 |
 | BUG-010 | 🟠 Moderado | Links legales apuntan a `#` | ✅ Resuelto Fase 3 |
-| BUG-011 | 🟠 Moderado | CSP deshabilitado en Helmet | Pendiente Fase 11 |
+| BUG-011 | 🟠 Moderado | CSP deshabilitado en Helmet | ✅ Resuelto Fase 11 |
 | BUG-012 | 🟠 Moderado | Auth mixto: HttpOnly cookies + localStorage adminToken | ✅ Resuelto Fase 1 |
-| DEBT-001 | 🟡 | README dice PostgreSQL pero código usa MySQL — migrar a PG | ✅ Resuelto Fase 1 |
+| DEBT-001 | 🟡 | README dice PostgreSQL pero código usa MySQL — migrar a PG | ✅ Resuelto Fase 11 |
 | DEBT-002 | 🟡 | Breakpoints CSS inconsistentes (700, 768, 900, 980px) | ✅ Resuelto Fase 2 |
 | DEBT-003 | 🟡 | Página mobile separada con UA sniffing — eliminar | ✅ Resuelto Fase 2 |
 | DEBT-004 | 🟡 | Trazabilidad usa datos hardcodeados, no BD | ✅ Resuelto Fase 5 |
@@ -324,5 +324,5 @@ Todo agente que cree o modifique páginas DEBE cumplir:
 | 8 | Mapa de calor de ventas | ✅ Completo |
 | 9 | Internacionalización (i18n) y versión USA | ✅ Completo |
 | 10 | Panel de administración profesional | ✅ Completo |
-| 11 | SEO, auditoría de seguridad y BD | ⏳ Pendiente |
+| 11 | SEO, auditoría de seguridad y BD | ✅ Completo |
 | 12 | CI/CD, testing y deployment | ⏳ Pendiente |
