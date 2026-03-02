@@ -292,9 +292,9 @@ Todo agente que cree o modifique páginas DEBE cumplir:
 | BUG-003 | 🔴 Crítico | 3 fuentes de datos de productos desincronizadas (products.ts, index.astro hardcoded, mobile.astro hardcoded) | Pendiente Fase 1 |
 | BUG-004 | 🟡 Mayor | `/en/` hereda `<html lang="es">` de Layout.astro | Pendiente Fase 9 |
 | BUG-005 | 🟡 Mayor | Error CSS en styles.css — llave `}` extra | ✅ Resuelto Fase 1 |
-| BUG-006 | 🟡 Mayor | Checkout no funcional — sin pasarela de pagos, sin órdenes | Pendiente Fase 4 |
-| BUG-007 | 🟠 Moderado | store.js es in-memory Map — órdenes se pierden al reiniciar | Pendiente Fase 4 |
-| BUG-008 | 🟠 Moderado | Formulario de contacto solo hace console.log | Pendiente Fase 4 |
+| BUG-006 | 🟡 Mayor | Checkout no funcional — sin pasarela de pagos, sin órdenes | ✅ Resuelto Fase 4 |
+| BUG-007 | 🟠 Moderado | store.js es in-memory Map — órdenes se pierden al reiniciar | ✅ Resuelto Fase 4 |
+| BUG-008 | 🟠 Moderado | Formulario de contacto solo hace console.log | ✅ Resuelto Fase 4 |
 | BUG-009 | 🟠 Moderado | Newsletter del footer sin handler de submit | ✅ Resuelto Fase 1 |
 | BUG-010 | 🟠 Moderado | Links legales apuntan a `#` | ✅ Resuelto Fase 3 |
 | BUG-011 | 🟠 Moderado | CSP deshabilitado en Helmet | Pendiente Fase 11 |
@@ -317,7 +317,7 @@ Todo agente que cree o modifique páginas DEBE cumplir:
 | 1 | Estabilización, bug fixes, migración PostgreSQL | ✅ Completo |
 | 2 | Diseño mobile-first y armonía visual | ✅ Completo |
 | 3 | Normativa colombiana y compliance legal | ✅ Completo |
-| 4 | Sistema de órdenes y pasarelas de pago | ⏳ Pendiente |
+| 4 | Sistema de órdenes y pasarelas de pago | ✅ Completo |
 | 5 | Trazabilidad completa y QR | ⏳ Pendiente |
 | 6 | Módulo de finanzas de producción | ⏳ Pendiente |
 | 7 | Landing pages de fincas y caficultores | ⏳ Pendiente |
