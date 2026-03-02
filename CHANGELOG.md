@@ -2,6 +2,33 @@
 
 ---
 
+## 📅 2026-03-02 — Fase 10: Panel de Administración Profesional (Agente: Claude)
+
+### Archivos Creados
+- `src/pages/admin/index.astro` — Dashboard con KPI cards (pedidos totales, ingresos, usuarios, stock bajo), tabla de pedidos recientes, alertas de inventario, acciones rápidas; carga datos en paralelo desde API
+- `src/pages/admin/pedidos.astro` — Gestión completa de pedidos: lista paginada (20/página), filtros por estado y búsqueda por referencia/cliente, modal de detalle + actualización de estado vía `PATCH /api/orders/:ref/status`
+
+### Archivos Reescritos/Reemplazados
+- `src/layouts/AdminLayout.astro` — Rediseño completo: sidebar fijo con navegación por secciones (Principal, Catálogo, Producción, Analítica, Gestión), topbar mobile con hamburger, overlay, active state automático por URL, logout, mobile-first responsive (1024px breakpoint para sidebar)
+- `src/pages/admin/lotes.astro` — Reemplazado placeholder de 26 líneas por página completa: tabla de lotes con filtro por estado (todos/verde/tostado), modal crear/editar con formulario completo (código, nombre, origen, finca, proceso, variedad, altitud, peso, score SCA, humedad, notas), enlace a página QR `/t/:code`
+- `admin.html` — **DEBT-006 resuelto**: legacy admin panel reemplazado por redirect `<meta http-equiv="refresh">` + `window.location.replace('/admin')`
+
+### Decisiones Técnicas
+- AdminLayout.astro ya no importa Header/Footer del sitio público (elimina confusión UI); estructura completamente autónoma con sidebar dedicado
+- Dashboard carga datos con `Promise.allSettled()` para máxima resiliencia: si un endpoint falla, los demás KPIs se siguen mostrando
+- Active nav link en sidebar se determina por segmento URL (`/admin/pedidos` → `pedidos`), sin prop manual
+- Paginación del cliente en pedidos: 20 por página, con búsqueda client-side adicional sobre la página cargada
+
+### Impacto
+- **DEBT-006 resuelto**: admin.html legacy reemplazado, no más confusión entre dos paneles admin
+- Panel de admin profesional con sidebar navegable en todas las páginas admin existentes + nuevas
+- Nueva página `/admin` (dashboard) — antes no existía ninguna ruta raíz de admin
+- Nueva página `/admin/pedidos` — gestión completa de órdenes con actualización de estado
+- `/admin/lotes` funcional con CRUD completo de lotes de café
+- Build 100% limpio sin errores
+
+---
+
 ## 📅 2026-03-04 — Fase 9: Internacionalización (i18n) y versión USA (Agente: Claude)
 
 ### Archivos Creados
