@@ -10,30 +10,30 @@ export const traceabilityRouter = Router();
  * Devuelve la cadena completa: cosecha → almacenamiento → tostión → empaque → etiqueta.
  */
 traceabilityRouter.get('/:code', async (req, res) => {
-  const { code } = req.params;
+    const { code } = req.params;
 
-  if (!code || code.length > 200) {
-    return res.status(400).json({ success: false, error: 'Código inválido' });
-  }
-
-  try {
-    // 1. Buscar por código de etiqueta generada (generated_labels)
-    let data = await lookupByLabelCode(code);
-
-    // 2. Si no aparece como etiqueta, buscar directamente por lot_id de cosecha
-    if (!data) {
-      data = await lookupByLotId(code);
+    if (!code || code.length > 200) {
+        return res.status(400).json({ success: false, error: 'Código inválido' });
     }
 
-    if (!data) {
-      return res.status(404).json({ success: false, error: 'Lote no encontrado' });
-    }
+    try {
+        // 1. Buscar por código de etiqueta generada (generated_labels)
+        let data = await lookupByLabelCode(code);
 
-    return res.json({ success: true, data });
-  } catch (err) {
-    console.error('[GET /api/traceability/:code] Error:', err);
-    return res.status(500).json({ success: false, error: 'Error al consultar trazabilidad' });
-  }
+        // 2. Si no aparece como etiqueta, buscar directamente por lot_id de cosecha
+        if (!data) {
+            data = await lookupByLotId(code);
+        }
+
+        if (!data) {
+            return res.status(404).json({ success: false, error: 'Lote no encontrado' });
+        }
+
+        return res.json({ success: true, data });
+    } catch (err) {
+        console.error('[GET /api/traceability/:code] Error:', err);
+        return res.status(500).json({ success: false, error: 'Error al consultar trazabilidad' });
+    }
 });
 
 // ─────────────────────────────────────────────────────────────────
@@ -44,7 +44,7 @@ traceabilityRouter.get('/:code', async (req, res) => {
  * Busca por label_code en generated_labels y une toda la cadena de producción.
  */
 async function lookupByLabelCode(code) {
-  const result = await query(`
+    const result = await query(`
     SELECT
       gl.label_code             AS code,
       gl.lot_code,
@@ -93,14 +93,14 @@ async function lookupByLabelCode(code) {
     LIMIT 1
   `, [code]);
 
-  return result.rows.length ? formatRow(result.rows[0]) : null;
+    return result.rows.length ? formatRow(result.rows[0]) : null;
 }
 
 /**
  * Busca directamente por lot_id en coffee_harvests.
  */
 async function lookupByLotId(lotId) {
-  const result = await query(`
+    const result = await query(`
     SELECT
       ch.lot_id                 AS code,
       ch.lot_id                 AS lot_code,
@@ -148,73 +148,73 @@ async function lookupByLotId(lotId) {
     LIMIT 1
   `, [lotId]);
 
-  return result.rows.length ? formatRow(result.rows[0]) : null;
+    return result.rows.length ? formatRow(result.rows[0]) : null;
 }
 
 /**
  * Transforma una fila de BD al objeto de respuesta estructurado.
  */
 function formatRow(row) {
-  return {
-    code:     row.code,
-    lot_code: row.lot_code,
+    return {
+        code: row.code,
+        lot_code: row.lot_code,
 
-    // Etapa 1 — Cosecha en finca
-    harvest: {
-      lot_id:     row.lot_id,
-      farm:       row.farm,
-      region:     row.region,
-      altitude:   row.altitude,
-      variety:    row.variety,
-      climate:    row.climate,
-      process:    row.process,
-      aroma:      row.aroma,
-      taste_notes: row.taste_notes,
-      date:       row.harvest_date,
-    },
+        // Etapa 1 — Cosecha en finca
+        harvest: {
+            lot_id: row.lot_id,
+            farm: row.farm,
+            region: row.region,
+            altitude: row.altitude,
+            variety: row.variety,
+            climate: row.climate,
+            process: row.process,
+            aroma: row.aroma,
+            taste_notes: row.taste_notes,
+            date: row.harvest_date,
+        },
 
-    // Etapa 2 — Almacenamiento café verde
-    storage: row.green_weight_kg ? {
-      weight_kg: row.green_weight_kg,
-      location:  row.green_location,
-      date:      row.storage_date,
-    } : null,
+        // Etapa 2 — Almacenamiento café verde
+        storage: row.green_weight_kg ? {
+            weight_kg: row.green_weight_kg,
+            location: row.green_location,
+            date: row.storage_date,
+        } : null,
 
-    // Etapa 3 — Envío a tostión
-    roasting: row.sent_kg ? {
-      sent_kg: row.sent_kg,
-      status:  row.roasting_status,
-      date:    row.roasting_date,
-    } : null,
+        // Etapa 3 — Envío a tostión
+        roasting: row.sent_kg ? {
+            sent_kg: row.sent_kg,
+            status: row.roasting_status,
+            date: row.roasting_date,
+        } : null,
 
-    // Etapa 4 — Tueste
-    roasted: row.roast_level ? {
-      roast_level:          row.roast_level,
-      weight_kg:            row.roasted_kg,
-      weight_loss_percent:  row.weight_loss_percent,
-      actual_temp:          row.actual_temp,
-      roast_time_minutes:   row.roast_time_minutes,
-      observations:         row.roast_observations,
-      date:                 row.roast_date,
-    } : null,
+        // Etapa 4 — Tueste
+        roasted: row.roast_level ? {
+            roast_level: row.roast_level,
+            weight_kg: row.roasted_kg,
+            weight_loss_percent: row.weight_loss_percent,
+            actual_temp: row.actual_temp,
+            roast_time_minutes: row.roast_time_minutes,
+            observations: row.roast_observations,
+            date: row.roast_date,
+        } : null,
 
-    // Etapa 5 — Empaque
-    packaged: row.acidity != null ? {
-      acidity:      row.acidity,
-      body:         row.body,
-      balance:      row.balance,
-      score:        row.score,
-      presentation: row.presentation,
-      grind_size:   row.grind_size,
-      package_size: row.package_size,
-      unit_count:   row.unit_count,
-    } : null,
+        // Etapa 5 — Empaque
+        packaged: row.acidity != null ? {
+            acidity: row.acidity,
+            body: row.body,
+            balance: row.balance,
+            score: row.score,
+            presentation: row.presentation,
+            grind_size: row.grind_size,
+            package_size: row.package_size,
+            unit_count: row.unit_count,
+        } : null,
 
-    // Etiqueta (solo si viene de generated_labels)
-    label: row.label_date ? {
-      code:         row.code,
-      flavor_notes: row.flavor_notes,
-      date:         row.label_date,
-    } : null,
-  };
+        // Etiqueta (solo si viene de generated_labels)
+        label: row.label_date ? {
+            code: row.code,
+            flavor_notes: row.flavor_notes,
+            date: row.label_date,
+        } : null,
+    };
 }
