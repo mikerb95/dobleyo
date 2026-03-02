@@ -5,6 +5,7 @@ import { query } from '../db.js';
 import { authenticateToken, requireRole } from '../auth.js';
 import { logAudit } from '../services/audit.js';
 import { sendOrderConfirmationEmail } from '../services/email.js';
+import { geocodeOrderAsync } from '../services/geocoding.js';
 
 export const ordersRouter = Router();
 
@@ -118,6 +119,9 @@ ordersRouter.post('/',
             }
 
             await logAudit(null, 'create', 'customer_orders', orderId, { reference, total });
+
+            // Geocodificación asíncrona — no bloquea la respuesta HTTP
+            geocodeOrderAsync(orderId, shippingCity, shippingDepartment);
 
             return res.status(201).json({
                 success: true,

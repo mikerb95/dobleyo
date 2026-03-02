@@ -20,6 +20,7 @@ import { ordersRouter } from '../server/routes/orders.js';
 import { traceabilityRouter } from '../server/routes/traceability.js';
 import { financeRouter } from '../server/routes/finance.js';
 import { farmsRouter } from '../server/routes/farms.js';
+import { heatmapRouter } from '../server/routes/heatmap.js';
 import auditRouter from '../server/routes/audit.js';
 
 const app = express();
@@ -76,6 +77,7 @@ app.use('/api/orders', ordersRouter);
 app.use('/api/traceability', traceabilityRouter);
 app.use('/api/finance', financeRouter);
 app.use('/api/farms', farmsRouter);
+app.use('/api/heatmap', heatmapRouter);
 // Webhook Wompi delegado al router de órdenes
 app.post('/api/wompi/webhook', (req, res, next) => { req.url = '/wompi/webhook'; ordersRouter(req, res, next); });
 app.use('/api/audit', auditRouter);
