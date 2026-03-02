@@ -2,6 +2,44 @@
 
 ---
 
+## 📅 2026-03-02 — Fase 4: Sistema de Órdenes y Pasarelas de Pago (Agente: Claude)
+
+### Archivos Creados
+
+- `server/migrations/create_customer_orders.js` — Migración PostgreSQL que crea `customer_orders` (14 columnas, JSONB payment_data, trigger `updated_at`) y `customer_order_items` (subtotal GENERATED ALWAYS AS). Incluye 5 índices de rendimiento.
+- `server/routes/orders.js` — Router Express completo para gestión de órdenes: `POST /api/orders` (crear orden + URL de pago Wompi), `GET /api/orders/:ref` (estado público para página de confirmación), `GET /api/orders` (admin, paginado), `PATCH /api/orders/:ref/status` (admin), `POST /api/orders/wompi/webhook` (webhook servidor-a-servidor con verificación HMAC SHA256).
+- `src/pages/confirmacion.astro` — Página de confirmación de pedido con 5 estados: loading, paid, pending_payment, error, not_found. Hace polling al endpoint GET /api/orders/:ref. Muestra resumen del pedido (ítems, envío, total) y enlace a /tienda. Lee `?ref=` o `?reference=` (Wompi lo envía como `reference`).
+
+### Archivos Modificados
+
+- `src/pages/checkout.astro` — Reescritura completa: formulario de envío (nombre, email, teléfono, dirección, ciudad, departamento), resumen lateral con cálculo de envío en tiempo real (gratis ≥ $120.000 COP, sino $12.000 COP), llama `POST /api/orders`, limpia carrito y redirige a Wompi o `/confirmacion?ref=xxx`.
+- `server/routes/contact.js` — **BUG-008**: Reemplaza `console.log` por `sendContactFormEmail()` con `express-validator`.
+- `server/index.js` — Monta `ordersRouter` en `/api/orders`, agrega delegación `/api/wompi/webhook`, elimina stubs antiguos de Wompi (501), elimina imports `store` y `crypto` no usados.
+- `api/index.js` — Paridad con server/index.js: monta `ordersRouter` y webhook delegation.
+
+### Decisiones Técnicas
+
+- **Wompi Redirect Checkout** (no API call): se construye URL con parámetros firmados via `SHA256(reference + amountCents + currency + WOMPI_EVENTS_SECRET)` — más simple y seguro que el flujo server-to-server.
+- **Referencia de orden**: formato `DY-{Date.now()}-{4 chars hex uppercase}` — legible + único.
+- **Shipping threshold**: $120.000 COP → envío gratis; de lo contrario $12.000 COP — alineado con política comercial.
+- **Webhook**: responde HTTP 200 inmediatamente (Wompi espera <5s) y procesa asíncronamente para evitar timeouts.
+- **confirmacion.astro**: Lee tanto `?ref=` (set por checkout.astro) como `?reference=` (set por Wompi en redirect-url) para cubrir ambos flujos de entrada.
+
+### Bugs/Deuda Resuelta
+
+- **BUG-006** 🟡: Checkout no funcional → checkout completo + integración Wompi.
+- **BUG-007** 🟠: store.js in-memory → tablas PostgreSQL `customer_orders` + `customer_order_items`.
+- **BUG-008** 🟠: Formulario de contacto solo console.log → `sendContactFormEmail()` via Resend.
+
+### Impacto
+
+- Flujo completo de compra: carrito → checkout → pago Wompi → confirmación.
+- Órdenes persistidas en PostgreSQL con historial completo.
+- Panel admin puede listar y actualizar estados de órdenes.
+- Email de confirmación automático al aprobar el pago.
+
+---
+
 ## 📅 2026-03-02 — Fase 3: Normativa Colombiana y Compliance Legal (Agente: Claude)
 
 ### Archivos Creados
