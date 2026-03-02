@@ -2,6 +2,42 @@
 
 ---
 
+## 📅 2026-03-02 — Fase 6: Módulo de Finanzas de Producción (Agente: Claude)
+
+### Archivos Creados
+
+- `server/migrations/create_finance_tables.js` — Migración PostgreSQL que crea 15 tablas financieras: `accounting_accounts`, `accounting_journals`, `accounting_entries`, `accounting_entry_lines`, `payment_methods`, `cost_centers`, `purchase_invoices`, `purchase_invoice_lines`, `sales_invoices`, `sales_invoice_lines`, `fin_payments`, `payment_allocations`, `expenses`, `budgets`, `budget_lines`. Sintaxis PostgreSQL (`BIGINT GENERATED ALWAYS AS IDENTITY`, `TIMESTAMPTZ`, `CHECK`). Ejecutable como script directo.
+- `server/routes/finance.js` — Router Express ESM con 14 endpoints cubriendo todo el módulo financiero: dashboard KPIs, plan de cuentas, gastos CRUD, facturas de compra (con líneas, transacciones), facturas de venta (con líneas), pagos, y vista de caficultor (`GET /my-invoices`). Usa transacciones `getClient` para inserciones multi-tabla.
+- `src/pages/admin/finanzas.astro` — Panel de administración financiero completo: 4 KPIs del mes (ingresos, costos, gastos, balance), sistema de pestañas (Resumen / Facturas compra / Facturas venta / Gastos / Pagos), tablas cargadas por JS desde la API, modales para registrar gastos y crear facturas de compra (con líneas dinámicas), acciones inline (aprobar gasto, marcar factura pagada).
+
+### Archivos Modificados
+
+- `src/pages/app/finanzas.astro` — Reescritura completa: elimina datos hardcodeados, conecta a `GET /api/finance/my-invoices`. SSR fetch con cookie relay. Muestra resumen (total facturado, pagado, por cobrar), lista expandible `<details>` de liquidaciones con líneas por lote, formateo COP, badges de estado.
+- `server/index.js` — Monta `financeRouter` en `/api/finance`.
+- `api/index.js` — Paridad: monta `financeRouter` en `/api/finance`.
+
+### Decisiones Técnicas
+
+- **`fin_payments` en lugar de `payments`**: Se usó este nombre para evitar colisión con la tabla `payments` del esquema MySQL legacy en `db/schema.sql`. Las migraciones PG tienen precedencia y usan sus propias tablas.
+- **`getClient()` para transacciones**: Inserciones de facturas con líneas usan `BEGIN/COMMIT/ROLLBACK` explícito para garantizar atomicidad.
+- **Separación de vistas**: La vista `/app/finanzas` está orientada al caficultor (solo sus facturas de compra recibidas). La vista `/admin/finanzas` es el panel completo del administrador con todos los módulos.
+- **Tabs con lazy loading**: Las pestañas del panel admin solo cargan datos al abrirse, reduciendo carga inicial.
+- **Dashboard SSR + pestañas client-side**: El resumen del mes se renderiza server-side para evitar parpadeo; las listas de tablas son client-side para permitir acciones inline.
+- **15 tablas en 1 migración**: A diferencia de migraciones individuales por tabla, se agrupan por módulo (finanzas) para facilitar el rollout ordenado.
+
+### Bugs/Deuda Resuelta
+
+- **DEBT-005** 🟡: Esquema contable (35+ tablas) sin rutas/servicios implementados → implementados router, migración y páginas para los módulos core (gastos, facturas, pagos, cuentas).
+
+### Impacto
+
+- Los administradores pueden registrar gastos, crear facturas de compra a caficultores, ver facturas de venta y aprobar/pagar desde el panel.
+- Los caficultores pueden ver en `/app/finanzas` todas sus liquidaciones históricas con detalle por lote, montos pagados y pendientes.
+- El dashboard financiero del mes (ingresos, costos, gastos, balance) está disponible en `/admin/finanzas`.
+- Base de doble partida contable lista para ser usada en asientos automáticos en fases posteriores.
+
+---
+
 ## 📅 2026-03-03 — Fase 5: Trazabilidad Completa y QR (Agente: Claude)
 
 ### Archivos Creados
