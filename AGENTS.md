@@ -321,7 +321,7 @@ Todo agente que cree o modifique páginas DEBE cumplir:
 | 5 | Trazabilidad completa y QR | ✅ Completo |
 | 6 | Módulo de finanzas de producción | ✅ Completo |
 | 7 | Landing pages de fincas y caficultores | ✅ Completo |
-| 8 | Mapa de calor de ventas | ⏳ Pendiente |
+| 8 | Mapa de calor de ventas | ✅ Completo |
 | 9 | Internacionalización (i18n) y versión USA | ⏳ Pendiente |
 | 10 | Panel de administración profesional | ⏳ Pendiente |
 | 11 | SEO, auditoría de seguridad y BD | ⏳ Pendiente |

@@ -2,6 +2,38 @@
 
 ---
 
+## 📅 2026-03-03 — Fase 8: Mapa de Calor de Ventas (Agente: Claude)
+
+### Archivos Creados
+- `server/migrations/add_geocoding_to_orders.js` — Añade columnas `geocoding_lat`, `geocoding_lng`, `geocoding_city_norm`, `geocoding_done` a `customer_orders`; índice parcial en órdenes pendientes
+- `server/services/geocoding.js` — Servicio Nominatim (OSM): `geocodeCity()`, `geocodeOrderAsync()` (no-blocking via `setImmediate`), `backfillGeocodingBatch(limit)` con rate-limit 1.1 s
+- `server/routes/heatmap.js` — Router unificado: `GET /api/heatmap` (combina web + ML con filtros period/channel/product), `GET /api/heatmap/stats`, `POST /api/heatmap/backfill`
+
+### Archivos Modificados
+- `src/components/SalesHeatmap.jsx` — Reescritura completa: filtros (período/canal/producto), stats bar (5 KPIs), mapa Leaflet con `mapObjRef` ref, heatmap + circle markers con channel badges, leyenda de calor, top-10 table con columnas web/ML, exportar CSV
+- `src/pages/admin/sales-map.astro` — Rediseño: panel de geocodificación con estado y botón backfill, layout mejorado, descripción actualizada con datos combinados
+- `src/pages/app/ventas.astro` — Limpieza y actualización: descripción refleja datos combinados web+ML, guía rápida de uso, CSS tokens correctos
+- `server/routes/orders.js` — Importa `geocodeOrderAsync`; llama al servicio de forma no-bloqueante tras crear cada orden
+- `server/index.js` — Monta `heatmapRouter` en `/api/heatmap`
+- `api/index.js` — Monta `heatmapRouter` en `/api/heatmap` (paridad con servidor standalone)
+
+### Decisiones Técnicas
+- Geocodificación con Nominatim (OSM, gratuito). User-Agent obligatorio: `DobleYoCafe/1.0 (contacto@dobleyo.cafe)`. Rate-limit 1.1 s/req.
+- `setImmediate` para geocodificación no-bloqueante al crear órdenes; no retrasa la respuesta al cliente
+- Merge web + ML por clave `city.toLowerCase().trim()` en JS; evita JOIN SQL complejo entre tablas heterogéneas
+- `geocoding_done = TRUE` incluso en fallo para evitar reintentos infinitos
+- `mapObjRef` (useRef) en lugar de `useState` para la instancia Leaflet; previene re-inicialización en re-renders
+- Moneda COP en todo el componente via `Intl.NumberFormat('es-CO', { currency: 'COP' })`
+
+### Impacto
+- Mapa de calor unificado que combina pedidos de la tienda web y MercadoLibre con coordenadas reales
+- Filtros interactivos por período, canal y producto sin recargar la página
+- Exportación CSV de cualquier vista filtrada
+- Geocodificación automática de nuevas órdenes; backfill de órdenes históricas desde el admin
+- Corrección del bug de moneda ARS → COP y de la fuente de datos ML-only
+
+---
+
 ## 📅 2026-03-02 — Fase 7: Landing Pages de Fincas y Caficultores (Agente: Claude)
 
 ### Archivos Creados
