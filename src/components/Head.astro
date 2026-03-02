@@ -107,17 +107,24 @@ const organizationSchema = {
 }
 
 <!-- JSON-LD: Organización (todas las páginas públicas) -->
-{!isAdmin && (
-  <script type="application/ld+json" set:html={JSON.stringify(organizationSchema)} />
-)}
+{
+  !isAdmin && (
+    <script
+      type="application/ld+json"
+      set:html={JSON.stringify(organizationSchema)}
+    />
+  )
+}
 
 {/* JSON-LD adicional específico de la página */}
-{jsonLd && !isAdmin && (
-  <script
-    type="application/ld+json"
-    set:html={JSON.stringify(Array.isArray(jsonLd) ? jsonLd : [jsonLd])}
-  />
-)}
+{
+  jsonLd && !isAdmin && (
+    <script
+      type="application/ld+json"
+      set:html={JSON.stringify(Array.isArray(jsonLd) ? jsonLd : [jsonLd])}
+    />
+  )
+}
 
 <!-- CSS Custom -->
 <link rel="stylesheet" href="/assets/css/styles.css" />
