@@ -57,22 +57,22 @@ async function getAuditLogs(filters = {}) {
     const params = [];
 
     if (action) {
-      sql += ` AND al.action = ?`;
       params.push(action);
+      sql += ` AND al.action = $${params.length}`;
     }
 
     if (entityType) {
-      sql += ` AND al.entity_type = ?`;
       params.push(entityType);
+      sql += ` AND al.entity_type = $${params.length}`;
     }
 
     if (userId) {
-      sql += ` AND al.user_id = ?`;
       params.push(userId);
+      sql += ` AND al.user_id = $${params.length}`;
     }
 
-    sql += ` ORDER BY al.created_at DESC LIMIT ? OFFSET ?`;
     params.push(limit, offset);
+    sql += ` ORDER BY al.created_at DESC LIMIT $${params.length - 1} OFFSET $${params.length}`;
 
     const result = await query(sql, params);
     return result.rows;
@@ -93,7 +93,7 @@ async function getAuditStats() {
         entity_type,
         COUNT(*) as count
       FROM audit_logs
-      WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      WHERE created_at >= NOW() - INTERVAL '30 days'
       GROUP BY action, entity_type
       ORDER BY count DESC
     `);
