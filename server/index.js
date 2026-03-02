@@ -27,9 +27,21 @@ import { query } from './db.js';
 
 const app = express();
 
-// Seguridad: Headers HTTP seguros (Helmet)
+// Seguridad: Headers HTTP seguros con CSP habilitado (BUG-011 resuelto Fase 11)
 app.use(helmet({
-  contentSecurityPolicy: false, // Desactivar CSP estricto por ahora si hay scripts inline o externos
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://checkout.wompi.co", "https://www.mercadopago.com", "https://sdk.mercadopago.com"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://unpkg.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      imgSrc: ["'self'", "data:", "https:", "blob:"],
+      connectSrc: ["'self'", "https://checkout.wompi.co", "https://nominatim.openstreetmap.org", "https://api.mercadopago.com"],
+      frameSrc: ["'self'", "https://checkout.wompi.co", "https://www.mercadopago.com"],
+      mediaSrc: ["'self'", "https:"],
+    },
+  },
+  crossOriginEmbedderPolicy: false, // Requerido para Leaflet y tiles de mapa externos
 }));
 
 // Seguridad: Cookies y Body Parsing

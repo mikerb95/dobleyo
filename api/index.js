@@ -2,6 +2,7 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import helmet from 'helmet';
 import { stockRouter } from '../server/routes/stock.js';
 import { authRouter } from '../server/routes/auth.js';
 import { setupRouter } from '../server/routes/setup.js';
@@ -24,6 +25,23 @@ import { heatmapRouter } from '../server/routes/heatmap.js';
 import auditRouter from '../server/routes/audit.js';
 
 const app = express();
+
+// Seguridad: Headers HTTP seguros con CSP habilitado (BUG-011 resuelto Fase 11)
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://checkout.wompi.co", "https://www.mercadopago.com", "https://sdk.mercadopago.com"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://unpkg.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      imgSrc: ["'self'", "data:", "https:", "blob:"],
+      connectSrc: ["'self'", "https://checkout.wompi.co", "https://nominatim.openstreetmap.org", "https://api.mercadopago.com"],
+      frameSrc: ["'self'", "https://checkout.wompi.co", "https://www.mercadopago.com"],
+      mediaSrc: ["'self'", "https:"],
+    },
+  },
+  crossOriginEmbedderPolicy: false, // Requerido para Leaflet y tiles de mapa externos
+}));
 
 // Basic Middleware
 app.use(cookieParser());

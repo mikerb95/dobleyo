@@ -55,43 +55,43 @@ usersRouter.put('/:id', auth.authenticateToken, auth.requireRole('admin'), async
     const values = [];
 
     if (first_name !== undefined && first_name !== null) {
-      updates.push('first_name = ?');
+      updates.push(`first_name = $${values.length + 1}`);
       values.push(first_name);
     }
     if (last_name !== undefined && last_name !== null) {
-      updates.push('last_name = ?');
+      updates.push(`last_name = $${values.length + 1}`);
       values.push(last_name);
     }
     if (name !== undefined && name !== null) {
-      updates.push('name = ?');
+      updates.push(`name = $${values.length + 1}`);
       values.push(name);
     }
     if (mobile_phone !== undefined && mobile_phone !== null) {
-      updates.push('mobile_phone = ?');
+      updates.push(`mobile_phone = $${values.length + 1}`);
       values.push(mobile_phone);
     }
     if (city !== undefined && city !== null) {
-      updates.push('city = ?');
+      updates.push(`city = $${values.length + 1}`);
       values.push(city);
     }
     if (state_province !== undefined && state_province !== null) {
-      updates.push('state_province = ?');
+      updates.push(`state_province = $${values.length + 1}`);
       values.push(state_province);
     }
     if (country !== undefined && country !== null) {
-      updates.push('country = ?');
+      updates.push(`country = $${values.length + 1}`);
       values.push(country);
     }
     if (tax_id !== undefined && tax_id !== null) {
-      updates.push('tax_id = ?');
+      updates.push(`tax_id = $${values.length + 1}`);
       values.push(tax_id);
     }
     if (role !== undefined && role !== null) {
-      updates.push('role = ?');
+      updates.push(`role = $${values.length + 1}`);
       values.push(role);
     }
     if (is_verified !== undefined && is_verified !== null) {
-      updates.push('is_verified = ?');
+      updates.push(`is_verified = $${values.length + 1}`);
       values.push(is_verified);
     }
 
@@ -100,9 +100,8 @@ usersRouter.put('/:id', auth.authenticateToken, auth.requireRole('admin'), async
     }
 
     // Agregar el ID al final de los valores
+    const updateQuery = `UPDATE users SET ${updates.join(', ')} WHERE id = $${values.length + 1}`;
     values.push(parseInt(id));
-
-    const updateQuery = `UPDATE users SET ${updates.join(', ')} WHERE id = ?`;
     console.log('[PUT /api/users/:id] Query:', updateQuery);
     console.log('[PUT /api/users/:id] Values:', values);
 
