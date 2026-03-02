@@ -4,6 +4,16 @@ import { products } from "../data/products.ts";
 
 // Fuente única: productos desde src/data/products.ts
 const coffeeProducts = products.filter((p) => p.category === "Cafés");
+
+// Fincas destacadas (máx. 3 publicadas)
+let featuredFarms: any[] = [];
+try {
+  const res = await fetch(`${Astro.url.origin}/api/farms?limit=3`);
+  if (res.ok) {
+    const data = await res.json();
+    featuredFarms = data.data ?? [];
+  }
+} catch (_) {}
 ---
 
 <Layout>
@@ -188,6 +198,46 @@ const coffeeProducts = products.filter((p) => p.category === "Cafés");
       </div>
     </div>
   </section>
+
+
+  <!-- Sección: Nuestras Fincas -->
+  {featuredFarms.length > 0 && (
+    <section class="home-farms" aria-labelledby="homeFarmsTitle">
+      <div class="container">
+        <div class="home-farms__header">
+          <h2 id="homeFarmsTitle" class="home-farms__title">Nuestras Fincas</h2>
+          <a href="/fincas" class="home-farms__link">Ver todas las fincas →</a>
+        </div>
+        <ul class="home-farms__grid" role="list">
+          {featuredFarms.map((farm: any) => (
+            <li class="home-farm-card">
+              <a href={`/finca/${farm.slug}`} class="home-farm-card__link">
+                {farm.cover_image_url ? (
+                  <img
+                    src={farm.cover_image_url}
+                    alt={`Finca ${farm.name} — ${farm.region}`}
+                    loading="lazy"
+                    class="home-farm-card__img"
+                    width="400"
+                    height="240"
+                  />
+                ) : (
+                  <div class="home-farm-card__img home-farm-card__img--ph" aria-hidden="true">🌿</div>
+                )}
+                <div class="home-farm-card__info">
+                  <span class="home-farm-card__region">{farm.region}</span>
+                  <strong class="home-farm-card__name">{farm.name}</strong>
+                  {farm.altitude_min && (
+                    <span class="home-farm-card__alt">{farm.altitude_min}{farm.altitude_max ? `–${farm.altitude_max}` : ""} msnm</span>
+                  )}
+                </div>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  )}
 
   <!-- Evidencia social -->
   <section class="evidence-section" aria-labelledby="evidenceTitle">
