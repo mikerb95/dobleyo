@@ -2,6 +2,40 @@
 
 ---
 
+## 📅 2026-03-02 — Fase 11: SEO, Auditoría de Seguridad y BD (Agente: Claude)
+
+### Archivos Creados
+- `migrate_placeholders.py` — Script Python para migración automática de placeholders MySQL `?` a PostgreSQL `$n` en archivos JS/TS
+- `public/robots.txt` — Reglas para crawlers: permite páginas públicas, bloquea `/admin/`, `/app/`, `/api/`, rutas de auth/cuenta
+- `src/pages/sitemap.xml.ts` — Endpoint Astro que genera sitemap dinámico con 14 URLs públicas (es + en), prioridades y frecuencias de cambio; servido como `application/xml`
+
+### Archivos Modificados
+- `server/routes/users.js` — Corregido constructor dinámico de UPDATE: cada `updates.push('field = ?')` reemplazado por `updates.push(\`field = \${values.length + 1}\`)` para PostgreSQL; la asignación de ID también corregida (`WHERE id = $${values.length + 1}`)
+- `server/index.js` — **BUG-011 resuelto**: CSP habilitado en Helmet con directivas completas (defaultSrc, scriptSrc, styleSrc, fontSrc, imgSrc, connectSrc, frameSrc, mediaSrc); `crossOriginEmbedderPolicy: false` para compatibilidad con Leaflet
+- `api/index.js` — Agregado `import helmet` y configuración CSP idéntica a `server/index.js` (paridad mantenida)
+- `src/components/Head.astro` — Agregados: prop `jsonLd` opcional para schema adicional; prop `robots` meta dinámico (noindex para isAdmin, index para público); JSON-LD `Organization` automático en todas las páginas públicas; JSON-LD de página específica vía prop `jsonLd`
+- `src/layouts/Layout.astro` — Agregada prop `jsonLd` en interfaz y pasada a `<Head>`
+- `src/pages/tienda.astro` — Agregado JSON-LD `ItemList` + `Product` con todos los productos (precio COP, disponibilidad, rating); pasado a Layout vía prop `jsonLd`
+
+### Migraciones MySQL → PostgreSQL (completadas en sesión previa)
+Archivos convertidos (396+ reemplazos totales con `migrate_placeholders.py`):
+- `server/routes/auth.js` (41), `server/routes/caficultor.js` (21), `server/routes/coffee.js` (82), `server/routes/inventory.js` (49), `server/routes/labels.js` (43), `server/routes/lots.js` (59), `server/routes/orders.js` (1), `server/routes/setup.js` (40), `server/routes/stock.js` (15), `server/routes/users.js` (15+10 manual), `server/services/audit.js` (5), `server/services/mercadolibre.js` (25), `server/migrations/split_name_fields.js` (3)
+
+### Decisiones Técnicas
+- CSP con `'unsafe-inline'` en scriptSrc: necesario por scripts inline de Astro (hidratación React) y Wompi/MercadoPago integrations; eliminar en Fase 12 cuando se migre a nonces
+- `crossOriginEmbedderPolicy: false`: requerido para que Leaflet cargue tiles de OpenStreetMap (recursos cross-origin)
+- `npm audit fix --force` omitido: requeriría downgrade de `@astrojs/vercel` 9.0.4→8.0.4 (breaking change); 3 high vulns en `path-to-regexp` (transitivo de `@vercel/routing-utils`) pendientes hasta que Astro publique parche
+- sitemap.xml generado vía endpoint Astro (SSR) en lugar de archivo estático: permite futuras fases agregar URLs de fincas o blogs dinámicamente
+
+### Impacto
+- **BUG-011 resuelto**: CSP activo en ambos servidores (standalone + Vercel)
+- **DEBT-001 completado**: todas las rutas/servicios usan PostgreSQL `$n` placeholders
+- SEO: `robots.txt` para crawlers, `sitemap.xml` con 14 URLs, JSON-LD Organization en todas las páginas, JSON-LD Product/ItemList en `/tienda`
+- Robots meta `noindex, nofollow` en páginas admin/app (via `isAdmin` prop)
+- Build limpio (747ms), sin warnings de compilación
+
+---
+
 ## 📅 2026-03-02 — Fase 10: Panel de Administración Profesional (Agente: Claude)
 
 ### Archivos Creados
