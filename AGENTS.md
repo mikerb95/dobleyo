@@ -320,7 +320,7 @@ Todo agente que cree o modifique páginas DEBE cumplir:
 | 4 | Sistema de órdenes y pasarelas de pago | ✅ Completo |
 | 5 | Trazabilidad completa y QR | ✅ Completo |
 | 6 | Módulo de finanzas de producción | ✅ Completo |
-| 7 | Landing pages de fincas y caficultores | ⏳ Pendiente |
+| 7 | Landing pages de fincas y caficultores | ✅ Completo |
 | 8 | Mapa de calor de ventas | ⏳ Pendiente |
 | 9 | Internacionalización (i18n) y versión USA | ⏳ Pendiente |
 | 10 | Panel de administración profesional | ⏳ Pendiente |

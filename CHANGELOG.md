@@ -2,6 +2,41 @@
 
 ---
 
+## 📅 2026-03-02 — Fase 7: Landing Pages de Fincas y Caficultores (Agente: Claude)
+
+### Archivos Creados
+
+- `server/migrations/create_farms_table.js` — Migración PostgreSQL que crea la tabla `farms`: id, caficultor_id (FK → users), name, slug (UNIQUE), region, municipality, altitude_min/max, hectares, varieties/certifications/processes (TEXT[]), soil_type, story, short_description, cover_image_url, gallery_urls (JSONB), latitude/longitude, is_published, created_at/updated_at. Índices en caficultor_id, region, slug, is_published.
+- `server/routes/farms.js` — Router Express ESM con 8 endpoints: `GET /` (listado público paginado con filtro por región), `GET /regions` (regiones con fincas), `GET /my` (finca del caficultor autenticado), `GET /admin/all` (admin lista todas), `GET /:slug` (perfil público con lotes recientes), `POST /` (caficultor crea su finca, una por usuario), `PATCH /:id` (caficultor/admin actualiza), `PATCH /:id/publish` (admin publica/despublica). Incluye helper `toSlug()` con normalización de tildes y colisión de slugs.
+- `src/pages/fincas.astro` — Página pública SSR de listado de fincas publicadas. Header hero con fondo oscuro, filtros de región por chips (con conteo activo), grid responsive 1→2→3 columnas, farm cards con imagen, región, altitud, variedades y certificaciones como badges. SEO completo (canonical, og, ld+json CollectionPage).
+- `src/pages/finca/[slug].astro` — Landing page dinámica SSR por slug. Hero con imagen de portada de fondo y overlay, breadcrumb accesible, layout 1→2 columnas (main + sidebar), sección de historia, lista de cosechas recientes con link a trazabilidad, galería de fotos, sidebar con ficha técnica (altitud, ha, suelo), variedades, procesos, certificaciones, CTA de tienda/trazabilidad. SEO completo (canonical, og, ld+json Organization + BreadcrumbList).
+- `src/pages/app/mi-finca.astro` — Página de caficultor para gestionar su perfil de finca (CRUD). Fetch SSR de `/api/farms/my` con cookie relay. Formulario completo con secciones: información básica, caficultura (variedades/procesos/certificaciones como campos coma-separated), historia, portada (con preview), ubicación. Crea con POST o actualiza con PATCH. Respuesta inline con mensaje de éxito/error. Indicador de estado publicado/borrador.
+
+### Archivos Modificados
+
+- `server/index.js` — Importa y monta `farmsRouter` en `/api/farms`.
+- `api/index.js` — Paridad: importa y monta `farmsRouter` en `/api/farms`.
+- `src/pages/index.astro` — Añade sección "Nuestras Fincas" (máx. 3 fincas publicadas) entre los artículos destacados y la sección de evidencia social. SSR fetch a `/api/farms?limit=3`. La sección solo se renderiza si hay fincas publicadas.
+- `public/assets/css/styles.css` — Añade 90 líneas de CSS para `.home-farms` (sección homepage) y sus subcomponentes `.home-farm-card`. Mobile-first, variables CSS, hover effects.
+
+### Decisiones Técnicas
+
+- **`farms` tabla separada de `caficultor_applications`**: La tabla `caficultor_applications` maneja el flujo de aprobación. La tabla `farms` es el perfil público de la finca, desacoplado del proceso de onboarding.
+- **TEXT[] para variedades/procesos/certificaciones**: PostgreSQL arrays nativos en lugar de tabla de relación 1:N, justificado por el tamaño pequeño (< 20 ítems) y su uso exclusivamente como lectura.
+- **Slug auto-generado con fallback de colisión**: Si el slug ya existe, se añade sufijo `Date.now().toString(36)` para garantizar unicidad sin error HTTP 409.
+- **`is_published = FALSE` por defecto**: Las fincas requieren revisión manual por admin antes de aparecer en el catálogo público. El caficultor ve su estado en `/app/mi-finca`.
+- **Ruta `/api/farms/my` antes de `/:slug`**: El registro de ruta `/my` debe declararse antes de `/:slug` en Express para evitar que "my" sea interpretado como un slug.
+- **Sección homepage condicional**: La sección "Nuestras Fincas" solo se renderiza en la homepage si la API retorna al menos 1 finca publicada, evitando secciones vacías en el estado inicial del proyecto.
+
+### Impacto
+
+- Nueva ruta pública `/fincas` con catálogo de fincas filtrable por región.
+- Nuevas landing pages SEO-optimizadas en `/finca/{slug}` para cada finca caficultora.
+- Caficultores pueden gestionar su perfil de finca en `/app/mi-finca`.
+- Homepage muestra hasta 3 fincas destacadas con link al catálogo completo.
+
+---
+
 ## 📅 2026-03-02 — Fase 6: Módulo de Finanzas de Producción (Agente: Claude)
 
 ### Archivos Creados
