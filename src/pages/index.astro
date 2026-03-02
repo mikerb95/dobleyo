@@ -3,7 +3,7 @@ import Layout from "../layouts/Layout.astro";
 import { products } from "../data/products.ts";
 import { getCanonicalUrl, getHreflangPair } from "../i18n/index.ts";
 
-const _hreflang = getHreflangPair('/');
+const _hreflang = getHreflangPair("/");
 
 // Fuente única: productos desde src/data/products.ts
 const coffeeProducts = products.filter((p) => p.category === "Cafés");
@@ -21,7 +21,7 @@ try {
 
 <Layout
   lang="es"
-  canonical={getCanonicalUrl('/', 'es')}
+  canonical={getCanonicalUrl("/", "es")}
   hreflangEs={_hreflang?.es}
   hreflangEn={_hreflang?.en}
 >
@@ -54,30 +54,33 @@ try {
     </div>
 
     <div class="coffee-scroll">
-      {coffeeProducts.map((p) => (
-        <article class="coffee-card">
-          <img
-            src={p.image}
-            alt={p.name}
-            class="coffee-img"
-            loading="lazy"
-          />
-          <span class="coffee-badge">{p.bestseller ? "Más Vendido" : `Tueste ${p.roast}`}</span>
-          <h3 class="coffee-name">{p.name}</h3>
-          <p class="coffee-notes">{p.notes?.join(", ")}</p>
-          <div class="coffee-footer">
-            <span class="coffee-price">${p.price.toLocaleString("es-CO")}</span>
-            <button
-              class="btn-add"
-              aria-label={`Agregar ${p.name} al carrito`}
-              data-id={p.id}
-              data-name={p.name}
-              data-price={p.price}
-              data-image={p.image}
-            >+</button>
-          </div>
-        </article>
-      ))}
+      {
+        coffeeProducts.map((p) => (
+          <article class="coffee-card">
+            <img src={p.image} alt={p.name} class="coffee-img" loading="lazy" />
+            <span class="coffee-badge">
+              {p.bestseller ? "Más Vendido" : `Tueste ${p.roast}`}
+            </span>
+            <h3 class="coffee-name">{p.name}</h3>
+            <p class="coffee-notes">{p.notes?.join(", ")}</p>
+            <div class="coffee-footer">
+              <span class="coffee-price">
+                ${p.price.toLocaleString("es-CO")}
+              </span>
+              <button
+                class="btn-add"
+                aria-label={`Agregar ${p.name} al carrito`}
+                data-id={p.id}
+                data-name={p.name}
+                data-price={p.price}
+                data-image={p.image}
+              >
+                +
+              </button>
+            </div>
+          </article>
+        ))
+      }
     </div>
   </section>
 
@@ -195,62 +198,89 @@ try {
             loading="lazy"
           />
           <div class="p featured-body">
-            <h3 class="featured-h3">Productores aliados: historias de origen</h3>
+            <h3 class="featured-h3">
+              Productores aliados: historias de origen
+            </h3>
             <p class="featured-desc muted">
               Conoce a los caficultores detrás de cada lote. Transparencia,
               relaciones directas y sostenibilidad en cada paso.
             </p>
-            <a class="btn outline small" href="/nosotros" data-link>Conocer más</a>
+            <a class="btn outline small" href="/nosotros" data-link
+              >Conocer más</a
+            >
           </div>
         </article>
       </div>
     </div>
   </section>
 
-
   <!-- Sección: Nuestras Fincas -->
-  {featuredFarms.length > 0 && (
-    <section class="home-farms" aria-labelledby="homeFarmsTitle">
-      <div class="container">
-        <div class="home-farms__header">
-          <h2 id="homeFarmsTitle" class="home-farms__title">Nuestras Fincas</h2>
-          <a href="/fincas" class="home-farms__link">Ver todas las fincas →</a>
-        </div>
-        <ul class="home-farms__grid" role="list">
-          {featuredFarms.map((farm: any) => (
-            <li class="home-farm-card">
-              <a href={`/finca/${farm.slug}`} class="home-farm-card__link">
-                {farm.cover_image_url ? (
-                  <img
-                    src={farm.cover_image_url}
-                    alt={`Finca ${farm.name} — ${farm.region}`}
-                    loading="lazy"
-                    class="home-farm-card__img"
-                    width="400"
-                    height="240"
-                  />
-                ) : (
-                  <div class="home-farm-card__img home-farm-card__img--ph" aria-hidden="true">🌿</div>
-                )}
-                <div class="home-farm-card__info">
-                  <span class="home-farm-card__region">{farm.region}</span>
-                  <strong class="home-farm-card__name">{farm.name}</strong>
-                  {farm.altitude_min && (
-                    <span class="home-farm-card__alt">{farm.altitude_min}{farm.altitude_max ? `–${farm.altitude_max}` : ""} msnm</span>
+  {
+    featuredFarms.length > 0 && (
+      <section class="home-farms" aria-labelledby="homeFarmsTitle">
+        <div class="container">
+          <div class="home-farms__header">
+            <h2 id="homeFarmsTitle" class="home-farms__title">
+              Nuestras Fincas
+            </h2>
+            <a href="/fincas" class="home-farms__link">
+              Ver todas las fincas →
+            </a>
+          </div>
+          <ul class="home-farms__grid" role="list">
+            {featuredFarms.map((farm: any) => (
+              <li class="home-farm-card">
+                <a href={`/finca/${farm.slug}`} class="home-farm-card__link">
+                  {farm.cover_image_url ? (
+                    <img
+                      src={farm.cover_image_url}
+                      alt={`Finca ${farm.name} — ${farm.region}`}
+                      loading="lazy"
+                      class="home-farm-card__img"
+                      width="400"
+                      height="240"
+                    />
+                  ) : (
+                    <div
+                      class="home-farm-card__img home-farm-card__img--ph"
+                      aria-hidden="true"
+                    >
+                      🌿
+                    </div>
                   )}
-                </div>
-              </a>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </section>
-  )}
+                  <div class="home-farm-card__info">
+                    <span class="home-farm-card__region">{farm.region}</span>
+                    <strong class="home-farm-card__name">{farm.name}</strong>
+                    {farm.altitude_min && (
+                      <span class="home-farm-card__alt">
+                        {farm.altitude_min}
+                        {farm.altitude_max ? `–${farm.altitude_max}` : ""} msnm
+                      </span>
+                    )}
+                  </div>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+    )
+  }
 
   <!-- Evidencia social -->
   <section class="evidence-section" aria-labelledby="evidenceTitle">
-    <img class="e-beans e-beans-left" src="/assets/beans.svg" alt="" aria-hidden="true" />
-    <img class="e-beans e-beans-right" src="/assets/beans.svg" alt="" aria-hidden="true" />
+    <img
+      class="e-beans e-beans-left"
+      src="/assets/beans.svg"
+      alt=""
+      aria-hidden="true"
+    />
+    <img
+      class="e-beans e-beans-right"
+      src="/assets/beans.svg"
+      alt=""
+      aria-hidden="true"
+    />
     <div class="evidence-inner container">
       <div class="evidence-grid">
         <div class="e-left">
@@ -272,7 +302,11 @@ try {
         </div>
 
         <div class="e-mid">
-          <div class="e-badge" role="img" aria-label="#1 en satisfacción del consumidor">
+          <div
+            class="e-badge"
+            role="img"
+            aria-label="#1 en satisfacción del consumidor"
+          >
             <span class="e-badge-num">#1</span>
             <span class="e-badge-label">en Satisfacción del Consumidor</span>
           </div>
@@ -298,8 +332,10 @@ try {
 
   <!-- Script: conectar botones "+" al carrito -->
   <script>
-    document.querySelector('.coffee-scroll')?.addEventListener('click', (e) => {
-      const btn = (e.target as HTMLElement).closest('.btn-add') as HTMLButtonElement | null;
+    document.querySelector(".coffee-scroll")?.addEventListener("click", (e) => {
+      const btn = (e.target as HTMLElement).closest(
+        ".btn-add",
+      ) as HTMLButtonElement | null;
       if (!btn) return;
       const { id, name, price, image } = btn.dataset;
       if (id && name && price && image && (window as any).Cart) {

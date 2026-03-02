@@ -2,12 +2,12 @@
 import Layout from "../layouts/Layout.astro";
 import { getCanonicalUrl, getHreflangPair } from "../i18n/index.ts";
 
-const _hreflang = getHreflangPair('/trazabilidad');
+const _hreflang = getHreflangPair("/trazabilidad");
 ---
 
 <Layout
   lang="es"
-  canonical={getCanonicalUrl('/trazabilidad', 'es')}
+  canonical={getCanonicalUrl("/trazabilidad", "es")}
   hreflangEs={_hreflang?.es}
   hreflangEn={_hreflang?.en}
   title="Trazabilidad de café — DobleYo Café"

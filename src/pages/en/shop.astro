@@ -17,12 +17,12 @@ const initialProducts = [...products].sort(
 const productsJson = JSON.stringify(
   initialProducts.map((p) => ({
     id:        p.id,
-    name:      p.nameEn || p.name,
-    category:  p.categoryEn || p.category,
+    name:      (p.nameEn || p.name),
+    category:  (p.categoryEn || p.category),
     origin:    p.origin ?? null,
-    process:   p.processEn || p.process ?? null,
-    roast:     p.roastEn || p.roast ?? null,
-    notes:     p.notesEn || p.notes || [],
+    process:   (p.processEn || p.process) ?? null,
+    roast:     (p.roastEn || p.roast) ?? null,
+    notes:     (p.notesEn || p.notes || []),
     price:     p.priceUsd ?? Math.round(p.price / 4000),
     rating:    p.rating,
     deal:      p.deal ?? false,

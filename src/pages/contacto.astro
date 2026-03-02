@@ -2,14 +2,14 @@
 import Layout from "../layouts/Layout.astro";
 import { getCanonicalUrl, getHreflangPair } from "../i18n/index.ts";
 
-const _hreflang = getHreflangPair('/contacto');
+const _hreflang = getHreflangPair("/contacto");
 ---
 
 <Layout
   title="Contacto — DobleYo Café"
   description="Contáctanos para preguntas sobre pedidos, productos o ventas al por mayor. Respondemos en menos de 24 horas."
   lang="es"
-  canonical={getCanonicalUrl('/contacto', 'es')}
+  canonical={getCanonicalUrl("/contacto", "es")}
   hreflangEs={_hreflang?.es}
   hreflangEn={_hreflang?.en}
 >
@@ -237,7 +237,7 @@ const _hreflang = getHreflangPair('/contacto');
       const form = e.target as HTMLFormElement;
       const status = document.getElementById("formStatus");
       const submitBtn = form.querySelector(
-        'button[type="submit"]'
+        'button[type="submit"]',
       ) as HTMLButtonElement;
 
       if (!status) return;

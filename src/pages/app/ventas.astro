@@ -5,40 +5,53 @@ import SalesHeatmap from "../../components/SalesHeatmap.jsx";
 
 <AppLayout>
   <div style="max-width: 1400px; margin: 0 auto; padding: 1.5rem;">
+
     <!-- Encabezado -->
     <div style="margin-bottom: 1.5rem;">
-      <h1
-        style="font-size: 1.7rem; font-weight: 700; color: var(--coffee, #251a14); margin-bottom: 0.4rem;"
-      >
+      <h1 style="font-size: 1.7rem; font-weight: 700; color: var(--coffee, #251a14); margin-bottom: 0.4rem;">
         🗺️ Mapa de Calor de Ventas
       </h1>
       <p style="color: #666; margin: 0; font-size: 0.95rem;">
-        Distribución geográfica combinada — tienda web y MercadoLibre. Filtra
-        por período, canal o producto y exporta los datos como CSV.
+        Distribución geográfica combinada — tienda web y MercadoLibre.
+        Filtra por período, canal o producto y exporta los datos como CSV.
       </p>
     </div>
 
     <!-- Mapa interactivo -->
-    <div
-      style="background: white; padding: 1.5rem; border-radius: 10px; border: 1px solid #e6e6e6; margin-bottom: 1.5rem;"
-    >
+    <div style="background: white; padding: 1.5rem; border-radius: 10px; border: 1px solid #e6e6e6; margin-bottom: 1.5rem;">
       <SalesHeatmap client:load />
     </div>
 
-    <!-- Tips rápidos -->
-    <div
-      style="background: #f9f7f4; border-radius: 8px; padding: 1.25rem 1.5rem; border: 1px solid #e6e6e6;"
-    >
-      <h3 style="color: #251a14; margin: 0 0 0.8rem; font-size: 0.95rem;">
-        Guía rápida
-      </h3>
-      <div
-        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.9rem;"
-      >
-        {
-          [
-            {
-              icon: "🎨",
-              title: "Intensidad de calor",
-              desc: "Amarillo = pocas ventas → Rojo oscuro = muchas ventas.",
-            },
+    <!-- Guía rápida -->
+    <div style="background: #f9f7f4; border-radius: 8px; padding: 1.25rem 1.5rem; border: 1px solid #e6e6e6;">
+      <h3 style="color: #251a14; margin: 0 0 0.8rem; font-size: 0.95rem;">Guía rápida</h3>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.9rem;">
+        <div style="background: white; border: 1px solid #e6e6e6; border-radius: 6px; padding: 0.85rem 1rem;">
+          <strong style="font-size: 0.9rem; color: #251a14;">🎨 Intensidad de calor</strong>
+          <p style="color: #666; margin: 0.3rem 0 0; font-size: 0.84rem; line-height: 1.5;">
+            Amarillo = pocas ventas → Rojo oscuro = muchas ventas.
+          </p>
+        </div>
+        <div style="background: white; border: 1px solid #e6e6e6; border-radius: 6px; padding: 0.85rem 1rem;">
+          <strong style="font-size: 0.9rem; color: #251a14;">📌 Marcadores</strong>
+          <p style="color: #666; margin: 0.3rem 0 0; font-size: 0.84rem; line-height: 1.5;">
+            Clic en un círculo para ver pedidos, ventas en COP y canal (web/ML).
+          </p>
+        </div>
+        <div style="background: white; border: 1px solid #e6e6e6; border-radius: 6px; padding: 0.85rem 1rem;">
+          <strong style="font-size: 0.9rem; color: #251a14;">🔍 Filtros</strong>
+          <p style="color: #666; margin: 0.3rem 0 0; font-size: 0.84rem; line-height: 1.5;">
+            Filtra por período, canal de venta o nombre de producto.
+          </p>
+        </div>
+        <div style="background: white; border: 1px solid #e6e6e6; border-radius: 6px; padding: 0.85rem 1rem;">
+          <strong style="font-size: 0.9rem; color: #251a14;">💾 Exportar</strong>
+          <p style="color: #666; margin: 0.3rem 0 0; font-size: 0.84rem; line-height: 1.5;">
+            Descarga los datos del filtro activo con el botón ↓ CSV.
+          </p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</AppLayout>
