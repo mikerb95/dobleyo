@@ -45,7 +45,7 @@ if (process.env.SITE_BASE_URL && !allowedOrigins.includes(process.env.SITE_BASE_
 }
 
 app.use(cors({
-  origin: function(origin, callback) {
+  origin: function (origin, callback) {
     // Permitir requests sin origin (como mobile apps o curl)
     if (!origin) return callback(null, true);
     if (allowedOrigins.includes(origin)) {
@@ -99,7 +99,7 @@ app.get('/api/audit/logs', authenticateToken, requireRole('admin'), async (req, 
       LEFT JOIN users u ON al.user_id = u.id
       WHERE 1=1
     `;
-    
+
     const params = [];
 
     if (action) {
@@ -235,7 +235,7 @@ app.get('*', (req, res) => {
 // Only start server if explicitly requested via START_SERVER env var
 // This prevents Vercel from trying to bind ports during module loading
 if (process.env.START_SERVER === 'true') {
-  app.listen(PORT, ()=>{
+  app.listen(PORT, () => {
     console.log('Server listening on https://dobleyo.cafe');
   });
 }
