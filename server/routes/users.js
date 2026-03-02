@@ -30,7 +30,7 @@ usersRouter.get('/', auth.authenticateToken, auth.requireRole('admin'), async (r
       FROM users 
       ORDER BY created_at DESC`
     );
-    
+
     res.json({ users: result.rows });
   } catch (err) {
     console.error('[GET /api/users] Error:', err);
@@ -134,7 +134,7 @@ usersRouter.put('/:id', auth.authenticateToken, auth.requireRole('admin'), async
     );
 
     console.log('[PUT /api/users/:id] Updated user:', updated.rows[0]);
-    
+
     // Registrar en auditoría
     await logAudit(
       req.user.id,
@@ -142,12 +142,12 @@ usersRouter.put('/:id', auth.authenticateToken, auth.requireRole('admin'), async
       'user',
       parseInt(id),
       {
-        fields_updated: Object.keys(req.body).filter(k => 
+        fields_updated: Object.keys(req.body).filter(k =>
           req.body[k] !== undefined && req.body[k] !== null
         )
       }
     );
-    
+
     res.json({ user: updated.rows[0] });
   } catch (err) {
     console.error('[PUT /api/users/:id] Error:', err);
@@ -176,7 +176,7 @@ usersRouter.delete('/:id', auth.authenticateToken, auth.requireRole('admin'), as
     // Eliminar usuario
     await query('DELETE FROM users WHERE id = $1', [id]);
 
-    res.json({ 
+    res.json({
       message: `Usuario ${userEmail} eliminado exitosamente`,
       deletedId: id
     });
@@ -235,7 +235,7 @@ usersRouter.post('/', auth.authenticateToken, auth.requireRole('admin'), async (
       [newUserId]
     );
 
-    res.status(201).json({ 
+    res.status(201).json({
       message: 'Usuario creado exitosamente',
       tempPassword: tempPassword,
       user: newUser.rows[0]

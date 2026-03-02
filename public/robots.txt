@@ -1,0 +1,22 @@
+User-agent: *
+Allow: /
+
+# Área privada y administrativa — sin indexar
+Disallow: /admin/
+Disallow: /app/
+Disallow: /api/
+Disallow: /login
+Disallow: /registro
+Disallow: /cuenta
+Disallow: /checkout
+Disallow: /confirmacion
+Disallow: /setup-db
+Disallow: /solicitar-caficultor
+Disallow: /verify-email
+
+# Versión inglés — privada y administrativa
+Disallow: /en/account
+Disallow: /en/checkout
+Disallow: /en/confirmacion
+
+Sitemap: https://dobleyo.cafe/sitemap.xml
