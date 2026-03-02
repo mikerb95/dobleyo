@@ -3,219 +3,271 @@ import Layout from "../../layouts/Layout.astro";
 import { products } from "../../data/products";
 import { t, getCanonicalUrl, getHreflangPair } from "../../i18n/index.ts";
 
-const lang = 'en' as const;
-const hreflang = getHreflangPair('/tienda');
+const lang = "en" as const;
+const hreflang = getHreflangPair("/tienda");
 
 // Ordenamiento inicial por relevancia
 const initialProducts = [...products].sort(
-  (a, b) =>
-    (b.bestseller ? 1 : 0) + (b.new ? 1 : 0) + (b.deal ? 1 : 0) + (b.rating || 0) / 5 -
-    ((a.bestseller ? 1 : 0) + (a.new ? 1 : 0) + (a.deal ? 1 : 0) + (a.rating || 0) / 5)
+    (a, b) =>
+        (b.bestseller ? 1 : 0) +
+        (b.new ? 1 : 0) +
+        (b.deal ? 1 : 0) +
+        (b.rating || 0) / 5 -
+        ((a.bestseller ? 1 : 0) +
+            (a.new ? 1 : 0) +
+            (a.deal ? 1 : 0) +
+            (a.rating || 0) / 5),
 );
 
 // Serializar para el script del cliente
 const productsJson = JSON.stringify(
-  initialProducts.map((p) => ({
-    id:        p.id,
-    name:      (p.nameEn || p.name),
-    category:  (p.categoryEn || p.category),
-    origin:    p.origin ?? null,
-    process:   (p.processEn || p.process) ?? null,
-    roast:     (p.roastEn || p.roast) ?? null,
-    notes:     (p.notesEn || p.notes || []),
-    price:     p.priceUsd ?? Math.round(p.price / 4000),
-    rating:    p.rating,
-    deal:      p.deal ?? false,
-    bestseller: p.bestseller ?? false,
-    new:       p.new ?? false,
-    fast:      p.fast ?? false,
-    image:     p.image,
-  }))
+    initialProducts.map((p) => ({
+        id: p.id,
+        name: p.nameEn || p.name,
+        category: p.categoryEn || p.category,
+        origin: p.origin ?? null,
+        process: (p.processEn || p.process) ?? null,
+        roast: (p.roastEn || p.roast) ?? null,
+        notes: p.notesEn || p.notes || [],
+        price: p.priceUsd ?? Math.round(p.price / 4000),
+        rating: p.rating,
+        deal: p.deal ?? false,
+        bestseller: p.bestseller ?? false,
+        new: p.new ?? false,
+        fast: p.fast ?? false,
+        image: p.image,
+    })),
 );
 ---
 
 <Layout
-  title="Shop — DobleYo Café | Colombian Specialty Coffee"
-  description="Browse our selection of Colombian specialty coffees and accessories. Single-origin, freshly roasted, farm-to-cup."
-  lang={lang}
-  canonical={getCanonicalUrl('/shop', 'en')}
-  hreflangEs={hreflang?.es}
-  hreflangEn={hreflang?.en}
+    title="Shop — DobleYo Café | Colombian Specialty Coffee"
+    description="Browse our selection of Colombian specialty coffees and accessories. Single-origin, freshly roasted, farm-to-cup."
+    lang={lang}
+    canonical={getCanonicalUrl("/shop", "en")}
+    hreflangEs={hreflang?.es}
+    hreflangEn={hreflang?.en}
 >
-  <!-- Promotional banner -->
-  <section class="promo-banner" aria-label="Promotion">
-    <div class="promo-inner">
-      <div class="promo-media" role="img" aria-label="Shop banner">
-        <img
-          src="https://images.unsplash.com/photo-1517705008128-361805f42e86?q=80&w=1600&auto=format&fit=crop"
-          alt="DobleYo Coffee shop"
-          loading="lazy"
-        />
-      </div>
-      <div class="promo-overlay" aria-hidden="false">
-        <div class="promo-text">
-          <h2 class="promo-title">Shop All</h2>
-          <p class="promo-sub">
-            DobleYo Café · Colombian specialty coffees and accessories. Single-origin, freshly roasted.
-          </p>
+    <!-- Promotional banner -->
+    <section class="promo-banner" aria-label="Promotion">
+        <div class="promo-inner">
+            <div class="promo-media" role="img" aria-label="Shop banner">
+                <img
+                    src="https://images.unsplash.com/photo-1517705008128-361805f42e86?q=80&w=1600&auto=format&fit=crop"
+                    alt="DobleYo Coffee shop"
+                    loading="lazy"
+                />
+            </div>
+            <div class="promo-overlay" aria-hidden="false">
+                <div class="promo-text">
+                    <h2 class="promo-title">Shop All</h2>
+                    <p class="promo-sub">
+                        DobleYo Café · Colombian specialty coffees and
+                        accessories. Single-origin, freshly roasted.
+                    </p>
+                </div>
+            </div>
         </div>
-      </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- Filter chips + sort bar -->
-  <section class="shop-topbar" aria-label="Quick filters">
-    <div class="chips" id="topChips" role="toolbar" aria-label="Quick filters">
-      <button class="chip" data-flag="fast">Fast delivery</button>
-      <button class="chip" data-flag="deal">On sale</button>
-      <button class="chip" data-flag="new">New arrivals</button>
-      <button class="chip" data-flag="bestseller">Best sellers</button>
-    </div>
-    <div class="actions">
-      <button class="filters-toggle" id="filtersToggle" aria-expanded="false">Filters</button>
-      <label class="sort">
-        <span>Sort by:</span>
-        <select id="shopSort" aria-label="Sort results">
-          <option value="relevance">Relevance</option>
-          <option value="price-asc">Price: lowest first</option>
-          <option value="price-desc">Price: highest first</option>
-          <option value="rating-desc">Highest rated</option>
-        </select>
-      </label>
-    </div>
-  </section>
-
-  <section class="shop-layout" aria-label="Shop results">
-    <!-- Sidebar filters -->
-    <aside class="shop-sidebar" id="shopSidebar">
-      <div class="filter-group">
-        <div class="filter-title">Categories</div>
-        <div class="filter-list" id="catList"></div>
-      </div>
-      <div class="filter-group">
-        <div class="filter-title">Origin</div>
-        <div class="filter-list" id="originList"></div>
-      </div>
-      <div class="filter-group">
-        <div class="filter-title">Roast</div>
-        <div class="filter-list" id="roastList"></div>
-      </div>
-      <div class="filter-group">
-        <div class="filter-title">Process</div>
-        <div class="filter-list" id="processList"></div>
-      </div>
-      <div class="filter-group">
-        <div class="filter-title">Price (USD)</div>
-        <div class="filter-price">
-          <input type="range" id="priceRange" min="0" max="100" value="100" step="5" aria-label="Max price" />
-          <div class="price-labels">
-            <span>$0</span>
-            <span id="priceVal">$100</span>
-          </div>
+    <!-- Filter chips + sort bar -->
+    <section class="shop-topbar" aria-label="Quick filters">
+        <div
+            class="chips"
+            id="topChips"
+            role="toolbar"
+            aria-label="Quick filters"
+        >
+            <button class="chip" data-flag="fast">Fast delivery</button>
+            <button class="chip" data-flag="deal">On sale</button>
+            <button class="chip" data-flag="new">New arrivals</button>
+            <button class="chip" data-flag="bestseller">Best sellers</button>
         </div>
-      </div>
-      <button class="btn btn-outline" id="clearFilters">Clear filters</button>
-    </aside>
+        <div class="actions">
+            <button
+                class="filters-toggle"
+                id="filtersToggle"
+                aria-expanded="false">Filters</button
+            >
+            <label class="sort">
+                <span>Sort by:</span>
+                <select id="shopSort" aria-label="Sort results">
+                    <option value="relevance">Relevance</option>
+                    <option value="price-asc">Price: lowest first</option>
+                    <option value="price-desc">Price: highest first</option>
+                    <option value="rating-desc">Highest rated</option>
+                </select>
+            </label>
+        </div>
+    </section>
 
-    <!-- Product grid -->
-    <div class="shop-main">
-      <div class="shop-results-bar">
-        <span id="resultsCount"></span>
-      </div>
-      <div class="product-grid" id="productGrid" role="list"></div>
-      <div id="noResults" class="no-results" style="display:none">
-        No products found for these filters.
-      </div>
-    </div>
-  </section>
+    <section class="shop-layout" aria-label="Shop results">
+        <!-- Sidebar filters -->
+        <aside class="shop-sidebar" id="shopSidebar">
+            <div class="filter-group">
+                <div class="filter-title">Categories</div>
+                <div class="filter-list" id="catList"></div>
+            </div>
+            <div class="filter-group">
+                <div class="filter-title">Origin</div>
+                <div class="filter-list" id="originList"></div>
+            </div>
+            <div class="filter-group">
+                <div class="filter-title">Roast</div>
+                <div class="filter-list" id="roastList"></div>
+            </div>
+            <div class="filter-group">
+                <div class="filter-title">Process</div>
+                <div class="filter-list" id="processList"></div>
+            </div>
+            <div class="filter-group">
+                <div class="filter-title">Price (USD)</div>
+                <div class="filter-price">
+                    <input
+                        type="range"
+                        id="priceRange"
+                        min="0"
+                        max="100"
+                        value="100"
+                        step="5"
+                        aria-label="Max price"
+                    />
+                    <div class="price-labels">
+                        <span>$0</span>
+                        <span id="priceVal">$100</span>
+                    </div>
+                </div>
+            </div>
+            <button class="btn btn-outline" id="clearFilters"
+                >Clear filters</button
+            >
+        </aside>
+
+        <!-- Product grid -->
+        <div class="shop-main">
+            <div class="shop-results-bar">
+                <span id="resultsCount"></span>
+            </div>
+            <div class="product-grid" id="productGrid" role="list"></div>
+            <div id="noResults" class="no-results" style="display:none">
+                No products found for these filters.
+            </div>
+        </div>
+    </section>
 </Layout>
 
 <script define:vars={{ productsJson }}>
-  /* Shop script — English version (USD) */
-  const ALL = JSON.parse(productsJson);
-  let activeFlags = new Set();
-  let activeCats  = new Set();
-  let activeOrigins = new Set();
-  let activeRoasts  = new Set();
-  let activeProcess = new Set();
-  let maxPrice = 100;
-  let sortKey  = 'relevance';
+    /* Shop script — English version (USD) */
+    const ALL = JSON.parse(productsJson);
+    let activeFlags = new Set();
+    let activeCats = new Set();
+    let activeOrigins = new Set();
+    let activeRoasts = new Set();
+    let activeProcess = new Set();
+    let maxPrice = 100;
+    let sortKey = "relevance";
 
-  const fmt = (p) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(p);
+    const fmt = (p) =>
+        new Intl.NumberFormat("en-US", {
+            style: "currency",
+            currency: "USD",
+            maximumFractionDigits: 0,
+        }).format(p);
 
-  function buildFilters() {
-    const cats     = [...new Set(ALL.map(p => p.category).filter(Boolean))];
-    const origins  = [...new Set(ALL.map(p => p.origin).filter(Boolean))];
-    const roasts   = [...new Set(ALL.map(p => p.roast).filter(Boolean))];
-    const procs    = [...new Set(ALL.map(p => p.process).filter(Boolean))];
+    function buildFilters() {
+        const cats = [...new Set(ALL.map((p) => p.category).filter(Boolean))];
+        const origins = [...new Set(ALL.map((p) => p.origin).filter(Boolean))];
+        const roasts = [...new Set(ALL.map((p) => p.roast).filter(Boolean))];
+        const procs = [...new Set(ALL.map((p) => p.process).filter(Boolean))];
 
-    const fill = (id, items, activeSet) => {
-      const el = document.getElementById(id);
-      if (!el) return;
-      el.innerHTML = items.map(v => `
+        const fill = (id, items, activeSet) => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.innerHTML = items
+                .map(
+                    (v) => `
         <label class="filter-item">
           <input type="checkbox" value="${v}" data-set="${id}"> ${v}
-        </label>`).join('');
-      el.querySelectorAll('input').forEach(cb => {
-        cb.addEventListener('change', e => {
-          e.target.checked ? activeSet.add(e.target.value) : activeSet.delete(e.target.value);
-          render();
-        });
-      });
-    };
+        </label>`,
+                )
+                .join("");
+            el.querySelectorAll("input").forEach((cb) => {
+                cb.addEventListener("change", (e) => {
+                    e.target.checked
+                        ? activeSet.add(e.target.value)
+                        : activeSet.delete(e.target.value);
+                    render();
+                });
+            });
+        };
 
-    fill('catList',    cats,    activeCats);
-    fill('originList', origins, activeOrigins);
-    fill('roastList',  roasts,  activeRoasts);
-    fill('processList',procs,   activeProcess);
+        fill("catList", cats, activeCats);
+        fill("originList", origins, activeOrigins);
+        fill("roastList", roasts, activeRoasts);
+        fill("processList", procs, activeProcess);
 
-    const rangeEl = document.getElementById('priceRange');
-    const priceVal = document.getElementById('priceVal');
-    if (rangeEl) {
-      const allPrices = ALL.map(p => p.price);
-      const maxP = Math.max(...allPrices);
-      rangeEl.max  = maxP;
-      rangeEl.value = maxP;
-      maxPrice = maxP;
-      if (priceVal) priceVal.textContent = fmt(maxP);
-      rangeEl.addEventListener('input', e => {
-        maxPrice = Number(e.target.value);
-        if (priceVal) priceVal.textContent = fmt(maxPrice);
-        render();
-      });
+        const rangeEl = document.getElementById("priceRange");
+        const priceVal = document.getElementById("priceVal");
+        if (rangeEl) {
+            const allPrices = ALL.map((p) => p.price);
+            const maxP = Math.max(...allPrices);
+            rangeEl.max = maxP;
+            rangeEl.value = maxP;
+            maxPrice = maxP;
+            if (priceVal) priceVal.textContent = fmt(maxP);
+            rangeEl.addEventListener("input", (e) => {
+                maxPrice = Number(e.target.value);
+                if (priceVal) priceVal.textContent = fmt(maxPrice);
+                render();
+            });
+        }
     }
-  }
 
-  function filtered() {
-    return ALL.filter(p => {
-      if (activeFlags.size > 0 && ![...activeFlags].every(f => p[f])) return false;
-      if (activeCats.size > 0    && !activeCats.has(p.category))  return false;
-      if (activeOrigins.size > 0 && !activeOrigins.has(p.origin)) return false;
-      if (activeRoasts.size > 0  && !activeRoasts.has(p.roast))   return false;
-      if (activeProcess.size > 0 && !activeProcess.has(p.process)) return false;
-      if (p.price > maxPrice) return false;
-      return true;
-    });
-  }
+    function filtered() {
+        return ALL.filter((p) => {
+            if (activeFlags.size > 0 && ![...activeFlags].every((f) => p[f]))
+                return false;
+            if (activeCats.size > 0 && !activeCats.has(p.category))
+                return false;
+            if (activeOrigins.size > 0 && !activeOrigins.has(p.origin))
+                return false;
+            if (activeRoasts.size > 0 && !activeRoasts.has(p.roast))
+                return false;
+            if (activeProcess.size > 0 && !activeProcess.has(p.process))
+                return false;
+            if (p.price > maxPrice) return false;
+            return true;
+        });
+    }
 
-  function sorted(list) {
-    const s = [...list];
-    if (sortKey === 'price-asc')  return s.sort((a,b) => a.price - b.price);
-    if (sortKey === 'price-desc') return s.sort((a,b) => b.price - a.price);
-    if (sortKey === 'rating-desc') return s.sort((a,b) => b.rating - a.rating);
-    return s;
-  }
+    function sorted(list) {
+        const s = [...list];
+        if (sortKey === "price-asc") return s.sort((a, b) => a.price - b.price);
+        if (sortKey === "price-desc")
+            return s.sort((a, b) => b.price - a.price);
+        if (sortKey === "rating-desc")
+            return s.sort((a, b) => b.rating - a.rating);
+        return s;
+    }
 
-  function cardHtml(p) {
-    const badges = [
-      p.bestseller && `<span class="badge-chip bestseller">Best seller</span>`,
-      p.new        && `<span class="badge-chip novedad">New</span>`,
-      p.deal       && `<span class="badge-chip oferta">Sale</span>`,
-      p.fast       && `<span class="badge-chip rapido">Fast</span>`,
-    ].filter(Boolean).join('');
-    const stars = '★'.repeat(Math.round(p.rating)) + '☆'.repeat(5 - Math.round(p.rating));
-    const notes = p.notes?.map(n => `<span class="note-chip">${n}</span>`).join('') ?? '';
-    return `
+    function cardHtml(p) {
+        const badges = [
+            p.bestseller &&
+                `<span class="badge-chip bestseller">Best seller</span>`,
+            p.new && `<span class="badge-chip novedad">New</span>`,
+            p.deal && `<span class="badge-chip oferta">Sale</span>`,
+            p.fast && `<span class="badge-chip rapido">Fast</span>`,
+        ]
+            .filter(Boolean)
+            .join("");
+        const stars =
+            "★".repeat(Math.round(p.rating)) +
+            "☆".repeat(5 - Math.round(p.rating));
+        const notes =
+            p.notes
+                ?.map((n) => `<span class="note-chip">${n}</span>`)
+                .join("") ?? "";
+        return `
       <article class="product-card" role="listitem" tabindex="0">
         <a href="/tienda/${p.id}" class="card-img-link">
           <div class="card-img-wrap">
@@ -226,12 +278,12 @@ const productsJson = JSON.stringify(
         <div class="card-body">
           <span class="card-category">${p.category}</span>
           <h3 class="card-name">${p.name}</h3>
-          ${p.origin ? `<p class="card-origin">${p.origin}${p.process ? ' · ' + p.process : ''}</p>` : ''}
+          ${p.origin ? `<p class="card-origin">${p.origin}${p.process ? " · " + p.process : ""}</p>` : ""}
           <div class="card-meta">
             <span class="rating">${stars} <small>${p.rating}</small></span>
-            ${p.roast ? `<span class="roast-chip">${p.roast}</span>` : ''}
+            ${p.roast ? `<span class="roast-chip">${p.roast}</span>` : ""}
           </div>
-          ${notes ? `<div class="note-chips">${notes}</div>` : ''}
+          ${notes ? `<div class="note-chips">${notes}</div>` : ""}
           <div class="card-footer">
             <span class="price">${fmt(p.price)}</span>
             <button class="btn btn-sm add-to-cart"
@@ -241,71 +293,103 @@ const productsJson = JSON.stringify(
           </div>
         </div>
       </article>`;
-  }
+    }
 
-  function render() {
-    const list = sorted(filtered());
-    const grid = document.getElementById('productGrid');
-    const noRes = document.getElementById('noResults');
-    const count = document.getElementById('resultsCount');
-    if (!grid) return;
-    grid.innerHTML = list.map(cardHtml).join('');
-    if (noRes)  noRes.style.display  = list.length ? 'none' : '';
-    if (count)  count.textContent = `${list.length} product${list.length !== 1 ? 's' : ''}`;
+    function render() {
+        const list = sorted(filtered());
+        const grid = document.getElementById("productGrid");
+        const noRes = document.getElementById("noResults");
+        const count = document.getElementById("resultsCount");
+        if (!grid) return;
+        grid.innerHTML = list.map(cardHtml).join("");
+        if (noRes) noRes.style.display = list.length ? "none" : "";
+        if (count)
+            count.textContent = `${list.length} product${list.length !== 1 ? "s" : ""}`;
 
-    // Add to cart
-    grid.querySelectorAll('.add-to-cart').forEach(btn => {
-      btn.addEventListener('click', e => {
-        e.preventDefault();
-        const b = e.currentTarget;
-        if (window.Cart) {
-          window.Cart.add({ id: b.dataset.id, name: b.dataset.name, price: Number(b.dataset.price), image: b.dataset.image, quantity: 1 });
-          b.textContent = '✓ Added';
-          setTimeout(() => { b.textContent = 'Add to cart'; }, 1800);
-        }
-      });
-    });
-  }
+        // Add to cart
+        grid.querySelectorAll(".add-to-cart").forEach((btn) => {
+            btn.addEventListener("click", (e) => {
+                e.preventDefault();
+                const b = e.currentTarget;
+                if (window.Cart) {
+                    window.Cart.add({
+                        id: b.dataset.id,
+                        name: b.dataset.name,
+                        price: Number(b.dataset.price),
+                        image: b.dataset.image,
+                        quantity: 1,
+                    });
+                    b.textContent = "✓ Added";
+                    setTimeout(() => {
+                        b.textContent = "Add to cart";
+                    }, 1800);
+                }
+            });
+        });
+    }
 
-  document.addEventListener('DOMContentLoaded', () => {
-    buildFilters();
-    render();
-
-    // Chips
-    document.getElementById('topChips')?.querySelectorAll('.chip').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const f = btn.dataset.flag;
-        btn.classList.toggle('active');
-        activeFlags.has(f) ? activeFlags.delete(f) : activeFlags.add(f);
+    document.addEventListener("DOMContentLoaded", () => {
+        buildFilters();
         render();
-      });
-    });
 
-    // Sort
-    document.getElementById('shopSort')?.addEventListener('change', e => {
-      sortKey = e.target.value;
-      render();
-    });
+        // Chips
+        document
+            .getElementById("topChips")
+            ?.querySelectorAll(".chip")
+            .forEach((btn) => {
+                btn.addEventListener("click", () => {
+                    const f = btn.dataset.flag;
+                    btn.classList.toggle("active");
+                    activeFlags.has(f)
+                        ? activeFlags.delete(f)
+                        : activeFlags.add(f);
+                    render();
+                });
+            });
 
-    // Sidebar toggle (mobile)
-    document.getElementById('filtersToggle')?.addEventListener('click', () => {
-      const s = document.getElementById('shopSidebar');
-      const open = s?.classList.toggle('open');
-      document.getElementById('filtersToggle')?.setAttribute('aria-expanded', open ? 'true' : 'false');
-    });
+        // Sort
+        document.getElementById("shopSort")?.addEventListener("change", (e) => {
+            sortKey = e.target.value;
+            render();
+        });
 
-    // Clear filters
-    document.getElementById('clearFilters')?.addEventListener('click', () => {
-      activeFlags.clear(); activeCats.clear(); activeOrigins.clear();
-      activeRoasts.clear(); activeProcess.clear();
-      document.querySelectorAll('#shopSidebar input[type=checkbox]').forEach(cb => cb.checked = false);
-      document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
-      const r = document.getElementById('priceRange');
-      if (r) { maxPrice = Number(r.max); r.value = r.max; document.getElementById('priceVal').textContent = fmt(maxPrice); }
-      sortKey = 'relevance';
-      const sort = document.getElementById('shopSort');
-      if (sort) sort.value = 'relevance';
-      render();
+        // Sidebar toggle (mobile)
+        document
+            .getElementById("filtersToggle")
+            ?.addEventListener("click", () => {
+                const s = document.getElementById("shopSidebar");
+                const open = s?.classList.toggle("open");
+                document
+                    .getElementById("filtersToggle")
+                    ?.setAttribute("aria-expanded", open ? "true" : "false");
+            });
+
+        // Clear filters
+        document
+            .getElementById("clearFilters")
+            ?.addEventListener("click", () => {
+                activeFlags.clear();
+                activeCats.clear();
+                activeOrigins.clear();
+                activeRoasts.clear();
+                activeProcess.clear();
+                document
+                    .querySelectorAll("#shopSidebar input[type=checkbox]")
+                    .forEach((cb) => (cb.checked = false));
+                document
+                    .querySelectorAll(".chip")
+                    .forEach((c) => c.classList.remove("active"));
+                const r = document.getElementById("priceRange");
+                if (r) {
+                    maxPrice = Number(r.max);
+                    r.value = r.max;
+                    document.getElementById("priceVal").textContent =
+                        fmt(maxPrice);
+                }
+                sortKey = "relevance";
+                const sort = document.getElementById("shopSort");
+                if (sort) sort.value = "relevance";
+                render();
+            });
     });
-  });
 </script>
