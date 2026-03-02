@@ -12,6 +12,8 @@ export interface Props {
   canonical?: string;
   hreflangEs?: string;
   hreflangEn?: string;
+  /** Esquema JSON-LD adicional específico de la página (Product, BreadcrumbList, etc.) */
+  jsonLd?: Record<string, unknown> | Record<string, unknown>[];
 }
 
 const {
@@ -22,8 +24,32 @@ const {
   canonical,
   hreflangEs,
   hreflangEn,
+  jsonLd,
 } = Astro.props;
+
+// JSON-LD de Organización — presente en todas las páginas públicas
+const organizationSchema = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "DobleYo Café",
+  url: "https://dobleyo.cafe",
+  logo: "https://dobleyo.cafe/assets/branding/logo.svg",
+  description: "Café de especialidad colombiano con trazabilidad completa del grano.",
+  sameAs: [
+    "https://www.instagram.com/dobleyo.cafe",
+    "https://www.facebook.com/doblcafe",
+  ],
+  contactPoint: {
+    "@type": "ContactPoint",
+    contactType: "customer support",
+    email: "hola@dobleyo.cafe",
+    availableLanguage: ["Spanish", "English"],
+  },
+};
 ---
+
+{/* Robots — noindex en páginas privadas */}
+<meta name="robots" content={isAdmin ? "noindex, nofollow" : "index, follow"} />
 
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
