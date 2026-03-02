@@ -2,24 +2,409 @@
 import AdminLayout from "../../layouts/AdminLayout.astro";
 ---
 
-<AdminLayout>
-  <div
-    class="container"
-    style="padding-top: calc(var(--header-height, 120px) + 2rem); padding-bottom: 4rem;"
-  >
-    <div
-      style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;"
-    >
-      <h1>Gestión de Lotes</h1>
-      <a href="/admin/lotes/nuevo" class="btn small">Crear Nuevo Lote</a>
-    </div>
+<AdminLayout title="Lotes — DobleYo Admin" section="lotes">
+  <style>
+    .page-header { margin-bottom: 1.75rem; }
+    .page-header h1 { font-size: 1.75rem; font-weight: 700; color: #251a14; margin: 0 0 .25rem; }
+    .page-header p { margin: 0; color: #7a6652; font-size: .95rem; }
 
-    <div class="card p-4">
-      <p class="muted">Aquí se listarán los lotes de café verde disponibles.</p>
-      <!-- TODO: Tabla de lotes -->
-      <a href="/admin" style="display: inline-block; margin-top: 1rem;"
-        >&larr; Volver al Dashboard</a
-      >
+    .toolbar {
+      display: flex; flex-wrap: wrap; gap: .75rem; align-items: center;
+      margin-bottom: 1.5rem;
+    }
+    .tab-btn {
+      padding: .45rem 1rem; border-radius: 20px; border: 1px solid #ddd;
+      background: #fff; font-size: .85rem; font-weight: 600; cursor: pointer;
+      color: #7a6652; transition: all .15s;
+    }
+    .tab-btn.active { background: #4a6741; color: #fff; border-color: #4a6741; }
+    .tab-btn:hover:not(.active) { border-color: #c8a96e; color: #251a14; }
+    .spacer { flex: 1; }
+    .btn-primary {
+      padding: .5rem 1.1rem; background: #4a6741; color: #fff; border: none;
+      border-radius: 6px; font-size: .88rem; font-weight: 600; cursor: pointer;
+    }
+    .btn-primary:hover { background: #3a5331; }
+
+    .table-wrap {
+      background: #fff; border-radius: 10px;
+      box-shadow: 0 1px 4px rgba(37,26,20,.08); overflow-x: auto; margin-bottom: 1.5rem;
+    }
+    table { width: 100%; border-collapse: collapse; font-size: .87rem; }
+    thead th {
+      text-align: left; padding: .75rem 1rem;
+      font-size: .71rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+      color: #7a6652; border-bottom: 1px solid #ede8e2; white-space: nowrap;
+    }
+    tbody td { padding: .65rem 1rem; border-bottom: 1px solid #f5f2ee; color: #3d2e22; vertical-align: middle; }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover td { background: #faf8f5; }
+
+    .badge-verde    { background: #d4edda; color: #155724; display: inline-block; padding: .18rem .55rem; border-radius: 50px; font-size: .7rem; font-weight: 700; text-transform: uppercase; }
+    .badge-tostado  { background: #fff3cd; color: #856404; display: inline-block; padding: .18rem .55rem; border-radius: 50px; font-size: .7rem; font-weight: 700; text-transform: uppercase; }
+    .badge-default  { background: #e9ecef; color: #495057; display: inline-block; padding: .18rem .55rem; border-radius: 50px; font-size: .7rem; font-weight: 700; text-transform: uppercase; }
+
+    .btn-action {
+      padding: .28rem .65rem; font-size: .75rem; font-weight: 600;
+      border: 1px solid #ddd; border-radius: 5px; background: #fff;
+      cursor: pointer; color: #251a14; transition: background .15s;
+    }
+    .btn-action:hover { background: #f7f3ef; border-color: #c8a96e; }
+    .btn-action.danger { border-color: #f8d7da; color: #721c24; }
+    .btn-action.danger:hover { background: #f8d7da; }
+
+    .empty { text-align: center; padding: 2.5rem; color: #7a6652; font-style: italic; }
+
+    /* ── Modal ─────────────────────────────────────── */
+    .modal-back {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,.45); z-index: 300;
+      align-items: flex-start; justify-content: center;
+      padding: 2rem 1rem; overflow-y: auto;
+    }
+    .modal-back.open { display: flex; }
+    .modal {
+      background: #fff; border-radius: 12px; width: 100%; max-width: 580px;
+      box-shadow: 0 8px 32px rgba(37,26,20,.22); margin: auto;
+    }
+    .modal-header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 1.2rem 1.5rem; border-bottom: 1px solid #ede8e2;
+    }
+    .modal-header h2 { margin: 0; font-size: 1.1rem; color: #251a14; }
+    .modal-close {
+      background: none; border: none; cursor: pointer;
+      color: #7a6652; font-size: 1.4rem; line-height: 1; padding: .2rem;
+    }
+    .modal-body { padding: 1.5rem; }
+    .form-grid { display: grid; gap: 1rem; grid-template-columns: 1fr 1fr; }
+    .form-group { display: flex; flex-direction: column; gap: .3rem; }
+    .form-group.full { grid-column: 1 / -1; }
+    .form-group label { font-size: .75rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: #7a6652; }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      padding: .55rem .75rem; border: 1px solid #ddd; border-radius: 6px;
+      font-size: .88rem; background: #faf8f5; color: #251a14; outline: none;
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #c8a96e; }
+    .form-group textarea { resize: vertical; min-height: 80px; }
+    .modal-footer {
+      display: flex; gap: .75rem; justify-content: flex-end;
+      padding: 1rem 1.5rem; border-top: 1px solid #ede8e2;
+    }
+    .btn-cancel {
+      padding: .55rem 1rem; background: transparent; border: 1px solid #ddd;
+      border-radius: 6px; font-size: .88rem; cursor: pointer; color: #7a6652;
+    }
+    .btn-cancel:hover { border-color: #bbb; color: #251a14; }
+    .form-msg { font-size: .82rem; margin-top: .5rem; }
+  </style>
+
+  <header class="page-header">
+    <h1>Lotes de café</h1>
+    <p>Gestión de lotes verdes y tostados · trazabilidad completa</p>
+  </header>
+
+  <div class="toolbar">
+    <button class="tab-btn active" data-tab="all">Todos</button>
+    <button class="tab-btn" data-tab="verde">Verde</button>
+    <button class="tab-btn" data-tab="tostado">Tostado</button>
+    <span class="spacer"></span>
+    <button class="btn-primary" id="btnNewLot">+ Nuevo lote</button>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Nombre</th>
+          <th>Origen</th>
+          <th>Finca</th>
+          <th>Proceso</th>
+          <th>Peso (kg)</th>
+          <th>Score</th>
+          <th>Estado</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="lotsBody">
+        <tr><td colspan="9" class="empty">Cargando lotes...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Create / Edit modal -->
+  <div class="modal-back" id="modalBack">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="modal-header">
+        <h2 id="modalTitle">Nuevo lote</h2>
+        <button class="modal-close" id="modalClose" aria-label="Cerrar">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="fCode">Código *</label>
+            <input type="text" id="fCode" placeholder="DY-2026-001" />
+          </div>
+          <div class="form-group">
+            <label for="fName">Nombre *</label>
+            <input type="text" id="fName" placeholder="Sierra Nevada Especial" />
+          </div>
+          <div class="form-group">
+            <label for="fOrigin">Origen / Región</label>
+            <input type="text" id="fOrigin" placeholder="Sierra Nevada, Magdalena" />
+          </div>
+          <div class="form-group">
+            <label for="fFarm">Finca</label>
+            <input type="text" id="fFarm" placeholder="Finca La Esperanza" />
+          </div>
+          <div class="form-group">
+            <label for="fProducer">Productor</label>
+            <input type="text" id="fProducer" placeholder="Juan Rodríguez" />
+          </div>
+          <div class="form-group">
+            <label for="fVariety">Variedad</label>
+            <input type="text" id="fVariety" placeholder="Castillo, Caturra..." />
+          </div>
+          <div class="form-group">
+            <label for="fProcess">Proceso</label>
+            <select id="fProcess">
+              <option value="">Seleccionar...</option>
+              <option value="Lavado">Lavado</option>
+              <option value="Natural">Natural</option>
+              <option value="Honey">Honey</option>
+              <option value="Anaeróbico">Anaeróbico</option>
+              <option value="Washed">Washed</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="fAltitude">Altitud (msnm)</label>
+            <input type="number" id="fAltitude" placeholder="1800" />
+          </div>
+          <div class="form-group">
+            <label for="fWeightKg">Peso verde (kg)</label>
+            <input type="number" id="fWeightKg" placeholder="120" step="0.1" />
+          </div>
+          <div class="form-group">
+            <label for="fScore">Score SCA</label>
+            <input type="number" id="fScore" placeholder="86.5" step="0.5" min="0" max="100" />
+          </div>
+          <div class="form-group">
+            <label for="fHarvestDate">Fecha cosecha</label>
+            <input type="date" id="fHarvestDate" />
+          </div>
+          <div class="form-group">
+            <label for="fMoisture">Humedad (%)</label>
+            <input type="number" id="fMoisture" placeholder="11.5" step="0.1" />
+          </div>
+          <div class="form-group full">
+            <label for="fNotes">Notas de cata / descripción</label>
+            <textarea id="fNotes" placeholder="Notas de sabor, características especiales..."></textarea>
+          </div>
+        </div>
+        <div class="form-msg" id="formMsg"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" id="modalCancel">Cancelar</button>
+        <button class="btn-primary" id="btnSaveLot">Crear lote</button>
+      </div>
     </div>
   </div>
+
+  <script>
+    // ── State ─────────────────────────────────────────────────
+    let allLots: any[] = [];
+    let currentTab = "all";
+    let editCode: string | null = null;
+
+    // ── Formatters ────────────────────────────────────────────
+    const fmtDate = (s: string) =>
+      s ? new Date(s).toLocaleDateString("es-CO", { day: "2-digit", month: "short", year: "numeric" }) : "—";
+
+    function statusBadge(estado: string) {
+      if (estado === "verde") return `<span class="badge-verde">Verde</span>`;
+      if (estado === "tostado") return `<span class="badge-tostado">Tostado</span>`;
+      return `<span class="badge-default">${estado ?? "—"}</span>`;
+    }
+
+    // ── Load lots ─────────────────────────────────────────────
+    async function loadLots() {
+      const tbody = document.getElementById("lotsBody")!;
+      tbody.innerHTML = `<tr><td colspan="9" class="empty">Cargando...</td></tr>`;
+      try {
+        const res = await fetch("/api/lots", { credentials: "include" });
+        if (!res.ok) throw new Error("Error al cargar");
+        const data = await res.json();
+        allLots = data.lots ?? data ?? [];
+        renderTable();
+      } catch {
+        tbody.innerHTML = `<tr><td colspan="9" class="empty">Error al cargar lotes. Verifica tu sesión.</td></tr>`;
+      }
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById("lotsBody")!;
+      const filtered = currentTab === "all"
+        ? allLots
+        : allLots.filter((l) => l.estado === currentTab);
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" class="empty">No hay lotes${currentTab !== "all" ? " " + currentTab + "s" : ""}.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map((l) => `
+        <tr>
+          <td><strong style="font-family:monospace;font-size:.85rem">${l.code ?? "—"}</strong></td>
+          <td>${l.name ?? "—"}</td>
+          <td style="color:#7a6652">${l.origin ?? "—"}</td>
+          <td style="color:#7a6652">${l.farm ?? "—"}</td>
+          <td style="color:#7a6652">${l.process ?? "—"}</td>
+          <td>${l.weight_kg != null ? Number(l.weight_kg).toFixed(1) + " kg" : "—"}</td>
+          <td>${l.score != null ? Number(l.score).toFixed(1) : "—"}</td>
+          <td>${statusBadge(l.estado)}</td>
+          <td style="display:flex;gap:.4rem;flex-wrap:wrap">
+            <button class="btn-action" data-action="edit" data-code="${l.code}">Editar</button>
+            <a href="/t/${l.code}" target="_blank" class="btn-action" style="display:inline-block;text-decoration:none">QR ↗</a>
+          </td>
+        </tr>
+      `).join("");
+
+      tbody.querySelectorAll("[data-action='edit']").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const code = (btn as HTMLElement).dataset.code!;
+          const lot = allLots.find((l) => l.code === code);
+          if (lot) openEditModal(lot);
+        });
+      });
+    }
+
+    // ── Tab filter ─────────────────────────────────────────────
+    document.querySelectorAll(".tab-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        currentTab = (btn as HTMLElement).dataset.tab ?? "all";
+        renderTable();
+      });
+    });
+
+    // ── Modal helpers ──────────────────────────────────────────
+    function getVal(id: string) {
+      return (document.getElementById(id) as HTMLInputElement)?.value?.trim() ?? "";
+    }
+    function setVal(id: string, v: any) {
+      const el = document.getElementById(id) as HTMLInputElement;
+      if (el) el.value = v ?? "";
+    }
+    function resetForm() {
+      ["fCode","fName","fOrigin","fFarm","fProducer","fVariety","fProcess",
+       "fAltitude","fWeightKg","fScore","fHarvestDate","fMoisture","fNotes"]
+        .forEach((id) => setVal(id, ""));
+      document.getElementById("formMsg")!.textContent = "";
+      const codeField = document.getElementById("fCode") as HTMLInputElement;
+      if (codeField) codeField.disabled = false;
+    }
+    function openCreateModal() {
+      editCode = null;
+      resetForm();
+      document.getElementById("modalTitle")!.textContent = "Nuevo lote";
+      (document.getElementById("btnSaveLot") as HTMLButtonElement).textContent = "Crear lote";
+      document.getElementById("modalBack")!.classList.add("open");
+    }
+    function openEditModal(lot: any) {
+      editCode = lot.code;
+      setVal("fCode", lot.code);
+      setVal("fName", lot.name);
+      setVal("fOrigin", lot.origin);
+      setVal("fFarm", lot.farm);
+      setVal("fProducer", lot.producer);
+      setVal("fVariety", lot.variety);
+      setVal("fProcess", lot.process);
+      setVal("fAltitude", lot.altitude);
+      setVal("fWeightKg", lot.weight_kg);
+      setVal("fScore", lot.score);
+      setVal("fHarvestDate", lot.harvest_date ? lot.harvest_date.slice(0, 10) : "");
+      setVal("fMoisture", lot.moisture);
+      setVal("fNotes", lot.notes);
+      (document.getElementById("fCode") as HTMLInputElement).disabled = true;
+      document.getElementById("modalTitle")!.textContent = `Editar lote ${lot.code}`;
+      (document.getElementById("btnSaveLot") as HTMLButtonElement).textContent = "Guardar cambios";
+      document.getElementById("formMsg")!.textContent = "";
+      document.getElementById("modalBack")!.classList.add("open");
+    }
+    function closeModal() {
+      document.getElementById("modalBack")!.classList.remove("open");
+    }
+
+    document.getElementById("btnNewLot")?.addEventListener("click", openCreateModal);
+    document.getElementById("modalClose")?.addEventListener("click", closeModal);
+    document.getElementById("modalCancel")?.addEventListener("click", closeModal);
+    document.getElementById("modalBack")?.addEventListener("click", (e) => {
+      if (e.target === e.currentTarget) closeModal();
+    });
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
+
+    // ── Save ───────────────────────────────────────────────────
+    document.getElementById("btnSaveLot")?.addEventListener("click", async () => {
+      const msg = document.getElementById("formMsg")!;
+      const btn = document.getElementById("btnSaveLot") as HTMLButtonElement;
+      msg.textContent = "";
+
+      const code = getVal("fCode");
+      const name = getVal("fName");
+      if (code --version || !name) {
+        msg.textContent = "⚠️ Código y nombre son obligatorios.";
+        msg.style.color = "#856404";
+        return;
+      }
+
+      const body: Record<string, any> = {
+        code, name,
+        origin: getVal("fOrigin") || null,
+        farm: getVal("fFarm") || null,
+        producer: getVal("fProducer") || null,
+        variety: getVal("fVariety") || null,
+        process: getVal("fProcess") || null,
+        altitude: getVal("fAltitude") ? Number(getVal("fAltitude")) : null,
+        weight_kg: getVal("fWeightKg") ? Number(getVal("fWeightKg")) : null,
+        score: getVal("fScore") ? Number(getVal("fScore")) : null,
+        harvest_date: getVal("fHarvestDate") || null,
+        moisture: getVal("fMoisture") ? Number(getVal("fMoisture")) : null,
+        notes: getVal("fNotes") || null,
+      };
+
+      btn.disabled = true;
+      btn.textContent = "Guardando...";
+
+      try {
+        const url = editCode ? `/api/lots/${editCode}` : "/api/lots";
+        const method = editCode ? "PUT" : "POST";
+        const res = await fetch(url, {
+          method,
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error ?? "Error");
+
+        msg.textContent = `✅ Lote ${editCode ? "actualizado" : "creado"} correctamente.`;
+        msg.style.color = "#155724";
+        await loadLots();
+        setTimeout(closeModal, 1200);
+      } catch (err: any) {
+        msg.textContent = `❌ ${err.message}`;
+        msg.style.color = "#721c24";
+      } finally {
+        btn.disabled = false;
+        btn.textContent = editCode ? "Guardar cambios" : "Crear lote";
+      }
+    });
+
+    // ── Init ──────────────────────────────────────────────────
+    loadLots();
+  </script>
 </AdminLayout>
