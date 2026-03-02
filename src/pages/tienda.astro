@@ -18,6 +18,38 @@ const initialProducts = [...products].sort(
       (a.deal ? 1 : 0) +
       (a.rating || 0) / 5),
 );
+
+// JSON-LD: ItemList con todos los productos de la tienda
+const shopJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  name: "Tienda DobleYo Café",
+  url: "https://dobleyo.cafe/tienda",
+  itemListElement: products.map((p, i) => ({
+    "@type": "ListItem",
+    position: i + 1,
+    item: {
+      "@type": "Product",
+      name: p.name,
+      image: p.image,
+      description: p.notes?.join(", ") ?? "",
+      offers: {
+        "@type": "Offer",
+        priceCurrency: "COP",
+        price: p.price,
+        availability: "https://schema.org/InStock",
+        url: `https://dobleyo.cafe/tienda`,
+      },
+      aggregateRating: {
+        "@type": "AggregateRating",
+        ratingValue: p.rating,
+        bestRating: 5,
+        worstRating: 1,
+        ratingCount: 1,
+      },
+    },
+  })),
+};
 ---
 
 <Layout
@@ -27,6 +59,7 @@ const initialProducts = [...products].sort(
   canonical={getCanonicalUrl("/tienda", "es")}
   hreflangEs={_hreflang?.es}
   hreflangEn={_hreflang?.en}
+  jsonLd={shopJsonLd}
 >
   <!-- Banner promocional: debajo de la navbar y encima de los filtros -->
   <section class="promo-banner" aria-label="Promoción">
