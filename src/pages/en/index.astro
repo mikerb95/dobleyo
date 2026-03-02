@@ -2,14 +2,14 @@
 import Layout from "../../layouts/Layout.astro";
 import { getCanonicalUrl, getHreflangPair } from "../../i18n/index.ts";
 
-const hreflang = getHreflangPair('/');
+const hreflang = getHreflangPair("/");
 ---
 
 <Layout
   title="DobleYo - Premium Colombian Coffee | Direct Sourcing & Export"
   description="Colombian specialty coffee, farm-to-cup. We connect roasters worldwide with exceptional Colombian producers. Traceable lots, consistent quality."
   lang="en"
-  canonical={getCanonicalUrl('/', 'en')}
+  canonical={getCanonicalUrl("/", "en")}
   hreflangEs={hreflang?.es}
   hreflangEn={hreflang?.en}
 >
@@ -1095,7 +1095,7 @@ const hreflang = getHreflangPair('/');
       e.preventDefault();
       const form = e.target as HTMLFormElement;
       const btn = form.querySelector(
-        "button[type='submit']"
+        "button[type='submit']",
       ) as HTMLButtonElement;
 
       btn.disabled = true;

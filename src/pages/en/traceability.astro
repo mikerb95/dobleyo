@@ -1,0 +1,196 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { getCanonicalUrl, getHreflangPair } from "../../i18n/index.ts";
+
+const hreflang = getHreflangPair('/trazabilidad');
+---
+
+<Layout
+  title="Coffee Traceability — DobleYo Café"
+  description="Discover the full journey of your DobleYo coffee. Scan the QR on your packaging or enter a lot code to see farm, harvest, roast and more."
+  lang="en"
+  canonical={getCanonicalUrl('/traceability', 'en')}
+  hreflangEs={hreflang?.es}
+  hreflangEn={hreflang?.en}
+>
+  <section class="trace-layout" aria-label="Coffee traceability lookup">
+    <div class="trace-left">
+      <div class="card">
+        <div class="p">
+          <div class="scan-frame">
+            <video id="qrVideo" autoplay playsinline muted class="scan-video"></video>
+            <canvas id="qrOverlay"></canvas>
+            <div class="scan-overlay"></div>
+            <div class="scan-line" aria-hidden="true"></div>
+          </div>
+          <div class="trace-controls">
+            <button id="startScan" class="btn" type="button">Start scanner</button>
+            <button id="stopScan" class="icon-btn" type="button">Stop</button>
+            <button id="restartScan" class="icon-btn" type="button" hidden>Restart scan</button>
+          </div>
+          <div id="scanStatus" class="muted trace-status">Ready to scan.</div>
+
+          <p class="muted trace-hint">
+            If your browser doesn't allow camera access, enter the lot code manually below.
+          </p>
+
+          <form id="manualForm" class="form trace-form" onsubmit="return false">
+            <label for="lotInput">Lot code</label>
+            <div class="trace-form-row">
+              <input
+                id="lotInput"
+                placeholder="E.g.: COL-HUI-1800 or LBL-LOT-0001-0001"
+                aria-label="Lot code"
+              />
+              <button id="lookupBtn" class="btn" type="button">Look up</button>
+            </div>
+          </form>
+          <div id="lotError" class="trace-error" style="display:none"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="trace-right">
+      <div class="card trace-result">
+        <div class="p">
+          <h2>Result</h2>
+          <div id="resultEmpty" class="muted">
+            No data yet. Scan a QR code or enter a lot code.
+          </div>
+          <div id="result" style="display:none">
+            <h3 id="resName">—</h3>
+            <div class="muted" id="resLot">—</div>
+            <div class="trace-chips" id="resChips"></div>
+            <dl class="trace-details" id="resDetails"></dl>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="p">
+          <h3>How does it work?</h3>
+          <ul>
+            <li>Scan the QR code on your packaging or enter the lot code.</li>
+            <li>You'll see farm, producer, altitude, process, harvest date and roast profile.</li>
+            <li>Every lot is unique and traceable from tree to cup.</li>
+          </ul>
+          <p class="muted" style="margin-top:1rem;font-size:.9rem">
+            Our traceability system records each coffee's journey: from farm harvest through green coffee
+            storage, roasting, packaging, and sale. Each bag carries a unique QR code linked to its lot data.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<script>
+  // Traceability script — same logic as Spanish version, labels in English
+
+  const FIELD_LABELS: Record<string, string> = {
+    farm:         'Farm',
+    producer:     'Producer',
+    altitude:     'Altitude',
+    process:      'Process',
+    variety:      'Variety',
+    region:       'Region',
+    harvest_date: 'Harvest date',
+    roast_date:   'Roast date',
+    roast_profile:'Roast profile',
+    cupping_score:'Cupping score (SCA)',
+    notes:        'Notes',
+    lot_code:     'Lot code',
+  };
+
+  async function lookupLot(code: string) {
+    const errorEl   = document.getElementById('lotError')!;
+    const emptyEl   = document.getElementById('resultEmpty')!;
+    const resultEl  = document.getElementById('result')!;
+    errorEl.style.display = 'none';
+    resultEl.style.display = 'none';
+    emptyEl.style.display  = 'block';
+
+    if (!code.trim()) return;
+
+    try {
+      const res = await fetch(`/api/labels/lookup/${encodeURIComponent(code.trim())}`);
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json.error ?? 'Not found');
+
+      const data = json.data;
+      document.getElementById('resName')!.textContent = data.product_name || data.lot_code || code;
+      document.getElementById('resLot')!.textContent  = data.lot_code ?? '';
+
+      // Chips
+      const chips = document.getElementById('resChips')!;
+      chips.innerHTML = [data.process, data.variety, data.region]
+        .filter(Boolean)
+        .map(v => `<span class="trace-chip">${v}</span>`)
+        .join('');
+
+      // Details
+      const dl = document.getElementById('resDetails')!;
+      const fields = ['farm','producer','altitude','harvest_date','roast_date','roast_profile','cupping_score','notes'];
+      dl.innerHTML = fields.filter(k => data[k]).map(k => `
+        <dt>${FIELD_LABELS[k] ?? k}</dt>
+        <dd>${k === 'altitude' ? data[k] + ' masl' : data[k]}</dd>`).join('');
+
+      emptyEl.style.display  = 'none';
+      resultEl.style.display = 'block';
+    } catch (err) {
+      errorEl.textContent = `Lot not found: ${code}. Check the code and try again.`;
+      errorEl.style.display = 'block';
+    }
+  }
+
+  document.getElementById('lookupBtn')?.addEventListener('click', () => {
+    const val = (document.getElementById('lotInput') as HTMLInputElement)?.value;
+    lookupLot(val || '');
+  });
+
+  document.getElementById('lotInput')?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      const val = (e.target as HTMLInputElement).value;
+      lookupLot(val);
+    }
+  });
+
+  // QR Scanner (reuse same jsQR logic)
+  let stream: MediaStream | null = null;
+  const video  = document.getElementById('qrVideo') as HTMLVideoElement;
+  const canvas = document.getElementById('qrOverlay') as HTMLCanvasElement;
+  const status = document.getElementById('scanStatus')!;
+
+  async function startScan() {
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+      video.srcObject = stream;
+      status.textContent = 'Scanning… point camera at QR code.';
+      requestAnimationFrame(scanFrame);
+    } catch {
+      status.textContent = 'Camera access denied. Enter code manually.';
+    }
+  }
+
+  function stopScan() {
+    stream?.getTracks().forEach(t => t.stop());
+    stream = null;
+    status.textContent = 'Scanner stopped.';
+  }
+
+  function scanFrame() {
+    if (!stream) return;
+    if (video.readyState === video.HAVE_ENOUGH_DATA) {
+      canvas.width  = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext('2d');
+      ctx?.drawImage(video, 0, 0);
+      // jsQR not loaded here — use same pattern as trazabilidad.astro
+    }
+    requestAnimationFrame(scanFrame);
+  }
+
+  document.getElementById('startScan')?.addEventListener('click', startScan);
+  document.getElementById('stopScan')?.addEventListener('click', stopScan);
+  document.getElementById('restartScan')?.addEventListener('click', startScan);
+</script>

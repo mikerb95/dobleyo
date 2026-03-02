@@ -1,8 +1,15 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import { getCanonicalUrl, getHreflangPair } from "../i18n/index.ts";
+
+const _hreflang = getHreflangPair('/trazabilidad');
 ---
 
 <Layout
+  lang="es"
+  canonical={getCanonicalUrl('/trazabilidad', 'es')}
+  hreflangEs={_hreflang?.es}
+  hreflangEn={_hreflang?.en}
   title="Trazabilidad de café — DobleYo Café"
   description="Consulta el origen, cosecha, tueste y empaque de tu café DobleYo. Escanea el QR del empaque o ingresa el código del lote para ver la historia completa."
 >

@@ -1,6 +1,9 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import { products } from "../data/products.ts";
+import { getCanonicalUrl, getHreflangPair } from "../i18n/index.ts";
+
+const _hreflang = getHreflangPair('/');
 
 // Fuente única: productos desde src/data/products.ts
 const coffeeProducts = products.filter((p) => p.category === "Cafés");
@@ -16,7 +19,12 @@ try {
 } catch (_) {}
 ---
 
-<Layout>
+<Layout
+  lang="es"
+  canonical={getCanonicalUrl('/', 'es')}
+  hreflangEs={_hreflang?.es}
+  hreflangEn={_hreflang?.en}
+>
   <section class="hero">
     <div class="hero-media" aria-hidden="true">
       <video

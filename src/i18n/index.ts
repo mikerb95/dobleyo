@@ -25,16 +25,16 @@ const dictionaries: Record<Lang, TranslationDict> = { es, en };
  * @param lang  Idioma destino ('es' | 'en'). Por defecto 'es'.
  */
 export function t(key: string, lang: Lang = 'es'): string {
-  const dict = dictionaries[lang] ?? dictionaries.es;
-  const parts = key.split('.');
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let value: any = dict;
-  for (const part of parts) {
-    if (value == null || typeof value !== 'object') return key;
-    value = value[part];
-  }
-  if (typeof value === 'string') return value;
-  return key;
+    const dict = dictionaries[lang] ?? dictionaries.es;
+    const parts = key.split('.');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let value: any = dict;
+    for (const part of parts) {
+        if (value == null || typeof value !== 'object') return key;
+        value = value[part];
+    }
+    if (typeof value === 'string') return value;
+    return key;
 }
 
 /**
@@ -43,7 +43,7 @@ export function t(key: string, lang: Lang = 'es'): string {
  * - Todo lo demás → 'es'
  */
 export function getLang(url: URL): Lang {
-  return url.pathname.startsWith('/en/') || url.pathname === '/en' ? 'en' : 'es';
+    return url.pathname.startsWith('/en/') || url.pathname === '/en' ? 'en' : 'es';
 }
 
 /**
@@ -52,30 +52,30 @@ export function getLang(url: URL): Lang {
  * - 'en' → USD, en-US
  */
 export function formatPrice(amount: number, lang: Lang = 'es'): string {
-  if (lang === 'en') {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      maximumFractionDigits: 0,
+    if (lang === 'en') {
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD',
+            maximumFractionDigits: 0,
+        }).format(amount);
+    }
+    return new Intl.NumberFormat('es-CO', {
+        style: 'currency',
+        currency: 'COP',
+        maximumFractionDigits: 0,
     }).format(amount);
-  }
-  return new Intl.NumberFormat('es-CO', {
-    style: 'currency',
-    currency: 'COP',
-    maximumFractionDigits: 0,
-  }).format(amount);
 }
 
 /**
  * Formatea una fecha según el idioma.
  */
 export function formatDate(date: Date | string, lang: Lang = 'es'): string {
-  const d = typeof date === 'string' ? new Date(date) : date;
-  return new Intl.DateTimeFormat(lang === 'en' ? 'en-US' : 'es-CO', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  }).format(d);
+    const d = typeof date === 'string' ? new Date(date) : date;
+    return new Intl.DateTimeFormat(lang === 'en' ? 'en-US' : 'es-CO', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+    }).format(d);
 }
 
 /**
@@ -83,12 +83,12 @@ export function formatDate(date: Date | string, lang: Lang = 'es'): string {
  * Las páginas /en/* usan en.dobleyo.cafe en producción.
  */
 export function getCanonicalUrl(pathname: string, lang: Lang = 'es'): string {
-  const base =
-    lang === 'en' ? 'https://en.dobleyo.cafe' : 'https://dobleyo.cafe';
-  // Para /en/shop → en.dobleyo.cafe/shop (el subdominio ya mapea /en/* → /*)
-  const cleanPath =
-    lang === 'en' ? pathname.replace(/^\/en/, '') || '/' : pathname;
-  return `${base}${cleanPath}`;
+    const base =
+        lang === 'en' ? 'https://en.dobleyo.cafe' : 'https://dobleyo.cafe';
+    // Para /en/shop → en.dobleyo.cafe/shop (el subdominio ya mapea /en/* → /*)
+    const cleanPath =
+        lang === 'en' ? pathname.replace(/^\/en/, '') || '/' : pathname;
+    return `${base}${cleanPath}`;
 }
 
 /**
@@ -98,19 +98,19 @@ export function getCanonicalUrl(pathname: string, lang: Lang = 'es'): string {
  * El mapa de equivalencias cubre las páginas con versión en ambos idiomas.
  */
 const HREFLANG_MAP: Record<string, string> = {
-  '/':             '/',
-  '/tienda':       '/shop',
-  '/contacto':     '/contact',
-  '/trazabilidad': '/traceability',
+    '/': '/',
+    '/tienda': '/shop',
+    '/contacto': '/contact',
+    '/trazabilidad': '/traceability',
 };
 
 export function getHreflangPair(
-  esPath: string
+    esPath: string
 ): { es: string; en: string } | null {
-  const enPath = HREFLANG_MAP[esPath];
-  if (!enPath) return null;
-  return {
-    es: `https://dobleyo.cafe${esPath}`,
-    en: `https://en.dobleyo.cafe${enPath}`,
-  };
+    const enPath = HREFLANG_MAP[esPath];
+    if (!enPath) return null;
+    return {
+        es: `https://dobleyo.cafe${esPath}`,
+        en: `https://en.dobleyo.cafe${enPath}`,
+    };
 }

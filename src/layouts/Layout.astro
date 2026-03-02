@@ -14,13 +14,27 @@ export interface Props {
   hreflangEn?: string;
 }
 
-const { title, description, lang = 'es', canonical, hreflangEs, hreflangEn } = Astro.props;
+const {
+  title,
+  description,
+  lang = "es",
+  canonical,
+  hreflangEs,
+  hreflangEn,
+} = Astro.props;
 ---
 
 <!doctype html>
 <html lang={lang}>
   <head>
-    <Head title={title} description={description} lang={lang} canonical={canonical} hreflangEs={hreflangEs} hreflangEn={hreflangEn} />
+    <Head
+      title={title}
+      description={description}
+      lang={lang}
+      canonical={canonical}
+      hreflangEs={hreflangEs}
+      hreflangEn={hreflangEn}
+    />
   </head>
   <body class="font-sans bg-cream text-ink">
     <!-- Barra superior de anuncio -->

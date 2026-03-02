@@ -1,8 +1,18 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import { getCanonicalUrl, getHreflangPair } from "../i18n/index.ts";
+
+const _hreflang = getHreflangPair('/contacto');
 ---
 
-<Layout title="Contacto - DobleYo">
+<Layout
+  title="Contacto — DobleYo Café"
+  description="Contáctanos para preguntas sobre pedidos, productos o ventas al por mayor. Respondemos en menos de 24 horas."
+  lang="es"
+  canonical={getCanonicalUrl('/contacto', 'es')}
+  hreflangEs={_hreflang?.es}
+  hreflangEn={_hreflang?.en}
+>
   <div class="contact-page">
     <section class="contact-hero">
       <div class="container">

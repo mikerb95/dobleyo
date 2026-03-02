@@ -2,6 +2,9 @@
 import Layout from "../layouts/Layout.astro";
 import ProductCard from "../components/ProductCard.astro";
 import { products } from "../data/products";
+import { getCanonicalUrl, getHreflangPair } from "../i18n/index.ts";
+
+const _hreflang = getHreflangPair('/tienda');
 
 // Ordenamiento inicial por defecto (relevancia)
 const initialProducts = [...products].sort(
@@ -17,7 +20,14 @@ const initialProducts = [...products].sort(
 );
 ---
 
-<Layout>
+<Layout
+  lang="es"
+  title="Tienda — DobleYo Café | Café de especialidad colombiano"
+  description="Explora nuestra selección de cafés de especialidad colombianos y accesorios. Origen trazable, tueste fresco."
+  canonical={getCanonicalUrl('/tienda', 'es')}
+  hreflangEs={_hreflang?.es}
+  hreflangEn={_hreflang?.en}
+>
   <!-- Banner promocional: debajo de la navbar y encima de los filtros -->
   <section class="promo-banner" aria-label="Promoción">
     <div class="promo-inner">
