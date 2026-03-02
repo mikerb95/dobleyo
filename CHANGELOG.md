@@ -2,6 +2,39 @@
 
 ---
 
+## 📅 2026-03-02 — Fase 3: Normativa Colombiana y Compliance Legal (Agente: Claude)
+
+### Archivos Creados
+
+- `src/pages/privacidad.astro` — Política de Privacidad y Tratamiento de Datos Personales conforme a la Ley 1581/2012 (Habeas Data) y Decreto 1377/2013. Incluye: identificación del responsable, finalidades del tratamiento, derechos ARCO, transferencias a terceros (Resend, transportadoras, pasarelas de pago), conservación de datos, sección de cookies, medidas de seguridad, canal SIC.
+- `src/pages/terminos.astro` — Términos y Condiciones conforme a la Ley 1480/2011 (Estatuto del Consumidor). Incluye: identificación del proveedor, proceso de compra, precios con IVA en COP, derecho de retracto de 5 días hábiles (Art. 47), garantía legal, política de envíos, propiedad intelectual, resolución de conflictos ante SIC.
+- `src/pages/accesibilidad.astro` — Declaración de accesibilidad WCAG 2.1 AA conforme a la Ley 1618/2013. Incluye: estado de conformidad, medidas implementadas, limitaciones conocidas, canal de retroalimentación.
+- `src/components/CookieBanner.astro` — Banner de consentimiento de cookies con opciones “Aceptar” / “Solo esenciales”. Persiste decisión en localStorage (`dy_cookie_consent`). Se muestra solo si el usuario no ha respondido. Totalmente responsive.
+
+### Archivos Modificados
+
+- `src/components/Footer.astro` — **BUG-010**: Reemplaza los 3 href=`#` por links reales: `/privacidad`, `/terminos`, `/accesibilidad`.
+- `src/layouts/Layout.astro` — Importa e incluye `<CookieBanner />` antes del cierre de `</body>`.
+- `src/pages/registro.astro` — Agrega checkbox obligatorio de autorización de tratamiento de datos personales (Ley 1581/2012, Art. 9) antes del botón de “Crear cuenta”. Con link a `/privacidad`.
+
+### Bugs/Deuda Resuelta
+
+- **BUG-010** 🟠: Links legales apuntan a `#` — resuelto: 3 páginas legales creadas y footer actualizado.
+
+### Decisiones Técnicas
+
+- Cookie banner usa localStorage (`dy_cookie_consent`) en lugar de una cookie adicional — evita el problema bootstrap del propio aviso.
+- El banner se activa con `setTimeout(400ms)` para evitar Cumulative Layout Shift (CLS) en el primer render.
+- El checkbox de tratamiento de datos usa `required` nativo del formulario HTML — sin JavaScript adicional; el formulario no procede sin marcarlo.
+- Las páginas legales comparten el sistema de diseño existente (variables CSS, layout, tipografía) mediante una clase `.legal-page` con estilos propios.
+- El derecho de retracto de 5 días hábiles y la garantía mínima se citan explícitamente con el artículo de ley para transparencia y válidez legal.
+
+### Impacto
+
+El sitio cumple ahora con los requisitos mínimos de la normativa colombiana para comercio electrónico: Ley 1580/2012 (datos personales), Ley 1480/2011 (consumidor), y Ley 1618/2013 (accesibilidad). Los usuarios reciben información clara sobre sus derechos. Los links del footer dejan de apuntar a `#`.
+
+---
+
 ## 📅 2026-03-01 — Fase 2: Diseño Mobile-First y Armonía Visual (Agente: Claude)
 
 ### Archivos Modificados

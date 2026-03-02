@@ -55,6 +55,21 @@ import Layout from "../layouts/Layout.astro";
             required
           /></label
         >
+        <!-- Autorización de tratamiento de datos — Ley 1581/2012, Art. 9 -->
+        <label style="display:flex; align-items:flex-start; gap:.5rem; font-size:0.875rem; font-weight:400; cursor:pointer;">
+          <input
+            id="regDataConsent"
+            type="checkbox"
+            required
+            style="margin-top:0.2rem; flex-shrink:0; width:16px; height:16px; accent-color: var(--accent);"
+          />
+          <span>
+            He leído y acepto la
+            <a href="/privacidad" target="_blank" style="color:var(--accent);">Política de Privacidad</a>
+            y autorizo el tratamiento de mis datos personales conforme a la
+            <strong>Ley 1581 de 2012</strong>.
+          </span>
+        </label>
         <button class="btn" id="regBtn" type="submit">Crear cuenta</button>
       </form>
       <div

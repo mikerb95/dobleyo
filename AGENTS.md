@@ -296,7 +296,7 @@ Todo agente que cree o modifique páginas DEBE cumplir:
 | BUG-007 | 🟠 Moderado | store.js es in-memory Map — órdenes se pierden al reiniciar | Pendiente Fase 4 |
 | BUG-008 | 🟠 Moderado | Formulario de contacto solo hace console.log | Pendiente Fase 4 |
 | BUG-009 | 🟠 Moderado | Newsletter del footer sin handler de submit | ✅ Resuelto Fase 1 |
-| BUG-010 | 🟠 Moderado | Links legales apuntan a `#` | Pendiente Fase 3 |
+| BUG-010 | 🟠 Moderado | Links legales apuntan a `#` | ✅ Resuelto Fase 3 |
 | BUG-011 | 🟠 Moderado | CSP deshabilitado en Helmet | Pendiente Fase 11 |
 | BUG-012 | 🟠 Moderado | Auth mixto: HttpOnly cookies + localStorage adminToken | ✅ Resuelto Fase 1 |
 | DEBT-001 | 🟡 | README dice PostgreSQL pero código usa MySQL — migrar a PG | ✅ Resuelto Fase 1 |
@@ -316,7 +316,7 @@ Todo agente que cree o modifique páginas DEBE cumplir:
 | 0 | Fundamentos documentales y gobernanza IA | ✅ En progreso |
 | 1 | Estabilización, bug fixes, migración PostgreSQL | ✅ Completo |
 | 2 | Diseño mobile-first y armonía visual | ✅ Completo |
-| 3 | Normativa colombiana y compliance legal | ⏳ Pendiente |
+| 3 | Normativa colombiana y compliance legal | ✅ Completo |
 | 4 | Sistema de órdenes y pasarelas de pago | ⏳ Pendiente |
 | 5 | Trazabilidad completa y QR | ⏳ Pendiente |
 | 6 | Módulo de finanzas de producción | ⏳ Pendiente |

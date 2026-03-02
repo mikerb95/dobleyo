@@ -2,6 +2,7 @@
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import Head from "../components/Head.astro";
+import CookieBanner from "../components/CookieBanner.astro";
 ---
 
 <!doctype html>
@@ -34,6 +35,9 @@ import Head from "../components/Head.astro";
     </main>
 
     <Footer />
+
+    <!-- Banner de consentimiento de cookies (Ley 1581/2012) -->
+    <CookieBanner />
 
     <!-- Scripts globales -->
     <script is:inline src="/assets/js/cart.js"></script>

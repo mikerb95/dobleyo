@@ -1,0 +1,136 @@
+---
+// Banner de consentimiento de cookies — Ley 1581/2012 + GDPR best practices
+// Se muestra solo si el usuario no ha dado su respuesta todavía
+---
+
+<div id="cookieBanner" class="cookie-banner" role="dialog" aria-label="Consentimiento de cookies" aria-live="polite" hidden>
+  <div class="cookie-inner">
+    <div class="cookie-text">
+      <p>
+        Usamos cookies esenciales para el funcionamiento del carrito y la sesión.
+        No rastreamos con fines publicitarios ni compartimos datos con terceros sin tu autorización.
+        <a href="/privacidad#cookies">Ver política de privacidad</a>.
+      </p>
+    </div>
+    <div class="cookie-actions">
+      <button id="cookieAccept" class="btn cookie-btn-accept">Aceptar</button>
+      <button id="cookieReject" class="btn outline cookie-btn-reject">Solo esenciales</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    const COOKIE_KEY = 'dy_cookie_consent';
+    const banner = document.getElementById('cookieBanner');
+    if (!banner) return;
+
+    // Mostrar banner solo si no hay decisión guardada
+    const saved = localStorage.getItem(COOKIE_KEY);
+    if (!saved) {
+      // Pequeño delay para evitar CLS en el primer render
+      setTimeout(() => { banner.hidden = false; }, 400);
+    }
+
+    function dismiss(value) {
+      localStorage.setItem(COOKIE_KEY, value);
+      banner.hidden = true;
+    }
+
+    document.getElementById('cookieAccept')?.addEventListener('click', () => dismiss('accepted'));
+    document.getElementById('cookieReject')?.addEventListener('click', () => dismiss('essential'));
+  })();
+</script>
+
+<style>
+  .cookie-banner {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 200;
+    background: var(--dark);
+    color: #fff;
+    padding: 1rem;
+    box-shadow: 0 -4px 24px rgba(0, 0, 0, .25);
+  }
+
+  .cookie-banner[hidden] {
+    display: none;
+  }
+
+  .cookie-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.25rem;
+    max-width: var(--page-width);
+    margin: 0 auto;
+    flex-wrap: wrap;
+  }
+
+  .cookie-text {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .cookie-text p {
+    font-size: 0.875rem;
+    line-height: 1.5;
+    margin: 0;
+    color: rgba(255, 255, 255, .88);
+  }
+
+  .cookie-text a {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+
+  .cookie-actions {
+    display: flex;
+    gap: 0.625rem;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+  }
+
+  /* Sobrescribir colores del btn para el contexto oscuro */
+  .cookie-btn-accept {
+    background: var(--accent);
+    color: #fff;
+    border: 1px solid var(--accent);
+    min-height: 44px;
+    padding: .55rem 1.25rem;
+  }
+
+  .cookie-btn-reject {
+    background: transparent;
+    color: rgba(255, 255, 255, .85);
+    border: 1px solid rgba(255, 255, 255, .35);
+    min-height: 44px;
+    padding: .55rem 1.25rem;
+  }
+
+  .cookie-btn-reject:hover {
+    background: rgba(255, 255, 255, .08);
+    color: #fff;
+    border-color: rgba(255, 255, 255, .6);
+  }
+
+  @media (max-width: 480px) {
+    .cookie-inner {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .cookie-actions {
+      width: 100%;
+    }
+
+    .cookie-btn-accept,
+    .cookie-btn-reject {
+      flex: 1;
+      text-align: center;
+      justify-content: center;
+    }
+  }
+</style>

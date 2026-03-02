@@ -1,0 +1,173 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout
+  title="Accesibilidad — DobleYo Café"
+  description="Declaración de accesibilidad de DobleYo Café. Compromiso con WCAG 2.1 nivel AA y la Ley 1618 de 2013 sobre inclusión de personas con discapacidad."
+>
+  <article class="prose legal-page">
+    <h1>Declaración de Accesibilidad</h1>
+    <p class="legal-meta">
+      Última revisión: <strong>1 de marzo de 2026</strong>
+    </p>
+
+    <div class="legal-alert">
+      <strong>Ley 1618 de 2013 — Inclusión y Discapacidad.</strong> DobleYo Café se compromete a garantizar
+      la accesibilidad de su sitio web para todas las personas, incluyendo aquellas con discapacidades
+      visuales, auditivas, motoras o cognitivas, en cumplimiento de la legislación colombiana y los
+      estándares internacionales WCAG 2.1.
+    </div>
+
+    <section>
+      <h2>1. Estado de Conformidad</h2>
+      <p>
+        DobleYo Café aspira al cumplimiento del nivel <strong>WCAG 2.1 AA</strong>
+        (Web Content Accessibility Guidelines) publicadas por el W3C.
+        El sitio se encuentra en <strong>conformidad parcial</strong> — implementamos la mayoría
+        de los criterios AA, con algunas áreas en mejora continua.
+      </p>
+    </section>
+
+    <section>
+      <h2>2. Medidas de Accesibilidad Implementadas</h2>
+      <ul>
+        <li><strong>Contraste de colores:</strong> Ratio mínimo 4.5:1 para texto normal y 3:1 para texto grande.</li>
+        <li><strong>Navegación por teclado:</strong> Todos los elementos interactivos son accesibles con Tab, Enter y Escape.</li>
+        <li><strong>Indicadores de foco:</strong> Visibles en todos los botones, enlaces y campos de formulario.</li>
+        <li><strong>Texto alternativo:</strong> Imágenes decorativas con <code>alt=""</code>; imágenes informativas con descripción.</li>
+        <li><strong>Jerarquía de encabezados:</strong> Estructura H1 → H2 → H3 coherente en todas las páginas.</li>
+        <li><strong>Etiquetas de formulario:</strong> Todos los campos tienen etiquetas asociadas y mensajes de error descriptivos.</li>
+        <li><strong>Semántica HTML:</strong> Uso de elementos semánticos (<code>nav</code>, <code>main</code>, <code>article</code>, <code>section</code>, <code>footer</code>).</li>
+        <li><strong>ARIA labels:</strong> En iconos sin texto, modales y menús desplegables.</li>
+        <li><strong>Movimiento reducido:</strong> Animaciones deshabilitadas cuando el usuario ha activado <code>prefers-reduced-motion</code>.</li>
+        <li><strong>Tamaño de fuente:</strong> Mínimo 16px en texto de cuerpo para evitar zoom automático en iOS.</li>
+        <li><strong>Áreas táctiles:</strong> Mínimo 44×44px para botones e iconos en dispositivos táctiles.</li>
+        <li><strong>Idioma:</strong> Atributo <code>lang</code> correcto en el elemento <code>html</code>.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>3. Limitaciones Conocidas</h2>
+      <p>Las siguientes áreas están en proceso de mejora:</p>
+      <ul>
+        <li>Algunos elementos del panel de administración interno aún no cuentan con etiquetas ARIA completas.</li>
+        <li>El reproductor de video del hero no expone controles accesibles completos en todos los navegadores.</li>
+        <li>Algunas páginas del flujo de app (caficultor) tienen formularios extensos que no están completamente optimizados para lectores de pantalla.</li>
+      </ul>
+      <p>
+        Trabajamos activamente para resolver estas limitaciones. Si encuentra una barrera de accesibilidad
+        no listada, por favor repórtela (ver sección 5).
+      </p>
+    </section>
+
+    <section>
+      <h2>4. Tecnologías Compatibles</h2>
+      <p>El sitio ha sido probado con:</p>
+      <ul>
+        <li><strong>Navegadores:</strong> Chrome 120+, Firefox 120+, Safari 17+, Edge 120+</li>
+        <li><strong>Dispositivos:</strong> iPhone SE, iPhone 14, Pixel 7, iPad 10ª gen, escritorio</li>
+        <li><strong>Lectores de pantalla:</strong> NVDA (Windows), VoiceOver (macOS/iOS), TalkBack (Android)</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>5. Comentarios y Retroalimentación</h2>
+      <p>
+        Si encuentra alguna barrera de accesibilidad o tiene sugerencias para mejorar la experiencia, puede:
+      </p>
+      <ul>
+        <li>Enviarnos un mensaje desde el <a href="/contacto">formulario de contacto</a>.</li>
+        <li>Escribirnos directamente a <a href="mailto:accesibilidad@dobleyo.cafe">accesibilidad@dobleyo.cafe</a>.</li>
+      </ul>
+      <p>
+        Nos comprometemos a responder su solicitud en un plazo de <strong>5 días hábiles</strong> y a
+        trabajar en una solución dentro de los <strong>30 días calendario</strong> siguientes.
+      </p>
+    </section>
+
+    <section>
+      <h2>6. Marco Legal</h2>
+      <ul>
+        <li><strong>Ley 1618 de 2013</strong> — "Por medio de la cual se establecen las disposiciones para garantizar el pleno ejercicio de los derechos de las personas con discapacidad."</li>
+        <li><strong>Decreto 1421 de 2017</strong> — Reglamentario de educación inclusiva.</li>
+        <li><strong>WCAG 2.1</strong> — Web Content Accessibility Guidelines, W3C.</li>
+        <li><strong>Política de Accesibilidad Digital del Estado Colombiano</strong> — MinTIC.</li>
+      </ul>
+    </section>
+  </article>
+</Layout>
+
+<style>
+  .legal-page {
+    max-width: 780px;
+    margin: 2rem auto 4rem;
+    line-height: 1.7;
+  }
+
+  .legal-page h1 {
+    font-size: clamp(1.6rem, 4vw, 2.2rem);
+    color: var(--coffee);
+    margin-bottom: 0.5rem;
+  }
+
+  .legal-meta {
+    color: var(--muted-fg);
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .legal-alert {
+    background: #fef3c7;
+    border-left: 4px solid var(--accent);
+    padding: 1rem 1.25rem;
+    border-radius: 0 0.375rem 0.375rem 0;
+    margin-bottom: 2.5rem;
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+
+  .legal-page section {
+    margin-bottom: 2.5rem;
+  }
+
+  .legal-page h2 {
+    font-size: 1.3rem;
+    color: var(--coffee);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0.4rem;
+    margin: 2rem 0 1rem;
+  }
+
+  .legal-page ul,
+  .legal-page ol {
+    padding-left: 1.5rem;
+    margin: 0.75rem 0;
+  }
+
+  .legal-page li {
+    margin: 0.4rem 0;
+  }
+
+  .legal-page a {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+
+  .legal-page a:hover {
+    color: var(--coffee);
+  }
+
+  code {
+    background: #f3f4f6;
+    padding: 0.1em 0.35em;
+    border-radius: 0.25rem;
+    font-size: 0.88em;
+  }
+
+  @media (max-width: 768px) {
+    .legal-page {
+      margin: 1.5rem auto 3rem;
+    }
+  }
+</style>
