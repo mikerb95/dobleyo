@@ -12,11 +12,11 @@ export const heatmapRouter = Router();
  * Acepta: 7 | 30 | 90 | 365 | 'all'
  */
 function buildDateFilter(days, tableAlias, column = 'created_at') {
-  const col = tableAlias ? `${tableAlias}.${column}` : column;
-  if (!days || days === 'all') return '';
-  const n = parseInt(days, 10);
-  if (isNaN(n) || n <= 0) return '';
-  return `AND ${col} >= NOW() - INTERVAL '${n} days'`;
+    const col = tableAlias ? `${tableAlias}.${column}` : column;
+    if (!days || days === 'all') return '';
+    const n = parseInt(days, 10);
+    if (isNaN(n) || n <= 0) return '';
+    return `AND ${col} >= NOW() - INTERVAL '${n} days'`;
 }
 
 // ───────────────────────────────────────────────
@@ -25,23 +25,23 @@ function buildDateFilter(days, tableAlias, column = 'created_at') {
 // Query params: days (7|30|90|365|all), channel (web|ml|all), product (texto libre)
 // ───────────────────────────────────────────────
 heatmapRouter.get('/', authenticateToken, requireRole('admin'), async (req, res) => {
-  try {
-    const { days = '30', channel = 'all', product = '' } = req.query;
+    try {
+        const { days = '30', channel = 'all', product = '' } = req.query;
 
-    // Rama web directa — customer_orders con geocodificación
-    let webRows = [];
-    if (channel === 'all' || channel === 'web') {
-      const dateFilter = buildDateFilter(days, 'o');
-      const productFilter = product
-        ? `AND EXISTS (
+        // Rama web directa — customer_orders con geocodificación
+        let webRows = [];
+        if (channel === 'all' || channel === 'web') {
+            const dateFilter = buildDateFilter(days, 'o');
+            const productFilter = product
+                ? `AND EXISTS (
              SELECT 1 FROM customer_order_items i
              WHERE i.order_id = o.id
                AND LOWER(i.product_name) LIKE $1
            )`
-        : '';
-      const params = product ? [`%${product.toLowerCase()}%`] : [];
+                : '';
+            const params = product ? [`%${product.toLowerCase()}%`] : [];
 
-      const { rows } = await query(`
+            const { rows } = await query(`
         SELECT
           COALESCE(o.geocoding_city_norm, o.shipping_city) AS city,
           o.shipping_department                            AS state,
@@ -60,19 +60,19 @@ heatmapRouter.get('/', authenticateToken, requireRole('admin'), async (req, res)
         ORDER BY order_count DESC
       `, params);
 
-      webRows = rows;
-    }
+            webRows = rows;
+        }
 
-    // Rama MercadoLibre — sales_tracking
-    let mlRows = [];
-    if (channel === 'all' || channel === 'ml') {
-      const dateFilter = buildDateFilter(days, 's', 'purchase_date');
-      const productFilter = product
-        ? `AND LOWER(s.products::text) LIKE $1`
-        : '';
-      const params = product ? [`%${product.toLowerCase()}%`] : [];
+        // Rama MercadoLibre — sales_tracking
+        let mlRows = [];
+        if (channel === 'all' || channel === 'ml') {
+            const dateFilter = buildDateFilter(days, 's', 'purchase_date');
+            const productFilter = product
+                ? `AND LOWER(s.products::text) LIKE $1`
+                : '';
+            const params = product ? [`%${product.toLowerCase()}%`] : [];
 
-      const { rows } = await query(`
+            const { rows } = await query(`
         SELECT
           s.recipient_city                           AS city,
           s.recipient_state                          AS state,
@@ -90,54 +90,54 @@ heatmapRouter.get('/', authenticateToken, requireRole('admin'), async (req, res)
         ORDER BY order_count DESC
       `, params);
 
-      mlRows = rows;
-    }
-
-    // Combinar: agrupar por ciudad normalizada (lower-case primera letra)
-    const cityMap = new Map();
-    const mergeRows = (rows) => {
-      for (const row of rows) {
-        const key = (row.city ?? '').toLowerCase().trim();
-        if (!key) continue;
-        if (cityMap.has(key)) {
-          const existing = cityMap.get(key);
-          existing.order_count   += parseInt(row.order_count, 10);
-          existing.total_sales   += parseFloat(row.total_sales ?? 0);
-          existing.channels[row.channel] = (existing.channels[row.channel] ?? 0) + parseInt(row.order_count, 10);
-        } else {
-          cityMap.set(key, {
-            city:        row.city,
-            state:       row.state,
-            latitude:    parseFloat(row.latitude),
-            longitude:   parseFloat(row.longitude),
-            order_count: parseInt(row.order_count, 10),
-            total_sales: parseFloat(row.total_sales ?? 0),
-            channels:    { [row.channel]: parseInt(row.order_count, 10) },
-          });
+            mlRows = rows;
         }
-      }
-    };
 
-    mergeRows(webRows);
-    mergeRows(mlRows);
+        // Combinar: agrupar por ciudad normalizada (lower-case primera letra)
+        const cityMap = new Map();
+        const mergeRows = (rows) => {
+            for (const row of rows) {
+                const key = (row.city ?? '').toLowerCase().trim();
+                if (!key) continue;
+                if (cityMap.has(key)) {
+                    const existing = cityMap.get(key);
+                    existing.order_count += parseInt(row.order_count, 10);
+                    existing.total_sales += parseFloat(row.total_sales ?? 0);
+                    existing.channels[row.channel] = (existing.channels[row.channel] ?? 0) + parseInt(row.order_count, 10);
+                } else {
+                    cityMap.set(key, {
+                        city: row.city,
+                        state: row.state,
+                        latitude: parseFloat(row.latitude),
+                        longitude: parseFloat(row.longitude),
+                        order_count: parseInt(row.order_count, 10),
+                        total_sales: parseFloat(row.total_sales ?? 0),
+                        channels: { [row.channel]: parseInt(row.order_count, 10) },
+                    });
+                }
+            }
+        };
 
-    const combined = Array.from(cityMap.values())
-      .sort((a, b) => b.order_count - a.order_count);
+        mergeRows(webRows);
+        mergeRows(mlRows);
 
-    // Estadísticas globales
-    const stats = {
-      total_orders:  combined.reduce((s, r) => s + r.order_count, 0),
-      total_sales:   combined.reduce((s, r) => s + r.total_sales, 0),
-      cities_count:  combined.length,
-      web_orders:    webRows.reduce((s, r) => s + parseInt(r.order_count, 10), 0),
-      ml_orders:     mlRows.reduce((s, r) => s + parseInt(r.order_count, 10), 0),
-    };
+        const combined = Array.from(cityMap.values())
+            .sort((a, b) => b.order_count - a.order_count);
 
-    res.json({ success: true, data: combined, stats, filters: { days, channel, product } });
-  } catch (err) {
-    console.error('[GET /api/heatmap]', err);
-    res.status(500).json({ success: false, error: 'Error al obtener datos del mapa de calor' });
-  }
+        // Estadísticas globales
+        const stats = {
+            total_orders: combined.reduce((s, r) => s + r.order_count, 0),
+            total_sales: combined.reduce((s, r) => s + r.total_sales, 0),
+            cities_count: combined.length,
+            web_orders: webRows.reduce((s, r) => s + parseInt(r.order_count, 10), 0),
+            ml_orders: mlRows.reduce((s, r) => s + parseInt(r.order_count, 10), 0),
+        };
+
+        res.json({ success: true, data: combined, stats, filters: { days, channel, product } });
+    } catch (err) {
+        console.error('[GET /api/heatmap]', err);
+        res.status(500).json({ success: false, error: 'Error al obtener datos del mapa de calor' });
+    }
 });
 
 // ───────────────────────────────────────────────
@@ -145,8 +145,8 @@ heatmapRouter.get('/', authenticateToken, requireRole('admin'), async (req, res)
 // Resumen rápido de órdenes sin geocodificación (para admin)
 // ───────────────────────────────────────────────
 heatmapRouter.get('/stats', authenticateToken, requireRole('admin'), async (req, res) => {
-  try {
-    const { rows } = await query(`
+    try {
+        const { rows } = await query(`
       SELECT
         COUNT(*)                                               AS total_orders,
         COUNT(*) FILTER (WHERE geocoding_done = FALSE
@@ -157,11 +157,11 @@ heatmapRouter.get('/stats', authenticateToken, requireRole('admin'), async (req,
       FROM customer_orders
     `, []);
 
-    res.json({ success: true, data: rows[0] });
-  } catch (err) {
-    console.error('[GET /api/heatmap/stats]', err);
-    res.status(500).json({ success: false, error: 'Error al obtener estadísticas' });
-  }
+        res.json({ success: true, data: rows[0] });
+    } catch (err) {
+        console.error('[GET /api/heatmap/stats]', err);
+        res.status(500).json({ success: false, error: 'Error al obtener estadísticas' });
+    }
 });
 
 // ───────────────────────────────────────────────
@@ -169,12 +169,12 @@ heatmapRouter.get('/stats', authenticateToken, requireRole('admin'), async (req,
 // Admin dispara geocodificación masiva de órdenes pendientes
 // ───────────────────────────────────────────────
 heatmapRouter.post('/backfill', authenticateToken, requireRole('admin'), async (req, res) => {
-  try {
-    const limit = Math.min(parseInt(req.body.limit ?? 50, 10), 200);
-    const result = await backfillGeocodingBatch(limit);
-    res.json({ success: true, data: result });
-  } catch (err) {
-    console.error('[POST /api/heatmap/backfill]', err);
-    res.status(500).json({ success: false, error: 'Error en geocodificación masiva' });
-  }
+    try {
+        const limit = Math.min(parseInt(req.body.limit ?? 50, 10), 200);
+        const result = await backfillGeocodingBatch(limit);
+        res.json({ success: true, data: result });
+    } catch (err) {
+        console.error('[POST /api/heatmap/backfill]', err);
+        res.status(500).json({ success: false, error: 'Error en geocodificación masiva' });
+    }
 });
