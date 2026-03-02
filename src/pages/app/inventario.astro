@@ -102,9 +102,6 @@ import AppLayout from "../../layouts/AppLayout.astro";
     (async function () {
       try {
         const response = await fetch("/api/auth/me", {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
-          },
           credentials: "include",
         });
 

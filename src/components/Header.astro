@@ -290,14 +290,9 @@
       "mobileUnauthenticatedMenu"
     );
 
-    // Primero intentar con token en localStorage
-    const token = localStorage.getItem("adminToken");
-
     try {
-      const headers = token ? { Authorization: `Bearer ${token}` } : {};
       const res = await fetch("/api/auth/me", {
         credentials: "include",
-        headers: headers,
       });
 
       if (res.ok) {
@@ -336,12 +331,8 @@
           auditLink.style.display = "block";
         }
 
-        // Guardar nombre en localStorage para persistencia
-        localStorage.setItem("userName", firstName);
       } else if (res.status === 401) {
         // No autenticado - mostrar menú de login/registro
-        localStorage.removeItem("adminToken");
-        localStorage.removeItem("userName");
 
         if (authenticatedMenu) authenticatedMenu.style.display = "none";
         if (unauthenticatedMenu) unauthenticatedMenu.style.display = "flex";
@@ -354,61 +345,19 @@
           userBtn.setAttribute("aria-label", "Menú de usuario");
         }
       } else {
-        // Error del servidor - mantener sesión con datos guardados
-        console.warn(
-          "[Header] Error del servidor en /api/auth/me:",
-          res.status
-        );
-        const savedName = localStorage.getItem("userName");
-        if (savedName && token) {
-          if (userNameDisplay) {
-            userNameDisplay.textContent = savedName;
-            userNameDisplay.style.display = "inline";
-          }
-          if (userMobileLabel) {
-            userMobileLabel.textContent = savedName;
-          }
-          if (authenticatedMenu) authenticatedMenu.style.display = "block";
-          if (unauthenticatedMenu) unauthenticatedMenu.style.display = "none";
-          if (mobileAuthenticatedMenu)
-            mobileAuthenticatedMenu.style.display = "flex";
-          if (mobileUnauthenticatedMenu)
-            mobileUnauthenticatedMenu.style.display = "none";
-        } else {
-          if (authenticatedMenu) authenticatedMenu.style.display = "none";
-          if (unauthenticatedMenu) unauthenticatedMenu.style.display = "flex";
-          if (mobileAuthenticatedMenu)
-            mobileAuthenticatedMenu.style.display = "none";
-          if (mobileUnauthenticatedMenu)
-            mobileUnauthenticatedMenu.style.display = "flex";
-        }
-      }
-    } catch (err) {
-      // Error en la verificación - mostrar menú no autenticado
-      console.error("[Header] Error checking auth status:", err);
-      const savedName = localStorage.getItem("userName");
-      if (savedName) {
-        if (userNameDisplay) {
-          userNameDisplay.textContent = savedName;
-          userNameDisplay.style.display = "inline";
-        }
-        if (userMobileLabel) {
-          userMobileLabel.textContent = savedName;
-        }
-        if (authenticatedMenu) authenticatedMenu.style.display = "block";
-        if (unauthenticatedMenu) unauthenticatedMenu.style.display = "none";
-        if (mobileAuthenticatedMenu)
-          mobileAuthenticatedMenu.style.display = "flex";
-        if (mobileUnauthenticatedMenu)
-          mobileUnauthenticatedMenu.style.display = "none";
-      } else {
+        // Error del servidor — mostrar menú no autenticado
+        console.warn("[Header] Error del servidor en /api/auth/me:", res.status);
         if (authenticatedMenu) authenticatedMenu.style.display = "none";
         if (unauthenticatedMenu) unauthenticatedMenu.style.display = "flex";
-        if (mobileAuthenticatedMenu)
-          mobileAuthenticatedMenu.style.display = "none";
-        if (mobileUnauthenticatedMenu)
-          mobileUnauthenticatedMenu.style.display = "flex";
+        if (mobileAuthenticatedMenu) mobileAuthenticatedMenu.style.display = "none";
+        if (mobileUnauthenticatedMenu) mobileUnauthenticatedMenu.style.display = "flex";
       }
+    } catch (err) {
+      console.error("[Header] Error checking auth status:", err);
+      if (authenticatedMenu) authenticatedMenu.style.display = "none";
+      if (unauthenticatedMenu) unauthenticatedMenu.style.display = "flex";
+      if (mobileAuthenticatedMenu) mobileAuthenticatedMenu.style.display = "none";
+      if (mobileUnauthenticatedMenu) mobileUnauthenticatedMenu.style.display = "flex";
     }
 
     // Logout
@@ -422,8 +371,6 @@
           });
 
           if (response.ok) {
-            localStorage.removeItem("adminToken");
-            localStorage.removeItem("userName");
             window.location.href = "/login";
           }
         } catch (err) {
@@ -482,8 +429,6 @@
           });
 
           if (response.ok) {
-            localStorage.removeItem("adminToken");
-            localStorage.removeItem("userName");
             window.location.href = "/login";
           }
         } catch (err) {

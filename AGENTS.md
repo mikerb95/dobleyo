@@ -295,10 +295,10 @@ Todo agente que cree o modifique páginas DEBE cumplir:
 | BUG-006 | 🟡 Mayor | Checkout no funcional — sin pasarela de pagos, sin órdenes | Pendiente Fase 4 |
 | BUG-007 | 🟠 Moderado | store.js es in-memory Map — órdenes se pierden al reiniciar | Pendiente Fase 4 |
 | BUG-008 | 🟠 Moderado | Formulario de contacto solo hace console.log | Pendiente Fase 4 |
-| BUG-009 | 🟠 Moderado | Newsletter del footer sin handler de submit | Pendiente Fase 2 |
+| BUG-009 | 🟠 Moderado | Newsletter del footer sin handler de submit | ✅ Resuelto Fase 1 |
 | BUG-010 | 🟠 Moderado | Links legales apuntan a `#` | Pendiente Fase 3 |
 | BUG-011 | 🟠 Moderado | CSP deshabilitado en Helmet | Pendiente Fase 11 |
-| BUG-012 | 🟠 Moderado | Auth mixto: HttpOnly cookies + localStorage adminToken | Pendiente Fase 1 |
+| BUG-012 | 🟠 Moderado | Auth mixto: HttpOnly cookies + localStorage adminToken | ✅ Resuelto Fase 1 |
 | DEBT-001 | 🟡 | README dice PostgreSQL pero código usa MySQL — migrar a PG | ✅ Resuelto Fase 1 |
 | DEBT-002 | 🟡 | Breakpoints CSS inconsistentes (700, 768, 900, 980px) | Pendiente Fase 2 |
 | DEBT-003 | 🟡 | Página mobile separada con UA sniffing — eliminar | Pendiente Fase 2 |

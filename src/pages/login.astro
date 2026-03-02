@@ -86,15 +86,8 @@ import Layout from "../layouts/Layout.astro";
             throw new Error(data.error || "Error al iniciar sesión");
           }
 
-          // Guardar token en localStorage para uso en paneles protegidos
-          if (data.token) {
-            localStorage.setItem("adminToken", data.token);
-          }
-
-          // Guardar nombre del usuario para mostrar en navbar
-          if (data.user?.first_name) {
-            localStorage.setItem("userName", data.user.first_name);
-          }
+          // La cookie HttpOnly auth_token es gestionada automáticamente por el servidor
+          // No se almacena ningún token en localStorage
 
           // Obtener parámetro de redirección
           const urlParams = new URLSearchParams(window.location.search);

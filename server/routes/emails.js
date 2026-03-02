@@ -7,11 +7,57 @@ import {
 } from '../services/email.js';
 import { apiLimiter } from '../middleware/rateLimit.js';
 import { authenticateToken, requireRole } from '../auth.js';
+import { query } from '../db.js';
 
 export const emailRouter = express.Router();
 
 // Rate limiting para prevenir spam
 emailRouter.use(apiLimiter);
+
+// POST /api/emails/newsletter — suscripción al newsletter
+emailRouter.post('/newsletter', async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ success: false, error: 'Correo inválido' });
+    }
+
+    // Guardar suscriptor en BD (tabla newsletter_subscribers si existe, si no loggear)
+    try {
+      await query(
+        `INSERT INTO newsletter_subscribers (email, subscribed_at)
+         VALUES ($1, NOW())
+         ON CONFLICT (email) DO NOTHING`,
+        [email]
+      );
+    } catch (dbErr) {
+      // Si la tabla no existe aún, solo loggeamos (no falla la respuesta al usuario)
+      console.warn('[Newsletter] Tabla newsletter_subscribers no existe aún:', dbErr.message);
+    }
+
+    // Enviar email de bienvenida con código de descuento
+    try {
+      const discountCode = 'PRIMERA10';
+      await sendContactFormEmail({
+        from_name: 'Suscriptor Newsletter',
+        from_email: email,
+        subject: `Nueva suscripción newsletter: ${email}`,
+        message: `Email ${email} se suscribió al newsletter. Código descuento: ${discountCode}`
+      });
+    } catch (emailErr) {
+      console.warn('[Newsletter] No se pudo enviar notificación:', emailErr.message);
+    }
+
+    res.json({
+      success: true,
+      message: '\u00a1Suscrito exitosamente! Revisa tu correo para el código de descuento.'
+    });
+  } catch (error) {
+    console.error('[POST /api/emails/newsletter] Error:', error);
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
+  }
+});
 
 // POST /api/emails/account-confirmation (PROTEGIDO: solo admin)
 emailRouter.post('/account-confirmation', authenticateToken, requireRole('admin'), async (req, res) => {

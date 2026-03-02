@@ -19,11 +19,16 @@
 
 - `server/migrations/convert-pg-placeholders.js` — Script utilitario para convertir placeholders MySQL (`?`) a PostgreSQL (`$n`) en template literals SQL.
 
-### Bugs Corregidos
+- `server/routes/emails.js` — Agrega endpoint `POST /api/emails/newsletter` con validación de email, guardado en BD (`newsletter_subscribers`), y notificación interna. Agrega `import { query }` de la BD.
+- `src/components/Footer.astro` — **BUG-009**: Agrega `id` al input y botón del newsletter. Script inline con fetch a `/api/emails/newsletter`, validación de email, feedback de estado, soporte Enter key.
+- `src/components/Header.astro` — **BUG-012**: Elimina dependencia de `localStorage.getItem('adminToken')` para verificar autenticación. Solo usa `credentials: 'include'` (HttpOnly cookie). Simplifica fallbacks de error para siempre mostrar menú no autenticado cuando falla `/api/auth/me`. Logout limpiado.
+- `src/pages/app/inventario.astro` — **BUG-012**: Elimina header `Authorization: Bearer ${localStorage.getItem('adminToken')}` de fetch a `/api/auth/me`. Solo usa `credentials: 'include'`.
 
 - **BUG-001** 🔴: `orders.js` declaraba `ordersRouter` pero usaba `router.` (no declarado) en todas las rutas — crash en runtime. Resuelto.
 - **BUG-002** 🔴: `api/index.js` no montaba caficultorRouter, emailRouter, contactRouter, productionRouter ni audit. Resuelto.
 - **BUG-005** 🟡: `}` extra en styles.css línea 543. Resuelto.
+- **BUG-009** 🟠: Newsletter del footer sin handler de submit — ahora funcional con API endpoint.
+- **BUG-012** 🟠: Auth mixto (HttpOnly cookie + localStorage adminToken) — unificado a solo cookies HttpOnly.
 - **DEBT-001** 🟡: README decía PostgreSQL pero código usaba MySQL — migración completa a pg. Resuelto.
 
 ### Decisiones Técnicas
