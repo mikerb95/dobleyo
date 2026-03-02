@@ -1,22 +1,17 @@
-// Trazabilidad por QR o codigo manual
+// Trazabilidad por QR o código manual — conectado a la BD
 (function(){
+  'use strict';
   const $ = (s, r=document) => r.querySelector(s);
-
-  // Dataset: se carga desde assets/data/lotes.json; fallback a inline si falla
-  let lots = [
-    {
-      lot: 'DBY-2025-09-HUI', name: 'Huila - Lote Sept 2025', origin: 'Huila, Colombia', farm: 'Finca El Bosque', producer: 'Familia Rodríguez', altitude: '1800 msnm', process: 'Honey', variety: 'Caturra', harvestDate: '2025-07-10', roastDate: '2025-09-05', moisture: '10.5%', score: 86.5, notes: ['Panela','Frutos rojos','Floral']
-    },
-    {
-      lot: 'DBY-2025-08-NAR', name: 'Nariño - Lote Ago 2025', origin: 'Nariño, Colombia', farm: 'La Primavera', producer: 'Ana Gómez', altitude: '2000 msnm', process: 'Natural', variety: 'Castillo', harvestDate: '2025-06-05', roastDate: '2025-08-28', moisture: '10.8%', score: 87.2, notes: ['Cítricos','Chocolate','Miel']
-    }
-  ];
-  async function loadLots(){
-  // 1) lotes provistos por admin desde localStorage
-    try{
-      const ls = JSON.parse(localStorage.getItem('dbyo-lots')||'null');
-      if (Array.isArray(ls) && ls.length){ lots = ls; return; }
-    }catch{}
+  // ─── API ─────────────────────────────────────────────────────────
+  async function lookupCode(code) {
+    const trimmed = (code || '').trim();
+    if (!trimmed) return null;
+    const res = await fetch(`/api/traceability/${encodeURIComponent(trimmed)}`);
+    if (res.status === 404) return null;
+    if (!res.ok) throw new Error('Error de red: ' + res.status);
+    const json = await res.json();
+    return json.success ? json.data : null;
+  }
   // 2) JSON externo
     try{
       const res = await fetch('assets/data/lotes.json', { cache: 'no-store' });
