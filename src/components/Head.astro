@@ -8,12 +8,20 @@ export interface Props {
   title?: string;
   description?: string;
   isAdmin?: boolean;
+  lang?: "es" | "en";
+  canonical?: string;
+  hreflangEs?: string;
+  hreflangEn?: string;
 }
 
 const {
   title = "DobleYo — Café de especialidad colombiano",
   description = "Tienda de café de especialidad colombiano. Tueste fresco, origen trazable, estilo sereno y acogedor.",
   isAdmin = false,
+  lang = "es",
+  canonical,
+  hreflangEs,
+  hreflangEn,
 } = Astro.props;
 ---
 

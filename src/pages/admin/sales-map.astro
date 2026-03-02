@@ -147,3 +147,30 @@ import SalesHeatmap from "../../components/SalesHeatmap.jsx";
       btn.disabled = true;
       btn.textContent = "Geocodificando…";
       msgEl.style.display = "none";
+      try {
+        const res = await fetch("/api/heatmap/backfill", {
+          method: "POST",
+          credentials: "include",
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error ?? "Error");
+        const { geocoded, failed, remaining } = json.data ?? {};
+        msgEl.textContent = `✅ Procesadas: ${geocoded ?? 0} ok, ${failed ?? 0} fallidas, ${remaining ?? 0} restantes.`;
+        msgEl.style.display = "inline";
+        statusEl.textContent =
+          remaining > 0
+            ? `⚠️ Aún quedan ${remaining} órdenes pendientes.`
+            : "✅ Sin órdenes pendientes.";
+        if (remaining > 0) btn.disabled = false;
+        btn.textContent = "Geocodificar pendientes";
+      } catch (err) {
+        msgEl.textContent = "❌ Error al geocodificar. Intenta de nuevo.";
+        msgEl.style.color = "#c00";
+        msgEl.style.display = "inline";
+        btn.disabled = false;
+        btn.textContent = "Geocodificar pendientes";
+        console.error(err);
+      }
+    });
+  })();
+</script>

@@ -290,7 +290,7 @@ Todo agente que cree o modifique páginas DEBE cumplir:
 | BUG-001 | 🔴 Crítico | Módulo production usa CommonJS (`require`) en proyecto ESM | ✅ Resuelto Fase 1 |
 | BUG-002 | 🔴 Crítico | `api/index.js` no monta productionRouter, emailRouter, contactRouter, caficultorRouter, audit endpoints | ✅ Resuelto Fase 1 |
 | BUG-003 | 🔴 Crítico | 3 fuentes de datos de productos desincronizadas (products.ts, index.astro hardcoded, mobile.astro hardcoded) | Pendiente Fase 1 |
-| BUG-004 | 🟡 Mayor | `/en/` hereda `<html lang="es">` de Layout.astro | Pendiente Fase 9 |
+| BUG-004 | 🟡 Mayor | `/en/` hereda `<html lang="es">` de Layout.astro | ✅ Resuelto Fase 9 |
 | BUG-005 | 🟡 Mayor | Error CSS en styles.css — llave `}` extra | ✅ Resuelto Fase 1 |
 | BUG-006 | 🟡 Mayor | Checkout no funcional — sin pasarela de pagos, sin órdenes | ✅ Resuelto Fase 4 |
 | BUG-007 | 🟠 Moderado | store.js es in-memory Map — órdenes se pierden al reiniciar | ✅ Resuelto Fase 4 |
@@ -322,7 +322,7 @@ Todo agente que cree o modifique páginas DEBE cumplir:
 | 6 | Módulo de finanzas de producción | ✅ Completo |
 | 7 | Landing pages de fincas y caficultores | ✅ Completo |
 | 8 | Mapa de calor de ventas | ✅ Completo |
-| 9 | Internacionalización (i18n) y versión USA | ⏳ Pendiente |
+| 9 | Internacionalización (i18n) y versión USA | ✅ Completo |
 | 10 | Panel de administración profesional | ⏳ Pendiente |
 | 11 | SEO, auditoría de seguridad y BD | ⏳ Pendiente |
 | 12 | CI/CD, testing y deployment | ⏳ Pendiente |

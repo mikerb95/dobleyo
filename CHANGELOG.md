@@ -2,6 +2,44 @@
 
 ---
 
+## 📅 2026-03-04 — Fase 9: Internacionalización (i18n) y versión USA (Agente: Claude)
+
+### Archivos Creados
+- `src/i18n/es.json` — Traducciones completas en español: seo, nav, topbar, shop, cart, contact, traceability, footer, common
+- `src/i18n/en.json` — Traducciones completas en inglés: mismas claves, valores en inglés; moneda USD; opciones B2B en formulario de contacto
+- `src/i18n/index.ts` — Helpers i18n: `t(key, lang)`, `getLang(url)`, `formatPrice(amount, lang)`, `formatDate(date, lang)`, `getCanonicalUrl(pathname, lang)`, `getHreflangPair(esPath)` con `HREFLANG_MAP`
+- `src/pages/en/shop.astro` — Tienda en inglés con precios USD, filtros, carrito; rutas `/en/shop`
+- `src/pages/en/contact.astro` — Página de contacto en inglés con opciones "Wholesale / B2B" y "Export / Sourcing"
+- `src/pages/en/traceability.astro` — Página de trazabilidad en inglés; lookup de lotes por QR o código manual
+
+### Archivos Modificados
+- `src/components/Head.astro` — Nuevas props: `lang`, `canonical`, `hreflangEs`, `hreflangEn`; inyecta `<link rel="canonical">`, `<link rel="alternate" hreflang>` x3, Open Graph tags completos
+- `src/layouts/Layout.astro` — Nuevas props: `lang`, `canonical`, `hreflangEs`, `hreflangEn`; **BUG-004 resuelto**: `<html lang={lang}>` dinámico en lugar de hardcodeado `lang="es"`
+- `src/data/products.ts` — Nuevos campos en interfaz Product: `nameEn`, `categoryEn`, `processEn`, `roastEn`, `notesEn[]`, `priceUsd`; precios USD añadidos a los 5 productos
+- `src/pages/en/index.astro` — Actualizado con `lang="en"`, canonical, hreflang
+- `src/pages/index.astro` — Añadidos canonical, hreflang ES/EN
+- `src/pages/tienda.astro` — Añadidos canonical, hreflang ES/EN
+- `src/pages/contacto.astro` — Añadidos canonical, hreflang ES/EN; título mejorado
+- `src/pages/trazabilidad.astro` — Añadidos canonical, hreflang ES/EN
+- `src/pages/app/ventas.astro` — BUG Fase 8 resuelto: archivo truncado reescrito con HTML estático en tarjetas de tips
+- `src/pages/admin/sales-map.astro` — BUG Fase 8 resuelto: script `<script>` truncado completado con handler de geocodificación
+
+### Decisiones Técnicas
+- i18n implementado server-side en Astro frontmatter (sin bundle JS al cliente); JSON estático importado en build time
+- URLs: español en raíz (`/tienda`), inglés en `/en/` (`/en/shop`); subdomain `en.dobleyo.cafe` ya configurado en vercel.json
+- `hreflangEs` siempre es `https://dobleyo.cafe/...`, `hreflangEn` siempre es `https://en.dobleyo.cafe/...`
+- `x-default` hreflang apunta a la versión en español (mercado primario)
+- Moneda: `Intl.NumberFormat('es-CO', { currency: 'COP' })` en español, `Intl.NumberFormat('en-US', { currency: 'USD' })` en inglés
+
+### Impacto
+- **BUG-004 resuelto**: `<html lang>` dinámico en todas las páginas
+- SEO internacional: canonical URLs y hreflang en todas las páginas públicas con versión dual
+- Versión en inglés completa con 3 nuevas páginas (`/en/shop`, `/en/contact`, `/en/traceability`)
+- Open Graph tags en todas las páginas públicas
+- Build 100% limpio sin errores
+
+---
+
 ## 📅 2026-03-03 — Fase 8: Mapa de Calor de Ventas (Agente: Claude)
 
 ### Archivos Creados
