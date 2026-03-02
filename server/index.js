@@ -3,8 +3,6 @@ import express from 'express';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { store } from './store.js';
-import crypto from 'crypto';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import { stockRouter } from './routes/stock.js';
@@ -20,6 +18,7 @@ import { usersRouter } from './routes/users.js';
 import { labelsRouter } from './routes/labels.js';
 import { devtoolsRouter } from './routes/devtools.js';
 import { productionRouter } from './routes/production.js';
+import { ordersRouter } from './routes/orders.js';
 import { query } from './db.js';
 
 const app = express();
@@ -75,6 +74,9 @@ app.use('/api/contact', contactRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/devtools', devtoolsRouter);
 app.use('/api/production', productionRouter);
+app.use('/api/orders', ordersRouter);
+// Webhook Wompi delegado al router de órdenes
+app.post('/api/wompi/webhook', (req, res, next) => { req.url = '/wompi/webhook'; ordersRouter(req, res, next); });
 
 // Endpoint de auditoría - Obtener logs (PROTEGIDO: solo admin)
 app.get('/api/audit/logs', authenticateToken, requireRole('admin'), async (req, res) => {
@@ -208,39 +210,13 @@ app.get('/api/debug-env', (req, res) => {
 // Salud
 app.get('/api/health', (req, res) => res.json({ status: 'ok', time: new Date().toISOString() }));
 
+// MercadoPago — stub (Fase 4, pendiente)
 app.post('/api/mp/create_preference', async (req, res) => {
-  try {
-    return res.status(501).json({ error: 'Método de pago aún no disponible' });
-  } catch (e) {
-    return res.status(500).json({ error: e.message });
-  }
-});
-
-app.post('/api/wompi/checkout', async (req, res) => {
-  try {
-    return res.status(501).json({ error: 'Método de pago aún no disponible' });
-  } catch (e) {
-    return res.status(500).json({ error: e.message });
-  }
+  return res.status(501).json({ error: 'MercadoPago pendiente de configuración' });
 });
 
 app.post('/api/mp/webhook', express.json(), async (req, res) => {
-  try{
-    res.sendStatus(200);
-  }catch(e){ res.status(200).end(); }
-});
-
-app.post('/api/wompi/webhook', express.json(), (req, res) => {
-  try{
-    res.sendStatus(200);
-  }catch(e){ res.status(200).end(); }
-});
-
-app.get('/api/order/:ref', (req, res) => {
-  const ref = req.params.ref;
-  const ord = store.get(ref);
-  if (!ord) return res.status(404).json({ error: 'No existe la orden' });
-  res.json(ord);
+  res.sendStatus(200);
 });
 
 const PORT = process.env.PORT || 4000;

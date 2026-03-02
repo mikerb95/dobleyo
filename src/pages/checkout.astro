@@ -2,54 +2,97 @@
 import Layout from "../layouts/Layout.astro";
 ---
 
-<Layout>
-  <section>
-    <h1>Checkout</h1>
-    <div class="grid" style="grid-template-columns: 1.4fr 1fr">
+<Layout
+  title="Checkout — DobleYo Café"
+  description="Finaliza tu pedido de café de especialidad. Envíos nacionales en Colombia."
+>
+  <section style="padding: 1.5rem 0 3rem;">
+    <h1 style="font-size:clamp(1.4rem,3vw,1.8rem); margin-bottom:1.5rem;">Finalizar pedido</h1>
+
+    <div id="cartEmpty" style="display:none; text-align:center; padding:3rem 0;">
+      <p class="muted" style="font-size:1.1rem;">Tu carrito está vacío.</p>
+      <a href="/tienda" class="btn" style="margin-top:1rem;" data-link>Ver tienda</a>
+    </div>
+
+    <div id="checkoutLayout" class="grid" style="grid-template-columns: 1.4fr 1fr; gap:1.5rem; align-items:start; display:none;">
+
+      <!-- Columna izquierda: formularios -->
       <div>
         <div class="card">
           <div class="p">
-            <h2>Datos de envio</h2>
-            <form id="shipForm" class="form" style="display:grid; gap:.5rem">
-              <label>Nombre completo<input id="fName" required /></label>
-              <label>Correo<input id="fEmail" type="email" required /></label>
-              <label>Telefono<input id="fPhone" required /></label>
-              <label>Direccion<input id="fAddr" required /></label>
-              <label>Ciudad<input id="fCity" required /></label>
+            <h2 style="margin-bottom:1rem;">Datos de envío</h2>
+            <form id="shipForm" class="form" style="display:grid; gap:.65rem;" novalidate>
+              <label>
+                Nombre completo *
+                <input id="fName" type="text" placeholder="John Doe" required autocomplete="name" />
+              </label>
+              <label>
+                Correo electrónico *
+                <input id="fEmail" type="email" placeholder="tu@correo.com" required autocomplete="email" />
+              </label>
+              <label>
+                Teléfono
+                <input id="fPhone" type="tel" placeholder="+57 300 000 0000" inputmode="tel" autocomplete="tel" />
+              </label>
+              <label>
+                Dirección de entrega *
+                <input id="fAddr" type="text" placeholder="Calle 123 # 45-67, Apto 8" required autocomplete="street-address" />
+              </label>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:.65rem;">
+                <label>
+                  Ciudad *
+                  <input id="fCity" type="text" placeholder="Bogotá" required autocomplete="address-level2" />
+                </label>
+                <label>
+                  Departamento
+                  <input id="fDept" type="text" placeholder="Cundinamarca" autocomplete="address-level1" />
+                </label>
+              </div>
             </form>
           </div>
         </div>
 
-        <div class="card" style="margin-top:1rem">
+        <div class="card" style="margin-top:1rem;">
           <div class="p">
-            <h2>Metodo de pago</h2>
-            <div style="display:grid; gap:.5rem">
-              <p class="muted">Métodos de pago próximamente</p>
-            </div>
-            <button class="btn" id="payBtn" style="margin-top:.75rem" disabled
-              >Pagar ahora</button
-            >
-            <div
-              id="payError"
-              class="muted"
-              style="color:#b91c1c; display:none; margin-top:.35rem"
-            >
-            </div>
+            <h2 style="margin-bottom:.75rem;">Método de pago</h2>
+            <label style="display:flex; align-items:center; gap:.75rem; padding:.875rem 1rem; border:2px solid var(--accent); border-radius:.5rem; cursor:pointer; background:#fffaf7;">
+              <input type="radio" name="payMethod" value="wompi" checked style="accent-color:var(--accent);"/>
+              <span style="font-weight:600;">Wompi</span>
+              <span class="muted" style="font-size:.85rem; margin-left:.25rem;">— Tarjeta, PSE, Nequi, Daviplata</span>
+            </label>
+
+            <div id="payError" style="color:#b91c1c; display:none; margin-top:.6rem; font-size:.9rem;"></div>
+
+            <button class="btn" id="payBtn" style="margin-top:1rem; width:100%; min-height:44px; font-size:1rem;">
+              Ir a pagar →
+            </button>
+
+            <p style="font-size:.78rem; color:var(--muted-fg); margin-top:.625rem; line-height:1.4;">
+              Al completar el pedido aceptas nuestros
+              <a href="/terminos" style="color:var(--accent);">Términos y Condiciones</a>.
+              Pago procesado de forma segura por Wompi.
+            </p>
           </div>
         </div>
       </div>
 
+      <!-- Resumen del pedido -->
       <aside>
-        <div class="card">
+        <div class="card" style="position:sticky; top:calc(var(--header-top,0px) + var(--header-height,96px) + 1.5rem);">
           <div class="p">
-            <h2>Resumen</h2>
-            <div id="sumList"></div>
-            <div
-              style="display:flex; justify-content:space-between; margin-top:.5rem"
-            >
-              <span>Total</span>
-              <strong id="sumTotal">$0</strong>
+            <h2 style="margin-bottom:.875rem;">Resumen</h2>
+            <div id="sumList" style="display:flex; flex-direction:column; gap:.5rem;"></div>
+            <hr style="border:none; border-top:1px solid var(--border); margin:1rem 0;" />
+            <div style="display:flex; justify-content:space-between; font-size:.9rem; margin-bottom:.4rem;">
+              <span>Subtotal</span><span id="sumSubtotal">$0</span>
             </div>
+            <div style="display:flex; justify-content:space-between; font-size:.9rem; margin-bottom:.75rem;">
+              <span>Envío</span><span id="sumShipping">—</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-weight:700; font-size:1.05rem;">
+              <span>Total</span><span id="sumTotal" style="color:var(--accent);">$0</span>
+            </div>
+            <p id="shipNote" style="font-size:.8rem; color:#4a6741; margin-top:.5rem; display:none;">✓ Envío gratis en este pedido</p>
           </div>
         </div>
       </aside>
@@ -57,57 +100,123 @@ import Layout from "../layouts/Layout.astro";
   </section>
 
   <script>
-    // flujo de checkout: próximamente
     (function () {
-      function $(s, r = document) {
-        return r.querySelector(s);
-      }
-      function fmt(n) {
-        return "$" + Number(n || 0).toLocaleString("es-CO");
-      }
-      function ready(fn) {
-        if (document.readyState !== "loading") fn();
-        else document.addEventListener("DOMContentLoaded", fn);
-      }
-      function whenCart(fn) {
-        if (window.Cart) fn();
-        else setTimeout(() => whenCart(fn), 30);
-      }
+      function fmt(n: number) { return '$' + Number(n || 0).toLocaleString('es-CO'); }
+      function ready(fn: () => void) { if (document.readyState !== 'loading') fn(); else document.addEventListener('DOMContentLoaded', fn); }
+      function whenCart(fn: () => void) { if ((window as any).Cart) fn(); else setTimeout(() => whenCart(fn), 40); }
 
-      ready(() =>
-        whenCart(function () {
-          const sumList = $("#sumList");
-          const sumTotal = $("#sumTotal");
-          const payBtn = document.getElementById("payBtn");
-          const payError = document.getElementById("payError");
+      ready(() => whenCart(function () {
+        const cart = (window as any).Cart.getCart();
+        const layout = document.getElementById('checkoutLayout')!;
+        const emptyMsg = document.getElementById('cartEmpty')!;
 
-          const cart = window.Cart.getCart();
-          if (!cart.length) {
-            sumList.innerHTML = '<p class="muted">Tu carrito esta vacio.</p>';
-            sumTotal.textContent = fmt(0);
-            if (payBtn) {
-              payBtn.disabled = true;
-              payBtn.textContent = "Carrito vacio";
-            }
+        if (!cart.length) { emptyMsg.style.display = 'block'; return; }
+        layout.style.display = 'grid';
+
+        const sumList = document.getElementById('sumList')!;
+        const sumSubtotal = document.getElementById('sumSubtotal')!;
+        const sumShipping = document.getElementById('sumShipping')!;
+        const sumTotal = document.getElementById('sumTotal')!;
+        const shipNote = document.getElementById('shipNote')!;
+        const payBtn = document.getElementById('payBtn') as HTMLButtonElement;
+        const payError = document.getElementById('payError')!;
+
+        function renderSummary() {
+          const c = (window as any).Cart.getCart();
+          const subtotal = (window as any).Cart.subtotal();
+          const shipping = subtotal >= 120000 ? 0 : 12000;
+          const total = subtotal + shipping;
+
+          sumList.innerHTML = c.map((p: any) =>
+            `<div style="display:flex;justify-content:space-between;gap:.5rem;font-size:.9rem;">
+              <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.qty}× ${p.name}</span>
+              <span style="flex-shrink:0;">${fmt((p.price || 0) * p.qty)}</span>
+            </div>`
+          ).join('');
+          sumSubtotal.textContent = fmt(subtotal);
+          sumShipping.textContent = shipping === 0 ? 'Gratis' : fmt(shipping);
+          sumTotal.textContent = fmt(total);
+          shipNote.style.display = shipping === 0 ? 'block' : 'none';
+        }
+        renderSummary();
+
+        payBtn.addEventListener('click', async () => {
+          payError.style.display = 'none';
+
+          const fName  = (document.getElementById('fName')  as HTMLInputElement).value.trim();
+          const fEmail = (document.getElementById('fEmail') as HTMLInputElement).value.trim();
+          const fPhone = (document.getElementById('fPhone') as HTMLInputElement).value.trim();
+          const fAddr  = (document.getElementById('fAddr')  as HTMLInputElement).value.trim();
+          const fCity  = (document.getElementById('fCity')  as HTMLInputElement).value.trim();
+          const fDept  = (document.getElementById('fDept')  as HTMLInputElement).value.trim();
+
+          if (!fName || !fEmail || !fAddr || !fCity) {
+            payError.textContent = 'Completa los campos obligatorios (*)';
+            payError.style.display = 'block';
             return;
           }
-          sumList.innerHTML = cart
-            .map(
-              (p) =>
-                `<div style="display:flex; justify-content:space-between; gap:.5rem"><span>${p.qty}× ${p.name || ""}</span><span>${fmt((p.price || 0) * p.qty)}</span></div>`
-            )
-            .join("");
-          const total = window.Cart.subtotal();
-          sumTotal.textContent = fmt(total);
-
-          async function pay() {
-            payError.textContent =
-              "Los métodos de pago aún no están disponibles";
-            payError.style.display = "block";
+          if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fEmail)) {
+            payError.textContent = 'Ingresa un correo electrónico válido';
+            payError.style.display = 'block';
+            return;
           }
-          payBtn.addEventListener("click", pay);
-        })
-      );
+
+          payBtn.disabled = true;
+          payBtn.textContent = 'Procesando…';
+
+          try {
+            const currentCart = (window as any).Cart.getCart();
+            const res = await fetch('/api/orders', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'include',
+              body: JSON.stringify({
+                customerName: fName,
+                customerEmail: fEmail,
+                customerPhone: fPhone || undefined,
+                shippingAddress: fAddr,
+                shippingCity: fCity,
+                shippingDepartment: fDept || undefined,
+                items: currentCart.map((p: any) => ({
+                  productId: p.id,
+                  productName: p.name,
+                  productImage: p.image,
+                  unitPrice: p.price,
+                  quantity: p.qty,
+                })),
+              }),
+            });
+            const data = await res.json();
+
+            if (!res.ok) {
+              payError.textContent = data.errors?.[0]?.msg || data.error || 'Error al crear la orden';
+              payError.style.display = 'block';
+              payBtn.disabled = false;
+              payBtn.textContent = 'Ir a pagar →';
+              return;
+            }
+
+            // Limpiar carrito antes de redirigir
+            if ((window as any).Cart.clearCart) (window as any).Cart.clearCart();
+
+            window.location.href = data.data.checkoutUrl
+              ? data.data.checkoutUrl
+              : `/confirmacion?ref=${data.data.reference}`;
+
+          } catch {
+            payError.textContent = 'Error de red. Inténtalo de nuevo.';
+            payError.style.display = 'block';
+            payBtn.disabled = false;
+            payBtn.textContent = 'Ir a pagar →';
+          }
+        });
+      }));
     })();
   </script>
+
+  <style>
+    @media (max-width: 768px) {
+      #checkoutLayout { grid-template-columns: 1fr !important; }
+    }
+  </style>
 </Layout>

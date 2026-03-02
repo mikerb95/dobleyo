@@ -16,6 +16,7 @@ import { caficultorRouter } from '../server/routes/caficultor.js';
 import { emailRouter } from '../server/routes/emails.js';
 import { contactRouter } from '../server/routes/contact.js';
 import { productionRouter } from '../server/routes/production.js';
+import { ordersRouter } from '../server/routes/orders.js';
 import auditRouter from '../server/routes/audit.js';
 
 const app = express();
@@ -68,6 +69,9 @@ app.use('/api/caficultor', caficultorRouter);
 app.use('/api/emails', emailRouter);
 app.use('/api/contact', contactRouter);
 app.use('/api/production', productionRouter);
+app.use('/api/orders', ordersRouter);
+// Webhook Wompi delegado al router de órdenes
+app.post('/api/wompi/webhook', (req, res, next) => { req.url = '/wompi/webhook'; ordersRouter(req, res, next); });
 app.use('/api/audit', auditRouter);
 
 // Health Check

@@ -1,57 +1,36 @@
 import express from 'express';
+import { body, validationResult } from 'express-validator';
 import { apiLimiter } from '../middleware/rateLimit.js';
+import { sendContactFormEmail } from '../services/email.js';
 
 export const contactRouter = express.Router();
 
 // PROTECCIÓN: Rate limit en contacto público
 // POST - Enviar mensaje de contacto
-contactRouter.post('/', apiLimiter, async (req, res) => {
-  try {
-    const { name, email, phone, subject, message } = req.body;
-
-    // Validación básica
-    if (!name || !email || !subject || !message) {
-      return res.status(400).json({ 
-        success: false, 
-        error: 'Nombre, email, asunto y mensaje son requeridos' 
-      });
+contactRouter.post('/',
+  apiLimiter,
+  [
+    body('name').trim().notEmpty().withMessage('Nombre requerido'),
+    body('email').isEmail().withMessage('Correo inválido'),
+    body('subject').trim().notEmpty().withMessage('Asunto requerido'),
+    body('message').trim().isLength({ min: 10 }).withMessage('Mensaje muy corto'),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(422).json({ success: false, errors: errors.array() });
     }
 
-    // Validar formato de email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return res.status(400).json({ 
-        success: false, 
-        error: 'Email inválido' 
-      });
+    try {
+      const { name, email, phone, subject, message } = req.body;
+
+      // Enviar email al admin vía Resend (BUG-008 — antes solo console.log)
+      await sendContactFormEmail({ name, email, phone, subject, message });
+
+      res.json({ success: true, message: 'Mensaje recibido correctamente' });
+    } catch (error) {
+      console.error('[POST /api/contact] Error:', error);
+      res.status(500).json({ success: false, error: 'Error al procesar el mensaje' });
     }
-
-    // TODO: Aquí puedes implementar:
-    // 1. Guardar el mensaje en la BD
-    // 2. Enviar email a través de Resend
-    // 3. Notificar al equipo
-
-    // Por ahora, solo logueamos
-    console.log('Mensaje de contacto recibido:', {
-      name,
-      email,
-      phone,
-      subject,
-      message,
-      timestamp: new Date().toISOString()
-    });
-
-    // Simular envío exitoso
-    res.json({
-      success: true,
-      message: 'Mensaje recibido correctamente'
-    });
-
-  } catch (error) {
-    console.error('Error procesando mensaje de contacto:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: 'Error al procesar el mensaje' 
-    });
   }
-});
+);
