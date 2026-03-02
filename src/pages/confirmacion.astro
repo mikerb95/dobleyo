@@ -1,0 +1,260 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout
+  title="Confirmación de pedido — DobleYo Café"
+  description="Resumen y estado de tu pedido en DobleYo Café."
+>
+  <section style="max-width:600px; margin:2rem auto 4rem; text-align:center;">
+
+    <!-- Estado: cargando -->
+    <div id="stateLoading" aria-live="polite">
+      <div class="spinner" aria-label="Cargando estado del pedido..."></div>
+      <p class="muted" style="margin-top:1rem;">Verificando tu pedido…</p>
+    </div>
+
+    <!-- Estado: pagado / procesando -->
+    <div id="statePaid" style="display:none;">
+      <div class="confirm-icon confirm-icon--success" aria-hidden="true">✓</div>
+      <h1 style="font-size:clamp(1.5rem,4vw,2rem); color:var(--coffee); margin:.75rem 0 .5rem;">¡Pedido confirmado!</h1>
+      <p class="muted" style="margin-bottom:1.5rem;">
+        Recibirás un correo de confirmación con los detalles de tu pedido.
+      </p>
+      <div class="order-card" id="orderDetails"></div>
+      <a href="/tienda" class="btn" style="margin-top:1.5rem;" data-link>Seguir comprando</a>
+    </div>
+
+    <!-- Estado: pendiente de pago -->
+    <div id="statePending" style="display:none;">
+      <div class="confirm-icon confirm-icon--pending" aria-hidden="true">⏳</div>
+      <h1 style="font-size:clamp(1.5rem,4vw,2rem); color:var(--coffee); margin:.75rem 0 .5rem;">Pago pendiente</h1>
+      <p class="muted" style="margin-bottom:1.5rem;">
+        Tu pedido fue creado pero el pago aún no ha sido confirmado.
+        Si completaste el pago, puede tomar unos minutos en procesarse.
+      </p>
+      <div class="order-card" id="orderDetailsPending"></div>
+      <p style="font-size:.875rem; color:var(--muted-fg); margin-top:1.5rem;">
+        ¿Problemas con el pago?
+        <a href="/contacto" style="color:var(--accent);" data-link>Contáctanos</a>
+      </p>
+    </div>
+
+    <!-- Estado: cancelado / rechazado -->
+    <div id="stateError" style="display:none;">
+      <div class="confirm-icon confirm-icon--error" aria-hidden="true">✕</div>
+      <h1 style="font-size:clamp(1.5rem,4vw,2rem); color:#b91c1c; margin:.75rem 0 .5rem;">Pago no procesado</h1>
+      <p class="muted" style="margin-bottom:1.5rem;">
+        Tu pago fue rechazado o cancelado. No se realizó ningún cargo.
+        Puedes intentarlo nuevamente.
+      </p>
+      <a href="/checkout" class="btn" data-link>Reintentar</a>
+      <p style="font-size:.875rem; color:var(--muted-fg); margin-top:1rem;">
+        ¿Necesitas ayuda?
+        <a href="/contacto" style="color:var(--accent);" data-link>Contáctanos</a>
+      </p>
+    </div>
+
+    <!-- Estado: referencia no encontrada -->
+    <div id="stateNotFound" style="display:none;">
+      <div class="confirm-icon confirm-icon--error" aria-hidden="true">?</div>
+      <h1 style="font-size:clamp(1.5rem,4vw,2rem); color:var(--coffee); margin:.75rem 0 .5rem;">Pedido no encontrado</h1>
+      <p class="muted" style="margin-bottom:1.5rem;">
+        No pudimos encontrar un pedido con esta referencia.
+      </p>
+      <a href="/" class="btn" data-link>Ir al inicio</a>
+    </div>
+
+  </section>
+
+  <script>
+    (function () {
+      function fmt(n: number) { return '$' + Number(n || 0).toLocaleString('es-CO'); }
+
+      function showState(id: string) {
+        ['stateLoading','statePaid','statePending','stateError','stateNotFound']
+          .forEach(s => {
+            const el = document.getElementById(s);
+            if (el) el.style.display = s === id ? 'block' : 'none';
+          });
+      }
+
+      function renderOrderCard(order: any, containerId: string) {
+        const el = document.getElementById(containerId);
+        if (!el) return;
+        const items = (order.items || []).map((i: any) =>
+          `<div class="order-line">
+            <span>${i.quantity}× ${i.product_name}</span>
+            <span>${fmt(i.subtotal_cop)}</span>
+          </div>`
+        ).join('');
+        el.innerHTML = `
+          <div class="order-meta">
+            <span class="order-ref">Pedido <strong>#${order.reference}</strong></span>
+            <span class="order-status order-status--${order.status}">${statusLabel(order.status)}</span>
+          </div>
+          <div class="order-items">${items}</div>
+          <div class="order-total">
+            <span>Envío</span><span>${order.shipping_cop === 0 ? 'Gratis' : fmt(order.shipping_cop)}</span>
+          </div>
+          <div class="order-total order-total--final">
+            <span>Total</span><span>${fmt(order.total_cop)}</span>
+          </div>
+          <p class="order-city">📦 Entrega en <strong>${order.shipping_city}</strong></p>
+        `;
+      }
+
+      function statusLabel(status: string): string {
+        const map: Record<string, string> = {
+          paid: '✅ Pagado',
+          processing: '⚙️ En proceso',
+          shipped: '🚚 En camino',
+          delivered: '✓ Entregado',
+          pending_payment: '⏳ Pago pendiente',
+          cancelled: '✕ Cancelado',
+          refunded: '↩ Reembolsado',
+        };
+        return map[status] || status;
+      }
+
+      async function loadOrder(ref: string) {
+        try {
+          const res = await fetch(`/api/orders/${encodeURIComponent(ref)}`);
+          if (res.status === 404) { showState('stateNotFound'); return; }
+          if (!res.ok) throw new Error('Error de red');
+
+          const data = await res.json();
+          if (!data.success) { showState('stateNotFound'); return; }
+
+          const order = data.data;
+          const s = order.status;
+
+          if (s === 'paid' || s === 'processing' || s === 'shipped' || s === 'delivered') {
+            renderOrderCard(order, 'orderDetails');
+            showState('statePaid');
+          } else if (s === 'pending_payment') {
+            renderOrderCard(order, 'orderDetailsPending');
+            showState('statePending');
+          } else {
+            showState('stateError');
+          }
+        } catch {
+          showState('stateError');
+        }
+      }
+
+      // Leer ref de la URL (?ref=DY-xxx o wompi lo pasa como ?id=transaction_id&reference=DY-xxx)
+      const params = new URLSearchParams(window.location.search);
+      const ref = params.get('ref') || params.get('reference');
+
+      if (!ref) {
+        showState('stateNotFound');
+      } else {
+        loadOrder(ref);
+      }
+    })();
+  </script>
+
+  <style>
+    .spinner {
+      width: 44px;
+      height: 44px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin .75s linear infinite;
+      margin: 2rem auto;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (prefers-reduced-motion: reduce) {
+      .spinner { animation: none; border-top-color: var(--accent); }
+    }
+
+    .confirm-icon {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      margin: 1.5rem auto .75rem;
+    }
+
+    .confirm-icon--success { background: #dcfce7; color: #16a34a; }
+    .confirm-icon--pending { background: #fef3c7; color: #d97706; }
+    .confirm-icon--error   { background: #fee2e2; color: #dc2626; }
+
+    .order-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: .625rem;
+      padding: 1.25rem;
+      text-align: left;
+      margin-top: 1rem;
+    }
+
+    .order-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: .5rem;
+      margin-bottom: 1rem;
+      padding-bottom: .75rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .order-ref { font-size: .95rem; }
+
+    .order-status {
+      font-size: .8rem;
+      padding: .2rem .65rem;
+      border-radius: 999px;
+      font-weight: 600;
+    }
+
+    .order-status--paid,
+    .order-status--processing,
+    .order-status--shipped,
+    .order-status--delivered { background: #dcfce7; color: #16a34a; }
+
+    .order-status--pending_payment { background: #fef3c7; color: #d97706; }
+    .order-status--cancelled,
+    .order-status--refunded        { background: #fee2e2; color: #dc2626; }
+
+    .order-items { display: flex; flex-direction: column; gap: .4rem; margin-bottom: .75rem; }
+
+    .order-line {
+      display: flex;
+      justify-content: space-between;
+      gap: .5rem;
+      font-size: .9rem;
+    }
+
+    .order-total {
+      display: flex;
+      justify-content: space-between;
+      font-size: .9rem;
+      color: var(--muted-fg);
+      margin-bottom: .3rem;
+    }
+
+    .order-total--final {
+      font-weight: 700;
+      font-size: 1.05rem;
+      color: var(--fg);
+      border-top: 1px solid var(--border);
+      padding-top: .5rem;
+      margin-top: .35rem;
+    }
+
+    .order-city {
+      font-size: .875rem;
+      color: var(--muted-fg);
+      margin-top: .875rem;
+    }
+  </style>
+</Layout>
