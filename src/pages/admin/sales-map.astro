@@ -16,12 +16,14 @@ import SalesHeatmap from "../../components/SalesHeatmap.jsx";
       >
         ← Volver al panel
       </a>
-      <h1 style="margin: 0 0 0.5rem; color: var(--coffee, #251a14); font-size: 1.7rem;">
+      <h1
+        style="margin: 0 0 0.5rem; color: var(--coffee, #251a14); font-size: 1.7rem;"
+      >
         Mapa de Calor de Ventas
       </h1>
       <p style="color: #666; font-size: 0.96rem; margin: 0;">
-        Distribución geográfica combinada: tienda web + MercadoLibre.
-        Usa los filtros para explorar por período, canal o producto.
+        Distribución geográfica combinada: tienda web + MercadoLibre. Usa los
+        filtros para explorar por período, canal o producto.
       </p>
     </div>
 
@@ -31,8 +33,13 @@ import SalesHeatmap from "../../components/SalesHeatmap.jsx";
       style="background: #fffbf5; border: 1px solid #e8d9c5; border-radius: 8px; padding: 1.1rem 1.4rem; margin-bottom: 1.5rem; display: flex; flex-wrap: wrap; align-items: center; gap: 1rem;"
     >
       <div style="flex: 1; min-width: 200px;">
-        <strong style="font-size: 0.9rem; color: #251a14;">📍 Geocodificación de órdenes</strong>
-        <p id="geocoding-status" style="margin: 0.2rem 0 0; font-size: 0.84rem; color: #666;">
+        <strong style="font-size: 0.9rem; color: #251a14;"
+          >📍 Geocodificación de órdenes</strong
+        >
+        <p
+          id="geocoding-status"
+          style="margin: 0.2rem 0 0; font-size: 0.84rem; color: #666;"
+        >
           Consultando estado…
         </p>
       </div>
@@ -43,7 +50,11 @@ import SalesHeatmap from "../../components/SalesHeatmap.jsx";
       >
         Geocodificar pendientes
       </button>
-      <div id="backfill-msg" style="font-size: 0.82rem; color: #2d5016; display: none; font-weight: 600;"></div>
+      <div
+        id="backfill-msg"
+        style="font-size: 0.82rem; color: #2d5016; display: none; font-weight: 600;"
+      >
+      </div>
     </div>
 
     <!-- Mapa principal -->
@@ -57,26 +68,37 @@ import SalesHeatmap from "../../components/SalesHeatmap.jsx";
     <div
       style="padding: 1.5rem 1.75rem; background: #f9f7f4; border-radius: 8px; border: 1px solid #e6e6e6;"
     >
-      <h3 style="margin: 0 0 0.9rem; color: #251a14; font-size: 1rem;">¿Cómo funciona este mapa?</h3>
-      <ul style="color: #666; line-height: 1.9; margin: 0; padding-left: 1.4rem; font-size: 0.92rem;">
+      <h3 style="margin: 0 0 0.9rem; color: #251a14; font-size: 1rem;">
+        ¿Cómo funciona este mapa?
+      </h3>
+      <ul
+        style="color: #666; line-height: 1.9; margin: 0; padding-left: 1.4rem; font-size: 0.92rem;"
+      >
         <li>
-          <strong>Datos combinados:</strong> Integra pedidos de la tienda web y de MercadoLibre en una sola vista.
+          <strong>Datos combinados:</strong> Integra pedidos de la tienda web y de
+          MercadoLibre en una sola vista.
         </li>
         <li>
-          <strong>Filtros:</strong> Filtra por período (7 / 30 / 90 / 365 días o todo el tiempo), canal de venta, o nombre de producto.
+          <strong>Filtros:</strong> Filtra por período (7 / 30 / 90 / 365 días o todo
+          el tiempo), canal de venta, o nombre de producto.
         </li>
         <li>
-          <strong>Intensidad de calor:</strong> Los colores van de amarillo claro (pocas ventas) a rojo oscuro (muchas ventas).
+          <strong>Intensidad de calor:</strong> Los colores van de amarillo claro
+          (pocas ventas) a rojo oscuro (muchas ventas).
         </li>
         <li>
-          <strong>Marcadores:</strong> Haz clic en cualquier círculo para ver ciudad, pedidos, ventas en COP y desglose por canal.
+          <strong>Marcadores:</strong> Haz clic en cualquier círculo para ver ciudad,
+          pedidos, ventas en COP y desglose por canal.
         </li>
         <li>
           <strong>Geocodificación:</strong> Las nuevas órdenes se geocodifican automáticamente.
-          Si hay órdenes antiguas sin coordenadas, usa el botón <em>"Geocodificar pendientes"</em> para procesarlas.
+          Si hay órdenes antiguas sin coordenadas, usa el botón <em
+            >"Geocodificar pendientes"</em
+          > para procesarlas.
         </li>
         <li>
-          <strong>Exportar:</strong> Descarga los datos del filtro activo como CSV con el botón <em>"↓ CSV"</em>.
+          <strong>Exportar:</strong> Descarga los datos del filtro activo como CSV
+          con el botón <em>"↓ CSV"</em>.
         </li>
       </ul>
     </div>
@@ -99,92 +121,29 @@ import SalesHeatmap from "../../components/SalesHeatmap.jsx";
 <script>
   // Consultar estado de geocodificación y manejar backfill
   (async () => {
-    const statusEl  = document.getElementById('geocoding-status');
-    const btn       = document.getElementById('btn-backfill');
-    const msgEl     = document.getElementById('backfill-msg');
+    const statusEl = document.getElementById("geocoding-status");
+    const btn = document.getElementById("btn-backfill");
+    const msgEl = document.getElementById("backfill-msg");
 
     try {
-      const res  = await fetch('/api/heatmap/stats', { credentials: 'include' });
+      const res = await fetch("/api/heatmap/stats", { credentials: "include" });
       const json = await res.json();
-      if (!res.ok) throw new Error(json.error ?? 'Error');
+      if (!res.ok) throw new Error(json.error ?? "Error");
 
       const { pending_geocoding, total_orders } = json.data ?? {};
       if (pending_geocoding === 0) {
-        statusEl.textContent = `✅ Todas las órdenes geocodificadas (${total_orders ?? '—'} en total).`;
+        statusEl.textContent = `✅ Todas las órdenes geocodificadas (${total_orders ?? "—"} en total).`;
       } else {
-        statusEl.textContent = `⚠️ ${pending_geocoding} órdenes sin coordenadas de ${total_orders ?? '?'} totales.`;
+        statusEl.textContent = `⚠️ ${pending_geocoding} órdenes sin coordenadas de ${total_orders ?? "?"} totales.`;
         btn.disabled = false;
       }
     } catch (err) {
-      statusEl.textContent = 'No se pudo consultar el estado de geocodificación.';
+      statusEl.textContent =
+        "No se pudo consultar el estado de geocodificación.";
       console.error(err);
     }
 
-    btn.addEventListener('click', async () => {
-      btn.disabled  = true;
-      btn.textContent = 'Geocodificando…';
-      msgEl.style.display = 'none';
-      try {
-        const res  = await fetch('/api/heatmap/backfill', { method: 'POST', credentials: 'include' });
-        const json = await res.json();
-        if (!res.ok) throw new Error(json.error ?? 'Error');
-        const { geocoded, failed, remaining } = json.data ?? {};
-        msgEl.textContent    = `✅ Procesadas: ${geocoded ?? 0} ok, ${failed ?? 0} fallidas, ${remaining ?? 0} restantes.`;
-        msgEl.style.display  = 'inline';
-        statusEl.textContent = remaining > 0
-          ? `⚠️ Aún quedan ${remaining} órdenes pendientes.`
-          : '✅ Sin órdenes pendientes.';
-        if (remaining > 0) btn.disabled = false;
-        btn.textContent = 'Geocodificar pendientes';
-      } catch (err) {
-        msgEl.textContent   = '❌ Error al geocodificar. Intenta de nuevo.';
-        msgEl.style.color   = '#c00';
-        msgEl.style.display = 'inline';
-        btn.disabled        = false;
-        btn.textContent     = 'Geocodificar pendientes';
-        console.error(err);
-      }
-    });
-  })();
-</script>
-
-
-    <div
-      style="background: white; padding: 2rem; border-radius: 8px; border: 1px solid #e6e6e6;"
-    >
-      <SalesHeatmap client:load />
-    </div>
-
-    <div
-      style="margin-top: 3rem; padding: 2rem; background: #f9f7f4; border-radius: 8px; border: 1px solid #e6e6e6;"
-    >
-      <h3>¿Cómo funciona este mapa?</h3>
-      <ul style="color: #666; line-height: 1.8;">
-        <li>
-          <strong>Círculos de color:</strong> Cada círculo representa una ciudad donde
-          se han realizado ventas. El color va desde amarillo claro (pocas ventas)
-          hasta rojo oscuro (muchas ventas).
-        </li>
-        <li>
-          <strong>Tamaño del círculo:</strong> Cuanto más grande sea el círculo, más
-          pedidos ha recibido esa zona.
-        </li>
-        <li>
-          <strong>Información al hacer clic:</strong> Haz clic en cualquier círculo
-          para ver detalles específicos de esa ciudad: cantidad de pedidos y monto
-          total de ventas.
-        </li>
-        <li>
-          <strong>Datos en tiempo real:</strong> Los datos se actualizan cada vez
-          que sincronizas tus ventas desde MercadoLibre.
-        </li>
-      </ul>
-    </div>
-  </div>
-</AdminLayout>
-
-<style>
-  :global(body) {
-    background-color: var(--bg);
-  }
-</style>
+    btn.addEventListener("click", async () => {
+      btn.disabled = true;
+      btn.textContent = "Geocodificando…";
+      msgEl.style.display = "none";
