@@ -2,9 +2,13 @@ import { query } from '../db.js';
 
 export async function addOriginFieldsToCoffeeHarvests() {
   try {
-    // Check if columns exist
-    const columns = await query('DESCRIBE coffee_harvests', []);
-    const existingColumns = columns.rows.map(col => col.Field);
+    // Obtener columnas existentes usando information_schema de PostgreSQL
+    const columns = await query(
+      `SELECT column_name FROM information_schema.columns
+       WHERE table_name = 'coffee_harvests' AND table_schema = 'public'`,
+      []
+    );
+    const existingColumns = columns.rows.map(col => col.column_name);
 
     // Add region column if it doesn't exist
     if (!existingColumns.includes('region')) {

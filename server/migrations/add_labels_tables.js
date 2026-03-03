@@ -3,15 +3,15 @@
 
 -- Product Labels (Etiquetas para productos)
 CREATE TABLE IF NOT EXISTS product_labels (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     lot_id BIGINT,
     label_code VARCHAR(100) NOT NULL UNIQUE,
     sequence INT,
-    qr_data JSON,
+    qr_data JSONB,
     printed BOOLEAN DEFAULT FALSE,
     printed_at TIMESTAMP NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL,
     FOREIGN KEY (lot_id) REFERENCES lots(id) ON DELETE CASCADE
 );
 
@@ -21,7 +21,7 @@ CREATE INDEX IF NOT EXISTS idx_product_labels_printed ON product_labels(printed)
 
 -- Generated Labels (Etiquetas generadas - desde lotes o de cero)
 CREATE TABLE IF NOT EXISTS generated_labels (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     label_code VARCHAR(100) NOT NULL UNIQUE,
     lot_code VARCHAR(100),
     origin VARCHAR(160),
@@ -35,13 +35,13 @@ CREATE TABLE IF NOT EXISTS generated_labels (
     balance INT,
     score DECIMAL(4,1),
     flavor_notes TEXT,
-    qr_data JSON,
+    qr_data JSONB,
     user_id BIGINT,
     printed BOOLEAN DEFAULT FALSE,
     printed_at TIMESTAMP NULL,
     sequence INT,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 );
 

@@ -8,31 +8,31 @@ import bcrypt from 'bcryptjs';
  * Uso: GET /api/setup_standalone?key=SETUP_SECRET_KEY
  */
 export default async function handler(req, res) {
-  const logs = [];
-  const log = (msg) => logs.push({ time: new Date().toISOString(), msg });
+    const logs = [];
+    const log = (msg) => logs.push({ time: new Date().toISOString(), msg });
 
-  // Protección via variable de entorno
-  const SETUP_KEY = process.env.SETUP_SECRET_KEY;
-  if (!SETUP_KEY || req.query.key !== SETUP_KEY) {
-    return res.status(403).json({ error: 'Unauthorized. Set SETUP_SECRET_KEY env var and pass ?key=<value>' });
-  }
+    // Protección via variable de entorno
+    const SETUP_KEY = process.env.SETUP_SECRET_KEY;
+    if (!SETUP_KEY || req.query.key !== SETUP_KEY) {
+        return res.status(403).json({ error: 'Unauthorized. Set SETUP_SECRET_KEY env var and pass ?key=<value>' });
+    }
 
-  let client;
+    let client;
 
-  try {
-    log('Starting Standalone Setup (PostgreSQL)...');
+    try {
+        log('Starting Standalone Setup (PostgreSQL)...');
 
-    // 1. Conectar
-    client = new pg.Client({
-      connectionString: process.env.DATABASE_URL,
-      ssl: { rejectUnauthorized: false }
-    });
-    await client.connect();
-    log('Connected to DB.');
+        // 1. Conectar
+        client = new pg.Client({
+            connectionString: process.env.DATABASE_URL,
+            ssl: { rejectUnauthorized: false }
+        });
+        await client.connect();
+        log('Connected to DB.');
 
-    // 2. Schema — tablas esenciales
-    const SCHEMA_STATEMENTS = [
-      `CREATE TABLE IF NOT EXISTS users (
+        // 2. Schema — tablas esenciales
+        const SCHEMA_STATEMENTS = [
+            `CREATE TABLE IF NOT EXISTS users (
           id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
           email VARCHAR(255) NOT NULL UNIQUE,
           password_hash VARCHAR(255) NOT NULL,
@@ -50,7 +50,7 @@ export default async function handler(req, res) {
           created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
           updated_at TIMESTAMP NULL
       )`,
-      `CREATE TABLE IF NOT EXISTS providers (
+            `CREATE TABLE IF NOT EXISTS providers (
           id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
           user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
           company_name VARCHAR(160) NOT NULL,
@@ -60,7 +60,7 @@ export default async function handler(req, res) {
           is_active BOOLEAN NOT NULL DEFAULT TRUE,
           created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
       )`,
-      `CREATE TABLE IF NOT EXISTS refresh_tokens (
+            `CREATE TABLE IF NOT EXISTS refresh_tokens (
           id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
           user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
           token_hash VARCHAR(255) NOT NULL,
@@ -69,7 +69,7 @@ export default async function handler(req, res) {
           created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
           replaced_by_token VARCHAR(255)
       )`,
-      `CREATE TABLE IF NOT EXISTS audit_logs (
+            `CREATE TABLE IF NOT EXISTS audit_logs (
           id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
           user_id BIGINT REFERENCES users(id) ON DELETE SET NULL,
           action VARCHAR(64) NOT NULL,
@@ -78,7 +78,7 @@ export default async function handler(req, res) {
           details JSONB,
           created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
       )`,
-      `CREATE TABLE IF NOT EXISTS products (
+            `CREATE TABLE IF NOT EXISTS products (
           id VARCHAR(50) PRIMARY KEY,
           name VARCHAR(160) NOT NULL,
           category TEXT NOT NULL DEFAULT 'cafe' CHECK (category IN ('cafe', 'accesorio', 'merchandising')),
@@ -96,7 +96,7 @@ export default async function handler(req, res) {
           created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
           updated_at TIMESTAMP NULL
       )`,
-      `CREATE TABLE IF NOT EXISTS lots (
+            `CREATE TABLE IF NOT EXISTS lots (
           id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
           code VARCHAR(40) NOT NULL UNIQUE,
           name VARCHAR(160),
@@ -115,69 +115,69 @@ export default async function handler(req, res) {
           created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
           updated_at TIMESTAMP NULL
       )`
-    ];
+        ];
 
-    for (const sql of SCHEMA_STATEMENTS) {
-      try {
-        await client.query(sql);
-      } catch (err) {
-        if (err.code !== '42P07') { // table already exists
-          log(`Schema Warning: ${err.message}`);
+        for (const sql of SCHEMA_STATEMENTS) {
+            try {
+                await client.query(sql);
+            } catch (err) {
+                if (err.code !== '42P07') { // table already exists
+                    log(`Schema Warning: ${err.message}`);
+                }
+            }
         }
-      }
+        log('Schema applied.');
+
+        // 3. Seed Products
+        const products = [
+            { id: 'cf-sierra', name: 'Sierra Nevada', category: 'cafe', price: 42000, stock: 50 },
+            { id: 'cf-huila', name: 'Huila', category: 'cafe', price: 45000, stock: 50 },
+            { id: 'cf-nar', name: 'Nariño', category: 'cafe', price: 48000, stock: 50 },
+            { id: 'acc-molinillo', name: 'Molinillo Manual', category: 'accesorio', price: 199900, stock: 20 },
+            { id: 'acc-prensa', name: 'Prensa Francesa', category: 'accesorio', price: 89900, stock: 30 },
+            { id: 'acc-chemex', name: 'Chemex 6 Tazas', category: 'accesorio', price: 245000, stock: 15 }
+        ];
+
+        for (const p of products) {
+            const existing = await client.query('SELECT id FROM products WHERE id = $1', [p.id]);
+            if (existing.rows.length === 0) {
+                await client.query(
+                    `INSERT INTO products (id, name, category, price, stock_quantity) VALUES ($1, $2, $3, $4, $5)`,
+                    [p.id, p.name, p.category, p.price, p.stock]
+                );
+            }
+        }
+        log('Products seeded.');
+
+        // 4. Create Admin
+        const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
+        const ADMIN_PASS = process.env.ADMIN_PASSWORD;
+
+        if (!ADMIN_EMAIL || !ADMIN_PASS) {
+            log('Skipping admin creation: ADMIN_EMAIL and ADMIN_PASSWORD env vars not set.');
+        } else if (ADMIN_PASS.length < 8) {
+            log('Skipping admin creation: Password must be at least 8 characters.');
+        } else {
+            const users = await client.query('SELECT id FROM users WHERE email = $1', [ADMIN_EMAIL]);
+            if (users.rows.length === 0) {
+                const salt = await bcrypt.genSalt(10);
+                const hash = await bcrypt.hash(ADMIN_PASS, salt);
+                await client.query(
+                    'INSERT INTO users (email, password_hash, first_name, role, is_verified) VALUES ($1, $2, $3, $4, TRUE)',
+                    [ADMIN_EMAIL, hash, 'Admin DobleYo', 'admin']
+                );
+                log('Admin user created.');
+            } else {
+                log('Admin user already exists.');
+            }
+        }
+
+        await client.end();
+        res.status(200).json({ status: 'Success', logs });
+
+    } catch (error) {
+        log(`ERROR: ${error.message}`);
+        if (client) try { await client.end(); } catch (_) { }
+        res.status(500).json({ status: 'Failed', error: error.message, logs });
     }
-    log('Schema applied.');
-
-    // 3. Seed Products
-    const products = [
-      { id: 'cf-sierra', name: 'Sierra Nevada', category: 'cafe', price: 42000, stock: 50 },
-      { id: 'cf-huila', name: 'Huila', category: 'cafe', price: 45000, stock: 50 },
-      { id: 'cf-nar', name: 'Nariño', category: 'cafe', price: 48000, stock: 50 },
-      { id: 'acc-molinillo', name: 'Molinillo Manual', category: 'accesorio', price: 199900, stock: 20 },
-      { id: 'acc-prensa', name: 'Prensa Francesa', category: 'accesorio', price: 89900, stock: 30 },
-      { id: 'acc-chemex', name: 'Chemex 6 Tazas', category: 'accesorio', price: 245000, stock: 15 }
-    ];
-
-    for (const p of products) {
-      const existing = await client.query('SELECT id FROM products WHERE id = $1', [p.id]);
-      if (existing.rows.length === 0) {
-        await client.query(
-          `INSERT INTO products (id, name, category, price, stock_quantity) VALUES ($1, $2, $3, $4, $5)`,
-          [p.id, p.name, p.category, p.price, p.stock]
-        );
-      }
-    }
-    log('Products seeded.');
-
-    // 4. Create Admin
-    const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
-    const ADMIN_PASS = process.env.ADMIN_PASSWORD;
-
-    if (!ADMIN_EMAIL || !ADMIN_PASS) {
-      log('Skipping admin creation: ADMIN_EMAIL and ADMIN_PASSWORD env vars not set.');
-    } else if (ADMIN_PASS.length < 8) {
-      log('Skipping admin creation: Password must be at least 8 characters.');
-    } else {
-      const users = await client.query('SELECT id FROM users WHERE email = $1', [ADMIN_EMAIL]);
-      if (users.rows.length === 0) {
-        const salt = await bcrypt.genSalt(10);
-        const hash = await bcrypt.hash(ADMIN_PASS, salt);
-        await client.query(
-          'INSERT INTO users (email, password_hash, first_name, role, is_verified) VALUES ($1, $2, $3, $4, TRUE)',
-          [ADMIN_EMAIL, hash, 'Admin DobleYo', 'admin']
-        );
-        log('Admin user created.');
-      } else {
-        log('Admin user already exists.');
-      }
-    }
-
-    await client.end();
-    res.status(200).json({ status: 'Success', logs });
-
-  } catch (error) {
-    log(`ERROR: ${error.message}`);
-    if (client) try { await client.end(); } catch (_) {}
-    res.status(500).json({ status: 'Failed', error: error.message, logs });
-  }
 }
