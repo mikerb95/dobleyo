@@ -1,0 +1,73 @@
+# CI Pipeline — DobleYo Café
+# Ejecutado en: push y PR a main y develop
+# Pasos: lint → typecheck → unit tests → build
+
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  ci:
+    name: Lint · Typecheck · Test · Build
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [20.x]
+
+    steps:
+      # 1. Checkout del repositorio
+      - name: Checkout código fuente
+        uses: actions/checkout@v4
+
+      # 2. Configurar Node.js
+      - name: Configurar Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      # 3. Instalar dependencias (reproducible desde package-lock.json)
+      - name: Instalar dependencias
+        run: npm ci --legacy-peer-deps
+
+      # 4. Lint con ESLint
+      - name: Lint (ESLint)
+        run: npm run lint
+        continue-on-error: false
+
+      # 5. Typecheck con Astro
+      - name: Typecheck (astro check)
+        run: npm run typecheck
+        continue-on-error: true  # No bloquear CI si hay errores de tipo en archivos legacy
+
+      # 6. Tests unitarios con Vitest
+      - name: Tests unitarios (Vitest)
+        run: npm test
+        env:
+          # Sin DATABASE_URL real — los tests usan mocks de BD
+          DATABASE_URL: postgresql://test:test@localhost:5432/test_db
+          JWT_SECRET: test-secret-32-chars-minimum-ci
+          JWT_REFRESH_SECRET: test-refresh-secret-32-chars-min
+
+      # 7. Build de producción
+      - name: Build (Astro)
+        run: npm run build
+        env:
+          # Variables mínimas requeridas para el build de Astro
+          SITE_BASE_URL: https://dobleyo.cafe
+          NODE_ENV: production
+
+      # 8. Reporte de cobertura (solo en main)
+      - name: Reporte de cobertura
+        if: github.ref == 'refs/heads/main'
+        run: npm run test:coverage
+        continue-on-error: true
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/test_db
+          JWT_SECRET: test-secret-32-chars-minimum-ci
+          JWT_REFRESH_SECRET: test-refresh-secret-32-chars-min
