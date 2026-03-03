@@ -16,7 +16,14 @@
     "server": "START_SERVER=true node ./server/index.js",
     "build": "astro build",
     "preview": "astro preview",
-    "migrate": "node ./server/migrations/add_roast_fields.js"
+    "migrate": "node ./server/migrations/add_roast_fields.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "typecheck": "astro check"
   },
   "dependencies": {
     "@astrojs/react": "^4.4.2",
