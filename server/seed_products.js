@@ -71,21 +71,21 @@ async function seed() {
     for (const p of products) {
       // Check if product exists
       const existing = await db.query('SELECT id FROM products WHERE id = $1', [p.id]);
-      
+
       if (existing.rows.length === 0) {
         console.log(`Inserting ${p.name}...`);
         await db.query(
           `INSERT INTO products (id, name, category, price, stock_quantity, origin, process, roast, image_url)
            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
           [
-            p.id, 
-            p.name, 
+            p.id,
+            p.name,
             p.category === 'Cafés' ? 'cafe' : 'accesorio',
-            p.price, 
+            p.price,
             100, // Default stock
-            p.origin || null, 
-            p.process || null, 
-            p.roast || null, 
+            p.origin || null,
+            p.process || null,
+            p.roast || null,
             p.image
           ]
         );
@@ -102,11 +102,11 @@ async function seed() {
             updated_at = NOW()
            WHERE id = $7`,
           [
-            p.name, 
-            p.price, 
-            p.origin || null, 
-            p.process || null, 
-            p.roast || null, 
+            p.name,
+            p.price,
+            p.origin || null,
+            p.process || null,
+            p.roast || null,
             p.image,
             p.id
           ]

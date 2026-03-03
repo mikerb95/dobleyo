@@ -43,7 +43,7 @@ async function seedInventory() {
     for (const supplier of suppliers) {
       const result = await query(
         `INSERT INTO product_suppliers (name, contact_name, email, phone, tax_id, payment_terms)
-         VALUES (?, ?, ?, ?, ?, ?)`,
+         VALUES ($1, $2, $3, $4, $5, $6)`,
         [supplier.name, supplier.contact_name, supplier.email, supplier.phone, supplier.tax_id, supplier.payment_terms]
       );
       supplierIds.push(result.rows.insertId);
@@ -164,7 +164,7 @@ async function seedInventory() {
           id, sku, name, description, category, subcategory, origin, process, roast,
           price, cost, stock_quantity, stock_min, weight, weight_unit, image_url,
           is_active, is_deal, is_bestseller, is_new, is_fast
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)`,
         [
           product.id, product.sku, product.name, product.description, product.category,
           product.subcategory, product.origin, product.process, product.roast,
@@ -179,7 +179,7 @@ async function seedInventory() {
       // Asociar con proveedor de café
       await query(
         `INSERT INTO product_supplier_prices (product_id, supplier_id, cost_price, is_preferred, lead_time_days)
-         VALUES (?, ?, ?, true, 7)`,
+         VALUES ($1, $2, $3, true, 7)`,
         [product.id, supplierIds[0], product.cost]
       );
     }
@@ -337,7 +337,7 @@ async function seedInventory() {
           id, sku, name, description, category, subcategory, price, cost,
           stock_quantity, stock_min, weight, weight_unit, dimensions, image_url,
           is_active, is_deal, is_bestseller, is_new, is_fast
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)`,
         [
           product.id, product.sku, product.name, product.description, product.category,
           product.subcategory, product.price, product.cost, product.stock_quantity,
@@ -351,7 +351,7 @@ async function seedInventory() {
       // Asociar con proveedor de equipos
       await query(
         `INSERT INTO product_supplier_prices (product_id, supplier_id, cost_price, is_preferred, lead_time_days)
-         VALUES (?, ?, ?, true, 15)`,
+         VALUES ($1, $2, $3, true, 15)`,
         [product.id, supplierIds[1], product.cost]
       );
     }
@@ -452,7 +452,7 @@ async function seedInventory() {
           id, sku, name, description, category, subcategory, price, cost,
           stock_quantity, stock_min, weight, weight_unit, dimensions, image_url,
           is_active, is_new, is_fast
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)`,
         [
           product.id, product.sku, product.name, product.description, product.category,
           product.subcategory, product.price, product.cost, product.stock_quantity,
@@ -465,7 +465,7 @@ async function seedInventory() {
       // Asociar con proveedor de textiles
       await query(
         `INSERT INTO product_supplier_prices (product_id, supplier_id, cost_price, is_preferred, lead_time_days)
-         VALUES (?, ?, ?, true, 20)`,
+         VALUES ($1, $2, $3, true, 20)`,
         [product.id, supplierIds[2], product.cost]
       );
     }
@@ -501,7 +501,7 @@ async function seedInventory() {
 
     for (const mov of movements) {
       // Obtener stock actual
-      const current = await query('SELECT stock_quantity FROM products WHERE id = ?', [mov.product_id]);
+      const current = await query('SELECT stock_quantity FROM products WHERE id = $1', [mov.product_id]);
       const currentStock = current.rows[0]?.stock_quantity || 0;
       
       let newStock = currentStock;
@@ -522,7 +522,7 @@ async function seedInventory() {
         `INSERT INTO inventory_movements (
           product_id, movement_type, quantity, quantity_before, quantity_after,
           reason, reference
-        ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
         [mov.product_id, mov.type, actualQty, currentStock, newStock, mov.reason, mov.ref]
       );
 

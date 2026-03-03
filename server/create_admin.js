@@ -21,7 +21,7 @@ async function createAdmin() {
   try {
     // Check if exists
     const existing = await db.query('SELECT id FROM users WHERE email = $1', [ADMIN_EMAIL]);
-    
+
     if (existing.rows.length > 0) {
       console.log('Admin user already exists.');
       // Update password just in case
