@@ -17,7 +17,7 @@ async function runCoffeeMigration() {
     console.log('\n📦 Creando tabla coffee_harvests...');
     await query(`
       CREATE TABLE IF NOT EXISTS coffee_harvests (
-        id INT PRIMARY KEY AUTO_INCREMENT,
+        id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
         lot_id VARCHAR(30) UNIQUE NOT NULL,
         farm VARCHAR(100) NOT NULL,
         variety VARCHAR(50) NOT NULL,
@@ -25,10 +25,12 @@ async function runCoffeeMigration() {
         process VARCHAR(50) NOT NULL,
         aroma TEXT NOT NULL,
         taste_notes TEXT NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        INDEX idx_lot_id (lot_id)
+        region VARCHAR(100),
+        altitude INTEGER,
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
       )
     `, []);
+    await query('CREATE INDEX IF NOT EXISTS idx_coffee_harvests_lot_id ON coffee_harvests(lot_id)');
     console.log('✅ Tabla coffee_harvests creada correctamente');
 
     // 2. Tabla de inventario de café verde
