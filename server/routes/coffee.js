@@ -65,7 +65,7 @@ coffeeRouter.post('/harvest', async (req, res) => {
     console.error('Error en harvest:', err);
     
     // Detectar si es un error de tabla no existente
-    if (err.code === 'ER_NO_SUCH_TABLE' || err.message?.includes('coffee_harvests')) {
+    if (err.code === '42P01' || err.message?.includes('coffee_harvests')) {
       return res.status(500).json({ 
         success: false, 
         error: 'La tabla coffee_harvests no existe. Ejecuta la migración primero',
