@@ -15,9 +15,9 @@ CREATE TABLE IF NOT EXISTS users (
     state_province VARCHAR(120), -- Departamento
     country VARCHAR(120) DEFAULT 'Colombia',
     address TEXT,
-    role TEXT NOT NULL DEFAULT 'client', CHECK (role IN ('admin', 'client', 'provider', 'caficultor'))
+    role TEXT NOT NULL DEFAULT 'client' CHECK (role IN ('admin', 'client', 'provider', 'caficultor')),
     is_verified BOOLEAN NOT NULL DEFAULT FALSE,
-    caficultor_status TEXT NOT NULL DEFAULT 'none', CHECK (caficultor_status IN ('none', 'pending', 'approved', 'rejected'))
+    caficultor_status TEXT NOT NULL DEFAULT 'none' CHECK (caficultor_status IN ('none', 'pending', 'approved', 'rejected')),
     last_login_at TIMESTAMP NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NULL
@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS caficultor_applications (
     varieties_cultivated TEXT,
     certifications TEXT,
     description TEXT,
-    status TEXT NOT NULL DEFAULT 'pending', CHECK (status IN ('pending', 'approved', 'rejected'))
+    status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
     admin_notes TEXT,
     reviewed_by BIGINT,
     reviewed_at TIMESTAMP NULL,
@@ -92,7 +92,7 @@ CREATE TABLE IF NOT EXISTS products (
     sku VARCHAR(100) UNIQUE,
     name VARCHAR(160) NOT NULL,
     description TEXT,
-    category TEXT NOT NULL DEFAULT 'cafe', CHECK (category IN ('cafe', 'accesorio', 'merchandising'))
+    category TEXT NOT NULL DEFAULT 'cafe' CHECK (category IN ('cafe', 'accesorio', 'merchandising')),
     subcategory VARCHAR(80), -- Para cafés: origen. Para accesorios: tipo (prensa, chemex, filtros, etc)
     origin VARCHAR(120), -- Para cafés
     process VARCHAR(80), -- Para cafés: lavado, honey, natural
@@ -111,7 +111,7 @@ CREATE TABLE IF NOT EXISTS products (
     stock_reserved INTEGER NOT NULL DEFAULT 0, -- Stock reservado en pedidos
     stock_min INTEGER DEFAULT 0, -- Stock mínimo antes de alertar
     weight DECIMAL(10,2), -- Peso del producto
-    weight_unit TEXT DEFAULT 'g', CHECK (weight_unit IN ('g', 'kg', 'ml', 'l', 'unidad'))
+    weight_unit TEXT DEFAULT 'g' CHECK (weight_unit IN ('g', 'kg', 'ml', 'l', 'unidad')),
     dimensions VARCHAR(100), -- Dimensiones para accesorios
     meta_keywords TEXT, -- SEO
     meta_description TEXT, -- SEO
@@ -126,7 +126,7 @@ CREATE INDEX idx_products_sku ON products(sku);
 CREATE TABLE IF NOT EXISTS inventory_movements (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     product_id VARCHAR(50) NOT NULL,
-    movement_type TEXT NOT NULL, CHECK (movement_type IN ('entrada', 'salida', 'ajuste', 'merma', 'devolucion'))
+    movement_type TEXT NOT NULL CHECK (movement_type IN ('entrada', 'salida', 'ajuste', 'merma', 'devolucion')),
     quantity INTEGER NOT NULL,
     quantity_before INTEGER NOT NULL,
     quantity_after INTEGER NOT NULL,
@@ -197,11 +197,11 @@ CREATE TABLE IF NOT EXISTS lots (
     score DECIMAL(4,1),
     notes TEXT,
     product_id VARCHAR(50) NULL,
-    estado TEXT NOT NULL DEFAULT 'verde', CHECK (estado IN ('verde', 'tostado'))
+    estado TEXT NOT NULL DEFAULT 'verde' CHECK (estado IN ('verde', 'tostado')),
     fecha_tostado DATE NULL,
     parent_lot_id BIGINT NULL,
     weight DECIMAL(10,2),
-    weight_unit TEXT NOT NULL DEFAULT 'kg', CHECK (weight_unit IN ('g', 'kg'))
+    weight_unit TEXT NOT NULL DEFAULT 'kg' CHECK (weight_unit IN ('g', 'kg')),
     aroma VARCHAR(255),
     flavor_notes VARCHAR(255),
     acidity VARCHAR(80),
@@ -299,13 +299,13 @@ CREATE TABLE IF NOT EXISTS accounting_accounts (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     code VARCHAR(20) NOT NULL UNIQUE,
     name VARCHAR(255) NOT NULL,
-    account_type TEXT NOT NULL, CHECK (account_type IN ('activo', 'pasivo', 'patrimonio', 'ingreso', 'gasto', 'costo'))
-    account_subtype ENUM(
+    account_type TEXT NOT NULL CHECK (account_type IN ('activo', 'pasivo', 'patrimonio', 'ingreso', 'gasto', 'costo')),
+    account_subtype TEXT CHECK (account_subtype IN (
         'efectivo', 'banco', 'cuentas_por_cobrar', 'inventario', 'activo_fijo',
         'cuentas_por_pagar', 'prestamo', 'capital', 
         'venta_producto', 'venta_servicio', 'otro_ingreso',
         'gasto_operativo', 'gasto_administrativo', 'gasto_venta', 'costo_venta'
-    ),
+    )),
     parent_account_id BIGINT NULL,
     is_active BOOLEAN DEFAULT TRUE,
     allow_reconciliation BOOLEAN DEFAULT FALSE, -- Para conciliación bancaria
@@ -323,7 +323,7 @@ CREATE TABLE IF NOT EXISTS accounting_journals (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     code VARCHAR(20) NOT NULL UNIQUE,
     name VARCHAR(160) NOT NULL,
-    journal_type TEXT NOT NULL, CHECK (journal_type IN ('venta', 'compra', 'banco', 'caja', 'general', 'nomina'))
+    journal_type TEXT NOT NULL CHECK (journal_type IN ('venta', 'compra', 'banco', 'caja', 'general', 'nomina')),
     default_account_id BIGINT,
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -342,7 +342,7 @@ CREATE TABLE IF NOT EXISTS accounting_entries (
     description TEXT,
     total_debit DECIMAL(15,2) NOT NULL DEFAULT 0,
     total_credit DECIMAL(15,2) NOT NULL DEFAULT 0,
-    state TEXT NOT NULL DEFAULT 'borrador', CHECK (state IN ('borrador', 'publicado', 'cancelado'))
+    state TEXT NOT NULL DEFAULT 'borrador' CHECK (state IN ('borrador', 'publicado', 'cancelado')),
     user_id BIGINT,
     posted_at TIMESTAMP NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -381,7 +381,7 @@ CREATE TABLE IF NOT EXISTS bank_accounts (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     bank_name VARCHAR(160) NOT NULL,
     account_number VARCHAR(50) NOT NULL,
-    account_type TEXT NOT NULL, CHECK (account_type IN ('ahorros', 'corriente', 'empresarial'))
+    account_type TEXT NOT NULL CHECK (account_type IN ('ahorros', 'corriente', 'empresarial')),
     currency VARCHAR(3) DEFAULT 'COP',
     current_balance DECIMAL(15,2) NOT NULL DEFAULT 0,
     accounting_account_id BIGINT,
@@ -398,7 +398,7 @@ CREATE TABLE IF NOT EXISTS bank_movements (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     bank_account_id BIGINT NOT NULL,
     movement_date DATE NOT NULL,
-    movement_type TEXT NOT NULL, CHECK (movement_type IN ('deposito', 'retiro', 'transferencia_entrada', 'transferencia_salida', 'comision', 'interes'))
+    movement_type TEXT NOT NULL CHECK (movement_type IN ('deposito', 'retiro', 'transferencia_entrada', 'transferencia_salida', 'comision', 'interes')),
     amount DECIMAL(15,2) NOT NULL,
     balance_after DECIMAL(15,2) NOT NULL,
     reference VARCHAR(100),
@@ -418,7 +418,7 @@ CREATE TABLE IF NOT EXISTS payment_methods (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     code VARCHAR(20) NOT NULL UNIQUE,
     name VARCHAR(100) NOT NULL,
-    method_type TEXT NOT NULL, CHECK (method_type IN ('efectivo', 'transferencia', 'cheque', 'tarjeta_credito', 'tarjeta_debito', 'pse', 'otro'))
+    method_type TEXT NOT NULL CHECK (method_type IN ('efectivo', 'transferencia', 'cheque', 'tarjeta_credito', 'tarjeta_debito', 'pse', 'otro')),
     is_active BOOLEAN DEFAULT TRUE,
     requires_reference BOOLEAN DEFAULT FALSE,
     accounting_account_id BIGINT,
@@ -434,7 +434,7 @@ CREATE TABLE IF NOT EXISTS purchase_orders (
     caficultor_id BIGINT NULL, -- Si es compra a caficultor
     order_date DATE NOT NULL,
     expected_delivery_date DATE,
-    state TEXT NOT NULL DEFAULT 'borrador', CHECK (state IN ('borrador', 'confirmada', 'recibida', 'facturada', 'cancelada'))
+    state TEXT NOT NULL DEFAULT 'borrador' CHECK (state IN ('borrador', 'confirmada', 'recibida', 'facturada', 'cancelada')),
     subtotal DECIMAL(15,2) NOT NULL DEFAULT 0,
     tax_amount DECIMAL(15,2) NOT NULL DEFAULT 0,
     total_amount DECIMAL(15,2) NOT NULL DEFAULT 0,
@@ -482,7 +482,7 @@ CREATE TABLE IF NOT EXISTS purchase_invoices (
     caficultor_id BIGINT NULL,
     invoice_date DATE NOT NULL,
     due_date DATE NOT NULL,
-    state TEXT NOT NULL DEFAULT 'borrador', CHECK (state IN ('borrador', 'confirmada', 'pagada_parcial', 'pagada', 'cancelada'))
+    state TEXT NOT NULL DEFAULT 'borrador' CHECK (state IN ('borrador', 'confirmada', 'pagada_parcial', 'pagada', 'cancelada')),
     payment_term_days INT DEFAULT 0, -- Días de crédito
     subtotal DECIMAL(15,2) NOT NULL DEFAULT 0,
     tax_amount DECIMAL(15,2) NOT NULL DEFAULT 0,
@@ -532,7 +532,7 @@ CREATE TABLE IF NOT EXISTS sales_invoices (
     customer_id BIGINT NOT NULL,
     invoice_date DATE NOT NULL,
     due_date DATE NOT NULL,
-    state TEXT NOT NULL DEFAULT 'borrador', CHECK (state IN ('borrador', 'confirmada', 'pagada_parcial', 'pagada', 'cancelada'))
+    state TEXT NOT NULL DEFAULT 'borrador' CHECK (state IN ('borrador', 'confirmada', 'pagada_parcial', 'pagada', 'cancelada')),
     payment_term_days INT DEFAULT 0,
     subtotal DECIMAL(15,2) NOT NULL DEFAULT 0,
     discount_amount DECIMAL(15,2) DEFAULT 0,
@@ -582,7 +582,7 @@ CREATE INDEX idx_sales_invoice_lines_invoice ON sales_invoice_lines(sales_invoic
 CREATE TABLE IF NOT EXISTS payments (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     payment_number VARCHAR(50) NOT NULL UNIQUE,
-    payment_type TEXT NOT NULL, -- Recibido = cobro, Realizado = pago CHECK (payment_type IN ('recibido', 'realizado'))
+    payment_type TEXT NOT NULL CHECK (payment_type IN ('recibido', 'realizado')), -- Recibido = cobro, Realizado = pago
     payment_date DATE NOT NULL,
     partner_id BIGINT NOT NULL, -- Cliente o Proveedor/Caficultor
     amount DECIMAL(15,2) NOT NULL,
@@ -591,7 +591,7 @@ CREATE TABLE IF NOT EXISTS payments (
     bank_account_id BIGINT NULL, -- Si aplica
     reference VARCHAR(100), -- Número de cheque, referencia de transferencia, etc.
     notes TEXT,
-    state TEXT NOT NULL DEFAULT 'borrador', CHECK (state IN ('borrador', 'confirmado', 'conciliado', 'cancelado'))
+    state TEXT NOT NULL DEFAULT 'borrador' CHECK (state IN ('borrador', 'confirmado', 'conciliado', 'cancelado')),
     accounting_entry_id BIGINT NULL,
     user_id BIGINT,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -612,7 +612,7 @@ CREATE TABLE IF NOT EXISTS payment_allocations (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     payment_id BIGINT NOT NULL,
     invoice_id BIGINT NOT NULL, -- Puede ser sales_invoice o purchase_invoice
-    invoice_type TEXT NOT NULL, CHECK (invoice_type IN ('venta', 'compra'))
+    invoice_type TEXT NOT NULL CHECK (invoice_type IN ('venta', 'compra')),
     amount_allocated DECIMAL(15,2) NOT NULL,
     allocation_date DATE NOT NULL,
     notes TEXT,
@@ -641,10 +641,10 @@ CREATE TABLE IF NOT EXISTS budgets (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     name VARCHAR(160) NOT NULL,
     budget_year INT NOT NULL,
-    budget_period TEXT NOT NULL, CHECK (budget_period IN ('anual', 'semestral', 'trimestral', 'mensual'))
+    budget_period TEXT NOT NULL CHECK (budget_period IN ('anual', 'semestral', 'trimestral', 'mensual')),
     start_date DATE NOT NULL,
     end_date DATE NOT NULL,
-    state TEXT NOT NULL DEFAULT 'borrador', CHECK (state IN ('borrador', 'aprobado', 'cerrado'))
+    state TEXT NOT NULL DEFAULT 'borrador' CHECK (state IN ('borrador', 'aprobado', 'cerrado')),
     total_budget DECIMAL(15,2) NOT NULL DEFAULT 0,
     notes TEXT,
     user_id BIGINT,
@@ -679,14 +679,14 @@ CREATE INDEX idx_budget_lines_cost_center ON budget_lines(cost_center_id);
 CREATE TABLE IF NOT EXISTS credit_debit_notes (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     note_number VARCHAR(50) NOT NULL UNIQUE,
-    note_type TEXT NOT NULL, CHECK (note_type IN ('credito', 'debito'))
-    document_type TEXT NOT NULL, -- A qué tipo de documento afecta CHECK (document_type IN ('venta', 'compra'))
+    note_type TEXT NOT NULL CHECK (note_type IN ('credito', 'debito')),
+    document_type TEXT NOT NULL CHECK (document_type IN ('venta', 'compra')), -- A qué tipo de documento afecta
     invoice_id BIGINT NOT NULL, -- Factura relacionada
     partner_id BIGINT NOT NULL,
     note_date DATE NOT NULL,
-    reason TEXT NOT NULL, CHECK (reason IN ('devolucion', 'descuento', 'error_facturacion', 'ajuste', 'otro'))
+    reason TEXT NOT NULL CHECK (reason IN ('devolucion', 'descuento', 'error_facturacion', 'ajuste', 'otro')),
     amount DECIMAL(15,2) NOT NULL,
-    state TEXT NOT NULL DEFAULT 'borrador', CHECK (state IN ('borrador', 'confirmada', 'aplicada', 'cancelada'))
+    state TEXT NOT NULL DEFAULT 'borrador' CHECK (state IN ('borrador', 'confirmada', 'aplicada', 'cancelada')),
     description TEXT,
     accounting_entry_id BIGINT NULL,
     user_id BIGINT,
@@ -707,7 +707,7 @@ CREATE TABLE IF NOT EXISTS expenses (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     expense_number VARCHAR(50) NOT NULL UNIQUE,
     expense_date DATE NOT NULL,
-    category TEXT NOT NULL, CHECK (category IN ('operativo', 'administrativo', 'venta', 'financiero', 'otro'))
+    category TEXT NOT NULL CHECK (category IN ('operativo', 'administrativo', 'venta', 'financiero', 'otro')),
     description VARCHAR(255) NOT NULL,
     amount DECIMAL(15,2) NOT NULL,
     currency VARCHAR(3) DEFAULT 'COP',
@@ -718,7 +718,7 @@ CREATE TABLE IF NOT EXISTS expenses (
     receipt_number VARCHAR(100), -- Número de recibo o factura
     is_reimbursable BOOLEAN DEFAULT FALSE, -- Si es reembolsable a empleado
     employee_id BIGINT NULL, -- Si aplica
-    state TEXT NOT NULL DEFAULT 'borrador', CHECK (state IN ('borrador', 'aprobado', 'pagado', 'rechazado'))
+    state TEXT NOT NULL DEFAULT 'borrador' CHECK (state IN ('borrador', 'aprobado', 'pagado', 'rechazado')),
     approved_by BIGINT NULL,
     approved_at TIMESTAMP NULL,
     notes TEXT,
@@ -747,7 +747,7 @@ CREATE TABLE IF NOT EXISTS tax_rates (
     code VARCHAR(20) NOT NULL UNIQUE,
     name VARCHAR(100) NOT NULL,
     rate_percent DECIMAL(5,2) NOT NULL,
-    tax_type TEXT NOT NULL, CHECK (tax_type IN ('iva', 'retencion_iva', 'retencion_renta', 'ica', 'otro'))
+    tax_type TEXT NOT NULL CHECK (tax_type IN ('iva', 'retencion_iva', 'retencion_renta', 'ica', 'otro')),
     accounting_account_id BIGINT NULL,
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -765,9 +765,9 @@ CREATE TABLE IF NOT EXISTS work_centers (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     code VARCHAR(20) NOT NULL UNIQUE,
     name VARCHAR(160) NOT NULL,
-    work_center_type TEXT NOT NULL, CHECK (work_center_type IN ('tostado', 'molido', 'empaque', 'control_calidad', 'almacen', 'otro'))
+    work_center_type TEXT NOT NULL CHECK (work_center_type IN ('tostado', 'molido', 'empaque', 'control_calidad', 'almacen', 'otro')),
     capacity_per_hour DECIMAL(10,2), -- Capacidad en kg/hora o unidades/hora
-    capacity_unit TEXT DEFAULT 'kg', CHECK (capacity_unit IN ('kg', 'unidades', 'lotes'))
+    capacity_unit TEXT DEFAULT 'kg' CHECK (capacity_unit IN ('kg', 'unidades', 'lotes')),
     cost_per_hour DECIMAL(10,2), -- Costo operativo por hora
     is_active BOOLEAN DEFAULT TRUE,
     description TEXT,
@@ -789,7 +789,7 @@ CREATE TABLE IF NOT EXISTS roasting_equipment (
     batch_capacity_kg DECIMAL(10,2) NOT NULL, -- Capacidad por batch en kg
     min_batch_kg DECIMAL(10,2), -- Carga mínima
     max_batch_kg DECIMAL(10,2), -- Carga máxima
-    fuel_type TEXT NOT NULL, CHECK (fuel_type IN ('gas', 'electrico', 'lena', 'hibrido'))
+    fuel_type TEXT NOT NULL CHECK (fuel_type IN ('gas', 'electrico', 'lena', 'hibrido')),
     roast_time_minutes INT, -- Tiempo promedio de tostado
     cooling_time_minutes INT, -- Tiempo de enfriamiento
     last_maintenance_date DATE,
@@ -809,8 +809,8 @@ CREATE TABLE IF NOT EXISTS bill_of_materials (
     bom_code VARCHAR(50) NOT NULL UNIQUE,
     product_id VARCHAR(50) NOT NULL, -- Producto final (café tostado)
     product_qty DECIMAL(10,2) NOT NULL DEFAULT 1, -- Cantidad producida
-    product_unit TEXT NOT NULL DEFAULT 'kg', CHECK (product_unit IN ('kg', 'g', 'unidad'))
-    bom_type TEXT NOT NULL DEFAULT 'tostado', CHECK (bom_type IN ('tostado', 'molido', 'empaque', 'combinado'))
+    product_unit TEXT NOT NULL DEFAULT 'kg' CHECK (product_unit IN ('kg', 'g', 'unidad')),
+    bom_type TEXT NOT NULL DEFAULT 'tostado' CHECK (bom_type IN ('tostado', 'molido', 'empaque', 'combinado')),
     work_center_id BIGINT NULL, -- Estación donde se produce
     estimated_time_minutes INT, -- Tiempo estimado de producción
     loss_percentage DECIMAL(5,2) DEFAULT 15.00, -- % de merma esperado (15% típico en tostado)
@@ -831,8 +831,8 @@ CREATE TABLE IF NOT EXISTS bom_components (
     bom_id BIGINT NOT NULL,
     component_product_id VARCHAR(50) NOT NULL, -- Producto componente (café verde, empaque, etc)
     quantity DECIMAL(10,2) NOT NULL, -- Cantidad requerida
-    quantity_unit TEXT NOT NULL DEFAULT 'kg', CHECK (quantity_unit IN ('kg', 'g', 'unidad', 'ml', 'l'))
-    component_type TEXT NOT NULL DEFAULT 'materia_prima', CHECK (component_type IN ('materia_prima', 'empaque', 'consumible', 'otro'))
+    quantity_unit TEXT NOT NULL DEFAULT 'kg' CHECK (quantity_unit IN ('kg', 'g', 'unidad', 'ml', 'l')),
+    component_type TEXT NOT NULL DEFAULT 'materia_prima' CHECK (component_type IN ('materia_prima', 'empaque', 'consumible', 'otro')),
     scrap_percentage DECIMAL(5,2) DEFAULT 0, -- % adicional de merma para este componente
     notes TEXT,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -851,11 +851,11 @@ CREATE TABLE IF NOT EXISTS production_orders (
     lot_id BIGINT NULL, -- Lote asociado si aplica
     planned_quantity DECIMAL(10,2) NOT NULL, -- Cantidad planeada a producir
     produced_quantity DECIMAL(10,2) DEFAULT 0, -- Cantidad realmente producida
-    quantity_unit TEXT NOT NULL DEFAULT 'kg', CHECK (quantity_unit IN ('kg', 'g', 'unidad'))
+    quantity_unit TEXT NOT NULL DEFAULT 'kg' CHECK (quantity_unit IN ('kg', 'g', 'unidad')),
     work_center_id BIGINT NULL,
     roasting_equipment_id BIGINT NULL,
-    state TEXT NOT NULL DEFAULT 'borrador', CHECK (state IN ('borrador', 'confirmada', 'en_progreso', 'pausada', 'completada', 'cancelada'))
-    priority TEXT NOT NULL DEFAULT 'normal', CHECK (priority IN ('baja', 'normal', 'alta', 'urgente'))
+    state TEXT NOT NULL DEFAULT 'borrador' CHECK (state IN ('borrador', 'confirmada', 'en_progreso', 'pausada', 'completada', 'cancelada')),
+    priority TEXT NOT NULL DEFAULT 'normal' CHECK (priority IN ('baja', 'normal', 'alta', 'urgente')),
     scheduled_date DATE NOT NULL,
     start_date TIMESTAMPTZ NULL,
     end_date TIMESTAMPTZ NULL,
@@ -890,7 +890,7 @@ CREATE TABLE IF NOT EXISTS production_material_consumption (
     lot_id BIGINT NULL, -- Lote del material si aplica
     planned_quantity DECIMAL(10,2) NOT NULL, -- Cantidad planeada
     consumed_quantity DECIMAL(10,2) NOT NULL, -- Cantidad realmente consumida
-    quantity_unit TEXT NOT NULL DEFAULT 'kg', CHECK (quantity_unit IN ('kg', 'g', 'unidad', 'ml', 'l'))
+    quantity_unit TEXT NOT NULL DEFAULT 'kg' CHECK (quantity_unit IN ('kg', 'g', 'unidad', 'ml', 'l')),
     consumption_date TIMESTAMPTZ NOT NULL,
     inventory_movement_id BIGINT NULL, -- Referencia al movimiento de inventario
     notes TEXT,
@@ -909,7 +909,7 @@ CREATE TABLE IF NOT EXISTS roast_profiles (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     profile_code VARCHAR(50) NOT NULL UNIQUE,
     profile_name VARCHAR(160) NOT NULL,
-    roast_level TEXT NOT NULL, CHECK (roast_level IN ('ligero', 'medio_ligero', 'medio', 'medio_oscuro', 'oscuro', 'muy_oscuro'))
+    roast_level TEXT NOT NULL CHECK (roast_level IN ('ligero', 'medio_ligero', 'medio', 'medio_oscuro', 'oscuro', 'muy_oscuro')),
     target_temperature_celsius INT, -- Temperatura objetivo
     roast_duration_minutes INT, -- Duración total del tostado
     first_crack_time_minutes INT, -- Tiempo al primer crack
@@ -953,7 +953,7 @@ CREATE TABLE IF NOT EXISTS roast_batches (
     drop_temperature_celsius INT, -- Temperatura de descarga
     development_time_ratio DECIMAL(5,2),
     color_agtron INT,
-    roast_level_achieved TEXT, CHECK (roast_level_achieved IN ('ligero', 'medio_ligero', 'medio', 'medio_oscuro', 'oscuro', 'muy_oscuro'))
+    roast_level_achieved TEXT CHECK (roast_level_achieved IN ('ligero', 'medio_ligero', 'medio', 'medio_oscuro', 'oscuro', 'muy_oscuro')),
     ambient_temperature_celsius INT,
     humidity_percentage INT,
     operator_id BIGINT NOT NULL, -- Operador que realizó el tostado
@@ -988,7 +988,7 @@ CREATE TABLE IF NOT EXISTS production_quality_checks (
     check_number VARCHAR(50) NOT NULL UNIQUE,
     production_order_id BIGINT NULL,
     roast_batch_id BIGINT NULL,
-    check_type TEXT NOT NULL, CHECK (check_type IN ('recepcion_verde', 'pre_tostado', 'post_tostado', 'catacion', 'empaque', 'final'))
+    check_type TEXT NOT NULL CHECK (check_type IN ('recepcion_verde', 'pre_tostado', 'post_tostado', 'catacion', 'empaque', 'final')),
     check_date TIMESTAMPTZ NOT NULL,
     inspector_id BIGINT NOT NULL,
     passed BOOLEAN NOT NULL DEFAULT FALSE,
@@ -1008,8 +1008,8 @@ CREATE TABLE IF NOT EXISTS production_quality_checks (
     defects_count INT DEFAULT 0,
     moisture_percentage DECIMAL(5,2),
     color_agtron INT,
-    grind_test_result TEXT DEFAULT 'no_aplica', CHECK (grind_test_result IN ('aprobado', 'rechazado', 'no_aplica'))
-    packaging_test_result TEXT DEFAULT 'no_aplica', CHECK (packaging_test_result IN ('aprobado', 'rechazado', 'no_aplica'))
+    grind_test_result TEXT DEFAULT 'no_aplica' CHECK (grind_test_result IN ('aprobado', 'rechazado', 'no_aplica')),
+    packaging_test_result TEXT DEFAULT 'no_aplica' CHECK (packaging_test_result IN ('aprobado', 'rechazado', 'no_aplica')),
     observations TEXT,
     corrective_actions TEXT,
     images JSONB, -- URLs de imágenes del control
@@ -1034,11 +1034,11 @@ CREATE TABLE IF NOT EXISTS production_waste_byproducts (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     production_order_id BIGINT NOT NULL,
     roast_batch_id BIGINT NULL,
-    waste_type TEXT NOT NULL, CHECK (waste_type IN ('merma_tostado', 'merma_molido', 'defectos', 'chaff', 'rechazo_calidad', 'otro'))
+    waste_type TEXT NOT NULL CHECK (waste_type IN ('merma_tostado', 'merma_molido', 'defectos', 'chaff', 'rechazo_calidad', 'otro')),
     quantity DECIMAL(10,2) NOT NULL,
-    quantity_unit TEXT NOT NULL DEFAULT 'kg', CHECK (quantity_unit IN ('kg', 'g', 'unidad'))
+    quantity_unit TEXT NOT NULL DEFAULT 'kg' CHECK (quantity_unit IN ('kg', 'g', 'unidad')),
     waste_date TIMESTAMPTZ NOT NULL,
-    disposal_method TEXT NOT NULL DEFAULT 'descartado', CHECK (disposal_method IN ('descartado', 'compost', 'reutilizado', 'vendido', 'donado'))
+    disposal_method TEXT NOT NULL DEFAULT 'descartado' CHECK (disposal_method IN ('descartado', 'compost', 'reutilizado', 'vendido', 'donado')),
     estimated_value_loss DECIMAL(10,2), -- Pérdida de valor estimada
     reason TEXT,
     notes TEXT,
@@ -1058,11 +1058,11 @@ CREATE TABLE IF NOT EXISTS equipment_maintenance (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     maintenance_number VARCHAR(50) NOT NULL UNIQUE,
     roasting_equipment_id BIGINT NOT NULL,
-    maintenance_type TEXT NOT NULL, CHECK (maintenance_type IN ('preventivo', 'correctivo', 'calibracion', 'limpieza', 'emergencia'))
+    maintenance_type TEXT NOT NULL CHECK (maintenance_type IN ('preventivo', 'correctivo', 'calibracion', 'limpieza', 'emergencia')),
     scheduled_date DATE NOT NULL,
     start_date TIMESTAMPTZ NULL,
     end_date TIMESTAMPTZ NULL,
-    state TEXT NOT NULL DEFAULT 'programado', CHECK (state IN ('programado', 'en_progreso', 'completado', 'cancelado'))
+    state TEXT NOT NULL DEFAULT 'programado' CHECK (state IN ('programado', 'en_progreso', 'completado', 'cancelado')),
     maintenance_description TEXT NOT NULL,
     parts_replaced TEXT,
     maintenance_cost DECIMAL(10,2),
