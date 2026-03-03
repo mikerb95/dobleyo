@@ -106,8 +106,11 @@ describe('POST /api/orders', () => {
         expect(res.body.success).toBe(true);
         expect(res.body.data.reference).toBeDefined();
         expect(res.body.data.total).toBeGreaterThan(0);
+    });
+
+    it('debería calcular envío gratis cuando el subtotal supera $120.000 COP', async () => {
         query.mockResolvedValueOnce({ rows: [{ id: 2, reference: 'DY-9999999-FREE' }] });
-        query.mockResolvedValueOnce({ rows: [] });
+        query.mockResolvedValueOnce({ rows: [] }); // INSERT item
 
         const res = await request(app)
             .post('/api/orders')
