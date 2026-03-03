@@ -228,7 +228,7 @@ setupRouter.post('/', async (req, res) => {
       try {
         await db.query(statement);
       } catch (err) {
-        if (err.code === 'ER_DUP_KEYNAME' || err.code === 'ER_TABLE_EXISTS_ERROR') {
+        if (err.code === '42710' || err.code === '42P07') {
           // ignore
         } else {
           log(`Schema Error (non-fatal): ${err.message}`);
@@ -242,7 +242,7 @@ setupRouter.post('/', async (req, res) => {
       await createCoffeeTables();
       log('Coffee tables created.');
     } catch (err) {
-      if (err.code === 'ER_TABLE_EXISTS_ERROR') {
+      if (err.code === '42P07') {
         log('Coffee tables already exist.');
       } else {
         throw err;
@@ -254,7 +254,7 @@ setupRouter.post('/', async (req, res) => {
       await addOriginFieldsToCoffeeHarvests();
       log('Origin fields added to coffee_harvests.');
     } catch (err) {
-      if (err.code === 'ER_DUP_FIELDNAME') {
+      if (err.code === '42701') {
         log('Origin fields already exist.');
       } else {
         // Non-fatal error, continue
@@ -347,7 +347,7 @@ setupRouter.post('/full-setup', async (req, res) => {
         const tableName = statement.match(/CREATE TABLE IF NOT EXISTS (\w+)/)?.[1];
         log(`  ✓ Tabla creada: ${tableName}`);
       } catch (err) {
-        if (err.code === 'ER_TABLE_EXISTS_ERROR') {
+        if (err.code === '42P07') {
           tablesExisted++;
         } else {
           log(`  ⚠ Error no fatal: ${err.message}`);
@@ -365,7 +365,7 @@ setupRouter.post('/full-setup', async (req, res) => {
       try {
         await db.query(idx);
       } catch (err) {
-        if (err.code !== 'ER_DUP_KEYNAME') {
+        if (err.code !== '42710') {
           log(`  ⚠ ${err.message}`);
         }
       }
@@ -379,7 +379,7 @@ setupRouter.post('/full-setup', async (req, res) => {
       await createCoffeeTables();
       log('✅ Tablas de café creadas: coffee_harvests, green_coffee_inventory, roasting_batches, etc.');
     } catch (err) {
-      if (err.code === 'ER_TABLE_EXISTS_ERROR') {
+      if (err.code === '42P07') {
         log('✅ Tablas de café ya existen');
       } else {
         log(`⚠ Error en tablas de café: ${err.message}`);
@@ -392,7 +392,7 @@ setupRouter.post('/full-setup', async (req, res) => {
       await addOriginFieldsToCoffeeHarvests();
       log('✅ Campos de origen agregados: region, altitude');
     } catch (err) {
-      if (err.code === 'ER_DUP_FIELDNAME') {
+      if (err.code === '42701') {
         log('✅ Campos de origen ya existen');
       } else {
         log(`⚠ Error agregando campos de origen: ${err.message}`);
