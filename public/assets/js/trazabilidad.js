@@ -11,7 +11,9 @@
     if (!res.ok) throw new Error('Error de red: ' + res.status);
     const json = await res.json();
     return json.success ? json.data : null;
-    // ─── UI Elements ────────────────────────────────────────────────
+  }
+
+  // ─── UI Elements ────────────────────────────────────────────────
     const video = $('#qrVideo');
     const startBtn = $('#startScan');
     const stopBtn = $('#stopScan');
