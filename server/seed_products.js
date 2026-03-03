@@ -70,16 +70,17 @@ async function seed() {
   try {
     for (const p of products) {
       // Check if product exists
-      const existing = await db.query('SELECT id FROM products WHERE slug = ?', [p.id]);
+      const existing = await db.query('SELECT id FROM products WHERE id = $1', [p.id]);
       
       if (existing.rows.length === 0) {
         console.log(`Inserting ${p.name}...`);
         await db.query(
-          `INSERT INTO products (slug, name, price_cop, stock, origin, process, roast, image_url)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+          `INSERT INTO products (id, name, category, price, stock_quantity, origin, process, roast, image_url)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
           [
             p.id, 
             p.name, 
+            p.category === 'Cafés' ? 'cafe' : 'accesorio',
             p.price, 
             100, // Default stock
             p.origin || null, 
@@ -92,14 +93,14 @@ async function seed() {
         console.log(`Updating ${p.name}...`);
         await db.query(
           `UPDATE products SET 
-            name = ?, 
-            price_cop = ?, 
-            origin = ?, 
-            process = ?, 
-            roast = ?, 
-            image_url = ?,
+            name = $1, 
+            price = $2, 
+            origin = $3, 
+            process = $4, 
+            roast = $5, 
+            image_url = $6,
             updated_at = NOW()
-           WHERE slug = ?`,
+           WHERE id = $7`,
           [
             p.name, 
             p.price, 

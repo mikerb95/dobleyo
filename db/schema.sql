@@ -1,4 +1,4 @@
--- DobleYo relational schema (MySQL Compatible)
+-- DobleYo relational schema (PostgreSQL)
 
 -- Users
 CREATE TABLE IF NOT EXISTS users (
