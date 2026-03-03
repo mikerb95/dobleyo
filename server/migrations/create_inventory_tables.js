@@ -21,12 +21,12 @@ export async function migrateInventoryTables() {
       { name: 'subcategory', type: 'VARCHAR(80)' },
       { name: 'cost', type: 'INTEGER' },
       { name: 'is_active', type: 'BOOLEAN DEFAULT TRUE' },
-      { name: 'images', type: 'JSON' },
+      { name: 'images', type: 'JSONB' },
       { name: 'stock_quantity', type: 'INTEGER NOT NULL DEFAULT 0' },
       { name: 'stock_reserved', type: 'INTEGER NOT NULL DEFAULT 0' },
       { name: 'stock_min', type: 'INTEGER DEFAULT 0' },
       { name: 'weight', type: 'DECIMAL(10,2)' },
-      { name: 'weight_unit', type: "ENUM('g', 'kg', 'ml', 'l', 'unidad') DEFAULT 'g'" },
+      { name: 'weight_unit', type: "TEXT DEFAULT 'g'" },
       { name: 'dimensions', type: 'VARCHAR(100)' },
       { name: 'meta_keywords', type: 'TEXT' },
       { name: 'meta_description', type: 'TEXT' }
@@ -40,7 +40,7 @@ export async function migrateInventoryTables() {
         `);
         console.log(`  ✓ Columna ${col.name} agregada`);
       } catch (err) {
-        if (err.code === 'ER_DUP_FIELDNAME' || err.message?.includes('Duplicate column')) {
+        if (err.code === '42701' || err.message?.includes('already exists')) {
           console.log(`  ⚠ Columna ${col.name} ya existe, saltando...`);
         } else {
           throw err;
@@ -48,23 +48,19 @@ export async function migrateInventoryTables() {
       }
     }
 
-    // Modificar category a ENUM si no lo es
+    // Asegurar que category sea TEXT con CHECK constraint
     try {
-      await query(`
-        ALTER TABLE products 
-        MODIFY COLUMN category ENUM('cafe', 'accesorio', 'merchandising') NOT NULL DEFAULT 'cafe'
-      `);
-      console.log('  ✓ Columna category actualizada a ENUM');
+      await query(`ALTER TABLE products ALTER COLUMN category TYPE TEXT`);
+      await query(`ALTER TABLE products ALTER COLUMN category SET NOT NULL`);
+      await query(`ALTER TABLE products ALTER COLUMN category SET DEFAULT 'cafe'`);
+      console.log('  ✓ Columna category actualizada a TEXT');
     } catch (err) {
       console.log('  ⚠ No se pudo actualizar category:', err.message);
     }
 
     // Renombrar stock a stock_quantity si existe
     try {
-      await query(`
-        ALTER TABLE products 
-        CHANGE COLUMN stock stock_quantity INTEGER NOT NULL DEFAULT 0
-      `);
+      await query(`ALTER TABLE products RENAME COLUMN stock TO stock_quantity`);
       console.log('  ✓ Columna stock renombrada a stock_quantity');
     } catch (err) {
       console.log('  ⚠ Columna stock ya procesada o no existe');
@@ -74,9 +70,9 @@ export async function migrateInventoryTables() {
     console.log('📊 Creando tabla inventory_movements...');
     await query(`
       CREATE TABLE IF NOT EXISTS inventory_movements (
-        id BIGINT PRIMARY KEY AUTO_INCREMENT,
+        id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
         product_id VARCHAR(50) NOT NULL,
-        movement_type ENUM('entrada', 'salida', 'ajuste', 'merma', 'devolucion') NOT NULL,
+        movement_type TEXT NOT NULL CHECK(movement_type IN ('entrada', 'salida', 'ajuste', 'merma', 'devolucion')),
         quantity INTEGER NOT NULL,
         quantity_before INTEGER NOT NULL,
         quantity_after INTEGER NOT NULL,
@@ -84,7 +80,7 @@ export async function migrateInventoryTables() {
         reference VARCHAR(100),
         notes TEXT,
         user_id BIGINT,
-        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
         FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
       )
@@ -93,9 +89,9 @@ export async function migrateInventoryTables() {
 
     // Crear índices para inventory_movements
     try {
-      await query('CREATE INDEX idx_inv_movements_product ON inventory_movements(product_id)');
-      await query('CREATE INDEX idx_inv_movements_type ON inventory_movements(movement_type)');
-      await query('CREATE INDEX idx_inv_movements_date ON inventory_movements(created_at)');
+      await query('CREATE INDEX IF NOT EXISTS idx_inv_movements_product ON inventory_movements(product_id)');
+      await query('CREATE INDEX IF NOT EXISTS idx_inv_movements_type ON inventory_movements(movement_type)');
+      await query('CREATE INDEX IF NOT EXISTS idx_inv_movements_date ON inventory_movements(created_at)');
       console.log('  ✓ Índices de inventory_movements creados');
     } catch (err) {
       console.log('  ⚠ Índices ya existen');
@@ -105,7 +101,7 @@ export async function migrateInventoryTables() {
     console.log('🏭 Creando tabla product_suppliers...');
     await query(`
       CREATE TABLE IF NOT EXISTS product_suppliers (
-        id BIGINT PRIMARY KEY AUTO_INCREMENT,
+        id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
         name VARCHAR(160) NOT NULL,
         contact_name VARCHAR(120),
         email VARCHAR(255),
@@ -115,8 +111,8 @@ export async function migrateInventoryTables() {
         payment_terms VARCHAR(255),
         notes TEXT,
         is_active BOOLEAN DEFAULT TRUE,
-        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP
+        created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMPTZ
       )
     `);
     console.log('  ✓ Tabla product_suppliers creada');
@@ -125,7 +121,7 @@ export async function migrateInventoryTables() {
     console.log('💰 Creando tabla product_supplier_prices...');
     await query(`
       CREATE TABLE IF NOT EXISTS product_supplier_prices (
-        id BIGINT PRIMARY KEY AUTO_INCREMENT,
+        id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
         product_id VARCHAR(50) NOT NULL,
         supplier_id BIGINT NOT NULL,
         cost_price INTEGER NOT NULL,
@@ -134,8 +130,8 @@ export async function migrateInventoryTables() {
         lead_time_days INTEGER,
         last_order_date DATE,
         is_preferred BOOLEAN DEFAULT FALSE,
-        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMPTZ,
         FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
         FOREIGN KEY (supplier_id) REFERENCES product_suppliers(id) ON DELETE CASCADE
       )
@@ -144,8 +140,8 @@ export async function migrateInventoryTables() {
 
     // Crear índices para product_supplier_prices
     try {
-      await query('CREATE INDEX idx_prod_supplier_product ON product_supplier_prices(product_id)');
-      await query('CREATE INDEX idx_prod_supplier_supplier ON product_supplier_prices(supplier_id)');
+      await query('CREATE INDEX IF NOT EXISTS idx_prod_supplier_product ON product_supplier_prices(product_id)');
+      await query('CREATE INDEX IF NOT EXISTS idx_prod_supplier_supplier ON product_supplier_prices(supplier_id)');
       console.log('  ✓ Índices de product_supplier_prices creados');
     } catch (err) {
       console.log('  ⚠ Índices ya existen');
