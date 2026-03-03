@@ -5,47 +5,50 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import express from 'express';
 import request from 'supertest';
 
-// ── Mocks (deben declararse antes de importar el módulo bajo test) ────────────
+// ── vi.hoisted() — necesario en ESM para que las fn de mock sean compartidas
+// entre el factory de vi.mock y los tests que llaman a .mockResolvedValueOnce()
+const mocks = vi.hoisted(() => ({
+  query: vi.fn(),
+  comparePassword: vi.fn(),
+}));
 
-vi.mock('../../db.js', () => ({ query: vi.fn() }));
+vi.mock('../../db.js', () => ({ query: mocks.query }));
 
 vi.mock('../../auth.js', () => ({
-    hashPassword: vi.fn().mockResolvedValue('$hashed$'),
-    comparePassword: vi.fn(),
-    generateToken: vi.fn().mockReturnValue('mock.access.token'),
-    generateRefreshToken: vi.fn().mockReturnValue('mock-refresh-token'),
-    hashRefreshToken: vi.fn().mockReturnValue('mock-refresh-hash'),
-    verifyToken: vi.fn(),
-    authenticateToken: (req, _res, next) => { req.user = null; next(); },
-    requireRole: () => (_req, _res, next) => next(),
+  hashPassword: vi.fn().mockResolvedValue('$hashed$'),
+  comparePassword: mocks.comparePassword,
+  generateToken: vi.fn().mockReturnValue('mock.access.token'),
+  generateRefreshToken: vi.fn().mockReturnValue('mock-refresh-token'),
+  hashRefreshToken: vi.fn().mockReturnValue('mock-refresh-hash'),
+  verifyToken: vi.fn(),
+  authenticateToken: (req, _res, next) => { req.user = null; next(); },
+  requireRole: () => (_req, _res, next) => next(),
 }));
 
 // Rate limiters → passthrough en tests
 vi.mock('../../middleware/rateLimit.js', () => ({
-    loginLimiter: (_req, _res, next) => next(),
-    registerLimiter: (_req, _res, next) => next(),
-    refreshLimiter: (_req, _res, next) => next(),
-    apiLimiter: (_req, _res, next) => next(),
+  loginLimiter: (_req, _res, next) => next(),
+  registerLimiter: (_req, _res, next) => next(),
+  refreshLimiter: (_req, _res, next) => next(),
+  apiLimiter: (_req, _res, next) => next(),
 }));
 
 vi.mock('../../services/email.js', () => ({
-    sendVerificationEmail: vi.fn().mockResolvedValue({ success: true }),
-    sendOrderConfirmationEmail: vi.fn().mockResolvedValue({ success: true }),
+  sendVerificationEmail: vi.fn().mockResolvedValue({ success: true }),
+  sendOrderConfirmationEmail: vi.fn().mockResolvedValue({ success: true }),
 }));
 
 // ── Importar router DESPUÉS de configurar mocks ───────────────────────────────
 import { authRouter } from '../auth.js';
-import * as dbModule from '../../db.js';
-import * as authModule from '../../auth.js';
 
-const { query } = dbModule;
+const { query } = mocks;
 
 // App Express mínima para tests
 function buildApp() {
-    const app = express();
-    app.use(express.json());
-    app.use('/api/auth', authRouter);
-    return app;
+  const app = express();
+  app.use(express.json());
+  app.use('/api/auth', authRouter);
+  return app;
 }
 
 // ── POST /api/auth/register ───────────────────────────────────────────────────
@@ -139,7 +142,7 @@ describe('POST /api/auth/login', () => {
         query.mockResolvedValueOnce({
             rows: [{ id: 1, email: 'user@test.com', password_hash: '$hashed$', role: 'client', first_name: 'A', last_name: 'B' }],
         });
-        authModule.comparePassword.mockResolvedValueOnce(false);
+        mocks.comparePassword.mockResolvedValueOnce(false);
 
         const res = await request(app)
             .post('/api/auth/login')
@@ -153,7 +156,7 @@ describe('POST /api/auth/login', () => {
         const mockUser = { id: 5, email: 'user@test.com', password_hash: '$hashed$', role: 'admin', first_name: 'Carlos', last_name: 'Ruiz' };
 
         query.mockResolvedValueOnce({ rows: [mockUser] });         // SELECT user
-        authModule.comparePassword.mockResolvedValueOnce(true);
+        mocks.comparePassword.mockResolvedValueOnce(true);
         query.mockResolvedValueOnce({ rows: [] });                  // INSERT refresh_tokens
         query.mockResolvedValueOnce({ rows: [] });                  // UPDATE last_login
 

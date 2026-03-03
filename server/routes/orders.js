@@ -203,7 +203,7 @@ ordersRouter.get('/',
             const result = await query(sql, params);
 
             const countResult = await query(
-                `SELECT COUNT(*) FROM customer_orders${status $1 ' WHERE status = $1' : ''}`,
+                `SELECT COUNT(*) FROM customer_orders${status ? ' WHERE status = $1' : ''}`,
                 status ? [status] : []
             );
 
