@@ -13,15 +13,15 @@ async function runMigration() {
     console.log('📋 Creando tabla product_labels...');
     await query(`
       CREATE TABLE IF NOT EXISTS product_labels (
-          id BIGINT PRIMARY KEY AUTO_INCREMENT,
+          id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
           lot_id BIGINT,
           label_code VARCHAR(100) NOT NULL UNIQUE,
           sequence INT,
-          qr_data JSON,
+          qr_data JSONB,
           printed BOOLEAN DEFAULT FALSE,
           printed_at TIMESTAMP NULL,
           created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-          updated_at TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP NULL ,
           FOREIGN KEY (lot_id) REFERENCES lots(id) ON DELETE CASCADE
       );
     `);
@@ -32,17 +32,17 @@ async function runMigration() {
     try {
       await query(`CREATE INDEX idx_product_labels_lot ON product_labels(lot_id);`);
     } catch (e) {
-      if (!e.message.includes('Duplicate key name')) throw e;
+      if (!e.message.includes('42710')) throw e;
     }
     try {
       await query(`CREATE INDEX idx_product_labels_code ON product_labels(label_code);`);
     } catch (e) {
-      if (!e.message.includes('Duplicate key name')) throw e;
+      if (!e.message.includes('42710')) throw e;
     }
     try {
       await query(`CREATE INDEX idx_product_labels_printed ON product_labels(printed);`);
     } catch (e) {
-      if (!e.message.includes('Duplicate key name')) throw e;
+      if (!e.message.includes('42710')) throw e;
     }
     console.log('✅ Índices de product_labels creados\n');
 
@@ -50,7 +50,7 @@ async function runMigration() {
     console.log('📋 Creando tabla generated_labels...');
     await query(`
       CREATE TABLE IF NOT EXISTS generated_labels (
-          id BIGINT PRIMARY KEY AUTO_INCREMENT,
+          id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
           label_code VARCHAR(100) NOT NULL UNIQUE,
           lot_code VARCHAR(100),
           origin VARCHAR(160),
@@ -64,13 +64,13 @@ async function runMigration() {
           balance INT,
           score DECIMAL(4,1),
           flavor_notes TEXT,
-          qr_data JSON,
+          qr_data JSONB,
           user_id BIGINT,
           printed BOOLEAN DEFAULT FALSE,
           printed_at TIMESTAMP NULL,
           sequence INT,
           created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-          updated_at TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP NULL ,
           FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
       );
     `);
@@ -81,27 +81,27 @@ async function runMigration() {
     try {
       await query(`CREATE INDEX idx_generated_labels_code ON generated_labels(label_code);`);
     } catch (e) {
-      if (!e.message.includes('Duplicate key name')) throw e;
+      if (!e.message.includes('42710')) throw e;
     }
     try {
       await query(`CREATE INDEX idx_generated_labels_lot_code ON generated_labels(lot_code);`);
     } catch (e) {
-      if (!e.message.includes('Duplicate key name')) throw e;
+      if (!e.message.includes('42710')) throw e;
     }
     try {
       await query(`CREATE INDEX idx_generated_labels_user ON generated_labels(user_id);`);
     } catch (e) {
-      if (!e.message.includes('Duplicate key name')) throw e;
+      if (!e.message.includes('42710')) throw e;
     }
     try {
       await query(`CREATE INDEX idx_generated_labels_printed ON generated_labels(printed);`);
     } catch (e) {
-      if (!e.message.includes('Duplicate key name')) throw e;
+      if (!e.message.includes('42710')) throw e;
     }
     try {
       await query(`CREATE INDEX idx_generated_labels_created ON generated_labels(created_at);`);
     } catch (e) {
-      if (!e.message.includes('Duplicate key name')) throw e;
+      if (!e.message.includes('42710')) throw e;
     }
     console.log('✅ Índices de generated_labels creados\n');
 
