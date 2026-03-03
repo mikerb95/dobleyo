@@ -289,7 +289,7 @@ setupRouter.post('/', async (req, res) => {
       if (existingAdmin.rows.length === 0) {
         const hash = await auth.hashPassword(ADMIN_PASS);
         await db.query(
-          'INSERT INTO users (email, password_hash, name, role, is_verified) VALUES ($1, $2, $3, $4, TRUE)',
+          'INSERT INTO users (email, password_hash, first_name, role, is_verified) VALUES ($1, $2, $3, $4, TRUE)',
           [ADMIN_EMAIL, hash, 'Admin DobleYo', 'admin']
         );
         log('Admin user created.');
@@ -475,7 +475,7 @@ setupRouter.post('/full-setup', async (req, res) => {
     if (existingAdmin.rows.length === 0) {
       const hash = await auth.hashPassword(ADMIN_PASS);
       await db.query(
-        'INSERT INTO users (email, password_hash, name, role, is_verified) VALUES ($1, $2, $3, $4, TRUE)',
+        'INSERT INTO users (email, password_hash, first_name, role, is_verified) VALUES ($1, $2, $3, $4, TRUE)',
         [ADMIN_EMAIL, hash, 'Admin DobleYo', 'admin']
       );
       log(`✅ Usuario admin creado: ${ADMIN_EMAIL} / ${ADMIN_PASS}`);
