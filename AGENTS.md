@@ -305,7 +305,7 @@ Todo agente que cree o modifique páginas DEBE cumplir:
 | DEBT-004 | 🟡 | Trazabilidad usa datos hardcodeados, no BD | ✅ Resuelto Fase 5 |
 | DEBT-005 | 🟡 | Esquema contable (35+ tablas) sin rutas/servicios implementados | ✅ Resuelto Fase 6 |
 | DEBT-006 | 🟡 | admin.html legacy coexiste con páginas Astro admin/ | ✅ Resuelto Fase 10 |
-| DEBT-007 | 🟡 | Zero tests automatizados | Pendiente Fase 12 |
+| DEBT-007 | 🟡 | Zero tests automatizados | ✅ Resuelto Fase 12 |
 
 ---
 
@@ -325,4 +325,4 @@ Todo agente que cree o modifique páginas DEBE cumplir:
 | 9 | Internacionalización (i18n) y versión USA | ✅ Completo |
 | 10 | Panel de administración profesional | ✅ Completo |
 | 11 | SEO, auditoría de seguridad y BD | ✅ Completo |
-| 12 | CI/CD, testing y deployment | ⏳ Pendiente |
+| 12 | CI/CD, testing y deployment | ✅ Completo |

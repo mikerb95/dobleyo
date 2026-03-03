@@ -111,70 +111,70 @@ describe('POST /api/auth/register', () => {
 
 // ── POST /api/auth/login ──────────────────────────────────────────────────────
 describe('POST /api/auth/login', () => {
-  let app;
+    let app;
 
-  beforeEach(() => {
-    app = buildApp();
-    vi.clearAllMocks();
-    // Por defecto comparePassword falla — sobreescribir en el test de éxito
-    mocks.comparePassword.mockResolvedValue(false);
-  });
-
-  it('debería retornar 400 si el email es inválido', async () => {
-    const res = await request(app)
-      .post('/api/auth/login')
-      .send({ email: 'no-email', password: 'pass123' });
-
-    expect(res.status).toBe(400);
-    expect(res.body.errors).toBeDefined();
-  });
-
-  it('debería retornar 401 si el usuario no existe', async () => {
-    query.mockResolvedValueOnce({ rows: [] });
-
-    const res = await request(app)
-      .post('/api/auth/login')
-      .send({ email: 'noexiste@test.com', password: 'pass123' });
-
-    expect(res.status).toBe(401);
-    expect(res.body.error).toMatch(/credenciales/i);
-  });
-
-  it('debería retornar 401 si la contraseña es incorrecta', async () => {
-    // comparePassword ya devuelve false por defecto
-    query.mockResolvedValueOnce({
-      rows: [{ id: 1, email: 'user@test.com', password_hash: '$hashed$', role: 'client', first_name: 'A', last_name: 'B' }],
+    beforeEach(() => {
+        app = buildApp();
+        vi.clearAllMocks();
+        // Por defecto comparePassword falla — sobreescribir en el test de éxito
+        mocks.comparePassword.mockResolvedValue(false);
     });
 
-    const res = await request(app)
-      .post('/api/auth/login')
-      .send({ email: 'user@test.com', password: 'wrongpass' });
+    it('debería retornar 400 si el email es inválido', async () => {
+        const res = await request(app)
+            .post('/api/auth/login')
+            .send({ email: 'no-email', password: 'pass123' });
 
-    expect(res.status).toBe(401);
-    expect(res.body.error).toMatch(/credenciales/i);
-  });
+        expect(res.status).toBe(400);
+        expect(res.body.errors).toBeDefined();
+    });
 
-  it('debería retornar 200 con token y cookies en login correcto', async () => {
-    const mockUser = {
-      id: 5, email: 'user@test.com', password_hash: '$hashed$',
-      role: 'admin', first_name: 'Carlos', last_name: 'Ruiz',
-    };
+    it('debería retornar 401 si el usuario no existe', async () => {
+        query.mockResolvedValueOnce({ rows: [] });
 
-    mocks.comparePassword.mockResolvedValue(true); // sobreescribir default
-    // Vaciar cola y cargar mocks frescos con mockReset para este test
-    mocks.query.mockReset();
-    mocks.query.mockResolvedValueOnce({ rows: [mockUser] });  // SELECT user
-    mocks.query.mockResolvedValueOnce({ rows: [] });           // INSERT refresh_tokens
-    mocks.query.mockResolvedValueOnce({ rows: [] });           // UPDATE last_login
+        const res = await request(app)
+            .post('/api/auth/login')
+            .send({ email: 'noexiste@test.com', password: 'pass123' });
 
-    const res = await request(app)
-      .post('/api/auth/login')
-      .send({ email: 'user@test.com', password: 'pass123' });
+        expect(res.status).toBe(401);
+        expect(res.body.error).toMatch(/credenciales/i);
+    });
 
-    expect(res.status).toBe(200);
-    expect(res.body.token).toBe('mock.access.token');
-    expect(res.body.user.role).toBe('admin');
-    expect(res.body.user.id).toBe(5);
-    expect(res.headers['set-cookie']).toBeDefined();
-  });
+    it('debería retornar 401 si la contraseña es incorrecta', async () => {
+        // comparePassword ya devuelve false por defecto
+        query.mockResolvedValueOnce({
+            rows: [{ id: 1, email: 'user@test.com', password_hash: '$hashed$', role: 'client', first_name: 'A', last_name: 'B' }],
+        });
+
+        const res = await request(app)
+            .post('/api/auth/login')
+            .send({ email: 'user@test.com', password: 'wrongpass' });
+
+        expect(res.status).toBe(401);
+        expect(res.body.error).toMatch(/credenciales/i);
+    });
+
+    it('debería retornar 200 con token y cookies en login correcto', async () => {
+        const mockUser = {
+            id: 5, email: 'user@test.com', password_hash: '$hashed$',
+            role: 'admin', first_name: 'Carlos', last_name: 'Ruiz',
+        };
+
+        mocks.comparePassword.mockResolvedValue(true); // sobreescribir default
+        // Vaciar cola y cargar mocks frescos con mockReset para este test
+        mocks.query.mockReset();
+        mocks.query.mockResolvedValueOnce({ rows: [mockUser] });  // SELECT user
+        mocks.query.mockResolvedValueOnce({ rows: [] });           // INSERT refresh_tokens
+        mocks.query.mockResolvedValueOnce({ rows: [] });           // UPDATE last_login
+
+        const res = await request(app)
+            .post('/api/auth/login')
+            .send({ email: 'user@test.com', password: 'pass123' });
+
+        expect(res.status).toBe(200);
+        expect(res.body.token).toBe('mock.access.token');
+        expect(res.body.user.role).toBe('admin');
+        expect(res.body.user.id).toBe(5);
+        expect(res.headers['set-cookie']).toBeDefined();
+    });
 });

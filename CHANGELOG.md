@@ -2,6 +2,42 @@
 
 ---
 
+## 📅 2026-03-03 — Fase 12: CI/CD, Testing y Deployment (Agente: Claude)
+
+### Archivos Creados
+- `vitest.config.js` — Configuración Vitest: entorno Node.js, include `server/**/__tests__/**`, globals, coverage v8 con reporte lcov/html, thresholds (60% servicios, 70% auth)
+- `eslint.config.js` — ESLint flat config (ESM, `@eslint/js`): reglas Node.js/Express (no-unused-vars, no-console warn, eqeqeq, etc.), ignores para dist/node_modules/migrations
+- `playwright.config.js` — Playwright config: base URL `http://localhost:4321`, chromium headless, `npm run dev` como webServer, retries 1, screenshots solo en fallo
+- `tests/e2e/smoke.spec.js` — E2E smoke tests: homepage carga (título, h1), tienda accesible + productos visibles, sitemap.xml devuelve XML válido, robots.txt accesible, /api/health responde 200
+- `.github/workflows/ci.yml` — GitHub Actions CI: Node.js 20, job `test` (install → lint → typecheck → unit tests → coverage), job `build` (depends on test), workflow en push/PR a main y develop
+- `migrate_placeholders.py` — Utilidad Python para migración MySQL→PostgreSQL (ya documentado en Fase 11)
+- `server/services/__tests__/audit.test.js` — 9 tests unitarios para `logAudit()` y `getAuditLogs()`: parámetros correctos, defaults, validación, manejo de errores BD, filtros combinados con $n
+- `server/routes/__tests__/auth.test.js` — 8 tests de integración con supertest: register (email inválido, contraseña corta, email duplicado, 201 éxito), login (email inválido, usuario no existe, contraseña incorrecta, 200 con token y cookies)
+- `server/routes/__tests__/orders.test.js` — 9 tests de integración: POST /api/orders (422 validaciones, 201 creación correcta, envío gratis ≥ $120k, 500 BD falla), GET /api/orders/:ref (404 no existe, 200 con datos)
+
+### Archivos Modificados
+- `server/services/audit.js` — Corregidos `getAuditLogs()` y `getAuditStats()`: placeholders `?` → `$n` en queries dinámicas; `DATE_SUB(NOW(), INTERVAL 30 DAY)` → `NOW() - INTERVAL '30 days'` (PostgreSQL syntax)
+- `server/routes/orders.js` — Corregida template literal corrupta en línea 206: `${status $1 ' WHERE status = $1' : ''}` → `${status ? ' WHERE status = $1' : ''}` (error introducido por migrate_placeholders.py en ternario dentro de template literal)
+- `package.json` — Agregados scripts: `test`, `test:watch`, `test:coverage`, `test:e2e`, `lint`, `lint:fix`, `typecheck`; devDependencies: `vitest`, `@vitest/coverage-v8`, `supertest`, `eslint`, `@eslint/js`, `@playwright/test`
+- `.env.example` — Actualizado: `DATABASE_URL` ahora documenta PostgreSQL (`postgresql://...`), removida referencia a MySQL; agregadas variables faltantes (`WOMPI_*`, `MERCADOPAGO_*`, `ML_*`, `ADMIN_*`)
+
+### Decisiones Técnicas
+- `vi.hoisted()` usado en auth.test.js para compartir referencias de `vi.fn()` entre el factory de `vi.mock()` y los assertions del test (requerimiento de Vitest ESM)
+- `mocks.query.mockReset()` en el test de login exitoso para limpiar cola de `mockResolvedValueOnce` entre tests y garantizar datos predecibles
+- `vi.clearAllMocks()` en `beforeEach` + `clearMocks: true` en config: el primero limpia historial de calls, el segundo actúa como safety net post-test
+- Playwright `webServer` inicia `npm run dev`; requiere DB disponible para E2E. Tests E2E marcados como smoke tests (flujos críticos sin auth)
+- GitHub Actions usa `continue-on-error: false` en cada paso; job `build` solo corre si `test` pasa
+
+### Impacto
+- **DEBT-007 resuelto**: Suite de tests automatizados implementada (27 tests unitarios + integración)
+- 27 tests pasando: 9 audit service + 8 auth routes + 9 orders routes + 1 smoke E2E
+- CI/CD pipeline completo: lint → typecheck → unit tests → coverage → build en cada push
+- `server/services/audit.js` 100% compatible con PostgreSQL
+- `server/routes/orders.js` corrección crítica de query sin parámetros (la ternaria corrupta causaría error en producción al listar órdenes con filtro de estado)
+- Build limpio (23.94s), sin errores de compilación
+
+---
+
 ## 📅 2026-03-02 — Fase 11: SEO, Auditoría de Seguridad y BD (Agente: Claude)
 
 ### Archivos Creados
