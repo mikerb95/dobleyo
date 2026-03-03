@@ -140,6 +140,21 @@
       <div class="info">
         Este proceso creará todas las tablas necesarias (usuarios, productos,
         inventario, trazabilidad de café) y agregará datos de ejemplo.
+        Requiere la clave <code>SETUP_SECRET_KEY</code> configurada en las variables de entorno del servidor.
+      </div>
+
+      <div style="margin-bottom: 1.5rem;">
+        <label for="setupKey" style="display:block; font-weight:600; margin-bottom:0.5rem; color:#333;">
+          Clave de Setup (SETUP_SECRET_KEY)
+        </label>
+        <input
+          type="password"
+          id="setupKey"
+          placeholder="Ingresa la clave secreta de setup"
+          style="width:100%; padding:0.75rem 1rem; border:2px solid #ddd; border-radius:8px; font-size:1rem; transition:border-color 0.2s;"
+          onfocus="this.style.borderColor='#667eea'"
+          onblur="this.style.borderColor='#ddd'"
+        />
       </div>
 
       <button type="button" class="btn" id="setupBtn">
@@ -155,8 +170,18 @@
       const setupBtn = document.getElementById("setupBtn");
       const resultDiv = document.getElementById("result");
       const logsDiv = document.getElementById("logs");
+      const setupKeyInput = document.getElementById("setupKey");
 
       setupBtn.addEventListener("click", async () => {
+        // Validar clave
+        const setupKey = setupKeyInput.value.trim();
+        if (!setupKey) {
+          resultDiv.className = "result error";
+          resultDiv.innerHTML = "<strong>⚠️ Ingresa la clave de setup (SETUP_SECRET_KEY)</strong>";
+          setupKeyInput.focus();
+          return;
+        }
+
         // Limpiar resultados previos
         resultDiv.className = "result";
         resultDiv.textContent = "";
@@ -172,6 +197,7 @@
             method: "POST",
             headers: {
               "Content-Type": "application/json",
+              "Authorization": `Bearer ${setupKey}`,
             },
             body: JSON.stringify({}),
           });
