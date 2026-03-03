@@ -306,6 +306,7 @@ Todo agente que cree o modifique páginas DEBE cumplir:
 | DEBT-005 | 🟡 | Esquema contable (35+ tablas) sin rutas/servicios implementados | ✅ Resuelto Fase 6 |
 | DEBT-006 | 🟡 | admin.html legacy coexiste con páginas Astro admin/ | ✅ Resuelto Fase 10 |
 | DEBT-007 | 🟡 | Zero tests automatizados | ✅ Resuelto Fase 12 |
+| DEBT-008 | 🟡 | Scripts de setup/seed/migraciones usan MySQL (mysql2, ?, AUTO_INCREMENT) | ✅ Resuelto Post-Fase 12 |
 
 ---
 

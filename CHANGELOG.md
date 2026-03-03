@@ -2,6 +2,64 @@
 
 ---
 
+## 📅 2026-03-03 — Migración PostgreSQL: Scripts de Setup y Migraciones (Agente: Claude)
+
+### Archivos Creados
+- `docs/SETUP_GUIDE.md` — Guía maestra de setup: orden de ejecución completo, requisitos, opciones de instalación (init_db, reset_database, web UI, curl), datos de ejemplo, troubleshooting
+
+### Archivos Modificados (Migración MySQL → PostgreSQL)
+
+#### Scripts de Setup/Seed
+- `server/create_admin.js` — `?` → `$1,$2,$3`, `name` → `first_name`
+- `server/seed_products.js` — `?` → `$n`, `slug` → `id`, `price_cop` → `price`, `stock` → `stock_quantity`, mapping categorías
+- `server/seed_inventory.js` — 80 placeholders `?` → `$n`, `result.rows.insertId` → `result.rows[0].id` con `RETURNING id`
+- `server/reset_database.js` — Reescrito completamente: mysql2 → db.js (pg), lee schema.sql, ejecuta migraciones PG
+- `server/init_db.js` — Error codes `ER_DUP_KEYNAME`/`ER_TABLE_EXISTS_ERROR` → `42710`/`42P07`
+
+#### API Serverless
+- `api/debug_login.js` — Reescrito: mysql2 → pg.Client, `$1` params
+- `api/diagnose.js` — Reescrito: mysql2 → pg.Client, listado de tablas con pg_tables
+- `api/setup_standalone.js` — Reescrito: mysql2 → pg.Client, DDL PG completo
+
+#### Rutas Express
+- `server/routes/setup.js` — DDL embebido reescrito a PG (IDENTITY, TEXT CHECK, JSONB), error codes MySQL → PG, `name` → `first_name`
+
+#### Migraciones
+- `server/migrations/create_coffee_tables.js` — AUTO_INCREMENT → IDENTITY, INDEX inline → CREATE INDEX IF NOT EXISTS, INT → BIGINT FKs
+- `server/migrations/create_inventory_tables.js` — AUTO_INCREMENT → IDENTITY, ENUM → TEXT CHECK, MODIFY/CHANGE → ALTER/RENAME, JSON → JSONB, ON UPDATE removed
+- `server/migrations/create_labels_tables.js` — AUTO_INCREMENT → IDENTITY, JSON → JSONB, ON UPDATE removed
+- `server/migrations/add_labels_tables.js` — Mismo: AUTO_INCREMENT, JSON, ON UPDATE convertidos
+- `server/migrations/add_roast_fields.js` — Reescrito completamente: mysql2/promise → db.js, ENUM → TEXT, errno → PG codes
+- `server/migrations/add_origin_fields_to_coffee_harvests.js` — DESCRIBE → information_schema query
+- `server/migrations/run_coffee_migration.js` — AUTO_INCREMENT → IDENTITY, INDEX inline → CREATE INDEX IF NOT EXISTS, INT → BIGINT FKs
+
+#### Schema
+- `db/schema.sql` (1082 líneas) — Conversión completa: AUTO_INCREMENT → GENERATED ALWAYS AS IDENTITY, ENUM() → TEXT CHECK(), ON UPDATE CURRENT_TIMESTAMP removed, JSON → JSONB, DATETIME → TIMESTAMPTZ
+
+#### Frontend
+- `src/pages/setup-db.astro` — Agregado campo de clave SETUP_SECRET_KEY + header `Authorization: Bearer` en fetch
+- `public/assets/js/trazabilidad.js` — Fix: llave `}` faltante en función `lookupCode()` (cámara QR no activaba)
+
+### Archivos de Backup Creados
+- `server/reset_database.js.bak`, `server/create_admin_luis.js.bak`, `api/debug_login.js.bak`, `api/diagnose.js.bak`, `api/setup_standalone.js.bak`, `server/migrations/add_roast_fields.js.bak`
+
+### Decisiones Técnicas
+- AUTO_INCREMENT → `BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY` (estándar SQL, PG nativo)
+- ENUM() → `TEXT CHECK(col IN (...))` (PG no soporta ENUM inline, CHECK constraints son preferibles)
+- Error codes MySQL (`ER_DUP_KEYNAME`, `ER_TABLE_EXISTS_ERROR`, `ER_DUP_FIELDNAME`, errno 1060/1061) → PG (`42710`, `42P07`, `42701`)
+- Scripts que usaban mysql2/promise directamente → reescritos para usar `server/db.js` (pool pg)
+- `MODIFY COLUMN` / `CHANGE COLUMN` (MySQL) → `ALTER COLUMN ... TYPE` / `RENAME COLUMN` (PG)
+- ON UPDATE CURRENT_TIMESTAMP eliminado (PG requiere trigger, manejado a nivel de app)
+
+### Impacto
+- ✅ TODOS los scripts de setup, seed y migración son ahora compatibles con PostgreSQL
+- ✅ Zero dependencias de mysql2 en código activo (solo en .bak)
+- ✅ Página setup-db.astro ahora funcional (antes siempre daba 403)
+- ✅ QR scanner funciona correctamente
+- ✅ Guía de setup documentada en docs/SETUP_GUIDE.md
+
+---
+
 ## 📅 2026-03-03 — Fase 12: CI/CD, Testing y Deployment (Agente: Claude)
 
 ### Archivos Creados
