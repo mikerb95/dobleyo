@@ -13,24 +13,33 @@ const ADMIN_PASS = process.env.ADMIN_PASSWORD;
 const SETUP_KEY = process.env.SETUP_SECRET_KEY;
 
 // Embed schema directly to avoid file reading issues in Vercel
+// PostgreSQL DDL — tablas esenciales (core)
 const SCHEMA_SQL = `
 -- Users
 CREATE TABLE IF NOT EXISTS users (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     email VARCHAR(255) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
-    name VARCHAR(120),
-    role ENUM('admin', 'client', 'provider') NOT NULL DEFAULT 'client',
+    first_name VARCHAR(80),
+    last_name VARCHAR(80),
+    mobile_phone VARCHAR(20),
+    city VARCHAR(120),
+    state_province VARCHAR(120),
+    country VARCHAR(120) DEFAULT 'Colombia',
+    address TEXT,
+    role TEXT NOT NULL DEFAULT 'client' CHECK (role IN ('admin', 'client', 'provider', 'caficultor')),
     is_verified BOOLEAN NOT NULL DEFAULT FALSE,
+    caficultor_status TEXT NOT NULL DEFAULT 'none' CHECK (caficultor_status IN ('none', 'pending', 'approved', 'rejected')),
     last_login_at TIMESTAMP NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP
+    updated_at TIMESTAMP NULL
 );
-CREATE INDEX idx_users_role ON users(role);
+CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
+CREATE INDEX IF NOT EXISTS idx_users_caficultor_status ON users(caficultor_status);
 
 -- Providers Profile
 CREATE TABLE IF NOT EXISTS providers (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     user_id BIGINT NOT NULL,
     company_name VARCHAR(160) NOT NULL,
     tax_id VARCHAR(50),
@@ -43,7 +52,7 @@ CREATE TABLE IF NOT EXISTS providers (
 
 -- Refresh Tokens
 CREATE TABLE IF NOT EXISTS refresh_tokens (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     user_id BIGINT NOT NULL,
     token_hash VARCHAR(255) NOT NULL,
     expires_at TIMESTAMP NOT NULL,
@@ -52,16 +61,16 @@ CREATE TABLE IF NOT EXISTS refresh_tokens (
     replaced_by_token VARCHAR(255),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
-CREATE INDEX idx_refresh_tokens_user ON refresh_tokens(user_id);
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user ON refresh_tokens(user_id);
 
 -- Audit Logs
 CREATE TABLE IF NOT EXISTS audit_logs (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     user_id BIGINT,
     action VARCHAR(64) NOT NULL,
     entity_type VARCHAR(64),
     entity_id VARCHAR(64),
-    details JSON,
+    details JSONB,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 );
@@ -69,47 +78,61 @@ CREATE TABLE IF NOT EXISTS audit_logs (
 -- Products
 CREATE TABLE IF NOT EXISTS products (
     id VARCHAR(50) PRIMARY KEY,
+    sku VARCHAR(100) UNIQUE,
     name VARCHAR(160) NOT NULL,
-    category VARCHAR(50),
+    description TEXT,
+    category TEXT NOT NULL DEFAULT 'cafe' CHECK (category IN ('cafe', 'accesorio', 'merchandising')),
+    subcategory VARCHAR(80),
     origin VARCHAR(120),
     process VARCHAR(80),
     roast VARCHAR(80),
     price INTEGER NOT NULL,
+    cost INTEGER,
     rating DECIMAL(3,1) DEFAULT 0,
     is_deal BOOLEAN DEFAULT FALSE,
     is_bestseller BOOLEAN DEFAULT FALSE,
     is_new BOOLEAN DEFAULT FALSE,
     is_fast BOOLEAN DEFAULT FALSE,
+    is_active BOOLEAN DEFAULT TRUE,
     image_url TEXT,
-    stock INTEGER NOT NULL DEFAULT 0,
+    images JSONB,
+    stock_quantity INTEGER NOT NULL DEFAULT 0,
+    stock_reserved INTEGER NOT NULL DEFAULT 0,
+    stock_min INTEGER DEFAULT 0,
+    weight DECIMAL(10,2),
+    weight_unit TEXT DEFAULT 'g' CHECK (weight_unit IN ('g', 'kg', 'ml', 'l', 'unidad')),
+    dimensions VARCHAR(100),
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP
+    updated_at TIMESTAMP NULL
 );
-CREATE INDEX idx_products_category ON products(category);
+CREATE INDEX IF NOT EXISTS idx_products_category ON products(category);
+CREATE INDEX IF NOT EXISTS idx_products_active ON products(is_active);
 
 -- Lots
 CREATE TABLE IF NOT EXISTS lots (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     code VARCHAR(40) NOT NULL UNIQUE,
     name VARCHAR(160),
     origin VARCHAR(160),
     farm VARCHAR(160),
     producer VARCHAR(160),
     altitude VARCHAR(60),
-    process VARCHAR(80),
     variety VARCHAR(120),
+    process VARCHAR(80),
+    roast VARCHAR(80),
     harvest_date DATE,
     roast_date DATE,
     moisture VARCHAR(20),
     score DECIMAL(4,1),
     notes TEXT,
     product_id VARCHAR(50) NULL,
+    estado TEXT NOT NULL DEFAULT 'verde' CHECK (estado IN ('verde', 'tostado')),
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL,
     FOREIGN KEY (product_id) REFERENCES products(id)
 );
-CREATE INDEX idx_lots_code ON lots(code);
-CREATE INDEX idx_lots_product ON lots(product_id);
+CREATE INDEX IF NOT EXISTS idx_lots_code ON lots(code);
+CREATE INDEX IF NOT EXISTS idx_lots_product ON lots(product_id);
 `;
 
 const products = [
