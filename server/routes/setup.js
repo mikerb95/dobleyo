@@ -405,16 +405,19 @@ setupRouter.post('/full-setup', async (req, res) => {
     try {
       await db.query(`
         CREATE TABLE IF NOT EXISTS inventory_movements (
-          id INT PRIMARY KEY AUTO_INCREMENT,
+          id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
           product_id VARCHAR(50) NOT NULL,
-          type ENUM('entrada', 'salida', 'ajuste', 'merma', 'devolucion') NOT NULL,
+          movement_type TEXT NOT NULL CHECK (movement_type IN ('entrada', 'salida', 'ajuste', 'merma', 'devolucion')),
           quantity INT NOT NULL,
+          quantity_before INTEGER NOT NULL DEFAULT 0,
+          quantity_after INTEGER NOT NULL DEFAULT 0,
+          reason VARCHAR(255),
           reference VARCHAR(100),
           notes TEXT,
+          user_id BIGINT,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          created_by BIGINT,
-          FOREIGN KEY (product_id) REFERENCES products(id),
-          FOREIGN KEY (created_by) REFERENCES users(id)
+          FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+          FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
         )
       `);
       log('✅ Tabla inventory_movements verificada');
@@ -425,13 +428,17 @@ setupRouter.post('/full-setup', async (req, res) => {
     try {
       await db.query(`
         CREATE TABLE IF NOT EXISTS product_suppliers (
-          id INT PRIMARY KEY AUTO_INCREMENT,
-          name VARCHAR(100) NOT NULL,
-          contact_name VARCHAR(100),
-          email VARCHAR(100),
-          phone VARCHAR(50),
+          id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+          name VARCHAR(160) NOT NULL,
+          contact_name VARCHAR(120),
+          email VARCHAR(255),
+          phone VARCHAR(40),
           address TEXT,
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+          tax_id VARCHAR(50),
+          payment_terms VARCHAR(255),
+          is_active BOOLEAN DEFAULT TRUE,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP NULL
         )
       `);
       log('✅ Tabla product_suppliers verificada');
