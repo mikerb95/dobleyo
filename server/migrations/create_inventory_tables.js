@@ -13,7 +13,7 @@ export async function migrateInventoryTables() {
   try {
     // 1. Verificar si necesitamos actualizar la tabla products
     console.log('📦 Actualizando tabla products...');
-    
+
     // Agregar columnas nuevas si no existen (manejo seguro)
     const newColumns = [
       { name: 'sku', type: 'VARCHAR(100) UNIQUE' },
