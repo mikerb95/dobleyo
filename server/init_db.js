@@ -26,7 +26,7 @@ async function initDb() {
         await db.query(statement);
       } catch (err) {
         // Ignore "Duplicate key" or "Index already exists" errors to make it idempotent
-        if (err.code === 'ER_DUP_KEYNAME' || err.code === 'ER_TABLE_EXISTS_ERROR') {
+        if (err.code === '42710' || err.code === '42P07') {
           console.log('  -> Already exists, skipping.');
         } else {
           console.error('  -> Error:', err.message);
