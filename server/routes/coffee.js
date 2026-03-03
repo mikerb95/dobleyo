@@ -19,8 +19,8 @@ coffeeRouter.post('/harvest', async (req, res) => {
 
     // Validaciones
     if (!farm || !variety || !climate || !process || !aroma || !tasteNotes) {
-      return res.status(400).json({ 
-        success: false, 
+      return res.status(400).json({
+        success: false,
         error: 'Faltan campos requeridos',
         details: { farm, variety, climate, process, aroma: !!aroma, tasteNotes: !!tasteNotes }
       });
@@ -63,19 +63,19 @@ coffeeRouter.post('/harvest', async (req, res) => {
     });
   } catch (err) {
     console.error('Error en harvest:', err);
-    
+
     // Detectar si es un error de tabla no existente
     if (err.code === '42P01' || err.message?.includes('coffee_harvests')) {
-      return res.status(500).json({ 
-        success: false, 
+      return res.status(500).json({
+        success: false,
         error: 'La tabla coffee_harvests no existe. Ejecuta la migración primero',
         message: err.message,
         hint: 'Ejecuta: node server/migrations/create_coffee_tables.js'
       });
     }
-    
-    return res.status(500).json({ 
-      success: false, 
+
+    return res.status(500).json({
+      success: false,
       error: 'Error al registrar lote',
       message: err.message,
       code: err.code
@@ -292,7 +292,7 @@ coffeeRouter.get('/roasted-storage/:id', async (req, res) => {
     }
 
     const data = result.rows[0];
-    
+
     // Parsear condiciones si existen
     const conditions = data.conditions ? data.conditions.split(',') : [];
 
@@ -392,13 +392,13 @@ coffeeRouter.post('/packaging', async (req, res) => {
       // Generar SKU basado en información del café
       const timestamp = Date.now().toString().slice(-6);
       productId = `CAFE-${roastedInfo.lot_id || 'GEN'}-${packageSize.replace(/[^0-9]/g, '')}-${timestamp}`.substring(0, 50);
-      
+
       // Crear producto en la tabla products
       const productName = `Café ${roastedInfo.lot_id || 'Premium'} - ${packageSize} (${presentation === 'GRANO' ? 'Grano' : 'Molido'})`;
-      
+
       const roastLevel = roastedInfo.roast_level || 'medium';
       const region = roastedInfo.region || 'Colombia';
-      
+
       await query(
         `INSERT INTO products (id, name, category, origin, process, roast, price, cost, is_active, stock_quantity, stock_min, weight, weight_unit, created_at)
          VALUES ($1, $2, 'cafe', $3, $4, $5, 0, 0, 1, $6, 0, $7, $8, NOW())`,
@@ -421,7 +421,7 @@ coffeeRouter.post('/packaging', async (req, res) => {
       productId: productId,
       score,
       inventoryUpdated: inventoryMovementCreated,
-      message: inventoryMovementCreated 
+      message: inventoryMovementCreated
         ? `Café preparado para venta y ${unitCount} unidades agregadas al inventario`
         : 'Café preparado para venta correctamente'
     });
@@ -429,7 +429,7 @@ coffeeRouter.post('/packaging', async (req, res) => {
     console.error('Error en packaging:', err);
     console.error('Stack:', err.stack);
     console.error('Body enviado:', { roastedStorageId, acidity, body, balance, presentation });
-    res.status(500).json({ 
+    res.status(500).json({
       error: err.message || 'Error al preparar café',
       details: process.env.NODE_ENV === 'development' ? err.stack : undefined
     });
@@ -483,7 +483,7 @@ coffeeRouter.get('/roasted-coffee', async (req, res) => {
       `SELECT COUNT(*) as count FROM roasted_coffee_inventory WHERE status = $1`,
       ['ready_for_packaging']
     );
-    
+
     console.log('[roasted-coffee] Lotes con status ready_for_packaging:', checkResult.rows[0]?.count || 0);
 
     const result = await query(
@@ -517,9 +517,9 @@ coffeeRouter.get('/roasted-coffee', async (req, res) => {
       LIMIT 100`,
       ['ready_for_packaging']
     );
-    
+
     console.log('[roasted-coffee] Resultados encontrados:', result.rows.length);
-    
+
     // Log para debugging
     if (result.rows.length > 0) {
       console.log('[roasted-coffee] Primer resultado (datos de origen):', {
@@ -530,7 +530,7 @@ coffeeRouter.get('/roasted-coffee', async (req, res) => {
         aroma: result.rows[0].aroma
       });
     }
-    
+
     res.json(result.rows);
   } catch (err) {
     console.error('Error en GET roasted-coffee:', err);
@@ -596,7 +596,7 @@ coffeeRouter.get('/lots', async (req, res) => {
   try {
     console.log('[GET /lots] Iniciando carga de todos los lotes');
     const allLots = [];
-    
+
     // 1. Lotes de café verde (coffee_harvests)
     try {
       const greenResult = await query(
@@ -721,7 +721,7 @@ coffeeRouter.get('/lots', async (req, res) => {
     allLots.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
     console.log(`[GET /lots] Total lotes cargados: ${allLots.length}`);
-    
+
     res.json({
       lots: allLots,
       total: allLots.length,
@@ -734,7 +734,7 @@ coffeeRouter.get('/lots', async (req, res) => {
     });
   } catch (err) {
     console.error('[GET /lots] Error general:', err);
-    res.status(500).json({ 
+    res.status(500).json({
       error: err.message,
       lots: []
     });
@@ -754,9 +754,9 @@ coffeeRouter.delete('/harvest/:lotId', async (req, res) => {
     );
 
     if (!checkResult.rows || checkResult.rows.length === 0) {
-      return res.status(404).json({ 
-        success: false, 
-        error: 'Lote no encontrado' 
+      return res.status(404).json({
+        success: false,
+        error: 'Lote no encontrado'
       });
     }
 
@@ -767,15 +767,15 @@ coffeeRouter.delete('/harvest/:lotId', async (req, res) => {
     await query('DELETE FROM coffee_harvests WHERE lot_id = $1', [lotId]);
 
     console.log(`[DELETE /harvest] Lote ${lotId} eliminado correctamente`);
-    res.json({ 
-      success: true, 
-      message: 'Lote eliminado correctamente' 
+    res.json({
+      success: true,
+      message: 'Lote eliminado correctamente'
     });
   } catch (err) {
     console.error('[DELETE /harvest] Error:', err);
-    res.status(500).json({ 
-      success: false, 
-      error: err.message 
+    res.status(500).json({
+      success: false,
+      error: err.message
     });
   }
 });
@@ -793,9 +793,9 @@ coffeeRouter.delete('/roasted-storage/:id', async (req, res) => {
     );
 
     if (!checkResult.rows || checkResult.rows.length === 0) {
-      return res.status(404).json({ 
-        success: false, 
-        error: 'Registro no encontrado' 
+      return res.status(404).json({
+        success: false,
+        error: 'Registro no encontrado'
       });
     }
 
@@ -803,15 +803,15 @@ coffeeRouter.delete('/roasted-storage/:id', async (req, res) => {
     await query('DELETE FROM roasted_coffee_inventory WHERE id = $1', [id]);
 
     console.log(`[DELETE /roasted-storage] ID ${id} eliminado correctamente`);
-    res.json({ 
-      success: true, 
-      message: 'Café tostado almacenado eliminado correctamente' 
+    res.json({
+      success: true,
+      message: 'Café tostado almacenado eliminado correctamente'
     });
   } catch (err) {
     console.error('[DELETE /roasted-storage] Error:', err);
-    res.status(500).json({ 
-      success: false, 
-      error: err.message 
+    res.status(500).json({
+      success: false,
+      error: err.message
     });
   }
 });
@@ -829,9 +829,9 @@ coffeeRouter.delete('/roasted-coffee/:id', async (req, res) => {
     );
 
     if (!checkResult.rows || checkResult.rows.length === 0) {
-      return res.status(404).json({ 
-        success: false, 
-        error: 'Registro no encontrado' 
+      return res.status(404).json({
+        success: false,
+        error: 'Registro no encontrado'
       });
     }
 
@@ -839,15 +839,15 @@ coffeeRouter.delete('/roasted-coffee/:id', async (req, res) => {
     await query('DELETE FROM roasted_coffee WHERE id = $1', [id]);
 
     console.log(`[DELETE /roasted-coffee] ID ${id} eliminado correctamente`);
-    res.json({ 
-      success: true, 
-      message: 'Café tostado pendiente eliminado correctamente' 
+    res.json({
+      success: true,
+      message: 'Café tostado pendiente eliminado correctamente'
     });
   } catch (err) {
     console.error('[DELETE /roasted-coffee] Error:', err);
-    res.status(500).json({ 
-      success: false, 
-      error: err.message 
+    res.status(500).json({
+      success: false,
+      error: err.message
     });
   }
 });
@@ -865,9 +865,9 @@ coffeeRouter.delete('/roasting-batch/:id', async (req, res) => {
     );
 
     if (!checkResult.rows || checkResult.rows.length === 0) {
-      return res.status(404).json({ 
-        success: false, 
-        error: 'Lote en tostado no encontrado' 
+      return res.status(404).json({
+        success: false,
+        error: 'Lote en tostado no encontrado'
       });
     }
 
@@ -878,15 +878,15 @@ coffeeRouter.delete('/roasting-batch/:id', async (req, res) => {
     await query('DELETE FROM roasting_batches WHERE id = $1', [id]);
 
     console.log(`[DELETE /roasting-batch] ID ${id} eliminado correctamente`);
-    res.json({ 
-      success: true, 
-      message: 'Lote en proceso de tostado eliminado correctamente' 
+    res.json({
+      success: true,
+      message: 'Lote en proceso de tostado eliminado correctamente'
     });
   } catch (err) {
     console.error('[DELETE /roasting-batch] Error:', err);
-    res.status(500).json({ 
-      success: false, 
-      error: err.message 
+    res.status(500).json({
+      success: false,
+      error: err.message
     });
   }
 });
