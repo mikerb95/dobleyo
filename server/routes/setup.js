@@ -206,7 +206,7 @@ setupRouter.post('/', async (req, res) => {
   // Requerir secreto en header Authorization, no en query string
   const authHeader = req.headers['authorization'] || '';
   const providedKey = authHeader.replace('Bearer ', '');
-  
+
   if (!SETUP_KEY || providedKey !== SETUP_KEY) {
     return res.status(403).json({ error: 'Unauthorized. Set SETUP_SECRET_KEY env var and pass Authorization: Bearer <value>' });
   }
@@ -222,7 +222,7 @@ setupRouter.post('/', async (req, res) => {
 
     // 1. Run Schema
     const statements = SCHEMA_SQL.split(';').map(s => s.trim()).filter(s => s.length > 0);
-    
+
     for (const statement of statements) {
       if (statement.startsWith('--')) continue;
       try {
@@ -310,7 +310,7 @@ setupRouter.post('/', async (req, res) => {
 setupRouter.post('/full-setup', async (req, res) => {
   const authHeader = req.headers['authorization'] || '';
   const providedKey = authHeader.replace('Bearer ', '');
-  
+
   if (!SETUP_KEY || providedKey !== SETUP_KEY) {
     return res.status(403).json({ error: 'Unauthorized. Set SETUP_SECRET_KEY env var and pass Authorization: Bearer <value>' });
   }
@@ -333,14 +333,14 @@ setupRouter.post('/full-setup', async (req, res) => {
     // 2. Crear tablas principales
     log('📦 Creando tablas principales (users, products, lots, etc.)...');
     const statements = SCHEMA_SQL.split(';').map(s => s.trim()).filter(s => s.length > 0);
-    
+
     let tablesCreated = 0;
     let tablesExisted = 0;
-    
+
     for (const statement of statements) {
       if (statement.startsWith('--') || statement.startsWith('CREATE INDEX')) continue;
       if (!statement.includes('CREATE TABLE')) continue;
-      
+
       try {
         await db.query(statement);
         tablesCreated++;
@@ -354,7 +354,7 @@ setupRouter.post('/full-setup', async (req, res) => {
         }
       }
     }
-    
+
     log(`✅ Tablas principales: ${tablesCreated} creadas, ${tablesExisted} ya existían`);
     log('');
 
@@ -385,7 +385,7 @@ setupRouter.post('/full-setup', async (req, res) => {
         log(`⚠ Error en tablas de café: ${err.message}`);
       }
     }
-    
+
     // 4b. Agregar campos de origen a coffee_harvests
     log('📍 Agregando campos de origen a coffee_harvests...');
     try {
@@ -491,8 +491,8 @@ setupRouter.post('/full-setup', async (req, res) => {
     log('');
     log('🎉 Ya puedes usar el sistema completo');
 
-    res.json({ 
-      success: true, 
+    res.json({
+      success: true,
       message: 'Configuración completada exitosamente',
       logs,
       credentials: {
@@ -507,10 +507,10 @@ setupRouter.post('/full-setup', async (req, res) => {
     log('');
     log('❌ ERROR EN LA CONFIGURACIÓN');
     log(`Mensaje: ${error.message}`);
-    
-    res.status(500).json({ 
-      success: false, 
-      error: error.message, 
+
+    res.status(500).json({
+      success: false,
+      error: error.message,
       logs,
       stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
