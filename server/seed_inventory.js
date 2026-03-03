@@ -43,10 +43,10 @@ async function seedInventory() {
     for (const supplier of suppliers) {
       const result = await query(
         `INSERT INTO product_suppliers (name, contact_name, email, phone, tax_id, payment_terms)
-         VALUES ($1, $2, $3, $4, $5, $6)`,
+         VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
         [supplier.name, supplier.contact_name, supplier.email, supplier.phone, supplier.tax_id, supplier.payment_terms]
       );
-      supplierIds.push(result.rows.insertId);
+      supplierIds.push(result.rows[0].id);
       console.log(`  ✓ ${supplier.name}`);
     }
 
