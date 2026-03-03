@@ -11,7 +11,7 @@ async function seedInventory() {
   try {
     // 1. CREAR PROVEEDORES
     console.log('👥 Creando proveedores...');
-    
+
     const suppliers = [
       {
         name: 'Finca La Esperanza',
@@ -52,7 +52,7 @@ async function seedInventory() {
 
     // 2. CREAR PRODUCTOS DE CAFÉ
     console.log('\n☕ Creando productos de café...');
-    
+
     const coffeeProducts = [
       {
         id: 'CF-HUILA-001',
@@ -186,7 +186,7 @@ async function seedInventory() {
 
     // 3. CREAR ACCESORIOS
     console.log('\n🔧 Creando accesorios para café...');
-    
+
     const accessories = [
       {
         id: 'ACC-CHEMEX-001',
@@ -358,7 +358,7 @@ async function seedInventory() {
 
     // 4. CREAR MERCHANDISING
     console.log('\n👕 Creando merchandising...');
-    
+
     const merchandise = [
       {
         id: 'MER-CAMISETA-001',
@@ -472,29 +472,29 @@ async function seedInventory() {
 
     // 5. CREAR MOVIMIENTOS DE INVENTARIO DE EJEMPLO
     console.log('\n📦 Creando movimientos de inventario...');
-    
+
     const movements = [
       // Entradas iniciales
       { product_id: 'CF-HUILA-001', type: 'entrada', qty: 150, reason: 'Stock inicial', ref: 'INIT-001' },
       { product_id: 'CF-NARINO-001', type: 'entrada', qty: 120, reason: 'Stock inicial', ref: 'INIT-002' },
       { product_id: 'ACC-CHEMEX-001', type: 'entrada', qty: 25, reason: 'Stock inicial', ref: 'INIT-003' },
-      
+
       // Ventas
       { product_id: 'CF-HUILA-001', type: 'salida', qty: 12, reason: 'Venta online', ref: 'ORD-1001' },
       { product_id: 'CF-HUILA-001', type: 'salida', qty: 8, reason: 'Venta online', ref: 'ORD-1002' },
       { product_id: 'ACC-V60-001', type: 'salida', qty: 3, reason: 'Venta tienda física', ref: 'POS-501' },
       { product_id: 'MER-TAZA-001', type: 'salida', qty: 5, reason: 'Venta online', ref: 'ORD-1003' },
-      
+
       // Compras a proveedores
       { product_id: 'CF-SIERRA-001', type: 'entrada', qty: 50, reason: 'Compra a proveedor', ref: 'PO-2001' },
       { product_id: 'ACC-FILTROS-001', type: 'entrada', qty: 100, reason: 'Reposición stock', ref: 'PO-2002' },
-      
+
       // Devoluciones
       { product_id: 'CF-NARINO-001', type: 'devolucion', qty: 2, reason: 'Devolución cliente', ref: 'DEV-301' },
-      
+
       // Mermas
       { product_id: 'CF-ANTIOQ-001', type: 'merma', qty: 1, reason: 'Paquete dañado en almacén', ref: 'MER-101' },
-      
+
       // Ajustes
       { product_id: 'ACC-PRENSA-001', type: 'ajuste', qty: 35, reason: 'Ajuste inventario físico', ref: 'ADJ-401' }
     ];
@@ -503,10 +503,10 @@ async function seedInventory() {
       // Obtener stock actual
       const current = await query('SELECT stock_quantity FROM products WHERE id = $1', [mov.product_id]);
       const currentStock = current.rows[0]?.stock_quantity || 0;
-      
+
       let newStock = currentStock;
       let actualQty = mov.qty;
-      
+
       if (mov.type === 'entrada' || mov.type === 'devolucion') {
         newStock = currentStock + mov.qty;
       } else if (mov.type === 'salida' || mov.type === 'merma') {
@@ -528,13 +528,13 @@ async function seedInventory() {
 
       // Actualizar stock
       await query('UPDATE products SET stock_quantity = ? WHERE id = ?', [newStock, mov.product_id]);
-      
+
       console.log(`  ✓ ${mov.type.toUpperCase()} ${mov.product_id}: ${currentStock} → ${newStock}`);
     }
 
     // 6. RESUMEN FINAL
     console.log('\n📊 Resumen de datos creados:');
-    
+
     const stats = await query(`
       SELECT 
         category,
