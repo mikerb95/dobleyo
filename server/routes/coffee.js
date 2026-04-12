@@ -192,9 +192,9 @@ coffeeRouter.post('/roast-retrieval', async (req, res) => {
       return res.status(400).json({ error: 'Faltan campos requeridos' });
     }
 
-    // Verificar roasting batch
+    // Verificar roasting batch y obtener lot_id para state machine
     const roastingResult = await query(
-      'SELECT quantity_sent_kg FROM roasting_batches WHERE id = $1',
+      'SELECT quantity_sent_kg, lot_id FROM roasting_batches WHERE id = $1',
       [roastingId]
     );
 
@@ -202,7 +202,16 @@ coffeeRouter.post('/roast-retrieval', async (req, res) => {
       return res.status(404).json({ error: 'Lote en tostión no encontrado' });
     }
 
-    const quantitySent = roastingResult.rows[0].quantity_sent_kg;
+    const { quantity_sent_kg: quantitySent, lot_id: roastLotId } = roastingResult.rows[0];
+
+    // E-01: Validar transición → roasted
+    if (roastLotId) {
+      try {
+        await assertCanAdvance(query, roastLotId, 'roasted');
+      } catch (stateErr) {
+        return res.status(409).json({ success: false, error: stateErr.message });
+      }
+    }
     const weightLossPercent = (((quantitySent - roastedWeight) / quantitySent) * 100).toFixed(2);
 
     // Guardar en BD
