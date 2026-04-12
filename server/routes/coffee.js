@@ -426,6 +426,15 @@ coffeeRouter.post('/packaging', async (req, res) => {
     const roastedInfo = roastedResult.rows[0];
     console.log('[packaging] roastedInfo:', { lot_id: roastedInfo.lot_id, roast_level: roastedInfo.roast_level, region: roastedInfo.region });
 
+    // E-01: Validar transición → packaged
+    if (roastedInfo.lot_id) {
+      try {
+        await assertCanAdvance(query, roastedInfo.lot_id, 'packaged');
+      } catch (stateErr) {
+        return res.status(409).json({ success: false, error: stateErr.message });
+      }
+    }
+
     // Guardar en BD
     const result = await query(
       `INSERT INTO packaged_coffee (roasted_storage_id, acidity, body, balance, score, presentation, grind_size, package_size, unit_count, notes, status, created_at)
