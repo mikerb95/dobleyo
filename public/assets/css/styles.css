@@ -436,20 +436,53 @@ img {
   isolation: isolate
 }
 
-/* Hero responsivo en móvil — fondo sólido y sin video */
+/* Hero responsivo en móvil — banner con video, altura fija no pantalla completa */
 @media (max-width: 767px) {
   .hero {
-    padding: 3rem 0;
-    min-height: calc(60vh - var(--page-offset-top, 96px));
-    background: var(--coffee)
+    padding: 2rem 1rem;
+    min-height: clamp(220px, 56vw, 360px);
+    background: var(--coffee); /* fallback si el video falla */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center
   }
 
+  /* Mostrar el video en móvil */
   .hero .hero-media {
-    display: none
+    display: block;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 100vw;
+    transform: translateX(-50%);
+    z-index: -1;
+    overflow: hidden
   }
 
+  .hero .hero-media video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block
+  }
+
+  /* Restaurar overlay para legibilidad del texto */
   .hero-overlay {
-    background: transparent
+    background: rgba(var(--hero-overlay-color), var(--hero-overlay-opacity-mobile))
+  }
+
+  /* Texto más compacto en banner móvil */
+  .hero h1 {
+    font-size: clamp(1.25rem, 5.5vw, 1.7rem);
+    margin-bottom: .4rem
+  }
+
+  .hero p {
+    font-size: .9rem;
+    margin-bottom: .75rem
   }
 }
 
@@ -553,7 +586,7 @@ img {
   box-shadow: 0 6px 20px rgba(0, 0, 0, .28)
 }
 
-@media (max-width: 1024px) {
+@media (min-width: 768px) and (max-width: 1024px) {
   .hero-overlay {
     background: rgba(var(--hero-overlay-color), var(--hero-overlay-opacity-mobile))
   }
