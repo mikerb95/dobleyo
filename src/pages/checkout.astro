@@ -270,6 +270,29 @@ import Layout from "../layouts/Layout.astro";
           if (ship === 0) { sumShipping.style.color = '#16a34a'; sumShipping.style.fontWeight = '600'; }
           sumTotal.textContent = fmt(tot);
           shipNote.style.display = ship === 0 ? 'flex' : 'none';
+
+          // Mobile accordion summary
+          const msl = document.getElementById('mobileSumList');
+          const mss = document.getElementById('mobileSumSubtotal');
+          const mship = document.getElementById('mobileSumShipping');
+          const mst = document.getElementById('mobileSumTotal');
+          const mstot = document.getElementById('mobileSummaryTotal');
+          const mbTotal = document.getElementById('coMbTotal');
+          if (msl) msl.innerHTML = c.map(p => `
+            <div class="co-sum-item">
+              <div class="co-sum-item__img-wrap">
+                <img src="${p.image || '/assets/img/placeholder.webp'}" alt="${(p.name||'').replace(/</g,'&lt;')}" width="48" height="48" loading="lazy" />
+                <span class="co-sum-item__qty">${p.qty || 1}</span>
+              </div>
+              <span class="co-sum-item__name">${p.name || ''}</span>
+              <span class="co-sum-item__price">${fmt((p.price || 0) * (p.qty || 1))}</span>
+            </div>
+          `).join('');
+          if (mss) mss.textContent = fmt(sub);
+          if (mship) { mship.textContent = ship === 0 ? 'Gratis' : fmt(ship); mship.style.color = ship === 0 ? '#16a34a' : ''; }
+          if (mst) mst.textContent = fmt(tot);
+          if (mstot) mstot.textContent = fmt(tot);
+          if (mbTotal) mbTotal.textContent = fmt(tot);
         }
         renderSummary();
 
@@ -294,6 +317,10 @@ import Layout from "../layouts/Layout.astro";
           const el = document.getElementById(id);
           if (el) el.addEventListener('input', () => clearError(el));
         });
+
+        const coMbPayBtn = document.getElementById('coMbPayBtn');
+        const coMbPayText = document.getElementById('coMbPayText');
+        if (coMbPayBtn) coMbPayBtn.addEventListener('click', () => payBtn.click());
 
         payBtn.addEventListener('click', async () => {
           payError.style.display = 'none';
