@@ -655,6 +655,25 @@ coffeeRouter.get('/packaged', async (req, res) => {
   }
 });
 
+// GET: Stage actual de un lote — E-01
+coffeeRouter.get('/lots/:lotId/stage', async (req, res) => {
+  try {
+    const { lotId } = req.params;
+    if (!lotId) return res.status(400).json({ success: false, error: 'lotId requerido' });
+
+    const stage = await getCurrentStage(query, lotId);
+    res.json({
+      success: true,
+      lot_id: lotId,
+      stage,
+      label: STAGE_LABELS[stage] ?? stage,
+    });
+  } catch (err) {
+    console.error('[GET /lots/:lotId/stage] Error:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // GET: Todos los lotes (verde, tostado almacenado, tostado pendiente)
 coffeeRouter.get('/lots', async (req, res) => {
   try {
