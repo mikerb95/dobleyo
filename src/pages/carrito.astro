@@ -40,9 +40,36 @@ import Layout from "../layouts/Layout.astro";
           <input type="text" class="coupon-input" placeholder="Código de descuento" aria-label="Código de descuento" />
           <button type="button" class="coupon-btn">Aplicar</button>
         </div>
+
+        <!-- Resumen inline (solo móvil) -->
+        <div class="cart-inline-summary">
+          <div class="cis-lines">
+            <div class="cis-line"><span>Subtotal</span><span id="cisSubtotal">$0</span></div>
+            <div class="cis-line" id="cisShipLine"><span>Envío</span><span id="cisShipping">—</span></div>
+          </div>
+          <div id="cisFreeShipProgress" class="cis-progress" style="display:none;">
+            <p class="fsp-text">Te faltan <strong id="cisFspAmount"></strong> para envío gratis</p>
+            <div class="fsp-bar-bg"><div class="fsp-bar-fill" id="cisFspFill"></div></div>
+          </div>
+          <div id="cisFreeShipBanner" class="free-ship-banner" style="display:none;">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M2 7l3.5 3.5L12 3.5" stroke="#16a34a" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            ¡Envío gratis en este pedido!
+          </div>
+          <div class="cis-total"><span>Total</span><span id="cisTotal" class="cis-total-amount">$0</span></div>
+          <div class="trust-row">
+            <span class="trust-item">
+              <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true"><path d="M6.5 1L2 3.5v3c0 2.7 1.9 5.2 4.5 5.8 2.6-.6 4.5-3.1 4.5-5.8v-3L6.5 1z" stroke="#6b7280" stroke-width="1" stroke-linejoin="round"/></svg>
+              Pago seguro
+            </span>
+            <span class="trust-item">
+              <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true"><circle cx="6.5" cy="9" r="1.2" fill="#6b7280"/><path d="M6.5 4v3" stroke="#6b7280" stroke-width="1" stroke-linecap="round"/></svg>
+              Devolución 5 días
+            </span>
+          </div>
+        </div>
       </div>
 
-      <!-- Resumen del pedido -->
+      <!-- Resumen del pedido (desktop) -->
       <aside class="cart-summary-col">
         <div class="summary-card">
           <h2 class="summary-title">Resumen del pedido</h2>
@@ -100,6 +127,18 @@ import Layout from "../layouts/Layout.astro";
     </div>
   </div>
 
+  <!-- Barra inferior fija — solo móvil -->
+  <div id="cartMobileBar" class="cart-mobile-bar" aria-hidden="true">
+    <div class="cmb-info">
+      <span class="cmb-label">Total</span>
+      <span id="cmbTotal" class="cmb-amount">$0</span>
+    </div>
+    <button id="cmbCheckoutBtn" class="cmb-btn">
+      Ir a pagar
+      <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true"><path d="M5.5 3l4 4.5-4 4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+  </div>
+
   <script>
     (function () {
       const FREE_SHIP_THRESHOLD = 120000;
@@ -121,6 +160,8 @@ import Layout from "../layouts/Layout.astro";
         const freeProgress = document.getElementById('freeShipProgress');
         const fspAmount  = document.getElementById('fspAmount');
         const fspFill    = document.getElementById('fspFill');
+        const mobileBar  = document.getElementById('cartMobileBar');
+        const cmbTotal   = document.getElementById('cmbTotal');
 
         function render() {
           const cart = window.Cart.getCart();
@@ -132,19 +173,37 @@ import Layout from "../layouts/Layout.astro";
           // Toggle vacío / lleno
           emptyEl.style.display  = cart.length ? 'none'  : 'flex';
           layoutEl.style.display = cart.length ? 'grid' : 'none';
+          if (mobileBar) { mobileBar.setAttribute('aria-hidden', cart.length ? 'false' : 'true'); mobileBar.classList.toggle('cart-mobile-bar--visible', !!cart.length); }
 
           // Contador
           const totalItems = cart.reduce((s, p) => s + (p.qty || 1), 0);
           countEl.textContent = totalItems ? `(${totalItems} ${totalItems === 1 ? 'producto' : 'productos'})` : '';
 
-          // Resumen
+          // Resumen (desktop)
           subtotalEl.textContent = fmt(sub);
           shippingEl.textContent = ship === 0 ? 'Gratis' : fmt(ship);
           if (ship === 0) shippingEl.style.color = '#16a34a';
           else shippingEl.style.color = '';
           totalEl.textContent = fmt(tot);
 
-          // Envío gratis
+          // Resumen inline (móvil)
+          const cisSubtotal = document.getElementById('cisSubtotal');
+          const cisShipping = document.getElementById('cisShipping');
+          const cisTotal    = document.getElementById('cisTotal');
+          const cisFreeProgress = document.getElementById('cisFreeShipProgress');
+          const cisFreeBanner   = document.getElementById('cisFreeShipBanner');
+          const cisFspAmount    = document.getElementById('cisFspAmount');
+          const cisFspFill      = document.getElementById('cisFspFill');
+          if (cisSubtotal) cisSubtotal.textContent = fmt(sub);
+          if (cisShipping) { cisShipping.textContent = ship === 0 ? 'Gratis' : fmt(ship); cisShipping.style.color = ship === 0 ? '#16a34a' : ''; }
+          if (cisTotal) cisTotal.textContent = fmt(tot);
+          if (cisFreeProgress && cisFreeBanner) {
+            if (ship === 0) { cisFreeBanner.style.display = 'flex'; cisFreeProgress.style.display = 'none'; }
+            else { cisFreeBanner.style.display = 'none'; cisFreeProgress.style.display = 'block'; if (cisFspAmount) cisFspAmount.textContent = fmt(FREE_SHIP_THRESHOLD - sub); if (cisFspFill) cisFspFill.style.width = pct + '%'; }
+          }
+          if (cmbTotal) cmbTotal.textContent = fmt(tot);
+
+          // Envío gratis (desktop sidebar)
           if (ship === 0) {
             freeBanner.style.display = 'flex';
             freeProgress.style.display = 'none';
@@ -206,6 +265,8 @@ import Layout from "../layouts/Layout.astro";
 
         render();
         document.getElementById('checkoutBtn').addEventListener('click', () => { location.href = '/checkout'; });
+        const cmbBtn = document.getElementById('cmbCheckoutBtn');
+        if (cmbBtn) cmbBtn.addEventListener('click', () => { location.href = '/checkout'; });
       }));
     })();
   </script>
