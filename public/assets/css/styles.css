@@ -2066,6 +2066,27 @@ body.menu-open {
   margin-top: auto
 }
 
+/* Stock badges en cards de tienda */
+.stock-badge {
+  display: inline-block;
+  font-size: .72rem;
+  font-weight: 600;
+  padding: .15rem .5rem;
+  border-radius: 99px;
+  margin-top: .2rem;
+  margin-bottom: .1rem;
+}
+.stock-badge.out { background: #fee2e2; color: #b91c1c; }
+.stock-badge.low { background: #fef9c3; color: #92400e; }
+
+/* Link en nombre de producto dentro de card */
+.card-name-link {
+  text-decoration: none;
+  color: inherit;
+  transition: color .15s;
+}
+.card-name-link:hover { color: var(--accent); }
+
 /* (modo compacto eliminado) */
 
 /* Seccion de cafes en venta - Franja horizontal */

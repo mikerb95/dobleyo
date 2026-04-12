@@ -215,7 +215,7 @@ const shopJsonLd = {
     </section>
   </section>
 
-  <script define:vars={{ products }}>
+  <script is:inline define:vars={{ products }}>
     (function () {
       const $ = (s, r = document) => r.querySelector(s);
       const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
