@@ -4,26 +4,23 @@ import { authenticateToken, requireRole } from '../auth.js';
 
 // Obtener todo el stock
 export async function getStock() {
-  // Retorna lista de { sku, stock }
-  const result = await db.query('SELECT id as sku, stock FROM products');
+  const result = await db.query('SELECT id as sku, stock_quantity as stock FROM products');
   return result.rows;
 }
 
 export async function getProductStock(sku) {
   if (!sku) return null;
-  const result = await db.query('SELECT stock FROM products WHERE id = $1', [sku]);
+  const result = await db.query('SELECT stock_quantity as stock FROM products WHERE id = $1', [sku]);
   return result.rows[0] || null;
 }
 
 export async function updateStock(sku, quantity) {
   if (!sku) throw new Error('SKU requerido');
-  // Actualizacion atomica en BD (MySQL no soporta RETURNING en UPDATE)
   await db.query(
-    'UPDATE products SET stock = $1, updated_at = NOW() WHERE id = $2',
+    'UPDATE products SET stock_quantity = $1, updated_at = NOW() WHERE id = $2',
     [quantity, sku]
   );
-  // Fetch updated record
-  const result = await db.query('SELECT id as sku, stock FROM products WHERE id = $1', [sku]);
+  const result = await db.query('SELECT id as sku, stock_quantity as stock FROM products WHERE id = $1', [sku]);
   return result.rows[0];
 }
 
