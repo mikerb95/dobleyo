@@ -2,38 +2,38 @@
 import type { Product } from "../data/products";
 
 interface Props {
-  product: Product;
+  product: Product & { stock?: number };
 }
 
 const { product } = Astro.props;
 
-function escapeHtml(str: string) {
-  return (str || "").replace(
-    /[&<>"]+/g,
-    (s) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[s]
-  );
-}
+const outOfStock = typeof product.stock === "number" && product.stock === 0;
+const lowStock   = typeof product.stock === "number" && product.stock > 0 && product.stock <= 5;
 ---
 
 <article class="card">
-  <a href={`/producto/${product.id}`} class="card-link">
-    <img src={product.image} alt={product.name} />
-    <div class="p">
-      <div class="muted" style="font-size:.85rem">
-        {product.category}{product.origin ? " · " + product.origin : ""}
-      </div>
-      <h3>{product.name}</h3>
-      <div class="muted" style="font-size:.85rem">
-        {product.process || ""}{product.process && product.roast ? " · " : ""}{
-          product.roast || ""
-        }
-      </div>
-      <div class="price">${product.price.toLocaleString("es-CO")}</div>
-    </div>
+  <a href={`/producto/${product.id}`} class="card-link" tabindex="-1" aria-hidden="true">
+    <img src={product.image} alt={product.name} loading="lazy" />
   </a>
+  <div class="p">
+    <div class="muted" style="font-size:.85rem">
+      {product.category}{product.origin ? " · " + product.origin : ""}
+    </div>
+    <h3>
+      <a href={`/producto/${product.id}`} class="card-name-link">{product.name}</a>
+    </h3>
+    <div class="muted" style="font-size:.85rem">
+      {product.process || ""}{product.process && product.roast ? " · " : ""}{product.roast || ""}
+    </div>
+    <div class="price">${product.price.toLocaleString("es-CO")}</div>
+    {outOfStock && <span class="stock-badge out">Agotado</span>}
+    {lowStock && <span class="stock-badge low">Últimas {product.stock}</span>}
+  </div>
   <div class="card-actions">
     <div style="display:flex; gap:.5rem; padding: 0 1rem 1rem;">
-      <button class="btn small" data-add={product.id}>Agregar</button>
+      <button class="btn small" data-add={product.id} disabled={outOfStock || undefined}>
+        {outOfStock ? "Agotado" : "Agregar"}
+      </button>
       <a class="btn outline small" href="/carrito" data-link>Ver carrito</a>
     </div>
   </div>
@@ -46,8 +46,13 @@ function escapeHtml(str: string) {
     display: block;
   }
 
-  .card-link:hover h3 {
-    color: #8b6f47;
+  .card-name-link {
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .card-name-link:hover {
+    color: var(--accent);
   }
 
   .card {
@@ -57,5 +62,24 @@ function escapeHtml(str: string) {
 
   .card-actions {
     margin-top: auto;
+  }
+
+  .stock-badge {
+    display: inline-block;
+    font-size: .75rem;
+    font-weight: 600;
+    padding: .15rem .5rem;
+    border-radius: 99px;
+    margin-top: .25rem;
+  }
+
+  .stock-badge.out {
+    background: #fee2e2;
+    color: #b91c1c;
+  }
+
+  .stock-badge.low {
+    background: #fef9c3;
+    color: #92400e;
   }
 </style>
