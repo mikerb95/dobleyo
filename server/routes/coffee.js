@@ -248,14 +248,28 @@ coffeeRouter.post('/roasted-storage', async (req, res) => {
       return res.status(400).json({ error: 'Faltan campos requeridos' });
     }
 
-    // Verificar café tostado existe
+    // Verificar café tostado existe y obtener lot_id para state machine
     const roastedResult = await query(
-      'SELECT weight_kg FROM roasted_coffee WHERE id = $1',
+      `SELECT rc.weight_kg, rb.lot_id
+       FROM roasted_coffee rc
+       JOIN roasting_batches rb ON rb.id = rc.roasting_id
+       WHERE rc.id = $1`,
       [roastedId]
     );
 
     if (!roastedResult.rows.length) {
       return res.status(404).json({ error: 'Café tostado no encontrado' });
+    }
+
+    const { lot_id: storageLotId } = roastedResult.rows[0];
+
+    // E-01: Validar transición → in_storage_roasted
+    if (storageLotId) {
+      try {
+        await assertCanAdvance(query, storageLotId, 'in_storage_roasted');
+      } catch (stateErr) {
+        return res.status(409).json({ success: false, error: stateErr.message });
+      }
     }
 
     // Guardar en BD
