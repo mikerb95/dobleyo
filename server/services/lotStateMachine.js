@@ -11,7 +11,7 @@
  */
 
 // Transiciones válidas: stage → [stages siguientes permitidos]
-const TRANSITIONS = {
+export const TRANSITIONS = {
   harvested:          ['in_storage_green'],
   in_storage_green:   ['sent_to_roasting'],
   sent_to_roasting:   ['roasted', 'returned_to_green'],
