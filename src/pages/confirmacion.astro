@@ -193,6 +193,16 @@ import Layout from "../layouts/Layout.astro";
       margin: 0 auto;
       padding: 3rem 1.25rem 5rem;
     }
+    @media (max-width: 480px) {
+      .conf-page { padding: 2rem 1rem 4rem; }
+      .conf-card { padding: 1.25rem; }
+      .conf-title { font-size: 1.4rem; }
+      .conf-next-steps { border-radius: .75rem; }
+      .conf-step-item { padding: .875rem 1.125rem; }
+      .conf-btn-primary { width: 100%; }
+      .conf-error-actions { flex-direction: column; }
+      .conf-btn-secondary { width: 100%; }
+    }
 
     /* Loading */
     .conf-loading {
