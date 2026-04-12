@@ -207,6 +207,18 @@ import Layout from "../layouts/Layout.astro";
     </div>
   </div>
 
+  <!-- Barra inferior fija — solo móvil -->
+  <div id="coMobileBar" class="co-mobile-bar" aria-hidden="true">
+    <div class="co-mb-info">
+      <span class="co-mb-label">Total</span>
+      <span id="coMbTotal" class="co-mb-amount">$0</span>
+    </div>
+    <button id="coMbPayBtn" class="co-mb-btn" type="button">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><rect x="1" y="4" width="12" height="8" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M1 8h12M5 4V3a2 2 0 014 0v1" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+      <span id="coMbPayText">Confirmar y pagar</span>
+    </button>
+  </div>
+
   <script>
     (function () {
       const FREE_SHIP = 120000;
@@ -222,6 +234,10 @@ import Layout from "../layouts/Layout.astro";
 
         if (!cart.length) { emptyMsg.style.display = 'block'; return; }
         layout.style.display = 'grid';
+        const mobileAccordion = document.getElementById('mobileSummaryAccordion');
+        if (mobileAccordion) mobileAccordion.style.display = 'block';
+        const coMobileBar = document.getElementById('coMobileBar');
+        if (coMobileBar) { coMobileBar.setAttribute('aria-hidden', 'false'); coMobileBar.classList.add('co-mobile-bar--visible'); }
 
         const sumList    = document.getElementById('sumList');
         const sumSubtotal = document.getElementById('sumSubtotal');
