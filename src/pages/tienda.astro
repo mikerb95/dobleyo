@@ -1,22 +1,57 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import ProductCard from "../components/ProductCard.astro";
-import { products } from "../data/products";
+import { products as staticProducts } from "../data/products";
 import { getCanonicalUrl, getHreflangPair } from "../i18n/index.ts";
 
 const _hreflang = getHreflangPair("/tienda");
 
-// Ordenamiento inicial por defecto (relevancia)
+// Cargar productos desde la BD; fallback al catálogo estático si la BD no está disponible
+let products: any[] = [];
+try {
+  const { query } = await import("../../server/db.js");
+  const result = await query(
+    `SELECT
+       id, slug, name, category, origin, process, roast,
+       tasting_notes, price, rating,
+       is_deal       AS deal,
+       is_bestseller AS bestseller,
+       is_new        AS new,
+       is_fast       AS fast,
+       image_url     AS image,
+       stock_quantity AS stock
+     FROM products
+     WHERE is_active = TRUE
+     ORDER BY is_bestseller DESC, is_new DESC, is_deal DESC, rating DESC`
+  );
+  if (result.rows.length > 0) {
+    const LABEL: Record<string, string> = { cafe: 'Cafés', accesorio: 'Accesorios', merchandising: 'Merchandising' };
+    products = result.rows.map((p: any) => ({
+      ...p,
+      category: LABEL[p.category] ?? p.category,
+      notes: p.tasting_notes?.es ?? null,
+    }));
+  }
+} catch (_) { /* BD no disponible */ }
+
+// Fallback a datos estáticos si la BD no tiene productos
+if (!products.length) {
+  products = staticProducts.map(p => ({
+    ...p,
+    image: p.image,
+    deal: p.deal ?? false,
+    bestseller: p.bestseller ?? false,
+    new: p.new ?? false,
+    fast: p.fast ?? false,
+    stock: 99,
+  }));
+}
+
+// Orden inicial para el SSR (relevancia)
 const initialProducts = [...products].sort(
-  (a, b) =>
-    (b.bestseller ? 1 : 0) +
-    (b.new ? 1 : 0) +
-    (b.deal ? 1 : 0) +
-    (b.rating || 0) / 5 -
-    ((a.bestseller ? 1 : 0) +
-      (a.new ? 1 : 0) +
-      (a.deal ? 1 : 0) +
-      (a.rating || 0) / 5),
+  (a: any, b: any) =>
+    (b.bestseller ? 1 : 0) + (b.new ? 1 : 0) + (b.deal ? 1 : 0) + (b.rating || 0) / 5 -
+    ((a.bestseller ? 1 : 0) + (a.new ? 1 : 0) + (a.deal ? 1 : 0) + (a.rating || 0) / 5),
 );
 
 // JSON-LD: ItemList con todos los productos de la tienda
@@ -25,20 +60,20 @@ const shopJsonLd = {
   "@type": "ItemList",
   name: "Tienda DobleYo Café",
   url: "https://dobleyo.cafe/tienda",
-  itemListElement: products.map((p, i) => ({
+  itemListElement: products.map((p: any, i: number) => ({
     "@type": "ListItem",
     position: i + 1,
     item: {
       "@type": "Product",
       name: p.name,
       image: p.image,
-      description: p.notes?.join(", ") ?? "",
+      description: Array.isArray(p.notes) ? p.notes.join(", ") : (p.notes ?? ""),
       offers: {
         "@type": "Offer",
         priceCurrency: "COP",
         price: p.price,
-        availability: "https://schema.org/InStock",
-        url: `https://dobleyo.cafe/tienda`,
+        availability: p.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+        url: `https://dobleyo.cafe/producto/${p.id}`,
       },
       aggregateRating: {
         "@type": "AggregateRating",
