@@ -1,0 +1,545 @@
+---
+import MobileLayout from "../../layouts/MobileLayout.astro";
+---
+
+<MobileLayout
+  title="Cupping SCA"
+  description="Formulario de catación SCA para evaluar la calidad del café"
+>
+  <form id="cuppingForm">
+    <!-- Selección de Lote Tostado -->
+    <div class="form-group">
+      <label for="roastedSelect">Lote Tostado <span class="required">*</span></label>
+      <select id="roastedSelect" name="roastedId" required>
+        <option value="">Selecciona un lote...</option>
+      </select>
+      <div class="form-hint">Lotes tostados disponibles para catación</div>
+    </div>
+
+    <!-- Info del Lote -->
+    <div class="card" id="lotInfoCard" style="display: none;">
+      <h3>Información del Lote</h3>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 0.95rem;">
+        <div>
+          <div style="color: #666; font-size: 0.85rem;">Lote ID</div>
+          <div style="font-weight: 600;" id="infoLotId">—</div>
+        </div>
+        <div>
+          <div style="color: #666; font-size: 0.85rem;">Variedad</div>
+          <div style="font-weight: 600;" id="infoVariety">—</div>
+        </div>
+        <div>
+          <div style="color: #666; font-size: 0.85rem;">Nivel de Tueste</div>
+          <div style="font-weight: 600;" id="infoRoastLevel">—</div>
+        </div>
+        <div>
+          <div style="color: #666; font-size: 0.85rem;">Peso</div>
+          <div style="font-weight: 600;" id="infoWeight">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Datos de la Sesión -->
+    <div class="form-group" style="margin-top: 1.5rem;">
+      <label style="font-weight: 600; font-size: 1.1rem; margin-bottom: 1rem; display: block;">
+        Datos de la Sesión
+      </label>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div>
+          <label for="cuppingDate">Fecha <span class="required">*</span></label>
+          <input type="date" id="cuppingDate" name="cuppingDate" required />
+        </div>
+        <div>
+          <label for="checkType">Tipo de Control</label>
+          <select id="checkType" name="checkType">
+            <option value="post_tostado">Post-Tostado</option>
+            <option value="catacion" selected>Catación</option>
+            <option value="final">Control Final</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Atributos SCA -->
+    <div style="margin-top: 1.5rem;">
+      <label style="font-weight: 600; font-size: 1.1rem; margin-bottom: 0.5rem; display: block;">
+        Atributos SCA <span style="font-size: 0.85rem; font-weight: 400; color: #666;">(6–10 puntos c/u)</span>
+      </label>
+      <div class="form-hint" style="margin-bottom: 1.5rem;">
+        Protocolo SCA: 6 = Bueno · 7 = Muy Bueno · 8 = Excelente · 9 = Sobresaliente · 10 = Perfecto
+      </div>
+
+      <!-- Aroma -->
+      <div class="sca-attr">
+        <div class="sca-attr-header">
+          <label for="aromaScore">Aroma</label>
+          <div class="sca-score-display" id="aromaDisplay">7.0</div>
+        </div>
+        <input type="range" id="aromaScore" name="aromaScore" min="6" max="10" step="0.25" value="7" class="sca-range" />
+        <div class="sca-range-labels"><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span></div>
+      </div>
+
+      <!-- Sabor -->
+      <div class="sca-attr">
+        <div class="sca-attr-header">
+          <label for="flavorScore">Sabor</label>
+          <div class="sca-score-display" id="flavorDisplay">7.0</div>
+        </div>
+        <input type="range" id="flavorScore" name="flavorScore" min="6" max="10" step="0.25" value="7" class="sca-range" />
+        <div class="sca-range-labels"><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span></div>
+      </div>
+
+      <!-- Retrogusto -->
+      <div class="sca-attr">
+        <div class="sca-attr-header">
+          <label for="aftertasteScore">Retrogusto</label>
+          <div class="sca-score-display" id="aftertasteDisplay">7.0</div>
+        </div>
+        <input type="range" id="aftertasteScore" name="aftertasteScore" min="6" max="10" step="0.25" value="7" class="sca-range" />
+        <div class="sca-range-labels"><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span></div>
+      </div>
+
+      <!-- Acidez -->
+      <div class="sca-attr">
+        <div class="sca-attr-header">
+          <label for="acidityScore">Acidez</label>
+          <div class="sca-score-display" id="acidityDisplay">7.0</div>
+        </div>
+        <input type="range" id="acidityScore" name="acidityScore" min="6" max="10" step="0.25" value="7" class="sca-range" />
+        <div class="sca-range-labels"><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span></div>
+      </div>
+
+      <!-- Cuerpo -->
+      <div class="sca-attr">
+        <div class="sca-attr-header">
+          <label for="bodyScore">Cuerpo</label>
+          <div class="sca-score-display" id="bodyDisplay">7.0</div>
+        </div>
+        <input type="range" id="bodyScore" name="bodyScore" min="6" max="10" step="0.25" value="7" class="sca-range" />
+        <div class="sca-range-labels"><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span></div>
+      </div>
+
+      <!-- Balance -->
+      <div class="sca-attr">
+        <div class="sca-attr-header">
+          <label for="balanceScore">Balance</label>
+          <div class="sca-score-display" id="balanceDisplay">7.0</div>
+        </div>
+        <input type="range" id="balanceScore" name="balanceScore" min="6" max="10" step="0.25" value="7" class="sca-range" />
+        <div class="sca-range-labels"><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span></div>
+      </div>
+
+      <!-- Uniformidad (5 tazas × 2 pts = máx 10) -->
+      <div class="sca-attr">
+        <div class="sca-attr-header">
+          <label for="uniformityScore">Uniformidad</label>
+          <div class="sca-score-display" id="uniformityDisplay">10.0</div>
+        </div>
+        <input type="range" id="uniformityScore" name="uniformityScore" min="0" max="10" step="2" value="10" class="sca-range" />
+        <div class="sca-range-labels"><span>0</span><span>2</span><span>4</span><span>6</span><span>8</span><span>10</span></div>
+      </div>
+
+      <!-- Taza Limpia (5 tazas × 2 pts = máx 10) -->
+      <div class="sca-attr">
+        <div class="sca-attr-header">
+          <label for="cleanCupScore">Taza Limpia</label>
+          <div class="sca-score-display" id="cleanCupDisplay">10.0</div>
+        </div>
+        <input type="range" id="cleanCupScore" name="cleanCupScore" min="0" max="10" step="2" value="10" class="sca-range" />
+        <div class="sca-range-labels"><span>0</span><span>2</span><span>4</span><span>6</span><span>8</span><span>10</span></div>
+      </div>
+
+      <!-- Dulzura (5 tazas × 2 pts = máx 10) -->
+      <div class="sca-attr">
+        <div class="sca-attr-header">
+          <label for="sweetnessScore">Dulzura</label>
+          <div class="sca-score-display" id="sweetnessDisplay">10.0</div>
+        </div>
+        <input type="range" id="sweetnessScore" name="sweetnessScore" min="0" max="10" step="2" value="10" class="sca-range" />
+        <div class="sca-range-labels"><span>0</span><span>2</span><span>4</span><span>6</span><span>8</span><span>10</span></div>
+      </div>
+    </div>
+
+    <!-- Defectos -->
+    <div class="form-group" style="margin-top: 1.5rem;">
+      <label style="font-weight: 600; font-size: 1.1rem; margin-bottom: 1rem; display: block;">
+        Defectos
+      </label>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div>
+          <label for="defectsCount">Cantidad de Defectos</label>
+          <input type="number" id="defectsCount" name="defectsCount" min="0" max="50" value="0" />
+          <div class="form-hint">Tazas defectuosas (×4 pts c/u)</div>
+        </div>
+        <div>
+          <label for="defectsFound">Descripción</label>
+          <input type="text" id="defectsFound" name="defectsFound" placeholder="Ej: tierra, moho..." />
+        </div>
+      </div>
+    </div>
+
+    <!-- Puntaje Total (en vivo) -->
+    <div class="sca-total-card" id="totalCard">
+      <div class="sca-total-label">Puntaje Total SCA</div>
+      <div class="sca-total-score" id="totalScore">63.0</div>
+      <div class="sca-total-badge" id="totalBadge">Muy Bueno</div>
+      <div class="sca-total-formula">Suma de atributos − (defectos × 4)</div>
+    </div>
+
+    <!-- Datos adicionales -->
+    <div class="form-group" style="margin-top: 1.5rem;">
+      <label for="moisturePercent">Humedad del Grano (%)</label>
+      <input type="number" id="moisturePercent" name="moisturePercent" min="0" max="30" step="0.1" placeholder="Ej: 11.5" />
+    </div>
+
+    <div class="form-group">
+      <label for="colorAgtron">Color Agtron</label>
+      <input type="number" id="colorAgtron" name="colorAgtron" min="0" max="100" placeholder="Ej: 55" />
+      <div class="form-hint">Escala Agtron: 25 (oscuro) – 95 (claro)</div>
+    </div>
+
+    <div class="form-group">
+      <label for="observations">Observaciones</label>
+      <textarea id="observations" name="observations" rows="3" placeholder="Notas del catador..."></textarea>
+    </div>
+
+    <div class="form-group">
+      <label for="correctiveActions">Acciones Correctivas</label>
+      <textarea id="correctiveActions" name="correctiveActions" rows="2" placeholder="Si aplica..."></textarea>
+    </div>
+
+    <!-- Resultado -->
+    <div class="form-group" style="margin-top: 0.5rem;">
+      <label style="display: flex; align-items: center; gap: 0.75rem; font-weight: 600; cursor: pointer;">
+        <input type="checkbox" id="passedCheck" name="passed" style="width: 20px; height: 20px; cursor: pointer;" />
+        Lote Aprobado
+      </label>
+      <div class="form-hint">Marcar si el lote cumple los estándares de calidad</div>
+    </div>
+
+    <button type="submit" class="btn" style="width: 100%; margin-top: 1.5rem;">
+      Registrar Cupping
+    </button>
+  </form>
+
+  <!-- Historial -->
+  <div style="margin-top: 2rem;">
+    <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 1rem;">Últimos Cuppings</h3>
+    <div id="historyList">
+      <div class="form-hint">Cargando historial...</div>
+    </div>
+  </div>
+
+  <style>
+    .sca-attr {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+    .sca-attr-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+    }
+    .sca-attr-header label {
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+    .sca-score-display {
+      background: var(--accent);
+      color: #fff;
+      font-weight: 700;
+      font-size: 1.1rem;
+      min-width: 48px;
+      text-align: center;
+      padding: 0.2rem 0.5rem;
+      border-radius: 6px;
+    }
+    .sca-range {
+      width: 100%;
+      cursor: pointer;
+      accent-color: var(--accent);
+    }
+    .sca-range-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.72rem;
+      color: #999;
+      margin-top: 0.3rem;
+    }
+    .sca-total-card {
+      background: var(--coffee);
+      color: #fff;
+      border-radius: 14px;
+      padding: 1.5rem;
+      text-align: center;
+      margin: 1.5rem 0;
+    }
+    .sca-total-label {
+      font-size: 0.85rem;
+      opacity: 0.7;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.5rem;
+    }
+    .sca-total-score {
+      font-size: 3rem;
+      font-weight: 700;
+      line-height: 1;
+      margin-bottom: 0.5rem;
+    }
+    .sca-total-badge {
+      display: inline-block;
+      background: var(--accent);
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+    .sca-total-formula {
+      font-size: 0.75rem;
+      opacity: 0.5;
+      margin-top: 0.5rem;
+    }
+    .history-item {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+    }
+    .history-item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 0.5rem;
+    }
+    .history-lot {
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+    .history-score {
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--accent);
+    }
+    .history-meta {
+      font-size: 0.8rem;
+      color: #666;
+    }
+    .badge-approved {
+      display: inline-block;
+      background: #d1fae5;
+      color: #065f46;
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 0.15rem 0.5rem;
+      border-radius: 10px;
+    }
+    .badge-rejected {
+      display: inline-block;
+      background: #fee2e2;
+      color: #991b1b;
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 0.15rem 0.5rem;
+      border-radius: 10px;
+    }
+  </style>
+
+  <script is:inline>
+    // ── Mapa de clasificación SCA ──────────────────────────────────────────────
+    const SCA_LABELS = [
+      { min: 90, label: 'Sobresaliente' },
+      { min: 85, label: 'Excelente' },
+      { min: 80, label: 'Muy Bueno' },
+      { min: 70, label: 'Bueno' },
+      { min: 60, label: 'Aceptable' },
+      { min: 0,  label: 'Por Debajo del Estándar' },
+    ];
+
+    function scaLabel(score) {
+      return (SCA_LABELS.find(l => score >= l.min) || SCA_LABELS[SCA_LABELS.length - 1]).label;
+    }
+
+    // ── Inputs de atributos ────────────────────────────────────────────────────
+    const ATTRS = [
+      { id: 'aromaScore',       display: 'aromaDisplay' },
+      { id: 'flavorScore',      display: 'flavorDisplay' },
+      { id: 'aftertasteScore',  display: 'aftertasteDisplay' },
+      { id: 'acidityScore',     display: 'acidityDisplay' },
+      { id: 'bodyScore',        display: 'bodyDisplay' },
+      { id: 'balanceScore',     display: 'balanceDisplay' },
+      { id: 'uniformityScore',  display: 'uniformityDisplay' },
+      { id: 'cleanCupScore',    display: 'cleanCupDisplay' },
+      { id: 'sweetnessScore',   display: 'sweetnessDisplay' },
+    ];
+
+    function calcTotal() {
+      const sum = ATTRS.reduce((acc, a) => {
+        return acc + parseFloat(document.getElementById(a.id).value || 0);
+      }, 0);
+      const defects = parseInt(document.getElementById('defectsCount').value || 0);
+      return Math.max(0, sum - defects * 4);
+    }
+
+    function updateTotal() {
+      const total = calcTotal();
+      document.getElementById('totalScore').textContent = total.toFixed(2);
+      document.getElementById('totalBadge').textContent = scaLabel(total);
+    }
+
+    ATTRS.forEach(({ id, display }) => {
+      const input = document.getElementById(id);
+      const disp  = document.getElementById(display);
+      input.addEventListener('input', () => {
+        disp.textContent = parseFloat(input.value).toFixed(2);
+        updateTotal();
+      });
+    });
+
+    document.getElementById('defectsCount').addEventListener('input', updateTotal);
+
+    // ── Poner fecha de hoy ─────────────────────────────────────────────────────
+    const today = new Date().toISOString().slice(0, 10);
+    document.getElementById('cuppingDate').value = today;
+
+    // ── Cargar lotes tostados ──────────────────────────────────────────────────
+    async function loadRoastedLots() {
+      try {
+        const res = await fetch('/api/coffee/roasted-for-cupping', { credentials: 'include' });
+        if (!res.ok) return;
+        const lots = await res.json();
+        const sel = document.getElementById('roastedSelect');
+        sel.innerHTML = '<option value="">Selecciona un lote...</option>';
+        lots.forEach(lot => {
+          const opt = document.createElement('option');
+          opt.value = lot.id;
+          opt.textContent = `${lot.lot_id} — ${lot.variety || '—'} (${lot.roast_level || '—'})`;
+          opt.dataset.lotId     = lot.lot_id     || '—';
+          opt.dataset.variety   = lot.variety    || '—';
+          opt.dataset.roastLevel= lot.roast_level|| '—';
+          opt.dataset.weight    = lot.weight_kg  || '—';
+          sel.appendChild(opt);
+        });
+      } catch (e) {
+        console.error('Error cargando lotes:', e);
+      }
+    }
+
+    document.getElementById('roastedSelect').addEventListener('change', function () {
+      const opt = this.options[this.selectedIndex];
+      const card = document.getElementById('lotInfoCard');
+      if (!opt.value) { card.style.display = 'none'; return; }
+      document.getElementById('infoLotId').textContent     = opt.dataset.lotId;
+      document.getElementById('infoVariety').textContent   = opt.dataset.variety;
+      document.getElementById('infoRoastLevel').textContent= opt.dataset.roastLevel;
+      document.getElementById('infoWeight').textContent    = opt.dataset.weight + ' kg';
+      card.style.display = 'block';
+    });
+
+    // ── Historial ──────────────────────────────────────────────────────────────
+    async function loadHistory() {
+      try {
+        const res = await fetch('/api/coffee/cupping', { credentials: 'include' });
+        if (!res.ok) { document.getElementById('historyList').innerHTML = '<div class="form-hint">No hay registros aún.</div>'; return; }
+        const data = await res.json();
+        const list = document.getElementById('historyList');
+        if (!data.length) { list.innerHTML = '<div class="form-hint">No hay registros aún.</div>'; return; }
+        list.innerHTML = data.slice(0, 8).map(c => `
+          <div class="history-item">
+            <div class="history-item-header">
+              <div>
+                <div class="history-lot">${c.lot_id || '—'}</div>
+                <div class="history-meta">${c.check_type} · ${new Date(c.check_date).toLocaleDateString('es-CO')}</div>
+              </div>
+              <div style="text-align: right;">
+                <div class="history-score">${parseFloat(c.overall_score || 0).toFixed(2)}</div>
+                <span class="${c.passed ? 'badge-approved' : 'badge-rejected'}">${c.passed ? 'Aprobado' : 'Rechazado'}</span>
+              </div>
+            </div>
+          </div>
+        `).join('');
+      } catch (e) {
+        document.getElementById('historyList').innerHTML = '<div class="form-hint">No hay registros aún.</div>';
+      }
+    }
+
+    // ── Envío del formulario ───────────────────────────────────────────────────
+    document.getElementById('cuppingForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const btn = this.querySelector('button[type="submit"]');
+      btn.disabled = true;
+      btn.textContent = 'Registrando...';
+
+      const roastedId = document.getElementById('roastedSelect').value;
+      if (!roastedId) {
+        alert('Selecciona un lote tostado.');
+        btn.disabled = false;
+        btn.textContent = 'Registrar Cupping';
+        return;
+      }
+
+      const payload = {
+        roastedId:         parseInt(roastedId),
+        checkType:         document.getElementById('checkType').value,
+        checkDate:         document.getElementById('cuppingDate').value,
+        aromaScore:        parseFloat(document.getElementById('aromaScore').value),
+        flavorScore:       parseFloat(document.getElementById('flavorScore').value),
+        aftertasteScore:   parseFloat(document.getElementById('aftertasteScore').value),
+        acidityScore:      parseFloat(document.getElementById('acidityScore').value),
+        bodyScore:         parseFloat(document.getElementById('bodyScore').value),
+        balanceScore:      parseFloat(document.getElementById('balanceScore').value),
+        uniformityScore:   parseFloat(document.getElementById('uniformityScore').value),
+        cleanCupScore:     parseFloat(document.getElementById('cleanCupScore').value),
+        sweetnessScore:    parseFloat(document.getElementById('sweetnessScore').value),
+        defectsCount:      parseInt(document.getElementById('defectsCount').value || 0),
+        defectsFound:      document.getElementById('defectsFound').value.trim() || null,
+        moisturePercent:   document.getElementById('moisturePercent').value ? parseFloat(document.getElementById('moisturePercent').value) : null,
+        colorAgtron:       document.getElementById('colorAgtron').value ? parseInt(document.getElementById('colorAgtron').value) : null,
+        observations:      document.getElementById('observations').value.trim() || null,
+        correctiveActions: document.getElementById('correctiveActions').value.trim() || null,
+        passed:            document.getElementById('passedCheck').checked,
+        overallScore:      calcTotal(),
+      };
+
+      try {
+        const res = await fetch('/api/coffee/cupping', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+          alert(`Cupping registrado. Puntaje final: ${data.overallScore}`);
+          document.getElementById('cuppingForm').reset();
+          document.getElementById('cuppingDate').value = today;
+          document.getElementById('lotInfoCard').style.display = 'none';
+          ATTRS.forEach(({ id, display }) => {
+            const v = id.includes('uniformity') || id.includes('cleanCup') || id.includes('sweetness') ? '10' : '7';
+            document.getElementById(id).value = v;
+            document.getElementById(display).textContent = parseFloat(v).toFixed(2);
+          });
+          updateTotal();
+          loadHistory();
+        } else {
+          alert('Error: ' + (data.error || 'No se pudo registrar el cupping'));
+        }
+      } catch (err) {
+        alert('Error de conexión: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Registrar Cupping';
+      }
+    });
+
+    loadRoastedLots();
+    loadHistory();
+  </script>
+</MobileLayout>
