@@ -24,6 +24,7 @@ import { farmsRouter } from '../server/routes/farms.js';
 import { heatmapRouter } from '../server/routes/heatmap.js';
 import { productsRouter } from '../server/routes/products.js';
 import auditRouter from '../server/routes/audit.js';
+import { healthCheck } from '../server/db.js';
 
 const app = express();
 
@@ -102,8 +103,15 @@ app.use('/api/products', productsRouter);
 app.post('/api/wompi/webhook', (req, res, next) => { req.url = '/wompi/webhook'; ordersRouter(req, res, next); });
 app.use('/api/audit', auditRouter);
 
-// Health Check
-app.get('/api/health', (req, res) => res.json({ status: 'ok', time: new Date().toISOString() }));
+// Health Check — ping real a BD para verificar PgBouncer + PostgreSQL
+app.get('/api/health', async (req, res) => {
+  const db = await healthCheck();
+  res.status(db.ok ? 200 : 503).json({
+    status: db.ok ? 'ok' : 'degraded',
+    time: new Date().toISOString(),
+    db: db.ok ? 'connected' : `error: ${db.error}`,
+  });
+});
 
 // Debug endpoint - verificar configuración (solo en desarrollo o con clave)
 app.get('/api/debug/config', (req, res) => {
