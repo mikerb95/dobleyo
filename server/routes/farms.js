@@ -89,12 +89,22 @@ farmsRouter.get('/regions', async (req, res) => {
     }
 });
 
-// GET /api/farms/my — finca del caficultor autenticado
+// GET /api/farms/my — finca(s) del caficultor autenticado
+// ?list=true → devuelve array con todas las fincas del usuario
 farmsRouter.get('/my', authenticateToken, async (req, res) => {
     try {
-        const { rows } = await query(`
-      SELECT * FROM farms WHERE caficultor_id = $1 LIMIT 1
-    `, [req.user.id]);
+        const isList = req.query.list === 'true';
+        const { rows } = await query(
+            `SELECT id, name, region, municipality, altitude_min, altitude_max,
+                    varieties, processes, slug
+             FROM farms
+             WHERE caficultor_id = $1
+             ORDER BY name`,
+            [req.user.id]
+        );
+        if (isList) {
+            return res.json({ success: true, data: rows });
+        }
         res.json({ success: true, data: rows[0] ?? null });
     } catch (err) {
         console.error('[GET /api/farms/my]', err);
