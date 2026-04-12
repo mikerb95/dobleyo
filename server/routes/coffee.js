@@ -28,6 +28,13 @@ coffeeRouter.post('/harvest', async (req, res) => {
       });
     }
 
+    // E-03: Verificar que el caficultor es dueño de la finca
+    try {
+      await assertFarmOwnership(farm, req.user);
+    } catch (authErr) {
+      return res.status(authErr.status ?? 403).json({ success: false, error: authErr.message });
+    }
+
     // Usar región y altura proporcionados o usar defaults
     let farmRegion = region;
     let farmAltitude = altitude;
