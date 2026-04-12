@@ -3,169 +3,283 @@ import Layout from "../layouts/Layout.astro";
 ---
 
 <Layout
-  title="Checkout — DobleYo Café"
+  title="Pagar — DobleYo Café"
   description="Finaliza tu pedido de café de especialidad. Envíos nacionales en Colombia."
 >
-  <section style="padding: 1.5rem 0 3rem;">
-    <h1 style="font-size:clamp(1.4rem,3vw,1.8rem); margin-bottom:1.5rem;">Finalizar pedido</h1>
+  <div class="co-page">
 
-    <div id="cartEmpty" style="display:none; text-align:center; padding:3rem 0;">
-      <p class="muted" style="font-size:1.1rem;">Tu carrito está vacío.</p>
-      <a href="/tienda" class="btn" style="margin-top:1rem;" data-link>Ver tienda</a>
+    <!-- Barra de progreso -->
+    <div class="co-progress" aria-label="Pasos del proceso de compra">
+      <a href="/carrito" class="co-step co-step--done">
+        <span class="co-step__dot">
+          <svg width="11" height="11" viewBox="0 0 11 11" fill="none" aria-hidden="true"><path d="M1.5 5.5l2.5 2.5 5.5-5.5" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        Carrito
+      </a>
+      <div class="co-step__line co-step__line--done"></div>
+      <div class="co-step co-step--active">
+        <span class="co-step__dot co-step__dot--active">2</span>
+        Datos &amp; Pago
+      </div>
+      <div class="co-step__line"></div>
+      <div class="co-step co-step--pending">
+        <span class="co-step__dot co-step__dot--pending">3</span>
+        Confirmación
+      </div>
     </div>
 
-    <div id="checkoutLayout" class="grid" style="grid-template-columns: 1.4fr 1fr; gap:1.5rem; align-items:start; display:none;">
+    <!-- Carrito vacío -->
+    <div id="cartEmpty" class="co-empty" style="display:none;">
+      <p class="co-empty__text">Tu carrito está vacío.</p>
+      <a href="/tienda" class="co-btn-primary" style="display:inline-flex; width:auto; padding:.75rem 2rem;">Ver tienda</a>
+    </div>
 
-      <!-- Columna izquierda: formularios -->
-      <div>
-        <div class="card">
-          <div class="p">
-            <h2 style="margin-bottom:1rem;">Datos de envío</h2>
-            <form id="shipForm" class="form" style="display:grid; gap:.65rem;" novalidate>
-              <label>
-                Nombre completo *
-                <input id="fName" type="text" placeholder="John Doe" required autocomplete="name" />
-              </label>
-              <label>
-                Correo electrónico *
-                <input id="fEmail" type="email" placeholder="tu@correo.com" required autocomplete="email" />
-              </label>
-              <label>
-                Teléfono
-                <input id="fPhone" type="tel" placeholder="+57 300 000 0000" inputmode="tel" autocomplete="tel" />
-              </label>
-              <label>
-                Dirección de entrega *
-                <input id="fAddr" type="text" placeholder="Calle 123 # 45-67, Apto 8" required autocomplete="street-address" />
-              </label>
-              <div style="display:grid; grid-template-columns:1fr 1fr; gap:.65rem;">
-                <label>
-                  Ciudad *
-                  <input id="fCity" type="text" placeholder="Bogotá" required autocomplete="address-level2" />
-                </label>
-                <label>
-                  Departamento
-                  <input id="fDept" type="text" placeholder="Cundinamarca" autocomplete="address-level1" />
-                </label>
+    <!-- Layout checkout -->
+    <div id="checkoutLayout" class="co-layout" style="display:none;">
+
+      <!-- Columna formulario -->
+      <div class="co-form-col">
+
+        <!-- Sección envío -->
+        <section class="co-section" id="sectionShipping">
+          <div class="co-section__header">
+            <span class="co-section__num">1</span>
+            <h2 class="co-section__title">Información de envío</h2>
+          </div>
+
+          <form id="shipForm" novalidate class="co-form">
+            <div class="co-field">
+              <label class="co-label" for="fName">Nombre completo <span class="co-req">*</span></label>
+              <div class="co-input-wrap">
+                <svg class="co-input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="5.5" r="2.5" stroke="currentColor" stroke-width="1.4"/><path d="M2.5 13.5c0-2.76 2.46-5 5.5-5s5.5 2.24 5.5 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+                <input id="fName" type="text" class="co-input" placeholder="Juan García" required autocomplete="name" />
               </div>
-            </form>
-          </div>
-        </div>
+            </div>
 
-        <div class="card" style="margin-top:1rem;">
-          <div class="p">
-            <h2 style="margin-bottom:.75rem;">Método de pago</h2>
-            <label style="display:flex; align-items:center; gap:.75rem; padding:.875rem 1rem; border:2px solid var(--accent); border-radius:.5rem; cursor:pointer; background:#fffaf7;">
-              <input type="radio" name="payMethod" value="wompi" checked style="accent-color:var(--accent);"/>
-              <span style="font-weight:600;">Wompi</span>
-              <span class="muted" style="font-size:.85rem; margin-left:.25rem;">— Tarjeta, PSE, Nequi, Daviplata</span>
+            <div class="co-field-row">
+              <div class="co-field">
+                <label class="co-label" for="fEmail">Correo electrónico <span class="co-req">*</span></label>
+                <div class="co-input-wrap">
+                  <svg class="co-input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="1.5" y="3.5" width="13" height="9" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M1.5 5.5l6.5 4 6.5-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+                  <input id="fEmail" type="email" class="co-input" placeholder="tu@correo.com" required autocomplete="email" />
+                </div>
+              </div>
+              <div class="co-field">
+                <label class="co-label" for="fPhone">Teléfono</label>
+                <div class="co-input-wrap">
+                  <svg class="co-input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 2h2.6l1.1 3-1.5 1.1c.7 1.5 1.9 2.7 3.4 3.4L10.2 8l3 1.1v2.6a1 1 0 01-1 .8C5.3 12.5 2.5 9.7 2.7 4a1 1 0 01.8-1z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  <input id="fPhone" type="tel" class="co-input" placeholder="+57 300 000 0000" inputmode="tel" autocomplete="tel" />
+                </div>
+              </div>
+            </div>
+
+            <div class="co-field">
+              <label class="co-label" for="fAddr">Dirección de entrega <span class="co-req">*</span></label>
+              <div class="co-input-wrap">
+                <svg class="co-input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 1.5C5.52 1.5 3.5 3.52 3.5 6c0 3.5 4.5 8.5 4.5 8.5S12.5 9.5 12.5 6c0-2.48-2.02-4.5-4.5-4.5z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><circle cx="8" cy="6" r="1.5" stroke="currentColor" stroke-width="1.4"/></svg>
+                <input id="fAddr" type="text" class="co-input" placeholder="Calle 123 # 45-67, Apto 8" required autocomplete="street-address" />
+              </div>
+            </div>
+
+            <div class="co-field-row">
+              <div class="co-field">
+                <label class="co-label" for="fCity">Ciudad <span class="co-req">*</span></label>
+                <input id="fCity" type="text" class="co-input" placeholder="Bogotá" required autocomplete="address-level2" />
+              </div>
+              <div class="co-field">
+                <label class="co-label" for="fDept">Departamento</label>
+                <input id="fDept" type="text" class="co-input" placeholder="Cundinamarca" autocomplete="address-level1" />
+              </div>
+            </div>
+          </form>
+        </section>
+
+        <!-- Sección pago -->
+        <section class="co-section">
+          <div class="co-section__header">
+            <span class="co-section__num">2</span>
+            <h2 class="co-section__title">Método de pago</h2>
+          </div>
+
+          <div class="co-pay-methods">
+            <label class="co-pay-option co-pay-option--selected">
+              <input type="radio" name="payMethod" value="wompi" checked class="co-radio" />
+              <div class="co-pay-option__body">
+                <div class="co-pay-option__top">
+                  <div class="co-pay-option__name">
+                    <span class="co-pay-badge">Wompi</span>
+                    <span class="co-pay-desc">Tarjeta, PSE, Nequi, Daviplata</span>
+                  </div>
+                  <div class="co-pay-chips">
+                    <span class="co-chip">PSE</span>
+                    <span class="co-chip">Visa</span>
+                    <span class="co-chip">MC</span>
+                    <span class="co-chip">Nequi</span>
+                  </div>
+                </div>
+              </div>
             </label>
-
-            <div id="payError" style="color:#b91c1c; display:none; margin-top:.6rem; font-size:.9rem;"></div>
-
-            <button class="btn" id="payBtn" style="margin-top:1rem; width:100%; min-height:44px; font-size:1rem;">
-              Ir a pagar →
-            </button>
-
-            <p style="font-size:.78rem; color:var(--muted-fg); margin-top:.625rem; line-height:1.4;">
-              Al completar el pedido aceptas nuestros
-              <a href="/terminos" style="color:var(--accent);">Términos y Condiciones</a>.
-              Pago procesado de forma segura por Wompi.
-            </p>
           </div>
-        </div>
+
+          <div id="payError" class="co-error" style="display:none;" role="alert"></div>
+
+          <button class="co-btn-primary" id="payBtn" type="button">
+            <span id="payBtnText">Confirmar y pagar</span>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="1.5" y="4.5" width="13" height="9" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M1.5 8h13M5 4.5V3a3 3 0 016 0v1.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+          </button>
+
+          <p class="co-legal">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true" style="flex-shrink:0"><path d="M6 1L2 3v2.5c0 2.4 1.7 4.6 4 5.2 2.3-.6 4-2.8 4-5.2V3L6 1z" stroke="#9ca3af" stroke-width="1" stroke-linejoin="round"/></svg>
+            Pago cifrado y seguro. Al continuar aceptas nuestros
+            <a href="/terminos">Términos y Condiciones</a>.
+          </p>
+        </section>
       </div>
 
-      <!-- Resumen del pedido -->
-      <aside>
-        <div class="card" style="position:sticky; top:calc(var(--header-top,0px) + var(--header-height,96px) + 1.5rem);">
-          <div class="p">
-            <h2 style="margin-bottom:.875rem;">Resumen</h2>
-            <div id="sumList" style="display:flex; flex-direction:column; gap:.5rem;"></div>
-            <hr style="border:none; border-top:1px solid var(--border); margin:1rem 0;" />
-            <div style="display:flex; justify-content:space-between; font-size:.9rem; margin-bottom:.4rem;">
-              <span>Subtotal</span><span id="sumSubtotal">$0</span>
+      <!-- Resumen lateral -->
+      <aside class="co-summary-col">
+        <div class="co-summary-card">
+          <h2 class="co-summary-title">Tu pedido</h2>
+
+          <div id="sumList" class="co-sum-list"></div>
+
+          <div class="co-sum-lines">
+            <div class="co-sum-line">
+              <span>Subtotal</span>
+              <span id="sumSubtotal">$0</span>
             </div>
-            <div style="display:flex; justify-content:space-between; font-size:.9rem; margin-bottom:.75rem;">
-              <span>Envío</span><span id="sumShipping">—</span>
+            <div class="co-sum-line">
+              <span>Envío</span>
+              <span id="sumShipping">—</span>
             </div>
-            <div style="display:flex; justify-content:space-between; font-weight:700; font-size:1.05rem;">
-              <span>Total</span><span id="sumTotal" style="color:var(--accent);">$0</span>
+          </div>
+
+          <div id="shipNote" class="co-ship-note" style="display:none;">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true"><path d="M1.5 6.5l3 3 7-7" stroke="#16a34a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Envío gratis en este pedido
+          </div>
+
+          <div class="co-sum-total">
+            <span>Total</span>
+            <div>
+              <span id="sumTotal" class="co-total-amount">$0</span>
+              <span class="co-total-tax">COP · IVA incluido</span>
             </div>
-            <p id="shipNote" style="font-size:.8rem; color:#4a6741; margin-top:.5rem; display:none;">✓ Envío gratis en este pedido</p>
+          </div>
+
+          <div class="co-sum-trust">
+            <div class="co-sum-trust-item">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M7 1L2 3.5V7c0 2.7 2 5.1 5 5.7 3-0.6 5-3 5-5.7V3.5L7 1z" stroke="#4a6741" stroke-width="1.2" stroke-linejoin="round"/></svg>
+              <span>Pago 100% seguro con SSL</span>
+            </div>
+            <div class="co-sum-trust-item">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><circle cx="7" cy="7" r="5.5" stroke="#4a6741" stroke-width="1.2"/><path d="M4.5 7l2 2 3-3.5" stroke="#4a6741" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <span>Devolución garantizada 5 días</span>
+            </div>
           </div>
         </div>
       </aside>
     </div>
-  </section>
+  </div>
 
   <script>
     (function () {
-      function fmt(n: number) { return '$' + Number(n || 0).toLocaleString('es-CO'); }
-      function ready(fn: () => void) { if (document.readyState !== 'loading') fn(); else document.addEventListener('DOMContentLoaded', fn); }
-      function whenCart(fn: () => void) { if ((window as any).Cart) fn(); else setTimeout(() => whenCart(fn), 40); }
+      const FREE_SHIP = 120000;
+      const SHIP_COST = 12000;
+      function fmt(n) { return '$' + Number(n || 0).toLocaleString('es-CO'); }
+      function ready(fn) { if (document.readyState !== 'loading') fn(); else document.addEventListener('DOMContentLoaded', fn); }
+      function whenCart(fn) { if (window.Cart) fn(); else setTimeout(() => whenCart(fn), 40); }
 
       ready(() => whenCart(function () {
-        const cart = (window as any).Cart.getCart();
-        const layout = document.getElementById('checkoutLayout')!;
-        const emptyMsg = document.getElementById('cartEmpty')!;
+        const cart    = window.Cart.getCart();
+        const layout  = document.getElementById('checkoutLayout');
+        const emptyMsg = document.getElementById('cartEmpty');
 
         if (!cart.length) { emptyMsg.style.display = 'block'; return; }
         layout.style.display = 'grid';
 
-        const sumList = document.getElementById('sumList')!;
-        const sumSubtotal = document.getElementById('sumSubtotal')!;
-        const sumShipping = document.getElementById('sumShipping')!;
-        const sumTotal = document.getElementById('sumTotal')!;
-        const shipNote = document.getElementById('shipNote')!;
-        const payBtn = document.getElementById('payBtn') as HTMLButtonElement;
-        const payError = document.getElementById('payError')!;
+        const sumList    = document.getElementById('sumList');
+        const sumSubtotal = document.getElementById('sumSubtotal');
+        const sumShipping = document.getElementById('sumShipping');
+        const sumTotal   = document.getElementById('sumTotal');
+        const shipNote   = document.getElementById('shipNote');
+        const payBtn     = document.getElementById('payBtn');
+        const payBtnText = document.getElementById('payBtnText');
+        const payError   = document.getElementById('payError');
 
         function renderSummary() {
-          const c = (window as any).Cart.getCart();
-          const subtotal = (window as any).Cart.subtotal();
-          const shipping = subtotal >= 120000 ? 0 : 12000;
-          const total = subtotal + shipping;
+          const c = window.Cart.getCart();
+          const sub = window.Cart.subtotal();
+          const ship = sub >= FREE_SHIP ? 0 : SHIP_COST;
+          const tot  = sub + ship;
 
-          sumList.innerHTML = c.map((p: any) =>
-            `<div style="display:flex;justify-content:space-between;gap:.5rem;font-size:.9rem;">
-              <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.qty}× ${p.name}</span>
-              <span style="flex-shrink:0;">${fmt((p.price || 0) * p.qty)}</span>
-            </div>`
-          ).join('');
-          sumSubtotal.textContent = fmt(subtotal);
-          sumShipping.textContent = shipping === 0 ? 'Gratis' : fmt(shipping);
-          sumTotal.textContent = fmt(total);
-          shipNote.style.display = shipping === 0 ? 'block' : 'none';
+          sumList.innerHTML = c.map(p => `
+            <div class="co-sum-item">
+              <div class="co-sum-item__img-wrap">
+                <img src="${p.image || '/assets/img/placeholder.webp'}" alt="${(p.name||'').replace(/</g,'&lt;')}" width="48" height="48" loading="lazy" />
+                <span class="co-sum-item__qty">${p.qty || 1}</span>
+              </div>
+              <span class="co-sum-item__name">${p.name || ''}</span>
+              <span class="co-sum-item__price">${fmt((p.price || 0) * (p.qty || 1))}</span>
+            </div>
+          `).join('');
+
+          sumSubtotal.textContent = fmt(sub);
+          sumShipping.textContent = ship === 0 ? 'Gratis' : fmt(ship);
+          if (ship === 0) { sumShipping.style.color = '#16a34a'; sumShipping.style.fontWeight = '600'; }
+          sumTotal.textContent = fmt(tot);
+          shipNote.style.display = ship === 0 ? 'flex' : 'none';
         }
         renderSummary();
+
+        // Validación inline
+        function setError(input, msg) {
+          input.classList.add('co-input--error');
+          let hint = input.parentElement.querySelector('.co-input-hint') || input.nextElementSibling;
+          if (!hint || !hint.classList.contains('co-input-hint')) {
+            hint = document.createElement('p');
+            hint.className = 'co-input-hint';
+            input.insertAdjacentElement('afterend', hint);
+          }
+          hint.textContent = msg;
+        }
+        function clearError(input) {
+          input.classList.remove('co-input--error');
+          const p = input.parentElement.querySelector('.co-input-hint') || input.nextElementSibling;
+          if (p && p.classList.contains('co-input-hint')) p.textContent = '';
+        }
+
+        ['fName','fEmail','fAddr','fCity'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.addEventListener('input', () => clearError(el));
+        });
 
         payBtn.addEventListener('click', async () => {
           payError.style.display = 'none';
 
-          const fName  = (document.getElementById('fName')  as HTMLInputElement).value.trim();
-          const fEmail = (document.getElementById('fEmail') as HTMLInputElement).value.trim();
-          const fPhone = (document.getElementById('fPhone') as HTMLInputElement).value.trim();
-          const fAddr  = (document.getElementById('fAddr')  as HTMLInputElement).value.trim();
-          const fCity  = (document.getElementById('fCity')  as HTMLInputElement).value.trim();
-          const fDept  = (document.getElementById('fDept')  as HTMLInputElement).value.trim();
+          const fName  = document.getElementById('fName').value.trim();
+          const fEmail = document.getElementById('fEmail').value.trim();
+          const fPhone = document.getElementById('fPhone').value.trim();
+          const fAddr  = document.getElementById('fAddr').value.trim();
+          const fCity  = document.getElementById('fCity').value.trim();
+          const fDept  = document.getElementById('fDept').value.trim();
 
-          if (!fName || !fEmail || !fAddr || !fCity) {
-            payError.textContent = 'Completa los campos obligatorios (*)';
-            payError.style.display = 'block';
-            return;
+          let hasError = false;
+          if (!fName)  { setError(document.getElementById('fName'),  'Campo obligatorio'); hasError = true; }
+          if (!fEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fEmail)) {
+            setError(document.getElementById('fEmail'), !fEmail ? 'Campo obligatorio' : 'Correo inválido');
+            hasError = true;
           }
-          if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fEmail)) {
-            payError.textContent = 'Ingresa un correo electrónico válido';
-            payError.style.display = 'block';
-            return;
-          }
+          if (!fAddr)  { setError(document.getElementById('fAddr'),  'Campo obligatorio'); hasError = true; }
+          if (!fCity)  { setError(document.getElementById('fCity'),  'Campo obligatorio'); hasError = true; }
+          if (hasError) return;
 
           payBtn.disabled = true;
-          payBtn.textContent = 'Procesando…';
+          payBtnText.textContent = 'Procesando…';
+          payBtn.classList.add('co-btn-primary--loading');
 
           try {
-            const currentCart = (window as any).Cart.getCart();
+            const currentCart = window.Cart.getCart();
             const res = await fetch('/api/orders', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -177,7 +291,7 @@ import Layout from "../layouts/Layout.astro";
                 shippingAddress: fAddr,
                 shippingCity: fCity,
                 shippingDepartment: fDept || undefined,
-                items: currentCart.map((p: any) => ({
+                items: currentCart.map(p => ({
                   productId: p.id,
                   productName: p.name,
                   productImage: p.image,
@@ -192,22 +306,22 @@ import Layout from "../layouts/Layout.astro";
               payError.textContent = data.errors?.[0]?.msg || data.error || 'Error al crear la orden';
               payError.style.display = 'block';
               payBtn.disabled = false;
-              payBtn.textContent = 'Ir a pagar →';
+              payBtnText.textContent = 'Confirmar y pagar';
+              payBtn.classList.remove('co-btn-primary--loading');
               return;
             }
 
-            // Limpiar carrito antes de redirigir
-            if ((window as any).Cart.clearCart) (window as any).Cart.clearCart();
-
+            if (window.Cart.clearCart) window.Cart.clearCart();
             window.location.href = data.data.checkoutUrl
               ? data.data.checkoutUrl
               : `/confirmacion?ref=${data.data.reference}`;
 
           } catch {
-            payError.textContent = 'Error de red. Inténtalo de nuevo.';
+            payError.textContent = 'Error de conexión. Inténtalo de nuevo.';
             payError.style.display = 'block';
             payBtn.disabled = false;
-            payBtn.textContent = 'Ir a pagar →';
+            payBtnText.textContent = 'Confirmar y pagar';
+            payBtn.classList.remove('co-btn-primary--loading');
           }
         });
       }));
@@ -215,8 +329,381 @@ import Layout from "../layouts/Layout.astro";
   </script>
 
   <style>
+    .co-page {
+      max-width: 1060px;
+      margin: 0 auto;
+      padding: 2rem 1.25rem 5rem;
+    }
+
+    /* Progress steps */
+    .co-progress {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      margin-bottom: 2.5rem;
+      max-width: 360px;
+    }
+    .co-step {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      font-size: .8rem;
+      font-weight: 500;
+      color: var(--muted-fg);
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .co-step--done  { color: #16a34a; }
+    .co-step--active { color: var(--coffee); font-weight: 700; }
+    .co-step__dot {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #e5e7eb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: .75rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .co-step--done .co-step__dot   { background: #16a34a; }
+    .co-step__dot--active { background: var(--coffee); color: #fff; }
+    .co-step__dot--pending { background: #e5e7eb; color: #9ca3af; }
+    .co-step__line {
+      flex: 1;
+      height: 2px;
+      background: #e5e7eb;
+      min-width: 24px;
+      max-width: 48px;
+      margin: 0 .375rem;
+    }
+    .co-step__line--done { background: #16a34a; }
+
+    /* Empty */
+    .co-empty {
+      text-align: center;
+      padding: 4rem 1.5rem;
+    }
+    .co-empty__text { color: var(--muted-fg); margin-bottom: 1.5rem; }
+
+    /* Layout */
+    .co-layout {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 2.5rem;
+      align-items: start;
+    }
+
+    /* Sections */
+    .co-section {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      padding: 1.75rem;
+      margin-bottom: 1rem;
+    }
+    .co-section__header {
+      display: flex;
+      align-items: center;
+      gap: .875rem;
+      margin-bottom: 1.5rem;
+    }
+    .co-section__num {
+      width: 28px;
+      height: 28px;
+      background: var(--coffee);
+      color: #fff;
+      border-radius: 50%;
+      font-size: .8rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .co-section__title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--coffee);
+      margin: 0;
+    }
+
+    /* Form */
+    .co-form { display: flex; flex-direction: column; gap: 1rem; }
+    .co-field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .co-field { display: flex; flex-direction: column; gap: .375rem; }
+    .co-label {
+      font-size: .8rem;
+      font-weight: 600;
+      color: var(--coffee);
+      letter-spacing: .01em;
+    }
+    .co-req { color: var(--accent); }
+    .co-input-wrap { position: relative; }
+    .co-input-icon {
+      position: absolute;
+      left: .875rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #9ca3af;
+      pointer-events: none;
+    }
+    .co-input-wrap .co-input { padding-left: 2.5rem; }
+    .co-input {
+      width: 100%;
+      border: 1.5px solid var(--border);
+      border-radius: .625rem;
+      padding: .75rem 1rem;
+      font-size: .95rem;
+      color: var(--coffee);
+      background: #fafafa;
+      outline: none;
+      transition: border-color .15s, background .15s, box-shadow .15s;
+      box-sizing: border-box;
+    }
+    .co-input::placeholder { color: #c0bab5; }
+    .co-input:focus {
+      border-color: var(--coffee);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(37,26,20,.08);
+    }
+    .co-input--error { border-color: #dc2626 !important; background: #fff9f9; }
+    .co-input-hint {
+      font-size: .75rem;
+      color: #dc2626;
+      margin: .2rem 0 0;
+    }
+
+    /* Payment */
+    .co-pay-methods { display: flex; flex-direction: column; gap: .75rem; margin-bottom: 1.25rem; }
+    .co-pay-option {
+      display: flex;
+      align-items: flex-start;
+      gap: .875rem;
+      padding: 1rem 1.125rem;
+      border: 1.5px solid var(--border);
+      border-radius: .75rem;
+      cursor: pointer;
+      transition: border-color .15s, background .15s;
+      background: #fafafa;
+    }
+    .co-pay-option--selected {
+      border-color: var(--coffee);
+      background: #fffaf7;
+    }
+    .co-radio { accent-color: var(--coffee); margin-top: .15rem; flex-shrink: 0; }
+    .co-pay-option__body { flex: 1; min-width: 0; }
+    .co-pay-option__top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: .5rem;
+    }
+    .co-pay-option__name { display: flex; align-items: center; gap: .625rem; flex-wrap: wrap; }
+    .co-pay-badge {
+      font-weight: 700;
+      font-size: .9rem;
+      color: var(--coffee);
+    }
+    .co-pay-desc { font-size: .8rem; color: var(--muted-fg); }
+    .co-pay-chips { display: flex; gap: .3rem; flex-wrap: wrap; }
+    .co-chip {
+      font-size: .7rem;
+      font-weight: 600;
+      color: var(--muted-fg);
+      background: #f3f4f6;
+      border-radius: .3rem;
+      padding: .15rem .45rem;
+      letter-spacing: .02em;
+    }
+
+    .co-error {
+      background: #fff1f1;
+      border: 1px solid #fca5a5;
+      color: #b91c1c;
+      border-radius: .5rem;
+      padding: .75rem 1rem;
+      font-size: .875rem;
+      margin-bottom: 1rem;
+    }
+
+    .co-btn-primary {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: .625rem;
+      width: 100%;
+      padding: 1rem 1.5rem;
+      background: var(--coffee);
+      color: #fff;
+      border: none;
+      border-radius: .75rem;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      transition: opacity .15s, transform .1s;
+      min-height: 52px;
+      letter-spacing: .01em;
+    }
+    .co-btn-primary:hover { opacity: .88; }
+    .co-btn-primary:active { transform: scale(.98); }
+    .co-btn-primary:disabled { opacity: .55; cursor: not-allowed; }
+    .co-btn-primary--loading { opacity: .7; }
+
+    .co-legal {
+      display: flex;
+      align-items: flex-start;
+      gap: .4rem;
+      font-size: .75rem;
+      color: var(--muted-fg);
+      margin-top: .875rem;
+      line-height: 1.5;
+    }
+    .co-legal a { color: var(--accent); text-decoration: none; }
+    .co-legal a:hover { text-decoration: underline; }
+
+    /* Summary */
+    .co-summary-col { position: sticky; top: 1.5rem; }
+    .co-summary-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      padding: 1.5rem;
+    }
+    .co-summary-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--coffee);
+      margin: 0 0 1.25rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .co-sum-list { display: flex; flex-direction: column; gap: .75rem; margin-bottom: 1.25rem; }
+    .co-sum-item {
+      display: flex;
+      align-items: center;
+      gap: .875rem;
+    }
+    .co-sum-item__img-wrap {
+      position: relative;
+      flex-shrink: 0;
+    }
+    .co-sum-item__img-wrap img {
+      width: 52px;
+      height: 52px;
+      border-radius: .5rem;
+      object-fit: cover;
+      border: 1px solid var(--border);
+      background: #f5f0eb;
+    }
+    .co-sum-item__qty {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      background: var(--coffee);
+      color: #fff;
+      font-size: .65rem;
+      font-weight: 700;
+      border-radius: 9999px;
+      min-width: 18px;
+      height: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 3px;
+    }
+    .co-sum-item__name {
+      flex: 1;
+      font-size: .85rem;
+      color: var(--coffee);
+      font-weight: 500;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .co-sum-item__price {
+      font-size: .875rem;
+      font-weight: 700;
+      color: var(--coffee);
+      white-space: nowrap;
+    }
+
+    .co-sum-lines {
+      display: flex;
+      flex-direction: column;
+      gap: .5rem;
+      padding-bottom: .875rem;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: .875rem;
+    }
+    .co-sum-line {
+      display: flex;
+      justify-content: space-between;
+      font-size: .875rem;
+      color: var(--muted-fg);
+    }
+
+    .co-ship-note {
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+      font-size: .78rem;
+      color: #16a34a;
+      font-weight: 600;
+      margin-bottom: .875rem;
+    }
+
+    .co-sum-total {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 1.25rem;
+    }
+    .co-sum-total > span { font-weight: 700; color: var(--coffee); font-size: 1rem; }
+    .co-total-amount {
+      display: block;
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--coffee);
+      line-height: 1.1;
+      text-align: right;
+    }
+    .co-total-tax {
+      display: block;
+      font-size: .7rem;
+      color: var(--muted-fg);
+      text-align: right;
+    }
+
+    .co-sum-trust {
+      border-top: 1px solid var(--border);
+      padding-top: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: .5rem;
+    }
+    .co-sum-trust-item {
+      display: flex;
+      align-items: center;
+      gap: .45rem;
+      font-size: .75rem;
+      color: #4a6741;
+    }
+
+    /* Responsive */
     @media (max-width: 768px) {
-      #checkoutLayout { grid-template-columns: 1fr !important; }
+      .co-layout { grid-template-columns: 1fr; }
+      .co-summary-col { position: static; order: -1; }
+      .co-field-row { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 480px) {
+      .co-section { padding: 1.25rem; }
+      .co-progress { display: none; }
     }
   </style>
 </Layout>

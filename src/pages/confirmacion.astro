@@ -6,122 +6,159 @@ import Layout from "../layouts/Layout.astro";
   title="Confirmación de pedido — DobleYo Café"
   description="Resumen y estado de tu pedido en DobleYo Café."
 >
-  <section style="max-width:600px; margin:2rem auto 4rem; text-align:center;">
+  <div class="conf-page">
 
-    <!-- Estado: cargando -->
-    <div id="stateLoading" aria-live="polite">
-      <div class="spinner" aria-label="Cargando estado del pedido..."></div>
-      <p class="muted" style="margin-top:1rem;">Verificando tu pedido…</p>
+    <!-- Loading -->
+    <div id="stateLoading" class="conf-loading" aria-live="polite">
+      <div class="conf-spinner" role="status" aria-label="Verificando pedido..."></div>
+      <p class="conf-loading__text">Verificando tu pedido…</p>
     </div>
 
-    <!-- Estado: pagado / procesando -->
-    <div id="statePaid" style="display:none;">
-      <div class="confirm-icon confirm-icon--success" aria-hidden="true">✓</div>
-      <h1 style="font-size:clamp(1.5rem,4vw,2rem); color:var(--coffee); margin:.75rem 0 .5rem;">¡Pedido confirmado!</h1>
-      <p class="muted" style="margin-bottom:1.5rem;">
-        Recibirás un correo de confirmación con los detalles de tu pedido.
-      </p>
-      <div class="order-card" id="orderDetails"></div>
-      <a href="/tienda" class="btn" style="margin-top:1.5rem;" data-link>Seguir comprando</a>
+    <!-- Pagado / Procesando -->
+    <div id="statePaid" class="conf-state" style="display:none;">
+      <div class="conf-anim conf-anim--success" aria-hidden="true">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><path d="M5 14l6 6 12-12" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <h1 class="conf-title">¡Pedido confirmado!</h1>
+      <p class="conf-subtitle">Recibirás un correo de confirmación con los detalles de tu pedido.</p>
+      <div id="orderDetails" class="conf-card"></div>
+      <div class="conf-next-steps">
+        <div class="conf-step-item">
+          <span class="conf-step-icon" aria-hidden="true">📬</span>
+          <div>
+            <p class="conf-step-title">Confirmación por email</p>
+            <p class="conf-step-desc">En los próximos minutos</p>
+          </div>
+        </div>
+        <div class="conf-step-item">
+          <span class="conf-step-icon" aria-hidden="true">📦</span>
+          <div>
+            <p class="conf-step-title">Preparación del pedido</p>
+            <p class="conf-step-desc">1–2 días hábiles</p>
+          </div>
+        </div>
+        <div class="conf-step-item">
+          <span class="conf-step-icon" aria-hidden="true">🚚</span>
+          <div>
+            <p class="conf-step-title">Envío a tu puerta</p>
+            <p class="conf-step-desc">3–5 días hábiles</p>
+          </div>
+        </div>
+      </div>
+      <a href="/tienda" class="conf-btn-primary">Seguir comprando</a>
     </div>
 
-    <!-- Estado: pendiente de pago -->
-    <div id="statePending" style="display:none;">
-      <div class="confirm-icon confirm-icon--pending" aria-hidden="true">⏳</div>
-      <h1 style="font-size:clamp(1.5rem,4vw,2rem); color:var(--coffee); margin:.75rem 0 .5rem;">Pago pendiente</h1>
-      <p class="muted" style="margin-bottom:1.5rem;">
-        Tu pedido fue creado pero el pago aún no ha sido confirmado.
-        Si completaste el pago, puede tomar unos minutos en procesarse.
-      </p>
-      <div class="order-card" id="orderDetailsPending"></div>
-      <p style="font-size:.875rem; color:var(--muted-fg); margin-top:1.5rem;">
+    <!-- Pago pendiente -->
+    <div id="statePending" class="conf-state" style="display:none;">
+      <div class="conf-anim conf-anim--pending" aria-hidden="true">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="10" stroke="#fff" stroke-width="2"/><path d="M14 9v5l3 3" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <h1 class="conf-title">Pago en proceso</h1>
+      <p class="conf-subtitle">Tu pedido fue creado. El pago puede tomar unos minutos en confirmarse.</p>
+      <div id="orderDetailsPending" class="conf-card"></div>
+      <p class="conf-help">
         ¿Problemas con el pago?
-        <a href="/contacto" style="color:var(--accent);" data-link>Contáctanos</a>
+        <a href="/contacto">Contáctanos</a>
       </p>
     </div>
 
-    <!-- Estado: cancelado / rechazado -->
-    <div id="stateError" style="display:none;">
-      <div class="confirm-icon confirm-icon--error" aria-hidden="true">✕</div>
-      <h1 style="font-size:clamp(1.5rem,4vw,2rem); color:#b91c1c; margin:.75rem 0 .5rem;">Pago no procesado</h1>
-      <p class="muted" style="margin-bottom:1.5rem;">
-        Tu pago fue rechazado o cancelado. No se realizó ningún cargo.
-        Puedes intentarlo nuevamente.
-      </p>
-      <a href="/checkout" class="btn" data-link>Reintentar</a>
-      <p style="font-size:.875rem; color:var(--muted-fg); margin-top:1rem;">
-        ¿Necesitas ayuda?
-        <a href="/contacto" style="color:var(--accent);" data-link>Contáctanos</a>
-      </p>
+    <!-- Error / Cancelado -->
+    <div id="stateError" class="conf-state" style="display:none;">
+      <div class="conf-anim conf-anim--error" aria-hidden="true">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><path d="M8 8l12 12M20 8L8 20" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/></svg>
+      </div>
+      <h1 class="conf-title conf-title--error">Pago no completado</h1>
+      <p class="conf-subtitle">Tu pago fue rechazado o cancelado. No se realizó ningún cobro.</p>
+      <div class="conf-error-actions">
+        <a href="/checkout" class="conf-btn-primary">Intentar de nuevo</a>
+        <a href="/carrito" class="conf-btn-secondary">Ver carrito</a>
+      </div>
+      <p class="conf-help">¿Necesitas ayuda? <a href="/contacto">Contáctanos</a></p>
     </div>
 
-    <!-- Estado: referencia no encontrada -->
-    <div id="stateNotFound" style="display:none;">
-      <div class="confirm-icon confirm-icon--error" aria-hidden="true">?</div>
-      <h1 style="font-size:clamp(1.5rem,4vw,2rem); color:var(--coffee); margin:.75rem 0 .5rem;">Pedido no encontrado</h1>
-      <p class="muted" style="margin-bottom:1.5rem;">
-        No pudimos encontrar un pedido con esta referencia.
-      </p>
-      <a href="/" class="btn" data-link>Ir al inicio</a>
+    <!-- No encontrado -->
+    <div id="stateNotFound" class="conf-state" style="display:none;">
+      <div class="conf-anim conf-anim--error" aria-hidden="true">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="10" stroke="#fff" stroke-width="2"/><path d="M14 9v6M14 17v1.5" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/></svg>
+      </div>
+      <h1 class="conf-title">Pedido no encontrado</h1>
+      <p class="conf-subtitle">No pudimos encontrar un pedido con esta referencia.</p>
+      <a href="/" class="conf-btn-primary">Ir al inicio</a>
     </div>
 
-  </section>
+  </div>
 
   <script>
     (function () {
-      function fmt(n: number) { return '$' + Number(n || 0).toLocaleString('es-CO'); }
+      function fmt(n) { return '$' + Number(n || 0).toLocaleString('es-CO'); }
 
-      function showState(id: string) {
-        ['stateLoading','statePaid','statePending','stateError','stateNotFound']
-          .forEach(s => {
-            const el = document.getElementById(s);
-            if (el) el.style.display = s === id ? 'block' : 'none';
-          });
+      const STATES = ['stateLoading','statePaid','statePending','stateError','stateNotFound'];
+      function showState(id) {
+        STATES.forEach(s => {
+          const el = document.getElementById(s);
+          if (el) el.style.display = s === id ? 'block' : 'none';
+        });
       }
 
-      function renderOrderCard(order: any, containerId: string) {
+      function statusLabel(status) {
+        const m = {
+          paid: 'Pagado', processing: 'En proceso',
+          shipped: 'En camino', delivered: 'Entregado',
+          pending_payment: 'Pago pendiente',
+          cancelled: 'Cancelado', refunded: 'Reembolsado',
+        };
+        return m[status] || status;
+      }
+
+      function statusColor(status) {
+        if (['paid','processing','shipped','delivered'].includes(status)) return '#16a34a';
+        if (status === 'pending_payment') return '#d97706';
+        return '#dc2626';
+      }
+
+      function renderOrderCard(order, containerId) {
         const el = document.getElementById(containerId);
         if (!el) return;
-        const items = (order.items || []).map((i: any) =>
-          `<div class="order-line">
-            <span>${i.quantity}× ${i.product_name}</span>
-            <span>${fmt(i.subtotal_cop)}</span>
+        const items = (order.items || []).map(i =>
+          `<div class="oc-line">
+            <span class="oc-line__name">${i.quantity}× ${i.product_name}</span>
+            <span class="oc-line__price">${fmt(i.subtotal_cop)}</span>
           </div>`
         ).join('');
+
         el.innerHTML = `
-          <div class="order-meta">
-            <span class="order-ref">Pedido <strong>#${order.reference}</strong></span>
-            <span class="order-status order-status--${order.status}">${statusLabel(order.status)}</span>
+          <div class="oc-header">
+            <div>
+              <p class="oc-ref-label">Número de pedido</p>
+              <p class="oc-ref">#${order.reference}</p>
+            </div>
+            <span class="oc-status" style="background:${statusColor(order.status)}20; color:${statusColor(order.status)}">
+              ${statusLabel(order.status)}
+            </span>
           </div>
-          <div class="order-items">${items}</div>
-          <div class="order-total">
-            <span>Envío</span><span>${order.shipping_cop === 0 ? 'Gratis' : fmt(order.shipping_cop)}</span>
+          <div class="oc-items">${items}</div>
+          <div class="oc-totals">
+            <div class="oc-total-line">
+              <span>Envío</span>
+              <span>${order.shipping_cop === 0 ? 'Gratis' : fmt(order.shipping_cop)}</span>
+            </div>
+            <div class="oc-total-line oc-total-line--final">
+              <span>Total</span>
+              <span>${fmt(order.total_cop)}</span>
+            </div>
           </div>
-          <div class="order-total order-total--final">
-            <span>Total</span><span>${fmt(order.total_cop)}</span>
+          <div class="oc-delivery">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M1.5 10.5l4-8 2.5 5 2-3 2.5 6" stroke="#4a6741" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Entrega en <strong>${order.shipping_city}</strong>
           </div>
-          <p class="order-city">📦 Entrega en <strong>${order.shipping_city}</strong></p>
         `;
       }
 
-      function statusLabel(status: string): string {
-        const map: Record<string, string> = {
-          paid: '✅ Pagado',
-          processing: '⚙️ En proceso',
-          shipped: '🚚 En camino',
-          delivered: '✓ Entregado',
-          pending_payment: '⏳ Pago pendiente',
-          cancelled: '✕ Cancelado',
-          refunded: '↩ Reembolsado',
-        };
-        return map[status] || status;
-      }
-
-      async function loadOrder(ref: string) {
+      async function loadOrder(ref) {
         try {
           const res = await fetch(`/api/orders/${encodeURIComponent(ref)}`);
           if (res.status === 404) { showState('stateNotFound'); return; }
-          if (!res.ok) throw new Error('Error de red');
+          if (!res.ok) throw new Error('Network error');
 
           const data = await res.json();
           if (!data.success) { showState('stateNotFound'); return; }
@@ -129,7 +166,7 @@ import Layout from "../layouts/Layout.astro";
           const order = data.data;
           const s = order.status;
 
-          if (s === 'paid' || s === 'processing' || s === 'shipped' || s === 'delivered') {
+          if (['paid','processing','shipped','delivered'].includes(s)) {
             renderOrderCard(order, 'orderDetails');
             showState('statePaid');
           } else if (s === 'pending_payment') {
@@ -143,118 +180,224 @@ import Layout from "../layouts/Layout.astro";
         }
       }
 
-      // Leer ref de la URL (?ref=DY-xxx o wompi lo pasa como ?id=transaction_id&reference=DY-xxx)
       const params = new URLSearchParams(window.location.search);
       const ref = params.get('ref') || params.get('reference');
-
-      if (!ref) {
-        showState('stateNotFound');
-      } else {
-        loadOrder(ref);
-      }
+      if (!ref) showState('stateNotFound');
+      else loadOrder(ref);
     })();
   </script>
 
   <style>
-    .spinner {
+    .conf-page {
+      max-width: 520px;
+      margin: 0 auto;
+      padding: 3rem 1.25rem 5rem;
+    }
+
+    /* Loading */
+    .conf-loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 4rem 0;
+      gap: 1rem;
+    }
+    .conf-spinner {
       width: 44px;
       height: 44px;
       border: 3px solid var(--border);
-      border-top-color: var(--accent);
+      border-top-color: var(--coffee);
       border-radius: 50%;
-      animation: spin .75s linear infinite;
-      margin: 2rem auto;
+      animation: conf-spin .75s linear infinite;
     }
+    @keyframes conf-spin { to { transform: rotate(360deg); } }
+    @media (prefers-reduced-motion: reduce) { .conf-spinner { animation: none; } }
+    .conf-loading__text { color: var(--muted-fg); font-size: .9rem; }
 
-    @keyframes spin { to { transform: rotate(360deg); } }
+    /* States */
+    .conf-state { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 0; }
 
-    @media (prefers-reduced-motion: reduce) {
-      .spinner { animation: none; border-top-color: var(--accent); }
-    }
-
-    .confirm-icon {
+    /* Animated icon */
+    .conf-anim {
       width: 72px;
       height: 72px;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 2rem;
-      margin: 1.5rem auto .75rem;
+      margin-bottom: 1.5rem;
+      animation: conf-pop .4s cubic-bezier(.175,.885,.32,1.275);
+    }
+    @keyframes conf-pop {
+      from { transform: scale(.5); opacity: 0; }
+      to   { transform: scale(1); opacity: 1; }
+    }
+    .conf-anim--success { background: linear-gradient(135deg, #16a34a, #22c55e); box-shadow: 0 8px 24px rgba(22,163,74,.25); }
+    .conf-anim--pending { background: linear-gradient(135deg, #d97706, #f59e0b); box-shadow: 0 8px 24px rgba(217,119,6,.25); }
+    .conf-anim--error   { background: linear-gradient(135deg, #dc2626, #ef4444); box-shadow: 0 8px 24px rgba(220,38,38,.25); }
+
+    .conf-title {
+      font-size: clamp(1.5rem, 4vw, 2rem);
+      font-weight: 800;
+      color: var(--coffee);
+      margin: 0 0 .5rem;
+    }
+    .conf-title--error { color: #b91c1c; }
+    .conf-subtitle {
+      color: var(--muted-fg);
+      font-size: .95rem;
+      line-height: 1.6;
+      margin: 0 0 1.75rem;
     }
 
-    .confirm-icon--success { background: #dcfce7; color: #16a34a; }
-    .confirm-icon--pending { background: #fef3c7; color: #d97706; }
-    .confirm-icon--error   { background: #fee2e2; color: #dc2626; }
-
-    .order-card {
-      background: var(--card);
+    /* Order card */
+    .conf-card {
+      width: 100%;
+      background: #fff;
       border: 1px solid var(--border);
-      border-radius: .625rem;
-      padding: 1.25rem;
+      border-radius: 1rem;
+      padding: 1.5rem;
       text-align: left;
-      margin-top: 1rem;
+      margin-bottom: 1.75rem;
     }
-
-    .order-meta {
+    .oc-header {
       display: flex;
       justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: .5rem;
-      margin-bottom: 1rem;
-      padding-bottom: .75rem;
+      align-items: flex-start;
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+      padding-bottom: 1.25rem;
       border-bottom: 1px solid var(--border);
     }
-
-    .order-ref { font-size: .95rem; }
-
-    .order-status {
-      font-size: .8rem;
-      padding: .2rem .65rem;
-      border-radius: 999px;
-      font-weight: 600;
-    }
-
-    .order-status--paid,
-    .order-status--processing,
-    .order-status--shipped,
-    .order-status--delivered { background: #dcfce7; color: #16a34a; }
-
-    .order-status--pending_payment { background: #fef3c7; color: #d97706; }
-    .order-status--cancelled,
-    .order-status--refunded        { background: #fee2e2; color: #dc2626; }
-
-    .order-items { display: flex; flex-direction: column; gap: .4rem; margin-bottom: .75rem; }
-
-    .order-line {
-      display: flex;
-      justify-content: space-between;
-      gap: .5rem;
-      font-size: .9rem;
-    }
-
-    .order-total {
-      display: flex;
-      justify-content: space-between;
-      font-size: .9rem;
-      color: var(--muted-fg);
-      margin-bottom: .3rem;
-    }
-
-    .order-total--final {
+    .oc-ref-label { font-size: .7rem; color: var(--muted-fg); text-transform: uppercase; letter-spacing: .05em; margin: 0 0 .2rem; }
+    .oc-ref { font-size: 1.1rem; font-weight: 700; color: var(--coffee); margin: 0; }
+    .oc-status {
+      font-size: .75rem;
       font-weight: 700;
-      font-size: 1.05rem;
-      color: var(--fg);
-      border-top: 1px solid var(--border);
-      padding-top: .5rem;
-      margin-top: .35rem;
+      padding: .3rem .75rem;
+      border-radius: 9999px;
+      white-space: nowrap;
+      flex-shrink: 0;
     }
 
-    .order-city {
+    .oc-items { display: flex; flex-direction: column; gap: .5rem; margin-bottom: 1rem; }
+    .oc-line {
+      display: flex;
+      justify-content: space-between;
+      gap: .75rem;
+      font-size: .875rem;
+    }
+    .oc-line__name { color: var(--coffee); flex: 1; min-width: 0; }
+    .oc-line__price { color: var(--coffee); font-weight: 600; white-space: nowrap; }
+
+    .oc-totals {
+      border-top: 1px solid var(--border);
+      padding-top: .875rem;
+      display: flex;
+      flex-direction: column;
+      gap: .4rem;
+      margin-bottom: .875rem;
+    }
+    .oc-total-line {
+      display: flex;
+      justify-content: space-between;
       font-size: .875rem;
       color: var(--muted-fg);
-      margin-top: .875rem;
     }
+    .oc-total-line--final {
+      font-weight: 800;
+      font-size: 1.05rem;
+      color: var(--coffee);
+      border-top: 1px solid var(--border);
+      padding-top: .625rem;
+      margin-top: .25rem;
+    }
+
+    .oc-delivery {
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+      font-size: .8rem;
+      color: #4a6741;
+      background: #f0fdf4;
+      padding: .5rem .875rem;
+      border-radius: .5rem;
+    }
+
+    /* Next steps */
+    .conf-next-steps {
+      width: 100%;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      overflow: hidden;
+      margin-bottom: 1.75rem;
+      text-align: left;
+    }
+    .conf-step-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .conf-step-item:last-child { border-bottom: none; }
+    .conf-step-icon { font-size: 1.375rem; flex-shrink: 0; }
+    .conf-step-title { font-size: .9rem; font-weight: 600; color: var(--coffee); margin: 0 0 .15rem; }
+    .conf-step-desc  { font-size: .8rem; color: var(--muted-fg); margin: 0; }
+
+    /* Buttons */
+    .conf-btn-primary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: .875rem 2.5rem;
+      background: var(--coffee);
+      color: #fff;
+      border: none;
+      border-radius: .75rem;
+      font-size: .975rem;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      transition: opacity .15s, transform .1s;
+      min-height: 48px;
+    }
+    .conf-btn-primary:hover { opacity: .88; }
+    .conf-btn-primary:active { transform: scale(.98); }
+
+    .conf-btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: .875rem 2rem;
+      background: transparent;
+      color: var(--coffee);
+      border: 1.5px solid var(--border);
+      border-radius: .75rem;
+      font-size: .975rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: border-color .15s, background .15s;
+      min-height: 48px;
+    }
+    .conf-btn-secondary:hover { border-color: var(--coffee); background: #f9f6f2; }
+
+    .conf-error-actions {
+      display: flex;
+      gap: .75rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 1.25rem;
+    }
+
+    .conf-help {
+      font-size: .85rem;
+      color: var(--muted-fg);
+      margin: .875rem 0 0;
+    }
+    .conf-help a { color: var(--accent); text-decoration: none; }
+    .conf-help a:hover { text-decoration: underline; }
   </style>
 </Layout>
