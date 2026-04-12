@@ -1,4 +1,7 @@
 ---
+import Header from "../components/Header.astro";
+import Head from "../components/Head.astro";
+
 interface Props {
   title: string;
   description?: string;
@@ -10,98 +13,46 @@ const { title, description } = Astro.props;
 <!doctype html>
 <html lang="es">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#251a14" />
+    <Head title={`${title} — DobleYo Café`} isAdmin={false} />
+    <!-- Sobreescribir robots: páginas operativas no deben indexarse -->
     <meta name="robots" content="noindex, nofollow" />
-    <title>{title} - DobleYo Café</title>
     <style>
-      :root {
-        --coffee: #251a14;
-        --cream: #f7f3ef;
-        --accent: #c67b4e;
-        --dark: #1f1f1f;
-        --muted: #777;
-        --border: #e6e6e6;
-      }
-
-      * {
-        box-sizing: border-box;
-      }
-
-      html,
-      body {
-        margin: 0;
-        padding: 0;
-        font-family: "Lora", Georgia, serif;
-        background: var(--cream);
-        color: var(--dark);
-      }
-
-      body {
-        overflow-x: hidden;
-      }
-
-      /* Header móvil */
-      .mobile-header {
-        position: sticky;
-        top: 0;
-        z-index: 50;
-        background: #fff;
-        border-bottom: 1px solid var(--border);
-        padding: 1rem;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-      }
-
-      .mobile-header h1 {
-        margin: 0;
-        font-size: 1.2rem;
-        font-weight: 600;
-        font-family: "Playfair Display", Georgia, serif;
-        color: var(--coffee);
-      }
-
-      .mobile-header .back-btn {
-        background: none;
-        border: none;
-        font-size: 1.5rem;
-        cursor: pointer;
-        color: var(--coffee);
-        padding: 0;
-        width: 2rem;
-        height: 2rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-
-      .mobile-header .logo {
-        width: 40px;
-        height: auto;
-      }
-
-      /* Contenedor principal */
-      .mobile-container {
+      /* ── Compensar navbar fija ───────────────────────────────────────────── */
+      .mobile-page-wrapper {
+        padding-top: calc(var(--header-height, 96px) + var(--header-top, 0px) + 0.5rem);
         min-height: 100vh;
-        padding-bottom: 2rem;
       }
 
+      /* ── Contenido de la página ──────────────────────────────────────────── */
       .mobile-content {
-        padding: 1.5rem;
+        padding: 1.25rem 1.25rem 3rem;
         max-width: 100%;
       }
 
-      /* Descripción bajo el título */
-      .mobile-description {
-        color: var(--muted);
-        font-size: 0.95rem;
-        margin-bottom: 1.5rem;
+      @media (min-width: 600px) {
+        .mobile-content {
+          max-width: 520px;
+          margin: 0 auto;
+        }
+      }
+
+      /* ── Título de página ────────────────────────────────────────────────── */
+      .page-title {
+        font-size: 1.35rem;
+        font-weight: 700;
+        color: var(--coffee, #251a14);
+        margin: 0 0 0.35rem;
+        font-family: 'Playfair Display', Georgia, serif;
+      }
+
+      .page-description {
+        color: var(--muted, #777);
+        font-size: 0.92rem;
+        margin: 0 0 1.5rem;
         line-height: 1.5;
       }
 
-      /* Formularios */
+      /* ── Formularios ─────────────────────────────────────────────────────── */
       form {
         display: flex;
         flex-direction: column;
@@ -117,7 +68,7 @@ const { title, description } = Astro.props;
       label {
         font-weight: 600;
         font-size: 0.95rem;
-        color: var(--dark);
+        color: var(--dark, #1f1f1f);
       }
 
       label .required {
@@ -128,19 +79,22 @@ const { title, description } = Astro.props;
       select,
       textarea {
         padding: 0.75rem;
-        border: 1px solid var(--border);
+        border: 1px solid var(--border, #e6e6e6);
         border-radius: 0.375rem;
         font-family: inherit;
         font-size: 1rem;
-        color: var(--dark);
+        color: var(--dark, #1f1f1f);
+        background: #fff;
+        width: 100%;
+        box-sizing: border-box;
       }
 
       input:focus,
       select:focus,
       textarea:focus {
         outline: none;
-        border-color: var(--accent);
-        box-shadow: 0 0 0 3px rgba(198, 123, 78, 0.1);
+        border-color: var(--accent, #c67b4e);
+        box-shadow: 0 0 0 3px rgba(198, 123, 78, 0.15);
       }
 
       textarea {
@@ -149,14 +103,14 @@ const { title, description } = Astro.props;
       }
 
       .form-hint {
-        font-size: 0.85rem;
-        color: var(--muted);
-        margin-top: 0.25rem;
+        font-size: 0.82rem;
+        color: var(--muted, #777);
+        margin-top: 0.2rem;
       }
 
-      /* Botones */
-      .btn-primary {
-        background: var(--accent);
+      /* ── Botones ─────────────────────────────────────────────────────────── */
+      .btn {
+        background: var(--accent, #c67b4e);
         color: #fff;
         padding: 0.875rem 1.5rem;
         border: none;
@@ -165,22 +119,26 @@ const { title, description } = Astro.props;
         font-size: 1rem;
         cursor: pointer;
         transition: background-color 0.2s ease;
+        text-align: center;
+        display: inline-block;
+        text-decoration: none;
       }
 
-      .btn-primary:active {
+      .btn:active,
+      .btn:hover {
         background: #a85a3a;
       }
 
-      .btn-primary:disabled {
-        background: var(--muted);
+      .btn:disabled {
+        background: var(--muted, #777);
         cursor: not-allowed;
       }
 
       .btn-secondary {
         background: #fff;
-        color: var(--accent);
+        color: var(--accent, #c67b4e);
         padding: 0.875rem 1.5rem;
-        border: 1px solid var(--accent);
+        border: 1px solid var(--accent, #c67b4e);
         border-radius: 0.375rem;
         font-weight: 600;
         font-size: 1rem;
@@ -189,7 +147,7 @@ const { title, description } = Astro.props;
       }
 
       .btn-secondary:active {
-        background: var(--cream);
+        background: var(--cream, #f7f3ef);
       }
 
       .form-actions {
@@ -202,7 +160,7 @@ const { title, description } = Astro.props;
         flex: 1;
       }
 
-      /* Alertas y mensajes */
+      /* ── Alertas ─────────────────────────────────────────────────────────── */
       .alert {
         padding: 1rem;
         border-radius: 0.375rem;
@@ -229,10 +187,26 @@ const { title, description } = Astro.props;
         border: 1px solid #93c5fd;
       }
 
-      /* Cards */
+      /* ── Cards ───────────────────────────────────────────────────────────── */
+      .mobile-card {
+        background: #fff;
+        border: 1px solid var(--border, #e6e6e6);
+        border-radius: 0.5rem;
+        padding: 1.25rem;
+        margin-bottom: 1rem;
+      }
+
+      .mobile-card h3 {
+        margin-top: 0;
+        margin-bottom: 1rem;
+        font-size: 1.05rem;
+        color: var(--coffee, #251a14);
+      }
+
+      /* Compatibilidad con .card usado en páginas existentes */
       .card {
         background: #fff;
-        border: 1px solid var(--border);
+        border: 1px solid var(--border, #e6e6e6);
         border-radius: 0.5rem;
         padding: 1.25rem;
         margin-bottom: 1rem;
@@ -241,11 +215,11 @@ const { title, description } = Astro.props;
       .card h3 {
         margin-top: 0;
         margin-bottom: 1rem;
-        font-size: 1.1rem;
-        color: var(--coffee);
+        font-size: 1.05rem;
+        color: var(--coffee, #251a14);
       }
 
-      /* Selecciones múltiples */
+      /* ── Selecciones múltiples ───────────────────────────────────────────── */
       .checkbox-group,
       .radio-group {
         display: flex;
@@ -259,7 +233,7 @@ const { title, description } = Astro.props;
         align-items: center;
         gap: 0.75rem;
         padding: 0.75rem;
-        border: 1px solid var(--border);
+        border: 1px solid var(--border, #e6e6e6);
         border-radius: 0.375rem;
         cursor: pointer;
         transition: background-color 0.2s ease;
@@ -275,136 +249,123 @@ const { title, description } = Astro.props;
       .checkbox-item:has(input:checked),
       .radio-item:has(input:checked) {
         background: rgba(198, 123, 78, 0.1);
-        border-color: var(--accent);
+        border-color: var(--accent, #c67b4e);
       }
 
-      /* Info display */
+      /* ── Info boxes ──────────────────────────────────────────────────────── */
       .info-box {
         background: rgba(198, 123, 78, 0.08);
         padding: 1rem;
-        border-left: 4px solid var(--accent);
+        border-left: 4px solid var(--accent, #c67b4e);
         border-radius: 0.375rem;
         margin-bottom: 1rem;
       }
 
       .info-box strong {
-        color: var(--coffee);
+        color: var(--coffee, #251a14);
       }
 
-      /* Footer móvil */
-      .mobile-footer {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background: #fff;
-        border-top: 1px solid var(--border);
-        padding: 1rem;
-        z-index: 40;
-      }
-
-      .mobile-footer button {
-        width: 100%;
-      }
-
-      /* Loading state */
+      /* ── Loading ─────────────────────────────────────────────────────────── */
       .loading {
         display: inline-block;
         width: 1rem;
         height: 1rem;
-        border: 2px solid var(--border);
-        border-top-color: var(--accent);
+        border: 2px solid var(--border, #e6e6e6);
+        border-top-color: var(--accent, #c67b4e);
         border-radius: 50%;
         animation: spin 0.8s linear infinite;
       }
 
       @keyframes spin {
-        to {
-          transform: rotate(360deg);
-        }
-      }
-
-      /* Responsive */
-      @media (min-width: 769px) {
-        .mobile-content {
-          max-width: 500px;
-          margin: 0 auto;
-        }
+        to { transform: rotate(360deg); }
       }
     </style>
   </head>
   <body>
-    <header class="mobile-header">
-      <button
-        class="back-btn"
-        title="Volver atrás"
-        onclick="window.history.back()">←</button
-      >
-      <h1>{title}</h1>
-      <div style="width: 2rem;"></div>
-    </header>
+    <Header />
 
-    <div class="mobile-container">
+    <div class="mobile-page-wrapper">
       <div class="mobile-content">
-        {description && <p class="mobile-description">{description}</p>}
+        <h1 class="page-title">{title}</h1>
+        {description && <p class="page-description">{description}</p>}
         <slot />
       </div>
     </div>
 
+    <script is:inline src="/assets/js/cart.js"></script>
+    <script is:inline src="/assets/js/auth-refresh.js"></script>
+
     <script>
-      // Haptic Feedback - Vibración al interactuar
-      const hapticFeedback = (pattern = 20) => {
-        if (navigator.vibrate) {
-          navigator.vibrate(pattern);
+      // ── Sincronizar altura de navbar fija ─────────────────────────────────
+      (function syncHeaderMetrics() {
+        const setMetrics = () => {
+          const header = document.querySelector(".site-header");
+          if (!header) return;
+          const h = header.offsetHeight;
+          document.documentElement.style.setProperty("--header-height", h + "px");
+          document.documentElement.style.setProperty("--header-top", "0px");
+        };
+        setMetrics();
+        window.addEventListener("resize", setMetrics);
+      })();
+
+      // ── Verificar autenticación ────────────────────────────────────────────
+      (async function checkAuth() {
+        const path = window.location.pathname;
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 10000);
+          const res = await fetch("/api/auth/me", {
+            credentials: "include",
+            signal: controller.signal,
+          });
+          clearTimeout(timeoutId);
+
+          if (!res.ok) {
+            if (res.status === 401 || res.status === 403) {
+              window.location.href = "/login?redirect=" + encodeURIComponent(path);
+            }
+            return;
+          }
+
+          const user = await res.json();
+          if (user.role !== "caficultor" && user.role !== "admin") {
+            window.location.href = "/login?redirect=" + encodeURIComponent(path);
+          }
+        } catch (err) {
+          // Timeout o error de red — dejar que las llamadas API individuales manejen el 401
+          console.warn("[MobileLayout] Auth check failed:", err?.message);
         }
+      })();
+
+      // ── Haptic feedback ────────────────────────────────────────────────────
+      const haptic = (pattern = 20) => {
+        if (navigator.vibrate) navigator.vibrate(pattern);
       };
 
-      // Vibración en botones
-      document.querySelectorAll("button").forEach((button) => {
-        button.addEventListener("click", () => {
-          hapticFeedback(15);
-        });
-      });
-
-      // Vibración en radio buttons y checkboxes
+      document.querySelectorAll("button").forEach((b) =>
+        b.addEventListener("click", () => haptic(15))
+      );
       document
         .querySelectorAll('input[type="radio"], input[type="checkbox"]')
-        .forEach((input) => {
-          input.addEventListener("change", () => {
-            hapticFeedback([10, 5, 10]);
-          });
-        });
-
-      // Vibración en selects
-      document.querySelectorAll("select").forEach((select) => {
-        select.addEventListener("change", () => {
-          hapticFeedback([10, 5, 10]);
-        });
-      });
-
-      // Vibración leve en inputs de texto
+        .forEach((i) => i.addEventListener("change", () => haptic([10, 5, 10])));
       document
-        .querySelectorAll(
-          'input[type="text"], input[type="number"], input[type="email"], textarea'
-        )
-        .forEach((input) => {
-          input.addEventListener("focus", () => {
-            hapticFeedback(5);
-          });
-        });
+        .querySelectorAll("select")
+        .forEach((s) => s.addEventListener("change", () => haptic([10, 5, 10])));
+      document
+        .querySelectorAll('input[type="text"], input[type="number"], input[type="email"], textarea')
+        .forEach((i) => i.addEventListener("focus", () => haptic(5)));
 
-      // Mantener scroll position
-      const savedScrollPos = sessionStorage.getItem("scrollPos");
-      if (savedScrollPos !== null) {
-        window.scrollTo(0, parseInt(savedScrollPos));
+      // ── Conservar posición de scroll ───────────────────────────────────────
+      const savedPos = sessionStorage.getItem("scrollPos");
+      if (savedPos !== null) {
+        window.scrollTo(0, parseInt(savedPos));
         sessionStorage.removeItem("scrollPos");
       }
-
-      // Guardar scroll position antes de navegar
       document.querySelectorAll("a").forEach((link) => {
         link.addEventListener("click", () => {
           if (!link.href.includes("#")) {
-            sessionStorage.setItem("scrollPos", window.scrollY);
+            sessionStorage.setItem("scrollPos", String(window.scrollY));
           }
         });
       });
