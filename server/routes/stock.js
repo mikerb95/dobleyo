@@ -46,7 +46,7 @@ stockRouter.get('/', async (req, res) => {
 stockRouter.post('/', authenticateToken, requireRole('admin'), async (req, res) => {
   try {
     const { id, name, category, origin, process, roast, price, stock, image_url } = req.body;
-    
+
     if (!id || !name || price === undefined) {
       return res.status(400).json({ error: 'id, name y price son requeridos' });
     }
@@ -59,7 +59,7 @@ stockRouter.post('/', authenticateToken, requireRole('admin'), async (req, res) 
 
     // Insertar
     await db.query(
-      'INSERT INTO products (id, name, category, origin, process, roast, price, stock, image_url) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)',
+      'INSERT INTO products (id, name, category, origin, process, roast, price, stock_quantity, image_url) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)',
       [id, name, category || null, origin || null, process || null, roast || null, price, stock || 0, image_url || null]
     );
 
