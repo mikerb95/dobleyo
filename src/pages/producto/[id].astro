@@ -1,0 +1,521 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { getCanonicalUrl } from "../../i18n/index.ts";
+
+const { id } = Astro.params;
+
+// ─── Cargar producto desde BD ──────────────────────────────────────────────
+let product: any = null;
+let error = false;
+
+try {
+  const { query } = await import("../../../server/db.js");
+  const LABEL: Record<string, string> = {
+    cafe: "Cafés",
+    accesorio: "Accesorios",
+    merchandising: "Merchandising",
+  };
+  const { rows } = await query(
+    `SELECT
+       id, slug, name, name_en, category, origin, process, roast,
+       tasting_notes, price, price_usd, rating,
+       is_deal AS deal, is_bestseller AS bestseller,
+       is_new AS new, is_fast AS fast,
+       image_url AS image, images,
+       stock_quantity AS stock,
+       description
+     FROM products
+     WHERE (id = $1 OR slug = $1) AND is_active = TRUE`,
+    [id]
+  );
+  if (rows.length) {
+    const p = rows[0];
+    product = {
+      ...p,
+      categoryLabel: LABEL[p.category] ?? p.category,
+      notes: p.tasting_notes?.es ?? null,
+      notesEn: p.tasting_notes?.en ?? null,
+    };
+  }
+} catch (_) {
+  // Fallback: buscar en datos estáticos
+  const { products: staticProducts } = await import("../../data/products.ts");
+  const found = staticProducts.find((p) => p.id === id);
+  if (found) {
+    product = { ...found, image: found.image, stock: 99, categoryLabel: found.category };
+  } else {
+    error = true;
+  }
+}
+
+if (!product && !error) {
+  return Astro.redirect("/tienda", 302);
+}
+if (error || !product) {
+  return Astro.redirect("/tienda", 302);
+}
+
+const outOfStock = typeof product.stock === "number" && product.stock === 0;
+const lowStock   = typeof product.stock === "number" && product.stock > 0 && product.stock <= 5;
+
+const productJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Product",
+  name: product.name,
+  image: product.image,
+  description:
+    product.description ||
+    (Array.isArray(product.notes) ? product.notes.join(", ") : ""),
+  brand: { "@type": "Brand", name: "DobleYo Café" },
+  offers: {
+    "@type": "Offer",
+    priceCurrency: "COP",
+    price: product.price,
+    availability: outOfStock
+      ? "https://schema.org/OutOfStock"
+      : "https://schema.org/InStock",
+    url: `https://dobleyo.cafe/producto/${product.id}`,
+  },
+  aggregateRating: product.rating
+    ? {
+        "@type": "AggregateRating",
+        ratingValue: product.rating,
+        bestRating: 5,
+        worstRating: 1,
+        ratingCount: 1,
+      }
+    : undefined,
+};
+---
+
+<Layout
+  title={`${product.name} — DobleYo Café`}
+  description={product.description ||
+    (Array.isArray(product.notes)
+      ? `${product.name}: ${product.notes.join(", ")}. Café de especialidad colombiano.`
+      : `${product.name} — Café de especialidad colombiano DobleYo.`)}
+  canonical={getCanonicalUrl(`/producto/${product.id}`, "es")}
+  jsonLd={productJsonLd}
+>
+  <section class="product-page">
+    <nav class="breadcrumb" aria-label="Ruta de navegación">
+      <a href="/tienda" data-link>Tienda</a>
+      <span aria-hidden="true">›</span>
+      <span>{product.categoryLabel}</span>
+      <span aria-hidden="true">›</span>
+      <span>{product.name}</span>
+    </nav>
+
+    <div class="product-layout">
+      <!-- Imagen -->
+      <div class="product-image-wrap">
+        <img
+          src={product.image}
+          alt={product.name}
+          class="product-image"
+          loading="eager"
+        />
+        {product.deal && <span class="badge deal">Oferta</span>}
+        {product.new && <span class="badge new-badge">Nuevo</span>}
+        {product.bestseller && <span class="badge best">Más vendido</span>}
+      </div>
+
+      <!-- Detalle -->
+      <div class="product-detail">
+        <p class="product-meta">
+          {product.categoryLabel}
+          {product.origin && <span>· {product.origin}</span>}
+        </p>
+
+        <h1 class="product-title">{product.name}</h1>
+
+        {product.rating && (
+          <div class="product-rating" aria-label={`Calificación: ${product.rating} de 5`}>
+            {"★".repeat(Math.round(product.rating))}{"☆".repeat(5 - Math.round(product.rating))}
+            <span class="rating-num">{product.rating}</span>
+          </div>
+        )}
+
+        <div class="product-price">
+          <span class="price-cop">${product.price.toLocaleString("es-CO")}</span>
+          {product.price_usd && (
+            <span class="price-usd">≈ USD {product.price_usd}</span>
+          )}
+        </div>
+
+        {outOfStock && (
+          <p class="stock-badge out">Agotado temporalmente</p>
+        )}
+        {lowStock && (
+          <p class="stock-badge low">¡Solo quedan {product.stock} unidades!</p>
+        )}
+
+        <!-- Atributos del café -->
+        {(product.process || product.roast) && (
+          <div class="product-attrs">
+            {product.process && (
+              <div class="attr">
+                <span class="attr-label">Proceso</span>
+                <span class="attr-val">{product.process}</span>
+              </div>
+            )}
+            {product.roast && (
+              <div class="attr">
+                <span class="attr-label">Tueste</span>
+                <span class="attr-val">{product.roast}</span>
+              </div>
+            )}
+            {product.origin && (
+              <div class="attr">
+                <span class="attr-label">Origen</span>
+                <span class="attr-val">{product.origin}</span>
+              </div>
+            )}
+          </div>
+        )}
+
+        <!-- Notas de cata -->
+        {Array.isArray(product.notes) && product.notes.length > 0 && (
+          <div class="tasting-notes">
+            <p class="tasting-title">Notas de cata</p>
+            <div class="notes-list">
+              {product.notes.map((note: string) => (
+                <span class="note-chip">{note}</span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {product.description && (
+          <p class="product-description">{product.description}</p>
+        )}
+
+        <!-- Acción -->
+        <div class="product-actions" id="productActions" data-product-id={product.id} data-product-name={product.name} data-product-price={product.price} data-product-image={product.image}>
+          <div class="qty-control">
+            <button class="qty-btn" id="qtyDown" aria-label="Reducir cantidad">−</button>
+            <input type="number" id="qtyInput" value="1" min="1" max={product.stock || 99} class="qty-input" aria-label="Cantidad" />
+            <button class="qty-btn" id="qtyUp" aria-label="Aumentar cantidad">+</button>
+          </div>
+          <button
+            class="btn add-btn"
+            id="addToCartBtn"
+            disabled={outOfStock || undefined}
+          >
+            {outOfStock ? "Agotado" : "Agregar al carrito"}
+          </button>
+          <a class="btn outline" href="/carrito" data-link>Ver carrito</a>
+        </div>
+
+        <!-- Envío -->
+        <p class="ship-note">
+          🚚 Envío gratis en pedidos mayores a $120.000 COP
+        </p>
+
+        <!-- Link de trazabilidad -->
+        {product.category === "cafe" && (
+          <a href="/trazabilidad" class="trace-link" data-link>
+            🔍 Rastrear el origen de este café
+          </a>
+        )}
+      </div>
+    </div>
+  </section>
+
+  <script>
+    (function () {
+      const actions = document.getElementById("productActions");
+      if (!actions) return;
+
+      const id    = actions.dataset.productId!;
+      const name  = actions.dataset.productName!;
+      const price = parseInt(actions.dataset.productPrice!, 10);
+      const image = actions.dataset.productImage!;
+
+      const qtyInput = document.getElementById("qtyInput") as HTMLInputElement;
+      const qtyDown  = document.getElementById("qtyDown") as HTMLButtonElement;
+      const qtyUp    = document.getElementById("qtyUp") as HTMLButtonElement;
+      const addBtn   = document.getElementById("addToCartBtn") as HTMLButtonElement;
+
+      function getQty() {
+        return Math.max(1, Math.min(99, parseInt(qtyInput.value, 10) || 1));
+      }
+
+      qtyDown.addEventListener("click", () => {
+        const q = getQty();
+        if (q > 1) { qtyInput.value = String(q - 1); }
+      });
+      qtyUp.addEventListener("click", () => {
+        const q = getQty();
+        const max = parseInt(qtyInput.max, 10) || 99;
+        if (q < max) { qtyInput.value = String(q + 1); }
+      });
+
+      addBtn.addEventListener("click", () => {
+        function tryAdd() {
+          if (!(window as any).Cart) { setTimeout(tryAdd, 40); return; }
+          const qty = getQty();
+          (window as any).Cart.addToCart({ id, name, price, image, qty });
+          addBtn.textContent = "✓ Agregado";
+          addBtn.disabled = true;
+          setTimeout(() => {
+            addBtn.textContent = "Agregar al carrito";
+            addBtn.disabled = false;
+          }, 1500);
+        }
+        tryAdd();
+      });
+    })();
+  </script>
+
+  <style>
+    .product-page {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1.5rem 1rem 4rem;
+    }
+
+    .breadcrumb {
+      display: flex;
+      gap: .4rem;
+      align-items: center;
+      font-size: .85rem;
+      color: var(--muted-fg, #888);
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .breadcrumb a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .breadcrumb a:hover { text-decoration: underline; }
+
+    .product-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+      align-items: start;
+    }
+
+    .product-image-wrap {
+      position: relative;
+      border-radius: .75rem;
+      overflow: hidden;
+      aspect-ratio: 1 / 1;
+      background: var(--surface, #f9f6f2);
+    }
+
+    .product-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .badge {
+      position: absolute;
+      top: .75rem;
+      left: .75rem;
+      font-size: .75rem;
+      font-weight: 700;
+      padding: .2rem .6rem;
+      border-radius: 99px;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+
+    .badge.deal      { background: var(--accent); color: #fff; }
+    .badge.new-badge { background: #4a6741; color: #fff; }
+    .badge.best      { background: #92400e; color: #fff; }
+
+    .product-meta {
+      font-size: .85rem;
+      color: var(--muted-fg, #888);
+      margin: 0 0 .4rem;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+
+    .product-title {
+      font-size: clamp(1.6rem, 4vw, 2.2rem);
+      margin: 0 0 .5rem;
+      line-height: 1.2;
+    }
+
+    .product-rating {
+      color: #f59e0b;
+      font-size: 1.1rem;
+      margin-bottom: .75rem;
+    }
+
+    .rating-num {
+      color: var(--muted-fg, #888);
+      font-size: .85rem;
+      margin-left: .25rem;
+    }
+
+    .product-price {
+      margin-bottom: .75rem;
+    }
+
+    .price-cop {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .price-usd {
+      font-size: .9rem;
+      color: var(--muted-fg, #888);
+      margin-left: .5rem;
+    }
+
+    .stock-badge {
+      display: inline-block;
+      font-size: .8rem;
+      font-weight: 600;
+      padding: .2rem .65rem;
+      border-radius: 99px;
+      margin-bottom: .75rem;
+    }
+
+    .stock-badge.out { background: #fee2e2; color: #b91c1c; }
+    .stock-badge.low { background: #fef9c3; color: #92400e; }
+
+    .product-attrs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .65rem;
+      margin: 1rem 0;
+    }
+
+    .attr {
+      display: flex;
+      flex-direction: column;
+      background: var(--surface, #f9f6f2);
+      border-radius: .5rem;
+      padding: .4rem .75rem;
+      min-width: 80px;
+    }
+
+    .attr-label {
+      font-size: .7rem;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--muted-fg, #888);
+    }
+
+    .attr-val {
+      font-size: .9rem;
+      font-weight: 600;
+    }
+
+    .tasting-notes { margin: 1rem 0; }
+
+    .tasting-title {
+      font-size: .8rem;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--muted-fg, #888);
+      margin-bottom: .4rem;
+    }
+
+    .notes-list { display: flex; flex-wrap: wrap; gap: .4rem; }
+
+    .note-chip {
+      background: var(--accent-light, #f0e8df);
+      color: var(--accent);
+      font-size: .82rem;
+      font-weight: 600;
+      padding: .2rem .65rem;
+      border-radius: 99px;
+    }
+
+    .product-description {
+      font-size: .95rem;
+      line-height: 1.6;
+      color: var(--text, #333);
+      margin: 1rem 0;
+    }
+
+    .product-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .65rem;
+      align-items: center;
+      margin: 1.25rem 0 .75rem;
+    }
+
+    .qty-control {
+      display: flex;
+      align-items: center;
+      border: 1px solid var(--border, #ddd);
+      border-radius: .375rem;
+      overflow: hidden;
+    }
+
+    .qty-btn {
+      width: 2.25rem;
+      height: 2.5rem;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--accent);
+      transition: background .15s;
+    }
+
+    .qty-btn:hover { background: var(--surface, #f9f6f2); }
+
+    .qty-input {
+      width: 3rem;
+      height: 2.5rem;
+      border: none;
+      border-left: 1px solid var(--border, #ddd);
+      border-right: 1px solid var(--border, #ddd);
+      text-align: center;
+      font-size: .95rem;
+      font-weight: 600;
+      -moz-appearance: textfield;
+    }
+
+    .qty-input::-webkit-inner-spin-button,
+    .qty-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+
+    .add-btn {
+      flex: 1;
+      min-width: 160px;
+      min-height: 2.5rem;
+      font-size: 1rem;
+    }
+
+    .ship-note {
+      font-size: .82rem;
+      color: #4a6741;
+      margin: .25rem 0 .75rem;
+    }
+
+    .trace-link {
+      display: inline-block;
+      font-size: .85rem;
+      color: var(--accent);
+      text-decoration: none;
+      margin-top: .25rem;
+    }
+
+    .trace-link:hover { text-decoration: underline; }
+
+    @media (max-width: 768px) {
+      .product-layout {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+      }
+
+      .product-image-wrap {
+        max-height: 340px;
+      }
+    }
+  </style>
+</Layout>
