@@ -947,33 +947,36 @@ coffeeRouter.get('/cupping', async (req, res) => {
   try {
     const result = await query(
       `SELECT
-        pqc.id,
-        pqc.check_number,
-        pqc.check_type,
-        pqc.check_date,
-        pqc.passed,
-        pqc.overall_score,
-        pqc.aroma_score,
-        pqc.flavor_score,
-        pqc.aftertaste_score,
-        pqc.acidity_score,
-        pqc.body_score,
-        pqc.balance_score,
-        pqc.uniformity_score,
-        pqc.clean_cup_score,
-        pqc.sweetness_score,
-        pqc.defects_count,
-        pqc.defects_found,
-        pqc.moisture_percentage,
-        pqc.color_agtron,
-        pqc.observations,
-        pqc.corrective_actions,
-        rb.lot_id
-       FROM production_quality_checks pqc
-       LEFT JOIN roasted_coffee       rc ON pqc.roast_batch_id = rc.id
-       LEFT JOIN roasting_batches     rb ON rc.roasting_id = rb.id
-       WHERE pqc.check_type IN ('post_tostado', 'catacion', 'final')
-       ORDER BY pqc.check_date DESC
+        id,
+        check_number,
+        -- lot_id está embebido en check_number con formato CUP-<lot_id>-<HEX>
+        CASE
+          WHEN check_number LIKE 'CUP-%' THEN
+            SUBSTRING(check_number FROM 5 FOR LENGTH(check_number) - 9)
+          ELSE NULL
+        END AS lot_id,
+        check_type,
+        check_date,
+        passed,
+        overall_score,
+        aroma_score,
+        flavor_score,
+        aftertaste_score,
+        acidity_score,
+        body_score,
+        balance_score,
+        uniformity_score,
+        clean_cup_score,
+        sweetness_score,
+        defects_count,
+        defects_found,
+        moisture_percentage,
+        color_agtron,
+        observations,
+        corrective_actions
+       FROM production_quality_checks
+       WHERE check_type IN ('post_tostado', 'catacion', 'final')
+       ORDER BY check_date DESC
        LIMIT 50`
     );
     res.json(result.rows);
@@ -1015,9 +1018,21 @@ coffeeRouter.post('/cupping', async (req, res) => {
     const attrSum = attrs.reduce((sum, v) => sum + (parseFloat(v) || 0), 0);
     const finalScore = Math.max(0, attrSum - (parseInt(defectsCount) || 0) * 4);
 
-    // Generar número de control único
-    const checkNumber = `CUP-${Date.now()}-${crypto.randomBytes(2).toString('hex').toUpperCase()}`;
+    // Obtener lot_id para incluirlo en el número de control
+    const lotRow = await query(
+      `SELECT rb.lot_id FROM roasted_coffee rc
+       LEFT JOIN roasting_batches rb ON rc.roasting_id = rb.id
+       WHERE rc.id = $1`,
+      [roastedId]
+    );
+    const lotId = lotRow.rows[0]?.lot_id || 'GEN';
 
+    // Generar número de control único con lot_id embebido
+    const checkNumber = `CUP-${lotId}-${crypto.randomBytes(2).toString('hex').toUpperCase()}`;
+
+    // roast_batch_id referencia la tabla `roast_batches` del sistema de producción (distinta
+    // de `roasting_batches` del pipeline de café), por lo que se deja en NULL para evitar
+    // violaciones de FK. El vínculo al lote queda en check_number y observations.
     const result = await query(
       `INSERT INTO production_quality_checks (
         check_number, roast_batch_id, check_type, check_date, inspector_id,
@@ -1027,15 +1042,15 @@ coffeeRouter.post('/cupping', async (req, res) => {
         defects_count, defects_found, moisture_percentage, color_agtron,
         observations, corrective_actions, created_at
        ) VALUES (
-        $1, $2, $3, $4, $5,
-        $6, $7,
-        $8, $9, $10, $11,
-        $12, $13, $14, $15, $16,
-        $17, $18, $19, $20,
-        $21, $22, NOW()
+        $1, NULL, $2, $3, $4,
+        $5, $6,
+        $7, $8, $9, $10,
+        $11, $12, $13, $14, $15,
+        $16, $17, $18, $19,
+        $20, $21, NOW()
        ) RETURNING id`,
       [
-        checkNumber, roastedId, checkType || 'catacion', checkDate, req.user.id,
+        checkNumber, checkType || 'catacion', checkDate, req.user.id,
         passed ? true : false, finalScore.toFixed(2),
         aromaScore || null, flavorScore || null, aftertasteScore || null, acidityScore || null,
         bodyScore || null, balanceScore || null, uniformityScore || null, cleanCupScore || null, sweetnessScore || null,
