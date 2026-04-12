@@ -1,253 +1,312 @@
 ---
 import AppLayout from "../../layouts/AppLayout.astro";
+
+const origin = Astro.url.origin;
+const cookie = Astro.request.headers.get("cookie") ?? "";
+const opts   = { headers: { cookie } };
+
+// ─── Fetch paralelo de APIs del pipeline ────────────────────────────────────
+let harvests: any[]  = [];
+let packaged: any[]  = [];
+let lotsData: any[]  = [];
+let fetchError       = false;
+
+try {
+  const [rH, rP, rL] = await Promise.all([
+    fetch(`${origin}/api/coffee/harvests`, opts),
+    fetch(`${origin}/api/coffee/packaged`,  opts),
+    fetch(`${origin}/api/coffee/lots`,      opts),
+  ]);
+
+  if (rH.ok) harvests  = await rH.json();
+  if (rP.ok) packaged  = await rP.json();
+  if (rL.ok) lotsData  = await rL.json();
+
+  // Normalizar: los endpoints devuelven arrays directos o {data:[]}
+  if (!Array.isArray(harvests)) harvests = (harvests as any)?.data ?? [];
+  if (!Array.isArray(packaged)) packaged = (packaged as any)?.data ?? [];
+  if (!Array.isArray(lotsData)) lotsData = (lotsData as any)?.data ?? [];
+} catch (_) {
+  fetchError = true;
+}
+
+// ─── KPIs principales ────────────────────────────────────────────────────────
+const totalLotes  = harvests.length;
+const totalEmpacados = packaged.length;
+
+// Calidad: score de empaquetado (escala 1–5, promedio de acidez, cuerpo, balance)
+const scoresValidos = packaged.filter((p: any) => p.score > 0);
+const avgScore = scoresValidos.length > 0
+  ? (scoresValidos.reduce((s: number, p: any) => s + Number(p.score), 0) / scoresValidos.length).toFixed(2)
+  : null;
+
+// Precio promedio (placeholder — viene de sales cuando esté disponible)
+// Por ahora calculamos kg totales de packaged (unit_count * weight por presentación)
+const PACK_WEIGHTS: Record<string, number> = { "250g": 0.25, "500g": 0.5, "1kg": 1, "1000g": 1, "100g": 0.1 };
+const totalKgEmpacado = packaged.reduce((s: number, p: any) => {
+  const w = PACK_WEIGHTS[p.package_size ?? ""] ?? 0;
+  return s + w * (Number(p.unit_count) || 0);
+}, 0);
+
+// ─── Distribución de calidad ────────────────────────────────────────────────
+const qDist = [
+  { label: "4.5–5 (Excepcional)", color: "#2d6a4f", count: scoresValidos.filter((p: any) => p.score >= 4.5).length },
+  { label: "3.5–4.4 (Muy bueno)", color: "#8b6f47", count: scoresValidos.filter((p: any) => p.score >= 3.5 && p.score < 4.5).length },
+  { label: "< 3.5 (Regular)",     color: "#d4a017", count: scoresValidos.filter((p: any) => p.score <  3.5 && p.score > 0).length },
+];
+const maxQDist = Math.max(1, ...qDist.map((d) => d.count));
+
+// ─── Variedades ──────────────────────────────────────────────────────────────
+const VARIETY_LABEL: Record<string, string> = {
+  CAT: "Caturra", TIP: "Típica", BOB: "Bourbon",
+  GER: "Geisha",  PAC: "Pacamara", CAS: "Castillo",
+  PBO: "Pink Bourbon",
+};
+
+const varietyCounts: Record<string, number> = {};
+for (const h of harvests) {
+  // lot_id = COL-HUI-1800-CAT-NAT-01 → parts[3] = código de variedad
+  const parts = (h.lot_id as string)?.split("-") ?? [];
+  const code  = h.variety ?? parts[3] ?? "UNK";
+  varietyCounts[code] = (varietyCounts[code] ?? 0) + 1;
+}
+const topVarieties = Object.entries(varietyCounts)
+  .map(([code, count]) => ({
+    name: VARIETY_LABEL[code] ?? code,
+    count,
+    pct: Math.round((count / Math.max(1, totalLotes)) * 100),
+  }))
+  .sort((a, b) => b.count - a.count)
+  .slice(0, 6);
+
+// ─── Producción mensual (últimos 6 meses) ───────────────────────────────────
+const now = new Date();
+const last6: { label: string; key: string }[] = [];
+for (let i = 5; i >= 0; i--) {
+  const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+  last6.push({
+    label: d.toLocaleDateString("es-CO", { month: "short" }),
+    key:   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`,
+  });
+}
+const monthCounts: Record<string, number> = {};
+for (const h of harvests) {
+  if (!h.created_at) continue;
+  const d   = new Date(h.created_at);
+  const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+  monthCounts[key] = (monthCounts[key] ?? 0) + 1;
+}
+const maxMonthCount = Math.max(1, ...last6.map((m) => monthCounts[m.key] ?? 0));
+
+// ─── Estado del pipeline (desde /api/coffee/lots) ───────────────────────────
+const STAGE_LABEL: Record<string, string> = {
+  harvested:           "Cosecha",
+  in_storage_green:    "Café Verde",
+  sent_to_roasting:    "En Tueste",
+  roasted:             "Tostado",
+  in_storage_roasted:  "Almacén tostado",
+  packaged:            "Empacado",
+};
+const pipelineCounts: Record<string, number> = {};
+for (const lot of lotsData) {
+  const stage = lot.stage ?? lot.status ?? lot.state ?? "unknown";
+  pipelineCounts[stage] = (pipelineCounts[stage] ?? 0) + 1;
+}
+const pipelineStages = Object.entries(pipelineCounts)
+  .map(([stage, count]) => ({ stage, label: STAGE_LABEL[stage] ?? stage, count }))
+  .sort((a, b) => b.count - a.count);
 ---
 
 <AppLayout>
-  <section style="max-width: 1200px; margin: 0 auto; padding: 2rem 1.25rem;">
-    <div style="margin-bottom: 2rem;">
-      <a
-        href="/app"
-        style="color: #8b6f47; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;"
-      >
+  <section style="max-width:1200px; margin:0 auto; padding:2rem 1.25rem;">
+
+    <div style="margin-bottom:2rem;">
+      <a href="/app" style="color:#8b6f47; text-decoration:none; display:inline-flex; align-items:center; gap:.5rem; margin-bottom:1rem;">
         ← Volver al Inicio
       </a>
-      <h1
-        style="font-size: 2rem; font-weight: bold; margin-bottom: 0.5rem; color: #251a14;"
-      >
-        📈 Estadísticas de Producción
+      <h1 style="font-size:2rem; font-weight:bold; margin-bottom:.5rem; color:#251a14;">
+        Estadísticas de Producción
       </h1>
-      <p style="color: #666; font-size: 1.05rem;">
+      <p style="color:#666; font-size:1.05rem;">
         Métricas de calidad y rendimiento de tus lotes
       </p>
     </div>
 
-    <!-- Período -->
-    <div
-      style="background: white; border: 1px solid #e5e7eb; border-radius: 0.75rem; padding: 1.5rem; margin-bottom: 2rem;"
-    >
-      <label
-        style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #374151;"
-        >Período</label
-      >
-      <select
-        id="periodoSelect"
-        style="padding: 0.5rem 1rem; border: 1px solid #d1d5db; border-radius: 0.5rem; font-size: 1rem;"
-      >
-        <option value="mes">Último Mes</option>
-        <option value="trimestre">Último Trimestre</option>
-        <option value="semestre">Último Semestre</option>
-        <option value="año">Último Año</option>
-      </select>
-    </div>
+    {fetchError && (
+      <div style="background:#fee2e2; color:#b91c1c; padding:1rem; border-radius:.75rem; margin-bottom:1.5rem; font-size:.9rem;">
+        No se pudo conectar con la base de datos. Mostrando datos parciales.
+      </div>
+    )}
 
     <!-- KPIs Principales -->
-    <div
-      style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 3rem;"
-    >
-      <div
-        style="background: linear-gradient(135deg, #8b6f47 0%, #6b5637 100%); color: white; padding: 2rem; border-radius: 0.75rem;"
-      >
-        <div style="font-size: 0.875rem; opacity: 0.9; margin-bottom: 0.5rem;">
-          Producción Total
-        </div>
-        <div
-          style="font-size: 2.5rem; font-weight: bold; margin-bottom: 0.25rem;"
-        >
-          550
-        </div>
-        <div style="font-size: 0.875rem; opacity: 0.8;">kg entregados</div>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:1.5rem; margin-bottom:3rem;">
+
+      <div style="background:linear-gradient(135deg, #8b6f47 0%, #6b5637 100%); color:white; padding:2rem; border-radius:.75rem;">
+        <div style="font-size:.875rem; opacity:.9; margin-bottom:.5rem;">Lotes Registrados</div>
+        <div style="font-size:2.5rem; font-weight:bold; margin-bottom:.25rem;">{totalLotes}</div>
+        <div style="font-size:.875rem; opacity:.8;">cosechas en BD</div>
       </div>
 
-      <div
-        style="background: white; border: 1px solid #e5e7eb; padding: 2rem; border-radius: 0.75rem;"
-      >
-        <div style="font-size: 0.875rem; color: #666; margin-bottom: 0.5rem;">
-          Calidad Promedio
+      <div style="background:white; border:1px solid #e5e7eb; padding:2rem; border-radius:.75rem;">
+        <div style="font-size:.875rem; color:#666; margin-bottom:.5rem;">Calidad Promedio</div>
+        <div style="font-size:2.5rem; font-weight:bold; color:#2d6a4f; margin-bottom:.25rem;">
+          {avgScore ?? "—"}
         </div>
-        <div
-          style="font-size: 2.5rem; font-weight: bold; color: #2d6a4f; margin-bottom: 0.25rem;"
-        >
-          87.5
-        </div>
-        <div style="font-size: 0.875rem; color: #666;">puntos SCA</div>
+        <div style="font-size:.875rem; color:#666;">puntos (escala 1–5)</div>
       </div>
 
-      <div
-        style="background: white; border: 1px solid #e5e7eb; padding: 2rem; border-radius: 0.75rem;"
-      >
-        <div style="font-size: 0.875rem; color: #666; margin-bottom: 0.5rem;">
-          Precio Promedio
+      <div style="background:white; border:1px solid #e5e7eb; padding:2rem; border-radius:.75rem;">
+        <div style="font-size:.875rem; color:#666; margin-bottom:.5rem;">Lotes Empacados</div>
+        <div style="font-size:2.5rem; font-weight:bold; color:#8b6f47; margin-bottom:.25rem;">
+          {totalEmpacados}
         </div>
-        <div
-          style="font-size: 2.5rem; font-weight: bold; color: #8b6f47; margin-bottom: 0.25rem;"
-        >
-          $12,500
-        </div>
-        <div style="font-size: 0.875rem; color: #666;">por kilogramo</div>
+        <div style="font-size:.875rem; color:#666;">listos para venta</div>
       </div>
 
-      <div
-        style="background: white; border: 1px solid #e5e7eb; padding: 2rem; border-radius: 0.75rem;"
-      >
-        <div style="font-size: 0.875rem; color: #666; margin-bottom: 0.5rem;">
-          Lotes Entregados
+      <div style="background:white; border:1px solid #e5e7eb; padding:2rem; border-radius:.75rem;">
+        <div style="font-size:.875rem; color:#666; margin-bottom:.5rem;">Kg Empacados</div>
+        <div style="font-size:2.5rem; font-weight:bold; color:#251a14; margin-bottom:.25rem;">
+          {totalKgEmpacado > 0 ? totalKgEmpacado.toFixed(1) : "—"}
         </div>
-        <div
-          style="font-size: 2.5rem; font-weight: bold; color: #251a14; margin-bottom: 0.25rem;"
-        >
-          3
-        </div>
-        <div style="font-size: 0.875rem; color: #666;">en el período</div>
+        <div style="font-size:.875rem; color:#666;">kg estimados</div>
       </div>
     </div>
 
     <!-- Gráficas -->
-    <div
-      style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 2rem; margin-bottom: 3rem;"
-    >
-      <!-- Producción por Mes -->
-      <div
-        style="background: white; border: 1px solid #e5e7eb; border-radius: 0.75rem; padding: 1.5rem;"
-      >
-        <h3
-          style="font-size: 1.25rem; font-weight: 600; margin-bottom: 1.5rem; color: #251a14;"
-        >
-          📊 Producción Mensual
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(380px, 1fr)); gap:2rem; margin-bottom:3rem;">
+
+      <!-- Producción Mensual -->
+      <div style="background:white; border:1px solid #e5e7eb; border-radius:.75rem; padding:1.5rem;">
+        <h3 style="font-size:1.1rem; font-weight:600; margin-bottom:1.5rem; color:#251a14;">
+          Lotes por Mes (últimos 6 meses)
         </h3>
-        <div
-          style="height: 250px; display: flex; align-items: flex-end; justify-content: space-between; gap: 0.5rem; border-bottom: 2px solid #e5e7eb; padding-bottom: 1rem;"
-        >
-          <div
-            style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.5rem;"
-          >
-            <div
-              style="width: 100%; background: #8b6f47; border-radius: 0.25rem 0.25rem 0 0; height: 60%;"
-            >
-            </div>
-            <span style="font-size: 0.75rem; color: #666;">Ene</span>
+        {harvests.length === 0 ? (
+          <p style="color:#999; font-size:.9rem; text-align:center; padding:2rem 0;">Sin datos de cosechas aún.</p>
+        ) : (
+          <div style="height:200px; display:flex; align-items:flex-end; gap:.5rem; border-bottom:2px solid #e5e7eb; padding-bottom:.5rem;">
+            {last6.map((m) => {
+              const count = monthCounts[m.key] ?? 0;
+              const pct   = Math.round((count / maxMonthCount) * 100);
+              return (
+                <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:.4rem; height:100%; justify-content:flex-end;">
+                  {count > 0 && (
+                    <span style="font-size:.7rem; font-weight:600; color:#8b6f47;">{count}</span>
+                  )}
+                  <div style={`width:100%; background:${pct > 0 ? '#8b6f47' : '#e5e7eb'}; border-radius:.25rem .25rem 0 0; height:${Math.max(pct, 2)}%;`}></div>
+                  <span style="font-size:.72rem; color:#666;">{m.label}</span>
+                </div>
+              );
+            })}
           </div>
-          <div
-            style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.5rem;"
-          >
-            <div
-              style="width: 100%; background: #8b6f47; border-radius: 0.25rem 0.25rem 0 0; height: 80%;"
-            >
-            </div>
-            <span style="font-size: 0.75rem; color: #666;">Feb</span>
-          </div>
-          <div
-            style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.5rem;"
-          >
-            <div
-              style="width: 100%; background: #8b6f47; border-radius: 0.25rem 0.25rem 0 0; height: 45%;"
-            >
-            </div>
-            <span style="font-size: 0.75rem; color: #666;">Mar</span>
-          </div>
-          <div
-            style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.5rem;"
-          >
-            <div
-              style="width: 100%; background: #8b6f47; border-radius: 0.25rem 0.25rem 0 0; height: 70%;"
-            >
-            </div>
-            <span style="font-size: 0.75rem; color: #666;">Abr</span>
-          </div>
-        </div>
+        )}
       </div>
 
       <!-- Distribución de Calidad -->
-      <div
-        style="background: white; border: 1px solid #e5e7eb; border-radius: 0.75rem; padding: 1.5rem;"
-      >
-        <h3
-          style="font-size: 1.25rem; font-weight: 600; margin-bottom: 1.5rem; color: #251a14;"
-        >
-          ⭐ Distribución de Calidad
+      <div style="background:white; border:1px solid #e5e7eb; border-radius:.75rem; padding:1.5rem;">
+        <h3 style="font-size:1.1rem; font-weight:600; margin-bottom:1.5rem; color:#251a14;">
+          Distribución de Calidad
         </h3>
-        <div style="display: flex; flex-direction: column; gap: 1rem;">
-          <div>
-            <div
-              style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;"
-            >
-              <span style="font-size: 0.875rem; color: #666;"
-                >85+ pts (Excelente)</span
-              >
-              <span style="font-weight: 600;">67%</span>
-            </div>
-            <div
-              style="background: #e5e7eb; border-radius: 9999px; height: 0.5rem; overflow: hidden;"
-            >
-              <div style="background: #2d6a4f; width: 67%; height: 100%;"></div>
-            </div>
+        {scoresValidos.length === 0 ? (
+          <p style="color:#999; font-size:.9rem; text-align:center; padding:2rem 0;">Sin lotes empacados con puntaje aún.</p>
+        ) : (
+          <div style="display:flex; flex-direction:column; gap:1rem;">
+            {qDist.map((d) => (
+              <div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:.4rem;">
+                  <span style="font-size:.875rem; color:#666;">{d.label}</span>
+                  <span style="font-weight:600;">{d.count} ({scoresValidos.length > 0 ? Math.round(d.count / scoresValidos.length * 100) : 0}%)</span>
+                </div>
+                <div style="background:#e5e7eb; border-radius:9999px; height:.5rem; overflow:hidden;">
+                  <div style={`background:${d.color}; width:${Math.round(d.count / maxQDist * 100)}%; height:100%;`}></div>
+                </div>
+              </div>
+            ))}
           </div>
-          <div>
-            <div
-              style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;"
-            >
-              <span style="font-size: 0.875rem; color: #666;"
-                >80-84 pts (Muy Bueno)</span
-              >
-              <span style="font-weight: 600;">25%</span>
-            </div>
-            <div
-              style="background: #e5e7eb; border-radius: 9999px; height: 0.5rem; overflow: hidden;"
-            >
-              <div style="background: #8b6f47; width: 25%; height: 100%;"></div>
-            </div>
-          </div>
-          <div>
-            <div
-              style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;"
-            >
-              <span style="font-size: 0.875rem; color: #666;"
-                >75-79 pts (Bueno)</span
-              >
-              <span style="font-weight: 600;">8%</span>
-            </div>
-            <div
-              style="background: #e5e7eb; border-radius: 9999px; height: 0.5rem; overflow: hidden;"
-            >
-              <div style="background: #d4a017; width: 8%; height: 100%;"></div>
-            </div>
-          </div>
-        </div>
+        )}
       </div>
     </div>
 
-    <!-- Variedades Producidas -->
-    <div
-      style="background: white; border: 1px solid #e5e7eb; border-radius: 0.75rem; padding: 1.5rem;"
-    >
-      <h3
-        style="font-size: 1.25rem; font-weight: 600; margin-bottom: 1.5rem; color: #251a14;"
-      >
-        🌱 Variedades Cultivadas
-      </h3>
-      <div
-        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;"
-      >
-        <div
-          style="padding: 1rem; border: 1px solid #e5e7eb; border-radius: 0.5rem;"
-        >
-          <div style="font-weight: 600; margin-bottom: 0.5rem;">Caturra</div>
-          <div style="color: #666; font-size: 0.875rem;">250 kg (45%)</div>
-        </div>
-        <div
-          style="padding: 1rem; border: 1px solid #e5e7eb; border-radius: 0.5rem;"
-        >
-          <div style="font-weight: 600; margin-bottom: 0.5rem;">Castillo</div>
-          <div style="color: #666; font-size: 0.875rem;">180 kg (33%)</div>
-        </div>
-        <div
-          style="padding: 1rem; border: 1px solid #e5e7eb; border-radius: 0.5rem;"
-        >
-          <div style="font-weight: 600; margin-bottom: 0.5rem;">
-            Pink Bourbon
+    <!-- Variedades Cultivadas + Pipeline -->
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(340px, 1fr)); gap:2rem; margin-bottom:3rem;">
+
+      <!-- Variedades -->
+      <div style="background:white; border:1px solid #e5e7eb; border-radius:.75rem; padding:1.5rem;">
+        <h3 style="font-size:1.1rem; font-weight:600; margin-bottom:1.25rem; color:#251a14;">
+          Variedades Cultivadas
+        </h3>
+        {topVarieties.length === 0 ? (
+          <p style="color:#999; font-size:.9rem; text-align:center; padding:1.5rem 0;">Sin datos de cosechas aún.</p>
+        ) : (
+          <div style="display:flex; flex-direction:column; gap:.75rem;">
+            {topVarieties.map((v) => (
+              <div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:.3rem;">
+                  <span style="font-size:.875rem; font-weight:600;">{v.name}</span>
+                  <span style="font-size:.85rem; color:#666;">{v.count} lotes · {v.pct}%</span>
+                </div>
+                <div style="background:#e5e7eb; border-radius:9999px; height:.4rem; overflow:hidden;">
+                  <div style={`background:#8b6f47; width:${v.pct}%; height:100%;`}></div>
+                </div>
+              </div>
+            ))}
           </div>
-          <div style="color: #666; font-size: 0.875rem;">120 kg (22%)</div>
-        </div>
+        )}
+      </div>
+
+      <!-- Estado del pipeline -->
+      <div style="background:white; border:1px solid #e5e7eb; border-radius:.75rem; padding:1.5rem;">
+        <h3 style="font-size:1.1rem; font-weight:600; margin-bottom:1.25rem; color:#251a14;">
+          Pipeline de Lotes
+        </h3>
+        {pipelineStages.length === 0 ? (
+          <p style="color:#999; font-size:.9rem; text-align:center; padding:1.5rem 0;">Sin lotes en pipeline.</p>
+        ) : (
+          <div style="display:flex; flex-direction:column; gap:.65rem;">
+            {pipelineStages.map((s) => (
+              <div style="display:flex; justify-content:space-between; align-items:center; padding:.5rem .75rem; background:#f9f6f2; border-radius:.5rem;">
+                <span style="font-size:.875rem; font-weight:500;">{s.label}</span>
+                <span style="font-size:.875rem; font-weight:700; color:#8b6f47;">{s.count}</span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
+
+    <!-- Últimas cosechas registradas -->
+    {harvests.length > 0 && (
+      <div style="background:white; border:1px solid #e5e7eb; border-radius:.75rem; padding:1.5rem;">
+        <h3 style="font-size:1.1rem; font-weight:600; margin-bottom:1.25rem; color:#251a14;">
+          Últimas Cosechas
+        </h3>
+        <div style="overflow-x:auto;">
+          <table style="width:100%; border-collapse:collapse; font-size:.875rem;">
+            <thead>
+              <tr style="border-bottom:2px solid #e5e7eb; text-align:left;">
+                <th style="padding:.5rem .75rem; color:#666; font-weight:600;">Lote</th>
+                <th style="padding:.5rem .75rem; color:#666; font-weight:600;">Variedad</th>
+                <th style="padding:.5rem .75rem; color:#666; font-weight:600;">Proceso</th>
+                <th style="padding:.5rem .75rem; color:#666; font-weight:600;">Clima</th>
+                <th style="padding:.5rem .75rem; color:#666; font-weight:600;">Fecha</th>
+              </tr>
+            </thead>
+            <tbody>
+              {harvests.slice(0, 8).map((h: any) => (
+                <tr style="border-bottom:1px solid #f3f4f6;">
+                  <td style="padding:.5rem .75rem; font-family:monospace; font-size:.8rem; color:#251a14;">{h.lot_id}</td>
+                  <td style="padding:.5rem .75rem;">{VARIETY_LABEL[h.variety] ?? h.variety ?? "—"}</td>
+                  <td style="padding:.5rem .75rem;">{h.process ?? "—"}</td>
+                  <td style="padding:.5rem .75rem;">{h.climate ?? "—"}</td>
+                  <td style="padding:.5rem .75rem; color:#666;">
+                    {h.created_at ? new Date(h.created_at).toLocaleDateString("es-CO", { day:"2-digit", month:"short", year:"numeric" }) : "—"}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    )}
+
   </section>
 </AppLayout>

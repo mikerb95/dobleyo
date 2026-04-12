@@ -3,6 +3,7 @@ import { query } from '../db.js';
 import crypto from 'crypto';
 import { authenticateToken, requireRole } from '../auth.js';
 import { apiLimiter } from '../middleware/rateLimit.js';
+import { assertCanAdvance } from '../services/lotStateMachine.js';
 
 export const coffeeRouter = express.Router();
 
@@ -45,8 +46,8 @@ coffeeRouter.post('/harvest', async (req, res) => {
       }
     }
 
-    const lotNumber = String(Math.floor(Math.random() * 100) + 1).padStart(2, '0');
-    const lotId = `COL-${farmRegion}-${farmAltitude}-${variety}-${process}-${lotNumber}`;
+    const lotSuffix = crypto.randomBytes(2).toString('hex').toUpperCase();
+    const lotId = `COL-${farmRegion}-${farmAltitude}-${variety}-${process}-${lotSuffix}`;
 
     // Guardar en BD
     const result = await query(
@@ -92,6 +93,13 @@ coffeeRouter.post('/inventory-storage', async (req, res) => {
       return res.status(400).json({ error: 'Faltan campos requeridos' });
     }
 
+    // Validar transición de estado
+    try {
+      await assertCanAdvance(query, lotId, 'in_storage_green');
+    } catch (stateErr) {
+      return res.status(409).json({ success: false, error: stateErr.message });
+    }
+
     // Verificar que el lote existe
     const harvestResult = await query(
       'SELECT id FROM coffee_harvests WHERE lot_id = $1',
@@ -129,6 +137,13 @@ coffeeRouter.post('/send-roasting', async (req, res) => {
 
     if (!lotId || !quantitySent) {
       return res.status(400).json({ error: 'Faltan campos requeridos' });
+    }
+
+    // Validar transición de estado
+    try {
+      await assertCanAdvance(query, lotId, 'sent_to_roasting');
+    } catch (stateErr) {
+      return res.status(409).json({ success: false, error: stateErr.message });
     }
 
     // Verificar inventario disponible
@@ -332,6 +347,15 @@ coffeeRouter.post('/packaging', async (req, res) => {
 
     if (presentation === 'MOLIDO' && !grindSize) {
       return res.status(400).json({ error: 'Debe especificar tipo de molienda' });
+    }
+
+    // Validar que el roasted_coffee_inventory no esté ya empacado
+    const dupCheck = await query(
+      `SELECT 1 FROM packaged_coffee WHERE roasted_storage_id = $1 AND status = 'ready_for_sale' LIMIT 1`,
+      [roastedStorageId]
+    );
+    if (dupCheck.rows.length > 0) {
+      return res.status(409).json({ success: false, error: 'Este lote tostado ya fue empacado' });
     }
 
     // Calcular puntuación

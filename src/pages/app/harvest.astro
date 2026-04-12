@@ -235,26 +235,53 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
   </div>
 
   <script>
-    const farmData = {
-      "finca-la-sierra": {
-        altitude: "1800m",
-        soil: "Franco arcilloso",
-        region: "HUI",
-        displayName: "La Sierra - Huila",
-      },
-      "finca-nariño": {
-        altitude: "1900m",
-        soil: "Franco arcilloso",
-        region: "NAR",
-        displayName: "Nariño Premium",
-      },
-      "finca-cauca": {
-        altitude: "1750m",
-        soil: "Franco arcilloso",
-        region: "CAU",
-        displayName: "Cauca Estate",
-      },
+    // Mapa de fincas: cargado dinámicamente desde la API, con fallback estático
+    let farmData = {
+      "finca-la-sierra": { altitude: "1800m", soil: "Franco arcilloso", region: "HUI", displayName: "La Sierra - Huila" },
+      "finca-nariño":    { altitude: "1900m", soil: "Franco arcilloso", region: "NAR", displayName: "Nariño Premium" },
+      "finca-cauca":     { altitude: "1750m", soil: "Franco arcilloso", region: "CAU", displayName: "Cauca Estate" },
     };
+
+    // Cargar fincas del usuario desde la API
+    (async function loadFarms() {
+      try {
+        const res = await fetch("/api/farms/my?list=true", { credentials: "include" });
+        if (!res.ok) return;
+        const json = await res.json();
+        const farms = json.data ?? [];
+        if (!farms.length) return;
+
+        // Reconstruir farmData con datos reales
+        const newFarmData = {};
+        farms.forEach(f => {
+          const key = f.slug || `farm-${f.id}`;
+          newFarmData[key] = {
+            id:          f.id,
+            altitude:    f.altitude_min ? `${f.altitude_min}m` : "—",
+            altitudeRaw: f.altitude_min ?? 0,
+            soil:        "Franco arcilloso", // campo no disponible en select actual
+            region:      f.region ?? "COL",
+            displayName: f.name,
+            municipality: f.municipality ?? "",
+          };
+        });
+        farmData = newFarmData;
+
+        // Repoblar el select con las fincas reales
+        const select = document.getElementById("farmSelect");
+        if (!select) return;
+        // Conservar la primera opción vacía
+        while (select.options.length > 1) select.remove(1);
+        farms.forEach(f => {
+          const key  = f.slug || `farm-${f.id}`;
+          const label = `${f.name}${f.municipality ? " — " + f.municipality : ""}${f.altitude_min ? " (" + f.altitude_min + "m)" : ""}`;
+          const opt  = new Option(label, key);
+          select.appendChild(opt);
+        });
+      } catch (_) {
+        // Si falla, el select ya tiene las opciones hardcodeadas como fallback
+      }
+    })();
 
     const varietyMap = {
       CAT: "Caturra",
@@ -290,7 +317,7 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
       }
     });
 
-    // Generar ID de Lote
+    // Mostrar preview del formato de lote (el ID real lo genera el servidor)
     function generateLotId() {
       const farm = farmData[farmSelect.value];
       if (!farm) return;
@@ -304,13 +331,9 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
         return;
       }
 
-      const altitude = farm.altitude.replace("m", "");
-      const lotNumber = String(Math.floor(Math.random() * 100) + 1).padStart(
-        2,
-        "0"
-      );
-
-      const lotId = `COL-${farm.region}-${altitude}-${variety}-${process}-${lotNumber}`;
+      const altitude = (farm.altitudeRaw || farm.altitude.replace("m", ""));
+      // Mostrar formato aproximado — el sufijo real lo genera el servidor con crypto
+      const lotId = `COL-${farm.region}-${altitude}-${variety}-${process}-****`;
       document.getElementById("lotId").textContent = lotId;
       lotInfo.style.display = "block";
     }
