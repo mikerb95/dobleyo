@@ -345,6 +345,7 @@ import Layout from "../layouts/Layout.astro";
           payBtn.disabled = true;
           payBtnText.textContent = 'Procesando…';
           payBtn.classList.add('co-btn-primary--loading');
+          if (coMbPayBtn) { coMbPayBtn.disabled = true; if (coMbPayText) coMbPayText.textContent = 'Procesando…'; }
 
           try {
             const currentCart = window.Cart.getCart();
@@ -376,6 +377,7 @@ import Layout from "../layouts/Layout.astro";
               payBtn.disabled = false;
               payBtnText.textContent = 'Confirmar y pagar';
               payBtn.classList.remove('co-btn-primary--loading');
+              if (coMbPayBtn) { coMbPayBtn.disabled = false; if (coMbPayText) coMbPayText.textContent = 'Confirmar y pagar'; }
               return;
             }
 
@@ -390,6 +392,7 @@ import Layout from "../layouts/Layout.astro";
             payBtn.disabled = false;
             payBtnText.textContent = 'Confirmar y pagar';
             payBtn.classList.remove('co-btn-primary--loading');
+            if (coMbPayBtn) { coMbPayBtn.disabled = false; if (coMbPayText) coMbPayText.textContent = 'Confirmar y pagar'; }
           }
         });
       }));
