@@ -3,7 +3,8 @@ import { query } from '../db.js';
 import crypto from 'crypto';
 import { authenticateToken, requireRole } from '../auth.js';
 import { apiLimiter } from '../middleware/rateLimit.js';
-import { assertCanAdvance } from '../services/lotStateMachine.js';
+import { assertCanAdvance, getCurrentStage, STAGE_LABELS } from '../services/lotStateMachine.js';
+import { assertFarmOwnership } from '../middleware/farmAuth.js';
 
 export const coffeeRouter = express.Router();
 
