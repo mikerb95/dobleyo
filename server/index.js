@@ -229,8 +229,16 @@ app.get('/api/debug-env', (req, res) => {
   });
 });
 
-// Salud
-app.get('/api/health', (req, res) => res.json({ status: 'ok', time: new Date().toISOString() }));
+// Salud — incluye ping real a la BD para verificar PgBouncer + PostgreSQL
+app.get('/api/health', async (req, res) => {
+  const db = await healthCheck();
+  const status = db.ok ? 'ok' : 'degraded';
+  res.status(db.ok ? 200 : 503).json({
+    status,
+    time: new Date().toISOString(),
+    db: db.ok ? 'connected' : `error: ${db.error}`,
+  });
+});
 
 // MercadoPago — stub (Fase 4, pendiente)
 app.post('/api/mp/create_preference', async (req, res) => {
