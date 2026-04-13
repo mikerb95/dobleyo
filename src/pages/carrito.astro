@@ -43,28 +43,34 @@ import Layout from "../layouts/Layout.astro";
 
         <!-- Resumen inline (solo móvil) -->
         <div class="cart-inline-summary">
-          <div class="cis-lines">
-            <div class="cis-line"><span>Subtotal</span><span id="cisSubtotal">$0</span></div>
-            <div class="cis-line" id="cisShipLine"><span>Envío</span><span id="cisShipping">—</span></div>
-          </div>
-          <div id="cisFreeShipProgress" class="cis-progress" style="display:none;">
-            <p class="fsp-text">Te faltan <strong id="cisFspAmount"></strong> para envío gratis</p>
-            <div class="fsp-bar-bg"><div class="fsp-bar-fill" id="cisFspFill"></div></div>
-          </div>
-          <div id="cisFreeShipBanner" class="free-ship-banner" style="display:none;">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M2 7l3.5 3.5L12 3.5" stroke="#16a34a" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            ¡Envío gratis en este pedido!
-          </div>
-          <div class="cis-total"><span>Total</span><span id="cisTotal" class="cis-total-amount">$0</span></div>
-          <div class="trust-row">
-            <span class="trust-item">
-              <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true"><path d="M6.5 1L2 3.5v3c0 2.7 1.9 5.2 4.5 5.8 2.6-.6 4.5-3.1 4.5-5.8v-3L6.5 1z" stroke="#6b7280" stroke-width="1" stroke-linejoin="round"/></svg>
-              Pago seguro
-            </span>
-            <span class="trust-item">
-              <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true"><circle cx="6.5" cy="9" r="1.2" fill="#6b7280"/><path d="M6.5 4v3" stroke="#6b7280" stroke-width="1" stroke-linecap="round"/></svg>
-              Devolución 5 días
-            </span>
+          <div class="cis-inner">
+            <p class="cis-heading">Resumen del pedido</p>
+            <div class="cis-lines">
+              <div class="cis-line"><span>Subtotal</span><span id="cisSubtotal">$0</span></div>
+              <div class="cis-line" id="cisShipLine"><span>Envío</span><span id="cisShipping">—</span></div>
+            </div>
+            <div id="cisFreeShipProgress" class="cis-progress" style="display:none;">
+              <p class="fsp-text">Te faltan <strong id="cisFspAmount"></strong> para envío gratis</p>
+              <div class="fsp-bar-bg"><div class="fsp-bar-fill" id="cisFspFill"></div></div>
+            </div>
+            <div id="cisFreeShipBanner" class="free-ship-banner" style="display:none;">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M2 7l3.5 3.5L12 3.5" stroke="#15803d" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              ¡Envío gratis en este pedido!
+            </div>
+            <div class="cis-total">
+              <span class="cis-total-label">Total</span>
+              <span id="cisTotal" class="cis-total-amount">$0</span>
+            </div>
+            <div class="trust-row">
+              <span class="trust-item">
+                <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true"><path d="M6.5 1L2 3.5v3c0 2.7 1.9 5.2 4.5 5.8 2.6-.6 4.5-3.1 4.5-5.8v-3L6.5 1z" stroke="currentColor" stroke-width="1" stroke-linejoin="round"/></svg>
+                Pago seguro
+              </span>
+              <span class="trust-item">
+                <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true"><path d="M2 6.5l2.5 2.5 6-6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Devolución 5 días
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -72,55 +78,59 @@ import Layout from "../layouts/Layout.astro";
       <!-- Resumen del pedido (desktop) -->
       <aside class="cart-summary-col">
         <div class="summary-card">
-          <h2 class="summary-title">Resumen del pedido</h2>
+          <div class="summary-inner">
+            <h2 class="summary-title">Resumen del pedido</h2>
 
-          <div class="summary-lines">
-            <div class="summary-line">
-              <span>Subtotal</span>
-              <span id="cartSubtotal">$0</span>
+            <div class="summary-lines">
+              <div class="summary-line">
+                <span>Subtotal</span>
+                <span id="cartSubtotal">$0</span>
+              </div>
+              <div class="summary-line" id="shippingLine">
+                <span>Envío</span>
+                <span id="cartShipping">—</span>
+              </div>
             </div>
-            <div class="summary-line" id="shippingLine">
-              <span>Envío</span>
-              <span id="cartShipping">—</span>
+
+            <div id="freeShipBanner" class="free-ship-banner" style="display:none;">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M2 7l3.5 3.5L12 3.5" stroke="#15803d" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              ¡Envío gratis en este pedido!
             </div>
-          </div>
 
-          <div id="freeShipBanner" class="free-ship-banner" style="display:none;">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M2 7l3.5 3.5L12 3.5" stroke="#16a34a" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            ¡Envío gratis en este pedido!
-          </div>
+            <div id="freeShipProgress" class="free-ship-progress" style="display:none;">
+              <p class="fsp-text">Te faltan <strong id="fspAmount"></strong> para envío gratis</p>
+              <div class="fsp-bar-bg"><div class="fsp-bar-fill" id="fspFill"></div></div>
+            </div>
 
-          <div id="freeShipProgress" class="free-ship-progress" style="display:none;">
-            <p class="fsp-text">Te faltan <strong id="fspAmount"></strong> para envío gratis</p>
-            <div class="fsp-bar-bg"><div class="fsp-bar-fill" id="fspFill"></div></div>
-          </div>
+            <hr class="summary-divider" />
 
-          <div class="summary-total">
-            <span>Total</span>
-            <div>
+            <div class="summary-total">
+              <div>
+                <span class="summary-total-label">Total</span>
+                <span class="total-tax">IVA incluido</span>
+              </div>
               <span id="cartTotal" class="total-amount">$0</span>
-              <span class="total-tax">IVA incluido</span>
             </div>
-          </div>
 
-          <button id="checkoutBtn" class="btn-checkout">
-            <span>Ir a pagar</span>
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </button>
+            <button id="checkoutBtn" class="btn-checkout">
+              <span>Ir a pagar</span>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
 
-          <div class="trust-row">
-            <span class="trust-item">
-              <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true"><path d="M6.5 1.5l1.2 3.7h3.9l-3.15 2.3 1.2 3.7L6.5 9 3.35 11.2l1.2-3.7L1.4 5.2h3.9z" stroke="#6b7280" stroke-width="1" stroke-linejoin="round"/></svg>
-              Pago 100% seguro
-            </span>
-            <span class="trust-item">
-              <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true"><path d="M6.5 1L2 3.5v3c0 2.7 1.9 5.2 4.5 5.8 2.6-.6 4.5-3.1 4.5-5.8v-3L6.5 1z" stroke="#6b7280" stroke-width="1" stroke-linejoin="round"/></svg>
-              Wompi certificado
-            </span>
-            <span class="trust-item">
-              <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true"><path d="M2 8.5h9M2 4.5h9M6.5 2v9" stroke="#6b7280" stroke-width="1" stroke-linecap="round"/></svg>
-              Devolución 5 días
-            </span>
+            <div class="trust-row">
+              <span class="trust-item">
+                <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true"><path d="M6.5 1L2 3.5v3c0 2.7 1.9 5.2 4.5 5.8 2.6-.6 4.5-3.1 4.5-5.8v-3L6.5 1z" stroke="currentColor" stroke-width="1" stroke-linejoin="round"/></svg>
+                Pago 100% seguro
+              </span>
+              <span class="trust-item">
+                <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true"><path d="M6.5 1.5l1.2 3.7h3.9l-3.15 2.3 1.2 3.7L6.5 9 3.35 11.2l1.2-3.7L1.4 5.2h3.9z" stroke="currentColor" stroke-width="1" stroke-linejoin="round"/></svg>
+                Wompi certificado
+              </span>
+              <span class="trust-item">
+                <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true"><path d="M2 6.5l2.5 2.5 6-6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Devolución 5 días
+              </span>
+            </div>
           </div>
         </div>
       </aside>
@@ -301,6 +311,7 @@ import Layout from "../layouts/Layout.astro";
       font-weight: 700;
       color: var(--coffee);
       margin: 0;
+      font-family: 'Lora', Georgia, serif;
     }
     .cart-count {
       color: var(--muted-fg);
@@ -317,14 +328,14 @@ import Layout from "../layouts/Layout.astro";
       gap: .875rem;
     }
     .empty-icon { margin-bottom: .5rem; }
-    .empty-title { font-size: 1.25rem; font-weight: 600; color: var(--coffee); margin: 0; }
+    .empty-title { font-size: 1.25rem; font-weight: 600; color: var(--coffee); margin: 0; font-family: 'Lora', Georgia, serif; }
     .empty-sub   { color: var(--muted-fg); font-size: .95rem; margin: 0; }
 
     /* Layout */
     .cart-layout {
       display: grid;
-      grid-template-columns: 1fr 380px;
-      gap: 2.5rem;
+      grid-template-columns: 1fr 360px;
+      gap: 2rem;
       align-items: start;
     }
 
@@ -337,6 +348,7 @@ import Layout from "../layouts/Layout.astro";
       border-radius: 1rem;
       overflow: hidden;
       background: #fff;
+      box-shadow: 0 1px 4px rgba(37,26,20,.05);
     }
 
     .cart-item {
@@ -384,11 +396,13 @@ import Layout from "../layouts/Layout.astro";
       color: var(--coffee);
       margin: 0;
       line-height: 1.3;
+      font-family: 'Lora', Georgia, serif;
     }
     .item-unit-price {
-      font-size: .8rem;
+      font-size: .78rem;
       color: var(--muted-fg);
       margin: .2rem 0 0;
+      letter-spacing: .01em;
     }
 
     .item-remove {
@@ -396,7 +410,7 @@ import Layout from "../layouts/Layout.astro";
       border: none;
       padding: .25rem;
       cursor: pointer;
-      color: #9ca3af;
+      color: #c4bbb4;
       border-radius: .375rem;
       transition: color .15s, background .15s;
       flex-shrink: 0;
@@ -417,6 +431,7 @@ import Layout from "../layouts/Layout.astro";
       border-radius: .5rem;
       overflow: hidden;
       height: 36px;
+      background: #faf8f6;
     }
     .qty-step {
       width: 36px;
@@ -432,7 +447,7 @@ import Layout from "../layouts/Layout.astro";
       justify-content: center;
       flex-shrink: 0;
     }
-    .qty-step:hover { background: #f5f0eb; }
+    .qty-step:hover { background: #f0ebe4; }
     .qty-input {
       width: 42px;
       border: none;
@@ -455,6 +470,7 @@ import Layout from "../layouts/Layout.astro";
       font-weight: 700;
       color: var(--coffee);
       white-space: nowrap;
+      font-family: 'Lora', Georgia, serif;
     }
 
     /* Cupón */
@@ -489,84 +505,118 @@ import Layout from "../layouts/Layout.astro";
     }
     .coupon-btn:hover { border-color: var(--coffee); background: #f9f6f2; }
 
-    /* Resumen */
+    /* ── Resumen del pedido ── */
     .cart-summary-col { position: sticky; top: 1.5rem; }
+
     .summary-card {
-      background: #fff;
-      border: 1px solid var(--border);
-      border-radius: 1rem;
-      padding: 1.75rem;
+      background: var(--cream);
+      border: 1px solid #ddd6ce;
+      border-radius: 1.125rem;
+      overflow: hidden;
+      box-shadow: 0 2px 12px rgba(37,26,20,.07);
     }
+
+    /* Franja de acento superior */
+    .summary-card::before {
+      content: '';
+      display: block;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent) 0%, #e09a70 100%);
+    }
+
+    .summary-inner {
+      padding: 1.5rem 1.75rem 1.75rem;
+    }
+
     .summary-title {
-      font-size: 1.05rem;
+      font-family: 'Lora', Georgia, serif;
+      font-size: 1.1rem;
       font-weight: 700;
       color: var(--coffee);
-      margin: 0 0 1.25rem;
+      margin: 0 0 1.375rem;
+      letter-spacing: -.01em;
     }
+
     .summary-lines {
       display: flex;
       flex-direction: column;
-      gap: .625rem;
-      margin-bottom: 1rem;
+      gap: .75rem;
+      margin-bottom: 1.125rem;
     }
     .summary-line {
       display: flex;
       justify-content: space-between;
-      font-size: .9rem;
+      align-items: center;
+      font-size: .875rem;
       color: var(--muted-fg);
+    }
+    .summary-line span:last-child {
+      font-weight: 500;
+      color: var(--coffee);
     }
 
     .free-ship-banner {
       display: flex;
       align-items: center;
       gap: .5rem;
-      background: #f0fdf4;
-      color: #16a34a;
-      font-size: .8rem;
+      background: #edfbf2;
+      color: #15803d;
+      font-size: .78rem;
       font-weight: 600;
       padding: .5rem .875rem;
       border-radius: .5rem;
       margin-bottom: 1rem;
+      border: 1px solid #bbf7d0;
     }
 
-    .free-ship-progress { margin-bottom: 1rem; }
-    .fsp-text { font-size: .8rem; color: var(--muted-fg); margin: 0 0 .5rem; }
+    .free-ship-progress { margin-bottom: 1.125rem; }
+    .fsp-text { font-size: .78rem; color: var(--muted-fg); margin: 0 0 .5rem; }
     .fsp-bar-bg {
       height: 5px;
-      background: #e5e7eb;
+      background: #ddd6ce;
       border-radius: 9999px;
       overflow: hidden;
     }
     .fsp-bar-fill {
       height: 100%;
-      background: var(--accent);
+      background: linear-gradient(90deg, var(--accent), #e09a70);
       border-radius: 9999px;
       transition: width .4s ease;
+    }
+
+    /* Divisor decorativo */
+    .summary-divider {
+      border: none;
+      border-top: 1px solid #ddd6ce;
+      margin: 0 0 1.25rem;
     }
 
     .summary-total {
       display: flex;
       justify-content: space-between;
       align-items: flex-end;
-      border-top: 1px solid var(--border);
-      padding-top: 1rem;
-      margin-bottom: 1.5rem;
+      margin-bottom: 1.375rem;
     }
-    .summary-total > span:first-child { font-size: 1rem; font-weight: 600; color: var(--coffee); }
-    .total-amount {
-      display: block;
-      font-size: 1.5rem;
-      font-weight: 800;
+    .summary-total-label {
+      font-size: .875rem;
+      font-weight: 600;
       color: var(--coffee);
-      line-height: 1.1;
-      text-align: right;
     }
     .total-tax {
       display: block;
-      font-size: .7rem;
+      font-size: .68rem;
       color: var(--muted-fg);
-      text-align: right;
       margin-top: .15rem;
+      font-weight: 400;
+    }
+    .total-amount {
+      display: block;
+      font-family: 'Lora', Georgia, serif;
+      font-size: 1.625rem;
+      font-weight: 700;
+      color: var(--coffee);
+      line-height: 1;
+      text-align: right;
     }
 
     .btn-primary, .btn-checkout {
@@ -579,15 +629,17 @@ import Layout from "../layouts/Layout.astro";
       background: var(--coffee);
       color: #fff;
       border: none;
-      border-radius: .625rem;
-      font-size: 1rem;
+      border-radius: .75rem;
+      font-size: .975rem;
       font-weight: 700;
       cursor: pointer;
       text-decoration: none;
-      transition: opacity .15s, transform .1s;
-      min-height: 48px;
+      transition: opacity .15s, transform .1s, box-shadow .15s;
+      min-height: 50px;
+      letter-spacing: .01em;
+      box-shadow: 0 2px 8px rgba(37,26,20,.25);
     }
-    .btn-primary:hover, .btn-checkout:hover { opacity: .88; }
+    .btn-primary:hover, .btn-checkout:hover { opacity: .88; box-shadow: 0 4px 14px rgba(37,26,20,.3); }
     .btn-primary:active, .btn-checkout:active { transform: scale(.98); }
 
     /* Trust */
@@ -597,59 +649,83 @@ import Layout from "../layouts/Layout.astro";
       gap: .5rem .875rem;
       justify-content: center;
       margin-top: 1.25rem;
-      padding-top: 1.25rem;
-      border-top: 1px solid var(--border);
+      padding-top: 1.125rem;
+      border-top: 1px solid #ddd6ce;
     }
     .trust-item {
       display: flex;
       align-items: center;
       gap: .3rem;
-      font-size: .72rem;
-      color: var(--muted-fg);
+      font-size: .7rem;
+      color: #9b8f87;
+      letter-spacing: .01em;
     }
 
-    /* Inline summary — móvil only */
-    .cart-inline-summary {
-      display: none;
-    }
+    /* ── Inline summary — móvil only ── */
+    .cart-inline-summary { display: none; }
 
     /* Mobile sticky bar */
-    .cart-mobile-bar {
-      display: none;
-    }
+    .cart-mobile-bar { display: none; }
 
     /* Responsive */
     @media (max-width: 768px) {
       .cart-page { padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px)); }
       .cart-layout { grid-template-columns: 1fr; gap: 1rem; }
-      .cart-summary-col { display: none; } /* reemplazado por inline summary + barra móvil */
+      .cart-summary-col { display: none; }
       .cart-item { grid-template-columns: 72px 1fr; gap: .875rem; padding: 1rem; }
-      .qty-step { width: 40px; height: 40px; } /* 40px mínimo touch */
+      .qty-step { width: 40px; height: 40px; }
       .qty-control { height: 40px; }
 
       /* Inline summary visible en móvil */
       .cart-inline-summary {
         display: block;
-        background: #fff;
-        border: 1px solid var(--border);
-        border-radius: 1rem;
-        padding: 1.25rem 1.25rem 1rem;
+        background: var(--cream);
+        border: 1px solid #ddd6ce;
+        border-radius: 1.125rem;
+        overflow: hidden;
         margin-top: 1rem;
+        box-shadow: 0 2px 10px rgba(37,26,20,.06);
       }
-      .cis-lines { display: flex; flex-direction: column; gap: .5rem; margin-bottom: .875rem; }
-      .cis-line { display: flex; justify-content: space-between; font-size: .9rem; color: var(--muted-fg); }
+      .cart-inline-summary::before {
+        content: '';
+        display: block;
+        height: 3px;
+        background: linear-gradient(90deg, var(--accent) 0%, #e09a70 100%);
+      }
+      .cis-inner {
+        padding: 1.125rem 1.25rem 1rem;
+      }
+      .cis-heading {
+        font-family: 'Lora', Georgia, serif;
+        font-size: .95rem;
+        font-weight: 700;
+        color: var(--coffee);
+        margin: 0 0 .875rem;
+      }
+      .cis-lines { display: flex; flex-direction: column; gap: .625rem; margin-bottom: .875rem; }
+      .cis-line {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: .875rem;
+        color: var(--muted-fg);
+      }
+      .cis-line span:last-child { font-weight: 500; color: var(--coffee); }
       .cis-total {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        font-weight: 700;
         color: var(--coffee);
-        font-size: 1rem;
-        border-top: 1px solid var(--border);
+        border-top: 1px solid #ddd6ce;
         padding-top: .875rem;
-        margin-bottom: .875rem;
+        margin-bottom: .75rem;
       }
-      .cis-total-amount { font-size: 1.3rem; font-weight: 800; }
+      .cis-total-label { font-size: .875rem; font-weight: 600; }
+      .cis-total-amount {
+        font-family: 'Lora', Georgia, serif;
+        font-size: 1.4rem;
+        font-weight: 700;
+      }
       .cis-progress { margin-bottom: .875rem; }
 
       /* Sticky mobile bar */
@@ -658,8 +734,8 @@ import Layout from "../layouts/Layout.astro";
         bottom: 0;
         left: 0;
         right: 0;
-        background: #fff;
-        border-top: 1px solid var(--border);
+        background: var(--cream);
+        border-top: 1px solid #ddd6ce;
         padding: .875rem 1.25rem;
         padding-bottom: calc(.875rem + env(safe-area-inset-bottom, 0px));
         display: flex;
@@ -667,14 +743,14 @@ import Layout from "../layouts/Layout.astro";
         justify-content: space-between;
         gap: 1rem;
         z-index: 200;
-        box-shadow: 0 -4px 20px rgba(0,0,0,.08);
+        box-shadow: 0 -4px 20px rgba(37,26,20,.1);
         transform: translateY(100%);
         transition: transform .25s ease;
       }
       .cart-mobile-bar--visible { transform: translateY(0); }
       .cmb-info { display: flex; flex-direction: column; gap: .1rem; }
-      .cmb-label { font-size: .7rem; color: var(--muted-fg); text-transform: uppercase; letter-spacing: .06em; }
-      .cmb-amount { font-size: 1.15rem; font-weight: 800; color: var(--coffee); }
+      .cmb-label { font-size: .65rem; color: var(--muted-fg); text-transform: uppercase; letter-spacing: .08em; }
+      .cmb-amount { font-family: 'Lora', Georgia, serif; font-size: 1.2rem; font-weight: 700; color: var(--coffee); }
       .cmb-btn {
         display: flex;
         align-items: center;
@@ -683,13 +759,14 @@ import Layout from "../layouts/Layout.astro";
         background: var(--coffee);
         color: #fff;
         border: none;
-        border-radius: .625rem;
+        border-radius: .75rem;
         font-size: .975rem;
         font-weight: 700;
         cursor: pointer;
         min-height: 48px;
         white-space: nowrap;
         flex-shrink: 0;
+        box-shadow: 0 2px 8px rgba(37,26,20,.25);
       }
     }
     @media (max-width: 480px) {
