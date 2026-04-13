@@ -9,11 +9,34 @@ import Layout from "../layouts/Layout.astro";
       <p class="muted" style="margin-top:-.4rem">
         Accede para ver tu cuenta y pedidos.
       </p>
+
+      <!-- Google Sign-In -->
+      <div id="googleBtnWrap" style="margin-top:1rem">
+        <div id="g_id_onload"
+          data-client_id=""
+          data-callback="handleGoogleCredential"
+          data-auto_prompt="false">
+        </div>
+        <div class="g_id_signin"
+          data-type="standard"
+          data-size="large"
+          data-theme="outline"
+          data-text="signin_with"
+          data-shape="rectangular"
+          data-logo_alignment="left"
+          data-width="380">
+        </div>
+      </div>
+
+      <div class="divider">
+        <span>o continúa con tu correo</span>
+      </div>
+
       <form
         id="loginForm"
         class="form"
         onsubmit="return false"
-        style="display:grid; gap:.75rem; margin-top:.75rem"
+        style="display:grid; gap:.75rem"
       >
         <label
           >Correo<input
@@ -47,27 +70,53 @@ import Layout from "../layouts/Layout.astro";
     </div>
   </section>
 
+  <!-- Google Identity Services -->
+  <script src="https://accounts.google.com/gsi/client" async></script>
+
   <script>
-    // Login real conectado al backend
+    // Inyectar GOOGLE_CLIENT_ID desde meta tag (evita hardcodear en JS)
+    const GOOGLE_CLIENT_ID = document.querySelector('meta[name="google-client-id"]')?.getAttribute('content') || '';
+    const onloadEl = document.getElementById('g_id_onload');
+    if (onloadEl && GOOGLE_CLIENT_ID) onloadEl.setAttribute('data-client_id', GOOGLE_CLIENT_ID);
+
+    // Callback que invoca Google GSI con el credential (ID token)
+    window.handleGoogleCredential = async function (response) {
+      const err = document.getElementById('loginError');
+      err.style.display = 'none';
+
+      try {
+        const res = await fetch('/api/auth/google', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ credential: response.credential }),
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Error al iniciar sesión con Google');
+
+        redirectAfterLogin(data.user?.role);
+      } catch (e) {
+        err.textContent = e.message;
+        err.style.display = 'block';
+      }
+    };
+
+    // Login con email/contraseña
     (function () {
       const f = document.getElementById("loginForm");
       const err = document.getElementById("loginError");
       const btn = document.getElementById("loginBtn");
 
       f.addEventListener("submit", async function () {
-        const email = (
-          document.getElementById("loginEmail").value || ""
-        ).trim();
-        const password = (
-          document.getElementById("loginPass").value || ""
-        ).trim();
+        const email = (document.getElementById("loginEmail").value || "").trim();
+        const password = (document.getElementById("loginPass").value || "").trim();
 
         if (!email || !password) {
           showError("Completa todos los campos.");
           return;
         }
 
-        // UI Loading state
         btn.disabled = true;
         btn.textContent = "Entrando...";
         err.style.display = "none";
@@ -81,63 +130,14 @@ import Layout from "../layouts/Layout.astro";
           });
 
           const data = await res.json();
+          if (!res.ok) throw new Error(data.error || "Error al iniciar sesión");
 
-          if (!res.ok) {
-            throw new Error(data.error || "Error al iniciar sesión");
-          }
-
-          // La cookie HttpOnly auth_token es gestionada automáticamente por el servidor
-          // No se almacena ningún token en localStorage
-
-          // Dev credentials: ir directo al panel admin
           if (data.user?.devUser === true) {
             window.location.href = "/admin";
             return;
           }
 
-          // Obtener parámetro de redirección
-          const urlParams = new URLSearchParams(window.location.search);
-          const redirect = urlParams.get("redirect");
-
-          // Redireccionar según rol y origen
-          const role = data.user?.role;
-
-          if (redirect) {
-            // Si hay redirect específico, validar acceso según rol
-            if (redirect.startsWith("/app")) {
-              // /app solo para caficultor y admin
-              if (role === "caficultor" || role === "admin") {
-                window.location.href = redirect;
-              } else {
-                showError("No tienes permisos para acceder a esa sección.");
-                btn.disabled = false;
-                btn.textContent = "Entrar";
-                return;
-              }
-            } else if (
-              redirect.startsWith("/admin") ||
-              redirect.includes("admin.html")
-            ) {
-              // /admin y /admin.html solo para admin
-              if (role === "admin") {
-                window.location.href = redirect;
-              } else {
-                showError("Solo administradores pueden acceder a esa sección.");
-                btn.disabled = false;
-                btn.textContent = "Entrar";
-                return;
-              }
-            } else {
-              window.location.href = redirect;
-            }
-          } else {
-            // Sin redirect: ir según rol
-            if (role === "admin" || role === "caficultor") {
-              window.location.href = "/app";
-            } else {
-              window.location.href = "/cuenta";
-            }
-          }
+          redirectAfterLogin(data.user?.role);
         } catch (e) {
           showError(e.message);
           btn.disabled = false;
@@ -150,5 +150,63 @@ import Layout from "../layouts/Layout.astro";
         err.style.display = "block";
       }
     })();
+
+    function redirectAfterLogin(role) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const redirect = urlParams.get("redirect");
+
+      if (redirect) {
+        if (redirect.startsWith("/app")) {
+          if (role === "caficultor" || role === "admin") {
+            window.location.href = redirect;
+          } else {
+            document.getElementById('loginError').textContent = "No tienes permisos para acceder a esa sección.";
+            document.getElementById('loginError').style.display = 'block';
+          }
+        } else if (redirect.startsWith("/admin") || redirect.includes("admin.html")) {
+          if (role === "admin") {
+            window.location.href = redirect;
+          } else {
+            document.getElementById('loginError').textContent = "Solo administradores pueden acceder a esa sección.";
+            document.getElementById('loginError').style.display = 'block';
+          }
+        } else {
+          window.location.href = redirect;
+        }
+      } else {
+        if (role === "admin" || role === "caficultor") {
+          window.location.href = "/app";
+        } else {
+          window.location.href = "/cuenta";
+        }
+      }
+    }
   </script>
+
+  <style>
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      margin: 1.125rem 0 1rem;
+      color: var(--muted-fg);
+      font-size: .8rem;
+    }
+    .divider::before,
+    .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* Centrar el botón de Google */
+    #googleBtnWrap {
+      display: flex;
+      justify-content: center;
+    }
+    .g_id_signin {
+      width: 100% !important;
+    }
+  </style>
 </Layout>
