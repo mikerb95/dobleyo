@@ -94,6 +94,26 @@ authRouter.post('/login',
 
     const { email, password } = req.body;
 
+    // Dev credentials bypass (solo si DEV_USER y DEV_PASSWORD están configurados)
+    const devEmail = process.env.DEV_USER;
+    const devPassword = process.env.DEV_PASSWORD;
+    if (devEmail && devPassword && email === devEmail && password === devPassword) {
+      const syntheticUser = { id: 0, role: 'admin', email: devEmail, first_name: 'Dev', last_name: 'Admin' };
+      const accessToken = auth.generateToken(syntheticUser);
+      const isProd = process.env.NODE_ENV === 'production';
+      res.cookie('auth_token', accessToken, {
+        httpOnly: true,
+        secure: isProd,
+        sameSite: 'lax',
+        maxAge: 15 * 60 * 1000
+      });
+      return res.json({
+        message: 'Login exitoso',
+        token: accessToken,
+        user: { id: syntheticUser.id, first_name: syntheticUser.first_name, last_name: syntheticUser.last_name, role: syntheticUser.role, devUser: true }
+      });
+    }
+
     try {
       const result = await db.query('SELECT * FROM users WHERE email = $1', [email]);
       const user = result.rows[0];

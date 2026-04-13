@@ -89,6 +89,12 @@ import Layout from "../layouts/Layout.astro";
           // La cookie HttpOnly auth_token es gestionada automáticamente por el servidor
           // No se almacena ningún token en localStorage
 
+          // Dev credentials: ir directo al panel admin
+          if (data.user?.devUser === true) {
+            window.location.href = "/admin";
+            return;
+          }
+
           // Obtener parámetro de redirección
           const urlParams = new URLSearchParams(window.location.search);
           const redirect = urlParams.get("redirect");
