@@ -31,9 +31,11 @@ const googleClientId = import.meta.env.PUBLIC_GOOGLE_CLIENT_ID || '';
         </div>
       )}
 
-      <div class="divider">
-        <span>o continúa con tu correo</span>
-      </div>
+      {googleClientId && (
+        <div class="divider">
+          <span>o continúa con tu correo</span>
+        </div>
+      )}
 
       <form
         id="loginForm"
@@ -73,15 +75,10 @@ const googleClientId = import.meta.env.PUBLIC_GOOGLE_CLIENT_ID || '';
     </div>
   </section>
 
-  <!-- Google Identity Services -->
-  <script src="https://accounts.google.com/gsi/client" async></script>
+  <!-- Google Identity Services (solo si está configurado) -->
+  {googleClientId && <script src="https://accounts.google.com/gsi/client" async></script>}
 
   <script>
-    // Inyectar GOOGLE_CLIENT_ID desde meta tag (evita hardcodear en JS)
-    const GOOGLE_CLIENT_ID = document.querySelector('meta[name="google-client-id"]')?.getAttribute('content') || '';
-    const onloadEl = document.getElementById('g_id_onload');
-    if (onloadEl && GOOGLE_CLIENT_ID) onloadEl.setAttribute('data-client_id', GOOGLE_CLIENT_ID);
-
     // Callback que invoca Google GSI con el credential (ID token)
     window.handleGoogleCredential = async function (response) {
       const err = document.getElementById('loginError');
