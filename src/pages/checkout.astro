@@ -719,9 +719,6 @@ import Layout from "../layouts/Layout.astro";
       color: #4a6741;
     }
 
-    /* Mobile summary accordion */
-    .co-mobile-summary { display: none; }
-
     /* Mobile sticky bar */
     .co-mobile-bar { display: none; }
 
@@ -729,63 +726,7 @@ import Layout from "../layouts/Layout.astro";
     @media (max-width: 768px) {
       .co-page { padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px)); }
       .co-layout { grid-template-columns: 1fr; }
-      .co-summary-col { display: none; } /* reemplazado por accordion + barra móvil */
       .co-field-row { grid-template-columns: 1fr; }
-
-      /* Accordion resumen */
-      .co-mobile-summary {
-        display: block;
-        background: #fff;
-        border: 1px solid var(--border);
-        border-radius: 1rem;
-        overflow: hidden;
-        margin-bottom: 1.25rem;
-      }
-      .co-mobile-summary__toggle {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 1rem 1.25rem;
-        cursor: pointer;
-        list-style: none;
-        user-select: none;
-        gap: .75rem;
-      }
-      .co-mobile-summary__toggle::-webkit-details-marker { display: none; }
-      .co-mobile-summary__toggle::marker { display: none; }
-      .co-mobile-summary__label {
-        display: flex;
-        align-items: center;
-        gap: .5rem;
-        font-size: .875rem;
-        font-weight: 600;
-        color: var(--accent);
-        text-decoration: underline;
-        text-underline-offset: 2px;
-      }
-      .co-mobile-summary__total {
-        font-size: 1rem;
-        font-weight: 800;
-        color: var(--coffee);
-        white-space: nowrap;
-      }
-      .co-mobile-summary__body {
-        padding: 0 1.25rem 1.25rem;
-        border-top: 1px solid var(--border);
-      }
-      .co-mobile-summary[open] .co-mobile-summary__label {
-        text-decoration: none;
-      }
-      .co-mobile-summary[open] .co-mobile-summary__label::after {
-        content: '▲';
-        font-size: .6rem;
-        margin-left: .25rem;
-      }
-      .co-mobile-summary:not([open]) .co-mobile-summary__label::after {
-        content: '▼';
-        font-size: .6rem;
-        margin-left: .25rem;
-      }
 
       /* Sticky mobile bar */
       .co-mobile-bar {
