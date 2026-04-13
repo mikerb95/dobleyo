@@ -34,31 +34,6 @@ import Layout from "../layouts/Layout.astro";
       <a href="/tienda" class="co-btn-primary" style="display:inline-flex; width:auto; padding:.75rem 2rem;">Ver tienda</a>
     </div>
 
-    <!-- Resumen colapsable — solo móvil -->
-    <details id="mobileSummaryAccordion" class="co-mobile-summary" style="display:none;">
-      <summary class="co-mobile-summary__toggle">
-        <span class="co-mobile-summary__label">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M2 3.5h10M2 7h10M2 10.5h6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
-          Ver resumen del pedido
-        </span>
-        <span id="mobileSummaryTotal" class="co-mobile-summary__total">$0</span>
-      </summary>
-      <div class="co-mobile-summary__body">
-        <div id="mobileSumList" class="co-sum-list"></div>
-        <div class="co-sum-lines">
-          <div class="co-sum-line"><span>Subtotal</span><span id="mobileSumSubtotal">$0</span></div>
-          <div class="co-sum-line"><span>Envío</span><span id="mobileSumShipping">—</span></div>
-        </div>
-        <div class="co-sum-total">
-          <span>Total</span>
-          <div>
-            <span id="mobileSumTotal" class="co-total-amount">$0</span>
-            <span class="co-total-tax">COP · IVA incluido</span>
-          </div>
-        </div>
-      </div>
-    </details>
-
     <!-- Layout checkout -->
     <div id="checkoutLayout" class="co-layout" style="display:none;">
 
