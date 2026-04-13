@@ -293,7 +293,7 @@ const { title = "Admin — DobleYo Café", section = "" } = Astro.props;
           }
           document.body.style.visibility = "visible";
           const el = document.getElementById("adminUserName");
-          if (el) el.textContent = user.name || user.email;
+          if (el) el.textContent = (user.first_name ? `${user.first_name} ${user.last_name}`.trim() : user.email);
         } catch {
           window.location.href = "/login?redirect=" + encodeURIComponent(path);
         }

@@ -310,13 +310,25 @@ authRouter.post('/google', loginLimiter, async (req, res) => {
 
 // Check auth status
 authRouter.get('/me', auth.authenticateToken, async (req, res) => {
+  // Usuario dev sintético (id=0) — no existe en BD
+  if (req.user.id === 0) {
+    return res.json({
+      id: 0,
+      first_name: 'Dev',
+      last_name: 'Admin',
+      email: process.env.DEV_USER || 'dev@dobleyo.cafe',
+      role: 'admin',
+      caficultor_status: null
+    });
+  }
+
   try {
     const result = await db.query('SELECT id, first_name, last_name, email, role, caficultor_status FROM users WHERE id = $1', [req.user.id]);
-    
+
     if (!result.rows || result.rows.length === 0) {
       return res.status(404).json({ error: 'Usuario no encontrado' });
     }
-    
+
     res.json(result.rows[0]);
   } catch (err) {
     console.error('[/api/auth/me] Error:', err);
