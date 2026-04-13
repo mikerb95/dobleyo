@@ -240,6 +240,74 @@ authRouter.post('/logout', async (req, res) => {
   res.json({ message: 'Logout exitoso' });
 });
 
+// Google OAuth — verificación de ID token (Google Identity Services)
+authRouter.post('/google', loginLimiter, async (req, res) => {
+  const { credential } = req.body;
+  if (!credential) return res.status(400).json({ error: 'Token de Google requerido' });
+
+  if (!process.env.GOOGLE_CLIENT_ID) {
+    return res.status(503).json({ error: 'Google auth no configurado' });
+  }
+
+  try {
+    const ticket = await googleClient.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+    const payload = ticket.getPayload();
+    const { email, given_name, family_name, sub: googleId } = payload;
+
+    // Buscar usuario existente por google_id o email
+    let result = await db.query(
+      'SELECT * FROM users WHERE google_id = $1 OR email = $2 LIMIT 1',
+      [googleId, email]
+    );
+    let user = result.rows[0];
+
+    if (!user) {
+      // Crear usuario nuevo (verificado, sin contraseña)
+      const insert = await db.query(
+        `INSERT INTO users (email, first_name, last_name, role, is_verified, google_id)
+         VALUES ($1, $2, $3, 'client', TRUE, $4) RETURNING *`,
+        [email, given_name || '', family_name || '', googleId]
+      );
+      user = insert.rows[0];
+    } else if (!user.google_id) {
+      // Cuenta existente por email — vincular google_id
+      await db.query('UPDATE users SET google_id = $1 WHERE id = $2', [googleId, user.id]);
+    }
+
+    // Emitir tokens igual que el login normal
+    const accessToken = auth.generateToken(user);
+    const refreshToken = auth.generateRefreshToken();
+    const refreshExpires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    const hashedRefreshToken = auth.hashRefreshToken(refreshToken);
+
+    await db.query(
+      'INSERT INTO refresh_tokens (user_id, token_hash, expires_at) VALUES ($1, $2, $3)',
+      [user.id, hashedRefreshToken, refreshExpires]
+    );
+    await db.query('UPDATE users SET last_login_at = NOW() WHERE id = $1', [user.id]);
+
+    const isProd = process.env.NODE_ENV === 'production';
+    res.cookie('auth_token', accessToken, {
+      httpOnly: true, secure: isProd, sameSite: 'lax', maxAge: 15 * 60 * 1000,
+    });
+    res.cookie('refresh_token', refreshToken, {
+      httpOnly: true, secure: isProd, sameSite: 'lax',
+      path: '/api/auth/refresh', maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    res.json({
+      message: 'Login con Google exitoso',
+      user: { id: user.id, first_name: user.first_name, last_name: user.last_name, role: user.role },
+    });
+  } catch (err) {
+    console.error('[POST /api/auth/google] Error:', err);
+    res.status(401).json({ error: 'Token de Google inválido' });
+  }
+});
+
 // Check auth status
 authRouter.get('/me', auth.authenticateToken, async (req, res) => {
   try {
