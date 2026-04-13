@@ -34,7 +34,7 @@ const lowStock   = typeof product.stock === "number" && product.stock > 0 && pro
       <button class="btn small" data-add={product.id} disabled={outOfStock || undefined}>
         {outOfStock ? "Agotado" : "Agregar"}
       </button>
-      <a class="btn outline small" href="/carrito" data-link>Ver carrito</a>
+      <a class="btn outline small" href="/cart" data-link>Ver carrito</a>
     </div>
   </div>
 </article>
