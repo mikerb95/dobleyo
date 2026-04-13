@@ -5,6 +5,9 @@ import * as auth from '../auth.js';
 import { sendVerificationEmail } from '../services/email.js';
 import crypto from 'crypto';
 import { loginLimiter, registerLimiter, refreshLimiter } from '../middleware/rateLimit.js';
+import { OAuth2Client } from 'google-auth-library';
+
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 export const authRouter = Router();
 
