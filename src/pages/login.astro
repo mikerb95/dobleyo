@@ -12,22 +12,24 @@ const googleClientId = import.meta.env.PUBLIC_GOOGLE_CLIENT_ID || '';
       </p>
 
       <!-- Google Sign-In -->
-      <div id="googleBtnWrap" style="margin-top:1rem">
-        <div id="g_id_onload"
-          data-client_id=""
-          data-callback="handleGoogleCredential"
-          data-auto_prompt="false">
+      {googleClientId && (
+        <div id="googleBtnWrap" style="margin-top:1rem">
+          <div id="g_id_onload"
+            data-client_id={googleClientId}
+            data-callback="handleGoogleCredential"
+            data-auto_prompt="false">
+          </div>
+          <div class="g_id_signin"
+            data-type="standard"
+            data-size="large"
+            data-theme="outline"
+            data-text="signin_with"
+            data-shape="rectangular"
+            data-logo_alignment="left"
+            data-width="380">
+          </div>
         </div>
-        <div class="g_id_signin"
-          data-type="standard"
-          data-size="large"
-          data-theme="outline"
-          data-text="signin_with"
-          data-shape="rectangular"
-          data-logo_alignment="left"
-          data-width="380">
-        </div>
-      </div>
+      )}
 
       <div class="divider">
         <span>o continúa con tu correo</span>
