@@ -261,7 +261,7 @@ const googleClientId = import.meta.env.PUBLIC_GOOGLE_CLIENT_ID || '';
   </div>
 </div>
 
-{googleClientId && <script src="https://accounts.google.com/gsi/client" async defer></script>}
+{googleClientId && <script is:inline src="https://accounts.google.com/gsi/client" async defer></script>}
 
 <script is:inline define:vars={{ googleClientId }}>
 (function () {
@@ -837,6 +837,34 @@ const googleClientId = import.meta.env.PUBLIC_GOOGLE_CLIENT_ID || '';
     margin-bottom: 0.5rem;
   }
   .g_id_signin { width: 100% !important; }
+
+  /* Botón personalizado de Google (visible mientras GSI no haya cargado) */
+  .google-custom-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.625rem;
+    width: 100%;
+    padding: 0.7rem 1.25rem;
+    border: 1.5px solid var(--border, #e6e6e6);
+    border-radius: 8px;
+    background: #fff;
+    color: #3c4043;
+    font-size: 0.925rem;
+    font-weight: 600;
+    font-family: 'Montserrat', Arial, sans-serif;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  .google-custom-btn:hover {
+    background: #f8f8f8;
+    border-color: #c8c8c8;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+  }
+  .google-custom-btn:active {
+    background: #f0f0f0;
+  }
 
   /* ── Divider ──────────────────────────────────────────────────────────────── */
   .auth-divider {
