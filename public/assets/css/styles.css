@@ -1492,6 +1492,18 @@ body.menu-open {
 /* ===== Trazabilidad (UI armoniosa) ===== */
 /* ── Trazabilidad ──────────────────────────────────────────────────── */
 
+/* Padding interno para cards de trazabilidad (no usan .p wrapper) */
+.trace-input-col .card,
+.trace-result-col .card {
+  padding: 1rem
+}
+
+/* Deshabilitar el hover lift en cards de resultado */
+.trace-result-col .card:hover {
+  transform: none;
+  box-shadow: none
+}
+
 .trace-page {
   display: grid;
   grid-template-columns: 1fr 1.4fr;
