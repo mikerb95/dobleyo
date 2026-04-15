@@ -844,8 +844,8 @@ coffeeRouter.delete('/harvest/:lotId', async (req, res) => {
       });
     }
 
-    // Eliminar de coffee_inventory primero (si existe)
-    await query('DELETE FROM coffee_inventory WHERE lot_id = $1', [lotId]);
+    // Eliminar de green_coffee_inventory primero (si existe)
+    await query('DELETE FROM green_coffee_inventory WHERE lot_id = $1', [lotId]);
 
     // Eliminar el lote
     await query('DELETE FROM coffee_harvests WHERE lot_id = $1', [lotId]);
