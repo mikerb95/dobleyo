@@ -60,7 +60,7 @@ const POOL_CONFIG = {
 let pool = null;
 
 function createPool() {
-  if (!process.env.DATABASE_URL) {
+  if (!_cleanUrl) {
     console.error('[db] CRITICAL: DATABASE_URL no está definido en las variables de entorno.');
     return null;
   }
