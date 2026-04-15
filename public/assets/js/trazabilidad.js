@@ -65,15 +65,88 @@
   tabScan?.addEventListener('click', () => switchTab('scan'));
   tabManual?.addEventListener('click', () => { switchTab('manual'); setTimeout(() => lotInput?.focus(), 50); });
 
+  // ─── Estado idle (placeholder opaco visible desde el inicio) ─────────
+  function renderIdle() {
+    if (resEmpty) resEmpty.style.display = 'none';
+    if (resWrap)  { resWrap.style.display = ''; resWrap.classList.add('trace-result--idle'); }
+
+    if (resName) resName.textContent = 'Origen · Variedad · Cosecha';
+    if (resLot)  resLot.textContent  = 'COL-XXX-0000 · Colombia';
+    if (resRegionBadge)   resRegionBadge.textContent   = 'Colombia';
+    if (resAltitudeBadge) { resAltitudeBadge.textContent = '1.600 msnm'; resAltitudeBadge.style.display = ''; }
+
+    if (resChips) {
+      resChips.innerHTML = '';
+      ['Proceso', 'Variedad', 'Finca origen'].forEach(t => {
+        const s = document.createElement('span'); s.className = 'trace-chip'; s.textContent = t; resChips.appendChild(s);
+      });
+    }
+
+    if (resFlavorSection && resFlavorChips) {
+      resFlavorSection.style.display = '';
+      resFlavorChips.innerHTML = '';
+      [['Panela', 'flavor-sweet'], ['Frutos rojos', 'flavor-fruity'], ['Chocolate', 'flavor-chocolate']].forEach(([t, c]) => {
+        const s = document.createElement('span'); s.className = 'trace-flavor-chip ' + c; s.textContent = t; resFlavorChips.appendChild(s);
+      });
+    }
+
+    if (resTimeline) {
+      resTimeline.innerHTML = '';
+      [
+        { label: 'Cosecha',            icon: '🌱', detail: 'Finca · Región · Altitud' },
+        { label: 'Almacén verde',      icon: '🏭', detail: 'Ubicación de almacenamiento' },
+        { label: 'Tueste',             icon: '🔥', detail: 'Nivel · Temperatura · Tiempo' },
+        { label: 'Control de calidad', icon: '🧪', detail: 'Puntaje SCA' },
+        { label: 'Empaque',            icon: '📦', detail: 'Presentación' },
+        { label: 'En tienda',          icon: '🛍️', detail: null },
+      ].forEach(stage => {
+        const li = document.createElement('li');
+        li.className = 'trace-timeline-item pending';
+        li.innerHTML = `
+          <div class="trace-timeline-marker">
+            <div class="trace-timeline-icon" aria-hidden="true">${stage.icon}</div>
+            <div class="trace-timeline-line"></div>
+          </div>
+          <div class="trace-timeline-content">
+            <div class="trace-timeline-stage">${stage.label}</div>
+            ${stage.detail ? `<div class="trace-timeline-detail muted">${stage.detail}</div>` : ''}
+          </div>`;
+        resTimeline.appendChild(li);
+      });
+    }
+
+    if (resSCACard) resSCACard.style.display = '';
+    if (resSCAMain) {
+      resSCAMain.innerHTML = `
+        <div class="trace-sca-score-display">
+          <span class="trace-sca-number">—</span>
+          <span class="trace-sca-max">/100</span>
+        </div>
+        <div class="trace-sca-label">Puntaje de calidad SCA</div>
+        <div class="trace-sca-bar-wrap"><div class="trace-sca-bar-fill" style="width:0%"></div></div>`;
+    }
+    if (resSCABars) {
+      resSCABars.innerHTML = '';
+      ['Acidez', 'Cuerpo', 'Balance'].forEach(label => {
+        const el = document.createElement('div');
+        el.className = 'trace-sca-attr';
+        el.innerHTML = `
+          <div class="trace-sca-attr-label">${label}</div>
+          <div class="trace-sca-attr-bar"><div class="trace-sca-attr-fill" style="width:0%"></div></div>
+          <div class="trace-sca-attr-val">—</div>`;
+        resSCABars.appendChild(el);
+      });
+    }
+  }
+
   // ─── Render resultado ────────────────────────────────────────────────
   function renderResult(data) {
     if (!data || !data.harvest) {
-      if (resWrap)  resWrap.style.display  = 'none';
-      if (resEmpty) resEmpty.style.display = '';
+      renderIdle();
       return;
     }
     if (resEmpty) resEmpty.style.display = 'none';
-    if (resWrap)  resWrap.style.display  = '';
+    if (resWrap)  { resWrap.style.display = ''; resWrap.classList.remove('trace-result--idle'); }
 
     const h      = data.harvest;
     const region = regionLabel(h.region);

@@ -88,8 +88,9 @@ labelsRouter.post('/generate-from-lot', async (req, res) => {
 
     // Obtener información del café empacado
     const coffeeResults = await query(
-      `SELECT pc.*, rc.roast_level, rc.weight_kg, rb.lot_id, ch.code as lot_code, ch.region, ch.farm, 
-              ch.variety, ch.process, ch.flavor_notes, ch.weight as lot_weight
+      `SELECT pc.*, rc.roast_level, rc.weight_kg, rb.lot_id,
+              ch.lot_id as lot_code, ch.region, ch.farm,
+              ch.variety, ch.process, ch.taste_notes as flavor_notes
        FROM packaged_coffee pc
        LEFT JOIN roasted_coffee_inventory rci ON pc.roasted_storage_id = rci.id
        LEFT JOIN roasted_coffee rc ON rci.roasted_id = rc.id
@@ -99,14 +100,14 @@ labelsRouter.post('/generate-from-lot', async (req, res) => {
       [lotId]
     );
 
-    if (coffeeResults.length === 0) {
+    if (coffeeResults.rows.length === 0) {
       return res.status(404).json({
         success: false,
         error: 'Café empacado no encontrado'
       });
     }
 
-    const coffee = coffeeResults[0];
+    const coffee = coffeeResults.rows[0];
 
     // Generar etiquetas
     const labels = [];
