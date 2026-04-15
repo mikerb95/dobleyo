@@ -273,10 +273,11 @@ coffeeRouter.post('/roasted-storage', async (req, res) => {
     }
 
     // Guardar en BD
+    const conditionsStr = (Array.isArray(conditions) && conditions.length) ? conditions.join(',') : null;
     const result = await query(
       `INSERT INTO roasted_coffee_inventory (roasted_id, location, container_type, container_count, storage_conditions, notes, status, created_at)
-       VALUES ($1, $2, $3, $4, $5, $6, 'ready_for_packaging', NOW())`,
-      [roastedId, location, container, containerCount, conditions.join(',') || null, notes || null]
+       VALUES ($1, $2, $3, $4, $5, $6, 'ready_for_packaging', NOW()) RETURNING id`,
+      [roastedId, location, container, containerCount, conditionsStr, notes || null]
     );
 
     // Actualizar estado
@@ -287,7 +288,7 @@ coffeeRouter.post('/roasted-storage', async (req, res) => {
 
     res.status(201).json({
       success: true,
-      storageId: result.rows.insertId,
+      storageId: result.rows[0].id,
       message: 'Café tostado almacenado correctamente'
     });
   } catch (err) {
@@ -438,7 +439,7 @@ coffeeRouter.post('/packaging', async (req, res) => {
     // Guardar en BD
     const result = await query(
       `INSERT INTO packaged_coffee (roasted_storage_id, acidity, body, balance, score, presentation, grind_size, package_size, unit_count, notes, status, created_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 'ready_for_sale', NOW())`,
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 'ready_for_sale', NOW()) RETURNING id`,
       [roastedStorageId, acidity, body, balance, score, presentation, grindSize || null, packageSize, unitCount, notes || null]
     );
 
