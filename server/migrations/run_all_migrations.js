@@ -6,45 +6,56 @@
  * IMPORTANTE: el orden importa por dependencias entre tablas.
  */
 import 'dotenv/config';
+import { execFileSync } from 'child_process';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const node = process.execPath;
+
+// Ejecutar un archivo JS como subproceso
+function runFile(file) {
+  execFileSync(node, [join(__dirname, file)], {
+    stdio: 'inherit',
+    env: process.env,
+  });
+}
+
+// Importar y llamar una función exportada
+async function runFn(file, fnName) {
+  const mod = await import(join(__dirname, file));
+  if (typeof mod[fnName] !== 'function') {
+    throw new Error(`Función '${fnName}' no encontrada en ${file}`);
+  }
+  await mod[fnName]();
+}
+
+const steps = [
+  // Self-executing (tienen process.exit internamente → subproceso)
+  { name: 'Coffee pipeline tables',          run: () => runFile('run_coffee_migration.js') },
+  { name: 'Roast fields on lots',            run: () => runFile('add_roast_fields.js') },
+  { name: 'Labels tables',                   run: () => runFile('create_labels_tables.js') },
+  { name: 'Google auth column',              run: () => runFile('add_google_auth.js') },
+
+  // Exportan función → import directo
+  { name: 'Origin fields on coffee_harvests', run: () => runFn('add_origin_fields_to_coffee_harvests.js', 'addOriginFieldsToCoffeeHarvests') },
+  { name: 'Farms table',                     run: () => runFn('create_farms_table.js', 'createFarmsTable') },
+  { name: 'Finance tables',                  run: () => runFn('create_finance_tables.js', 'createFinanceTables') },
+  { name: 'Inventory tables',                run: () => runFn('create_inventory_tables.js', 'migrateInventoryTables') },
+  { name: 'Customer orders tables',          run: () => runFn('create_customer_orders.js', 'createCustomerOrdersTables') },
+  { name: 'Geocoding on orders',             run: () => runFn('add_geocoding_to_orders.js', 'addGeocodingToOrders') },
+  { name: 'Split name fields',               run: () => runFn('split_name_fields.js', 'splitNameFields') },
+];
 
 async function runAll() {
   console.log('🚀 Ejecutando todas las migraciones...\n');
-
-  const steps = [
-    { name: 'Coffee pipeline tables', path: './run_coffee_migration.js', fn: null },
-    { name: 'Origin fields on coffee_harvests', path: './add_origin_fields_to_coffee_harvests.js', fn: 'addOriginFieldsToCoffeeHarvests' },
-    { name: 'Roast fields on lots', path: './add_roast_fields.js', fn: 'addRoastFields' },
-    { name: 'Labels tables', path: './create_labels_tables.js', fn: 'createLabelsTables' },
-    { name: 'Farms table', path: './create_farms_table.js', fn: 'createFarmsTable' },
-    { name: 'Finance tables', path: './create_finance_tables.js', fn: 'createFinanceTables' },
-    { name: 'Inventory tables', path: './create_inventory_tables.js', fn: 'createInventoryTables' },
-    { name: 'Customer orders tables', path: './create_customer_orders.js', fn: 'createCustomerOrdersTables' },
-    { name: 'Google auth column', path: './add_google_auth.js', fn: 'addGoogleAuth' },
-    { name: 'Geocoding on orders', path: './add_geocoding_to_orders.js', fn: 'addGeocodingToOrders' },
-    { name: 'Split name fields', path: './split_name_fields.js', fn: 'splitNameFields' },
-  ];
-
   let ok = 0;
   let failed = 0;
 
   for (const step of steps) {
     process.stdout.write(`  ▶ ${step.name}... `);
     try {
-      const mod = await import(step.path);
-
-      if (step.fn) {
-        // Módulo que exporta una función
-        if (typeof mod[step.fn] !== 'function') {
-          throw new Error(`Función ${step.fn} no encontrada en ${step.path}`);
-        }
-        await mod[step.fn]();
-      } else {
-        // run_coffee_migration.js ejecuta solo al importar — ya tiene su propio main
-        // Lo ejecutamos como subprocess para no tener conflicto con process.exit()
-        const { execSync } = await import('child_process');
-        execSync(`node ${new URL(step.path, import.meta.url).pathname}`, { stdio: 'pipe' });
-      }
-
+      await step.run();
       console.log('✅');
       ok++;
     } catch (err) {
@@ -56,9 +67,10 @@ async function runAll() {
   console.log(`\n─────────────────────────────────`);
   console.log(`✅ Exitosas: ${ok}  ❌ Fallidas: ${failed}`);
   if (failed > 0) {
-    console.log('Revisa los errores arriba. Las migraciones con IF NOT EXISTS son seguras de re-ejecutar.');
+    console.log('Revisa los errores. Las migraciones con IF NOT EXISTS son seguras de re-ejecutar.');
+    process.exit(1);
   }
-  process.exit(failed > 0 ? 1 : 0);
+  process.exit(0);
 }
 
 runAll();
