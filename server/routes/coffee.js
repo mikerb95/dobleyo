@@ -168,13 +168,13 @@ coffeeRouter.post('/send-roasting', async (req, res) => {
     // Guardar en BD
     const result = await query(
       `INSERT INTO roasting_batches (lot_id, quantity_sent_kg, target_temp, notes, status, created_at)
-       VALUES ($1, $2, $3, $4, 'in_roasting', NOW())`,
+       VALUES ($1, $2, $3, $4, 'in_roasting', NOW()) RETURNING id`,
       [lotId, quantitySent, targetTemp || null, notes || null]
     );
 
     res.status(201).json({
       success: true,
-      roastingId: result.rows.insertId,
+      roastingId: result.rows[0].id,
       message: 'Lote enviado a tostión correctamente'
     });
   } catch (err) {
