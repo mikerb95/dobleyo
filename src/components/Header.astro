@@ -425,9 +425,14 @@
     }
 
     // Toggle dropdown al hacer click en el botón
+    // Si no está autenticado, abre la modal directamente
     userBtn.addEventListener("click", (e) => {
       e.preventDefault();
       e.stopPropagation();
+      if (userBtn.dataset.auth !== "true") {
+        window.AuthModal?.open("login");
+        return;
+      }
       userDropdown.classList.toggle("active");
       userBtn.setAttribute(
         "aria-expanded",
