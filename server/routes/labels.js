@@ -424,18 +424,19 @@ labelsRouter.delete('/:labelId', async (req, res) => {
 });
 
 // Función auxiliar para generar datos QR
+// lot puede ser un objeto raw de BD (campos snake_case) o un objeto transformado
 function generateQRData(lot, labelId) {
   return JSON.stringify({
     type: 'product_label',
     labelId,
-    lotCode: lot.code,
-    origin: lot.origin,
+    lotCode: lot.lot_code || lot.lot_id,
+    origin: lot.region || lot.origin,
     farm: lot.farm,
     variety: lot.variety,
-    roast: lot.roast,
+    roast: lot.roast_level || lot.roast,
     process: lot.process,
     presentation: lot.presentation,
-    grind: lot.grind,
+    grind: lot.grind_size || lot.grind,
     profile: {
       acidity: lot.acidity,
       body: lot.body,
