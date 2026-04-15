@@ -698,7 +698,7 @@ coffeeRouter.get('/lots', async (req, res) => {
           'verde' as status,
           COALESCE(ci.weight_kg, 0) as weight
         FROM coffee_harvests ch
-        LEFT JOIN coffee_inventory ci ON ch.lot_id = ci.lot_id
+        LEFT JOIN green_coffee_inventory ci ON ch.lot_id = ci.lot_id
         ORDER BY ch.created_at DESC`
       );
       if (greenResult.rows) {
