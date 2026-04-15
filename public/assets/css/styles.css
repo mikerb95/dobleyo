@@ -130,7 +130,7 @@ img {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1.5rem 1.25rem;
+  padding: 1rem 1.25rem;
   width: min(var(--page-width), calc(100% - var(--page-gutter)));
   margin-inline: auto;
   background: transparent;
@@ -165,7 +165,7 @@ img {
 
 /* Asegurar altura consistente del logo (escritorio por defecto) */
 .brand img {
-  height: 64px;
+  height: 52px;
   width: auto;
   display: block
 }
