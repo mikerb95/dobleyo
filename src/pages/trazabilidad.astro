@@ -13,86 +13,179 @@ const _hreflang = getHreflangPair("/trazabilidad");
   title="Trazabilidad de café — DobleYo Café"
   description="Consulta el origen, cosecha, tueste y empaque de tu café DobleYo. Escanea el QR del empaque o ingresa el código del lote para ver la historia completa."
 >
-  <section class="trace-layout" aria-label="Consulta de trazabilidad">
-    <div class="trace-left">
-      <div class="card">
-        <div class="p">
-          <div class="scan-frame">
-            <video id="qrVideo" autoplay playsinline muted class="scan-video"
-            ></video>
-            <canvas id="qrOverlay"></canvas>
-            <div class="scan-overlay"></div>
-            <div class="scan-line" aria-hidden="true"></div>
-          </div>
-          <div class="trace-controls">
-            <button id="startScan" class="btn" type="button"
-              >Iniciar escáner</button
+  <div class="container" style="padding-top:1rem">
+    <div class="trace-page">
+
+      <!-- ─── Columna de entrada ─────────────────────────────────── -->
+      <div class="trace-input-col">
+
+        <div class="card">
+          <!-- Tabs -->
+          <div class="trace-tabs" role="tablist" aria-label="Modo de consulta">
+            <button
+              class="trace-tab active"
+              id="tabScan"
+              role="tab"
+              aria-selected="true"
+              aria-controls="panelScan"
             >
-            <button id="stopScan" class="icon-btn" type="button">Detener</button
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M3 7V5a2 2 0 012-2h2M17 3h2a2 2 0 012 2v2M21 17v2a2 2 0 01-2 2h-2M7 21H5a2 2 0 01-2-2v-2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              </svg>
+              Escanear QR
+            </button>
+            <button
+              class="trace-tab"
+              id="tabManual"
+              role="tab"
+              aria-selected="false"
+              aria-controls="panelManual"
             >
-            <button id="restartScan" class="icon-btn" type="button" hidden
-              >Reiniciar escaneo</button
-            >
-          </div>
-          <div id="scanStatus" class="muted trace-status">
-            Listo para escanear.
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <rect x="3" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.8"/>
+                <rect x="14" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.8"/>
+                <rect x="3" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.8"/>
+                <path d="M14 14h2m3 0h2M14 17h2m3 0h2M14 20h2m3 0h2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              </svg>
+              Código manual
+            </button>
           </div>
 
-          <p class="muted trace-hint">
-            Si tu navegador no permite el uso de la cámara, ingresa el código
-            manualmente.
-          </p>
-          <form id="manualForm" class="form trace-form" onsubmit="return false">
-            <label for="lotInput">Código de lote</label>
-            <div class="trace-form-row">
-              <input
-                id="lotInput"
-                placeholder="Ej: COL-HUI-1800 o LBL-LOT-0001-0001"
-                aria-label="Código de lote"
-              />
-              <button id="lookupBtn" class="btn" type="button">Consultar</button
-              >
+          <!-- Panel: Escáner QR -->
+          <div class="trace-panel" id="panelScan" role="tabpanel" aria-labelledby="tabScan">
+            <div class="scan-frame" id="scanFrame">
+              <video id="qrVideo" autoplay playsinline muted class="scan-video"></video>
+              <canvas id="qrOverlay"></canvas>
+              <div class="scan-viewfinder" aria-hidden="true"></div>
+              <div class="scan-idle-hint" id="scanIdleHint" aria-hidden="true">
+                <svg width="44" height="44" viewBox="0 0 24 24" fill="none">
+                  <path d="M3 7V5a2 2 0 012-2h2M17 3h2a2 2 0 012 2v2M21 17v2a2 2 0 01-2 2h-2M7 21H5a2 2 0 01-2-2v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+                <span>Apunta al código QR<br>del empaque</span>
+              </div>
+              <div class="scan-line" id="scanLine" aria-hidden="true" hidden></div>
             </div>
-          </form>
-          <div id="lotError" class="trace-error" style="display:none"></div>
-        </div>
-      </div>
-    </div>
 
-    <div class="trace-right">
-      <div class="card trace-result">
-        <div class="p">
-          <h2>Resultado</h2>
-          <div id="resultEmpty" class="muted">
-            Aún no hay datos. Escanea un QR o ingresa un código.
+            <div class="trace-controls">
+              <button id="startScan" class="btn" type="button">Iniciar cámara</button>
+              <button id="stopScan" class="icon-btn" type="button" hidden>Detener</button>
+              <button id="restartScan" class="icon-btn" type="button" hidden>Reiniciar</button>
+            </div>
+            <div id="scanStatus" class="trace-status muted">Presiona "Iniciar cámara" para escanear.</div>
           </div>
-          <div id="result" style="display:none">
-            <h3 id="resName">—</h3>
-            <div class="muted" id="resLot">—</div>
-            <div class="trace-chips" id="resChips"></div>
-            <dl class="trace-details" id="resDetails"></dl>
+
+          <!-- Panel: Código manual -->
+          <div class="trace-panel" id="panelManual" role="tabpanel" aria-labelledby="tabManual" hidden>
+            <p class="trace-hint muted">
+              Ingresa el código impreso en el empaque de tu café DobleYo.
+            </p>
+            <form id="manualForm" class="trace-form" onsubmit="return false">
+              <label for="lotInput">Código de lote</label>
+              <div class="trace-form-row">
+                <input
+                  id="lotInput"
+                  placeholder="Ej: COL-HUI-1800 o LBL-LOT-0001-0001"
+                  aria-label="Código de lote"
+                  autocomplete="off"
+                  autocapitalize="characters"
+                  spellcheck="false"
+                />
+                <button id="lookupBtn" class="btn" type="button">Consultar</button>
+              </div>
+            </form>
+            <div id="lotError" class="trace-error" style="display:none"></div>
           </div>
         </div>
-      </div>
 
-      <div class="card">
-        <div class="p">
+        <!-- Cómo funciona -->
+        <div class="card trace-how">
           <h3>¿Cómo funciona?</h3>
-          <ul>
-            <li>Escanea el QR del empaque o ingresa el código del lote.</li>
+          <ol class="trace-how-list">
             <li>
-              Verás finca, productor, altitud, proceso, fecha de cosecha y
-              tueste.
+              <span class="trace-how-num">1</span>
+              <span>Escanea el QR del empaque <strong>o</strong> ingresa el código del lote manualmente.</span>
             </li>
-            <li>Transparencia y confianza en cada taza.</li>
-          </ul>
+            <li>
+              <span class="trace-how-num">2</span>
+              <span>Verás la historia completa: finca, cosecha, tueste y control de calidad.</span>
+            </li>
+            <li>
+              <span class="trace-how-num">3</span>
+              <span>Transparencia total — desde el grano hasta tu taza.</span>
+            </li>
+          </ol>
+        </div>
+
+      </div>
+
+      <!-- ─── Columna de resultado ───────────────────────────────── -->
+      <div class="trace-result-col" id="traceResultCol">
+
+        <!-- Estado vacío -->
+        <div class="trace-empty" id="resultEmpty">
+          <div class="trace-empty-icon" aria-hidden="true">
+            <svg width="56" height="56" viewBox="0 0 24 24" fill="none">
+              <circle cx="11" cy="11" r="7.5" stroke="currentColor" stroke-width="1.4"/>
+              <path d="M17.5 17.5L21 21" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+              <path d="M8.5 11h5M11 8.5v5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <p class="trace-empty-title">Busca tu lote</p>
+          <p class="muted">
+            Escanea el QR o ingresa el código del empaque para conocer la historia completa de tu café.
+          </p>
+        </div>
+
+        <!-- Resultado (oculto hasta que haya datos) -->
+        <div id="result" style="display:none">
+
+          <!-- Hero -->
+          <div class="card trace-hero-card">
+            <div class="trace-hero-top">
+              <div class="trace-hero-origin">
+                <span class="trace-origin-badge" id="resRegionBadge">Colombia</span>
+                <span class="trace-altitude-badge" id="resAltitudeBadge" style="display:none"></span>
+              </div>
+              <button class="icon-btn trace-share-btn" id="shareBtn" type="button" title="Compartir enlace">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <circle cx="18" cy="5" r="3" stroke="currentColor" stroke-width="1.8"/>
+                  <circle cx="6" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/>
+                  <circle cx="18" cy="19" r="3" stroke="currentColor" stroke-width="1.8"/>
+                  <path d="M8.59 13.51l6.83 3.98M15.41 6.51L8.59 10.49" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                </svg>
+                <span id="shareBtnLabel">Compartir</span>
+              </button>
+            </div>
+
+            <h2 class="trace-hero-name" id="resName">—</h2>
+            <div class="trace-lot-code muted" id="resLot">—</div>
+            <div class="trace-chips" id="resChips"></div>
+
+            <div class="trace-flavor-section" id="resFlavorSection" style="display:none">
+              <div class="trace-flavor-label">Notas de sabor</div>
+              <div class="trace-flavor-chips" id="resFlavorChips"></div>
+            </div>
+          </div>
+
+          <!-- Timeline de producción -->
+          <div class="card">
+            <h3 class="trace-section-title">Cadena de producción</h3>
+            <ol class="trace-timeline" id="resTimeline"></ol>
+          </div>
+
+          <!-- Control de calidad SCA -->
+          <div class="card trace-sca-card" id="resSCACard" style="display:none">
+            <h3 class="trace-section-title">Control de calidad SCA</h3>
+            <div class="trace-sca-main" id="resSCAMain"></div>
+            <div class="trace-sca-bars" id="resSCABars"></div>
+          </div>
+
         </div>
       </div>
-    </div>
-  </section>
 
-  <script
-    src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"
-    is:inline></script>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js" is:inline></script>
   <script src="/assets/js/trazabilidad.js" is:inline></script>
 </Layout>
