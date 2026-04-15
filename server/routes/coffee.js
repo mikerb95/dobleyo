@@ -217,7 +217,7 @@ coffeeRouter.post('/roast-retrieval', async (req, res) => {
     // Guardar en BD
     const result = await query(
       `INSERT INTO roasted_coffee (roasting_id, roast_level, weight_kg, weight_loss_percent, actual_temp, roast_time_minutes, observations, status, created_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, 'ready_for_storage', NOW())`,
+       VALUES ($1, $2, $3, $4, $5, $6, $7, 'ready_for_storage', NOW()) RETURNING id`,
       [roastingId, roastLevel, roastedWeight, weightLossPercent, actualTemp || null, roastTime || null, observations || null]
     );
 
@@ -229,7 +229,7 @@ coffeeRouter.post('/roast-retrieval', async (req, res) => {
 
     res.status(201).json({
       success: true,
-      roastedId: result.rows.insertId,
+      roastedId: result.rows[0].id,
       weightLossPercent,
       message: 'Café tostado registrado correctamente'
     });
