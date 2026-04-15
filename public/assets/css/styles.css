@@ -165,7 +165,7 @@ img {
 
 /* Asegurar altura consistente del logo (escritorio por defecto) */
 .brand img {
-  height: 52px;
+  height: 80px;
   width: auto;
   display: block
 }
