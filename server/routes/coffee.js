@@ -482,7 +482,7 @@ coffeeRouter.post('/packaging', async (req, res) => {
 
     res.status(201).json({
       success: true,
-      packagedId: result.rows.insertId,
+      packagedId: result.rows[0].id,
       productId: productId,
       score,
       inventoryUpdated: inventoryMovementCreated,
