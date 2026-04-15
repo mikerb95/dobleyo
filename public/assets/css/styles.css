@@ -1504,6 +1504,19 @@ body.menu-open {
   box-shadow: none
 }
 
+/* Estado idle: visible pero opaco hasta que se escanee un código */
+.trace-result--idle {
+  opacity: .3;
+  pointer-events: none;
+  user-select: none;
+  transition: opacity .5s ease
+}
+
+#result:not(.trace-result--idle) {
+  opacity: 1;
+  transition: opacity .5s ease
+}
+
 .trace-page {
   display: grid;
   grid-template-columns: 1fr 1.4fr;
