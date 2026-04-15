@@ -310,6 +310,7 @@
         if (userBtn) {
           userBtn.href = "/cuenta";
           userBtn.setAttribute("aria-label", `Cuenta de ${firstName}`);
+          userBtn.dataset.auth = "true";
         }
 
         // Mostrar opciones de autenticado, ocultar no autenticado
