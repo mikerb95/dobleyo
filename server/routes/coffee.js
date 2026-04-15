@@ -123,13 +123,13 @@ coffeeRouter.post('/inventory-storage', async (req, res) => {
     // Guardar en BD
     const result = await query(
       `INSERT INTO green_coffee_inventory (harvest_id, lot_id, weight_kg, location, storage_date, notes, created_at)
-       VALUES ($1, $2, $3, $4, $5, $6, NOW())`,
+       VALUES ($1, $2, $3, $4, $5, $6, NOW()) RETURNING id`,
       [harvestId, lotId, weight, location, storageDate, notes || null]
     );
 
     res.status(201).json({
       success: true,
-      storageId: result.rows.insertId,
+      storageId: result.rows[0].id,
       message: 'Café verde almacenado correctamente'
     });
   } catch (err) {
