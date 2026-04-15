@@ -22,14 +22,22 @@ const IS_SERVERLESS = process.env.VERCEL === '1' || process.env.AWS_LAMBDA_FUNCT
 // Sin PgBouncer (conexión directa):
 //   - max: 5 — límite conservador para no saturar PostgreSQL directamente.
 //
-const POOL_CONFIG = {
-  connectionString: process.env.DATABASE_URL,
+// Eliminar parámetros SSL de la URL para evitar conflicto con pg v8:
+// cuando el connection string tiene ?sslmode=require y se pasa ssl:{} por config,
+// pg puede activar validación de certificado ignorando rejectUnauthorized.
+const _rawUrl = process.env.DATABASE_URL || '';
+const _cleanUrl = _rawUrl.replace(/[?&]sslmode=[^&]*/gi, '').replace(/[?&]ssl=[^&]*/gi, '').replace(/[?&]$/, '');
 
-  ssl: {
-    // Aiven requiere SSL. rejectUnauthorized: false acepta el certificado
-    // auto-firmado de Aiven sin necesidad de incluir el CA cert en el bundle.
-    rejectUnauthorized: false,
-  },
+const POOL_CONFIG = {
+  connectionString: _cleanUrl || undefined,
+
+  ssl: _cleanUrl
+    ? {
+        // Aiven usa certificado auto-firmado. rejectUnauthorized: false lo acepta
+        // sin necesidad de incluir el CA cert en el bundle.
+        rejectUnauthorized: false,
+      }
+    : false,
 
   // Tamaño del pool por instancia de función/proceso
   max: IS_SERVERLESS ? 2 : 5,
