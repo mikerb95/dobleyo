@@ -313,26 +313,27 @@ labelsRouter.get('/list', async (req, res) => {
     const params = [];
 
     if (type === 'lots') {
-      sql += ` AND lot_id IS NOT NULL`;
+      sql += ` AND lot_code NOT LIKE 'TMP-%'`;
     } else if (type === 'custom') {
-      sql += ` AND lot_id IS NULL`;
+      sql += ` AND lot_code LIKE 'TMP-%'`;
     }
 
-    sql += ` ORDER BY created_at DESC LIMIT ? OFFSET ?`;
+    sql += ` ORDER BY created_at DESC LIMIT $1 OFFSET $2`;
     params.push(parseInt(limit), parseInt(offset));
 
-    const labels = await query(sql, params);
+    const labelsResult = await query(sql, params);
+    const labels = labelsResult.rows;
 
     // Contar total
     let countSql = `SELECT COUNT(*) as total FROM generated_labels WHERE 1=1`;
     if (type === 'lots') {
-      countSql += ` AND lot_id IS NOT NULL`;
+      countSql += ` AND lot_code NOT LIKE 'TMP-%'`;
     } else if (type === 'custom') {
-      countSql += ` AND lot_id IS NULL`;
+      countSql += ` AND lot_code LIKE 'TMP-%'`;
     }
 
     const countResult = await query(countSql);
-    const total = countResult[0]?.total || 0;
+    const total = parseInt(countResult.rows[0]?.total || 0);
 
     res.json({
       success: true,
