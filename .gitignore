@@ -27,3 +27,4 @@ coverage/
 # Misc
 *.tmp
 *.swp
+.env.example
