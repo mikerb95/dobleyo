@@ -512,23 +512,82 @@ const googleClientId = import.meta.env.PUBLIC_GOOGLE_CLIENT_ID || '';
   }
 
   // ── Google Sign-In ─────────────────────────────────────────────────────────────
-  if (googleClientId) {
-    window.handleGoogleCredential = async function (response) {
-      showAlert('loginError', '');
-      try {
-        const res = await fetch('/api/auth/google', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ credential: response.credential }),
+  async function handleGoogleToken(credential) {
+    showAlert('loginError', '');
+    try {
+      const res = await fetch('/api/auth/google', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ credential }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error al iniciar sesión con Google');
+      redirectAfterLogin(data.user?.role);
+    } catch (e) {
+      showAlert('loginError', e.message);
+    }
+  }
+
+  // Callback que invoca Google GSI
+  window.handleGoogleCredential = (response) => handleGoogleToken(response.credential);
+
+  // Botón personalizado de Google
+  const googleBtn = document.getElementById('googleSignInBtn');
+  if (googleBtn) {
+    googleBtn.addEventListener('click', () => {
+      if (googleClientId && window.google?.accounts?.id) {
+        // Usar el flujo One Tap / popup de GSI
+        window.google.accounts.id.prompt((notification) => {
+          if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+            // Fallback: renderizar botón oficial en popup
+            window.google.accounts.id.renderButton(
+              document.getElementById('gsi-render-target'),
+              { type: 'standard', size: 'large', text: 'signin_with', shape: 'rectangular', width: 400 }
+            );
+          }
         });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Error al iniciar sesión con Google');
-        redirectAfterLogin(data.user?.role);
-      } catch (e) {
-        showAlert('loginError', e.message);
+      } else if (!googleClientId) {
+        showAlert('loginError', 'El inicio de sesión con Google no está configurado.');
+      } else {
+        // SDK aún cargando, esperar
+        showAlert('loginError', 'Cargando Google Sign-In, intenta en un momento.');
       }
-    };
+    });
+  }
+
+  // Cuando el SDK de GSI carga, reemplazamos el botón personalizado por el oficial
+  if (googleClientId) {
+    const waitForGSI = setInterval(() => {
+      if (window.google?.accounts?.id) {
+        clearInterval(waitForGSI);
+        const wrap = document.getElementById('googleBtnWrap');
+        if (!wrap) return;
+        // Inicializar GSI
+        window.google.accounts.id.initialize({
+          client_id: googleClientId,
+          callback: window.handleGoogleCredential,
+          auto_prompt: false,
+        });
+        // Renderizar el botón oficial reemplazando el personalizado
+        const customBtn = document.getElementById('googleSignInBtn');
+        if (customBtn) {
+          const renderTarget = document.createElement('div');
+          renderTarget.id = 'gsi-render-target';
+          customBtn.replaceWith(renderTarget);
+          window.google.accounts.id.renderButton(renderTarget, {
+            type: 'standard',
+            size: 'large',
+            text: 'signin_with',
+            shape: 'rectangular',
+            logo_alignment: 'left',
+            width: wrap.offsetWidth || 380,
+          });
+        }
+      }
+    }, 100);
+    // Dejar de intentar después de 10s
+    setTimeout(() => clearInterval(waitForGSI), 10000);
   }
 
   // ── Submit LOGIN ───────────────────────────────────────────────────────────────
