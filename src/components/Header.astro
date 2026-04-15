@@ -380,6 +380,34 @@
     }
   })();
 
+  // Botones de auth modal (desktop dropdown)
+  document.getElementById('openLoginModal')?.addEventListener('click', () => {
+    document.getElementById('userDropdown')?.classList.remove('active');
+    window.AuthModal?.open('login');
+  });
+  document.getElementById('openRegisterModal')?.addEventListener('click', () => {
+    document.getElementById('userDropdown')?.classList.remove('active');
+    window.AuthModal?.open('register');
+  });
+
+  // Botones de auth modal (menú móvil)
+  document.getElementById('mobileOpenLoginModal')?.addEventListener('click', () => {
+    const mobileMenu = document.getElementById('mobileMenu');
+    const menuBtn = document.getElementById('menuBtn');
+    if (mobileMenu) mobileMenu.setAttribute('hidden', '');
+    if (menuBtn) { menuBtn.classList.remove('active'); }
+    document.body.classList.remove('menu-open');
+    window.AuthModal?.open('login');
+  });
+  document.getElementById('mobileOpenRegisterModal')?.addEventListener('click', () => {
+    const mobileMenu = document.getElementById('mobileMenu');
+    const menuBtn = document.getElementById('menuBtn');
+    if (mobileMenu) mobileMenu.setAttribute('hidden', '');
+    if (menuBtn) { menuBtn.classList.remove('active'); }
+    document.body.classList.remove('menu-open');
+    window.AuthModal?.open('register');
+  });
+
   // Dropdown menu logic
   (function initUserDropdown() {
     const userDropdown = document.getElementById("userDropdown");
