@@ -15,7 +15,7 @@ labelsRouter.get('/prepared-lots', async (req, res) => {
   res.setHeader('Content-Type', 'application/json');
   try {
     const results = await query(
-      `SELECT 
+      `SELECT
         pc.id,
         pc.roasted_storage_id,
         pc.acidity,
@@ -29,25 +29,24 @@ labelsRouter.get('/prepared-lots', async (req, res) => {
         rc.roast_level,
         rc.weight_kg,
         rb.lot_id,
-        ch.code as lot_code,
+        ch.lot_id as lot_code,
         ch.region,
         ch.farm,
         ch.variety,
         ch.process,
-        ch.flavor_notes,
-        ch.weight as lot_weight
+        ch.taste_notes as flavor_notes
        FROM packaged_coffee pc
        LEFT JOIN roasted_coffee_inventory rci ON pc.roasted_storage_id = rci.id
        LEFT JOIN roasted_coffee rc ON rci.roasted_id = rc.id
        LEFT JOIN roasting_batches rb ON rc.roasting_id = rb.id
        LEFT JOIN coffee_harvests ch ON rb.lot_id = ch.lot_id
-       WHERE pc.status = 'ready_for_sale' 
-       ORDER BY pc.created_at DESC 
+       WHERE pc.status = 'ready_for_sale'
+       ORDER BY pc.created_at DESC
        LIMIT 100`
     );
 
     // Transformar resultados al formato esperado
-    const lots = results.map(row => ({
+    const lots = results.rows.map(row => ({
       id: row.id,
       code: row.lot_code || `LOT-${row.roasted_storage_id}`,
       origin: row.region || 'Colombia',
