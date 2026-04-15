@@ -60,7 +60,7 @@ coffeeRouter.post('/harvest', async (req, res) => {
     // Guardar en BD
     const result = await query(
       `INSERT INTO coffee_harvests (lot_id, farm, region, altitude, variety, climate, process, aroma, taste_notes, created_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW())`,
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW()) RETURNING id`,
       [lotId, farm, farmRegion, farmAltitude, variety, climate, process, aroma, tasteNotes]
     );
 
@@ -68,7 +68,7 @@ coffeeRouter.post('/harvest', async (req, res) => {
       success: true,
       message: 'Lote registrado correctamente',
       lotId: lotId,
-      harvestId: result.insertId || result.rows?.[0]?.insertId
+      harvestId: result.rows[0].id
     });
   } catch (err) {
     console.error('Error en harvest:', err);
