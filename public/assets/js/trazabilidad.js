@@ -469,6 +469,9 @@
     }
   });
 
+  // ─── Inicializar con estado idle ─────────────────────────────────────
+  renderIdle();
+
   // ─── Deep link: ?lote=CODE ────────────────────────────────────────────
   const _q = new URLSearchParams(location.search).get('lote');
   if (_q) {

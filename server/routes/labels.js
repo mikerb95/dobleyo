@@ -365,7 +365,7 @@ labelsRouter.get('/:labelId', async (req, res) => {
       [labelId]
     );
 
-    if (results.length === 0) {
+    if (results.rows.length === 0) {
       return res.status(404).json({
         success: false,
         error: 'Etiqueta no encontrada'
@@ -374,7 +374,7 @@ labelsRouter.get('/:labelId', async (req, res) => {
 
     res.json({
       success: true,
-      data: results[0]
+      data: results.rows[0]
     });
   } catch (error) {
     console.error('Error al obtener etiqueta:', error);
