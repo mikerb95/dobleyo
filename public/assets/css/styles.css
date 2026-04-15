@@ -130,7 +130,7 @@ img {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1rem 1.25rem;
+  padding: 0.375rem 1.25rem;
   width: min(var(--page-width), calc(100% - var(--page-gutter)));
   margin-inline: auto;
   background: transparent;
