@@ -396,7 +396,7 @@ labelsRouter.delete('/:labelId', async (req, res) => {
       [labelId]
     );
 
-    if (result.affectedRows === 0) {
+    if (result.rowCount === 0) {
       return res.status(404).json({
         success: false,
         error: 'Etiqueta no encontrada'
