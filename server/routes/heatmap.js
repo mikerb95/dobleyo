@@ -16,7 +16,7 @@ function buildDateFilter(days, tableAlias, column = 'created_at') {
     if (!days || days === 'all') return '';
     const n = parseInt(days, 10);
     if (isNaN(n) || n <= 0) return '';
-    return `AND ${col} >= datetime('now') - INTERVAL '${n} days'`;
+    return `AND ${col} >= datetime('now', '-${n} days')`;
 }
 
 // ───────────────────────────────────────────────
