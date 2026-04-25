@@ -337,7 +337,7 @@ ordersRouter.post('/:id/start', async (req, res) => {
     }
 
     await query(
-      "UPDATE production_orders SET state = ?, start_date = datetime('now'), updated_at = datetime("now') WHERE id = ?',
+      "UPDATE production_orders SET state = ?, start_date = datetime('now'), updated_at = datetime('now') WHERE id = ?",
       ['en_progreso', id]
     );
 
