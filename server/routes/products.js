@@ -98,7 +98,7 @@ productsRouter.get('/:id', async (req, res) => {
          description, meta_description
        FROM products
        WHERE (id = ? OR slug = ?) AND is_active = TRUE`,
-      [id]
+      [id, id]
     );
 
     if (!rows.length) {
