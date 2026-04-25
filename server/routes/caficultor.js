@@ -147,7 +147,7 @@ caficultorRouter.post('/applications/:id/reject',
 
       // Actualizar aplicación
       await db.query(
-        'UPDATE caficultor_applications SET status = "rejected", reviewed_by = ?, reviewed_at = datetime('now'), admin_notes = ? WHERE id = ?',
+        "UPDATE caficultor_applications SET status = 'rejected', reviewed_by = ?, reviewed_at = datetime('now'), admin_notes = ? WHERE id = ?",
         [adminId, reason, appId]
       );
 
