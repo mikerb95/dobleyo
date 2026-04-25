@@ -26,24 +26,21 @@ authRouter.post('/register',
 
     try {
       // Verificar si existe
-      const existing = await db.query('SELECT id FROM users WHERE email = $1', [email]);
+      const existing = await db.query('SELECT id FROM users WHERE email = ?', [email]);
       if (existing.rows.length > 0) {
         return res.status(400).json({ error: 'El email ya esta registrado' });
       }
 
       const hash = await auth.hashPassword(password);
-      
+
       // Crear usuario (rol default: client)
       const result = await db.query(
-        'INSERT INTO users (email, password_hash, first_name, last_name, role, is_verified) VALUES ($1, $2, $3, $4, $5, $6)',
-        [email, hash, first_name, last_name, 'client', false]
+        'INSERT INTO users (email, password_hash, first_name, last_name, role, is_verified) VALUES (?, ?, ?, ?, ?, ?)',
+        [email, hash, first_name, last_name, 'client', 0]
       );
-      
-      // En MySQL, el ID insertado viene en result.rows.insertId (dependiendo del driver, pero con mysql2/promise y execute devuelve [rows, fields])
-      // Con execute de mysql2, result es [ResultSetHeader, undefined] para inserts
-      // Mi wrapper en db.js devuelve { rows, fields }. Para inserts, rows es el ResultSetHeader.
-      const insertId = result.rows.insertId;
-      
+
+      const insertId = result.lastInsertRowid;
+
       const newUser = { id: insertId, email, first_name, last_name, role: 'client' };
 
       // Generar token de verificacion (temporal, guardado en DB o JWT firmado)
