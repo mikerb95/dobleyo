@@ -2,6 +2,28 @@
 
 ---
 
+## 📅 2026-04-25 — Migración a Turso/libSQL como base de datos única (Agente: Claude)
+
+### Motivación
+Migración completa desde PostgreSQL (`pg`) a Turso (libSQL/SQLite) como base de datos única del proyecto.
+
+### Archivos Modificados
+- `package.json` — Reemplazado `pg` por `@libsql/client`
+- `server/db.js` — Reescrito completamente: Pool pg → Cliente libSQL. Mantiene misma interfaz `query()`, `getClient()`, `withTransaction()`, `healthCheck()`. Añade `lastInsertRowid` al resultado.
+- `db/schema.sql` — Convertido a SQLite: `BIGINT GENERATED ALWAYS AS IDENTITY` → `INTEGER PRIMARY KEY AUTOINCREMENT`, `JSONB` → `TEXT`, `TIMESTAMPTZ` → `TIMESTAMP`
+- `.env.example` — `DATABASE_URL` PostgreSQL reemplazado por `TURSO_DATABASE_URL` + `TURSO_AUTH_TOKEN`
+- `CLAUDE.md` — Actualizado stack y reglas de BD
+- Todos los archivos en `server/routes/` y `server/routes/production/`: placeholders `$N` → `?`, `NOW()` → `datetime('now')`, `ILIKE` → `LIKE`, type casts PG removidos, INTERVAL → datetime offset, `insertId` → `lastInsertRowid`
+
+### Configuración requerida
+```
+TURSO_DATABASE_URL=libsql://tu-db.turso.io
+TURSO_AUTH_TOKEN=tu_token_de_turso
+```
+Para desarrollo local sin Turso: `TURSO_DATABASE_URL=file:local.db` (sin auth token).
+
+---
+
 ## 📅 2026-03-03 — Migración PostgreSQL: Scripts de Setup y Migraciones (Agente: Claude)
 
 ### Archivos Creados
