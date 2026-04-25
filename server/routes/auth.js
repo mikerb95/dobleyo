@@ -180,7 +180,7 @@ authRouter.post('/refresh', refreshLimiter, async (req, res) => {
     
     // Buscar token hasheado en DB
     const result = await db.query(
-      'SELECT rt.*, u.role, u.email, u.name FROM refresh_tokens rt JOIN users u ON rt.user_id = u.id WHERE rt.token_hash = $1 AND rt.revoked = FALSE AND rt.expires_at > NOW()',
+      "SELECT rt.*, u.role, u.email, u.name FROM refresh_tokens rt JOIN users u ON rt.user_id = u.id WHERE rt.token_hash = ? AND rt.revoked = 0 AND rt.expires_at > datetime('now')",
       [hashedToken]
     );
 
