@@ -17,7 +17,7 @@ export async function getProductStock(sku) {
 export async function updateStock(sku, quantity) {
   if (!sku) throw new Error('SKU requerido');
   await db.query(
-    'UPDATE products SET stock_quantity = ?, updated_at = datetime('now') WHERE id = ?',
+    "UPDATE products SET stock_quantity = ?, updated_at = datetime('now') WHERE id = ?",
     [quantity, sku]
   );
   const result = await db.query('SELECT id as sku, stock_quantity as stock FROM products WHERE id = ?', [sku]);

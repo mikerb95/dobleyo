@@ -316,7 +316,7 @@ qualityRouter.put('/:id', async (req, res) => {
       return res.status(400).json({ success: false, error: 'No fields to update' });
     }
 
-    updateFields.push('updated_at = datetime('now')');
+    updateFields.push("updated_at = datetime('now')");
     updateValues.push(id);
 
     await query(

@@ -286,7 +286,7 @@ lotsRouter.post('/roast/:lotId', authenticateToken, requireRole('admin'), async 
 
     // Actualizar el lote verde con el peso restante
     await db.query(
-      'UPDATE lots SET weight_kg = ?, updated_at = datetime('now') WHERE id = ?',
+      "UPDATE lots SET weight_kg = ?, updated_at = datetime('now') WHERE id = ?",
       [remainingWeight, lotId]
     );
 

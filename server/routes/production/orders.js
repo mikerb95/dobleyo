@@ -247,7 +247,7 @@ ordersRouter.put('/:id', async (req, res) => {
       return res.status(400).json({ success: false, error: 'No fields to update' });
     }
 
-    updateFields.push('updated_at = datetime('now')');
+    updateFields.push("updated_at = datetime('now')");
     updateValues.push(id);
 
     await query(
@@ -311,7 +311,7 @@ ordersRouter.post('/:id/confirm', async (req, res) => {
     }
 
     await query(
-      'UPDATE production_orders SET state = ?, updated_at = datetime('now') WHERE id = ?',
+      "UPDATE production_orders SET state = ?, updated_at = datetime('now') WHERE id = ?",
       ['confirmada', id]
     );
 
@@ -337,7 +337,7 @@ ordersRouter.post('/:id/start', async (req, res) => {
     }
 
     await query(
-      'UPDATE production_orders SET state = ?, start_date = datetime('now'), updated_at = datetime('now') WHERE id = ?',
+      "UPDATE production_orders SET state = ?, start_date = datetime('now'), updated_at = datetime("now') WHERE id = ?',
       ['en_progreso', id]
     );
 
@@ -363,7 +363,7 @@ ordersRouter.post('/:id/pause', async (req, res) => {
     }
 
     await query(
-      'UPDATE production_orders SET state = ?, updated_at = datetime('now') WHERE id = ?',
+      "UPDATE production_orders SET state = ?, updated_at = datetime('now') WHERE id = ?",
       ['pausada', id]
     );
 
@@ -389,7 +389,7 @@ ordersRouter.post('/:id/resume', async (req, res) => {
     }
 
     await query(
-      'UPDATE production_orders SET state = ?, updated_at = datetime('now') WHERE id = ?',
+      "UPDATE production_orders SET state = ?, updated_at = datetime('now') WHERE id = ?",
       ['en_progreso', id]
     );
 
@@ -420,7 +420,7 @@ ordersRouter.post('/:id/complete', async (req, res) => {
     }
 
     await query(
-      'UPDATE production_orders SET state = ?, produced_quantity = ?, end_date = datetime('now'), updated_at = datetime('now') WHERE id = ?',
+      "UPDATE production_orders SET state = ?, produced_quantity = ?, end_date = datetime('now'), updated_at = datetime("now') WHERE id = ?',
       ['completada', produced_quantity, id]
     );
 
@@ -447,7 +447,7 @@ ordersRouter.post('/:id/cancel', async (req, res) => {
     const cancelNote = `\nCancelada: ${reason || 'Sin motivo especificado'}`;
 
     await query(
-      'UPDATE production_orders SET state = ?, notes = COALESCE(notes, \'\') || ?, updated_at = datetime('now') WHERE id = ?',
+      "UPDATE production_orders SET state = ?, notes = COALESCE(notes, \'\') || ?, updated_at = datetime('now') WHERE id = ?",
       ['cancelada', cancelNote, id]
     );
 
