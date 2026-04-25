@@ -51,7 +51,7 @@ authRouter.post('/register',
       sendVerificationEmail(email, verifyToken).then(r => console.log('Email result:', r));
       
       // Log de auditoria
-      await db.query('INSERT INTO audit_logs (action, entity_type, entity_id, details) VALUES ($1, $2, $3, $4)', 
+      await db.query('INSERT INTO audit_logs (action, entity_type, entity_id, details) VALUES (?, ?, ?, ?)',
         ['REGISTER', 'user', String(newUser.id), JSON.stringify({ email: newUser.email })]
       );
 
@@ -73,7 +73,7 @@ authRouter.get('/verify', async (req, res) => {
     const decoded = auth.verifyToken(token);
     // Aqui podriamos validar decoded.type === 'verification' si lo hubieramos seteado especificamente
 
-    await db.query('UPDATE users SET is_verified = TRUE WHERE id = $1', [decoded.id]);
+    await db.query('UPDATE users SET is_verified = 1 WHERE id = ?', [decoded.id]);
     
     res.json({ message: 'Cuenta verificada exitosamente. Ya puedes iniciar sesion.' });
   } catch (err) {
