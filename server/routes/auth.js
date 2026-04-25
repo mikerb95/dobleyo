@@ -200,8 +200,8 @@ authRouter.post('/refresh', refreshLimiter, async (req, res) => {
     const newRefreshTokenHash = auth.hashRefreshToken(newRefreshToken);
     const newExpires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
-    await db.query('UPDATE refresh_tokens SET revoked = TRUE, replaced_by_token = $1 WHERE id = $2', [newRefreshTokenHash, tokenRecord.id]);
-    await db.query('INSERT INTO refresh_tokens (user_id, token_hash, expires_at) VALUES ($1, $2, $3)', [user.id, newRefreshTokenHash, newExpires]);
+    await db.query('UPDATE refresh_tokens SET revoked = 1, replaced_by_token = ? WHERE id = ?', [newRefreshTokenHash, tokenRecord.id]);
+    await db.query('INSERT INTO refresh_tokens (user_id, token_hash, expires_at) VALUES (?, ?, ?)', [user.id, newRefreshTokenHash, newExpires]);
 
     const newAccessToken = auth.generateToken(user);
 
@@ -229,7 +229,7 @@ authRouter.post('/logout', async (req, res) => {
   if (refreshToken) {
     // Revocar en DB (hasheado)
     const hashedToken = auth.hashRefreshToken(refreshToken);
-    await db.query('UPDATE refresh_tokens SET revoked = TRUE WHERE token_hash = $1', [hashedToken]);
+    await db.query('UPDATE refresh_tokens SET revoked = 1 WHERE token_hash = ?', [hashedToken]);
   }
   
   res.clearCookie('auth_token');
