@@ -25,7 +25,7 @@
 | **UI interactiva** | React 19 + Framer Motion | Solo para componentes que necesitan estado/interactividad |
 | **Estilos** | CSS custom (`public/assets/css/styles.css`) + TailwindCSS CDN (algunas páginas) | Variables CSS en `:root`, mobile-first |
 | **Backend API** | Express 4.19 | Montado en `server/index.js` (standalone) y `api/index.js` (Vercel) |
-| **Base de datos** | PostgreSQL | Migración desde MySQL en progreso. Driver: `pg` |
+| **Base de datos** | Turso (libSQL/SQLite) | Driver: `@libsql/client` |
 | **Auth** | JWT (access 15min + refresh 7d) | HttpOnly cookies. Roles: admin, client, provider, caficultor |
 | **Email** | Resend | Templates HTML para verificación, confirmación de orden, contacto |
 | **Mapas** | Leaflet + leaflet.heat | Heatmap de ventas en admin |
@@ -47,7 +47,7 @@
 ### Base de Datos
 | Archivo | Propósito |
 |---|---|
-| `server/db.js` | Pool de conexión PostgreSQL (migrar de mysql2 → pg) |
+| `server/db.js` | Cliente Turso/libSQL — `query()`, `getClient()`, `withTransaction()` |
 | `db/schema.sql` | Schema completo (~1082 líneas, 35+ tablas). FUENTE DE VERDAD del modelo de datos |
 | `db/seed_data.sql` | Datos semilla para desarrollo |
 | `server/migrations/*.js` | Migraciones incrementales |
@@ -146,7 +146,7 @@
 2. **Verifica el archivo antes de editarlo** — el proyecto tiene archivos legacy y archivos Astro nuevos. No editar archivos legacy sin confirmar que son activos.
 3. **Mantén paridad** entre `server/index.js` y `api/index.js` — si agregas un router al standalone, agrégalo también al serverless.
 4. **Nunca uses `require()`** — el proyecto es ESM (`"type": "module"`).
-5. **Base de datos es PostgreSQL** — usa `$1, $2` para parámetros, no `?`.
+5. **Base de datos es Turso/libSQL** — usa `?` para parámetros posicionales (NO `$1, $2`). Fechas: `datetime('now')` no `NOW()`. Sin type casts `::text`. `BOOLEAN` se almacena como 0/1 en SQLite.
 6. **Formato de respuesta API** estandarizado: `{ success: true/false, data/error, ... }`.
 7. **Al crear páginas**: usa `Layout.astro` o `AdminLayout.astro` según contexto. Incluye `<Head>` con SEO.
 8. **CSS**: solo variables CSS. Breakpoints mobile-first estándar (480, 768, 1024, 1400).
