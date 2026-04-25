@@ -214,7 +214,7 @@ usersRouter.post('/', auth.authenticateToken, auth.requireRole('admin'), async (
       [email, passwordHash, name, mobile_phone || null, city || null, state_province || null, country || null, role || 'client', is_verified || false]
     );
 
-    const newUserId = result.rows.insertId;
+    const newUserId = result.lastInsertRowid;
 
     // Obtener usuario creado
     const newUser = await query(
