@@ -88,7 +88,7 @@ dashboardRouter.get('/', async (req, res) => {
     const { rows: ordersByState } = await query(`
       SELECT state, COUNT(*) as count
       FROM production_orders
-      WHERE scheduled_date >= CURRENT_DATE - INTERVAL '7 days'
+      WHERE scheduled_date >= date('now', '-7 days')
       GROUP BY state
     `);
 
@@ -100,7 +100,7 @@ dashboardRouter.get('/', async (req, res) => {
         COUNT(*) as batches,
         ROUND(AVG(weight_loss_percentage), 2) as avg_loss
       FROM roast_batches
-      WHERE roast_date >= datetime('now') - INTERVAL '7 days'
+      WHERE roast_date >= datetime('now', '-7 days')
       GROUP BY roast_date
       ORDER BY date ASC
     `);
@@ -126,7 +126,7 @@ dashboardRouter.get('/', async (req, res) => {
         15.0 as expected_loss,
         ROUND((AVG(weight_loss_percentage) - 15.0), 2) as variance
       FROM roast_batches
-      WHERE roast_date >= datetime('now') - INTERVAL '30 days'
+      WHERE roast_date >= datetime('now', '-30 days')
     `);
 
     res.json({
@@ -334,7 +334,7 @@ dashboardRouter.get('/alerts', async (req, res) => {
         ROUND(AVG(weight_loss_percentage), 2) as avg_loss
       FROM roast_batches
       WHERE weight_loss_percentage > 18
-        AND roast_date >= CURRENT_DATE - INTERVAL '7 days'
+        AND roast_date >= date('now', '-7 days')
     `);
 
     if (parseInt(lossAlerts[0]?.count) > 0) {
@@ -349,7 +349,7 @@ dashboardRouter.get('/alerts', async (req, res) => {
         COUNT(*) as count
       FROM production_quality_checks
       WHERE passed = FALSE
-        AND check_date >= datetime('now') - INTERVAL '1 day'
+        AND check_date >= datetime('now', '-1 days')
     `);
 
     if (parseInt(qualityAlerts[0]?.count) > 0) {
