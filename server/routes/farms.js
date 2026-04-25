@@ -293,7 +293,7 @@ farmsRouter.patch('/:id/publish', authenticateToken, requireRole('admin'), [
         const { id } = req.params;
         const { is_published } = req.body;
         const { rows } = await query(
-            'UPDATE farms SET is_published = ?, updated_at = datetime('now') WHERE id = ? RETURNING id, name, slug, is_published',
+            "UPDATE farms SET is_published = ?, updated_at = datetime('now') WHERE id = ? RETURNING id, name, slug, is_published",
             [is_published, id]
         );
         if (!rows.length) return res.status(404).json({ success: false, error: 'Finca no encontrada' });
