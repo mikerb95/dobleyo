@@ -1,8 +1,8 @@
--- DobleYo relational schema (PostgreSQL)
+-- DobleYo relational schema (Turso/SQLite)
 
 -- Users
 CREATE TABLE IF NOT EXISTS users (
-    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     email VARCHAR(255) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
     first_name VARCHAR(80),
@@ -27,7 +27,7 @@ CREATE INDEX idx_users_caficultor_status ON users(caficultor_status);
 
 -- Caficultor Applications
 CREATE TABLE IF NOT EXISTS caficultor_applications (
-    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id BIGINT NOT NULL,
     farm_name VARCHAR(160) NOT NULL,
     region VARCHAR(80) NOT NULL,
@@ -50,7 +50,7 @@ CREATE INDEX idx_caficultor_apps_status ON caficultor_applications(status);
 
 -- Providers Profile
 CREATE TABLE IF NOT EXISTS providers (
-    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id BIGINT NOT NULL,
     company_name VARCHAR(160) NOT NULL,
     tax_id VARCHAR(50),
@@ -63,7 +63,7 @@ CREATE TABLE IF NOT EXISTS providers (
 
 -- Refresh Tokens
 CREATE TABLE IF NOT EXISTS refresh_tokens (
-    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id BIGINT NOT NULL,
     token_hash VARCHAR(255) NOT NULL,
     expires_at TIMESTAMP NOT NULL,
@@ -76,12 +76,12 @@ CREATE INDEX idx_refresh_tokens_user ON refresh_tokens(user_id);
 
 -- Audit Logs
 CREATE TABLE IF NOT EXISTS audit_logs (
-    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id BIGINT,
     action VARCHAR(64) NOT NULL,
     entity_type VARCHAR(64),
     entity_id VARCHAR(64),
-    details JSONB,
+    details TEXT,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 );
@@ -106,7 +106,7 @@ CREATE TABLE IF NOT EXISTS products (
     is_fast BOOLEAN DEFAULT FALSE,
     is_active BOOLEAN DEFAULT TRUE, -- Producto visible en tienda
     image_url TEXT,
-    images JSONB, -- Array de URLs de imágenes adicionales
+    images TEXT, -- Array de URLs de imágenes adicionales
     stock_quantity INTEGER NOT NULL DEFAULT 0, -- Stock actual disponible
     stock_reserved INTEGER NOT NULL DEFAULT 0, -- Stock reservado en pedidos
     stock_min INTEGER DEFAULT 0, -- Stock mínimo antes de alertar
@@ -124,7 +124,7 @@ CREATE INDEX idx_products_sku ON products(sku);
 
 -- Inventory Movements (Trazabilidad de movimientos de stock)
 CREATE TABLE IF NOT EXISTS inventory_movements (
-    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     product_id VARCHAR(50) NOT NULL,
     movement_type TEXT NOT NULL CHECK (movement_type IN ('entrada', 'salida', 'ajuste', 'merma', 'devolucion')),
     quantity INTEGER NOT NULL,
@@ -144,7 +144,7 @@ CREATE INDEX idx_inv_movements_date ON inventory_movements(created_at);
 
 -- Product Suppliers (Proveedores de productos)
 CREATE TABLE IF NOT EXISTS product_suppliers (
-    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     name VARCHAR(160) NOT NULL,
     contact_name VARCHAR(120),
     email VARCHAR(255),
@@ -160,7 +160,7 @@ CREATE TABLE IF NOT EXISTS product_suppliers (
 
 -- Product-Supplier relationship
 CREATE TABLE IF NOT EXISTS product_supplier_prices (
-    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     product_id VARCHAR(50) NOT NULL,
     supplier_id BIGINT NOT NULL,
     cost_price INTEGER NOT NULL,
@@ -179,7 +179,7 @@ CREATE INDEX idx_prod_supplier_supplier ON product_supplier_prices(supplier_id);
 
 -- Lots
 CREATE TABLE IF NOT EXISTS lots (
-    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     code VARCHAR(40) NOT NULL UNIQUE,
     name VARCHAR(160),
     origin VARCHAR(160),
@@ -221,9 +221,9 @@ CREATE INDEX idx_lots_parent ON lots(parent_lot_id);
 
 -- Sales Tracking (MercadoLibre)
 CREATE TABLE IF NOT EXISTS sales_tracking (
-    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     ml_order_id BIGINT NOT NULL UNIQUE,
-    purchase_date TIMESTAMPTZ NOT NULL,
+    purchase_date TIMESTAMP NOT NULL,
     total_amount DECIMAL(12,2) NOT NULL,
     order_status VARCHAR(80),
     shipping_method VARCHAR(120),
@@ -233,7 +233,7 @@ CREATE TABLE IF NOT EXISTS sales_tracking (
     recipient_zip_code VARCHAR(20),
     latitude DECIMAL(10,8),
     longitude DECIMAL(10,8),
-    products JSONB NOT NULL,
+    products TEXT NOT NULL,
     sync_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -244,11 +244,11 @@ CREATE INDEX idx_sales_city ON sales_tracking(recipient_city);
 CREATE INDEX idx_sales_state ON sales_tracking(recipient_state);
 -- Product Labels (Etiquetas para productos)
 CREATE TABLE IF NOT EXISTS product_labels (
-    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     lot_id BIGINT,
     label_code VARCHAR(100) NOT NULL UNIQUE,
     sequence INT,
-    qr_data JSONB,
+    qr_data TEXT,
     printed BOOLEAN DEFAULT FALSE,
     printed_at TIMESTAMP NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -261,7 +261,7 @@ CREATE INDEX idx_product_labels_printed ON product_labels(printed);
 
 -- Generated Labels (Etiquetas generadas - desde lotes o de cero)
 CREATE TABLE IF NOT EXISTS generated_labels (
-    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     label_code VARCHAR(100) NOT NULL UNIQUE,
     lot_code VARCHAR(100),
     origin VARCHAR(160),
@@ -275,7 +275,7 @@ CREATE TABLE IF NOT EXISTS generated_labels (
     balance INT,
     score DECIMAL(4,1),
     flavor_notes TEXT,
-    qr_data JSONB,
+    qr_data TEXT,
     user_id BIGINT,
     printed BOOLEAN DEFAULT FALSE,
     printed_at TIMESTAMP NULL,
@@ -296,7 +296,7 @@ CREATE INDEX idx_generated_labels_created ON generated_labels(created_at);
 
 -- Plan de Cuentas Contables (Chart of Accounts)
 CREATE TABLE IF NOT EXISTS accounting_accounts (
-    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     code VARCHAR(20) NOT NULL UNIQUE,
     name VARCHAR(255) NOT NULL,
     account_type TEXT NOT NULL CHECK (account_type IN ('activo', 'pasivo', 'patrimonio', 'ingreso', 'gasto', 'costo')),
@@ -320,7 +320,7 @@ CREATE INDEX idx_acc_accounts_parent ON accounting_accounts(parent_account_id);
 
 -- Diarios Contables (Journals)
 CREATE TABLE IF NOT EXISTS accounting_journals (
-    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     code VARCHAR(20) NOT NULL UNIQUE,
     name VARCHAR(160) NOT NULL,
     journal_type TEXT NOT NULL CHECK (journal_type IN ('venta', 'compra', 'banco', 'caja', 'general', 'nomina')),
@@ -334,7 +334,7 @@ CREATE INDEX idx_acc_journals_type ON accounting_journals(journal_type);
 
 -- Asientos Contables (Journal Entries)
 CREATE TABLE IF NOT EXISTS accounting_entries (
-    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     entry_number VARCHAR(50) NOT NULL UNIQUE,
     journal_id BIGINT NOT NULL,
     entry_date DATE NOT NULL,
@@ -357,7 +357,7 @@ CREATE INDEX idx_acc_entries_reference ON accounting_entries(reference);
 
 -- Líneas de Asientos Contables (Journal Entry Lines - Partida Doble)
 CREATE TABLE IF NOT EXISTS accounting_entry_lines (
-    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     entry_id BIGINT NOT NULL,
     account_id BIGINT NOT NULL,
     description VARCHAR(255),
@@ -378,7 +378,7 @@ CREATE INDEX idx_acc_entry_lines_reconciled ON accounting_entry_lines(reconciled
 
 -- Cuentas Bancarias
 CREATE TABLE IF NOT EXISTS bank_accounts (
-    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     bank_name VARCHAR(160) NOT NULL,
     account_number VARCHAR(50) NOT NULL,
     account_type TEXT NOT NULL CHECK (account_type IN ('ahorros', 'corriente', 'empresarial')),
@@ -395,7 +395,7 @@ CREATE INDEX idx_bank_accounts_active ON bank_accounts(is_active);
 
 -- Movimientos Bancarios
 CREATE TABLE IF NOT EXISTS bank_movements (
-    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     bank_account_id BIGINT NOT NULL,
     movement_date DATE NOT NULL,
     movement_type TEXT NOT NULL CHECK (movement_type IN ('deposito', 'retiro', 'transferencia_entrada', 'transferencia_salida', 'comision', 'interes')),
@@ -415,7 +415,7 @@ CREATE INDEX idx_bank_movements_reconciled ON bank_movements(reconciled);
 
 -- Métodos de Pago
 CREATE TABLE IF NOT EXISTS payment_methods (
-    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     code VARCHAR(20) NOT NULL UNIQUE,
     name VARCHAR(100) NOT NULL,
     method_type TEXT NOT NULL CHECK (method_type IN ('efectivo', 'transferencia', 'cheque', 'tarjeta_credito', 'tarjeta_debito', 'pse', 'otro')),
@@ -428,7 +428,7 @@ CREATE TABLE IF NOT EXISTS payment_methods (
 
 -- Órdenes de Compra (Purchase Orders)
 CREATE TABLE IF NOT EXISTS purchase_orders (
-    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     order_number VARCHAR(50) NOT NULL UNIQUE,
     supplier_id BIGINT NULL, -- Puede ser product_supplier o caficultor (user)
     caficultor_id BIGINT NULL, -- Si es compra a caficultor
@@ -455,7 +455,7 @@ CREATE INDEX idx_purchase_orders_date ON purchase_orders(order_date);
 
 -- Líneas de Órdenes de Compra
 CREATE TABLE IF NOT EXISTS purchase_order_lines (
-    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     purchase_order_id BIGINT NOT NULL,
     product_id VARCHAR(50) NULL, -- Si es producto existente
     description VARCHAR(255) NOT NULL, -- Descripción del ítem
@@ -474,7 +474,7 @@ CREATE INDEX idx_purchase_order_lines_order ON purchase_order_lines(purchase_ord
 
 -- Facturas de Compra (Vendor Bills)
 CREATE TABLE IF NOT EXISTS purchase_invoices (
-    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     invoice_number VARCHAR(50) NOT NULL UNIQUE,
     supplier_invoice_number VARCHAR(100), -- Número de factura del proveedor
     purchase_order_id BIGINT NULL, -- Relacionada con orden de compra
@@ -508,7 +508,7 @@ CREATE INDEX idx_purchase_invoices_due_date ON purchase_invoices(due_date);
 
 -- Líneas de Facturas de Compra
 CREATE TABLE IF NOT EXISTS purchase_invoice_lines (
-    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     purchase_invoice_id BIGINT NOT NULL,
     product_id VARCHAR(50) NULL,
     description VARCHAR(255) NOT NULL,
@@ -527,7 +527,7 @@ CREATE INDEX idx_purchase_invoice_lines_invoice ON purchase_invoice_lines(purcha
 
 -- Facturas de Venta (Customer Invoices)
 CREATE TABLE IF NOT EXISTS sales_invoices (
-    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     invoice_number VARCHAR(50) NOT NULL UNIQUE,
     customer_id BIGINT NOT NULL,
     invoice_date DATE NOT NULL,
@@ -560,7 +560,7 @@ CREATE INDEX idx_sales_invoices_ml_order ON sales_invoices(ml_order_id);
 
 -- Líneas de Facturas de Venta
 CREATE TABLE IF NOT EXISTS sales_invoice_lines (
-    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     sales_invoice_id BIGINT NOT NULL,
     product_id VARCHAR(50) NULL,
     description VARCHAR(255) NOT NULL,
@@ -580,7 +580,7 @@ CREATE INDEX idx_sales_invoice_lines_invoice ON sales_invoice_lines(sales_invoic
 
 -- Pagos (Payments - tanto recibidos como realizados)
 CREATE TABLE IF NOT EXISTS payments (
-    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     payment_number VARCHAR(50) NOT NULL UNIQUE,
     payment_type TEXT NOT NULL CHECK (payment_type IN ('recibido', 'realizado')), -- Recibido = cobro, Realizado = pago
     payment_date DATE NOT NULL,
@@ -609,7 +609,7 @@ CREATE INDEX idx_payments_state ON payments(state);
 
 -- Asignación de Pagos a Facturas (Payment Allocations)
 CREATE TABLE IF NOT EXISTS payment_allocations (
-    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     payment_id BIGINT NOT NULL,
     invoice_id BIGINT NOT NULL, -- Puede ser sales_invoice o purchase_invoice
     invoice_type TEXT NOT NULL CHECK (invoice_type IN ('venta', 'compra')),
@@ -624,7 +624,7 @@ CREATE INDEX idx_payment_allocations_invoice ON payment_allocations(invoice_id, 
 
 -- Centro de Costos
 CREATE TABLE IF NOT EXISTS cost_centers (
-    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     code VARCHAR(20) NOT NULL UNIQUE,
     name VARCHAR(160) NOT NULL,
     description TEXT,
@@ -638,7 +638,7 @@ CREATE INDEX idx_cost_centers_parent ON cost_centers(parent_cost_center_id);
 
 -- Presupuestos
 CREATE TABLE IF NOT EXISTS budgets (
-    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     name VARCHAR(160) NOT NULL,
     budget_year INT NOT NULL,
     budget_period TEXT NOT NULL CHECK (budget_period IN ('anual', 'semestral', 'trimestral', 'mensual')),
@@ -657,7 +657,7 @@ CREATE INDEX idx_budgets_state ON budgets(state);
 
 -- Líneas de Presupuesto
 CREATE TABLE IF NOT EXISTS budget_lines (
-    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     budget_id BIGINT NOT NULL,
     account_id BIGINT NOT NULL,
     cost_center_id BIGINT NULL,
@@ -677,7 +677,7 @@ CREATE INDEX idx_budget_lines_cost_center ON budget_lines(cost_center_id);
 
 -- Notas Crédito/Débito
 CREATE TABLE IF NOT EXISTS credit_debit_notes (
-    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     note_number VARCHAR(50) NOT NULL UNIQUE,
     note_type TEXT NOT NULL CHECK (note_type IN ('credito', 'debito')),
     document_type TEXT NOT NULL CHECK (document_type IN ('venta', 'compra')), -- A qué tipo de documento afecta
@@ -704,7 +704,7 @@ CREATE INDEX idx_credit_debit_notes_state ON credit_debit_notes(state);
 
 -- Gastos / Expenses
 CREATE TABLE IF NOT EXISTS expenses (
-    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     expense_number VARCHAR(50) NOT NULL UNIQUE,
     expense_date DATE NOT NULL,
     category TEXT NOT NULL CHECK (category IN ('operativo', 'administrativo', 'venta', 'financiero', 'otro')),
@@ -743,7 +743,7 @@ CREATE INDEX idx_expenses_cost_center ON expenses(cost_center_id);
 
 -- Configuración de Impuestos
 CREATE TABLE IF NOT EXISTS tax_rates (
-    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     code VARCHAR(20) NOT NULL UNIQUE,
     name VARCHAR(100) NOT NULL,
     rate_percent DECIMAL(5,2) NOT NULL,
@@ -762,7 +762,7 @@ CREATE INDEX idx_tax_rates_type ON tax_rates(tax_type);
 
 -- Estaciones de Trabajo / Equipos (Work Centers)
 CREATE TABLE IF NOT EXISTS work_centers (
-    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     code VARCHAR(20) NOT NULL UNIQUE,
     name VARCHAR(160) NOT NULL,
     work_center_type TEXT NOT NULL CHECK (work_center_type IN ('tostado', 'molido', 'empaque', 'control_calidad', 'almacen', 'otro')),
@@ -780,7 +780,7 @@ CREATE INDEX idx_work_centers_active ON work_centers(is_active);
 
 -- Equipos de Tostado (Roasting Equipment)
 CREATE TABLE IF NOT EXISTS roasting_equipment (
-    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     work_center_id BIGINT NOT NULL,
     equipment_code VARCHAR(50) NOT NULL UNIQUE,
     equipment_name VARCHAR(160) NOT NULL,
@@ -805,7 +805,7 @@ CREATE INDEX idx_roasting_equipment_operational ON roasting_equipment(is_operati
 
 -- Lista de Materiales (Bill of Materials - BOM)
 CREATE TABLE IF NOT EXISTS bill_of_materials (
-    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     bom_code VARCHAR(50) NOT NULL UNIQUE,
     product_id VARCHAR(50) NOT NULL, -- Producto final (café tostado)
     product_qty DECIMAL(10,2) NOT NULL DEFAULT 1, -- Cantidad producida
@@ -827,7 +827,7 @@ CREATE INDEX idx_bom_active ON bill_of_materials(is_active);
 
 -- Componentes de la Lista de Materiales (BOM Components)
 CREATE TABLE IF NOT EXISTS bom_components (
-    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     bom_id BIGINT NOT NULL,
     component_product_id VARCHAR(50) NOT NULL, -- Producto componente (café verde, empaque, etc)
     quantity DECIMAL(10,2) NOT NULL, -- Cantidad requerida
@@ -844,7 +844,7 @@ CREATE INDEX idx_bom_components_product ON bom_components(component_product_id);
 
 -- Órdenes de Producción (Manufacturing Orders)
 CREATE TABLE IF NOT EXISTS production_orders (
-    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     order_number VARCHAR(50) NOT NULL UNIQUE,
     bom_id BIGINT NOT NULL,
     product_id VARCHAR(50) NOT NULL, -- Producto a producir
@@ -857,8 +857,8 @@ CREATE TABLE IF NOT EXISTS production_orders (
     state TEXT NOT NULL DEFAULT 'borrador' CHECK (state IN ('borrador', 'confirmada', 'en_progreso', 'pausada', 'completada', 'cancelada')),
     priority TEXT NOT NULL DEFAULT 'normal' CHECK (priority IN ('baja', 'normal', 'alta', 'urgente')),
     scheduled_date DATE NOT NULL,
-    start_date TIMESTAMPTZ NULL,
-    end_date TIMESTAMPTZ NULL,
+    start_date TIMESTAMP NULL,
+    end_date TIMESTAMP NULL,
     expected_loss_percentage DECIMAL(5,2) DEFAULT 15.00,
     actual_loss_percentage DECIMAL(5,2),
     production_cost DECIMAL(15,2) DEFAULT 0, -- Costo total de producción
@@ -884,14 +884,14 @@ CREATE INDEX idx_production_orders_work_center ON production_orders(work_center_
 
 -- Consumos de Materiales en Producción (Material Consumption)
 CREATE TABLE IF NOT EXISTS production_material_consumption (
-    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     production_order_id BIGINT NOT NULL,
     product_id VARCHAR(50) NOT NULL, -- Material consumido
     lot_id BIGINT NULL, -- Lote del material si aplica
     planned_quantity DECIMAL(10,2) NOT NULL, -- Cantidad planeada
     consumed_quantity DECIMAL(10,2) NOT NULL, -- Cantidad realmente consumida
     quantity_unit TEXT NOT NULL DEFAULT 'kg' CHECK (quantity_unit IN ('kg', 'g', 'unidad', 'ml', 'l')),
-    consumption_date TIMESTAMPTZ NOT NULL,
+    consumption_date TIMESTAMP NOT NULL,
     inventory_movement_id BIGINT NULL, -- Referencia al movimiento de inventario
     notes TEXT,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -906,7 +906,7 @@ CREATE INDEX idx_prod_material_consumption_date ON production_material_consumpti
 
 -- Perfiles de Tostado (Roast Profiles)
 CREATE TABLE IF NOT EXISTS roast_profiles (
-    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     profile_code VARCHAR(50) NOT NULL UNIQUE,
     profile_name VARCHAR(160) NOT NULL,
     roast_level TEXT NOT NULL CHECK (roast_level IN ('ligero', 'medio_ligero', 'medio', 'medio_oscuro', 'oscuro', 'muy_oscuro')),
@@ -919,7 +919,7 @@ CREATE TABLE IF NOT EXISTS roast_profiles (
     suitable_for_varieties TEXT, -- Variedades recomendadas
     flavor_profile TEXT, -- Perfil de sabor esperado
     roasting_equipment_id BIGINT NULL, -- Equipo específico si aplica
-    curve_data JSONB, -- Datos de la curva de tostado (temperatura vs tiempo)
+    curve_data TEXT, -- Datos de la curva de tostado (temperatura vs tiempo)
     is_active BOOLEAN DEFAULT TRUE,
     notes TEXT,
     created_by BIGINT,
@@ -933,7 +933,7 @@ CREATE INDEX idx_roast_profiles_active ON roast_profiles(is_active);
 
 -- Registros de Tostado (Roast Batches / Roast Logs)
 CREATE TABLE IF NOT EXISTS roast_batches (
-    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     batch_number VARCHAR(50) NOT NULL UNIQUE,
     production_order_id BIGINT NOT NULL,
     roast_profile_id BIGINT NULL,
@@ -942,9 +942,9 @@ CREATE TABLE IF NOT EXISTS roast_batches (
     green_coffee_weight_kg DECIMAL(10,2) NOT NULL, -- Peso verde inicial
     roasted_coffee_weight_kg DECIMAL(10,2), -- Peso tostado final
     weight_loss_percentage DECIMAL(5,2), -- % de merma real
-    roast_date TIMESTAMPTZ NOT NULL,
-    roast_start_time TIMESTAMPTZ NOT NULL,
-    roast_end_time TIMESTAMPTZ,
+    roast_date TIMESTAMP NOT NULL,
+    roast_start_time TIMESTAMP NOT NULL,
+    roast_end_time TIMESTAMP,
     actual_duration_minutes INT,
     inlet_temperature_celsius INT, -- Temperatura de entrada
     first_crack_time_minutes INT,
@@ -960,7 +960,7 @@ CREATE TABLE IF NOT EXISTS roast_batches (
     quality_score DECIMAL(3,1), -- Puntuación de calidad (0-10)
     quality_notes TEXT,
     defects_found TEXT,
-    curve_data JSONB, -- Datos reales de la curva de tostado
+    curve_data TEXT, -- Datos reales de la curva de tostado
     is_approved BOOLEAN DEFAULT FALSE,
     approved_by BIGINT NULL,
     approved_at TIMESTAMP NULL,
@@ -984,12 +984,12 @@ CREATE INDEX idx_roast_batches_approved ON roast_batches(is_approved);
 
 -- Control de Calidad en Producción
 CREATE TABLE IF NOT EXISTS production_quality_checks (
-    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     check_number VARCHAR(50) NOT NULL UNIQUE,
     production_order_id BIGINT NULL,
     roast_batch_id BIGINT NULL,
     check_type TEXT NOT NULL CHECK (check_type IN ('recepcion_verde', 'pre_tostado', 'post_tostado', 'catacion', 'empaque', 'final')),
-    check_date TIMESTAMPTZ NOT NULL,
+    check_date TIMESTAMP NOT NULL,
     inspector_id BIGINT NOT NULL,
     passed BOOLEAN NOT NULL DEFAULT FALSE,
     overall_score DECIMAL(4,1), -- Puntuación general (0-100)
@@ -1012,7 +1012,7 @@ CREATE TABLE IF NOT EXISTS production_quality_checks (
     packaging_test_result TEXT DEFAULT 'no_aplica' CHECK (packaging_test_result IN ('aprobado', 'rechazado', 'no_aplica')),
     observations TEXT,
     corrective_actions TEXT,
-    images JSONB, -- URLs de imágenes del control
+    images TEXT, -- URLs de imágenes del control
     approved_by BIGINT NULL,
     approved_at TIMESTAMP NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -1031,13 +1031,13 @@ CREATE INDEX idx_quality_checks_passed ON production_quality_checks(passed);
 
 -- Mermas y Subproductos
 CREATE TABLE IF NOT EXISTS production_waste_byproducts (
-    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     production_order_id BIGINT NOT NULL,
     roast_batch_id BIGINT NULL,
     waste_type TEXT NOT NULL CHECK (waste_type IN ('merma_tostado', 'merma_molido', 'defectos', 'chaff', 'rechazo_calidad', 'otro')),
     quantity DECIMAL(10,2) NOT NULL,
     quantity_unit TEXT NOT NULL DEFAULT 'kg' CHECK (quantity_unit IN ('kg', 'g', 'unidad')),
-    waste_date TIMESTAMPTZ NOT NULL,
+    waste_date TIMESTAMP NOT NULL,
     disposal_method TEXT NOT NULL DEFAULT 'descartado' CHECK (disposal_method IN ('descartado', 'compost', 'reutilizado', 'vendido', 'donado')),
     estimated_value_loss DECIMAL(10,2), -- Pérdida de valor estimada
     reason TEXT,
@@ -1055,13 +1055,13 @@ CREATE INDEX idx_waste_byproducts_date ON production_waste_byproducts(waste_date
 
 -- Mantenimiento de Equipos
 CREATE TABLE IF NOT EXISTS equipment_maintenance (
-    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     maintenance_number VARCHAR(50) NOT NULL UNIQUE,
     roasting_equipment_id BIGINT NOT NULL,
     maintenance_type TEXT NOT NULL CHECK (maintenance_type IN ('preventivo', 'correctivo', 'calibracion', 'limpieza', 'emergencia')),
     scheduled_date DATE NOT NULL,
-    start_date TIMESTAMPTZ NULL,
-    end_date TIMESTAMPTZ NULL,
+    start_date TIMESTAMP NULL,
+    end_date TIMESTAMP NULL,
     state TEXT NOT NULL DEFAULT 'programado' CHECK (state IN ('programado', 'en_progreso', 'completado', 'cancelado')),
     maintenance_description TEXT NOT NULL,
     parts_replaced TEXT,
