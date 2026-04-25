@@ -180,7 +180,7 @@ exampleRouter.post('/',
     try {
       const { name, price } = req.body;
       const result = await query(
-        'INSERT INTO products (name, price) VALUES ($1, $2) RETURNING id',
+        'INSERT INTO products (name, price) VALUES (?, ?) RETURNING id',
         [name, price]
       );
 
