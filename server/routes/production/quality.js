@@ -45,31 +45,31 @@ qualityRouter.get('/', async (req, res) => {
     const params = [];
 
     if (check_type) {
-      sql += ` AND pqc.check_type = $${params.length + 1}`;
+      sql += ` AND pqc.check_type = ?`;
       params.push(check_type);
     }
 
     if (passed !== undefined) {
-      sql += ` AND pqc.passed = $${params.length + 1}`;
+      sql += ` AND pqc.passed = ?`;
       params.push(passed === 'true');
     }
 
     if (date_from) {
-      sql += ` AND pqc.check_date::date >= $${params.length + 1}`;
+      sql += ` AND pqc.check_date >= ?`;
       params.push(date_from);
     }
 
     if (date_to) {
-      sql += ` AND pqc.check_date::date <= $${params.length + 1}`;
+      sql += ` AND pqc.check_date <= ?`;
       params.push(date_to);
     }
 
     if (inspector_id) {
-      sql += ` AND pqc.inspector_id = $${params.length + 1}`;
+      sql += ` AND pqc.inspector_id = ?`;
       params.push(inspector_id);
     }
 
-    sql += ` ORDER BY pqc.check_date DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
+    sql += ` ORDER BY pqc.check_date DESC LIMIT ? OFFSET ?`;
     params.push(parseInt(limit), parseInt(offset));
 
     const { rows: checks } = await query(sql, params);
@@ -98,7 +98,7 @@ qualityRouter.get('/stats/summary', async (req, res) => {
         COUNT(*) as total_checks,
         SUM(CASE WHEN passed = TRUE THEN 1 ELSE 0 END) as passed_checks,
         SUM(CASE WHEN passed = FALSE THEN 1 ELSE 0 END) as failed_checks,
-        ROUND(AVG(overall_score)::numeric, 2) as avg_score,
+        ROUND(AVG(overall_score), 2) as avg_score,
         MIN(overall_score) as min_score,
         MAX(overall_score) as max_score,
         check_type
@@ -108,12 +108,12 @@ qualityRouter.get('/stats/summary', async (req, res) => {
     const params = [];
 
     if (date_from) {
-      sql += ` AND check_date::date >= $${params.length + 1}`;
+      sql += ` AND check_date >= ?`;
       params.push(date_from);
     }
 
     if (date_to) {
-      sql += ` AND check_date::date <= $${params.length + 1}`;
+      sql += ` AND check_date <= ?`;
       params.push(date_to);
     }
 
@@ -148,7 +148,7 @@ qualityRouter.get('/:id', async (req, res) => {
       LEFT JOIN users ab ON pqc.approved_by = ab.id
       LEFT JOIN roast_batches rb ON pqc.roast_batch_id = rb.id
       LEFT JOIN production_orders po ON pqc.production_order_id = po.id
-      WHERE pqc.id = $1
+      WHERE pqc.id = ?
     `, [id]);
 
     if (!rows.length) {
@@ -190,7 +190,7 @@ qualityRouter.post('/', async (req, res) => {
         check_number, production_order_id, roast_batch_id,
         check_type, check_date, inspector_id, passed,
         overall_score, observations, defects_found
-      ) VALUES ($1, $2, $3, $4, NOW(), $5, $6, $7, $8, $9)
+      ) VALUES (?, ?, ?, ?, datetime('now'), ?, ?, ?, ?, ?)
       RETURNING id
     `, [
       check_number, production_order_id || null, roast_batch_id || null,
@@ -256,7 +256,7 @@ qualityRouter.post('/cupping', async (req, res) => {
         body_score, balance_score, aftertaste_score, sweetness_score,
         uniformity_score, clean_cup_score, moisture_percentage,
         observations
-      ) VALUES ($1, $2, $3, $4, NOW(), $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
+      ) VALUES (?, ?, ?, ?, datetime('now'), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       RETURNING id
     `, [
       check_number, production_order_id || null, roast_batch_id || null,
@@ -292,23 +292,23 @@ qualityRouter.put('/:id', async (req, res) => {
     const updateValues = [];
 
     if (overall_score !== undefined) {
-      updateFields.push(`overall_score = $${updateValues.length + 1}`);
+      updateFields.push(`overall_score = ?`);
       updateValues.push(overall_score);
     }
     if (passed !== undefined) {
-      updateFields.push(`passed = $${updateValues.length + 1}`);
+      updateFields.push(`passed = ?`);
       updateValues.push(passed ? true : false);
     }
     if (defects_found !== undefined) {
-      updateFields.push(`defects_found = $${updateValues.length + 1}`);
+      updateFields.push(`defects_found = ?`);
       updateValues.push(defects_found);
     }
     if (corrective_actions !== undefined) {
-      updateFields.push(`corrective_actions = $${updateValues.length + 1}`);
+      updateFields.push(`corrective_actions = ?`);
       updateValues.push(corrective_actions);
     }
     if (observations !== undefined) {
-      updateFields.push(`observations = $${updateValues.length + 1}`);
+      updateFields.push(`observations = ?`);
       updateValues.push(observations);
     }
 
@@ -316,11 +316,11 @@ qualityRouter.put('/:id', async (req, res) => {
       return res.status(400).json({ success: false, error: 'No fields to update' });
     }
 
-    updateFields.push('updated_at = NOW()');
+    updateFields.push('updated_at = datetime('now')');
     updateValues.push(id);
 
     await query(
-      `UPDATE production_quality_checks SET ${updateFields.join(', ')} WHERE id = $${updateValues.length}`,
+      `UPDATE production_quality_checks SET ${updateFields.join(', ')} WHERE id = ?`,
       updateValues
     );
 
@@ -346,8 +346,8 @@ qualityRouter.post('/:id/approve', async (req, res) => {
 
     await query(`
       UPDATE production_quality_checks
-      SET approved_by = $1, approved_at = NOW(), updated_at = NOW()
-      WHERE id = $2
+      SET approved_by = ?, approved_at = datetime('now'), updated_at = datetime('now')
+      WHERE id = ?
     `, [approved_by_user_id, id]);
 
     res.json({ success: true, message: 'Quality check approved' });

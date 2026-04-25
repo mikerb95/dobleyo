@@ -39,26 +39,26 @@ ordersRouter.get('/', async (req, res) => {
     const params = [];
 
     if (state) {
-      sql += ` AND po.state = $${params.length + 1}`;
+      sql += ` AND po.state = ?`;
       params.push(state);
     }
 
     if (work_center_id) {
-      sql += ` AND po.work_center_id = $${params.length + 1}`;
+      sql += ` AND po.work_center_id = ?`;
       params.push(work_center_id);
     }
 
     if (date_from) {
-      sql += ` AND po.scheduled_date >= $${params.length + 1}`;
+      sql += ` AND po.scheduled_date >= ?`;
       params.push(date_from);
     }
 
     if (date_to) {
-      sql += ` AND po.scheduled_date <= $${params.length + 1}`;
+      sql += ` AND po.scheduled_date <= ?`;
       params.push(date_to);
     }
 
-    sql += ` ORDER BY po.scheduled_date DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
+    sql += ` ORDER BY po.scheduled_date DESC LIMIT ? OFFSET ?`;
     params.push(parseInt(limit), parseInt(offset));
 
     const { rows: orders } = await query(sql, params);
@@ -95,7 +95,7 @@ ordersRouter.get('/:id', async (req, res) => {
       LEFT JOIN roasting_equipment re ON po.roasting_equipment_id = re.id
       LEFT JOIN bill_of_materials b ON po.bom_id = b.id
       LEFT JOIN work_centers wc ON po.work_center_id = wc.id
-      WHERE po.id = $1
+      WHERE po.id = ?
     `, [id]);
 
     if (!orderRows.length) {
@@ -109,7 +109,7 @@ ordersRouter.get('/:id', async (req, res) => {
         prd.stock_quantity, bc.component_type
       FROM bom_components bc
       JOIN products prd ON bc.component_product_id = prd.id
-      WHERE bc.bom_id = $1
+      WHERE bc.bom_id = ?
     `, [orderRows[0].bom_id]);
 
     const { rows: consumptions } = await query(`
@@ -119,7 +119,7 @@ ordersRouter.get('/:id', async (req, res) => {
         pmc.consumption_date
       FROM production_material_consumption pmc
       JOIN products prd ON pmc.product_id = prd.id
-      WHERE pmc.production_order_id = $1
+      WHERE pmc.production_order_id = ?
     `, [id]);
 
     const { rows: batches } = await query(`
@@ -129,7 +129,7 @@ ordersRouter.get('/:id', async (req, res) => {
         rb.is_approved, u.name as operator_name
       FROM roast_batches rb
       LEFT JOIN users u ON rb.operator_id = u.id
-      WHERE rb.production_order_id = $1
+      WHERE rb.production_order_id = ?
     `, [id]);
 
     res.json({
@@ -169,7 +169,7 @@ ordersRouter.post('/', async (req, res) => {
     const order_number = `ORD-${timestamp}`;
 
     const { rows: bomRows } = await query(
-      'SELECT loss_percentage FROM bill_of_materials WHERE id = $1',
+      'SELECT loss_percentage FROM bill_of_materials WHERE id = ?',
       [bom_id]
     );
     const expected_loss_percentage = bomRows[0]?.loss_percentage || 15;
@@ -179,7 +179,7 @@ ordersRouter.post('/', async (req, res) => {
         order_number, bom_id, product_id, planned_quantity, quantity_unit,
         work_center_id, roasting_equipment_id, state, priority,
         scheduled_date, expected_loss_percentage, responsible_user_id, notes, user_id
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       RETURNING id
     `, [
       order_number, bom_id, product_id, planned_quantity, quantity_unit || 'kg',
@@ -219,27 +219,27 @@ ordersRouter.put('/:id', async (req, res) => {
     const updateValues = [];
 
     if (planned_quantity !== undefined) {
-      updateFields.push(`planned_quantity = $${updateValues.length + 1}`);
+      updateFields.push(`planned_quantity = ?`);
       updateValues.push(planned_quantity);
     }
     if (work_center_id !== undefined) {
-      updateFields.push(`work_center_id = $${updateValues.length + 1}`);
+      updateFields.push(`work_center_id = ?`);
       updateValues.push(work_center_id);
     }
     if (roasting_equipment_id !== undefined) {
-      updateFields.push(`roasting_equipment_id = $${updateValues.length + 1}`);
+      updateFields.push(`roasting_equipment_id = ?`);
       updateValues.push(roasting_equipment_id);
     }
     if (responsible_user_id !== undefined) {
-      updateFields.push(`responsible_user_id = $${updateValues.length + 1}`);
+      updateFields.push(`responsible_user_id = ?`);
       updateValues.push(responsible_user_id);
     }
     if (priority !== undefined) {
-      updateFields.push(`priority = $${updateValues.length + 1}`);
+      updateFields.push(`priority = ?`);
       updateValues.push(priority);
     }
     if (notes !== undefined) {
-      updateFields.push(`notes = $${updateValues.length + 1}`);
+      updateFields.push(`notes = ?`);
       updateValues.push(notes);
     }
 
@@ -247,11 +247,11 @@ ordersRouter.put('/:id', async (req, res) => {
       return res.status(400).json({ success: false, error: 'No fields to update' });
     }
 
-    updateFields.push('updated_at = NOW()');
+    updateFields.push('updated_at = datetime('now')');
     updateValues.push(id);
 
     await query(
-      `UPDATE production_orders SET ${updateFields.join(', ')} WHERE id = $${updateValues.length}`,
+      `UPDATE production_orders SET ${updateFields.join(', ')} WHERE id = ?`,
       updateValues
     );
 
@@ -271,7 +271,7 @@ ordersRouter.delete('/:id', async (req, res) => {
     const { id } = req.params;
 
     const { rows: orderRows } = await query(
-      'SELECT state FROM production_orders WHERE id = $1',
+      'SELECT state FROM production_orders WHERE id = ?',
       [id]
     );
 
@@ -283,7 +283,7 @@ ordersRouter.delete('/:id', async (req, res) => {
       return res.status(400).json({ success: false, error: 'Can only delete draft orders' });
     }
 
-    await query('DELETE FROM production_orders WHERE id = $1', [id]);
+    await query('DELETE FROM production_orders WHERE id = ?', [id]);
 
     res.json({ success: true, message: 'Production order deleted' });
   } catch (error) {
@@ -303,7 +303,7 @@ ordersRouter.delete('/:id', async (req, res) => {
 ordersRouter.post('/:id/confirm', async (req, res) => {
   try {
     const { id } = req.params;
-    const { rows } = await query('SELECT state FROM production_orders WHERE id = $1', [id]);
+    const { rows } = await query('SELECT state FROM production_orders WHERE id = ?', [id]);
 
     if (!rows.length) return res.status(404).json({ success: false, error: 'Order not found' });
     if (rows[0].state !== 'borrador') {
@@ -311,7 +311,7 @@ ordersRouter.post('/:id/confirm', async (req, res) => {
     }
 
     await query(
-      'UPDATE production_orders SET state = $1, updated_at = NOW() WHERE id = $2',
+      'UPDATE production_orders SET state = ?, updated_at = datetime('now') WHERE id = ?',
       ['confirmada', id]
     );
 
@@ -329,7 +329,7 @@ ordersRouter.post('/:id/confirm', async (req, res) => {
 ordersRouter.post('/:id/start', async (req, res) => {
   try {
     const { id } = req.params;
-    const { rows } = await query('SELECT state FROM production_orders WHERE id = $1', [id]);
+    const { rows } = await query('SELECT state FROM production_orders WHERE id = ?', [id]);
 
     if (!rows.length) return res.status(404).json({ success: false, error: 'Order not found' });
     if (rows[0].state !== 'confirmada') {
@@ -337,7 +337,7 @@ ordersRouter.post('/:id/start', async (req, res) => {
     }
 
     await query(
-      'UPDATE production_orders SET state = $1, start_date = NOW(), updated_at = NOW() WHERE id = $2',
+      'UPDATE production_orders SET state = ?, start_date = datetime('now'), updated_at = datetime('now') WHERE id = ?',
       ['en_progreso', id]
     );
 
@@ -355,7 +355,7 @@ ordersRouter.post('/:id/start', async (req, res) => {
 ordersRouter.post('/:id/pause', async (req, res) => {
   try {
     const { id } = req.params;
-    const { rows } = await query('SELECT state FROM production_orders WHERE id = $1', [id]);
+    const { rows } = await query('SELECT state FROM production_orders WHERE id = ?', [id]);
 
     if (!rows.length) return res.status(404).json({ success: false, error: 'Order not found' });
     if (rows[0].state !== 'en_progreso') {
@@ -363,7 +363,7 @@ ordersRouter.post('/:id/pause', async (req, res) => {
     }
 
     await query(
-      'UPDATE production_orders SET state = $1, updated_at = NOW() WHERE id = $2',
+      'UPDATE production_orders SET state = ?, updated_at = datetime('now') WHERE id = ?',
       ['pausada', id]
     );
 
@@ -381,7 +381,7 @@ ordersRouter.post('/:id/pause', async (req, res) => {
 ordersRouter.post('/:id/resume', async (req, res) => {
   try {
     const { id } = req.params;
-    const { rows } = await query('SELECT state FROM production_orders WHERE id = $1', [id]);
+    const { rows } = await query('SELECT state FROM production_orders WHERE id = ?', [id]);
 
     if (!rows.length) return res.status(404).json({ success: false, error: 'Order not found' });
     if (rows[0].state !== 'pausada') {
@@ -389,7 +389,7 @@ ordersRouter.post('/:id/resume', async (req, res) => {
     }
 
     await query(
-      'UPDATE production_orders SET state = $1, updated_at = NOW() WHERE id = $2',
+      'UPDATE production_orders SET state = ?, updated_at = datetime('now') WHERE id = ?',
       ['en_progreso', id]
     );
 
@@ -409,7 +409,7 @@ ordersRouter.post('/:id/complete', async (req, res) => {
     const { id } = req.params;
     const { produced_quantity } = req.body;
 
-    const { rows } = await query('SELECT state FROM production_orders WHERE id = $1', [id]);
+    const { rows } = await query('SELECT state FROM production_orders WHERE id = ?', [id]);
 
     if (!rows.length) return res.status(404).json({ success: false, error: 'Order not found' });
     if (rows[0].state !== 'en_progreso') {
@@ -420,7 +420,7 @@ ordersRouter.post('/:id/complete', async (req, res) => {
     }
 
     await query(
-      'UPDATE production_orders SET state = $1, produced_quantity = $2, end_date = NOW(), updated_at = NOW() WHERE id = $3',
+      'UPDATE production_orders SET state = ?, produced_quantity = ?, end_date = datetime('now'), updated_at = datetime('now') WHERE id = ?',
       ['completada', produced_quantity, id]
     );
 
@@ -440,14 +440,14 @@ ordersRouter.post('/:id/cancel', async (req, res) => {
     const { id } = req.params;
     const { reason } = req.body;
 
-    const { rows } = await query('SELECT state FROM production_orders WHERE id = $1', [id]);
+    const { rows } = await query('SELECT state FROM production_orders WHERE id = ?', [id]);
 
     if (!rows.length) return res.status(404).json({ success: false, error: 'Order not found' });
 
     const cancelNote = `\nCancelada: ${reason || 'Sin motivo especificado'}`;
 
     await query(
-      'UPDATE production_orders SET state = $1, notes = COALESCE(notes, \'\') || $2, updated_at = NOW() WHERE id = $3',
+      'UPDATE production_orders SET state = ?, notes = COALESCE(notes, \'\') || ?, updated_at = datetime('now') WHERE id = ?',
       ['cancelada', cancelNote, id]
     );
 

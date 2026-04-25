@@ -60,7 +60,7 @@ coffeeRouter.post('/harvest', async (req, res) => {
     // Guardar en BD
     const result = await query(
       `INSERT INTO coffee_harvests (lot_id, farm, region, altitude, variety, climate, process, aroma, taste_notes, created_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW()) RETURNING id`,
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now')) RETURNING id`,
       [lotId, farm, farmRegion, farmAltitude, variety, climate, process, aroma, tasteNotes]
     );
 
@@ -110,7 +110,7 @@ coffeeRouter.post('/inventory-storage', async (req, res) => {
 
     // Verificar que el lote existe
     const harvestResult = await query(
-      'SELECT id FROM coffee_harvests WHERE lot_id = $1',
+      'SELECT id FROM coffee_harvests WHERE lot_id = ?',
       [lotId]
     );
 
@@ -123,7 +123,7 @@ coffeeRouter.post('/inventory-storage', async (req, res) => {
     // Guardar en BD
     const result = await query(
       `INSERT INTO green_coffee_inventory (harvest_id, lot_id, weight_kg, location, storage_date, notes, created_at)
-       VALUES ($1, $2, $3, $4, $5, $6, NOW()) RETURNING id`,
+       VALUES (?, ?, ?, ?, ?, ?, datetime('now')) RETURNING id`,
       [harvestId, lotId, weight, location, storageDate, notes || null]
     );
 
@@ -156,7 +156,7 @@ coffeeRouter.post('/send-roasting', async (req, res) => {
 
     // Verificar inventario disponible
     const inventoryResult = await query(
-      'SELECT SUM(weight_kg) as total FROM green_coffee_inventory WHERE lot_id = $1',
+      'SELECT SUM(weight_kg) as total FROM green_coffee_inventory WHERE lot_id = ?',
       [lotId]
     );
 
@@ -168,7 +168,7 @@ coffeeRouter.post('/send-roasting', async (req, res) => {
     // Guardar en BD
     const result = await query(
       `INSERT INTO roasting_batches (lot_id, quantity_sent_kg, target_temp, notes, status, created_at)
-       VALUES ($1, $2, $3, $4, 'in_roasting', NOW()) RETURNING id`,
+       VALUES (?, ?, ?, ?, 'in_roasting', datetime('now')) RETURNING id`,
       [lotId, quantitySent, targetTemp || null, notes || null]
     );
 
@@ -194,7 +194,7 @@ coffeeRouter.post('/roast-retrieval', async (req, res) => {
 
     // Verificar roasting batch y obtener lot_id para state machine
     const roastingResult = await query(
-      'SELECT quantity_sent_kg, lot_id FROM roasting_batches WHERE id = $1',
+      'SELECT quantity_sent_kg, lot_id FROM roasting_batches WHERE id = ?',
       [roastingId]
     );
 
@@ -217,13 +217,13 @@ coffeeRouter.post('/roast-retrieval', async (req, res) => {
     // Guardar en BD
     const result = await query(
       `INSERT INTO roasted_coffee (roasting_id, roast_level, weight_kg, weight_loss_percent, actual_temp, roast_time_minutes, observations, status, created_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, 'ready_for_storage', NOW()) RETURNING id`,
+       VALUES (?, ?, ?, ?, ?, ?, ?, 'ready_for_storage', datetime('now')) RETURNING id`,
       [roastingId, roastLevel, roastedWeight, weightLossPercent, actualTemp || null, roastTime || null, observations || null]
     );
 
     // Actualizar estado del roasting batch
     await query(
-      'UPDATE roasting_batches SET status = $1 WHERE id = $2',
+      'UPDATE roasting_batches SET status = ? WHERE id = ?',
       ['completed', roastingId]
     );
 
@@ -253,7 +253,7 @@ coffeeRouter.post('/roasted-storage', async (req, res) => {
       `SELECT rc.weight_kg, rb.lot_id
        FROM roasted_coffee rc
        JOIN roasting_batches rb ON rb.id = rc.roasting_id
-       WHERE rc.id = $1`,
+       WHERE rc.id = ?`,
       [roastedId]
     );
 
@@ -276,13 +276,13 @@ coffeeRouter.post('/roasted-storage', async (req, res) => {
     const conditionsStr = (Array.isArray(conditions) && conditions.length) ? conditions.join(',') : null;
     const result = await query(
       `INSERT INTO roasted_coffee_inventory (roasted_id, location, container_type, container_count, storage_conditions, notes, status, created_at)
-       VALUES ($1, $2, $3, $4, $5, $6, 'ready_for_packaging', NOW()) RETURNING id`,
+       VALUES (?, ?, ?, ?, ?, ?, 'ready_for_packaging', datetime('now')) RETURNING id`,
       [roastedId, location, container, containerCount, conditionsStr, notes || null]
     );
 
     // Actualizar estado
     await query(
-      'UPDATE roasted_coffee SET status = $1 WHERE id = $2',
+      'UPDATE roasted_coffee SET status = ? WHERE id = ?',
       ['stored', roastedId]
     );
 
@@ -330,7 +330,7 @@ coffeeRouter.get('/roasted-storage/:id', async (req, res) => {
        LEFT JOIN roasted_coffee rc ON rci.roasted_id = rc.id
        LEFT JOIN roasting_batches rb ON rc.roasting_id = rb.id
        LEFT JOIN coffee_harvests ch ON rb.lot_id = ch.lot_id
-       WHERE rci.id = $1`,
+       WHERE rci.id = ?`,
       [id]
     );
 
@@ -383,7 +383,7 @@ coffeeRouter.post('/packaging', async (req, res) => {
 
     // Validar que el roasted_coffee_inventory no esté ya empacado
     const dupCheck = await query(
-      `SELECT 1 FROM packaged_coffee WHERE roasted_storage_id = $1 AND status = 'ready_for_sale' LIMIT 1`,
+      `SELECT 1 FROM packaged_coffee WHERE roasted_storage_id = ? AND status = 'ready_for_sale' LIMIT 1`,
       [roastedStorageId]
     );
     if (dupCheck.rows.length > 0) {
@@ -396,7 +396,7 @@ coffeeRouter.post('/packaging', async (req, res) => {
     // Obtener información del café tostado para crear el SKU
     // Primero verificar que existe el registro en roasted_coffee_inventory
     const rciCheck = await query(
-      'SELECT * FROM roasted_coffee_inventory WHERE id = $1',
+      'SELECT * FROM roasted_coffee_inventory WHERE id = ?',
       [roastedStorageId]
     );
 
@@ -415,7 +415,7 @@ coffeeRouter.post('/packaging', async (req, res) => {
        LEFT JOIN roasted_coffee rc ON rci.roasted_id = rc.id
        LEFT JOIN roasting_batches rb ON rc.roasting_id = rb.id
        LEFT JOIN coffee_harvests ch ON rb.lot_id = ch.lot_id
-       WHERE rci.id = $1`,
+       WHERE rci.id = ?`,
       [roastedStorageId]
     );
 
@@ -439,13 +439,13 @@ coffeeRouter.post('/packaging', async (req, res) => {
     // Guardar en BD
     const result = await query(
       `INSERT INTO packaged_coffee (roasted_storage_id, acidity, body, balance, score, presentation, grind_size, package_size, unit_count, notes, status, created_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 'ready_for_sale', NOW()) RETURNING id`,
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'ready_for_sale', datetime('now')) RETURNING id`,
       [roastedStorageId, acidity, body, balance, score, presentation, grindSize || null, packageSize, unitCount, notes || null]
     );
 
     // Actualizar estado del café tostado
     await query(
-      'UPDATE roasted_coffee_inventory SET status = $1 WHERE id = $2',
+      'UPDATE roasted_coffee_inventory SET status = ? WHERE id = ?',
       ['packaged', roastedStorageId]
     );
 
@@ -466,14 +466,14 @@ coffeeRouter.post('/packaging', async (req, res) => {
 
       await query(
         `INSERT INTO products (id, name, category, origin, process, roast, price, cost, is_active, stock_quantity, stock_min, weight, weight_unit, created_at)
-         VALUES ($1, $2, 'cafe', $3, $4, $5, 0, 0, 1, $6, 0, $7, $8, NOW())`,
+         VALUES (?, ?, 'cafe', ?, ?, ?, 0, 0, 1, ?, 0, ?, ?, datetime('now'))`,
         [productId, productName, region, 'unknown', roastLevel, unitCount, packageSize, 'unidad']
       );
 
       // Registrar movimiento de inventario
       await query(
         `INSERT INTO inventory_movements (product_id, movement_type, quantity, quantity_before, quantity_after, reason, reference, created_at)
-         VALUES ($1, 'entrada', $2, 0, $3, 'Café empacado para venta', $4, NOW())`,
+         VALUES (?, 'entrada', ?, 0, ?, 'Café empacado para venta', ?, datetime('now'))`,
         [productId, unitCount, unitCount, roastedInfo.lot_id || 'packaging']
       );
 
@@ -531,7 +531,7 @@ coffeeRouter.get('/green-inventory', async (req, res) => {
 coffeeRouter.get('/roasting-batches', async (req, res) => {
   try {
     const result = await query(
-      'SELECT * FROM roasting_batches WHERE status = $1 ORDER BY created_at DESC LIMIT 100',
+      'SELECT * FROM roasting_batches WHERE status = ? ORDER BY created_at DESC LIMIT 100',
       ['in_roasting']
     );
     res.json(result.rows);
@@ -545,7 +545,7 @@ coffeeRouter.get('/roasted-coffee', async (req, res) => {
   try {
     // Primero verificar si hay lotes en roasted_coffee_inventory
     const checkResult = await query(
-      `SELECT COUNT(*) as count FROM roasted_coffee_inventory WHERE status = $1`,
+      `SELECT COUNT(*) as count FROM roasted_coffee_inventory WHERE status = ?`,
       ['ready_for_packaging']
     );
 
@@ -577,7 +577,7 @@ coffeeRouter.get('/roasted-coffee', async (req, res) => {
       INNER JOIN roasted_coffee rc ON rci.roasted_id = rc.id
       LEFT JOIN roasting_batches rb ON rc.roasting_id = rb.id
       LEFT JOIN coffee_harvests ch ON rb.lot_id = ch.lot_id
-      WHERE rci.status = $1 
+      WHERE rci.status = ? 
       ORDER BY rci.created_at DESC 
       LIMIT 100`,
       ['ready_for_packaging']
@@ -631,7 +631,7 @@ coffeeRouter.get('/roasted-for-storage', async (req, res) => {
       FROM roasted_coffee rc
       LEFT JOIN roasting_batches rb ON rc.roasting_id = rb.id
       LEFT JOIN coffee_harvests ch ON rb.lot_id = ch.lot_id
-      WHERE rc.status = $1 
+      WHERE rc.status = ? 
       ORDER BY rc.created_at DESC 
       LIMIT 100`,
       ['ready_for_storage']
@@ -646,7 +646,7 @@ coffeeRouter.get('/roasted-for-storage', async (req, res) => {
 coffeeRouter.get('/packaged', async (req, res) => {
   try {
     const result = await query(
-      'SELECT * FROM packaged_coffee WHERE status = $1 ORDER BY created_at DESC LIMIT 100',
+      'SELECT * FROM packaged_coffee WHERE status = ? ORDER BY created_at DESC LIMIT 100',
       ['ready_for_sale']
     );
     res.json(result.rows);
@@ -833,7 +833,7 @@ coffeeRouter.delete('/harvest/:lotId', async (req, res) => {
 
     // Verificar si el lote existe
     const checkResult = await query(
-      'SELECT id FROM coffee_harvests WHERE lot_id = $1',
+      'SELECT id FROM coffee_harvests WHERE lot_id = ?',
       [lotId]
     );
 
@@ -845,10 +845,10 @@ coffeeRouter.delete('/harvest/:lotId', async (req, res) => {
     }
 
     // Eliminar de green_coffee_inventory primero (si existe)
-    await query('DELETE FROM green_coffee_inventory WHERE lot_id = $1', [lotId]);
+    await query('DELETE FROM green_coffee_inventory WHERE lot_id = ?', [lotId]);
 
     // Eliminar el lote
-    await query('DELETE FROM coffee_harvests WHERE lot_id = $1', [lotId]);
+    await query('DELETE FROM coffee_harvests WHERE lot_id = ?', [lotId]);
 
     console.log(`[DELETE /harvest] Lote ${lotId} eliminado correctamente`);
     res.json({
@@ -872,7 +872,7 @@ coffeeRouter.delete('/roasted-storage/:id', async (req, res) => {
 
     // Verificar si existe
     const checkResult = await query(
-      'SELECT id FROM roasted_coffee_inventory WHERE id = $1',
+      'SELECT id FROM roasted_coffee_inventory WHERE id = ?',
       [id]
     );
 
@@ -884,7 +884,7 @@ coffeeRouter.delete('/roasted-storage/:id', async (req, res) => {
     }
 
     // Eliminar
-    await query('DELETE FROM roasted_coffee_inventory WHERE id = $1', [id]);
+    await query('DELETE FROM roasted_coffee_inventory WHERE id = ?', [id]);
 
     console.log(`[DELETE /roasted-storage] ID ${id} eliminado correctamente`);
     res.json({
@@ -908,7 +908,7 @@ coffeeRouter.delete('/roasted-coffee/:id', async (req, res) => {
 
     // Verificar si existe
     const checkResult = await query(
-      'SELECT id FROM roasted_coffee WHERE id = $1',
+      'SELECT id FROM roasted_coffee WHERE id = ?',
       [id]
     );
 
@@ -920,7 +920,7 @@ coffeeRouter.delete('/roasted-coffee/:id', async (req, res) => {
     }
 
     // Eliminar
-    await query('DELETE FROM roasted_coffee WHERE id = $1', [id]);
+    await query('DELETE FROM roasted_coffee WHERE id = ?', [id]);
 
     console.log(`[DELETE /roasted-coffee] ID ${id} eliminado correctamente`);
     res.json({
@@ -944,7 +944,7 @@ coffeeRouter.delete('/roasting-batch/:id', async (req, res) => {
 
     // Verificar si existe
     const checkResult = await query(
-      'SELECT id FROM roasting_batches WHERE id = $1',
+      'SELECT id FROM roasting_batches WHERE id = ?',
       [id]
     );
 
@@ -956,10 +956,10 @@ coffeeRouter.delete('/roasting-batch/:id', async (req, res) => {
     }
 
     // Eliminar registros relacionados en roasted_coffee primero
-    await query('DELETE FROM roasted_coffee WHERE roasting_id = $1', [id]);
+    await query('DELETE FROM roasted_coffee WHERE roasting_id = ?', [id]);
 
     // Eliminar el lote en tostado
-    await query('DELETE FROM roasting_batches WHERE id = $1', [id]);
+    await query('DELETE FROM roasting_batches WHERE id = ?', [id]);
 
     console.log(`[DELETE /roasting-batch] ID ${id} eliminado correctamente`);
     res.json({
@@ -1065,7 +1065,7 @@ coffeeRouter.post('/cupping', async (req, res) => {
 
     // Verificar que el lote tostado existe
     const lotCheck = await query(
-      'SELECT id FROM roasted_coffee WHERE id = $1',
+      'SELECT id FROM roasted_coffee WHERE id = ?',
       [roastedId]
     );
     if (!lotCheck.rows.length) {
@@ -1082,7 +1082,7 @@ coffeeRouter.post('/cupping', async (req, res) => {
     const lotRow = await query(
       `SELECT rb.lot_id FROM roasted_coffee rc
        LEFT JOIN roasting_batches rb ON rc.roasting_id = rb.id
-       WHERE rc.id = $1`,
+       WHERE rc.id = ?`,
       [roastedId]
     );
     const lotId = lotRow.rows[0]?.lot_id || 'GEN';
@@ -1102,12 +1102,12 @@ coffeeRouter.post('/cupping', async (req, res) => {
         defects_count, defects_found, moisture_percentage, color_agtron,
         observations, corrective_actions, created_at
        ) VALUES (
-        $1, NULL, $2, $3, $4,
-        $5, $6,
-        $7, $8, $9, $10,
-        $11, $12, $13, $14, $15,
-        $16, $17, $18, $19,
-        $20, $21, NOW()
+        ?, NULL, ?, ?, ?,
+        ?, ?,
+        ?, ?, ?, ?,
+        ?, ?, ?, ?, ?,
+        ?, ?, ?, ?,
+        ?, ?, datetime('now')
        ) RETURNING id`,
       [
         checkNumber, checkType || 'catacion', checkDate, req.user.id,

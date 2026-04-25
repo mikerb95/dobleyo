@@ -16,7 +16,7 @@ function buildDateFilter(days, tableAlias, column = 'created_at') {
     if (!days || days === 'all') return '';
     const n = parseInt(days, 10);
     if (isNaN(n) || n <= 0) return '';
-    return `AND ${col} >= NOW() - INTERVAL '${n} days'`;
+    return `AND ${col} >= datetime('now') - INTERVAL '${n} days'`;
 }
 
 // ───────────────────────────────────────────────
@@ -36,7 +36,7 @@ heatmapRouter.get('/', authenticateToken, requireRole('admin'), async (req, res)
                 ? `AND EXISTS (
              SELECT 1 FROM customer_order_items i
              WHERE i.order_id = o.id
-               AND LOWER(i.product_name) LIKE $1
+               AND LOWER(i.product_name) LIKE ?
            )`
                 : '';
             const params = product ? [`%${product.toLowerCase()}%`] : [];
@@ -45,9 +45,9 @@ heatmapRouter.get('/', authenticateToken, requireRole('admin'), async (req, res)
         SELECT
           COALESCE(o.geocoding_city_norm, o.shipping_city) AS city,
           o.shipping_department                            AS state,
-          AVG(o.geocoding_lat)::DECIMAL(10,7)             AS latitude,
-          AVG(o.geocoding_lng)::DECIMAL(10,7)             AS longitude,
-          COUNT(*)::INT                                    AS order_count,
+          AVG(o.geocoding_lat)             AS latitude,
+          AVG(o.geocoding_lng)             AS longitude,
+          COUNT(*)                                    AS order_count,
           SUM(o.total_cop)                                 AS total_sales,
           'web'                                            AS channel
         FROM customer_orders o
@@ -68,7 +68,7 @@ heatmapRouter.get('/', authenticateToken, requireRole('admin'), async (req, res)
         if (channel === 'all' || channel === 'ml') {
             const dateFilter = buildDateFilter(days, 's', 'purchase_date');
             const productFilter = product
-                ? `AND LOWER(s.products::text) LIKE $1`
+                ? `AND LOWER(s.products) LIKE ?`
                 : '';
             const params = product ? [`%${product.toLowerCase()}%`] : [];
 
@@ -76,9 +76,9 @@ heatmapRouter.get('/', authenticateToken, requireRole('admin'), async (req, res)
         SELECT
           s.recipient_city                           AS city,
           s.recipient_state                          AS state,
-          AVG(s.latitude)::DECIMAL(10,7)             AS latitude,
-          AVG(s.longitude)::DECIMAL(10,7)            AS longitude,
-          COUNT(*)::INT                              AS order_count,
+          AVG(s.latitude)             AS latitude,
+          AVG(s.longitude)            AS longitude,
+          COUNT(*)                              AS order_count,
           SUM(s.total_amount)                        AS total_sales,
           'ml'                                       AS channel
         FROM sales_tracking s

@@ -41,7 +41,7 @@ farmsRouter.get('/', async (req, res) => {
 
         if (region) {
             params.push(region);
-            conditions.push(`f.region = $${params.length}`);
+            conditions.push(`f.region = ?`);
         }
 
         params.push(parseInt(limit, 10), parseInt(offset, 10));
@@ -57,7 +57,7 @@ farmsRouter.get('/', async (req, res) => {
       JOIN users u ON u.id = f.caficultor_id
       ${where}
       ORDER BY f.name
-      LIMIT $${params.length - 1} OFFSET $${params.length}
+      LIMIT ? OFFSET ?
     `, params);
 
         const countParams = params.slice(0, params.length - 2);
@@ -98,7 +98,7 @@ farmsRouter.get('/my', authenticateToken, async (req, res) => {
             `SELECT id, name, region, municipality, altitude_min, altitude_max,
                     varieties, processes, slug
              FROM farms
-             WHERE caficultor_id = $1
+             WHERE caficultor_id = ?
              ORDER BY name`,
             [req.user.id]
         );
@@ -140,7 +140,7 @@ farmsRouter.get('/:slug', async (req, res) => {
              u.city AS caficultor_city
       FROM farms f
       JOIN users u ON u.id = f.caficultor_id
-      WHERE f.slug = $1 AND f.is_published = TRUE
+      WHERE f.slug = ? AND f.is_published = TRUE
     `, [slug]);
 
         if (!rows.length) {
@@ -156,7 +156,7 @@ farmsRouter.get('/:slug', async (req, res) => {
              gl.label_code, gl.flavor_notes
       FROM coffee_harvests ch
       LEFT JOIN generated_labels gl ON gl.lot_code = ch.lot_id
-      WHERE ch.farm = $1
+      WHERE ch.farm = ?
       ORDER BY ch.created_at DESC
       LIMIT 5
     `, [farm.name]);
@@ -182,7 +182,7 @@ farmsRouter.post('/', authenticateToken, [
     try {
         // Verificar que no tenga ya una finca
         const { rows: existing } = await query(
-            'SELECT id FROM farms WHERE caficultor_id = $1', [req.user.id]
+            'SELECT id FROM farms WHERE caficultor_id = ?', [req.user.id]
         );
         if (existing.length) {
             return res.status(409).json({ success: false, error: 'Ya tienes una finca registrada. Usa PATCH para actualizarla.' });
@@ -197,7 +197,7 @@ farmsRouter.post('/', authenticateToken, [
 
         // Generar slug único
         let slug = toSlug(name);
-        const { rows: slugCheck } = await query('SELECT id FROM farms WHERE slug = $1', [slug]);
+        const { rows: slugCheck } = await query('SELECT id FROM farms WHERE slug = ?', [slug]);
         if (slugCheck.length) slug = `${slug}-${Date.now().toString(36)}`;
 
         const { rows } = await query(`
@@ -207,7 +207,7 @@ farmsRouter.post('/', authenticateToken, [
         varieties, certifications, soil_type, processes,
         story, short_description, cover_image_url, gallery_urls,
         latitude, longitude
-      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9::text[],$10::text[],$11,$12::text[],$13,$14,$15,$16,$17,$18)
+      ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
       RETURNING *
     `, [
             req.user.id, name, slug, region, municipality ?? null,
@@ -239,7 +239,7 @@ farmsRouter.patch('/:id', authenticateToken, [
         const isAdmin = req.user.role === 'admin';
 
         // Verificar pertenencia (o admin)
-        const { rows: farmRows } = await query('SELECT * FROM farms WHERE id = $1', [id]);
+        const { rows: farmRows } = await query('SELECT * FROM farms WHERE id = ?', [id]);
         if (!farmRows.length) return res.status(404).json({ success: false, error: 'Finca no encontrada' });
         if (!isAdmin && farmRows[0].caficultor_id !== req.user.id) {
             return res.status(403).json({ success: false, error: 'Sin permiso para editar esta finca' });
@@ -258,11 +258,11 @@ farmsRouter.patch('/:id', authenticateToken, [
             if (req.body[key] !== undefined) {
                 vals.push(req.body[key]);
                 if (key === 'varieties' || key === 'certifications' || key === 'processes') {
-                    updates.push(`${key} = $${vals.length}::text[]`);
+                    updates.push(`${key} = ?`);
                 } else if (key === 'gallery_urls') {
-                    updates.push(`${key} = $${vals.length}`);
+                    updates.push(`${key} = ?`);
                 } else {
-                    updates.push(`${key} = $${vals.length}`);
+                    updates.push(`${key} = ?`);
                 }
             }
         }
@@ -271,7 +271,7 @@ farmsRouter.patch('/:id', authenticateToken, [
 
         vals.push(id);
         const { rows } = await query(
-            `UPDATE farms SET ${updates.join(', ')}, updated_at = NOW() WHERE id = $${vals.length} RETURNING *`,
+            `UPDATE farms SET ${updates.join(', ')}, updated_at = datetime('now') WHERE id = ? RETURNING *`,
             vals
         );
 
@@ -293,7 +293,7 @@ farmsRouter.patch('/:id/publish', authenticateToken, requireRole('admin'), [
         const { id } = req.params;
         const { is_published } = req.body;
         const { rows } = await query(
-            'UPDATE farms SET is_published = $1, updated_at = NOW() WHERE id = $2 RETURNING id, name, slug, is_published',
+            'UPDATE farms SET is_published = ?, updated_at = datetime('now') WHERE id = ? RETURNING id, name, slug, is_published',
             [is_published, id]
         );
         if (!rows.length) return res.status(404).json({ success: false, error: 'Finca no encontrada' });

@@ -118,7 +118,7 @@ financeRouter.get('/accounts', requireRole('admin'), async (req, res) => {
         const params = [];
 
         if (active === 'true') { conditions.push('a.is_active = TRUE'); }
-        if (type) { params.push(type); conditions.push(`a.account_type = $${params.length}`); }
+        if (type) { params.push(type); conditions.push(`a.account_type = ?`); }
 
         const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
         const { rows } = await query(`
@@ -146,7 +146,7 @@ financeRouter.post('/accounts', requireRole('admin'), [
         const { code, name, account_type, account_subtype, parent_account_id, description } = req.body;
         const { rows } = await query(`
       INSERT INTO accounting_accounts (code, name, account_type, account_subtype, parent_account_id, description)
-      VALUES ($1, $2, $3, $4, $5, $6) RETURNING *
+      VALUES (?, ?, ?, ?, ?, ?) RETURNING *
     `, [code, name, account_type, account_subtype || null, parent_account_id || null, description || null]);
         await logAudit(req.user.id, 'create', 'accounting_account', rows[0].id, { code, name, account_type });
         res.status(201).json({ success: true, data: rows[0] });
@@ -167,8 +167,8 @@ financeRouter.get('/expenses', requireRole('admin'), async (req, res) => {
         const conditions = [];
         const params = [];
 
-        if (state) { params.push(state); conditions.push(`e.state = $${params.length}`); }
-        if (category) { params.push(category); conditions.push(`e.category = $${params.length}`); }
+        if (state) { params.push(state); conditions.push(`e.state = ?`); }
+        if (category) { params.push(category); conditions.push(`e.category = ?`); }
 
         const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
         params.push(parseInt(limit, 10), parseInt(offset, 10));
@@ -183,7 +183,7 @@ financeRouter.get('/expenses', requireRole('admin'), async (req, res) => {
       LEFT JOIN users ab ON ab.id = e.approved_by
       ${where}
       ORDER BY e.expense_date DESC
-      LIMIT $${params.length - 1} OFFSET $${params.length}
+      LIMIT ? OFFSET ?
     `, params);
 
         const { rows: countRows } = await query(
@@ -214,7 +214,7 @@ financeRouter.post('/expenses', requireRole('admin'), [
       INSERT INTO expenses
         (expense_number, expense_date, category, description, amount, currency,
          receipt_number, notes, payment_method_id, cost_center_id, user_id)
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING *
+      VALUES (?,?,?,?,?,?,?,?,?,?,?) RETURNING *
     `, [expense_number, expense_date, category, description, amount, currency,
             receipt_number || null, notes || null,
             payment_method_id || null, cost_center_id || null, req.user.id]);
@@ -236,10 +236,10 @@ financeRouter.patch('/expenses/:id/state', requireRole('admin'), [
         const { id } = req.params;
         const { state } = req.body;
         const extra = state === 'aprobado'
-            ? `, approved_by = ${req.user.id}, approved_at = NOW()`
+            ? `, approved_by = ${req.user.id}, approved_at = datetime('now')`
             : '';
         const { rows } = await query(
-            `UPDATE expenses SET state = $1, updated_at = NOW() ${extra} WHERE id = $2 RETURNING *`,
+            `UPDATE expenses SET state = ?, updated_at = datetime('now') ${extra} WHERE id = ? RETURNING *`,
             [state, id]
         );
         if (!rows.length) return res.status(404).json({ success: false, error: 'Gasto no encontrado' });
@@ -261,8 +261,8 @@ financeRouter.get('/purchase-invoices', requireRole('admin'), async (req, res) =
         const conditions = [];
         const params = [];
 
-        if (state) { params.push(state); conditions.push(`pi.state = $${params.length}`); }
-        if (caficultor_id) { params.push(caficultor_id); conditions.push(`pi.caficultor_id = $${params.length}`); }
+        if (state) { params.push(state); conditions.push(`pi.state = ?`); }
+        if (caficultor_id) { params.push(caficultor_id); conditions.push(`pi.caficultor_id = ?`); }
 
         const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
         params.push(parseInt(limit, 10), parseInt(offset, 10));
@@ -275,7 +275,7 @@ financeRouter.get('/purchase-invoices', requireRole('admin'), async (req, res) =
       LEFT JOIN users u ON u.id = pi.caficultor_id
       ${where}
       ORDER BY pi.invoice_date DESC
-      LIMIT $${params.length - 1} OFFSET $${params.length}
+      LIMIT ? OFFSET ?
     `, params);
 
         const countParams = params.slice(0, params.length - 2);
@@ -320,7 +320,7 @@ financeRouter.post('/purchase-invoices', requireRole('admin'), [
       INSERT INTO purchase_invoices
         (invoice_number, supplier_invoice_number, caficultor_id, invoice_date, due_date,
          payment_term_days, subtotal, tax_amount, total_amount, amount_due, notes, user_id)
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING *
+      VALUES (?,?,?,?,?,?,?,?,?,?,?,?) RETURNING *
     `, [invoice_number, supplier_invoice_number || null, caficultor_id || null, invoice_date, due_date,
             payment_term_days, subtotal, tax_amount, total_amount, total_amount, notes || null, req.user.id]);
 
@@ -331,7 +331,7 @@ financeRouter.post('/purchase-invoices', requireRole('admin'), [
             await client.query(`
         INSERT INTO purchase_invoice_lines
           (purchase_invoice_id, description, quantity, unit_price, tax_rate, subtotal, total, lot_reference)
-        VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+        VALUES (?,?,?,?,?,?,?,?)
       `, [invoice.id, line.description, line.quantity, line.unit_price,
             line.tax_rate || 0, lineSub, lineTotal, line.lot_reference || null]);
         }
@@ -358,11 +358,11 @@ financeRouter.patch('/purchase-invoices/:id/state', requireRole('admin'), [
         const { id } = req.params;
         const { state, amount_paid } = req.body;
         const setAmountPaid = amount_paid !== undefined
-            ? `, amount_paid = $3, amount_due = total_amount - $3`
+            ? `, amount_paid = ?, amount_due = total_amount - ?`
             : '';
         const params = amount_paid !== undefined ? [state, id, amount_paid] : [state, id];
         const { rows } = await query(
-            `UPDATE purchase_invoices SET state = $1, updated_at = NOW() ${setAmountPaid} WHERE id = $2 RETURNING *`,
+            `UPDATE purchase_invoices SET state = ?, updated_at = datetime('now') ${setAmountPaid} WHERE id = ? RETURNING *`,
             params
         );
         if (!rows.length) return res.status(404).json({ success: false, error: 'Factura no encontrada' });
@@ -384,7 +384,7 @@ financeRouter.get('/sales-invoices', requireRole('admin'), async (req, res) => {
         const conditions = [];
         const params = [];
 
-        if (state) { params.push(state); conditions.push(`si.state = $${params.length}`); }
+        if (state) { params.push(state); conditions.push(`si.state = ?`); }
 
         const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
         params.push(parseInt(limit, 10), parseInt(offset, 10));
@@ -397,7 +397,7 @@ financeRouter.get('/sales-invoices', requireRole('admin'), async (req, res) => {
       JOIN users u ON u.id = si.customer_id
       ${where}
       ORDER BY si.invoice_date DESC
-      LIMIT $${params.length - 1} OFFSET $${params.length}
+      LIMIT ? OFFSET ?
     `, params);
 
         const { rows: countRows } = await query(
@@ -444,7 +444,7 @@ financeRouter.post('/sales-invoices', requireRole('admin'), [
       INSERT INTO sales_invoices
         (invoice_number, customer_id, invoice_date, due_date, subtotal, discount_amount,
          tax_amount, shipping_cost, total_amount, amount_due, notes, user_id)
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING *
+      VALUES (?,?,?,?,?,?,?,?,?,?,?,?) RETURNING *
     `, [invoice_number, customer_id, invoice_date, due_date, subtotal, discount_amount,
             tax_amount, shipping_cost, total_amount, total_amount, notes || null, req.user.id]);
 
@@ -456,7 +456,7 @@ financeRouter.post('/sales-invoices', requireRole('admin'), [
             await client.query(`
         INSERT INTO sales_invoice_lines
           (sales_invoice_id, product_id, description, quantity, unit_price, discount_percent, tax_rate, subtotal, total)
-        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+        VALUES (?,?,?,?,?,?,?,?,?)
       `, [invoice.id, line.product_id || null, line.description, line.quantity, line.unit_price,
             line.discount_percent || 0, line.tax_rate || 0, lineAfterDiscount, lineAfterDiscount + lineTax]);
         }
@@ -483,8 +483,8 @@ financeRouter.get('/payments', requireRole('admin'), async (req, res) => {
         const conditions = [];
         const params = [];
 
-        if (type) { params.push(type); conditions.push(`p.payment_type = $${params.length}`); }
-        if (state) { params.push(state); conditions.push(`p.state = $${params.length}`); }
+        if (type) { params.push(type); conditions.push(`p.payment_type = ?`); }
+        if (state) { params.push(state); conditions.push(`p.state = ?`); }
 
         const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
         params.push(parseInt(limit, 10), parseInt(offset, 10));
@@ -497,7 +497,7 @@ financeRouter.get('/payments', requireRole('admin'), async (req, res) => {
       JOIN users u ON u.id = p.partner_id
       ${where}
       ORDER BY p.payment_date DESC
-      LIMIT $${params.length - 1} OFFSET $${params.length}
+      LIMIT ? OFFSET ?
     `, params);
 
         const { rows: countRows } = await query(
@@ -528,7 +528,7 @@ financeRouter.post('/payments', requireRole('admin'), [
       INSERT INTO fin_payments
         (payment_number, payment_type, payment_date, partner_id, amount, currency,
          payment_method_id, reference, notes, state, user_id)
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,'confirmado',$10) RETURNING *
+      VALUES (?,?,?,?,?,?,?,?,?,'confirmado',?) RETURNING *
     `, [payment_number, payment_type, payment_date, partner_id, amount, currency,
             payment_method_id || null, reference || null, notes || null, req.user.id]);
 
@@ -563,14 +563,14 @@ financeRouter.get('/my-invoices', async (req, res) => {
              ) FILTER (WHERE pil.id IS NOT NULL), '[]') AS lines
       FROM purchase_invoices pi
       LEFT JOIN purchase_invoice_lines pil ON pil.purchase_invoice_id = pi.id
-      WHERE pi.caficultor_id = $1
+      WHERE pi.caficultor_id = ?
       GROUP BY pi.id
       ORDER BY pi.invoice_date DESC
-      LIMIT $2 OFFSET $3
+      LIMIT ? OFFSET ?
     `, [req.user.id, parseInt(limit, 10), parseInt(offset, 10)]);
 
         const { rows: countRows } = await query(
-            `SELECT COUNT(*) AS total FROM purchase_invoices WHERE caficultor_id = $1`,
+            `SELECT COUNT(*) AS total FROM purchase_invoices WHERE caficultor_id = ?`,
             [req.user.id]
         );
 
@@ -582,7 +582,7 @@ financeRouter.get('/my-invoices', async (req, res) => {
         COALESCE(SUM(amount_due), 0) AS total_pendiente,
         COUNT(*) FILTER (WHERE state IN ('confirmada','pagada_parcial')) AS facturas_pendientes
       FROM purchase_invoices
-      WHERE caficultor_id = $1
+      WHERE caficultor_id = ?
     `, [req.user.id]);
 
         res.json({

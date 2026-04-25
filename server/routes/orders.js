@@ -77,7 +77,7 @@ ordersRouter.post('/',
 
             // Calcular totales en COP
             const subtotal = items.reduce((sum, i) => sum + i.unitPrice * i.quantity, 0);
-            const shipping = subtotal >= 120000 ? 0 : 12000; // Gratis sobre $120.000
+            const shipping = subtotal >= 120000 ? 0 : 12000; // Gratis sobre ?.000
             const total = subtotal + shipping;
 
             // Referencia única: DY-timestamp-random4chars
@@ -89,7 +89,7 @@ ordersRouter.post('/',
            (reference, status, customer_name, customer_email, customer_phone,
             shipping_address, shipping_city, shipping_department, shipping_zip,
             subtotal_cop, shipping_cop, total_cop, notes, user_id)
-         VALUES ($1, 'pending_payment', $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+         VALUES (?, 'pending_payment', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
          RETURNING id, reference`,
                 [ref, customerName, customerEmail, customerPhone || null,
                     shippingAddress, shippingCity, shippingDepartment || null, shippingZip || null,
@@ -104,7 +104,7 @@ ordersRouter.post('/',
                 await query(
                     `INSERT INTO customer_order_items
              (order_id, product_id, product_name, product_image, unit_price_cop, quantity)
-           VALUES ($1, $2, $3, $4, $5, $6)`,
+           VALUES (?, ?, ?, ?, ?, ?)`,
                     [orderId, item.productId, item.productName, item.productImage || null,
                         item.unitPrice, item.quantity]
                 );
@@ -146,7 +146,7 @@ ordersRouter.get('/:ref', async (req, res) => {
               o.shipping_city, o.subtotal_cop, o.shipping_cop, o.total_cop,
               o.payment_method, o.created_at, o.updated_at
        FROM customer_orders o
-       WHERE o.reference = $1`,
+       WHERE o.reference = ?`,
             [ref]
         );
 
@@ -159,7 +159,7 @@ ordersRouter.get('/:ref', async (req, res) => {
         const itemsResult = await query(
             `SELECT product_id, product_name, product_image, unit_price_cop, quantity, subtotal_cop
        FROM customer_order_items
-       WHERE order_id = $1
+       WHERE order_id = ?
        ORDER BY id`,
             [order.id]
         );
@@ -194,16 +194,16 @@ ordersRouter.get('/',
 
             if (status) {
                 params.push(status);
-                sql += ` AND o.status = $${params.length}`;
+                sql += ` AND o.status = ?`;
             }
 
-            sql += ` ORDER BY o.created_at DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
+            sql += ` ORDER BY o.created_at DESC LIMIT ? OFFSET ?`;
             params.push(Number(limit), Number(offset));
 
             const result = await query(sql, params);
 
             const countResult = await query(
-                `SELECT COUNT(*) FROM customer_orders${status ? ' WHERE status = $1' : ''}`,
+                `SELECT COUNT(*) FROM customer_orders${status ? ' WHERE status = ?' : ''}`,
                 status ? [status] : []
             );
 
@@ -239,8 +239,8 @@ ordersRouter.patch('/:ref/status',
 
             const result = await query(
                 `UPDATE customer_orders
-         SET status = $1, notes = COALESCE($2, notes)
-         WHERE reference = $3
+         SET status = ?, notes = COALESCE(?, notes)
+         WHERE reference = ?
          RETURNING id, reference, status`,
                 [status, notes || null, ref]
             );
@@ -295,9 +295,9 @@ ordersRouter.post('/wompi/webhook', async (req, res) => {
 
         const orderResult = await query(
             `UPDATE customer_orders
-       SET status = $1, payment_method = $2, payment_transaction_id = $3,
-           payment_data = $4
-       WHERE reference = $5
+       SET status = ?, payment_method = ?, payment_transaction_id = ?,
+           payment_data = ?
+       WHERE reference = ?
        RETURNING id, customer_name, customer_email, total_cop, subtotal_cop, shipping_cop,
                  shipping_address, shipping_city`,
             [newStatus, payment_method_type || 'wompi', txId, JSON.stringify(tx), reference]
@@ -311,7 +311,7 @@ ordersRouter.post('/wompi/webhook', async (req, res) => {
         if (newStatus === 'paid') {
             const itemsResult = await query(
                 `SELECT product_name, quantity, unit_price_cop
-         FROM customer_order_items WHERE order_id = $1`,
+         FROM customer_order_items WHERE order_id = ?`,
                 [order.id]
             );
 

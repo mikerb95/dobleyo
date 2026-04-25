@@ -88,7 +88,7 @@ async function lookupByLabelCode(code) {
     LEFT JOIN roasted_coffee            rc  ON rc.roasting_id = rb.id
     LEFT JOIN roasted_coffee_inventory  rci ON rci.roasted_id = rc.id
     LEFT JOIN packaged_coffee           pc  ON pc.roasted_storage_id = rci.id
-    WHERE gl.label_code = $1
+    WHERE gl.label_code = ?
     ORDER BY rb.created_at DESC
     LIMIT 1
   `, [code]);
@@ -143,7 +143,7 @@ async function lookupByLotId(lotId) {
     LEFT JOIN roasted_coffee            rc  ON rc.roasting_id = rb.id
     LEFT JOIN roasted_coffee_inventory  rci ON rci.roasted_id = rc.id
     LEFT JOIN packaged_coffee           pc  ON pc.roasted_storage_id = rci.id
-    WHERE ch.lot_id = $1
+    WHERE ch.lot_id = ?
     ORDER BY rb.created_at DESC
     LIMIT 1
   `, [lotId]);

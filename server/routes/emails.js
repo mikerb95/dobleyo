@@ -27,7 +27,7 @@ emailRouter.post('/newsletter', async (req, res) => {
     try {
       await query(
         `INSERT INTO newsletter_subscribers (email, subscribed_at)
-         VALUES ($1, NOW())
+         VALUES (?, datetime('now'))
          ON CONFLICT (email) DO NOTHING`,
         [email]
       );

@@ -10,17 +10,17 @@ export async function getStock() {
 
 export async function getProductStock(sku) {
   if (!sku) return null;
-  const result = await db.query('SELECT stock_quantity as stock FROM products WHERE id = $1', [sku]);
+  const result = await db.query('SELECT stock_quantity as stock FROM products WHERE id = ?', [sku]);
   return result.rows[0] || null;
 }
 
 export async function updateStock(sku, quantity) {
   if (!sku) throw new Error('SKU requerido');
   await db.query(
-    'UPDATE products SET stock_quantity = $1, updated_at = NOW() WHERE id = $2',
+    'UPDATE products SET stock_quantity = ?, updated_at = datetime('now') WHERE id = ?',
     [quantity, sku]
   );
-  const result = await db.query('SELECT id as sku, stock_quantity as stock FROM products WHERE id = $1', [sku]);
+  const result = await db.query('SELECT id as sku, stock_quantity as stock FROM products WHERE id = ?', [sku]);
   return result.rows[0];
 }
 
@@ -52,19 +52,19 @@ stockRouter.post('/', authenticateToken, requireRole('admin'), async (req, res) 
     }
 
     // Verificar que no existe ya
-    const existing = await db.query('SELECT id FROM products WHERE id = $1', [id]);
+    const existing = await db.query('SELECT id FROM products WHERE id = ?', [id]);
     if (existing.rows.length > 0) {
       return res.status(400).json({ error: 'El producto con este ID ya existe' });
     }
 
     // Insertar
     await db.query(
-      'INSERT INTO products (id, name, category, origin, process, roast, price, stock_quantity, image_url) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)',
+      'INSERT INTO products (id, name, category, origin, process, roast, price, stock_quantity, image_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
       [id, name, category || null, origin || null, process || null, roast || null, price, stock || 0, image_url || null]
     );
 
     // Retornar el producto creado
-    const result = await db.query('SELECT * FROM products WHERE id = $1', [id]);
+    const result = await db.query('SELECT * FROM products WHERE id = ?', [id]);
     res.status(201).json(result.rows[0]);
   } catch (err) {
     console.error(err);

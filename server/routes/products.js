@@ -21,19 +21,19 @@ productsRouter.get('/', async (req, res) => {
     }
     if (category) {
       params.push(category);
-      conditions.push(`category = $${params.length}`);
+      conditions.push(`category = ?`);
     }
     if (origin) {
       params.push(origin);
-      conditions.push(`origin ILIKE $${params.length}`);
+      conditions.push(`origin LIKE ?`);
     }
     if (proc) {
       params.push(proc);
-      conditions.push(`process ILIKE $${params.length}`);
+      conditions.push(`process LIKE ?`);
     }
     if (roast) {
       params.push(roast);
-      conditions.push(`roast ILIKE $${params.length}`);
+      conditions.push(`roast LIKE ?`);
     }
 
     const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
@@ -97,7 +97,7 @@ productsRouter.get('/:id', async (req, res) => {
          stock_quantity AS stock,
          description, meta_description
        FROM products
-       WHERE (id = $1 OR slug = $1) AND is_active = TRUE`,
+       WHERE (id = ? OR slug = ?) AND is_active = TRUE`,
       [id]
     );
 

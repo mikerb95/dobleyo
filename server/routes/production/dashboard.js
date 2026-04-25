@@ -28,17 +28,17 @@ dashboardRouter.get('/', async (req, res) => {
         SUM(CASE WHEN state = 'en_progreso' THEN 1 ELSE 0 END) as in_progress,
         SUM(CASE WHEN state = 'confirmada' THEN 1 ELSE 0 END) as pending
       FROM production_orders
-      WHERE scheduled_date::date = $1
+      WHERE scheduled_date = ?
     `, [today]);
 
     // KPI 2: Producción del día (kg tostados)
     const { rows: productionToday } = await query(`
       SELECT
-        ROUND(SUM(COALESCE(rb.roasted_coffee_weight_kg, 0))::numeric, 2) as total_kg_roasted,
+        ROUND(SUM(COALESCE(rb.roasted_coffee_weight_kg, 0)), 2) as total_kg_roasted,
         COUNT(DISTINCT rb.id) as total_batches,
-        ROUND(AVG(rb.weight_loss_percentage)::numeric, 2) as avg_loss_percentage
+        ROUND(AVG(rb.weight_loss_percentage), 2) as avg_loss_percentage
       FROM roast_batches rb
-      WHERE rb.roast_date::date = $1
+      WHERE rb.roast_date = ?
     `, [today]);
 
     // KPI 3: Control de calidad
@@ -47,20 +47,20 @@ dashboardRouter.get('/', async (req, res) => {
         COUNT(*) as total_checks,
         SUM(CASE WHEN passed = TRUE THEN 1 ELSE 0 END) as passed,
         SUM(CASE WHEN passed = FALSE THEN 1 ELSE 0 END) as failed,
-        ROUND(AVG(overall_score)::numeric, 1) as avg_score
+        ROUND(AVG(overall_score), 1) as avg_score
       FROM production_quality_checks
-      WHERE check_date::date = $1
+      WHERE check_date = ?
     `, [today]);
 
     // KPI 4: Alertas del día
     const { rows: alerts } = await query(`
       SELECT 'Equipos en Mantenimiento' as alert_type, COUNT(*) as count
       FROM equipment_maintenance
-      WHERE state = 'programado' AND scheduled_date::date = $1
+      WHERE state = 'programado' AND scheduled_date = ?
       UNION ALL
       SELECT 'Órdenes Pendientes', COUNT(*)
       FROM production_orders
-      WHERE state = 'confirmada' AND scheduled_date::date <= $1
+      WHERE state = 'confirmada' AND scheduled_date <= ?
       UNION ALL
       SELECT 'Equipos no Operacionales', COUNT(*)
       FROM roasting_equipment
@@ -80,7 +80,7 @@ dashboardRouter.get('/', async (req, res) => {
     const { rows: operators } = await query(`
       SELECT
         COUNT(DISTINCT operator_id) as active_operators,
-        SUM(CASE WHEN roast_date::date = $1 THEN 1 ELSE 0 END) as batches_today
+        SUM(CASE WHEN roast_date = ? THEN 1 ELSE 0 END) as batches_today
       FROM roast_batches
     `, [today]);
 
@@ -88,20 +88,20 @@ dashboardRouter.get('/', async (req, res) => {
     const { rows: ordersByState } = await query(`
       SELECT state, COUNT(*) as count
       FROM production_orders
-      WHERE scheduled_date::date >= CURRENT_DATE - INTERVAL '7 days'
+      WHERE scheduled_date >= CURRENT_DATE - INTERVAL '7 days'
       GROUP BY state
     `);
 
     // KPI 8: Producción últimos 7 días
     const { rows: production7Days } = await query(`
       SELECT
-        roast_date::date as date,
-        ROUND(SUM(roasted_coffee_weight_kg)::numeric, 2) as kg_roasted,
+        roast_date as date,
+        ROUND(SUM(roasted_coffee_weight_kg), 2) as kg_roasted,
         COUNT(*) as batches,
-        ROUND(AVG(weight_loss_percentage)::numeric, 2) as avg_loss
+        ROUND(AVG(weight_loss_percentage), 2) as avg_loss
       FROM roast_batches
-      WHERE roast_date >= NOW() - INTERVAL '7 days'
-      GROUP BY roast_date::date
+      WHERE roast_date >= datetime('now') - INTERVAL '7 days'
+      GROUP BY roast_date
       ORDER BY date ASC
     `);
 
@@ -122,11 +122,11 @@ dashboardRouter.get('/', async (req, res) => {
     const { rows: lossAnalysis } = await query(`
       SELECT
         COUNT(*) as total_batches,
-        ROUND(AVG(weight_loss_percentage)::numeric, 2) as avg_actual_loss,
+        ROUND(AVG(weight_loss_percentage), 2) as avg_actual_loss,
         15.0 as expected_loss,
-        ROUND((AVG(weight_loss_percentage) - 15.0)::numeric, 2) as variance
+        ROUND((AVG(weight_loss_percentage) - 15.0), 2) as variance
       FROM roast_batches
-      WHERE roast_date >= NOW() - INTERVAL '30 days'
+      WHERE roast_date >= datetime('now') - INTERVAL '30 days'
     `);
 
     res.json({
@@ -196,13 +196,13 @@ dashboardRouter.get('/efficiency', async (req, res) => {
 
     let sql = `
       SELECT
-        po.scheduled_date::date as date,
+        po.scheduled_date as date,
         COUNT(*) as total_orders,
         SUM(CASE WHEN po.state = 'completada' THEN 1 ELSE 0 END) as completed,
-        ROUND(SUM(po.planned_quantity)::numeric, 2) as planned_quantity,
-        ROUND(SUM(po.produced_quantity)::numeric, 2) as produced_quantity,
-        ROUND(AVG(po.actual_loss_percentage)::numeric, 2) as avg_loss,
-        ROUND(AVG(rb.actual_duration_minutes)::numeric, 0) as avg_duration,
+        ROUND(SUM(po.planned_quantity), 2) as planned_quantity,
+        ROUND(SUM(po.produced_quantity), 2) as produced_quantity,
+        ROUND(AVG(po.actual_loss_percentage), 2) as avg_loss,
+        ROUND(AVG(rb.actual_duration_minutes), 0) as avg_duration,
         COUNT(DISTINCT po.responsible_user_id) as operators
       FROM production_orders po
       LEFT JOIN roast_batches rb ON po.id = rb.production_order_id
@@ -211,16 +211,16 @@ dashboardRouter.get('/efficiency', async (req, res) => {
     const params = [];
 
     if (date_from) {
-      sql += ` AND po.scheduled_date >= $${params.length + 1}`;
+      sql += ` AND po.scheduled_date >= ?`;
       params.push(date_from);
     }
 
     if (date_to) {
-      sql += ` AND po.scheduled_date <= $${params.length + 1}`;
+      sql += ` AND po.scheduled_date <= ?`;
       params.push(date_to);
     }
 
-    sql += ` GROUP BY po.scheduled_date::date ORDER BY date ASC`;
+    sql += ` GROUP BY po.scheduled_date ORDER BY date ASC`;
 
     const { rows: efficiency } = await query(sql, params);
 
@@ -254,11 +254,11 @@ dashboardRouter.get('/operators', async (req, res) => {
       SELECT
         u.id, u.name, u.email,
         COUNT(*) as total_batches,
-        ROUND(SUM(rb.roasted_coffee_weight_kg)::numeric, 2) as total_kg,
-        ROUND(AVG(rb.weight_loss_percentage)::numeric, 2) as avg_loss,
-        ROUND(AVG(rb.quality_score)::numeric, 1) as avg_quality_score,
+        ROUND(SUM(rb.roasted_coffee_weight_kg), 2) as total_kg,
+        ROUND(AVG(rb.weight_loss_percentage), 2) as avg_loss,
+        ROUND(AVG(rb.quality_score), 1) as avg_quality_score,
         SUM(CASE WHEN pqc.passed = TRUE THEN 1 ELSE 0 END) as passed_checks,
-        ROUND(AVG(rb.actual_duration_minutes)::numeric, 0) as avg_duration
+        ROUND(AVG(rb.actual_duration_minutes), 0) as avg_duration
       FROM roast_batches rb
       JOIN users u ON rb.operator_id = u.id
       LEFT JOIN production_quality_checks pqc ON rb.id = pqc.roast_batch_id
@@ -267,12 +267,12 @@ dashboardRouter.get('/operators', async (req, res) => {
     const params = [];
 
     if (date_from) {
-      sql += ` AND rb.roast_date >= $${params.length + 1}`;
+      sql += ` AND rb.roast_date >= ?`;
       params.push(date_from);
     }
 
     if (date_to) {
-      sql += ` AND rb.roast_date <= $${params.length + 1}`;
+      sql += ` AND rb.roast_date <= ?`;
       params.push(date_to);
     }
 
@@ -331,7 +331,7 @@ dashboardRouter.get('/alerts', async (req, res) => {
         'HIGH_LOSS_RATE' as type,
         'Tasa de merma superior al esperado' as title,
         COUNT(*) as count,
-        ROUND(AVG(weight_loss_percentage)::numeric, 2) as avg_loss
+        ROUND(AVG(weight_loss_percentage), 2) as avg_loss
       FROM roast_batches
       WHERE weight_loss_percentage > 18
         AND roast_date >= CURRENT_DATE - INTERVAL '7 days'
@@ -349,7 +349,7 @@ dashboardRouter.get('/alerts', async (req, res) => {
         COUNT(*) as count
       FROM production_quality_checks
       WHERE passed = FALSE
-        AND check_date >= NOW() - INTERVAL '1 day'
+        AND check_date >= datetime('now') - INTERVAL '1 day'
     `);
 
     if (parseInt(qualityAlerts[0]?.count) > 0) {

@@ -46,31 +46,31 @@ batchesRouter.get('/', async (req, res) => {
     const params = [];
 
     if (production_order_id) {
-      sql += ` AND rb.production_order_id = $${params.length + 1}`;
+      sql += ` AND rb.production_order_id = ?`;
       params.push(production_order_id);
     }
 
     if (operator_id) {
-      sql += ` AND rb.operator_id = $${params.length + 1}`;
+      sql += ` AND rb.operator_id = ?`;
       params.push(operator_id);
     }
 
     if (date_from) {
-      sql += ` AND rb.roast_date::date >= $${params.length + 1}`;
+      sql += ` AND rb.roast_date >= ?`;
       params.push(date_from);
     }
 
     if (date_to) {
-      sql += ` AND rb.roast_date::date <= $${params.length + 1}`;
+      sql += ` AND rb.roast_date <= ?`;
       params.push(date_to);
     }
 
     if (is_approved !== undefined) {
-      sql += ` AND rb.is_approved = $${params.length + 1}`;
+      sql += ` AND rb.is_approved = ?`;
       params.push(is_approved === 'true');
     }
 
-    sql += ` ORDER BY rb.roast_date DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
+    sql += ` ORDER BY rb.roast_date DESC LIMIT ? OFFSET ?`;
     params.push(parseInt(limit), parseInt(offset));
 
     const { rows: batches } = await query(sql, params);
@@ -109,7 +109,7 @@ batchesRouter.get('/:id', async (req, res) => {
       LEFT JOIN roast_profiles rp ON rb.roast_profile_id = rp.id
       LEFT JOIN roasting_equipment re ON rb.roasting_equipment_id = re.id
       LEFT JOIN production_orders po ON rb.production_order_id = po.id
-      WHERE rb.id = $1
+      WHERE rb.id = ?
     `, [id]);
 
     if (!batchRows.length) {
@@ -118,14 +118,14 @@ batchesRouter.get('/:id', async (req, res) => {
 
     const { rows: qcRows } = await query(`
       SELECT * FROM production_quality_checks
-      WHERE roast_batch_id = $1
+      WHERE roast_batch_id = ?
       ORDER BY check_date DESC
       LIMIT 1
     `, [id]);
 
     const { rows: wasteRows } = await query(`
       SELECT * FROM production_waste_byproducts
-      WHERE roast_batch_id = $1
+      WHERE roast_batch_id = ?
     `, [id]);
 
     res.json({
@@ -169,7 +169,7 @@ batchesRouter.post('/', async (req, res) => {
         batch_number, production_order_id, roast_profile_id,
         roasting_equipment_id, green_coffee_lot_id, green_coffee_weight_kg,
         roast_date, roast_start_time, operator_id
-      ) VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW(), $7)
+      ) VALUES (?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'), ?)
       RETURNING id
     `, [
       batch_number, production_order_id, roast_profile_id || null,
@@ -203,8 +203,8 @@ batchesRouter.post('/:id/first-crack', async (req, res) => {
 
     await query(`
       UPDATE roast_batches
-      SET first_crack_time_minutes = $1, first_crack_temperature_celsius = $2, updated_at = NOW()
-      WHERE id = $3
+      SET first_crack_time_minutes = ?, first_crack_temperature_celsius = ?, updated_at = datetime('now')
+      WHERE id = ?
     `, [time_minutes, temperature_celsius, id]);
 
     res.json({
@@ -233,8 +233,8 @@ batchesRouter.post('/:id/second-crack', async (req, res) => {
 
     await query(`
       UPDATE roast_batches
-      SET second_crack_time_minutes = $1, updated_at = NOW()
-      WHERE id = $2
+      SET second_crack_time_minutes = ?, updated_at = datetime('now')
+      WHERE id = ?
     `, [time_minutes, id]);
 
     res.json({ success: true, message: 'Second crack recorded' });
@@ -268,7 +268,7 @@ batchesRouter.post('/:id/complete', async (req, res) => {
     const { rows: batchRows } = await query(`
       SELECT green_coffee_weight_kg, first_crack_time_minutes, roast_start_time
       FROM roast_batches
-      WHERE id = $1
+      WHERE id = ?
     `, [id]);
 
     if (!batchRows.length) {
@@ -293,19 +293,19 @@ batchesRouter.post('/:id/complete', async (req, res) => {
     await query(`
       UPDATE roast_batches
       SET
-        roast_end_time = NOW(),
-        actual_duration_minutes = $1,
-        roasted_coffee_weight_kg = $2,
-        weight_loss_percentage = $3,
-        drop_temperature_celsius = $4,
-        color_agtron = $5,
-        development_time_ratio = $6,
-        quality_score = $7,
-        quality_notes = $8,
-        ambient_temperature_celsius = $9,
-        humidity_percentage = $10,
-        updated_at = NOW()
-      WHERE id = $11
+        roast_end_time = datetime('now'),
+        actual_duration_minutes = ?,
+        roasted_coffee_weight_kg = ?,
+        weight_loss_percentage = ?,
+        drop_temperature_celsius = ?,
+        color_agtron = ?,
+        development_time_ratio = ?,
+        quality_score = ?,
+        quality_notes = ?,
+        ambient_temperature_celsius = ?,
+        humidity_percentage = ?,
+        updated_at = datetime('now')
+      WHERE id = ?
     `, [
       actual_duration_minutes, roasted_weight, weight_loss_percentage,
       drop_temperature_celsius, color_agtron || null, dtr,
@@ -340,8 +340,8 @@ batchesRouter.post('/:id/approve', async (req, res) => {
 
     await query(`
       UPDATE roast_batches
-      SET is_approved = TRUE, approved_by = $1, approved_at = NOW(), updated_at = NOW()
-      WHERE id = $2
+      SET is_approved = TRUE, approved_by = ?, approved_at = datetime('now'), updated_at = datetime('now')
+      WHERE id = ?
     `, [approved_by_user_id, id]);
 
     res.json({ success: true, message: 'Batch approved', is_approved: true });
@@ -366,8 +366,8 @@ batchesRouter.post('/:id/reject', async (req, res) => {
 
     await query(`
       UPDATE roast_batches
-      SET defects_found = $1, notes = $2, updated_at = NOW()
-      WHERE id = $3
+      SET defects_found = ?, notes = ?, updated_at = datetime('now')
+      WHERE id = ?
     `, [`Rechazado: ${reason}`, `Rechazado por: ${approved_by_user_id}`, id]);
 
     res.json({ success: true, message: 'Batch rejected', reason });
@@ -396,7 +396,7 @@ batchesRouter.get('/:id/comparison', async (req, res) => {
         rp.target_temperature_celsius
       FROM roast_batches rb
       LEFT JOIN roast_profiles rp ON rb.roast_profile_id = rp.id
-      WHERE rb.id = $1
+      WHERE rb.id = ?
     `, [id]);
 
     if (!rows.length) {
