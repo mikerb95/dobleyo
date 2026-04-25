@@ -420,7 +420,7 @@ ordersRouter.post('/:id/complete', async (req, res) => {
     }
 
     await query(
-      "UPDATE production_orders SET state = ?, produced_quantity = ?, end_date = datetime('now'), updated_at = datetime("now') WHERE id = ?',
+      "UPDATE production_orders SET state = ?, produced_quantity = ?, end_date = datetime('now'), updated_at = datetime('now') WHERE id = ?",
       ['completada', produced_quantity, id]
     );
 
