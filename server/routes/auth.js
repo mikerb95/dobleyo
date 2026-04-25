@@ -131,12 +131,12 @@ authRouter.post('/login',
       // Guardar refresh token hasheado en DB (seguridad)
       const hashedRefreshToken = auth.hashRefreshToken(refreshToken);
       await db.query(
-        'INSERT INTO refresh_tokens (user_id, token_hash, expires_at) VALUES ($1, $2, $3)',
+        'INSERT INTO refresh_tokens (user_id, token_hash, expires_at) VALUES (?, ?, ?)',
         [user.id, hashedRefreshToken, refreshExpires]
       );
 
       // Actualizar last_login
-      await db.query('UPDATE users SET last_login_at = NOW() WHERE id = $1', [user.id]);
+      await db.query('UPDATE users SET last_login_at = datetime(\'now\') WHERE id = ?', [user.id]);
 
       // Cookies - usar 'lax' para permitir navegación normal
       const isProd = process.env.NODE_ENV === 'production';
