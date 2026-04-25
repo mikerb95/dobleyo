@@ -256,7 +256,7 @@ authRouter.post('/google', loginLimiter, async (req, res) => {
 
     // Buscar usuario existente por google_id o email
     let result = await db.query(
-      'SELECT * FROM users WHERE google_id = $1 OR email = $2 LIMIT 1',
+      'SELECT * FROM users WHERE google_id = ? OR email = ? LIMIT 1',
       [googleId, email]
     );
     let user = result.rows[0];
@@ -265,13 +265,13 @@ authRouter.post('/google', loginLimiter, async (req, res) => {
       // Crear usuario nuevo (verificado, sin contraseña)
       const insert = await db.query(
         `INSERT INTO users (email, first_name, last_name, role, is_verified, google_id)
-         VALUES ($1, $2, $3, 'client', TRUE, $4) RETURNING *`,
+         VALUES (?, ?, ?, 'client', 1, ?) RETURNING *`,
         [email, given_name || '', family_name || '', googleId]
       );
       user = insert.rows[0];
     } else if (!user.google_id) {
       // Cuenta existente por email — vincular google_id
-      await db.query('UPDATE users SET google_id = $1 WHERE id = $2', [googleId, user.id]);
+      await db.query('UPDATE users SET google_id = ? WHERE id = ?', [googleId, user.id]);
     }
 
     // Emitir tokens igual que el login normal
@@ -281,10 +281,10 @@ authRouter.post('/google', loginLimiter, async (req, res) => {
     const hashedRefreshToken = auth.hashRefreshToken(refreshToken);
 
     await db.query(
-      'INSERT INTO refresh_tokens (user_id, token_hash, expires_at) VALUES ($1, $2, $3)',
+      'INSERT INTO refresh_tokens (user_id, token_hash, expires_at) VALUES (?, ?, ?)',
       [user.id, hashedRefreshToken, refreshExpires]
     );
-    await db.query('UPDATE users SET last_login_at = NOW() WHERE id = $1', [user.id]);
+    await db.query("UPDATE users SET last_login_at = datetime('now') WHERE id = ?", [user.id]);
 
     const isProd = process.env.NODE_ENV === 'production';
     res.cookie('auth_token', accessToken, {
@@ -320,7 +320,7 @@ authRouter.get('/me', auth.authenticateToken, async (req, res) => {
   }
 
   try {
-    const result = await db.query('SELECT id, first_name, last_name, email, role, caficultor_status FROM users WHERE id = $1', [req.user.id]);
+    const result = await db.query('SELECT id, first_name, last_name, email, role, caficultor_status FROM users WHERE id = ?', [req.user.id]);
 
     if (!result.rows || result.rows.length === 0) {
       return res.status(404).json({ error: 'Usuario no encontrado' });
