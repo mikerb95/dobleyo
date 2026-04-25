@@ -42,7 +42,7 @@ devtoolsRouter.post('/clean-users', async (req, res) => {
     res.json({
       success: true,
       message: `✅ Usuarios eliminados. Se preservaron los 2 primeros admins.`,
-      deletedCount: deleteResult.affectedRows || 0
+      deletedCount: deleteResult.rowCount || 0
     });
   } catch (error) {
     console.error('Error al limpiar usuarios:', error);
@@ -77,7 +77,7 @@ devtoolsRouter.post('/clean-lots', async (req, res) => {
       try {
         const result = await query(`DELETE FROM ${table}`);
         deletedCount++;
-        details.push(`✓ ${table}: ${result.affectedRows || 0} registros`);
+        details.push(`✓ ${table}: ${result.rowCount || 0} registros`);
       } catch (tableError) {
         details.push(`⚠ ${table}: ${tableError.message}`);
         console.warn(`Error limpiando ${table}:`, tableError.message);
@@ -122,7 +122,7 @@ devtoolsRouter.post('/clean-products', async (req, res) => {
       try {
         const result = await query(`DELETE FROM ${table}`);
         deletedCount++;
-        details.push(`✓ ${table}: ${result.affectedRows || 0} registros`);
+        details.push(`✓ ${table}: ${result.rowCount || 0} registros`);
       } catch (tableError) {
         details.push(`⚠ ${table}: ${tableError.message}`);
         console.warn(`Error limpiando ${table}:`, tableError.message);
