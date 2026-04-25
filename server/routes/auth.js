@@ -115,7 +115,7 @@ authRouter.post('/login',
     }
 
     try {
-      const result = await db.query('SELECT * FROM users WHERE email = $1', [email]);
+      const result = await db.query('SELECT * FROM users WHERE email = ?', [email]);
       const user = result.rows[0];
 
       if (!user) return res.status(401).json({ error: 'Credenciales invalidas' });
