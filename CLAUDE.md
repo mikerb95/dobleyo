@@ -212,8 +212,9 @@ exampleRouter.post('/',
 ## Variables de Entorno Requeridas
 
 ```bash
-# Base de datos PostgreSQL
-DATABASE_URL=postgresql://user:pass@host:5432/dobleyo
+# Base de datos Turso/libSQL
+TURSO_DATABASE_URL=libsql://tu-db.turso.io
+TURSO_AUTH_TOKEN=tu_token_de_turso
 
 # Auth
 JWT_SECRET=<min 32 chars>
