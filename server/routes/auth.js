@@ -349,7 +349,7 @@ authRouter.post('/request-caficultor',
     try {
       // Verificar si ya existe una solicitud activa
       const existing = await db.query(
-        'SELECT id FROM caficultor_applications WHERE user_id = $1 AND status = "pending"',
+        "SELECT id FROM caficultor_applications WHERE user_id = ? AND status = 'pending'",
         [userId]
       );
       if (existing.rows.length > 0) {
@@ -358,25 +358,27 @@ authRouter.post('/request-caficultor',
 
       // Insertar solicitud
       const result = await db.query(
-        'INSERT INTO caficultor_applications (user_id, farm_name, region, altitude, hectares, varieties_cultivated, certifications, description) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',
+        'INSERT INTO caficultor_applications (user_id, farm_name, region, altitude, hectares, varieties_cultivated, certifications, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
         [userId, farm_name, region, altitude || null, hectares || null, varieties_cultivated || null, certifications || null, description]
       );
 
       // Actualizar estado del usuario
       await db.query(
-        'UPDATE users SET caficultor_status = "pending" WHERE id = $1',
+        "UPDATE users SET caficultor_status = 'pending' WHERE id = ?",
         [userId]
       );
 
+      const appId = result.lastInsertRowid;
+
       // Log de auditoria
       await db.query(
-        'INSERT INTO audit_logs (user_id, action, entity_type, entity_id, details) VALUES ($1, $2, $3, $4, $5)',
-        [userId, 'REQUEST_CAFICULTOR', 'caficultor_applications', String(result.rows.insertId), JSON.stringify({ farm_name })]
+        'INSERT INTO audit_logs (user_id, action, entity_type, entity_id, details) VALUES (?, ?, ?, ?, ?)',
+        [userId, 'REQUEST_CAFICULTOR', 'caficultor_applications', String(appId), JSON.stringify({ farm_name })]
       );
 
-      res.status(201).json({ 
+      res.status(201).json({
         message: 'Solicitud enviada. El administrador revisará tu perfil pronto.',
-        application_id: result.rows.insertId
+        application_id: appId
       });
 
     } catch (err) {
