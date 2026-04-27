@@ -23,6 +23,7 @@ import { financeRouter } from '../server/routes/finance.js';
 import { farmsRouter } from '../server/routes/farms.js';
 import { heatmapRouter } from '../server/routes/heatmap.js';
 import { productsRouter } from '../server/routes/products.js';
+import { blogRouter } from '../server/routes/blog.js';
 import auditRouter from '../server/routes/audit.js';
 import { healthCheck } from '../server/db.js';
 
