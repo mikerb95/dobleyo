@@ -11,13 +11,11 @@ export async function createCustomerOrdersTables() {
     console.log('🛒 Iniciando migración de órdenes de e-commerce...');
 
     try {
-        // Tabla principal de órdenes
         await query(`
       CREATE TABLE IF NOT EXISTS customer_orders (
-        id                       BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+        id                       INTEGER PRIMARY KEY AUTOINCREMENT,
         reference                TEXT UNIQUE NOT NULL,
         status                   TEXT NOT NULL DEFAULT 'pending_payment',
-        -- Estados: pending_payment, paid, processing, shipped, delivered, cancelled, refunded
         customer_name            TEXT NOT NULL,
         customer_email           TEXT NOT NULL,
         customer_phone           TEXT,
@@ -25,65 +23,52 @@ export async function createCustomerOrdersTables() {
         shipping_city            TEXT NOT NULL,
         shipping_department      TEXT,
         shipping_zip             TEXT,
-        subtotal_cop             BIGINT NOT NULL,
-        shipping_cop             BIGINT NOT NULL DEFAULT 0,
-        total_cop                BIGINT NOT NULL,
-        payment_method           TEXT,   -- wompi | mercadopago | cod
+        subtotal_cop             INTEGER NOT NULL,
+        shipping_cop             INTEGER NOT NULL DEFAULT 0,
+        total_cop                INTEGER NOT NULL,
+        payment_method           TEXT,
         payment_transaction_id   TEXT,
-        payment_data             JSONB,
+        payment_data             TEXT,
         notes                    TEXT,
-        user_id                  BIGINT REFERENCES users(id) ON DELETE SET NULL,
-        created_at               TIMESTAMPTZ DEFAULT NOW(),
-        updated_at               TIMESTAMPTZ DEFAULT NOW()
+        user_id                  INTEGER REFERENCES users(id) ON DELETE SET NULL,
+        created_at               TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at               TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
       )
     `);
         console.log('  ✓ Tabla customer_orders creada');
 
-        // Tabla de ítems de la orden
         await query(`
       CREATE TABLE IF NOT EXISTS customer_order_items (
-        id               BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-        order_id         BIGINT NOT NULL REFERENCES customer_orders(id) ON DELETE CASCADE,
+        id               INTEGER PRIMARY KEY AUTOINCREMENT,
+        order_id         INTEGER NOT NULL REFERENCES customer_orders(id) ON DELETE CASCADE,
         product_id       TEXT NOT NULL,
         product_name     TEXT NOT NULL,
         product_image    TEXT,
-        unit_price_cop   BIGINT NOT NULL,
-        quantity         INT NOT NULL CHECK (quantity > 0),
-        subtotal_cop     BIGINT GENERATED ALWAYS AS (unit_price_cop * quantity) STORED
+        unit_price_cop   INTEGER NOT NULL,
+        quantity         INTEGER NOT NULL CHECK (quantity > 0),
+        subtotal_cop     INTEGER NOT NULL
       )
     `);
         console.log('  ✓ Tabla customer_order_items creada');
 
-        // Índices para búsquedas frecuentes
         const indexes = [
-            `CREATE INDEX IF NOT EXISTS idx_customer_orders_reference      ON customer_orders(reference)`,
-            `CREATE INDEX IF NOT EXISTS idx_customer_orders_status         ON customer_orders(status)`,
-            `CREATE INDEX IF NOT EXISTS idx_customer_orders_email          ON customer_orders(customer_email)`,
-            `CREATE INDEX IF NOT EXISTS idx_customer_orders_created        ON customer_orders(created_at DESC)`,
-            `CREATE INDEX IF NOT EXISTS idx_customer_order_items_order_id  ON customer_order_items(order_id)`,
+            `CREATE INDEX IF NOT EXISTS idx_customer_orders_reference     ON customer_orders(reference)`,
+            `CREATE INDEX IF NOT EXISTS idx_customer_orders_status        ON customer_orders(status)`,
+            `CREATE INDEX IF NOT EXISTS idx_customer_orders_email         ON customer_orders(customer_email)`,
+            `CREATE INDEX IF NOT EXISTS idx_customer_orders_created       ON customer_orders(created_at)`,
+            `CREATE INDEX IF NOT EXISTS idx_customer_order_items_order_id ON customer_order_items(order_id)`,
         ];
-
-        for (const sql of indexes) {
-            await query(sql);
-        }
+        for (const sql of indexes) await query(sql);
         console.log('  ✓ Índices creados');
 
-        // Trigger para actualizar updated_at automáticamente
+        // Trigger updated_at (SQLite syntax)
         await query(`
-      CREATE OR REPLACE FUNCTION set_updated_at()
-      RETURNS TRIGGER AS $$
-      BEGIN
-        NEW.updated_at = NOW();
-        RETURN NEW;
-      END;
-      $$ language plpgsql
-    `);
-
-        await query(`
-      DROP TRIGGER IF EXISTS customer_orders_updated_at ON customer_orders;
-      CREATE TRIGGER customer_orders_updated_at
-        BEFORE UPDATE ON customer_orders
-        FOR EACH ROW EXECUTE FUNCTION set_updated_at()
+      CREATE TRIGGER IF NOT EXISTS customer_orders_updated_at
+        AFTER UPDATE ON customer_orders
+        FOR EACH ROW
+        BEGIN
+          UPDATE customer_orders SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+        END
     `);
         console.log('  ✓ Trigger updated_at configurado');
 
@@ -93,4 +78,10 @@ export async function createCustomerOrdersTables() {
         console.error('❌ Error en migración de órdenes:', err.message);
         throw err;
     }
+}
+
+if (process.argv[1].endsWith('create_customer_orders.js')) {
+    import('dotenv/config').then(() =>
+        createCustomerOrdersTables().then(() => process.exit(0)).catch(() => process.exit(1))
+    );
 }
