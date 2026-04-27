@@ -1,21 +1,84 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import { products } from "../data/products.ts";
+import { products as staticProducts } from "../data/products.ts";
 import { getCanonicalUrl, getHreflangPair } from "../i18n/index.ts";
 
 const _hreflang = getHreflangPair("/");
 
-// Fuente única: productos desde src/data/products.ts
-const coffeeProducts = products.filter((p) => p.category === "Cafés");
+// Productos desde BD (fallback a estáticos)
+let coffeeProducts: any[] = [];
+try {
+  const { query } = await import("../../server/db.js");
+  const result = await query(
+    `SELECT id, slug, name, origin, process, roast, tasting_notes, price, rating,
+            is_bestseller AS bestseller, is_new AS new, image_url AS image,
+            stock_quantity AS stock
+     FROM products
+     WHERE is_active = 1 AND is_gift_set = 0 AND category = 'cafe'
+     ORDER BY is_bestseller DESC, is_new DESC, rating DESC
+     LIMIT 3`
+  );
+  if (result.rows.length > 0) {
+    coffeeProducts = result.rows.map((p: any) => ({
+      ...p,
+      notes: p.tasting_notes?.es ?? null,
+    }));
+  }
+} catch (_) {}
 
-// Fincas destacadas (máx. 3 publicadas)
+if (!coffeeProducts.length) {
+  coffeeProducts = staticProducts
+    .filter((p) => p.category === "Cafés")
+    .slice(0, 3)
+    .map((p) => ({ ...p, notes: p.notes }));
+}
+
+// Fincas destacadas
 let featuredFarms: any[] = [];
 try {
-  const res = await fetch(`${Astro.url.origin}/api/farms?limit=3`);
-  if (res.ok) {
-    const data = await res.json();
-    featuredFarms = data.data ?? [];
-  }
+  const { query } = await import("../../server/db.js");
+  const result = await query(
+    `SELECT name, slug, region, altitude_min, altitude_max, cover_image_url
+     FROM farms WHERE is_published = 1 ORDER BY created_at DESC LIMIT 3`
+  );
+  featuredFarms = result.rows;
+} catch (_) {}
+
+// Últimos posts del blog
+let recentPosts: any[] = [];
+try {
+  const { query } = await import("../../server/db.js");
+  const result = await query(
+    `SELECT slug, title, excerpt, cover_image_url, reading_time_min, published_at
+     FROM blog_posts WHERE is_published = 1 ORDER BY published_at DESC LIMIT 3`
+  );
+  recentPosts = result.rows;
+} catch (_) {}
+
+// Kits de regalo
+let featuredKits: any[] = [];
+try {
+  const { query } = await import("../../server/db.js");
+  const result = await query(
+    `SELECT id, slug, name, description, price, image_url AS image
+     FROM products WHERE is_gift_set = 1 AND is_active = 1
+     ORDER BY price ASC LIMIT 3`
+  );
+  featuredKits = result.rows;
+} catch (_) {}
+
+// Reseñas destacadas
+let featuredReviews: any[] = [];
+try {
+  const { query } = await import("../../server/db.js");
+  const result = await query(
+    `SELECT r.reviewer_name, r.rating, r.comment, p.name AS product_name
+     FROM product_reviews r
+     JOIN products p ON p.id = r.product_id
+     WHERE r.is_approved = 1 AND r.comment IS NOT NULL AND r.comment != ''
+     ORDER BY r.created_at DESC LIMIT 3`
+  );
+  featuredReviews = result.rows;
 } catch (_) {}
 ---
 
@@ -247,6 +310,166 @@ try {
     )
   }
 
+
+  <!-- Por qué DobleYo -->
+  <section class="why-section" aria-labelledby="whyTitle">
+    <div class="container">
+      <div class="why-header">
+        <p class="why-eyebrow">Por qué elegirnos</p>
+        <h2 id="whyTitle" class="why-title">Café con propósito, de la finca a tu taza</h2>
+      </div>
+      <div class="why-grid">
+        <div class="why-card">
+          <div class="why-icon" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+          </div>
+          <h3 class="why-card__title">Trazabilidad QR por lote</h3>
+          <p class="why-card__desc">Cada bolsa incluye un código QR que documenta la finca, el caficultor, la altitud y la curva de tueste del lote exacto.</p>
+        </div>
+        <div class="why-card">
+          <div class="why-icon" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          </div>
+          <h3 class="why-card__title">Tueste fresco en 15 días</h3>
+          <p class="why-card__desc">Tostamos en pequeños lotes y despachamos en menos de 15 días desde el tueste. Nunca café de bodega.</p>
+        </div>
+        <div class="why-card">
+          <div class="why-icon" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </div>
+          <h3 class="why-card__title">Compra directa al caficultor</h3>
+          <p class="why-card__desc">Trabajamos directamente con fincas colombianas. Sin intermediarios: mejor precio para el productor, mejor calidad para ti.</p>
+        </div>
+        <div class="why-card">
+          <div class="why-icon" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+          </div>
+          <h3 class="why-card__title">Envío gratis desde $120.000</h3>
+          <p class="why-card__desc">Despachos a todo el territorio nacional. Gratis en pedidos superiores a $120.000 COP.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Kits de regalo -->
+  {featuredKits.length > 0 && (
+    <section class="kits-section" aria-labelledby="kitsTitle">
+      <div class="container">
+        <div class="kits-header">
+          <div>
+            <p class="kits-eyebrow">Para regalar</p>
+            <h2 id="kitsTitle" class="kits-title">Kits diseñados para sorprender</h2>
+          </div>
+          <a href="/regalos" class="kits-link" data-link>Ver todos los kits →</a>
+        </div>
+        <div class="kits-grid">
+          {featuredKits.map((kit: any) => (
+            <a href={`/producto/${kit.slug ?? kit.id}`} class="kit-card" data-link>
+              <div class="kit-card__img-wrap">
+                <img
+                  src={kit.image || 'https://images.unsplash.com/photo-1559496417-e7f25cb247f3?q=80&w=600&auto=format&fit=crop'}
+                  alt={kit.name}
+                  loading="lazy"
+                  class="kit-card__img"
+                />
+              </div>
+              <div class="kit-card__body">
+                <span class="kit-card__tag">Kit regalo</span>
+                <h3 class="kit-card__name">{kit.name}</h3>
+                {kit.description && <p class="kit-card__desc">{kit.description.slice(0, 90)}…</p>}
+                <span class="kit-card__price">${Number(kit.price).toLocaleString('es-CO')}</span>
+              </div>
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
+
+  <!-- Newsletter en home -->
+  <section class="newsletter-section" aria-labelledby="nlTitle">
+    <div class="container">
+      <div class="newsletter-inner">
+        <div class="newsletter-copy">
+          <p class="newsletter-eyebrow">Newsletter</p>
+          <h2 id="nlTitle" class="newsletter-title">10% de descuento en tu primera compra</h2>
+          <p class="newsletter-sub">Suscríbete y recibe el código al instante. También te avisamos de nuevas cosechas y lanzamientos.</p>
+        </div>
+        <form class="newsletter-form" id="homeNewsletterForm" novalidate>
+          <input
+            type="email"
+            id="homeNlEmail"
+            class="newsletter-input"
+            placeholder="tu@correo.com"
+            required
+            aria-label="Correo electrónico"
+          />
+          <button type="submit" class="newsletter-btn">Suscribirse</button>
+        </form>
+        <p class="newsletter-msg" id="homeNlMsg" style="display:none"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Últimas entradas del blog -->
+  {recentPosts.length > 0 && (
+    <section class="blog-section" aria-labelledby="blogTitle">
+      <div class="container">
+        <div class="blog-home-header">
+          <div>
+            <p class="blog-eyebrow">Blog</p>
+            <h2 id="blogTitle" class="blog-home-title">Recetas, notas de cata y guías</h2>
+          </div>
+          <a href="/blog" class="blog-home-link" data-link>Ver todas las entradas →</a>
+        </div>
+        <div class="blog-home-grid">
+          {recentPosts.map((post: any) => (
+            <a href={`/blog/${post.slug}`} class="blog-home-card" data-link>
+              <div class="blog-home-card__img-wrap">
+                <img
+                  src={post.cover_image_url || 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?q=80&w=600&auto=format&fit=crop'}
+                  alt={post.title}
+                  loading="lazy"
+                  class="blog-home-card__img"
+                />
+              </div>
+              <div class="blog-home-card__body">
+                <h3 class="blog-home-card__title">{post.title}</h3>
+                {post.excerpt && <p class="blog-home-card__exc">{post.excerpt.slice(0, 80)}…</p>}
+                <span class="blog-home-card__time">{post.reading_time_min ?? 3} min de lectura</span>
+              </div>
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
+
+  <!-- Reseñas -->
+  {featuredReviews.length > 0 && (
+    <section class="reviews-home" aria-labelledby="reviewsHomeTitle">
+      <div class="container">
+        <div class="reviews-home-header">
+          <p class="reviews-eyebrow">Lo que dicen nuestros clientes</p>
+          <h2 id="reviewsHomeTitle" class="reviews-home-title">Reseñas verificadas</h2>
+        </div>
+        <div class="reviews-home-grid">
+          {featuredReviews.map((r: any) => (
+            <div class="review-home-card">
+              <div class="review-home-card__stars" aria-label={`${r.rating} estrellas`}>
+                {"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)}
+              </div>
+              <p class="review-home-card__comment">"{r.comment}"</p>
+              <div class="review-home-card__meta">
+                <strong>{r.reviewer_name}</strong>
+                {r.product_name && <span>sobre {r.product_name}</span>}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
 
   <!-- Script: conectar botones "+" al carrito -->
   <script>
