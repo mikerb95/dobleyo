@@ -11,7 +11,8 @@ export const ordersRouter = Router();
 
 const SITE_URL = process.env.SITE_BASE_URL || 'https://dobleyo.cafe';
 const WOMPI_PUBLIC_KEY = process.env.WOMPI_PUBLIC_KEY || '';
-const WOMPI_INTEGRITY_SECRET = process.env.WOMPI_EVENTS_SECRET || '';
+const WOMPI_INTEGRITY_SECRET = process.env.WOMPI_INTEGRITY_SECRET || '';
+const WOMPI_EVENTS_SECRET = process.env.WOMPI_EVENTS_SECRET || '';
 
 // ─── Utilidades Wompi ───────────────────────────────────────────────────────
 
