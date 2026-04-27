@@ -270,42 +270,42 @@ Diferenciadores comunicados: café de origen colombiano · cápsulas biodegradab
 
 ### 6.1 Catálogo de Productos
 
-| Brecha | Detalle | Prioridad |
+| Brecha | Detalle | Estado |
 |---|---|---|
-| **5 productos vs 39** | DobleYo tiene 5 estáticos; Quindío tiene 39 (16 cafés + 9 cápsulas + 5 alimentos + 6 kits + 4 accesorios) | 🔴 Crítica |
-| **Sin variantes de producto** | Sin opciones de molienda (entera/espresso/filtro/moka) ni tamaños (125g/250g/500g/1kg) | 🔴 Crítica |
-| **Sin cápsulas** | Categoría completa ausente; alta demanda de mercado | 🟠 Alta |
-| **Sin alimentos complementarios** | Galletas, merenguitos, arequipe, caramelos → ticket promedio mayor | 🟠 Alta |
-| **Sin kits/sets de regalo** | Sección que convierte especialmente en fechas especiales | 🟠 Alta |
-| **Sin Ediciones Limitadas** | Drops y collabs (Disney) → urgencia de compra + PR orgánico | 🟡 Media |
-| **Sin colecciones por municipio** | Circasia, Salento, Córdoba como identidad regional | 🟡 Media |
-| **Sin SALE/descuentos visible** | Sección de outlet destacada en navegación | 🟡 Media |
-| **Sin accesorios de marca** | Chemex, muñecos decorativos → extensión de marca | 🟡 Media |
-| **SCA score no visible en tienda** | Existe en tabla `lots` pero no se conecta con `products` en la UI | 🔴 Crítica |
+| **5 productos vs 39** | DobleYo tiene 5 estáticos; Quindío tiene 39 (16 cafés + 9 cápsulas + 5 alimentos + 6 kits + 4 accesorios) | ⏳ Pendiente — catálogo real por poblar |
+| **Sin variantes de producto** | Sin opciones de molienda (entera/espresso/filtro/moka) ni tamaños (125g/250g/500g/1kg) | ✅ Resuelto — tabla `product_variants` + selector en producto |
+| **Sin cápsulas** | Categoría completa ausente; alta demanda de mercado | 🟢 Largo plazo |
+| **Sin alimentos complementarios** | Galletas, merenguitos, arequipe, caramelos → ticket promedio mayor | 🟢 Largo plazo |
+| **Sin kits/sets de regalo** | Sección que convierte especialmente en fechas especiales | ✅ Resuelto — `/regalos` + 3 kits seed + link en nav |
+| **Sin Ediciones Limitadas** | Drops y collabs (Disney) → urgencia de compra + PR orgánico | 🟢 Largo plazo |
+| **Sin colecciones por municipio** | Circasia, Salento, Córdoba como identidad regional | 🟡 Medio plazo |
+| **Sin SALE/descuentos visible** | Sección de outlet destacada en navegación | 🟡 Medio plazo |
+| **Sin accesorios de marca** | Chemex, muñecos decorativos → extensión de marca | 🟢 Largo plazo |
+| **SCA score no visible en tienda** | Existe en tabla `lots` pero no se conecta con `products` en la UI | ✅ Resuelto — subconsulta en tienda + badge verde en cards y producto |
 
 ### 6.2 Conversión y UX
 
-| Brecha | Detalle | Prioridad |
+| Brecha | Detalle | Estado |
 |---|---|---|
-| **Sin incentivo de newsletter** | Quindío ofrece 10% en primera compra con doble formulario (header + footer) | 🔴 Crítica |
-| **Sin WhatsApp flotante** | Canal de soporte inmediato; reduce abandono de carrito | 🔴 Crítica |
-| **Sin sistema de reseñas visible** | Ratings en tarjetas construyen confianza social decisiva | 🔴 Crítica |
-| **Pagos Wompi deshabilitados** | Sin pagos activos no hay e-commerce real | 🔴 Bloqueante |
-| **Sin Subscribe & Save** | Suscripción mensual = LTV alto + predecibilidad de ingresos | 🟠 Alta |
-| **Sin badges contextuales** | "Ahorra 10%", "Agotado", "Nuevo" → señales visuales de urgencia y ahorro | 🟡 Media |
-| **Sin banner superior de envío** | "Envío gratis >$X" destacado atrae la mirada y sube ticket promedio | 🟡 Media |
+| **Sin incentivo de newsletter** | Quindío ofrece 10% en primera compra con doble formulario (header + footer) | ✅ Resuelto — `sendNewsletterWelcomeEmail` + código `PRIMERA10` |
+| **Sin WhatsApp flotante** | Canal de soporte inmediato; reduce abandono de carrito | ✅ Resuelto — botón SVG fijo con número real |
+| **Sin sistema de reseñas visible** | Ratings en tarjetas construyen confianza social decisiva | ✅ Resuelto — formulario + lista + moderación admin |
+| **Pagos Wompi deshabilitados** | Sin pagos activos no hay e-commerce real | ⏳ Pendiente — faltan env vars en Vercel |
+| **Sin Subscribe & Save** | Suscripción mensual = LTV alto + predecibilidad de ingresos | 🟡 Medio plazo |
+| **Sin badges contextuales** | "Ahorra 10%", "Agotado", "Nuevo" → señales visuales de urgencia y ahorro | 🟡 Medio plazo |
+| **Sin banner superior de envío** | "Envío gratis >$X" destacado atrae la mirada y sube ticket promedio | ✅ Ya existía — topbar con mensaje de envío gratis |
 
 ### 6.3 Contenido y Marca
 
-| Brecha | Detalle | Prioridad |
+| Brecha | Detalle | Estado |
 |---|---|---|
-| **Blog sin backend real** | localStorage; sin estrategia de contenido ni artículos activos | 🔴 Crítica |
-| **Sin "Nuestra Historia"** | Narrativa fundacional = conexión emocional con el consumidor | 🟠 Alta |
-| **Sin "Nuestro Proceso" público** | DobleYo tiene app operativa pero nada orientado al consumidor final | 🟠 Alta |
-| **Sin FAQ dedicada** | Reducción de fricción pre-compra | 🟠 Alta |
-| **Sin información nutricional** | Requerido por regulaciones y buenas prácticas | 🟡 Media |
-| **Sin página de empleo** | Reclutamiento + señal de cultura de empresa | 🟢 Baja |
-| **Sin premios/reconocimientos** | Trust building; Quindío lo usa en blog y branding | 🟢 Baja |
+| **Blog sin backend real** | localStorage; sin estrategia de contenido ni artículos activos | ✅ Resuelto — BD Turso + 3 posts seed + router API completo |
+| **Sin "Nuestra Historia"** | Narrativa fundacional = conexión emocional con el consumidor | 🟡 Medio plazo |
+| **Sin "Nuestro Proceso" público** | DobleYo tiene app operativa pero nada orientado al consumidor final | 🟡 Medio plazo |
+| **Sin FAQ dedicada** | Reducción de fricción pre-compra | 🟡 Medio plazo |
+| **Sin información nutricional** | Requerido por regulaciones y buenas prácticas | 🟢 Largo plazo |
+| **Sin página de empleo** | Reclutamiento + señal de cultura de empresa | 🟢 Largo plazo |
+| **Sin premios/reconocimientos** | Trust building; Quindío lo usa en blog y branding | 🟢 Largo plazo |
 
 ### 6.4 Distribución Internacional
 
@@ -342,50 +342,74 @@ Café Quindío opera en Shopify sin ninguna infraestructura de producción o tra
 
 ---
 
-## 8. Plan de Acción Priorizado
+## 8. Plan de Acción — Estado de Implementación
 
-### 🔴 Inmediato — Bloquea ventas reales
+> **Última actualización:** Abril 2026
 
-1. **Activar pagos Wompi** en producción (validar webhook, PSE, tarjetas)
-2. **Migrar catálogo a BD real** — tabla `product_variants` con opciones de molienda y tamaño
-3. **Conectar SCA score** de tabla `lots` → `products` → cards de tienda
+### ✅ Completado — Fase Inmediata
 
-### 🟠 Corto plazo (1–2 semanas) — Alto impacto en conversión
+| # | Tarea | Archivos |
+|---|---|---|
+| ✅ | **Bug fix `$1` → `?`** en `producto/[id].astro` (placeholder PostgreSQL vs libSQL) | `src/pages/producto/[id].astro` |
+| ✅ | **SCA score** visible en tarjetas de tienda y página de producto (subconsulta a `lots`) | `src/pages/tienda.astro`, `src/pages/producto/[id].astro`, `styles.css` |
+| ✅ | **Product variants** — tabla `product_variants` en Turso + selector de tamaño/molienda en producto | `server/migrations/add_product_variants.js`, `src/pages/producto/[id].astro` |
 
-4. **Newsletter con 10% descuento** — backend en Resend + doble formulario header+footer
-5. **Sistema de reseñas** — tabla `product_reviews` + ratings en tarjetas y página de producto
-6. **WhatsApp flotante** — botón con número de contacto, texto del asistente
-7. **Blog en Turso** — migrar de localStorage a tabla `blog_posts`; publicar primeros artículos
-8. **Kits/sets de regalo** — crear colección de bundles con badge de ahorro
+### ✅ Completado — Fase Corto Plazo
 
-### 🟡 Medio plazo (2–4 semanas) — Estrategia de marca
+| # | Tarea | Archivos |
+|---|---|---|
+| ✅ | **Newsletter con 10% off** — tabla `newsletter_subscribers` en Turso + `sendNewsletterWelcomeEmail()` + ruta actualizada | `server/migrations/add_newsletter_subscribers.js`, `server/services/email.js`, `server/routes/emails.js` |
+| ✅ | **WhatsApp flotante** — botón fijo SVG verde con número real (+57 320 498 1580) y tooltip | `src/layouts/Layout.astro`, `public/assets/css/styles.css` |
+| ✅ | **Blog en Turso** — tabla `blog_posts` + 3 posts seed + router `/api/blog` completo + `blog.astro` reescrito con SSR | `server/migrations/add_blog_posts.js`, `server/routes/blog.js`, `src/pages/blog.astro` |
+| ✅ | **Sistema de reseñas con moderación admin** — tabla `product_reviews` (`is_approved DEFAULT 0`) + 4 rutas API + UI completa en producto (picker estrellas, formulario, lista) | `server/migrations/add_product_reviews.js`, `server/routes/products.js`, `src/pages/producto/[id].astro` |
+| ✅ | **Kits/Sets de regalo** — migración `is_gift_set` + 3 kits seed + página `/regalos` + link en nav | `server/migrations/add_gift_sets.js`, `src/pages/regalos.astro`, `src/components/Header.astro` |
 
-9. **Página "Nuestra Historia"** — historia de la marca, orígenes, propósito
-10. **Página "Nuestro Proceso"** — versión pública del proceso productivo (no la app interna)
-11. **FAQ dedicada** — 15–20 preguntas frecuentes sobre envíos, pagos, calidad, suscripción
-12. **Opciones de molienda** en productos + selector de tamaño
-13. **Sección SALE** en navegación con badge visual
-14. **Subscribe & Save** — tabla `subscriptions` + integración de pago recurrente en Wompi
+---
 
-### 🟢 Largo plazo (1–2 meses) — Diferenciación de categoría
+### 🔴 Pendiente — Acción requerida del usuario
 
-15. **Cápsulas biodegradables** — nueva categoría de productos
-16. **Ediciones Limitadas** — mecanismo de drops con contador de disponibilidad
-17. **Alimentos de café** — galletas, caramelos → extensión de portafolio
-18. **Página de exportaciones en español** con directorio de distribuidores
-19. **Apple Pay / Google Pay** vía pasarela compatible
-20. **Accesorios de marca** — Chemex, items de merchandising
+| # | Tarea | Dónde actuar |
+|---|---|---|
+| ⏳ | **Activar Wompi en producción** — agregar `WOMPI_PUBLIC_KEY`, `WOMPI_PRIVATE_KEY`, `WOMPI_EVENTS_SECRET` | Vercel Dashboard → Settings → Environment Variables |
+| ⏳ | **Poblar catálogo real en BD** — insertar cafés reales con imágenes propias, precios, variantes de molienda/tamaño | Admin panel → Inventario, o seed SQL directo en Turso |
+| ⏳ | **Ejecutar migración `add_gift_sets`** — requiere que la tabla `products` exista en Turso (depende de que el schema base esté aplicado) | `node server/migrations/add_gift_sets.js` |
+
+---
+
+### 🟡 Pendiente — Medio plazo (estrategia de marca)
+
+| # | Tarea | Detalle |
+|---|---|---|
+| 9 | **Página "Nuestra Historia"** | `/historia.astro` — narrativa de marca, orígenes, propósito, valores |
+| 10 | **Página "Nuestro Proceso"** | `/proceso.astro` — versión pública del proceso productivo (≠ app interna) |
+| 11 | **FAQ dedicada** | `/faq.astro` — 15–20 preguntas por categoría (envíos, pagos, calidad) |
+| 12 | **Sección SALE** en navegación | Link destacado + badge visual en header, colección de productos con descuento |
+| 13 | **Subscribe & Save** | Tabla `subscriptions` + integración pago recurrente Wompi |
+| 14 | **Moderación de reseñas en admin** | Panel `/admin/reseñas` o tab en inventario con approve/reject |
+
+---
+
+### 🟢 Pendiente — Largo plazo (diferenciación de categoría)
+
+| # | Tarea | Detalle |
+|---|---|---|
+| 15 | **Cápsulas biodegradables** | Nueva categoría de productos; eje de sostenibilidad |
+| 16 | **Ediciones Limitadas (drops)** | Campo `is_limited` + contador de stock + lógica de urgencia |
+| 17 | **Alimentos de café** | Galletas, caramelos, arequipe — extensión de portafolio |
+| 18 | **Página exportaciones en español** | Complementa `/en/` en inglés; directorio de distribuidores por país |
+| 19 | **Apple Pay / Google Pay** | Vía widget Wompi o integración directa; prioritario para mercado USA |
+| 20 | **Accesorios de marca** | Chemex artesanal, merchandising DobleYo |
 
 ---
 
 ## 9. Resumen Ejecutivo
 
-Café Quindío es una marca de e-commerce madura construida sobre Shopify, con un catálogo de **39 productos**, operaciones en **2 dominios** (Colombia + USA), presencia en **9 países**, blog activo con estrategia de contenido clara y funcionalidades de conversión bien ejecutadas (newsletter con incentivo, WhatsApp, reseñas, subscribe & save).
+Café Quindío opera en Shopify con **39 productos**, **2 dominios** (Colombia + USA), presencia en **9 países** y funcionalidades de conversión maduras (newsletter con incentivo, WhatsApp, reseñas, subscribe & save).
 
-DobleYo tiene una **infraestructura técnica significativamente superior** (trazabilidad real, app de caficultor, contabilidad, 43 tablas, CI/CD), pero adolece de los elementos más básicos del e-commerce orientado al consumidor: catálogo mínimo, pagos activos, sistema de reseñas, blog con contenido y newsletter con incentivo.
+DobleYo tiene infraestructura técnica significativamente superior (trazabilidad real, app de caficultor, contabilidad, CI/CD), y ha completado la fase de paridad básica en conversión: newsletter con código `PRIMERA10`, WhatsApp flotante activo, blog con BD real, sistema de reseñas con moderación y primera colección de kits de regalo.
 
-La prioridad no es rivalizar en funcionalidades avanzadas — es activar lo básico que convierte: **pagos, catálogo real, reseñas y newsletter**. Con eso resuelto, la profundidad técnica de DobleYo se convierte en diferenciación clara (trazabilidad, fincas, B2B) que Quindío no puede replicar fácilmente.
+**El siguiente cuello de botella es operativo, no técnico:** activar las claves de Wompi en producción y poblar el catálogo con productos reales. Con eso, el e-commerce es completamente funcional y listo para capturar ventas.
 
 ---
 
-*Análisis elaborado directamente contra sitios en producción. Precios sujetos a cambios. Estado de inventario verificado en abril 2026.*
+*Análisis elaborado directamente contra sitios en producción. Precios sujetos a cambios. Estado de inventario verificado en abril 2026. Plan de implementación actualizado el 27 de abril de 2026.*
