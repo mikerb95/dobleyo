@@ -456,7 +456,8 @@ coffeeRouter.post('/packaging', async (req, res) => {
 
     // Ahora obtener la información con LEFT JOINs para mejor compatibilidad
     const roastedResult = await query(
-      `SELECT rci.*, rc.roast_level, rc.weight_kg, rb.lot_id, ch.region, ch.farm, ch.variety
+      `SELECT rci.*, rc.roast_level, rc.weight_kg, rb.lot_id,
+              ch.region, ch.farm, ch.variety, ch.process, ch.aroma, ch.taste_notes
        FROM roasted_coffee_inventory rci
        LEFT JOIN roasted_coffee rc ON rci.roasted_id = rc.id
        LEFT JOIN roasting_batches rb ON rc.roasting_id = rb.id
@@ -473,6 +474,45 @@ coffeeRouter.post('/packaging', async (req, res) => {
     const roastedInfo = roastedResult.rows[0];
     console.log('[packaging] roastedInfo:', { lot_id: roastedInfo.lot_id, roast_level: roastedInfo.roast_level, region: roastedInfo.region });
 
+    // Validar que unidades × tamaño de paquete no supere el peso disponible del lote
+    const unitCountNum = parseInt(unitCount, 10);
+    if (!Number.isInteger(unitCountNum) || unitCountNum <= 0) {
+      return res.status(400).json({ error: 'Cantidad de unidades inválida' });
+    }
+
+    const availableWeightKg = parseFloat(roastedInfo.weight_kg) || 0;
+    if (availableWeightKg <= 0) {
+      return res.status(400).json({ error: 'No hay peso disponible en este lote tostado' });
+    }
+
+    const PACKAGE_KG = { '100g': 0.1, '250g': 0.25, '500g': 0.5, '1kg': 1.0 };
+    if (packageSize !== 'bulk') {
+      const packageKg = PACKAGE_KG[packageSize];
+      if (!packageKg) {
+        return res.status(400).json({ error: `Tamaño de paquete no reconocido: ${packageSize}` });
+      }
+      const requiredKg = parseFloat((unitCountNum * packageKg).toFixed(3));
+      if (requiredKg > availableWeightKg) {
+        return res.status(400).json({
+          error: `Peso requerido (${requiredKg} kg) supera el disponible (${availableWeightKg} kg)`,
+          detail: {
+            unit_count: unitCountNum,
+            package_size: packageSize,
+            required_kg: requiredKg,
+            available_kg: availableWeightKg,
+            max_units: Math.floor(availableWeightKg / packageKg)
+          }
+        });
+      }
+    } else {
+      // Para granel: unitCount se interpreta como kg
+      if (unitCountNum > availableWeightKg) {
+        return res.status(400).json({
+          error: `Peso a granel (${unitCountNum} kg) supera el disponible (${availableWeightKg} kg)`
+        });
+      }
+    }
+
     // E-01: Validar transición → packaged
     if (roastedInfo.lot_id) {
       try {
@@ -486,7 +526,7 @@ coffeeRouter.post('/packaging', async (req, res) => {
     const result = await query(
       `INSERT INTO packaged_coffee (roasted_storage_id, acidity, body, balance, score, presentation, grind_size, package_size, unit_count, notes, status, created_at)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'ready_for_sale', datetime('now')) RETURNING id`,
-      [roastedStorageId, acidity, body, balance, score, presentation, grindSize || null, packageSize, unitCount, notes || null]
+      [roastedStorageId, parseInt(acidity), parseInt(body), parseInt(balance), parseFloat(score), presentation, grindSize || null, packageSize, unitCountNum, notes || null]
     );
 
     // Actualizar estado del café tostado
@@ -502,25 +542,32 @@ coffeeRouter.post('/packaging', async (req, res) => {
     if (addToInventory === true) {
       // Generar SKU basado en información del café
       const timestamp = Date.now().toString().slice(-6);
-      productId = `CAFE-${roastedInfo.lot_id || 'GEN'}-${packageSize.replace(/[^0-9]/g, '')}-${timestamp}`.substring(0, 50);
+      productId = `CAFE-${roastedInfo.lot_id || 'GEN'}-${packageSize.replace(/[^a-zA-Z0-9-]/g, '')}-${timestamp}`.substring(0, 50);
 
-      // Crear producto en la tabla products
-      const productName = `Café ${roastedInfo.lot_id || 'Premium'} - ${packageSize} (${presentation === 'GRANO' ? 'Grano' : 'Molido'})`;
+      // Nombre descriptivo del producto
+      const presentationLabel = presentation === 'GRANO' ? 'Grano' : `Molido ${grindSize ?? ''}`.trim();
+      const productName = `Café ${roastedInfo.lot_id || 'Premium'} - ${packageSize} (${presentationLabel})`;
 
       const roastLevel = roastedInfo.roast_level || 'medium';
-      const region = roastedInfo.region || 'Colombia';
+      const origin = roastedInfo.region || 'Colombia';
+      const harvestProcess = roastedInfo.process || null;
+
+      // Peso en gramos (numérico) para el campo weight
+      const weightGrams = packageSize === '1kg' ? 1000
+        : packageSize === 'bulk' ? null
+        : parseInt(packageSize);  // '250g' → 250, '500g' → 500, '100g' → 100
 
       await query(
         `INSERT INTO products (id, name, category, origin, process, roast, price, cost, is_active, stock_quantity, stock_min, weight, weight_unit, created_at)
-         VALUES (?, ?, 'cafe', ?, ?, ?, 0, 0, 1, ?, 0, ?, ?, datetime('now'))`,
-        [productId, productName, region, 'unknown', roastLevel, unitCount, packageSize, 'unidad']
+         VALUES (?, ?, 'cafe', ?, ?, ?, 0, 0, 1, ?, 0, ?, 'g', datetime('now'))`,
+        [productId, productName, origin, harvestProcess, roastLevel, unitCountNum, weightGrams]
       );
 
       // Registrar movimiento de inventario
       await query(
         `INSERT INTO inventory_movements (product_id, movement_type, quantity, quantity_before, quantity_after, reason, reference, created_at)
          VALUES (?, 'entrada', ?, 0, ?, 'Café empacado para venta', ?, datetime('now'))`,
-        [productId, unitCount, unitCount, roastedInfo.lot_id || 'packaging']
+        [productId, unitCountNum, unitCountNum, roastedInfo.lot_id || 'packaging']
       );
 
       inventoryMovementCreated = true;
