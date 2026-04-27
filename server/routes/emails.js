@@ -3,7 +3,8 @@ import {
   sendOrderConfirmationEmail,
   sendContactFormEmail,
   sendContactReplyEmail,
-  sendVerificationEmail
+  sendVerificationEmail,
+  sendNewsletterWelcomeEmail,
 } from '../services/email.js';
 import { apiLimiter } from '../middleware/rateLimit.js';
 import { authenticateToken, requireRole } from '../auth.js';
