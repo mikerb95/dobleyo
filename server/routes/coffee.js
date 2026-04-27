@@ -436,8 +436,14 @@ coffeeRouter.post('/packaging', async (req, res) => {
       return res.status(409).json({ success: false, error: 'Este lote tostado ya fue empacado' });
     }
 
-    // Calcular puntuación
-    const score = ((parseInt(acidity) + parseInt(body) + parseInt(balance)) / 3).toFixed(2);
+    // Calcular puntuación sensorial (promedio 1-5, precisión 2 decimales)
+    const acidityInt = parseInt(acidity, 10);
+    const bodyInt    = parseInt(body, 10);
+    const balanceInt = parseInt(balance, 10);
+    if ([acidityInt, bodyInt, balanceInt].some(v => !Number.isInteger(v) || v < 1 || v > 5)) {
+      return res.status(400).json({ error: 'Los atributos sensoriales deben ser enteros entre 1 y 5' });
+    }
+    const score = parseFloat(((acidityInt + bodyInt + balanceInt) / 3).toFixed(2));
 
     // Obtener información del café tostado para crear el SKU
     // Primero verificar que existe el registro en roasted_coffee_inventory
@@ -806,9 +812,9 @@ coffeeRouter.get('/lots', async (req, res) => {
     // 2. Lotes de café tostado almacenado (roasted_coffee_inventory)
     try {
       const storedResult = await query(
-        `SELECT 
+        `SELECT
           rci.id,
-          rci.lot_id,
+          rb.lot_id,
           ch.farm as farm_name,
           ch.variety,
           ch.region,
@@ -817,13 +823,14 @@ coffeeRouter.get('/lots', async (req, res) => {
           ch.process,
           ch.aroma,
           ch.taste_notes as notes,
-          rci.storage_date as created_at,
+          rci.created_at,
           'tostado' as status,
-          rci.weight_kg as weight
+          rc.weight_kg as weight
         FROM roasted_coffee_inventory rci
-        LEFT JOIN roasting_batches rb ON rci.lot_id = rb.lot_id
+        JOIN roasted_coffee rc ON rci.roasted_id = rc.id
+        JOIN roasting_batches rb ON rc.roasting_id = rb.id
         LEFT JOIN coffee_harvests ch ON rb.lot_id = ch.lot_id
-        ORDER BY rci.storage_date DESC`
+        ORDER BY rci.created_at DESC`
       );
       if (storedResult.rows) {
         allLots.push(...storedResult.rows);
