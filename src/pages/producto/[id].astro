@@ -546,6 +546,38 @@ const productJsonLd = {
       font-weight: 600;
     }
 
+    .variants-wrap { margin: 1rem 0; display: flex; flex-direction: column; gap: .75rem; }
+
+    .variant-group {}
+
+    .variant-label {
+      font-size: .72rem;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--muted-fg, #888);
+      margin: 0 0 .35rem;
+    }
+
+    .variant-options { display: flex; flex-wrap: wrap; gap: .4rem; }
+
+    .variant-btn {
+      padding: .35rem .75rem;
+      border: 1.5px solid var(--border, #e5e0d8);
+      border-radius: 6px;
+      background: transparent;
+      font-size: .85rem;
+      cursor: pointer;
+      transition: border-color .15s, background .15s, color .15s;
+    }
+
+    .variant-btn:hover { border-color: var(--accent); }
+
+    .variant-btn.active {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: #fff;
+    }
+
     .tasting-notes { margin: 1rem 0; }
 
     .tasting-title {
