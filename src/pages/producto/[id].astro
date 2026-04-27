@@ -19,16 +19,17 @@ try {
   };
   const { rows } = await query(
     `SELECT
-       id, slug, name, name_en, category, origin, process, roast,
-       tasting_notes, price, price_usd, rating,
-       is_deal AS deal, is_bestseller AS bestseller,
-       is_new AS new, is_fast AS fast,
-       image_url AS image, images,
-       stock_quantity AS stock,
-       description
-     FROM products
-     WHERE (id = $1 OR slug = $1) AND is_active = TRUE`,
-    [id]
+       p.id, p.slug, p.name, p.name_en, p.category, p.origin, p.process, p.roast,
+       p.tasting_notes, p.price, p.price_usd, p.rating,
+       p.is_deal AS deal, p.is_bestseller AS bestseller,
+       p.is_new AS new, p.is_fast AS fast,
+       p.image_url AS image, p.images,
+       p.stock_quantity AS stock,
+       p.description,
+       (SELECT MAX(l.score) FROM lots l WHERE l.product_id = p.id AND l.score IS NOT NULL) AS sca_score
+     FROM products p
+     WHERE (p.id = ? OR p.slug = ?) AND p.is_active = 1`,
+    [id, id]
   );
   if (rows.length) {
     const p = rows[0];
@@ -135,6 +136,13 @@ const productJsonLd = {
           <div class="product-rating" aria-label={`Calificación: ${product.rating} de 5`}>
             {"★".repeat(Math.round(product.rating))}{"☆".repeat(5 - Math.round(product.rating))}
             <span class="rating-num">{product.rating}</span>
+          </div>
+        )}
+
+        {product.sca_score && (
+          <div class="sca-badge" title="Puntuación SCA (Specialty Coffee Association)">
+            <span class="sca-score">{product.sca_score}</span>
+            <span class="sca-label">pts SCA</span>
           </div>
         )}
 
