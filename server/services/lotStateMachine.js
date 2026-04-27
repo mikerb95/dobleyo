@@ -54,12 +54,12 @@ export function canTransitionTo(currentStage, nextStage) {
  */
 export async function getCurrentStage(queryFn, lotId) {
   const checks = [
-    { stage: 'packaged',           sql: `SELECT 1 FROM packaged_coffee     pc JOIN roasted_coffee_inventory rci ON rci.id = pc.roasted_storage_id JOIN roasted_coffee rc ON rc.id = rci.roasted_id JOIN roasting_batches rb ON rb.id = rc.roasting_id WHERE rb.lot_id = $1 LIMIT 1` },
-    { stage: 'in_storage_roasted', sql: `SELECT 1 FROM roasted_coffee_inventory rci JOIN roasted_coffee rc ON rc.id = rci.roasted_id JOIN roasting_batches rb ON rb.id = rc.roasting_id WHERE rb.lot_id = $1 LIMIT 1` },
-    { stage: 'roasted',            sql: `SELECT 1 FROM roasted_coffee rc JOIN roasting_batches rb ON rb.id = rc.roasting_id WHERE rb.lot_id = $1 LIMIT 1` },
-    { stage: 'sent_to_roasting',   sql: `SELECT 1 FROM roasting_batches WHERE lot_id = $1 LIMIT 1` },
-    { stage: 'in_storage_green',   sql: `SELECT 1 FROM green_coffee_inventory WHERE lot_id = $1 LIMIT 1` },
-    { stage: 'harvested',          sql: `SELECT 1 FROM coffee_harvests WHERE lot_id = $1 LIMIT 1` },
+    { stage: 'packaged',           sql: `SELECT 1 FROM packaged_coffee pc JOIN roasted_coffee_inventory rci ON rci.id = pc.roasted_storage_id JOIN roasted_coffee rc ON rc.id = rci.roasted_id JOIN roasting_batches rb ON rb.id = rc.roasting_id WHERE rb.lot_id = ? LIMIT 1` },
+    { stage: 'in_storage_roasted', sql: `SELECT 1 FROM roasted_coffee_inventory rci JOIN roasted_coffee rc ON rc.id = rci.roasted_id JOIN roasting_batches rb ON rb.id = rc.roasting_id WHERE rb.lot_id = ? LIMIT 1` },
+    { stage: 'roasted',            sql: `SELECT 1 FROM roasted_coffee rc JOIN roasting_batches rb ON rb.id = rc.roasting_id WHERE rb.lot_id = ? LIMIT 1` },
+    { stage: 'sent_to_roasting',   sql: `SELECT 1 FROM roasting_batches WHERE lot_id = ? LIMIT 1` },
+    { stage: 'in_storage_green',   sql: `SELECT 1 FROM green_coffee_inventory WHERE lot_id = ? LIMIT 1` },
+    { stage: 'harvested',          sql: `SELECT 1 FROM coffee_harvests WHERE lot_id = ? LIMIT 1` },
   ];
 
   for (const { stage, sql } of checks) {

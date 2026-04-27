@@ -120,11 +120,18 @@ coffeeRouter.post('/inventory-storage', async (req, res) => {
 
     const harvestId = harvestResult.rows[0].id;
 
+    // Normalizar peso a kg
+    const weightNum = parseFloat(weight);
+    if (!isFinite(weightNum) || weightNum <= 0) {
+      return res.status(400).json({ error: 'Peso inválido' });
+    }
+    const weightKg = weightUnit === 'lb' ? parseFloat((weightNum * 0.453592).toFixed(3)) : weightNum;
+
     // Guardar en BD
     const result = await query(
       `INSERT INTO green_coffee_inventory (harvest_id, lot_id, weight_kg, location, storage_date, notes, created_at)
        VALUES (?, ?, ?, ?, ?, ?, datetime('now')) RETURNING id`,
-      [harvestId, lotId, weight, location, storageDate, notes || null]
+      [harvestId, lotId, weightKg, location, storageDate, notes || null]
     );
 
     res.status(201).json({
