@@ -279,10 +279,10 @@ ordersRouter.post('/wompi/webhook', async (req, res) => {
         // Verificar firma de Wompi (checksum)
         const checksum = event?.signature?.checksum;
         const tsStr = event?.timestamp;
-        if (WOMPI_INTEGRITY_SECRET && checksum && tsStr) {
+        if (WOMPI_EVENTS_SECRET && checksum && tsStr) {
             const expected = crypto
                 .createHash('sha256')
-                .update(`${tsStr}${WOMPI_INTEGRITY_SECRET}`, 'utf8')
+                .update(`${tsStr}${WOMPI_EVENTS_SECRET}`, 'utf8')
                 .digest('hex');
             if (expected !== checksum) {
                 console.warn('[Wompi webhook] Firma inválida para ref:', reference);
