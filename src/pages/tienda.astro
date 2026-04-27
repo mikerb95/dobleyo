@@ -467,6 +467,9 @@ const shopJsonLd = {
           : lowStock
             ? `<span class="stock-badge low">Últimas ${p.stock}</span>`
             : '';
+        const scaBadge = p.sca_score
+          ? `<span class="sca-pill">${p.sca_score} pts SCA</span>`
+          : '';
         return `
         <article class="card">
           <a href="/producto/${p.id}" class="card-link" tabindex="-1" aria-hidden="true">
@@ -477,6 +480,7 @@ const shopJsonLd = {
             <h3><a href="/producto/${p.id}" class="card-name-link">${escapeHtml(p.name)}</a></h3>
             <div class="muted" style="font-size:.85rem">${p.process || ""}${p.process && p.roast ? " · " : ""}${p.roast || ""}</div>
             <div class="price">$${p.price.toLocaleString("es-CO")}</div>
+            ${scaBadge}
             ${stockBadge}
             <div style="margin-top:.35rem; display:flex; gap:.5rem">
               <button class="btn small" data-add="${p.id}"${outOfStock ? ' disabled aria-disabled="true"' : ''}>
