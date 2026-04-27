@@ -104,10 +104,10 @@ ordersRouter.post('/',
             for (const item of items) {
                 await query(
                     `INSERT INTO customer_order_items
-             (order_id, product_id, product_name, product_image, unit_price_cop, quantity)
-           VALUES (?, ?, ?, ?, ?, ?)`,
+             (order_id, product_id, product_name, product_image, unit_price_cop, quantity, subtotal_cop)
+           VALUES (?, ?, ?, ?, ?, ?, ?)`,
                     [orderId, item.productId, item.productName, item.productImage || null,
-                        item.unitPrice, item.quantity]
+                        item.unitPrice, item.quantity, item.unitPrice * item.quantity]
                 );
             }
 
