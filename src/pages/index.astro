@@ -471,6 +471,42 @@ try {
     </section>
   )}
 
+  <!-- Script: newsletter de home -->
+  <script>
+    (function () {
+      const form = document.getElementById("homeNewsletterForm") as HTMLFormElement;
+      const msgEl = document.getElementById("homeNlMsg");
+      if (!form) return;
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const email = (document.getElementById("homeNlEmail") as HTMLInputElement).value.trim();
+        if (!email) return;
+        const btn = form.querySelector("button") as HTMLButtonElement;
+        btn.disabled = true;
+        btn.textContent = "Enviando…";
+        try {
+          const res = await fetch("/api/emails/newsletter", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email }),
+          });
+          const data = await res.json();
+          if (msgEl) {
+            msgEl.textContent = data.message ?? "¡Suscrito! Revisa tu correo.";
+            msgEl.className = res.ok ? "newsletter-msg success" : "newsletter-msg error";
+            msgEl.style.display = "block";
+          }
+          if (res.ok) form.reset();
+        } catch {
+          if (msgEl) { msgEl.textContent = "Error de conexión. Inténtalo de nuevo."; msgEl.style.display = "block"; }
+        } finally {
+          btn.disabled = false;
+          btn.textContent = "Suscribirse";
+        }
+      });
+    })();
+  </script>
+
   <!-- Script: conectar botones "+" al carrito -->
   <script>
     document.querySelector(".cs-grid")?.addEventListener("click", (e) => {
