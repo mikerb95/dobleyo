@@ -668,7 +668,11 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
 
         if (!response.ok) {
           const error = await response.json();
-          throw new Error(error.message || "Error al preparar café");
+          let msg = error.error || error.message || "Error al preparar café";
+          if (error.detail?.max_units !== undefined) {
+            msg += `\nMáximo posible: ${error.detail.max_units} unidades de ${error.detail.package_size}`;
+          }
+          throw new Error(msg);
         }
 
         const data = await response.json();

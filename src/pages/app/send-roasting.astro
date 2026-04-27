@@ -278,7 +278,9 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
 
         if (!response.ok) {
           const error = await response.json();
-          throw new Error(error.message || "Error al enviar a tostión");
+          const msg = error.error || error.message || "Error al enviar a tostión";
+          const detail = error.detail ? `\nDisponible: ${error.detail.available_kg} kg` : "";
+          throw new Error(msg + detail);
         }
 
         alert(

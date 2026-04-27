@@ -312,12 +312,22 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
       ).value;
       const roastedWeight = parseFloat(roastedWeightInput.value);
 
-      if (
-        roastedWeight <= 0 ||
-        roastedWeight > currentRoastingRecord.quantity_sent_kg
-      ) {
-        alert("⚠️ El peso debe ser mayor a 0 y no exceder el peso enviado");
+      const sentKg = currentRoastingRecord.quantity_sent_kg;
+      const minReasonable = parseFloat((sentKg * 0.60).toFixed(3));
+      if (roastedWeight <= 0) {
+        alert("⚠️ El peso tostado debe ser mayor a 0");
         return;
+      }
+      if (roastedWeight >= sentKg) {
+        alert(`⚠️ El peso tostado (${roastedWeight} kg) no puede ser igual o mayor al enviado (${sentKg} kg). El café siempre pierde masa durante el tueste.`);
+        return;
+      }
+      if (roastedWeight < minReasonable) {
+        const evap = (((sentKg - roastedWeight) / sentKg) * 100).toFixed(1);
+        const confirm = window.confirm(
+          `⚠️ Pérdida de peso inusualmente alta: ${evap}% (${(sentKg - roastedWeight).toFixed(2)} kg evaporados).\n\nLo normal en tostión de especialidad es 12–22%. Una pérdida >40% es poco probable.\n\n¿Deseas continuar de todas formas?`
+        );
+        if (!confirm) return;
       }
 
       const submitBtn = form.querySelector('button[type="submit"]');
@@ -343,7 +353,7 @@ import MobileLayout from "../../layouts/MobileLayout.astro";
 
         if (!response.ok) {
           const error = await response.json();
-          throw new Error(error.message || "Error al registrar tueste");
+          throw new Error(error.error || error.message || "Error al registrar tueste");
         }
 
         const data = await response.json();
