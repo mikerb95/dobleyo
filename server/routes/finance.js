@@ -658,6 +658,43 @@ financeRouter.post('/payments', requireRole('admin'), [
 });
 
 // ==========================================================
+// LISTAS DE SOPORTE (selects en formularios)
+// ==========================================================
+
+// GET /api/finance/users-list?role=caficultor|client
+financeRouter.get('/users-list', requireRole('admin'), async (req, res) => {
+    try {
+        const { role } = req.query;
+        const conditions = [];
+        const params = [];
+        if (role) { conditions.push('role = ?'); params.push(role); }
+        const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+        const { rows } = await query(
+            `SELECT id, name, email, role FROM users ${where} ORDER BY name`,
+            params
+        );
+        res.json({ success: true, data: rows });
+    } catch (err) {
+        console.error('[GET /api/finance/users-list]', err);
+        res.status(500).json({ success: false, error: 'Error al obtener usuarios' });
+    }
+});
+
+// GET /api/finance/payment-methods
+financeRouter.get('/payment-methods', requireRole('admin'), async (req, res) => {
+    try {
+        const { rows } = await query(
+            `SELECT id, code, name, method_type, requires_reference FROM payment_methods WHERE is_active = 1 ORDER BY name`,
+            []
+        );
+        res.json({ success: true, data: rows });
+    } catch (err) {
+        console.error('[GET /api/finance/payment-methods]', err);
+        res.status(500).json({ success: false, error: 'Error al obtener métodos de pago' });
+    }
+});
+
+// ==========================================================
 // RUTA CAFICULTOR — mis facturas de compra recibidas
 // ==========================================================
 
