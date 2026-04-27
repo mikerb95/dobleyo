@@ -24,6 +24,7 @@ import { financeRouter } from './routes/finance.js';
 import { farmsRouter } from './routes/farms.js';
 import { heatmapRouter } from './routes/heatmap.js';
 import { productsRouter } from './routes/products.js';
+import { blogRouter } from './routes/blog.js';
 import { query, healthCheck } from './db.js';
 
 const app = express();

@@ -3070,3 +3070,40 @@ body.menu-open {
 .dropdown-item:last-child:hover {
   color: #d32f2f;
 }
+/* WhatsApp FAB */
+.whatsapp-fab {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 900;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: #25D366;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(0,0,0,.18);
+  text-decoration: none;
+  transition: transform .2s, box-shadow .2s;
+}
+.whatsapp-fab:hover {
+  transform: scale(1.08);
+  box-shadow: 0 6px 20px rgba(0,0,0,.24);
+}
+.whatsapp-fab__tooltip {
+  position: absolute;
+  right: calc(100% + .6rem);
+  background: #111;
+  color: #fff;
+  font-size: .78rem;
+  white-space: nowrap;
+  padding: .3rem .65rem;
+  border-radius: 4px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .15s;
+}
+.whatsapp-fab:hover .whatsapp-fab__tooltip { opacity: 1; }
+@media print { .whatsapp-fab { display: none; } }
