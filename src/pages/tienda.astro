@@ -12,17 +12,18 @@ try {
   const { query } = await import("../../server/db.js");
   const result = await query(
     `SELECT
-       id, slug, name, category, origin, process, roast,
-       tasting_notes, price, rating,
-       is_deal       AS deal,
-       is_bestseller AS bestseller,
-       is_new        AS new,
-       is_fast       AS fast,
-       image_url     AS image,
-       stock_quantity AS stock
-     FROM products
-     WHERE is_active = TRUE
-     ORDER BY is_bestseller DESC, is_new DESC, is_deal DESC, rating DESC`
+       p.id, p.slug, p.name, p.category, p.origin, p.process, p.roast,
+       p.tasting_notes, p.price, p.rating,
+       p.is_deal       AS deal,
+       p.is_bestseller AS bestseller,
+       p.is_new        AS new,
+       p.is_fast       AS fast,
+       p.image_url     AS image,
+       p.stock_quantity AS stock,
+       (SELECT MAX(l.score) FROM lots l WHERE l.product_id = p.id AND l.score IS NOT NULL) AS sca_score
+     FROM products p
+     WHERE p.is_active = 1
+     ORDER BY p.is_bestseller DESC, p.is_new DESC, p.is_deal DESC, p.rating DESC`
   );
   if (result.rows.length > 0) {
     const LABEL: Record<string, string> = { cafe: 'Cafés', accesorio: 'Accesorios', merchandising: 'Merchandising' };
