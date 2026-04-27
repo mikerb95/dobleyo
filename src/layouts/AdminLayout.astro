@@ -14,322 +14,853 @@ const { title = "Admin — DobleYo Café", section = "" } = Astro.props;
   <head>
     <Head title={title} isAdmin={true} />
     <style>
-      /* ── Variables ─────────────────────────────────────── */
+      /* ── Fiori Design System — DobleYo ERP ────────────────── */
       :root {
-        --sidebar-w: 260px;
-        --sidebar-bg: #1a1008;
-        --sidebar-text: #d4c4b0;
-        --sidebar-active: #c8a96e;
-        --sidebar-hover: rgba(200,169,110,0.12);
-        --topbar-h: 56px;
+        --shell-h: 48px;
+        --nav-w: 240px;
+        --nav-w-sm: 52px;
+
+        /* Shell */
+        --shell-bg: #354a5e;
+        --shell-text: rgba(255,255,255,.95);
+        --shell-icon: rgba(255,255,255,.65);
+        --shell-icon-hover: #fff;
+
+        /* Nav */
+        --nav-bg: #fff;
+        --nav-text: #32363a;
+        --nav-text-2: #6a6d70;
+        --nav-hover-bg: #f5f6f7;
+        --nav-active-bg: #fdf5e8;
+        --nav-active-color: #7d4e10;
+        --nav-active-border: #c8a96e;
+        --nav-section-color: #8c9099;
+
+        /* Content */
+        --erp-bg: #f5f6f7;
+        --card-bg: #fff;
+        --card-shadow: 0 0 0 1px rgba(0,0,0,.06), 0 2px 8px rgba(0,0,0,.05);
+        --border: rgba(0,0,0,.09);
+
+        /* Text */
+        --text-1: #32363a;
+        --text-2: #6a6d70;
+        --text-3: #a9b0b8;
+
+        /* Semantic */
+        --c-success: #107e3e;
+        --c-success-bg: #f1fdf6;
+        --c-success-border: #b5e8cd;
+        --c-warning: #c96800;
+        --c-warning-bg: #fef3e2;
+        --c-warning-border: #f5c87a;
+        --c-error: #aa0000;
+        --c-error-bg: #ffeaea;
+        --c-error-border: #f5bcbc;
+        --c-info: #0064d9;
+        --c-info-bg: #e8f2ff;
+        --c-info-border: #91c2f5;
+
+        /* Brand */
+        --brand: #c8a96e;
+        --brand-dark: #a8874a;
+        --brand-green: #4a6741;
       }
-      *, *::before, *::after { box-sizing: border-box; }
+
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
       body {
-        margin: 0;
-        font-family: 'Crimson Pro', Georgia, serif;
-        background: #f7f3ef;
-        color: #251a14;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        font-size: 14px;
+        line-height: 1.5;
+        background: var(--erp-bg);
+        color: var(--text-1);
         min-height: 100vh;
         visibility: hidden;
       }
 
-      /* ── Sidebar ─────────────────────────────────────── */
-      .admin-sidebar {
-        position: fixed;
-        inset: 0 auto 0 0;
-        width: var(--sidebar-w);
-        background: var(--sidebar-bg);
-        color: var(--sidebar-text);
-        display: flex;
-        flex-direction: column;
-        z-index: 200;
-        transform: translateX(calc(-1 * var(--sidebar-w)));
-        transition: transform 0.28s ease;
-        overflow-y: auto;
-      }
-      .admin-sidebar.open { transform: translateX(0); }
-      @media (min-width: 1024px) { .admin-sidebar { transform: translateX(0); } }
-
-      .sidebar-brand {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        padding: 1.5rem 1.25rem 1rem;
-        text-decoration: none;
-        color: var(--sidebar-active);
-        font-size: 1.15rem;
-        font-weight: 700;
-        letter-spacing: 0.02em;
-        border-bottom: 1px solid rgba(255,255,255,0.08);
-        flex-shrink: 0;
-      }
-      .sidebar-nav { flex: 1; padding: 0.75rem 0; overflow-y: auto; }
-      .nav-section-label {
-        font-size: 0.65rem;
-        font-weight: 700;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        color: rgba(212,196,176,0.4);
-        padding: 0.9rem 1.25rem 0.3rem;
-        display: block;
-      }
-      .nav-link {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        padding: 0.6rem 1.25rem;
-        color: var(--sidebar-text);
-        text-decoration: none;
-        font-size: 0.88rem;
-        transition: background 0.15s, color 0.15s;
-        position: relative;
-      }
-      .nav-link:hover { background: var(--sidebar-hover); color: #fff; }
-      .nav-link.active { color: var(--sidebar-active); background: var(--sidebar-hover); }
-      .nav-link.active::before {
-        content: '';
-        position: absolute;
-        left: 0; top: 0; bottom: 0;
-        width: 3px;
-        background: var(--sidebar-active);
-        border-radius: 0 2px 2px 0;
-      }
-      .nav-link svg { flex-shrink: 0; opacity: 0.7; }
-      .nav-link.active svg, .nav-link:hover svg { opacity: 1; }
-      .sidebar-footer {
-        padding: 1rem 1.25rem;
-        border-top: 1px solid rgba(255,255,255,0.08);
-        font-size: 0.8rem;
-        color: rgba(212,196,176,0.55);
-      }
-      .sidebar-footer a { display: block; color: rgba(212,196,176,0.55); text-decoration: none; padding: 0.3rem 0; transition: color 0.15s; }
-      .sidebar-footer a:hover { color: var(--sidebar-text); }
-      #adminUserName { font-weight: 600; color: var(--sidebar-text); margin-bottom: 0.4rem; font-size: 0.85rem; }
-
-      /* ── Topbar (mobile) ──────────────────────────────── */
-      .admin-topbar {
+      /* ── Shell Bar ─────────────────────────────────────────── */
+      .erp-shell {
         position: fixed;
         top: 0; left: 0; right: 0;
-        height: var(--topbar-h);
-        background: var(--sidebar-bg);
+        height: var(--shell-h);
+        background: var(--shell-bg);
         display: flex;
         align-items: center;
-        padding: 0 1rem;
-        z-index: 190;
-        gap: 1rem;
-      }
-      @media (min-width: 1024px) { .admin-topbar { display: none; } }
-      .topbar-title { color: var(--sidebar-active); font-size: 1rem; font-weight: 700; flex: 1; }
-      .btn-hamburger {
-        background: none; border: none; cursor: pointer;
-        color: var(--sidebar-text); display: grid; place-items: center; padding: 0.3rem;
+        z-index: 300;
+        box-shadow: 0 2px 8px rgba(0,0,0,.25);
+        gap: 0;
       }
 
-      /* ── Overlay ──────────────────────────────────────── */
-      .sidebar-overlay {
+      .shell-nav-toggle {
+        display: grid;
+        place-items: center;
+        width: var(--shell-h);
+        height: var(--shell-h);
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: var(--shell-icon);
+        flex-shrink: 0;
+        transition: color 0.15s, background 0.15s;
+      }
+      .shell-nav-toggle:hover { color: var(--shell-icon-hover); background: rgba(255,255,255,.08); }
+
+      .shell-product {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0 1rem 0 0.25rem;
+        text-decoration: none;
+        color: var(--shell-text);
+        flex-shrink: 0;
+        border-right: 1px solid rgba(255,255,255,.15);
+        height: 100%;
+      }
+      .shell-product-logo {
+        width: 28px;
+        height: 28px;
+        background: var(--brand);
+        border-radius: 4px;
+        display: grid;
+        place-items: center;
+        flex-shrink: 0;
+      }
+      .shell-product-name {
+        font-size: 15px;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+        color: var(--shell-text);
+        white-space: nowrap;
+      }
+      .shell-product-sub {
+        font-size: 11px;
+        color: var(--shell-icon);
         display: none;
-        position: fixed; inset: 0;
-        background: rgba(0,0,0,0.55);
+      }
+      @media (min-width: 480px) { .shell-product-sub { display: block; } }
+
+      .shell-spacer { flex: 1; }
+
+      .shell-actions {
+        display: flex;
+        align-items: center;
+        height: 100%;
+      }
+      .shell-btn {
+        display: grid;
+        place-items: center;
+        width: var(--shell-h);
+        height: var(--shell-h);
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: var(--shell-icon);
+        transition: color 0.15s, background 0.15s;
+        position: relative;
+        text-decoration: none;
+      }
+      .shell-btn:hover { color: var(--shell-icon-hover); background: rgba(255,255,255,.08); }
+
+      .shell-avatar {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: var(--brand);
+        color: #fff;
+        font-size: 12px;
+        font-weight: 700;
+        display: grid;
+        place-items: center;
+        flex-shrink: 0;
+        border: 2px solid rgba(255,255,255,.3);
+      }
+      .shell-user-btn {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0 1rem;
+        height: 100%;
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: var(--shell-text);
+        font-size: 13px;
+        font-family: inherit;
+        transition: background 0.15s;
+        position: relative;
+      }
+      .shell-user-btn:hover { background: rgba(255,255,255,.08); }
+      .shell-user-name { display: none; }
+      @media (min-width: 768px) { .shell-user-name { display: block; } }
+
+      /* User dropdown */
+      .shell-user-dropdown {
+        position: absolute;
+        top: calc(var(--shell-h) - 2px);
+        right: 0;
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        box-shadow: 0 8px 24px rgba(0,0,0,.15);
+        border-radius: 4px;
+        min-width: 200px;
+        z-index: 400;
+        display: none;
+        overflow: hidden;
+      }
+      .shell-user-dropdown.open { display: block; }
+      .dropdown-user-info {
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--border);
+        background: var(--erp-bg);
+      }
+      .dropdown-user-name { font-weight: 600; font-size: 13px; color: var(--text-1); }
+      .dropdown-user-role { font-size: 11px; color: var(--text-2); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 2px; }
+      .dropdown-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 16px;
+        color: var(--text-1);
+        font-size: 13px;
+        text-decoration: none;
+        background: none;
+        border: none;
+        width: 100%;
+        text-align: left;
+        cursor: pointer;
+        font-family: inherit;
+        transition: background 0.12s;
+      }
+      .dropdown-item:hover { background: var(--nav-hover-bg); }
+      .dropdown-item.danger { color: var(--c-error); }
+      .dropdown-item svg { opacity: 0.6; flex-shrink: 0; }
+
+      /* ── Left Navigation ───────────────────────────────────── */
+      .erp-nav {
+        position: fixed;
+        top: var(--shell-h);
+        left: 0;
+        bottom: 0;
+        width: var(--nav-w);
+        background: var(--nav-bg);
+        border-right: 1px solid var(--border);
+        z-index: 200;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        transition: transform 0.25s ease, width 0.2s ease;
+      }
+
+      /* Mobile: hidden off-screen */
+      @media (max-width: 1023px) {
+        .erp-nav {
+          transform: translateX(calc(-1 * var(--nav-w)));
+          box-shadow: 4px 0 16px rgba(0,0,0,.12);
+        }
+        .erp-nav.open { transform: translateX(0); }
+      }
+
+      /* Desktop: collapsed icon-only */
+      @media (min-width: 1024px) {
+        body.nav-collapsed .erp-nav { width: var(--nav-w-sm); }
+        body.nav-collapsed .nav-label,
+        body.nav-collapsed .nav-section-label { display: none; }
+        body.nav-collapsed .nav-item { justify-content: center; padding: 0; }
+        body.nav-collapsed .nav-item svg { margin: 0; }
+        body.nav-collapsed .nav-section { padding-top: 0.5rem; }
+        body.nav-collapsed .nav-section + .nav-section { border-top: 1px solid var(--border); }
+      }
+
+      .nav-scroller { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 8px 0; }
+
+      .nav-section { padding-top: 8px; }
+      .nav-section-label {
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--nav-section-color);
+        padding: 6px 16px 4px;
+        display: block;
+        white-space: nowrap;
+        overflow: hidden;
+      }
+
+      .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 0 16px;
+        height: 44px;
+        color: var(--nav-text);
+        text-decoration: none;
+        font-size: 13.5px;
+        font-weight: 400;
+        transition: background 0.12s, color 0.12s;
+        position: relative;
+        cursor: pointer;
+        white-space: nowrap;
+        overflow: hidden;
+      }
+      .nav-item:hover { background: var(--nav-hover-bg); }
+      .nav-item.active {
+        background: var(--nav-active-bg);
+        color: var(--nav-active-color);
+        font-weight: 600;
+      }
+      .nav-item.active::before {
+        content: '';
+        position: absolute;
+        left: 0; top: 6px; bottom: 6px;
+        width: 3px;
+        background: var(--nav-active-border);
+        border-radius: 0 2px 2px 0;
+      }
+      .nav-item svg { flex-shrink: 0; opacity: 0.65; }
+      .nav-item:hover svg { opacity: 0.85; }
+      .nav-item.active svg { opacity: 1; }
+      .nav-label { flex: 1; }
+
+      .nav-divider {
+        height: 1px;
+        background: var(--border);
+        margin: 8px 0;
+      }
+
+      .nav-footer {
+        padding: 12px 0;
+        border-top: 1px solid var(--border);
+        flex-shrink: 0;
+      }
+
+      /* ── Nav overlay (mobile) ──────────────────────────────── */
+      .nav-overlay {
+        display: none;
+        position: fixed;
+        inset: var(--shell-h) 0 0 0;
+        background: rgba(0,0,0,.45);
         z-index: 199;
       }
-      .sidebar-overlay.visible { display: block; }
-      @media (min-width: 1024px) { .sidebar-overlay { display: none !important; } }
+      .nav-overlay.visible { display: block; }
+      @media (min-width: 1024px) { .nav-overlay { display: none !important; } }
 
-      /* ── Main ─────────────────────────────────────────── */
-      .admin-main { min-height: 100vh; padding-top: var(--topbar-h); }
-      @media (min-width: 1024px) { .admin-main { padding-left: var(--sidebar-w); padding-top: 0; } }
-      .admin-content { padding: 1.75rem 1.25rem; }
-      @media (min-width: 768px) { .admin-content { padding: 2rem 1.75rem; } }
-      @media (min-width: 1024px) { .admin-content { padding: 2.5rem 2.5rem; } }
+      /* ── Main Content ──────────────────────────────────────── */
+      .erp-main {
+        padding-top: var(--shell-h);
+        padding-left: var(--nav-w);
+        min-height: 100vh;
+        transition: padding-left 0.2s ease;
+      }
+      @media (max-width: 1023px) {
+        .erp-main { padding-left: 0; }
+      }
+      body.nav-collapsed .erp-main {
+        padding-left: var(--nav-w-sm);
+      }
+
+      .erp-content { padding: 0; }
+
+      /* ── Page Header (Fiori Object Page Header) ────────────── */
+      .page-header {
+        background: var(--card-bg);
+        border-bottom: 1px solid var(--border);
+        padding: 0 1.5rem;
+      }
+      .page-header-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 52px;
+        gap: 1rem;
+      }
+      .page-breadcrumb {
+        font-size: 12px;
+        color: var(--text-2);
+        margin-bottom: 2px;
+      }
+      .page-breadcrumb a { color: var(--text-2); text-decoration: none; }
+      .page-breadcrumb a:hover { color: var(--brand-dark); text-decoration: underline; }
+      .page-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--text-1);
+        letter-spacing: -0.01em;
+      }
+      .page-header-actions { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
+
+      /* ── Body padding ──────────────────────────────────────── */
+      .erp-body {
+        padding: 1.5rem;
+      }
+      @media (min-width: 768px) { .erp-body { padding: 1.75rem 2rem; } }
+
+      /* ── Buttons (Fiori style) ─────────────────────────────── */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 0 16px;
+        height: 36px;
+        border-radius: 4px;
+        font-size: 13px;
+        font-weight: 600;
+        font-family: inherit;
+        cursor: pointer;
+        text-decoration: none;
+        border: 1px solid transparent;
+        transition: background 0.12s, border-color 0.12s, box-shadow 0.12s;
+        white-space: nowrap;
+      }
+      .btn-primary {
+        background: var(--brand);
+        border-color: var(--brand-dark);
+        color: #fff;
+      }
+      .btn-primary:hover { background: var(--brand-dark); }
+      .btn-secondary {
+        background: var(--card-bg);
+        border-color: var(--border);
+        color: var(--text-1);
+      }
+      .btn-secondary:hover { background: var(--nav-hover-bg); border-color: #bbb; }
+      .btn-ghost {
+        background: none;
+        border-color: transparent;
+        color: var(--text-1);
+      }
+      .btn-ghost:hover { background: var(--nav-hover-bg); }
+
+      /* ── KPI Tile ──────────────────────────────────────────── */
+      .kpi-tile {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 16px 20px;
+        position: relative;
+        overflow: hidden;
+      }
+      .kpi-tile::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 3px;
+      }
+      .kpi-tile.success::before { background: var(--c-success); }
+      .kpi-tile.warning::before { background: var(--c-warning); }
+      .kpi-tile.error::before   { background: var(--c-error); }
+      .kpi-tile.info::before    { background: var(--c-info); }
+      .kpi-tile.brand::before   { background: var(--brand); }
+
+      .kpi-label {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--text-2);
+        margin-bottom: 6px;
+      }
+      .kpi-value {
+        font-size: 28px;
+        font-weight: 700;
+        line-height: 1;
+        color: var(--text-1);
+        margin-bottom: 4px;
+      }
+      .kpi-sub {
+        font-size: 12px;
+        color: var(--text-3);
+      }
+
+      /* ── Card ──────────────────────────────────────────────── */
+      .card {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        overflow: hidden;
+      }
+      .card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 20px;
+        border-bottom: 1px solid var(--border);
+        gap: 1rem;
+      }
+      .card-title {
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--text-1);
+      }
+      .card-subtitle {
+        font-size: 12px;
+        color: var(--text-2);
+        margin-top: 1px;
+      }
+      .card-action {
+        font-size: 12px;
+        color: var(--c-info);
+        text-decoration: none;
+        font-weight: 500;
+        white-space: nowrap;
+      }
+      .card-action:hover { text-decoration: underline; }
+
+      /* ── Table ─────────────────────────────────────────────── */
+      .erp-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+      .erp-table thead th {
+        text-align: left;
+        padding: 10px 16px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+        color: var(--text-2);
+        background: #fafafa;
+        border-bottom: 1px solid var(--border);
+        white-space: nowrap;
+      }
+      .erp-table tbody td {
+        padding: 11px 16px;
+        border-bottom: 1px solid rgba(0,0,0,.05);
+        color: var(--text-1);
+        vertical-align: middle;
+      }
+      .erp-table tbody tr:last-child td { border-bottom: none; }
+      .erp-table tbody tr:hover td { background: var(--nav-hover-bg); }
+
+      /* ── Badge ─────────────────────────────────────────────── */
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        border: 1px solid transparent;
+        white-space: nowrap;
+      }
+      .badge-success { background: var(--c-success-bg); color: var(--c-success); border-color: var(--c-success-border); }
+      .badge-warning { background: var(--c-warning-bg); color: var(--c-warning); border-color: var(--c-warning-border); }
+      .badge-error   { background: var(--c-error-bg);   color: var(--c-error);   border-color: var(--c-error-border); }
+      .badge-info    { background: var(--c-info-bg);    color: var(--c-info);    border-color: var(--c-info-border); }
+      .badge-neutral { background: #f0f0f0; color: #555; border-color: #ddd; }
+
+      /* ── Skeleton ──────────────────────────────────────────── */
+      .skeleton {
+        display: inline-block;
+        height: 1em;
+        width: 70px;
+        background: linear-gradient(90deg, #ebebeb 25%, #d8d8d8 50%, #ebebeb 75%);
+        background-size: 200% 100%;
+        animation: shimmer 1.2s infinite;
+        border-radius: 3px;
+      }
+      @keyframes shimmer {
+        0%   { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+      }
+
+      /* ── Empty state ───────────────────────────────────────── */
+      .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: var(--text-2);
+        font-size: 13px;
+      }
     </style>
   </head>
   <body>
-    <!-- Mobile topbar -->
-    <div class="admin-topbar">
-      <button class="btn-hamburger" id="sidebarToggle" aria-label="Abrir menú">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+
+    <!-- ── Shell Bar ──────────────────────────────────────────── -->
+    <header class="erp-shell">
+      <button class="shell-nav-toggle" id="navToggle" aria-label="Menú de navegación">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
         </svg>
       </button>
-      <span class="topbar-title">DobleYo Admin</span>
-    </div>
 
-    <div class="sidebar-overlay" id="sidebarOverlay"></div>
-
-    <aside class="admin-sidebar" id="adminSidebar">
-      <a href="/admin" class="sidebar-brand">
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-          <polyline points="9 22 9 12 15 12 15 22"/>
-        </svg>
-        DobleYo Café
+      <a href="/admin" class="shell-product">
+        <div class="shell-product-logo">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5">
+            <path d="M17 8h1a4 4 0 1 1 0 8h-1"/>
+            <path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8z"/>
+            <line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/>
+          </svg>
+        </div>
+        <div>
+          <div class="shell-product-name">DobleYo</div>
+          <div class="shell-product-sub">ERP Café</div>
+        </div>
       </a>
 
-      <nav class="sidebar-nav" aria-label="Admin">
-        <span class="nav-section-label">Principal</span>
-        <a href="/admin" class="nav-link" data-section="dashboard">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
-            <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
-          </svg>
-          Dashboard
-        </a>
-        <a href="/admin/pedidos" class="nav-link" data-section="pedidos">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
-            <line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>
-          </svg>
-          Pedidos
-        </a>
+      <div class="shell-spacer"></div>
 
-        <span class="nav-section-label">Catálogo</span>
-        <a href="/admin/inventario" class="nav-link" data-section="inventario">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
-          </svg>
-          Inventario
-        </a>
-        <a href="/admin/lotes" class="nav-link" data-section="lotes">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
-            <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
-          </svg>
-          Lotes
-        </a>
-
-        <span class="nav-section-label">Producción</span>
-        <a href="/app/harvest" class="nav-link">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-          </svg>
-          Cosechas
-        </a>
-        <a href="/app/send-roasting" class="nav-link">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="5"/>
-            <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
-            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-            <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
-          </svg>
-          Tostión
-        </a>
-        <a href="/app/packaging" class="nav-link">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/>
-            <line x1="10" y1="12" x2="14" y2="12"/>
-          </svg>
-          Empaque
-        </a>
-
-        <span class="nav-section-label">Analítica</span>
-        <a href="/admin/sales-map" class="nav-link" data-section="sales-map">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
-            <line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/>
-          </svg>
-          Mapa de ventas
-        </a>
-        <a href="/admin/finanzas" class="nav-link" data-section="finanzas">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="12" y1="1" x2="12" y2="23"/>
-            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-          </svg>
-          Finanzas
-        </a>
-        <a href="/app/auditoria" class="nav-link">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-            <polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
-          </svg>
-          Auditoría
-        </a>
-
-        <span class="nav-section-label">Gestión</span>
-        <a href="/admin/usuarios" class="nav-link" data-section="usuarios">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-            <circle cx="9" cy="7" r="4"/>
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-          </svg>
-          Usuarios
-        </a>
-        <a href="/" class="nav-link" target="_blank" rel="noreferrer">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <div class="shell-actions">
+        <!-- Ver tienda -->
+        <a href="/" target="_blank" class="shell-btn" title="Ver tienda">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
             <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
           </svg>
-          Ver tienda
         </a>
-      </nav>
 
-      <div class="sidebar-footer">
-        <div id="adminUserName">—</div>
-        <a href="#" id="adminLogout">Cerrar sesión</a>
+        <!-- User -->
+        <div style="position:relative">
+          <button class="shell-user-btn" id="userMenuBtn" aria-label="Menú de usuario">
+            <div class="shell-avatar" id="shellAvatar">—</div>
+            <span class="shell-user-name" id="shellUserName">Usuario</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="opacity:.6">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+          <div class="shell-user-dropdown" id="userDropdown">
+            <div class="dropdown-user-info">
+              <div class="dropdown-user-name" id="dropdownUserName">—</div>
+              <div class="dropdown-user-role">Administrador</div>
+            </div>
+            <button class="dropdown-item danger" id="logoutBtn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                <polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+              </svg>
+              Cerrar sesión
+            </button>
+          </div>
+        </div>
       </div>
-    </aside>
+    </header>
 
-    <div class="admin-main">
-      <div class="admin-content">
+    <!-- ── Nav Overlay (mobile) ───────────────────────────────── -->
+    <div class="nav-overlay" id="navOverlay"></div>
+
+    <!-- ── Left Navigation ───────────────────────────────────── -->
+    <nav class="erp-nav" id="erpNav" aria-label="Navegación ERP">
+      <div class="nav-scroller">
+
+        <div class="nav-section">
+          <span class="nav-section-label">Principal</span>
+          <a href="/admin" class="nav-item" data-section="dashboard">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+              <rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/>
+            </svg>
+            <span class="nav-label">Dashboard</span>
+          </a>
+          <a href="/admin/pedidos" class="nav-item" data-section="pedidos">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+              <line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>
+            </svg>
+            <span class="nav-label">Pedidos</span>
+          </a>
+        </div>
+
+        <div class="nav-divider"></div>
+
+        <div class="nav-section">
+          <span class="nav-section-label">Catálogo</span>
+          <a href="/admin/inventario" class="nav-item" data-section="inventario">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+            </svg>
+            <span class="nav-label">Inventario</span>
+          </a>
+          <a href="/admin/lotes" class="nav-item" data-section="lotes">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+              <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+            </svg>
+            <span class="nav-label">Lotes</span>
+          </a>
+        </div>
+
+        <div class="nav-divider"></div>
+
+        <div class="nav-section">
+          <span class="nav-section-label">Producción</span>
+          <a href="/app/harvest" class="nav-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+            <span class="nav-label">Cosechas</span>
+          </a>
+          <a href="/app/send-roasting" class="nav-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="5"/>
+              <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+              <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+            </svg>
+            <span class="nav-label">Tostión</span>
+          </a>
+          <a href="/app/packaging" class="nav-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/>
+              <line x1="10" y1="12" x2="14" y2="12"/>
+            </svg>
+            <span class="nav-label">Empaque</span>
+          </a>
+          <a href="/app/cupping" class="nav-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8z"/>
+            </svg>
+            <span class="nav-label">Cupping</span>
+          </a>
+        </div>
+
+        <div class="nav-divider"></div>
+
+        <div class="nav-section">
+          <span class="nav-section-label">Analítica</span>
+          <a href="/admin/sales-map" class="nav-item" data-section="sales-map">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
+              <line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/>
+            </svg>
+            <span class="nav-label">Mapa de ventas</span>
+          </a>
+          <a href="/admin/finanzas" class="nav-item" data-section="finanzas">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="1" x2="12" y2="23"/>
+              <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+            </svg>
+            <span class="nav-label">Finanzas</span>
+          </a>
+          <a href="/app/estadisticas" class="nav-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/>
+              <line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/>
+            </svg>
+            <span class="nav-label">Estadísticas</span>
+          </a>
+          <a href="/app/auditoria" class="nav-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+            </svg>
+            <span class="nav-label">Auditoría</span>
+          </a>
+        </div>
+
+        <div class="nav-divider"></div>
+
+        <div class="nav-section">
+          <span class="nav-section-label">Configuración</span>
+          <a href="/admin/usuarios" class="nav-item" data-section="usuarios">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+            <span class="nav-label">Usuarios</span>
+          </a>
+        </div>
+
+      </div>
+
+      <div class="nav-footer">
+        <div class="nav-item" style="height:36px;font-size:11px;color:var(--text-3);gap:8px;cursor:default">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity:.4">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          <span class="nav-label">DobleYo ERP v2.0</span>
+        </div>
+      </div>
+    </nav>
+
+    <!-- ── Main ───────────────────────────────────────────────── -->
+    <main class="erp-main">
+      <div class="erp-content">
         <slot />
       </div>
-    </div>
+    </main>
 
     <script is:inline src="/assets/js/auth-refresh.js"></script>
     <script>
-      // Auth check
-      (async function () {
+      // ── Auth check ─────────────────────────────────────────
+      (async () => {
         const path = window.location.pathname;
         try {
-          const res = await fetch("/api/auth/me", { credentials: "include" });
-          if (!res.ok) {
-            window.location.href = "/login?redirect=" + encodeURIComponent(path);
-            return;
-          }
+          const res = await fetch('/api/auth/me', { credentials: 'include' });
+          if (!res.ok) { window.location.href = '/login?redirect=' + encodeURIComponent(path); return; }
           const user = await res.json();
-          if (user.role !== "admin") {
-            alert("Acceso denegado. Solo administradores.");
-            window.location.href = "/";
-            return;
-          }
-          document.body.style.visibility = "visible";
-          const el = document.getElementById("adminUserName");
-          if (el) el.textContent = (user.first_name ? `${user.first_name} ${user.last_name}`.trim() : user.email);
+          if (user.role !== 'admin') { alert('Acceso denegado. Solo administradores.'); window.location.href = '/'; return; }
+
+          document.body.style.visibility = 'visible';
+
+          const fullName = (user.first_name ? `${user.first_name} ${user.last_name ?? ''}`.trim() : user.email);
+          const initials = fullName.split(' ').slice(0, 2).map((w: string) => w[0]).join('').toUpperCase();
+
+          const avatarEl = document.getElementById('shellAvatar');
+          if (avatarEl) avatarEl.textContent = initials;
+          const nameEl = document.getElementById('shellUserName');
+          if (nameEl) nameEl.textContent = user.first_name ?? user.email;
+          const dropEl = document.getElementById('dropdownUserName');
+          if (dropEl) dropEl.textContent = fullName;
         } catch {
-          window.location.href = "/login?redirect=" + encodeURIComponent(path);
+          window.location.href = '/login?redirect=' + encodeURIComponent(path);
         }
       })();
 
-      // Active nav
-      (function () {
-        const seg = window.location.pathname.split("/").filter(Boolean);
-        const section = seg[1] ?? "dashboard";
-        document.querySelectorAll(".nav-link[data-section]").forEach((a) => {
-          if ((a as HTMLAnchorElement).getAttribute("data-section") === section)
-            a.classList.add("active");
+      // ── Active nav ────────────────────────────────────────
+      (() => {
+        const seg = window.location.pathname.split('/').filter(Boolean);
+        const section = seg[1] ?? 'dashboard';
+        document.querySelectorAll('.nav-item[data-section]').forEach((a) => {
+          if ((a as HTMLAnchorElement).getAttribute('data-section') === section)
+            a.classList.add('active');
         });
       })();
 
-      // Sidebar toggle
-      (function () {
-        const sidebar = document.getElementById("adminSidebar");
-        const overlay = document.getElementById("sidebarOverlay");
-        const toggle = document.getElementById("sidebarToggle");
-        const close = () => {
-          sidebar?.classList.remove("open");
-          overlay?.classList.remove("visible");
-        };
-        toggle?.addEventListener("click", () => {
-          sidebar?.classList.toggle("open");
-          overlay?.classList.toggle("visible");
+      // ── Nav toggle ────────────────────────────────────────
+      (() => {
+        const nav = document.getElementById('erpNav');
+        const overlay = document.getElementById('navOverlay');
+        const toggle = document.getElementById('navToggle');
+        const isMobile = () => window.innerWidth < 1024;
+
+        toggle?.addEventListener('click', () => {
+          if (isMobile()) {
+            nav?.classList.toggle('open');
+            overlay?.classList.toggle('visible');
+          } else {
+            document.body.classList.toggle('nav-collapsed');
+            localStorage.setItem('erpNavCollapsed', document.body.classList.contains('nav-collapsed') ? '1' : '0');
+          }
         });
-        overlay?.addEventListener("click", close);
+
+        overlay?.addEventListener('click', () => {
+          nav?.classList.remove('open');
+          overlay?.classList.remove('visible');
+        });
+
+        // Restore collapsed state on desktop
+        if (window.innerWidth >= 1024 && localStorage.getItem('erpNavCollapsed') === '1') {
+          document.body.classList.add('nav-collapsed');
+        }
       })();
 
-      // Logout
-      document.getElementById("adminLogout")?.addEventListener("click", async (e) => {
-        e.preventDefault();
-        await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
-        window.location.href = "/login";
+      // ── User dropdown ─────────────────────────────────────
+      (() => {
+        const btn = document.getElementById('userMenuBtn');
+        const dropdown = document.getElementById('userDropdown');
+
+        btn?.addEventListener('click', (e) => {
+          e.stopPropagation();
+          dropdown?.classList.toggle('open');
+        });
+
+        document.addEventListener('click', () => dropdown?.classList.remove('open'));
+      })();
+
+      // ── Logout ─────────────────────────────────────────────
+      document.getElementById('logoutBtn')?.addEventListener('click', async () => {
+        await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+        window.location.href = '/login';
       });
     </script>
   </body>
