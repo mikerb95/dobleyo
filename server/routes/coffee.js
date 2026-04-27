@@ -161,15 +161,31 @@ coffeeRouter.post('/send-roasting', async (req, res) => {
       return res.status(409).json({ success: false, error: stateErr.message });
     }
 
-    // Verificar inventario disponible
+    // Verificar inventario disponible: total almacenado − ya enviado a tostión
+    const quantitySentNum = parseFloat(quantitySent);
+    if (!isFinite(quantitySentNum) || quantitySentNum <= 0) {
+      return res.status(400).json({ error: 'Cantidad inválida' });
+    }
+
     const inventoryResult = await query(
-      'SELECT SUM(weight_kg) as total FROM green_coffee_inventory WHERE lot_id = ?',
+      'SELECT COALESCE(SUM(weight_kg), 0) as total FROM green_coffee_inventory WHERE lot_id = ?',
+      [lotId]
+    );
+    const sentResult = await query(
+      `SELECT COALESCE(SUM(quantity_sent_kg), 0) as sent
+       FROM roasting_batches WHERE lot_id = ? AND status != 'cancelled'`,
       [lotId]
     );
 
-    const availableWeight = inventoryResult.rows[0]?.total || 0;
-    if (quantitySent > availableWeight) {
-      return res.status(400).json({ error: 'Cantidad excede el inventario disponible' });
+    const totalStored = parseFloat(inventoryResult.rows[0]?.total) || 0;
+    const alreadySent = parseFloat(sentResult.rows[0]?.sent) || 0;
+    const availableWeight = parseFloat((totalStored - alreadySent).toFixed(3));
+
+    if (quantitySentNum > availableWeight) {
+      return res.status(400).json({
+        error: 'Cantidad excede el inventario disponible',
+        detail: { total_stored_kg: totalStored, already_sent_kg: alreadySent, available_kg: availableWeight, requested_kg: quantitySentNum }
+      });
     }
 
     // Guardar en BD
