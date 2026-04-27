@@ -4,15 +4,16 @@
 CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     email VARCHAR(255) NOT NULL UNIQUE,
-    password_hash VARCHAR(255) NOT NULL,
+    password_hash VARCHAR(255),
+    google_id VARCHAR(255) UNIQUE,
     first_name VARCHAR(80),
     last_name VARCHAR(80),
     name VARCHAR(120),
     mobile_phone VARCHAR(20),
     landline_phone VARCHAR(20),
-    tax_id VARCHAR(50), -- Cédula o NIT
+    tax_id VARCHAR(50),
     city VARCHAR(120),
-    state_province VARCHAR(120), -- Departamento
+    state_province VARCHAR(120),
     country VARCHAR(120) DEFAULT 'Colombia',
     address TEXT,
     role TEXT NOT NULL DEFAULT 'client' CHECK (role IN ('admin', 'client', 'provider', 'caficultor')),
@@ -24,6 +25,7 @@ CREATE TABLE IF NOT EXISTS users (
 );
 CREATE INDEX idx_users_role ON users(role);
 CREATE INDEX idx_users_caficultor_status ON users(caficultor_status);
+CREATE INDEX IF NOT EXISTS idx_users_google_id ON users(google_id);
 
 -- Caficultor Applications
 CREATE TABLE IF NOT EXISTS caficultor_applications (
