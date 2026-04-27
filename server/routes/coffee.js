@@ -227,6 +227,28 @@ coffeeRouter.post('/roast-retrieval', async (req, res) => {
 
     const { quantity_sent_kg: quantitySent, lot_id: roastLotId } = roastingResult.rows[0];
 
+    // Validar pesos con precisión
+    const roastedWeightNum = parseFloat(roastedWeight);
+    const quantitySentNum  = parseFloat(quantitySent);
+
+    if (!isFinite(roastedWeightNum) || roastedWeightNum <= 0) {
+      return res.status(400).json({ error: 'Peso tostado inválido: debe ser mayor a 0' });
+    }
+    if (roastedWeightNum >= quantitySentNum) {
+      return res.status(400).json({
+        error: 'El peso tostado no puede ser igual o mayor al peso enviado (siempre hay pérdida por evaporación)',
+        detail: { sent_kg: quantitySentNum, received_kg: roastedWeightNum }
+      });
+    }
+    // Evaporación máxima física en café: ~35%. Menos del 65% de lo enviado es sospechoso.
+    const minReasonableWeight = parseFloat((quantitySentNum * 0.60).toFixed(3));
+    if (roastedWeightNum < minReasonableWeight) {
+      return res.status(400).json({
+        error: `Peso tostado inusualmente bajo (${roastedWeightNum} kg). Evaporación máxima esperada ~35%. Mínimo razonable: ${minReasonableWeight} kg`,
+        detail: { sent_kg: quantitySentNum, received_kg: roastedWeightNum, min_reasonable_kg: minReasonableWeight }
+      });
+    }
+
     // E-01: Validar transición → roasted
     if (roastLotId) {
       try {
@@ -235,13 +257,14 @@ coffeeRouter.post('/roast-retrieval', async (req, res) => {
         return res.status(409).json({ success: false, error: stateErr.message });
       }
     }
-    const weightLossPercent = (((quantitySent - roastedWeight) / quantitySent) * 100).toFixed(2);
+
+    const weightLossPercent = parseFloat(((quantitySentNum - roastedWeightNum) / quantitySentNum * 100).toFixed(2));
 
     // Guardar en BD
     const result = await query(
       `INSERT INTO roasted_coffee (roasting_id, roast_level, weight_kg, weight_loss_percent, actual_temp, roast_time_minutes, observations, status, created_at)
        VALUES (?, ?, ?, ?, ?, ?, ?, 'ready_for_storage', datetime('now')) RETURNING id`,
-      [roastingId, roastLevel, roastedWeight, weightLossPercent, actualTemp || null, roastTime || null, observations || null]
+      [roastingId, roastLevel, roastedWeightNum, weightLossPercent, actualTemp ? parseInt(actualTemp) : null, roastTime ? parseInt(roastTime) : null, observations || null]
     );
 
     // Actualizar estado del roasting batch
