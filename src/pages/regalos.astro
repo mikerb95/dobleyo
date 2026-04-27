@@ -1,0 +1,138 @@
+---
+import Layout from "../layouts/Layout.astro";
+import ProductCard from "../components/ProductCard.astro";
+import { getCanonicalUrl } from "../i18n/index.ts";
+
+let kits: any[] = [];
+try {
+  const { query } = await import("../../server/db.js");
+  const result = await query(
+    `SELECT
+       id, slug, name, category, description,
+       price, price_usd, rating,
+       image_url AS image,
+       stock_quantity AS stock,
+       is_deal AS deal, is_bestseller AS bestseller, is_new AS new, is_fast AS fast
+     FROM products
+     WHERE is_gift_set = 1 AND is_active = 1
+     ORDER BY price ASC`
+  );
+  kits = result.rows.map((p: any) => ({
+    ...p,
+    category: 'Regalos',
+    notes: null,
+  }));
+} catch (_) { /* BD no disponible */ }
+---
+
+<Layout
+  title="Regalos — DobleYo Café"
+  description="Kits y sets de regalo para amantes del café. El detalle perfecto para cualquier ocasión."
+  canonical={getCanonicalUrl('/regalos', 'es')}
+>
+  <section class="regalos-page">
+    <header class="regalos-header">
+      <nav class="breadcrumb" aria-label="Ruta de navegación">
+        <a href="/" data-link>Inicio</a>
+        <span aria-hidden="true">›</span>
+        <span>Regalos</span>
+      </nav>
+      <h1 class="regalos-title">El regalo perfecto para amantes del café</h1>
+      <p class="regalos-subtitle">Kits curados con los mejores cafés de especialidad colombiano. Empaque especial para regalo incluido.</p>
+    </header>
+
+    {kits.length > 0 ? (
+      <div class="regalos-grid">
+        {kits.map((kit: any) => (
+          <ProductCard product={kit} />
+        ))}
+      </div>
+    ) : (
+      <div class="regalos-empty">
+        <p>Próximamente — estamos preparando los mejores kits de regalo.</p>
+        <a href="/tienda" class="btn-back" data-link>Ver todos los productos</a>
+      </div>
+    )}
+
+    <div class="regalos-info">
+      <div class="info-card">
+        <span class="info-icon">📦</span>
+        <h3>Empaque especial</h3>
+        <p>Todos los kits vienen en caja de regalo lista para entregar.</p>
+      </div>
+      <div class="info-card">
+        <span class="info-icon">🚚</span>
+        <h3>Envío a todo el país</h3>
+        <p>Gratis en pedidos mayores a $120.000 COP.</p>
+      </div>
+      <div class="info-card">
+        <span class="info-icon">🔍</span>
+        <h3>Con trazabilidad</h3>
+        <p>Cada café incluye código QR para conocer su origen.</p>
+      </div>
+    </div>
+  </section>
+
+  <style>
+    .regalos-page {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1.5rem 1.25rem 5rem;
+    }
+
+    .breadcrumb {
+      display: flex;
+      gap: .4rem;
+      align-items: center;
+      font-size: .85rem;
+      color: var(--muted-fg, #888);
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .breadcrumb a { color: var(--accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+
+    .regalos-header { margin-bottom: 2.5rem; }
+    .regalos-title { font-size: clamp(1.8rem, 4vw, 2.8rem); margin: 0 0 .75rem; }
+    .regalos-subtitle { color: var(--muted-fg, #888); margin: 0; max-width: 600px; }
+
+    .regalos-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.75rem;
+      margin-bottom: 3.5rem;
+    }
+
+    .regalos-empty {
+      text-align: center;
+      padding: 4rem 0;
+      color: var(--muted-fg, #888);
+    }
+    .btn-back {
+      display: inline-block;
+      margin-top: 1rem;
+      padding: .65rem 1.5rem;
+      background: var(--accent);
+      color: #fff;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .regalos-info {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.5rem;
+      border-top: 1px solid var(--border, #e6e6e6);
+      padding-top: 2.5rem;
+    }
+    .info-card { text-align: center; padding: 1.5rem; }
+    .info-icon { font-size: 2rem; display: block; margin-bottom: .75rem; }
+    .info-card h3 { margin: 0 0 .5rem; font-size: 1rem; }
+    .info-card p { margin: 0; font-size: .9rem; color: var(--muted-fg, #888); }
+
+    @media (max-width: 480px) {
+      .regalos-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</Layout>
