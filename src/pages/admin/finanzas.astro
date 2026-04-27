@@ -282,6 +282,117 @@ const balancePositive = dashboard.month_balance >= 0;
       </form>
     </dialog>
 
+    <!-- Modal: Nueva Factura de Venta -->
+    <dialog id="modalSalesInvoice" class="adm-modal adm-modal--wide">
+      <form id="formSalesInvoice" class="adm-modal__form">
+        <h2 class="adm-modal__title">Nueva Factura de Venta</h2>
+        <div class="adm-form-grid">
+          <label class="adm-field">
+            <span>Cliente *</span>
+            <select name="customer_id" id="selectClient" required>
+              <option value="">— Seleccionar cliente —</option>
+            </select>
+          </label>
+          <label class="adm-field">
+            <span>Fecha factura *</span>
+            <input type="date" name="invoice_date" required />
+          </label>
+          <label class="adm-field">
+            <span>Fecha vencimiento *</span>
+            <input type="date" name="due_date" required />
+          </label>
+          <label class="adm-field">
+            <span>Costo de envío (COP)</span>
+            <input type="number" name="shipping_cost" min="0" step="1" value="0" />
+          </label>
+          <label class="adm-field adm-field--full">
+            <span>Notas</span>
+            <textarea name="notes" rows="2"></textarea>
+          </label>
+        </div>
+
+        <h3 class="adm-lines__title">Líneas de la factura</h3>
+        <div class="adm-lines-header">
+          <span>Descripción</span><span>Cant.</span><span>Precio unit.</span><span>Desc. %</span><span>IVA %</span><span>Total línea</span><span></span>
+        </div>
+        <div id="salesLines">
+          <div class="adm-line-row adm-line-row--sale">
+            <input type="text" name="sl[0][description]" placeholder="Descripción del producto" required />
+            <input type="number" name="sl[0][quantity]" placeholder="1" min="0.01" step="0.01" required class="adm-line-calc" />
+            <input type="number" name="sl[0][unit_price]" placeholder="0" min="0" step="1" required class="adm-line-calc" />
+            <input type="number" name="sl[0][discount_percent]" placeholder="0" min="0" max="100" step="0.1" value="0" class="adm-line-calc" />
+            <input type="number" name="sl[0][tax_rate]" placeholder="19" min="0" max="100" step="0.1" value="19" class="adm-line-calc" />
+            <span class="adm-line-total">$ 0</span>
+            <span class="adm-line-remove" onclick="removeSaleLine(this)">✕</span>
+          </div>
+        </div>
+        <div class="adm-lines-footer">
+          <button type="button" class="adm-btn adm-btn--outline adm-btn--sm" id="addSaleLine">+ Agregar línea</button>
+          <div class="adm-total-box">
+            <span>Subtotal: <strong id="saleSub">$ 0</strong></span>
+            <span>IVA: <strong id="saleTax">$ 0</strong></span>
+            <span>Envío: <strong id="saleShip">$ 0</strong></span>
+            <span class="adm-total-box__grand">TOTAL: <strong id="saleTotal">$ 0</strong></span>
+          </div>
+        </div>
+
+        <div class="adm-modal__actions">
+          <button type="button" class="adm-btn adm-btn--outline" id="closeModalSalesInvoice">Cancelar</button>
+          <button type="submit" class="adm-btn adm-btn--primary">Crear factura</button>
+        </div>
+        <p class="adm-modal__msg" id="salesInvoiceMsg"></p>
+      </form>
+    </dialog>
+
+    <!-- Modal: Registrar Pago -->
+    <dialog id="modalPayment" class="adm-modal adm-modal--wide">
+      <form id="formPayment" class="adm-modal__form">
+        <h2 class="adm-modal__title">Registrar Pago</h2>
+        <div class="adm-form-grid">
+          <label class="adm-field">
+            <span>Tipo *</span>
+            <select name="payment_type" required>
+              <option value="recibido">📥 Cobro recibido (de cliente)</option>
+              <option value="realizado">📤 Pago realizado (a proveedor/caficultor)</option>
+            </select>
+          </label>
+          <label class="adm-field">
+            <span>Fecha *</span>
+            <input type="date" name="payment_date" required />
+          </label>
+          <label class="adm-field adm-field--full">
+            <span>Socio (cliente / proveedor) *</span>
+            <select name="partner_id" id="selectPartner" required>
+              <option value="">— Seleccionar persona —</option>
+            </select>
+          </label>
+          <label class="adm-field">
+            <span>Monto (COP) *</span>
+            <input type="number" name="amount" min="1" step="1" required />
+          </label>
+          <label class="adm-field">
+            <span>Método de pago *</span>
+            <select name="payment_method_id" id="selectPaymentMethod" required>
+              <option value="">— Seleccionar método —</option>
+            </select>
+          </label>
+          <label class="adm-field">
+            <span>Referencia (N° transacción / cheque)</span>
+            <input type="text" name="reference" maxlength="100" placeholder="Opcional" />
+          </label>
+          <label class="adm-field adm-field--full">
+            <span>Notas</span>
+            <textarea name="notes" rows="2"></textarea>
+          </label>
+        </div>
+        <div class="adm-modal__actions">
+          <button type="button" class="adm-btn adm-btn--outline" id="closeModalPayment">Cancelar</button>
+          <button type="submit" class="adm-btn adm-btn--primary">Registrar pago</button>
+        </div>
+        <p class="adm-modal__msg" id="paymentMsg"></p>
+      </form>
+    </dialog>
+
     <!-- Modal: Nueva Factura de Compra -->
     <dialog id="modalPurchaseInvoice" class="adm-modal adm-modal--wide">
       <form id="formPurchaseInvoice" class="adm-modal__form">
@@ -296,8 +407,10 @@ const balancePositive = dashboard.month_balance >= 0;
             <input type="date" name="due_date" required />
           </label>
           <label class="adm-field">
-            <span>ID Caficultor</span>
-            <input type="number" name="caficultor_id" placeholder="User ID del caficultor" />
+            <span>Caficultor</span>
+            <select name="caficultor_id" id="selectCaficultor">
+              <option value="">— Seleccionar caficultor —</option>
+            </select>
           </label>
           <label class="adm-field">
             <span>N° Factura proveedor</span>
