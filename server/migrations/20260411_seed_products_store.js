@@ -8,7 +8,7 @@ export async function seedStoreProducts() {
     { name: 'tasting_notes', def: 'TEXT' },
     { name: 'name_en',       def: 'TEXT' },
     { name: 'price_usd',     def: 'INTEGER' },
-    { name: 'slug',          def: 'TEXT UNIQUE' },
+    { name: 'slug',          def: 'TEXT' },
   ];
   for (const col of newColumns) {
     try {
