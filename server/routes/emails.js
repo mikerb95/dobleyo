@@ -12,10 +12,9 @@ import { query } from '../db.js';
 
 export const emailRouter = express.Router();
 
-// Rate limiting para prevenir spam
 emailRouter.use(apiLimiter);
 
-// POST /api/emails/newsletter — suscripción al newsletter
+// POST /api/emails/newsletter
 emailRouter.post('/newsletter', async (req, res) => {
   try {
     const { email } = req.body;
@@ -24,91 +23,61 @@ emailRouter.post('/newsletter', async (req, res) => {
       return res.status(400).json({ success: false, error: 'Correo inválido' });
     }
 
-    // Guardar suscriptor en BD (tabla newsletter_subscribers si existe, si no loggear)
+    let isNew = true;
     try {
-      await query(
-        `INSERT INTO newsletter_subscribers (email, subscribed_at)
-         VALUES (?, datetime('now'))
-         ON CONFLICT (email) DO NOTHING`,
+      const result = await query(
+        `INSERT INTO newsletter_subscribers (email) VALUES (?) ON CONFLICT (email) DO NOTHING`,
         [email]
       );
+      isNew = (result.rowCount ?? 0) > 0;
     } catch (dbErr) {
-      // Si la tabla no existe aún, solo loggeamos (no falla la respuesta al usuario)
-      console.warn('[Newsletter] Tabla newsletter_subscribers no existe aún:', dbErr.message);
+      console.warn('[Newsletter] Error al guardar suscriptor:', dbErr.message);
     }
 
-    // Enviar email de bienvenida con código de descuento
-    try {
-      const discountCode = 'PRIMERA10';
-      await sendContactFormEmail({
-        from_name: 'Suscriptor Newsletter',
-        from_email: email,
-        subject: `Nueva suscripción newsletter: ${email}`,
-        message: `Email ${email} se suscribió al newsletter. Código descuento: ${discountCode}`
-      });
-    } catch (emailErr) {
-      console.warn('[Newsletter] No se pudo enviar notificación:', emailErr.message);
+    if (isNew) {
+      sendNewsletterWelcomeEmail(email).catch(err =>
+        console.warn('[Newsletter] Error al enviar email de bienvenida:', err.message)
+      );
     }
 
-    res.json({
-      success: true,
-      message: '\u00a1Suscrito exitosamente! Revisa tu correo para el código de descuento.'
-    });
+    res.json({ success: true, message: '¡Suscrito! Revisa tu correo para el código de descuento.' });
   } catch (error) {
     console.error('[POST /api/emails/newsletter] Error:', error);
     res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });
 
-// POST /api/emails/account-confirmation (PROTEGIDO: solo admin)
+// POST /api/emails/account-confirmation (solo admin)
 emailRouter.post('/account-confirmation', authenticateToken, requireRole('admin'), async (req, res) => {
   try {
     const { email, name, confirmationToken } = req.body;
-
     if (!email || !name || !confirmationToken) {
       return res.status(400).json({ error: 'Faltan parámetros requeridos' });
     }
-
-    const confirmationLink = `${process.env.SITE_BASE_URL}/verify-email?token=${confirmationToken}`;
     const result = await sendVerificationEmail(email, confirmationToken);
-
-    if (result.success) {
-      return res.json({ success: true, message: 'Email de confirmación enviado' });
-    } else {
-      return res.status(500).json({ error: 'Error al enviar email', details: result.error });
-    }
+    if (result.success) return res.json({ success: true, message: 'Email de confirmación enviado' });
+    return res.status(500).json({ error: 'Error al enviar email', details: result.error });
   } catch (error) {
     console.error('Error:', error);
     return res.status(500).json({ error: error.message });
   }
 });
 
-// POST /api/emails/order-confirmation (PROTEGIDO: solo admin)
+// POST /api/emails/order-confirmation (solo admin)
 emailRouter.post('/order-confirmation', authenticateToken, requireRole('admin'), async (req, res) => {
   try {
     const { email, customerName, orderId, items, subtotal, shipping, total, shippingAddress } = req.body;
-
     if (!email || !customerName || !orderId || !items || !total) {
       return res.status(400).json({ error: 'Faltan parámetros requeridos' });
     }
-
     const orderData = {
-      orderId,
-      date: new Date().toISOString(),
-      items,
-      subtotal: subtotal || 0,
-      shipping: shipping || 0,
-      total,
-      shippingAddress: shippingAddress || 'No especificada'
+      orderId, date: new Date().toISOString(), items,
+      subtotal: subtotal || 0, shipping: shipping || 0, total,
+      shippingAddress: shippingAddress || 'No especificada',
     };
-
     const result = await sendOrderConfirmationEmail(email, customerName, orderData);
-
-    if (result.success) {
-      return res.json({ success: true, message: 'Email de confirmación de pedido enviado' });
-    } else {
-      return res.status(500).json({ error: 'Error al enviar email', details: result.error });
-    }
+    if (result.success) return res.json({ success: true, message: 'Email de confirmación de pedido enviado' });
+    return res.status(500).json({ error: 'Error al enviar email', details: result.error });
   } catch (error) {
     console.error('Error:', error);
     return res.status(500).json({ error: error.message });
@@ -119,27 +88,12 @@ emailRouter.post('/order-confirmation', authenticateToken, requireRole('admin'),
 emailRouter.post('/contact', async (req, res) => {
   try {
     const { name, email, phone, subject, message, ip } = req.body;
-
     if (!name || !email || !subject || !message) {
       return res.status(400).json({ error: 'Faltan parámetros requeridos' });
     }
-
-    const contactData = {
-      name,
-      email,
-      phone: phone || '',
-      subject,
-      message,
-      ip: ip || req.ip
-    };
-
-    const result = await sendContactFormEmail(contactData);
-
-    if (result.success) {
-      return res.json({ success: true, message: 'Mensaje de contacto enviado al administrador' });
-    } else {
-      return res.status(500).json({ error: 'Error al enviar email', details: result.error });
-    }
+    const result = await sendContactFormEmail({ name, email, phone: phone || '', subject, message, ip: ip || req.ip });
+    if (result.success) return res.json({ success: true, message: 'Mensaje enviado al administrador' });
+    return res.status(500).json({ error: 'Error al enviar email', details: result.error });
   } catch (error) {
     console.error('Error:', error);
     return res.status(500).json({ error: error.message });
@@ -150,31 +104,24 @@ emailRouter.post('/contact', async (req, res) => {
 emailRouter.post('/contact-reply', authenticateToken, requireRole('admin'), async (req, res) => {
   try {
     const { email, clientName, message } = req.body;
-
     if (!email || !clientName || !message) {
       return res.status(400).json({ error: 'Faltan parámetros requeridos' });
     }
-
     const result = await sendContactReplyEmail(email, clientName, message);
-
-    if (result.success) {
-      return res.json({ success: true, message: 'Email de respuesta enviado al cliente' });
-    } else {
-      return res.status(500).json({ error: 'Error al enviar email', details: result.error });
-    }
+    if (result.success) return res.json({ success: true, message: 'Email de respuesta enviado' });
+    return res.status(500).json({ error: 'Error al enviar email', details: result.error });
   } catch (error) {
     console.error('Error:', error);
     return res.status(500).json({ error: error.message });
   }
 });
 
-// GET /api/emails/health (para verificar que el servicio funciona)
-emailRouter.get('/health', (req, res) => {
-  const hasApiKey = !!process.env.RESEND_API_KEY;
-  return res.json({
+// GET /api/emails/health
+emailRouter.get('/health', (_req, res) => {
+  res.json({
     status: 'ok',
-    resendConfigured: hasApiKey,
-    fromEmail: process.env.RESEND_FROM_EMAIL || 'No configurado'
+    resendConfigured: !!process.env.RESEND_API_KEY,
+    fromEmail: process.env.RESEND_FROM_EMAIL || 'No configurado',
   });
 });
 
