@@ -1,44 +1,29 @@
 import { query } from '../db.js';
 
 export async function addOriginFieldsToCoffeeHarvests() {
-  try {
-    // Obtener columnas existentes usando information_schema de PostgreSQL
-    const columns = await query(
-      `SELECT column_name FROM information_schema.columns
-       WHERE table_name = 'coffee_harvests' AND table_schema = 'public'`,
-      []
-    );
-    const existingColumns = columns.rows.map(col => col.column_name);
-
-    // Add region column if it doesn't exist
-    if (!existingColumns.includes('region')) {
-      await query(
-        'ALTER TABLE coffee_harvests ADD COLUMN region VARCHAR(80)',
-        []
-      );
-      console.log('✅ Added region column to coffee_harvests');
+  const cols = [
+    { name: 'region',   sql: 'ALTER TABLE coffee_harvests ADD COLUMN region TEXT' },
+    { name: 'altitude', sql: 'ALTER TABLE coffee_harvests ADD COLUMN altitude INTEGER' },
+  ];
+  for (const col of cols) {
+    try {
+      await query(col.sql);
+      console.log('✅ Added', col.name, 'to coffee_harvests');
+    } catch (err) {
+      if (err.message.includes('duplicate column')) {
+        console.log('⊗', col.name, 'ya existe');
+      } else {
+        throw err;
+      }
     }
-
-    // Add altitude column if it doesn't exist
-    if (!existingColumns.includes('altitude')) {
-      await query(
-        'ALTER TABLE coffee_harvests ADD COLUMN altitude INT',
-        []
-      );
-      console.log('✅ Added altitude column to coffee_harvests');
-    }
-
-    console.log('✅ Origin fields migration completed');
-  } catch (err) {
-    console.error('Error adding origin fields:', err);
-    throw err;
   }
+  console.log('✅ Origin fields migration completed');
 }
 
-// Run if called directly
 if (import.meta.url === `file://${process.argv[1]}`) {
-  addOriginFieldsToCoffeeHarvests().then(() => process.exit(0)).catch(err => {
-    console.error(err);
-    process.exit(1);
-  });
+  import('dotenv/config').then(() =>
+    addOriginFieldsToCoffeeHarvests().then(() => process.exit(0)).catch(err => {
+      console.error(err); process.exit(1);
+    })
+  );
 }
