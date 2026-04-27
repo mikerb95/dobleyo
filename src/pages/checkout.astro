@@ -64,11 +64,18 @@ import Layout from "../layouts/Layout.astro";
                   <input id="fEmail" type="email" class="co-input" placeholder="tu@correo.com" required autocomplete="email" />
                 </div>
               </div>
+
+              <!-- Teléfono con selector de país -->
               <div class="co-field">
                 <label class="co-label" for="fPhone">Teléfono</label>
-                <div class="co-input-wrap">
-                  <svg class="co-input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 2h2.6l1.1 3-1.5 1.1c.7 1.5 1.9 2.7 3.4 3.4L10.2 8l3 1.1v2.6a1 1 0 01-1 .8C5.3 12.5 2.5 9.7 2.7 4a1 1 0 01.8-1z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                  <input id="fPhone" type="tel" class="co-input" placeholder="+57 300 000 0000" inputmode="tel" autocomplete="tel" />
+                <div class="co-phone-wrap">
+                  <button type="button" class="co-phone-trigger" id="phoneTrigger" aria-expanded="false" aria-haspopup="listbox" aria-label="Seleccionar código de país">
+                    <span id="phoneFlag">🇨🇴</span>
+                    <span id="phoneCodeLabel">+57</span>
+                    <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true"><path d="M2 3.5l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </button>
+                  <div class="co-phone-dropdown" id="phoneDropdown" role="listbox" style="display:none;"></div>
+                  <input id="fPhone" type="tel" class="co-input co-input--phone-field" placeholder="300 000 0000" inputmode="tel" autocomplete="tel-national" />
                 </div>
               </div>
             </div>
@@ -81,14 +88,27 @@ import Layout from "../layouts/Layout.astro";
               </div>
             </div>
 
+            <!-- Departamento primero, luego ciudad filtrada -->
             <div class="co-field-row">
               <div class="co-field">
-                <label class="co-label" for="fCity">Ciudad <span class="co-req">*</span></label>
-                <input id="fCity" type="text" class="co-input" placeholder="Bogotá" required autocomplete="address-level2" />
+                <label class="co-label" for="fDept">Departamento <span class="co-req">*</span></label>
+                <div class="co-select-wrap">
+                  <svg class="co-select-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 1.5C5.52 1.5 3.5 3.52 3.5 6c0 3.5 4.5 8.5 4.5 8.5S12.5 9.5 12.5 6c0-2.48-2.02-4.5-4.5-4.5z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><circle cx="8" cy="6" r="1.5" stroke="currentColor" stroke-width="1.4"/></svg>
+                  <select id="fDept" class="co-select" required>
+                    <option value="">Selecciona departamento…</option>
+                  </select>
+                  <svg class="co-select-arrow" width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M2.5 4.5l3.5 3.5 3.5-3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
               </div>
               <div class="co-field">
-                <label class="co-label" for="fDept">Departamento</label>
-                <input id="fDept" type="text" class="co-input" placeholder="Cundinamarca" autocomplete="address-level1" />
+                <label class="co-label" for="fCity">Ciudad <span class="co-req">*</span></label>
+                <div class="co-select-wrap">
+                  <svg class="co-select-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="2" y="7" width="12" height="7.5" rx="1" stroke="currentColor" stroke-width="1.4"/><path d="M5 14.5v-4h2.5v4M8.5 14.5v-4H11v4M1 7l7-5.5L15 7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  <select id="fCity" class="co-select" required disabled>
+                    <option value="">Primero selecciona departamento</option>
+                  </select>
+                  <svg class="co-select-arrow" width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M2.5 4.5l3.5 3.5 3.5-3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
               </div>
             </div>
           </form>
@@ -202,6 +222,63 @@ import Layout from "../layouts/Layout.astro";
       function ready(fn) { if (document.readyState !== 'loading') fn(); else document.addEventListener('DOMContentLoaded', fn); }
       function whenCart(fn) { if (window.Cart) fn(); else setTimeout(() => whenCart(fn), 40); }
 
+      // ── Datos Colombia: departamentos y ciudades ──────────────────────────
+      const CO_DATA = {
+        'Amazonas':             ['Leticia', 'Puerto Nariño'],
+        'Antioquia':            ['Medellín', 'Bello', 'Envigado', 'Itagüí', 'Sabaneta', 'Rionegro', 'Apartadó', 'Turbo', 'Caucasia', 'Itaguí'],
+        'Arauca':               ['Arauca', 'Saravena', 'Tame', 'Fortul'],
+        'Atlántico':            ['Barranquilla', 'Soledad', 'Malambo', 'Sabanalarga', 'Galapa', 'Puerto Colombia'],
+        'Bogotá D.C.':          ['Bogotá D.C.'],
+        'Bolívar':              ['Cartagena', 'Magangué', 'El Carmen de Bolívar', 'Mompós'],
+        'Boyacá':               ['Tunja', 'Duitama', 'Sogamoso', 'Chiquinquirá', 'Paipa', 'Villa de Leyva'],
+        'Caldas':               ['Manizales', 'La Dorada', 'Chinchiná', 'Riosucio', 'Villamaría'],
+        'Caquetá':              ['Florencia', 'San Vicente del Caguán', 'Puerto Rico'],
+        'Casanare':             ['Yopal', 'Aguazul', 'Villanueva', 'Paz de Ariporo'],
+        'Cauca':                ['Popayán', 'Santander de Quilichao', 'Puerto Tejada', 'Patía'],
+        'Cesar':                ['Valledupar', 'Aguachica', 'Codazzi', 'Bosconia'],
+        'Chocó':                ['Quibdó', 'Istmina', 'Tadó', 'Riosucio'],
+        'Córdoba':              ['Montería', 'Cereté', 'Lorica', 'Sahagún', 'Montelíbano'],
+        'Cundinamarca':         ['Soacha', 'Zipaquirá', 'Facatativá', 'Chía', 'Mosquera', 'Madrid', 'Fusagasugá', 'Girardot', 'Cajicá', 'La Mesa'],
+        'Guainía':              ['Inírida'],
+        'Guaviare':             ['San José del Guaviare', 'El Retorno'],
+        'Huila':                ['Neiva', 'Pitalito', 'Garzón', 'La Plata', 'Campoalegre'],
+        'La Guajira':           ['Riohacha', 'Maicao', 'Uribia', 'Manaure'],
+        'Magdalena':            ['Santa Marta', 'Ciénaga', 'Fundación', 'Plato'],
+        'Meta':                 ['Villavicencio', 'Acacías', 'Granada', 'Puerto López'],
+        'Nariño':               ['Pasto', 'Tumaco', 'Ipiales', 'Túquerres'],
+        'Norte de Santander':   ['Cúcuta', 'Ocaña', 'Pamplona', 'Villa del Rosario', 'Los Patios'],
+        'Putumayo':             ['Mocoa', 'Puerto Asís', 'Valle del Guamuez'],
+        'Quindío':              ['Armenia', 'Calarcá', 'Montenegro', 'Quimbaya', 'La Tebaida'],
+        'Risaralda':            ['Pereira', 'Dosquebradas', 'Santa Rosa de Cabal', 'La Virginia'],
+        'San Andrés y Providencia': ['San Andrés', 'Providencia'],
+        'Santander':            ['Bucaramanga', 'Barrancabermeja', 'Floridablanca', 'Girón', 'Piedecuesta', 'Socorro'],
+        'Sucre':                ['Sincelejo', 'Corozal', 'San Marcos', 'Sampués'],
+        'Tolima':               ['Ibagué', 'Espinal', 'Melgar', 'Honda', 'Líbano'],
+        'Valle del Cauca':      ['Cali', 'Buenaventura', 'Palmira', 'Tuluá', 'Buga', 'Cartago', 'Yumbo', 'Jamundí', 'Candelaria'],
+        'Vaupés':               ['Mitú'],
+        'Vichada':              ['Puerto Carreño'],
+      };
+
+      // ── Países con indicativo ─────────────────────────────────────────────
+      const COUNTRIES = [
+        { flag: '🇨🇴', name: 'Colombia',          code: '+57'  },
+        { flag: '🇺🇸', name: 'Estados Unidos',     code: '+1'   },
+        { flag: '🇲🇽', name: 'México',             code: '+52'  },
+        { flag: '🇪🇸', name: 'España',             code: '+34'  },
+        { flag: '🇻🇪', name: 'Venezuela',          code: '+58'  },
+        { flag: '🇪🇨', name: 'Ecuador',            code: '+593' },
+        { flag: '🇵🇪', name: 'Perú',               code: '+51'  },
+        { flag: '🇨🇱', name: 'Chile',              code: '+56'  },
+        { flag: '🇦🇷', name: 'Argentina',          code: '+54'  },
+        { flag: '🇧🇷', name: 'Brasil',             code: '+55'  },
+        { flag: '🇵🇦', name: 'Panamá',             code: '+507' },
+        { flag: '🇨🇷', name: 'Costa Rica',         code: '+506' },
+        { flag: '🇩🇴', name: 'Rep. Dominicana',    code: '+1'   },
+        { flag: '🇬🇧', name: 'Reino Unido',        code: '+44'  },
+        { flag: '🇨🇦', name: 'Canadá',             code: '+1'   },
+      ];
+      let selectedCountry = COUNTRIES[0];
+
       ready(() => whenCart(function () {
         const cart    = window.Cart.getCart();
         const layout  = document.getElementById('checkoutLayout');
@@ -212,14 +289,16 @@ import Layout from "../layouts/Layout.astro";
         const coMobileBar = document.getElementById('coMobileBar');
         if (coMobileBar) { coMobileBar.setAttribute('aria-hidden', 'false'); coMobileBar.classList.add('co-mobile-bar--visible'); }
 
-        const sumList    = document.getElementById('sumList');
+        const sumList     = document.getElementById('sumList');
         const sumSubtotal = document.getElementById('sumSubtotal');
         const sumShipping = document.getElementById('sumShipping');
-        const sumTotal   = document.getElementById('sumTotal');
-        const shipNote   = document.getElementById('shipNote');
-        const payBtn     = document.getElementById('payBtn');
-        const payBtnText = document.getElementById('payBtnText');
-        const payError   = document.getElementById('payError');
+        const sumTotal    = document.getElementById('sumTotal');
+        const shipNote    = document.getElementById('shipNote');
+        const payBtn      = document.getElementById('payBtn');
+        const payBtnText  = document.getElementById('payBtnText');
+        const payError    = document.getElementById('payError');
+        const fDeptEl     = document.getElementById('fDept');
+        const fCityEl     = document.getElementById('fCity');
 
         function renderSummary() {
           const c = window.Cart.getCart();
@@ -249,41 +328,128 @@ import Layout from "../layouts/Layout.astro";
         }
         renderSummary();
 
-        // Validación inline
+        // ── Selector de país para teléfono ──────────────────────────────
+        const phoneDropdown = document.getElementById('phoneDropdown');
+        const phoneTrigger  = document.getElementById('phoneTrigger');
+        const phoneFlagEl   = document.getElementById('phoneFlag');
+        const phoneCodeEl   = document.getElementById('phoneCodeLabel');
+
+        phoneDropdown.innerHTML = COUNTRIES.map((c, i) => `
+          <button type="button" class="co-phone-option${i === 0 ? ' co-phone-option--selected' : ''}" data-index="${i}" role="option" aria-selected="${i === 0}">
+            <span>${c.flag}</span>
+            <span class="co-phone-option__name">${c.name}</span>
+            <span class="co-phone-option__code">${c.code}</span>
+          </button>
+        `).join('');
+
+        phoneTrigger.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const isOpen = phoneDropdown.style.display !== 'none';
+          phoneDropdown.style.display = isOpen ? 'none' : 'block';
+          phoneTrigger.setAttribute('aria-expanded', String(!isOpen));
+        });
+
+        phoneDropdown.addEventListener('click', (e) => {
+          const btn = e.target.closest('.co-phone-option');
+          if (!btn) return;
+          const idx = Number(btn.dataset.index);
+          selectedCountry = COUNTRIES[idx];
+          phoneFlagEl.textContent = selectedCountry.flag;
+          phoneCodeEl.textContent = selectedCountry.code;
+          phoneDropdown.querySelectorAll('.co-phone-option').forEach((el, i) => {
+            el.classList.toggle('co-phone-option--selected', i === idx);
+            el.setAttribute('aria-selected', String(i === idx));
+          });
+          phoneDropdown.style.display = 'none';
+          phoneTrigger.setAttribute('aria-expanded', 'false');
+        });
+
+        document.addEventListener('click', (e) => {
+          if (!e.target.closest('.co-phone-wrap')) {
+            phoneDropdown.style.display = 'none';
+            phoneTrigger.setAttribute('aria-expanded', 'false');
+          }
+        });
+
+        // ── Departamentos y ciudades ────────────────────────────────────
+        function populateDepts() {
+          Object.keys(CO_DATA).sort().forEach(dept => {
+            const opt = document.createElement('option');
+            opt.value = dept;
+            opt.textContent = dept;
+            fDeptEl.appendChild(opt);
+          });
+        }
+
+        function populateCities(dept) {
+          fCityEl.innerHTML = '';
+          if (!dept) {
+            fCityEl.innerHTML = '<option value="">Primero selecciona departamento</option>';
+            fCityEl.disabled = true;
+            return;
+          }
+          const cities = CO_DATA[dept] || [];
+          const placeholder = document.createElement('option');
+          placeholder.value = '';
+          placeholder.textContent = 'Selecciona ciudad…';
+          fCityEl.appendChild(placeholder);
+          cities.forEach(city => {
+            const opt = document.createElement('option');
+            opt.value = city;
+            opt.textContent = city;
+            fCityEl.appendChild(opt);
+          });
+          fCityEl.disabled = false;
+        }
+
+        populateDepts();
+        populateCities('');
+
+        fDeptEl.addEventListener('change', () => {
+          populateCities(fDeptEl.value);
+          clearError(fDeptEl);
+          clearError(fCityEl);
+        });
+        fCityEl.addEventListener('change', () => clearError(fCityEl));
+
+        // ── Validación inline ────────────────────────────────────────────
         function setError(input, msg) {
           input.classList.add('co-input--error');
-          let hint = input.parentElement.querySelector('.co-input-hint') || input.nextElementSibling;
-          if (!hint || !hint.classList.contains('co-input-hint')) {
+          const field = input.closest('.co-field');
+          let hint = field && field.querySelector('.co-input-hint');
+          if (!hint) {
             hint = document.createElement('p');
             hint.className = 'co-input-hint';
-            input.insertAdjacentElement('afterend', hint);
+            (field || input.parentElement).appendChild(hint);
           }
           hint.textContent = msg;
         }
         function clearError(input) {
           input.classList.remove('co-input--error');
-          const p = input.parentElement.querySelector('.co-input-hint') || input.nextElementSibling;
-          if (p && p.classList.contains('co-input-hint')) p.textContent = '';
+          const field = input.closest('.co-field');
+          const hint = field && field.querySelector('.co-input-hint');
+          if (hint) hint.textContent = '';
         }
 
-        ['fName','fEmail','fAddr','fCity'].forEach(id => {
+        ['fName', 'fEmail', 'fAddr'].forEach(id => {
           const el = document.getElementById(id);
           if (el) el.addEventListener('input', () => clearError(el));
         });
 
-        const coMbPayBtn = document.getElementById('coMbPayBtn');
+        const coMbPayBtn  = document.getElementById('coMbPayBtn');
         const coMbPayText = document.getElementById('coMbPayText');
         if (coMbPayBtn) coMbPayBtn.addEventListener('click', () => payBtn.click());
 
         payBtn.addEventListener('click', async () => {
           payError.style.display = 'none';
 
-          const fName  = document.getElementById('fName').value.trim();
-          const fEmail = document.getElementById('fEmail').value.trim();
-          const fPhone = document.getElementById('fPhone').value.trim();
-          const fAddr  = document.getElementById('fAddr').value.trim();
-          const fCity  = document.getElementById('fCity').value.trim();
-          const fDept  = document.getElementById('fDept').value.trim();
+          const fName      = document.getElementById('fName').value.trim();
+          const fEmail     = document.getElementById('fEmail').value.trim();
+          const fPhoneRaw  = document.getElementById('fPhone').value.trim();
+          const fAddr      = document.getElementById('fAddr').value.trim();
+          const fDept      = fDeptEl.value;
+          const fCity      = fCityEl.value;
+          const fPhone     = fPhoneRaw ? `${selectedCountry.code} ${fPhoneRaw}` : undefined;
 
           let hasError = false;
           if (!fName)  { setError(document.getElementById('fName'),  'Campo obligatorio'); hasError = true; }
@@ -292,7 +458,8 @@ import Layout from "../layouts/Layout.astro";
             hasError = true;
           }
           if (!fAddr)  { setError(document.getElementById('fAddr'),  'Campo obligatorio'); hasError = true; }
-          if (!fCity)  { setError(document.getElementById('fCity'),  'Campo obligatorio'); hasError = true; }
+          if (!fDept)  { setError(fDeptEl, 'Selecciona un departamento'); hasError = true; }
+          if (!fCity)  { setError(fCityEl, 'Selecciona una ciudad'); hasError = true; }
           if (hasError) return;
 
           payBtn.disabled = true;
@@ -307,18 +474,18 @@ import Layout from "../layouts/Layout.astro";
               headers: { 'Content-Type': 'application/json' },
               credentials: 'include',
               body: JSON.stringify({
-                customerName: fName,
-                customerEmail: fEmail,
-                customerPhone: fPhone || undefined,
-                shippingAddress: fAddr,
-                shippingCity: fCity,
+                customerName:       fName,
+                customerEmail:      fEmail,
+                customerPhone:      fPhone,
+                shippingAddress:    fAddr,
+                shippingCity:       fCity,
                 shippingDepartment: fDept || undefined,
                 items: currentCart.map(p => ({
-                  productId: p.id,
-                  productName: p.name,
+                  productId:    p.id,
+                  productName:  p.name,
                   productImage: p.image,
-                  unitPrice: p.price,
-                  quantity: p.qty,
+                  unitPrice:    p.price,
+                  quantity:     p.qty,
                 })),
               }),
             });
@@ -472,6 +639,7 @@ import Layout from "../layouts/Layout.astro";
       transform: translateY(-50%);
       color: #9ca3af;
       pointer-events: none;
+      z-index: 1;
     }
     .co-input-wrap .co-input { padding-left: 2.5rem; }
     .co-input {
@@ -498,6 +666,124 @@ import Layout from "../layouts/Layout.astro";
       color: #dc2626;
       margin: .2rem 0 0;
     }
+
+    /* Select con ícono y flecha personalizada */
+    .co-select-wrap {
+      position: relative;
+    }
+    .co-select-icon {
+      position: absolute;
+      left: .875rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #9ca3af;
+      pointer-events: none;
+      z-index: 1;
+    }
+    .co-select-arrow {
+      position: absolute;
+      right: .875rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #9ca3af;
+      pointer-events: none;
+    }
+    .co-select {
+      width: 100%;
+      border: 1.5px solid var(--border);
+      border-radius: .625rem;
+      padding: .75rem 2.25rem .75rem 2.5rem;
+      font-size: .95rem;
+      color: var(--coffee);
+      background: #fafafa;
+      outline: none;
+      transition: border-color .15s, background .15s, box-shadow .15s;
+      box-sizing: border-box;
+      appearance: none;
+      -webkit-appearance: none;
+      cursor: pointer;
+    }
+    .co-select:focus {
+      border-color: var(--coffee);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(37,26,20,.08);
+    }
+    .co-select:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+      background: #f3f4f6;
+      color: #9ca3af;
+    }
+    .co-select.co-input--error {
+      border-color: #dc2626 !important;
+      background: #fff9f9;
+    }
+
+    /* Teléfono: trigger + dropdown + input */
+    .co-phone-wrap {
+      position: relative;
+      display: flex;
+      align-items: stretch;
+    }
+    .co-phone-trigger {
+      display: flex;
+      align-items: center;
+      gap: .3rem;
+      padding: .75rem .625rem;
+      border: 1.5px solid var(--border);
+      border-right: none;
+      border-radius: .625rem 0 0 .625rem;
+      background: #fafafa;
+      cursor: pointer;
+      font-size: .875rem;
+      color: var(--coffee);
+      white-space: nowrap;
+      transition: background .15s, border-color .15s;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+    .co-phone-trigger:hover { background: #f5f0eb; }
+    .co-phone-trigger:focus { outline: none; border-color: var(--coffee); }
+    .co-phone-trigger svg { color: #9ca3af; flex-shrink: 0; }
+    .co-input--phone-field {
+      border-radius: 0 .625rem .625rem 0 !important;
+      padding-left: .875rem !important;
+      flex: 1;
+      min-width: 0;
+    }
+    .co-phone-dropdown {
+      position: absolute;
+      top: calc(100% + .375rem);
+      left: 0;
+      z-index: 400;
+      background: #fff;
+      border: 1.5px solid var(--border);
+      border-radius: .75rem;
+      box-shadow: 0 8px 28px rgba(0,0,0,.13);
+      min-width: 230px;
+      max-height: 270px;
+      overflow-y: auto;
+      padding: .3rem;
+    }
+    .co-phone-option {
+      display: flex;
+      align-items: center;
+      gap: .625rem;
+      width: 100%;
+      padding: .45rem .75rem;
+      border: none;
+      background: transparent;
+      border-radius: .5rem;
+      cursor: pointer;
+      font-size: .875rem;
+      text-align: left;
+      transition: background .1s;
+      color: var(--coffee);
+    }
+    .co-phone-option:hover { background: #f5f0eb; }
+    .co-phone-option--selected { background: #fdf6ef; font-weight: 600; }
+    .co-phone-option__name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .co-phone-option__code { color: var(--muted-fg); font-size: .8rem; flex-shrink: 0; }
 
     /* Payment */
     .co-pay-methods { display: flex; flex-direction: column; gap: .75rem; margin-bottom: 1.25rem; }
@@ -728,7 +1014,6 @@ import Layout from "../layouts/Layout.astro";
       .co-layout { grid-template-columns: 1fr; }
       .co-field-row { grid-template-columns: 1fr; }
 
-      /* Sticky mobile bar */
       .co-mobile-bar {
         position: fixed;
         bottom: 0;
