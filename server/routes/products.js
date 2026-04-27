@@ -1,5 +1,7 @@
 import { Router } from 'express';
+import { body, validationResult } from 'express-validator';
 import { query } from '../db.js';
+import { authenticateToken, requireRole } from '../auth.js';
 
 export const productsRouter = Router();
 
@@ -119,4 +121,80 @@ productsRouter.get('/:id', async (req, res) => {
     console.error('[GET /api/products/:id] Error:', err);
     res.status(500).json({ success: false, error: 'Error al cargar producto' });
   }
+});
+
+// ─── Reseñas ──────────────────────────────────────────────────────────────────
+
+// GET /api/products/:id/reviews
+productsRouter.get('/:id/reviews', async (req, res) => {
+    try {
+        const { rows } = await query(
+            `SELECT id, reviewer_name, rating, comment, created_at
+             FROM product_reviews
+             WHERE product_id = ? AND is_approved = 1
+             ORDER BY created_at DESC`,
+            [req.params.id]
+        );
+        const { rows: agg } = await query(
+            `SELECT AVG(CAST(rating AS REAL)) AS avg_rating, COUNT(*) AS total
+             FROM product_reviews WHERE product_id = ? AND is_approved = 1`,
+            [req.params.id]
+        );
+        res.json({
+            success: true,
+            data: { reviews: rows, avg_rating: agg[0]?.avg_rating ?? null, total: agg[0]?.total ?? 0 },
+        });
+    } catch (err) {
+        console.error('[GET /api/products/:id/reviews] Error:', err);
+        res.status(500).json({ success: false, error: 'Error interno' });
+    }
+});
+
+// POST /api/products/:id/reviews
+productsRouter.post('/:id/reviews',
+    [
+        body('reviewer_name').trim().notEmpty().withMessage('Nombre requerido'),
+        body('rating').isInt({ min: 1, max: 5 }).withMessage('Rating entre 1 y 5'),
+        body('comment').optional().trim(),
+    ],
+    async (req, res) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) return res.status(422).json({ success: false, errors: errors.array() });
+
+        try {
+            const { reviewer_name, rating, comment } = req.body;
+            const user_id = req.user?.id ?? null;
+            await query(
+                `INSERT INTO product_reviews (product_id, user_id, reviewer_name, rating, comment)
+                 VALUES (?, ?, ?, ?, ?)`,
+                [req.params.id, user_id, reviewer_name, parseInt(rating), comment || null]
+            );
+            res.status(201).json({ success: true, message: 'Reseña enviada. Aparecerá tras revisión.' });
+        } catch (err) {
+            console.error('[POST /api/products/:id/reviews] Error:', err);
+            res.status(500).json({ success: false, error: 'Error interno' });
+        }
+    }
+);
+
+// PATCH /api/products/reviews/:reviewId/approve (admin)
+productsRouter.patch('/reviews/:reviewId/approve', authenticateToken, requireRole('admin'), async (req, res) => {
+    try {
+        await query(`UPDATE product_reviews SET is_approved = 1 WHERE id = ?`, [req.params.reviewId]);
+        res.json({ success: true });
+    } catch (err) {
+        console.error('[PATCH /api/products/reviews/:reviewId/approve] Error:', err);
+        res.status(500).json({ success: false, error: 'Error interno' });
+    }
+});
+
+// DELETE /api/products/reviews/:reviewId (admin)
+productsRouter.delete('/reviews/:reviewId', authenticateToken, requireRole('admin'), async (req, res) => {
+    try {
+        await query(`DELETE FROM product_reviews WHERE id = ?`, [req.params.reviewId]);
+        res.json({ success: true });
+    } catch (err) {
+        console.error('[DELETE /api/products/reviews/:reviewId] Error:', err);
+        res.status(500).json({ success: false, error: 'Error interno' });
+    }
 });

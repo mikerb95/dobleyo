@@ -265,6 +265,45 @@ const productJsonLd = {
         )}
       </div>
     </div>
+
+    <!-- Sección de reseñas -->
+    <section class="reviews-section" id="reviewsSection" data-product-id={product.id}>
+      <h2 class="reviews-title">Reseñas</h2>
+
+      <div class="reviews-summary" id="reviewsSummary">
+        <span class="reviews-avg" id="reviewsAvg">—</span>
+        <span class="reviews-stars" id="reviewsStars"></span>
+        <span class="reviews-count" id="reviewsCount"></span>
+      </div>
+
+      <div class="reviews-list" id="reviewsList">
+        <p class="reviews-empty" id="reviewsEmpty" style="display:none">Sé el primero en dejar una reseña.</p>
+      </div>
+
+      <div class="review-form-wrap">
+        <h3 class="review-form-title">Dejar una reseña</h3>
+        <form class="review-form" id="reviewForm" novalidate>
+          <div class="review-field">
+            <label class="review-label" for="revName">Tu nombre <span style="color:var(--accent)">*</span></label>
+            <input id="revName" type="text" class="review-input" placeholder="Juan García" required />
+          </div>
+          <div class="review-field">
+            <label class="review-label">Calificación <span style="color:var(--accent)">*</span></label>
+            <div class="star-picker" id="starPicker" role="group" aria-label="Selecciona una calificación">
+              {[1,2,3,4,5].map(n => (
+                <button type="button" class="star-btn" data-val={n} aria-label={`${n} estrella${n > 1 ? 's' : ''}`}>★</button>
+              ))}
+            </div>
+          </div>
+          <div class="review-field">
+            <label class="review-label" for="revComment">Comentario</label>
+            <textarea id="revComment" class="review-input" rows={3} placeholder="Cuéntanos tu experiencia…"></textarea>
+          </div>
+          <div id="reviewMsg" class="review-msg" style="display:none"></div>
+          <button type="submit" class="review-submit" id="reviewSubmit">Enviar reseña</button>
+        </form>
+      </div>
+    </section>
   </section>
 
   <script>
