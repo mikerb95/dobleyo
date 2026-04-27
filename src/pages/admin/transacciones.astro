@@ -1,0 +1,568 @@
+---
+export const prerender = false;
+
+import AdminLayout from "../../layouts/AdminLayout.astro";
+
+const url = Astro.url;
+const params = url.searchParams;
+
+const dateFrom  = params.get("date_from")  ?? "";
+const dateTo    = params.get("date_to")    ?? "";
+const tipo      = params.get("tipo")       ?? "";
+const estado    = params.get("estado")     ?? "";
+const direccion = params.get("direccion")  ?? "";
+const search    = params.get("search")     ?? "";
+const page      = Math.max(1, parseInt(params.get("page") ?? "1", 10));
+const limit     = 50;
+const offset    = (page - 1) * limit;
+
+let transactions = [];
+let total = 0;
+let totalIngresos = 0;
+let totalEgresos = 0;
+let balance = 0;
+let fetchError: string | null = null;
+
+const apiParams = new URLSearchParams();
+if (dateFrom)  apiParams.set("date_from",  dateFrom);
+if (dateTo)    apiParams.set("date_to",    dateTo);
+if (tipo)      apiParams.set("tipo",       tipo);
+if (estado)    apiParams.set("estado",     estado);
+if (direccion) apiParams.set("direccion",  direccion);
+if (search)    apiParams.set("search",     search);
+apiParams.set("limit",  String(limit));
+apiParams.set("offset", String(offset));
+
+try {
+  const resp = await fetch(`${url.origin}/api/finance/transactions?${apiParams}`, {
+    headers: { cookie: Astro.request.headers.get("cookie") ?? "" },
+  });
+  if (resp.ok) {
+    const json = await resp.json();
+    if (json.success) {
+      transactions  = json.data          ?? [];
+      total         = json.total         ?? 0;
+      totalIngresos = json.total_ingresos ?? 0;
+      totalEgresos  = json.total_egresos  ?? 0;
+      balance       = json.balance        ?? 0;
+    } else {
+      fetchError = json.error;
+    }
+  } else {
+    fetchError = resp.status === 401 ? null : `Error del servidor (${resp.status})`;
+  }
+} catch (e) {
+  fetchError = "No se pudo conectar con la base de datos";
+}
+
+const totalPages = Math.ceil(total / limit);
+
+function fmtCOP(val: number | string) {
+  return new Intl.NumberFormat("es-CO", {
+    style: "currency", currency: "COP", maximumFractionDigits: 0
+  }).format(Number(val ?? 0));
+}
+
+function fmtDate(d: string) {
+  if (!d) return "—";
+  return new Date(d + "T00:00:00").toLocaleDateString("es-CO", {
+    day: "2-digit", month: "short", year: "numeric"
+  });
+}
+
+const TIPO_META: Record<string, { label: string; color: string; bg: string }> = {
+  factura_venta:  { label: "Factura venta",  color: "#065f46", bg: "#d1fae5" },
+  factura_compra: { label: "Factura compra", color: "#92400e", bg: "#fef3c7" },
+  gasto:          { label: "Gasto",          color: "#991b1b", bg: "#fee2e2" },
+  pago:           { label: "Pago",           color: "#1e40af", bg: "#dbeafe" },
+};
+
+const ESTADO_META: Record<string, { label: string; color: string; bg: string }> = {
+  borrador:       { label: "Borrador",       color: "#374151", bg: "#f3f4f6" },
+  confirmada:     { label: "Confirmada",     color: "#92400e", bg: "#fef3c7" },
+  confirmado:     { label: "Confirmado",     color: "#92400e", bg: "#fef3c7" },
+  pagada_parcial: { label: "Pago parcial",   color: "#1e40af", bg: "#dbeafe" },
+  pagada:         { label: "Pagada",         color: "#065f46", bg: "#d1fae5" },
+  pagado:         { label: "Pagado",         color: "#065f46", bg: "#d1fae5" },
+  aprobado:       { label: "Aprobado",       color: "#065f46", bg: "#d1fae5" },
+  cancelada:      { label: "Cancelada",      color: "#991b1b", bg: "#fee2e2" },
+  cancelado:      { label: "Cancelado",      color: "#991b1b", bg: "#fee2e2" },
+  rechazado:      { label: "Rechazado",      color: "#991b1b", bg: "#fee2e2" },
+  conciliado:     { label: "Conciliado",     color: "#065f46", bg: "#d1fae5" },
+};
+
+function tipoMeta(t: string) { return TIPO_META[t]   ?? { label: t, color: "#374151", bg: "#f3f4f6" }; }
+function estadoMeta(s: string){ return ESTADO_META[s] ?? { label: s, color: "#374151", bg: "#f3f4f6" }; }
+
+function pageUrl(p: number) {
+  const q = new URLSearchParams(apiParams);
+  q.set("page", String(p));
+  q.delete("limit");
+  q.delete("offset");
+  return `/admin/transacciones?${q}`;
+}
+---
+
+<AdminLayout>
+  <section class="tx-page">
+
+    <!-- Encabezado -->
+    <div class="tx-header">
+      <div>
+        <h1 class="tx-title">Libro de Transacciones</h1>
+        <p class="tx-subtitle">Registro legal completo de todos los movimientos financieros</p>
+      </div>
+      <div class="tx-header-actions">
+        <a href="/admin/finanzas" class="tx-btn tx-btn--ghost">Dashboard Finanzas</a>
+        <button id="exportBtn" class="tx-btn tx-btn--primary" type="button">
+          Exportar CSV
+        </button>
+      </div>
+    </div>
+
+    {fetchError && (
+      <div class="tx-error">
+        <strong>Error al cargar:</strong> {fetchError}
+      </div>
+    )}
+
+    <!-- KPIs del período filtrado -->
+    <div class="tx-kpi-grid">
+      <div class="tx-kpi tx-kpi--green">
+        <div class="tx-kpi__label">Ingresos del período</div>
+        <div class="tx-kpi__value">{fmtCOP(totalIngresos)}</div>
+        <div class="tx-kpi__sub">Facturas venta + pagos recibidos</div>
+      </div>
+      <div class="tx-kpi tx-kpi--red">
+        <div class="tx-kpi__label">Egresos del período</div>
+        <div class="tx-kpi__value">{fmtCOP(totalEgresos)}</div>
+        <div class="tx-kpi__sub">Compras + gastos + pagos realizados</div>
+      </div>
+      <div class={`tx-kpi ${balance >= 0 ? "tx-kpi--blue" : "tx-kpi--amber"}`}>
+        <div class="tx-kpi__label">Balance neto</div>
+        <div class="tx-kpi__value">{fmtCOP(balance)}</div>
+        <div class="tx-kpi__sub">{total} transacción(es) — pág. {page} de {Math.max(1, totalPages)}</div>
+      </div>
+    </div>
+
+    <!-- Filtros -->
+    <form method="get" action="/admin/transacciones" class="tx-filters">
+      <div class="tx-filters__row">
+        <div class="tx-filter-group">
+          <label class="tx-filter-label" for="date_from">Desde</label>
+          <input
+            id="date_from" name="date_from" type="date"
+            value={dateFrom} class="tx-filter-input"
+          />
+        </div>
+        <div class="tx-filter-group">
+          <label class="tx-filter-label" for="date_to">Hasta</label>
+          <input
+            id="date_to" name="date_to" type="date"
+            value={dateTo} class="tx-filter-input"
+          />
+        </div>
+        <div class="tx-filter-group">
+          <label class="tx-filter-label" for="tipo">Tipo</label>
+          <select id="tipo" name="tipo" class="tx-filter-input">
+            <option value="">Todos los tipos</option>
+            <option value="factura_venta"  selected={tipo === "factura_venta"}>Facturas venta</option>
+            <option value="factura_compra" selected={tipo === "factura_compra"}>Facturas compra</option>
+            <option value="gasto"          selected={tipo === "gasto"}>Gastos</option>
+            <option value="pago"           selected={tipo === "pago"}>Pagos</option>
+          </select>
+        </div>
+        <div class="tx-filter-group">
+          <label class="tx-filter-label" for="direccion">Dirección</label>
+          <select id="direccion" name="direccion" class="tx-filter-input">
+            <option value="">Todas</option>
+            <option value="ingreso" selected={direccion === "ingreso"}>Ingresos</option>
+            <option value="egreso"  selected={direccion === "egreso"}>Egresos</option>
+          </select>
+        </div>
+        <div class="tx-filter-group">
+          <label class="tx-filter-label" for="estado">Estado</label>
+          <select id="estado" name="estado" class="tx-filter-input">
+            <option value="">Todos los estados</option>
+            <option value="borrador"       selected={estado === "borrador"}>Borrador</option>
+            <option value="confirmada"     selected={estado === "confirmada"}>Confirmada</option>
+            <option value="confirmado"     selected={estado === "confirmado"}>Confirmado</option>
+            <option value="pagada_parcial" selected={estado === "pagada_parcial"}>Pago parcial</option>
+            <option value="pagada"         selected={estado === "pagada"}>Pagada</option>
+            <option value="pagado"         selected={estado === "pagado"}>Pagado</option>
+            <option value="aprobado"       selected={estado === "aprobado"}>Aprobado</option>
+            <option value="cancelada"      selected={estado === "cancelada"}>Cancelada</option>
+            <option value="rechazado"      selected={estado === "rechazado"}>Rechazado</option>
+            <option value="conciliado"     selected={estado === "conciliado"}>Conciliado</option>
+          </select>
+        </div>
+        <div class="tx-filter-group tx-filter-group--search">
+          <label class="tx-filter-label" for="search">Buscar</label>
+          <input
+            id="search" name="search" type="search"
+            value={search} placeholder="N° doc, nombre, descripción…"
+            class="tx-filter-input"
+          />
+        </div>
+      </div>
+      <div class="tx-filters__actions">
+        <button type="submit" class="tx-btn tx-btn--primary">Filtrar</button>
+        <a href="/admin/transacciones" class="tx-btn tx-btn--ghost">Limpiar</a>
+      </div>
+    </form>
+
+    <!-- Tabla de transacciones -->
+    {transactions.length === 0 && !fetchError && (
+      <div class="tx-empty">
+        <div class="tx-empty__icon">📋</div>
+        <p class="tx-empty__title">Sin resultados</p>
+        <p class="tx-empty__sub">No hay transacciones que coincidan con los filtros aplicados.</p>
+      </div>
+    )}
+
+    {transactions.length > 0 && (
+      <div class="tx-table-wrap">
+        <table class="tx-table" id="txTable">
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Número</th>
+              <th>Tipo</th>
+              <th>Contraparte / Categoría</th>
+              <th>Descripción</th>
+              <th>Dirección</th>
+              <th class="tx-col-amount">Monto (COP)</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            {transactions.map((tx) => {
+              const tm = tipoMeta(tx.tipo);
+              const em = estadoMeta(tx.estado);
+              const isIngreso = tx.direccion === "ingreso";
+              return (
+                <tr class={`tx-row ${isIngreso ? "tx-row--in" : "tx-row--out"}`}>
+                  <td class="tx-col-date">{fmtDate(tx.fecha)}</td>
+                  <td class="tx-col-num">
+                    <span class="tx-num">{tx.numero}</span>
+                  </td>
+                  <td>
+                    <span class="tx-badge" style={`background:${tm.bg};color:${tm.color}`}>
+                      {tm.label}
+                    </span>
+                  </td>
+                  <td class="tx-col-party">{tx.contraparte || "—"}</td>
+                  <td class="tx-col-desc">{tx.descripcion || "—"}</td>
+                  <td>
+                    <span class={`tx-dir ${isIngreso ? "tx-dir--in" : "tx-dir--out"}`}>
+                      {isIngreso ? "↑ Ingreso" : "↓ Egreso"}
+                    </span>
+                  </td>
+                  <td class={`tx-col-amount ${isIngreso ? "tx-amount--in" : "tx-amount--out"}`}>
+                    {isIngreso ? "+" : "−"}{fmtCOP(tx.monto)}
+                  </td>
+                  <td>
+                    <span class="tx-badge" style={`background:${em.bg};color:${em.color}`}>
+                      {em.label}
+                    </span>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    )}
+
+    <!-- Paginación -->
+    {totalPages > 1 && (
+      <nav class="tx-pagination">
+        {page > 1 && (
+          <a href={pageUrl(page - 1)} class="tx-page-btn">← Anterior</a>
+        )}
+        <span class="tx-page-info">
+          Página {page} de {totalPages} · {total} registros
+        </span>
+        {page < totalPages && (
+          <a href={pageUrl(page + 1)} class="tx-page-btn">Siguiente →</a>
+        )}
+      </nav>
+    )}
+
+    <!-- Nota legal -->
+    <div class="tx-legal-note">
+      <strong>Nota legal:</strong> Este registro incluye todas las transacciones financieras del sistema —
+      facturas de venta, facturas de compra a caficultores y proveedores, gastos operativos y pagos.
+      Generado el {new Date().toLocaleDateString("es-CO", { day: "2-digit", month: "long", year: "numeric" })}.
+      Conserve copias para efectos fiscales y contables según normativa colombiana DIAN.
+    </div>
+
+  </section>
+</AdminLayout>
+
+<script>
+  // Exportar tabla visible a CSV
+  document.getElementById("exportBtn")?.addEventListener("click", () => {
+    const table = document.getElementById("txTable");
+    if (!table) return;
+
+    const rows: string[][] = [];
+    const headers = Array.from(table.querySelectorAll("thead th"))
+      .map(th => `"${(th as HTMLElement).innerText.trim()}"`);
+    rows.push(headers);
+
+    table.querySelectorAll("tbody tr").forEach(tr => {
+      const cells = Array.from(tr.querySelectorAll("td"))
+        .map(td => `"${(td as HTMLElement).innerText.trim().replace(/"/g, '""')}"`);
+      rows.push(cells);
+    });
+
+    const csv = rows.map(r => r.join(",")).join("\n");
+    const bom = "﻿"; // BOM UTF-8 para Excel en español
+    const blob = new Blob([bom + csv], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    const now = new Date().toISOString().slice(0, 10);
+    link.download = `transacciones_dobleyo_${now}.csv`;
+    link.click();
+  });
+</script>
+
+<style>
+  .tx-page {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 4rem;
+  }
+
+  /* Header */
+  .tx-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+  .tx-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--ink, #251a14);
+    margin: 0 0 0.25rem;
+  }
+  .tx-subtitle {
+    color: #6b7280;
+    font-size: 0.925rem;
+    margin: 0;
+  }
+  .tx-header-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  /* Buttons */
+  .tx-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.5rem 1.125rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    text-decoration: none;
+    min-height: 40px;
+    white-space: nowrap;
+  }
+  .tx-btn--primary { background: var(--coffee, #8b6f47); color: white; }
+  .tx-btn--ghost   { background: #f3f4f6; color: #374151; }
+  .tx-btn:hover    { opacity: 0.88; }
+
+  /* Error */
+  .tx-error {
+    background: #fef2f2;
+    border: 1px solid #fca5a5;
+    color: #991b1b;
+    padding: 1rem 1.25rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  /* KPIs */
+  .tx-kpi-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    margin-bottom: 1.75rem;
+  }
+  @media (min-width: 640px) {
+    .tx-kpi-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+  .tx-kpi {
+    padding: 1.25rem 1.5rem;
+    border-radius: 0.75rem;
+    color: white;
+  }
+  .tx-kpi--green { background: linear-gradient(135deg, #2d6a4f, #1e5a3f); }
+  .tx-kpi--red   { background: linear-gradient(135deg, #b91c1c, #991b1b); }
+  .tx-kpi--blue  { background: linear-gradient(135deg, #1d4ed8, #1e40af); }
+  .tx-kpi--amber { background: linear-gradient(135deg, #d97706, #b45309); }
+  .tx-kpi__label { font-size: 0.8rem; opacity: 0.85; margin-bottom: 0.3rem; }
+  .tx-kpi__value { font-size: 1.6rem; font-weight: 700; line-height: 1.2; }
+  .tx-kpi__sub   { font-size: 0.78rem; opacity: 0.75; margin-top: 0.25rem; }
+
+  /* Filtros */
+  .tx-filters {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.75rem;
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+  .tx-filters__row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.875rem;
+  }
+  @media (min-width: 768px) {
+    .tx-filters__row { grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (min-width: 1024px) {
+    .tx-filters__row { grid-template-columns: repeat(6, 1fr); }
+    .tx-filter-group--search { grid-column: span 2; }
+  }
+  .tx-filter-group { display: flex; flex-direction: column; gap: 0.3rem; }
+  .tx-filter-label { font-size: 0.78rem; font-weight: 600; color: #374151; }
+  .tx-filter-input {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.4rem;
+    font-size: 0.875rem;
+    background: white;
+    color: #111827;
+    width: 100%;
+    min-height: 40px;
+  }
+  .tx-filter-input:focus { outline: 2px solid var(--coffee, #8b6f47); border-color: transparent; }
+  .tx-filters__actions {
+    display: flex;
+    gap: 0.625rem;
+    margin-top: 1rem;
+  }
+
+  /* Empty */
+  .tx-empty {
+    text-align: center;
+    padding: 4rem 1.5rem;
+    background: #f9fafb;
+    border-radius: 0.75rem;
+    color: #6b7280;
+  }
+  .tx-empty__icon  { font-size: 3rem; margin-bottom: 0.75rem; }
+  .tx-empty__title { font-weight: 600; font-size: 1.1rem; margin: 0 0 0.375rem; color: #374151; }
+  .tx-empty__sub   { font-size: 0.875rem; margin: 0; }
+
+  /* Tabla */
+  .tx-table-wrap {
+    overflow-x: auto;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+  .tx-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+    min-width: 820px;
+  }
+  .tx-table thead {
+    background: #f9fafb;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+  .tx-table th {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-weight: 600;
+    color: #374151;
+    border-bottom: 2px solid #e5e7eb;
+    white-space: nowrap;
+  }
+  .tx-table td {
+    padding: 0.7rem 1rem;
+    border-bottom: 1px solid #f3f4f6;
+    color: #374151;
+    vertical-align: middle;
+  }
+  .tx-row:hover td { background: #f9fafb; }
+  .tx-row--in td:first-child { border-left: 3px solid #10b981; }
+  .tx-row--out td:first-child { border-left: 3px solid #ef4444; }
+
+  .tx-col-date  { white-space: nowrap; color: #6b7280; font-size: 0.825rem; }
+  .tx-col-num   { white-space: nowrap; }
+  .tx-num       { font-family: monospace; font-size: 0.82rem; color: #374151; font-weight: 600; }
+  .tx-col-party { max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tx-col-desc  { max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #6b7280; font-size: 0.825rem; }
+  .tx-col-amount { text-align: right; white-space: nowrap; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .tx-amount--in  { color: #065f46; }
+  .tx-amount--out { color: #991b1b; }
+
+  .tx-badge {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    border-radius: 9999px;
+    font-size: 0.775rem;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .tx-dir {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    font-size: 0.825rem;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .tx-dir--in  { color: #065f46; }
+  .tx-dir--out { color: #991b1b; }
+
+  /* Paginación */
+  .tx-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.25rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+  }
+  .tx-page-btn {
+    padding: 0.5rem 1.25rem;
+    background: white;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    color: #374151;
+    text-decoration: none;
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+  }
+  .tx-page-btn:hover { background: #f3f4f6; }
+  .tx-page-info { font-size: 0.875rem; color: #6b7280; }
+
+  /* Nota legal */
+  .tx-legal-note {
+    background: #fffbeb;
+    border: 1px solid #fcd34d;
+    border-radius: 0.5rem;
+    padding: 0.875rem 1.125rem;
+    font-size: 0.825rem;
+    color: #78350f;
+    line-height: 1.5;
+  }
+</style>
