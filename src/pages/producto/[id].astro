@@ -8,6 +8,7 @@ const { id } = Astro.params;
 
 // ─── Cargar producto desde BD ──────────────────────────────────────────────
 let product: any = null;
+let variants: any[] = [];
 let error = false;
 
 try {
@@ -39,6 +40,14 @@ try {
       notes: p.tasting_notes?.es ?? null,
       notesEn: p.tasting_notes?.en ?? null,
     };
+    const vRows = await query(
+      `SELECT id, size_label, grind_label, price_cop, stock_quantity, sort_order
+       FROM product_variants
+       WHERE product_id = ? AND is_active = 1
+       ORDER BY sort_order ASC, size_label ASC`,
+      [product.id]
+    );
+    variants = vRows.rows;
   }
 } catch (_) {
   // Fallback: buscar en datos estáticos
@@ -198,6 +207,32 @@ const productJsonLd = {
 
         {product.description && (
           <p class="product-description">{product.description}</p>
+        )}
+
+        <!-- Variantes (tamaño y molienda) -->
+        {variants.length > 0 && (
+          <div class="variants-wrap" id="variantsWrap" data-variants={JSON.stringify(variants)} data-base-price={product.price}>
+            {[...new Set(variants.map((v: any) => v.size_label).filter(Boolean))].length > 0 && (
+              <div class="variant-group">
+                <p class="variant-label">Presentación</p>
+                <div class="variant-options" id="variantSize">
+                  {[...new Set(variants.map((v: any) => v.size_label).filter(Boolean))].map((s: any) => (
+                    <button class="variant-btn" data-size={s}>{s}</button>
+                  ))}
+                </div>
+              </div>
+            )}
+            {[...new Set(variants.map((v: any) => v.grind_label).filter(Boolean))].length > 0 && (
+              <div class="variant-group">
+                <p class="variant-label">Molienda</p>
+                <div class="variant-options" id="variantGrind">
+                  {[...new Set(variants.map((v: any) => v.grind_label).filter(Boolean))].map((g: any) => (
+                    <button class="variant-btn" data-grind={g}>{g}</button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         )}
 
         <!-- Acción -->
