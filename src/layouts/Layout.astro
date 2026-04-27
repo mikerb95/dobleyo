@@ -103,8 +103,8 @@ const {
       document.addEventListener("click", (e) => {
         const btn = (e.target as Element).closest("button[data-add]") as HTMLButtonElement | null;
         if (!btn || btn.disabled) return;
-        // tienda.astro maneja sus propios botones via resultsEl.onclick
-        if (btn.closest("#resultsEl")) return;
+        // tienda.astro maneja sus propios botones via #shopResults.onclick
+        if (btn.closest("#shopResults")) return;
         const id   = btn.dataset.add  ?? "";
         const name  = btn.dataset.name  ?? "";
         const price = Number(btn.dataset.price ?? 0);
