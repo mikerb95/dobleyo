@@ -122,6 +122,23 @@ CREATE INDEX idx_products_category ON products(category);
 CREATE INDEX idx_products_active ON products(is_active);
 CREATE INDEX idx_products_sku ON products(sku);
 
+-- Product Variants (Variantes de producto: tamaño y molienda)
+CREATE TABLE IF NOT EXISTS product_variants (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    product_id    VARCHAR(50) NOT NULL,
+    size_label    VARCHAR(30),          -- "125g", "250g", "500g", "1kg"
+    grind_label   VARCHAR(30),          -- "Grano Entero", "Espresso", "Filtro", "Moka"
+    price_cop     INTEGER NOT NULL,     -- precio total COP (precio completo, no ajuste)
+    stock_quantity INTEGER NOT NULL DEFAULT 0,
+    sku_suffix    VARCHAR(30),          -- sufijo al SKU base ej: "-250-ESP"
+    is_active     INTEGER NOT NULL DEFAULT 1,
+    sort_order    INTEGER NOT NULL DEFAULT 0,
+    created_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+);
+CREATE INDEX idx_pv_product ON product_variants(product_id);
+CREATE INDEX idx_pv_active  ON product_variants(is_active);
+
 -- Inventory Movements (Trazabilidad de movimientos de stock)
 CREATE TABLE IF NOT EXISTS inventory_movements (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
