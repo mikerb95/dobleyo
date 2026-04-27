@@ -97,6 +97,24 @@ const {
     <!-- Scripts globales -->
     <script is:inline src="/assets/js/cart.js"></script>
     <script is:inline src="/assets/js/auth-refresh.js"></script>
+
+    <!-- Handler global para botones [data-add] de ProductCard -->
+    <script>
+      document.addEventListener("click", (e) => {
+        const btn = (e.target as Element).closest("button[data-add]") as HTMLButtonElement | null;
+        if (!btn || btn.disabled) return;
+        // tienda.astro maneja sus propios botones via resultsEl.onclick
+        if (btn.closest("#resultsEl")) return;
+        const id   = btn.dataset.add  ?? "";
+        const name  = btn.dataset.name  ?? "";
+        const price = Number(btn.dataset.price ?? 0);
+        const image = btn.dataset.image ?? "";
+        if (!id) return;
+        window.Cart?.addToCart({ id, name, price, image, qty: 1 });
+        btn.textContent = "✓ Agregado";
+        setTimeout(() => { btn.textContent = "Agregar"; }, 1500);
+      });
+    </script>
     <script>
       // Utilidades globales (Metrics, Theme, Topbar)
       (function () {
