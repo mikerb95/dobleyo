@@ -192,7 +192,7 @@ coffeeRouter.post('/send-roasting', async (req, res) => {
     const result = await query(
       `INSERT INTO roasting_batches (lot_id, quantity_sent_kg, target_temp, notes, status, created_at)
        VALUES (?, ?, ?, ?, 'in_roasting', datetime('now')) RETURNING id`,
-      [lotId, quantitySent, targetTemp || null, notes || null]
+      [lotId, quantitySentNum, targetTemp ? parseInt(targetTemp) : null, notes || null]
     );
 
     res.status(201).json({
