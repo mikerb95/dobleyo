@@ -46,6 +46,10 @@ const steps = [
   { name: 'Geocoding on orders',             run: () => runFn('add_geocoding_to_orders.js', 'addGeocodingToOrders') },
   { name: 'Split name fields',               run: () => runFn('split_name_fields.js', 'splitNameFields') },
   { name: 'Product variants table',          run: () => runFn('add_product_variants.js', 'addProductVariants') },
+  { name: 'Newsletter subscribers table',    run: () => runFn('add_newsletter_subscribers.js', 'addNewsletterSubscribers') },
+  { name: 'Blog posts table + seed',         run: () => runFn('add_blog_posts.js', 'addBlogPosts') },
+  { name: 'Product reviews table',           run: () => runFn('add_product_reviews.js', 'addProductReviews') },
+  { name: 'Gift sets column + seed',         run: () => runFn('add_gift_sets.js', 'addGiftSets') },
 ];
 
 async function runAll() {
