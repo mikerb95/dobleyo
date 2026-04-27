@@ -60,7 +60,7 @@ let featuredKits: any[] = [];
 try {
   const { query } = await import("../../server/db.js");
   const result = await query(
-    `SELECT id, slug, name, description, price, image_url AS image
+    `SELECT id, name, description, price, image_url AS image
      FROM products WHERE is_gift_set = 1 AND is_active = 1
      ORDER BY price ASC LIMIT 3`
   );
