@@ -45,6 +45,7 @@ const steps = [
   { name: 'Customer orders tables',          run: () => runFn('create_customer_orders.js', 'createCustomerOrdersTables') },
   { name: 'Geocoding on orders',             run: () => runFn('add_geocoding_to_orders.js', 'addGeocodingToOrders') },
   { name: 'Split name fields',               run: () => runFn('split_name_fields.js', 'splitNameFields') },
+  { name: 'Product variants table',          run: () => runFn('add_product_variants.js', 'addProductVariants') },
 ];
 
 async function runAll() {
