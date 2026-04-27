@@ -1,6 +1,15 @@
 import { query } from '../db.js';
 
 export async function addGiftSets() {
+    // Verificar que la tabla products existe antes de alterar
+    const { rows: tables } = await query(
+        `SELECT name FROM sqlite_master WHERE type='table' AND name='products'`
+    );
+    if (!tables.length) {
+        console.log('[Migration] Tabla products no existe aún — omitiendo add_gift_sets. Ejecuta el schema base primero.');
+        return;
+    }
+
     // Añadir columna is_gift_set a products
     try {
         await query(`ALTER TABLE products ADD COLUMN is_gift_set INTEGER NOT NULL DEFAULT 0`);
