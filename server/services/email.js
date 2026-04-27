@@ -254,6 +254,68 @@ export const sendContactFormEmail = async (contactData) => {
   }
 };
 
+// Email de bienvenida al newsletter con código de descuento
+export const sendNewsletterWelcomeEmail = async (email) => {
+  const SITE_URL = process.env.SITE_BASE_URL || 'https://dobleyo.cafe';
+  if (!resend) {
+    console.log('[Mock] Newsletter welcome email to:', email);
+    return { success: true, mock: true };
+  }
+  try {
+    const data = await resend.emails.send({
+      from: `${FROM_NAME} <${FROM_EMAIL}>`,
+      to: email,
+      subject: 'Tu 10% de descuento — DobleYo Café',
+      html: `
+        <!DOCTYPE html>
+        <html lang="es">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <style>
+            body { font-family: 'Lora', Georgia, serif; color: #1f1f1f; line-height: 1.6; margin: 0; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; background: #f7f3ef; }
+            .header { text-align: center; margin-bottom: 24px; }
+            .header h1 { color: #251a14; margin: 0; font-size: 28px; }
+            .content { background: #fff; padding: 32px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,.1); }
+            .code-box { background: #f7f3ef; border: 2px dashed #c67b4e; border-radius: 8px; text-align: center; padding: 20px; margin: 24px 0; }
+            .code-box .label { font-size: 13px; color: #888; text-transform: uppercase; letter-spacing: .08em; margin: 0 0 8px; }
+            .code-box .code { font-size: 32px; font-weight: 700; color: #251a14; letter-spacing: .12em; margin: 0; }
+            .btn { display: inline-block; background: #251a14; color: #fff !important; padding: 14px 36px; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 15px; margin-top: 8px; }
+            .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #999; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header"><h1>☕ DobleYo Café</h1></div>
+            <div class="content">
+              <h2 style="color:#251a14;margin-top:0;">¡Gracias por suscribirte!</h2>
+              <p>Ya eres parte de la familia DobleYo. Como regalo de bienvenida, aquí está tu código para obtener <strong>10% de descuento</strong> en tu primera compra:</p>
+              <div class="code-box">
+                <p class="label">Tu código de descuento</p>
+                <p class="code">PRIMERA10</p>
+              </div>
+              <p style="font-size:14px;color:#666;">Aplica el código al finalizar tu compra. Válido para tu primer pedido.</p>
+              <center style="margin-top:20px;">
+                <a href="${SITE_URL}/tienda" class="btn">Ir a la tienda</a>
+              </center>
+              <p style="margin-top:24px;font-size:13px;color:#999;border-top:1px solid #eee;padding-top:16px;">
+                Recibirás noticias sobre nuevos cafés, recetas y lanzamientos exclusivos. Puedes darte de baja cuando quieras.
+              </p>
+            </div>
+            <div class="footer"><p>© 2026 DobleYo Café. Todos los derechos reservados.</p></div>
+          </div>
+        </body>
+        </html>
+      `,
+    });
+    return { success: true, data };
+  } catch (error) {
+    console.error('[Newsletter] Error enviando email de bienvenida:', error);
+    return { success: false, error };
+  }
+};
+
 // Email de respuesta al cliente
 export const sendContactReplyEmail = async (email, clientName, replyMessage) => {
   if (!resend) {
