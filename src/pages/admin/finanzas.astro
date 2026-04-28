@@ -750,7 +750,7 @@ const balancePositive = dashboard.month_balance >= 0;
 
 <script>
 // ================================================================
-// Lógica de pestañas
+// Pestañas
 // ================================================================
 document.querySelectorAll('.adm-tab').forEach(tab => {
   tab.addEventListener('click', () => switchTab(tab.dataset.tab));
@@ -770,27 +770,71 @@ function switchTab(name) {
 }
 
 // ================================================================
-// Formateo compartido
+// Formateo
 // ================================================================
 const fmtCOP = v => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(Number(v ?? 0));
-const fmtDate = d => d ? new Date(d).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
-const badges = {
+const fmtDate = d => d ? new Date(d + 'T00:00:00').toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
+const BADGES = {
   borrador:       ['#f3f4f6','#374151','Borrador'],
   confirmada:     ['#fef3c7','#92400e','Confirmada'],
+  confirmado:     ['#fef3c7','#92400e','Confirmado'],
   pagada_parcial: ['#dbeafe','#1e40af','Pago parcial'],
   pagada:         ['#d1fae5','#065f46','Pagada'],
+  pagado:         ['#d1fae5','#065f46','Pagado'],
   cancelada:      ['#fee2e2','#991b1b','Cancelada'],
   aprobado:       ['#d1fae5','#065f46','Aprobado'],
-  pagado:         ['#d1fae5','#065f46','Pagado'],
   rechazado:      ['#fee2e2','#991b1b','Rechazado'],
+  conciliado:     ['#d1fae5','#065f46','Conciliado'],
 };
 function badge(state) {
-  const [bg, color, text] = badges[state] ?? ['#f3f4f6','#374151', state];
+  const [bg, color, text] = BADGES[state] ?? ['#f3f4f6','#374151', state];
   return `<span class="adm-badge" style="background:${bg};color:${color}">${text}</span>`;
 }
 
 // ================================================================
-// Cargar datos de paneles
+// Listas de soporte (cacheadas)
+// ================================================================
+let _caficultores = null, _clients = null, _allUsers = null, _payMethods = null;
+
+async function getCaficultores() {
+  if (_caficultores) return _caficultores;
+  const r = await fetch('/api/finance/users-list?role=caficultor', { credentials: 'include' });
+  const json = await r.json();
+  _caficultores = json.success ? json.data : [];
+  return _caficultores;
+}
+
+async function getClients() {
+  if (_clients) return _clients;
+  const r = await fetch('/api/finance/users-list?role=client', { credentials: 'include' });
+  const json = await r.json();
+  _clients = json.success ? json.data : [];
+  return _clients;
+}
+
+async function getAllUsers() {
+  if (_allUsers) return _allUsers;
+  const r = await fetch('/api/finance/users-list', { credentials: 'include' });
+  const json = await r.json();
+  _allUsers = json.success ? json.data : [];
+  return _allUsers;
+}
+
+async function getPaymentMethods() {
+  if (_payMethods) return _payMethods;
+  const r = await fetch('/api/finance/payment-methods', { credentials: 'include' });
+  const json = await r.json();
+  _payMethods = json.success ? json.data : [];
+  return _payMethods;
+}
+
+function fillSelect(selectEl, items, valueKey, labelFn, emptyLabel) {
+  selectEl.innerHTML = `<option value="">${emptyLabel}</option>` +
+    items.map(i => `<option value="${i[valueKey]}">${labelFn(i)}</option>`).join('');
+}
+
+// ================================================================
+// Paneles — carga lazy
 // ================================================================
 async function loadPanelData(name) {
   const loaders = {
@@ -810,7 +854,7 @@ async function loadPurchaseInvoices() {
     if (!json.success) { el.innerHTML = `<p class="adm-empty">Error: ${json.error}</p>`; return; }
     if (!json.data.length) { el.innerHTML = '<p class="adm-empty">Sin facturas de compra</p>'; return; }
     el.innerHTML = `<div style="overflow-x:auto"><table class="adm-table">
-      <thead><tr><th>Número</th><th>Caficultor</th><th>Fecha</th><th>Vence</th><th>Total</th><th>Por Pagar</th><th>Estado</th><th>Acción</th></tr></thead>
+      <thead><tr><th>Número</th><th>Caficultor</th><th>Fecha</th><th>Vence</th><th>Total</th><th>Por pagar</th><th>Estado</th><th></th></tr></thead>
       <tbody>${json.data.map(inv => `<tr>
         <td class="adm-table__mono">${inv.invoice_number}</td>
         <td>${inv.caficultor_name ?? '—'}</td>
@@ -821,11 +865,10 @@ async function loadPurchaseInvoices() {
         <td>${badge(inv.state)}</td>
         <td>${inv.state !== 'pagada' && inv.state !== 'cancelada'
           ? `<button class="adm-btn adm-btn--sm adm-btn--primary" onclick="markInvoicePaid(${inv.id})">Marcar pagada</button>`
-          : ''
-        }</td>
+          : ''}</td>
       </tr>`).join('')}</tbody>
     </table></div>`;
-  } catch (e) { el.innerHTML = '<p class="adm-empty">Error al cargar</p>'; }
+  } catch { el.innerHTML = '<p class="adm-empty">Error al cargar</p>'; }
 }
 
 async function loadSalesInvoices() {
@@ -836,7 +879,7 @@ async function loadSalesInvoices() {
     if (!json.success) { el.innerHTML = `<p class="adm-empty">Error: ${json.error}</p>`; return; }
     if (!json.data.length) { el.innerHTML = '<p class="adm-empty">Sin facturas de venta</p>'; return; }
     el.innerHTML = `<div style="overflow-x:auto"><table class="adm-table">
-      <thead><tr><th>Número</th><th>Cliente</th><th>Fecha</th><th>Total</th><th>Por Cobrar</th><th>Estado</th></tr></thead>
+      <thead><tr><th>Número</th><th>Cliente</th><th>Fecha</th><th>Total</th><th>Por cobrar</th><th>Estado</th></tr></thead>
       <tbody>${json.data.map(inv => `<tr>
         <td class="adm-table__mono">${inv.invoice_number}</td>
         <td>${inv.customer_name ?? '—'}</td>
@@ -846,7 +889,7 @@ async function loadSalesInvoices() {
         <td>${badge(inv.state)}</td>
       </tr>`).join('')}</tbody>
     </table></div>`;
-  } catch (e) { el.innerHTML = '<p class="adm-empty">Error al cargar</p>'; }
+  } catch { el.innerHTML = '<p class="adm-empty">Error al cargar</p>'; }
 }
 
 async function loadExpenses() {
@@ -857,7 +900,7 @@ async function loadExpenses() {
     if (!json.success) { el.innerHTML = `<p class="adm-empty">Error: ${json.error}</p>`; return; }
     if (!json.data.length) { el.innerHTML = '<p class="adm-empty">Sin gastos registrados</p>'; return; }
     el.innerHTML = `<div style="overflow-x:auto"><table class="adm-table">
-      <thead><tr><th>Número</th><th>Fecha</th><th>Categoría</th><th>Descripción</th><th>Monto</th><th>Estado</th><th>Acción</th></tr></thead>
+      <thead><tr><th>Número</th><th>Fecha</th><th>Categoría</th><th>Descripción</th><th>Monto</th><th>Estado</th><th></th></tr></thead>
       <tbody>${json.data.map(exp => `<tr>
         <td class="adm-table__mono">${exp.expense_number}</td>
         <td>${fmtDate(exp.expense_date)}</td>
@@ -867,11 +910,10 @@ async function loadExpenses() {
         <td>${badge(exp.state)}</td>
         <td>${exp.state === 'borrador'
           ? `<button class="adm-btn adm-btn--sm adm-btn--outline" onclick="approveExpense(${exp.id})">Aprobar</button>`
-          : ''
-        }</td>
+          : ''}</td>
       </tr>`).join('')}</tbody>
     </table></div>`;
-  } catch (e) { el.innerHTML = '<p class="adm-empty">Error al cargar</p>'; }
+  } catch { el.innerHTML = '<p class="adm-empty">Error al cargar</p>'; }
 }
 
 async function loadPayments() {
@@ -893,7 +935,7 @@ async function loadPayments() {
         <td>${badge(p.state)}</td>
       </tr>`).join('')}</tbody>
     </table></div>`;
-  } catch (e) { el.innerHTML = '<p class="adm-empty">Error al cargar</p>'; }
+  } catch { el.innerHTML = '<p class="adm-empty">Error al cargar</p>'; }
 }
 
 // ================================================================
@@ -906,7 +948,7 @@ async function markInvoicePaid(id) {
     body: JSON.stringify({ state: 'pagada' }),
   });
   const json = await r.json();
-  if (json.success) { loadedTabs.delete('purchase-invoices'); loadPurchaseInvoices(); }
+  if (json.success) { loadedTabs.delete('purchase-invoices'); await loadPurchaseInvoices(); }
   else alert('Error: ' + json.error);
 }
 
@@ -917,44 +959,64 @@ async function approveExpense(id) {
     body: JSON.stringify({ state: 'aprobado' }),
   });
   const json = await r.json();
-  if (json.success) { loadedTabs.delete('expenses'); loadExpenses(); }
+  if (json.success) { loadedTabs.delete('expenses'); await loadExpenses(); }
   else alert('Error: ' + json.error);
 }
 
 // ================================================================
-// Modales
+// Modales — abrir / cerrar
 // ================================================================
-function openModal(id) { document.getElementById(id).showModal(); }
-function closeModal(id) { document.getElementById(id).close(); }
+function openModal(id) { document.getElementById(id)?.showModal(); }
+function closeModal(id) { document.getElementById(id)?.close(); }
 
+// Gasto
 document.getElementById('btnNewExpense').addEventListener('click', () => openModal('modalExpense'));
 document.getElementById('closeModalExpense').addEventListener('click', () => closeModal('modalExpense'));
-document.getElementById('btnNewPurchaseInvoice').addEventListener('click', () => openModal('modalPurchaseInvoice'));
+
+// Factura de compra — cargar caficultores al abrir
+document.getElementById('btnNewPurchaseInvoice').addEventListener('click', async () => {
+  const sel = document.getElementById('selectCaficultor');
+  const list = await getCaficultores();
+  fillSelect(sel, list, 'id', u => `${u.name} (${u.email})`, '— Sin asignar —');
+  openModal('modalPurchaseInvoice');
+});
 document.getElementById('closeModalPurchaseInvoice').addEventListener('click', () => closeModal('modalPurchaseInvoice'));
 
-// Agregar línea en factura de compra
-let lineCount = 1;
-document.getElementById('addPurchaseLine').addEventListener('click', () => {
-  const n = lineCount++;
-  const row = document.createElement('div');
-  row.className = 'adm-line-row';
-  row.innerHTML = `
-    <input type="text" name="lines[${n}][description]" placeholder="Descripción" required />
-    <input type="text" name="lines[${n}][lot_reference]" placeholder="Referencia lote" />
-    <input type="number" name="lines[${n}][quantity]" placeholder="Kg" min="0.01" step="0.01" required />
-    <input type="number" name="lines[${n}][unit_price]" placeholder="$/kg" min="0" step="1" required />
-    <span class="adm-line-remove" onclick="this.parentElement.remove()">✕</span>
-  `;
-  document.getElementById('purchaseLines').appendChild(row);
+// Factura de venta — cargar clientes al abrir
+document.getElementById('btnNewSalesInvoice').addEventListener('click', async () => {
+  const sel = document.getElementById('selectClient');
+  const list = await getClients();
+  fillSelect(sel, list, 'id', u => `${u.name} (${u.email})`, '— Seleccionar cliente —');
+  // Fecha por defecto: hoy
+  const today = new Date().toISOString().slice(0, 10);
+  document.querySelector('#formSalesInvoice [name="invoice_date"]').value = today;
+  document.querySelector('#formSalesInvoice [name="due_date"]').value = today;
+  recalcSaleTotal();
+  openModal('modalSalesInvoice');
 });
+document.getElementById('closeModalSalesInvoice').addEventListener('click', () => closeModal('modalSalesInvoice'));
 
-// Enviar formulario de gasto
+// Pago — cargar usuarios y métodos al abrir
+document.getElementById('btnNewPayment').addEventListener('click', async () => {
+  const [users, methods] = await Promise.all([getAllUsers(), getPaymentMethods()]);
+  fillSelect(document.getElementById('selectPartner'), users, 'id',
+    u => `${u.name} — ${u.role} (${u.email})`, '— Seleccionar persona —');
+  fillSelect(document.getElementById('selectPaymentMethod'), methods, 'id',
+    m => `${m.name} (${m.method_type})`, '— Seleccionar método —');
+  const today = new Date().toISOString().slice(0, 10);
+  document.querySelector('#formPayment [name="payment_date"]').value = today;
+  openModal('modalPayment');
+});
+document.getElementById('closeModalPayment').addEventListener('click', () => closeModal('modalPayment'));
+
+// ================================================================
+// Formulario: Gasto
+// ================================================================
 document.getElementById('formExpense').addEventListener('submit', async (e) => {
   e.preventDefault();
   const msgEl = document.getElementById('expenseMsg');
-  const form = e.target;
-  const data = Object.fromEntries(new FormData(form));
-  msgEl.textContent = 'Guardando…';
+  const data = Object.fromEntries(new FormData(e.target));
+  msgEl.style.color = '#374151'; msgEl.textContent = 'Guardando…';
   try {
     const r = await fetch('/api/finance/expenses', {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
@@ -964,37 +1026,53 @@ document.getElementById('formExpense').addEventListener('submit', async (e) => {
     if (json.success) {
       msgEl.style.color = '#065f46';
       msgEl.textContent = `✅ Gasto ${json.data.expense_number} registrado`;
-      form.reset();
+      e.target.reset();
       setTimeout(() => { closeModal('modalExpense'); msgEl.textContent = ''; loadedTabs.delete('expenses'); }, 1800);
     } else {
       msgEl.style.color = '#991b1b';
-      msgEl.textContent = 'Error: ' + json.error;
+      msgEl.textContent = 'Error: ' + (json.errors?.[0]?.msg ?? json.error);
     }
-  } catch { msgEl.textContent = 'Error de conexión'; }
+  } catch { msgEl.style.color = '#991b1b'; msgEl.textContent = 'Error de conexión'; }
 });
 
-// Enviar formulario de factura de compra
+// ================================================================
+// Formulario: Factura de compra
+// ================================================================
+let purchaseLineCount = 1;
+
+document.getElementById('addPurchaseLine').addEventListener('click', () => {
+  const n = purchaseLineCount++;
+  const row = document.createElement('div');
+  row.className = 'adm-line-row';
+  row.innerHTML = `
+    <input type="text" name="lines[${n}][description]" placeholder="Descripción" required />
+    <input type="text" name="lines[${n}][lot_reference]" placeholder="Ref. lote" />
+    <input type="number" name="lines[${n}][quantity]" placeholder="Kg" min="0.01" step="0.01" required />
+    <input type="number" name="lines[${n}][unit_price]" placeholder="$/kg" min="0" step="1" required />
+    <span class="adm-line-remove" onclick="this.parentElement.remove()">✕</span>
+  `;
+  document.getElementById('purchaseLines').appendChild(row);
+});
+
 document.getElementById('formPurchaseInvoice').addEventListener('submit', async (e) => {
   e.preventDefault();
   const msgEl = document.getElementById('purchaseInvoiceMsg');
-  const form = e.target;
-  const rawData = Object.fromEntries(new FormData(form));
+  const rawData = Object.fromEntries(new FormData(e.target));
 
-  // Reconstruir líneas
   const linesMap = {};
   for (const [key, val] of Object.entries(rawData)) {
     const m = key.match(/^lines\[(\d+)\]\[(\w+)\]$/);
     if (m) {
       const [, idx, field] = m;
       if (!linesMap[idx]) linesMap[idx] = {};
-      linesMap[idx][field] = field === 'quantity' || field === 'unit_price' ? parseFloat(val) : val;
+      linesMap[idx][field] = (field === 'quantity' || field === 'unit_price') ? parseFloat(val) : val;
       delete rawData[key];
     }
   }
   rawData.lines = Object.values(linesMap).filter(l => l.description && l.quantity > 0);
   if (rawData.caficultor_id) rawData.caficultor_id = parseInt(rawData.caficultor_id, 10);
 
-  msgEl.textContent = 'Creando factura…';
+  msgEl.style.color = '#374151'; msgEl.textContent = 'Creando factura…';
   try {
     const r = await fetch('/api/finance/purchase-invoices', {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
@@ -1004,20 +1082,161 @@ document.getElementById('formPurchaseInvoice').addEventListener('submit', async 
     if (json.success) {
       msgEl.style.color = '#065f46';
       msgEl.textContent = `✅ Factura ${json.data.invoice_number} creada`;
-      form.reset();
-      document.getElementById('purchaseLines').innerHTML = `<div class="adm-line-row">
-        <input type="text" name="lines[0][description]" placeholder="Descripción" required />
-        <input type="text" name="lines[0][lot_reference]" placeholder="Referencia lote" />
-        <input type="number" name="lines[0][quantity]" placeholder="Kg" min="0.01" step="0.01" required />
-        <input type="number" name="lines[0][unit_price]" placeholder="$/kg" min="0" step="1" required />
-        <span class="adm-line-remove" onclick="this.parentElement.remove()">✕</span>
-      </div>`;
-      lineCount = 1;
+      e.target.reset();
+      document.getElementById('purchaseLines').innerHTML = purchaseLineTemplate(0);
+      purchaseLineCount = 1;
       setTimeout(() => { closeModal('modalPurchaseInvoice'); msgEl.textContent = ''; loadedTabs.delete('purchase-invoices'); }, 1800);
     } else {
       msgEl.style.color = '#991b1b';
       msgEl.textContent = 'Error: ' + (json.errors?.[0]?.msg ?? json.error);
     }
-  } catch { msgEl.textContent = 'Error de conexión'; }
+  } catch { msgEl.style.color = '#991b1b'; msgEl.textContent = 'Error de conexión'; }
+});
+
+function purchaseLineTemplate(n) {
+  return `<div class="adm-line-row">
+    <input type="text" name="lines[${n}][description]" placeholder="Descripción (ej: Café verde Huila)" required />
+    <input type="text" name="lines[${n}][lot_reference]" placeholder="Ref. lote" />
+    <input type="number" name="lines[${n}][quantity]" placeholder="Kg" min="0.01" step="0.01" required />
+    <input type="number" name="lines[${n}][unit_price]" placeholder="$/kg" min="0" step="1" required />
+    <span class="adm-line-remove" onclick="this.parentElement.remove()">✕</span>
+  </div>`;
+}
+
+// ================================================================
+// Formulario: Factura de venta — con cálculo automático
+// ================================================================
+let saleLineCount = 1;
+
+function removeSaleLine(btn) {
+  btn.closest('.adm-line-row--sale').remove();
+  recalcSaleTotal();
+}
+
+function recalcSaleTotal() {
+  let subtotal = 0, tax = 0;
+  document.querySelectorAll('#salesLines .adm-line-row--sale').forEach(row => {
+    const qty  = parseFloat(row.querySelector('[name$="[quantity]"]')?.value) || 0;
+    const price = parseFloat(row.querySelector('[name$="[unit_price]"]')?.value) || 0;
+    const disc  = parseFloat(row.querySelector('[name$="[discount_percent]"]')?.value) || 0;
+    const iva   = parseFloat(row.querySelector('[name$="[tax_rate]"]')?.value) || 0;
+    const base  = qty * price * (1 - disc / 100);
+    const lineTax = base * (iva / 100);
+    const lineTotal = base + lineTax;
+    subtotal += base;
+    tax += lineTax;
+    const totalEl = row.querySelector('.adm-line-total');
+    if (totalEl) totalEl.textContent = fmtCOP(lineTotal);
+  });
+  const ship = parseFloat(document.querySelector('#formSalesInvoice [name="shipping_cost"]')?.value) || 0;
+  document.getElementById('saleSub').textContent  = fmtCOP(subtotal);
+  document.getElementById('saleTax').textContent  = fmtCOP(tax);
+  document.getElementById('saleShip').textContent = fmtCOP(ship);
+  document.getElementById('saleTotal').textContent = fmtCOP(subtotal + tax + ship);
+}
+
+document.getElementById('salesLines').addEventListener('input', recalcSaleTotal);
+document.querySelector('#formSalesInvoice [name="shipping_cost"]')
+  ?.addEventListener('input', recalcSaleTotal);
+
+document.getElementById('addSaleLine').addEventListener('click', () => {
+  const n = saleLineCount++;
+  const row = document.createElement('div');
+  row.className = 'adm-line-row adm-line-row--sale';
+  row.innerHTML = `
+    <input type="text" name="sl[${n}][description]" placeholder="Descripción del producto" required />
+    <input type="number" name="sl[${n}][quantity]" placeholder="1" min="0.01" step="0.01" value="1" required class="adm-line-calc" />
+    <input type="number" name="sl[${n}][unit_price]" placeholder="0" min="0" step="1" required class="adm-line-calc" />
+    <input type="number" name="sl[${n}][discount_percent]" placeholder="0" min="0" max="100" step="0.1" value="0" class="adm-line-calc" />
+    <input type="number" name="sl[${n}][tax_rate]" placeholder="19" min="0" max="100" step="0.1" value="19" class="adm-line-calc" />
+    <span class="adm-line-total">$ 0</span>
+    <span class="adm-line-remove" onclick="removeSaleLine(this)">✕</span>
+  `;
+  document.getElementById('salesLines').appendChild(row);
+});
+
+document.getElementById('formSalesInvoice').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const msgEl = document.getElementById('salesInvoiceMsg');
+  const rawData = Object.fromEntries(new FormData(e.target));
+
+  const linesMap = {};
+  for (const [key, val] of Object.entries(rawData)) {
+    const m = key.match(/^sl\[(\d+)\]\[(\w+)\]$/);
+    if (m) {
+      const [, idx, field] = m;
+      if (!linesMap[idx]) linesMap[idx] = {};
+      const numFields = ['quantity','unit_price','discount_percent','tax_rate'];
+      linesMap[idx][field] = numFields.includes(field) ? parseFloat(val) : val;
+      delete rawData[key];
+    }
+  }
+  rawData.lines = Object.values(linesMap).filter(l => l.description && l.quantity > 0);
+  rawData.customer_id = parseInt(rawData.customer_id, 10);
+  rawData.shipping_cost = parseFloat(rawData.shipping_cost) || 0;
+
+  msgEl.style.color = '#374151'; msgEl.textContent = 'Creando factura…';
+  try {
+    const r = await fetch('/api/finance/sales-invoices', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+      body: JSON.stringify(rawData),
+    });
+    const json = await r.json();
+    if (json.success) {
+      msgEl.style.color = '#065f46';
+      msgEl.textContent = `✅ Factura ${json.data.invoice_number} creada — Total: ${fmtCOP(json.data.total_amount)}`;
+      e.target.reset();
+      document.getElementById('salesLines').innerHTML = saleLineTemplate(0);
+      saleLineCount = 1;
+      recalcSaleTotal();
+      setTimeout(() => { closeModal('modalSalesInvoice'); msgEl.textContent = ''; loadedTabs.delete('sales-invoices'); }, 2200);
+    } else {
+      msgEl.style.color = '#991b1b';
+      msgEl.textContent = 'Error: ' + (json.errors?.[0]?.msg ?? json.error);
+    }
+  } catch { msgEl.style.color = '#991b1b'; msgEl.textContent = 'Error de conexión'; }
+});
+
+function saleLineTemplate(n) {
+  return `<div class="adm-line-row adm-line-row--sale">
+    <input type="text" name="sl[${n}][description]" placeholder="Descripción del producto" required />
+    <input type="number" name="sl[${n}][quantity]" placeholder="1" min="0.01" step="0.01" value="1" required class="adm-line-calc" />
+    <input type="number" name="sl[${n}][unit_price]" placeholder="0" min="0" step="1" required class="adm-line-calc" />
+    <input type="number" name="sl[${n}][discount_percent]" placeholder="0" min="0" max="100" step="0.1" value="0" class="adm-line-calc" />
+    <input type="number" name="sl[${n}][tax_rate]" placeholder="19" min="0" max="100" step="0.1" value="19" class="adm-line-calc" />
+    <span class="adm-line-total">$ 0</span>
+    <span class="adm-line-remove" onclick="removeSaleLine(this)">✕</span>
+  </div>`;
+}
+
+// ================================================================
+// Formulario: Pago
+// ================================================================
+document.getElementById('formPayment').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const msgEl = document.getElementById('paymentMsg');
+  const rawData = Object.fromEntries(new FormData(e.target));
+  rawData.partner_id = parseInt(rawData.partner_id, 10);
+  rawData.payment_method_id = parseInt(rawData.payment_method_id, 10);
+  rawData.amount = parseFloat(rawData.amount);
+
+  msgEl.style.color = '#374151'; msgEl.textContent = 'Registrando pago…';
+  try {
+    const r = await fetch('/api/finance/payments', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+      body: JSON.stringify(rawData),
+    });
+    const json = await r.json();
+    if (json.success) {
+      const tipo = rawData.payment_type === 'recibido' ? 'cobro' : 'pago';
+      msgEl.style.color = '#065f46';
+      msgEl.textContent = `✅ ${tipo.charAt(0).toUpperCase() + tipo.slice(1)} ${json.data.payment_number} registrado — ${fmtCOP(json.data.amount)}`;
+      e.target.reset();
+      setTimeout(() => { closeModal('modalPayment'); msgEl.textContent = ''; loadedTabs.delete('payments'); }, 2000);
+    } else {
+      msgEl.style.color = '#991b1b';
+      msgEl.textContent = 'Error: ' + (json.errors?.[0]?.msg ?? json.error);
+    }
+  } catch { msgEl.style.color = '#991b1b'; msgEl.textContent = 'Error de conexión'; }
 });
 </script>
