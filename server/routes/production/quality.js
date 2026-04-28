@@ -297,7 +297,7 @@ qualityRouter.put('/:id', async (req, res) => {
     }
     if (passed !== undefined) {
       updateFields.push(`passed = ?`);
-      updateValues.push(passed ? true : false);
+      updateValues.push(passed ? 1 : 0);
     }
     if (defects_found !== undefined) {
       updateFields.push(`defects_found = ?`);

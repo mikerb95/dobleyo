@@ -211,7 +211,7 @@ usersRouter.post('/', auth.authenticateToken, auth.requireRole('admin'), async (
       `INSERT INTO users 
         (email, password_hash, name, mobile_phone, city, state_province, country, role, is_verified) 
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [email, passwordHash, name, mobile_phone || null, city || null, state_province || null, country || null, role || 'client', is_verified || false]
+      [email, passwordHash, name, mobile_phone || null, city || null, state_province || null, country || null, role || 'client', is_verified ? 1 : 0]
     );
 
     const newUserId = result.lastInsertRowid;
