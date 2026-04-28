@@ -141,8 +141,8 @@ inventoryRouter.post('/products', async (req, res) => {
       [
         id, sku, name, description, category, subcategory,
         origin, process, roast, price, cost,
-        is_deal || false, is_bestseller || false, is_new || false, 
-        is_fast || false, is_active !== false,
+        is_deal ? 1 : 0, is_bestseller ? 1 : 0, is_new ? 1 : 0,
+        is_fast ? 1 : 0, is_active !== false ? 1 : 0,
         image_url, images ? JSON.stringify(images) : null,
         stock_quantity || 0, stock_min || 0,
         weight, weight_unit || 'g', dimensions,
