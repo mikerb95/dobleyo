@@ -49,9 +49,10 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
             <div class="stat-label">Total Productos</div>
             <div class="stat-value" id="statTotalProducts">-</div>
           </div>
-          <div class="stat-card">
+          <div class="stat-card stat-card--clickable" id="cardTotalValue" title="Ver detalle del valor">
             <div class="stat-label">Valor Inventario</div>
             <div class="stat-value" id="statTotalValue">-</div>
+            <div class="stat-hint">Click para ver detalle</div>
           </div>
           <div class="stat-card alert">
             <div class="stat-label">Stock Bajo</div>
@@ -303,6 +304,19 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
           >
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- Modal: Detalle Valor Inventario -->
+  <div id="valueModal" class="modal">
+    <div class="modal-content modal-wide">
+      <div class="modal-header">
+        <h2>Detalle del Valor de Inventario</h2>
+        <button class="modal-close" id="valueModalClose">&times;</button>
+      </div>
+      <div id="valueModalBody" style="padding:1.5rem;overflow-x:auto;">
+        <div class="spinner"></div>
+      </div>
     </div>
   </div>
 
@@ -1367,6 +1381,67 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   .stat-card.alert {
     border-left: 4px solid var(--warning);
   }
+
+  .stat-card--clickable {
+    cursor: pointer;
+    border: 1px solid var(--border);
+  }
+
+  .stat-card--clickable:hover {
+    border-color: var(--accent);
+    box-shadow: 0 4px 12px rgba(198, 123, 78, 0.15);
+  }
+
+  .stat-hint {
+    font-size: 0.72rem;
+    color: var(--accent);
+    margin-top: 0.35rem;
+    font-weight: 500;
+  }
+
+  .modal-wide {
+    max-width: 900px !important;
+  }
+
+  .value-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+  }
+
+  .value-table th {
+    background: #f9fafb;
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .value-table th.text-right { text-align: right; }
+
+  .value-table td {
+    padding: 0.65rem 1rem;
+    border-bottom: 1px solid #f3f4f6;
+    vertical-align: middle;
+  }
+
+  .value-table td.text-right { text-align: right; }
+
+  .value-table tbody tr:hover td { background: #fafafa; }
+
+  .value-table tfoot td {
+    padding: 0.85rem 1rem;
+    font-weight: 700;
+    border-top: 2px solid var(--border);
+    background: #f9fafb;
+  }
+
+  .value-table tfoot td.text-right { text-align: right; }
 
   .stat-label {
     color: var(--text-muted);
