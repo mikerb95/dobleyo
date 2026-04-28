@@ -194,7 +194,7 @@ qualityRouter.post('/', async (req, res) => {
       RETURNING id
     `, [
       check_number, production_order_id || null, roast_batch_id || null,
-      check_type, inspector_id, passed ? true : false,
+      check_type, inspector_id, passed ? 1 : 0,
       overall_score || null, observations || null, defects_found || null
     ]);
 
