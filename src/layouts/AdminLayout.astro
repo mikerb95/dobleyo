@@ -13,7 +13,7 @@ const { title = "Admin — DobleYo Café", section = "" } = Astro.props;
 <html lang="es">
   <head>
     <Head title={title} isAdmin={true} />
-    <style>
+    <style is:global>
       /* ── Fiori Design System — DobleYo ERP ────────────────── */
       :root {
         --shell-h: 48px;
