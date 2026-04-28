@@ -197,13 +197,18 @@ inventoryRouter.put('/products/:id', async (req, res) => {
     const updates = [];
     const values = [];
 
+    const boolFields = new Set(['is_deal', 'is_bestseller', 'is_new', 'is_fast', 'is_active']);
+
     for (const field of allowedFields) {
       if (updateData[field] !== undefined) {
         updates.push(`${field} = ?`);
-        values.push(field === 'images' && typeof updateData[field] === 'object' 
-          ? JSON.stringify(updateData[field]) 
-          : updateData[field]
-        );
+        let val = updateData[field];
+        if (boolFields.has(field)) {
+          val = val ? 1 : 0;
+        } else if (field === 'images' && typeof val === 'object') {
+          val = JSON.stringify(val);
+        }
+        values.push(val);
       }
     }
 
