@@ -1211,7 +1211,7 @@ coffeeRouter.post('/cupping', async (req, res) => {
        ) RETURNING id`,
       [
         checkNumber, checkType || 'catacion', checkDate, req.user.id,
-        passed ? true : false, finalScore.toFixed(2),
+        passed ? 1 : 0, finalScore.toFixed(2),
         aromaScore || null, flavorScore || null, aftertasteScore || null, acidityScore || null,
         bodyScore || null, balanceScore || null, uniformityScore || null, cleanCupScore || null, sweetnessScore || null,
         defectsCount || 0, defectsFound || null, moisturePercent || null, colorAgtron || null,
