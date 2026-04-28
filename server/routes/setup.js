@@ -271,8 +271,8 @@ setupRouter.post('/', async (req, res) => {
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [
             p.id, p.name, p.category, p.origin || null, p.process || null, p.roast || null,
-            p.price, p.rating || 0, p.deal || false, p.bestseller || false, p.new || false,
-            p.fast || false, p.image, 50
+            p.price, p.rating || 0, p.deal ? 1 : 0, p.bestseller ? 1 : 0, p.new ? 1 : 0,
+            p.fast ? 1 : 0, p.image, 50
           ]
         );
       }
@@ -458,8 +458,8 @@ setupRouter.post('/full-setup', async (req, res) => {
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [
             p.id, p.name, p.category, p.origin || null, p.process || null, p.roast || null,
-            p.price, p.rating || 0, p.deal || false, p.bestseller || false, p.new || false,
-            p.fast || false, p.image, 50
+            p.price, p.rating || 0, p.deal ? 1 : 0, p.bestseller ? 1 : 0, p.new ? 1 : 0,
+            p.fast ? 1 : 0, p.image, 50
           ]
         );
         productsAdded++;
