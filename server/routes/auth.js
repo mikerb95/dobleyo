@@ -388,6 +388,89 @@ authRouter.post('/request-caficultor',
   }
 );
 
+// Update profile
+authRouter.put('/profile',
+  auth.authenticateToken,
+  [
+    body('first_name').trim().notEmpty().withMessage('Nombre requerido'),
+    body('last_name').trim().notEmpty().withMessage('Apellido requerido'),
+    body('mobile_phone').optional({ checkFalsy: true }).trim(),
+    body('landline_phone').optional({ checkFalsy: true }).trim(),
+    body('tax_id').optional({ checkFalsy: true }).trim(),
+    body('city').optional({ checkFalsy: true }).trim(),
+    body('state_province').optional({ checkFalsy: true }).trim(),
+    body('country').optional({ checkFalsy: true }).trim(),
+    body('address').optional({ checkFalsy: true }).trim(),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(422).json({ success: false, errors: errors.array() });
+
+    if (req.user.id === 0) return res.status(403).json({ success: false, error: 'Usuario de desarrollo no editable' });
+
+    const { first_name, last_name, mobile_phone, landline_phone, tax_id, city, state_province, country, address } = req.body;
+    const fullName = `${first_name} ${last_name}`.trim();
+
+    try {
+      await db.query(
+        `UPDATE users SET first_name=?, last_name=?, name=?, mobile_phone=?, landline_phone=?, tax_id=?, city=?, state_province=?, country=?, address=?, updated_at=datetime('now') WHERE id=?`,
+        [first_name, last_name, fullName, mobile_phone || null, landline_phone || null, tax_id || null, city || null, state_province || null, country || 'Colombia', address || null, req.user.id]
+      );
+
+      await db.query(
+        'INSERT INTO audit_logs (user_id, action, entity_type, entity_id, details) VALUES (?, ?, ?, ?, ?)',
+        [req.user.id, 'UPDATE_PROFILE', 'users', String(req.user.id), JSON.stringify({ first_name, last_name })]
+      );
+
+      res.json({ success: true, message: 'Perfil actualizado' });
+    } catch (err) {
+      console.error('[PUT /api/auth/profile] Error:', err);
+      res.status(500).json({ success: false, error: 'Error interno del servidor' });
+    }
+  }
+);
+
+// Change password
+authRouter.put('/password',
+  auth.authenticateToken,
+  [
+    body('current_password').notEmpty().withMessage('Contraseña actual requerida'),
+    body('new_password').isLength({ min: 8 }).withMessage('La nueva contraseña debe tener al menos 8 caracteres'),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(422).json({ success: false, errors: errors.array() });
+
+    if (req.user.id === 0) return res.status(403).json({ success: false, error: 'Usuario de desarrollo no editable' });
+
+    const { current_password, new_password } = req.body;
+
+    try {
+      const result = await db.query('SELECT password_hash FROM users WHERE id = ?', [req.user.id]);
+      if (!result.rows.length) return res.status(404).json({ success: false, error: 'Usuario no encontrado' });
+
+      const { password_hash } = result.rows[0];
+      if (!password_hash) return res.status(400).json({ success: false, error: 'Esta cuenta usa Google Sign-In y no tiene contraseña' });
+
+      const valid = await auth.comparePassword(current_password, password_hash);
+      if (!valid) return res.status(401).json({ success: false, error: 'Contraseña actual incorrecta' });
+
+      const newHash = await auth.hashPassword(new_password);
+      await db.query(`UPDATE users SET password_hash=?, updated_at=datetime('now') WHERE id=?`, [newHash, req.user.id]);
+
+      await db.query(
+        'INSERT INTO audit_logs (user_id, action, entity_type, entity_id, details) VALUES (?, ?, ?, ?, ?)',
+        [req.user.id, 'CHANGE_PASSWORD', 'users', String(req.user.id), '{}']
+      );
+
+      res.json({ success: true, message: 'Contraseña actualizada' });
+    } catch (err) {
+      console.error('[PUT /api/auth/password] Error:', err);
+      res.status(500).json({ success: false, error: 'Error interno del servidor' });
+    }
+  }
+);
+
 // Get caficultor application status (para que el usuario vea el estado de su solicitud)
 authRouter.get('/caficultor-status',
   auth.authenticateToken,
