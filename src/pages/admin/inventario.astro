@@ -1285,6 +1285,64 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     }
   }
 
+  async function openValueModal() {
+    valueModal.classList.add("active");
+    const body = document.getElementById("valueModalBody");
+    body.innerHTML = `<div style="text-align:center;padding:2rem"><div class="spinner"></div></div>`;
+
+    try {
+      const res = await fetch(`${API_BASE}/products?active=true&sortBy=name`);
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error);
+
+      const rows = (data.products || [])
+        .map((p) => ({ ...p, valor: (p.stock_quantity || 0) * (p.price || 0) }))
+        .sort((a, b) => b.valor - a.valor);
+
+      const total = rows.reduce((s, r) => s + r.valor, 0);
+
+      body.innerHTML = `
+        <table class="value-table">
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th>Categoría</th>
+              <th class="text-right">Precio unit.</th>
+              <th class="text-right">Stock</th>
+              <th class="text-right">Valor total</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map((p) => `
+              <tr>
+                <td>
+                  <strong>${p.name}</strong>
+                  ${p.sku ? `<br><span style="font-size:.78rem;color:#9ca3af">${p.sku}</span>` : ""}
+                </td>
+                <td><span class="category-badge category-${p.category}">${p.category}</span></td>
+                <td class="text-right">${formatCurrency(p.price)}</td>
+                <td class="text-right">
+                  <span class="stock-badge ${p.stock_quantity === 0 ? "stock-out" : p.stock_quantity <= p.stock_min ? "stock-low" : "stock-ok"}">
+                    ${p.stock_quantity}
+                  </span>
+                </td>
+                <td class="text-right" style="font-weight:600">${formatCurrency(p.valor)}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="4"><strong>Total inventario activo</strong></td>
+              <td class="text-right"><strong>${formatCurrency(total)}</strong></td>
+            </tr>
+          </tfoot>
+        </table>
+      `;
+    } catch (err) {
+      body.innerHTML = `<p style="color:#b91c1c;padding:1rem">Error al cargar detalle: ${err.message}</p>`;
+    }
+  }
+
   // Utilities
   function formatCurrency(amount) {
     return new Intl.NumberFormat("es-CO", {
