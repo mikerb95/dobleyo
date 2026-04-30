@@ -1,0 +1,865 @@
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+---
+
+<AdminLayout title="Sistema — DobleYo Café" section="sistema">
+  <div class="page-header">
+    <div class="page-header-top">
+      <div>
+        <div class="page-breadcrumb">Admin / Sistema</div>
+        <h1 class="page-title">Gestión del Sistema</h1>
+      </div>
+    </div>
+    <div class="sys-tabs" role="tablist">
+      <button class="sys-tab active" data-tab="resumen">Resumen</button>
+      <button class="sys-tab" data-tab="usuarios">Usuarios</button>
+      <button class="sys-tab" data-tab="logs">Logs</button>
+      <button class="sys-tab" data-tab="changelog">Changelog</button>
+      <button class="sys-tab danger-tab" data-tab="danger">Danger Zone</button>
+    </div>
+  </div>
+
+  <div class="erp-body">
+
+    <!-- ── TAB: Resumen ─────────────────────────────────────────────────────── -->
+    <div id="tab-resumen" class="tab-panel">
+
+      <div class="card" style="margin-bottom:1.25rem">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Estado del Sistema</div>
+            <div class="card-subtitle" id="sysUptime">Cargando...</div>
+          </div>
+          <span class="badge" id="dbStatusBadge">—</span>
+        </div>
+        <div class="health-grid">
+          <div class="health-stat">
+            <div class="health-label">Latencia DB</div>
+            <div class="health-value" id="dbLatency">—</div>
+          </div>
+          <div class="health-stat">
+            <div class="health-label">Audit logs</div>
+            <div class="health-value" id="statAuditLogs">—</div>
+          </div>
+          <div class="health-stat">
+            <div class="health-label">Error logs</div>
+            <div class="health-value" id="statErrorLogs">—</div>
+          </div>
+          <div class="health-stat">
+            <div class="health-label">Última actualización</div>
+            <div class="health-value" id="statUpdated">—</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="kpi-grid" style="margin-bottom:1.25rem">
+        <div class="kpi-tile info">
+          <div class="kpi-label">Total Usuarios</div>
+          <div class="kpi-value" id="kpiUsers">—</div>
+        </div>
+        <div class="kpi-tile brand">
+          <div class="kpi-label">Admins</div>
+          <div class="kpi-value" id="kpiAdmins">—</div>
+        </div>
+        <div class="kpi-tile success">
+          <div class="kpi-label">Productos</div>
+          <div class="kpi-value" id="kpiProducts">—</div>
+        </div>
+        <div class="kpi-tile warning">
+          <div class="kpi-label">Facturas</div>
+          <div class="kpi-value" id="kpiOrders">—</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Distribución de Roles</div>
+        </div>
+        <div id="rolesOverview" style="padding:1rem 1.25rem">
+          <div class="loading-row">Cargando...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TAB: Usuarios ────────────────────────────────────────────────────── -->
+    <div id="tab-usuarios" class="tab-panel hidden">
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.25rem">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Registros por Mes</div>
+            <div class="card-subtitle">Últimos 6 meses</div>
+          </div>
+          <div id="regChart" style="padding:1rem 1.25rem 1.25rem">
+            <div class="loading-row">Cargando...</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Métricas</div></div>
+          <div style="padding:1rem 1.25rem;display:flex;flex-direction:column;gap:.875rem">
+            <div class="metric-row">
+              <span class="metric-label">Activos (30 días)</span>
+              <span class="metric-value" id="mActiveUsers">—</span>
+            </div>
+            <div class="metric-row">
+              <span class="metric-label">Verificados</span>
+              <span class="metric-value" id="mVerified">—</span>
+            </div>
+            <div class="metric-row">
+              <span class="metric-label">Solicitudes caficultor pendientes</span>
+              <span class="metric-value badge badge-warning" id="mPending">—</span>
+            </div>
+          </div>
+          <div style="padding:0 1.25rem 1rem">
+            <div class="card-title" style="font-size:12px;margin-bottom:.5rem">Distribución de roles</div>
+            <div id="rolesChart"><div class="loading-row">Cargando...</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabla de admins -->
+      <div class="card" style="margin-bottom:1.25rem">
+        <div class="card-header">
+          <div class="card-title">Usuarios Administradores</div>
+          <button class="btn btn-primary btn-sm" id="btnShowNewAdmin">+ Nuevo Admin</button>
+        </div>
+
+        <!-- Formulario nuevo admin (oculto por defecto) -->
+        <div id="newAdminForm" class="hidden" style="padding:1rem 1.25rem;background:var(--surface-2);border-bottom:1px solid var(--border)">
+          <div style="display:flex;gap:.75rem;flex-wrap:wrap;align-items:flex-end">
+            <div>
+              <label class="form-label">Email *</label>
+              <input type="email" id="naEmail" class="form-input" placeholder="admin@dobleyo.cafe" style="min-width:220px">
+            </div>
+            <div>
+              <label class="form-label">Nombre</label>
+              <input type="text" id="naFirstName" class="form-input" placeholder="Nombre">
+            </div>
+            <div>
+              <label class="form-label">Apellido</label>
+              <input type="text" id="naLastName" class="form-input" placeholder="Apellido">
+            </div>
+            <button class="btn btn-primary" id="btnCreateAdmin">Crear Admin</button>
+            <button class="btn btn-secondary" id="btnCancelNewAdmin">Cancelar</button>
+          </div>
+          <div id="newAdminResult" class="hidden" style="margin-top:.75rem"></div>
+        </div>
+
+        <div class="table-wrapper">
+          <table class="erp-table">
+            <thead>
+              <tr>
+                <th>Email</th>
+                <th>Nombre</th>
+                <th>Rol</th>
+                <th>Último login</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="adminsTableBody">
+              <tr><td colspan="5" class="loading-row">Cargando...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TAB: Logs ─────────────────────────────────────────────────────────── -->
+    <div id="tab-logs" class="tab-panel hidden">
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Error Logs</div>
+            <div class="card-subtitle">Errores capturados del sistema</div>
+          </div>
+          <div style="display:flex;gap:.5rem;align-items:center">
+            <select id="errLevelFilter" class="form-input form-input-sm">
+              <option value="">Todos los niveles</option>
+              <option value="error">Error</option>
+              <option value="warn">Warning</option>
+              <option value="info">Info</option>
+            </select>
+            <button class="btn btn-secondary btn-sm" id="btnRefreshErrors">Actualizar</button>
+            <button class="btn btn-sm" id="btnClearErrors" style="background:var(--c-error);color:#fff;border-color:var(--c-error)">Limpiar todo</button>
+          </div>
+        </div>
+
+        <div class="table-wrapper">
+          <table class="erp-table">
+            <thead>
+              <tr>
+                <th style="width:80px">Nivel</th>
+                <th>Mensaje</th>
+                <th>Fuente</th>
+                <th>Ruta</th>
+                <th style="width:150px">Fecha</th>
+              </tr>
+            </thead>
+            <tbody id="errorsTableBody">
+              <tr><td colspan="5" class="loading-row">Cargando...</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="padding:.75rem 1.25rem;display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--border)">
+          <span id="errPaginationInfo" style="font-size:12px;color:var(--text-2)">—</span>
+          <div style="display:flex;gap:.5rem">
+            <button class="btn btn-secondary btn-sm" id="btnErrPrev" disabled>Anterior</button>
+            <button class="btn btn-secondary btn-sm" id="btnErrNext" disabled>Siguiente</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:1rem">
+        <div class="card-header">
+          <div class="card-title">Audit Logs</div>
+          <a href="/app/auditoria" class="btn btn-secondary btn-sm">Ver Auditoría completa →</a>
+        </div>
+        <div style="padding:1rem 1.25rem;color:var(--text-2);font-size:13px">
+          Los audit logs de operaciones (crear, actualizar, eliminar entidades) se gestionan en la página de Auditoría.
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TAB: Changelog ───────────────────────────────────────────────────── -->
+    <div id="tab-changelog" class="tab-panel hidden">
+
+      <!-- Formulario nueva entrada -->
+      <div class="card" style="margin-bottom:1.25rem">
+        <div class="card-header">
+          <div class="card-title">Nueva Entrada</div>
+        </div>
+        <div style="padding:1rem 1.25rem">
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.75rem;margin-bottom:.75rem">
+            <div>
+              <label class="form-label">Versión *</label>
+              <input type="text" id="clVersion" class="form-input" placeholder="v2.1.0">
+            </div>
+            <div>
+              <label class="form-label">Tipo</label>
+              <select id="clType" class="form-input">
+                <option value="feature">Feature</option>
+                <option value="fix">Fix</option>
+                <option value="breaking">Breaking</option>
+                <option value="security">Security</option>
+                <option value="performance">Performance</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label">Publicado</label>
+              <input type="date" id="clPublished" class="form-input">
+            </div>
+          </div>
+          <div style="margin-bottom:.75rem">
+            <label class="form-label">Título *</label>
+            <input type="text" id="clTitle" class="form-input" placeholder="Descripción breve del cambio">
+          </div>
+          <div style="margin-bottom:.75rem">
+            <label class="form-label">Descripción</label>
+            <textarea id="clDesc" class="form-input" rows="3" placeholder="Detalles adicionales..."></textarea>
+          </div>
+          <button class="btn btn-primary" id="btnSaveChangelog">Guardar Entrada</button>
+          <span id="clSaveResult" style="margin-left:.75rem;font-size:13px"></span>
+        </div>
+      </div>
+
+      <!-- Timeline -->
+      <div id="changelogTimeline">
+        <div class="loading-row">Cargando...</div>
+      </div>
+    </div>
+
+    <!-- ── TAB: Danger Zone ─────────────────────────────────────────────────── -->
+    <div id="tab-danger" class="tab-panel hidden">
+
+      <div style="margin-bottom:1rem;padding:.75rem 1rem;background:var(--c-error-soft,#fef2f2);border:1px solid var(--c-error);border-radius:6px;font-size:13px;color:var(--c-error)">
+        <strong>Zona de Peligro.</strong> Las acciones aquí son irreversibles o afectan el estado global del sistema. Procede con cuidado.
+      </div>
+
+      <div class="card danger-card">
+        <!-- Backup -->
+        <div class="danger-action">
+          <div class="danger-action-info">
+            <strong>Descargar Backup de BD</strong>
+            <p class="danger-desc">Descarga un volcado SQL completo de todas las tablas. Recomendado antes de cualquier operación destructiva.</p>
+          </div>
+          <button id="btnBackup" class="btn btn-secondary">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:5px">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            Descargar Backup
+          </button>
+        </div>
+
+        <!-- Migraciones -->
+        <div class="danger-action">
+          <div class="danger-action-info">
+            <strong>Ejecutar Migraciones</strong>
+            <p class="danger-desc">Corre todas las migraciones de base de datos. Seguro de re-ejecutar (usan IF NOT EXISTS). Las migraciones de tipo self-executing deben correrse por CLI.</p>
+          </div>
+          <button id="btnMigrate" class="btn btn-secondary">Ejecutar Migraciones</button>
+        </div>
+        <div id="migrateOutput" class="hidden" style="margin:0 1.25rem 1rem;padding:.75rem;background:var(--surface-2);border-radius:6px;font-family:monospace;font-size:12px;max-height:260px;overflow-y:auto;border:1px solid var(--border)"></div>
+
+        <!-- Purga de logs -->
+        <div class="danger-action">
+          <div class="danger-action-info">
+            <strong>Purgar Audit Logs Antiguos</strong>
+            <p class="danger-desc">Elimina permanentemente los audit logs más viejos que N días. Mínimo: 7 días.</p>
+          </div>
+          <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
+            <input type="number" id="purgeDays" value="90" min="7" max="730" class="form-input" style="width:80px">
+            <span style="color:var(--text-2);font-size:13px">días</span>
+            <button id="btnPurge" class="btn" style="background:var(--c-error);color:#fff;border-color:var(--c-error)">Purgar Logs</button>
+          </div>
+          <div id="purgeResult" style="margin-top:.5rem;font-size:13px;width:100%"></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /erp-body -->
+</AdminLayout>
+
+<style>
+  /* Tabs */
+  .sys-tabs {
+    display: flex;
+    gap: 0;
+    margin-top: .75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .sys-tab {
+    padding: 9px 18px;
+    border: none;
+    background: none;
+    font-size: 13.5px;
+    font-weight: 500;
+    color: var(--text-2);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    font-family: inherit;
+    transition: color .12s, border-color .12s;
+    margin-bottom: -1px;
+  }
+  .sys-tab:hover { color: var(--text-1); }
+  .sys-tab.active { color: var(--brand-dark, #251a14); border-bottom-color: var(--brand, #c8a96e); font-weight: 700; }
+  .sys-tab.danger-tab { color: var(--c-error, #dc2626); }
+  .sys-tab.danger-tab.active { color: var(--c-error, #dc2626); border-bottom-color: var(--c-error, #dc2626); }
+
+  .tab-panel { padding-top: 1.25rem; }
+  .hidden { display: none !important; }
+
+  /* Salud del sistema */
+  .health-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 1rem;
+    padding: .75rem 1.25rem 1.25rem;
+  }
+  .health-label { font-size: 11px; color: var(--text-2); margin-bottom: 3px; text-transform: uppercase; letter-spacing: .04em; }
+  .health-value { font-size: 15px; font-weight: 700; color: var(--text-1); }
+
+  /* KPIs */
+  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; }
+
+  /* Métricas de usuario */
+  .metric-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+  .metric-label { color: var(--text-2); }
+  .metric-value { font-weight: 700; color: var(--text-1); }
+
+  /* Bar chart CSS */
+  .bar-chart { display: flex; align-items: flex-end; gap: 8px; height: 100px; }
+  .bar-col { display: flex; flex-direction: column; align-items: center; flex: 1; gap: 4px; }
+  .bar { width: 100%; background: var(--brand, #c8a96e); border-radius: 3px 3px 0 0; min-height: 2px; transition: height .3s; }
+  .bar-label { font-size: 10px; color: var(--text-2); text-align: center; }
+  .bar-val { font-size: 11px; font-weight: 700; color: var(--text-1); }
+
+  /* Roles list */
+  .role-row { display: flex; align-items: center; gap: .5rem; margin-bottom: .5rem; font-size: 13px; }
+  .role-bar-bg { flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  .role-bar-fill { height: 100%; background: var(--brand, #c8a96e); border-radius: 3px; }
+  .role-name { width: 80px; color: var(--text-2); }
+  .role-count { width: 30px; text-align: right; font-weight: 700; color: var(--text-1); }
+
+  /* Danger zone */
+  .danger-card { border-top: 3px solid var(--c-error, #dc2626); }
+  .danger-action {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    flex-wrap: wrap;
+    padding: 1.25rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .danger-action:last-child { border-bottom: none; }
+  .danger-action-info { flex: 1; min-width: 200px; }
+  .danger-action-info strong { font-size: 13.5px; color: var(--text-1); display: block; margin-bottom: 3px; }
+  .danger-desc { font-size: 12px; color: var(--text-2); margin: 0; line-height: 1.5; }
+
+  /* Form helpers */
+  .form-label { display: block; font-size: 11px; font-weight: 600; color: var(--text-2); margin-bottom: 4px; text-transform: uppercase; letter-spacing: .04em; }
+  .form-input { padding: .375rem .625rem; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; font-family: inherit; background: var(--surface); color: var(--text-1); width: 100%; box-sizing: border-box; }
+  .form-input:focus { outline: none; border-color: var(--brand, #c8a96e); }
+  .form-input-sm { padding: .25rem .5rem; font-size: 12px; width: auto; }
+  textarea.form-input { resize: vertical; }
+  .btn-sm { padding: .25rem .625rem; font-size: 12px; }
+  .btn-primary { background: var(--brand, #c8a96e); color: #fff; border: 1px solid var(--brand, #c8a96e); border-radius: 4px; padding: .375rem .875rem; font-size: 13px; cursor: pointer; font-family: inherit; font-weight: 600; }
+  .btn-primary:hover { opacity: .9; }
+
+  /* Changelog timeline */
+  .cl-entry { display: flex; gap: 1rem; margin-bottom: 1.25rem; }
+  .cl-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--brand, #c8a96e); margin-top: 5px; flex-shrink: 0; }
+  .cl-content { flex: 1; }
+  .cl-header { display: flex; align-items: center; gap: .5rem; margin-bottom: .25rem; flex-wrap: wrap; }
+  .cl-version { font-weight: 700; font-size: 13px; color: var(--text-1); }
+  .cl-date { font-size: 11px; color: var(--text-3); }
+  .cl-title { font-size: 13.5px; color: var(--text-1); margin-bottom: .25rem; }
+  .cl-desc { font-size: 12.5px; color: var(--text-2); line-height: 1.5; }
+  .cl-author { font-size: 11px; color: var(--text-3); margin-top: .25rem; }
+
+  .loading-row { color: var(--text-2); font-size: 13px; text-align: center; padding: 1.5rem; }
+
+  @media (max-width: 768px) {
+    .sys-tabs { overflow-x: auto; }
+    .kpi-grid { grid-template-columns: 1fr 1fr; }
+    #tab-usuarios > div:first-child { grid-template-columns: 1fr; }
+    .danger-action { flex-direction: column; }
+    .health-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+
+<script>
+  // ── Estado de paginación de errores ───────────────────────────────────────
+  let errOffset = 0;
+  const ERR_LIMIT = 50;
+  let errTotal = 0;
+
+  // ── Tab switching ─────────────────────────────────────────────────────────
+  document.querySelectorAll('.sys-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tab = btn.dataset.tab;
+      document.querySelectorAll('.sys-tab').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+      btn.classList.add('active');
+      const panel = document.getElementById(`tab-${tab}`);
+      panel.classList.remove('hidden');
+      if (!panel.dataset.loaded) activateTab(tab, panel);
+    });
+  });
+
+  async function activateTab(tab, panel) {
+    if (tab === 'resumen')    await loadStats();
+    if (tab === 'usuarios')  { await loadUserStats(); await loadAdmins(); }
+    if (tab === 'logs')      await loadErrors();
+    if (tab === 'changelog') await loadChangelog();
+    panel.dataset.loaded = 'true';
+  }
+
+  // Cargar resumen al inicio
+  loadStats();
+
+  // ── Resumen ───────────────────────────────────────────────────────────────
+  async function loadStats() {
+    try {
+      const res = await fetch('/api/system/stats', { credentials: 'include' });
+      const { data } = await res.json();
+
+      document.getElementById('kpiUsers').textContent     = data.users.total;
+      document.getElementById('kpiAdmins').textContent    = data.users.admins;
+      document.getElementById('kpiProducts').textContent  = data.products;
+      document.getElementById('kpiOrders').textContent    = data.orders;
+      document.getElementById('statAuditLogs').textContent = data.auditLogs.toLocaleString('es-CO');
+      document.getElementById('statErrorLogs').textContent = data.errorLogs.toLocaleString('es-CO');
+      document.getElementById('statUpdated').textContent   = new Date().toLocaleTimeString('es-CO');
+
+      const badge = document.getElementById('dbStatusBadge');
+      if (data.db.ok) {
+        badge.textContent = 'DB OK';
+        badge.className = 'badge badge-success';
+        document.getElementById('dbLatency').textContent = `${data.db.latencyMs}ms`;
+      } else {
+        badge.textContent = 'DB ERROR';
+        badge.className = 'badge badge-error';
+        document.getElementById('dbLatency').textContent = data.db.error || 'Error';
+      }
+
+      const h = Math.floor(data.uptime / 3600);
+      const m = Math.floor((data.uptime % 3600) / 60);
+      document.getElementById('sysUptime').textContent = `Proceso activo hace ${h}h ${m}m`;
+
+      const rolesEl = document.getElementById('rolesOverview');
+      rolesEl.innerHTML = renderRolesBars(data.users.byRole, data.users.total);
+
+      document.getElementById('tab-resumen').dataset.loaded = 'true';
+    } catch (err) {
+      console.error('loadStats error', err);
+    }
+  }
+
+  function renderRolesBars(roles, total) {
+    const colors = { admin: 'var(--brand)', caficultor: '#16a34a', client: '#2563eb', provider: '#9333ea' };
+    return roles.map(r => {
+      const pct = total > 0 ? Math.round((Number(r.count) / total) * 100) : 0;
+      const color = colors[r.role] || 'var(--brand)';
+      return `<div class="role-row">
+        <span class="role-name">${r.role}</span>
+        <div class="role-bar-bg"><div class="role-bar-fill" style="width:${pct}%;background:${color}"></div></div>
+        <span class="role-count">${r.count}</span>
+      </div>`;
+    }).join('');
+  }
+
+  // ── Usuarios ──────────────────────────────────────────────────────────────
+  async function loadUserStats() {
+    try {
+      const res = await fetch('/api/system/users/stats', { credentials: 'include' });
+      const { data } = await res.json();
+
+      document.getElementById('mActiveUsers').textContent = data.activeUsersLast30Days;
+      document.getElementById('mPending').textContent     = data.pendingCaficultorApps;
+
+      const vPct = data.verification.total > 0
+        ? Math.round((data.verification.verified / data.verification.total) * 100) : 0;
+      document.getElementById('mVerified').textContent = `${data.verification.verified} / ${data.verification.total} (${vPct}%)`;
+
+      // Bar chart de registros
+      const months = data.registrationsByMonth;
+      const max = Math.max(...months.map(m => Number(m.count)), 1);
+      document.getElementById('regChart').innerHTML = months.length === 0
+        ? '<div class="loading-row">Sin datos</div>'
+        : `<div class="bar-chart">${months.map(m => {
+            const h = Math.max(Math.round((Number(m.count) / max) * 100), 4);
+            const label = m.month?.slice(5) || m.month;
+            return `<div class="bar-col">
+              <span class="bar-val">${m.count}</span>
+              <div class="bar" style="height:${h}px"></div>
+              <span class="bar-label">${label}</span>
+            </div>`;
+          }).join('')}</div>`;
+
+      // Roles chart
+      const total = data.roleDistribution.reduce((s, r) => s + Number(r.count), 0);
+      document.getElementById('rolesChart').innerHTML = renderRolesBars(data.roleDistribution, total);
+    } catch (err) {
+      console.error('loadUserStats error', err);
+    }
+  }
+
+  async function loadAdmins() {
+    try {
+      const res  = await fetch('/api/system/admins', { credentials: 'include' });
+      const { data } = await res.json();
+      const tbody = document.getElementById('adminsTableBody');
+      if (!data.length) { tbody.innerHTML = '<tr><td colspan="5" class="loading-row">Sin usuarios</td></tr>'; return; }
+
+      tbody.innerHTML = data.map(u => {
+        const name = [u.first_name, u.last_name].filter(Boolean).join(' ') || '—';
+        const login = u.last_login_at ? new Date(u.last_login_at).toLocaleDateString('es-CO') : 'Nunca';
+        const roleBadge = u.role === 'admin' ? 'badge-brand' : 'badge-neutral';
+        return `<tr>
+          <td><span style="font-size:13px">${u.email}</span></td>
+          <td>${name}</td>
+          <td>
+            <span class="badge ${roleBadge}">${u.role}</span>
+            <select class="role-select form-input form-input-sm hidden" data-uid="${u.id}" style="margin-top:4px">
+              ${['admin','client','provider','caficultor'].map(r => `<option value="${r}" ${r===u.role?'selected':''}>${r}</option>`).join('')}
+            </select>
+          </td>
+          <td style="font-size:12px;color:var(--text-2)">${login}</td>
+          <td>
+            <div style="display:flex;gap:.375rem;flex-wrap:wrap">
+              <button class="btn btn-secondary btn-sm btn-change-role" data-uid="${u.id}">Cambiar rol</button>
+              <button class="btn btn-secondary btn-sm btn-reset-pwd" data-uid="${u.id}">Reset pwd</button>
+            </div>
+          </td>
+        </tr>`;
+      }).join('');
+
+      // Eventos de cambiar rol
+      tbody.querySelectorAll('.btn-change-role').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const uid = btn.dataset.uid;
+          const sel = tbody.querySelector(`.role-select[data-uid="${uid}"]`);
+          if (sel.classList.contains('hidden')) {
+            sel.classList.remove('hidden');
+            btn.textContent = 'Guardar';
+            btn.dataset.saving = 'true';
+          } else {
+            saveRole(uid, sel.value, btn, sel);
+          }
+        });
+      });
+
+      // Eventos de reset password
+      tbody.querySelectorAll('.btn-reset-pwd').forEach(btn => {
+        btn.addEventListener('click', () => resetPassword(btn.dataset.uid));
+      });
+    } catch (err) {
+      console.error('loadAdmins error', err);
+    }
+  }
+
+  async function saveRole(uid, role, btn, sel) {
+    btn.disabled = true;
+    const res = await fetch(`/api/system/admins/${uid}/role`, {
+      method: 'PUT', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ role }),
+    });
+    if (res.ok) {
+      sel.classList.add('hidden');
+      btn.textContent = 'Cambiar rol';
+      btn.dataset.saving = '';
+      btn.disabled = false;
+      await loadAdmins();
+    } else {
+      btn.disabled = false;
+      alert('Error al cambiar rol');
+    }
+  }
+
+  async function resetPassword(uid) {
+    if (!confirm('¿Generar nueva contraseña temporal para este usuario?')) return;
+    const res = await fetch(`/api/system/admins/${uid}/reset-password`, {
+      method: 'POST', credentials: 'include',
+    });
+    const { data } = await res.json();
+    if (data?.tempPassword) {
+      alert(`Contraseña temporal: ${data.tempPassword}\n\nGuárdala, no se mostrará de nuevo.`);
+    }
+  }
+
+  // Formulario nuevo admin
+  document.getElementById('btnShowNewAdmin').addEventListener('click', () => {
+    document.getElementById('newAdminForm').classList.remove('hidden');
+  });
+  document.getElementById('btnCancelNewAdmin').addEventListener('click', () => {
+    document.getElementById('newAdminForm').classList.add('hidden');
+  });
+  document.getElementById('btnCreateAdmin').addEventListener('click', async () => {
+    const email     = document.getElementById('naEmail').value.trim();
+    const firstName = document.getElementById('naFirstName').value.trim();
+    const lastName  = document.getElementById('naLastName').value.trim();
+    if (!email) { alert('Email requerido'); return; }
+
+    const res = await fetch('/api/system/admins', {
+      method: 'POST', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, first_name: firstName, last_name: lastName }),
+    });
+    const json = await res.json();
+    const resultEl = document.getElementById('newAdminResult');
+    resultEl.classList.remove('hidden');
+
+    if (json.success) {
+      resultEl.innerHTML = `<div style="color:green">Admin creado. Contraseña temporal: <strong>${json.data.tempPassword}</strong> — guárdala.</div>`;
+      document.getElementById('naEmail').value = '';
+      document.getElementById('naFirstName').value = '';
+      document.getElementById('naLastName').value = '';
+      await loadAdmins();
+    } else {
+      resultEl.innerHTML = `<div style="color:var(--c-error)">${json.error}</div>`;
+    }
+  });
+
+  // ── Error logs ────────────────────────────────────────────────────────────
+  async function loadErrors(offset = 0) {
+    errOffset = offset;
+    const level = document.getElementById('errLevelFilter').value;
+    const params = new URLSearchParams({ limit: ERR_LIMIT, offset });
+    if (level) params.set('level', level);
+
+    try {
+      const res  = await fetch(`/api/system/errors?${params}`, { credentials: 'include' });
+      const json = await res.json();
+      errTotal   = json.total;
+
+      const tbody = document.getElementById('errorsTableBody');
+      if (!json.data.length) {
+        tbody.innerHTML = '<tr><td colspan="5" class="loading-row">Sin error logs</td></tr>';
+      } else {
+        tbody.innerHTML = json.data.map(e => {
+          const levelClass = e.level === 'error' ? 'badge-error' : e.level === 'warn' ? 'badge-warning' : 'badge-neutral';
+          const date = new Date(e.created_at).toLocaleString('es-CO');
+          const msg = e.message.length > 80 ? e.message.slice(0, 80) + '…' : e.message;
+          return `<tr>
+            <td><span class="badge ${levelClass}">${e.level}</span></td>
+            <td style="font-size:12px;max-width:300px" title="${e.message.replace(/"/g,'\\"')}">${msg}</td>
+            <td style="font-size:12px;color:var(--text-2)">${e.source || '—'}</td>
+            <td style="font-size:12px;color:var(--text-2)">${e.request_path || '—'}</td>
+            <td style="font-size:12px;color:var(--text-2)">${date}</td>
+          </tr>`;
+        }).join('');
+      }
+
+      const info = document.getElementById('errPaginationInfo');
+      const showing = Math.min(errOffset + ERR_LIMIT, errTotal);
+      info.textContent = errTotal === 0 ? 'Sin registros' : `${errOffset + 1}–${showing} de ${errTotal}`;
+
+      document.getElementById('btnErrPrev').disabled = errOffset === 0;
+      document.getElementById('btnErrNext').disabled = errOffset + ERR_LIMIT >= errTotal;
+    } catch (err) {
+      console.error('loadErrors error', err);
+    }
+  }
+
+  document.getElementById('errLevelFilter').addEventListener('change', () => loadErrors(0));
+  document.getElementById('btnRefreshErrors').addEventListener('click', () => loadErrors(errOffset));
+  document.getElementById('btnErrPrev').addEventListener('click', () => loadErrors(Math.max(0, errOffset - ERR_LIMIT)));
+  document.getElementById('btnErrNext').addEventListener('click', () => loadErrors(errOffset + ERR_LIMIT));
+
+  document.getElementById('btnClearErrors').addEventListener('click', async () => {
+    if (!confirm(`¿Eliminar TODOS los error logs? Esta acción no se puede deshacer.`)) return;
+    await fetch('/api/system/errors', { method: 'DELETE', credentials: 'include' });
+    await loadErrors(0);
+  });
+
+  // ── Changelog ─────────────────────────────────────────────────────────────
+  async function loadChangelog() {
+    try {
+      const res  = await fetch('/api/system/changelog', { credentials: 'include' });
+      const { data } = await res.json();
+      const el   = document.getElementById('changelogTimeline');
+
+      if (!data.length) { el.innerHTML = '<div class="loading-row">Sin entradas de changelog.</div>'; return; }
+
+      const typeBadge = { feature: 'badge-success', fix: 'badge-info', breaking: 'badge-error', security: 'badge-warning', performance: 'badge-neutral' };
+      el.innerHTML = data.map(e => {
+        const date = e.published_at
+          ? new Date(e.published_at).toLocaleDateString('es-CO')
+          : new Date(e.created_at).toLocaleDateString('es-CO');
+        const author = e.author_email || 'Sistema';
+        const tClass = typeBadge[e.change_type] || 'badge-neutral';
+        return `<div class="cl-entry">
+          <div class="cl-dot"></div>
+          <div class="cl-content">
+            <div class="cl-header">
+              <span class="cl-version">${e.version}</span>
+              <span class="badge ${tClass}">${e.change_type}</span>
+              <span class="cl-date">${date}</span>
+            </div>
+            <div class="cl-title">${e.title}</div>
+            ${e.description ? `<div class="cl-desc">${e.description}</div>` : ''}
+            <div class="cl-author">por ${author}</div>
+          </div>
+        </div>`;
+      }).join('');
+    } catch (err) {
+      console.error('loadChangelog error', err);
+    }
+  }
+
+  document.getElementById('btnSaveChangelog').addEventListener('click', async () => {
+    const version = document.getElementById('clVersion').value.trim();
+    const title   = document.getElementById('clTitle').value.trim();
+    if (!version || !title) { alert('Versión y título son requeridos'); return; }
+
+    const body = {
+      version,
+      title,
+      description:  document.getElementById('clDesc').value.trim() || null,
+      change_type:  document.getElementById('clType').value,
+      published_at: document.getElementById('clPublished').value || null,
+    };
+
+    const res  = await fetch('/api/system/changelog', {
+      method: 'POST', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const json = await res.json();
+    const resultEl = document.getElementById('clSaveResult');
+
+    if (json.success) {
+      resultEl.style.color = 'green';
+      resultEl.textContent = 'Entrada guardada.';
+      document.getElementById('clVersion').value   = '';
+      document.getElementById('clTitle').value     = '';
+      document.getElementById('clDesc').value      = '';
+      document.getElementById('clPublished').value = '';
+      const panel = document.getElementById('tab-changelog');
+      panel.dataset.loaded = '';
+      await loadChangelog();
+    } else {
+      resultEl.style.color = 'var(--c-error)';
+      resultEl.textContent = json.error;
+    }
+    setTimeout(() => { resultEl.textContent = ''; }, 4000);
+  });
+
+  // ── Danger Zone ───────────────────────────────────────────────────────────
+  document.getElementById('btnBackup').addEventListener('click', async () => {
+    const btn = document.getElementById('btnBackup');
+    btn.disabled = true;
+    btn.textContent = 'Generando...';
+    try {
+      const res  = await fetch('/api/system/backup', { method: 'POST', credentials: 'include' });
+      const blob = await res.blob();
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement('a');
+      a.href = url;
+      a.download = `dobleyo-backup-${new Date().toISOString().slice(0, 10)}.sql`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      alert('Error generando backup: ' + err.message);
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:5px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Descargar Backup';
+    }
+  });
+
+  document.getElementById('btnMigrate').addEventListener('click', async () => {
+    const btn = document.getElementById('btnMigrate');
+    btn.disabled = true;
+    btn.textContent = 'Ejecutando...';
+    const output = document.getElementById('migrateOutput');
+    output.classList.remove('hidden');
+    output.textContent = 'Corriendo migraciones...';
+
+    try {
+      const res  = await fetch('/api/system/migrate', { method: 'POST', credentials: 'include' });
+      const json = await res.json();
+      output.textContent = json.data.map(r =>
+        `${r.ok ? '✅' : '❌'} ${r.name}${r.error ? ': ' + r.error : ''}`
+      ).join('\n');
+    } catch (err) {
+      output.textContent = 'Error: ' + err.message;
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Ejecutar Migraciones';
+    }
+  });
+
+  // Doble confirmación para purga
+  let purgeConfirmTimer = null;
+  document.getElementById('btnPurge').addEventListener('click', async (e) => {
+    const btn = e.currentTarget;
+    if (btn.dataset.confirm === 'true') {
+      clearTimeout(purgeConfirmTimer);
+      btn.dataset.confirm = '';
+      btn.textContent = 'Purgar Logs';
+      const days = parseInt(document.getElementById('purgeDays').value) || 90;
+      btn.disabled = true;
+      const res  = await fetch(`/api/system/logs/old?days=${days}`, { method: 'DELETE', credentials: 'include' });
+      const json = await res.json();
+      const result = document.getElementById('purgeResult');
+      if (json.success) {
+        result.style.color = 'green';
+        result.textContent = `${json.data.deleted} registros eliminados (más viejos de ${days} días).`;
+      } else {
+        result.style.color = 'var(--c-error)';
+        result.textContent = json.error;
+      }
+      btn.disabled = false;
+      setTimeout(() => { result.textContent = ''; }, 5000);
+    } else {
+      btn.dataset.confirm = 'true';
+      btn.textContent = '¿Confirmar purga?';
+      purgeConfirmTimer = setTimeout(() => {
+        btn.dataset.confirm = '';
+        btn.textContent = 'Purgar Logs';
+      }, 5000);
+    }
+  });
+</script>
