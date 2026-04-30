@@ -921,8 +921,9 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     .getElementById("movementModalClose")
     .addEventListener("click", closeMovementModal);
 
-  document.getElementById("cardTotalValue").addEventListener("click", openValueModal);
-  document.getElementById("valueModalClose").addEventListener("click", () => valueModal.classList.remove("active"));
+  document.getElementById("cardTotalValue").addEventListener("click", () => {
+    window.location.href = "/admin/inventario-valor";
+  });
   document
     .getElementById("btnCancelMovement")
     .addEventListener("click", closeMovementModal);
