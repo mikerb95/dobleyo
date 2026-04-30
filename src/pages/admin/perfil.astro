@@ -1,0 +1,527 @@
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+---
+
+<AdminLayout title="Mi Perfil — DobleYo ERP" section="perfil">
+  <div class="page-header">
+    <div class="page-header-top">
+      <div>
+        <div class="page-breadcrumb"><a href="/admin">Admin</a> / Mi Perfil</div>
+        <div class="page-title">Mi Perfil</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="erp-body profile-layout">
+
+    <!-- Columna izquierda: info de cuenta -->
+    <aside class="profile-aside">
+      <div class="card">
+        <div class="profile-avatar-block">
+          <div class="profile-avatar" id="profileAvatar">—</div>
+          <div class="profile-fullname" id="profileFullName">—</div>
+          <div class="badge badge-neutral" id="profileRole">—</div>
+        </div>
+        <div class="profile-meta">
+          <div class="meta-row">
+            <span class="meta-label">Correo</span>
+            <span class="meta-value" id="profileEmail">—</span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-label">Último acceso</span>
+            <span class="meta-value" id="profileLastLogin">—</span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-label">Miembro desde</span>
+            <span class="meta-value" id="profileCreatedAt">—</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Columna derecha: formularios -->
+    <div class="profile-forms">
+
+      <!-- Datos personales -->
+      <div class="card" id="cardPersonal">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Datos personales</div>
+            <div class="card-subtitle">Nombre, contacto y dirección</div>
+          </div>
+          <button class="btn btn-secondary" id="btnEditPersonal">Editar</button>
+        </div>
+        <div class="card-body" id="personalViewMode">
+          <div class="field-grid">
+            <div class="field-item">
+              <div class="field-label">Nombre</div>
+              <div class="field-value" id="viewFirstName">—</div>
+            </div>
+            <div class="field-item">
+              <div class="field-label">Apellido</div>
+              <div class="field-value" id="viewLastName">—</div>
+            </div>
+            <div class="field-item">
+              <div class="field-label">Celular</div>
+              <div class="field-value" id="viewMobilePhone">—</div>
+            </div>
+            <div class="field-item">
+              <div class="field-label">Teléfono fijo</div>
+              <div class="field-value" id="viewLandlinePhone">—</div>
+            </div>
+            <div class="field-item">
+              <div class="field-label">NIT / Cédula</div>
+              <div class="field-value" id="viewTaxId">—</div>
+            </div>
+            <div class="field-item">
+              <div class="field-label">Ciudad</div>
+              <div class="field-value" id="viewCity">—</div>
+            </div>
+            <div class="field-item">
+              <div class="field-label">Departamento</div>
+              <div class="field-value" id="viewStateProvince">—</div>
+            </div>
+            <div class="field-item">
+              <div class="field-label">País</div>
+              <div class="field-value" id="viewCountry">—</div>
+            </div>
+            <div class="field-item field-item--full">
+              <div class="field-label">Dirección</div>
+              <div class="field-value" id="viewAddress">—</div>
+            </div>
+          </div>
+        </div>
+
+        <form class="card-body" id="personalEditMode" style="display:none" novalidate>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="inputFirstName">Nombre <span class="required">*</span></label>
+              <input type="text" id="inputFirstName" required />
+            </div>
+            <div class="form-group">
+              <label for="inputLastName">Apellido <span class="required">*</span></label>
+              <input type="text" id="inputLastName" required />
+            </div>
+            <div class="form-group">
+              <label for="inputMobilePhone">Celular</label>
+              <input type="tel" id="inputMobilePhone" />
+            </div>
+            <div class="form-group">
+              <label for="inputLandlinePhone">Teléfono fijo</label>
+              <input type="tel" id="inputLandlinePhone" />
+            </div>
+            <div class="form-group">
+              <label for="inputTaxId">NIT / Cédula</label>
+              <input type="text" id="inputTaxId" />
+            </div>
+            <div class="form-group">
+              <label for="inputCity">Ciudad</label>
+              <input type="text" id="inputCity" />
+            </div>
+            <div class="form-group">
+              <label for="inputStateProvince">Departamento</label>
+              <input type="text" id="inputStateProvince" />
+            </div>
+            <div class="form-group">
+              <label for="inputCountry">País</label>
+              <input type="text" id="inputCountry" />
+            </div>
+            <div class="form-group form-group--full">
+              <label for="inputAddress">Dirección</label>
+              <textarea id="inputAddress" rows="2"></textarea>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" id="btnCancelPersonal">Cancelar</button>
+            <button type="submit" class="btn btn-primary" id="btnSavePersonal">Guardar cambios</button>
+          </div>
+          <div class="form-msg" id="personalMsg"></div>
+        </form>
+      </div>
+
+      <!-- Cambiar contraseña -->
+      <div class="card" id="cardPassword">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Contraseña</div>
+            <div class="card-subtitle">Actualiza tu contraseña de acceso</div>
+          </div>
+        </div>
+        <form class="card-body" id="passwordForm" novalidate>
+          <div class="form-grid form-grid--narrow">
+            <div class="form-group form-group--full">
+              <label for="inputCurrentPassword">Contraseña actual <span class="required">*</span></label>
+              <input type="password" id="inputCurrentPassword" autocomplete="current-password" required />
+            </div>
+            <div class="form-group">
+              <label for="inputNewPassword">Nueva contraseña <span class="required">*</span></label>
+              <input type="password" id="inputNewPassword" autocomplete="new-password" required minlength="8" />
+              <div class="form-hint">Mínimo 8 caracteres</div>
+            </div>
+            <div class="form-group">
+              <label for="inputConfirmPassword">Confirmar nueva contraseña <span class="required">*</span></label>
+              <input type="password" id="inputConfirmPassword" autocomplete="new-password" required />
+            </div>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Cambiar contraseña</button>
+          </div>
+          <div class="form-msg" id="passwordMsg"></div>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</AdminLayout>
+
+<style>
+  .profile-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 1.5rem;
+    align-items: start;
+  }
+
+  @media (max-width: 900px) {
+    .profile-layout { grid-template-columns: 1fr; }
+  }
+
+  /* Aside */
+  .profile-aside .card { overflow: hidden; }
+
+  .profile-avatar-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem 1.5rem 1.25rem;
+    background: var(--erp-bg);
+    border-bottom: 1px solid var(--border);
+    gap: 0.5rem;
+  }
+
+  .profile-avatar {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: var(--brand);
+    color: #fff;
+    font-size: 26px;
+    font-weight: 700;
+    display: grid;
+    place-items: center;
+    margin-bottom: 0.5rem;
+    border: 3px solid rgba(255,255,255,.6);
+    box-shadow: 0 2px 8px rgba(0,0,0,.12);
+  }
+
+  .profile-fullname {
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--text-1);
+    text-align: center;
+  }
+
+  .profile-meta {
+    padding: 1rem 1.25rem;
+  }
+
+  .meta-row {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 0.625rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .meta-row:last-child { border-bottom: none; }
+
+  .meta-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-3);
+  }
+
+  .meta-value {
+    font-size: 13px;
+    color: var(--text-1);
+    word-break: break-all;
+  }
+
+  /* Forms col */
+  .profile-forms { display: flex; flex-direction: column; gap: 1.5rem; }
+
+  /* Card body */
+  .card-body { padding: 1.25rem 1.5rem; }
+
+  /* Field grid (view mode) */
+  .field-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+  }
+
+  .field-item--full { grid-column: 1 / -1; }
+
+  .field-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-3);
+    margin-bottom: 3px;
+  }
+
+  .field-value {
+    font-size: 14px;
+    color: var(--text-1);
+  }
+
+  /* Form grid (edit mode) */
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1rem 1.25rem;
+  }
+
+  .form-grid--narrow {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  }
+
+  .form-group { display: flex; flex-direction: column; gap: 4px; }
+  .form-group--full { grid-column: 1 / -1; }
+
+  .form-group label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-2);
+  }
+
+  .form-group input,
+  .form-group textarea,
+  .form-group select {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 13.5px;
+    font-family: inherit;
+    color: var(--text-1);
+    background: var(--card-bg);
+    transition: border-color 0.15s;
+  }
+
+  .form-group input:focus,
+  .form-group textarea:focus {
+    outline: none;
+    border-color: var(--brand);
+    box-shadow: 0 0 0 3px rgba(200,169,110,.15);
+  }
+
+  .form-group textarea { resize: vertical; }
+
+  .form-hint {
+    font-size: 11px;
+    color: var(--text-3);
+    margin-top: 2px;
+  }
+
+  .required { color: var(--c-error); }
+
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-top: 1.25rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .form-msg {
+    margin-top: 0.75rem;
+    font-size: 13px;
+    min-height: 20px;
+  }
+  .form-msg.success { color: var(--c-success); }
+  .form-msg.error   { color: var(--c-error); }
+</style>
+
+<script>
+  const API = '/api/auth';
+  let userData: Record<string, any> = {};
+
+  async function loadProfile() {
+    try {
+      const res = await fetch(`${API}/me`, { credentials: 'include' });
+      if (!res.ok) return;
+      const user = await res.json();
+      userData = user;
+      renderProfile(user);
+    } catch (err) {
+      console.error('Error loading profile:', err);
+    }
+  }
+
+  function renderProfile(u: Record<string, any>) {
+    const fullName = [u.first_name, u.last_name].filter(Boolean).join(' ') || u.email;
+    const initials = fullName.split(' ').slice(0, 2).map((w: string) => w[0]).join('').toUpperCase();
+
+    setText('profileAvatar', initials);
+    setText('profileFullName', fullName);
+    setText('profileRole', u.role ?? '—');
+    setText('profileEmail', u.email ?? '—');
+    setText('profileLastLogin', formatDate(u.last_login_at));
+    setText('profileCreatedAt', formatDate(u.created_at));
+
+    setText('viewFirstName', u.first_name ?? '—');
+    setText('viewLastName', u.last_name ?? '—');
+    setText('viewMobilePhone', u.mobile_phone ?? '—');
+    setText('viewLandlinePhone', u.landline_phone ?? '—');
+    setText('viewTaxId', u.tax_id ?? '—');
+    setText('viewCity', u.city ?? '—');
+    setText('viewStateProvince', u.state_province ?? '—');
+    setText('viewCountry', u.country ?? '—');
+    setText('viewAddress', u.address ?? '—');
+
+    (document.getElementById('inputFirstName') as HTMLInputElement).value = u.first_name ?? '';
+    (document.getElementById('inputLastName') as HTMLInputElement).value = u.last_name ?? '';
+    (document.getElementById('inputMobilePhone') as HTMLInputElement).value = u.mobile_phone ?? '';
+    (document.getElementById('inputLandlinePhone') as HTMLInputElement).value = u.landline_phone ?? '';
+    (document.getElementById('inputTaxId') as HTMLInputElement).value = u.tax_id ?? '';
+    (document.getElementById('inputCity') as HTMLInputElement).value = u.city ?? '';
+    (document.getElementById('inputStateProvince') as HTMLInputElement).value = u.state_province ?? '';
+    (document.getElementById('inputCountry') as HTMLInputElement).value = u.country ?? 'Colombia';
+    (document.getElementById('inputAddress') as HTMLTextAreaElement).value = u.address ?? '';
+  }
+
+  function setText(id: string, val: string) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val;
+  }
+
+  function formatDate(raw: string | null) {
+    if (!raw) return '—';
+    try {
+      return new Date(raw).toLocaleDateString('es-CO', { year: 'numeric', month: 'short', day: 'numeric' });
+    } catch { return raw; }
+  }
+
+  function setMsg(id: string, msg: string, type: 'success' | 'error' | '') {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = msg;
+    el.className = `form-msg ${type}`;
+  }
+
+  // -- Personal edit toggle --
+  document.getElementById('btnEditPersonal')?.addEventListener('click', () => {
+    document.getElementById('personalViewMode')!.style.display = 'none';
+    document.getElementById('personalEditMode')!.style.display = 'block';
+    (document.getElementById('btnEditPersonal') as HTMLButtonElement).style.display = 'none';
+  });
+
+  document.getElementById('btnCancelPersonal')?.addEventListener('click', () => {
+    document.getElementById('personalViewMode')!.style.display = 'block';
+    document.getElementById('personalEditMode')!.style.display = 'none';
+    (document.getElementById('btnEditPersonal') as HTMLButtonElement).style.display = '';
+    renderProfile(userData);
+    setMsg('personalMsg', '', '');
+  });
+
+  // -- Personal form submit --
+  document.getElementById('personalEditMode')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('btnSavePersonal') as HTMLButtonElement;
+    btn.disabled = true;
+    btn.textContent = 'Guardando…';
+    setMsg('personalMsg', '', '');
+
+    const body = {
+      first_name: (document.getElementById('inputFirstName') as HTMLInputElement).value.trim(),
+      last_name:  (document.getElementById('inputLastName') as HTMLInputElement).value.trim(),
+      mobile_phone: (document.getElementById('inputMobilePhone') as HTMLInputElement).value.trim(),
+      landline_phone: (document.getElementById('inputLandlinePhone') as HTMLInputElement).value.trim(),
+      tax_id: (document.getElementById('inputTaxId') as HTMLInputElement).value.trim(),
+      city: (document.getElementById('inputCity') as HTMLInputElement).value.trim(),
+      state_province: (document.getElementById('inputStateProvince') as HTMLInputElement).value.trim(),
+      country: (document.getElementById('inputCountry') as HTMLInputElement).value.trim(),
+      address: (document.getElementById('inputAddress') as HTMLTextAreaElement).value.trim(),
+    };
+
+    try {
+      const res = await fetch(`${API}/profile`, {
+        method: 'PUT',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        userData = { ...userData, ...body, name: `${body.first_name} ${body.last_name}`.trim() };
+        renderProfile(userData);
+        document.getElementById('personalViewMode')!.style.display = 'block';
+        document.getElementById('personalEditMode')!.style.display = 'none';
+        (document.getElementById('btnEditPersonal') as HTMLButtonElement).style.display = '';
+        setMsg('personalMsg', '', '');
+      } else {
+        const msg = data.errors ? data.errors.map((e: any) => e.msg).join(', ') : data.error;
+        setMsg('personalMsg', msg, 'error');
+      }
+    } catch {
+      setMsg('personalMsg', 'Error de conexión', 'error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Guardar cambios';
+    }
+  });
+
+  // -- Password form submit --
+  document.getElementById('passwordForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    setMsg('passwordMsg', '', '');
+
+    const newPwd  = (document.getElementById('inputNewPassword') as HTMLInputElement).value;
+    const confPwd = (document.getElementById('inputConfirmPassword') as HTMLInputElement).value;
+
+    if (newPwd !== confPwd) {
+      setMsg('passwordMsg', 'Las contraseñas no coinciden', 'error');
+      return;
+    }
+    if (newPwd.length < 8) {
+      setMsg('passwordMsg', 'La nueva contraseña debe tener al menos 8 caracteres', 'error');
+      return;
+    }
+
+    const btn = (e.target as HTMLFormElement).querySelector('button[type="submit"]') as HTMLButtonElement;
+    btn.disabled = true;
+    btn.textContent = 'Actualizando…';
+
+    try {
+      const res = await fetch(`${API}/password`, {
+        method: 'PUT',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          current_password: (document.getElementById('inputCurrentPassword') as HTMLInputElement).value,
+          new_password: newPwd,
+        }),
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        setMsg('passwordMsg', 'Contraseña actualizada correctamente', 'success');
+        (document.getElementById('passwordForm') as HTMLFormElement).reset();
+      } else {
+        const msg = data.errors ? data.errors.map((e: any) => e.msg).join(', ') : data.error;
+        setMsg('passwordMsg', msg, 'error');
+      }
+    } catch {
+      setMsg('passwordMsg', 'Error de conexión', 'error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Cambiar contraseña';
+    }
+  });
+
+  loadProfile();
+</script>
