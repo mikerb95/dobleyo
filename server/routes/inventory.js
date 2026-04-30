@@ -27,7 +27,7 @@ inventoryRouter.get('/products', async (req, res) => {
       params.push(category);
     }
 
-    if (active !== undefined) {
+    if (active === 'true' || active === 'false') {
       sql += ' AND is_active = ?';
       params.push(active === 'true' ? 1 : 0);
     }
