@@ -451,25 +451,32 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
           })
         : "—";
 
-    function statusBadge(estado: string) {
-      if (estado === "verde") return `<span class="badge-verde">Verde</span>`;
-      if (estado === "tostado")
-        return `<span class="badge-tostado">Tostado</span>`;
-      return `<span class="badge-default">${estado ?? "—"}</span>`;
+    const STATUS_LABELS: Record<string, string> = {
+      verde: "Verde",
+      en_tostado: "En tostado",
+      pendiente: "Pendiente almacén",
+      tostado: "Tostado",
+    };
+
+    function statusBadge(status: string) {
+      const cls = ["verde", "tostado", "en_tostado", "pendiente"].includes(status)
+        ? `badge-${status}`
+        : "badge-default";
+      return `<span class="${cls}">${STATUS_LABELS[status] ?? status ?? "—"}</span>`;
     }
 
     // ── Load lots ─────────────────────────────────────────────
     async function loadLots() {
       const tbody = document.getElementById("lotsBody")!;
-      tbody.innerHTML = `<tr><td colspan="9" class="empty">Cargando...</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="8" class="empty">Cargando...</td></tr>`;
       try {
-        const res = await fetch("/api/lots", { credentials: "include" });
+        const res = await fetch("/api/coffee/lots", { credentials: "include" });
         if (!res.ok) throw new Error("Error al cargar");
         const data = await res.json();
-        allLots = data.lots ?? data ?? [];
+        allLots = data.lots ?? [];
         renderTable();
       } catch {
-        tbody.innerHTML = `<tr><td colspan="9" class="empty">Error al cargar lotes. Verifica tu sesión.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" class="empty">Error al cargar lotes. Verifica tu sesión.</td></tr>`;
       }
     }
 
@@ -478,10 +485,10 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       const filtered =
         currentTab === "all"
           ? allLots
-          : allLots.filter((l) => l.estado === currentTab);
+          : allLots.filter((l) => l.status === currentTab);
 
       if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="9" class="empty">No hay lotes${currentTab !== "all" ? " " + currentTab + "s" : ""}.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" class="empty">No hay lotes${currentTab !== "all" ? " en estado " + (STATUS_LABELS[currentTab] ?? currentTab) : ""}.</td></tr>`;
         return;
       }
 
@@ -489,30 +496,18 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         .map(
           (l) => `
         <tr>
-          <td><strong style="font-family:monospace;font-size:.85rem">${l.code ?? "—"}</strong></td>
-          <td>${l.name ?? "—"}</td>
-          <td style="color:#7a6652">${l.origin ?? "—"}</td>
-          <td style="color:#7a6652">${l.farm ?? "—"}</td>
+          <td><strong style="font-family:monospace;font-size:.82rem">${l.lot_id ?? "—"}</strong></td>
+          <td>${l.farm_name ?? "—"}</td>
+          <td style="color:#7a6652">${l.region ?? "—"}</td>
+          <td style="color:#7a6652">${l.variety ?? "—"}</td>
           <td style="color:#7a6652">${l.process ?? "—"}</td>
-          <td>${l.weight_kg != null ? Number(l.weight_kg).toFixed(1) + " kg" : "—"}</td>
-          <td>${l.score != null ? Number(l.score).toFixed(1) : "—"}</td>
-          <td>${statusBadge(l.estado)}</td>
-          <td style="display:flex;gap:.4rem;flex-wrap:wrap">
-            <button class="btn-action" data-action="edit" data-code="${l.code}">Editar</button>
-            <a href="/t/${l.code}" target="_blank" class="btn-action" style="display:inline-block;text-decoration:none">QR ↗</a>
-          </td>
+          <td>${l.weight != null ? Number(l.weight).toFixed(1) + " kg" : "—"}</td>
+          <td>${statusBadge(l.status)}</td>
+          <td style="color:#7a6652;font-size:.82rem">${fmtDate(l.created_at)}</td>
         </tr>
       `,
         )
         .join("");
-
-      tbody.querySelectorAll("[data-action='edit']").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          const code = (btn as HTMLElement).dataset.code!;
-          const lot = allLots.find((l) => l.code === code);
-          if (lot) openEditModal(lot);
-        });
-      });
     }
 
     // ── Tab filter ─────────────────────────────────────────────
