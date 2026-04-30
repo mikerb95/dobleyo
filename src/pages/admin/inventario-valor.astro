@@ -1,0 +1,378 @@
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+---
+
+<AdminLayout>
+  <div class="valor-page">
+    <section class="page-header">
+      <div class="container">
+        <div class="header-top">
+          <div class="breadcrumb">
+            <a href="/admin/inventario">← Inventario</a>
+          </div>
+          <h1>Valor de Inventario</h1>
+          <p class="subtitle">Desglose del valor total por producto activo</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="page-body">
+      <div class="container">
+        <div class="summary-cards" id="summaryCards">
+          <div class="summary-card">
+            <div class="summary-label">Valor Total</div>
+            <div class="summary-value" id="totalValue">—</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-label">Productos activos</div>
+            <div class="summary-value" id="totalProducts">—</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-label">Unidades en stock</div>
+            <div class="summary-value" id="totalUnits">—</div>
+          </div>
+        </div>
+
+        <div class="table-wrapper" id="tableWrapper">
+          <div class="loading-state">
+            <div class="spinner"></div>
+            Cargando detalle...
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</AdminLayout>
+
+<style>
+  :root {
+    --primary: #251a14;
+    --primary-light: #3e2d23;
+    --accent: #c67b4e;
+    --bg-light: #f7f3ef;
+    --white: #ffffff;
+    --text-dark: #1f2937;
+    --text-muted: #6b7280;
+    --border: #e6e6e6;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+  }
+
+  .valor-page {
+    min-height: 100vh;
+    background: var(--bg-light);
+    padding-top: calc(var(--header-height, 120px) + 2rem);
+    padding-bottom: 4rem;
+    font-family: system-ui, -apple-system, sans-serif;
+    color: var(--text-dark);
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+  }
+
+  .page-header {
+    background: var(--white);
+    border-bottom: 1px solid var(--border);
+    padding: 2rem 0;
+    margin-bottom: 2rem;
+  }
+
+  .breadcrumb {
+    margin-bottom: 0.75rem;
+  }
+
+  .breadcrumb a {
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+
+  .breadcrumb a:hover {
+    text-decoration: underline;
+  }
+
+  .header-top h1 {
+    font-family: "Playfair Display", serif;
+    font-size: 2rem;
+    color: var(--primary);
+    margin: 0 0 0.25rem;
+  }
+
+  .subtitle {
+    color: var(--text-muted);
+    margin: 0;
+    font-size: 0.95rem;
+  }
+
+  /* Summary cards */
+  .summary-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.25rem;
+    margin-bottom: 2rem;
+  }
+
+  .summary-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+  }
+
+  .summary-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+  }
+
+  .summary-value {
+    font-family: "Playfair Display", serif;
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--primary);
+  }
+
+  /* Table */
+  .table-wrapper {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    overflow-x: auto;
+  }
+
+  .value-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 640px;
+  }
+
+  .value-table thead th {
+    background: #f9fafb;
+    padding: 0.875rem 1.25rem;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .value-table thead th.text-right { text-align: right; }
+
+  .value-table tbody td {
+    padding: 0.875rem 1.25rem;
+    border-bottom: 1px solid #f3f4f6;
+    vertical-align: middle;
+    font-size: 0.95rem;
+  }
+
+  .value-table tbody td.text-right { text-align: right; }
+
+  .value-table tbody tr:hover td { background: #fafafa; }
+
+  .value-table tbody tr:last-child td { border-bottom: none; }
+
+  .value-table tfoot td {
+    padding: 1rem 1.25rem;
+    font-weight: 700;
+    border-top: 2px solid var(--border);
+    background: #f9fafb;
+    font-size: 1rem;
+  }
+
+  .value-table tfoot td.text-right { text-align: right; }
+
+  /* Badges */
+  .category-badge,
+  .stock-badge {
+    display: inline-flex;
+    padding: 0.2rem 0.65rem;
+    border-radius: 9999px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+
+  .category-cafe { background: #fff8f1; color: #92400e; border: 1px solid #fed7aa; }
+  .category-accesorio { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
+  .category-merchandising { background: #fdf4ff; color: #6b21a8; border: 1px solid #e9d5ff; }
+
+  .stock-ok { background: #ecfdf5; color: #047857; }
+  .stock-low { background: #fffbeb; color: #b45309; }
+  .stock-out { background: #fef2f2; color: #b91c1c; }
+
+  .product-sku {
+    font-size: 0.78rem;
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  /* Value bar */
+  .value-bar-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    justify-content: flex-end;
+  }
+
+  .value-bar-bg {
+    flex: 1;
+    max-width: 80px;
+    height: 6px;
+    background: #f3f4f6;
+    border-radius: 99px;
+    overflow: hidden;
+  }
+
+  .value-bar-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 99px;
+    transition: width 0.6s ease;
+  }
+
+  /* Loading & states */
+  .loading-state {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    justify-content: center;
+    padding: 4rem;
+    color: var(--text-muted);
+  }
+
+  .spinner {
+    width: 28px;
+    height: 28px;
+    border: 3px solid rgba(198,123,78,0.3);
+    border-radius: 50%;
+    border-top-color: var(--accent);
+    animation: spin 0.9s ease-in-out infinite;
+    flex-shrink: 0;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .error-state {
+    padding: 3rem;
+    text-align: center;
+    color: var(--danger);
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .header-top h1 { font-size: 1.5rem; }
+    .summary-cards { grid-template-columns: 1fr 1fr; }
+    .value-bar-wrap { flex-direction: column; align-items: flex-end; gap: 0.25rem; }
+    .value-bar-bg { max-width: 60px; }
+  }
+
+  @media (max-width: 480px) {
+    .summary-cards { grid-template-columns: 1fr; }
+  }
+</style>
+
+<script>
+  const API_BASE = "/api/inventory";
+
+  async function loadData() {
+    try {
+      const res = await fetch(`${API_BASE}/products?active=true&sortBy=name`);
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error);
+
+      const rows = (data.products || [])
+        .map((p) => ({ ...p, valor: (p.stock_quantity || 0) * (p.price || 0) }))
+        .sort((a, b) => b.valor - a.valor);
+
+      const totalVal = rows.reduce((s, r) => s + r.valor, 0);
+      const totalUnits = rows.reduce((s, r) => s + (r.stock_quantity || 0), 0);
+      const maxValor = rows[0]?.valor || 1;
+
+      document.getElementById("totalValue").textContent = formatCurrency(totalVal);
+      document.getElementById("totalProducts").textContent = rows.length;
+      document.getElementById("totalUnits").textContent = totalUnits.toLocaleString("es-CO");
+
+      const wrapper = document.getElementById("tableWrapper");
+      wrapper.innerHTML = `
+        <table class="value-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Producto</th>
+              <th>Categoría</th>
+              <th class="text-right">Precio unit.</th>
+              <th class="text-right">Stock</th>
+              <th class="text-right">Valor total</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map((p, i) => {
+              const stockClass =
+                p.stock_quantity === 0 ? "stock-out"
+                : p.stock_quantity <= p.stock_min ? "stock-low"
+                : "stock-ok";
+              const barPct = Math.round((p.valor / maxValor) * 100);
+              return `
+                <tr>
+                  <td style="color:var(--text-muted);font-size:.85rem">${i + 1}</td>
+                  <td>
+                    <strong>${p.name}</strong>
+                    ${p.sku ? `<br><span class="product-sku">${p.sku}</span>` : ""}
+                  </td>
+                  <td>
+                    <span class="category-badge category-${p.category}">${p.category}</span>
+                  </td>
+                  <td class="text-right">${formatCurrency(p.price)}</td>
+                  <td class="text-right">
+                    <span class="stock-badge ${stockClass}">${p.stock_quantity}</span>
+                  </td>
+                  <td class="text-right">
+                    <div class="value-bar-wrap">
+                      <div class="value-bar-bg">
+                        <div class="value-bar-fill" style="width:${barPct}%"></div>
+                      </div>
+                      <strong>${formatCurrency(p.valor)}</strong>
+                    </div>
+                  </td>
+                </tr>
+              `;
+            }).join("")}
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="5">Total inventario activo (${rows.length} productos)</td>
+              <td class="text-right">${formatCurrency(totalVal)}</td>
+            </tr>
+          </tfoot>
+        </table>
+      `;
+    } catch (err) {
+      document.getElementById("tableWrapper").innerHTML = `
+        <div class="error-state">Error al cargar datos: ${err.message}</div>
+      `;
+    }
+  }
+
+  function formatCurrency(amount) {
+    return new Intl.NumberFormat("es-CO", {
+      style: "currency",
+      currency: "COP",
+      minimumFractionDigits: 0,
+    }).format(amount);
+  }
+
+  loadData();
+</script>
