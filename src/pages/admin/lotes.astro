@@ -534,71 +534,23 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     }
     function resetForm() {
       [
-        "fCode",
-        "fName",
-        "fOrigin",
-        "fFarm",
-        "fProducer",
-        "fVariety",
-        "fProcess",
-        "fAltitude",
-        "fWeightKg",
-        "fScore",
-        "fHarvestDate",
-        "fMoisture",
-        "fNotes",
+        "fCode", "fName", "fOrigin", "fFarm", "fProducer", "fVariety",
+        "fProcess", "fAltitude", "fWeightKg", "fScore", "fHarvestDate",
+        "fMoisture", "fNotes",
       ].forEach((id) => setVal(id, ""));
       document.getElementById("formMsg")!.textContent = "";
-      const codeField = document.getElementById("fCode") as HTMLInputElement;
-      if (codeField) codeField.disabled = false;
     }
     function openCreateModal() {
-      editCode = null;
       resetForm();
-      document.getElementById("modalTitle")!.textContent = "Nuevo lote";
-      (document.getElementById("btnSaveLot") as HTMLButtonElement).textContent =
-        "Crear lote";
-      document.getElementById("modalBack")!.classList.add("open");
-    }
-    function openEditModal(lot: any) {
-      editCode = lot.code;
-      setVal("fCode", lot.code);
-      setVal("fName", lot.name);
-      setVal("fOrigin", lot.origin);
-      setVal("fFarm", lot.farm);
-      setVal("fProducer", lot.producer);
-      setVal("fVariety", lot.variety);
-      setVal("fProcess", lot.process);
-      setVal("fAltitude", lot.altitude);
-      setVal("fWeightKg", lot.weight_kg);
-      setVal("fScore", lot.score);
-      setVal(
-        "fHarvestDate",
-        lot.harvest_date ? lot.harvest_date.slice(0, 10) : "",
-      );
-      setVal("fMoisture", lot.moisture);
-      setVal("fNotes", lot.notes);
-      (document.getElementById("fCode") as HTMLInputElement).disabled = true;
-      document.getElementById("modalTitle")!.textContent =
-        `Editar lote ${lot.code}`;
-      (document.getElementById("btnSaveLot") as HTMLButtonElement).textContent =
-        "Guardar cambios";
-      document.getElementById("formMsg")!.textContent = "";
       document.getElementById("modalBack")!.classList.add("open");
     }
     function closeModal() {
       document.getElementById("modalBack")!.classList.remove("open");
     }
 
-    document
-      .getElementById("btnNewLot")
-      ?.addEventListener("click", openCreateModal);
-    document
-      .getElementById("modalClose")
-      ?.addEventListener("click", closeModal);
-    document
-      .getElementById("modalCancel")
-      ?.addEventListener("click", closeModal);
+    document.getElementById("btnNewLot")?.addEventListener("click", openCreateModal);
+    document.getElementById("modalClose")?.addEventListener("click", closeModal);
+    document.getElementById("modalCancel")?.addEventListener("click", closeModal);
     document.getElementById("modalBack")?.addEventListener("click", (e) => {
       if (e.target === e.currentTarget) closeModal();
     });
@@ -607,64 +559,60 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     });
 
     // ── Save ───────────────────────────────────────────────────
-    document
-      .getElementById("btnSaveLot")
-      ?.addEventListener("click", async () => {
-        const msg = document.getElementById("formMsg")!;
-        const btn = document.getElementById("btnSaveLot") as HTMLButtonElement;
-        msg.textContent = "";
+    document.getElementById("btnSaveLot")?.addEventListener("click", async () => {
+      const msg = document.getElementById("formMsg")!;
+      const btn = document.getElementById("btnSaveLot") as HTMLButtonElement;
+      msg.textContent = "";
 
-        const code = getVal("fCode");
-        const name = getVal("fName");
-        if (!code || !name) {
-          msg.textContent = "⚠️ Código y nombre son obligatorios.";
-          msg.style.color = "#856404";
-          return;
-        }
+      const code = getVal("fCode");
+      const name = getVal("fName");
+      if (!code || !name) {
+        msg.textContent = "⚠️ Código y nombre son obligatorios.";
+        msg.style.color = "#856404";
+        return;
+      }
 
-        const body: Record<string, any> = {
-          code,
-          name,
-          origin: getVal("fOrigin") || null,
-          farm: getVal("fFarm") || null,
-          producer: getVal("fProducer") || null,
-          variety: getVal("fVariety") || null,
-          process: getVal("fProcess") || null,
-          altitude: getVal("fAltitude") ? Number(getVal("fAltitude")) : null,
-          weight_kg: getVal("fWeightKg") ? Number(getVal("fWeightKg")) : null,
-          score: getVal("fScore") ? Number(getVal("fScore")) : null,
-          harvest_date: getVal("fHarvestDate") || null,
-          moisture: getVal("fMoisture") ? Number(getVal("fMoisture")) : null,
-          notes: getVal("fNotes") || null,
-        };
+      const body: Record<string, any> = {
+        code,
+        name,
+        origin: getVal("fOrigin") || null,
+        farm: getVal("fFarm") || null,
+        producer: getVal("fProducer") || null,
+        variety: getVal("fVariety") || null,
+        process: getVal("fProcess") || null,
+        altitude: getVal("fAltitude") ? Number(getVal("fAltitude")) : null,
+        weight_kg: getVal("fWeightKg") ? Number(getVal("fWeightKg")) : null,
+        score: getVal("fScore") ? Number(getVal("fScore")) : null,
+        harvest_date: getVal("fHarvestDate") || null,
+        moisture: getVal("fMoisture") ? Number(getVal("fMoisture")) : null,
+        notes: getVal("fNotes") || null,
+      };
 
-        btn.disabled = true;
-        btn.textContent = "Guardando...";
+      btn.disabled = true;
+      btn.textContent = "Guardando...";
 
-        try {
-          const url = editCode ? `/api/lots/${editCode}` : "/api/lots";
-          const method = editCode ? "PUT" : "POST";
-          const res = await fetch(url, {
-            method,
-            credentials: "include",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(body),
-          });
-          const data = await res.json();
-          if (!res.ok) throw new Error(data.error ?? "Error");
+      try {
+        const res = await fetch("/api/lots", {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error ?? "Error");
 
-          msg.textContent = `✅ Lote ${editCode ? "actualizado" : "creado"} correctamente.`;
-          msg.style.color = "#155724";
-          await loadLots();
-          setTimeout(closeModal, 1200);
-        } catch (err: any) {
-          msg.textContent = `❌ ${err.message}`;
-          msg.style.color = "#721c24";
-        } finally {
-          btn.disabled = false;
-          btn.textContent = editCode ? "Guardar cambios" : "Crear lote";
-        }
-      });
+        msg.textContent = "✅ Lote creado correctamente.";
+        msg.style.color = "#155724";
+        await loadLots();
+        setTimeout(closeModal, 1200);
+      } catch (err: any) {
+        msg.textContent = `❌ ${err.message}`;
+        msg.style.color = "#721c24";
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Crear lote";
+      }
+    });
 
     // ── Init ──────────────────────────────────────────────────
     loadLots();
