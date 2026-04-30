@@ -920,6 +920,9 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   document
     .getElementById("movementModalClose")
     .addEventListener("click", closeMovementModal);
+
+  document.getElementById("cardTotalValue").addEventListener("click", openValueModal);
+  document.getElementById("valueModalClose").addEventListener("click", () => valueModal.classList.remove("active"));
   document
     .getElementById("btnCancelMovement")
     .addEventListener("click", closeMovementModal);
