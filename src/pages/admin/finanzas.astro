@@ -466,13 +466,13 @@ const balancePositive = dashboard.month_balance >= 0;
       </form>
     </dialog>
   </section>
+  </div>
 </AdminLayout>
 
 <style>
   .adm-fin {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 2rem 1.25rem;
   }
 
   /* Encabezado */
@@ -1006,7 +1006,9 @@ function openModal(id) { document.getElementById(id)?.showModal(); }
 function closeModal(id) { document.getElementById(id)?.close(); }
 
 // Gasto
-document.getElementById('btnNewExpense').addEventListener('click', () => openModal('modalExpense'));
+['btnNewExpense', 'btnNewExpense2'].forEach(id => {
+  document.getElementById(id)?.addEventListener('click', () => openModal('modalExpense'));
+});
 document.getElementById('closeModalExpense').addEventListener('click', () => closeModal('modalExpense'));
 
 // Factura de compra — cargar caficultores al abrir
