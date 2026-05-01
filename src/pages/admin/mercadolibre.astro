@@ -1,0 +1,675 @@
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+---
+
+<AdminLayout title="MercadoLibre — DobleYo ERP" section="mercadolibre">
+
+  <!-- ── Page Header ─────────────────────────────────────────── -->
+  <div class="page-header">
+    <div class="page-header-top">
+      <div>
+        <div class="page-breadcrumb">
+          <a href="/admin">Admin</a> / MercadoLibre
+        </div>
+        <h1 class="page-title">MercadoLibre — Canal de Ventas</h1>
+      </div>
+      <div class="page-header-actions">
+        <a href="/admin/sales-map" class="btn btn-secondary">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
+            <line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/>
+          </svg>
+          Mapa de calor
+        </a>
+        <button class="btn btn-primary" id="btnSync">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="syncIcon">
+            <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+          </svg>
+          Sincronizar ahora
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="erp-body">
+
+    <!-- ── Sync result banner ──────────────────────────────────── -->
+    <div id="syncBanner" style="display:none;margin-bottom:1.5rem"></div>
+
+    <!-- ── Connection status ──────────────────────────────────── -->
+    <div class="conn-card" id="connCard">
+      <div class="conn-dot" id="connDot"></div>
+      <div>
+        <div class="conn-title" id="connTitle">Verificando conexión…</div>
+        <div class="conn-sub" id="connSub">Comprobando credenciales de MercadoLibre</div>
+      </div>
+      <div style="margin-left:auto;display:flex;gap:8px;flex-shrink:0" id="connActions"></div>
+    </div>
+
+    <!-- ── KPI Row ─────────────────────────────────────────────── -->
+    <div class="kpi-grid" style="margin-bottom:1.5rem">
+      <div class="kpi-tile brand">
+        <div class="kpi-label">Total Órdenes</div>
+        <div class="kpi-value" id="kpiOrders"><span class="skeleton" style="width:60px"></span></div>
+        <div class="kpi-sub" id="kpiOrdersRange">—</div>
+      </div>
+      <div class="kpi-tile success">
+        <div class="kpi-label">Ingresos Totales</div>
+        <div class="kpi-value" id="kpiRevenue"><span class="skeleton" style="width:80px"></span></div>
+        <div class="kpi-sub">COP acumulado</div>
+      </div>
+      <div class="kpi-tile info">
+        <div class="kpi-label">Valor Promedio Orden</div>
+        <div class="kpi-value" id="kpiAvg"><span class="skeleton" style="width:70px"></span></div>
+        <div class="kpi-sub">por pedido</div>
+      </div>
+      <div class="kpi-tile warning">
+        <div class="kpi-label">Ciudades Únicas</div>
+        <div class="kpi-value" id="kpiCities"><span class="skeleton" style="width:40px"></span></div>
+        <div class="kpi-sub" id="kpiStates">—</div>
+      </div>
+    </div>
+
+    <!-- ── Main grid ───────────────────────────────────────────── -->
+    <div class="ml-main-grid">
+
+      <!-- ── Orders table ─────────────────────────────────────── -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Órdenes sincronizadas</div>
+            <div class="card-subtitle" id="tableSubtitle">Cargando datos…</div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <input type="date" id="filterFrom" class="ml-input" title="Desde">
+            <input type="date" id="filterTo" class="ml-input" title="Hasta">
+            <input type="text" id="filterCity" class="ml-input" placeholder="Ciudad" style="width:120px">
+            <select id="filterStatus" class="ml-input">
+              <option value="">Todos los estados</option>
+              <option value="paid">Pagado</option>
+              <option value="pending">Pendiente</option>
+              <option value="cancelled">Cancelado</option>
+            </select>
+            <button class="btn btn-secondary" id="btnFilter" style="height:32px;padding:0 12px;font-size:12px">
+              Filtrar
+            </button>
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="erp-table">
+            <thead>
+              <tr>
+                <th>ID Orden ML</th>
+                <th>Fecha</th>
+                <th>Comprador</th>
+                <th>Ciudad</th>
+                <th>Dpto.</th>
+                <th>Total</th>
+                <th>Estado pago</th>
+                <th>Estado envío</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="ordersBody">
+              <tr><td colspan="9" class="empty-state">Cargando órdenes…</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <!-- Pagination -->
+        <div class="pagination-bar" id="paginationBar" style="display:none">
+          <span class="pag-info" id="pagInfo"></span>
+          <div style="display:flex;gap:4px">
+            <button class="btn btn-ghost" id="btnPrev" style="height:30px;padding:0 10px;font-size:12px" disabled>‹ Anterior</button>
+            <div id="pagPages" style="display:flex;gap:2px"></div>
+            <button class="btn btn-ghost" id="btnNext" style="height:30px;padding:0 10px;font-size:12px">Siguiente ›</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Right sidebar ────────────────────────────────────── -->
+      <div class="ml-sidebar">
+
+        <!-- Top ciudades -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Top Ciudades</div>
+              <div class="card-subtitle">Por número de órdenes</div>
+            </div>
+          </div>
+          <div style="padding:0" id="citiesList">
+            <div class="empty-state">Cargando…</div>
+          </div>
+        </div>
+
+        <!-- Acciones rápidas -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Acciones rápidas</div>
+          </div>
+          <div style="padding:8px 0">
+            <a href="/admin/sales-map" class="quick-action">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
+                <line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/>
+              </svg>
+              Ver mapa de calor de ventas
+            </a>
+            <a href="/app/ventas" class="quick-action">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/>
+                <line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/>
+              </svg>
+              Dashboard de ventas operativo
+            </a>
+            <button class="quick-action" id="btnExportCSV">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              Exportar tabla a CSV
+            </button>
+            <button class="quick-action" id="btnSyncQuick">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+              </svg>
+              Sincronizar órdenes ML
+            </button>
+          </div>
+        </div>
+
+        <!-- Config / Webhooks -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Configuración e integración</div>
+          </div>
+          <div style="padding:16px">
+            <div class="config-row">
+              <div class="config-label">ML_ACCESS_TOKEN</div>
+              <div id="cfgToken" class="badge badge-neutral">—</div>
+            </div>
+            <div class="config-row">
+              <div class="config-label">ML_SELLER_ID</div>
+              <div id="cfgSeller" class="badge badge-neutral">—</div>
+            </div>
+            <div style="height:1px;background:var(--border);margin:12px 0"></div>
+            <div class="config-row">
+              <div class="config-label">Webhook /sync</div>
+              <div class="badge badge-info">POST /api/mercadolibre/sync</div>
+            </div>
+            <div class="config-row" style="margin-top:8px">
+              <div class="config-label">Endpoint ventas</div>
+              <div class="badge badge-info">GET /api/mercadolibre/sales</div>
+            </div>
+            <div class="config-row" style="margin-top:8px">
+              <div class="config-label">Heatmap data</div>
+              <div class="badge badge-info">GET /api/mercadolibre/heatmap-data</div>
+            </div>
+            <div style="height:1px;background:var(--border);margin:12px 0"></div>
+            <div style="font-size:11px;color:var(--text-3);line-height:1.6">
+              Para automatizar la sincronización, configura un cron job que haga POST al endpoint de sync con las credenciales de admin. Todas las rutas requieren cookie de sesión con rol <code style="background:#f0f0f0;padding:1px 4px;border-radius:2px">admin</code>.
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /.ml-sidebar -->
+    </div><!-- /.ml-main-grid -->
+  </div><!-- /.erp-body -->
+
+</AdminLayout>
+
+<style>
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+  }
+
+  .ml-main-grid {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 1.5rem;
+    align-items: start;
+  }
+  @media (max-width: 1200px) {
+    .ml-main-grid { grid-template-columns: 1fr; }
+  }
+
+  .ml-sidebar { display: flex; flex-direction: column; gap: 1rem; }
+
+  /* Connection banner */
+  .conn-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px 18px;
+    margin-bottom: 1.5rem;
+  }
+  .conn-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--text-3);
+    flex-shrink: 0;
+  }
+  .conn-dot.ok  { background: var(--c-success); box-shadow: 0 0 0 3px var(--c-success-bg); }
+  .conn-dot.err { background: var(--c-error);   box-shadow: 0 0 0 3px var(--c-error-bg); }
+  .conn-dot.warn{ background: var(--c-warning);  box-shadow: 0 0 0 3px var(--c-warning-bg); }
+  .conn-title { font-weight: 600; font-size: 13px; }
+  .conn-sub   { font-size: 12px; color: var(--text-2); }
+
+  /* Filters */
+  .ml-input {
+    height: 32px;
+    padding: 0 8px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 12px;
+    font-family: inherit;
+    color: var(--text-1);
+    background: var(--card-bg);
+  }
+  .ml-input:focus { outline: none; border-color: var(--brand); }
+
+  /* Pagination */
+  .pagination-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    border-top: 1px solid var(--border);
+    background: #fafafa;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .pag-info { font-size: 12px; color: var(--text-2); }
+  .pag-btn-active {
+    background: var(--brand) !important;
+    color: #fff !important;
+    border-color: var(--brand-dark) !important;
+  }
+
+  /* Top cities list */
+  .city-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 20px;
+    border-bottom: 1px solid rgba(0,0,0,.04);
+    font-size: 13px;
+  }
+  .city-row:last-child { border-bottom: none; }
+  .city-rank {
+    width: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-3);
+    flex-shrink: 0;
+    text-align: right;
+  }
+  .city-name { flex: 1; font-weight: 500; }
+  .city-bar-wrap { width: 70px; height: 6px; background: #eee; border-radius: 3px; flex-shrink: 0; }
+  .city-bar      { height: 6px; background: var(--brand); border-radius: 3px; }
+  .city-count    { font-size: 12px; font-weight: 600; color: var(--text-2); min-width: 28px; text-align: right; flex-shrink: 0; }
+
+  /* Quick actions */
+  .quick-action {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 20px;
+    font-size: 13px;
+    color: var(--text-1);
+    text-decoration: none;
+    cursor: pointer;
+    background: none;
+    border: none;
+    width: 100%;
+    text-align: left;
+    font-family: inherit;
+    transition: background 0.12s;
+    border-bottom: 1px solid rgba(0,0,0,.04);
+  }
+  .quick-action:last-child { border-bottom: none; }
+  .quick-action:hover { background: var(--nav-hover-bg); color: var(--brand-dark); }
+  .quick-action svg { flex-shrink: 0; opacity: 0.55; }
+
+  /* Config rows */
+  .config-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .config-row:last-child { margin-bottom: 0; }
+  .config-label { font-size: 12px; color: var(--text-2); font-family: monospace; }
+
+  /* Sync banner */
+  .banner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    border: 1px solid transparent;
+  }
+  .banner.success { background: var(--c-success-bg); color: var(--c-success); border-color: var(--c-success-border); }
+  .banner.error   { background: var(--c-error-bg);   color: var(--c-error);   border-color: var(--c-error-border); }
+
+  /* Spin animation for sync */
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spinning { animation: spin 0.8s linear infinite; display: inline-block; }
+</style>
+
+<script>
+  // ── State ──────────────────────────────────────────────────
+  let currentPage = 0;
+  const limit = 25;
+  let totalOrders = 0;
+  let allSalesCache: any[] = [];
+
+  const fmt = (n: number) =>
+    new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(n);
+
+  const fmtDate = (s: string) =>
+    s ? new Date(s).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
+
+  // ── Load stats ─────────────────────────────────────────────
+  async function loadStats() {
+    try {
+      const res = await fetch('/api/mercadolibre/stats', { credentials: 'include' });
+      const json = await res.json();
+
+      if (!res.ok || !json.success) {
+        setConnectionStatus('err', 'Error al cargar estadísticas', json.error ?? 'Revisa los logs del servidor');
+        return;
+      }
+
+      const ov = json.overview;
+      if (!ov || !ov.total_orders) {
+        setConnectionStatus('warn', 'Sin órdenes sincronizadas', 'Usa el botón "Sincronizar ahora" para importar órdenes desde MercadoLibre');
+        document.getElementById('kpiOrders')!.textContent = '0';
+        document.getElementById('kpiRevenue')!.textContent = '$0';
+        document.getElementById('kpiAvg')!.textContent = '$0';
+        document.getElementById('kpiCities')!.textContent = '0';
+      } else {
+        setConnectionStatus('ok', 'Conectado a MercadoLibre', `${ov.total_orders} órdenes — última: ${fmtDate(ov.last_order_date)}`);
+        document.getElementById('kpiOrders')!.textContent = ov.total_orders.toLocaleString('es-CO');
+        document.getElementById('kpiOrdersRange')!.textContent = `${fmtDate(ov.first_order_date)} – ${fmtDate(ov.last_order_date)}`;
+        document.getElementById('kpiRevenue')!.textContent = fmt(ov.total_revenue ?? 0);
+        document.getElementById('kpiAvg')!.textContent = fmt(ov.avg_order_value ?? 0);
+        document.getElementById('kpiCities')!.textContent = (ov.unique_cities ?? 0).toString();
+        document.getElementById('kpiStates')!.textContent = `en ${ov.unique_states ?? 0} departamentos`;
+      }
+
+      renderCities(json.top_cities ?? []);
+    } catch (e) {
+      setConnectionStatus('err', 'Error de red', 'No se pudo conectar con el servidor');
+    }
+  }
+
+  // ── Check credentials ──────────────────────────────────────
+  async function checkCredentials() {
+    const cfgToken = document.getElementById('cfgToken')!;
+    const cfgSeller = document.getElementById('cfgSeller')!;
+
+    try {
+      const res = await fetch('/api/mercadolibre/stats', { credentials: 'include' });
+      const json = await res.json();
+
+      if (res.status === 400 && json.error?.includes('credentials')) {
+        cfgToken.className = 'badge badge-error';
+        cfgToken.textContent = 'No configurado';
+        cfgSeller.className = 'badge badge-error';
+        cfgSeller.textContent = 'No configurado';
+      } else {
+        cfgToken.className = 'badge badge-success';
+        cfgToken.textContent = 'Configurado';
+        cfgSeller.className = 'badge badge-success';
+        cfgSeller.textContent = 'Configurado';
+      }
+    } catch {
+      cfgToken.className = 'badge badge-warning';
+      cfgToken.textContent = 'Sin verificar';
+      cfgSeller.className = 'badge badge-warning';
+      cfgSeller.textContent = 'Sin verificar';
+    }
+  }
+
+  function setConnectionStatus(type: 'ok'|'err'|'warn', title: string, sub: string) {
+    const dot = document.getElementById('connDot')!;
+    dot.className = `conn-dot ${type}`;
+    document.getElementById('connTitle')!.textContent = title;
+    document.getElementById('connSub')!.textContent = sub;
+  }
+
+  // ── Load orders ────────────────────────────────────────────
+  async function loadOrders(page = 0) {
+    currentPage = page;
+    const tbody = document.getElementById('ordersBody')!;
+    tbody.innerHTML = '<tr><td colspan="9" class="empty-state">Cargando…</td></tr>';
+
+    const city = (document.getElementById('filterCity') as HTMLInputElement).value.trim();
+    const dateFrom = (document.getElementById('filterFrom') as HTMLInputElement).value;
+    const dateTo = (document.getElementById('filterTo') as HTMLInputElement).value;
+    const status = (document.getElementById('filterStatus') as HTMLSelectElement).value;
+
+    const params = new URLSearchParams({
+      limit: String(limit),
+      offset: String(page * limit),
+      ...(city && { city }),
+      ...(dateFrom && { dateFrom }),
+      ...(dateTo && { dateTo }),
+    });
+
+    try {
+      const res = await fetch(`/api/mercadolibre/sales?${params}`, { credentials: 'include' });
+      const json = await res.json();
+
+      if (!res.ok || !json.success) {
+        tbody.innerHTML = `<tr><td colspan="9" class="empty-state">Error: ${json.error ?? 'desconocido'}</td></tr>`;
+        return;
+      }
+
+      let rows: any[] = json.data ?? [];
+
+      // Client-side status filter (field may vary)
+      if (status) rows = rows.filter((r: any) => (r.payment_status ?? '').toLowerCase() === status);
+
+      allSalesCache = rows;
+      totalOrders = json.pagination?.total ?? rows.length;
+
+      document.getElementById('tableSubtitle')!.textContent =
+        `${totalOrders.toLocaleString('es-CO')} órdenes encontradas`;
+
+      if (rows.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="9" class="empty-state">Sin órdenes para los filtros seleccionados</td></tr>';
+        document.getElementById('paginationBar')!.style.display = 'none';
+        return;
+      }
+
+      tbody.innerHTML = rows.map((r: any) => `
+        <tr>
+          <td><code style="font-size:11px;background:#f5f5f5;padding:2px 6px;border-radius:3px">${r.ml_order_id ?? r.id ?? '—'}</code></td>
+          <td style="white-space:nowrap">${fmtDate(r.purchase_date ?? r.created_at)}</td>
+          <td>${r.buyer_nickname ?? r.buyer_name ?? '—'}</td>
+          <td>${r.recipient_city ?? '—'}</td>
+          <td>${r.recipient_state ?? '—'}</td>
+          <td style="font-weight:600;white-space:nowrap">${fmt(r.total_amount ?? 0)}</td>
+          <td>${badgeStatus(r.payment_status)}</td>
+          <td>${badgeShipping(r.shipping_status)}</td>
+          <td>
+            ${r.ml_order_id ? `<a href="https://www.mercadolibre.com.co/ventas/${r.ml_order_id}/detalle" target="_blank" class="btn btn-ghost" style="height:28px;padding:0 8px;font-size:11px" title="Ver en ML">↗</a>` : ''}
+          </td>
+        </tr>
+      `).join('');
+
+      renderPagination(json.pagination);
+    } catch (e: any) {
+      tbody.innerHTML = `<tr><td colspan="9" class="empty-state">Error de red: ${e.message}</td></tr>`;
+    }
+  }
+
+  function badgeStatus(s: string) {
+    const map: Record<string, string> = {
+      paid: 'success', approved: 'success',
+      pending: 'warning',
+      cancelled: 'error', rejected: 'error',
+    };
+    const key = (s ?? '').toLowerCase();
+    const cls = map[key] ?? 'neutral';
+    const labels: Record<string, string> = { paid:'Pagado', approved:'Aprobado', pending:'Pendiente', cancelled:'Cancelado', rejected:'Rechazado' };
+    return `<span class="badge badge-${cls}">${labels[key] ?? s ?? '—'}</span>`;
+  }
+
+  function badgeShipping(s: string) {
+    const map: Record<string, string> = {
+      delivered: 'success', handling: 'info', ready_to_ship: 'info',
+      shipped: 'info', not_delivered: 'error', cancelled: 'error',
+    };
+    const key = (s ?? '').toLowerCase();
+    const cls = map[key] ?? 'neutral';
+    const labels: Record<string, string> = {
+      delivered:'Entregado', handling:'Preparando', ready_to_ship:'Listo', shipped:'Enviado',
+      not_delivered:'No entregado', cancelled:'Cancelado',
+    };
+    return `<span class="badge badge-${cls}">${labels[key] ?? s ?? '—'}</span>`;
+  }
+
+  function renderPagination(pag: any) {
+    if (!pag || pag.pages <= 1) {
+      document.getElementById('paginationBar')!.style.display = 'none';
+      return;
+    }
+    const bar = document.getElementById('paginationBar')!;
+    bar.style.display = 'flex';
+
+    const from = currentPage * limit + 1;
+    const to = Math.min((currentPage + 1) * limit, pag.total);
+    document.getElementById('pagInfo')!.textContent = `${from}–${to} de ${pag.total}`;
+
+    const prevBtn = document.getElementById('btnPrev') as HTMLButtonElement;
+    const nextBtn = document.getElementById('btnNext') as HTMLButtonElement;
+    prevBtn.disabled = currentPage === 0;
+    nextBtn.disabled = currentPage >= pag.pages - 1;
+
+    const container = document.getElementById('pagPages')!;
+    container.innerHTML = '';
+    const maxPages = 5;
+    let start = Math.max(0, currentPage - Math.floor(maxPages / 2));
+    let end = Math.min(pag.pages - 1, start + maxPages - 1);
+    if (end - start < maxPages - 1) start = Math.max(0, end - maxPages + 1);
+
+    for (let i = start; i <= end; i++) {
+      const btn = document.createElement('button');
+      btn.className = `btn btn-ghost${i === currentPage ? ' pag-btn-active' : ''}`;
+      btn.style.cssText = 'height:30px;padding:0 10px;font-size:12px;min-width:32px';
+      btn.textContent = String(i + 1);
+      btn.addEventListener('click', () => loadOrders(i));
+      container.appendChild(btn);
+    }
+  }
+
+  // ── Top cities ─────────────────────────────────────────────
+  function renderCities(cities: any[]) {
+    const el = document.getElementById('citiesList')!;
+    if (!cities.length) {
+      el.innerHTML = '<div class="empty-state">Sin datos</div>';
+      return;
+    }
+    const max = cities[0]?.order_count ?? 1;
+    el.innerHTML = cities.slice(0, 10).map((c: any, i: number) => `
+      <div class="city-row">
+        <div class="city-rank">${i + 1}</div>
+        <div class="city-name">${c.recipient_city ?? '—'}</div>
+        <div class="city-bar-wrap"><div class="city-bar" style="width:${Math.round((c.order_count / max) * 100)}%"></div></div>
+        <div class="city-count">${c.order_count}</div>
+      </div>
+    `).join('');
+  }
+
+  // ── Sync ───────────────────────────────────────────────────
+  async function doSync() {
+    const btn = document.getElementById('btnSync')!;
+    const icon = document.getElementById('syncIcon')!;
+    const banner = document.getElementById('syncBanner')!;
+
+    btn.setAttribute('disabled', '');
+    icon.classList.add('spinning');
+    banner.style.display = 'none';
+
+    try {
+      const res = await fetch('/api/mercadolibre/sync', { method: 'POST', credentials: 'include' });
+      const json = await res.json();
+
+      if (!res.ok || !json.success) {
+        banner.innerHTML = `<div class="banner error">✗ Error en sincronización: ${json.error ?? json.details ?? 'desconocido'}</div>`;
+      } else {
+        banner.innerHTML = `<div class="banner success">✓ Sincronización completada — ${json.processed} procesadas, ${json.saved} guardadas${json.failed ? `, ${json.failed} fallidas` : ''}</div>`;
+        await loadStats();
+        await loadOrders(0);
+      }
+    } catch (e: any) {
+      banner.innerHTML = `<div class="banner error">✗ Error de red: ${e.message}</div>`;
+    } finally {
+      btn.removeAttribute('disabled');
+      icon.classList.remove('spinning');
+      banner.style.display = 'block';
+      setTimeout(() => { banner.style.display = 'none'; }, 8000);
+    }
+  }
+
+  // ── CSV export ─────────────────────────────────────────────
+  function exportCSV() {
+    if (!allSalesCache.length) { alert('No hay datos para exportar. Carga órdenes primero.'); return; }
+    const headers = ['ID Orden ML','Fecha','Comprador','Ciudad','Dpto','Total COP','Estado Pago','Estado Envío'];
+    const rows = allSalesCache.map((r: any) => [
+      r.ml_order_id ?? r.id ?? '',
+      r.purchase_date ?? r.created_at ?? '',
+      r.buyer_nickname ?? r.buyer_name ?? '',
+      r.recipient_city ?? '',
+      r.recipient_state ?? '',
+      r.total_amount ?? 0,
+      r.payment_status ?? '',
+      r.shipping_status ?? '',
+    ]);
+    const csv = [headers, ...rows].map((row: any[]) =>
+      row.map((v: any) => `"${String(v).replace(/"/g, '""')}"`).join(',')
+    ).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `ordenes-ml-${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  // ── Event listeners ────────────────────────────────────────
+  document.getElementById('btnSync')?.addEventListener('click', doSync);
+  document.getElementById('btnSyncQuick')?.addEventListener('click', doSync);
+  document.getElementById('btnFilter')?.addEventListener('click', () => loadOrders(0));
+  document.getElementById('btnExportCSV')?.addEventListener('click', exportCSV);
+  document.getElementById('btnPrev')?.addEventListener('click', () => loadOrders(currentPage - 1));
+  document.getElementById('btnNext')?.addEventListener('click', () => loadOrders(currentPage + 1));
+
+  // Enter key on filters
+  ['filterCity','filterFrom','filterTo','filterStatus'].forEach(id => {
+    document.getElementById(id)?.addEventListener('keydown', (e: KeyboardEvent) => {
+      if (e.key === 'Enter') loadOrders(0);
+    });
+  });
+
+  // ── Init ───────────────────────────────────────────────────
+  loadStats();
+  loadOrders(0);
+  checkCredentials();
+</script>
