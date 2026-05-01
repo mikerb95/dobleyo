@@ -1012,25 +1012,30 @@ function closeModal(id) { document.getElementById(id)?.close(); }
 document.getElementById('closeModalExpense').addEventListener('click', () => closeModal('modalExpense'));
 
 // Factura de compra — cargar caficultores al abrir
-document.getElementById('btnNewPurchaseInvoice').addEventListener('click', async () => {
+async function openPurchaseInvoice() {
   const sel = document.getElementById('selectCaficultor');
   const list = await getCaficultores();
   fillSelect(sel, list, 'id', u => `${u.name} (${u.email})`, '— Sin asignar —');
   openModal('modalPurchaseInvoice');
+}
+['btnNewPurchaseInvoice', 'btnNewPurchaseInvoice2'].forEach(id => {
+  document.getElementById(id)?.addEventListener('click', openPurchaseInvoice);
 });
 document.getElementById('closeModalPurchaseInvoice').addEventListener('click', () => closeModal('modalPurchaseInvoice'));
 
 // Factura de venta — cargar clientes al abrir
-document.getElementById('btnNewSalesInvoice').addEventListener('click', async () => {
+async function openSalesInvoice() {
   const sel = document.getElementById('selectClient');
   const list = await getClients();
   fillSelect(sel, list, 'id', u => `${u.name} (${u.email})`, '— Seleccionar cliente —');
-  // Fecha por defecto: hoy
   const today = new Date().toISOString().slice(0, 10);
   document.querySelector('#formSalesInvoice [name="invoice_date"]').value = today;
   document.querySelector('#formSalesInvoice [name="due_date"]').value = today;
   recalcSaleTotal();
   openModal('modalSalesInvoice');
+}
+['btnNewSalesInvoice', 'btnNewSalesInvoice2'].forEach(id => {
+  document.getElementById(id)?.addEventListener('click', openSalesInvoice);
 });
 document.getElementById('closeModalSalesInvoice').addEventListener('click', () => closeModal('modalSalesInvoice'));
 
