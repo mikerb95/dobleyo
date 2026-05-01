@@ -72,56 +72,23 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       margin-bottom: 1.5rem;
     }
 
-    .badge-verde {
-      background: #d4edda;
-      color: #155724;
-      display: inline-block;
-      padding: 0.18rem 0.55rem;
-      border-radius: 50px;
-      font-size: 0.7rem;
+    .badge-lote {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 11px;
       font-weight: 700;
+      letter-spacing: 0.04em;
       text-transform: uppercase;
+      border: 1px solid transparent;
+      white-space: nowrap;
     }
-    .badge-tostado {
-      background: #fff3cd;
-      color: #856404;
-      display: inline-block;
-      padding: 0.18rem 0.55rem;
-      border-radius: 50px;
-      font-size: 0.7rem;
-      font-weight: 700;
-      text-transform: uppercase;
-    }
-    .badge-en_tostado {
-      background: #fde8cc;
-      color: #7d4600;
-      display: inline-block;
-      padding: 0.18rem 0.55rem;
-      border-radius: 50px;
-      font-size: 0.7rem;
-      font-weight: 700;
-      text-transform: uppercase;
-    }
-    .badge-pendiente {
-      background: #d1ecf1;
-      color: #0c5460;
-      display: inline-block;
-      padding: 0.18rem 0.55rem;
-      border-radius: 50px;
-      font-size: 0.7rem;
-      font-weight: 700;
-      text-transform: uppercase;
-    }
-    .badge-default {
-      background: #e9ecef;
-      color: #495057;
-      display: inline-block;
-      padding: 0.18rem 0.55rem;
-      border-radius: 50px;
-      font-size: 0.7rem;
-      font-weight: 700;
-      text-transform: uppercase;
-    }
+    .badge-verde     { background: var(--c-success-bg, #f1fdf6); color: var(--c-success, #107e3e); border-color: var(--c-success-border, #b5e8cd); }
+    .badge-tostado   { background: var(--c-warning-bg, #fef3e2); color: var(--c-warning, #c96800); border-color: var(--c-warning-border, #f5c87a); }
+    .badge-en_tostado { background: #fff8f1; color: #92400e; border-color: #fed7aa; }
+    .badge-pendiente { background: var(--c-info-bg, #e8f2ff); color: var(--c-info, #0064d9); border-color: var(--c-info-border, #91c2f5); }
+    .badge-default   { background: #f0f0f0; color: #555; border-color: #ddd; }
 
     .btn-action {
       padding: 0.28rem 0.65rem;
