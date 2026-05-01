@@ -574,19 +574,32 @@ const balancePositive = dashboard.month_balance >= 0;
     border-collapse: collapse;
     font-size: 0.85rem;
   }
+  .adm-table thead {
+    background: #fafafa;
+  }
   .adm-table th {
-    padding: 0.5rem 0.625rem;
+    padding: 10px 12px;
     text-align: left;
-    font-weight: 600;
-    color: #374151;
-    border-bottom: 1px solid #e5e7eb;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--text-2, #6a6d70);
+    border-bottom: 1px solid var(--border, rgba(0,0,0,.09));
     white-space: nowrap;
   }
   .adm-table td {
-    padding: 0.5rem 0.625rem;
-    border-bottom: 1px solid #f9fafb;
-    color: #374151;
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(0,0,0,.05);
+    color: var(--text-1, #32363a);
     vertical-align: middle;
+    font-size: 13px;
+  }
+  .adm-table tbody tr:hover td {
+    background: var(--nav-hover-bg, #f5f6f7);
+  }
+  .adm-table tbody tr:last-child td {
+    border-bottom: none;
   }
   .adm-table__mono   { font-family: monospace; font-size: 0.8rem; }
   .adm-table__amount { font-weight: 600; color: #2d6a4f; }
