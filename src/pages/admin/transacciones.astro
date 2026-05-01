@@ -479,26 +479,29 @@ function pageUrl(p: number) {
     min-width: 820px;
   }
   .tx-table thead {
-    background: #f9fafb;
+    background: #fafafa;
     position: sticky;
     top: 0;
     z-index: 1;
   }
   .tx-table th {
-    padding: 0.75rem 1rem;
+    padding: 10px 16px;
     text-align: left;
-    font-weight: 600;
-    color: #374151;
-    border-bottom: 2px solid #e5e7eb;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--text-2, #6a6d70);
+    border-bottom: 1px solid var(--border, rgba(0,0,0,.09));
     white-space: nowrap;
   }
   .tx-table td {
-    padding: 0.7rem 1rem;
-    border-bottom: 1px solid #f3f4f6;
-    color: #374151;
+    padding: 11px 16px;
+    border-bottom: 1px solid rgba(0,0,0,.05);
+    color: var(--text-1, #32363a);
     vertical-align: middle;
   }
-  .tx-row:hover td { background: #f9fafb; }
+  .tx-row:hover td { background: var(--nav-hover-bg, #f5f6f7); }
   .tx-row--in td:first-child { border-left: 3px solid #10b981; }
   .tx-row--out td:first-child { border-left: 3px solid #ef4444; }
 
