@@ -27,6 +27,7 @@ import { productsRouter } from './routes/products.js';
 import { blogRouter } from './routes/blog.js';
 import { lotsRouter } from './routes/lots.js';
 import { systemRouter } from './routes/system.js';
+import { authenticateToken, requireRole } from './auth.js';
 import { query, healthCheck } from './db.js';
 
 const app = express();
