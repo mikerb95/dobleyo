@@ -110,83 +110,34 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         /* ── Table ────────────────────────────────────── */
         .table-wrap {
             background: #fff;
-            border-radius: 10px;
-            box-shadow: 0 1px 4px rgba(37, 26, 20, 0.08);
+            border-radius: 8px;
+            border: 1px solid var(--border, rgba(0,0,0,.09));
+            box-shadow: var(--card-shadow, 0 0 0 1px rgba(0,0,0,.06), 0 2px 8px rgba(0,0,0,.05));
             overflow-x: auto;
             margin-bottom: 1.5rem;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.87rem;
-        }
-        thead th {
-            text-align: left;
-            padding: 0.75rem 1rem;
-            font-size: 0.71rem;
-            font-weight: 700;
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
-            color: #7a6652;
-            border-bottom: 1px solid #ede8e2;
-            white-space: nowrap;
-        }
-        tbody td {
-            padding: 0.7rem 1rem;
-            border-bottom: 1px solid #f5f2ee;
-            color: #3d2e22;
-            vertical-align: middle;
-        }
-        tbody tr:last-child td {
-            border-bottom: none;
-        }
-        tbody tr:hover td {
-            background: #faf8f5;
         }
 
         /* ── Badge ────────────────────────────────────── */
         .badge {
-            display: inline-block;
-            padding: 0.2rem 0.6rem;
-            border-radius: 50px;
-            font-size: 0.71rem;
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
             font-weight: 700;
             letter-spacing: 0.04em;
             text-transform: uppercase;
+            border: 1px solid transparent;
             white-space: nowrap;
         }
-        .badge-paid {
-            background: #d4edda;
-            color: #155724;
-        }
-        .badge-pending {
-            background: #fff3cd;
-            color: #856404;
-        }
-        .badge-processing {
-            background: #cce5ff;
-            color: #004085;
-        }
-        .badge-shipped {
-            background: #d1ecf1;
-            color: #0c5460;
-        }
-        .badge-delivered {
-            background: #d4edda;
-            color: #155724;
-        }
-        .badge-cancelled {
-            background: #f8d7da;
-            color: #721c24;
-        }
-        .badge-refunded {
-            background: #e2e3e5;
-            color: #383d41;
-        }
-        .badge-default {
-            background: #e9ecef;
-            color: #495057;
-        }
+        .badge-paid     { background: var(--c-success-bg, #f1fdf6); color: var(--c-success, #107e3e); border-color: var(--c-success-border, #b5e8cd); }
+        .badge-pending  { background: var(--c-warning-bg, #fef3e2); color: var(--c-warning, #c96800); border-color: var(--c-warning-border, #f5c87a); }
+        .badge-processing { background: var(--c-info-bg, #e8f2ff); color: var(--c-info, #0064d9); border-color: var(--c-info-border, #91c2f5); }
+        .badge-shipped  { background: var(--c-info-bg, #e8f2ff); color: var(--c-info, #0064d9); border-color: var(--c-info-border, #91c2f5); }
+        .badge-delivered { background: var(--c-success-bg, #f1fdf6); color: var(--c-success, #107e3e); border-color: var(--c-success-border, #b5e8cd); }
+        .badge-cancelled { background: var(--c-error-bg, #ffeaea); color: var(--c-error, #aa0000); border-color: var(--c-error-border, #f5bcbc); }
+        .badge-refunded { background: #f0f0f0; color: #555; border-color: #ddd; }
+        .badge-default  { background: #f0f0f0; color: #555; border-color: #ddd; }
 
         /* ── Pagination ───────────────────────────────── */
         .pagination {
