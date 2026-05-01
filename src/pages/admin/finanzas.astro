@@ -52,21 +52,44 @@ function stateBadge(state) {
 const balancePositive = dashboard.month_balance >= 0;
 ---
 
-<AdminLayout>
-  <section class="adm-fin">
-    <!-- Encabezado -->
-    <div class="adm-fin__header">
-      <div>
-        <h1 class="adm-fin__title">💰 Finanzas</h1>
-        <p class="adm-fin__subtitle">Dashboard financiero del mes</p>
-      </div>
-      <div class="adm-fin__header-actions">
-        <a href="/admin/transacciones" class="adm-btn adm-btn--outline">Libro de transacciones</a>
-        <a href="/admin/finanzas?tab=gastos" class="adm-btn adm-btn--outline">+ Gasto</a>
-        <a href="/admin/finanzas?tab=facturas-compra" class="adm-btn adm-btn--outline">+ Factura de compra</a>
-        <a href="/admin/finanzas?tab=facturas-venta" class="adm-btn adm-btn--primary">+ Factura de venta</a>
-      </div>
+<AdminLayout title="Finanzas — DobleYo Admin" section="finanzas">
+  <style>
+    .page-header {
+      padding: 1.25rem 2rem;
+      background: #fff;
+      border-bottom: 1px solid rgba(0,0,0,.08);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .page-header h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: #251a14;
+      margin: 0 0 0.2rem;
+    }
+    .page-header p { margin: 0; color: #7a6652; font-size: 0.95rem; }
+    .page-header-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .page-body { padding: 1.75rem 2rem 2rem; }
+  </style>
+
+  <header class="page-header">
+    <div>
+      <h1>Finanzas</h1>
+      <p>Dashboard financiero del mes</p>
     </div>
+    <div class="page-header-actions">
+      <a href="/admin/transacciones" class="adm-btn adm-btn--outline">Libro de transacciones</a>
+      <button class="adm-btn adm-btn--outline" id="btnNewExpense2">+ Gasto</button>
+      <button class="adm-btn adm-btn--outline" id="btnNewPurchaseInvoice2">+ Factura de compra</button>
+      <button class="adm-btn adm-btn--primary" id="btnNewSalesInvoice2">+ Factura de venta</button>
+    </div>
+  </header>
+
+  <div class="page-body">
+  <section class="adm-fin">
 
     {fetchError && (
       <div class="adm-fin__error">

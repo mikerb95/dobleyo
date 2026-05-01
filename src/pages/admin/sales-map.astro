@@ -3,120 +3,118 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 import SalesHeatmap from "../../components/SalesHeatmap.jsx";
 ---
 
-<AdminLayout>
-  <div
-    class="container"
-    style="padding-top: calc(var(--header-height, 120px) + 2rem); padding-bottom: 4rem;"
-  >
-    <!-- Encabezado -->
-    <div style="margin-bottom: 2rem;">
-      <a
-        href="/admin"
-        style="color: var(--accent, #c67b4e); text-decoration: none; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 0.35rem; margin-bottom: 0.75rem;"
-      >
-        ← Volver al panel
-      </a>
-      <h1
-        style="margin: 0 0 0.5rem; color: var(--coffee, #251a14); font-size: 1.7rem;"
-      >
-        Mapa de Calor de Ventas
-      </h1>
-      <p style="color: #666; font-size: 0.96rem; margin: 0;">
-        Distribución geográfica combinada: tienda web + MercadoLibre. Usa los
-        filtros para explorar por período, canal o producto.
-      </p>
+<AdminLayout title="Mapa de Ventas — DobleYo Admin" section="sales-map">
+  <style>
+    .page-header {
+      padding: 1.75rem 2rem 1.5rem;
+      background: #fff;
+      border-bottom: 1px solid rgba(0,0,0,.08);
+    }
+    .page-header h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: #251a14;
+      margin: 0 0 0.3rem;
+    }
+    .page-header p {
+      margin: 0;
+      color: #7a6652;
+      font-size: 0.95rem;
+    }
+    .page-body {
+      padding: 1.75rem 2rem 2rem;
+    }
+    .geocoding-panel {
+      background: #fffbf5;
+      border: 1px solid #e8d9c5;
+      border-radius: 8px;
+      padding: 1.1rem 1.4rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 1rem;
+    }
+    .geocoding-panel__info { flex: 1; min-width: 200px; }
+    .geocoding-panel__label { font-size: 0.9rem; font-weight: 600; color: #251a14; }
+    #geocoding-status { margin: 0.2rem 0 0; font-size: 0.84rem; color: #7a6652; }
+    #btn-backfill {
+      background: #c8a96e;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 0.55rem 1.1rem;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    #btn-backfill:hover:not(:disabled) { background: #a8874a; }
+    #btn-backfill:disabled { opacity: 0.5; cursor: not-allowed; }
+    #backfill-msg { font-size: 0.82rem; color: #2d5016; display: none; font-weight: 600; }
+    .map-card {
+      background: #fff;
+      border-radius: 8px;
+      border: 1px solid var(--border, rgba(0,0,0,.09));
+      box-shadow: var(--card-shadow, 0 0 0 1px rgba(0,0,0,.06), 0 2px 8px rgba(0,0,0,.05));
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .info-panel {
+      background: #fafafa;
+      border-radius: 8px;
+      border: 1px solid var(--border, rgba(0,0,0,.09));
+      padding: 1.25rem 1.5rem;
+    }
+    .info-panel h3 {
+      margin: 0 0 0.75rem;
+      color: #251a14;
+      font-size: 0.95rem;
+      font-weight: 700;
+    }
+    .info-panel ul {
+      color: #7a6652;
+      line-height: 1.9;
+      margin: 0;
+      padding-left: 1.4rem;
+      font-size: 0.9rem;
+    }
+  </style>
+
+  <header class="page-header">
+    <h1>Mapa de Calor de Ventas</h1>
+    <p>Distribución geográfica combinada: tienda web + MercadoLibre. Filtra por período, canal o producto.</p>
+  </header>
+
+  <div class="page-body">
+
+    <div class="geocoding-panel" id="geocoding-panel">
+      <div class="geocoding-panel__info">
+        <div class="geocoding-panel__label">Geocodificación de órdenes</div>
+        <p id="geocoding-status">Consultando estado…</p>
+      </div>
+      <button id="btn-backfill" disabled>Geocodificar pendientes</button>
+      <div id="backfill-msg"></div>
     </div>
 
-    <!-- Panel de geocodificación -->
-    <div
-      id="geocoding-panel"
-      style="background: #fffbf5; border: 1px solid #e8d9c5; border-radius: 8px; padding: 1.1rem 1.4rem; margin-bottom: 1.5rem; display: flex; flex-wrap: wrap; align-items: center; gap: 1rem;"
-    >
-      <div style="flex: 1; min-width: 200px;">
-        <strong style="font-size: 0.9rem; color: #251a14;"
-          >📍 Geocodificación de órdenes</strong
-        >
-        <p
-          id="geocoding-status"
-          style="margin: 0.2rem 0 0; font-size: 0.84rem; color: #666;"
-        >
-          Consultando estado…
-        </p>
-      </div>
-      <button
-        id="btn-backfill"
-        style="background: var(--accent, #c67b4e); color: #fff; border: none; border-radius: 6px; padding: 0.55rem 1.1rem; font-size: 0.88rem; font-weight: 600; cursor: pointer; white-space: nowrap;"
-        disabled
-      >
-        Geocodificar pendientes
-      </button>
-      <div
-        id="backfill-msg"
-        style="font-size: 0.82rem; color: #2d5016; display: none; font-weight: 600;"
-      >
-      </div>
-    </div>
-
-    <!-- Mapa principal -->
-    <div
-      style="background: white; padding: 1.5rem; border-radius: 10px; border: 1px solid #e6e6e6; margin-bottom: 2rem;"
-    >
+    <div class="map-card">
       <SalesHeatmap client:load />
     </div>
 
-    <!-- Info panel -->
-    <div
-      style="padding: 1.5rem 1.75rem; background: #f9f7f4; border-radius: 8px; border: 1px solid #e6e6e6;"
-    >
-      <h3 style="margin: 0 0 0.9rem; color: #251a14; font-size: 1rem;">
-        ¿Cómo funciona este mapa?
-      </h3>
-      <ul
-        style="color: #666; line-height: 1.9; margin: 0; padding-left: 1.4rem; font-size: 0.92rem;"
-      >
-        <li>
-          <strong>Datos combinados:</strong> Integra pedidos de la tienda web y de
-          MercadoLibre en una sola vista.
-        </li>
-        <li>
-          <strong>Filtros:</strong> Filtra por período (7 / 30 / 90 / 365 días o todo
-          el tiempo), canal de venta, o nombre de producto.
-        </li>
-        <li>
-          <strong>Intensidad de calor:</strong> Los colores van de amarillo claro
-          (pocas ventas) a rojo oscuro (muchas ventas).
-        </li>
-        <li>
-          <strong>Marcadores:</strong> Haz clic en cualquier círculo para ver ciudad,
-          pedidos, ventas en COP y desglose por canal.
-        </li>
-        <li>
-          <strong>Geocodificación:</strong> Las nuevas órdenes se geocodifican automáticamente.
-          Si hay órdenes antiguas sin coordenadas, usa el botón <em
-            >"Geocodificar pendientes"</em
-          > para procesarlas.
-        </li>
-        <li>
-          <strong>Exportar:</strong> Descarga los datos del filtro activo como CSV
-          con el botón <em>"↓ CSV"</em>.
-        </li>
+    <div class="info-panel">
+      <h3>¿Cómo funciona este mapa?</h3>
+      <ul>
+        <li><strong>Datos combinados:</strong> Integra pedidos de la tienda web y de MercadoLibre en una sola vista.</li>
+        <li><strong>Filtros:</strong> Filtra por período (7 / 30 / 90 / 365 días o todo el tiempo), canal de venta, o nombre de producto.</li>
+        <li><strong>Intensidad de calor:</strong> Los colores van de amarillo claro (pocas ventas) a rojo oscuro (muchas ventas).</li>
+        <li><strong>Marcadores:</strong> Haz clic en cualquier círculo para ver ciudad, pedidos, ventas en COP y desglose por canal.</li>
+        <li><strong>Geocodificación:</strong> Las nuevas órdenes se geocodifican automáticamente. Si hay órdenes antiguas sin coordenadas, usa el botón <em>"Geocodificar pendientes"</em> para procesarlas.</li>
+        <li><strong>Exportar:</strong> Descarga los datos del filtro activo como CSV con el botón <em>"↓ CSV"</em>.</li>
       </ul>
     </div>
+
   </div>
 </AdminLayout>
-
-<style>
-  :global(body) {
-    background-color: var(--bg);
-  }
-  #btn-backfill:hover:not(:disabled) {
-    opacity: 0.88;
-  }
-  #btn-backfill:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-</style>
 
 <script>
   // Consultar estado de geocodificación y manejar backfill
