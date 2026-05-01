@@ -91,26 +91,32 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     .badge-default   { background: #f0f0f0; color: #555; border-color: #ddd; }
 
     .btn-action {
-      padding: 0.28rem 0.65rem;
-      font-size: 0.75rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 0 10px;
+      height: 28px;
+      font-size: 12px;
       font-weight: 600;
-      border: 1px solid #ddd;
-      border-radius: 5px;
-      background: #fff;
+      font-family: inherit;
+      border: 1px solid var(--border, rgba(0,0,0,.09));
+      border-radius: 4px;
+      background: var(--card-bg, #fff);
       cursor: pointer;
-      color: #251a14;
-      transition: background 0.15s;
+      color: var(--text-1, #32363a);
+      transition: background 0.12s, border-color 0.12s;
+      white-space: nowrap;
     }
     .btn-action:hover {
-      background: #f7f3ef;
-      border-color: #c8a96e;
+      background: var(--nav-hover-bg, #f5f6f7);
+      border-color: #bbb;
     }
     .btn-action.danger {
-      border-color: #f8d7da;
-      color: #721c24;
+      color: var(--c-error, #aa0000);
+      border-color: var(--c-error-border, #f5bcbc);
     }
     .btn-action.danger:hover {
-      background: #f8d7da;
+      background: var(--c-error-bg, #ffeaea);
     }
 
     .empty {
