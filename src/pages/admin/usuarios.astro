@@ -148,54 +148,24 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   </div>
 
   <!-- Tabla -->
-  <div
-    style="background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden;"
-  >
+  <div class="card" style="overflow: hidden;">
     <div style="overflow-x: auto;">
-      <table style="width: 100%; border-collapse: collapse;">
+      <table class="erp-table">
         <thead>
-          <tr style="background: #f9fafb; border-bottom: 2px solid #e5e7eb;">
-            <th
-              style="padding: 1rem; text-align: left; font-weight: 600; color: #251a14;"
-              >ID</th
-            >
-            <th
-              style="padding: 1rem; text-align: left; font-weight: 600; color: #251a14;"
-              >Nombre</th
-            >
-            <th
-              style="padding: 1rem; text-align: left; font-weight: 600; color: #251a14;"
-              >Email</th
-            >
-            <th
-              style="padding: 1rem; text-align: left; font-weight: 600; color: #251a14;"
-              >Rol</th
-            >
-            <th
-              style="padding: 1rem; text-align: left; font-weight: 600; color: #251a14;"
-              >Verificado</th
-            >
-            <th
-              style="padding: 1rem; text-align: left; font-weight: 600; color: #251a14;"
-              >Caficultor</th
-            >
-            <th
-              style="padding: 1rem; text-align: left; font-weight: 600; color: #251a14;"
-              >Último Login</th
-            >
-            <th
-              style="padding: 1rem; text-align: center; font-weight: 600; color: #251a14;"
-              >Acciones</th
-            >
+          <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Email</th>
+            <th>Rol</th>
+            <th>Verificado</th>
+            <th>Caficultor</th>
+            <th>Último Login</th>
+            <th style="text-align:center">Acciones</th>
           </tr>
         </thead>
         <tbody id="usersTableBody">
-          <tr style="border-bottom: 1px solid #e5e7eb;">
-            <td
-              colspan="8"
-              style="padding: 2rem; text-align: center; color: #666;"
-              >Cargando usuarios...</td
-            >
+          <tr>
+            <td colspan="8" class="empty-state">Cargando usuarios...</td>
           </tr>
         </tbody>
       </table>
