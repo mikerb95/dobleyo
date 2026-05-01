@@ -65,38 +65,11 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
     .table-wrap {
       background: #fff;
-      border-radius: 10px;
-      box-shadow: 0 1px 4px rgba(37, 26, 20, 0.08);
+      border-radius: 8px;
+      border: 1px solid var(--border, rgba(0,0,0,.09));
+      box-shadow: var(--card-shadow, 0 0 0 1px rgba(0,0,0,.06), 0 2px 8px rgba(0,0,0,.05));
       overflow-x: auto;
       margin-bottom: 1.5rem;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.87rem;
-    }
-    thead th {
-      text-align: left;
-      padding: 0.75rem 1rem;
-      font-size: 0.71rem;
-      font-weight: 700;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      color: #7a6652;
-      border-bottom: 1px solid #ede8e2;
-      white-space: nowrap;
-    }
-    tbody td {
-      padding: 0.65rem 1rem;
-      border-bottom: 1px solid #f5f2ee;
-      color: #3d2e22;
-      vertical-align: middle;
-    }
-    tbody tr:last-child td {
-      border-bottom: none;
-    }
-    tbody tr:hover td {
-      background: #faf8f5;
     }
 
     .badge-verde {
