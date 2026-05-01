@@ -119,83 +119,158 @@ const pipelineStages = Object.entries(pipelineCounts)
   .sort((a, b) => b.count - a.count);
 ---
 
-<AppLayout>
-  <section style="max-width:1200px; margin:0 auto; padding:2rem 1.25rem;">
+<AdminLayout title="Estadísticas — DobleYo Admin">
 
-    <div style="margin-bottom:2rem;">
-      <a href="/app" style="color:#8b6f47; text-decoration:none; display:inline-flex; align-items:center; gap:.5rem; margin-bottom:1rem;">
-        ← Volver al Inicio
-      </a>
-      <h1 style="font-size:2rem; font-weight:bold; margin-bottom:.5rem; color:#251a14;">
-        Estadísticas de Producción
-      </h1>
-      <p style="color:#666; font-size:1.05rem;">
-        Métricas de calidad y rendimiento de tus lotes
-      </p>
-    </div>
+  <style>
+    .page-header {
+      padding: 1.75rem 2rem 1.5rem;
+      background: #fff;
+      border-bottom: 1px solid rgba(0,0,0,.08);
+    }
+    .page-header h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: #251a14;
+      margin: 0 0 0.3rem;
+    }
+    .page-header p { margin: 0; color: #7a6652; font-size: 0.95rem; }
+    .page-body { padding: 1.75rem 2rem 2rem; }
+
+    .stat-error {
+      background: #ffeaea;
+      border: 1px solid var(--c-error-border, #f5bcbc);
+      color: var(--c-error, #aa0000);
+      padding: 0.875rem 1.25rem;
+      border-radius: 6px;
+      margin-bottom: 1.5rem;
+      font-size: 0.9rem;
+    }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .stat-card {
+      background: #fff;
+      border: 1px solid var(--border, rgba(0,0,0,.09));
+      border-radius: 6px;
+      box-shadow: var(--card-shadow, 0 0 0 1px rgba(0,0,0,.06), 0 2px 8px rgba(0,0,0,.05));
+      padding: 1.25rem 1.5rem;
+    }
+    .stat-card h3 {
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: var(--text-2, #6a6d70);
+      margin: 0 0 0.75rem;
+    }
+    .stat-empty { color: var(--text-3, #a9b0b8); font-size: 0.88rem; text-align: center; padding: 1.5rem 0; }
+
+    .bar-chart {
+      height: 180px;
+      display: flex;
+      align-items: flex-end;
+      gap: 0.4rem;
+      border-bottom: 2px solid var(--border, rgba(0,0,0,.09));
+      padding-bottom: 0.4rem;
+    }
+    .bar-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.3rem;
+      height: 100%;
+      justify-content: flex-end;
+    }
+    .bar-count { font-size: 0.7rem; font-weight: 700; color: #7a6652; }
+    .bar-fill { width: 100%; border-radius: 3px 3px 0 0; }
+    .bar-label { font-size: 0.7rem; color: var(--text-2, #6a6d70); }
+
+    .progress-row { margin-bottom: 0.75rem; }
+    .progress-row__header { display: flex; justify-content: space-between; margin-bottom: 0.3rem; font-size: 0.84rem; }
+    .progress-row__label { color: var(--text-1, #32363a); }
+    .progress-row__value { color: var(--text-2, #6a6d70); font-weight: 600; }
+    .progress-bar { background: var(--border, rgba(0,0,0,.09)); border-radius: 9999px; height: 6px; overflow: hidden; }
+    .progress-fill { height: 100%; border-radius: 9999px; }
+
+    .pipeline-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 0.75rem;
+      background: #faf8f5;
+      border-radius: 4px;
+      margin-bottom: 0.5rem;
+      font-size: 0.875rem;
+    }
+    .pipeline-item__count { font-weight: 700; color: #7a6652; }
+  </style>
+
+  <header class="page-header">
+    <h1>Estadísticas de Producción</h1>
+    <p>Métricas de calidad y rendimiento de los lotes</p>
+  </header>
+
+  <div class="page-body">
 
     {fetchError && (
-      <div style="background:#fee2e2; color:#b91c1c; padding:1rem; border-radius:.75rem; margin-bottom:1.5rem; font-size:.9rem;">
+      <div class="stat-error">
         No se pudo conectar con la base de datos. Mostrando datos parciales.
       </div>
     )}
 
-    <!-- KPIs Principales -->
-    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:1.5rem; margin-bottom:3rem;">
-
-      <div style="background:linear-gradient(135deg, #8b6f47 0%, #6b5637 100%); color:white; padding:2rem; border-radius:.75rem;">
-        <div style="font-size:.875rem; opacity:.9; margin-bottom:.5rem;">Lotes Registrados</div>
-        <div style="font-size:2.5rem; font-weight:bold; margin-bottom:.25rem;">{totalLotes}</div>
-        <div style="font-size:.875rem; opacity:.8;">cosechas en BD</div>
+    <!-- KPIs -->
+    <div class="kpi-grid">
+      <div class="kpi-tile brand">
+        <div class="kpi-label">Lotes Registrados</div>
+        <div class="kpi-value">{totalLotes}</div>
+        <div class="kpi-sub">cosechas en BD</div>
       </div>
-
-      <div style="background:white; border:1px solid #e5e7eb; padding:2rem; border-radius:.75rem;">
-        <div style="font-size:.875rem; color:#666; margin-bottom:.5rem;">Calidad Promedio</div>
-        <div style="font-size:2.5rem; font-weight:bold; color:#2d6a4f; margin-bottom:.25rem;">
-          {avgScore ?? "—"}
-        </div>
-        <div style="font-size:.875rem; color:#666;">puntos (escala 1–5)</div>
+      <div class="kpi-tile success">
+        <div class="kpi-label">Calidad Promedio</div>
+        <div class="kpi-value">{avgScore ?? "—"}</div>
+        <div class="kpi-sub">puntos (escala 1–5)</div>
       </div>
-
-      <div style="background:white; border:1px solid #e5e7eb; padding:2rem; border-radius:.75rem;">
-        <div style="font-size:.875rem; color:#666; margin-bottom:.5rem;">Lotes Empacados</div>
-        <div style="font-size:2.5rem; font-weight:bold; color:#8b6f47; margin-bottom:.25rem;">
-          {totalEmpacados}
-        </div>
-        <div style="font-size:.875rem; color:#666;">listos para venta</div>
+      <div class="kpi-tile info">
+        <div class="kpi-label">Lotes Empacados</div>
+        <div class="kpi-value">{totalEmpacados}</div>
+        <div class="kpi-sub">listos para venta</div>
       </div>
-
-      <div style="background:white; border:1px solid #e5e7eb; padding:2rem; border-radius:.75rem;">
-        <div style="font-size:.875rem; color:#666; margin-bottom:.5rem;">Kg Empacados</div>
-        <div style="font-size:2.5rem; font-weight:bold; color:#251a14; margin-bottom:.25rem;">
-          {totalKgEmpacado > 0 ? totalKgEmpacado.toFixed(1) : "—"}
-        </div>
-        <div style="font-size:.875rem; color:#666;">kg estimados</div>
+      <div class="kpi-tile warning">
+        <div class="kpi-label">Kg Empacados</div>
+        <div class="kpi-value">{totalKgEmpacado > 0 ? totalKgEmpacado.toFixed(1) : "—"}</div>
+        <div class="kpi-sub">kg estimados</div>
       </div>
     </div>
 
     <!-- Gráficas -->
-    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(380px, 1fr)); gap:2rem; margin-bottom:3rem;">
-
-      <!-- Producción Mensual -->
-      <div style="background:white; border:1px solid #e5e7eb; border-radius:.75rem; padding:1.5rem;">
-        <h3 style="font-size:1.1rem; font-weight:600; margin-bottom:1.5rem; color:#251a14;">
-          Lotes por Mes (últimos 6 meses)
-        </h3>
+    <div class="charts-grid">
+      <div class="stat-card">
+        <h3>Lotes por Mes (últimos 6 meses)</h3>
         {harvests.length === 0 ? (
-          <p style="color:#999; font-size:.9rem; text-align:center; padding:2rem 0;">Sin datos de cosechas aún.</p>
+          <p class="stat-empty">Sin datos de cosechas aún.</p>
         ) : (
-          <div style="height:200px; display:flex; align-items:flex-end; gap:.5rem; border-bottom:2px solid #e5e7eb; padding-bottom:.5rem;">
+          <div class="bar-chart">
             {last6.map((m) => {
               const count = monthCounts[m.key] ?? 0;
               const pct   = Math.round((count / maxMonthCount) * 100);
               return (
-                <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:.4rem; height:100%; justify-content:flex-end;">
-                  {count > 0 && (
-                    <span style="font-size:.7rem; font-weight:600; color:#8b6f47;">{count}</span>
-                  )}
-                  <div style={`width:100%; background:${pct > 0 ? '#8b6f47' : '#e5e7eb'}; border-radius:.25rem .25rem 0 0; height:${Math.max(pct, 2)}%;`}></div>
-                  <span style="font-size:.72rem; color:#666;">{m.label}</span>
+                <div class="bar-col">
+                  {count > 0 && <span class="bar-count">{count}</span>}
+                  <div class="bar-fill" style={`background:${pct > 0 ? '#c8a96e' : 'var(--border)'}; height:${Math.max(pct, 2)}%;`}></div>
+                  <span class="bar-label">{m.label}</span>
                 </div>
               );
             })}
@@ -203,112 +278,93 @@ const pipelineStages = Object.entries(pipelineCounts)
         )}
       </div>
 
-      <!-- Distribución de Calidad -->
-      <div style="background:white; border:1px solid #e5e7eb; border-radius:.75rem; padding:1.5rem;">
-        <h3 style="font-size:1.1rem; font-weight:600; margin-bottom:1.5rem; color:#251a14;">
-          Distribución de Calidad
-        </h3>
+      <div class="stat-card">
+        <h3>Distribución de Calidad</h3>
         {scoresValidos.length === 0 ? (
-          <p style="color:#999; font-size:.9rem; text-align:center; padding:2rem 0;">Sin lotes empacados con puntaje aún.</p>
+          <p class="stat-empty">Sin lotes empacados con puntaje aún.</p>
         ) : (
-          <div style="display:flex; flex-direction:column; gap:1rem;">
-            {qDist.map((d) => (
-              <div>
-                <div style="display:flex; justify-content:space-between; margin-bottom:.4rem;">
-                  <span style="font-size:.875rem; color:#666;">{d.label}</span>
-                  <span style="font-weight:600;">{d.count} ({scoresValidos.length > 0 ? Math.round(d.count / scoresValidos.length * 100) : 0}%)</span>
-                </div>
-                <div style="background:#e5e7eb; border-radius:9999px; height:.5rem; overflow:hidden;">
-                  <div style={`background:${d.color}; width:${Math.round(d.count / maxQDist * 100)}%; height:100%;`}></div>
-                </div>
+          qDist.map((d) => (
+            <div class="progress-row">
+              <div class="progress-row__header">
+                <span class="progress-row__label">{d.label}</span>
+                <span class="progress-row__value">{d.count} ({Math.round(d.count / scoresValidos.length * 100)}%)</span>
               </div>
-            ))}
-          </div>
+              <div class="progress-bar">
+                <div class="progress-fill" style={`background:${d.color}; width:${Math.round(d.count / maxQDist * 100)}%;`}></div>
+              </div>
+            </div>
+          ))
         )}
       </div>
     </div>
 
-    <!-- Variedades Cultivadas + Pipeline -->
-    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(340px, 1fr)); gap:2rem; margin-bottom:3rem;">
-
-      <!-- Variedades -->
-      <div style="background:white; border:1px solid #e5e7eb; border-radius:.75rem; padding:1.5rem;">
-        <h3 style="font-size:1.1rem; font-weight:600; margin-bottom:1.25rem; color:#251a14;">
-          Variedades Cultivadas
-        </h3>
+    <div class="charts-grid">
+      <div class="stat-card">
+        <h3>Variedades Cultivadas</h3>
         {topVarieties.length === 0 ? (
-          <p style="color:#999; font-size:.9rem; text-align:center; padding:1.5rem 0;">Sin datos de cosechas aún.</p>
+          <p class="stat-empty">Sin datos de cosechas aún.</p>
         ) : (
-          <div style="display:flex; flex-direction:column; gap:.75rem;">
-            {topVarieties.map((v) => (
-              <div>
-                <div style="display:flex; justify-content:space-between; margin-bottom:.3rem;">
-                  <span style="font-size:.875rem; font-weight:600;">{v.name}</span>
-                  <span style="font-size:.85rem; color:#666;">{v.count} lotes · {v.pct}%</span>
-                </div>
-                <div style="background:#e5e7eb; border-radius:9999px; height:.4rem; overflow:hidden;">
-                  <div style={`background:#8b6f47; width:${v.pct}%; height:100%;`}></div>
-                </div>
+          topVarieties.map((v) => (
+            <div class="progress-row">
+              <div class="progress-row__header">
+                <span class="progress-row__label" style="font-weight:600">{v.name}</span>
+                <span class="progress-row__value">{v.count} lotes · {v.pct}%</span>
               </div>
-            ))}
-          </div>
+              <div class="progress-bar">
+                <div class="progress-fill" style={`background:#c8a96e; width:${v.pct}%;`}></div>
+              </div>
+            </div>
+          ))
         )}
       </div>
 
-      <!-- Estado del pipeline -->
-      <div style="background:white; border:1px solid #e5e7eb; border-radius:.75rem; padding:1.5rem;">
-        <h3 style="font-size:1.1rem; font-weight:600; margin-bottom:1.25rem; color:#251a14;">
-          Pipeline de Lotes
-        </h3>
+      <div class="stat-card">
+        <h3>Pipeline de Lotes</h3>
         {pipelineStages.length === 0 ? (
-          <p style="color:#999; font-size:.9rem; text-align:center; padding:1.5rem 0;">Sin lotes en pipeline.</p>
+          <p class="stat-empty">Sin lotes en pipeline.</p>
         ) : (
-          <div style="display:flex; flex-direction:column; gap:.65rem;">
-            {pipelineStages.map((s) => (
-              <div style="display:flex; justify-content:space-between; align-items:center; padding:.5rem .75rem; background:#f9f6f2; border-radius:.5rem;">
-                <span style="font-size:.875rem; font-weight:500;">{s.label}</span>
-                <span style="font-size:.875rem; font-weight:700; color:#8b6f47;">{s.count}</span>
-              </div>
-            ))}
-          </div>
+          pipelineStages.map((s) => (
+            <div class="pipeline-item">
+              <span>{s.label}</span>
+              <span class="pipeline-item__count">{s.count}</span>
+            </div>
+          ))
         )}
       </div>
     </div>
 
-    <!-- Últimas cosechas registradas -->
+    <!-- Últimas cosechas -->
     {harvests.length > 0 && (
-      <div style="background:white; border:1px solid #e5e7eb; border-radius:.75rem; padding:1.5rem;">
-        <h3 style="font-size:1.1rem; font-weight:600; margin-bottom:1.25rem; color:#251a14;">
-          Últimas Cosechas
-        </h3>
-        <div style="overflow-x:auto;">
-          <table style="width:100%; border-collapse:collapse; font-size:.875rem;">
-            <thead>
-              <tr style="border-bottom:2px solid #e5e7eb; text-align:left;">
-                <th style="padding:.5rem .75rem; color:#666; font-weight:600;">Lote</th>
-                <th style="padding:.5rem .75rem; color:#666; font-weight:600;">Variedad</th>
-                <th style="padding:.5rem .75rem; color:#666; font-weight:600;">Proceso</th>
-                <th style="padding:.5rem .75rem; color:#666; font-weight:600;">Clima</th>
-                <th style="padding:.5rem .75rem; color:#666; font-weight:600;">Fecha</th>
-              </tr>
-            </thead>
-            <tbody>
-              {harvests.slice(0, 8).map((h: any) => (
-                <tr style="border-bottom:1px solid #f3f4f6;">
-                  <td style="padding:.5rem .75rem; font-family:monospace; font-size:.8rem; color:#251a14;">{h.lot_id}</td>
-                  <td style="padding:.5rem .75rem;">{VARIETY_LABEL[h.variety] ?? h.variety ?? "—"}</td>
-                  <td style="padding:.5rem .75rem;">{h.process ?? "—"}</td>
-                  <td style="padding:.5rem .75rem;">{h.climate ?? "—"}</td>
-                  <td style="padding:.5rem .75rem; color:#666;">
-                    {h.created_at ? new Date(h.created_at).toLocaleDateString("es-CO", { day:"2-digit", month:"short", year:"numeric" }) : "—"}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      <div class="table-wrap" style="background:#fff; border-radius:6px; border:1px solid var(--border,rgba(0,0,0,.09)); box-shadow:var(--card-shadow); overflow-x:auto;">
+        <div style="padding:1rem 1.25rem; border-bottom:1px solid var(--border,rgba(0,0,0,.09));">
+          <span style="font-size:0.85rem; font-weight:700; letter-spacing:0.07em; text-transform:uppercase; color:var(--text-2,#6a6d70);">Últimas Cosechas</span>
         </div>
+        <table class="erp-table">
+          <thead>
+            <tr>
+              <th>Lote</th>
+              <th>Variedad</th>
+              <th>Proceso</th>
+              <th>Clima</th>
+              <th>Fecha</th>
+            </tr>
+          </thead>
+          <tbody>
+            {harvests.slice(0, 8).map((h: any) => (
+              <tr>
+                <td style="font-family:monospace; font-size:0.8rem;">{h.lot_id}</td>
+                <td>{VARIETY_LABEL[h.variety] ?? h.variety ?? "—"}</td>
+                <td>{h.process ?? "—"}</td>
+                <td>{h.climate ?? "—"}</td>
+                <td>
+                  {h.created_at ? new Date(h.created_at).toLocaleDateString("es-CO", { day:"2-digit", month:"short", year:"numeric" }) : "—"}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     )}
 
-  </section>
-</AppLayout>
+  </div>
+</AdminLayout>
