@@ -1908,3 +1908,19 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     }
   }
 </style>
+
+<style is:global>
+  /* Clases usadas via JS (innerHTML) — requieren global para saltar el scope de Astro */
+  .product-img {
+    width: 48px !important;
+    height: 48px !important;
+    min-width: 48px;
+    max-width: 48px !important;
+    border-radius: 0.5rem;
+    object-fit: cover;
+    background: #f3f4f6;
+    border: 1px solid #e6e6e6;
+    display: block;
+    flex-shrink: 0;
+  }
+</style>

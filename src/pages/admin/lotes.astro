@@ -405,8 +405,8 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
     function statusBadge(status: string) {
       const cls = ["verde", "tostado", "en_tostado", "pendiente"].includes(status)
-        ? `badge-${status}`
-        : "badge-default";
+        ? `badge-lote badge-${status}`
+        : "badge-lote badge-default";
       return `<span class="${cls}">${STATUS_LABELS[status] ?? status ?? "—"}</span>`;
     }
 
