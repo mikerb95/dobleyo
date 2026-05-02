@@ -1,161 +1,163 @@
 ---
-import AppLayout from "../../layouts/AppLayout.astro";
+import AdminLayout from "../../layouts/AdminLayout.astro";
 ---
 
-<AppLayout>
-  <div style="max-width: 1400px; margin: 0 auto; padding: 1.5rem;">
-    <div style="margin-bottom: 1.5rem;">
-      <h1
-        style="font-size: 2rem; font-weight: 700; color: #8b6f47; margin-bottom: 1rem;"
-      >
-        📋 Auditoría y Logs
-      </h1>
-      <p style="color: #666; margin: 0;">
-        Registro de todas las acciones realizadas en el sistema
-      </p>
-    </div>
+<AdminLayout title="Auditoría — DobleYo Admin">
+  <style>
+    .page-header {
+      padding: 1.75rem 2rem 1.5rem;
+      background: #fff;
+      border-bottom: 1px solid rgba(0,0,0,.08);
+    }
+    .page-header h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: #251a14;
+      margin: 0 0 0.3rem;
+    }
+    .page-header p { margin: 0; color: #7a6652; font-size: 0.95rem; }
+    .page-body { padding: 1.75rem 2rem 2rem; }
 
-    <!-- Filtros -->
-    <div
-      style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; background: white; padding: 1rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);"
-    >
-      <select
-        id="actionFilter"
-        style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;"
-      >
+    .filters-bar {
+      background: #fff;
+      border-radius: 8px;
+      border: 1px solid var(--border, rgba(0,0,0,.09));
+      box-shadow: var(--card-shadow, 0 0 0 1px rgba(0,0,0,.06), 0 2px 8px rgba(0,0,0,.05));
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      align-items: flex-end;
+    }
+    .filters-bar select,
+    .filters-bar input {
+      padding: 0.55rem 0.75rem;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 0.88rem;
+      color: #251a14;
+      background: #faf8f5;
+      outline: none;
+      min-width: 180px;
+    }
+    .filters-bar select:focus,
+    .filters-bar input:focus { border-color: #c8a96e; }
+    .btn-filter {
+      padding: 0.55rem 1.25rem;
+      background: #4a6741;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-filter:hover { background: #3a5331; }
+    .btn-reset {
+      padding: 0.55rem 1rem;
+      background: transparent;
+      color: #7a6652;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 0.88rem;
+      cursor: pointer;
+    }
+    .btn-reset:hover { border-color: #bbb; color: #251a14; }
+
+    .table-wrap {
+      background: #fff;
+      border-radius: 8px;
+      border: 1px solid var(--border, rgba(0,0,0,.09));
+      box-shadow: var(--card-shadow, 0 0 0 1px rgba(0,0,0,.06), 0 2px 8px rgba(0,0,0,.05));
+      overflow-x: auto;
+      margin-bottom: 1.5rem;
+    }
+    #loading { text-align: center; padding: 2.5rem; color: #7a6652; }
+
+    .pagination {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+    }
+    .page-btn {
+      padding: 0.4rem 0.8rem;
+      border: 1px solid #ddd;
+      background: #fff;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      color: #251a14;
+    }
+    .page-btn:hover { background: #f7f3ef; border-color: #c8a96e; }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+  </style>
+
+  <header class="page-header">
+    <h1>Auditoría y Logs</h1>
+    <p>Registro de todas las acciones realizadas en el sistema</p>
+  </header>
+
+  <div class="page-body">
+
+    <div class="filters-bar">
+      <select id="actionFilter">
         <option value="">Todas las acciones</option>
       </select>
-
-      <input
-        type="text"
-        id="entityIdFilter"
-        placeholder="Filtrar por ID de entidad..."
-        style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;"
-      />
-
-      <input
-        type="text"
-        id="userFilter"
-        placeholder="Filtrar por usuario (email)..."
-        style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;"
-      />
-
-      <button
-        onclick="applyFilters()"
-        style="padding: 0.5rem 1rem; background: #8b6f47; color: white; border: none; border-radius: 4px; font-weight: 600; cursor: pointer;"
-      >
-        🔍 Filtrar
-      </button>
-
-      <button
-        onclick="resetFilters()"
-        style="padding: 0.5rem 1rem; background: #ddd; color: #333; border: none; border-radius: 4px; font-weight: 600; cursor: pointer;"
-      >
-        ↻ Limpiar
-      </button>
+      <input type="text" id="entityIdFilter" placeholder="Filtrar por ID de entidad..." />
+      <input type="text" id="userFilter" placeholder="Filtrar por usuario (email)..." />
+      <button class="btn-filter" onclick="applyFilters()">Filtrar</button>
+      <button class="btn-reset" onclick="resetFilters()">Limpiar</button>
     </div>
 
-    <!-- Loading -->
-    <div id="loading" style="text-align: center; padding: 2rem; color: #666;">
-      Cargando logs de auditoría...
-    </div>
+    <div id="loading">Cargando logs de auditoría...</div>
 
-    <!-- Tabla de logs -->
-    <div
-      style="overflow-x: auto; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);"
-    >
-      <table
-        id="logsTable"
-        style="width: 100%; border-collapse: collapse; display: none;"
-      >
+    <div class="table-wrap">
+      <table class="erp-table" id="logsTable" style="display:none;">
         <thead>
-          <tr style="background: #f9fafb; border-bottom: 2px solid #e5e7eb;">
-            <th
-              style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;"
-              >Fecha</th
-            >
-            <th
-              style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;"
-              >Usuario</th
-            >
-            <th
-              style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;"
-              >Acción</th
-            >
-            <th
-              style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;"
-              >Tipo</th
-            >
-            <th
-              style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;"
-              >ID Entidad</th
-            >
-            <th
-              style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;"
-              >Detalles</th
-            >
+          <tr>
+            <th>Fecha</th>
+            <th>Usuario</th>
+            <th>Acción</th>
+            <th>Tipo</th>
+            <th>ID Entidad</th>
+            <th>Detalles</th>
           </tr>
         </thead>
         <tbody id="logsTableBody"></tbody>
       </table>
     </div>
 
-    <!-- Paginación -->
-    <div
-      id="pagination"
-      style="display: flex; justify-content: center; gap: 1rem; margin-top: 1.5rem; align-items: center;"
-    >
+    <div class="pagination" id="pagination"></div>
+
+    <div class="kpi-grid">
+      <div class="kpi-tile info">
+        <div class="kpi-label">Total Registros</div>
+        <div class="kpi-value" id="statTotal">0</div>
+      </div>
+      <div class="kpi-tile success">
+        <div class="kpi-label">Creaciones</div>
+        <div class="kpi-value" id="statCreates">0</div>
+      </div>
+      <div class="kpi-tile warning">
+        <div class="kpi-label">Actualizaciones</div>
+        <div class="kpi-value" id="statUpdates">0</div>
+      </div>
+      <div class="kpi-tile error">
+        <div class="kpi-label">Eliminaciones</div>
+        <div class="kpi-value" id="statDeletes">0</div>
+      </div>
     </div>
 
-    <!-- Estadísticas -->
-    <div
-      style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 2rem;"
-    >
-      <div
-        style="background: #f0f9ff; border-radius: 8px; padding: 1.5rem; text-align: center;"
-      >
-        <div
-          style="font-size: 2rem; font-weight: 700; color: #0369a1;"
-          id="statTotal"
-        >
-          0
-        </div>
-        <div style="color: #666; font-size: 0.9rem;">Total de registros</div>
-      </div>
-      <div
-        style="background: #f0fdf4; border-radius: 8px; padding: 1.5rem; text-align: center;"
-      >
-        <div
-          style="font-size: 2rem; font-weight: 700; color: #15803d;"
-          id="statCreates"
-        >
-          0
-        </div>
-        <div style="color: #666; font-size: 0.9rem;">Creaciones</div>
-      </div>
-      <div
-        style="background: #fef3c7; border-radius: 8px; padding: 1.5rem; text-align: center;"
-      >
-        <div
-          style="font-size: 2rem; font-weight: 700; color: #b45309;"
-          id="statUpdates"
-        >
-          0
-        </div>
-        <div style="color: #666; font-size: 0.9rem;">Actualizaciones</div>
-      </div>
-      <div
-        style="background: #fee2e2; border-radius: 8px; padding: 1.5rem; text-align: center;"
-      >
-        <div
-          style="font-size: 2rem; font-weight: 700; color: #991b1b;"
-          id="statDeletes"
-        >
-          0
-        </div>
-        <div style="color: #666; font-size: 0.9rem;">Eliminaciones</div>
-      </div>
-    </div>
   </div>
 
   <script>
@@ -227,10 +229,6 @@ import AppLayout from "../../layouts/AppLayout.astro";
 
       paginatedLogs.forEach((log) => {
         const row = document.createElement("tr");
-        row.style.borderBottom = "1px solid #e5e7eb";
-        row.style.transition = "background-color 0.2s";
-        row.onmouseenter = () => (row.style.backgroundColor = "#f9fafb");
-        row.onmouseleave = () => (row.style.backgroundColor = "transparent");
 
         const date = new Date(log.created_at);
         const dateStr =
@@ -254,20 +252,17 @@ import AppLayout from "../../layouts/AppLayout.astro";
             : log.user_email || "Sistema";
 
         row.innerHTML = `
-          <td style="padding: 1rem; font-size: 0.85rem; color: #666;">${dateStr}</td>
-          <td style="padding: 1rem; font-weight: 500;">${userName}</td>
-          <td style="padding: 1rem;">
-            <span style="background: ${actionColors[log.action] || "#6b7280"}; color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.85rem; font-weight: 500;">
+          <td style="font-size:0.82rem; color:var(--text-2)">${dateStr}</td>
+          <td style="font-weight:500;">${userName}</td>
+          <td>
+            <span style="background:${actionColors[log.action] || "#6b7280"}; color:white; padding:2px 8px; border-radius:10px; font-size:11px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; white-space:nowrap;">
               ${log.action}
             </span>
           </td>
-          <td style="padding: 1rem; font-size: 0.85rem; color: #666;">${log.entity_type}</td>
-          <td style="padding: 1rem; font-size: 0.85rem; color: #666;">${log.entity_id}</td>
-          <td style="padding: 1rem; font-size: 0.85rem; color: #666;">
-            <button onclick="showDetails('${btoa(JSON.stringify(log.details))}', '${log.action}', '${log.entity_type}', '${log.entity_id}')" 
-              style="background: #e5e7eb; border: none; padding: 0.25rem 0.75rem; border-radius: 4px; cursor: pointer; font-size: 0.85rem;">
-              Ver
-            </button>
+          <td style="font-size:0.82rem; color:var(--text-2)">${log.entity_type}</td>
+          <td style="font-size:0.82rem; color:var(--text-2)">${log.entity_id}</td>
+          <td>
+            <button class="btn-action" onclick="showDetails('${btoa(JSON.stringify(log.details))}', '${log.action}', '${log.entity_type}', '${log.entity_id}')">Ver</button>
           </td>
         `;
 
@@ -288,31 +283,22 @@ import AppLayout from "../../layouts/AppLayout.astro";
       if (currentPage > 1) {
         const prevBtn = document.createElement("button");
         prevBtn.textContent = "← Anterior";
-        prevBtn.style.cssText =
-          "padding: 0.5rem 1rem; background: #8b6f47; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;";
-        prevBtn.onclick = () => {
-          currentPage--;
-          displayLogs();
-          window.scrollTo(0, 0);
-        };
+        prevBtn.className = "page-btn";
+        prevBtn.onclick = () => { currentPage--; displayLogs(); window.scrollTo(0, 0); };
         container.appendChild(prevBtn);
       }
 
       const pageSpan = document.createElement("span");
       pageSpan.textContent = `Página ${currentPage} de ${totalPages}`;
-      pageSpan.style.color = "#666";
+      pageSpan.style.color = "#7a6652";
+      pageSpan.style.fontSize = "0.88rem";
       container.appendChild(pageSpan);
 
       if (currentPage < totalPages) {
         const nextBtn = document.createElement("button");
         nextBtn.textContent = "Siguiente →";
-        nextBtn.style.cssText =
-          "padding: 0.5rem 1rem; background: #8b6f47; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;";
-        nextBtn.onclick = () => {
-          currentPage++;
-          displayLogs();
-          window.scrollTo(0, 0);
-        };
+        nextBtn.className = "page-btn";
+        nextBtn.onclick = () => { currentPage++; displayLogs(); window.scrollTo(0, 0); };
         container.appendChild(nextBtn);
       }
     }
