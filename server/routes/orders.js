@@ -73,13 +73,48 @@ ordersRouter.post('/',
             const {
                 customerName, customerEmail, customerPhone,
                 shippingAddress, shippingCity, shippingDepartment, shippingZip,
-                items, notes
+                items, notes, couponCode
             } = req.body;
 
             // Calcular totales en COP
             const subtotal = items.reduce((sum, i) => sum + i.unitPrice * i.quantity, 0);
-            const shipping = subtotal >= 120000 ? 0 : 12000; // Gratis sobre ?.000
-            const total = subtotal + shipping;
+
+            // Aplicar cupón si viene en el request
+            let discountAmount = 0;
+            let appliedCode = null;
+            if (couponCode) {
+                const code = couponCode.trim().toUpperCase();
+                const codeResult = await query(
+                    `SELECT * FROM discount_codes WHERE code = ? AND active = 1`,
+                    [code]
+                );
+                if (codeResult.rows.length) {
+                    const dc = codeResult.rows[0];
+                    const notExpired = !dc.expires_at || new Date(dc.expires_at) >= new Date();
+                    const withinLimit = dc.max_uses === null || dc.uses_count < dc.max_uses;
+
+                    let firstPurchaseOk = true;
+                    if (dc.first_purchase_only) {
+                        const prev = await query(
+                            `SELECT COUNT(*) as cnt FROM customer_orders
+                             WHERE customer_email = ? AND status IN ('paid','processing','shipped','delivered')`,
+                            [customerEmail.toLowerCase()]
+                        );
+                        firstPurchaseOk = Number(prev.rows[0].cnt) === 0;
+                    }
+
+                    if (notExpired && withinLimit && firstPurchaseOk) {
+                        discountAmount = dc.discount_type === 'percent'
+                            ? Math.round(subtotal * dc.discount_value / 100)
+                            : Math.min(Math.round(dc.discount_value), subtotal);
+                        appliedCode = code;
+                    }
+                }
+            }
+
+            const discountedSubtotal = subtotal - discountAmount;
+            const shipping = discountedSubtotal >= 120000 ? 0 : 12000;
+            const total = discountedSubtotal + shipping;
 
             // Referencia única: DY-timestamp-random4chars
             const ref = `DY-${Date.now()}-${crypto.randomBytes(2).toString('hex').toUpperCase()}`;
