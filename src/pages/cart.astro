@@ -48,6 +48,7 @@ import Layout from "../layouts/Layout.astro";
             <p class="cis-heading">Resumen del pedido</p>
             <div class="cis-lines">
               <div class="cis-line"><span>Subtotal</span><span id="cisSubtotal">$0</span></div>
+              <div class="cis-line" id="cisDiscountLine" style="display:none;color:#16a34a"><span id="cisDiscountLabel">Descuento</span><span id="cisDiscount"></span></div>
               <div class="cis-line" id="cisShipLine"><span>Envío</span><span id="cisShipping">—</span></div>
             </div>
             <div id="cisFreeShipProgress" class="cis-progress" style="display:none;">
