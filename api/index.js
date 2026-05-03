@@ -106,6 +106,7 @@ app.use('/api/products', productsRouter);
 // Webhook Wompi delegado al router de órdenes
 app.post('/api/wompi/webhook', (req, res, next) => { req.url = '/wompi/webhook'; ordersRouter(req, res, next); });
 app.use('/api/audit', auditRouter);
+app.use('/api/coupons', couponsRouter);
 app.use('/api/system', systemRouter);
 
 // Health Check — ping real a BD para verificar PgBouncer + PostgreSQL
