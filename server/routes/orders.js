@@ -156,14 +156,21 @@ ordersRouter.post('/',
                 checkoutUrl = buildWompiCheckoutUrl(reference, total, customerEmail, redirectUrl);
             }
 
-            await logAudit(null, 'create', 'customer_orders', orderId, { reference, total });
+            if (appliedCode) {
+                await query(
+                    `UPDATE discount_codes SET uses_count = uses_count + 1 WHERE code = ?`,
+                    [appliedCode]
+                );
+            }
+
+            await logAudit(null, 'create', 'customer_orders', orderId, { reference, total, discount: discountAmount });
 
             // Geocodificación asíncrona — no bloquea la respuesta HTTP
             geocodeOrderAsync(orderId, shippingCity, shippingDepartment);
 
             return res.status(201).json({
                 success: true,
-                data: { orderId, reference, total, shipping, checkoutUrl }
+                data: { orderId, reference, subtotal, discountAmount, shipping, total, checkoutUrl }
             });
         } catch (err) {
             console.error('[POST /api/orders] Error:', err);
