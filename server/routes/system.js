@@ -344,6 +344,7 @@ systemRouter.post('/migrate', async (req, res) => {
   await tryMigration('Product reviews table',            '../migrations/add_product_reviews.js',                  'addProductReviews');
   await tryMigration('Gift sets',                        '../migrations/add_gift_sets.js',                        'addGiftSets');
   await tryMigration('System tables',                    '../migrations/add_system_tables.js',                    'addSystemTables');
+  await tryMigration('Discount codes',                   '../migrations/add_discount_codes.js',                   'addDiscountCodes');
 
   const failed = results.filter(r => !r.ok).length;
   await logAudit(req.user.id, 'run_migrations', 'system', 'database', { total: results.length, failed });
