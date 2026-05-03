@@ -364,4 +364,23 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
     loadLogs();
   </script>
-</AppLayout>
+
+  <style>
+    .btn-action {
+      display: inline-flex;
+      align-items: center;
+      padding: 0 10px;
+      height: 28px;
+      font-size: 12px;
+      font-weight: 600;
+      font-family: inherit;
+      border: 1px solid var(--border, rgba(0,0,0,.09));
+      border-radius: 4px;
+      background: var(--card-bg, #fff);
+      cursor: pointer;
+      color: var(--text-1, #32363a);
+      transition: background 0.12s, border-color 0.12s;
+    }
+    .btn-action:hover { background: var(--nav-hover-bg, #f5f6f7); border-color: #bbb; }
+  </style>
+</AdminLayout>
