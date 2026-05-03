@@ -104,6 +104,7 @@ app.use('/api/heatmap', heatmapRouter);
 app.use('/api/blog', blogRouter);
 app.use('/api/products', productsRouter);
 app.use('/api/lots', lotsRouter);
+app.use('/api/coupons', couponsRouter);
 app.use('/api/system', systemRouter);
 // Webhook Wompi delegado al router de órdenes
 app.post('/api/wompi/webhook', (req, res, next) => { req.url = '/wompi/webhook'; ordersRouter(req, res, next); });
