@@ -514,6 +514,7 @@ import Layout from "../layouts/Layout.astro";
                 shippingAddress:    fAddr,
                 shippingCity:       fCity,
                 shippingDepartment: fDept || undefined,
+                couponCode:         appliedCoupon ? appliedCoupon.code : undefined,
                 items: currentCart.map(p => ({
                   productId:    p.id,
                   productName:  p.name,
