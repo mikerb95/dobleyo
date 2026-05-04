@@ -179,12 +179,95 @@ import Layout from "../layouts/Layout.astro";
         const mobileBar  = document.getElementById('cartMobileBar');
         const cmbTotal   = document.getElementById('cmbTotal');
 
+        // ── Cupón ──────────────────────────────────────────────────────
+        const couponInput = document.getElementById('couponInput');
+        const couponBtn   = document.getElementById('couponBtn');
+        const couponMsg   = document.getElementById('couponMsg');
+
+        // Estado del cupón (persiste en sessionStorage para pasarlo al checkout)
+        let appliedCoupon = (() => {
+          try { return JSON.parse(sessionStorage.getItem('dy_coupon') || 'null'); } catch { return null; }
+        })();
+
+        // Restaurar input si ya había cupón
+        if (appliedCoupon && couponInput) {
+          couponInput.value = appliedCoupon.code;
+          couponInput.disabled = true;
+          couponBtn.textContent = 'Quitar';
+          couponMsg.textContent = `✓ ${appliedCoupon.description} aplicado`;
+          couponMsg.style.color = '#16a34a';
+        }
+
+        async function applyOrRemoveCoupon() {
+          if (appliedCoupon) {
+            // Quitar cupón
+            appliedCoupon = null;
+            sessionStorage.removeItem('dy_coupon');
+            couponInput.value = '';
+            couponInput.disabled = false;
+            couponBtn.textContent = 'Aplicar';
+            couponMsg.textContent = '';
+            render();
+            return;
+          }
+
+          const code = couponInput.value.trim();
+          if (!code) { couponMsg.textContent = 'Ingresa un código'; couponMsg.style.color = '#b91c1c'; return; }
+
+          // Para validación de primera compra, pedir el email del cliente
+          const emailForValidation = prompt('Ingresa tu correo electrónico para validar el cupón:');
+          if (!emailForValidation) return;
+
+          couponBtn.disabled = true;
+          couponMsg.textContent = 'Validando…';
+          couponMsg.style.color = '#888';
+
+          try {
+            const res = await fetch('/api/coupons/validate', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ code, email: emailForValidation.trim() }),
+            });
+            const json = await res.json();
+
+            if (!res.ok || !json.success) {
+              couponMsg.textContent = json.error || 'Código inválido';
+              couponMsg.style.color = '#b91c1c';
+            } else {
+              appliedCoupon = { ...json.data, email: emailForValidation.trim().toLowerCase() };
+              sessionStorage.setItem('dy_coupon', JSON.stringify(appliedCoupon));
+              couponInput.disabled = true;
+              couponBtn.textContent = 'Quitar';
+              couponMsg.textContent = `✓ ${json.data.description} aplicado`;
+              couponMsg.style.color = '#16a34a';
+              render();
+            }
+          } catch {
+            couponMsg.textContent = 'Error de conexión';
+            couponMsg.style.color = '#b91c1c';
+          } finally {
+            couponBtn.disabled = false;
+          }
+        }
+
+        couponBtn.addEventListener('click', applyOrRemoveCoupon);
+        couponInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') applyOrRemoveCoupon(); });
+
+        function getDiscount(sub) {
+          if (!appliedCoupon) return 0;
+          if (appliedCoupon.discountType === 'percent')
+            return Math.round(sub * appliedCoupon.discountValue / 100);
+          return Math.min(Math.round(appliedCoupon.discountValue), sub);
+        }
+
         function render() {
-          const cart = window.Cart.getCart();
-          const sub  = window.Cart.subtotal();
-          const ship = sub >= FREE_SHIP_THRESHOLD ? 0 : SHIP_COST;
-          const tot  = sub + ship;
-          const pct  = Math.min(100, Math.round((sub / FREE_SHIP_THRESHOLD) * 100));
+          const cart     = window.Cart.getCart();
+          const sub      = window.Cart.subtotal();
+          const discount = getDiscount(sub);
+          const discountedSub = sub - discount;
+          const ship     = discountedSub >= FREE_SHIP_THRESHOLD ? 0 : SHIP_COST;
+          const tot      = discountedSub + ship;
+          const pct      = Math.min(100, Math.round((discountedSub / FREE_SHIP_THRESHOLD) * 100));
 
           // Toggle vacío / lleno
           emptyEl.style.display  = cart.length ? 'none'  : 'flex';
@@ -197,25 +280,49 @@ import Layout from "../layouts/Layout.astro";
 
           // Resumen (desktop)
           subtotalEl.textContent = fmt(sub);
+          const discountLineEl = document.getElementById('discountLine');
+          const discountEl     = document.getElementById('cartDiscount');
+          const discountLbl    = document.getElementById('discountLabel');
+          if (discountLineEl && discountEl) {
+            if (discount > 0) {
+              discountLineEl.style.display = '';
+              discountEl.textContent = `-${fmt(discount)}`;
+              if (discountLbl && appliedCoupon) discountLbl.textContent = `Descuento (${appliedCoupon.code})`;
+            } else {
+              discountLineEl.style.display = 'none';
+            }
+          }
           shippingEl.textContent = ship === 0 ? 'Gratis' : fmt(ship);
           if (ship === 0) shippingEl.style.color = '#16a34a';
           else shippingEl.style.color = '';
           totalEl.textContent = fmt(tot);
 
           // Resumen inline (móvil)
-          const cisSubtotal = document.getElementById('cisSubtotal');
-          const cisShipping = document.getElementById('cisShipping');
-          const cisTotal    = document.getElementById('cisTotal');
+          const cisSubtotal     = document.getElementById('cisSubtotal');
+          const cisDiscountLine = document.getElementById('cisDiscountLine');
+          const cisDiscount     = document.getElementById('cisDiscount');
+          const cisDiscountLbl  = document.getElementById('cisDiscountLabel');
+          const cisShipping     = document.getElementById('cisShipping');
+          const cisTotal        = document.getElementById('cisTotal');
           const cisFreeProgress = document.getElementById('cisFreeShipProgress');
           const cisFreeBanner   = document.getElementById('cisFreeShipBanner');
           const cisFspAmount    = document.getElementById('cisFspAmount');
           const cisFspFill      = document.getElementById('cisFspFill');
           if (cisSubtotal) cisSubtotal.textContent = fmt(sub);
+          if (cisDiscountLine && cisDiscount) {
+            if (discount > 0) {
+              cisDiscountLine.style.display = '';
+              cisDiscount.textContent = `-${fmt(discount)}`;
+              if (cisDiscountLbl && appliedCoupon) cisDiscountLbl.textContent = `Descuento (${appliedCoupon.code})`;
+            } else {
+              cisDiscountLine.style.display = 'none';
+            }
+          }
           if (cisShipping) { cisShipping.textContent = ship === 0 ? 'Gratis' : fmt(ship); cisShipping.style.color = ship === 0 ? '#16a34a' : ''; }
           if (cisTotal) cisTotal.textContent = fmt(tot);
           if (cisFreeProgress && cisFreeBanner) {
             if (ship === 0) { cisFreeBanner.style.display = 'flex'; cisFreeProgress.style.display = 'none'; }
-            else { cisFreeBanner.style.display = 'none'; cisFreeProgress.style.display = 'block'; if (cisFspAmount) cisFspAmount.textContent = fmt(FREE_SHIP_THRESHOLD - sub); if (cisFspFill) cisFspFill.style.width = pct + '%'; }
+            else { cisFreeBanner.style.display = 'none'; cisFreeProgress.style.display = 'block'; if (cisFspAmount) cisFspAmount.textContent = fmt(FREE_SHIP_THRESHOLD - discountedSub); if (cisFspFill) cisFspFill.style.width = pct + '%'; }
           }
           if (cmbTotal) cmbTotal.textContent = fmt(tot);
 
