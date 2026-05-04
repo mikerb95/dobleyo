@@ -335,6 +335,23 @@ import Layout from "../layouts/Layout.astro";
           `).join('');
 
           sumSubtotal.textContent = fmt(sub);
+
+          // Línea de descuento
+          let sumDiscountLine = document.getElementById('sumDiscountLine');
+          if (!sumDiscountLine && discount > 0) {
+            sumDiscountLine = document.createElement('div');
+            sumDiscountLine.id = 'sumDiscountLine';
+            sumDiscountLine.className = 'co-sum-line';
+            sumDiscountLine.style.color = '#16a34a';
+            sumDiscountLine.innerHTML = `<span>Descuento${appliedCoupon ? ` (${appliedCoupon.code})` : ''}</span><span id="sumDiscount"></span>`;
+            sumSubtotal.closest('.co-sum-line').insertAdjacentElement('afterend', sumDiscountLine);
+          }
+          if (sumDiscountLine) {
+            sumDiscountLine.style.display = discount > 0 ? '' : 'none';
+            const sumDiscountVal = document.getElementById('sumDiscount');
+            if (sumDiscountVal) sumDiscountVal.textContent = `-${fmt(discount)}`;
+          }
+
           sumShipping.textContent = ship === 0 ? 'Gratis' : fmt(ship);
           if (ship === 0) { sumShipping.style.color = '#16a34a'; sumShipping.style.fontWeight = '600'; }
           sumTotal.textContent = fmt(tot);
