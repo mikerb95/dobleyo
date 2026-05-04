@@ -1104,5 +1104,12 @@ import Layout from "../layouts/Layout.astro";
       .co-section { padding: 1.25rem; }
       .co-progress { display: none; }
     }
+
+    /* Subir el FAB de WhatsApp por encima de la barra móvil de pago */
+    @media (max-width: 768px) {
+      .whatsapp-fab {
+        bottom: calc(5rem + env(safe-area-inset-bottom, 0px));
+      }
+    }
   </style>
 </Layout>
