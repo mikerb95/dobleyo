@@ -27,6 +27,7 @@ import { blogRouter } from '../server/routes/blog.js';
 import auditRouter from '../server/routes/audit.js';
 import { systemRouter } from '../server/routes/system.js';
 import { couponsRouter } from '../server/routes/coupons.js';
+import { externalSalesRouter } from '../server/routes/external-sales.js';
 import { healthCheck } from '../server/db.js';
 
 const app = express();
