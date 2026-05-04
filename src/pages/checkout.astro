@@ -304,11 +304,24 @@ import Layout from "../layouts/Layout.astro";
         const fDeptEl     = document.getElementById('fDept');
         const fCityEl     = document.getElementById('fCity');
 
+        // Cupón aplicado desde el carrito
+        let appliedCoupon = (() => {
+          try { return JSON.parse(sessionStorage.getItem('dy_coupon') || 'null'); } catch { return null; }
+        })();
+
+        function getDiscount(sub) {
+          if (!appliedCoupon) return 0;
+          if (appliedCoupon.discountType === 'percent')
+            return Math.round(sub * appliedCoupon.discountValue / 100);
+          return Math.min(Math.round(appliedCoupon.discountValue), sub);
+        }
+
         function renderSummary() {
-          const c = window.Cart.getCart();
-          const sub = window.Cart.subtotal();
-          const ship = sub >= FREE_SHIP ? 0 : SHIP_COST;
-          const tot  = sub + ship;
+          const c        = window.Cart.getCart();
+          const sub      = window.Cart.subtotal();
+          const discount = getDiscount(sub);
+          const ship     = (sub - discount) >= FREE_SHIP ? 0 : SHIP_COST;
+          const tot      = (sub - discount) + ship;
 
           sumList.innerHTML = c.map(p => `
             <div class="co-sum-item">
