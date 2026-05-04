@@ -537,6 +537,7 @@ import Layout from "../layouts/Layout.astro";
             }
 
             if (window.Cart.clearCart) window.Cart.clearCart();
+            sessionStorage.removeItem('dy_coupon');
             window.location.href = data.data.checkoutUrl
               ? data.data.checkoutUrl
               : `/confirmacion?ref=${data.data.reference}`;
