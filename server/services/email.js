@@ -255,7 +255,7 @@ export const sendContactFormEmail = async (contactData) => {
 };
 
 // Email de bienvenida al newsletter con código de descuento
-export const sendNewsletterWelcomeEmail = async (email) => {
+export const sendNewsletterWelcomeEmail = async (email, unsubscribeToken) => {
   const SITE_URL = process.env.SITE_BASE_URL || 'https://dobleyo.cafe';
   if (!resend) {
     console.log('[Mock] Newsletter welcome email to:', email);
