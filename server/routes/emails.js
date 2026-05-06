@@ -1,4 +1,5 @@
 import express from 'express';
+import crypto from 'crypto';
 import {
   sendOrderConfirmationEmail,
   sendContactFormEmail,
@@ -23,19 +24,21 @@ emailRouter.post('/newsletter', async (req, res) => {
       return res.status(400).json({ success: false, error: 'Correo inválido' });
     }
 
+    const token = crypto.randomBytes(32).toString('hex');
     let isNew = true;
     try {
       const result = await query(
-        `INSERT INTO newsletter_subscribers (email) VALUES (?) ON CONFLICT (email) DO NOTHING`,
-        [email]
+        `INSERT INTO newsletter_subscribers (email, unsubscribe_token) VALUES (?, ?)
+         ON CONFLICT (email) DO NOTHING`,
+        [email, token]
       );
-      isNew = (result.rowCount ?? 0) > 0;
+      isNew = result.rowsAffected > 0 || (result.rowCount ?? 0) > 0;
     } catch (dbErr) {
       console.warn('[Newsletter] Error al guardar suscriptor:', dbErr.message);
     }
 
     if (isNew) {
-      sendNewsletterWelcomeEmail(email).catch(err =>
+      sendNewsletterWelcomeEmail(email, token).catch(err =>
         console.warn('[Newsletter] Error al enviar email de bienvenida:', err.message)
       );
     }
@@ -43,6 +46,45 @@ emailRouter.post('/newsletter', async (req, res) => {
     res.json({ success: true, message: '¡Suscrito! Revisa tu correo para el código de descuento.' });
   } catch (error) {
     console.error('[POST /api/emails/newsletter] Error:', error);
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
+  }
+});
+
+// GET /api/emails/newsletter/unsubscribe?token=xxx
+emailRouter.get('/newsletter/unsubscribe', async (req, res) => {
+  try {
+    const { token, email } = req.query;
+
+    if (token) {
+      const result = await query(
+        `DELETE FROM newsletter_subscribers WHERE unsubscribe_token = ?`,
+        [token]
+      );
+      const deleted = result.rowsAffected > 0 || (result.rowCount ?? 0) > 0;
+      if (!deleted) {
+        return res.status(404).json({ success: false, error: 'Token no válido o ya desuscrito' });
+      }
+      return res.json({ success: true, message: 'Desuscrito correctamente' });
+    }
+
+    if (email) {
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return res.status(400).json({ success: false, error: 'Correo inválido' });
+      }
+      const result = await query(
+        `DELETE FROM newsletter_subscribers WHERE email = ?`,
+        [email]
+      );
+      const deleted = result.rowsAffected > 0 || (result.rowCount ?? 0) > 0;
+      if (!deleted) {
+        return res.status(404).json({ success: false, error: 'Correo no encontrado en la lista' });
+      }
+      return res.json({ success: true, message: 'Desuscrito correctamente' });
+    }
+
+    return res.status(400).json({ success: false, error: 'Se requiere token o email' });
+  } catch (error) {
+    console.error('[GET /api/emails/newsletter/unsubscribe] Error:', error);
     res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });
