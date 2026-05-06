@@ -300,7 +300,11 @@ export const sendNewsletterWelcomeEmail = async (email, unsubscribeToken) => {
                 <a href="${SITE_URL}/tienda" class="btn">Ir a la tienda</a>
               </center>
               <p style="margin-top:24px;font-size:13px;color:#999;border-top:1px solid #eee;padding-top:16px;">
-                Recibirás noticias sobre nuevos cafés, recetas y lanzamientos exclusivos. Puedes darte de baja cuando quieras.
+                Recibirás noticias sobre nuevos cafés, recetas y lanzamientos exclusivos.
+                ${unsubscribeToken
+                  ? `<br>¿No quieres recibir más correos? <a href="${SITE_URL}/desuscribirse?token=${unsubscribeToken}" style="color:#c67b4e;">Darte de baja aquí</a>.`
+                  : `<br>Puedes darte de baja cuando quieras en <a href="${SITE_URL}/desuscribirse" style="color:#c67b4e;">esta página</a>.`
+                }
               </p>
             </div>
             <div class="footer"><p>© 2026 DobleYo Café. Todos los derechos reservados.</p></div>
