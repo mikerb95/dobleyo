@@ -1,445 +1,479 @@
 ---
-import AppLayout from "../../layouts/AppLayout.astro";
+import Head from "../../components/Head.astro";
 ---
 
-<AppLayout>
-  <section style="max-width: 1200px; margin: 0 auto; padding: 2rem 1.25rem;">
-    <!-- Información -->
-    <div
-      style="background: #dbeafe; border: 1px solid #93c5fd; border-radius: 0.5rem; padding: 1rem; margin-bottom: 2rem;"
-    >
-      <strong style="color: #1e40af;">💡 Nota:</strong> Esta página está optimizada
-      para dispositivos móviles.
-    </div>
+<!doctype html>
+<html lang="es">
+  <head>
+    <Head title="App · DobleYo Café" isAdmin={true} />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="theme-color" content="#F2F2F7" />
+    <style>
+      /* ── Reset & Base ─────────────────────────────────────────────── */
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    <!-- Opciones para ADMIN -->
-    <div id="adminOptions" style="display: none;">
-      <h2
-        style="font-size: 1.5rem; font-weight: 600; margin-bottom: 1rem; color: #8b6f47;"
-      >
-        🔧 Gestión Operativa (Admin)
-      </h2>
-      <div
-        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 3rem;"
-      >
-        <!-- 1. Recoger Lote en Finca -->
-        <a href="/app/harvest" style="text-decoration: none; color: inherit;">
-          <div
-            style="background: white; border: 1px solid #e5e7eb; border-radius: 0.75rem; padding: 1.5rem; transition: all 0.3s; cursor: pointer;"
-            onmouseover="this.style.borderColor='#8b6f47'; this.style.boxShadow='0 4px 12px rgba(139,111,71,0.15)'"
-            onmouseout="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none'"
-          >
-            <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">🌱</div>
-            <h3
-              style="font-weight: 600; margin-bottom: 0.5rem; color: #251a14;"
-            >
-              1. Recoger Lote en Finca
-            </h3>
-            <p style="color: #666; font-size: 0.95rem;">
-              Registrar nuevo lote recién cosechado desde la finca
-            </p>
-          </div>
-        </a>
+      :root {
+        --ios-bg:           #F2F2F7;
+        --ios-card:         #FFFFFF;
+        --ios-label:        #1C1C1E;
+        --ios-label2:       #8E8E93;
+        --ios-sep:          rgba(60, 60, 67, 0.18);
+        --ios-tab-blur:     rgba(242, 242, 247, 0.82);
+        --brand:            #c67b4e;
+        --brand-dark:       #a85a3a;
+        --tab-height:       68px;
+        --safe-bottom:      env(safe-area-inset-bottom, 0px);
+        --header-h:         80px;
+        font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Helvetica, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
 
-        <!-- 2. Almacenar en Inventario -->
-        <a
-          href="/app/inventory-storage"
-          style="text-decoration: none; color: inherit;"
-        >
-          <div
-            style="background: white; border: 1px solid #e5e7eb; border-radius: 0.75rem; padding: 1.5rem; transition: all 0.3s; cursor: pointer;"
-            onmouseover="this.style.borderColor='#8b6f47'; this.style.boxShadow='0 4px 12px rgba(139,111,71,0.15)'"
-            onmouseout="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none'"
-          >
-            <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">📦</div>
-            <h3
-              style="font-weight: 600; margin-bottom: 0.5rem; color: #251a14;"
-            >
-              2. Almacenar en Inventario
-            </h3>
-            <p style="color: #666; font-size: 0.95rem;">
-              Registrar entrada de café verde al almacén
-            </p>
-          </div>
-        </a>
+      html, body {
+        height: 100%;
+        background: var(--ios-bg);
+        color: var(--ios-label);
+        overflow-x: hidden;
+      }
 
-        <!-- 3. Enviar a Tostión -->
-        <a
-          href="/app/send-roasting"
-          style="text-decoration: none; color: inherit;"
-        >
-          <div
-            style="background: white; border: 1px solid #e5e7eb; border-radius: 0.75rem; padding: 1.5rem; transition: all 0.3s; cursor: pointer;"
-            onmouseover="this.style.borderColor='#8b6f47'; this.style.boxShadow='0 4px 12px rgba(139,111,71,0.15)'"
-            onmouseout="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none'"
-          >
-            <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">🔥</div>
-            <h3
-              style="font-weight: 600; margin-bottom: 0.5rem; color: #251a14;"
-            >
-              3. Enviar a Tostión
-            </h3>
-            <p style="color: #666; font-size: 0.95rem;">
-              Preparar y enviar lote al proceso de tueste
-            </p>
-          </div>
-        </a>
+      body {
+        visibility: hidden;
+        display: flex;
+        flex-direction: column;
+      }
 
-        <!-- 4. Recoger del Tueste -->
-        <a
-          href="/app/roast-retrieval"
-          style="text-decoration: none; color: inherit;"
-        >
-          <div
-            style="background: white; border: 1px solid #e5e7eb; border-radius: 0.75rem; padding: 1.5rem; transition: all 0.3s; cursor: pointer;"
-            onmouseover="this.style.borderColor='#8b6f47'; this.style.boxShadow='0 4px 12px rgba(139,111,71,0.15)'"
-            onmouseout="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none'"
-          >
-            <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">☕</div>
-            <h3
-              style="font-weight: 600; margin-bottom: 0.5rem; color: #251a14;"
-            >
-              4. Recoger del Tueste
-            </h3>
-            <p style="color: #666; font-size: 0.95rem;">
-              Recibir café tostado y verificar calidad
-            </p>
-          </div>
-        </a>
+      a { text-decoration: none; color: inherit; }
 
-        <!-- 4b. Cupping SCA -->
-        <a href="/app/cupping" style="text-decoration: none; color: inherit;">
-          <div
-            style="background: white; border: 1px solid #e5e7eb; border-radius: 0.75rem; padding: 1.5rem; transition: all 0.3s; cursor: pointer;"
-            onmouseover="this.style.borderColor='#8b6f47'; this.style.boxShadow='0 4px 12px rgba(139,111,71,0.15)'"
-            onmouseout="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none'"
-          >
-            <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">🧪</div>
-            <h3
-              style="font-weight: 600; margin-bottom: 0.5rem; color: #251a14;"
-            >
-              Cupping SCA
-            </h3>
-            <p style="color: #666; font-size: 0.95rem;">
-              Evaluación sensorial SCA: aroma, sabor, acidez, cuerpo y balance
-            </p>
-          </div>
-        </a>
+      /* ── App Header ───────────────────────────────────────────────── */
+      .app-header {
+        position: fixed;
+        top: 0; left: 0; right: 0;
+        z-index: 100;
+        height: var(--header-h);
+        background: var(--ios-tab-blur);
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        border-bottom: 1px solid var(--ios-sep);
+        display: flex;
+        align-items: flex-end;
+        padding: 0 20px 12px;
+        gap: 12px;
+      }
 
-        <!-- 5. Almacenar Tostado -->
-        <a
-          href="/app/roasted-storage"
-          style="text-decoration: none; color: inherit;"
-        >
-          <div
-            style="background: white; border: 1px solid #e5e7eb; border-radius: 0.75rem; padding: 1.5rem; transition: all 0.3s; cursor: pointer;"
-            onmouseover="this.style.borderColor='#8b6f47'; this.style.boxShadow='0 4px 12px rgba(139,111,71,0.15)'"
-            onmouseout="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none'"
-          >
-            <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">🏺</div>
-            <h3
-              style="font-weight: 600; margin-bottom: 0.5rem; color: #251a14;"
-            >
-              5. Almacenar Tostado
-            </h3>
-            <p style="color: #666; font-size: 0.95rem;">
-              Guardar café tostado en inventario de producto terminado
-            </p>
-          </div>
-        </a>
+      .app-header-logo {
+        width: 40px; height: 40px;
+        background: var(--brand);
+        border-radius: 10px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.4rem;
+        flex-shrink: 0;
+        box-shadow: 0 2px 8px rgba(198,123,78,0.3);
+      }
 
-        <!-- 6. Preparar para Venta -->
-        <a href="/app/packaging" style="text-decoration: none; color: inherit;">
-          <div
-            style="background: white; border: 1px solid #e5e7eb; border-radius: 0.75rem; padding: 1.5rem; transition: all 0.3s; cursor: pointer;"
-            onmouseover="this.style.borderColor='#8b6f47'; this.style.boxShadow='0 4px 12px rgba(139,111,71,0.15)'"
-            onmouseout="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none'"
-          >
-            <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">📦</div>
-            <h3
-              style="font-weight: 600; margin-bottom: 0.5rem; color: #251a14;"
-            >
-              6. Preparar para Venta
-            </h3>
-            <p style="color: #666; font-size: 0.95rem;">
-              Empacar y etiquetar producto final para venta
-            </p>
-          </div>
-        </a>
+      .app-header-text { flex: 1; }
 
-        <!-- 7. Crear Etiquetas -->
-        <a href="/app/etiquetas" style="text-decoration: none; color: inherit;">
-          <div
-            style="background: white; border: 1px solid #e5e7eb; border-radius: 0.75rem; padding: 1.5rem; transition: all 0.3s; cursor: pointer;"
-            onmouseover="this.style.borderColor='#8b6f47'; this.style.boxShadow='0 4px 12px rgba(139,111,71,0.15)'"
-            onmouseout="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none'"
-          >
-            <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">🏷️</div>
-            <h3
-              style="font-weight: 600; margin-bottom: 0.5rem; color: #251a14;"
-            >
-              7. Crear Etiquetas
-            </h3>
-            <p style="color: #666; font-size: 0.95rem;">
-              Generar etiquetas desde lotes o perfiles personalizados
-            </p>
-          </div>
-        </a>
+      .app-header-title {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: var(--ios-label);
+        line-height: 1.2;
+      }
+
+      .app-header-sub {
+        font-size: 0.75rem;
+        color: var(--ios-label2);
+        margin-top: 1px;
+      }
+
+      .app-header-greeting {
+        font-size: 0.82rem;
+        font-weight: 500;
+        color: var(--brand);
+        white-space: nowrap;
+      }
+
+      /* ── Main scroll area ─────────────────────────────────────────── */
+      .app-main {
+        flex: 1;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-top: var(--header-h);
+        padding-bottom: calc(var(--tab-height) + var(--safe-bottom) + 16px);
+      }
+
+      .app-scroll-inner {
+        padding: 24px 16px 8px;
+        max-width: 540px;
+        margin: 0 auto;
+      }
+
+      /* ── Section ──────────────────────────────────────────────────── */
+      .section { margin-bottom: 28px; }
+
+      .section-label {
+        font-size: 0.7rem;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--ios-label2);
+        margin-bottom: 10px;
+        padding-left: 2px;
+      }
+
+      /* ── Icon Grid 4 cols ─────────────────────────────────────────── */
+      .icon-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px 6px;
+      }
+
+      .icon-cell {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+        transition: transform 0.12s ease, opacity 0.12s ease;
+        padding: 4px 2px;
+        border-radius: 14px;
+      }
+
+      .icon-cell:active {
+        transform: scale(0.88);
+        opacity: 0.65;
+      }
+
+      .icon-box {
+        width: 62px; height: 62px;
+        background: var(--ios-card);
+        border-radius: 16px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.75rem;
+        box-shadow:
+          0 1px 3px rgba(0,0,0,0.10),
+          0 4px 12px rgba(0,0,0,0.07);
+      }
+
+      .icon-label {
+        font-size: 0.68rem;
+        font-weight: 500;
+        color: var(--ios-label);
+        text-align: center;
+        line-height: 1.3;
+        max-width: 66px;
+        word-break: break-word;
+        hyphens: auto;
+      }
+
+      /* ── Tab Bar ──────────────────────────────────────────────────── */
+      .tab-bar {
+        position: fixed;
+        bottom: 0; left: 0; right: 0;
+        z-index: 200;
+        height: calc(var(--tab-height) + var(--safe-bottom));
+        padding-bottom: var(--safe-bottom);
+        background: var(--ios-tab-blur);
+        backdrop-filter: blur(24px) saturate(200%);
+        -webkit-backdrop-filter: blur(24px) saturate(200%);
+        border-top: 1px solid var(--ios-sep);
+        display: flex;
+        align-items: stretch;
+      }
+
+      .tab-item {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 3px;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+        transition: opacity 0.1s;
+        color: var(--ios-label2);
+        text-decoration: none;
+      }
+
+      .tab-item:active { opacity: 0.5; }
+
+      .tab-item.active { color: var(--brand); }
+
+      .tab-icon {
+        font-size: 1.3rem;
+        line-height: 1;
+      }
+
+      .tab-label {
+        font-size: 0.63rem;
+        font-weight: 500;
+        letter-spacing: 0.01em;
+      }
+
+      /* ── Hidden utility ───────────────────────────────────────────── */
+      .hidden { display: none !important; }
+
+      /* ── Logout button ────────────────────────────────────────────── */
+      .logout-btn {
+        margin-top: 16px;
+        display: flex;
+        justify-content: center;
+      }
+
+      .logout-btn button {
+        background: none;
+        border: 1px solid var(--ios-sep);
+        color: #FF3B30;
+        font-size: 0.9rem;
+        font-weight: 500;
+        padding: 10px 28px;
+        border-radius: 12px;
+        cursor: pointer;
+        font-family: inherit;
+        transition: background 0.15s;
+      }
+
+      .logout-btn button:active { background: rgba(255,59,48,0.08); }
+
+      /* ── Responsive: larger screens show 2-col cards ──────────────── */
+      @media (min-width: 480px) {
+        .icon-box { width: 68px; height: 68px; }
+        .icon-label { font-size: 0.72rem; max-width: 72px; }
+      }
+    </style>
+  </head>
+  <body>
+
+    <!-- ── App Header ─────────────────────────────────────────────── -->
+    <header class="app-header">
+      <div class="app-header-logo">☕</div>
+      <div class="app-header-text">
+        <div class="app-header-title">DobleYo</div>
+        <div class="app-header-sub">Panel Operativo</div>
       </div>
-    </div>
+      <div class="app-header-greeting" id="headerGreeting"></div>
+    </header>
 
-    <!-- Gestión del Website (Solo Admin) -->
-    <div id="websiteManagementSection" style="display: none;">
-      <h2
-        style="font-size: 1.5rem; font-weight: 600; margin-bottom: 1rem; color: #8b6f47;"
-      >
-        🌐 Gestión del Website
-      </h2>
-      <div
-        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 3rem;"
-      >
-        <!-- Gestión de Usuarios -->
-        <a
-          href="/app/usuarios"
-          style="text-decoration: none; color: inherit;"
-          id="usersLink"
-        >
-          <div
-            style="background: white; border: 1px solid #e5e7eb; border-radius: 0.75rem; padding: 1.5rem; transition: all 0.3s; cursor: pointer;"
-            onmouseover="this.style.borderColor='#8b6f47'; this.style.boxShadow='0 4px 12px rgba(139,111,71,0.15)'"
-            onmouseout="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none'"
-          >
-            <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">👥</div>
-            <h3
-              style="font-weight: 600; margin-bottom: 0.5rem; color: #251a14;"
-            >
-              Gestión de Usuarios
-            </h3>
-            <p style="color: #666; font-size: 0.95rem;">
-              Ver y administrar todos los usuarios del sistema
-            </p>
-          </div>
-        </a>
+    <!-- ── Main Content ───────────────────────────────────────────── -->
+    <main class="app-main">
+      <div class="app-scroll-inner">
 
-        <!-- Gestión de Productos -->
-        <a
-          href="/app/productos"
-          style="text-decoration: none; color: inherit;"
-          id="productsLink"
-        >
-          <div
-            style="background: white; border: 1px solid #e5e7eb; border-radius: 0.75rem; padding: 1.5rem; transition: all 0.3s; cursor: pointer;"
-            onmouseover="this.style.borderColor='#8b6f47'; this.style.boxShadow='0 4px 12px rgba(139,111,71,0.15)'"
-            onmouseout="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none'"
-          >
-            <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">📦</div>
-            <h3
-              style="font-weight: 600; margin-bottom: 0.5rem; color: #251a14;"
-            >
-              Gestión de Productos
-            </h3>
-            <p style="color: #666; font-size: 0.95rem;">
-              Crear, editar y administrar productos de la tienda en línea
-            </p>
+        <!-- Admin: Pipeline de Producción -->
+        <div id="adminOptions" class="section hidden">
+          <div class="section-label">Pipeline de Producción</div>
+          <div class="icon-grid">
+            <a href="/app/harvest" class="icon-cell">
+              <div class="icon-box">🌱</div>
+              <span class="icon-label">Cosecha</span>
+            </a>
+            <a href="/app/inventory-storage" class="icon-cell">
+              <div class="icon-box">📥</div>
+              <span class="icon-label">Almacenar Verde</span>
+            </a>
+            <a href="/app/send-roasting" class="icon-cell">
+              <div class="icon-box">🔥</div>
+              <span class="icon-label">Enviar a Tostión</span>
+            </a>
+            <a href="/app/roast-retrieval" class="icon-cell">
+              <div class="icon-box">☕</div>
+              <span class="icon-label">Recoger Tueste</span>
+            </a>
+            <a href="/app/cupping" class="icon-cell">
+              <div class="icon-box">🧪</div>
+              <span class="icon-label">Cupping SCA</span>
+            </a>
+            <a href="/app/roasted-storage" class="icon-cell">
+              <div class="icon-box">🏺</div>
+              <span class="icon-label">Almacenar Tostado</span>
+            </a>
+            <a href="/app/packaging" class="icon-cell">
+              <div class="icon-box">📦</div>
+              <span class="icon-label">Empaque</span>
+            </a>
+            <a href="/app/etiquetas" class="icon-cell">
+              <div class="icon-box">🏷️</div>
+              <span class="icon-label">Etiquetas</span>
+            </a>
           </div>
-        </a>
+        </div>
 
-        <!-- Mapa de Ventas -->
-        <a
-          href="/app/ventas"
-          id="salesMapLink"
-          style="text-decoration: none; color: inherit;"
-        >
-          <div
-            style="background: white; border: 1px solid #e5e7eb; border-radius: 0.75rem; padding: 1.5rem; transition: all 0.3s; cursor: pointer;"
-            onmouseover="this.style.borderColor='#8b6f47'; this.style.boxShadow='0 4px 12px rgba(139,111,71,0.15)'"
-            onmouseout="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none'"
-          >
-            <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">🗺️</div>
-            <h3
-              style="font-weight: 600; margin-bottom: 0.5rem; color: #251a14;"
-            >
-              Mapa de Ventas
-            </h3>
-            <p style="color: #666; font-size: 0.95rem;">
-              Visualiza la distribución geográfica de tus ventas en Colombia
-            </p>
+        <!-- Admin: Gestión del Website -->
+        <div id="websiteManagementSection" class="section hidden">
+          <div class="section-label">Gestión del Website</div>
+          <div class="icon-grid">
+            <a href="/app/usuarios" class="icon-cell" id="usersLink">
+              <div class="icon-box">👥</div>
+              <span class="icon-label">Usuarios</span>
+            </a>
+            <a href="/app/productos" class="icon-cell" id="productsLink">
+              <div class="icon-box">🛍️</div>
+              <span class="icon-label">Productos</span>
+            </a>
+            <a href="/app/ventas" class="icon-cell" id="salesMapLink">
+              <div class="icon-box">🗺️</div>
+              <span class="icon-label">Mapa Ventas</span>
+            </a>
+            <a href="/app/inventario" class="icon-cell">
+              <div class="icon-box">🗂️</div>
+              <span class="icon-label">Inventario</span>
+            </a>
           </div>
-        </a>
+        </div>
+
+        <!-- Admin: Seguridad -->
+        <div id="auditSection" class="section hidden">
+          <div class="section-label">Seguridad y Sistema</div>
+          <div class="icon-grid">
+            <a href="/app/auditoria" class="icon-cell">
+              <div class="icon-box">📋</div>
+              <span class="icon-label">Auditoría</span>
+            </a>
+            <a href="/app/devtools" class="icon-cell hidden" id="devtoolsLink">
+              <div class="icon-box">⚙️</div>
+              <span class="icon-label">DevTools</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Caficultor: Gestión y Reportes -->
+        <div id="caficultorOptions" class="section hidden">
+          <div class="section-label">Gestión y Reportes</div>
+          <div class="icon-grid">
+            <a href="/app/lotes-entregados" class="icon-cell">
+              <div class="icon-box">📋</div>
+              <span class="icon-label">Mis Lotes</span>
+            </a>
+            <a href="/app/estadisticas" class="icon-cell">
+              <div class="icon-box">📈</div>
+              <span class="icon-label">Estadísticas</span>
+            </a>
+            <a href="/app/finanzas" class="icon-cell">
+              <div class="icon-box">💰</div>
+              <span class="icon-label">Finanzas</span>
+            </a>
+            <a href="/app/mi-finca" class="icon-cell">
+              <div class="icon-box">🌿</div>
+              <span class="icon-label">Mi Finca</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Cerrar sesión -->
+        <div class="logout-btn">
+          <button id="logoutBtn" type="button">Cerrar sesión</button>
+        </div>
+
       </div>
-    </div>
+    </main>
 
-    <!-- Auditoría (Solo Admin) -->
-    <div id="auditSection" style="display: none;">
-      <h2
-        style="font-size: 1.5rem; font-weight: 600; margin-bottom: 1rem; color: #8b6f47;"
-      >
-        🔐 Seguridad y Auditoría
-      </h2>
-      <div
-        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 3rem;"
-      >
-        <!-- Auditoría -->
-        <a
-          href="/app/auditoria"
-          style="display: block; padding: 2rem; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-decoration: none; color: inherit; transition: transform 0.2s, box-shadow 0.2s;"
-          onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 16px rgba(0,0,0,0.15)';"
-          onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.1)';"
-        >
-          <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">📋</div>
-          <h3 style="font-weight: 600; margin-bottom: 0.5rem; color: #251a14;">
-            Auditoría del Sistema
-          </h3>
-          <p style="color: #666; font-size: 0.95rem;">
-            Registros de todas las acciones realizadas en el sistema
-          </p>
-        </a>
+    <!-- ── Tab Bar ─────────────────────────────────────────────────── -->
+    <nav class="tab-bar">
+      <a href="/app" class="tab-item active">
+        <span class="tab-icon">🏠</span>
+        <span class="tab-label">Inicio</span>
+      </a>
+      <a href="/app/lotes" class="tab-item">
+        <span class="tab-icon">☕</span>
+        <span class="tab-label">Lotes</span>
+      </a>
+      <a href="/app/inventario" class="tab-item">
+        <span class="tab-icon">📦</span>
+        <span class="tab-label">Inventario</span>
+      </a>
+      <a href="/app/estadisticas" class="tab-item">
+        <span class="tab-icon">📈</span>
+        <span class="tab-label">Reportes</span>
+      </a>
+      <a href="/app/finanzas" class="tab-item">
+        <span class="tab-icon">💰</span>
+        <span class="tab-label">Finanzas</span>
+      </a>
+    </nav>
 
-        <!-- DevTools (Solo desarrollo) -->
-        <a
-          href="/app/devtools"
-          id="devtoolsLink"
-          style="display: none; padding: 2rem; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-decoration: none; color: inherit; transition: transform 0.2s, box-shadow 0.2s;"
-          onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 16px rgba(0,0,0,0.15)';"
-          onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.1)';"
-        >
-          <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">⚙️</div>
-          <h3 style="font-weight: 600; margin-bottom: 0.5rem; color: #251a14;">
-            DevTools
-          </h3>
-          <p style="color: #666; font-size: 0.95rem;">
-            Herramientas de desarrollo para limpiar datos de prueba
-          </p>
-        </a>
-      </div>
-    </div>
+    <script is:inline src="/assets/js/auth-refresh.js"></script>
 
-    <!-- Opciones para CAFICULTOR y ADMIN -->
-    <div id="caficultorOptions">
-      <h2
-        style="font-size: 1.5rem; font-weight: 600; margin-bottom: 1rem; color: #8b6f47;"
-      >
-        📊 Gestión y Reportes
-      </h2>
-      <div
-        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;"
-      >
-        <!-- Ver Lotes Entregados -->
-        <a
-          href="/app/lotes-entregados"
-          style="text-decoration: none; color: inherit;"
-        >
-          <div
-            style="background: white; border: 1px solid #e5e7eb; border-radius: 0.75rem; padding: 1.5rem; transition: all 0.3s; cursor: pointer;"
-            onmouseover="this.style.borderColor='#8b6f47'; this.style.boxShadow='0 4px 12px rgba(139,111,71,0.15)'"
-            onmouseout="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none'"
-          >
-            <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">📋</div>
-            <h3
-              style="font-weight: 600; margin-bottom: 0.5rem; color: #251a14;"
-            >
-              Ver Lotes Entregados
-            </h3>
-            <p style="color: #666; font-size: 0.95rem;">
-              Historial de lotes entregados y su estado
-            </p>
-          </div>
-        </a>
+    <script>
+      // ── Auth check ─────────────────────────────────────────────────
+      (async function () {
+        const path = window.location.pathname;
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 10000);
+          const res = await fetch("/api/auth/me", {
+            credentials: "include",
+            signal: controller.signal,
+          });
+          clearTimeout(timeoutId);
 
-        <!-- Estadísticas -->
-        <a
-          href="/app/estadisticas"
-          style="text-decoration: none; color: inherit;"
-        >
-          <div
-            style="background: white; border: 1px solid #e5e7eb; border-radius: 0.75rem; padding: 1.5rem; transition: all 0.3s; cursor: pointer;"
-            onmouseover="this.style.borderColor='#8b6f47'; this.style.boxShadow='0 4px 12px rgba(139,111,71,0.15)'"
-            onmouseout="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none'"
-          >
-            <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">📈</div>
-            <h3
-              style="font-weight: 600; margin-bottom: 0.5rem; color: #251a14;"
-            >
-              Estadísticas
-            </h3>
-            <p style="color: #666; font-size: 0.95rem;">
-              Métricas de producción y calidad
-            </p>
-          </div>
-        </a>
-
-        <!-- Finanzas -->
-        <a href="/app/finanzas" style="text-decoration: none; color: inherit;">
-          <div
-            style="background: white; border: 1px solid #e5e7eb; border-radius: 0.75rem; padding: 1.5rem; transition: all 0.3s; cursor: pointer;"
-            onmouseover="this.style.borderColor='#8b6f47'; this.style.boxShadow='0 4px 12px rgba(139,111,71,0.15)'"
-            onmouseout="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none'"
-          >
-            <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">💰</div>
-            <h3
-              style="font-weight: 600; margin-bottom: 0.5rem; color: #251a14;"
-            >
-              Finanzas
-            </h3>
-            <p style="color: #666; font-size: 0.95rem;">
-              Pagos, ingresos y balance general
-            </p>
-          </div>
-        </a>
-      </div>
-    </div>
-  </section>
-</AppLayout>
-
-<style>
-  a {
-    text-decoration: none;
-  }
-</style>
-
-<script>
-  // Mostrar opciones según rol del usuario
-  (function () {
-    // Esperar a que el rol esté disponible (seteado por AppLayout)
-    const checkRole = setInterval(() => {
-      if (window.userRole) {
-        clearInterval(checkRole);
-
-        const adminOptions = document.getElementById("adminOptions");
-        const caficultorOptions = document.getElementById("caficultorOptions");
-        const websiteManagementSection = document.getElementById(
-          "websiteManagementSection"
-        );
-        const usersLink = document.getElementById("usersLink");
-        const productsLink = document.getElementById("productsLink");
-        const salesMapLink = document.getElementById("salesMapLink");
-        const auditSection = document.getElementById("auditSection");
-        const devtoolsLink = document.getElementById("devtoolsLink");
-
-        if (window.userRole === "admin") {
-          // Admin ve todo
-          if (adminOptions) adminOptions.style.display = "block";
-          if (caficultorOptions) caficultorOptions.style.display = "block";
-          if (websiteManagementSection)
-            websiteManagementSection.style.display = "block";
-          if (auditSection) auditSection.style.display = "block";
-
-          // Mostrar DevTools para admins en cualquier ambiente
-          if (devtoolsLink) {
-            devtoolsLink.style.display = "block";
+          if (!res.ok) {
+            if (res.status === 401 || res.status === 403) {
+              window.location.href = "/login?redirect=" + encodeURIComponent(path);
+            }
+            return;
           }
-        } else if (window.userRole === "caficultor") {
-          // Caficultor solo ve sus opciones
-          if (adminOptions) adminOptions.style.display = "none";
-          if (caficultorOptions) caficultorOptions.style.display = "block";
-          if (websiteManagementSection)
-            websiteManagementSection.style.display = "none";
-          if (auditSection) auditSection.style.display = "none";
+
+          const user = await res.json();
+          if (user.role !== "caficultor" && user.role !== "admin") {
+            window.location.href = "/login?redirect=" + encodeURIComponent(path);
+            return;
+          }
+
+          window.userRole = user.role;
+          window.userName = user.first_name || user.name || "Usuario";
+
+          const greeting = document.getElementById("headerGreeting");
+          if (greeting) greeting.textContent = "Hola, " + window.userName;
+
+          document.body.style.visibility = "visible";
+          revealByRole(user.role);
+        } catch (err) {
+          if (err.name === "AbortError") {
+            document.body.innerHTML = `
+              <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;font-family:system-ui;background:#F2F2F7;padding:2rem;text-align:center;">
+                <div style="font-size:3rem;margin-bottom:1rem;">⏱️</div>
+                <h2 style="color:#1C1C1E;margin-bottom:0.5rem;">Tiempo de espera</h2>
+                <p style="color:#8E8E93;margin-bottom:2rem;font-size:0.95rem;">El servidor tardó demasiado en responder.</p>
+                <button onclick="location.reload()" style="padding:0.875rem 2rem;background:#c67b4e;color:white;border:none;border-radius:12px;cursor:pointer;font-size:1rem;font-weight:600;">Reintentar</button>
+                <a href="/" style="margin-top:1rem;color:#8E8E93;font-size:0.9rem;">Volver al inicio</a>
+              </div>`;
+            document.body.style.visibility = "visible";
+          } else {
+            window.location.href = "/login?redirect=" + encodeURIComponent(path);
+          }
+        }
+      })();
+
+      // ── Reveal sections by role ────────────────────────────────────
+      function revealByRole(role) {
+        const $ = (id) => document.getElementById(id);
+
+        if (role === "admin") {
+          $("adminOptions")?.classList.remove("hidden");
+          $("websiteManagementSection")?.classList.remove("hidden");
+          $("auditSection")?.classList.remove("hidden");
+          $("caficultorOptions")?.classList.remove("hidden");
+          $("devtoolsLink")?.classList.remove("hidden");
+        } else if (role === "caficultor") {
+          $("caficultorOptions")?.classList.remove("hidden");
         }
       }
-    }, 50);
 
-    // Timeout después de 5 segundos
-    setTimeout(() => clearInterval(checkRole), 5000);
-  })();
-</script>
+      // ── Logout ─────────────────────────────────────────────────────
+      document.getElementById("logoutBtn")?.addEventListener("click", async () => {
+        try {
+          await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+        } finally {
+          window.location.href = "/login";
+        }
+      });
+
+      // ── Haptic feedback ────────────────────────────────────────────
+      document.querySelectorAll(".icon-cell, .tab-item").forEach((el) => {
+        el.addEventListener("touchstart", () => {
+          if (navigator.vibrate) navigator.vibrate(8);
+        }, { passive: true });
+      });
+    </script>
+  </body>
+</html>
