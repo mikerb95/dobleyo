@@ -1,0 +1,335 @@
+---
+import Layout from "../layouts/Layout.astro";
+
+const token = Astro.url.searchParams.get("token") ?? "";
+
+type UnsubResult = { status: "success" | "error" | "invalid" | "idle"; message: string };
+let result: UnsubResult = { status: "idle", message: "" };
+
+if (token) {
+  try {
+    const res = await fetch(
+      `${Astro.url.origin}/api/emails/newsletter/unsubscribe?token=${encodeURIComponent(token)}`
+    );
+    const data = await res.json();
+    if (res.ok && data.success) {
+      result = { status: "success", message: "Te has dado de baja exitosamente del boletín." };
+    } else {
+      result = { status: "invalid", message: data.error ?? "El enlace no es válido o ya fue usado." };
+    }
+  } catch {
+    result = { status: "error", message: "Error de conexión. Por favor intenta de nuevo." };
+  }
+}
+---
+
+<Layout
+  title="Darse de baja — DobleYo Café"
+  description="Cancela tu suscripción al boletín de DobleYo Café."
+  lang="es"
+>
+  <div class="unsub-page">
+    <div class="unsub-card">
+      <a href="/" class="unsub-logo" aria-label="Volver al inicio">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+          <circle cx="16" cy="16" r="16" fill="#251a14"/>
+          <text x="16" y="21" text-anchor="middle" font-size="14" font-family="Georgia,serif" fill="#c67b4e">☕</text>
+        </svg>
+        <span>DobleYo Café</span>
+      </a>
+
+      {result.status === "success" && (
+        <div class="unsub-state unsub-state--success">
+          <div class="unsub-icon">✓</div>
+          <h1>Listo, te dimos de baja</h1>
+          <p>{result.message}</p>
+          <p class="unsub-note">Ya no recibirás correos del boletín. Si fue un error, puedes volver a suscribirte desde el pie de página.</p>
+          <a href="/" class="unsub-btn">Volver al inicio</a>
+        </div>
+      )}
+
+      {result.status === "invalid" && (
+        <div class="unsub-state unsub-state--error">
+          <div class="unsub-icon">!</div>
+          <h1>Enlace no válido</h1>
+          <p>{result.message}</p>
+          <p class="unsub-note">Puedes ingresar tu correo manualmente para darte de baja.</p>
+          <div id="form-section">
+            <form class="unsub-form" id="unsub-form">
+              <label for="email-input">Tu correo electrónico</label>
+              <div class="unsub-form__row">
+                <input
+                  type="email"
+                  id="email-input"
+                  name="email"
+                  placeholder="tu@correo.com"
+                  required
+                  autocomplete="email"
+                />
+                <button type="submit">Darme de baja</button>
+              </div>
+              <p class="unsub-feedback" id="form-feedback" aria-live="polite"></p>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {(result.status === "idle" || result.status === "error") && (
+        <div class="unsub-state">
+          <div class="unsub-icon unsub-icon--neutral">✉</div>
+          <h1>Darse de baja del boletín</h1>
+          <p>Ingresa tu correo para cancelar tu suscripción al boletín de DobleYo Café.</p>
+          <div id="form-section">
+            <form class="unsub-form" id="unsub-form">
+              <label for="email-input">Tu correo electrónico</label>
+              <div class="unsub-form__row">
+                <input
+                  type="email"
+                  id="email-input"
+                  name="email"
+                  placeholder="tu@correo.com"
+                  required
+                  autocomplete="email"
+                />
+                <button type="submit">Darme de baja</button>
+              </div>
+              <p class="unsub-feedback" id="form-feedback" aria-live="polite"></p>
+            </form>
+          </div>
+          {result.status === "error" && (
+            <p class="unsub-note unsub-note--error">{result.message}</p>
+          )}
+        </div>
+      )}
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById("unsub-form") as HTMLFormElement | null;
+    const feedback = document.getElementById("form-feedback") as HTMLParagraphElement | null;
+
+    form?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = (form.elements.namedItem("email") as HTMLInputElement).value.trim();
+      const btn = form.querySelector("button") as HTMLButtonElement;
+
+      btn.disabled = true;
+      btn.textContent = "Procesando...";
+      if (feedback) { feedback.textContent = ""; feedback.className = "unsub-feedback"; }
+
+      try {
+        const res = await fetch(
+          `/api/emails/newsletter/unsubscribe?email=${encodeURIComponent(email)}`
+        );
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+          form.innerHTML = `
+            <div class="unsub-state unsub-state--success" style="padding:0;box-shadow:none;background:none;">
+              <div class="unsub-icon">✓</div>
+              <p style="font-weight:600;color:var(--color-success,#2e7d32);">¡Listo! Te dimos de baja del boletín.</p>
+              <p style="font-size:0.875rem;color:var(--color-text-muted,#666);">Ya no recibirás correos. Si fue un error, vuelve a suscribirte desde el pie de página.</p>
+            </div>`;
+        } else {
+          if (feedback) {
+            feedback.textContent = data.error ?? "No encontramos ese correo en nuestra lista.";
+            feedback.className = "unsub-feedback unsub-feedback--error";
+          }
+          btn.disabled = false;
+          btn.textContent = "Darme de baja";
+        }
+      } catch {
+        if (feedback) {
+          feedback.textContent = "Error de conexión. Por favor intenta de nuevo.";
+          feedback.className = "unsub-feedback unsub-feedback--error";
+        }
+        btn.disabled = false;
+        btn.textContent = "Darme de baja";
+      }
+    });
+  </script>
+
+  <style>
+    .unsub-page {
+      min-height: 80vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+      background: var(--color-bg, #f7f3ef);
+    }
+
+    .unsub-card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+      padding: 2.5rem 2rem;
+      max-width: 480px;
+      width: 100%;
+      text-align: center;
+    }
+
+    .unsub-logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+      color: var(--color-primary, #251a14);
+      font-family: var(--font-heading, Georgia, serif);
+      font-weight: 700;
+      font-size: 1.1rem;
+      margin-bottom: 2rem;
+    }
+
+    .unsub-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .unsub-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: var(--color-accent, #c67b4e);
+      color: #fff;
+      font-size: 1.5rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .unsub-icon--neutral {
+      background: var(--color-primary, #251a14);
+    }
+
+    .unsub-state--success .unsub-icon {
+      background: #2e7d32;
+    }
+
+    .unsub-state--error .unsub-icon {
+      background: #c62828;
+    }
+
+    .unsub-state h1 {
+      font-size: 1.4rem;
+      color: var(--color-primary, #251a14);
+      margin: 0;
+    }
+
+    .unsub-state p {
+      color: var(--color-text-muted, #555);
+      font-size: 0.95rem;
+      margin: 0;
+      line-height: 1.6;
+    }
+
+    .unsub-note {
+      font-size: 0.8rem !important;
+      color: var(--color-text-muted, #888) !important;
+    }
+
+    .unsub-note--error {
+      color: #c62828 !important;
+    }
+
+    .unsub-btn {
+      display: inline-block;
+      margin-top: 0.5rem;
+      padding: 0.75rem 2rem;
+      background: var(--color-primary, #251a14);
+      color: #fff;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.95rem;
+      transition: opacity 0.2s;
+    }
+
+    .unsub-btn:hover {
+      opacity: 0.85;
+    }
+
+    .unsub-form {
+      width: 100%;
+      margin-top: 0.5rem;
+      text-align: left;
+    }
+
+    .unsub-form label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--color-primary, #251a14);
+      margin-bottom: 0.4rem;
+    }
+
+    .unsub-form__row {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .unsub-form input[type="email"] {
+      flex: 1;
+      padding: 0.65rem 0.875rem;
+      border: 1.5px solid #ddd;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .unsub-form input[type="email"]:focus {
+      border-color: var(--color-accent, #c67b4e);
+    }
+
+    .unsub-form button {
+      padding: 0.65rem 1.25rem;
+      background: var(--color-primary, #251a14);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: opacity 0.2s;
+    }
+
+    .unsub-form button:hover:not(:disabled) {
+      opacity: 0.85;
+    }
+
+    .unsub-form button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .unsub-feedback {
+      margin-top: 0.5rem;
+      font-size: 0.85rem;
+      min-height: 1.2em;
+    }
+
+    .unsub-feedback--error {
+      color: #c62828;
+    }
+
+    @media (max-width: 480px) {
+      .unsub-card {
+        padding: 2rem 1.25rem;
+      }
+
+      .unsub-form__row {
+        flex-direction: column;
+      }
+
+      .unsub-form button {
+        width: 100%;
+      }
+    }
+  </style>
+</Layout>
