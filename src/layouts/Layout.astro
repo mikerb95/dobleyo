@@ -14,6 +14,7 @@ export interface Props {
   hreflangEs?: string;
   hreflangEn?: string;
   jsonLd?: Record<string, unknown> | Record<string, unknown>[];
+  hideWhatsApp?: boolean;
 }
 
 const {
@@ -24,6 +25,7 @@ const {
   hreflangEs,
   hreflangEn,
   jsonLd,
+  hideWhatsApp = false,
 } = Astro.props;
 ---
 
@@ -73,6 +75,7 @@ const {
     <AuthModal />
 
     <!-- Botón flotante WhatsApp -->
+    {!hideWhatsApp && (
     <a
       href="https://wa.me/573204981580?text=Hola%20Café%20San%20Jorge!%20Estoy%20interesado%20en%20saber%20más%20sobre%20sus%20cafés."
       class="whatsapp-fab"
@@ -93,6 +96,7 @@ const {
       </svg>
       <span class="whatsapp-fab__tooltip">Escríbenos</span>
     </a>
+    )}
 
     <!-- Scripts globales -->
     <script is:inline src="/assets/js/cart.js"></script>
