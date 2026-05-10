@@ -281,8 +281,8 @@ export default function SalesHeatmap() {
       )}
 
       {/* ── Mapa ── */}
-      <div ref={mapRef} style={{
-        width: '100%', height: '520px', borderRadius: '10px',
+      <div ref={mapRef} className="heatmap-map" style={{
+        width: '100%', borderRadius: '10px',
         overflow: 'hidden', border: '1px solid #ddd',
         display: loading ? 'none' : 'block', marginBottom: '1.5rem',
       }} />
