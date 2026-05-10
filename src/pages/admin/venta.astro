@@ -585,6 +585,114 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     .ios-filter-chips { gap: .4rem; }
     .ios-filter-select { font-size: .75rem; padding: .4rem .6rem; }
   }
+
+  /* ── Desktop ERP aesthetic (≥768px) ────────────────────── */
+  @media (min-width: 768px) {
+    /* Page header: white bar con border bottom (Fiori Object Header) */
+    .ios-page-header {
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+    }
+    .ios-header-inner { min-height: 56px; flex-wrap: nowrap; }
+    .ios-page-title { font-size: 1.125rem; letter-spacing: -.01em; }
+    .ios-page-sub { font-size: .75rem; }
+
+    /* KPI tiles: flat Fiori — sin sombra, border sólido, radio 6px */
+    .ios-kpi-section { padding: 1.5rem 2rem 0; }
+    .ios-kpi-grid { grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+    .ios-kpi-card {
+      border-radius: 6px;
+      box-shadow: none;
+      border: 1px solid var(--border);
+      padding: 1rem 1.25rem;
+    }
+    .ios-kpi-card::before { height: 3px; border-radius: 6px 6px 0 0; }
+    .ios-kpi-brand::before   { background: var(--brand); }
+    .ios-kpi-success::before { background: var(--c-success); }
+    .ios-kpi-info::before    { background: var(--c-info); }
+    .ios-kpi-warning::before { background: var(--c-warning); }
+    .ios-kpi-value { font-size: 1.75rem; }
+    .ios-kpi-label { font-size: .69rem; }
+    .ios-kpi-icon { opacity: .07; }
+
+    /* Filtros: toolbar compacta en una sola línea */
+    .ios-filters-section {
+      padding: .875rem 2rem 0;
+      flex-direction: row;
+      align-items: center;
+      gap: .625rem;
+      flex-wrap: wrap;
+    }
+    .ios-search-bar { border-radius: 4px; flex: 1; max-width: 300px; }
+    .ios-filter-chips { flex-wrap: nowrap; }
+    .ios-filter-select { border-radius: 4px; padding: .35rem .65rem; font-size: .8rem; }
+
+    /* Tabla: card Fiori sin sombra */
+    .ios-table-section { padding: 1rem 2rem 0; }
+    .ios-table-card {
+      border-radius: 6px;
+      box-shadow: none;
+      border: 1px solid var(--border);
+    }
+    .ios-table { font-size: .8125rem; }
+    .ios-table thead th { padding: .625rem 1rem; font-size: .6875rem; }
+    .ios-table tbody td { padding: .6875rem 1rem; }
+
+    /* Paginación */
+    .ios-pagination { padding: .625rem 1rem; }
+
+    /* Botón Ver en fila */
+    .action-btn { border-radius: 4px; }
+
+    /* Buttons: Fiori flat — 36px, radius 4px, border explícito */
+    .ios-btn {
+      border-radius: 4px;
+      height: 36px;
+      padding: 0 1rem;
+      font-size: .8125rem;
+      border: 1px solid transparent;
+    }
+    .ios-btn:active { transform: none; }
+    .ios-btn-primary  { border-color: var(--brand-dark); }
+    .ios-btn-secondary { border-color: var(--border); }
+    .ios-btn-ghost { border-color: transparent; }
+    .ios-btn-danger { border-color: var(--c-error-border); }
+    .ios-btn-sm {
+      height: 28px !important;
+      padding: 0 .75rem !important;
+      font-size: .75rem !important;
+      border-radius: 4px !important;
+    }
+
+    /* Modal: diálogo ERP — sin handle, radio 8px, sin blur */
+    .ios-modal-handle { display: none; }
+    .ios-modal-overlay {
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+      background: rgba(0,0,0,.5);
+    }
+    .ios-modal {
+      border-radius: 8px;
+      box-shadow: 0 8px 32px rgba(0,0,0,.18), 0 2px 8px rgba(0,0,0,.1);
+    }
+    .ios-modal-footer {
+      background: var(--erp-bg);
+      border-radius: 0 0 8px 8px;
+    }
+    .ios-modal-close {
+      background: transparent;
+      border-radius: 4px;
+    }
+    .ios-modal-close:hover { background: var(--nav-hover-bg); }
+
+    /* Form inputs: ERP compact */
+    .ios-form-group input,
+    .ios-form-group select { border-radius: 4px; padding: .45rem .75rem; }
+    .item-row select,
+    .item-row input { border-radius: 4px; }
+    .ios-totals-box { border-radius: 6px; }
+  }
 </style>
 
 <script>
