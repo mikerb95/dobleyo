@@ -197,12 +197,12 @@ export default function SalesHeatmap() {
     <div style={{ width: '100%', fontFamily: 'system-ui, sans-serif' }}>
 
       {/* ── Panel de filtros ── */}
-      <form onSubmit={handleApply} style={{
+      <form onSubmit={handleApply} className="heatmap-filters" style={{
         display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'flex-end',
         background: '#f9f7f4', border: '1px solid #e0d9d2',
         borderRadius: '8px', padding: '1rem 1.25rem', marginBottom: '1.25rem',
       }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', minWidth: '140px' }}>
+        <div className="heatmap-filter-field" style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', minWidth: '140px' }}>
           <label style={{ fontSize: '0.77rem', fontWeight: 600, color: '#555' }}>Período</label>
           <select value={period} onChange={(e) => setPeriod(e.target.value)} style={selectStyle}>
             <option value="7">Últimos 7 días</option>
@@ -212,7 +212,7 @@ export default function SalesHeatmap() {
             <option value="all">Todo el tiempo</option>
           </select>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', minWidth: '155px' }}>
+        <div className="heatmap-filter-field" style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', minWidth: '155px' }}>
           <label style={{ fontSize: '0.77rem', fontWeight: 600, color: '#555' }}>Canal de venta</label>
           <select value={channel} onChange={(e) => setChannel(e.target.value)} style={selectStyle}>
             <option value="all">Todos los canales</option>
@@ -220,7 +220,7 @@ export default function SalesHeatmap() {
             <option value="ml">Solo MercadoLibre</option>
           </select>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', flex: 1, minWidth: '160px' }}>
+        <div className="heatmap-filter-field" style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', flex: 1, minWidth: '160px' }}>
           <label style={{ fontSize: '0.77rem', fontWeight: 600, color: '#555' }}>Producto (opcional)</label>
           <input
             type="text" value={product} onChange={(e) => setProduct(e.target.value)}
@@ -228,7 +228,7 @@ export default function SalesHeatmap() {
             style={{ ...selectStyle, fontFamily: 'inherit' }}
           />
         </div>
-        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-end' }}>
+        <div className="heatmap-filter-actions" style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-end', flexWrap: 'wrap' }}>
           <button type="submit" disabled={loading} style={btnPrimary}>
             {loading ? 'Cargando…' : 'Aplicar'}
           </button>
