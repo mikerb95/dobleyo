@@ -4,54 +4,189 @@ import SalesHeatmap from "../../components/SalesHeatmap.jsx";
 ---
 
 <AppLayout>
-  <div style="max-width: 1400px; margin: 0 auto; padding: 1.5rem;">
+  <div class="ventas-page">
 
-    <!-- Encabezado -->
-    <div style="margin-bottom: 1.5rem;">
-      <h1 style="font-size: 1.7rem; font-weight: 700; color: var(--coffee, #251a14); margin-bottom: 0.4rem;">
-        🗺️ Mapa de Calor de Ventas
-      </h1>
-      <p style="color: #666; margin: 0; font-size: 0.95rem;">
+    <div class="ventas-header">
+      <h1>🗺️ Mapa de Calor de Ventas</h1>
+      <p>
         Distribución geográfica combinada — tienda web y MercadoLibre.
         Filtra por período, canal o producto y exporta los datos como CSV.
       </p>
     </div>
 
-    <!-- Mapa interactivo -->
-    <div style="background: white; padding: 1.5rem; border-radius: 10px; border: 1px solid #e6e6e6; margin-bottom: 1.5rem;">
+    <div class="ventas-card">
       <SalesHeatmap client:load />
     </div>
 
-    <!-- Guía rápida -->
-    <div style="background: #f9f7f4; border-radius: 8px; padding: 1.25rem 1.5rem; border: 1px solid #e6e6e6;">
-      <h3 style="color: #251a14; margin: 0 0 0.8rem; font-size: 0.95rem;">Guía rápida</h3>
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.9rem;">
-        <div style="background: white; border: 1px solid #e6e6e6; border-radius: 6px; padding: 0.85rem 1rem;">
-          <strong style="font-size: 0.9rem; color: #251a14;">🎨 Intensidad de calor</strong>
-          <p style="color: #666; margin: 0.3rem 0 0; font-size: 0.84rem; line-height: 1.5;">
-            Amarillo = pocas ventas → Rojo oscuro = muchas ventas.
-          </p>
+    <div class="ventas-guide">
+      <h3>Guía rápida</h3>
+      <div class="ventas-guide-grid">
+        <div class="ventas-guide-item">
+          <strong>🎨 Intensidad de calor</strong>
+          <p>Amarillo = pocas ventas → Rojo oscuro = muchas ventas.</p>
         </div>
-        <div style="background: white; border: 1px solid #e6e6e6; border-radius: 6px; padding: 0.85rem 1rem;">
-          <strong style="font-size: 0.9rem; color: #251a14;">📌 Marcadores</strong>
-          <p style="color: #666; margin: 0.3rem 0 0; font-size: 0.84rem; line-height: 1.5;">
-            Clic en un círculo para ver pedidos, ventas en COP y canal (web/ML).
-          </p>
+        <div class="ventas-guide-item">
+          <strong>📌 Marcadores</strong>
+          <p>Clic en un círculo para ver pedidos, ventas en COP y canal (web/ML).</p>
         </div>
-        <div style="background: white; border: 1px solid #e6e6e6; border-radius: 6px; padding: 0.85rem 1rem;">
-          <strong style="font-size: 0.9rem; color: #251a14;">🔍 Filtros</strong>
-          <p style="color: #666; margin: 0.3rem 0 0; font-size: 0.84rem; line-height: 1.5;">
-            Filtra por período, canal de venta o nombre de producto.
-          </p>
+        <div class="ventas-guide-item">
+          <strong>🔍 Filtros</strong>
+          <p>Filtra por período, canal de venta o nombre de producto.</p>
         </div>
-        <div style="background: white; border: 1px solid #e6e6e6; border-radius: 6px; padding: 0.85rem 1rem;">
-          <strong style="font-size: 0.9rem; color: #251a14;">💾 Exportar</strong>
-          <p style="color: #666; margin: 0.3rem 0 0; font-size: 0.84rem; line-height: 1.5;">
-            Descarga los datos del filtro activo con el botón ↓ CSV.
-          </p>
+        <div class="ventas-guide-item">
+          <strong>💾 Exportar</strong>
+          <p>Descarga los datos del filtro activo con el botón ↓ CSV.</p>
         </div>
       </div>
     </div>
 
   </div>
 </AppLayout>
+
+<style>
+  /* ── Mobile-first base ── */
+  .ventas-page {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 1rem;
+  }
+
+  .ventas-header {
+    margin-bottom: 1.25rem;
+  }
+
+  .ventas-header h1 {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--coffee, #251a14);
+    margin-bottom: 0.4rem;
+  }
+
+  .ventas-header p {
+    color: #666;
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+
+  .ventas-card {
+    background: white;
+    padding: 1rem;
+    border-radius: 10px;
+    border: 1px solid #e6e6e6;
+    margin-bottom: 1.25rem;
+  }
+
+  .ventas-guide {
+    background: #f9f7f4;
+    border-radius: 8px;
+    padding: 1rem;
+    border: 1px solid #e6e6e6;
+  }
+
+  .ventas-guide h3 {
+    color: #251a14;
+    margin: 0 0 0.75rem;
+    font-size: 0.95rem;
+  }
+
+  .ventas-guide-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .ventas-guide-item {
+    background: white;
+    border: 1px solid #e6e6e6;
+    border-radius: 6px;
+    padding: 0.85rem 1rem;
+  }
+
+  .ventas-guide-item strong {
+    font-size: 0.9rem;
+    color: #251a14;
+    display: block;
+    margin-bottom: 0.25rem;
+  }
+
+  .ventas-guide-item p {
+    color: #666;
+    margin: 0;
+    font-size: 0.84rem;
+    line-height: 1.5;
+  }
+
+  /* ── Heatmap component responsive overrides ── */
+  :global(.heatmap-filters) {
+    flex-direction: column !important;
+  }
+
+  :global(.heatmap-filter-field) {
+    min-width: 100% !important;
+  }
+
+  :global(.heatmap-filter-actions) {
+    flex-direction: row;
+    width: 100%;
+  }
+
+  :global(.heatmap-map) {
+    height: 300px !important;
+  }
+
+  /* ── Tablet (480px+) ── */
+  @media (min-width: 480px) {
+    .ventas-guide-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    :global(.heatmap-map) {
+      height: 400px !important;
+    }
+  }
+
+  /* ── Desktop (768px+) ── */
+  @media (min-width: 768px) {
+    .ventas-page {
+      padding: 1.5rem;
+    }
+
+    .ventas-header {
+      margin-bottom: 1.5rem;
+    }
+
+    .ventas-header h1 {
+      font-size: 1.7rem;
+    }
+
+    .ventas-header p {
+      font-size: 0.95rem;
+    }
+
+    .ventas-card {
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .ventas-guide {
+      padding: 1.25rem 1.5rem;
+    }
+
+    .ventas-guide-grid {
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+
+    :global(.heatmap-filters) {
+      flex-direction: row !important;
+    }
+
+    :global(.heatmap-filter-field) {
+      min-width: 140px !important;
+    }
+
+    :global(.heatmap-map) {
+      height: 520px !important;
+    }
+  }
+</style>
