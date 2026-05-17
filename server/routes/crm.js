@@ -95,8 +95,8 @@ crmRouter.post('/accounts', async (req, res) => {
   const ownerId = req.user?.id ?? null;
 
   try {
-    const result = await withTransaction(async (tx) => {
-      const acctRes = await tx(
+    const result = await withTransaction(async ({ query: txq }) => {
+      const acctRes = await txq(
         `INSERT INTO crm_accounts
            (legal_name, display_name, segment, country, city, region, tax_id, pipeline_value, source, notes, owner_user_id)
          VALUES (?,?,?,?,?,?,?,?,?,?,?)`,
@@ -106,7 +106,7 @@ crmRouter.post('/accounts', async (req, res) => {
       const accountId = Number(acctRes.lastInsertRowid);
 
       if (contact?.full_name) {
-        await tx(
+        await txq(
           `INSERT INTO crm_contacts(account_id, full_name, role, email, phone, is_primary)
            VALUES (?,?,?,?,?,1)`,
           [accountId, contact.full_name, contact.role ?? null, contact.email ?? null, contact.phone ?? null]
@@ -229,11 +229,11 @@ crmRouter.post('/accounts/:id(\\d+)/contacts', async (req, res) => {
   if (!full_name) return err(res, 400, 'bad_payload', 'full_name requerido');
 
   try {
-    const accountId = await withTransaction(async (tx) => {
+    await withTransaction(async ({ query: txq }) => {
       if (is_primary) {
-        await tx('UPDATE crm_contacts SET is_primary = 0 WHERE account_id = ?', [id]);
+        await txq('UPDATE crm_contacts SET is_primary = 0 WHERE account_id = ?', [id]);
       }
-      await tx(
+      await txq(
         `INSERT INTO crm_contacts(account_id, full_name, role, email, phone, is_primary)
          VALUES (?,?,?,?,?,?)`,
         [id, full_name, role ?? null, email ?? null, phone ?? null, is_primary ? 1 : 0]

@@ -8,6 +8,7 @@
 - `server/routes/orders.js` — Recalcula totales desde `products` y persiste ítems con precio/nombre de BD para evitar manipulación del cliente
 - `src/pages/checkout.astro` — Envia solo `productId` y `quantity` al crear orden
 - `server/routes/__tests__/orders.test.js` — Ajusta mocks y casos para precios server-side y validación de productos
+- `server/routes/orders.js` — Elimina PII del endpoint público de consulta por referencia
 
 ### Decisiones Técnicas
 - Ignorar `unitPrice` y `productName` del cliente; usar solo `productId` + `quantity` con validación server-side
