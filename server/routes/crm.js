@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { query, withTransaction } from '../db.js';
-import { authenticateToken, requireRole } from './auth.js';
+import { authenticateToken, requireRole } from '../auth.js';
 
 const STAGES   = ['prospect','contacted','sample_sent','negotiation','active','lost'];
 const SEGMENTS = ['importer_us','distributor_co','hotel','cafeteria','retail','other'];
