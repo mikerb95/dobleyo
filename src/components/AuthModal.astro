@@ -503,7 +503,9 @@ const googleClientId = import.meta.env.PUBLIC_GOOGLE_CLIENT_ID || '';
         window.location.href = redirect;
       }
     } else {
-      if (role === 'admin' || role === 'caficultor') {
+      if (role === 'admin') {
+        window.location.href = '/admin';
+      } else if (role === 'caficultor') {
         window.location.href = '/app';
       } else {
         window.location.href = '/cuenta';
