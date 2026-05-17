@@ -206,6 +206,16 @@ exampleRouter.post('/',
 - ❌ Olvidar SEO meta tags en páginas públicas
 - ❌ Crear páginas sin responsive design
 - ❌ Ignorar la paridad `server/index.js` ↔ `api/index.js`
+- ❌ Usar voseo argentino ni regionalismos ajenos al español colombiano (probá, tomá, querés, tenés, dale, che, etc.)
+
+### Idioma de la UI — Español Colombia (es-CO)
+
+Todo texto en español que aparezca en la interfaz (etiquetas, errores, placeholders, mensajes vacíos, botones, toasts) **debe estar en español formal colombiano**:
+
+- Tratamiento con **"usted"** en flujos transaccionales y mensajes del sistema.
+- Tratamiento con **"tú"** solo en copy de marketing donde el tono así lo requiera.
+- **Nunca voseo**: ❌ "Probá", "Ingresá", "Hacé clic" → ✅ "Intente", "Ingrese", "Haga clic".
+- Consultar la tabla de ejemplos en `AGENTS.md` sección 8 (Español Colombia).
 
 ---
 

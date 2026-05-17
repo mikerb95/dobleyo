@@ -231,6 +231,21 @@ Todo agente que cree o modifique páginas DEBE cumplir:
 - **Fechas**: `Intl.DateTimeFormat` con locale correcto.
 - **Contenido nuevo**: Siempre crear en ambos idiomas.
 
+### Variedad de español — Español Colombia (es-CO)
+
+Todo texto en español visible en la UI (etiquetas, mensajes de error, placeholders, toasts, textos vacíos, botones, descripciones) debe seguir el **español formal colombiano**:
+
+- **Pronombre de tratamiento**: usar "usted" en contextos formales (mensajes del sistema, confirmaciones, errores). Usar "tú" solo en copy de marketing casual donde el tono así lo requiera. **Nunca usar voseo** (probá, tomá, querés, tenés, etc.).
+- **Vocabulario**: evitar regionalismos argentinos, mexicanos o españoles. Preferir términos neutros de uso corriente en Colombia.
+- **Tono**: formal y respetuoso en flujos transaccionales (checkout, errores, formularios). Cálido pero profesional en copy de marca.
+- **Ejemplos de corrección**:
+  | ❌ Incorrecto (voseo/arg.) | ✅ Correcto (es-CO formal) |
+  |---|---|
+  | Probá quitando filtros | Intente quitar algunos filtros |
+  | Ingresá tu correo | Ingrese su correo |
+  | Hacé clic aquí | Haga clic aquí |
+  | ¿Querés continuar? | ¿Desea continuar? |
+
 ---
 
 ## 9. Documentación — Reglas para Agentes
