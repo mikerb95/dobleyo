@@ -5,9 +5,18 @@ import * as auth from '../auth.js';
 import { sendVerificationEmail } from '../services/email.js';
 import crypto from 'crypto';
 import { loginLimiter, registerLimiter, refreshLimiter } from '../middleware/rateLimit.js';
-import { OAuth2Client } from 'google-auth-library';
 
-const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+// google-auth-library se carga perezosamente dentro del handler /google para
+// evitar ERR_INTERNAL_ASSERTION de Node.js al mezclar ESM/CJS en cold start serverless.
+let googleClientPromise = null;
+async function getGoogleClient() {
+  if (!googleClientPromise) {
+    googleClientPromise = import('google-auth-library').then(
+      ({ OAuth2Client }) => new OAuth2Client(process.env.GOOGLE_CLIENT_ID)
+    );
+  }
+  return googleClientPromise;
+}
 
 export const authRouter = Router();
 
