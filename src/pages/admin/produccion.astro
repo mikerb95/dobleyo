@@ -1,0 +1,8 @@
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+import ProductionPipeline from "../../components/production/ProductionPipeline.jsx";
+---
+
+<AdminLayout title="Producción — DobleYo ERP" section="produccion">
+  <ProductionPipeline client:only="react" />
+</AdminLayout>
