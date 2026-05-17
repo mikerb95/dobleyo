@@ -22,7 +22,6 @@
   font-feature-settings: "ss01", "cv11";
   color: var(--color-text);
   background: var(--bg);
-  min-height: 100vh;
 
   display: grid;
   grid-template-rows: auto auto auto 1fr;
