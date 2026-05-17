@@ -40,7 +40,7 @@ export default function ClientList({ filters, onFiltersChange, onOpen, onNew }) 
       {loading ? (
         <ListSkeleton rows={6} />
       ) : items.length === 0 ? (
-        <p className={styles.list__empty}>Sin resultados. Probá quitando filtros.</p>
+        <p className={styles.list__empty}>Sin resultados. Intente quitar algunos filtros.</p>
       ) : (
         <ul className={styles.list} style={{ listStyle: "none", margin: 0, padding: 0 }}>
           {items.map((a) => <AccountRow key={a.id} account={a} onOpen={onOpen} />)}

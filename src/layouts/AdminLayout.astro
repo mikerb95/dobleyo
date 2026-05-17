@@ -661,19 +661,36 @@ const { title = "Admin — DobleYo Café", section = "" } = Astro.props;
 
     <script is:inline src="/assets/js/auth-refresh.js"></script>
     <script>
-      // Auth check
+      // Auth check (admin + caficultor)
       (async () => {
         const path = window.location.pathname;
+        const ALLOWED_ROLES = ['admin', 'caficultor'];
         try {
           const res = await fetch('/api/auth/me', { credentials: 'include' });
           if (!res.ok) { window.location.href = '/login?redirect=' + encodeURIComponent(path); return; }
           const user = await res.json();
-          if (user.role !== 'admin') { alert('Acceso denegado. Solo administradores.'); window.location.href = '/'; return; }
+          if (!ALLOWED_ROLES.includes(user.role)) {
+            alert('Acceso denegado.'); window.location.href = '/'; return;
+          }
+
+          // Filtrar nav items según rol (data-roles="admin,caficultor")
+          document.querySelectorAll('[data-roles]').forEach((el) => {
+            const roles = (el as HTMLElement).getAttribute('data-roles')!.split(',').map(s => s.trim());
+            if (!roles.includes(user.role)) (el as HTMLElement).style.display = 'none';
+          });
+
+          // Ocultar secciones cuyo único contenido visible quedó vacío
+          document.querySelectorAll('.nav-section').forEach((sec) => {
+            const items = sec.querySelectorAll('.nav-item');
+            const visibles = Array.from(items).filter(i => (i as HTMLElement).style.display !== 'none');
+            if (items.length > 0 && visibles.length === 0) (sec as HTMLElement).style.display = 'none';
+          });
 
           document.body.style.visibility = 'visible';
 
           const fullName = (user.first_name ? `${user.first_name} ${user.last_name ?? ''}`.trim() : user.email);
           const initials = fullName.split(' ').slice(0, 2).map((w: string) => w[0]).join('').toUpperCase();
+          const roleLabel = user.role === 'caficultor' ? 'Caficultor' : 'Administrador';
 
           const avatarEl = document.getElementById('shellAvatar');
           if (avatarEl) avatarEl.textContent = initials;
@@ -681,6 +698,8 @@ const { title = "Admin — DobleYo Café", section = "" } = Astro.props;
           if (nameEl) nameEl.textContent = user.first_name ?? user.email;
           const dropEl = document.getElementById('dropdownUserName');
           if (dropEl) dropEl.textContent = fullName;
+          const roleEl = document.querySelector('.dropdown-user-role');
+          if (roleEl) roleEl.textContent = roleLabel;
         } catch {
           window.location.href = '/login?redirect=' + encodeURIComponent(path);
         }
