@@ -9,6 +9,7 @@
 - `src/pages/checkout.astro` — Envia solo `productId` y `quantity` al crear orden
 - `server/routes/__tests__/orders.test.js` — Ajusta mocks y casos para precios server-side y validación de productos
 - `server/routes/orders.js` — Elimina PII del endpoint público de consulta por referencia
+- `server/routes/orders.js` — Endurece webhook Wompi con firma obligatoria, validación de monto/moneda e idempotencia
 
 ### Decisiones Técnicas
 - Ignorar `unitPrice` y `productName` del cliente; usar solo `productId` + `quantity` con validación server-side

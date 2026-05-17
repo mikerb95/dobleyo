@@ -341,34 +341,67 @@ ordersRouter.patch('/:ref/status',
 
 ordersRouter.post('/wompi/webhook', async (req, res) => {
     try {
-        res.sendStatus(200); // Responder rápido a Wompi
-
         const event = req.body;
-        if (event?.event !== 'transaction.updated') return;
+        if (process.env.NODE_ENV === 'production' && !WOMPI_EVENTS_SECRET) {
+            console.error('[Wompi webhook] WOMPI_EVENTS_SECRET no configurado en producción');
+            return res.sendStatus(500);
+        }
 
-        const tx = event.data?.transaction;
-        if (!tx) return;
-
-        const { reference, status: txStatus, id: txId, payment_method_type } = tx;
-        if (!reference) return;
-
-        // Verificar firma de Wompi (checksum)
         const checksum = event?.signature?.checksum;
         const tsStr = event?.timestamp;
-        if (WOMPI_EVENTS_SECRET && checksum && tsStr) {
+        if (!checksum || !tsStr) {
+            return res.sendStatus(400);
+        }
+        if (WOMPI_EVENTS_SECRET) {
             const expected = crypto
                 .createHash('sha256')
                 .update(`${tsStr}${WOMPI_EVENTS_SECRET}`, 'utf8')
                 .digest('hex');
             if (expected !== checksum) {
-                console.warn('[Wompi webhook] Firma inválida para ref:', reference);
-                return;
+                console.warn('[Wompi webhook] Firma inválida');
+                return res.sendStatus(401);
             }
+        }
+
+        if (event?.event !== 'transaction.updated') return res.sendStatus(200);
+
+        const tx = event.data?.transaction;
+        if (!tx) return res.sendStatus(400);
+
+        const { reference, status: txStatus, id: txId, payment_method_type, amount_in_cents, currency } = tx;
+        if (!reference) return res.sendStatus(400);
+
+        const orderLookup = await query(
+            `SELECT id, status, total_cop, payment_transaction_id
+       FROM customer_orders
+       WHERE reference = ?`,
+            [reference]
+        );
+
+        if (!orderLookup.rows.length) return res.sendStatus(200);
+
+        const order = orderLookup.rows[0];
+        if (order.payment_transaction_id && order.payment_transaction_id === txId) {
+            return res.sendStatus(200);
+        }
+        if (order.payment_transaction_id && order.payment_transaction_id !== txId) {
+            console.warn('[Wompi webhook] Transacción distinta para ref:', reference);
+            return res.sendStatus(200);
+        }
+
+        const expectedAmount = Number(order.total_cop) * 100;
+        if (Number(amount_in_cents) !== expectedAmount || (currency && currency !== 'COP')) {
+            console.warn('[Wompi webhook] Monto/moneda inválidos para ref:', reference);
+            return res.sendStatus(400);
         }
 
         // Mapear estado de Wompi → estado interno
         const statusMap = { APPROVED: 'paid', DECLINED: 'cancelled', VOIDED: 'cancelled', ERROR: 'pending_payment' };
         const newStatus = statusMap[txStatus] || 'pending_payment';
+
+        if (order.status !== 'pending_payment' && order.status !== newStatus) {
+            return res.sendStatus(200);
+        }
 
         const orderResult = await query(
             `UPDATE customer_orders
@@ -410,7 +443,10 @@ ordersRouter.post('/wompi/webhook', async (req, res) => {
                 }
             );
         }
+
+        return res.sendStatus(200);
     } catch (err) {
         console.error('[Wompi webhook] Error procesando evento:', err);
+        return res.sendStatus(500);
     }
 });
