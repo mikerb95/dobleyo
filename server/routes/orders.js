@@ -59,8 +59,6 @@ ordersRouter.post('/',
         body('shippingDepartment').optional().trim(),
         body('items').isArray({ min: 1 }).withMessage('El carrito está vacío'),
         body('items.*.productId').notEmpty(),
-        body('items.*.productName').notEmpty(),
-        body('items.*.unitPrice').isInt({ min: 1 }),
         body('items.*.quantity').isInt({ min: 1 }),
     ],
     async (req, res) => {
@@ -76,8 +74,42 @@ ordersRouter.post('/',
                 items, notes, couponCode
             } = req.body;
 
-            // Calcular totales en COP
-            const subtotal = items.reduce((sum, i) => sum + i.unitPrice * i.quantity, 0);
+            const productIds = [...new Set(items.map((item) => item.productId).filter(Boolean))];
+            if (!productIds.length) {
+                return res.status(422).json({ success: false, error: 'El carrito está vacío' });
+            }
+
+            const placeholders = productIds.map(() => '?').join(', ');
+            const productsResult = await query(
+                `SELECT id, name, price, image_url
+         FROM products
+         WHERE id IN (${placeholders}) AND is_active = 1`,
+                productIds
+            );
+
+            if (productsResult.rows.length !== productIds.length) {
+                return res.status(422).json({ success: false, error: 'Uno o más productos no están disponibles' });
+            }
+
+            const productMap = new Map(productsResult.rows.map((p) => [p.id, p]));
+
+            // Calcular totales en COP desde la BD (evita manipulación del cliente)
+            let subtotal = 0;
+            const normalizedItems = items.map((item) => {
+                const product = productMap.get(item.productId);
+                const quantity = Number(item.quantity);
+                const unitPrice = Number(product.price);
+                const itemSubtotal = unitPrice * quantity;
+                subtotal += itemSubtotal;
+                return {
+                    productId: item.productId,
+                    productName: product.name,
+                    productImage: product.image_url,
+                    unitPrice,
+                    quantity,
+                    subtotal: itemSubtotal
+                };
+            });
 
             // Aplicar cupón si viene en el request
             let discountAmount = 0;
@@ -138,13 +170,13 @@ ordersRouter.post('/',
             const { id: orderId, reference } = orderResult.rows[0];
 
             // Insertar ítems
-            for (const item of items) {
+            for (const item of normalizedItems) {
                 await query(
                     `INSERT INTO customer_order_items
              (order_id, product_id, product_name, product_image, unit_price_cop, quantity, subtotal_cop)
            VALUES (?, ?, ?, ?, ?, ?, ?)`,
                     [orderId, item.productId, item.productName, item.productImage || null,
-                        item.unitPrice, item.quantity, item.unitPrice * item.quantity]
+                        item.unitPrice, item.quantity, item.subtotal]
                 );
             }
 

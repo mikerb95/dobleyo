@@ -1,0 +1,259 @@
+/* ProductionPipeline.module.css — mobile-first vertical → desktop horizontal */
+
+.shell {
+  --color-primary: #3a2618;
+  --color-accent:  #c9893d;
+  --color-text:    #1a1410;
+
+  --bg:     color-mix(in oklab, var(--color-primary) 4%,  #fbf8f3);
+  --paper:  #ffffff;
+  --rule:   color-mix(in oklab, var(--color-primary) 12%, #ffffff);
+  --rule-2: color-mix(in oklab, var(--color-primary) 22%, #ffffff);
+  --muted:  color-mix(in oklab, var(--color-text)    50%, transparent);
+  --danger: #c0392b;
+  --ok:     #2e7d5b;
+
+  --radius:    10px;
+  --radius-sm: 8px;
+  --shadow:    0 1px 0  color-mix(in oklab, var(--color-primary) 6%,  transparent),
+               0 8px 24px -16px color-mix(in oklab, var(--color-primary) 30%, transparent);
+
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-feature-settings: "ss01", "cv11";
+  color: var(--color-text);
+  background: var(--bg);
+  min-height: 100vh;
+  padding: 24px;
+  max-width: 1240px;
+  margin: 0 auto;
+}
+
+/* HEADER */
+.head        { margin-bottom: 14px; }
+.head__title { margin: 0 0 2px; font-size: 22px; font-weight: 600; letter-spacing: -0.01em; color: var(--color-primary); }
+.head__sub   { font-size: 13px; color: var(--muted); }
+
+/* LOT CARD */
+.lotcard {
+  background: var(--paper); border: 1px solid var(--rule);
+  border-radius: var(--radius); padding: 16px 18px; margin-bottom: 16px;
+}
+.lotcard__top    { display: flex; align-items: flex-end; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+.lotcard__code   { font-family: ui-monospace, "JetBrains Mono", Menlo, monospace; font-size: 22px; font-weight: 600; letter-spacing: -0.02em; color: var(--color-primary); }
+.lotcard__origin { font-size: 13px; color: var(--muted); margin-top: 2px; }
+.lotcard__meta   {
+  display: grid; grid-template-columns: repeat(2, 1fr);
+  gap: 10px 16px; margin-top: 14px; font-size: 13px;
+}
+@media (min-width: 700px) { .lotcard__meta { grid-template-columns: repeat(4, 1fr); } }
+.lotcard__meta dt { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+.lotcard__meta dd { margin: 2px 0 0; font-weight: 600; color: var(--color-primary); font-variant-numeric: tabular-nums; }
+
+/* LOT PICKER */
+.picker {
+  display: flex; gap: 8px; flex-wrap: wrap;
+  background: var(--paper); border: 1px solid var(--rule);
+  border-radius: var(--radius); padding: 10px 12px; margin-bottom: 16px;
+  overflow-x: auto;
+}
+.picker__label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); align-self: center; padding: 0 6px; }
+
+.lotchip {
+  appearance: none; cursor: pointer;
+  font: inherit; font-size: 12.5px;
+  padding: 6px 11px; border-radius: 999px;
+  border: 1px solid var(--rule); background: var(--paper); color: var(--color-text);
+  display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+}
+.lotchip:hover  { border-color: var(--rule-2); }
+.lotchip--on    { background: var(--color-primary); color: white; border-color: var(--color-primary); }
+.lotchip__stage {
+  font-size: 10px; font-family: ui-monospace, Menlo, monospace;
+  padding: 1px 5px; border-radius: 4px;
+  background: color-mix(in oklab, currentColor 12%, white);
+  color: inherit; opacity: 0.85;
+}
+
+/* STEPPER */
+.stepper {
+  background: var(--paper); border: 1px solid var(--rule);
+  border-radius: var(--radius); padding: 20px;
+  list-style: none; margin: 0 0 16px;
+  box-shadow: var(--shadow);
+  display: grid; gap: 0; grid-template-columns: 1fr;
+}
+
+/* Mobile vertical */
+.step {
+  position: relative;
+  display: grid;
+  grid-template-columns: 36px 1fr auto;
+  gap: 12px;
+  padding: 4px 0 16px;
+  align-items: start;
+}
+.step:last-child { padding-bottom: 4px; }
+
+.step:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  left: 17px; top: 36px; bottom: 4px;
+  width: 2px; background: var(--rule); z-index: 0;
+}
+.step--completed:not(:last-child)::after { background: color-mix(in oklab, var(--ok) 50%, white); }
+
+.step__node {
+  width: 34px; height: 34px; border-radius: 999px;
+  display: grid; place-items: center;
+  font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums;
+  background: var(--paper); border: 2px solid var(--rule); color: var(--muted);
+  position: relative; z-index: 1;
+}
+.step--pending     .step__node { background: var(--paper); border-color: var(--rule-2); color: var(--muted); }
+.step--in_progress .step__node {
+  background: color-mix(in oklab, var(--color-accent) 22%, white);
+  border-color: var(--color-accent);
+  color: color-mix(in oklab, var(--color-accent) 80%, black);
+  animation: pulse 1.8s ease-in-out infinite;
+}
+.step--completed   .step__node { background: var(--ok); border-color: var(--ok); color: white; }
+
+@keyframes pulse {
+  0%   { box-shadow: 0 0 0 0   color-mix(in oklab, var(--color-accent) 50%, transparent); }
+  60%  { box-shadow: 0 0 0 10px color-mix(in oklab, var(--color-accent) 0%,  transparent); }
+  100% { box-shadow: 0 0 0 0   color-mix(in oklab, var(--color-accent) 0%,  transparent); }
+}
+
+.step__body {
+  cursor: pointer; appearance: none; background: transparent; border: 0;
+  text-align: left; font: inherit; color: inherit; padding: 0; display: grid; gap: 2px;
+}
+.step__body:hover .step__name { color: var(--color-primary); }
+.step__body:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 4px; border-radius: 4px; }
+
+.step__name {
+  font-size: 14px; font-weight: 600; color: var(--color-primary);
+  display: flex; align-items: center; gap: 8px;
+}
+.step--pending .step__name { color: var(--muted); }
+
+.step__meta {
+  font-size: 12.5px; color: var(--color-text); font-variant-numeric: tabular-nums;
+  display: flex; gap: 12px; flex-wrap: wrap;
+}
+.step__meta b { font-weight: 600; color: var(--color-primary); }
+.step--pending .step__meta { color: var(--muted); }
+
+.step__resp { font-size: 11.5px; color: var(--muted); }
+
+.statePill {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.08em;
+  padding: 2px 7px; border-radius: 999px; text-transform: uppercase;
+}
+.statePill--pending     { background: color-mix(in oklab, var(--color-text) 6%, white); color: var(--muted); }
+.statePill--in_progress { background: color-mix(in oklab, var(--color-accent) 22%, white); color: color-mix(in oklab, var(--color-accent) 80%, black); }
+.statePill--completed   { background: color-mix(in oklab, var(--ok) 14%, white); color: var(--ok); }
+
+.step__toggle { font-size: 14px; color: var(--muted); align-self: center; padding-left: 4px; transition: transform .15s ease; }
+.step--expanded .step__toggle { transform: rotate(90deg); color: var(--color-primary); }
+
+.progress {
+  height: 4px; border-radius: 999px;
+  background: color-mix(in oklab, var(--color-accent) 14%, white);
+  overflow: hidden; margin-top: 6px; max-width: 280px;
+}
+.progress__bar { height: 100%; background: var(--color-accent); transition: width .25s ease; }
+
+/* Desktop horizontal */
+@media (min-width: 900px) {
+  .stepper {
+    grid-auto-flow: column;
+    grid-template-columns: repeat(6, 1fr);
+    grid-template-rows: auto;
+    gap: 0;
+    padding: 24px 20px 18px;
+  }
+  .step {
+    grid-template-columns: 1fr;
+    grid-template-rows: 36px auto;
+    gap: 8px;
+    padding: 0 6px;
+    justify-items: center; align-items: start; text-align: center;
+  }
+  .step__node   { justify-self: center; }
+  .step__body   { justify-self: center; align-items: center; }
+  .step__name   { justify-content: center; }
+  .step__meta   { justify-content: center; }
+  .step__toggle { display: none; }
+
+  .step:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    top: 17px;
+    left: calc(50% + 22px);
+    right: calc(-50% + 22px);
+    bottom: auto;
+    height: 2px; width: auto; background: var(--rule);
+  }
+  .step--completed:not(:last-child)::after { background: color-mix(in oklab, var(--ok) 50%, white); }
+  .progress { margin: 6px auto 0; }
+}
+
+/* STAGE DETAIL */
+.detail {
+  background: var(--paper); border: 1px solid var(--rule);
+  border-radius: var(--radius); padding: 18px 20px; box-shadow: var(--shadow);
+}
+.detail__title {
+  margin: 0 0 12px; font-size: 13px; font-weight: 600; color: var(--color-primary);
+  text-transform: uppercase; letter-spacing: 0.08em;
+  display: flex; align-items: center; gap: 10px;
+}
+.detail__title small { font-size: 11.5px; font-weight: 500; color: var(--muted); letter-spacing: 0; text-transform: none; }
+
+.detail__grid { display: grid; gap: 12px 24px; grid-template-columns: repeat(2, 1fr); }
+@media (min-width: 700px) { .detail__grid { grid-template-columns: repeat(4, 1fr); } }
+.detail__field dt { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+.detail__field dd { margin: 2px 0 0; font-weight: 600; color: var(--color-primary); font-variant-numeric: tabular-nums; font-size: 14px; }
+
+.detail__note {
+  margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--rule);
+  font-size: 13px; color: var(--color-text); line-height: 1.5;
+}
+.detail__actions {
+  margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--rule);
+  display: flex; gap: 8px; flex-wrap: wrap;
+}
+
+.btn {
+  appearance: none; cursor: pointer; font: inherit; font-size: 13px; font-weight: 500;
+  padding: 7px 13px; border-radius: 8px;
+  border: 1px solid var(--rule); background: var(--paper); color: var(--color-text);
+}
+.btn:hover { border-color: var(--rule-2); }
+.btn--primary { background: var(--color-primary); color: white; border-color: var(--color-primary); }
+.btn--primary:hover { background: color-mix(in oklab, var(--color-primary) 90%, black); }
+
+/* SKELETONS */
+.skel {
+  display: block;
+  background: linear-gradient(90deg,
+    color-mix(in oklab, var(--color-primary) 6%,  white) 0%,
+    color-mix(in oklab, var(--color-primary) 12%, white) 50%,
+    color-mix(in oklab, var(--color-primary) 6%,  white) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+  border-radius: 6px; height: 14px;
+}
+@keyframes shimmer {
+  from { background-position: 200% 0; }
+  to   { background-position: -200% 0; }
+}
+
+.error {
+  background: color-mix(in oklab, var(--danger) 8%, white);
+  border: 1px solid color-mix(in oklab, var(--danger) 30%, white);
+  color: var(--danger); border-radius: var(--radius);
+  padding: 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  font-size: 13.5px;
+}

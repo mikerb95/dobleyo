@@ -2,6 +2,17 @@
 
 ---
 
+## 📅 2026-05-17 — Seguridad checkout: precios calculados en servidor (Agente: GitHub Copilot)
+
+### Archivos Modificados
+- `server/routes/orders.js` — Recalcula totales desde `products` y persiste ítems con precio/nombre de BD para evitar manipulación del cliente
+
+### Decisiones Técnicas
+- Ignorar `unitPrice` y `productName` del cliente; usar solo `productId` + `quantity` con validación server-side
+
+### Impacto
+- ✅ Mitiga manipulación de precios y cantidades en el proceso de pago
+
 ## 📅 2026-04-25 — Migración a Turso/libSQL como base de datos única (Agente: Claude)
 
 ### Motivación
