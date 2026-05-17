@@ -56,13 +56,17 @@
     align-items: center;
   }
 
-  .cart-preview-item img {
-    width: 24px;
-    height: 24px;
+  .cart-preview-item > img {
+    width: 20px !important;
+    height: 20px !important;
+    min-width: 20px !important;
+    max-width: 20px !important;
     object-fit: cover;
     border-radius: 0.25rem;
     border: 1px solid var(--border);
     background: var(--cream);
+    flex-shrink: 0;
+    display: block;
   }
 
   .cart-preview-item-name {
