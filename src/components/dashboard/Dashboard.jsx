@@ -6,7 +6,7 @@ import QuickActions from "./components/QuickActions.jsx";
 import { useApi }   from "../../lib/api.js";
 import styles       from "./Dashboard.module.css";
 
-export default function Dashboard({ user }) {
+export default function Dashboard({ user = null }) {
   const kpis   = useApi("/dashboard/kpis");
   const alerts = useApi("/dashboard/alerts");
   const feed   = useApi("/dashboard/activity");
