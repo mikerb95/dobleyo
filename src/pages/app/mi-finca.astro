@@ -2,7 +2,7 @@
 export const prerender = false;
 
 // Página de Mi Finca — Caficultor gestiona su perfil de finca — Fase 7
-import AppLayout from "../../layouts/AppLayout.astro";
+import AdminLayout from "../../layouts/AdminLayout.astro";
 
 // Cargar la finca del caficultor autenticado (si existe)
 let farm: any = null;
@@ -28,7 +28,7 @@ const displayDate = farm?.created_at
   : "";
 ---
 
-<AppLayout>
+<AdminLayout>
   <div class="mf-page">
 
     <!-- Encabezado de sección -->
@@ -217,7 +217,7 @@ const displayDate = farm?.created_at
     <!-- Mensaje de resultado -->
     <div id="resultMsg" class="result-msg" aria-live="polite" hidden></div>
   </div>
-</AppLayout>
+</AdminLayout>
 
 <script define:vars={{ currentFarm: farm }}>
 // Estado: si ya existe la finca o no
