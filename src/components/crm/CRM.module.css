@@ -22,7 +22,6 @@
   font-feature-settings: "ss01", "cv11";
   color: var(--color-text);
   background: var(--bg);
-  min-height: 100vh;
   padding: 24px;
   max-width: 1280px;
   margin: 0 auto;
