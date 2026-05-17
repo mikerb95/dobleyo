@@ -1,0 +1,8 @@
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+import CrmApp from "../../components/crm/App.jsx";
+---
+
+<AdminLayout title="CRM — DobleYo ERP" section="crm">
+  <CrmApp client:only="react" />
+</AdminLayout>
