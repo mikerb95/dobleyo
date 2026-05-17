@@ -410,6 +410,354 @@ const { title = "Admin — DobleYo Café", section = "" } = Astro.props;
         to   { background-position: -200% 0; }
       }
 
+      /* =========================================================
+         FORMULARIOS Y UTILIDADES — Re-skin Claude Design
+         (heredan páginas migradas: harvest, cupping, packaging, etc.)
+         ========================================================= */
+
+      /* Wrapper de página por defecto para páginas legacy */
+      .erp-content > form,
+      .erp-content > .page-wrap,
+      .erp-content > .harvest,
+      .erp-content > .packaging,
+      .erp-content > .cupping,
+      .erp-content > .etiquetas,
+      .erp-content > .mi-finca,
+      .erp-content > .inventory-storage,
+      .erp-content > .send-roasting,
+      .erp-content > .roast-retrieval,
+      .erp-content > .roasted-storage,
+      .erp-content > .lotes-entregados,
+      .erp-content > .pages {
+        padding: 24px;
+        max-width: 1100px;
+        margin: 0 auto;
+      }
+      @media (max-width: 640px) {
+        .erp-content > form,
+        .erp-content > .page-wrap,
+        .erp-content > .harvest,
+        .erp-content > .packaging,
+        .erp-content > .cupping,
+        .erp-content > .etiquetas,
+        .erp-content > .mi-finca,
+        .erp-content > .inventory-storage,
+        .erp-content > .send-roasting,
+        .erp-content > .roast-retrieval,
+        .erp-content > .roasted-storage,
+        .erp-content > .lotes-entregados,
+        .erp-content > .pages { padding: 16px; }
+      }
+
+      /* Headings genéricos en páginas legacy */
+      .erp-content h1 {
+        font-size: 22px; font-weight: 600; letter-spacing: -0.01em;
+        color: var(--color-primary); margin: 0 0 4px;
+      }
+      .erp-content h2 {
+        font-size: 17px; font-weight: 600; letter-spacing: -0.01em;
+        color: var(--color-primary); margin: 20px 0 12px;
+      }
+      .erp-content h3 {
+        font-size: 14px; font-weight: 600; color: var(--color-primary);
+        margin: 16px 0 10px;
+      }
+
+      /* Form group */
+      .form-group {
+        display: grid; gap: 6px; margin-bottom: 16px;
+      }
+      .form-group > label,
+      .form-group > .form-label {
+        font-size: 12px; font-weight: 600;
+        color: var(--color-primary);
+        text-transform: uppercase; letter-spacing: 0.06em;
+        display: flex; align-items: center; gap: 4px;
+      }
+      .form-group input[type="text"],
+      .form-group input[type="number"],
+      .form-group input[type="email"],
+      .form-group input[type="date"],
+      .form-group input[type="time"],
+      .form-group input[type="datetime-local"],
+      .form-group input[type="tel"],
+      .form-group input[type="url"],
+      .form-group input[type="password"],
+      .form-group input[type="search"],
+      .form-group select,
+      .form-group textarea,
+      input[type="text"]:not([class]),
+      input[type="number"]:not([class]),
+      input[type="email"]:not([class]),
+      input[type="date"]:not([class]),
+      input[type="tel"]:not([class]),
+      input[type="search"]:not([class]),
+      select:not([class]),
+      textarea:not([class]) {
+        appearance: none;
+        font: inherit; font-size: 14px;
+        padding: 9px 12px;
+        border: 1px solid var(--rule);
+        border-radius: var(--radius-sm);
+        background: var(--paper);
+        color: var(--color-text);
+        width: 100%;
+        transition: border-color .12s, box-shadow .12s;
+      }
+      .form-group input:focus,
+      .form-group select:focus,
+      .form-group textarea:focus,
+      input:focus, select:focus, textarea:focus {
+        outline: none;
+        border-color: var(--color-accent);
+        box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-accent) 18%, transparent);
+      }
+      .form-group textarea { min-height: 80px; resize: vertical; }
+
+      .form-hint {
+        font-size: 11.5px; color: var(--muted);
+      }
+      .required {
+        color: var(--danger); margin-left: 2px; font-weight: 600;
+      }
+
+      .form-grid {
+        display: grid; gap: 14px;
+        grid-template-columns: 1fr;
+      }
+      @media (min-width: 720px) {
+        .form-grid { grid-template-columns: 1fr 1fr; }
+      }
+      .form-group--wide,
+      .form-grid .wide { grid-column: 1 / -1; }
+
+      .form-section {
+        margin: 20px 0 12px;
+      }
+      .form-section > h3,
+      .form-section > .form-section-title {
+        font-size: 12px; font-weight: 600; color: var(--color-primary);
+        text-transform: uppercase; letter-spacing: 0.08em;
+        margin: 0 0 12px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid var(--rule);
+      }
+
+      .form-actions {
+        display: flex; gap: 8px; flex-wrap: wrap;
+        margin-top: 20px;
+        padding-top: 16px; border-top: 1px solid var(--rule);
+      }
+
+      /* Radio & checkbox — estilo card */
+      .radio-group, .checkbox-group {
+        display: grid; gap: 6px;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      }
+      .radio-item, .checkbox-item {
+        display: flex; align-items: center; gap: 8px;
+        padding: 10px 14px;
+        border: 1px solid var(--rule); border-radius: var(--radius-sm);
+        background: var(--paper);
+        cursor: pointer;
+        transition: border-color .12s, background .12s;
+        font-size: 13px;
+      }
+      .radio-item:hover, .checkbox-item:hover {
+        border-color: var(--rule-2); background: var(--hover);
+      }
+      .radio-item input, .checkbox-item input {
+        accent-color: var(--color-accent);
+        width: auto;
+      }
+      .radio-item:has(input:checked),
+      .checkbox-item:has(input:checked) {
+        background: var(--active-bg);
+        border-color: var(--color-accent);
+        color: var(--color-primary);
+        font-weight: 500;
+      }
+
+      /* Botones — variantes adicionales */
+      .btn-save { background: var(--color-accent); color: var(--color-primary); border-color: var(--color-accent); font-weight: 600; }
+      .btn-save:hover { background: color-mix(in oklab, var(--color-accent) 90%, black); border-color: color-mix(in oklab, var(--color-accent) 90%, black); }
+      .btn-preview { background: var(--paper); color: var(--color-primary); border-color: var(--color-primary); }
+      .btn-preview:hover { background: var(--hover); }
+      .btn-danger { background: var(--danger); color: white; border-color: var(--danger); }
+      .btn-danger:hover { background: color-mix(in oklab, var(--danger) 88%, black); }
+
+      /* Detail grids (cupping, harvest detail, etc.) */
+      .detail-grid {
+        display: grid; gap: 12px 20px;
+        grid-template-columns: repeat(2, 1fr);
+      }
+      @media (min-width: 700px) {
+        .detail-grid { grid-template-columns: repeat(4, 1fr); }
+      }
+      .detail-item dt, .detail-label {
+        font-size: 11px; color: var(--muted);
+        text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600;
+      }
+      .detail-item dd, .detail-value {
+        margin: 2px 0 0; font-weight: 600; color: var(--color-primary);
+        font-variant-numeric: tabular-nums;
+      }
+
+      /* Alerts */
+      .alert {
+        padding: 12px 14px; border-radius: var(--radius-sm);
+        display: flex; gap: 10px; align-items: flex-start;
+        font-size: 13.5px; margin: 12px 0;
+      }
+      .alert--error {
+        background: color-mix(in oklab, var(--danger) 8%, white);
+        border: 1px solid color-mix(in oklab, var(--danger) 30%, white);
+        color: var(--danger);
+      }
+      .alert--success {
+        background: color-mix(in oklab, var(--ok) 8%, white);
+        border: 1px solid color-mix(in oklab, var(--ok) 30%, white);
+        color: var(--ok);
+      }
+      .alert--info {
+        background: color-mix(in oklab, var(--color-primary) 5%, white);
+        border: 1px solid var(--rule);
+        color: var(--color-primary);
+      }
+      .info-box, .error-box {
+        padding: 12px 14px; border-radius: var(--radius-sm);
+        font-size: 13px; margin: 12px 0;
+      }
+      .info-box {
+        background: color-mix(in oklab, var(--color-primary) 4%, white);
+        border-left: 3px solid var(--color-accent);
+      }
+      .error-box {
+        background: color-mix(in oklab, var(--danger) 8%, white);
+        border-left: 3px solid var(--danger);
+        color: var(--danger);
+      }
+
+      /* Badges */
+      .badge-approved { background: color-mix(in oklab, var(--ok) 14%, white); color: var(--ok); padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+      .badge-rejected { background: color-mix(in oklab, var(--danger) 12%, white); color: var(--danger); padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+      .passed { color: var(--ok); }
+
+      /* Modal */
+      .modal {
+        position: fixed; inset: 0; z-index: 50;
+        background: color-mix(in oklab, var(--color-primary) 50%, transparent);
+        display: grid; place-items: center; padding: 16px;
+      }
+      .modal-content {
+        background: var(--paper); border-radius: var(--radius);
+        max-width: 540px; width: 100%; max-height: 90vh; overflow: auto;
+        box-shadow: 0 20px 60px -16px color-mix(in oklab, var(--color-primary) 50%, transparent);
+        border: 1px solid var(--rule);
+      }
+      .modal-header {
+        padding: 14px 20px;
+        border-bottom: 1px solid var(--rule);
+        display: flex; justify-content: space-between; align-items: center;
+      }
+      .modal-title {
+        font-size: 15px; font-weight: 600; color: var(--color-primary); margin: 0;
+      }
+      .modal-body { padding: 20px; }
+      .modal-actions {
+        padding: 12px 20px;
+        border-top: 1px solid var(--rule);
+        display: flex; gap: 8px; justify-content: flex-end;
+      }
+
+      /* Spinner */
+      .loading-spinner {
+        display: inline-block;
+        width: 18px; height: 18px;
+        border: 2px solid var(--rule);
+        border-top-color: var(--color-accent);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+      }
+      @keyframes spin { to { transform: rotate(360deg); } }
+
+      /* Action buttons row */
+      .action-buttons {
+        display: flex; gap: 8px; flex-wrap: wrap;
+        margin: 16px 0;
+      }
+
+      /* Conditions list (harvest, etc.) */
+      .conditions-list {
+        display: grid; gap: 8px;
+      }
+      .condition-item {
+        display: flex; align-items: center; gap: 10px;
+        padding: 10px 14px;
+        background: var(--paper);
+        border: 1px solid var(--rule);
+        border-radius: var(--radius-sm);
+        font-size: 13px;
+      }
+
+      /* History items (cupping, etc.) */
+      .history-item {
+        background: var(--paper); border: 1px solid var(--rule);
+        border-radius: var(--radius); padding: 14px 16px;
+        margin-bottom: 10px;
+      }
+      .history-item-header {
+        display: flex; align-items: center; justify-content: space-between;
+        gap: 12px; margin-bottom: 8px;
+      }
+      .history-lot {
+        font-size: 14px; font-weight: 600; color: var(--color-primary);
+        font-family: ui-monospace, Menlo, monospace;
+      }
+      .history-meta { font-size: 12px; color: var(--muted); }
+      .history-score {
+        font-size: 18px; font-weight: 700; color: var(--color-accent);
+        font-variant-numeric: tabular-nums;
+      }
+
+      /* Notes content */
+      .notes-content {
+        background: color-mix(in oklab, var(--color-primary) 3%, white);
+        padding: 12px 14px; border-radius: var(--radius-sm);
+        font-size: 13px; line-height: 1.5; color: var(--color-text);
+        white-space: pre-wrap;
+      }
+
+      /* Header con badge (algunas páginas) */
+      .header-badge {
+        display: inline-flex; align-items: center; gap: 6px;
+        font-size: 11px; font-weight: 600;
+        padding: 3px 10px; border-radius: 999px;
+        background: var(--active-bg); color: var(--color-primary);
+      }
+
+      /* Cover preview (etiquetas) */
+      .cover-preview {
+        background: var(--paper); border: 1px solid var(--rule);
+        border-radius: var(--radius); padding: 12px;
+        max-width: 400px;
+      }
+
+      /* mi-finca específico */
+      .mf-page { padding: 24px; max-width: 1100px; margin: 0 auto; }
+      .mf-header {
+        display: flex; justify-content: space-between; align-items: flex-end;
+        gap: 16px; flex-wrap: wrap; margin-bottom: 20px;
+      }
+      .mf-view-btn {
+        appearance: none; border: 1px solid var(--rule);
+        background: var(--paper); color: var(--color-text);
+        padding: 6px 12px; border-radius: 8px; cursor: pointer;
+        font-size: 12.5px; font-weight: 500;
+      }
+      .mf-view-btn:hover { background: var(--hover); border-color: var(--rule-2); }
+      .mf-view-btn.active { background: var(--color-primary); color: white; border-color: var(--color-primary); }
+
       /* ===== Scrollbars sutiles ===== */
       ::-webkit-scrollbar { width: 8px; height: 8px; }
       ::-webkit-scrollbar-track { background: transparent; }
