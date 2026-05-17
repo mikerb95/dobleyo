@@ -649,11 +649,8 @@
       const fmt = (n) => '$' + Number(n).toLocaleString('es-CO');
       const items = cart.slice(0, 4).map(item => `
         <div class="cart-preview-item">
-          <img src="${item.image || '/assets/logo.png'}" alt="${item.name}" loading="lazy">
-          <div class="cart-preview-item-info">
-            <span class="cart-preview-item-name">${item.name}</span>
-            <span class="cart-preview-item-qty">× ${item.qty || 1}</span>
-          </div>
+          <img src="${item.image || '/assets/logo.png'}" alt="" width="20" height="20" loading="lazy" style="width:20px;height:20px;min-width:20px;flex-shrink:0">
+          <span class="cart-preview-item-name">${item.name}<span class="cart-preview-item-qty"> × ${item.qty || 1}</span></span>
           <span class="cart-preview-item-price">${fmt((item.price || 0) * (item.qty || 1))}</span>
         </div>`).join('');
       const extra = cart.length > 4 ? `<p class="cart-preview-empty">+${cart.length - 4} más</p>` : '';
