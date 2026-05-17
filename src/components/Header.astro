@@ -626,4 +626,52 @@
     // Actualizar cuando se redimensiona la ventana
     window.addEventListener("resize", updateHeaderHeight);
   })();
+
+  // Cart preview hover
+  (function initCartPreview() {
+    const wrap = document.getElementById("cartPreviewWrap");
+    const preview = document.getElementById("cartPreview");
+    const inner = document.getElementById("cartPreviewInner");
+    if (!wrap || !preview || !inner) return;
+
+    function positionPreview() {
+      const rect = wrap.getBoundingClientRect();
+      preview.style.top = (rect.bottom + 8) + "px";
+      preview.style.right = (window.innerWidth - rect.right) + "px";
+    }
+
+    function renderPreview() {
+      const cart = window.Cart ? window.Cart.getCart() : [];
+      if (cart.length === 0) {
+        inner.innerHTML = '<p class="cart-preview-empty">Tu carrito está vacío</p>';
+        return;
+      }
+      const fmt = (n) => '$' + Number(n).toLocaleString('es-CO');
+      const items = cart.slice(0, 4).map(item => `
+        <div class="cart-preview-item">
+          <img src="${item.image || '/assets/logo.png'}" alt="${item.name}" loading="lazy">
+          <div class="cart-preview-item-info">
+            <span class="cart-preview-item-name">${item.name}</span>
+            <span class="cart-preview-item-qty">× ${item.qty || 1}</span>
+          </div>
+          <span class="cart-preview-item-price">${fmt((item.price || 0) * (item.qty || 1))}</span>
+        </div>`).join('');
+      const extra = cart.length > 4 ? `<p class="cart-preview-empty">+${cart.length - 4} más</p>` : '';
+      const subtotal = window.Cart.subtotal();
+      inner.innerHTML = items + extra + `
+        <div style="border-top:1px solid var(--border);margin-top:0.4rem;padding-top:0.5rem;display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-size:0.75rem;color:var(--muted-fg)">Subtotal</span>
+          <span style="font-size:0.85rem;font-weight:700;color:var(--coffee)">${fmt(subtotal)}</span>
+        </div>`;
+    }
+
+    wrap.addEventListener("mouseenter", () => {
+      positionPreview();
+      renderPreview();
+    });
+
+    window.addEventListener("resize", () => {
+      if (preview.style.opacity === '1' || wrap.matches(':hover')) positionPreview();
+    });
+  })();
 </script>
