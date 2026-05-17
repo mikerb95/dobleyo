@@ -15,8 +15,8 @@
 | **Tipo de módulo** | ESM (`"type": "module"` en package.json) |
 | **Node.js** | >= 20 |
 | **Lenguaje de código** | Inglés (variables, funciones, clases, nombres de archivo) |
-| **Lenguaje de comentarios** | Español (comentarios en código, commits, docs) |
-| **Lenguaje de UI** | Español (primario) + Inglés (versión internacional) |
+| **Lenguaje de comentarios** | Español Colombia (comentarios en código, commits, docs) |
+| **Lenguaje de UI** | Español Colombia (primario) + Inglés (versión internacional) |
 | **Moneda primaria** | COP (Peso colombiano) |
 | **Moneda secundaria** | USD (versión USA) |
 
