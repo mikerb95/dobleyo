@@ -439,7 +439,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
       row.innerHTML = `
           <td style="padding: 1rem; color: #666;">${user.id}</td>
-          <td style="padding: 1rem; color: #251a14; font-weight: 500;">${user.name || "N/A"}</td>
+          <td style="padding: 1rem; color: #251a14; font-weight: 500;">${[user.first_name, user.last_name].filter(Boolean).join(" ") || user.name || "N/A"}</td>
           <td style="padding: 1rem; color: #666;">${user.email}</td>
           <td style="padding: 1rem;">
             <span style="display: inline-block; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.85rem; font-weight: 600; ${roleColors[user.role] || "background: #f3f4f6; color: #6b7280;"}">
