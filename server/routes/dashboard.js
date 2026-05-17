@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { query } from '../db.js';
-import { authenticateToken, requireRole } from './auth.js';
+import { authenticateToken, requireRole } from '../auth.js';
 
 export const dashboardRouter = Router();
 
