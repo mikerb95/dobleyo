@@ -14,570 +14,420 @@ const { title = "Admin — DobleYo Café", section = "" } = Astro.props;
   <head>
     <Head title={title} isAdmin={true} />
     <style is:global>
-      /* ── Fiori Design System — DobleYo ERP ────────────────── */
+      /* =================================================================
+         DobleYo Admin — sistema visual basado en Claude Design
+         3 variables base: --color-primary, --color-accent, --color-text
+         Todo lo demás derivado con color-mix.
+         ============================================================== */
       :root {
-        --shell-h: 48px;
-        --nav-w: 240px;
-        --nav-w-sm: 52px;
+        /* === Paleta Claude Design (FUENTE DE VERDAD) === */
+        --color-primary: #3a2618;
+        --color-accent:  #c9893d;
+        --color-text:    #1a1410;
 
-        /* Shell */
-        --shell-bg: #354a5e;
-        --shell-text: rgba(255,255,255,.95);
-        --shell-icon: rgba(255,255,255,.65);
-        --shell-icon-hover: #fff;
+        /* Derivados */
+        --bg:       color-mix(in oklab, var(--color-primary) 4%,  #fbf8f3);
+        --paper:    #ffffff;
+        --rule:     color-mix(in oklab, var(--color-primary) 12%, #ffffff);
+        --rule-2:   color-mix(in oklab, var(--color-primary) 20%, #ffffff);
+        --muted:    color-mix(in oklab, var(--color-text)    50%, transparent);
+        --muted-2:  color-mix(in oklab, var(--color-text)    35%, transparent);
+        --hover:    color-mix(in oklab, var(--color-primary)  4%, white);
+        --active-bg: color-mix(in oklab, var(--color-accent) 14%, white);
 
-        /* Nav */
-        --nav-bg: #fff;
-        --nav-text: #32363a;
-        --nav-text-2: #6a6d70;
-        --nav-hover-bg: #f5f6f7;
-        --nav-active-bg: #fdf5e8;
-        --nav-active-color: #7d4e10;
-        --nav-active-border: #c8a96e;
-        --nav-section-color: #8c9099;
+        /* Semánticos (mantengo para badges/alerts) */
+        --danger:   #c0392b;
+        --warn:     var(--color-accent);
+        --ok:       #2e7d5b;
+        --info:     color-mix(in oklab, var(--color-primary) 50%, white);
 
-        /* Content */
-        --erp-bg: #f5f6f7;
-        --card-bg: #fff;
-        --card-shadow: 0 0 0 1px rgba(0,0,0,.06), 0 2px 8px rgba(0,0,0,.05);
-        --border: rgba(0,0,0,.09);
+        /* === Compatibilidad con páginas Fiori existentes === */
+        --shell-h: 56px;
+        --nav-w: 232px;
+        --nav-w-sm: 56px;
 
-        /* Text */
-        --text-1: #32363a;
-        --text-2: #6a6d70;
-        --text-3: #a9b0b8;
+        --shell-bg: var(--paper);
+        --shell-text: var(--color-primary);
+        --shell-icon: var(--muted);
+        --shell-icon-hover: var(--color-primary);
 
-        /* Semantic */
-        --c-success: #107e3e;
-        --c-success-bg: #f1fdf6;
-        --c-success-border: #b5e8cd;
-        --c-warning: #c96800;
-        --c-warning-bg: #fef3e2;
-        --c-warning-border: #f5c87a;
-        --c-error: #aa0000;
-        --c-error-bg: #ffeaea;
-        --c-error-border: #f5bcbc;
-        --c-info: #0064d9;
-        --c-info-bg: #e8f2ff;
-        --c-info-border: #91c2f5;
+        --nav-bg: var(--paper);
+        --nav-text: var(--color-text);
+        --nav-text-2: var(--muted);
+        --nav-hover-bg: var(--hover);
+        --nav-active-bg: var(--active-bg);
+        --nav-active-color: var(--color-primary);
+        --nav-active-border: var(--color-accent);
+        --nav-section-color: var(--muted-2);
 
-        /* Brand */
-        --brand: #c8a96e;
-        --brand-dark: #a8874a;
-        --brand-green: #4a6741;
+        --erp-bg: var(--bg);
+        --card-bg: var(--paper);
+        --card-shadow: 0 1px 0 color-mix(in oklab, var(--color-primary) 6%, transparent),
+                       0 8px 24px -16px color-mix(in oklab, var(--color-primary) 30%, transparent);
+        --border: var(--rule);
+
+        --text-1: var(--color-primary);
+        --text-2: var(--muted);
+        --text-3: var(--muted-2);
+
+        --c-success: var(--ok);
+        --c-success-bg: color-mix(in oklab, var(--ok) 12%, white);
+        --c-success-border: color-mix(in oklab, var(--ok) 30%, white);
+        --c-warning: var(--color-accent);
+        --c-warning-bg: color-mix(in oklab, var(--color-accent) 14%, white);
+        --c-warning-border: color-mix(in oklab, var(--color-accent) 30%, white);
+        --c-error: var(--danger);
+        --c-error-bg: color-mix(in oklab, var(--danger) 10%, white);
+        --c-error-border: color-mix(in oklab, var(--danger) 30%, white);
+        --c-info: color-mix(in oklab, var(--color-primary) 60%, white);
+        --c-info-bg: color-mix(in oklab, var(--color-primary) 6%, white);
+
+        --brand: var(--color-accent);
+        --brand-dark: var(--color-primary);
+
+        --radius:    10px;
+        --radius-sm: 8px;
       }
 
-      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      * { box-sizing: border-box; }
 
-      body {
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        font-size: 14px;
-        line-height: 1.5;
-        background: var(--erp-bg);
-        color: var(--text-1);
+      html, body {
+        margin: 0; padding: 0;
+        font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+        font-feature-settings: "ss01", "cv11";
+        color: var(--color-text);
+        background: var(--bg);
         min-height: 100vh;
-        visibility: hidden;
       }
 
-      /* ── Shell Bar ─────────────────────────────────────────── */
+      body { visibility: hidden; }
+
+      a { color: inherit; }
+      button { font: inherit; }
+
+      /* =========================================================
+         SHELL — topbar + sidebar + main
+         ========================================================= */
       .erp-shell {
-        position: fixed;
-        top: 0; left: 0; right: 0;
+        position: fixed; top: 0; left: 0; right: 0;
         height: var(--shell-h);
-        background: var(--shell-bg);
-        display: flex;
-        align-items: center;
-        z-index: 300;
-        box-shadow: 0 2px 8px rgba(0,0,0,.25);
-        gap: 0;
+        background: var(--paper);
+        border-bottom: 1px solid var(--rule);
+        display: flex; align-items: center;
+        padding: 0 18px;
+        z-index: 30;
       }
 
       .shell-nav-toggle {
-        display: grid;
-        place-items: center;
-        width: var(--shell-h);
-        height: var(--shell-h);
-        background: none;
-        border: none;
-        cursor: pointer;
-        color: var(--shell-icon);
-        flex-shrink: 0;
-        transition: color 0.15s, background 0.15s;
+        appearance: none; border: 0; background: transparent;
+        width: 36px; height: 36px;
+        display: grid; place-items: center;
+        cursor: pointer; color: var(--muted);
+        border-radius: 8px;
       }
-      .shell-nav-toggle:hover { color: var(--shell-icon-hover); background: rgba(255,255,255,.08); }
+      .shell-nav-toggle:hover { background: var(--hover); color: var(--color-primary); }
 
       .shell-product {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0 1rem 0 0.25rem;
-        text-decoration: none;
-        color: var(--shell-text);
-        flex-shrink: 0;
-        border-right: 1px solid rgba(255,255,255,.15);
-        height: 100%;
+        display: flex; align-items: center; gap: 10px;
+        text-decoration: none; margin-left: 8px;
       }
       .shell-product-logo {
-        width: 28px;
-        height: 28px;
-        background: var(--brand);
-        border-radius: 4px;
-        display: grid;
-        place-items: center;
-        flex-shrink: 0;
+        width: 30px; height: 30px;
+        background: var(--color-primary);
+        border-radius: 8px;
+        display: grid; place-items: center;
       }
       .shell-product-name {
-        font-size: 15px;
-        font-weight: 600;
+        font-weight: 600; font-size: 14px;
+        color: var(--color-primary); line-height: 1;
         letter-spacing: -0.01em;
-        color: var(--shell-text);
-        white-space: nowrap;
       }
       .shell-product-sub {
-        font-size: 11px;
-        color: var(--shell-icon);
-        display: none;
+        font-size: 10px; color: var(--muted);
+        text-transform: uppercase; letter-spacing: 0.08em;
+        margin-top: 2px;
       }
-      @media (min-width: 480px) { .shell-product-sub { display: block; } }
 
       .shell-spacer { flex: 1; }
 
-      .shell-actions {
-        display: flex;
-        align-items: center;
-        height: 100%;
-      }
+      .shell-actions { display: flex; align-items: center; gap: 6px; }
+
       .shell-btn {
-        display: grid;
-        place-items: center;
-        width: var(--shell-h);
-        height: var(--shell-h);
-        background: none;
-        border: none;
-        cursor: pointer;
-        color: var(--shell-icon);
-        transition: color 0.15s, background 0.15s;
-        position: relative;
+        appearance: none; border: 0; background: transparent;
+        width: 36px; height: 36px;
+        display: grid; place-items: center;
+        color: var(--muted); cursor: pointer;
+        border-radius: 8px;
         text-decoration: none;
       }
-      .shell-btn:hover { color: var(--shell-icon-hover); background: rgba(255,255,255,.08); }
+      .shell-btn:hover { background: var(--hover); color: var(--color-primary); }
+
+      .shell-user-btn {
+        display: flex; align-items: center; gap: 8px;
+        background: transparent; border: 1px solid transparent;
+        padding: 4px 10px 4px 4px; border-radius: 999px;
+        cursor: pointer;
+      }
+      .shell-user-btn:hover { border-color: var(--rule); background: var(--hover); }
 
       .shell-avatar {
-        width: 30px;
-        height: 30px;
-        border-radius: 50%;
-        background: var(--brand);
-        color: #fff;
-        font-size: 12px;
-        font-weight: 700;
-        display: grid;
-        place-items: center;
-        flex-shrink: 0;
-        border: 2px solid rgba(255,255,255,.3);
+        width: 28px; height: 28px; border-radius: 999px;
+        background: var(--color-primary); color: white;
+        display: grid; place-items: center;
+        font-size: 12px; font-weight: 600;
       }
-      .shell-user-btn {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0 1rem;
-        height: 100%;
-        background: none;
-        border: none;
-        cursor: pointer;
-        color: var(--shell-text);
-        font-size: 13px;
-        font-family: inherit;
-        transition: background 0.15s;
-        position: relative;
+      .shell-user-name {
+        font-size: 13px; font-weight: 500; color: var(--color-primary);
+        max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
       }
-      .shell-user-btn:hover { background: rgba(255,255,255,.08); }
-      .shell-user-name { display: none; }
-      @media (min-width: 768px) { .shell-user-name { display: block; } }
 
-      /* User dropdown */
       .shell-user-dropdown {
-        position: absolute;
-        top: calc(var(--shell-h) - 2px);
-        right: 0;
-        background: var(--card-bg);
-        border: 1px solid var(--border);
-        box-shadow: 0 8px 24px rgba(0,0,0,.15);
-        border-radius: 4px;
-        min-width: 200px;
-        z-index: 400;
-        display: none;
-        overflow: hidden;
+        position: absolute; right: 0; top: calc(100% + 6px);
+        background: var(--paper); border: 1px solid var(--rule);
+        border-radius: var(--radius); min-width: 220px;
+        box-shadow: 0 10px 32px -8px color-mix(in oklab, var(--color-primary) 30%, transparent);
+        padding: 6px; opacity: 0; visibility: hidden;
+        transform: translateY(-4px);
+        transition: opacity .12s, transform .12s, visibility .12s;
+        z-index: 40;
       }
-      .shell-user-dropdown.open { display: block; }
+      .shell-user-dropdown.open { opacity: 1; visibility: visible; transform: none; }
+
       .dropdown-user-info {
-        padding: 12px 16px;
-        border-bottom: 1px solid var(--border);
-        background: var(--erp-bg);
+        padding: 10px 12px 12px;
+        border-bottom: 1px solid var(--rule);
+        margin-bottom: 4px;
       }
-      .dropdown-user-name { font-weight: 600; font-size: 13px; color: var(--text-1); }
-      .dropdown-user-role { font-size: 11px; color: var(--text-2); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 2px; }
+      .dropdown-user-name {
+        font-size: 13px; font-weight: 600; color: var(--color-primary);
+      }
+      .dropdown-user-role {
+        font-size: 11px; color: var(--muted); margin-top: 2px;
+      }
+
       .dropdown-item {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 10px 16px;
-        color: var(--text-1);
-        font-size: 13px;
-        text-decoration: none;
-        background: none;
-        border: none;
-        width: 100%;
-        text-align: left;
-        cursor: pointer;
-        font-family: inherit;
-        transition: background 0.12s;
+        display: flex; align-items: center; gap: 10px;
+        padding: 8px 12px; font-size: 13px;
+        color: var(--color-text); text-decoration: none;
+        border-radius: 6px; cursor: pointer;
+        appearance: none; border: 0; background: transparent;
+        width: 100%; text-align: left;
       }
-      .dropdown-item:hover { background: var(--nav-hover-bg); }
-      .dropdown-item.danger { color: var(--c-error); }
-      .dropdown-item svg { opacity: 0.6; flex-shrink: 0; }
+      .dropdown-item:hover { background: var(--hover); }
+      .dropdown-item.danger { color: var(--danger); }
+      .dropdown-item.danger:hover { background: color-mix(in oklab, var(--danger) 8%, white); }
 
-      /* ── Left Navigation ───────────────────────────────────── */
+      /* ===== NAV ===== */
       .erp-nav {
-        position: fixed;
-        top: var(--shell-h);
-        left: 0;
-        bottom: 0;
+        position: fixed; top: var(--shell-h); left: 0; bottom: 0;
         width: var(--nav-w);
-        background: var(--nav-bg);
-        border-right: 1px solid var(--border);
-        z-index: 200;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-        transition: transform 0.25s ease, width 0.2s ease;
+        background: var(--paper);
+        border-right: 1px solid var(--rule);
+        display: flex; flex-direction: column;
+        z-index: 20;
+        transition: width .18s ease, transform .2s ease;
       }
+      body.nav-collapsed .erp-nav { width: var(--nav-w-sm); }
+      body.nav-collapsed .nav-label { display: none; }
+      body.nav-collapsed .nav-section-label { display: none; }
+      body.nav-collapsed .nav-section { padding-top: 8px; padding-bottom: 8px; }
 
-      /* Mobile: hidden off-screen */
-      @media (max-width: 1023px) {
-        .erp-nav {
-          transform: translateX(calc(-1 * var(--nav-w)));
-          box-shadow: 4px 0 16px rgba(0,0,0,.12);
-        }
-        .erp-nav.open { transform: translateX(0); }
-      }
+      .nav-scroller { flex: 1; overflow-y: auto; padding: 14px 10px; }
 
-      /* Desktop: collapsed icon-only */
-      @media (min-width: 1024px) {
-        body.nav-collapsed .erp-nav { width: var(--nav-w-sm); }
-        body.nav-collapsed .nav-label,
-        body.nav-collapsed .nav-section-label { display: none; }
-        body.nav-collapsed .nav-item { justify-content: center; padding: 0; }
-        body.nav-collapsed .nav-item svg { margin: 0; }
-        body.nav-collapsed .nav-section { padding-top: 0.5rem; }
-        body.nav-collapsed .nav-section + .nav-section { border-top: 1px solid var(--border); }
-      }
-
-      .nav-scroller { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 12px 0 8px; }
-
-      .nav-section { padding-top: 12px; }
+      .nav-section { padding: 8px 0; }
       .nav-section-label {
-        font-size: 10px;
-        font-weight: 700;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-        color: var(--nav-section-color);
-        padding: 8px 16px 6px;
         display: block;
-        white-space: nowrap;
-        overflow: hidden;
+        font-size: 10px; font-weight: 600;
+        text-transform: uppercase; letter-spacing: 0.1em;
+        color: var(--muted-2);
+        padding: 4px 12px 6px;
+      }
+
+      .nav-divider {
+        height: 1px; background: var(--rule);
+        margin: 4px 6px;
       }
 
       .nav-item {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 0 16px;
-        height: 40px;
-        color: var(--nav-text);
+        display: flex; align-items: center; gap: 10px;
+        padding: 8px 12px;
+        margin: 1px 0;
+        font-size: 13px; font-weight: 500;
+        color: var(--color-text);
         text-decoration: none;
-        font-size: 13.5px;
-        font-weight: 400;
-        transition: background 0.12s, color 0.12s;
+        border-radius: 8px;
         position: relative;
-        cursor: pointer;
-        white-space: nowrap;
-        overflow: hidden;
+        transition: background .12s, color .12s;
       }
-      .nav-item:hover { background: var(--nav-hover-bg); }
+      .nav-item:hover { background: var(--hover); color: var(--color-primary); }
+      .nav-item svg { flex-shrink: 0; opacity: 0.7; }
+      .nav-item:hover svg { opacity: 1; }
+
       .nav-item.active {
-        background: var(--nav-active-bg);
-        color: var(--nav-active-color);
+        background: var(--active-bg);
+        color: var(--color-primary);
         font-weight: 600;
       }
+      .nav-item.active svg { opacity: 1; color: var(--color-accent); }
       .nav-item.active::before {
-        content: '';
-        position: absolute;
-        left: 0; top: 6px; bottom: 6px;
-        width: 3px;
-        background: var(--nav-active-border);
-        border-radius: 0 2px 2px 0;
-      }
-      .nav-item svg { flex-shrink: 0; opacity: 0.65; }
-      .nav-item:hover svg { opacity: 0.85; }
-      .nav-item.active svg { opacity: 1; }
-      .nav-label { flex: 1; }
-
-      .nav-divider {
-        height: 1px;
-        background: var(--border);
-        margin: 12px 0 0;
+        content: ""; position: absolute;
+        left: -10px; top: 8px; bottom: 8px;
+        width: 3px; border-radius: 0 3px 3px 0;
+        background: var(--color-accent);
       }
 
       .nav-footer {
-        padding: 12px 0;
-        border-top: 1px solid var(--border);
-        flex-shrink: 0;
+        border-top: 1px solid var(--rule);
+        padding: 8px 10px;
       }
 
-      /* ── Nav overlay (mobile) ──────────────────────────────── */
+      /* Overlay para mobile */
       .nav-overlay {
-        display: none;
-        position: fixed;
-        inset: var(--shell-h) 0 0 0;
-        background: rgba(0,0,0,.45);
-        z-index: 199;
+        position: fixed; inset: 0;
+        background: color-mix(in oklab, var(--color-primary) 50%, transparent);
+        opacity: 0; visibility: hidden;
+        transition: opacity .15s, visibility .15s;
+        z-index: 15;
       }
-      .nav-overlay.visible { display: block; }
-      @media (min-width: 1024px) { .nav-overlay { display: none !important; } }
+      .nav-overlay.visible { opacity: 1; visibility: visible; }
 
-      /* ── Main Content ──────────────────────────────────────── */
+      /* ===== MAIN ===== */
       .erp-main {
         padding-top: var(--shell-h);
         padding-left: var(--nav-w);
         min-height: 100vh;
-        transition: padding-left 0.2s ease;
+        transition: padding-left .18s ease;
       }
+      body.nav-collapsed .erp-main { padding-left: var(--nav-w-sm); }
+
+      .erp-content {
+        min-height: calc(100vh - var(--shell-h));
+      }
+
+      /* ===== MOBILE ===== */
       @media (max-width: 1023px) {
+        .erp-nav {
+          width: 280px;
+          transform: translateX(-100%);
+          box-shadow: 0 10px 40px -10px color-mix(in oklab, var(--color-primary) 40%, transparent);
+        }
+        .erp-nav.open { transform: translateX(0); }
         .erp-main { padding-left: 0; }
-      }
-      body.nav-collapsed .erp-main {
-        padding-left: var(--nav-w-sm);
-      }
-
-      .erp-content { padding: 0; }
-
-      /* ── Page Header (Fiori Object Page Header) ────────────── */
-      .page-header {
-        background: var(--card-bg);
-        border-bottom: 1px solid var(--border);
-        padding: 0 2rem;
-      }
-      .page-header-top {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        min-height: 56px;
-        gap: 1rem;
-      }
-      .page-breadcrumb {
-        font-size: 12px;
-        color: var(--text-2);
-        margin-bottom: 2px;
-      }
-      .page-breadcrumb a { color: var(--text-2); text-decoration: none; }
-      .page-breadcrumb a:hover { color: var(--brand-dark); text-decoration: underline; }
-      .page-title {
-        font-size: 18px;
-        font-weight: 700;
-        color: var(--text-1);
-        letter-spacing: -0.01em;
-      }
-      .page-header-actions { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
-
-      /* ── Body padding ──────────────────────────────────────── */
-      .erp-body {
-        padding: 1.75rem 1.5rem;
-      }
-      @media (min-width: 768px) { .erp-body { padding: 2rem; } }
-
-      /* ── Buttons (Fiori style) ─────────────────────────────── */
-      .btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 0 16px;
-        height: 36px;
-        border-radius: 4px;
-        font-size: 13px;
-        font-weight: 600;
-        font-family: inherit;
-        cursor: pointer;
-        text-decoration: none;
-        border: 1px solid transparent;
-        transition: background 0.12s, border-color 0.12s, box-shadow 0.12s;
-        white-space: nowrap;
-      }
-      .btn-primary {
-        background: var(--brand);
-        border-color: var(--brand-dark);
-        color: #fff;
-      }
-      .btn-primary:hover { background: var(--brand-dark); }
-      .btn-secondary {
-        background: var(--card-bg);
-        border-color: var(--border);
-        color: var(--text-1);
-      }
-      .btn-secondary:hover { background: var(--nav-hover-bg); border-color: #bbb; }
-      .btn-ghost {
-        background: none;
-        border-color: transparent;
-        color: var(--text-1);
-      }
-      .btn-ghost:hover { background: var(--nav-hover-bg); }
-
-      /* ── KPI Tile ──────────────────────────────────────────── */
-      .kpi-tile {
-        background: var(--card-bg);
-        border: 1px solid var(--border);
-        border-radius: 6px;
-        padding: 16px 20px;
-        position: relative;
-        overflow: hidden;
-      }
-      .kpi-tile::before {
-        content: '';
-        position: absolute;
-        top: 0; left: 0; right: 0;
-        height: 3px;
-      }
-      .kpi-tile.success::before { background: var(--c-success); }
-      .kpi-tile.warning::before { background: var(--c-warning); }
-      .kpi-tile.error::before   { background: var(--c-error); }
-      .kpi-tile.info::before    { background: var(--c-info); }
-      .kpi-tile.brand::before   { background: var(--brand); }
-
-      .kpi-label {
-        font-size: 11px;
-        font-weight: 700;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: var(--text-2);
-        margin-bottom: 6px;
-      }
-      .kpi-value {
-        font-size: 28px;
-        font-weight: 700;
-        line-height: 1;
-        color: var(--text-1);
-        margin-bottom: 4px;
-      }
-      .kpi-sub {
-        font-size: 12px;
-        color: var(--text-3);
+        .shell-user-name { display: none; }
+        body.nav-collapsed .erp-nav { width: 280px; }
+        body.nav-collapsed .nav-label { display: inline; }
+        body.nav-collapsed .nav-section-label { display: block; }
       }
 
-      /* ── Card ──────────────────────────────────────────────── */
+      /* ===== UTILIDADES COMPARTIDAS (compat páginas Fiori) ===== */
       .card {
-        background: var(--card-bg);
-        border: 1px solid var(--border);
-        border-radius: 6px;
+        background: var(--paper);
+        border: 1px solid var(--rule);
+        border-radius: var(--radius);
         overflow: hidden;
+        box-shadow: var(--card-shadow);
       }
       .card-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 14px 20px;
-        border-bottom: 1px solid var(--border);
-        gap: 1rem;
+        padding: 14px 18px;
+        border-bottom: 1px solid var(--rule);
+        display: flex; align-items: center; justify-content: space-between;
+        gap: 12px;
       }
       .card-title {
-        font-size: 14px;
-        font-weight: 700;
-        color: var(--text-1);
+        font-size: 14px; font-weight: 600; color: var(--color-primary);
+        margin: 0;
       }
       .card-subtitle {
-        font-size: 12px;
-        color: var(--text-2);
-        margin-top: 1px;
+        font-size: 12px; color: var(--muted); margin-top: 2px;
       }
       .card-action {
-        font-size: 12px;
-        color: var(--c-info);
-        text-decoration: none;
-        font-weight: 500;
-        white-space: nowrap;
+        font-size: 12px; color: var(--color-primary);
+        text-decoration: none; font-weight: 500;
       }
       .card-action:hover { text-decoration: underline; }
 
-      /* ── Table ─────────────────────────────────────────────── */
-      .erp-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+      .btn {
+        appearance: none; cursor: pointer;
+        font: inherit; font-size: 13px; font-weight: 500;
+        padding: 8px 14px; border-radius: 8px;
+        border: 1px solid var(--rule); background: var(--paper); color: var(--color-text);
+        display: inline-flex; align-items: center; gap: 6px;
+        text-decoration: none;
+      }
+      .btn:hover { border-color: var(--rule-2); background: var(--hover); }
+      .btn-primary { background: var(--color-primary); color: white; border-color: var(--color-primary); }
+      .btn-primary:hover { background: color-mix(in oklab, var(--color-primary) 90%, black); }
+      .btn-secondary { background: var(--paper); }
+
+      .badge {
+        display: inline-flex; align-items: center;
+        font-size: 11px; font-weight: 600;
+        padding: 2px 8px; border-radius: 999px;
+      }
+      .badge-success { background: var(--c-success-bg); color: var(--c-success); }
+      .badge-warning { background: var(--c-warning-bg); color: var(--c-warning); }
+      .badge-error   { background: var(--c-error-bg);   color: var(--c-error); }
+      .badge-info    { background: var(--c-info-bg);    color: var(--c-info); }
+      .badge-neutral { background: var(--hover);        color: var(--muted); }
+
+      .erp-table {
+        width: 100%; border-collapse: collapse; font-size: 13px;
+      }
       .erp-table thead th {
         text-align: left;
-        padding: 10px 16px;
-        font-size: 11px;
-        font-weight: 700;
-        letter-spacing: 0.07em;
-        text-transform: uppercase;
-        color: var(--text-2);
-        background: #fafafa;
-        border-bottom: 1px solid var(--border);
-        white-space: nowrap;
+        font-size: 11px; font-weight: 600;
+        text-transform: uppercase; letter-spacing: 0.06em;
+        color: var(--muted);
+        padding: 10px 18px;
+        background: color-mix(in oklab, var(--color-primary) 3%, white);
+        border-bottom: 1px solid var(--rule);
       }
       .erp-table tbody td {
-        padding: 11px 16px;
-        border-bottom: 1px solid rgba(0,0,0,.05);
-        color: var(--text-1);
-        vertical-align: middle;
+        padding: 12px 18px;
+        border-bottom: 1px solid var(--rule);
+        color: var(--color-text);
       }
-      .erp-table tbody tr:last-child td { border-bottom: none; }
-      .erp-table tbody tr:hover td { background: var(--nav-hover-bg); }
+      .erp-table tbody tr:last-child td { border-bottom: 0; }
+      .erp-table tbody tr:hover { background: var(--hover); }
 
-      /* ── Badge ─────────────────────────────────────────────── */
-      .badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        padding: 2px 8px;
-        border-radius: 10px;
-        font-size: 11px;
-        font-weight: 700;
-        letter-spacing: 0.04em;
-        text-transform: uppercase;
-        border: 1px solid transparent;
-        white-space: nowrap;
+      .empty-state {
+        text-align: center; color: var(--muted);
+        padding: 32px 16px; font-size: 13px;
       }
-      .badge-success { background: var(--c-success-bg); color: var(--c-success); border-color: var(--c-success-border); }
-      .badge-warning { background: var(--c-warning-bg); color: var(--c-warning); border-color: var(--c-warning-border); }
-      .badge-error   { background: var(--c-error-bg);   color: var(--c-error);   border-color: var(--c-error-border); }
-      .badge-info    { background: var(--c-info-bg);    color: var(--c-info);    border-color: var(--c-info-border); }
-      .badge-neutral { background: #f0f0f0; color: #555; border-color: #ddd; }
 
-      /* ── Skeleton ──────────────────────────────────────────── */
       .skeleton {
         display: inline-block;
-        height: 1em;
-        width: 70px;
-        background: linear-gradient(90deg, #ebebeb 25%, #d8d8d8 50%, #ebebeb 75%);
+        background: linear-gradient(90deg,
+          color-mix(in oklab, var(--color-primary) 6%,  white) 0%,
+          color-mix(in oklab, var(--color-primary) 12%, white) 50%,
+          color-mix(in oklab, var(--color-primary) 6%,  white) 100%);
         background-size: 200% 100%;
-        animation: shimmer 1.2s infinite;
-        border-radius: 3px;
+        animation: shimmer 1.4s linear infinite;
+        border-radius: 4px; height: 14px;
       }
       @keyframes shimmer {
-        0%   { background-position: 200% 0; }
-        100% { background-position: -200% 0; }
+        from { background-position: 200% 0; }
+        to   { background-position: -200% 0; }
       }
 
-      /* ── Empty state ───────────────────────────────────────── */
-      .empty-state {
-        text-align: center;
-        padding: 40px 20px;
-        color: var(--text-2);
-        font-size: 13px;
+      /* ===== Scrollbars sutiles ===== */
+      ::-webkit-scrollbar { width: 8px; height: 8px; }
+      ::-webkit-scrollbar-track { background: transparent; }
+      ::-webkit-scrollbar-thumb {
+        background: color-mix(in oklab, var(--color-primary) 18%, white);
+        border-radius: 999px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: color-mix(in oklab, var(--color-primary) 30%, white);
       }
     </style>
   </head>
+
   <body>
 
-    <!-- ── Shell Bar ──────────────────────────────────────────── -->
+    <!-- ── Topbar ──────────────────────────────────────────── -->
     <header class="erp-shell">
-      <button class="shell-nav-toggle" id="navToggle" aria-label="Menú de navegación">
+      <button class="shell-nav-toggle" id="navToggle" aria-label="Menú">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
         </svg>
@@ -600,20 +450,18 @@ const { title = "Admin — DobleYo Café", section = "" } = Astro.props;
       <div class="shell-spacer"></div>
 
       <div class="shell-actions">
-        <!-- Ver tienda -->
-        <a href="/" target="_blank" class="shell-btn" title="Ver tienda">
+        <a href="/" target="_blank" class="shell-btn" title="Ver tienda" aria-label="Ver tienda">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
             <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
           </svg>
         </a>
 
-        <!-- User -->
         <div style="position:relative">
           <button class="shell-user-btn" id="userMenuBtn" aria-label="Menú de usuario">
             <div class="shell-avatar" id="shellAvatar">—</div>
             <span class="shell-user-name" id="shellUserName">Usuario</span>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="opacity:.6">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="opacity:.5">
               <polyline points="6 9 12 15 18 9"/>
             </svg>
           </button>
@@ -629,7 +477,6 @@ const { title = "Admin — DobleYo Café", section = "" } = Astro.props;
               </svg>
               Mi Perfil
             </a>
-            <div style="height:1px;background:var(--border);margin:4px 0"></div>
             <button class="dropdown-item danger" id="logoutBtn">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
@@ -642,11 +489,11 @@ const { title = "Admin — DobleYo Café", section = "" } = Astro.props;
       </div>
     </header>
 
-    <!-- ── Nav Overlay (mobile) ───────────────────────────────── -->
+    <!-- ── Overlay (mobile) ───────────────────────────────── -->
     <div class="nav-overlay" id="navOverlay"></div>
 
-    <!-- ── Left Navigation ───────────────────────────────────── -->
-    <nav class="erp-nav" id="erpNav" aria-label="Navegación ERP">
+    <!-- ── Sidebar ───────────────────────────────────────── -->
+    <nav class="erp-nav" id="erpNav" aria-label="Navegación">
       <div class="nav-scroller">
 
         <div class="nav-section">
@@ -675,7 +522,8 @@ const { title = "Admin — DobleYo Café", section = "" } = Astro.props;
           </a>
           <a href="/admin/produccion" class="nav-item" data-section="produccion">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/>
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/>
               <path d="M15.54 8.46a5 5 0 0 1 0 7.07M8.46 8.46a5 5 0 0 0 0 7.07"/>
             </svg>
             <span class="nav-label">Producción</span>
@@ -704,7 +552,7 @@ const { title = "Admin — DobleYo Café", section = "" } = Astro.props;
         <div class="nav-divider"></div>
 
         <div class="nav-section">
-          <span class="nav-section-label">Producción</span>
+          <span class="nav-section-label">Operación</span>
           <a href="/app/harvest" class="nav-item">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
@@ -783,15 +631,13 @@ const { title = "Admin — DobleYo Café", section = "" } = Astro.props;
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
               <circle cx="9" cy="7" r="4"/>
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
             </svg>
             <span class="nav-label">Usuarios</span>
           </a>
           <a href="/admin/sistema" class="nav-item" data-section="sistema">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <circle cx="12" cy="12" r="3"/>
-              <path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/>
-              <path d="M12 2v2M12 20v2M2 12h2M20 12h2"/>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
             </svg>
             <span class="nav-label">Sistema</span>
           </a>
@@ -800,16 +646,13 @@ const { title = "Admin — DobleYo Café", section = "" } = Astro.props;
       </div>
 
       <div class="nav-footer">
-        <div class="nav-item" style="height:36px;font-size:11px;color:var(--text-3);gap:8px;cursor:default">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity:.4">
-            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-          </svg>
-          <span class="nav-label">DobleYo ERP v2.0</span>
+        <div style="font-size:10px;color:var(--muted-2);text-align:center;padding:6px;letter-spacing:0.05em">
+          <span class="nav-label">DobleYo ERP · v2.0</span>
         </div>
       </div>
     </nav>
 
-    <!-- ── Main ───────────────────────────────────────────────── -->
+    <!-- ── Main ──────────────────────────────────────────── -->
     <main class="erp-main">
       <div class="erp-content">
         <slot />
@@ -818,7 +661,7 @@ const { title = "Admin — DobleYo Café", section = "" } = Astro.props;
 
     <script is:inline src="/assets/js/auth-refresh.js"></script>
     <script>
-      // ── Auth check ─────────────────────────────────────────
+      // Auth check
       (async () => {
         const path = window.location.pathname;
         try {
@@ -843,7 +686,7 @@ const { title = "Admin — DobleYo Café", section = "" } = Astro.props;
         }
       })();
 
-      // ── Active nav ────────────────────────────────────────
+      // Active nav
       (() => {
         const seg = window.location.pathname.split('/').filter(Boolean);
         const section = seg[1] ?? 'dashboard';
@@ -853,7 +696,7 @@ const { title = "Admin — DobleYo Café", section = "" } = Astro.props;
         });
       })();
 
-      // ── Nav toggle ────────────────────────────────────────
+      // Nav toggle
       (() => {
         const nav = document.getElementById('erpNav');
         const overlay = document.getElementById('navOverlay');
@@ -875,26 +718,23 @@ const { title = "Admin — DobleYo Café", section = "" } = Astro.props;
           overlay?.classList.remove('visible');
         });
 
-        // Restore collapsed state on desktop
         if (window.innerWidth >= 1024 && localStorage.getItem('erpNavCollapsed') === '1') {
           document.body.classList.add('nav-collapsed');
         }
       })();
 
-      // ── User dropdown ─────────────────────────────────────
+      // User dropdown
       (() => {
         const btn = document.getElementById('userMenuBtn');
         const dropdown = document.getElementById('userDropdown');
-
         btn?.addEventListener('click', (e) => {
           e.stopPropagation();
           dropdown?.classList.toggle('open');
         });
-
         document.addEventListener('click', () => dropdown?.classList.remove('open'));
       })();
 
-      // ── Logout ─────────────────────────────────────────────
+      // Logout
       document.getElementById('logoutBtn')?.addEventListener('click', async () => {
         await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
         window.location.href = '/login';
