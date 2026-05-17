@@ -28,6 +28,8 @@ import auditRouter from '../server/routes/audit.js';
 import { systemRouter } from '../server/routes/system.js';
 import { couponsRouter } from '../server/routes/coupons.js';
 import { externalSalesRouter } from '../server/routes/external-sales.js';
+import { crmRouter } from '../server/routes/crm.js';
+import { dashboardRouter } from '../server/routes/dashboard.js';
 import { healthCheck } from '../server/db.js';
 
 const app = express();

@@ -45,7 +45,7 @@ const validOrderPayload = {
     shippingAddress: 'Calle 123 #45-67',
     shippingCity: 'Bogotá',
     items: [
-        { productId: 'cf-sierra', productName: 'Sierra Nevada', unitPrice: 42000, quantity: 2 },
+        { productId: 'cf-sierra', quantity: 2 },
     ],
 };
 
@@ -93,6 +93,9 @@ describe('POST /api/orders', () => {
     });
 
     it('debería crear una orden correctamente y retornar referencia + URL de pago', async () => {
+        query.mockResolvedValueOnce({
+            rows: [{ id: 'cf-sierra', name: 'Sierra Nevada', price: 42000, image_url: '/img/si.webp' }],
+        });
         // INSERT orden → retorna id y referencia
         query.mockResolvedValueOnce({ rows: [{ id: 1, reference: 'DY-1234567-ABCD' }] });
         // INSERT item (1 item en el payload)
@@ -109,6 +112,9 @@ describe('POST /api/orders', () => {
     });
 
     it('debería calcular envío gratis cuando el subtotal supera $120.000 COP', async () => {
+        query.mockResolvedValueOnce({
+            rows: [{ id: 'cf-premium', name: 'Premium', price: 65000, image_url: '/img/premium.webp' }],
+        });
         query.mockResolvedValueOnce({ rows: [{ id: 2, reference: 'DY-9999999-FREE' }] });
         query.mockResolvedValueOnce({ rows: [] }); // INSERT item
 
@@ -117,7 +123,7 @@ describe('POST /api/orders', () => {
             .send({
                 ...validOrderPayload,
                 items: [
-                    { productId: 'cf-premium', productName: 'Premium', unitPrice: 65000, quantity: 2 }, // 130.000 > 120.000
+                    { productId: 'cf-premium', quantity: 2 }, // 130.000 > 120.000
                 ],
             });
 
@@ -126,6 +132,9 @@ describe('POST /api/orders', () => {
     });
 
     it('debería retornar 500 si la BD falla al insertar', async () => {
+        query.mockResolvedValueOnce({
+            rows: [{ id: 'cf-sierra', name: 'Sierra Nevada', price: 42000, image_url: '/img/si.webp' }],
+        });
         query.mockRejectedValueOnce(new Error('BD no disponible'));
 
         const res = await request(app)
@@ -134,6 +143,36 @@ describe('POST /api/orders', () => {
 
         expect(res.status).toBe(500);
         expect(res.body.success).toBe(false);
+    });
+
+    it('debería retornar 422 si uno o más productos no existen o están inactivos', async () => {
+        query.mockResolvedValueOnce({ rows: [] });
+
+        const res = await request(app)
+            .post('/api/orders')
+            .send(validOrderPayload);
+
+        expect(res.status).toBe(422);
+        expect(res.body.success).toBe(false);
+    });
+
+    it('debería calcular subtotal usando precios de BD, no del cliente', async () => {
+        query.mockResolvedValueOnce({
+            rows: [{ id: 'cf-sierra', name: 'Sierra Nevada', price: 42000, image_url: '/img/si.webp' }],
+        });
+        query.mockResolvedValueOnce({ rows: [{ id: 3, reference: 'DY-DB-PRICE' }] });
+        query.mockResolvedValueOnce({ rows: [] });
+
+        const res = await request(app)
+            .post('/api/orders')
+            .send({
+                ...validOrderPayload,
+                items: [{ productId: 'cf-sierra', quantity: 2, unitPrice: 1, productName: 'Hack' }],
+            });
+
+        expect(res.status).toBe(201);
+        const orderInsertArgs = query.mock.calls[1][1];
+        expect(orderInsertArgs[8]).toBe(84000);
     });
 });
 
