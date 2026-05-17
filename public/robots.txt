@@ -3,7 +3,6 @@ Allow: /
 
 # Área privada y administrativa — sin indexar
 Disallow: /admin/
-Disallow: /app/
 Disallow: /api/
 Disallow: /login
 Disallow: /registro
