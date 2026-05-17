@@ -422,12 +422,12 @@ ordersRouter.post('/wompi/webhook', async (req, res) => {
             const itemsResult = await query(
                 `SELECT product_name, quantity, unit_price_cop
          FROM customer_order_items WHERE order_id = ?`,
-                [order.id]
+                [updatedOrder.id]
             );
 
             await sendOrderConfirmationEmail(
-                order.customer_email,
-                order.customer_name,
+                updatedOrder.customer_email,
+                updatedOrder.customer_name,
                 {
                     orderId: reference,
                     date: new Date().toISOString(),
@@ -436,10 +436,10 @@ ordersRouter.post('/wompi/webhook', async (req, res) => {
                         quantity: r.quantity,
                         price: r.unit_price_cop
                     })),
-                    subtotal: order.subtotal_cop,
-                    shipping: order.shipping_cop,
-                    total: order.total_cop,
-                    shippingAddress: `${order.shipping_address}, ${order.shipping_city}`
+                    subtotal: updatedOrder.subtotal_cop,
+                    shipping: updatedOrder.shipping_cop,
+                    total: updatedOrder.total_cop,
+                    shippingAddress: `${updatedOrder.shipping_address}, ${updatedOrder.shipping_city}`
                 }
             );
         }
