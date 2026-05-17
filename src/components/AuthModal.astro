@@ -487,13 +487,7 @@ const googleClientId = import.meta.env.PUBLIC_GOOGLE_CLIENT_ID || '';
     const urlParams = new URLSearchParams(window.location.search);
     const redirect = urlParams.get('redirect');
     if (redirect) {
-      if (redirect.startsWith('/app')) {
-        if (role === 'caficultor' || role === 'admin') {
-          window.location.href = redirect;
-        } else {
-          showAlert('loginError', 'No tienes permisos para acceder a esa sección.');
-        }
-      } else if (redirect.startsWith('/admin') || redirect.includes('admin.html')) {
+      if (redirect.startsWith('/admin') || redirect.includes('admin.html')) {
         if (role === 'admin') {
           window.location.href = redirect;
         } else {
