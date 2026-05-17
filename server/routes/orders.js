@@ -415,7 +415,7 @@ ordersRouter.post('/wompi/webhook', async (req, res) => {
 
         if (!orderResult.rows.length) return;
 
-        const order = orderResult.rows[0];
+        const updatedOrder = orderResult.rows[0];
 
         // Enviar email de confirmación solo si el pago fue aprobado
         if (newStatus === 'paid') {
