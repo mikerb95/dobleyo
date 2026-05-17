@@ -11,7 +11,7 @@ const STAGES = [
   { id: "label",   label: "Etiquetado",      shortLabel: "Etiq."      },
 ];
 
-export default function ProductionPipeline({ initialLotId }) {
+export default function ProductionPipeline({ initialLotId = null }) {
   const lots = useApi("/production/lots");
   const [lotId,    setLotId]    = useState(initialLotId ?? null);
   const [expanded, setExpanded] = useState(null);

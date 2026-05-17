@@ -517,11 +517,8 @@ import Layout from "../layouts/Layout.astro";
                 shippingDepartment: fDept || undefined,
                 couponCode:         appliedCoupon ? appliedCoupon.code : undefined,
                 items: currentCart.map(p => ({
-                  productId:    p.id,
-                  productName:  p.name,
-                  productImage: p.image,
-                  unitPrice:    p.price,
-                  quantity:     p.qty,
+                  productId: p.id,
+                  quantity:  p.qty,
                 })),
               }),
             });
