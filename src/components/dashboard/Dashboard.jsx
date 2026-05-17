@@ -83,9 +83,9 @@ function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
 
 function useQuickActions(role) {
   const base = [
-    { id: "harvest", label: "Registrar cosecha", hint: "Caficultor + lote", icon: "🌱", href: "/app/harvest",         tone: "accent"  },
-    { id: "roast",   label: "Programar tostión", hint: "Asignar perfil",    icon: "🔥", href: "/app/send-roasting",    tone: "accent"  },
-    { id: "pack",    label: "Empaque",            hint: "250g / 500g / 1kg", icon: "📦", href: "/app/packaging",        tone: "neutral" },
+    { id: "harvest", label: "Registrar cosecha", hint: "Caficultor + lote", icon: "🌱", href: "/admin/harvest",         tone: "accent"  },
+    { id: "roast",   label: "Programar tostión", hint: "Asignar perfil",    icon: "🔥", href: "/admin/send-roasting",    tone: "accent"  },
+    { id: "pack",    label: "Empaque",            hint: "250g / 500g / 1kg", icon: "📦", href: "/admin/packaging",        tone: "neutral" },
     { id: "sale",    label: "Nueva venta",        hint: "B2B / B2C",         icon: "$",  href: "/admin/mercadolibre",   tone: "primary" },
     { id: "crm",     label: "CRM",                hint: "Cuentas B2B",       icon: "👥", href: "/admin/crm",            tone: "neutral" },
     { id: "prod",    label: "Producción",          hint: "Estado por lote",   icon: "⚙", href: "/admin/produccion",     tone: "neutral" },

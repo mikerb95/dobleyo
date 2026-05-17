@@ -534,26 +534,26 @@ const { title = "Admin — DobleYo Café", section = "" } = Astro.props;
 
         <div class="nav-section">
           <span class="nav-section-label">Operación</span>
-          <a href="/app/mi-finca" class="nav-item" data-roles="caficultor">
+          <a href="/admin/mi-finca" class="nav-item" data-roles="caficultor">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
               <polyline points="9 22 9 12 15 12 15 22"/>
             </svg>
             <span class="nav-label">Mi finca</span>
           </a>
-          <a href="/app/harvest" class="nav-item" data-roles="admin,caficultor">
+          <a href="/admin/harvest" class="nav-item" data-roles="admin,caficultor">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
             </svg>
             <span class="nav-label">Cosechas</span>
           </a>
-          <a href="/app/inventory-storage" class="nav-item" data-roles="admin,caficultor">
+          <a href="/admin/inventory-storage" class="nav-item" data-roles="admin,caficultor">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M21 8V21H3V8"/><path d="M1 3h22v5H1z"/><path d="M10 12h4"/>
             </svg>
             <span class="nav-label">Almacén verde</span>
           </a>
-          <a href="/app/send-roasting" class="nav-item" data-roles="admin,caficultor">
+          <a href="/admin/send-roasting" class="nav-item" data-roles="admin,caficultor">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <circle cx="12" cy="12" r="5"/>
               <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
@@ -562,40 +562,40 @@ const { title = "Admin — DobleYo Café", section = "" } = Astro.props;
             </svg>
             <span class="nav-label">Enviar a tostión</span>
           </a>
-          <a href="/app/roast-retrieval" class="nav-item" data-roles="admin">
+          <a href="/admin/roast-retrieval" class="nav-item" data-roles="admin">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/>
               <line x1="12" y1="22" x2="12" y2="7"/>
             </svg>
             <span class="nav-label">Recibir tostado</span>
           </a>
-          <a href="/app/roasted-storage" class="nav-item" data-roles="admin">
+          <a href="/admin/roasted-storage" class="nav-item" data-roles="admin">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M21 8V21H3V8"/><path d="M1 3h22v5H1z"/><line x1="10" y1="12" x2="14" y2="12"/>
             </svg>
             <span class="nav-label">Almacén tostado</span>
           </a>
-          <a href="/app/packaging" class="nav-item" data-roles="admin">
+          <a href="/admin/packaging" class="nav-item" data-roles="admin">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/>
               <line x1="10" y1="12" x2="14" y2="12"/>
             </svg>
             <span class="nav-label">Empaque</span>
           </a>
-          <a href="/app/etiquetas" class="nav-item" data-roles="admin">
+          <a href="/admin/etiquetas" class="nav-item" data-roles="admin">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
               <line x1="7" y1="7" x2="7.01" y2="7"/>
             </svg>
             <span class="nav-label">Etiquetas</span>
           </a>
-          <a href="/app/cupping" class="nav-item" data-roles="admin">
+          <a href="/admin/cupping" class="nav-item" data-roles="admin">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8z"/>
             </svg>
             <span class="nav-label">Cupping</span>
           </a>
-          <a href="/app/lotes-entregados" class="nav-item" data-roles="caficultor">
+          <a href="/admin/lotes-entregados" class="nav-item" data-roles="caficultor">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="20 6 9 17 4 12"/>
             </svg>
@@ -607,7 +607,7 @@ const { title = "Admin — DobleYo Café", section = "" } = Astro.props;
 
         <div class="nav-section">
           <span class="nav-section-label">Catálogo</span>
-          <a href="/app/productos" class="nav-item" data-roles="admin">
+          <a href="/admin/productos" class="nav-item" data-roles="admin">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
             </svg>
@@ -638,7 +638,7 @@ const { title = "Admin — DobleYo Café", section = "" } = Astro.props;
             </svg>
             <span class="nav-label">MercadoLibre</span>
           </a>
-          <a href="/app/ventas" class="nav-item" data-roles="admin">
+          <a href="/admin/ventas" class="nav-item" data-roles="admin">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <line x1="12" y1="1" x2="12" y2="23"/>
               <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
@@ -659,14 +659,14 @@ const { title = "Admin — DobleYo Café", section = "" } = Astro.props;
             </svg>
             <span class="nav-label">Finanzas</span>
           </a>
-          <a href="/app/estadisticas" class="nav-item" data-roles="admin">
+          <a href="/admin/estadisticas" class="nav-item" data-roles="admin">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/>
               <line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/>
             </svg>
             <span class="nav-label">Estadísticas</span>
           </a>
-          <a href="/app/auditoria" class="nav-item" data-roles="admin">
+          <a href="/admin/auditoria" class="nav-item" data-roles="admin">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
               <polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
@@ -693,7 +693,7 @@ const { title = "Admin — DobleYo Café", section = "" } = Astro.props;
             </svg>
             <span class="nav-label">Sistema</span>
           </a>
-          <a href="/app/devtools" class="nav-item" data-roles="admin">
+          <a href="/admin/devtools" class="nav-item" data-roles="admin">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>
             </svg>

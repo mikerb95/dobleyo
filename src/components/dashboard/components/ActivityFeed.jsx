@@ -8,7 +8,7 @@ export default function ActivityFeed({ items, limit = 10, loading }) {
     <section className={styles.feed} aria-label="Actividad reciente">
       <header className={styles.feed__head}>
         <h2 className={styles.feed__title}>Actividad reciente</h2>
-        <a href="/app/auditoria" className={styles.feed__more}>Ver auditoría ›</a>
+        <a href="/admin/auditoria" className={styles.feed__more}>Ver auditoría ›</a>
       </header>
       {loading ? (
         <FeedSkeleton rows={limit} />
