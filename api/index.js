@@ -112,6 +112,8 @@ app.use('/api/audit', auditRouter);
 app.use('/api/coupons', couponsRouter);
 app.use('/api/external-sales', externalSalesRouter);
 app.use('/api/system', systemRouter);
+app.use('/api/crm', crmRouter);
+app.use('/api/dashboard', dashboardRouter);
 
 // Health Check — ping real a BD para verificar PgBouncer + PostgreSQL
 app.get('/api/health', async (req, res) => {
