@@ -392,7 +392,7 @@ ordersRouter.post('/wompi/webhook', async (req, res) => {
         const expectedAmount = Number(order.total_cop) * 100;
         if (Number(amount_in_cents) !== expectedAmount || (currency && currency !== 'COP')) {
             console.warn('[Wompi webhook] Monto/moneda inválidos para ref:', reference);
-            return res.sendStatus(400);
+                const existingOrder = orderLookup.rows[0];
         }
 
         // Mapear estado de Wompi → estado interno
