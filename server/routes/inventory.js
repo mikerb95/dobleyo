@@ -398,6 +398,139 @@ inventoryRouter.get('/movements', async (req, res) => {
 });
 
 // ============================================
+// INGRESO MANUAL DE UNIDADES
+// ============================================
+
+// POST - Ingreso manual de unidades (SAP-style)
+inventoryRouter.post('/entrada', async (req, res) => {
+  try {
+    const {
+      product_id,
+      quantity,
+      cost_unit,
+      reason,
+      reference,
+      notes,
+      // Campos café (trazabilidad)
+      lot_code,
+      lot_name,
+      farm,
+      producer,
+      origin,
+      altitude,
+      variety,
+      process,
+      roast,
+      harvest_date,
+      roast_date,
+      moisture,
+      score,
+      lot_weight,
+      aroma,
+      flavor_notes,
+      acidity,
+      body,
+      shade_system,
+    } = req.body;
+
+    if (!product_id || !quantity || quantity < 1) {
+      return res.status(400).json({
+        success: false,
+        error: 'Campos requeridos: product_id, quantity (mínimo 1)'
+      });
+    }
+
+    const productResult = await query(
+      'SELECT id, name, category, stock_quantity, cost FROM products WHERE id = ?',
+      [product_id]
+    );
+
+    if (productResult.rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'Producto no encontrado' });
+    }
+
+    const product = productResult.rows[0];
+    const currentStock = product.stock_quantity;
+    const newStock = currentStock + parseInt(quantity);
+    let lot_id = null;
+
+    if (product.category === 'cafe') {
+      if (!lot_code || !lot_name) {
+        return res.status(400).json({
+          success: false,
+          error: 'Para café se requiere código y nombre del lote'
+        });
+      }
+
+      const existingLot = await query('SELECT id FROM lots WHERE code = ?', [lot_code]);
+      if (existingLot.rows.length > 0) {
+        return res.status(409).json({
+          success: false,
+          error: `Ya existe un lote con código "${lot_code}"`
+        });
+      }
+
+      const lotResult = await query(
+        `INSERT INTO lots (
+          code, name, origin, farm, producer, altitude, variety,
+          shade_system, process, roast, harvest_date, roast_date,
+          moisture, score, notes, product_id, weight, weight_unit,
+          aroma, flavor_notes, acidity, body, estado
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'kg', ?, ?, ?, ?, 'tostado')`,
+        [
+          lot_code, lot_name,
+          origin || null, farm || null, producer || null,
+          altitude || null, variety || null, shade_system || null,
+          process || null, roast || null,
+          harvest_date || null, roast_date || null,
+          moisture || null, score || null,
+          notes || null, product_id,
+          lot_weight || null,
+          aroma || null, flavor_notes || null,
+          acidity || null, body || null
+        ]
+      );
+
+      lot_id = Number(lotResult.lastInsertRowid);
+    }
+
+    await query(
+      `INSERT INTO inventory_movements (
+        product_id, movement_type, quantity, quantity_before, quantity_after,
+        reason, reference, notes, user_id
+      ) VALUES (?, 'entrada', ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        product_id, parseInt(quantity),
+        currentStock, newStock,
+        reason || 'Ingreso manual',
+        reference || (lot_id ? `LOTE-${lot_code}` : null),
+        notes || null,
+        req.user?.id || null
+      ]
+    );
+
+    await query(
+      'UPDATE products SET stock_quantity = ?, cost = COALESCE(?, cost), updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+      [newStock, cost_unit || null, product_id]
+    );
+
+    res.status(201).json({
+      success: true,
+      product_id,
+      lot_id,
+      lot_code: lot_code || null,
+      stock_before: currentStock,
+      stock_after: newStock,
+      units_added: parseInt(quantity),
+      message: `Se ingresaron ${quantity} unidades de "${product.name}". Stock: ${currentStock} → ${newStock}`
+    });
+  } catch (error) {
+    console.error('[POST /inventory/entrada] Error:', error);
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
+  }
+});
+
+// ============================================
 // ALERTAS DE STOCK BAJO
 // ============================================
 
