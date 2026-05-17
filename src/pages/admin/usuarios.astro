@@ -467,14 +467,21 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   document.getElementById("userForm").addEventListener("submit", async (e) => {
     e.preventDefault();
 
+    const first_name = document.getElementById("firstNameInput").value.trim();
+    const last_name = document.getElementById("lastNameInput").value.trim();
     const userData = {
       email: document.getElementById("emailInput").value,
-      name: document.getElementById("nameInput").value,
-      mobile_phone: document.getElementById("phoneInput").value,
+      first_name,
+      last_name,
+      name: [first_name, last_name].filter(Boolean).join(" "),
+      mobile_phone: document.getElementById("mobilePhoneInput").value.trim(),
+      landline_phone: document.getElementById("landlinePhoneInput").value.trim(),
+      tax_id: document.getElementById("taxIdInput").value.trim(),
       role: document.getElementById("roleInput").value,
-      city: document.getElementById("cityInput").value,
-      state_province: document.getElementById("stateInput").value,
-      country: document.getElementById("countryInput").value,
+      city: document.getElementById("cityInput").value.trim(),
+      state_province: document.getElementById("stateProvinceInput").value.trim(),
+      country: document.getElementById("countryInput").value.trim(),
+      address: document.getElementById("addressInput").value.trim(),
       is_verified: document.getElementById("verifiedInput").checked,
     };
 
