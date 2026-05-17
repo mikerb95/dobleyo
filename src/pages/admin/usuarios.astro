@@ -493,10 +493,11 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         verified === "" || String(user.is_verified) === verified;
       const matchCaficultor =
         !caficultor || user.caficultor_status === caficultor;
+      const fullName = [user.first_name, user.last_name].filter(Boolean).join(" ") || user.name || "";
       const matchSearch =
         !search ||
         user.email.toLowerCase().includes(search) ||
-        (user.name && user.name.toLowerCase().includes(search));
+        fullName.toLowerCase().includes(search);
       return matchRole && matchVerified && matchCaficultor && matchSearch;
     });
 
