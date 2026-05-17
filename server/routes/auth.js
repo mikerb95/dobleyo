@@ -257,6 +257,7 @@ authRouter.post('/google', loginLimiter, async (req, res) => {
   }
 
   try {
+    const googleClient = await getGoogleClient();
     const ticket = await googleClient.verifyIdToken({
       idToken: credential,
       audience: process.env.GOOGLE_CLIENT_ID,
