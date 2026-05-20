@@ -1,4 +1,5 @@
 import express from 'express';
+import { logger } from '../logger.js';
 import { query } from '../db.js';
 import { authenticateToken, requireRole } from '../auth.js';
 import { apiLimiter } from '../middleware/rateLimit.js';
@@ -53,7 +54,7 @@ inventoryRouter.get('/products', async (req, res) => {
       total: result.rows.length
     });
   } catch (error) {
-    console.error('Error listing products:', error);
+    logger.error('Error listing products:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });
@@ -95,7 +96,7 @@ inventoryRouter.get('/products/:id', async (req, res) => {
       suppliers: suppliers.rows
     });
   } catch (error) {
-    console.error('Error getting product:', error);
+    logger.error('Error getting product:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });
@@ -167,7 +168,7 @@ inventoryRouter.post('/products', async (req, res) => {
       message: 'Producto creado exitosamente'
     });
   } catch (error) {
-    console.error('Error creating product:', error);
+    logger.error('Error creating product:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });
@@ -228,7 +229,7 @@ inventoryRouter.put('/products/:id', async (req, res) => {
       message: 'Producto actualizado exitosamente'
     });
   } catch (error) {
-    console.error('Error updating product:', error);
+    logger.error('Error updating product:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });
@@ -257,7 +258,7 @@ inventoryRouter.delete('/products/:id', async (req, res) => {
       message: hard === 'true' ? 'Producto eliminado' : 'Producto desactivado'
     });
   } catch (error) {
-    console.error('Error deleting product:', error);
+    logger.error('Error deleting product:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });
@@ -351,7 +352,7 @@ inventoryRouter.post('/movements', async (req, res) => {
       message: 'Movimiento registrado exitosamente'
     });
   } catch (error) {
-    console.error('Error recording movement:', error);
+    logger.error('Error recording movement:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });
@@ -392,7 +393,7 @@ inventoryRouter.get('/movements', async (req, res) => {
       offset: parseInt(offset)
     });
   } catch (error) {
-    console.error('Error listing movements:', error);
+    logger.error('Error listing movements:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });
@@ -525,7 +526,7 @@ inventoryRouter.post('/entrada', async (req, res) => {
       message: `Se ingresaron ${quantity} unidades de "${product.name}". Stock: ${currentStock} → ${newStock}`
     });
   } catch (error) {
-    console.error('[POST /inventory/entrada] Error:', error);
+    logger.error('[POST /inventory/entrada] Error:', error);
     res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });
@@ -555,7 +556,7 @@ inventoryRouter.get('/alerts/low-stock', async (req, res) => {
       total: result.rows.length
     });
   } catch (error) {
-    console.error('Error getting low stock alerts:', error);
+    logger.error('Error getting low stock alerts:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });
@@ -611,7 +612,7 @@ inventoryRouter.get('/stats/dashboard', async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Error getting inventory stats:', error);
+    logger.error('Error getting inventory stats:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });

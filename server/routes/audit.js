@@ -1,4 +1,5 @@
 import express from 'express';
+import { logger } from '../logger.js';
 import * as auth from '../auth.js';
 import { query } from '../db.js';
 import { logAudit, getAuditLogs, getAuditStats } from '../services/audit.js';
@@ -47,7 +48,7 @@ auditRouter.get('/logs', auth.authenticateToken, auth.requireRole('admin'), asyn
       offset: filters.offset
     });
   } catch (err) {
-    console.error('[GET /api/audit/logs] Error:', err);
+    logger.error({ err }, '[GET /api/audit/logs] Error:');
     res.status(500).json({ error: 'Error al obtener logs de auditoría' });
   }
 });
@@ -58,7 +59,7 @@ auditRouter.get('/stats', auth.authenticateToken, auth.requireRole('admin'), asy
     const stats = await getAuditStats();
     res.json({ stats });
   } catch (err) {
-    console.error('[GET /api/audit/stats] Error:', err);
+    logger.error({ err }, '[GET /api/audit/stats] Error:');
     res.status(500).json({ error: 'Error al obtener estadísticas' });
   }
 });
@@ -73,7 +74,7 @@ auditRouter.get('/actions', auth.authenticateToken, auth.requireRole('admin'), a
     const actions = result.rows.map(r => r.action);
     res.json({ actions });
   } catch (err) {
-    console.error('[GET /api/audit/actions] Error:', err);
+    logger.error({ err }, '[GET /api/audit/actions] Error:');
     res.status(500).json({ error: 'Error al obtener acciones' });
   }
 });

@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { logger } from '../logger.js';
 import { query } from '../db.js';
 
 export const traceabilityRouter = Router();
@@ -31,7 +32,7 @@ traceabilityRouter.get('/:code', async (req, res) => {
 
         return res.json({ success: true, data });
     } catch (err) {
-        console.error('[GET /api/traceability/:code] Error:', err);
+        logger.error({ err }, '[GET /api/traceability/:code] Error:');
         return res.status(500).json({ success: false, error: 'Error al consultar trazabilidad' });
     }
 });

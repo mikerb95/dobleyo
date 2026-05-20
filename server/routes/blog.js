@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { logger } from '../logger.js';
 import { body, validationResult } from 'express-validator';
 import { query } from '../db.js';
 import { authenticateToken, requireRole } from '../auth.js';
@@ -16,7 +17,7 @@ blogRouter.get('/', async (_req, res) => {
         );
         res.json({ success: true, data: result.rows });
     } catch (err) {
-        console.error('[GET /api/blog] Error:', err);
+        logger.error({ err }, '[GET /api/blog] Error:');
         res.status(500).json({ success: false, error: 'Error interno' });
     }
 });
@@ -31,7 +32,7 @@ blogRouter.get('/:slug', async (req, res) => {
         if (!result.rows.length) return res.status(404).json({ success: false, error: 'Post no encontrado' });
         res.json({ success: true, data: result.rows[0] });
     } catch (err) {
-        console.error('[GET /api/blog/:slug] Error:', err);
+        logger.error({ err }, '[GET /api/blog/:slug] Error:');
         res.status(500).json({ success: false, error: 'Error interno' });
     }
 });
@@ -64,7 +65,7 @@ blogRouter.post('/',
             );
             res.status(201).json({ success: true, data: result.rows[0] });
         } catch (err) {
-            console.error('[POST /api/blog] Error:', err);
+            logger.error({ err }, '[POST /api/blog] Error:');
             res.status(500).json({ success: false, error: 'Error interno' });
         }
     }
@@ -104,7 +105,7 @@ blogRouter.patch('/:id',
             );
             res.json({ success: true });
         } catch (err) {
-            console.error('[PATCH /api/blog/:id] Error:', err);
+            logger.error({ err }, '[PATCH /api/blog/:id] Error:');
             res.status(500).json({ success: false, error: 'Error interno' });
         }
     }
@@ -116,7 +117,7 @@ blogRouter.delete('/:id', authenticateToken, requireRole('admin'), async (req, r
         await query(`DELETE FROM blog_posts WHERE id = ?`, [req.params.id]);
         res.json({ success: true });
     } catch (err) {
-        console.error('[DELETE /api/blog/:id] Error:', err);
+        logger.error({ err }, '[DELETE /api/blog/:id] Error:');
         res.status(500).json({ success: false, error: 'Error interno' });
     }
 });

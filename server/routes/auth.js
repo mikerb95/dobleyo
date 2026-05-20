@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { logger } from '../logger.js';
 import { body, validationResult } from 'express-validator';
 import * as db from '../db.js';
 import * as auth from '../auth.js';
@@ -67,7 +68,7 @@ authRouter.post('/register',
       res.status(201).json({ message: 'Usuario registrado. Por favor revisa tu correo para verificar la cuenta.', user: newUser });
 
     } catch (err) {
-      console.error(err);
+      logger.error(err);
       res.status(500).json({ error: 'Error al registrar usuario' });
     }
   }
@@ -174,7 +175,7 @@ authRouter.post('/login',
       });
 
     } catch (err) {
-      console.error(err);
+      logger.error(err);
       res.status(500).json({ error: 'Error de servidor' });
     }
 });
@@ -228,7 +229,7 @@ authRouter.post('/refresh', refreshLimiter, async (req, res) => {
     });
 
   } catch (err) {
-    console.error(err);
+    logger.error(err);
     res.status(500).json({ error: 'Error al refrescar token' });
   }
 });
@@ -311,7 +312,7 @@ authRouter.post('/google', loginLimiter, async (req, res) => {
       user: { id: user.id, first_name: user.first_name, last_name: user.last_name, role: user.role },
     });
   } catch (err) {
-    console.error('[POST /api/auth/google] Error:', err);
+    logger.error({ err }, '[POST /api/auth/google] Error:');
     res.status(401).json({ error: 'Token de Google inválido' });
   }
 });
@@ -342,7 +343,7 @@ authRouter.get('/me', auth.authenticateToken, async (req, res) => {
 
     res.json(result.rows[0]);
   } catch (err) {
-    console.error('[/api/auth/me] Error:', err);
+    logger.error({ err }, '[/api/auth/me] Error:');
     res.status(500).json({ error: 'Error al obtener usuario' });
   }
 });
@@ -396,7 +397,7 @@ authRouter.post('/request-caficultor',
       });
 
     } catch (err) {
-      console.error(err);
+      logger.error(err);
       res.status(500).json({ error: 'Error al enviar solicitud' });
     }
   }
@@ -438,7 +439,7 @@ authRouter.put('/profile',
 
       res.json({ success: true, message: 'Perfil actualizado' });
     } catch (err) {
-      console.error('[PUT /api/auth/profile] Error:', err);
+      logger.error({ err }, '[PUT /api/auth/profile] Error:');
       res.status(500).json({ success: false, error: 'Error interno del servidor' });
     }
   }
@@ -479,7 +480,7 @@ authRouter.put('/password',
 
       res.json({ success: true, message: 'Contraseña actualizada' });
     } catch (err) {
-      console.error('[PUT /api/auth/password] Error:', err);
+      logger.error({ err }, '[PUT /api/auth/password] Error:');
       res.status(500).json({ success: false, error: 'Error interno del servidor' });
     }
   }
@@ -499,7 +500,7 @@ authRouter.get('/caficultor-status',
       }
       res.json({ hasApplication: true, application: result.rows[0] });
     } catch (err) {
-      console.error(err);
+      logger.error(err);
       res.status(500).json({ error: 'Error al obtener estado' });
     }
   }

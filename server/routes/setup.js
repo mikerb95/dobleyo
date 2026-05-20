@@ -1,4 +1,5 @@
 import express from 'express';
+import { logger } from '../logger.js';
 import * as db from '../db.js';
 import * as auth from '../auth.js';
 import { createCoffeeTables } from '../migrations/create_coffee_tables.js';
@@ -301,7 +302,7 @@ setupRouter.post('/', async (req, res) => {
     res.json({ success: true, logs });
 
   } catch (error) {
-    console.error(error);
+    logger.error(error);
     res.status(500).json({ success: false, error: error.message, logs });
   }
 });
@@ -510,7 +511,7 @@ setupRouter.post('/full-setup', async (req, res) => {
     });
 
   } catch (error) {
-    console.error(error);
+    logger.error(error);
     log('');
     log('❌ ERROR EN LA CONFIGURACIÓN');
     log(`Mensaje: ${error.message}`);

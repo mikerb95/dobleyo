@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { logger } from '../logger.js';
 import { body, validationResult } from 'express-validator';
 import { query, withTransaction } from '../db.js';
 import { authenticateToken, requireRole } from '../auth.js';
@@ -80,7 +81,7 @@ externalSalesRouter.get('/', async (req, res) => {
       stats: statsResult.rows,
     });
   } catch (err) {
-    console.error('[GET /api/external-sales] Error:', err);
+    logger.error({ err }, '[GET /api/external-sales] Error:');
     res.status(500).json({ success: false, error: 'Error al obtener ventas externas' });
   }
 });
@@ -115,7 +116,7 @@ externalSalesRouter.get('/:id', async (req, res) => {
 
     res.json({ success: true, sale: saleResult.rows[0], items: itemsResult.rows });
   } catch (err) {
-    console.error('[GET /api/external-sales/:id] Error:', err);
+    logger.error({ err }, '[GET /api/external-sales/:id] Error:');
     res.status(500).json({ success: false, error: 'Error al obtener la venta' });
   }
 });
@@ -214,7 +215,7 @@ externalSalesRouter.post('/',
 
       res.status(201).json({ success: true, id: saleId });
     } catch (err) {
-      console.error('[POST /api/external-sales] Error:', err);
+      logger.error({ err }, '[POST /api/external-sales] Error:');
       res.status(500).json({ success: false, error: err.message || 'Error al registrar la venta' });
     }
   }
@@ -272,7 +273,7 @@ externalSalesRouter.put('/:id/cancel', async (req, res) => {
 
     res.json({ success: true });
   } catch (err) {
-    console.error('[PUT /api/external-sales/:id/cancel] Error:', err);
+    logger.error({ err }, '[PUT /api/external-sales/:id/cancel] Error:');
     res.status(500).json({ success: false, error: 'Error al cancelar la venta' });
   }
 });

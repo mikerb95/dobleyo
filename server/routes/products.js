@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { logger } from '../logger.js';
 import { body, validationResult } from 'express-validator';
 import { query } from '../db.js';
 import { authenticateToken, requireRole } from '../auth.js';
@@ -78,7 +79,7 @@ productsRouter.get('/', async (req, res) => {
 
     res.json({ success: true, data, total: data.length });
   } catch (err) {
-    console.error('[GET /api/products] Error:', err);
+    logger.error({ err }, '[GET /api/products] Error:');
     res.status(500).json({ success: false, error: 'Error al cargar productos' });
   }
 });
@@ -118,7 +119,7 @@ productsRouter.get('/:id', async (req, res) => {
       },
     });
   } catch (err) {
-    console.error('[GET /api/products/:id] Error:', err);
+    logger.error({ err }, '[GET /api/products/:id] Error:');
     res.status(500).json({ success: false, error: 'Error al cargar producto' });
   }
 });
@@ -145,7 +146,7 @@ productsRouter.get('/:id/reviews', async (req, res) => {
             data: { reviews: rows, avg_rating: agg[0]?.avg_rating ?? null, total: agg[0]?.total ?? 0 },
         });
     } catch (err) {
-        console.error('[GET /api/products/:id/reviews] Error:', err);
+        logger.error({ err }, '[GET /api/products/:id/reviews] Error:');
         res.status(500).json({ success: false, error: 'Error interno' });
     }
 });
@@ -171,7 +172,7 @@ productsRouter.post('/:id/reviews',
             );
             res.status(201).json({ success: true, message: 'Reseña enviada. Aparecerá tras revisión.' });
         } catch (err) {
-            console.error('[POST /api/products/:id/reviews] Error:', err);
+            logger.error({ err }, '[POST /api/products/:id/reviews] Error:');
             res.status(500).json({ success: false, error: 'Error interno' });
         }
     }
@@ -183,7 +184,7 @@ productsRouter.patch('/reviews/:reviewId/approve', authenticateToken, requireRol
         await query(`UPDATE product_reviews SET is_approved = 1 WHERE id = ?`, [req.params.reviewId]);
         res.json({ success: true });
     } catch (err) {
-        console.error('[PATCH /api/products/reviews/:reviewId/approve] Error:', err);
+        logger.error({ err }, '[PATCH /api/products/reviews/:reviewId/approve] Error:');
         res.status(500).json({ success: false, error: 'Error interno' });
     }
 });
@@ -194,7 +195,7 @@ productsRouter.delete('/reviews/:reviewId', authenticateToken, requireRole('admi
         await query(`DELETE FROM product_reviews WHERE id = ?`, [req.params.reviewId]);
         res.json({ success: true });
     } catch (err) {
-        console.error('[DELETE /api/products/reviews/:reviewId] Error:', err);
+        logger.error({ err }, '[DELETE /api/products/reviews/:reviewId] Error:');
         res.status(500).json({ success: false, error: 'Error interno' });
     }
 });

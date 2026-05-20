@@ -1,4 +1,5 @@
 import express from 'express';
+import { logger } from '../logger.js';
 import { query } from '../db.js';
 import { authenticateToken, requireRole } from '../auth.js';
 import { apiLimiter } from '../middleware/rateLimit.js';
@@ -45,7 +46,7 @@ devtoolsRouter.post('/clean-users', async (req, res) => {
       deletedCount: deleteResult.rowCount || 0
     });
   } catch (error) {
-    console.error('Error al limpiar usuarios:', error);
+    logger.error('Error al limpiar usuarios:', error);
     res.status(500).json({ error: `Error al limpiar usuarios: ${error.message}` });
   }
 });
@@ -80,7 +81,7 @@ devtoolsRouter.post('/clean-lots', async (req, res) => {
         details.push(`✓ ${table}: ${result.rowCount || 0} registros`);
       } catch (tableError) {
         details.push(`⚠ ${table}: ${tableError.message}`);
-        console.warn(`Error limpiando ${table}:`, tableError.message);
+        logger.warn(`Error limpiando ${table}:`, tableError.message);
       }
     }
 
@@ -93,7 +94,7 @@ devtoolsRouter.post('/clean-lots', async (req, res) => {
       details: details
     });
   } catch (error) {
-    console.error('Error general al limpiar lotes:', error);
+    logger.error('Error general al limpiar lotes:', error);
     // Asegurar que reactivamos las claves foráneas en caso de error
     await query('SET FOREIGN_KEY_CHECKS = 1;').catch(() => {});
     res.status(500).json({ error: `Error al limpiar lotes: ${error.message}` });
@@ -125,7 +126,7 @@ devtoolsRouter.post('/clean-products', async (req, res) => {
         details.push(`✓ ${table}: ${result.rowCount || 0} registros`);
       } catch (tableError) {
         details.push(`⚠ ${table}: ${tableError.message}`);
-        console.warn(`Error limpiando ${table}:`, tableError.message);
+        logger.warn(`Error limpiando ${table}:`, tableError.message);
       }
     }
 
@@ -138,7 +139,7 @@ devtoolsRouter.post('/clean-products', async (req, res) => {
       details: details
     });
   } catch (error) {
-    console.error('Error general al limpiar productos:', error);
+    logger.error('Error general al limpiar productos:', error);
     // Asegurar que reactivamos las claves foráneas en caso de error
     await query('SET FOREIGN_KEY_CHECKS = 1;').catch(() => {});
     res.status(500).json({ error: `Error al limpiar productos: ${error.message}` });

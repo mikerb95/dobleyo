@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { logger } from '../logger.js';
 import libsqlClient, { query, healthCheck } from '../db.js';
 import { authenticateToken, requireRole, hashPassword } from '../auth.js';
 import { logAudit } from '../services/audit.js';
@@ -36,7 +37,7 @@ systemRouter.get('/stats', async (req, res) => {
       },
     });
   } catch (err) {
-    console.error('[GET /api/system/stats]', err);
+    logger.error({ err }, '[GET /api/system/stats]');
     res.status(500).json({ success: false, error: err.message });
   }
 });
@@ -81,7 +82,7 @@ systemRouter.get('/users/stats', async (req, res) => {
       },
     });
   } catch (err) {
-    console.error('[GET /api/system/users/stats]', err);
+    logger.error({ err }, '[GET /api/system/users/stats]');
     res.status(500).json({ success: false, error: err.message });
   }
 });
@@ -97,7 +98,7 @@ systemRouter.get('/admins', async (req, res) => {
     `);
     res.json({ success: true, data: result.rows });
   } catch (err) {
-    console.error('[GET /api/system/admins]', err);
+    logger.error({ err }, '[GET /api/system/admins]');
     res.status(500).json({ success: false, error: err.message });
   }
 });
@@ -123,7 +124,7 @@ systemRouter.post('/admins', async (req, res) => {
 
     res.status(201).json({ success: true, data: { id: Number(r.lastInsertRowid), tempPassword: temp } });
   } catch (err) {
-    console.error('[POST /api/system/admins]', err);
+    logger.error({ err }, '[POST /api/system/admins]');
     res.status(500).json({ success: false, error: err.message });
   }
 });
@@ -142,7 +143,7 @@ systemRouter.put('/admins/:id/role', async (req, res) => {
 
     res.json({ success: true });
   } catch (err) {
-    console.error('[PUT /api/system/admins/:id/role]', err);
+    logger.error({ err }, '[PUT /api/system/admins/:id/role]');
     res.status(500).json({ success: false, error: err.message });
   }
 });
@@ -158,7 +159,7 @@ systemRouter.post('/admins/:id/reset-password', async (req, res) => {
 
     res.json({ success: true, data: { tempPassword: temp } });
   } catch (err) {
-    console.error('[POST /api/system/admins/:id/reset-password]', err);
+    logger.error({ err }, '[POST /api/system/admins/:id/reset-password]');
     res.status(500).json({ success: false, error: err.message });
   }
 });
@@ -188,7 +189,7 @@ systemRouter.get('/errors', async (req, res) => {
 
     res.json({ success: true, data: rows.rows, total: Number(total.rows[0].count) });
   } catch (err) {
-    console.error('[GET /api/system/errors]', err);
+    logger.error({ err }, '[GET /api/system/errors]');
     res.status(500).json({ success: false, error: err.message });
   }
 });
@@ -207,7 +208,7 @@ systemRouter.post('/errors', async (req, res) => {
 
     res.status(201).json({ success: true });
   } catch (err) {
-    console.error('[POST /api/system/errors]', err);
+    logger.error({ err }, '[POST /api/system/errors]');
     res.status(500).json({ success: false, error: err.message });
   }
 });
@@ -218,7 +219,7 @@ systemRouter.delete('/errors', async (req, res) => {
     await logAudit(req.user.id, 'clear_error_logs', 'system', 'error_logs', { deleted: r.rowCount });
     res.json({ success: true, data: { deleted: r.rowCount } });
   } catch (err) {
-    console.error('[DELETE /api/system/errors]', err);
+    logger.error({ err }, '[DELETE /api/system/errors]');
     res.status(500).json({ success: false, error: err.message });
   }
 });
@@ -235,7 +236,7 @@ systemRouter.get('/changelog', async (req, res) => {
     `);
     res.json({ success: true, data: result.rows });
   } catch (err) {
-    console.error('[GET /api/system/changelog]', err);
+    logger.error({ err }, '[GET /api/system/changelog]');
     res.status(500).json({ success: false, error: err.message });
   }
 });
@@ -254,7 +255,7 @@ systemRouter.post('/changelog', async (req, res) => {
     await logAudit(req.user.id, 'create_changelog', 'system', String(r.lastInsertRowid), { version, title });
     res.status(201).json({ success: true, data: { id: Number(r.lastInsertRowid) } });
   } catch (err) {
-    console.error('[POST /api/system/changelog]', err);
+    logger.error({ err }, '[POST /api/system/changelog]');
     res.status(500).json({ success: false, error: err.message });
   }
 });
@@ -310,7 +311,7 @@ systemRouter.post('/backup', async (req, res) => {
 
     res.send(lines.join('\n') + '\n');
   } catch (err) {
-    console.error('[POST /api/system/backup]', err);
+    logger.error({ err }, '[POST /api/system/backup]');
     res.status(500).json({ success: false, error: err.message });
   }
 });
@@ -367,7 +368,7 @@ systemRouter.delete('/logs/old', async (req, res) => {
     await logAudit(req.user.id, 'purge_old_logs', 'system', 'audit_logs', { days, deleted: r.rowCount });
     res.json({ success: true, data: { deleted: r.rowCount, olderThanDays: days } });
   } catch (err) {
-    console.error('[DELETE /api/system/logs/old]', err);
+    logger.error({ err }, '[DELETE /api/system/logs/old]');
     res.status(500).json({ success: false, error: err.message });
   }
 });

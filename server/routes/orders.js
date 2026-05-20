@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { logger } from '../logger.js';
 import crypto from 'crypto';
 import { body, validationResult } from 'express-validator';
 import { query } from '../db.js';
@@ -205,7 +206,7 @@ ordersRouter.post('/',
                 data: { orderId, reference, subtotal, discountAmount, shipping, total, checkoutUrl }
             });
         } catch (err) {
-            console.error('[POST /api/orders] Error:', err);
+            logger.error({ err }, '[POST /api/orders] Error:');
             return res.status(500).json({ success: false, error: 'Error al crear la orden' });
         }
     }
@@ -247,7 +248,7 @@ ordersRouter.get('/:ref', async (req, res) => {
             data: { ...order, items: itemsResult.rows }
         });
     } catch (err) {
-        console.error('[GET /api/orders/:ref] Error:', err);
+        logger.error({ err }, '[GET /api/orders/:ref] Error:');
         return res.status(500).json({ success: false, error: 'Error al consultar la orden' });
     }
 });
@@ -292,7 +293,7 @@ ordersRouter.get('/',
                 offset: Number(offset)
             });
         } catch (err) {
-            console.error('[GET /api/orders] Error:', err);
+            logger.error({ err }, '[GET /api/orders] Error:');
             return res.status(500).json({ success: false, error: 'Error al listar órdenes' });
         }
     }
@@ -330,7 +331,7 @@ ordersRouter.patch('/:ref/status',
 
             return res.json({ success: true, data: result.rows[0] });
         } catch (err) {
-            console.error('[PATCH /api/orders/:ref/status] Error:', err);
+            logger.error({ err }, '[PATCH /api/orders/:ref/status] Error:');
             return res.status(500).json({ success: false, error: 'Error actualizando estado' });
         }
     }
@@ -343,7 +344,7 @@ ordersRouter.post('/wompi/webhook', async (req, res) => {
     try {
         const event = req.body;
         if (process.env.NODE_ENV === 'production' && !WOMPI_EVENTS_SECRET) {
-            console.error('[Wompi webhook] WOMPI_EVENTS_SECRET no configurado en producción');
+            logger.error('[Wompi webhook] WOMPI_EVENTS_SECRET no configurado en producción');
             return res.sendStatus(500);
         }
 
@@ -358,7 +359,7 @@ ordersRouter.post('/wompi/webhook', async (req, res) => {
                 .update(`${tsStr}${WOMPI_EVENTS_SECRET}`, 'utf8')
                 .digest('hex');
             if (expected !== checksum) {
-                console.warn('[Wompi webhook] Firma inválida');
+                logger.warn('[Wompi webhook] Firma inválida');
                 return res.sendStatus(401);
             }
         }
@@ -385,13 +386,13 @@ ordersRouter.post('/wompi/webhook', async (req, res) => {
             return res.sendStatus(200);
         }
         if (order.payment_transaction_id && order.payment_transaction_id !== txId) {
-            console.warn('[Wompi webhook] Transacción distinta para ref:', reference);
+            logger.warn('[Wompi webhook] Transacción distinta para ref:', reference);
             return res.sendStatus(200);
         }
 
         const expectedAmount = Number(order.total_cop) * 100;
         if (Number(amount_in_cents) !== expectedAmount || (currency && currency !== 'COP')) {
-            console.warn('[Wompi webhook] Monto/moneda inválidos para ref:', reference);
+            logger.warn('[Wompi webhook] Monto/moneda inválidos para ref:', reference);
             const existingOrder = orderLookup.rows[0];
         }
 
@@ -446,7 +447,7 @@ ordersRouter.post('/wompi/webhook', async (req, res) => {
 
         return res.sendStatus(200);
     } catch (err) {
-        console.error('[Wompi webhook] Error procesando evento:', err);
+        logger.error({ err }, '[Wompi webhook] Error procesando evento:');
         return res.sendStatus(500);
     }
 });

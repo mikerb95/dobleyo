@@ -1,4 +1,5 @@
 import { Resend } from 'resend';
+import { logger } from '../logger.js';
 
 // Initialize Resend only if key is present to avoid crashes
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
@@ -63,7 +64,7 @@ export const sendVerificationEmail = async (email, token) => {
     });
     return { success: true, data };
   } catch (error) {
-    console.error('Error enviando email de verificación:', error);
+    logger.error('Error enviando email de verificación:', error);
     return { success: false, error };
   }
 };
@@ -174,7 +175,7 @@ export const sendOrderConfirmationEmail = async (email, customerName, orderData)
 
     return { success: true, data };
   } catch (error) {
-    console.error('Error enviando email de confirmación de pedido:', error);
+    logger.error('Error enviando email de confirmación de pedido:', error);
     return { success: false, error };
   }
 };
@@ -249,7 +250,7 @@ export const sendContactFormEmail = async (contactData) => {
 
     return { success: true, data };
   } catch (error) {
-    console.error('Error enviando email de contacto:', error);
+    logger.error('Error enviando email de contacto:', error);
     return { success: false, error };
   }
 };
@@ -315,7 +316,7 @@ export const sendNewsletterWelcomeEmail = async (email, unsubscribeToken) => {
     });
     return { success: true, data };
   } catch (error) {
-    console.error('[Newsletter] Error enviando email de bienvenida:', error);
+    logger.error('[Newsletter] Error enviando email de bienvenida:', error);
     return { success: false, error };
   }
 };
@@ -377,7 +378,7 @@ export const sendContactReplyEmail = async (email, clientName, replyMessage) => 
 
     return { success: true, data };
   } catch (error) {
-    console.error('Error enviando email de respuesta:', error);
+    logger.error('Error enviando email de respuesta:', error);
     return { success: false, error };
   }
 };

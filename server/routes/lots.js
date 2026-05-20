@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { logger } from '../logger.js';
 import * as db from '../db.js';
 import { authenticateToken, requireRole } from '../auth.js';
 
@@ -12,7 +13,7 @@ lotsRouter.get('/', authenticateToken, requireRole('admin'), async (req, res) =>
     );
     res.json({ lots: result.rows });
   } catch (err) {
-    console.error(err);
+    logger.error(err);
     res.status(500).json({ error: 'Error obteniendo lotes' });
   }
 });
@@ -45,7 +46,7 @@ lotsRouter.get('/:identifier', authenticateToken, requireRole('admin'), async (r
     
     res.json(result.rows[0]);
   } catch (err) {
-    console.error(err);
+    logger.error(err);
     res.status(500).json({ error: 'Error obteniendo lote' });
   }
 });
@@ -131,7 +132,7 @@ lotsRouter.post('/', authenticateToken, requireRole('admin'), async (req, res) =
 
     res.status(201).json(result.rows[0]);
   } catch (err) {
-    console.error(err);
+    logger.error(err);
     res.status(500).json({ error: 'Error creando lote: ' + err.message });
   }
 });
@@ -210,7 +211,7 @@ lotsRouter.put('/:code', authenticateToken, requireRole('admin'), async (req, re
 
     res.json(result.rows[0]);
   } catch (err) {
-    console.error(err);
+    logger.error(err);
     res.status(500).json({ error: 'Error actualizando lote: ' + err.message });
   }
 });
@@ -302,7 +303,7 @@ lotsRouter.post('/roast/:lotId', authenticateToken, requireRole('admin'), async 
       remaining_green_weight: remainingWeight
     });
   } catch (err) {
-    console.error(err);
+    logger.error(err);
     res.status(500).json({ error: 'Error tostando café: ' + err.message });
   }
 });
@@ -315,7 +316,7 @@ lotsRouter.get('/status/verde', authenticateToken, requireRole('admin'), async (
     );
     res.json({ lots: result.rows });
   } catch (err) {
-    console.error(err);
+    logger.error(err);
     res.status(500).json({ error: 'Error obteniendo lotes verdes' });
   }
 });

@@ -1,4 +1,5 @@
 import express from 'express';
+import { logger } from '../logger.js';
 import { query } from '../db.js';
 import { authenticateToken, requireRole } from '../auth.js';
 import { apiLimiter } from '../middleware/rateLimit.js';
@@ -68,7 +69,7 @@ labelsRouter.get('/prepared-lots', async (req, res) => {
 
     res.json(lots);
   } catch (error) {
-    console.error('Error al obtener lotes preparados:', error);
+    logger.error('Error al obtener lotes preparados:', error);
     res.status(500).json({ error: 'Error al obtener lotes preparados' });
   }
 });
@@ -175,7 +176,7 @@ labelsRouter.post('/generate-from-lot', async (req, res) => {
       labels: labels
     });
   } catch (error) {
-    console.error('Error al generar etiquetas desde lote:', error);
+    logger.error('Error al generar etiquetas desde lote:', error);
     res.status(500).json({
       success: false,
       error: 'Error al generar etiquetas'
@@ -295,7 +296,7 @@ labelsRouter.post('/generate-from-scratch', async (req, res) => {
       labels: labels
     });
   } catch (error) {
-    console.error('Error al generar etiquetas personalizadas:', error);
+    logger.error('Error al generar etiquetas personalizadas:', error);
     res.status(500).json({
       success: false,
       error: 'Error al generar etiquetas personalizadas'
@@ -346,7 +347,7 @@ labelsRouter.get('/list', async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Error al obtener etiquetas:', error);
+    logger.error('Error al obtener etiquetas:', error);
     res.status(500).json({
       success: false,
       error: 'Error al obtener etiquetas'
@@ -377,7 +378,7 @@ labelsRouter.get('/:labelId', async (req, res) => {
       data: results.rows[0]
     });
   } catch (error) {
-    console.error('Error al obtener etiqueta:', error);
+    logger.error('Error al obtener etiqueta:', error);
     res.status(500).json({
       success: false,
       error: 'Error al obtener etiqueta'
@@ -415,7 +416,7 @@ labelsRouter.delete('/:labelId', async (req, res) => {
       message: 'Etiqueta eliminada'
     });
   } catch (error) {
-    console.error('Error al eliminar etiqueta:', error);
+    logger.error('Error al eliminar etiqueta:', error);
     res.status(500).json({
       success: false,
       error: 'Error al eliminar etiqueta'

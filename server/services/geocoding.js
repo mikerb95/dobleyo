@@ -1,6 +1,7 @@
 // Servicio de geocodificación usando Nominatim (OpenStreetMap) — Fase 8
 // Convierte ciudad/departamento colombiano en coordenadas lat/lng
 import { query } from '../db.js';
+import { logger } from '../logger.js';
 
 const NOMINATIM_URL = 'https://nominatim.openstreetmap.org/search';
 const USER_AGENT = 'DobleYoCafe/1.0 (contacto@dobleyo.cafe)';
@@ -36,7 +37,7 @@ export async function geocodeCity(city, department = '') {
             displayName: display_name,
         };
     } catch (err) {
-        console.warn(`[geocoding] No se pudo geocodificar "${city}":`, err.message);
+        logger.warn(`[geocoding] No se pudo geocodificar "${city}":`, err.message);
         return null;
     }
 }
@@ -59,7 +60,7 @@ export async function geocodeOrderAsync(orderId, city, department = '') {
                 );
             }
         } catch (err) {
-            console.error(`[geocoding] Error al guardar geocodificación para orden ${orderId}:`, err.message);
+            logger.error(`[geocoding] Error al guardar geocodificación para orden ${orderId}:`, err.message);
         }
     });
 }
@@ -98,7 +99,7 @@ export async function backfillGeocodingBatch(limit = 50) {
             }
             await new Promise(r => setTimeout(r, 1100));
         } catch (err) {
-            console.error(`[geocoding backfill] Error orden ${row.id}:`, err.message);
+            logger.error(`[geocoding backfill] Error orden ${row.id}:`, err.message);
             failed++;
         }
     }

@@ -1,4 +1,5 @@
 import express from 'express';
+import { logger } from '../../logger.js';
 import { query } from '../../db.js';
 import { authenticateToken, requireRole } from '../../auth.js';
 
@@ -80,7 +81,7 @@ qualityRouter.get('/', async (req, res) => {
       pagination: { limit: parseInt(limit), offset: parseInt(offset), total: checks.length }
     });
   } catch (error) {
-    console.error('Error fetching quality checks:', error);
+    logger.error('Error fetching quality checks:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });
@@ -123,7 +124,7 @@ qualityRouter.get('/stats/summary', async (req, res) => {
 
     res.json({ success: true, data: stats });
   } catch (error) {
-    console.error('Error getting quality stats:', error);
+    logger.error('Error getting quality stats:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });
@@ -157,7 +158,7 @@ qualityRouter.get('/:id', async (req, res) => {
 
     res.json({ success: true, data: rows[0] });
   } catch (error) {
-    console.error('Error fetching quality check:', error);
+    logger.error('Error fetching quality check:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });
@@ -204,7 +205,7 @@ qualityRouter.post('/', async (req, res) => {
       data: { id: rows[0].id, check_number }
     });
   } catch (error) {
-    console.error('Error creating quality check:', error);
+    logger.error('Error creating quality check:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });
@@ -274,7 +275,7 @@ qualityRouter.post('/cupping', async (req, res) => {
       data: { id: rows[0].id, check_number, overall_score, passed: overall_score >= 80 }
     });
   } catch (error) {
-    console.error('Error recording cupping:', error);
+    logger.error('Error recording cupping:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });
@@ -326,7 +327,7 @@ qualityRouter.put('/:id', async (req, res) => {
 
     res.json({ success: true, message: 'Quality check updated' });
   } catch (error) {
-    console.error('Error updating quality check:', error);
+    logger.error('Error updating quality check:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });
@@ -352,7 +353,7 @@ qualityRouter.post('/:id/approve', async (req, res) => {
 
     res.json({ success: true, message: 'Quality check approved' });
   } catch (error) {
-    console.error('Error approving quality check:', error);
+    logger.error('Error approving quality check:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });

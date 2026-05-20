@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { logger } from '../logger.js';
 import * as db from '../db.js';
 import { authenticateToken, requireRole } from '../auth.js';
 
@@ -37,7 +38,7 @@ stockRouter.get('/', async (req, res) => {
     const items = await db.query('SELECT id as slug, stock_quantity as stock, name, image_url, price as price_cop FROM products ORDER BY name ASC');
     res.json({ items: items.rows });
   } catch (err) {
-    console.error(err);
+    logger.error(err);
     res.status(500).json({ error: 'Error de base de datos' });
   }
 });
@@ -67,7 +68,7 @@ stockRouter.post('/', authenticateToken, requireRole('admin'), async (req, res) 
     const result = await db.query('SELECT * FROM products WHERE id = ?', [id]);
     res.status(201).json(result.rows[0]);
   } catch (err) {
-    console.error(err);
+    logger.error(err);
     res.status(500).json({ error: 'Error creando producto: ' + err.message });
   }
 });
@@ -90,7 +91,7 @@ stockRouter.post('/:sku', authenticateToken, requireRole('admin'), async (req, r
 
     res.json({ success: true, product: updated });
   } catch (err) {
-    console.error(err);
+    logger.error(err);
     res.status(500).json({ error: 'Error updating stock' });
   }
 });

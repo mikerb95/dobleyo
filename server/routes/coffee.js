@@ -1,4 +1,5 @@
 import express from 'express';
+import { logger } from '../logger.js';
 import { query } from '../db.js';
 import crypto from 'crypto';
 import { authenticateToken, requireRole } from '../auth.js';
@@ -71,7 +72,7 @@ coffeeRouter.post('/harvest', async (req, res) => {
       harvestId: result.rows[0].id
     });
   } catch (err) {
-    console.error('Error en harvest:', err);
+    logger.error({ err }, 'Error en harvest:');
 
     // Detectar si es un error de tabla no existente
     if (err.code === '42P01' || err.message?.includes('coffee_harvests')) {
@@ -140,7 +141,7 @@ coffeeRouter.post('/inventory-storage', async (req, res) => {
       message: 'Café verde almacenado correctamente'
     });
   } catch (err) {
-    console.error('Error en inventory-storage:', err);
+    logger.error({ err }, 'Error en inventory-storage:');
     res.status(500).json({ error: err.message });
   }
 });
@@ -201,7 +202,7 @@ coffeeRouter.post('/send-roasting', async (req, res) => {
       message: 'Lote enviado a tostión correctamente'
     });
   } catch (err) {
-    console.error('Error en send-roasting:', err);
+    logger.error({ err }, 'Error en send-roasting:');
     res.status(500).json({ error: err.message });
   }
 });
@@ -280,7 +281,7 @@ coffeeRouter.post('/roast-retrieval', async (req, res) => {
       message: 'Café tostado registrado correctamente'
     });
   } catch (err) {
-    console.error('Error en roast-retrieval:', err);
+    logger.error({ err }, 'Error en roast-retrieval:');
     res.status(500).json({ error: err.message });
   }
 });
@@ -338,7 +339,7 @@ coffeeRouter.post('/roasted-storage', async (req, res) => {
       message: 'Café tostado almacenado correctamente'
     });
   } catch (err) {
-    console.error('Error en roasted-storage:', err);
+    logger.error({ err }, 'Error en roasted-storage:');
     res.status(500).json({ error: err.message });
   }
 });
@@ -409,7 +410,7 @@ coffeeRouter.get('/roasted-storage/:id', async (req, res) => {
       storage_date: data.storage_date
     });
   } catch (err) {
-    console.error('Error obteniendo detalle de almacenamiento:', err);
+    logger.error({ err }, 'Error obteniendo detalle de almacenamiento:');
     res.status(500).json({ error: err.message });
   }
 });
@@ -453,7 +454,7 @@ coffeeRouter.post('/packaging', async (req, res) => {
     );
 
     if (!rciCheck.rows.length) {
-      console.error('[packaging] Error: roasted_coffee_inventory no encontrado, id:', roastedStorageId);
+      logger.error('[packaging] Error: roasted_coffee_inventory no encontrado, id:', roastedStorageId);
       return res.status(404).json({ error: 'Café tostado no encontrado en inventario' });
     }
 
@@ -473,7 +474,7 @@ coffeeRouter.post('/packaging', async (req, res) => {
     );
 
     if (!roastedResult.rows.length) {
-      console.error('[packaging] Error: No se pudo obtener información del café tostado');
+      logger.error('[packaging] Error: No se pudo obtener información del café tostado');
       return res.status(404).json({ error: 'Café tostado no encontrado' });
     }
 
@@ -590,9 +591,9 @@ coffeeRouter.post('/packaging', async (req, res) => {
         : 'Café preparado para venta correctamente'
     });
   } catch (err) {
-    console.error('Error en packaging:', err);
-    console.error('Stack:', err.stack);
-    console.error('Body enviado:', { roastedStorageId, acidity, body, balance, presentation });
+    logger.error({ err }, 'Error en packaging:');
+    logger.error('Stack:', err.stack);
+    logger.error('Body enviado:', { roastedStorageId, acidity, body, balance, presentation });
     res.status(500).json({
       error: err.message || 'Error al preparar café',
       details: process.env.NODE_ENV === 'development' ? err.stack : undefined
@@ -609,7 +610,7 @@ coffeeRouter.get('/harvests', async (req, res) => {
     );
     res.json(result.rows);
   } catch (err) {
-    console.error('Error en GET harvests:', err);
+    logger.error({ err }, 'Error en GET harvests:');
     res.status(500).json({ error: err.message });
   }
 });
@@ -622,7 +623,7 @@ coffeeRouter.get('/green-inventory', async (req, res) => {
     );
     res.json(result.rows);
   } catch (err) {
-    console.error('Error en GET green-inventory:', err);
+    logger.error({ err }, 'Error en GET green-inventory:');
     res.status(500).json({ error: err.message });
   }
 });
@@ -635,7 +636,7 @@ coffeeRouter.get('/roasting-batches', async (req, res) => {
     );
     res.json(result.rows);
   } catch (err) {
-    console.error('Error en GET roasting-batches:', err);
+    logger.error({ err }, 'Error en GET roasting-batches:');
     res.status(500).json({ error: err.message });
   }
 });
@@ -697,7 +698,7 @@ coffeeRouter.get('/roasted-coffee', async (req, res) => {
 
     res.json(result.rows);
   } catch (err) {
-    console.error('Error en GET roasted-coffee:', err);
+    logger.error({ err }, 'Error en GET roasted-coffee:');
     res.status(500).json({ error: err.message });
   }
 });
@@ -737,7 +738,7 @@ coffeeRouter.get('/roasted-for-storage', async (req, res) => {
     );
     res.json(result.rows);
   } catch (err) {
-    console.error('Error en GET roasted-for-storage:', err);
+    logger.error({ err }, 'Error en GET roasted-for-storage:');
     res.status(500).json({ error: err.message });
   }
 });
@@ -750,7 +751,7 @@ coffeeRouter.get('/packaged', async (req, res) => {
     );
     res.json(result.rows);
   } catch (err) {
-    console.error('Error en GET packaged:', err);
+    logger.error({ err }, 'Error en GET packaged:');
     res.status(500).json({ error: err.message });
   }
 });
@@ -769,7 +770,7 @@ coffeeRouter.get('/lots/:lotId/stage', async (req, res) => {
       label: STAGE_LABELS[stage] ?? stage,
     });
   } catch (err) {
-    console.error('[GET /lots/:lotId/stage] Error:', err);
+    logger.error({ err }, '[GET /lots/:lotId/stage] Error:');
     res.status(500).json({ success: false, error: err.message });
   }
 });
@@ -806,7 +807,7 @@ coffeeRouter.get('/lots', async (req, res) => {
         console.log(`[GET /lots] Lotes verdes: ${greenResult.rows.length}`);
       }
     } catch (err) {
-      console.error('[GET /lots] Error cargando lotes verdes:', err.message);
+      logger.error({ err }, '[GET /lots] Error cargando lotes verdes:');
     }
 
     // 2. Lotes de café tostado almacenado (roasted_coffee_inventory)
@@ -837,7 +838,7 @@ coffeeRouter.get('/lots', async (req, res) => {
         console.log(`[GET /lots] Lotes tostados almacenados: ${storedResult.rows.length}`);
       }
     } catch (err) {
-      console.error('[GET /lots] Error cargando tostados almacenados:', err.message);
+      logger.error({ err }, '[GET /lots] Error cargando tostados almacenados:');
     }
 
     // 3. Lotes de café tostado pendiente de almacenar (roasted_coffee)
@@ -868,7 +869,7 @@ coffeeRouter.get('/lots', async (req, res) => {
         console.log(`[GET /lots] Lotes tostados pendientes: ${pendingResult.rows.length}`);
       }
     } catch (err) {
-      console.error('[GET /lots] Error cargando tostados pendientes:', err.message);
+      logger.error({ err }, '[GET /lots] Error cargando tostados pendientes:');
     }
 
     // 4. Lotes en proceso de tostado (roasting_batches)
@@ -898,7 +899,7 @@ coffeeRouter.get('/lots', async (req, res) => {
         console.log(`[GET /lots] Lotes en tostado: ${roastingResult.rows.length}`);
       }
     } catch (err) {
-      console.error('[GET /lots] Error cargando lotes en tostado:', err.message);
+      logger.error({ err }, '[GET /lots] Error cargando lotes en tostado:');
     }
 
     // Ordenar todos los lotes por fecha (más recientes primero)
@@ -917,7 +918,7 @@ coffeeRouter.get('/lots', async (req, res) => {
       }
     });
   } catch (err) {
-    console.error('[GET /lots] Error general:', err);
+    logger.error({ err }, '[GET /lots] Error general:');
     res.status(500).json({
       error: err.message,
       lots: []
@@ -956,7 +957,7 @@ coffeeRouter.delete('/harvest/:lotId', async (req, res) => {
       message: 'Lote eliminado correctamente'
     });
   } catch (err) {
-    console.error('[DELETE /harvest] Error:', err);
+    logger.error({ err }, '[DELETE /harvest] Error:');
     res.status(500).json({
       success: false,
       error: err.message
@@ -992,7 +993,7 @@ coffeeRouter.delete('/roasted-storage/:id', async (req, res) => {
       message: 'Café tostado almacenado eliminado correctamente'
     });
   } catch (err) {
-    console.error('[DELETE /roasted-storage] Error:', err);
+    logger.error({ err }, '[DELETE /roasted-storage] Error:');
     res.status(500).json({
       success: false,
       error: err.message
@@ -1028,7 +1029,7 @@ coffeeRouter.delete('/roasted-coffee/:id', async (req, res) => {
       message: 'Café tostado pendiente eliminado correctamente'
     });
   } catch (err) {
-    console.error('[DELETE /roasted-coffee] Error:', err);
+    logger.error({ err }, '[DELETE /roasted-coffee] Error:');
     res.status(500).json({
       success: false,
       error: err.message
@@ -1067,7 +1068,7 @@ coffeeRouter.delete('/roasting-batch/:id', async (req, res) => {
       message: 'Lote en proceso de tostado eliminado correctamente'
     });
   } catch (err) {
-    console.error('[DELETE /roasting-batch] Error:', err);
+    logger.error({ err }, '[DELETE /roasting-batch] Error:');
     res.status(500).json({
       success: false,
       error: err.message
@@ -1097,7 +1098,7 @@ coffeeRouter.get('/roasted-for-cupping', async (req, res) => {
     );
     res.json(result.rows);
   } catch (err) {
-    console.error('[GET /roasted-for-cupping] Error:', err);
+    logger.error({ err }, '[GET /roasted-for-cupping] Error:');
     res.status(500).json({ error: err.message });
   }
 });
@@ -1141,7 +1142,7 @@ coffeeRouter.get('/cupping', async (req, res) => {
     );
     res.json(result.rows);
   } catch (err) {
-    console.error('[GET /cupping] Error:', err);
+    logger.error({ err }, '[GET /cupping] Error:');
     res.status(500).json({ error: err.message });
   }
 });
@@ -1228,7 +1229,7 @@ coffeeRouter.post('/cupping', async (req, res) => {
       message: 'Cupping registrado correctamente',
     });
   } catch (err) {
-    console.error('[POST /cupping] Error:', err);
+    logger.error({ err }, '[POST /cupping] Error:');
     res.status(500).json({ success: false, error: err.message });
   }
 });

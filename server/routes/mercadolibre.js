@@ -4,6 +4,7 @@
  */
 
 import { Router } from 'express';
+import { logger } from '../logger.js';
 import MercadoLibreService from '../services/mercadolibre.js';
 import * as auth from '../auth.js';
 import * as db from '../db.js';
@@ -57,7 +58,7 @@ mercadolibreRouter.post('/sync', auth.requireAuth, auth.requireAdmin, async (req
           try {
             shipment = await mlService.fetchShipment(orderDetails.shipping.id);
           } catch (shipmentError) {
-            console.warn(`Could not fetch shipment for order ${order.id}:`, shipmentError.message);
+            logger.warn(`Could not fetch shipment for order ${order.id}:`, shipmentError.message);
           }
         }
 
@@ -66,7 +67,7 @@ mercadolibreRouter.post('/sync', auth.requireAuth, auth.requireAdmin, async (req
         salesData.push(transformedData);
         processed++;
       } catch (orderError) {
-        console.error(`Error processing order ${order.id}:`, orderError.message);
+        logger.error(`Error processing order ${order.id}:`, orderError.message);
         failed++;
       }
     }
@@ -83,7 +84,7 @@ mercadolibreRouter.post('/sync', auth.requireAuth, auth.requireAdmin, async (req
       total_orders_fetched: orders.length
     });
   } catch (error) {
-    console.error('Error in /sync endpoint:', error);
+    logger.error('Error in /sync endpoint:', error);
     res.status(500).json({
       error: 'Synchronization failed',
       details: error.message
@@ -129,7 +130,7 @@ mercadolibreRouter.get('/sales', auth.requireAuth, auth.requireAdmin, async (req
       }
     });
   } catch (error) {
-    console.error('Error in /sales endpoint:', error);
+    logger.error('Error in /sales endpoint:', error);
     res.status(500).json({
       error: 'Failed to retrieve sales data',
       details: error.message
@@ -152,7 +153,7 @@ mercadolibreRouter.get('/heatmap-data', auth.requireAuth, auth.requireAdmin, asy
       data
     });
   } catch (error) {
-    console.error('Error in /heatmap-data endpoint:', error);
+    logger.error('Error in /heatmap-data endpoint:', error);
     res.status(500).json({
       error: 'Failed to retrieve heatmap data',
       details: error.message
@@ -196,7 +197,7 @@ mercadolibreRouter.get('/stats', auth.requireAuth, auth.requireAdmin, async (req
       top_cities: topCitiesResult.rows
     });
   } catch (error) {
-    console.error('Error in /stats endpoint:', error);
+    logger.error('Error in /stats endpoint:', error);
     res.status(500).json({
       error: 'Failed to retrieve statistics',
       details: error.message

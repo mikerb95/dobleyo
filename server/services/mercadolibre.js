@@ -4,6 +4,7 @@
  */
 
 import * as db from '../db.js';
+import { logger } from '../logger.js';
 
 class MercadoLibreService {
   constructor(accessToken) {
@@ -33,7 +34,7 @@ class MercadoLibreService {
       const data = await response.json();
       return data.results || [];
     } catch (error) {
-      console.error('Error fetching orders from MercadoLibre:', error);
+      logger.error('Error fetching orders from MercadoLibre:', error);
       throw error;
     }
   }
@@ -59,7 +60,7 @@ class MercadoLibreService {
 
       return await response.json();
     } catch (error) {
-      console.error(`Error fetching order details for ${orderId}:`, error);
+      logger.error(`Error fetching order details for ${orderId}:`, error);
       throw error;
     }
   }
@@ -85,7 +86,7 @@ class MercadoLibreService {
 
       return await response.json();
     } catch (error) {
-      console.error(`Error fetching shipment ${shipmentId}:`, error);
+      logger.error(`Error fetching shipment ${shipmentId}:`, error);
       throw error;
     }
   }
@@ -146,7 +147,7 @@ class MercadoLibreService {
         products: JSON.stringify(products)
       };
     } catch (error) {
-      console.error('Error transforming order data:', error);
+      logger.error('Error transforming order data:', error);
       throw error;
     }
   }
@@ -204,7 +205,7 @@ class MercadoLibreService {
     }
 
     // Default to Buenos Aires if city not found
-    console.warn(`Coordinates not found for city: ${city}, using Buenos Aires as default`);
+    logger.warn(`Coordinates not found for city: ${city}, using Buenos Aires as default`);
     return { latitude: -34.6037, longitude: -58.3816 };
   }
 
@@ -278,7 +279,7 @@ class MercadoLibreService {
 
       return insertedIds;
     } catch (error) {
-      console.error('Error saving sales data to database:', error);
+      logger.error('Error saving sales data to database:', error);
       throw error;
     }
   }
@@ -336,7 +337,7 @@ class MercadoLibreService {
 
       return { data: parsedData, total };
     } catch (error) {
-      console.error('Error fetching sales data:', error);
+      logger.error('Error fetching sales data:', error);
       throw error;
     }
   }
@@ -364,7 +365,7 @@ class MercadoLibreService {
       const result = await db.query(query, []);
       return result.rows;
     } catch (error) {
-      console.error('Error fetching heatmap data:', error);
+      logger.error('Error fetching heatmap data:', error);
       throw error;
     }
   }

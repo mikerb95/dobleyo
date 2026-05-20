@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { logger } from '../logger.js';
 import * as auth from '../auth.js';
 import { query } from '../db.js';
 import { logAudit } from '../services/audit.js';
@@ -33,7 +34,7 @@ usersRouter.get('/', auth.authenticateToken, auth.requireRole('admin'), async (r
 
     res.json({ users: result.rows });
   } catch (err) {
-    console.error('[GET /api/users] Error:', err);
+    logger.error({ err }, '[GET /api/users] Error:');
     res.status(500).json({ error: 'Error al obtener usuarios' });
   }
 });
@@ -150,7 +151,7 @@ usersRouter.put('/:id', auth.authenticateToken, auth.requireRole('admin'), async
 
     res.json({ user: updated.rows[0] });
   } catch (err) {
-    console.error('[PUT /api/users/:id] Error:', err);
+    logger.error({ err }, '[PUT /api/users/:id] Error:');
     res.status(500).json({ error: 'Error al actualizar usuario', details: err.message });
   }
 });
@@ -181,7 +182,7 @@ usersRouter.delete('/:id', auth.authenticateToken, auth.requireRole('admin'), as
       deletedId: id
     });
   } catch (err) {
-    console.error('[DELETE /api/users/:id] Error:', err);
+    logger.error({ err }, '[DELETE /api/users/:id] Error:');
     res.status(500).json({ error: 'Error al eliminar usuario' });
   }
 });
@@ -241,7 +242,7 @@ usersRouter.post('/', auth.authenticateToken, auth.requireRole('admin'), async (
       user: newUser.rows[0]
     });
   } catch (err) {
-    console.error('[POST /api/users] Error:', err);
+    logger.error({ err }, '[POST /api/users] Error:');
     res.status(500).json({ error: 'Error al crear usuario' });
   }
 });

@@ -1,6 +1,7 @@
 // Router unificado de mapa de calor — Fase 8
 // Combina ventas web directas (customer_orders) + MercadoLibre (sales_tracking)
 import { Router } from 'express';
+import { logger } from '../logger.js';
 import { query } from '../db.js';
 import { authenticateToken, requireRole } from '../auth.js';
 import { backfillGeocodingBatch } from '../services/geocoding.js';
@@ -135,7 +136,7 @@ heatmapRouter.get('/', authenticateToken, requireRole('admin'), async (req, res)
 
         res.json({ success: true, data: combined, stats, filters: { days, channel, product } });
     } catch (err) {
-        console.error('[GET /api/heatmap]', err);
+        logger.error({ err }, '[GET /api/heatmap]');
         res.status(500).json({ success: false, error: 'Error al obtener datos del mapa de calor' });
     }
 });
@@ -159,7 +160,7 @@ heatmapRouter.get('/stats', authenticateToken, requireRole('admin'), async (req,
 
         res.json({ success: true, data: rows[0] });
     } catch (err) {
-        console.error('[GET /api/heatmap/stats]', err);
+        logger.error({ err }, '[GET /api/heatmap/stats]');
         res.status(500).json({ success: false, error: 'Error al obtener estadísticas' });
     }
 });
@@ -174,7 +175,7 @@ heatmapRouter.post('/backfill', authenticateToken, requireRole('admin'), async (
         const result = await backfillGeocodingBatch(limit);
         res.json({ success: true, data: result });
     } catch (err) {
-        console.error('[POST /api/heatmap/backfill]', err);
+        logger.error({ err }, '[POST /api/heatmap/backfill]');
         res.status(500).json({ success: false, error: 'Error en geocodificación masiva' });
     }
 });

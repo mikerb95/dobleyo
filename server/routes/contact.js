@@ -1,4 +1,5 @@
 import express from 'express';
+import { logger } from '../logger.js';
 import { body, validationResult } from 'express-validator';
 import { apiLimiter } from '../middleware/rateLimit.js';
 import { sendContactFormEmail } from '../services/email.js';
@@ -29,7 +30,7 @@ contactRouter.post('/',
 
       res.json({ success: true, message: 'Mensaje recibido correctamente' });
     } catch (error) {
-      console.error('[POST /api/contact] Error:', error);
+      logger.error('[POST /api/contact] Error:', error);
       res.status(500).json({ success: false, error: 'Error al procesar el mensaje' });
     }
   }

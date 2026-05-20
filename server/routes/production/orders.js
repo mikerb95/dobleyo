@@ -1,4 +1,5 @@
 import express from 'express';
+import { logger } from '../../logger.js';
 import { query } from '../../db.js';
 import { authenticateToken, requireRole } from '../../auth.js';
 
@@ -69,7 +70,7 @@ ordersRouter.get('/', async (req, res) => {
       pagination: { limit: parseInt(limit), offset: parseInt(offset), total: orders.length }
     });
   } catch (error) {
-    console.error('Error fetching production orders:', error);
+    logger.error('Error fetching production orders:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });
@@ -137,7 +138,7 @@ ordersRouter.get('/:id', async (req, res) => {
       data: { ...orderRows[0], components, consumptions, batches }
     });
   } catch (error) {
-    console.error('Error fetching production order:', error);
+    logger.error('Error fetching production order:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });
@@ -194,7 +195,7 @@ ordersRouter.post('/', async (req, res) => {
       data: { id: rows[0].id, order_number, state: 'borrador' }
     });
   } catch (error) {
-    console.error('Error creating production order:', error);
+    logger.error('Error creating production order:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });
@@ -257,7 +258,7 @@ ordersRouter.put('/:id', async (req, res) => {
 
     res.json({ success: true, message: 'Production order updated' });
   } catch (error) {
-    console.error('Error updating production order:', error);
+    logger.error('Error updating production order:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });
@@ -287,7 +288,7 @@ ordersRouter.delete('/:id', async (req, res) => {
 
     res.json({ success: true, message: 'Production order deleted' });
   } catch (error) {
-    console.error('Error deleting production order:', error);
+    logger.error('Error deleting production order:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });
@@ -317,7 +318,7 @@ ordersRouter.post('/:id/confirm', async (req, res) => {
 
     res.json({ success: true, message: 'Order confirmed', state: 'confirmada' });
   } catch (error) {
-    console.error('Error confirming order:', error);
+    logger.error('Error confirming order:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });
@@ -343,7 +344,7 @@ ordersRouter.post('/:id/start', async (req, res) => {
 
     res.json({ success: true, message: 'Order started', state: 'en_progreso' });
   } catch (error) {
-    console.error('Error starting order:', error);
+    logger.error('Error starting order:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });
@@ -369,7 +370,7 @@ ordersRouter.post('/:id/pause', async (req, res) => {
 
     res.json({ success: true, message: 'Order paused', state: 'pausada' });
   } catch (error) {
-    console.error('Error pausing order:', error);
+    logger.error('Error pausing order:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });
@@ -395,7 +396,7 @@ ordersRouter.post('/:id/resume', async (req, res) => {
 
     res.json({ success: true, message: 'Order resumed', state: 'en_progreso' });
   } catch (error) {
-    console.error('Error resuming order:', error);
+    logger.error('Error resuming order:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });
@@ -426,7 +427,7 @@ ordersRouter.post('/:id/complete', async (req, res) => {
 
     res.json({ success: true, message: 'Order completed', state: 'completada' });
   } catch (error) {
-    console.error('Error completing order:', error);
+    logger.error('Error completing order:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });
@@ -453,7 +454,7 @@ ordersRouter.post('/:id/cancel', async (req, res) => {
 
     res.json({ success: true, message: 'Order cancelled', state: 'cancelada' });
   } catch (error) {
-    console.error('Error cancelling order:', error);
+    logger.error('Error cancelling order:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });

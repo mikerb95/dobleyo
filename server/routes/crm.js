@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { logger } from '../logger.js';
 import { query, withTransaction } from '../db.js';
 import { authenticateToken, requireRole } from '../auth.js';
 
@@ -48,7 +49,7 @@ crmRouter.get('/accounts', async (req, res) => {
     ]);
     ok(res, { items: rows.rows, total: countRow.rows[0].n, limit, offset });
   } catch (e) {
-    console.error('[GET /api/crm/accounts]', e);
+    logger.error('[GET /api/crm/accounts]', e);
     err(res, 500, 'db_error', e.message);
   }
 });
@@ -76,7 +77,7 @@ crmRouter.get('/accounts/:id(\\d+)', async (req, res) => {
 
     ok(res, { account, contacts: contactsRes.rows, interactions: interactionsRes.rows });
   } catch (e) {
-    console.error('[GET /api/crm/accounts/:id]', e);
+    logger.error('[GET /api/crm/accounts/:id]', e);
     err(res, 500, 'db_error', e.message);
   }
 });
@@ -118,7 +119,7 @@ crmRouter.post('/accounts', async (req, res) => {
     const fullRes = await query('SELECT * FROM crm_account_overview WHERE id = ?', [result]);
     ok(res, fullRes.rows[0]);
   } catch (e) {
-    console.error('[POST /api/crm/accounts]', e);
+    logger.error('[POST /api/crm/accounts]', e);
     err(res, 500, 'db_error', e.message);
   }
 });
@@ -141,7 +142,7 @@ crmRouter.patch('/accounts/:id(\\d+)', async (req, res) => {
     const row = await query('SELECT * FROM crm_account_overview WHERE id = ?', [id]);
     ok(res, row.rows[0]);
   } catch (e) {
-    console.error('[PATCH /api/crm/accounts/:id]', e);
+    logger.error('[PATCH /api/crm/accounts/:id]', e);
     err(res, 500, 'db_error', e.message);
   }
 });
@@ -169,7 +170,7 @@ crmRouter.patch('/accounts/:id(\\d+)/stage', async (req, res) => {
     const row = await query('SELECT * FROM crm_account_overview WHERE id = ?', [id]);
     ok(res, row.rows[0]);
   } catch (e) {
-    console.error('[PATCH /api/crm/accounts/:id/stage]', e);
+    logger.error('[PATCH /api/crm/accounts/:id/stage]', e);
     err(res, 500, 'db_error', e.message);
   }
 });
@@ -188,7 +189,7 @@ crmRouter.get('/pipeline', async (_req, res) => {
     }
     ok(res, { stages: STAGES, groups });
   } catch (e) {
-    console.error('[GET /api/crm/pipeline]', e);
+    logger.error('[GET /api/crm/pipeline]', e);
     err(res, 500, 'db_error', e.message);
   }
 });
@@ -217,7 +218,7 @@ crmRouter.post('/accounts/:id(\\d+)/interactions', async (req, res) => {
     );
     ok(res, row.rows[0]);
   } catch (e) {
-    console.error('[POST /api/crm/accounts/:id/interactions]', e);
+    logger.error('[POST /api/crm/accounts/:id/interactions]', e);
     err(res, 500, 'db_error', e.message);
   }
 });
@@ -241,7 +242,7 @@ crmRouter.post('/accounts/:id(\\d+)/contacts', async (req, res) => {
     });
     ok(res, { account_id: id });
   } catch (e) {
-    console.error('[POST /api/crm/accounts/:id/contacts]', e);
+    logger.error('[POST /api/crm/accounts/:id/contacts]', e);
     err(res, 500, 'db_error', e.message);
   }
 });

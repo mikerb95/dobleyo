@@ -1,6 +1,7 @@
 // Módulo de Fincas — Fase 7
 // Gestión de landing pages de fincas y caficultores
 import { Router } from 'express';
+import { logger } from '../logger.js';
 import { body, param, validationResult } from 'express-validator';
 import { query } from '../db.js';
 import { authenticateToken, requireRole } from '../auth.js';
@@ -67,7 +68,7 @@ farmsRouter.get('/', async (req, res) => {
 
         res.json({ success: true, data: rows, total: parseInt(countRows[0].total, 10) });
     } catch (err) {
-        console.error('[GET /api/farms]', err);
+        logger.error({ err }, '[GET /api/farms]');
         res.status(500).json({ success: false, error: 'Error al obtener las fincas' });
     }
 });
@@ -84,7 +85,7 @@ farmsRouter.get('/regions', async (req, res) => {
     `, []);
         res.json({ success: true, data: rows });
     } catch (err) {
-        console.error('[GET /api/farms/regions]', err);
+        logger.error({ err }, '[GET /api/farms/regions]');
         res.status(500).json({ success: false, error: 'Error al obtener regiones' });
     }
 });
@@ -107,7 +108,7 @@ farmsRouter.get('/my', authenticateToken, async (req, res) => {
         }
         res.json({ success: true, data: rows[0] ?? null });
     } catch (err) {
-        console.error('[GET /api/farms/my]', err);
+        logger.error({ err }, '[GET /api/farms/my]');
         res.status(500).json({ success: false, error: 'Error al obtener tu finca' });
     }
 });
@@ -124,7 +125,7 @@ farmsRouter.get('/admin/all', authenticateToken, requireRole('admin'), async (re
     `, []);
         res.json({ success: true, data: rows });
     } catch (err) {
-        console.error('[GET /api/farms/admin/all]', err);
+        logger.error({ err }, '[GET /api/farms/admin/all]');
         res.status(500).json({ success: false, error: 'Error al listar fincas' });
     }
 });
@@ -163,7 +164,7 @@ farmsRouter.get('/:slug', async (req, res) => {
 
         res.json({ success: true, data: { ...farm, recent_lots: lots } });
     } catch (err) {
-        console.error('[GET /api/farms/:slug]', err);
+        logger.error({ err }, '[GET /api/farms/:slug]');
         res.status(500).json({ success: false, error: 'Error al obtener la finca' });
     }
 });
@@ -222,7 +223,7 @@ farmsRouter.post('/', authenticateToken, [
         res.status(201).json({ success: true, data: rows[0] });
     } catch (err) {
         if (err.code === '23505') return res.status(409).json({ success: false, error: 'El slug de la finca ya existe' });
-        console.error('[POST /api/farms]', err);
+        logger.error({ err }, '[POST /api/farms]');
         res.status(500).json({ success: false, error: 'Error al crear la finca' });
     }
 });
@@ -278,7 +279,7 @@ farmsRouter.patch('/:id', authenticateToken, [
         await logAudit(req.user.id, 'update', 'farm', id, req.body);
         res.json({ success: true, data: rows[0] });
     } catch (err) {
-        console.error('[PATCH /api/farms/:id]', err);
+        logger.error({ err }, '[PATCH /api/farms/:id]');
         res.status(500).json({ success: false, error: 'Error al actualizar la finca' });
     }
 });
@@ -300,7 +301,7 @@ farmsRouter.patch('/:id/publish', authenticateToken, requireRole('admin'), [
         await logAudit(req.user.id, 'update', 'farm', id, { is_published });
         res.json({ success: true, data: rows[0] });
     } catch (err) {
-        console.error('[PATCH /api/farms/:id/publish]', err);
+        logger.error({ err }, '[PATCH /api/farms/:id/publish]');
         res.status(500).json({ success: false, error: 'Error al actualizar visibilidad' });
     }
 });

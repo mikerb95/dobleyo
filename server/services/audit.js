@@ -1,4 +1,5 @@
 import { query } from '../db.js';
+import { logger } from '../logger.js';
 
 export async function logAudit(userId, action, entityType, entityId, details = {}) {
   try {
@@ -11,7 +12,7 @@ export async function logAudit(userId, action, entityType, entityId, details = {
     );
     return result;
   } catch (err) {
-    console.error('[Audit] Error logging action:', err);
+    logger.error({ err }, '[Audit] Error logging action:');
     return null;
   }
 }
@@ -40,7 +41,7 @@ export async function getAuditLogs(filters = {}) {
     const result = await query(sql, params);
     return result.rows;
   } catch (err) {
-    console.error('[Audit] Error getting logs:', err);
+    logger.error({ err }, '[Audit] Error getting logs:');
     return [];
   }
 }
@@ -56,7 +57,7 @@ export async function getAuditStats() {
     `);
     return result.rows;
   } catch (err) {
-    console.error('[Audit] Error getting stats:', err);
+    logger.error({ err }, '[Audit] Error getting stats:');
     return [];
   }
 }

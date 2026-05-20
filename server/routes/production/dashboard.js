@@ -1,4 +1,5 @@
 import express from 'express';
+import { logger } from '../../logger.js';
 import { query } from '../../db.js';
 import { authenticateToken, requireRole } from '../../auth.js';
 
@@ -181,7 +182,7 @@ dashboardRouter.get('/', async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Error fetching production dashboard:', error);
+    logger.error('Error fetching production dashboard:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });
@@ -237,7 +238,7 @@ dashboardRouter.get('/efficiency', async (req, res) => {
       }))
     });
   } catch (error) {
-    console.error('Error fetching efficiency data:', error);
+    logger.error('Error fetching efficiency data:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });
@@ -282,7 +283,7 @@ dashboardRouter.get('/operators', async (req, res) => {
 
     res.json({ success: true, data: operatorsData });
   } catch (error) {
-    console.error('Error fetching operator performance:', error);
+    logger.error('Error fetching operator performance:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });
@@ -358,7 +359,7 @@ dashboardRouter.get('/alerts', async (req, res) => {
 
     res.json({ success: true, alerts });
   } catch (error) {
-    console.error('Error fetching alerts:', error);
+    logger.error('Error fetching alerts:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });

@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { logger } from '../logger.js';
 import { query } from '../db.js';
 
 export const couponsRouter = Router();
@@ -66,7 +67,7 @@ couponsRouter.post('/validate', async (req, res) => {
       }
     });
   } catch (err) {
-    console.error('[POST /api/coupons/validate] Error:', err);
+    logger.error({ err }, '[POST /api/coupons/validate] Error:');
     return res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });

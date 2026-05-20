@@ -1,6 +1,7 @@
 // Módulo de Finanzas — Fase 6
 // Cubre: plan de cuentas, gastos, facturas de compra/venta, pagos, dashboard financiero
 import { Router } from 'express';
+import { logger } from '../logger.js';
 import { body, query as eqQuery, param, validationResult } from 'express-validator';
 import { query } from '../db.js';
 import { authenticateToken, requireRole } from '../auth.js';
@@ -90,7 +91,7 @@ financeRouter.get('/dashboard', requireRole('admin'), async (req, res) => {
             },
         });
     } catch (err) {
-        console.error('[GET /api/finance/dashboard]', err);
+        logger.error({ err }, '[GET /api/finance/dashboard]');
         res.status(500).json({ success: false, error: 'Error al obtener el dashboard financiero' });
     }
 });
@@ -219,7 +220,7 @@ financeRouter.get('/transactions', requireRole('admin'), async (req, res) => {
             offset: off,
         });
     } catch (err) {
-        console.error('[GET /api/finance/transactions]', err);
+        logger.error({ err }, '[GET /api/finance/transactions]');
         res.status(500).json({ success: false, error: 'Error al obtener el libro de transacciones' });
     }
 });
@@ -248,7 +249,7 @@ financeRouter.get('/accounts', requireRole('admin'), async (req, res) => {
         `, params);
         res.json({ success: true, data: rows });
     } catch (err) {
-        console.error('[GET /api/finance/accounts]', err);
+        logger.error({ err }, '[GET /api/finance/accounts]');
         res.status(500).json({ success: false, error: 'Error al obtener el plan de cuentas' });
     }
 });
@@ -268,7 +269,7 @@ financeRouter.post('/accounts', requireRole('admin'), [
         await logAudit(req.user.id, 'create', 'accounting_account', rows[0].id, { code, name, account_type });
         res.status(201).json({ success: true, data: rows[0] });
     } catch (err) {
-        console.error('[POST /api/finance/accounts]', err);
+        logger.error({ err }, '[POST /api/finance/accounts]');
         res.status(500).json({ success: false, error: 'Error al crear la cuenta contable' });
     }
 });
@@ -309,7 +310,7 @@ financeRouter.get('/expenses', requireRole('admin'), async (req, res) => {
 
         res.json({ success: true, data: rows, total: parseInt(countRows[0].total, 10), limit, offset });
     } catch (err) {
-        console.error('[GET /api/finance/expenses]', err);
+        logger.error({ err }, '[GET /api/finance/expenses]');
         res.status(500).json({ success: false, error: 'Error al obtener los gastos' });
     }
 });
@@ -338,7 +339,7 @@ financeRouter.post('/expenses', requireRole('admin'), [
         await logAudit(req.user.id, 'create', 'expense', rows[0].id, { expense_number, amount, category });
         res.status(201).json({ success: true, data: rows[0] });
     } catch (err) {
-        console.error('[POST /api/finance/expenses]', err);
+        logger.error({ err }, '[POST /api/finance/expenses]');
         res.status(500).json({ success: false, error: 'Error al registrar el gasto' });
     }
 });
@@ -362,7 +363,7 @@ financeRouter.patch('/expenses/:id/state', requireRole('admin'), [
         await logAudit(req.user.id, 'update', 'expense', id, { state });
         res.json({ success: true, data: rows[0] });
     } catch (err) {
-        console.error('[PATCH /api/finance/expenses/:id/state]', err);
+        logger.error({ err }, '[PATCH /api/finance/expenses/:id/state]');
         res.status(500).json({ success: false, error: 'Error al actualizar el gasto' });
     }
 });
@@ -401,7 +402,7 @@ financeRouter.get('/purchase-invoices', requireRole('admin'), async (req, res) =
 
         res.json({ success: true, data: rows, total: parseInt(countRows[0].total, 10), limit, offset });
     } catch (err) {
-        console.error('[GET /api/finance/purchase-invoices]', err);
+        logger.error({ err }, '[GET /api/finance/purchase-invoices]');
         res.status(500).json({ success: false, error: 'Error al obtener las facturas de compra' });
     }
 });
@@ -456,7 +457,7 @@ financeRouter.post('/purchase-invoices', requireRole('admin'), [
         res.status(201).json({ success: true, data: { ...invoice, lines } });
     } catch (err) {
         await client.query('ROLLBACK');
-        console.error('[POST /api/finance/purchase-invoices]', err);
+        logger.error({ err }, '[POST /api/finance/purchase-invoices]');
         res.status(500).json({ success: false, error: 'Error al crear la factura de compra' });
     } finally {
         client.release();
@@ -484,7 +485,7 @@ financeRouter.patch('/purchase-invoices/:id/state', requireRole('admin'), [
         await logAudit(req.user.id, 'update', 'purchase_invoice', id, { state, amount_paid });
         res.json({ success: true, data: rows[0] });
     } catch (err) {
-        console.error('[PATCH /api/finance/purchase-invoices/:id/state]', err);
+        logger.error({ err }, '[PATCH /api/finance/purchase-invoices/:id/state]');
         res.status(500).json({ success: false, error: 'Error al actualizar la factura' });
     }
 });
@@ -522,7 +523,7 @@ financeRouter.get('/sales-invoices', requireRole('admin'), async (req, res) => {
 
         res.json({ success: true, data: rows, total: parseInt(countRows[0].total, 10), limit, offset });
     } catch (err) {
-        console.error('[GET /api/finance/sales-invoices]', err);
+        logger.error({ err }, '[GET /api/finance/sales-invoices]');
         res.status(500).json({ success: false, error: 'Error al obtener las facturas de venta' });
     }
 });
@@ -582,7 +583,7 @@ financeRouter.post('/sales-invoices', requireRole('admin'), [
         res.status(201).json({ success: true, data: { ...invoice, lines } });
     } catch (err) {
         await client.query('ROLLBACK');
-        console.error('[POST /api/finance/sales-invoices]', err);
+        logger.error({ err }, '[POST /api/finance/sales-invoices]');
         res.status(500).json({ success: false, error: 'Error al crear la factura de venta' });
     } finally {
         client.release();
@@ -623,7 +624,7 @@ financeRouter.get('/payments', requireRole('admin'), async (req, res) => {
 
         res.json({ success: true, data: rows, total: parseInt(countRows[0].total, 10), limit, offset });
     } catch (err) {
-        console.error('[GET /api/finance/payments]', err);
+        logger.error({ err }, '[GET /api/finance/payments]');
         res.status(500).json({ success: false, error: 'Error al obtener los pagos' });
     }
 });
@@ -652,7 +653,7 @@ financeRouter.post('/payments', requireRole('admin'), [
         await logAudit(req.user.id, 'create', 'payment', rows[0].id, { payment_number, amount, payment_type });
         res.status(201).json({ success: true, data: rows[0] });
     } catch (err) {
-        console.error('[POST /api/finance/payments]', err);
+        logger.error({ err }, '[POST /api/finance/payments]');
         res.status(500).json({ success: false, error: 'Error al registrar el pago' });
     }
 });
@@ -675,7 +676,7 @@ financeRouter.get('/users-list', requireRole('admin'), async (req, res) => {
         );
         res.json({ success: true, data: rows });
     } catch (err) {
-        console.error('[GET /api/finance/users-list]', err);
+        logger.error({ err }, '[GET /api/finance/users-list]');
         res.status(500).json({ success: false, error: 'Error al obtener usuarios' });
     }
 });
@@ -689,7 +690,7 @@ financeRouter.get('/payment-methods', requireRole('admin'), async (req, res) => 
         );
         res.json({ success: true, data: rows });
     } catch (err) {
-        console.error('[GET /api/finance/payment-methods]', err);
+        logger.error({ err }, '[GET /api/finance/payment-methods]');
         res.status(500).json({ success: false, error: 'Error al obtener métodos de pago' });
     }
 });
@@ -757,7 +758,7 @@ financeRouter.get('/my-invoices', async (req, res) => {
             summary: summaryRows[0],
         });
     } catch (err) {
-        console.error('[GET /api/finance/my-invoices]', err);
+        logger.error({ err }, '[GET /api/finance/my-invoices]');
         res.status(500).json({ success: false, error: 'Error al obtener tus facturas' });
     }
 });

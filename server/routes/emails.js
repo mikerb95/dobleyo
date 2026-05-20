@@ -1,4 +1,5 @@
 import express from 'express';
+import { logger } from '../logger.js';
 import crypto from 'crypto';
 import {
   sendOrderConfirmationEmail,
@@ -34,18 +35,18 @@ emailRouter.post('/newsletter', async (req, res) => {
       );
       isNew = result.rowsAffected > 0 || (result.rowCount ?? 0) > 0;
     } catch (dbErr) {
-      console.warn('[Newsletter] Error al guardar suscriptor:', dbErr.message);
+      logger.warn('[Newsletter] Error al guardar suscriptor:', dbErr.message);
     }
 
     if (isNew) {
       sendNewsletterWelcomeEmail(email, token).catch(err =>
-        console.warn('[Newsletter] Error al enviar email de bienvenida:', err.message)
+        logger.warn('[Newsletter] Error al enviar email de bienvenida:', err.message)
       );
     }
 
     res.json({ success: true, message: '¡Suscrito! Revisa tu correo para el código de descuento.' });
   } catch (error) {
-    console.error('[POST /api/emails/newsletter] Error:', error);
+    logger.error('[POST /api/emails/newsletter] Error:', error);
     res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });
@@ -84,7 +85,7 @@ emailRouter.get('/newsletter/unsubscribe', async (req, res) => {
 
     return res.status(400).json({ success: false, error: 'Se requiere token o email' });
   } catch (error) {
-    console.error('[GET /api/emails/newsletter/unsubscribe] Error:', error);
+    logger.error('[GET /api/emails/newsletter/unsubscribe] Error:', error);
     res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });
@@ -100,7 +101,7 @@ emailRouter.post('/account-confirmation', authenticateToken, requireRole('admin'
     if (result.success) return res.json({ success: true, message: 'Email de confirmación enviado' });
     return res.status(500).json({ error: 'Error al enviar email', details: result.error });
   } catch (error) {
-    console.error('Error:', error);
+    logger.error('Error:', error);
     return res.status(500).json({ error: error.message });
   }
 });
@@ -121,7 +122,7 @@ emailRouter.post('/order-confirmation', authenticateToken, requireRole('admin'),
     if (result.success) return res.json({ success: true, message: 'Email de confirmación de pedido enviado' });
     return res.status(500).json({ error: 'Error al enviar email', details: result.error });
   } catch (error) {
-    console.error('Error:', error);
+    logger.error('Error:', error);
     return res.status(500).json({ error: error.message });
   }
 });
@@ -137,7 +138,7 @@ emailRouter.post('/contact', async (req, res) => {
     if (result.success) return res.json({ success: true, message: 'Mensaje enviado al administrador' });
     return res.status(500).json({ error: 'Error al enviar email', details: result.error });
   } catch (error) {
-    console.error('Error:', error);
+    logger.error('Error:', error);
     return res.status(500).json({ error: error.message });
   }
 });
@@ -153,7 +154,7 @@ emailRouter.post('/contact-reply', authenticateToken, requireRole('admin'), asyn
     if (result.success) return res.json({ success: true, message: 'Email de respuesta enviado' });
     return res.status(500).json({ error: 'Error al enviar email', details: result.error });
   } catch (error) {
-    console.error('Error:', error);
+    logger.error('Error:', error);
     return res.status(500).json({ error: error.message });
   }
 });

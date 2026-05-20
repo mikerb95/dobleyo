@@ -1,4 +1,5 @@
 import express from 'express';
+import { logger } from '../../logger.js';
 import { query } from '../../db.js';
 import { authenticateToken, requireRole } from '../../auth.js';
 
@@ -81,7 +82,7 @@ batchesRouter.get('/', async (req, res) => {
       pagination: { limit: parseInt(limit), offset: parseInt(offset), total: batches.length }
     });
   } catch (error) {
-    console.error('Error fetching roast batches:', error);
+    logger.error('Error fetching roast batches:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });
@@ -137,7 +138,7 @@ batchesRouter.get('/:id', async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Error fetching roast batch:', error);
+    logger.error('Error fetching roast batch:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });
@@ -183,7 +184,7 @@ batchesRouter.post('/', async (req, res) => {
       data: { id: rows[0].id, batch_number, production_order_id }
     });
   } catch (error) {
-    console.error('Error creating roast batch:', error);
+    logger.error('Error creating roast batch:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });
@@ -213,7 +214,7 @@ batchesRouter.post('/:id/first-crack', async (req, res) => {
       first_crack: { time: time_minutes, temperature: temperature_celsius }
     });
   } catch (error) {
-    console.error('Error recording first crack:', error);
+    logger.error('Error recording first crack:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });
@@ -239,7 +240,7 @@ batchesRouter.post('/:id/second-crack', async (req, res) => {
 
     res.json({ success: true, message: 'Second crack recorded' });
   } catch (error) {
-    console.error('Error recording second crack:', error);
+    logger.error('Error recording second crack:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });
@@ -320,7 +321,7 @@ batchesRouter.post('/:id/complete', async (req, res) => {
       data: { roasted_weight, weight_loss_percentage, actual_duration_minutes, development_time_ratio: dtr }
     });
   } catch (error) {
-    console.error('Error completing roast batch:', error);
+    logger.error('Error completing roast batch:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });
@@ -346,7 +347,7 @@ batchesRouter.post('/:id/approve', async (req, res) => {
 
     res.json({ success: true, message: 'Batch approved', is_approved: true });
   } catch (error) {
-    console.error('Error approving batch:', error);
+    logger.error('Error approving batch:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });
@@ -372,7 +373,7 @@ batchesRouter.post('/:id/reject', async (req, res) => {
 
     res.json({ success: true, message: 'Batch rejected', reason });
   } catch (error) {
-    console.error('Error rejecting batch:', error);
+    logger.error('Error rejecting batch:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });
@@ -434,7 +435,7 @@ batchesRouter.get('/:id/comparison', async (req, res) => {
 
     res.json({ success: true, data: comparison });
   } catch (error) {
-    console.error('Error comparing batch:', error);
+    logger.error('Error comparing batch:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });

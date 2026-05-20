@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { logger } from '../logger.js';
 import { body, validationResult } from 'express-validator';
 import * as db from '../db.js';
 import * as auth from '../auth.js';
@@ -32,7 +33,7 @@ caficultorRouter.get('/applications',
       `);
       res.json({ applications: result.rows });
     } catch (err) {
-      console.error(err);
+      logger.error(err);
       res.status(500).json({ error: 'Error al obtener solicitudes' });
     }
   }
@@ -61,7 +62,7 @@ caficultorRouter.get('/applications/:id',
       }
       res.json({ application: result.rows[0] });
     } catch (err) {
-      console.error(err);
+      logger.error(err);
       res.status(500).json({ error: 'Error al obtener aplicación' });
     }
   }
@@ -113,7 +114,7 @@ caficultorRouter.post('/applications/:id/approve',
 
       res.json({ message: 'Solicitud de caficultor aprobada' });
     } catch (err) {
-      console.error(err);
+      logger.error(err);
       res.status(500).json({ error: 'Error al aprobar solicitud' });
     }
   }
@@ -165,7 +166,7 @@ caficultorRouter.post('/applications/:id/reject',
 
       res.json({ message: 'Solicitud de caficultor rechazada' });
     } catch (err) {
-      console.error(err);
+      logger.error(err);
       res.status(500).json({ error: 'Error al rechazar solicitud' });
     }
   }

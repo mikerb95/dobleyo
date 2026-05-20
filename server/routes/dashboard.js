@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { logger } from '../logger.js';
 import { query } from '../db.js';
 import { authenticateToken, requireRole } from '../auth.js';
 
@@ -32,7 +33,7 @@ dashboardRouter.get('/kpis', async (req, res) => {
       { id: 'lowstock', label: 'Stock bajo',      value: lowStock ?? '—',  delta: null, icon: '⚠', tone: lowStock > 0 ? 'warn' : 'neutral', spark: null },
     ]);
   } catch (e) {
-    console.error('[GET /api/dashboard/kpis]', e);
+    logger.error('[GET /api/dashboard/kpis]', e);
     res.status(500).json({ success: false, error: { code: 'db_error', message: e.message } });
   }
 });
@@ -59,7 +60,7 @@ dashboardRouter.get('/alerts', async (req, res) => {
 
     ok(res, alerts);
   } catch (e) {
-    console.error('[GET /api/dashboard/alerts]', e);
+    logger.error('[GET /api/dashboard/alerts]', e);
     res.status(500).json({ success: false, error: { code: 'db_error', message: e.message } });
   }
 });
@@ -78,7 +79,7 @@ dashboardRouter.get('/activity', async (req, res) => {
     );
     ok(res, logsRes.rows);
   } catch (e) {
-    console.error('[GET /api/dashboard/activity]', e);
+    logger.error('[GET /api/dashboard/activity]', e);
     res.status(500).json({ success: false, error: { code: 'db_error', message: e.message } });
   }
 });
