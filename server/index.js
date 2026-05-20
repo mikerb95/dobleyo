@@ -5,6 +5,8 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
+import pinoHttp from 'pino-http';
+import { logger } from './logger.js';
 import { stockRouter } from './routes/stock.js';
 import { authRouter } from './routes/auth.js';
 import { caficultorRouter } from './routes/caficultor.js';
