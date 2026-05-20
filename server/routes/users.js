@@ -9,30 +9,46 @@ const usersRouter = Router();
 // GET /api/users - Obtener todos los usuarios (solo admin)
 usersRouter.get('/', auth.authenticateToken, auth.requireRole('admin'), async (req, res) => {
   try {
-    const result = await query(
-      `SELECT 
-        id, 
-        email, 
-        name,
-        first_name,
-        last_name, 
-        mobile_phone, 
-        landline_phone,
-        tax_id,
-        address,
-        city, 
-        state_province, 
-        country, 
-        role, 
-        is_verified, 
-        caficultor_status,
-        last_login_at, 
-        created_at 
-      FROM users 
-      ORDER BY created_at DESC`
-    );
+    const { role, search, page = 1, limit = 50 } = req.query;
+    const pageNum = Math.max(1, parseInt(page) || 1);
+    const pageSize = Math.min(100, parseInt(limit) || 50);
+    const offset = (pageNum - 1) * pageSize;
 
-    res.json({ users: result.rows });
+    const conditions = [];
+    const params = [];
+
+    if (role) { conditions.push('role = ?'); params.push(role); }
+    if (search) {
+      conditions.push('(email LIKE ? OR first_name LIKE ? OR last_name LIKE ?)');
+      const p = `%${search}%`;
+      params.push(p, p, p);
+    }
+
+    const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+
+    const [countResult, result] = await Promise.all([
+      query(`SELECT COUNT(*) as total FROM users ${where}`, params),
+      query(
+        `SELECT
+          id, email, name, first_name, last_name, mobile_phone, landline_phone,
+          tax_id, address, city, state_province, country, role, is_verified,
+          caficultor_status, last_login_at, created_at
+        FROM users ${where}
+        ORDER BY created_at DESC
+        LIMIT ? OFFSET ?`,
+        [...params, pageSize, offset]
+      ),
+    ]);
+
+    const total = countResult.rows[0].total;
+    res.json({
+      success: true,
+      data: result.rows,
+      total,
+      page: pageNum,
+      limit: pageSize,
+      pages: Math.ceil(total / pageSize),
+    });
   } catch (err) {
     logger.error({ err }, '[GET /api/users] Error:');
     res.status(500).json({ error: 'Error al obtener usuarios' });
