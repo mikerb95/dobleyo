@@ -2,6 +2,42 @@
 
 ---
 
+## 📅 2026-05-20 — Auditoría de mantenibilidad: seguridad y coherencia de backend (Agente: Claude Opus)
+
+### Contexto
+Ejecución parcial del plan `auditoria-may-20.md`. Tareas cubiertas: 1.2, 1.3, 2.1, 2.2 (y verificación de 3.1 ya implementada).
+
+### Archivos Modificados
+- `vercel.json` — Eliminados rewrites de endpoints debug (`/api/minimal`, `/api/diagnose`, `/api/debug-login`, `/api/setup-standalone`)
+- `server/index.js` — Eliminados 3 endpoints de audit inline (bug MySQL `DATE_SUB`), eliminado `/api/debug-env`, importado y montado `auditRouter` desde `routes/audit.js`, corregido comentario "PgBouncer + PostgreSQL" → "Turso/libSQL"
+- `public/assets/js/auth-refresh.js` — Reescrito para operar 100% por HttpOnly cookies. Eliminadas todas las referencias a `localStorage` (`adminToken`, `userName`)
+
+### Archivos Eliminados
+- `api/debug_login.js` + `.bak` — Endpoint debug de login
+- `api/diagnose.js` + `.bak` — Endpoint de diagnóstico
+- `api/minimal.js` — Endpoint mínimo de prueba
+- `api/setup_standalone.js` + `.bak` — Endpoint de setup público
+- `server/index_with_production.js` — Versión legacy CommonJS, reemplazada por ESM
+- `public/assets/js/admin.js` — CRUD localStorage legacy, sin referencias activas
+- `server/reset_database.js.bak`, `server/create_admin_luis.js.bak`, `server/migrations/add_roast_fields.js.bak`, `index.html.bak` — Archivos backup obsoletos
+
+### Hallazgos Adicionales
+- `.env` **no estaba commiteado** (el `.gitignore` ya lo protegía correctamente)
+- `tienda.astro` e `index.astro` ya consultan la BD directamente con fallback a datos estáticos (tarea 3.1 ya implementada)
+- `server/routes/audit.js` ya existía con los endpoints correctos en SQLite (sin el bug `DATE_SUB(NOW())` de MySQL que tenía el inline)
+
+### Decisiones Técnicas
+- `auth-refresh.js` arranca el timer incondicionalmente: si no hay sesión, el primer refresh retorna 401 y se detiene sin redirigir (salvo página protegida)
+- Los stubs de MercadoPago (`/api/mp/*`) se mantienen en `server/index.js` como placeholders de Fase 4 — retornan 501
+
+### Impacto
+- Eliminados 4 endpoints de debug accesibles públicamente en producción
+- Token JWT ya no se almacena en `localStorage` (XSS surface reducida)
+- `server/index.js` y `api/index.js` ahora comparten el mismo `auditRouter`
+- Eliminado bug latente: audit/stats en `server/index.js` usaba `DATE_SUB(NOW(), INTERVAL 30 DAY)` (MySQL) que habría fallado en Turso/SQLite
+
+---
+
 ## 📅 2026-05-17 — Seguridad checkout: precios calculados en servidor (Agente: GitHub Copilot)
 
 ### Archivos Modificados
