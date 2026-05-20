@@ -225,26 +225,7 @@ app.get('/api/audit/actions', authenticateToken, requireRole('admin'), async (re
   }
 });
 
-// Debug endpoint to check environment variables (safe version)
-app.get('/api/debug-env', (req, res) => {
-  // Proteger en producción
-  if (process.env.NODE_ENV === 'production') {
-    return res.status(403).json({ error: 'Endpoint no disponible en producción' });
-  }
-
-  res.json({
-    status: 'ok',
-    env: {
-      hasDatabaseUrl: !!process.env.DATABASE_URL,
-      databaseUrlLength: process.env.DATABASE_URL ? process.env.DATABASE_URL.length : 0,
-      nodeEnv: process.env.NODE_ENV,
-      vercel: process.env.VERCEL,
-      hasJwtSecret: !!process.env.JWT_SECRET
-    }
-  });
-});
-
-// Salud — incluye ping real a la BD para verificar PgBouncer + PostgreSQL
+// Salud — ping real a Turso/libSQL
 app.get('/api/health', async (req, res) => {
   const db = await healthCheck();
   const status = db.ok ? 'ok' : 'degraded';
