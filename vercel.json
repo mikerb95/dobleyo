@@ -11,22 +11,6 @@
       "destination": "/en/:path*"
     },
     {
-      "source": "/api/minimal",
-      "destination": "/api/minimal.js"
-    },
-    {
-      "source": "/api/diagnose",
-      "destination": "/api/diagnose.js"
-    },
-    {
-      "source": "/api/setup-standalone",
-      "destination": "/api/setup_standalone.js"
-    },
-    {
-      "source": "/api/debug-login",
-      "destination": "/api/debug_login.js"
-    },
-    {
       "source": "/api/(.*)",
       "destination": "/api/index.js"
     }
