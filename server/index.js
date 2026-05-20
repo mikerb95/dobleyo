@@ -31,8 +31,8 @@ import { couponsRouter } from './routes/coupons.js';
 import { externalSalesRouter } from './routes/external-sales.js';
 import { crmRouter } from './routes/crm.js';
 import { dashboardRouter } from './routes/dashboard.js';
-import { authenticateToken, requireRole } from './auth.js';
-import { query, healthCheck } from './db.js';
+import auditRouter from './routes/audit.js';
+import { healthCheck } from './db.js';
 
 const app = express();
 
@@ -112,6 +112,7 @@ app.use('/api/external-sales', externalSalesRouter);
 app.use('/api/system', systemRouter);
 app.use('/api/crm', crmRouter);
 app.use('/api/dashboard', dashboardRouter);
+app.use('/api/audit', auditRouter);
 // Webhook Wompi delegado al router de órdenes
 app.post('/api/wompi/webhook', (req, res, next) => { req.url = '/wompi/webhook'; ordersRouter(req, res, next); });
 
