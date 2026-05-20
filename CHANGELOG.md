@@ -2,6 +2,42 @@
 
 ---
 
+## 📅 2026-05-20 — Auditoría de mantenibilidad: observabilidad, paginación y service layer (Agente: Claude Opus)
+
+### Contexto
+Segunda ronda del plan `auditoria-may-20.md`. Tareas cubiertas: 4.1, 4.4, 4.2.
+
+### Logger estructurado (pino)
+- `npm install pino pino-http pino-pretty`
+- Creado `server/logger.js` — exporta `logger` y `routeLogger(route)`. En dev usa `pino-pretty`, en prod JSON puro.
+- Middleware `pino-http` instalado en `server/index.js` y `api/index.js` — loggea cada request automáticamente.
+- Migrados **34 archivos** (routes/ y services/) de `console.error/warn` a `logger.error/warn` con contexto `{ err }`.
+- Eliminados **13 archivos `.bak2`** adicionales encontrados en server/.
+
+### Paginación en endpoints de lista
+- `users.js` — `GET /api/users`: añadidos filtros `role`, `search`, paginación `page/limit`, conteo total.
+- `lots.js` — `GET /api/lots`: añadidos filtros `estado`, `search`, paginación `page/limit`.
+- `blog.js` — `GET /api/blog`: paginación `page/limit` con conteo.
+- `products.js` — `GET /api/products`: paginación `page/limit` con conteo; corregido `TRUE/FALSE` → `1/0` para SQLite.
+- (Verificados: `external-sales.js`, `farms.js`, `orders.js`, y producción/* ya tenían paginación correcta.)
+
+### Service layer — coffee.js y finance.js
+- Creado `server/services/coffeeService.js` (~520 líneas) con 22 funciones del pipeline completo: `createHarvest`, `storeGreenCoffee`, `sendToRoasting`, `receiveRoasted`, `storeRoasted`, `createPackaging`, queries de lista, deletes, y cupping SCA.
+- `server/routes/coffee.js`: reducido de **1,234 líneas → 191 líneas** (router delgado que delega al service). Eliminados todos los `console.log` debug restantes.
+- Creado `server/services/financeService.js` (~230 líneas) con: `getDashboard`, `getTransactionBook` (UNION query con filtros), `createPurchaseInvoice` (transacción), `createSalesInvoice` (transacción), `nextNumber`.
+- `server/routes/finance.js`: reducido de **763 líneas → 416 líneas**.
+
+### Patrón de errores de negocio en services
+Los services lanzan errores con `{ status, message, detail }`. El router los captura y envía la respuesta HTTP apropiada — sin duplicar lógica de validación.
+
+### Impacto
+- Logs estructurados JSON en producción con niveles, `requestId` automático por pino-http
+- Endpoints de lista con límite de seguridad (max 100-200 registros por página)
+- `coffee.js` testeble unitariamente sin HTTP (funciones puras)
+- `finance.js`: lógica de facturas con transacciones aislada del router
+
+---
+
 ## 📅 2026-05-20 — Auditoría de mantenibilidad: seguridad y coherencia de backend (Agente: Claude Opus)
 
 ### Contexto
