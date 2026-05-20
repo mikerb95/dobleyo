@@ -1,1235 +1,191 @@
 import express from 'express';
 import { logger } from '../logger.js';
-import { query } from '../db.js';
-import crypto from 'crypto';
 import { authenticateToken, requireRole } from '../auth.js';
 import { apiLimiter } from '../middleware/rateLimit.js';
-import { assertCanAdvance, getCurrentStage, STAGE_LABELS } from '../services/lotStateMachine.js';
 import { assertFarmOwnership } from '../middleware/farmAuth.js';
+import {
+  createHarvest, storeGreenCoffee, sendToRoasting, receiveRoasted,
+  storeRoasted, getRoastedStorageDetail, createPackaging,
+  getHarvests, getGreenInventory, getRoastingBatches, getRoastedCoffee,
+  getRoastedForStorage, getPackaged, getLotStage, getAllLots,
+  deleteHarvest, deleteRoastedStorage, deleteRoastedCoffee, deleteRoastingBatch,
+  getRoastedForCupping, getCuppings, createCupping,
+} from '../services/coffeeService.js';
 
 export const coffeeRouter = express.Router();
 
-// Aplicar rate limiting y autenticación a todas las rutas
 coffeeRouter.use(apiLimiter);
 coffeeRouter.use(authenticateToken);
 coffeeRouter.use(requireRole(['admin', 'caficultor']));
 
-// 1. CREAR LOTE (Recolección en Finca)
+// Helper: envía la respuesta de error de negocio o 500
+function handleErr(res, err, context) {
+  if (err.status) return res.status(err.status).json({ success: false, error: err.message, ...(err.detail && { detail: err.detail }) });
+  logger.error({ err }, context);
+  res.status(500).json({ success: false, error: err.message });
+}
+
+// 1. Cosecha
 coffeeRouter.post('/harvest', async (req, res) => {
   res.setHeader('Content-Type', 'application/json');
   try {
     const { farm, region, altitude, variety, climate, process, aroma, tasteNotes } = req.body;
-
-    // Validaciones
-    if (!farm || !variety || !climate || !process || !aroma || !tasteNotes) {
-      return res.status(400).json({
-        success: false,
-        error: 'Faltan campos requeridos',
-        details: { farm, variety, climate, process, aroma: !!aroma, tasteNotes: !!tasteNotes }
-      });
-    }
-
-    // E-03: Verificar que el caficultor es dueño de la finca
     try {
       await assertFarmOwnership(farm, req.user);
     } catch (authErr) {
       return res.status(authErr.status ?? 403).json({ success: false, error: authErr.message });
     }
-
-    // Usar región y altura proporcionados o usar defaults
-    let farmRegion = region;
-    let farmAltitude = altitude;
-
-    if (!farmRegion || !farmAltitude) {
-      // Fallback a valores por defecto si no se proporcionan
-      const farmMap = {
-        'finca-la-sierra': { region: 'HUI', altitude: 1800 },
-        'finca-nariño': { region: 'NAR', altitude: 1900 },
-        'finca-cauca': { region: 'CAU', altitude: 1750 }
-      };
-
-      const farmInfo = farmMap[farm];
-      if (farmInfo) {
-        farmRegion = farmInfo.region;
-        farmAltitude = farmInfo.altitude;
-      }
-    }
-
-    const lotSuffix = crypto.randomBytes(2).toString('hex').toUpperCase();
-    const lotId = `COL-${farmRegion}-${farmAltitude}-${variety}-${process}-${lotSuffix}`;
-
-    // Guardar en BD
-    const result = await query(
-      `INSERT INTO coffee_harvests (lot_id, farm, region, altitude, variety, climate, process, aroma, taste_notes, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now')) RETURNING id`,
-      [lotId, farm, farmRegion, farmAltitude, variety, climate, process, aroma, tasteNotes]
-    );
-
-    return res.status(201).json({
-      success: true,
-      message: 'Lote registrado correctamente',
-      lotId: lotId,
-      harvestId: result.rows[0].id
-    });
+    const data = await createHarvest({ farm, region, altitude, variety, climate, process, aroma, tasteNotes });
+    res.status(201).json({ success: true, message: 'Lote registrado correctamente', ...data });
   } catch (err) {
-    logger.error({ err }, 'Error en harvest:');
-
-    // Detectar si es un error de tabla no existente
-    if (err.code === '42P01' || err.message?.includes('coffee_harvests')) {
-      return res.status(500).json({
-        success: false,
-        error: 'La tabla coffee_harvests no existe. Ejecuta la migración primero',
-        message: err.message,
-        hint: 'Ejecuta: node server/migrations/create_coffee_tables.js'
-      });
-    }
-
-    return res.status(500).json({
-      success: false,
-      error: 'Error al registrar lote',
-      message: err.message,
-      code: err.code
-    });
+    handleErr(res, err, 'Error en harvest');
   }
 });
 
-// 2. ALMACENAR EN INVENTARIO (Café Verde)
+// 2. Almacenamiento verde
 coffeeRouter.post('/inventory-storage', async (req, res) => {
   try {
     const { lotId, weight, weightUnit, location, storageDate, notes } = req.body;
-
-    if (!lotId || !weight || !location || !storageDate) {
-      return res.status(400).json({ error: 'Faltan campos requeridos' });
-    }
-
-    // Validar transición de estado
-    try {
-      await assertCanAdvance(query, lotId, 'in_storage_green');
-    } catch (stateErr) {
-      return res.status(409).json({ success: false, error: stateErr.message });
-    }
-
-    // Verificar que el lote existe
-    const harvestResult = await query(
-      'SELECT id FROM coffee_harvests WHERE lot_id = ?',
-      [lotId]
-    );
-
-    if (!harvestResult.rows.length) {
-      return res.status(404).json({ error: 'Lote no encontrado' });
-    }
-
-    const harvestId = harvestResult.rows[0].id;
-
-    // Normalizar peso a kg
-    const weightNum = parseFloat(weight);
-    if (!isFinite(weightNum) || weightNum <= 0) {
-      return res.status(400).json({ error: 'Peso inválido' });
-    }
-    const weightKg = weightUnit === 'lb' ? parseFloat((weightNum * 0.453592).toFixed(3)) : weightNum;
-
-    // Guardar en BD
-    const result = await query(
-      `INSERT INTO green_coffee_inventory (harvest_id, lot_id, weight_kg, location, storage_date, notes, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, datetime('now')) RETURNING id`,
-      [harvestId, lotId, weightKg, location, storageDate, notes || null]
-    );
-
-    res.status(201).json({
-      success: true,
-      storageId: result.rows[0].id,
-      message: 'Café verde almacenado correctamente'
-    });
+    const data = await storeGreenCoffee({ lotId, weight, weightUnit, location, storageDate, notes });
+    res.status(201).json({ success: true, message: 'Café verde almacenado correctamente', ...data });
   } catch (err) {
-    logger.error({ err }, 'Error en inventory-storage:');
-    res.status(500).json({ error: err.message });
+    handleErr(res, err, 'Error en inventory-storage');
   }
 });
 
-// 3. ENVIAR A TOSTIÓN
+// 3. Enviar a tostión
 coffeeRouter.post('/send-roasting', async (req, res) => {
   try {
     const { lotId, quantitySent, targetTemp, notes } = req.body;
-
-    if (!lotId || !quantitySent) {
-      return res.status(400).json({ error: 'Faltan campos requeridos' });
-    }
-
-    // Validar transición de estado
-    try {
-      await assertCanAdvance(query, lotId, 'sent_to_roasting');
-    } catch (stateErr) {
-      return res.status(409).json({ success: false, error: stateErr.message });
-    }
-
-    // Verificar inventario disponible: total almacenado − ya enviado a tostión
-    const quantitySentNum = parseFloat(quantitySent);
-    if (!isFinite(quantitySentNum) || quantitySentNum <= 0) {
-      return res.status(400).json({ error: 'Cantidad inválida' });
-    }
-
-    const inventoryResult = await query(
-      'SELECT COALESCE(SUM(weight_kg), 0) as total FROM green_coffee_inventory WHERE lot_id = ?',
-      [lotId]
-    );
-    const sentResult = await query(
-      `SELECT COALESCE(SUM(quantity_sent_kg), 0) as sent
-       FROM roasting_batches WHERE lot_id = ? AND status != 'cancelled'`,
-      [lotId]
-    );
-
-    const totalStored = parseFloat(inventoryResult.rows[0]?.total) || 0;
-    const alreadySent = parseFloat(sentResult.rows[0]?.sent) || 0;
-    const availableWeight = parseFloat((totalStored - alreadySent).toFixed(3));
-
-    if (quantitySentNum > availableWeight) {
-      return res.status(400).json({
-        error: 'Cantidad excede el inventario disponible',
-        detail: { total_stored_kg: totalStored, already_sent_kg: alreadySent, available_kg: availableWeight, requested_kg: quantitySentNum }
-      });
-    }
-
-    // Guardar en BD
-    const result = await query(
-      `INSERT INTO roasting_batches (lot_id, quantity_sent_kg, target_temp, notes, status, created_at)
-       VALUES (?, ?, ?, ?, 'in_roasting', datetime('now')) RETURNING id`,
-      [lotId, quantitySentNum, targetTemp ? parseInt(targetTemp) : null, notes || null]
-    );
-
-    res.status(201).json({
-      success: true,
-      roastingId: result.rows[0].id,
-      message: 'Lote enviado a tostión correctamente'
-    });
+    const data = await sendToRoasting({ lotId, quantitySent, targetTemp, notes });
+    res.status(201).json({ success: true, message: 'Lote enviado a tostión correctamente', ...data });
   } catch (err) {
-    logger.error({ err }, 'Error en send-roasting:');
-    res.status(500).json({ error: err.message });
+    handleErr(res, err, 'Error en send-roasting');
   }
 });
 
-// 4. RECOGER DEL TUESTE
+// 4. Recoger del tueste
 coffeeRouter.post('/roast-retrieval', async (req, res) => {
   try {
     const { roastingId, roastLevel, roastedWeight, actualTemp, roastTime, observations } = req.body;
-
-    if (!roastingId || !roastLevel || !roastedWeight) {
-      return res.status(400).json({ error: 'Faltan campos requeridos' });
-    }
-
-    // Verificar roasting batch y obtener lot_id para state machine
-    const roastingResult = await query(
-      'SELECT quantity_sent_kg, lot_id FROM roasting_batches WHERE id = ?',
-      [roastingId]
-    );
-
-    if (!roastingResult.rows.length) {
-      return res.status(404).json({ error: 'Lote en tostión no encontrado' });
-    }
-
-    const { quantity_sent_kg: quantitySent, lot_id: roastLotId } = roastingResult.rows[0];
-
-    // Validar pesos con precisión
-    const roastedWeightNum = parseFloat(roastedWeight);
-    const quantitySentNum  = parseFloat(quantitySent);
-
-    if (!isFinite(roastedWeightNum) || roastedWeightNum <= 0) {
-      return res.status(400).json({ error: 'Peso tostado inválido: debe ser mayor a 0' });
-    }
-    if (roastedWeightNum >= quantitySentNum) {
-      return res.status(400).json({
-        error: 'El peso tostado no puede ser igual o mayor al peso enviado (siempre hay pérdida por evaporación)',
-        detail: { sent_kg: quantitySentNum, received_kg: roastedWeightNum }
-      });
-    }
-    // Evaporación máxima física en café: ~35%. Menos del 65% de lo enviado es sospechoso.
-    const minReasonableWeight = parseFloat((quantitySentNum * 0.60).toFixed(3));
-    if (roastedWeightNum < minReasonableWeight) {
-      return res.status(400).json({
-        error: `Peso tostado inusualmente bajo (${roastedWeightNum} kg). Evaporación máxima esperada ~35%. Mínimo razonable: ${minReasonableWeight} kg`,
-        detail: { sent_kg: quantitySentNum, received_kg: roastedWeightNum, min_reasonable_kg: minReasonableWeight }
-      });
-    }
-
-    // E-01: Validar transición → roasted
-    if (roastLotId) {
-      try {
-        await assertCanAdvance(query, roastLotId, 'roasted');
-      } catch (stateErr) {
-        return res.status(409).json({ success: false, error: stateErr.message });
-      }
-    }
-
-    const weightLossPercent = parseFloat(((quantitySentNum - roastedWeightNum) / quantitySentNum * 100).toFixed(2));
-
-    // Guardar en BD
-    const result = await query(
-      `INSERT INTO roasted_coffee (roasting_id, roast_level, weight_kg, weight_loss_percent, actual_temp, roast_time_minutes, observations, status, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, 'ready_for_storage', datetime('now')) RETURNING id`,
-      [roastingId, roastLevel, roastedWeightNum, weightLossPercent, actualTemp ? parseInt(actualTemp) : null, roastTime ? parseInt(roastTime) : null, observations || null]
-    );
-
-    // Actualizar estado del roasting batch
-    await query(
-      'UPDATE roasting_batches SET status = ? WHERE id = ?',
-      ['completed', roastingId]
-    );
-
-    res.status(201).json({
-      success: true,
-      roastedId: result.rows[0].id,
-      weightLossPercent,
-      message: 'Café tostado registrado correctamente'
-    });
+    const data = await receiveRoasted({ roastingId, roastLevel, roastedWeight, actualTemp, roastTime, observations });
+    res.status(201).json({ success: true, message: 'Café tostado registrado correctamente', ...data });
   } catch (err) {
-    logger.error({ err }, 'Error en roast-retrieval:');
-    res.status(500).json({ error: err.message });
+    handleErr(res, err, 'Error en roast-retrieval');
   }
 });
 
-// 5. ALMACENAR CAFÉ TOSTADO
+// 5. Almacenar tostado
 coffeeRouter.post('/roasted-storage', async (req, res) => {
   try {
     const { roastedId, location, container, containerCount, conditions, notes } = req.body;
-
-    if (!roastedId || !location || !container || !containerCount) {
-      return res.status(400).json({ error: 'Faltan campos requeridos' });
-    }
-
-    // Verificar café tostado existe y obtener lot_id para state machine
-    const roastedResult = await query(
-      `SELECT rc.weight_kg, rb.lot_id
-       FROM roasted_coffee rc
-       JOIN roasting_batches rb ON rb.id = rc.roasting_id
-       WHERE rc.id = ?`,
-      [roastedId]
-    );
-
-    if (!roastedResult.rows.length) {
-      return res.status(404).json({ error: 'Café tostado no encontrado' });
-    }
-
-    const { lot_id: storageLotId } = roastedResult.rows[0];
-
-    // E-01: Validar transición → in_storage_roasted
-    if (storageLotId) {
-      try {
-        await assertCanAdvance(query, storageLotId, 'in_storage_roasted');
-      } catch (stateErr) {
-        return res.status(409).json({ success: false, error: stateErr.message });
-      }
-    }
-
-    // Guardar en BD
-    const conditionsStr = (Array.isArray(conditions) && conditions.length) ? conditions.join(',') : null;
-    const result = await query(
-      `INSERT INTO roasted_coffee_inventory (roasted_id, location, container_type, container_count, storage_conditions, notes, status, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, 'ready_for_packaging', datetime('now')) RETURNING id`,
-      [roastedId, location, container, containerCount, conditionsStr, notes || null]
-    );
-
-    // Actualizar estado
-    await query(
-      'UPDATE roasted_coffee SET status = ? WHERE id = ?',
-      ['stored', roastedId]
-    );
-
-    res.status(201).json({
-      success: true,
-      storageId: result.rows[0].id,
-      message: 'Café tostado almacenado correctamente'
-    });
+    const data = await storeRoasted({ roastedId, location, container, containerCount, conditions, notes });
+    res.status(201).json({ success: true, message: 'Café tostado almacenado correctamente', ...data });
   } catch (err) {
-    logger.error({ err }, 'Error en roasted-storage:');
-    res.status(500).json({ error: err.message });
+    handleErr(res, err, 'Error en roasted-storage');
   }
 });
 
-// 5.1 OBTENER DETALLE DE ALMACENAMIENTO DE TOSTADO
+// 5.1 Detalle de almacenamiento
 coffeeRouter.get('/roasted-storage/:id', async (req, res) => {
   try {
-    const { id } = req.params;
-
-    if (!id) {
-      return res.status(400).json({ error: 'ID de almacenamiento requerido' });
-    }
-
-    // Obtener información completa del almacenamiento
-    const result = await query(
-      `SELECT 
-        rci.id,
-        rci.location,
-        rci.container_type as container,
-        rci.container_count,
-        rci.storage_conditions as conditions,
-        rci.notes,
-        rci.created_at as storage_date,
-        rc.weight_kg,
-        rc.roast_level,
-        rb.lot_id,
-        ch.variety,
-        ch.climate,
-        ch.region,
-        ch.altitude,
-        ch.process,
-        ch.aroma,
-        ch.taste_notes
-       FROM roasted_coffee_inventory rci
-       LEFT JOIN roasted_coffee rc ON rci.roasted_id = rc.id
-       LEFT JOIN roasting_batches rb ON rc.roasting_id = rb.id
-       LEFT JOIN coffee_harvests ch ON rb.lot_id = ch.lot_id
-       WHERE rci.id = ?`,
-      [id]
-    );
-
-    if (!result.rows.length) {
-      return res.status(404).json({ error: 'Almacenamiento no encontrado' });
-    }
-
-    const data = result.rows[0];
-
-    // Parsear condiciones si existen
-    const conditions = data.conditions ? data.conditions.split(',') : [];
-
-    res.json({
-      id: data.id,
-      lot_id: data.lot_id,
-      variety: data.variety,
-      climate: data.climate,
-      region: data.region,
-      altitude: data.altitude,
-      process: data.process,
-      aroma: data.aroma,
-      taste_notes: data.taste_notes,
-      weight_kg: data.weight_kg,
-      roast_level: data.roast_level,
-      location: data.location,
-      container: data.container,
-      container_count: data.container_count,
-      conditions: conditions,
-      notes: data.notes,
-      storage_date: data.storage_date
-    });
+    const data = await getRoastedStorageDetail(req.params.id);
+    res.json(data);
   } catch (err) {
-    logger.error({ err }, 'Error obteniendo detalle de almacenamiento:');
-    res.status(500).json({ error: err.message });
+    handleErr(res, err, 'Error obteniendo detalle de almacenamiento');
   }
 });
 
-// 6. PREPARAR PARA VENTA (Packaging)
+// 6. Empaque
 coffeeRouter.post('/packaging', async (req, res) => {
   try {
     const { roastedStorageId, acidity, body, balance, presentation, grindSize, packageSize, unitCount, notes, addToInventory } = req.body;
-
-    if (!roastedStorageId || !acidity || !body || !balance || !presentation || !packageSize || !unitCount) {
-      return res.status(400).json({ error: 'Faltan campos requeridos' });
-    }
-
-    if (presentation === 'MOLIDO' && !grindSize) {
-      return res.status(400).json({ error: 'Debe especificar tipo de molienda' });
-    }
-
-    // Validar que el roasted_coffee_inventory no esté ya empacado
-    const dupCheck = await query(
-      `SELECT 1 FROM packaged_coffee WHERE roasted_storage_id = ? AND status = 'ready_for_sale' LIMIT 1`,
-      [roastedStorageId]
-    );
-    if (dupCheck.rows.length > 0) {
-      return res.status(409).json({ success: false, error: 'Este lote tostado ya fue empacado' });
-    }
-
-    // Calcular puntuación sensorial (promedio 1-5, precisión 2 decimales)
-    const acidityInt = parseInt(acidity, 10);
-    const bodyInt    = parseInt(body, 10);
-    const balanceInt = parseInt(balance, 10);
-    if ([acidityInt, bodyInt, balanceInt].some(v => !Number.isInteger(v) || v < 1 || v > 5)) {
-      return res.status(400).json({ error: 'Los atributos sensoriales deben ser enteros entre 1 y 5' });
-    }
-    const score = parseFloat(((acidityInt + bodyInt + balanceInt) / 3).toFixed(2));
-
-    // Obtener información del café tostado para crear el SKU
-    // Primero verificar que existe el registro en roasted_coffee_inventory
-    const rciCheck = await query(
-      'SELECT * FROM roasted_coffee_inventory WHERE id = ?',
-      [roastedStorageId]
-    );
-
-    if (!rciCheck.rows.length) {
-      logger.error('[packaging] Error: roasted_coffee_inventory no encontrado, id:', roastedStorageId);
-      return res.status(404).json({ error: 'Café tostado no encontrado en inventario' });
-    }
-
-    const rciData = rciCheck.rows[0];
-    console.log('[packaging] rciData:', { id: rciData.id, roasted_id: rciData.roasted_id, status: rciData.status });
-
-    // Ahora obtener la información con LEFT JOINs para mejor compatibilidad
-    const roastedResult = await query(
-      `SELECT rci.*, rc.roast_level, rc.weight_kg, rb.lot_id,
-              ch.region, ch.farm, ch.variety, ch.process, ch.aroma, ch.taste_notes
-       FROM roasted_coffee_inventory rci
-       LEFT JOIN roasted_coffee rc ON rci.roasted_id = rc.id
-       LEFT JOIN roasting_batches rb ON rc.roasting_id = rb.id
-       LEFT JOIN coffee_harvests ch ON rb.lot_id = ch.lot_id
-       WHERE rci.id = ?`,
-      [roastedStorageId]
-    );
-
-    if (!roastedResult.rows.length) {
-      logger.error('[packaging] Error: No se pudo obtener información del café tostado');
-      return res.status(404).json({ error: 'Café tostado no encontrado' });
-    }
-
-    const roastedInfo = roastedResult.rows[0];
-    console.log('[packaging] roastedInfo:', { lot_id: roastedInfo.lot_id, roast_level: roastedInfo.roast_level, region: roastedInfo.region });
-
-    // Validar que unidades × tamaño de paquete no supere el peso disponible del lote
-    const unitCountNum = parseInt(unitCount, 10);
-    if (!Number.isInteger(unitCountNum) || unitCountNum <= 0) {
-      return res.status(400).json({ error: 'Cantidad de unidades inválida' });
-    }
-
-    const availableWeightKg = parseFloat(roastedInfo.weight_kg) || 0;
-    if (availableWeightKg <= 0) {
-      return res.status(400).json({ error: 'No hay peso disponible en este lote tostado' });
-    }
-
-    const PACKAGE_KG = { '100g': 0.1, '250g': 0.25, '500g': 0.5, '1kg': 1.0 };
-    if (packageSize !== 'bulk') {
-      const packageKg = PACKAGE_KG[packageSize];
-      if (!packageKg) {
-        return res.status(400).json({ error: `Tamaño de paquete no reconocido: ${packageSize}` });
-      }
-      const requiredKg = parseFloat((unitCountNum * packageKg).toFixed(3));
-      if (requiredKg > availableWeightKg) {
-        return res.status(400).json({
-          error: `Peso requerido (${requiredKg} kg) supera el disponible (${availableWeightKg} kg)`,
-          detail: {
-            unit_count: unitCountNum,
-            package_size: packageSize,
-            required_kg: requiredKg,
-            available_kg: availableWeightKg,
-            max_units: Math.floor(availableWeightKg / packageKg)
-          }
-        });
-      }
-    } else {
-      // Para granel: unitCount se interpreta como kg
-      if (unitCountNum > availableWeightKg) {
-        return res.status(400).json({
-          error: `Peso a granel (${unitCountNum} kg) supera el disponible (${availableWeightKg} kg)`
-        });
-      }
-    }
-
-    // E-01: Validar transición → packaged
-    if (roastedInfo.lot_id) {
-      try {
-        await assertCanAdvance(query, roastedInfo.lot_id, 'packaged');
-      } catch (stateErr) {
-        return res.status(409).json({ success: false, error: stateErr.message });
-      }
-    }
-
-    // Guardar en BD
-    const result = await query(
-      `INSERT INTO packaged_coffee (roasted_storage_id, acidity, body, balance, score, presentation, grind_size, package_size, unit_count, notes, status, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'ready_for_sale', datetime('now')) RETURNING id`,
-      [roastedStorageId, parseInt(acidity), parseInt(body), parseInt(balance), parseFloat(score), presentation, grindSize || null, packageSize, unitCountNum, notes || null]
-    );
-
-    // Actualizar estado del café tostado
-    await query(
-      'UPDATE roasted_coffee_inventory SET status = ? WHERE id = ?',
-      ['packaged', roastedStorageId]
-    );
-
-    let productId = null;
-    let inventoryMovementCreated = false;
-
-    // Si se marcó la opción de sumar al inventario disponible
-    if (addToInventory === true) {
-      // Generar SKU basado en información del café
-      const timestamp = Date.now().toString().slice(-6);
-      productId = `CAFE-${roastedInfo.lot_id || 'GEN'}-${packageSize.replace(/[^a-zA-Z0-9-]/g, '')}-${timestamp}`.substring(0, 50);
-
-      // Nombre descriptivo del producto
-      const presentationLabel = presentation === 'GRANO' ? 'Grano' : `Molido ${grindSize ?? ''}`.trim();
-      const productName = `Café ${roastedInfo.lot_id || 'Premium'} - ${packageSize} (${presentationLabel})`;
-
-      const roastLevel = roastedInfo.roast_level || 'medium';
-      const origin = roastedInfo.region || 'Colombia';
-      const harvestProcess = roastedInfo.process || null;
-
-      // Peso en gramos (numérico) para el campo weight
-      const weightGrams = packageSize === '1kg' ? 1000
-        : packageSize === 'bulk' ? null
-        : parseInt(packageSize);  // '250g' → 250, '500g' → 500, '100g' → 100
-
-      await query(
-        `INSERT INTO products (id, name, category, origin, process, roast, price, cost, is_active, stock_quantity, stock_min, weight, weight_unit, created_at)
-         VALUES (?, ?, 'cafe', ?, ?, ?, 0, 0, 1, ?, 0, ?, 'g', datetime('now'))`,
-        [productId, productName, origin, harvestProcess, roastLevel, unitCountNum, weightGrams]
-      );
-
-      // Registrar movimiento de inventario
-      await query(
-        `INSERT INTO inventory_movements (product_id, movement_type, quantity, quantity_before, quantity_after, reason, reference, created_at)
-         VALUES (?, 'entrada', ?, 0, ?, 'Café empacado para venta', ?, datetime('now'))`,
-        [productId, unitCountNum, unitCountNum, roastedInfo.lot_id || 'packaging']
-      );
-
-      inventoryMovementCreated = true;
-    }
-
+    const data = await createPackaging({ roastedStorageId, acidity, body, balance, presentation, grindSize, packageSize, unitCount, notes, addToInventory });
     res.status(201).json({
       success: true,
-      packagedId: result.rows[0].id,
-      productId: productId,
-      score,
-      inventoryUpdated: inventoryMovementCreated,
-      message: inventoryMovementCreated
+      ...data,
+      message: data.inventoryMovementCreated
         ? `Café preparado para venta y ${unitCount} unidades agregadas al inventario`
-        : 'Café preparado para venta correctamente'
+        : 'Café preparado para venta correctamente',
     });
   } catch (err) {
-    logger.error({ err }, 'Error en packaging:');
-    logger.error('Stack:', err.stack);
-    logger.error('Body enviado:', { roastedStorageId, acidity, body, balance, presentation });
-    res.status(500).json({
-      error: err.message || 'Error al preparar café',
-      details: process.env.NODE_ENV === 'development' ? err.stack : undefined
-    });
+    handleErr(res, err, 'Error en packaging');
   }
 });
 
-// GET: Lotes disponibles por tipo
-coffeeRouter.get('/harvests', async (req, res) => {
-  try {
-    const result = await query(
-      'SELECT * FROM coffee_harvests ORDER BY created_at DESC LIMIT 100',
-      []
-    );
-    res.json(result.rows);
-  } catch (err) {
-    logger.error({ err }, 'Error en GET harvests:');
-    res.status(500).json({ error: err.message });
-  }
-});
+// GETs de lista
+coffeeRouter.get('/harvests',          async (_req, res) => { try { res.json(await getHarvests()); }          catch (err) { handleErr(res, err, 'Error en GET harvests'); } });
+coffeeRouter.get('/green-inventory',   async (_req, res) => { try { res.json(await getGreenInventory()); }    catch (err) { handleErr(res, err, 'Error en GET green-inventory'); } });
+coffeeRouter.get('/roasting-batches',  async (_req, res) => { try { res.json(await getRoastingBatches()); }   catch (err) { handleErr(res, err, 'Error en GET roasting-batches'); } });
+coffeeRouter.get('/roasted-coffee',    async (_req, res) => { try { res.json(await getRoastedCoffee()); }     catch (err) { handleErr(res, err, 'Error en GET roasted-coffee'); } });
+coffeeRouter.get('/roasted-for-storage', async (_req, res) => { try { res.json(await getRoastedForStorage()); } catch (err) { handleErr(res, err, 'Error en GET roasted-for-storage'); } });
+coffeeRouter.get('/packaged',          async (_req, res) => { try { res.json(await getPackaged()); }          catch (err) { handleErr(res, err, 'Error en GET packaged'); } });
+coffeeRouter.get('/roasted-for-cupping', async (_req, res) => { try { res.json(await getRoastedForCupping()); } catch (err) { handleErr(res, err, 'Error en GET roasted-for-cupping'); } });
+coffeeRouter.get('/cupping',           async (_req, res) => { try { res.json(await getCuppings()); }          catch (err) { handleErr(res, err, 'Error en GET cupping'); } });
 
-coffeeRouter.get('/green-inventory', async (req, res) => {
-  try {
-    const result = await query(
-      'SELECT * FROM green_coffee_inventory ORDER BY created_at DESC LIMIT 100',
-      []
-    );
-    res.json(result.rows);
-  } catch (err) {
-    logger.error({ err }, 'Error en GET green-inventory:');
-    res.status(500).json({ error: err.message });
-  }
-});
-
-coffeeRouter.get('/roasting-batches', async (req, res) => {
-  try {
-    const result = await query(
-      'SELECT * FROM roasting_batches WHERE status = ? ORDER BY created_at DESC LIMIT 100',
-      ['in_roasting']
-    );
-    res.json(result.rows);
-  } catch (err) {
-    logger.error({ err }, 'Error en GET roasting-batches:');
-    res.status(500).json({ error: err.message });
-  }
-});
-
-coffeeRouter.get('/roasted-coffee', async (req, res) => {
-  try {
-    // Primero verificar si hay lotes en roasted_coffee_inventory
-    const checkResult = await query(
-      `SELECT COUNT(*) as count FROM roasted_coffee_inventory WHERE status = ?`,
-      ['ready_for_packaging']
-    );
-
-    console.log('[roasted-coffee] Lotes con status ready_for_packaging:', checkResult.rows[0]?.count || 0);
-
-    const result = await query(
-      `SELECT 
-        rci.id,
-        rci.roasted_id,
-        rci.location,
-        rci.container_type,
-        rci.container_count,
-        rci.status,
-        rc.roast_level,
-        rc.weight_kg,
-        rc.weight_loss_percent,
-        rb.lot_id,
-        COALESCE(ch.farm, '') as farm,
-        COALESCE(ch.farm, '') as farm_name,
-        COALESCE(ch.region, '') as region,
-        COALESCE(ch.altitude, 0) as altitude,
-        COALESCE(ch.variety, '') as variety,
-        COALESCE(ch.climate, '') as climate,
-        COALESCE(ch.process, '') as process,
-        COALESCE(ch.aroma, '') as aroma,
-        COALESCE(ch.taste_notes, '') as taste_notes,
-        COALESCE(ch.taste_notes, '') as notes
-      FROM roasted_coffee_inventory rci
-      INNER JOIN roasted_coffee rc ON rci.roasted_id = rc.id
-      LEFT JOIN roasting_batches rb ON rc.roasting_id = rb.id
-      LEFT JOIN coffee_harvests ch ON rb.lot_id = ch.lot_id
-      WHERE rci.status = ? 
-      ORDER BY rci.created_at DESC 
-      LIMIT 100`,
-      ['ready_for_packaging']
-    );
-
-    console.log('[roasted-coffee] Resultados encontrados:', result.rows.length);
-
-    // Log para debugging
-    if (result.rows.length > 0) {
-      console.log('[roasted-coffee] Primer resultado (datos de origen):', {
-        lot_id: result.rows[0].lot_id,
-        farm: result.rows[0].farm,
-        region: result.rows[0].region,
-        altitude: result.rows[0].altitude,
-        aroma: result.rows[0].aroma
-      });
-    }
-
-    res.json(result.rows);
-  } catch (err) {
-    logger.error({ err }, 'Error en GET roasted-coffee:');
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// GET: Lotes tostados listos para almacenar
-coffeeRouter.get('/roasted-for-storage', async (req, res) => {
-  try {
-    const result = await query(
-      `SELECT 
-        rc.id,
-        rc.roasting_id,
-        rc.roast_level,
-        rc.weight_kg,
-        rc.weight_loss_percent,
-        rc.actual_temp,
-        rc.roast_time_minutes,
-        rc.observations,
-        rc.status,
-        rb.lot_id,
-        ch.farm,
-        ch.farm as farm_name,
-        ch.region,
-        ch.altitude,
-        ch.variety,
-        ch.climate,
-        ch.process,
-        ch.aroma,
-        ch.taste_notes,
-        ch.taste_notes as notes
-      FROM roasted_coffee rc
-      LEFT JOIN roasting_batches rb ON rc.roasting_id = rb.id
-      LEFT JOIN coffee_harvests ch ON rb.lot_id = ch.lot_id
-      WHERE rc.status = ? 
-      ORDER BY rc.created_at DESC 
-      LIMIT 100`,
-      ['ready_for_storage']
-    );
-    res.json(result.rows);
-  } catch (err) {
-    logger.error({ err }, 'Error en GET roasted-for-storage:');
-    res.status(500).json({ error: err.message });
-  }
-});
-
-coffeeRouter.get('/packaged', async (req, res) => {
-  try {
-    const result = await query(
-      'SELECT * FROM packaged_coffee WHERE status = ? ORDER BY created_at DESC LIMIT 100',
-      ['ready_for_sale']
-    );
-    res.json(result.rows);
-  } catch (err) {
-    logger.error({ err }, 'Error en GET packaged:');
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// GET: Stage actual de un lote — E-01
+// Stage del lote
 coffeeRouter.get('/lots/:lotId/stage', async (req, res) => {
   try {
     const { lotId } = req.params;
     if (!lotId) return res.status(400).json({ success: false, error: 'lotId requerido' });
-
-    const stage = await getCurrentStage(query, lotId);
-    res.json({
-      success: true,
-      lot_id: lotId,
-      stage,
-      label: STAGE_LABELS[stage] ?? stage,
-    });
+    res.json({ success: true, ...(await getLotStage(lotId)) });
   } catch (err) {
-    logger.error({ err }, '[GET /lots/:lotId/stage] Error:');
-    res.status(500).json({ success: false, error: err.message });
+    handleErr(res, err, '[GET /lots/:lotId/stage] Error');
   }
 });
 
-// GET: Todos los lotes (verde, tostado almacenado, tostado pendiente)
-coffeeRouter.get('/lots', async (req, res) => {
+// Todos los lotes
+coffeeRouter.get('/lots', async (_req, res) => {
   try {
-    console.log('[GET /lots] Iniciando carga de todos los lotes');
-    const allLots = [];
-
-    // 1. Lotes de café verde (coffee_harvests)
-    try {
-      const greenResult = await query(
-        `SELECT 
-          ch.id,
-          ch.lot_id,
-          ch.farm as farm_name,
-          ch.variety,
-          ch.region,
-          ch.altitude,
-          ch.climate,
-          ch.process,
-          ch.aroma,
-          ch.taste_notes as notes,
-          ch.created_at,
-          'verde' as status,
-          COALESCE(ci.weight_kg, 0) as weight
-        FROM coffee_harvests ch
-        LEFT JOIN green_coffee_inventory ci ON ch.lot_id = ci.lot_id
-        ORDER BY ch.created_at DESC`
-      );
-      if (greenResult.rows) {
-        allLots.push(...greenResult.rows);
-        console.log(`[GET /lots] Lotes verdes: ${greenResult.rows.length}`);
-      }
-    } catch (err) {
-      logger.error({ err }, '[GET /lots] Error cargando lotes verdes:');
-    }
-
-    // 2. Lotes de café tostado almacenado (roasted_coffee_inventory)
-    try {
-      const storedResult = await query(
-        `SELECT
-          rci.id,
-          rb.lot_id,
-          ch.farm as farm_name,
-          ch.variety,
-          ch.region,
-          ch.altitude,
-          ch.climate,
-          ch.process,
-          ch.aroma,
-          ch.taste_notes as notes,
-          rci.created_at,
-          'tostado' as status,
-          rc.weight_kg as weight
-        FROM roasted_coffee_inventory rci
-        JOIN roasted_coffee rc ON rci.roasted_id = rc.id
-        JOIN roasting_batches rb ON rc.roasting_id = rb.id
-        LEFT JOIN coffee_harvests ch ON rb.lot_id = ch.lot_id
-        ORDER BY rci.created_at DESC`
-      );
-      if (storedResult.rows) {
-        allLots.push(...storedResult.rows);
-        console.log(`[GET /lots] Lotes tostados almacenados: ${storedResult.rows.length}`);
-      }
-    } catch (err) {
-      logger.error({ err }, '[GET /lots] Error cargando tostados almacenados:');
-    }
-
-    // 3. Lotes de café tostado pendiente de almacenar (roasted_coffee)
-    try {
-      const pendingResult = await query(
-        `SELECT 
-          rc.id,
-          rb.lot_id,
-          ch.farm as farm_name,
-          ch.variety,
-          ch.region,
-          ch.altitude,
-          ch.climate,
-          ch.process,
-          ch.aroma,
-          ch.taste_notes as notes,
-          rc.created_at,
-          'pendiente' as status,
-          rc.weight_kg as weight
-        FROM roasted_coffee rc
-        LEFT JOIN roasting_batches rb ON rc.roasting_id = rb.id
-        LEFT JOIN coffee_harvests ch ON rb.lot_id = ch.lot_id
-        WHERE rc.status = 'ready_for_storage'
-        ORDER BY rc.created_at DESC`
-      );
-      if (pendingResult.rows) {
-        allLots.push(...pendingResult.rows);
-        console.log(`[GET /lots] Lotes tostados pendientes: ${pendingResult.rows.length}`);
-      }
-    } catch (err) {
-      logger.error({ err }, '[GET /lots] Error cargando tostados pendientes:');
-    }
-
-    // 4. Lotes en proceso de tostado (roasting_batches)
-    try {
-      const roastingResult = await query(
-        `SELECT 
-          rb.id,
-          rb.lot_id,
-          ch.farm as farm_name,
-          ch.variety,
-          ch.region,
-          ch.altitude,
-          ch.climate,
-          ch.process,
-          ch.aroma,
-          ch.taste_notes as notes,
-          rb.created_at,
-          'en_tostado' as status,
-          rb.quantity_sent_kg as weight
-        FROM roasting_batches rb
-        LEFT JOIN coffee_harvests ch ON rb.lot_id = ch.lot_id
-        WHERE rb.status = 'in_roasting'
-        ORDER BY rb.created_at DESC`
-      );
-      if (roastingResult.rows) {
-        allLots.push(...roastingResult.rows);
-        console.log(`[GET /lots] Lotes en tostado: ${roastingResult.rows.length}`);
-      }
-    } catch (err) {
-      logger.error({ err }, '[GET /lots] Error cargando lotes en tostado:');
-    }
-
-    // Ordenar todos los lotes por fecha (más recientes primero)
-    allLots.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-
-    console.log(`[GET /lots] Total lotes cargados: ${allLots.length}`);
-
-    res.json({
-      lots: allLots,
-      total: allLots.length,
-      breakdown: {
-        verde: allLots.filter(l => l.status === 'verde').length,
-        en_tostado: allLots.filter(l => l.status === 'en_tostado').length,
-        tostado: allLots.filter(l => l.status === 'tostado').length,
-        pendiente: allLots.filter(l => l.status === 'pendiente').length
-      }
-    });
+    res.json(await getAllLots());
   } catch (err) {
-    logger.error({ err }, '[GET /lots] Error general:');
-    res.status(500).json({
-      error: err.message,
-      lots: []
-    });
+    handleErr(res, err, '[GET /lots] Error general');
   }
 });
 
-// DELETE: Eliminar lote de café verde (coffee_harvests)
+// DELETEs
 coffeeRouter.delete('/harvest/:lotId', async (req, res) => {
   try {
-    const { lotId } = req.params;
-    console.log(`[DELETE /harvest] Eliminando lote verde: ${lotId}`);
-
-    // Verificar si el lote existe
-    const checkResult = await query(
-      'SELECT id FROM coffee_harvests WHERE lot_id = ?',
-      [lotId]
-    );
-
-    if (!checkResult.rows || checkResult.rows.length === 0) {
-      return res.status(404).json({
-        success: false,
-        error: 'Lote no encontrado'
-      });
-    }
-
-    // Eliminar de green_coffee_inventory primero (si existe)
-    await query('DELETE FROM green_coffee_inventory WHERE lot_id = ?', [lotId]);
-
-    // Eliminar el lote
-    await query('DELETE FROM coffee_harvests WHERE lot_id = ?', [lotId]);
-
-    console.log(`[DELETE /harvest] Lote ${lotId} eliminado correctamente`);
-    res.json({
-      success: true,
-      message: 'Lote eliminado correctamente'
-    });
+    await deleteHarvest(req.params.lotId);
+    res.json({ success: true, message: 'Lote eliminado correctamente' });
   } catch (err) {
-    logger.error({ err }, '[DELETE /harvest] Error:');
-    res.status(500).json({
-      success: false,
-      error: err.message
-    });
+    handleErr(res, err, '[DELETE /harvest] Error');
   }
 });
 
-// DELETE: Eliminar café tostado almacenado
 coffeeRouter.delete('/roasted-storage/:id', async (req, res) => {
   try {
-    const { id } = req.params;
-    console.log(`[DELETE /roasted-storage] Eliminando tostado almacenado ID: ${id}`);
-
-    // Verificar si existe
-    const checkResult = await query(
-      'SELECT id FROM roasted_coffee_inventory WHERE id = ?',
-      [id]
-    );
-
-    if (!checkResult.rows || checkResult.rows.length === 0) {
-      return res.status(404).json({
-        success: false,
-        error: 'Registro no encontrado'
-      });
-    }
-
-    // Eliminar
-    await query('DELETE FROM roasted_coffee_inventory WHERE id = ?', [id]);
-
-    console.log(`[DELETE /roasted-storage] ID ${id} eliminado correctamente`);
-    res.json({
-      success: true,
-      message: 'Café tostado almacenado eliminado correctamente'
-    });
+    await deleteRoastedStorage(req.params.id);
+    res.json({ success: true, message: 'Café tostado almacenado eliminado correctamente' });
   } catch (err) {
-    logger.error({ err }, '[DELETE /roasted-storage] Error:');
-    res.status(500).json({
-      success: false,
-      error: err.message
-    });
+    handleErr(res, err, '[DELETE /roasted-storage] Error');
   }
 });
 
-// DELETE: Eliminar café tostado pendiente de almacenar
 coffeeRouter.delete('/roasted-coffee/:id', async (req, res) => {
   try {
-    const { id } = req.params;
-    console.log(`[DELETE /roasted-coffee] Eliminando tostado pendiente ID: ${id}`);
-
-    // Verificar si existe
-    const checkResult = await query(
-      'SELECT id FROM roasted_coffee WHERE id = ?',
-      [id]
-    );
-
-    if (!checkResult.rows || checkResult.rows.length === 0) {
-      return res.status(404).json({
-        success: false,
-        error: 'Registro no encontrado'
-      });
-    }
-
-    // Eliminar
-    await query('DELETE FROM roasted_coffee WHERE id = ?', [id]);
-
-    console.log(`[DELETE /roasted-coffee] ID ${id} eliminado correctamente`);
-    res.json({
-      success: true,
-      message: 'Café tostado pendiente eliminado correctamente'
-    });
+    await deleteRoastedCoffee(req.params.id);
+    res.json({ success: true, message: 'Café tostado pendiente eliminado correctamente' });
   } catch (err) {
-    logger.error({ err }, '[DELETE /roasted-coffee] Error:');
-    res.status(500).json({
-      success: false,
-      error: err.message
-    });
+    handleErr(res, err, '[DELETE /roasted-coffee] Error');
   }
 });
 
-// DELETE: Eliminar lote en proceso de tostado
 coffeeRouter.delete('/roasting-batch/:id', async (req, res) => {
   try {
-    const { id } = req.params;
-    console.log(`[DELETE /roasting-batch] Eliminando lote en tostado ID: ${id}`);
-
-    // Verificar si existe
-    const checkResult = await query(
-      'SELECT id FROM roasting_batches WHERE id = ?',
-      [id]
-    );
-
-    if (!checkResult.rows || checkResult.rows.length === 0) {
-      return res.status(404).json({
-        success: false,
-        error: 'Lote en tostado no encontrado'
-      });
-    }
-
-    // Eliminar registros relacionados en roasted_coffee primero
-    await query('DELETE FROM roasted_coffee WHERE roasting_id = ?', [id]);
-
-    // Eliminar el lote en tostado
-    await query('DELETE FROM roasting_batches WHERE id = ?', [id]);
-
-    console.log(`[DELETE /roasting-batch] ID ${id} eliminado correctamente`);
-    res.json({
-      success: true,
-      message: 'Lote en proceso de tostado eliminado correctamente'
-    });
+    await deleteRoastingBatch(req.params.id);
+    res.json({ success: true, message: 'Lote en proceso de tostado eliminado correctamente' });
   } catch (err) {
-    logger.error({ err }, '[DELETE /roasting-batch] Error:');
-    res.status(500).json({
-      success: false,
-      error: err.message
-    });
+    handleErr(res, err, '[DELETE /roasting-batch] Error');
   }
 });
 
-// ── CUPPING SCA ───────────────────────────────────────────────────────────────
-
-// GET: Lotes tostados disponibles para cupping (con o sin cupping previo)
-coffeeRouter.get('/roasted-for-cupping', async (req, res) => {
-  try {
-    const result = await query(
-      `SELECT
-        rc.id,
-        rc.roast_level,
-        rc.weight_kg,
-        rb.lot_id,
-        COALESCE(ch.variety, '') AS variety,
-        COALESCE(ch.region,  '') AS region
-       FROM roasted_coffee rc
-       LEFT JOIN roasting_batches rb ON rc.roasting_id = rb.id
-       LEFT JOIN coffee_harvests  ch ON rb.lot_id = ch.lot_id
-       WHERE rc.status IN ('ready_for_storage', 'stored')
-       ORDER BY rc.created_at DESC
-       LIMIT 100`
-    );
-    res.json(result.rows);
-  } catch (err) {
-    logger.error({ err }, '[GET /roasted-for-cupping] Error:');
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// GET: Historial de cuppings
-coffeeRouter.get('/cupping', async (req, res) => {
-  try {
-    const result = await query(
-      `SELECT
-        id,
-        check_number,
-        -- lot_id está embebido en check_number con formato CUP-<lot_id>-<HEX>
-        CASE
-          WHEN check_number LIKE 'CUP-%' THEN
-            SUBSTRING(check_number FROM 5 FOR LENGTH(check_number) - 9)
-          ELSE NULL
-        END AS lot_id,
-        check_type,
-        check_date,
-        passed,
-        overall_score,
-        aroma_score,
-        flavor_score,
-        aftertaste_score,
-        acidity_score,
-        body_score,
-        balance_score,
-        uniformity_score,
-        clean_cup_score,
-        sweetness_score,
-        defects_count,
-        defects_found,
-        moisture_percentage,
-        color_agtron,
-        observations,
-        corrective_actions
-       FROM production_quality_checks
-       WHERE check_type IN ('post_tostado', 'catacion', 'final')
-       ORDER BY check_date DESC
-       LIMIT 50`
-    );
-    res.json(result.rows);
-  } catch (err) {
-    logger.error({ err }, '[GET /cupping] Error:');
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// POST: Registrar cupping SCA
+// Cupping SCA
 coffeeRouter.post('/cupping', async (req, res) => {
   try {
-    const {
-      roastedId, checkType, checkDate,
-      aromaScore, flavorScore, aftertasteScore, acidityScore,
-      bodyScore, balanceScore, uniformityScore, cleanCupScore, sweetnessScore,
-      defectsCount, defectsFound,
-      moisturePercent, colorAgtron,
-      observations, correctiveActions,
-      passed, overallScore,
-    } = req.body;
-
-    if (!roastedId || !checkDate) {
-      return res.status(400).json({ success: false, error: 'Faltan campos requeridos (roastedId, checkDate)' });
-    }
-
-    // Verificar que el lote tostado existe
-    const lotCheck = await query(
-      'SELECT id FROM roasted_coffee WHERE id = ?',
-      [roastedId]
-    );
-    if (!lotCheck.rows.length) {
-      return res.status(404).json({ success: false, error: 'Lote tostado no encontrado' });
-    }
-
-    // Calcular puntaje final si no viene calculado
-    const attrs = [aromaScore, flavorScore, aftertasteScore, acidityScore,
-                   bodyScore, balanceScore, uniformityScore, cleanCupScore, sweetnessScore];
-    const attrSum = attrs.reduce((sum, v) => sum + (parseFloat(v) || 0), 0);
-    const finalScore = Math.max(0, attrSum - (parseInt(defectsCount) || 0) * 4);
-
-    // Obtener lot_id para incluirlo en el número de control
-    const lotRow = await query(
-      `SELECT rb.lot_id FROM roasted_coffee rc
-       LEFT JOIN roasting_batches rb ON rc.roasting_id = rb.id
-       WHERE rc.id = ?`,
-      [roastedId]
-    );
-    const lotId = lotRow.rows[0]?.lot_id || 'GEN';
-
-    // Generar número de control único con lot_id embebido
-    const checkNumber = `CUP-${lotId}-${crypto.randomBytes(2).toString('hex').toUpperCase()}`;
-
-    // roast_batch_id referencia la tabla `roast_batches` del sistema de producción (distinta
-    // de `roasting_batches` del pipeline de café), por lo que se deja en NULL para evitar
-    // violaciones de FK. El vínculo al lote queda en check_number y observations.
-    const result = await query(
-      `INSERT INTO production_quality_checks (
-        check_number, roast_batch_id, check_type, check_date, inspector_id,
-        passed, overall_score,
-        aroma_score, flavor_score, aftertaste_score, acidity_score,
-        body_score, balance_score, uniformity_score, clean_cup_score, sweetness_score,
-        defects_count, defects_found, moisture_percentage, color_agtron,
-        observations, corrective_actions, created_at
-       ) VALUES (
-        ?, NULL, ?, ?, ?,
-        ?, ?,
-        ?, ?, ?, ?,
-        ?, ?, ?, ?, ?,
-        ?, ?, ?, ?,
-        ?, ?, datetime('now')
-       ) RETURNING id`,
-      [
-        checkNumber, checkType || 'catacion', checkDate, req.user.id,
-        passed ? 1 : 0, finalScore.toFixed(2),
-        aromaScore || null, flavorScore || null, aftertasteScore || null, acidityScore || null,
-        bodyScore || null, balanceScore || null, uniformityScore || null, cleanCupScore || null, sweetnessScore || null,
-        defectsCount || 0, defectsFound || null, moisturePercent || null, colorAgtron || null,
-        observations || null, correctiveActions || null,
-      ]
-    );
-
-    res.status(201).json({
-      success: true,
-      cuppingId: result.rows[0].id,
-      checkNumber,
-      overallScore: finalScore.toFixed(2),
-      passed: passed ? true : false,
-      message: 'Cupping registrado correctamente',
-    });
+    const data = await createCupping({ ...req.body, userId: req.user.id });
+    res.status(201).json({ success: true, message: 'Cupping registrado correctamente', ...data });
   } catch (err) {
-    logger.error({ err }, '[POST /cupping] Error:');
-    res.status(500).json({ success: false, error: err.message });
+    handleErr(res, err, '[POST /cupping] Error');
   }
 });
