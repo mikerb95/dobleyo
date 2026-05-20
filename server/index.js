@@ -38,6 +38,8 @@ import { healthCheck } from './db.js';
 
 const app = express();
 
+app.use(pinoHttp({ logger }));
+
 // Seguridad: Headers HTTP seguros con CSP habilitado (BUG-011 resuelto Fase 11)
 app.use(helmet({
   contentSecurityPolicy: {

@@ -3,6 +3,8 @@ import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
+import pinoHttp from 'pino-http';
+import { logger } from '../server/logger.js';
 import { stockRouter } from '../server/routes/stock.js';
 import { authRouter } from '../server/routes/auth.js';
 import { setupRouter } from '../server/routes/setup.js';
