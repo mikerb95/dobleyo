@@ -8,12 +8,42 @@ export const lotsRouter = Router();
 // Obtener todos los lotes (solo admin)
 lotsRouter.get('/', authenticateToken, requireRole('admin'), async (req, res) => {
   try {
-    const result = await db.query(
-      'SELECT * FROM lots ORDER BY created_at DESC'
-    );
-    res.json({ lots: result.rows });
+    const { estado, search, page = 1, limit = 50 } = req.query;
+    const pageNum = Math.max(1, parseInt(page) || 1);
+    const pageSize = Math.min(200, parseInt(limit) || 50);
+    const offset = (pageNum - 1) * pageSize;
+
+    const conditions = [];
+    const params = [];
+
+    if (estado) { conditions.push('estado = ?'); params.push(estado); }
+    if (search) {
+      conditions.push('(code LIKE ? OR name LIKE ? OR farm LIKE ?)');
+      const p = `%${search}%`;
+      params.push(p, p, p);
+    }
+
+    const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+
+    const [countResult, result] = await Promise.all([
+      db.query(`SELECT COUNT(*) as total FROM lots ${where}`, params),
+      db.query(
+        `SELECT * FROM lots ${where} ORDER BY created_at DESC LIMIT ? OFFSET ?`,
+        [...params, pageSize, offset]
+      ),
+    ]);
+
+    const total = countResult.rows[0].total;
+    res.json({
+      success: true,
+      data: result.rows,
+      total,
+      page: pageNum,
+      limit: pageSize,
+      pages: Math.ceil(total / pageSize),
+    });
   } catch (err) {
-    logger.error(err);
+    logger.error({ err }, '[GET /api/lots] Error:');
     res.status(500).json({ error: 'Error obteniendo lotes' });
   }
 });

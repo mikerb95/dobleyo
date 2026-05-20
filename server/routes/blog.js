@@ -7,15 +7,34 @@ import { authenticateToken, requireRole } from '../auth.js';
 export const blogRouter = Router();
 
 // GET /api/blog — posts publicados
-blogRouter.get('/', async (_req, res) => {
+blogRouter.get('/', async (req, res) => {
     try {
-        const result = await query(
-            `SELECT id, slug, title, excerpt, cover_image_url, author, reading_time_min, tags, published_at
-             FROM blog_posts
-             WHERE is_published = 1
-             ORDER BY published_at DESC`
-        );
-        res.json({ success: true, data: result.rows });
+        const { page = 1, limit = 20 } = req.query;
+        const pageNum = Math.max(1, parseInt(page) || 1);
+        const pageSize = Math.min(100, parseInt(limit) || 20);
+        const offset = (pageNum - 1) * pageSize;
+
+        const [countResult, result] = await Promise.all([
+            query(`SELECT COUNT(*) as total FROM blog_posts WHERE is_published = 1`),
+            query(
+                `SELECT id, slug, title, excerpt, cover_image_url, author, reading_time_min, tags, published_at
+                 FROM blog_posts
+                 WHERE is_published = 1
+                 ORDER BY published_at DESC
+                 LIMIT ? OFFSET ?`,
+                [pageSize, offset]
+            ),
+        ]);
+
+        const total = countResult.rows[0].total;
+        res.json({
+            success: true,
+            data: result.rows,
+            total,
+            page: pageNum,
+            limit: pageSize,
+            pages: Math.ceil(total / pageSize),
+        });
     } catch (err) {
         logger.error({ err }, '[GET /api/blog] Error:');
         res.status(500).json({ success: false, error: 'Error interno' });
