@@ -10,66 +10,50 @@ export const productsRouter = Router();
 const CATEGORY_LABEL = { cafe: 'Cafés', accesorio: 'Accesorios', merchandising: 'Merchandising' };
 
 // ─── GET /api/products ───────────────────────────────────────────────────────
-// Listado público de productos activos con filtros opcionales.
-// Query params: category, origin, process, roast, active (default=true)
+// Listado público de productos activos con filtros y paginación opcionales.
+// Query params: category, origin, process, roast, active, page, limit
 productsRouter.get('/', async (req, res) => {
   try {
-    const { category, origin, process: proc, roast, active = 'true' } = req.query;
+    const { category, origin, process: proc, roast, active = 'true', page = 1, limit = 50 } = req.query;
+    const pageNum = Math.max(1, parseInt(page) || 1);
+    const pageSize = Math.min(200, parseInt(limit) || 50);
+    const offset = (pageNum - 1) * pageSize;
 
     const conditions = [];
     const params = [];
 
     if (active !== 'all') {
-      conditions.push(`is_active = ${active === 'false' ? 'FALSE' : 'TRUE'}`);
+      conditions.push(`is_active = ${active === 'false' ? '0' : '1'}`);
     }
-    if (category) {
-      params.push(category);
-      conditions.push(`category = ?`);
-    }
-    if (origin) {
-      params.push(origin);
-      conditions.push(`origin LIKE ?`);
-    }
-    if (proc) {
-      params.push(proc);
-      conditions.push(`process LIKE ?`);
-    }
-    if (roast) {
-      params.push(roast);
-      conditions.push(`roast LIKE ?`);
-    }
+    if (category) { params.push(category); conditions.push(`category = ?`); }
+    if (origin)   { params.push(origin);   conditions.push(`origin LIKE ?`); }
+    if (proc)     { params.push(proc);     conditions.push(`process LIKE ?`); }
+    if (roast)    { params.push(roast);    conditions.push(`roast LIKE ?`); }
 
     const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
 
-    const { rows } = await query(
-      `SELECT
-         id,
-         slug,
-         name,
-         name_en,
-         category,
-         origin,
-         process,
-         roast,
-         tasting_notes,
-         price,
-         price_usd,
-         rating,
-         is_deal       AS deal,
-         is_bestseller AS bestseller,
-         is_new        AS new,
-         is_fast       AS fast,
-         image_url     AS image,
-         stock_quantity AS stock,
-         description,
-         meta_description
-       FROM products
-       ${where}
-       ORDER BY is_bestseller DESC, is_new DESC, is_deal DESC, rating DESC`,
-      params
-    );
+    const [countResult, { rows }] = await Promise.all([
+      query(`SELECT COUNT(*) as total FROM products ${where}`, params),
+      query(
+        `SELECT
+           id, slug, name, name_en, category, origin, process, roast,
+           tasting_notes, price, price_usd, rating,
+           is_deal       AS deal,
+           is_bestseller AS bestseller,
+           is_new        AS new,
+           is_fast       AS fast,
+           image_url     AS image,
+           stock_quantity AS stock,
+           description, meta_description
+         FROM products
+         ${where}
+         ORDER BY is_bestseller DESC, is_new DESC, is_deal DESC, rating DESC
+         LIMIT ? OFFSET ?`,
+        [...params, pageSize, offset]
+      ),
+    ]);
 
-    // Añadir etiqueta de categoría para el frontend
+    const total = countResult.rows[0].total;
     const data = rows.map(p => ({
       ...p,
       categoryLabel: CATEGORY_LABEL[p.category] ?? p.category,
@@ -77,7 +61,7 @@ productsRouter.get('/', async (req, res) => {
       notesEn: p.tasting_notes?.en ?? null,
     }));
 
-    res.json({ success: true, data, total: data.length });
+    res.json({ success: true, data, total, page: pageNum, limit: pageSize, pages: Math.ceil(total / pageSize) });
   } catch (err) {
     logger.error({ err }, '[GET /api/products] Error:');
     res.status(500).json({ success: false, error: 'Error al cargar productos' });
