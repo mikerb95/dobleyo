@@ -1,0 +1,475 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout
+  title="Showcase — DobleYo Café"
+  description="Resumen ejecutivo del proyecto DobleYo Café: arquitectura, stack tecnológico y mejoras de mantenibilidad ejecutadas."
+  lang="es"
+  noindex={true}
+>
+  <main class="showcase">
+    <section class="showcase-hero">
+      <div class="container">
+        <span class="eyebrow">Documentación interna</span>
+        <h1>DobleYo Café — Showcase del proyecto</h1>
+        <p class="lead">
+          Plataforma de comercio electrónico, trazabilidad y ERP para café de
+          especialidad colombiano. Resumen ejecutivo de la arquitectura y de
+          las mejoras de mantenibilidad ejecutadas en la auditoría de mayo de
+          2026.
+        </p>
+        <div class="meta">
+          <span>Versión: <strong>1.0</strong></span>
+          <span>Última actualización: <strong>2026-05-21</strong></span>
+          <span>Dominios: <strong>dobleyo.cafe · en.dobleyo.cafe</strong></span>
+        </div>
+      </div>
+    </section>
+
+    <section class="showcase-section">
+      <div class="container">
+        <h2>1. Resumen ejecutivo</h2>
+        <p>
+          DobleYo Café integra tres productos en un mismo dominio: una tienda
+          B2C en Colombia y B2B/B2C en Estados Unidos, un sistema de
+          trazabilidad del grano desde la finca hasta el empaque (con QR en
+          cada bolsa) y un ERP operativo para administración, producción y
+          finanzas. Todo construido sobre Astro 5 con SSR en Vercel, Express
+          como capa de API y Turso (libSQL/SQLite) como base de datos.
+        </p>
+
+        <div class="kpi-grid">
+          <div class="kpi">
+            <span class="kpi-value">35+</span>
+            <span class="kpi-label">Tablas en el modelo de datos</span>
+          </div>
+          <div class="kpi">
+            <span class="kpi-value">4</span>
+            <span class="kpi-label">Roles (admin, client, provider, caficultor)</span>
+          </div>
+          <div class="kpi">
+            <span class="kpi-value">2</span>
+            <span class="kpi-label">Idiomas (es-CO, en-US)</span>
+          </div>
+          <div class="kpi">
+            <span class="kpi-value">12</span>
+            <span class="kpi-label">Fases de evolución del producto</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="showcase-section alt">
+      <div class="container">
+        <h2>2. Composición del sitio</h2>
+
+        <h3>Frontend público</h3>
+        <ul class="bullets">
+          <li><strong>Home</strong> con hero en video y productos destacados.</li>
+          <li><strong>Tienda</strong> con filtros y catálogo de cafés y accesorios.</li>
+          <li><strong>Carrito y checkout</strong> (pagos en preparación para Fase 4).</li>
+          <li><strong>Trazabilidad</strong> con escáner QR y búsqueda manual de lotes.</li>
+          <li><strong>Landing B2B en inglés</strong> en <code>en.dobleyo.cafe</code> para exportación.</li>
+          <li><strong>Blog y contacto</strong> con formularios validados.</li>
+        </ul>
+
+        <h3>Panel de administración (ERP)</h3>
+        <ul class="bullets">
+          <li><strong>Inventario y lotes</strong> con CRUD completo y control de stock.</li>
+          <li><strong>Usuarios</strong> con paginación y filtros por rol.</li>
+          <li><strong>Mapa de calor de ventas</strong> en React + Leaflet + leaflet.heat.</li>
+        </ul>
+
+        <h3>App operativa (caficultor / admin)</h3>
+        <ul class="bullets">
+          <li><strong>Pipeline de café</strong>: cosecha → almacenamiento verde → tostión → recepción → almacén tostado → empaque.</li>
+          <li><strong>Etiquetas y QR</strong> con generación automatizada.</li>
+          <li><strong>Finanzas</strong>: dashboard, libro de transacciones, facturas de compra y venta.</li>
+          <li><strong>Ventas MercadoLibre</strong>: sync de órdenes, tracking, geolocalización.</li>
+          <li><strong>Auditoría y estadísticas</strong>: logs estructurados y métricas operativas.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="showcase-section">
+      <div class="container">
+        <h2>3. Stack tecnológico</h2>
+        <table class="stack-table">
+          <thead>
+            <tr><th>Capa</th><th>Tecnología</th><th>Rol</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Frontend SSR</td><td>Astro 5.16 + adapter Vercel</td><td>HTML estático + SSR en rutas dinámicas</td></tr>
+            <tr><td>UI interactiva</td><td>React 19 + Framer Motion</td><td>Componentes con estado e interacción</td></tr>
+            <tr><td>Estilos</td><td>CSS custom con variables <code>:root</code></td><td>Mobile-first, sin frameworks de utility</td></tr>
+            <tr><td>Backend API</td><td>Express 4.19 (ESM)</td><td>Standalone (<code>server/index.js</code>) + Serverless (<code>api/index.js</code>)</td></tr>
+            <tr><td>Base de datos</td><td>Turso (libSQL/SQLite)</td><td>Driver <code>@libsql/client</code>, parámetros <code>?</code></td></tr>
+            <tr><td>Auth</td><td>JWT (access 15min + refresh 7d)</td><td>HttpOnly cookies, 4 roles</td></tr>
+            <tr><td>Logging</td><td>pino + pino-http + pino-pretty</td><td>Structured logging en JSON (prod) y formato legible (dev)</td></tr>
+            <tr><td>Email</td><td>Resend</td><td>Verificación, confirmaciones, contacto</td></tr>
+            <tr><td>Mapas</td><td>Leaflet + leaflet.heat</td><td>Heatmap de ventas en admin</td></tr>
+            <tr><td>Deploy</td><td>Vercel + Fluid Compute</td><td>SSR Astro + Serverless Functions</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="showcase-section alt">
+      <div class="container">
+        <h2>4. Modelo de datos — pilares</h2>
+        <div class="model-grid">
+          <div class="model-card">
+            <h4>Core</h4>
+            <p><code>users</code>, <code>products</code>, <code>lots</code>, <code>orders</code>, <code>order_items</code></p>
+          </div>
+          <div class="model-card">
+            <h4>Producción y trazabilidad</h4>
+            <p><code>coffee_harvests</code>, <code>green_coffee_inventory</code>, <code>roast_batches</code>, <code>production_orders</code>, <code>production_quality_checks</code>, <code>generated_labels</code></p>
+          </div>
+          <div class="model-card">
+            <h4>Finanzas (doble partida)</h4>
+            <p><code>accounting_accounts</code>, <code>accounting_entries</code>, <code>sales_invoices</code>, <code>purchase_invoices</code>, <code>payments</code>, <code>expenses</code>, <code>budgets</code></p>
+          </div>
+          <div class="model-card">
+            <h4>Ventas externas</h4>
+            <p><code>sales_tracking</code> con geocoordenadas para el heatmap</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="showcase-section">
+      <div class="container">
+        <h2>5. Auditoría de mantenibilidad (mayo 2026)</h2>
+        <p>
+          Plan ejecutado en <code>auditoria-may-20.md</code>. Tareas
+          autónomas completadas:
+        </p>
+
+        <div class="audit-grid">
+          <article class="audit-card">
+            <h4>4.1 — Logging estructurado</h4>
+            <ul>
+              <li>Cliente <code>pino</code> centralizado (<code>server/logger.js</code>).</li>
+              <li>Middleware <code>pino-http</code> en <code>server/index.js</code> y <code>api/index.js</code>.</li>
+              <li><strong>34 archivos</strong> migrados de <code>console.error/warn</code> a <code>logger</code> con contexto <code>{ err }</code>.</li>
+              <li>Eliminados 13 archivos <code>.bak2</code> residuales.</li>
+            </ul>
+          </article>
+
+          <article class="audit-card">
+            <h4>4.2 — Service layer</h4>
+            <ul>
+              <li>
+                <code>routes/coffee.js</code>: <strong>1.234 → 191 líneas</strong>
+                (router delgado).
+              </li>
+              <li>
+                <code>routes/finance.js</code>: <strong>763 → 416 líneas</strong>.
+              </li>
+              <li>
+                Nuevos servicios:
+                <code>services/coffeeService.js</code> (22 funciones) y
+                <code>services/financeService.js</code> (5 funciones,
+                transacciones BEGIN/COMMIT/ROLLBACK).
+              </li>
+            </ul>
+          </article>
+
+          <article class="audit-card">
+            <h4>4.3 — Limpieza CSS / legacy</h4>
+            <ul>
+              <li>14 archivos HTML pre-Astro movidos a <code>legacy/</code>.</li>
+              <li>Eliminada dependencia residual de Tailwind CDN.</li>
+              <li>Arreglado link roto en <code>404.astro</code> y guardia legacy <code>admin.html</code> en <code>AuthModal.astro</code>.</li>
+            </ul>
+          </article>
+
+          <article class="audit-card">
+            <h4>4.4 — Paginación en endpoints</h4>
+            <ul>
+              <li>
+                Rutas con respuesta estándar
+                <code>{ data, total, page, limit, pages }</code>:
+                <code>users</code>, <code>lots</code>, <code>blog</code>,
+                <code>products</code>.
+              </li>
+              <li>Filtros y bug fix de booleanos (<code>1/0</code>) para SQLite.</li>
+            </ul>
+          </article>
+
+          <article class="audit-card">
+            <h4>Seguridad y hardening</h4>
+            <ul>
+              <li>Eliminadas 4 reescrituras de debug en <code>vercel.json</code>.</li>
+              <li>Borrado <code>/api/debug-env</code> y rutas <code>setup_standalone</code>, <code>diagnose</code>, <code>minimal</code>.</li>
+              <li>
+                <code>auth-refresh.js</code> reescrito: 100% HttpOnly cookies,
+                sin <code>localStorage</code>.
+              </li>
+              <li>
+                Endpoints inline de audit con bug MySQL
+                (<code>DATE_SUB(NOW())</code>) reemplazados por router
+                correcto con <code>getAuditStats()</code>.
+              </li>
+            </ul>
+          </article>
+
+          <article class="audit-card">
+            <h4>Coherencia de entry points</h4>
+            <ul>
+              <li>
+                <code>server/index.js</code> y <code>api/index.js</code>
+                ahora montan los mismos routers (incluido
+                <code>auditRouter</code>).
+              </li>
+              <li>Eliminados <code>index_with_production.js</code> y <code>admin.js</code> legacy.</li>
+            </ul>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="showcase-section alt">
+      <div class="container">
+        <h2>6. Lo que queda por hacer</h2>
+        <ul class="bullets">
+          <li>
+            <strong>4.5 — Cobertura de tests</strong>: setup de vitest +
+            supertest sobre rutas críticas (auth, coffee pipeline, finance,
+            checkout cuando se habilite).
+          </li>
+          <li>
+            <strong>1.1 — Rotación de secretos</strong>: tarea de operador
+            si se considera necesario (<code>.env</code> nunca llegó al
+            repositorio, protegido por <code>.gitignore</code> desde el
+            inicio).
+          </li>
+          <li>
+            <strong>Fases 4 → 12</strong>: pagos (Wompi / Mercado Pago),
+            trazabilidad de fincas, heatmap, i18n para USA, SEO/seguridad
+            avanzada y CI/CD.
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="showcase-footer">
+      <div class="container">
+        <p>
+          Documentación viva del proyecto. El detalle completo está en
+          <code>CLAUDE.md</code>, <code>AGENTS.md</code>,
+          <code>CHANGELOG.md</code> y <code>auditoria-may-20.md</code>.
+        </p>
+      </div>
+    </section>
+  </main>
+</Layout>
+
+<style>
+  .showcase {
+    color: var(--color-text, #2a1810);
+    font-family: var(--font-body, system-ui, sans-serif);
+  }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+  }
+
+  .showcase-hero {
+    padding: 5rem 0 3rem;
+    background: var(--color-bg-soft, #f8f4ee);
+    border-bottom: 1px solid var(--color-border, #e6dcc8);
+  }
+
+  .eyebrow {
+    display: inline-block;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-size: 0.75rem;
+    color: var(--color-muted, #8a7a5e);
+    margin-bottom: 0.75rem;
+  }
+
+  .showcase-hero h1 {
+    font-size: clamp(2rem, 4vw, 2.75rem);
+    margin: 0 0 1rem;
+    line-height: 1.15;
+  }
+
+  .lead {
+    font-size: 1.1rem;
+    max-width: 720px;
+    color: var(--color-text-soft, #5b4a36);
+    line-height: 1.6;
+  }
+
+  .meta {
+    margin-top: 2rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.25rem;
+    font-size: 0.9rem;
+    color: var(--color-muted, #8a7a5e);
+  }
+
+  .showcase-section {
+    padding: 3.5rem 0;
+  }
+
+  .showcase-section.alt {
+    background: var(--color-bg-soft, #faf6ef);
+  }
+
+  .showcase-section h2 {
+    font-size: 1.75rem;
+    margin: 0 0 1.25rem;
+  }
+
+  .showcase-section h3 {
+    font-size: 1.15rem;
+    margin: 1.75rem 0 0.5rem;
+  }
+
+  .showcase-section p {
+    line-height: 1.7;
+    color: var(--color-text-soft, #5b4a36);
+  }
+
+  .bullets {
+    line-height: 1.8;
+    padding-left: 1.25rem;
+  }
+
+  .bullets li { margin-bottom: 0.35rem; }
+
+  code {
+    background: var(--color-bg-soft, #f1ead8);
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.88em;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  }
+
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    margin-top: 2rem;
+  }
+
+  .kpi {
+    background: var(--color-card, #fff);
+    border: 1px solid var(--color-border, #e6dcc8);
+    border-radius: 10px;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .kpi-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--color-primary, #8b6f47);
+  }
+
+  .kpi-label {
+    font-size: 0.85rem;
+    color: var(--color-muted, #8a7a5e);
+  }
+
+  .stack-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+    font-size: 0.95rem;
+  }
+
+  .stack-table th,
+  .stack-table td {
+    text-align: left;
+    padding: 0.75rem 0.9rem;
+    border-bottom: 1px solid var(--color-border, #e6dcc8);
+    vertical-align: top;
+  }
+
+  .stack-table th {
+    background: var(--color-bg-soft, #f1ead8);
+    font-weight: 600;
+  }
+
+  .model-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1rem;
+    margin-top: 1.5rem;
+  }
+
+  .model-card {
+    background: var(--color-card, #fff);
+    border: 1px solid var(--color-border, #e6dcc8);
+    border-radius: 10px;
+    padding: 1.25rem;
+  }
+
+  .model-card h4 {
+    margin: 0 0 0.6rem;
+    font-size: 1rem;
+    color: var(--color-primary, #8b6f47);
+  }
+
+  .model-card p {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.65;
+  }
+
+  .audit-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.25rem;
+    margin-top: 1.5rem;
+  }
+
+  .audit-card {
+    background: var(--color-card, #fff);
+    border: 1px solid var(--color-border, #e6dcc8);
+    border-radius: 10px;
+    padding: 1.5rem;
+  }
+
+  .audit-card h4 {
+    margin: 0 0 0.75rem;
+    color: var(--color-primary, #8b6f47);
+    font-size: 1.05rem;
+  }
+
+  .audit-card ul {
+    margin: 0;
+    padding-left: 1.1rem;
+    line-height: 1.65;
+    font-size: 0.92rem;
+  }
+
+  .audit-card li { margin-bottom: 0.3rem; }
+
+  .showcase-footer {
+    padding: 2rem 0 4rem;
+    text-align: center;
+    color: var(--color-muted, #8a7a5e);
+    font-size: 0.9rem;
+  }
+
+  @media (max-width: 768px) {
+    .showcase-hero { padding: 3rem 0 2rem; }
+    .showcase-section { padding: 2.5rem 0; }
+    .stack-table { font-size: 0.85rem; }
+    .stack-table th, .stack-table td { padding: 0.55rem 0.5rem; }
+  }
+</style>
+</content>
+</invoke>
