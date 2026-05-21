@@ -23,7 +23,7 @@
 |---|---|---|
 | **Frontend SSR** | Astro 5.16 + `@astrojs/vercel` | Genera HTML estático + SSR en rutas dinámicas |
 | **UI interactiva** | React 19 + Framer Motion | Solo para componentes que necesitan estado/interactividad |
-| **Estilos** | CSS custom (`public/assets/css/styles.css`) + TailwindCSS CDN (algunas páginas) | Variables CSS en `:root`, mobile-first |
+| **Estilos** | CSS custom (`public/assets/css/styles.css`) | Variables CSS en `:root`, mobile-first |
 | **Backend API** | Express 4.19 | Montado en `server/index.js` (standalone) y `api/index.js` (Vercel) |
 | **Base de datos** | Turso (libSQL/SQLite) | Driver: `@libsql/client` |
 | **Auth** | JWT (access 15min + refresh 7d) | HttpOnly cookies. Roles: admin, client, provider, caficultor |

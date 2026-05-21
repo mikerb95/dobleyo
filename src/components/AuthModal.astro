@@ -487,7 +487,7 @@ const googleClientId = import.meta.env.PUBLIC_GOOGLE_CLIENT_ID || '';
     const urlParams = new URLSearchParams(window.location.search);
     const redirect = urlParams.get('redirect');
     if (redirect) {
-      if (redirect.startsWith('/admin') || redirect.includes('admin.html')) {
+      if (redirect.startsWith('/admin')) {
         if (role === 'admin') {
           window.location.href = redirect;
         } else {
