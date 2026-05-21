@@ -6,7 +6,6 @@ import Layout from "../layouts/Layout.astro";
   title="Showcase — DobleYo Café"
   description="Resumen ejecutivo del proyecto DobleYo Café: arquitectura, stack tecnológico y mejoras de mantenibilidad ejecutadas."
   lang="es"
-  noindex={true}
 >
   <main class="showcase">
     <section class="showcase-hero">
@@ -153,7 +152,7 @@ import Layout from "../layouts/Layout.astro";
             <ul>
               <li>Cliente <code>pino</code> centralizado (<code>server/logger.js</code>).</li>
               <li>Middleware <code>pino-http</code> en <code>server/index.js</code> y <code>api/index.js</code>.</li>
-              <li><strong>34 archivos</strong> migrados de <code>console.error/warn</code> a <code>logger</code> con contexto <code>{ err }</code>.</li>
+              <li><strong>34 archivos</strong> migrados de <code>console.error/warn</code> a <code>logger</code> con contexto <code>{"{ err }"}</code>.</li>
               <li>Eliminados 13 archivos <code>.bak2</code> residuales.</li>
             </ul>
           </article>
@@ -191,7 +190,7 @@ import Layout from "../layouts/Layout.astro";
             <ul>
               <li>
                 Rutas con respuesta estándar
-                <code>{ data, total, page, limit, pages }</code>:
+                <code>{"{ data, total, page, limit, pages }"}</code>:
                 <code>users</code>, <code>lots</code>, <code>blog</code>,
                 <code>products</code>.
               </li>
