@@ -2,6 +2,24 @@
 
 ---
 
+## 📅 2026-05-21 — Limpieza HTML legacy y estrategia CSS (Tarea 4.3) (Agente: Claude Opus)
+
+### Contexto
+Tarea 4.3 del plan `auditoria-may-20.md`. Auditoría reveló que los 14 archivos `.html` en la raíz del repo eran sobras de la versión pre-Astro y la única fuente de uso de TailwindCSS CDN. Astro SSR sirve únicamente `src/pages/*.astro`, por lo que estos archivos no eran accesibles vía web pero contaminaban el repo y la documentación.
+
+### Cambios
+- Movidos a `legacy/` (preservados, no eliminados): `admin.html`, `blog.html`, `carrito.html`, `catalogo.html`, `checkout.html`, `confirmacion.html`, `contacto.html`, `cuenta.html`, `faq.html`, `login.html`, `lotes.html`, `nosotros.html`, `tienda.html`, `trazabilidad.html`.
+- `src/pages/404.astro` — link roto `/contacto.html` → `/contacto`.
+- `src/components/AuthModal.astro` — eliminada guardia legacy `redirect.includes('admin.html')` en el redirect post-login.
+- `CLAUDE.md` — quitada mención obsoleta de "TailwindCSS CDN (algunas páginas)" en la tabla de stack.
+
+### Verificación
+- Confirmado vía `grep` que ningún archivo en `src/`, `server/`, `api/`, `public/`, `vercel.json` o `astro.config.mjs` referencia los `.html` movidos.
+- `public/` no contiene HTML servidos; sólo activos estáticos y `styles.css` (única mención a "tailwind" es un comentario inocuo).
+- Diseño preservado: el ERP, navbar, layouts (`Layout.astro`, `AdminLayout.astro`, `AppLayout.astro`, `MobileLayout.astro`) y todas las páginas Astro activas usan exclusivamente CSS custom desde `public/assets/css/styles.css`.
+
+---
+
 ## 📅 2026-05-20 — Auditoría de mantenibilidad: observabilidad, paginación y service layer (Agente: Claude Opus)
 
 ### Contexto
