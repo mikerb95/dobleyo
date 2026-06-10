@@ -55,7 +55,7 @@ export function createApi(client: ApiClient) {
       getPackaged: () => unwrap(request<ApiEnvelope<PackagedItem[]>>('/api/coffee/packaged')),
       getLots: () => unwrap(request<ApiEnvelope<Lot[]>>('/api/coffee/lots')),
       getLotStage: (lotId: string | number) =>
-        unwrap(request<ApiEnvelope<{ stage: string }>>(`/api/coffee/lot/${lotId}/stage`)),
+        unwrap(request<ApiEnvelope<{ stage: string }>>(`/api/coffee/lots/${lotId}/stage`)),
 
       createHarvest: (input: HarvestInput & WithClientOpId) =>
         request<{ success: boolean; lotId?: string | number }>('/api/coffee/harvest', { method: 'POST', body: input }),
@@ -70,7 +70,7 @@ export function createApi(client: ApiClient) {
       packaging: (input: PackagingInput & WithClientOpId) =>
         request<{ success: boolean }>('/api/coffee/packaging', { method: 'POST', body: input }),
 
-      getCuppings: () => unwrap(request<ApiEnvelope<Cupping[]>>('/api/coffee/cuppings')),
+      getCuppings: () => unwrap(request<ApiEnvelope<Cupping[]>>('/api/coffee/cupping')),
       getRoastedForCupping: () => unwrap(request<ApiEnvelope<RoastBatch[]>>('/api/coffee/roasted-for-cupping')),
       createCupping: (input: CuppingInput & WithClientOpId) =>
         request<{ success: boolean }>('/api/coffee/cupping', { method: 'POST', body: input }),
