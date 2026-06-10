@@ -89,8 +89,9 @@ export function createApiClient(config: ApiClientConfig) {
 
     let res = await send(await buildHeaders());
 
-    // Renovación transparente ante 401/403 por token vencido.
-    if ((res.status === 401 || res.status === 403) && !skipAuth) {
+    // Renovación transparente ante 401 (token vencido). 403 = rol insuficiente,
+    // no se reintenta ni se cierra sesión.
+    if (res.status === 401 && !skipAuth) {
       const newToken = await refreshOnce();
       if (newToken) {
         res = await send({ 'Content-Type': 'application/json', Authorization: `Bearer ${newToken}` });

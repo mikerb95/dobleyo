@@ -32,7 +32,9 @@ export function createApi(client: ApiClient) {
       login: (email: string, password: string) =>
         request<LoginResponse>('/api/auth/login', {
           method: 'POST',
-          body: { email, password },
+          // `client: 'mobile'` indica al backend que devuelva el refresh_token
+          // en JSON (los clientes nativos no pueden usar cookies HttpOnly).
+          body: { email, password, client: 'mobile' },
           skipAuth: true,
         }),
       me: () => request<AuthUser>('/api/auth/me'),
