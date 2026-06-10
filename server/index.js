@@ -117,6 +117,7 @@ app.use('/api/external-sales', externalSalesRouter);
 app.use('/api/system', systemRouter);
 app.use('/api/crm', crmRouter);
 app.use('/api/dashboard', dashboardRouter);
+app.use('/api/ml', forecastRouter);
 app.use('/api/audit', auditRouter);
 // Webhook Wompi delegado al router de órdenes
 app.post('/api/wompi/webhook', (req, res, next) => { req.url = '/wompi/webhook'; ordersRouter(req, res, next); });
