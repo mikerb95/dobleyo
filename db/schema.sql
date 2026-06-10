@@ -1134,7 +1134,8 @@ CREATE TABLE IF NOT EXISTS client_operations (
     status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'done')),
     status_code INTEGER,
     response_json TEXT,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    -- Sin FK a users: debe aceptar al usuario dev sintético (id 0) y la
+    -- limpieza por retención (30 días) hace innecesario el ON DELETE.
 );
 CREATE INDEX idx_client_operations_created ON client_operations(created_at);

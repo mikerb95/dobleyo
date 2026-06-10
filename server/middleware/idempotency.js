@@ -20,7 +20,7 @@ export async function idempotency(req, res, next) {
       [opId, req.user.id, req.originalUrl]
     );
   } catch (err) {
-    if (!/UNIQUE|SQLITE_CONSTRAINT/i.test(err.message ?? '')) {
+    if (!/UNIQUE constraint failed/i.test(err.message ?? '')) {
       logger.error({ err }, '[idempotency] Error registrando operación');
       return res.status(500).json({ success: false, error: 'Error interno del servidor' });
     }
