@@ -261,6 +261,29 @@ CREATE INDEX idx_sales_ml_order_id ON sales_tracking(ml_order_id);
 CREATE INDEX idx_sales_purchase_date ON sales_tracking(purchase_date);
 CREATE INDEX idx_sales_city ON sales_tracking(recipient_city);
 CREATE INDEX idx_sales_state ON sales_tracking(recipient_state);
+
+-- Demand Forecasts (Pronóstico de demanda — analítica con Python)
+-- Escrita por api/ml/recompute.py a partir de sales_tracking. El backend Node solo lee.
+-- metric: 'units' (demanda por SKU) | 'revenue' (ingresos totales agregados).
+-- product_key: título normalizado del producto ML, o 'TOTAL' para ingresos.
+CREATE TABLE IF NOT EXISTS demand_forecasts (
+    id             INTEGER PRIMARY KEY AUTOINCREMENT,
+    product_key    TEXT    NOT NULL,
+    product_ml_id  TEXT,
+    metric         TEXT    NOT NULL DEFAULT 'units',
+    period_start   TEXT    NOT NULL,           -- lunes (ISO) de la semana pronosticada
+    horizon_index  INTEGER NOT NULL,           -- 1..H semanas hacia adelante
+    forecast_value REAL    NOT NULL,
+    lower_bound    REAL,                        -- banda de confianza ~95%
+    upper_bound    REAL,
+    model_used     TEXT    NOT NULL DEFAULT 'moving_avg',
+    history_weeks  INTEGER,
+    generated_at   TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX idx_demand_forecasts_key       ON demand_forecasts(product_key);
+CREATE INDEX idx_demand_forecasts_metric    ON demand_forecasts(metric);
+CREATE INDEX idx_demand_forecasts_generated ON demand_forecasts(generated_at);
+
 -- Product Labels (Etiquetas para productos)
 CREATE TABLE IF NOT EXISTS product_labels (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
