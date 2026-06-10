@@ -2,6 +2,40 @@
 
 ---
 
+## 📅 2026-06-10 — Analítica de demanda con Python sobre Vercel (Agente: Claude)
+
+### Contexto
+Primera integración de Python en el proyecto (Node/ESM). Objetivo: pronóstico de demanda por SKU e ingresos a partir de `sales_tracking` (MercadoLibre, única fuente de ventas hasta que exista `orders` en Fase 4). Arquitectura de separación limpia: **Python calcula y escribe una tabla; Node/Astro solo lee**.
+
+### Base de datos
+- `db/schema.sql` + `server/migrations/create_demand_forecasts.js` — nueva tabla `demand_forecasts` (corridas de pronóstico: `metric` units/revenue, `period_start` semanal, banda de confianza, `model_used`, `generated_at`). Registrada en `run_all_migrations.js`.
+
+### Función Python (Vercel Fluid Compute)
+- `api/ml/recompute.py` — lee `sales_tracking` vía **Turso HTTP API** (Hrana `/v2/pipeline`, con `urllib` stdlib), explota el JSON `products`, agrega demanda semanal por SKU + ingresos totales y pronostica 8 semanas. Modelo: suavizado exponencial de **Holt** (≥6 semanas de historia) con fallback a **media móvil**; banda ~95% por desviación de residuales. Solo `pandas`+`numpy` (sin statsmodels/scipy) para bundle ligero. Protegida por `CRON_SECRET` (header `Authorization: Bearer`).
+- `requirements.txt` — `numpy`, `pandas`.
+
+### Backend Node (solo lectura + puente)
+- `server/routes/forecast.js` — `GET /api/ml/forecast` (lee la última corrida, empareja SKU↔catálogo por nombre para la señal de reorden) y `POST /api/ml/forecast/recompute` (proxy server-to-server a la función Python con `CRON_SECRET`; el secreto nunca llega al navegador). Montado en `server/index.js` **y** `api/index.js` (paridad).
+
+### Wiring Vercel
+- `vercel.json` — catch-all `/api/(.*)` ahora excluye `/api/ml/recompute` (negative-lookahead) para que Vercel sirva la función Python; el resto sigue a Express. Añadido **cron nocturno** `0 7 * * *` (02:00 COT).
+- `.env.example` — nueva variable `CRON_SECRET`.
+
+### UI
+- `src/pages/admin/estadisticas.astro` — sección «Pronóstico de Demanda»: KPIs (ingresos 4 sem, SKUs, sugerencias de reorden), gráfica de ingresos proyectados por semana con banda al hover, tabla de demanda por SKU con señal de reorden vs stock, y botón «Recalcular ahora». Copy es-CO formal; nota de que el pronóstico es orientativo.
+
+### Verificación
+- `python3 -m py_compile` OK; lógica de Holt validada con espejo puro-python (crece con tendencia, estable en serie plana, sin negativos).
+- `node --check` en `forecast.js`, `server/index.js`, `api/index.js` OK.
+- `astro check`: `estadisticas.astro` sin errores nuevos.
+- Pendiente (requiere deploy + datos reales): correr el cron/recompute en un preview de Vercel y validar que `/api/ml/recompute` lo sirve la función Python (no Express) y que escribe `demand_forecasts`.
+
+### Pendiente conocido
+- El `id` de producto de MercadoLibre no mapea 1:1 con `products.sku`; la señal de reorden empareja por nombre (best-effort) y puede marcar «sin match».
+- La fiabilidad mejorará cuando exista `orders` (Fase 4) como fuente de ventas web directas.
+
+---
+
 ## 📅 2026-06-09 — App móvil: flujo de tokens nativo, paridad de endpoints y pantallas base (Agente: Claude)
 
 ### Contexto

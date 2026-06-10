@@ -206,8 +206,11 @@ def build_forecasts():
         return None, []
 
     df = pd.DataFrame(records)
-    df["week"] = df["date"].dt.tz_convert("UTC").dt.to_period("W-MON").dt.start_time
-    weeks = pd.date_range(df["week"].min(), df["week"].max(), freq="W-MON")
+    # Lunes (00:00, naive UTC) de la semana de cada venta — bucketing consistente
+    # para que el reindex semanal alinee sin desfases.
+    day = df["date"].dt.tz_localize(None).dt.normalize()
+    df["week"] = day - pd.to_timedelta(day.dt.weekday, unit="D")
+    weeks = pd.date_range(df["week"].min(), df["week"].max(), freq="7D")
     last_monday = weeks[-1]
     future = _future_mondays(last_monday, HORIZON_WEEKS)
     generated_at = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
