@@ -1122,3 +1122,19 @@ CREATE INDEX idx_equipment_maintenance_equipment ON equipment_maintenance(roasti
 CREATE INDEX idx_equipment_maintenance_type ON equipment_maintenance(maintenance_type);
 CREATE INDEX idx_equipment_maintenance_state ON equipment_maintenance(state);
 CREATE INDEX idx_equipment_maintenance_scheduled_date ON equipment_maintenance(scheduled_date);
+
+-- Idempotencia de mutaciones móviles (cola offline de la app)
+-- Un reintento con el mismo client_op_id devuelve la respuesta guardada
+-- en lugar de re-ejecutar la operación.
+CREATE TABLE IF NOT EXISTS client_operations (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    client_op_id TEXT NOT NULL UNIQUE,
+    user_id INTEGER NOT NULL,
+    endpoint TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'done')),
+    status_code INTEGER,
+    response_json TEXT,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+CREATE INDEX idx_client_operations_created ON client_operations(created_at);
