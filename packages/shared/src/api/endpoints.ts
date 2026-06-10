@@ -82,9 +82,11 @@ export function createApi(client: ApiClient) {
       getStock: () => unwrap(request<ApiEnvelope<StockItem[]>>('/api/stock')),
     },
 
-    // Reportes — /api/dashboard
+    // Reportes — /api/dashboard/*
     reports: {
-      getDashboard: () => request<unknown>('/api/dashboard'),
+      getKpis: () => request<unknown>('/api/dashboard/kpis'),
+      getAlerts: () => request<unknown>('/api/dashboard/alerts'),
+      getActivity: () => request<unknown>('/api/dashboard/activity'),
     },
 
     // Trazabilidad — /api/traceability, /api/lots
