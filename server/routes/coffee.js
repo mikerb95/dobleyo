@@ -2,6 +2,7 @@ import express from 'express';
 import { logger } from '../logger.js';
 import { authenticateToken, requireRole } from '../auth.js';
 import { apiLimiter } from '../middleware/rateLimit.js';
+import { idempotency } from '../middleware/idempotency.js';
 import { assertFarmOwnership } from '../middleware/farmAuth.js';
 import {
   createHarvest, storeGreenCoffee, sendToRoasting, receiveRoasted,
@@ -17,6 +18,9 @@ export const coffeeRouter = express.Router();
 coffeeRouter.use(apiLimiter);
 coffeeRouter.use(authenticateToken);
 coffeeRouter.use(requireRole(['admin', 'caficultor']));
+// Idempotencia de la cola offline móvil: los POST con client_op_id
+// no se re-ejecutan al reintentarse (devuelven la respuesta guardada).
+coffeeRouter.use(idempotency);
 
 // Helper: envía la respuesta de error de negocio o 500
 function handleErr(res, err, context) {
