@@ -59,7 +59,9 @@ export const authenticateToken = (req, res, next) => {
     req.user = verified;
     next();
   } catch (err) {
-    res.status(403).json({ error: 'Token invalido' });
+    // 401 = no autenticado (token vencido/inválido) → el cliente debe refrescar.
+    // 403 queda reservado para permisos insuficientes (requireRole).
+    res.status(401).json({ error: 'Token invalido' });
   }
 };
 
