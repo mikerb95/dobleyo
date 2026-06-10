@@ -323,3 +323,9 @@ class handler(BaseHTTPRequestHandler):
 
     def do_POST(self):  # Proxy admin (Express)
         self._handle()
+
+
+# Ejecución local para pruebas:
+#   TURSO_DATABASE_URL=... TURSO_AUTH_TOKEN=... python3 api/ml/recompute.py
+if __name__ == "__main__":
+    print(json.dumps(run(), indent=2, ensure_ascii=False))
