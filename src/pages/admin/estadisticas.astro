@@ -438,5 +438,150 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
       </div>
     )}
 
+    <!-- ─── Pronóstico de Demanda (Python) ──────────────────────────────── -->
+    <div class="section-divider">
+      <div>
+        <h2>Pronóstico de Demanda</h2>
+        <p>Proyección de las próximas 8 semanas desde ventas de MercadoLibre · calculado con Python</p>
+        {fcGeneratedAt && (
+          <span class="fc-meta">
+            Última actualización: {new Date(fcGeneratedAt + " UTC").toLocaleString("es-CO", { dateStyle: "medium", timeStyle: "short" })}
+          </span>
+        )}
+      </div>
+      <div>
+        <button id="btn-recalc" class="btn-recalc" type="button">Recalcular ahora</button>
+        <span id="fc-status" class="fc-status"></span>
+      </div>
+    </div>
+
+    {(!fcRevenue && fcUnits.length === 0) && (
+      <div class="stat-card">
+        <p class="stat-empty">
+          Aún no hay pronóstico. Pulse <strong>«Recalcular ahora»</strong> o espere a la corrida automática nocturna.
+          Requiere ventas registradas en MercadoLibre.
+        </p>
+      </div>
+    )}
+
+    {(fcRevenue || fcUnits.length > 0) && (
+      <Fragment>
+        {fcRevenue && (
+          <div class="kpi-grid">
+            <div class="kpi-tile brand">
+              <div class="kpi-label">Ingresos proyectados (4 sem)</div>
+              <div class="kpi-value" style="font-size:1.4rem">{fmtCOP(fcRevenue.next_4w)}</div>
+              <div class="kpi-sub">modelo: {MODEL_LABEL[fcRevenue.model_used] ?? fcRevenue.model_used}</div>
+            </div>
+            <div class="kpi-tile info">
+              <div class="kpi-label">SKUs con demanda</div>
+              <div class="kpi-value">{fcUnits.length}</div>
+              <div class="kpi-sub">productos pronosticados</div>
+            </div>
+            <div class="kpi-tile warning">
+              <div class="kpi-label">Sugerencias de reorden</div>
+              <div class="kpi-value">{fcUnits.filter((u: any) => u.reorder).length}</div>
+              <div class="kpi-sub">demanda 4 sem &gt; stock</div>
+            </div>
+            <div class="kpi-tile success">
+              <div class="kpi-label">Historia usada</div>
+              <div class="kpi-value">{fcRevenue.history_weeks ?? "—"}</div>
+              <div class="kpi-sub">semanas de ventas</div>
+            </div>
+          </div>
+        )}
+
+        <div class="charts-grid">
+          {fcRevenue && (
+            <div class="stat-card">
+              <h3>Ingresos proyectados por semana</h3>
+              <div class="bar-chart">
+                {fcRevenue.points.map((p: any) => {
+                  const pct = Math.round(((p.forecast_value ?? 0) / revenueMax) * 100);
+                  return (
+                    <div class="bar-col" title={`${fmtCOP(p.lower_bound)} – ${fmtCOP(p.upper_bound)}`}>
+                      <div class="bar-fill" style={`background:#c8a96e; height:${Math.max(pct, 2)}%;`}></div>
+                      <span class="bar-label">{fmtWeek(p.period_start)}</span>
+                    </div>
+                  );
+                })}
+              </div>
+              <p class="fc-meta" style="margin-top:.6rem">Pase el cursor sobre cada barra para ver la banda de confianza (~95%).</p>
+            </div>
+          )}
+
+          <div class="stat-card">
+            <h3>Demanda por producto (próximas 4 semanas)</h3>
+            {fcUnits.length === 0 ? (
+              <p class="stat-empty">Sin demanda por SKU en la última corrida.</p>
+            ) : (
+              <div style="overflow-x:auto">
+                <table class="erp-table">
+                  <thead>
+                    <tr>
+                      <th>Producto</th>
+                      <th style="text-align:right">Unidades (4 sem)</th>
+                      <th>Stock</th>
+                      <th>Reorden</th>
+                      <th>Modelo</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {fcUnits.slice(0, 12).map((u: any) => (
+                      <tr>
+                        <td>{u.product_key}</td>
+                        <td style="text-align:right; font-weight:700">{u.next_4w}</td>
+                        <td>{u.stock_quantity ?? "—"}</td>
+                        <td>
+                          {u.reorder === true ? (
+                            <span class="badge badge--warn">Reordenar</span>
+                          ) : u.reorder === false ? (
+                            <span class="badge badge--ok">OK</span>
+                          ) : (
+                            <span class="badge badge--muted">sin match</span>
+                          )}
+                        </td>
+                        <td><span class="badge badge--muted">{MODEL_LABEL[u.model_used] ?? u.model_used}</span></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div class="fc-note">
+          <strong>Nota:</strong> el pronóstico es orientativo. Con MercadoLibre como única fuente y un historial corto,
+          úselo como guía de tendencia, no como cifra exacta. La señal de reorden empareja el título del producto de
+          MercadoLibre con el catálogo por nombre (best-effort); «sin match» significa que no se encontró en el inventario.
+        </div>
+      </Fragment>
+    )}
+
   </div>
+
+  <script>
+    const btn = document.getElementById("btn-recalc") as HTMLButtonElement | null;
+    const status = document.getElementById("fc-status");
+    btn?.addEventListener("click", async () => {
+      if (!status) return;
+      btn.disabled = true;
+      status.textContent = "Calculando…";
+      try {
+        const r = await fetch("/api/ml/forecast/recompute", { method: "POST", credentials: "include" });
+        const j = await r.json();
+        if (r.ok && j.success) {
+          status.textContent = `Listo: ${j.data?.rows_written ?? 0} filas. Recargando…`;
+          setTimeout(() => location.reload(), 900);
+        } else {
+          status.textContent = j.error || "No se pudo recalcular.";
+          btn.disabled = false;
+        }
+      } catch {
+        status.textContent = "Error de red al recalcular.";
+        btn.disabled = false;
+      }
+    });
+  </script>
 </AdminLayout>
