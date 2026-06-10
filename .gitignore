@@ -1,6 +1,11 @@
 # Dependencies
 node_modules/
 
+# Python (funciones api/*.py)
+__pycache__/
+*.pyc
+.venv/
+
 # Env and secrets
 .env
 .env.local
