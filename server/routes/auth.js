@@ -167,12 +167,17 @@ authRouter.post('/login',
         maxAge: 7 * 24 * 60 * 60 * 1000 // 7 dias
       });
 
-      // Devolver token también en JSON para clientes que usen localStorage
-      res.json({ 
-        message: 'Login exitoso', 
+      // Devolver token también en JSON para clientes que usen localStorage.
+      // Los clientes nativos (app móvil) no pueden usar cookies HttpOnly:
+      // si lo solicitan con `client: 'mobile'`, reciben el refresh token en JSON
+      // y lo guardan en el llavero seguro del dispositivo.
+      const payload = {
+        message: 'Login exitoso',
         token: accessToken,
-        user: { id: user.id, first_name: user.first_name, last_name: user.last_name, role: user.role } 
-      });
+        user: { id: user.id, first_name: user.first_name, last_name: user.last_name, role: user.role }
+      };
+      if (req.body.client === 'mobile') payload.refresh_token = refreshToken;
+      res.json(payload);
 
     } catch (err) {
       logger.error(err);
