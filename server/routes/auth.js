@@ -228,12 +228,16 @@ authRouter.post('/refresh', refreshLimiter, async (req, res) => {
     res.cookie('auth_token', newAccessToken, { httpOnly: true, secure: isProd, sameSite: 'lax', maxAge: 15 * 60 * 1000 });
     res.cookie('refresh_token', newRefreshToken, { httpOnly: true, secure: isProd, sameSite: 'lax', path: '/api/auth/refresh', maxAge: 7 * 24 * 60 * 60 * 1000 });
 
-    // Devolver también el token en JSON para actualizar localStorage
-    res.json({ 
+    // Devolver también el token en JSON para actualizar localStorage.
+    // Si el refresh llegó por body (móvil), el cliente necesita el token rotado
+    // en JSON: el anterior queda revocado y no recibe la cookie.
+    const payload = {
       message: 'Token refrescado',
       token: newAccessToken,
       user: { id: user.id, first_name: user.first_name, last_name: user.last_name, role: user.role }
-    });
+    };
+    if (bodyToken && !req.cookies['refresh_token']) payload.refresh_token = newRefreshToken;
+    res.json(payload);
 
   } catch (err) {
     logger.error(err);
