@@ -247,7 +247,9 @@ authRouter.post('/refresh', refreshLimiter, async (req, res) => {
 
 // Logout
 authRouter.post('/logout', async (req, res) => {
-  const refreshToken = req.cookies['refresh_token'];
+  // Web envía el token por cookie; la app móvil lo envía en el body.
+  const refreshToken = req.cookies['refresh_token'] ||
+    (typeof req.body?.refresh_token === 'string' ? req.body.refresh_token : null);
   if (refreshToken) {
     // Revocar en DB (hasheado)
     const hashedToken = auth.hashRefreshToken(refreshToken);
