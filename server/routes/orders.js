@@ -47,6 +47,35 @@ function buildWompiCheckoutUrl(reference, amountCopPesos, customerEmail, redirec
     return `https://checkout.wompi.co/p/?${params.toString()}`;
 }
 
+/**
+ * Verifica la firma de un evento (webhook) de Wompi.
+ * checksum = SHA256( valores_de_properties (en orden) + timestamp + eventsSecret ).
+ * `properties` son rutas relativas a `data`, p.ej. "transaction.id".
+ * Ata la firma al contenido del evento, no solo al timestamp.
+ * https://docs.wompi.co/docs/colombia/eventos/
+ */
+function verifyWompiEventSignature(event) {
+    const checksum = event?.signature?.checksum;
+    const properties = event?.signature?.properties;
+    const tsStr = event?.timestamp;
+    if (!checksum || !tsStr || !Array.isArray(properties)) return false;
+
+    const concatenated = properties
+        .map((path) => path.split('.').reduce((obj, key) => obj?.[key], event.data))
+        .map((v) => (v == null ? '' : String(v)))
+        .join('');
+
+    const expected = crypto
+        .createHash('sha256')
+        .update(`${concatenated}${tsStr}${WOMPI_EVENTS_SECRET}`, 'utf8')
+        .digest('hex');
+
+    // Comparación en tiempo constante para evitar timing attacks.
+    const a = Buffer.from(expected, 'hex');
+    const b = Buffer.from(String(checksum), 'hex');
+    return a.length === b.length && crypto.timingSafeEqual(a, b);
+}
+
 // ─── POST /api/orders ─────────────────────────────────────────────────────
 // Crea una orden en estado pending_payment y devuelve la URL de pago Wompi
 
@@ -353,15 +382,9 @@ ordersRouter.post('/wompi/webhook', async (req, res) => {
         if (!checksum || !tsStr) {
             return res.sendStatus(400);
         }
-        if (WOMPI_EVENTS_SECRET) {
-            const expected = crypto
-                .createHash('sha256')
-                .update(`${tsStr}${WOMPI_EVENTS_SECRET}`, 'utf8')
-                .digest('hex');
-            if (expected !== checksum) {
-                logger.warn('[Wompi webhook] Firma inválida');
-                return res.sendStatus(401);
-            }
+        if (WOMPI_EVENTS_SECRET && !verifyWompiEventSignature(event)) {
+            logger.warn('[Wompi webhook] Firma inválida');
+            return res.sendStatus(401);
         }
 
         if (event?.event !== 'transaction.updated') return res.sendStatus(200);
@@ -392,8 +415,10 @@ ordersRouter.post('/wompi/webhook', async (req, res) => {
 
         const expectedAmount = Number(order.total_cop) * 100;
         if (Number(amount_in_cents) !== expectedAmount || (currency && currency !== 'COP')) {
+            // Monto/moneda no coinciden con la orden: acusamos recibo (200, sin
+            // reintentos de Wompi) pero NO marcamos la orden como pagada.
             logger.warn('[Wompi webhook] Monto/moneda inválidos para ref:', reference);
-            const existingOrder = orderLookup.rows[0];
+            return res.sendStatus(200);
         }
 
         // Mapear estado de Wompi → estado interno
