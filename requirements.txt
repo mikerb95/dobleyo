@@ -1,0 +1,4 @@
+# Dependencias de las funciones Python en api/ (analítica de demanda).
+# Deliberadamente mínimo: sin statsmodels/scipy para mantener el bundle ligero.
+numpy>=1.26,<3
+pandas>=2.1,<3
