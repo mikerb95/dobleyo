@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import type { Harvest, HarvestInput } from '@dobleyo/shared';
+import type { Harvest, HarvestInput, WithClientOpId } from '@dobleyo/shared';
 import { api } from '../../src/lib/api';
 import { mutationKeys, queryKeys, withOpId } from '../../src/lib/mutations';
 import { colors, radius, spacing } from '../../src/theme';
@@ -47,7 +47,11 @@ export default function HarvestScreen() {
     queryFn: () => api.production.getHarvests(),
   });
 
-  const createHarvest = useMutation({ mutationKey: mutationKeys.harvest });
+  // El mutationFn viene de los defaults registrados en src/lib/mutations.ts;
+  // los genéricos son necesarios porque useMutation no los infiere de ahí.
+  const createHarvest = useMutation<unknown, Error, HarvestInput & WithClientOpId>({
+    mutationKey: mutationKeys.harvest,
+  });
 
   const onSubmit = () => {
     const missing = FIELDS.filter((f) => f.required && !String(form[f.key] ?? '').trim());
