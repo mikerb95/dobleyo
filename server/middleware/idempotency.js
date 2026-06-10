@@ -61,7 +61,7 @@ async function replayOrConflict(opId, req, res, next) {
        WHERE client_op_id = ? AND status = 'pending' AND created_at < datetime('now', '-${STALE_PENDING_MINUTES} minutes')`,
       [opId]
     );
-    if ((takeover.rowsAffected ?? 0) > 0) {
+    if ((takeover.rowCount ?? 0) > 0) {
       captureResponse(opId, res);
       return next();
     }
