@@ -119,6 +119,7 @@ app.use('/api/external-sales', externalSalesRouter);
 app.use('/api/system', systemRouter);
 app.use('/api/crm', crmRouter);
 app.use('/api/dashboard', dashboardRouter);
+app.use('/api/ml', forecastRouter);
 
 // Health Check — ping real a BD para verificar PgBouncer + PostgreSQL
 app.get('/api/health', async (req, res) => {
