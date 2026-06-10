@@ -89,10 +89,10 @@ export function createApi(client: ApiClient) {
       getActivity: () => request<unknown>('/api/dashboard/activity'),
     },
 
-    // Trazabilidad — /api/traceability, /api/lots
+    // Trazabilidad — /api/traceability
+    // (no usar /api/lots/:id aquí: es del ERP web y exige rol admin)
     traceability: {
       lookup: (code: string) => request<unknown>(`/api/traceability/${encodeURIComponent(code)}`),
-      getLot: (id: string | number) => request<unknown>(`/api/lots/${id}`),
     },
   };
 }

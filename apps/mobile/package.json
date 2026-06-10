@@ -21,6 +21,7 @@
     "expo": "~54.0.16",
     "expo-camera": "~17.0.8",
     "expo-constants": "~18.0.9",
+    "expo-crypto": "~15.0.9",
     "expo-router": "~6.0.12",
     "expo-secure-store": "~15.0.7",
     "expo-status-bar": "~3.0.8",
