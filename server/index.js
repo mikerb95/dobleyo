@@ -33,6 +33,7 @@ import { couponsRouter } from './routes/coupons.js';
 import { externalSalesRouter } from './routes/external-sales.js';
 import { crmRouter } from './routes/crm.js';
 import { dashboardRouter } from './routes/dashboard.js';
+import { forecastRouter } from './routes/forecast.js';
 import auditRouter from './routes/audit.js';
 import { healthCheck } from './db.js';
 
