@@ -2,6 +2,37 @@
 
 ---
 
+## 📅 2026-06-10 — App móvil: cola offline con idempotencia y primera pantalla funcional (Agente: Claude)
+
+### Contexto
+Segunda tanda del trabajo móvil (continuación de la entrada 2026-06-09). Implementa los tres pendientes que quedaron documentados: idempotencia server-side para la cola offline, la cola de mutaciones en el móvil, y el fix de trazabilidad para caficultores.
+
+### Backend — idempotencia (`client_op_id`)
+- `server/migrations/create_client_operations.js` + `db/schema.sql` — nueva tabla `client_operations` (client_op_id UNIQUE, user_id, endpoint, status pending/done, status_code, response_json). Sin FK a `users` (debe aceptar al usuario dev sintético id 0); limpieza por retención de 30 días al insertar. **Migración ya aplicada en Turso.**
+- `server/middleware/idempotency.js` — middleware genérico: un POST con `client_op_id` repetido devuelve la respuesta original guardada (replay) en vez de re-ejecutar; `pending` huérfanos (> 2 min) son retomables; respuestas 4xx/5xx liberan el ID para reintento; la respuesta se persiste ANTES de enviarse (seguro en serverless). Los requests sin `client_op_id` (web) pasan intactos.
+- `server/routes/coffee.js` — middleware montado tras auth/roles; cubre todos los POST de la línea de producción. Paridad server/api automática (router compartido).
+
+### Móvil — cola offline (`apps/mobile`)
+- `expo-crypto` instalado (~15.0.9, SDK 54).
+- `src/lib/mutations.ts` — `mutationKeys`/`queryKeys` por etapa, `withOpId()` (genera el UUID **al encolar**, persiste con la mutación) y `setMutationDefaults` por etapa con invalidación de queries en éxito. Los defaults se registran al importar: las mutaciones pausadas que se rehidratan tras reinicio recuperan su `mutationFn` por clave.
+- `app/_layout.tsx` — `resumePausedMutations()` al restaurar la caché persistida.
+- `app/(app)/harvest.tsx` — primera pantalla funcional: formulario de cosecha (campos requeridos espejo de `coffeeService.createHarvest`) con patrón offline-first (`mutate()` + navegación inmediata; sin conexión queda encolada) y lista de cosechas recientes. Es el molde para las otras 5 etapas.
+- `app/(app)/index.tsx` — tarjeta de cosecha enlazada, badge "N operaciones pendientes de sincronizar" (`useMutationState`).
+
+### Paquete compartido
+- `endpoints.ts` — eliminado `traceability.getLot` (apuntaba a `/api/lots/:id`, admin-only del ERP web); queda `lookup` sobre `/api/traceability/:code`.
+
+### Verificación
+- E2E local contra Turso: POST cosecha con `client_op_id` → 201 con `lotId`; reintento con el mismo ID → **misma respuesta exacta y 1 sola fila en BD**; POST sin `client_op_id` → flujo normal. Datos de prueba eliminados.
+- El test destapó 2 bugs corregidos: el wrapper `query()` expone `rowCount` (no `rowsAffected`), y la detección de conflicto distinguía mal FK de UNIQUE.
+- `tsc --noEmit` en verde en `apps/mobile` y `packages/shared`.
+
+### Pendiente conocido (móvil)
+- Pantallas de las 5 etapas restantes (green-storage, send-roasting, roast-retrieval, roasted-storage, packaging) + cupping: replicar el molde de `harvest.tsx`.
+- Scanner QR (expo-camera ya configurado) para trazabilidad.
+
+---
+
 ## 📅 2026-06-10 — Analítica de demanda con Python sobre Vercel (Agente: Claude)
 
 ### Contexto
