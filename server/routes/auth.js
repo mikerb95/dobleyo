@@ -187,7 +187,9 @@ authRouter.post('/login',
 
 // Refresh Token
 authRouter.post('/refresh', refreshLimiter, async (req, res) => {
-  const refreshToken = req.cookies['refresh_token'];
+  // Web envía el token por cookie HttpOnly; la app móvil lo envía en el body.
+  const bodyToken = typeof req.body?.refresh_token === 'string' ? req.body.refresh_token : null;
+  const refreshToken = req.cookies['refresh_token'] || bodyToken;
   if (!refreshToken) return res.status(401).json({ error: 'No refresh token' });
 
   try {
