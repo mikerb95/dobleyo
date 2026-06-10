@@ -2,6 +2,36 @@
 
 ---
 
+## 📅 2026-06-09 — App móvil: flujo de tokens nativo, paridad de endpoints y pantallas base (Agente: Claude)
+
+### Contexto
+Auditoría del trabajo móvil del 2026-05-30 (`apps/mobile` + `packages/shared`) detectó que la app no compilaba (archivos referenciados inexistentes), la sesión moría a los 15 min (el backend solo soportaba refresh por cookie HttpOnly, inviable en React Native) y 4 endpoints del cliente compartido no existían en el servidor.
+
+### Backend — flujo de tokens para clientes nativos
+- `server/routes/auth.js` — `POST /login` devuelve `refresh_token` en JSON cuando el body incluye `client: 'mobile'` (web sigue usando solo cookies HttpOnly). `POST /refresh` y `POST /logout` aceptan `refresh_token` por body como alternativa a la cookie; el refresh por body devuelve el token rotado en JSON. Paridad server/api garantizada (router compartido).
+- `server/auth.js` — `authenticateToken` ahora responde **401** ante token inválido/vencido (antes 403). 403 queda reservado para `requireRole` (permisos insuficientes). Esto permite al cliente móvil refrescar solo ante 401 sin cerrar sesión por un 403 de rol.
+
+### Paquete compartido (`packages/shared`)
+- `api/client.ts` — el retry con refresh se dispara solo ante 401 (antes 401/403).
+- `api/endpoints.ts` — corregidos endpoints inexistentes: `lot/:id/stage` → `lots/:id/stage`, `cuppings` → `cupping`, `GET /api/dashboard` → `getKpis/getAlerts/getActivity` (`/api/dashboard/*`). Login envía `client: 'mobile'`.
+
+### App móvil (`apps/mobile`)
+- Creados `src/theme.ts` (paleta espejo de las variables CSS web), `app/login.tsx` (login es-CO formal), `app/(app)/_layout.tsx` (guard de sesión) y `app/(app)/index.tsx` (home con etapas de producción, placeholder).
+- `src/lib/queryClient.ts` — NetInfo conectado a `onlineManager` de React Query (requisito en RN para `refetchOnReconnect` y pausa de mutaciones offline).
+- `AGENTS.md` móvil corregido: docs de Expo SDK 54 (no v56).
+- `npm install` ejecutado en la raíz (workspaces); `tsc --noEmit` en verde en `apps/mobile` y `packages/shared`.
+
+### Verificación
+- Servidor local (`START_SERVER=true`): login con `client:'mobile'` OK; `/me` con Bearer → 200; token inválido → **401** (antes 403); refresh sin token → 401; refresh con body token inválido → 403; logout con token por body → 200.
+- Pendiente (requiere usuario real): E2E del ciclo completo login → refresh por body → rotación.
+
+### Pendiente conocido (móvil)
+- Cola offline de mutaciones con idempotencia: `client_op_id` está tipado en `packages/shared` pero el servidor aún no lo soporta — los reintentos duplicarían registros.
+- `traceability.getLot` usa `/api/lots/:id` que exige rol admin; los caficultores reciben 403.
+- Pantallas funcionales de la línea de producción (hoy placeholders).
+
+---
+
 ## 📅 2026-05-21 — Limpieza HTML legacy y estrategia CSS (Tarea 4.3) (Agente: Claude Opus)
 
 ### Contexto
