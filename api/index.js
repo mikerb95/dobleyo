@@ -95,6 +95,9 @@ app.use(cors({
   exposedHeaders: ['Set-Cookie']
 }));
 
+// Red de seguridad global contra abuso (excluye webhooks y health, ver rateLimit.js)
+app.use('/api', globalLimiter);
+
 // Routes
 app.use('/api/auth', authRouter);
 app.use('/api/stock', stockRouter);
