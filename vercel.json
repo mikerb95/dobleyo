@@ -11,8 +11,14 @@
       "destination": "/en/:path*"
     },
     {
-      "source": "/api/(.*)",
+      "source": "/api/((?!ml/recompute).*)",
       "destination": "/api/index.js"
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/ml/recompute",
+      "schedule": "0 7 * * *"
     }
   ]
 }
