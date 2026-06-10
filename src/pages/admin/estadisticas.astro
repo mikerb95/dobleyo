@@ -117,6 +117,26 @@ for (const lot of lotsData) {
 const pipelineStages = Object.entries(pipelineCounts)
   .map(([stage, count]) => ({ stage, label: STAGE_LABEL[stage] ?? stage, count }))
   .sort((a, b) => b.count - a.count);
+
+// ─── Pronóstico de demanda (escrito por api/ml/recompute.py) ─────────────────
+let forecast: any = { generated_at: null, units: [], revenue: null };
+try {
+  const rF = await fetch(`${origin}/api/ml/forecast`, opts);
+  if (rF.ok) {
+    const j = await rF.json();
+    if (j?.success && j.data) forecast = j.data;
+  }
+} catch (_) { /* sección de demanda queda vacía */ }
+
+const fcUnits: any[]  = forecast.units ?? [];
+const fcRevenue: any  = forecast.revenue;
+const fcGeneratedAt   = forecast.generated_at;
+const revenueMax = fcRevenue
+  ? Math.max(1, ...fcRevenue.points.map((p: any) => p.upper_bound ?? p.forecast_value))
+  : 1;
+const MODEL_LABEL: Record<string, string> = { holt: "Holt", moving_avg: "Media móvil" };
+const fmtCOP  = (n: number) => new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(n || 0);
+const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-CO", { day: "2-digit", month: "short" });
 ---
 
 <AdminLayout title="Estadísticas — DobleYo Admin">
@@ -216,6 +236,58 @@ const pipelineStages = Object.entries(pipelineCounts)
       font-size: 0.875rem;
     }
     .pipeline-item__count { font-weight: 700; color: #7a6652; }
+
+    .section-divider {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin: 2.5rem 0 1.25rem;
+      padding-top: 1.75rem;
+      border-top: 2px solid var(--border, rgba(0,0,0,.09));
+    }
+    .section-divider h2 { font-size: 1.25rem; font-weight: 700; color: #251a14; margin: 0; }
+    .section-divider p  { margin: .2rem 0 0; color: #7a6652; font-size: .85rem; }
+    .fc-meta { font-size: .78rem; color: var(--text-3, #a9b0b8); }
+
+    .btn-recalc {
+      background: #c8a96e;
+      color: #251a14;
+      border: 0;
+      border-radius: 6px;
+      padding: .55rem 1.1rem;
+      font-size: .85rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: filter .15s;
+    }
+    .btn-recalc:hover:not(:disabled) { filter: brightness(.95); }
+    .btn-recalc:disabled { opacity: .6; cursor: progress; }
+    .fc-status { font-size: .8rem; margin-left: .75rem; color: #7a6652; }
+
+    .badge {
+      display: inline-block;
+      padding: .15rem .5rem;
+      border-radius: 9999px;
+      font-size: .72rem;
+      font-weight: 700;
+      letter-spacing: .02em;
+    }
+    .badge--warn  { background: #fbe7d2; color: #8a5a00; }
+    .badge--ok    { background: #dff0e4; color: #2d6a4f; }
+    .badge--muted { background: var(--border, rgba(0,0,0,.08)); color: var(--text-2, #6a6d70); }
+
+    .fc-note {
+      background: #faf8f5;
+      border: 1px solid var(--border, rgba(0,0,0,.09));
+      border-left: 3px solid #c8a96e;
+      border-radius: 4px;
+      padding: .7rem 1rem;
+      font-size: .82rem;
+      color: #6a5a48;
+      margin-top: 1rem;
+    }
   </style>
 
   <header class="page-header">
