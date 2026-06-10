@@ -97,6 +97,9 @@ app.use(cors({
   exposedHeaders: ['Set-Cookie']
 }));
 
+// Red de seguridad global contra abuso (excluye webhooks y health, ver rateLimit.js)
+app.use('/api', globalLimiter);
+
 app.use('/api/auth', authRouter);
 app.use('/api/stock', stockRouter);
 app.use('/api/caficultor', caficultorRouter);
