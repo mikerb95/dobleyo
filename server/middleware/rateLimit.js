@@ -57,3 +57,25 @@ export const apiLimiter = rateLimit({
   legacyHeaders: false,
   keyGenerator: ipKeyGenerator
 });
+
+// Limiter global montado en todo /api — red de seguridad contra abuso/scraping.
+// Holgado para no romper navegación normal de la SPA (muchos GET por sesión).
+// Excluye webhooks server-to-server (Wompi/MercadoPago) y health checks, que no
+// deben recibir 429: perder una confirmación de pago o un ping de salud es peor.
+export const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 600, // Máximo 600 requests por IP
+  message: {
+    error: 'Demasiadas solicitudes desde esta IP. Por favor, intenta más tarde.',
+    retryAfter: 900
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: ipKeyGenerator,
+  skip: (req) => {
+    const url = req.originalUrl || req.url || '';
+    return url.includes('/wompi/webhook') ||
+           url.includes('/mp/webhook') ||
+           url.endsWith('/health');
+  }
+});

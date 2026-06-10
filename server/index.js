@@ -35,9 +35,15 @@ import { crmRouter } from './routes/crm.js';
 import { dashboardRouter } from './routes/dashboard.js';
 import { forecastRouter } from './routes/forecast.js';
 import auditRouter from './routes/audit.js';
+import { globalLimiter } from './middleware/rateLimit.js';
 import { healthCheck } from './db.js';
 
 const app = express();
+
+// Detrás del proxy de Vercel: confiar en el primer hop para que req.ip refleje
+// la IP real del cliente (X-Forwarded-For). Sin esto, el rate limiting agrupa a
+// todos los usuarios bajo la IP del proxy y se vuelve inútil o bloquea a todos.
+app.set('trust proxy', 1);
 
 app.use(pinoHttp({ logger }));
 
