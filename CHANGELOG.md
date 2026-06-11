@@ -2,6 +2,35 @@
 
 ---
 
+## 📅 2026-06-11 — Blindaje de seguridad: tokens de verificación, contraseñas y fuga de config (Agente: Claude)
+
+### Contexto
+Segunda tanda de la auditoría de seguridad: se resuelven los hallazgos de riesgo medio que quedaron pendientes del 2026-06-10.
+
+### Token de verificación de email ya no es un token de sesión (`server/auth.js`, `server/routes/auth.js`)
+- El registro generaba el token con `generateToken({ ...user, type: 'verification' })`, pero `generateToken` solo firma `{ id, role }`: el `type` se descartaba, así que el enlace del correo era un **access token de sesión válido (15 min)**.
+- Nuevo `generateVerificationToken(user)` que firma `{ id, type: 'verification' }` (24h, sin `role`).
+- `authenticateToken` ahora **rechaza** cualquier token que traiga `type` → un enlace de verificación no sirve para autenticarse en endpoints protegidos.
+- `GET /api/auth/verify` valida `decoded.type === 'verification'` → un access token de sesión no puede marcar la cuenta como verificada.
+- ⚠️ Enlaces de verificación emitidos antes de este cambio dejan de funcionar (formato de token distinto); basta reenviar el correo.
+
+### Contraseña mínima coherente (`server/routes/auth.js`)
+- Registro pasa de `min: 6` a `min: 8` con mensaje en es-CO, alineado con el cambio de contraseña (ya en 8). El login se deja en 6 a propósito: subirlo dejaría afuera a cuentas creadas con la política anterior; el control de fortaleza va donde se *crea* la contraseña, no al autenticar.
+
+### Endpoint de debug eliminado (`api/index.js`)
+- Se removió `GET /api/debug/config`, que revelaba qué variables de entorno estaban configuradas y la lista de `allowedOrigins`. Además solo existía en el serverless → también corrige la paridad con `server/index.js`. `GET /api/health` cubre el chequeo de salud.
+
+### Verificación
+- `node --check` en verde en los 3 archivos.
+- `vitest run auth.test.js orders.test.js` → 19/19 pasan. Se ajustó el mock de `auth.js` (faltaba `generateVerificationToken`) y data de test obsoleta con contraseñas de 7 chars.
+
+### Pendiente conocido (riesgo bajo, requieren refactor coordinado)
+- CORS permite requests sin `origin` (curl/server-to-server); endurecerlo puede romper fetches SSR/webhooks.
+- `'unsafe-inline'` en CSP `scriptSrc`: quitarlo exige nonces/hashes en todos los scripts inline de Astro.
+- `devtools.js` usa `SET FOREIGN_KEY_CHECKS` (MySQL) inválido en Turso (ruta bloqueada en prod).
+
+---
+
 ## 📅 2026-06-10 — Blindaje de seguridad: webhook de pagos y rate limiting (Agente: Claude)
 
 ### Contexto
@@ -21,10 +50,8 @@ Auditoría de la configuración de seguridad (Express standalone + serverless, a
 - Fallos preexistentes en `server/services/__tests__/audit.test.js` (3) son ajenos: el test espera placeholders Postgres `$1 OFFSET $2` y el código ya migró a Turso `?`.
 
 ### Pendiente conocido (de la auditoría, riesgo medio/bajo)
-- Token de verificación de email es un access token válido (no valida `type`).
-- `/api/debug/config` filtra qué env vars existen (solo `api/index.js`).
-- Contraseña mínima de 6 en registro vs 8 en cambio de contraseña.
-- CORS permite requests sin `origin`; `'unsafe-inline'` en CSP `scriptSrc`.
+- ✅ Resueltos el 2026-06-11: token de verificación, `/api/debug/config`, contraseña mínima.
+- CORS permite requests sin `origin`; `'unsafe-inline'` en CSP `scriptSrc` (siguen abiertos).
 
 ---
 
