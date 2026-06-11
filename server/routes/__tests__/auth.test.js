@@ -87,7 +87,7 @@ describe('POST /api/auth/register', () => {
 
         const res = await request(app)
             .post('/api/auth/register')
-            .send({ email: 'existente@test.com', password: 'pass123', first_name: 'Juan', last_name: 'Pérez' });
+            .send({ email: 'existente@test.com', password: 'password123', first_name: 'Juan', last_name: 'Pérez' });
 
         expect(res.status).toBe(400);
         expect(res.body.error).toMatch(/registrado/i);
