@@ -18,6 +18,7 @@ vi.mock('../../auth.js', () => ({
     hashPassword: vi.fn().mockResolvedValue('$hashed$'),
     comparePassword: mocks.comparePassword,
     generateToken: vi.fn().mockReturnValue('mock.access.token'),
+    generateVerificationToken: vi.fn().mockReturnValue('mock.verify.token'),
     generateRefreshToken: vi.fn().mockReturnValue('mock-refresh-token'),
     hashRefreshToken: vi.fn().mockReturnValue('mock-refresh-hash'),
     verifyToken: vi.fn(),
@@ -69,7 +70,7 @@ describe('POST /api/auth/register', () => {
         expect(res.body.errors).toBeDefined();
     });
 
-    it('debería retornar 400 si la contraseña tiene menos de 6 caracteres', async () => {
+    it('debería retornar 400 si la contraseña tiene menos de 8 caracteres', async () => {
         const res = await request(app)
             .post('/api/auth/register')
             .send({ email: 'juan@test.com', password: '123', first_name: 'Juan', last_name: 'Pérez' });
