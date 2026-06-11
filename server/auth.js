@@ -26,6 +26,13 @@ export const generateToken = (user) => {
   return jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: '15m' }); // Access token corto
 };
 
+// Token de verificación de email: lleva un 'type' específico para que NO pueda
+// usarse como token de sesión (ver authenticateToken). Vida más larga (24h) porque
+// depende de que la persona abra el correo. No incluye 'role' a propósito.
+export const generateVerificationToken = (user) => {
+  return jwt.sign({ id: user.id, type: 'verification' }, JWT_SECRET, { expiresIn: '24h' });
+};
+
 export const generateRefreshToken = () => {
   // Opaque token (random string) es mas seguro para refresh tokens que JWT si se guarda en DB
   return crypto.randomBytes(40).toString('hex');
@@ -56,6 +63,11 @@ export const authenticateToken = (req, res, next) => {
 
   try {
     const verified = verifyToken(token);
+    // Un token con 'type' (p.ej. verificación de email) NO es un token de sesión:
+    // rechazarlo evita que un enlace de verificación sirva para autenticarse.
+    if (verified.type) {
+      return res.status(401).json({ error: 'Token invalido' });
+    }
     req.user = verified;
     next();
   } catch (err) {

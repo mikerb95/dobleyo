@@ -2,6 +2,32 @@
 
 ---
 
+## 📅 2026-06-10 — Blindaje de seguridad: webhook de pagos y rate limiting (Agente: Claude)
+
+### Contexto
+Auditoría de la configuración de seguridad (Express standalone + serverless, auth/JWT, CORS, headers, rate limiting, webhooks). Se corrigen los 4 hallazgos de mayor riesgo real.
+
+### Webhook de Wompi (`server/routes/orders.js`)
+- **Monto inválido ya no marca la orden como pagada.** El chequeo de `amount_in_cents`/`currency` tenía una línea muerta sin `return`: el `UPDATE` a `paid` se ejecutaba igual. Ahora retorna `200` (acusa recibo, sin reintentos de Wompi) sin procesar.
+- **Firma del webhook atada al contenido del evento.** Antes se validaba `SHA256(timestamp + secret)`, que no liga la firma a la transacción. Nuevo `verifyWompiEventSignature()` concatena los valores de `signature.properties` (rutas relativas a `data`, p.ej. `transaction.id`) + `timestamp` + `WOMPI_EVENTS_SECRET`, según la spec de eventos de Wompi, con comparación en tiempo constante (`timingSafeEqual`).
+
+### Rate limiting (`server/middleware/rateLimit.js`, `server/index.js`, `api/index.js`)
+- **`trust proxy = 1`** en ambos entrypoints. Detrás del proxy de Vercel, sin esto `express-rate-limit` agrupaba a todos los clientes bajo la IP del proxy (bloqueo masivo o bypass vía `X-Forwarded-For`).
+- **`globalLimiter`** nuevo, montado en `/api` (600 req/15 min por IP). Red de seguridad contra abuso/scraping en routers que no tenían ninguno (orders, finance, crm, users, products, farms…). Excluye webhooks server-to-server (`/wompi/webhook`, `/mp/webhook`) y `/health` para no devolverles `429`.
+
+### Verificación
+- `node --check` en verde en los 4 archivos.
+- `vitest run server/routes/__tests__/orders.test.js` → 11/11 pasan (incluye webhook).
+- Fallos preexistentes en `server/services/__tests__/audit.test.js` (3) son ajenos: el test espera placeholders Postgres `$1 OFFSET $2` y el código ya migró a Turso `?`.
+
+### Pendiente conocido (de la auditoría, riesgo medio/bajo)
+- Token de verificación de email es un access token válido (no valida `type`).
+- `/api/debug/config` filtra qué env vars existen (solo `api/index.js`).
+- Contraseña mínima de 6 en registro vs 8 en cambio de contraseña.
+- CORS permite requests sin `origin`; `'unsafe-inline'` en CSP `scriptSrc`.
+
+---
+
 ## 📅 2026-06-10 — App móvil: cola offline con idempotencia y primera pantalla funcional (Agente: Claude)
 
 ### Contexto

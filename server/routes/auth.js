@@ -25,7 +25,7 @@ export const authRouter = Router();
 authRouter.post('/register',
   registerLimiter,
   body('email').isEmail(),
-  body('password').isLength({ min: 6 }),
+  body('password').isLength({ min: 8 }).withMessage('La contraseña debe tener al menos 8 caracteres'),
   body('first_name').notEmpty(),
   body('last_name').notEmpty(),
   async (req, res) => {
@@ -55,7 +55,7 @@ authRouter.post('/register',
 
       // Generar token de verificacion (temporal, guardado en DB o JWT firmado)
       // Para simplificar, usaremos un JWT de corta duracion con payload especifico
-      const verifyToken = auth.generateToken({ ...newUser, type: 'verification' }); // Reusamos generateToken pero idealmente seria uno especifico
+      const verifyToken = auth.generateVerificationToken(newUser);
       
       // Enviar email (No bloqueante para no demorar la respuesta)
       sendVerificationEmail(email, verifyToken).then(r => console.log('Email result:', r));
@@ -81,7 +81,11 @@ authRouter.get('/verify', async (req, res) => {
 
   try {
     const decoded = auth.verifyToken(token);
-    // Aqui podriamos validar decoded.type === 'verification' si lo hubieramos seteado especificamente
+    // Solo aceptamos tokens emitidos específicamente para verificación: un access
+    // token de sesión no debe servir para marcar la cuenta como verificada.
+    if (decoded.type !== 'verification') {
+      return res.status(400).json({ error: 'Token invalido o expirado' });
+    }
 
     await db.query('UPDATE users SET is_verified = 1 WHERE id = ?', [decoded.id]);
     
