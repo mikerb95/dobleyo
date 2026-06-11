@@ -2,6 +2,33 @@
 
 ---
 
+## 📅 2026-06-11 — Blindaje de seguridad: headers de seguridad en páginas (CSP/HSTS) y CORS (Agente: Claude)
+
+### Contexto
+Tercera tanda. Al revisar el CSP se detectó algo más grave que el `'unsafe-inline'`: **en producción las páginas HTML no tenían NINGÚN header de seguridad**. En Vercel las sirve el adapter de Astro, no Express, así que `helmet` (montado en el Express serverless) solo cubría `/api/*`. Las páginas iban sin CSP, sin HSTS, sin `X-Frame-Options`, etc.
+
+### Headers de seguridad en páginas (`vercel.json`)
+- Nuevo bloque `headers` aplicado a todas las rutas **excepto `/api/`** (ahí los pone helmet): `Content-Security-Policy`, `Strict-Transport-Security` (2 años + preload), `X-Content-Type-Options: nosniff`, `X-Frame-Options: SAMEORIGIN`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy` (`camera=(self)` para el escáner QR, `microphone=()`, `geolocation=(self)`).
+- CSP con allowlist verificado contra el código real: Wompi (`checkout.wompi.co`), MercadoPago (`www`/`sdk`/`api`), jsDelivr (jsQR del escáner), Google GSI (`accounts.google.com`, `www.gstatic.com`), fuentes (`fonts.googleapis.com`/`gstatic`), mapas (`nominatim`, tiles vía `img-src https:`), Leaflet CSS (`unpkg`). Endurecimiento: `object-src 'none'`, `base-uri 'self'`, `frame-ancestors 'self'` (anti-clickjacking), `form-action` limitado a self + pasarelas, `upgrade-insecure-requests`.
+- **Se mantiene `'unsafe-inline'` en `script-src`/`style-src`** a propósito: hay **56 bloques `<script>` inline + 60 handlers `on*=`** en las páginas Astro. Quitarlo rompería el sitio; ese refactor queda como fase aparte (ver pendientes). Aun así, pasar de *cero* headers a un CSP completo es el mayor salto de seguridad de esta auditoría.
+
+### CSP de helmet alineado (`server/index.js`, `api/index.js`)
+- Se replicaron las mismas fuentes y directivas en helmet (paridad y para el server standalone que sí sirve `dist/`). De paso se corrigió un bug latente: `script-src` no incluía jsDelivr ni Google → en standalone el escáner QR y el login de Google se habrían bloqueado.
+
+### CORS más limpio (`server/index.js`, `api/index.js`)
+- Origen de navegador no permitido: antes lanzaba `new Error()` → 500 con traza. Ahora `callback(null, false)` (responde sin cabeceras CORS; el navegador bloquea la lectura). Log estructurado vía `logger.warn`.
+- Las peticiones **sin `origin`** se siguen permitiendo a propósito (SSR, webhooks Wompi/ML, health, curl): CORS solo protege al navegador y no aplica a clientes server-to-server, cuyo control real es el JWT / la firma del webhook. Bloquearlas no aporta seguridad y rompería pagos.
+
+### Verificación
+- `node --check` en verde (`server/index.js`, `api/index.js`); `vercel.json` parsea como JSON válido; el `source` con lookahead `^/((?!api/).*)$` confirma que excluye `/api/*` e incluye `/`, `/tienda`, `/en/*`.
+- `vitest run` → 26/29 (los 3 fallos de `audit.test.js` son los preexistentes de la migración Postgres→Turso, ajenos).
+
+### Pendiente conocido
+- **CSP estricto** (quitar `'unsafe-inline'`): requiere migrar los 60 handlers `on*=` a `addEventListener` y hashear/externalizar los 56 scripts inline, o habilitar `experimental.csp` de Astro 5 y refactorizar los handlers. Refactor grande, fase aparte.
+- `devtools.js` usa `SET FOREIGN_KEY_CHECKS` (MySQL) inválido en Turso (ruta bloqueada en prod).
+
+---
+
 ## 📅 2026-06-11 — Blindaje de seguridad: tokens de verificación, contraseñas y fuga de config (Agente: Claude)
 
 ### Contexto
@@ -25,8 +52,7 @@ Segunda tanda de la auditoría de seguridad: se resuelven los hallazgos de riesg
 - `vitest run auth.test.js orders.test.js` → 19/19 pasan. Se ajustó el mock de `auth.js` (faltaba `generateVerificationToken`) y data de test obsoleta con contraseñas de 7 chars.
 
 ### Pendiente conocido (riesgo bajo, requieren refactor coordinado)
-- CORS permite requests sin `origin` (curl/server-to-server); endurecerlo puede romper fetches SSR/webhooks.
-- `'unsafe-inline'` en CSP `scriptSrc`: quitarlo exige nonces/hashes en todos los scripts inline de Astro.
+- CORS y CSP/headers de seguridad → atendidos en la entrada de CSP/CORS de este mismo día. Queda abierto solo el **CSP estricto** (quitar `'unsafe-inline'`), que exige refactor de scripts/handlers inline.
 - `devtools.js` usa `SET FOREIGN_KEY_CHECKS` (MySQL) inválido en Turso (ruta bloqueada en prod).
 
 ---
