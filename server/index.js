@@ -52,13 +52,18 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "https://checkout.wompi.co", "https://www.mercadopago.com", "https://sdk.mercadopago.com"],
+      baseUri: ["'self'"],
+      objectSrc: ["'none'"],
+      frameAncestors: ["'self'"], // anti-clickjacking
+      formAction: ["'self'", "https://checkout.wompi.co", "https://www.mercadopago.com"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://checkout.wompi.co", "https://www.mercadopago.com", "https://sdk.mercadopago.com", "https://cdn.jsdelivr.net", "https://accounts.google.com", "https://www.gstatic.com"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://unpkg.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       imgSrc: ["'self'", "data:", "https:", "blob:"],
-      connectSrc: ["'self'", "https://checkout.wompi.co", "https://nominatim.openstreetmap.org", "https://api.mercadopago.com"],
-      frameSrc: ["'self'", "https://checkout.wompi.co", "https://www.mercadopago.com"],
-      mediaSrc: ["'self'", "https:"],
+      connectSrc: ["'self'", "https://checkout.wompi.co", "https://nominatim.openstreetmap.org", "https://api.mercadopago.com", "https://accounts.google.com", "https://www.gstatic.com"],
+      frameSrc: ["'self'", "https://checkout.wompi.co", "https://www.mercadopago.com", "https://accounts.google.com"],
+      mediaSrc: ["'self'", "https:", "blob:"],
+      workerSrc: ["'self'", "blob:"],
     },
   },
   crossOriginEmbedderPolicy: false, // Requerido para Leaflet y tiles de mapa externos
@@ -82,14 +87,17 @@ if (process.env.SITE_BASE_URL && !allowedOrigins.includes(process.env.SITE_BASE_
 
 app.use(cors({
   origin: function (origin, callback) {
-    // Permitir requests sin origin (como mobile apps o curl)
+    // Sin 'origin' = petición no-navegador (SSR, webhooks Wompi/ML, health, curl).
+    // CORS solo aplica al navegador; su control real aquí es el JWT / la firma del
+    // webhook, no la cabecera Origin. Por eso se permiten.
     if (!origin) return callback(null, true);
     if (allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      console.warn('[CORS] Origen bloqueado:', origin);
-      callback(new Error('No permitido por CORS'));
+      return callback(null, true);
     }
+    // Origen de navegador no permitido: respondemos SIN cabeceras CORS (el navegador
+    // bloquea la lectura) en lugar de lanzar un Error, que produciría un 500 con traza.
+    logger.warn({ origin }, '[CORS] Origen bloqueado');
+    return callback(null, false);
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
