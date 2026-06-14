@@ -2,6 +2,33 @@
 
 ---
 
+## 📅 2026-06-14 — CRUD de demanda 100% Python (módulo aislado) (Agente: Claude)
+
+### Contexto
+El módulo de cálculo de demanda solo escribía pronósticos (`api/ml/recompute.py` → tabla `demand_forecasts`, leída por Node). Se necesitaba un CRUD completo **100% en Python** acotado **únicamente** al módulo de demanda, sin tocar el resto del CRUD del sitio (usuarios, productos, etc.) ni el pipeline de pronóstico existente.
+
+### Nuevo módulo CRUD en Python (`api/ml/demand.py`)
+- Función serverless autónoma con el ciclo completo sobre la **nueva tabla `demand_records`** (autocreada con `CREATE TABLE IF NOT EXISTS`): `category`, `product_key`, `period`, `demand_value`, `unit`, `notes`, `created_at`, `updated_at`.
+  - `POST   /api/ml/demand` → **Create** (con validación: `category` y `demand_value >= 0`).
+  - `GET    /api/ml/demand` → **Read** (filtros `?id=`, `?category=`, `?limit=`).
+  - `PUT    /api/ml/demand?id=` → **Update** (campos parciales, refresca `updated_at`).
+  - `DELETE /api/ml/demand?id=` → **Delete**.
+- Acceso a Turso vía HTTP API (Hrana `/v2/pipeline`), mismo patrón que `recompute.py`. Respuestas estandarizadas `{ success, data/error }`.
+- **Auth sin dependencias nuevas:** verifica el mismo JWT de sesión de Node (HS256, cookie `auth_token` o `Authorization: Bearer`) con la librería estándar (`hmac`/`hashlib`); valida `exp`, rechaza tokens con `type` y exige rol `admin`. No se alteró la auth de Node. `requirements.txt` sin cambios.
+
+### Configuración y UI
+- `vercel.json`: el rewrite que excluía `ml/recompute` del proxy a Node ahora excluye también `ml/demand` (`/api/((?!ml/(recompute|demand)).*)`), para que Vercel lo sirva como función Python nativa.
+- Nueva página `src/pages/admin/demanda.astro` (AdminLayout, admin-only): formulario de alta, listado con filtro por categoría, edición en modal y borrado con confirmación. Enlace en el menú lateral (sección Analítica).
+
+### Aislamiento
+- No se modificó `recompute.py`, `forecast.js`, `demand_forecasts`, ni ningún CRUD existente. El módulo es completamente independiente.
+
+### Verificación
+- `python3 -m py_compile api/ml/demand.py` en verde.
+- Nota: las funciones Python solo corren en el deploy de Vercel / `vercel dev`, no en el Express standalone local (igual que `recompute.py`). Smoke test local incluido: `TURSO_DATABASE_URL=… TURSO_AUTH_TOKEN=… python3 api/ml/demand.py`.
+
+---
+
 ## 📅 2026-06-11 — Blindaje de seguridad: headers de seguridad en páginas (CSP/HSTS) y CORS (Agente: Claude)
 
 ### Contexto
