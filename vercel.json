@@ -11,7 +11,7 @@
       "destination": "/en/:path*"
     },
     {
-      "source": "/api/((?!ml/recompute).*)",
+      "source": "/api/((?!ml/(recompute|demand)).*)",
       "destination": "/api/index.js"
     }
   ],
