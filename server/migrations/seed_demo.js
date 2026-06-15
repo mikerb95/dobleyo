@@ -19,9 +19,26 @@
  */
 import 'dotenv/config';
 import bcrypt from 'bcryptjs';
-import { query } from '../db.js';
+import client, { query } from '../db.js';
 
 const DEMO_PASSWORD = 'Demo1234*';
+
+// Catálogo real (ids en BD) con precios COP, para construir ventas coherentes
+const CATALOG = {
+  'cf-huila': { title: 'Café Huila Geisha 500g', price: 45000, cat: 'cafe' },
+  'cf-nar': { title: 'Café Nariño Castillo 500g', price: 48000, cat: 'cafe' },
+  'cf-sierra': { title: 'Café Sierra Nevada 500g', price: 42000, cat: 'cafe' },
+  'acc-chemex': { title: 'Chemex 6 tazas', price: 269900, cat: 'accesorio' },
+  'acc-molinillo': { title: 'Molinillo Manual', price: 199900, cat: 'accesorio' },
+  'kit-iniciacion-barista': { title: 'Kit Iniciación Barista', price: 89900, cat: 'kit' },
+  'kit-regalo-especial': { title: 'Kit Regalo Especial', price: 129900, cat: 'kit' },
+  'kit-trazabilidad-completa': { title: 'Kit Trazabilidad Completa', price: 159900, cat: 'kit' },
+};
+
+// Envía un lote de sentencias en un solo round-trip (mucho más rápido en Turso)
+async function batch(stmts) {
+  if (stmts.length) await client.batch(stmts, 'write');
+}
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const log = (...a) => console.log('  ', ...a);
