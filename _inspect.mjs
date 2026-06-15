@@ -1,10 +1,10 @@
 import { query } from './server/db.js';
-const t = await query("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name");
-const tables = t.rows.map(r => r.name);
-const counts = {};
-for (const name of tables) {
-  try { const c = await query(`SELECT COUNT(*) AS n FROM "${name}"`); counts[name] = Number(c.rows[0].n); }
-  catch(e){ counts[name] = 'ERR'; }
+const wanted = ['users','products','customer_orders','demand_records','crm_accounts','crm_contacts','crm_interactions','sales_tracking','external_sales','product_reviews','newsletter_subscribers'];
+for (const t of wanted) {
+  try {
+    const r = await query(`PRAGMA table_info("${t}")`);
+    console.log(`\n=== ${t} ===`);
+    console.log(r.rows.map(c => `${c.name}:${c.type}${c.notnull?'!':''}${c.dflt_value!=null?'='+c.dflt_value:''}`).join('  '));
+  } catch(e){ console.log(`\n=== ${t} === ERR ${e.message}`); }
 }
-for (const [k,v] of Object.entries(counts)) console.log(`${String(v).padStart(6)}  ${k}`);
 process.exit(0);
