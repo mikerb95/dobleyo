@@ -384,6 +384,13 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   .role-count { width: 30px; text-align: right; font-weight: 700; color: var(--text-1); }
 
   /* Danger zone */
+  .danger-banner {
+    display: flex; align-items: flex-start; gap: .625rem;
+    margin-bottom: 1rem; padding: .75rem 1rem;
+    background: var(--c-error-bg); border: 1px solid var(--c-error-border);
+    border-radius: var(--radius-sm); font-size: 13px; color: var(--c-error);
+    line-height: 1.5;
+  }
   .danger-card { border-top: 3px solid var(--c-error, #dc2626); }
   .danger-action {
     display: flex;
