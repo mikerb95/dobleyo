@@ -128,18 +128,19 @@ async function seedCaficultores(U) {
     || await scalarId(`SELECT id FROM users WHERE role='admin' ORDER BY id LIMIT 1`);
 
   const apps = [
-    [U['caficultor.huila@demo.dobleyo.cafe'], 'Finca El Paraíso', 'Huila', 1800, 25.5, 'Geisha, Caturra', 'FLO, Orgánico', 'approved'],
-    [U['caficultor.narino@demo.dobleyo.cafe'], 'Finca La Esperanza', 'Nariño', 2100, 12.0, 'Castillo, Caturra', 'Rainforest Alliance', 'approved'],
-    [U['caficultor.sierra@demo.dobleyo.cafe'], 'Finca Sierra Azul', 'Magdalena', 1100, 40.0, 'Typica, Bourbon', 'Orgánico', 'approved'],
-    [U['caficultor.cauca@demo.dobleyo.cafe'], 'Finca Las Nubes', 'Cauca', 1900, 8.5, 'Castillo', 'En trámite', 'pending'],
+    [U['caficultor.huila@demo.dobleyo.cafe'], 'Finca El Paraíso', 'Pitalito, Huila', 25.5, 6000, 'Geisha, Caturra', 'FLO, Orgánico', 12, 'approved'],
+    [U['caficultor.narino@demo.dobleyo.cafe'], 'Finca La Esperanza', 'La Unión, Nariño', 12.0, 2800, 'Castillo, Caturra', 'Rainforest Alliance', 8, 'approved'],
+    [U['caficultor.sierra@demo.dobleyo.cafe'], 'Finca Sierra Azul', 'Santa Marta, Magdalena', 40.0, 9500, 'Typica, Bourbon', 'Orgánico', 20, 'approved'],
+    [U['caficultor.cauca@demo.dobleyo.cafe'], 'Finca Las Nubes', 'Popayán, Cauca', 8.5, 1500, 'Castillo', 'En trámite', 5, 'pending'],
   ];
-  for (const [uid, farm, region, alt, ha, varieties, certs, status] of apps) {
+  for (const [uid, farm, location, ha, prod, varieties, certs, years, status] of apps) {
     if (!uid) continue;
     if (await exists('SELECT 1 FROM caficultor_applications WHERE user_id = ?', [uid])) continue;
     await query(
-      `INSERT INTO caficultor_applications (user_id, farm_name, region, altitude, hectares, varieties_cultivated, certifications, status, reviewed_by, reviewed_at, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now', '-40 days'))`,
-      [uid, farm, region, alt, ha, varieties, certs, status,
+      `INSERT INTO caficultor_applications (user_id, farm_name, farm_location, farm_size_hectares, annual_production_kg, coffee_varieties, certifications, experience_years, motivation, status, reviewed_by, reviewed_at, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now', '-40 days'))`,
+      [uid, farm, location, ha, prod, varieties, certs, years,
+       'Quiero llevar mi café de especialidad a más tazas con trazabilidad real.', status,
        status === 'approved' ? adminId : null, status === 'approved' ? tsDaysAgo(38) : null]);
   }
   log(`${apps.length} solicitudes de caficultor aseguradas`);
