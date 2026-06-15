@@ -273,8 +273,12 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     <!-- ── TAB: Danger Zone ─────────────────────────────────────────────────── -->
     <div id="tab-danger" class="tab-panel hidden">
 
-      <div style="margin-bottom:1rem;padding:.75rem 1rem;background:var(--c-error-soft,#fef2f2);border:1px solid var(--c-error);border-radius:6px;font-size:13px;color:var(--c-error)">
-        <strong>Zona de Peligro.</strong> Las acciones aquí son irreversibles o afectan el estado global del sistema. Procede con cuidado.
+      <div class="danger-banner">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;margin-top:1px">
+          <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+        <div><strong>Zona de peligro.</strong> Las acciones aquí son irreversibles o afectan el estado global del sistema. Proceda con cuidado.</div>
       </div>
 
       <div class="card danger-card">
