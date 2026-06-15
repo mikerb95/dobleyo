@@ -411,6 +411,88 @@ const { title = "Admin — DobleYo Café", section = "" } = Astro.props;
       }
 
       /* =========================================================
+         ENCABEZADO DE PÁGINA + CUERPO (estructura compartida de
+         las páginas nuevas: sistema, mercadolibre, inventario-valor,
+         perfil). Las páginas que definen su propio .page-header
+         scoped lo sobreescriben por mayor especificidad.
+         ========================================================= */
+      .page-header {
+        background: var(--paper);
+        border-bottom: 1px solid var(--rule);
+        padding: 20px 24px 16px;
+      }
+      .page-header-top {
+        display: flex; align-items: flex-start; justify-content: space-between;
+        gap: 16px; flex-wrap: wrap;
+      }
+      .page-breadcrumb {
+        font-size: 11px; font-weight: 600;
+        text-transform: uppercase; letter-spacing: 0.08em;
+        color: var(--muted-2); margin-bottom: 5px;
+      }
+      .page-title {
+        font-size: 22px; font-weight: 600; letter-spacing: -0.01em;
+        color: var(--color-primary); margin: 0;
+      }
+      .page-subtitle {
+        font-size: 13px; color: var(--muted); margin-top: 4px;
+      }
+      .page-header-actions {
+        display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+      }
+
+      .erp-body {
+        padding: 24px;
+        max-width: 1280px;
+        margin: 0 auto;
+      }
+      @media (max-width: 640px) {
+        .erp-body { padding: 16px; }
+      }
+
+      /* ===== KPI TILES (tarjetas de métrica destacada) ===== */
+      .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 16px;
+      }
+      .kpi-tile {
+        position: relative;
+        background: var(--paper);
+        border: 1px solid var(--rule);
+        border-radius: var(--radius);
+        padding: 16px 18px 16px 20px;
+        box-shadow: var(--card-shadow);
+        overflow: hidden;
+      }
+      .kpi-tile::before {
+        content: ""; position: absolute;
+        left: 0; top: 0; bottom: 0; width: 3px;
+        background: var(--color-accent);
+      }
+      .kpi-tile.brand::before   { background: var(--color-accent); }
+      .kpi-tile.success::before { background: var(--c-success); }
+      .kpi-tile.info::before    { background: var(--c-info); }
+      .kpi-tile.warning::before { background: var(--c-warning); }
+      .kpi-tile.error::before   { background: var(--c-error); }
+      .kpi-label {
+        font-size: 11px; font-weight: 600;
+        text-transform: uppercase; letter-spacing: 0.06em;
+        color: var(--muted); margin-bottom: 6px;
+      }
+      .kpi-value {
+        font-size: 24px; font-weight: 700;
+        color: var(--color-primary); line-height: 1.1;
+        font-variant-numeric: tabular-nums;
+      }
+      .kpi-sub {
+        font-size: 12px; color: var(--muted); margin-top: 4px;
+      }
+
+      /* ===== Tabla con scroll horizontal en mobile ===== */
+      .table-wrapper { width: 100%; overflow-x: auto; }
+
+      /* =========================================================
          FORMULARIOS Y UTILIDADES — Re-skin Claude Design
          (heredan páginas migradas: harvest, cupping, packaging, etc.)
          ========================================================= */
