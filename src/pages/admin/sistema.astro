@@ -326,11 +326,15 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 </AdminLayout>
 
 <style>
+  /* La hilera de pestañas provee el separador inferior del header,
+     así evitamos una doble línea con el borde del .page-header. */
+  .page-header { padding-bottom: 0; border-bottom: none; }
+
   /* Tabs */
   .sys-tabs {
     display: flex;
     gap: 0;
-    margin-top: .75rem;
+    margin-top: 1rem;
     border-bottom: 1px solid var(--border);
   }
   .sys-tab {
