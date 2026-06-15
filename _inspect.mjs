@@ -1,10 +1,6 @@
 import { query } from './server/db.js';
-const p = await query("SELECT id, sku, name, category, price, stock_quantity FROM products ORDER BY id");
-console.log('PRODUCTS:'); for(const r of p.rows) console.log(` ${r.id} | ${r.sku} | ${r.category} | $${r.price} | stock ${r.stock_quantity} | ${r.name}`);
-const u = await query("SELECT id, email, role, name FROM users ORDER BY id");
-console.log('\nUSERS:'); for(const r of u.rows) console.log(` ${r.id} | ${r.role} | ${r.email} | ${r.name}`);
-const o = await query("SELECT id, reference, status, customer_name, total_cop, geocoding_done FROM customer_orders ORDER BY id LIMIT 4");
-console.log('\nCUSTOMER_ORDERS sample:'); for(const r of o.rows) console.log(` ${r.id} | ${r.reference} | ${r.status} | ${r.customer_name} | ${r.total_cop} | geo ${r.geocoding_done}`);
-const dr = await query("SELECT * FROM demand_records LIMIT 3");
-console.log('\nDEMAND_RECORDS sample rows:', dr.rows.length);
+for (const t of ['product_variants','discount_codes','coffee_harvests','green_coffee_inventory','roasting_batches','roasted_coffee','accounting_accounts','sales_invoices','payments','expenses']) {
+  const r = await query(`PRAGMA table_info("${t}")`);
+  console.log(`=== ${t} ===\n` + r.rows.map(c=>c.name).join(', '));
+}
 process.exit(0);
