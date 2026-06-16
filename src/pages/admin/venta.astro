@@ -776,7 +776,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         <td class="text-right"><strong>${fmt(s.total)}</strong></td>
         <td><span class="badge badge-${s.status}">${STATUS_LABELS[s.status] || s.status}</span></td>
         <td>
-          <button class="action-btn" onclick="openDetail(${s.id})">Ver</button>
+          <button class="action-btn" data-action="open-detail" data-sale-id="${s.id}">Ver</button>
         </td>
       </tr>
     `).join('');
@@ -788,9 +788,9 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     if (pages <= 1) { el.innerHTML = `<span>${total} registros</span>`; return; }
     el.innerHTML = `
       <span>${total} registros</span>
-      <button class="ios-btn ios-btn-ghost ios-btn-sm" onclick="loadSales(${page - 1})" ${page === 0 ? 'disabled' : ''}>‹ Anterior</button>
+      <button class="ios-btn ios-btn-ghost ios-btn-sm" data-action="page" data-page="${page - 1}" ${page === 0 ? 'disabled' : ''}>‹ Anterior</button>
       <span>Pág. ${page + 1} / ${pages}</span>
-      <button class="ios-btn ios-btn-ghost ios-btn-sm" onclick="loadSales(${page + 1})" ${page >= pages - 1 ? 'disabled' : ''}>Siguiente ›</button>
+      <button class="ios-btn ios-btn-ghost ios-btn-sm" data-action="page" data-page="${page + 1}" ${page >= pages - 1 ? 'disabled' : ''}>Siguiente ›</button>
     `;
   }
 
@@ -809,10 +809,10 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     row.className = 'item-row';
     row.dataset.idx = idx;
     row.innerHTML = `
-      <select class="item-product" onchange="recalcTotals()">${buildProductOptions()}</select>
-      <input type="number" class="item-qty" min="1" value="1" placeholder="Cant." onchange="recalcTotals()" oninput="recalcTotals()" />
-      <input type="number" class="item-price" min="0" value="0" placeholder="Precio unit. COP" onchange="recalcTotals()" oninput="recalcTotals()" />
-      <button type="button" class="btn-remove-item" onclick="removeItemRow(this)" title="Quitar">×</button>
+      <select class="item-product">${buildProductOptions()}</select>
+      <input type="number" class="item-qty" min="1" value="1" placeholder="Cant." />
+      <input type="number" class="item-price" min="0" value="0" placeholder="Precio unit. COP" />
+      <button type="button" class="btn-remove-item" data-action="remove-item" title="Quitar">×</button>
     `;
     container.appendChild(row);
     recalcTotals();

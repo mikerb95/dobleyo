@@ -458,8 +458,8 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
             ${formatDate(user.last_login_at)}
           </td>
           <td style="padding: 1rem; text-align: center;">
-            <button onclick="window.editUser(${user.id})" style="padding: 0.4rem 0.8rem; background: #8b6f47; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; margin-right: 0.5rem;">✏️ Editar</button>
-            <button onclick="window.deleteUser(${user.id}, '${user.email.replace(/'/g, "\\'")}')" style="padding: 0.4rem 0.8rem; background: #dc2626; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem;">🗑️ Eliminar</button>
+            <button data-action="edit-user" data-user-id="${user.id}" style="padding: 0.4rem 0.8rem; background: #8b6f47; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; margin-right: 0.5rem;">✏️ Editar</button>
+            <button data-action="delete-user" data-user-id="${user.id}" data-user-email="${user.email.replace(/"/g, '&quot;')}" style="padding: 0.4rem 0.8rem; background: #dc2626; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem;">🗑️ Eliminar</button>
           </td>
         `;
       tbody.appendChild(row);
@@ -678,4 +678,11 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
   // Load on init
   loadUsers();
+
+  document.getElementById("usersTableBody")?.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-action]");
+    if (!btn) return;
+    if (btn.dataset.action === "edit-user") window.editUser(parseInt(btn.dataset.userId));
+    if (btn.dataset.action === "delete-user") window.deleteUser(parseInt(btn.dataset.userId), btn.dataset.userEmail);
+  });
 </script>
