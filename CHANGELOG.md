@@ -2,6 +2,19 @@
 
 ---
 
+## 📅 2026-06-16 — Página taller SENA: modelos de ingreso (Agente: Claude)
+
+### Contexto
+Entregable del taller «Negociación y modelos de ingreso» (SENA): tabla con 3 modelos de ingreso aplicados a la venta de la plataforma DobleYo Café.
+
+### Archivos modificados
+- `src/pages/sena/taller-negociacion.astro` — **nueva**. Página pública con tabla de 3 streams de ingreso (Suscripción SaaS de trazabilidad/producción, Comisión por venta en tienda online, Licencia white-label por fases + soporte mensual): modelo, descripción, precio estimado en COP y defensa del valor. Usa `Layout.astro` + `<Head>` con SEO/canonical. Estilos con variables CSS, mobile-first (tabla con scroll en ≥768px, tarjetas en móvil). Copy en español Colombia.
+
+### Notas
+- Build de la fase de páginas verificado ✓. El build del cliente sigue fallando por el error preexistente y ajeno a este cambio en `src/pages/admin/etiquetas.astro` (`updateCeroSummary` declarada dos veces).
+
+---
+
 ## 📅 2026-06-16 — Drawer lateral de carrito como feedback al agregar (Agente: Claude)
 
 ### Contexto
