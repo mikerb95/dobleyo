@@ -464,12 +464,12 @@ async function seedCRM(U) {
   const owner = U['compras.cafebar@demo.dobleyo.cafe'] || null;
   const adminOwner = await scalarId(`SELECT id FROM users WHERE role='admin' ORDER BY id LIMIT 1`);
   const accounts = [
-    ['Café Bar Quindío SAS', 'Café Bar Quindío', 'horeca', 'Quindío', 'Armenia', '901111111', 'negociacion', 4800000, 'instagram'],
-    ['Restaurante La Terraza', 'La Terraza', 'horeca', 'Cundinamarca', 'Bogotá', '901222222', 'propuesta', 2600000, 'referido'],
-    ['Supermercados El Trigal', 'El Trigal', 'retail', 'Antioquia', 'Medellín', '901333333', 'ganado', 12500000, 'feria'],
-    ['Hotel Boutique Andino', 'Hotel Andino', 'hospitalidad', 'Caldas', 'Manizales', '901444444', 'prospect', 1800000, 'web'],
-    ['Distribuidora Pacífico', 'Distri Pacífico', 'distribuidor', 'Valle del Cauca', 'Cali', '901555555', 'calificado', 7200000, 'llamada'],
-    ['Oficinas TechHub', 'TechHub', 'corporativo', 'Cundinamarca', 'Bogotá', '901666666', 'perdido', 0, 'web'],
+    ['Café Bar Quindío SAS', 'Café Bar Quindío', 'cafeteria', 'Quindío', 'Armenia', '901111111', 'negotiation', 4800000, 'instagram'],
+    ['Restaurante La Terraza', 'La Terraza', 'cafeteria', 'Cundinamarca', 'Bogotá', '901222222', 'sample_sent', 2600000, 'referido'],
+    ['Supermercados El Trigal', 'El Trigal', 'retail', 'Antioquia', 'Medellín', '901333333', 'active', 12500000, 'feria'],
+    ['Hotel Boutique Andino', 'Hotel Andino', 'hotel', 'Caldas', 'Manizales', '901444444', 'prospect', 1800000, 'web'],
+    ['Distribuidora Pacífico', 'Distri Pacífico', 'distributor_co', 'Valle del Cauca', 'Cali', '901555555', 'contacted', 7200000, 'llamada'],
+    ['Bright Coffee Imports LLC', 'Bright Coffee US', 'importer_us', 'Florida', 'Miami', 'US-99887766', 'lost', 0, 'web'],
   ];
   let aCount = 0;
   for (const [legal, display, segment, region, city, tax, stage, value, source] of accounts) {
