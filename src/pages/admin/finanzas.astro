@@ -1142,7 +1142,7 @@ function purchaseLineTemplate(n) {
     <input type="text" name="lines[${n}][lot_reference]" placeholder="Ref. lote" />
     <input type="number" name="lines[${n}][quantity]" placeholder="Kg" min="0.01" step="0.01" required />
     <input type="number" name="lines[${n}][unit_price]" placeholder="$/kg" min="0" step="1" required />
-    <span class="adm-line-remove" onclick="this.parentElement.remove()">✕</span>
+    <span class="adm-line-remove" data-action="remove-purchase-line">✕</span>
   </div>`;
 }
 
