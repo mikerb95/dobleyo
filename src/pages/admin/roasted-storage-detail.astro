@@ -113,8 +113,8 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     <div class="action-buttons">
       <button
         type="button"
+        id="backToRoastedBtn"
         class="btn-secondary"
-        onclick="window.location.href='/admin/roasted-storage'"
       >
         ← Volver a Almacenar
       </button>
@@ -122,7 +122,6 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         type="button"
         class="btn-primary"
         id="goToPackagingBtn"
-        onclick="goToPackaging()"
       >
         Ir a Empaquetado →
       </button>
@@ -141,8 +140,8 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       <p id="errorMessage">Error al cargar los detalles</p>
       <button
         type="button"
+        id="backToRoastedErrorBtn"
         class="btn-secondary"
-        onclick="window.location.href='/admin/roasted-storage'"
       >
         Volver
       </button>
@@ -298,5 +297,9 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     }
 
     loadStorageDetail();
+
+    document.getElementById("backToRoastedBtn")?.addEventListener("click", () => { window.location.href = "/admin/roasted-storage"; });
+    document.getElementById("backToRoastedErrorBtn")?.addEventListener("click", () => { window.location.href = "/admin/roasted-storage"; });
+    document.getElementById("goToPackagingBtn")?.addEventListener("click", goToPackaging);
   </script>
 </AdminLayout>

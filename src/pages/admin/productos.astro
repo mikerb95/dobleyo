@@ -11,10 +11,8 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         📦 Gestión de Productos
       </h1>
       <button
-        onclick="openCreateModal()"
+        id="openCreateProductBtn"
         style="background: #8b6f47; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 6px; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: background 0.2s;"
-        onmouseover="this.style.background='#6b5437'"
-        onmouseout="this.style.background='#8b6f47'"
       >
         ➕ Nuevo Producto
       </button>
@@ -570,7 +568,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
             </button>
             <button
               type="button"
-              onclick="document.getElementById('productModal').style.display = 'none'"
+              id="closeProductModalBtn"
               style="flex: 1; padding: 0.75rem; background: #ddd; color: #333; border: none; border-radius: 4px; font-weight: 500; cursor: pointer;"
             >
               Cancelar
@@ -600,13 +598,13 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         </p>
         <div style="display: flex; gap: 1rem;">
           <button
-            onclick="confirmDelete()"
+            id="confirmDeleteBtn"
             style="flex: 1; padding: 0.75rem; background: #c00; color: white; border: none; border-radius: 4px; font-weight: 500; cursor: pointer;"
           >
             Eliminar
           </button>
           <button
-            onclick="document.getElementById('deleteModal').style.display = 'none'"
+            id="closeDeleteModalBtn"
             style="flex: 1; padding: 0.75rem; background: #ddd; color: #333; border: none; border-radius: 4px; font-weight: 500; cursor: pointer;"
           >
             Cancelar

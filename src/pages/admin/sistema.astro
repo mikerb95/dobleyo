@@ -441,7 +441,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
 <script>
   // ── Helper tipado para acceder a elementos del DOM ────────────────────────
-  type DomEl = HTMLInputElement & HTMLSelectElement & HTMLTextAreaElement & HTMLButtonElement;
+  type DomEl = HTMLElement & { value: string; disabled: boolean };
   const el = (id: string) => document.getElementById(id) as unknown as DomEl;
 
   // ── Estado de paginación de errores ───────────────────────────────────────
