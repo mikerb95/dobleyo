@@ -2,6 +2,20 @@
 
 ---
 
+## 📅 2026-06-15 — Seed de DEMO completo del sitio (Agente: Claude)
+
+### Contexto
+Para exponer la plataforma en vivo se necesitaban datos representativos en **todos los módulos** sin tener que insertarlos manualmente y moverlos por el flujo. El `db/seed_data.sql` existente estaba desactualizado (sintaxis Postgres `NOW()`, IDs de producto que ya no existen) e incompatible con Turso/libSQL.
+
+### Nuevo seed (`server/migrations/seed_demo.js`)
+- Script ESM **idempotente** (re-ejecutable sin duplicar) que usa `query`/`batch` de `server/db.js`, parámetros `?`, `datetime('now')` e `INSERT OR IGNORE`/guardas por clave natural.
+- Verificado contra la BD viva (no contra `schema.sql`, que difiere en varias tablas).
+- Usuarios demo con **hash bcrypt real** → login funcional. Contraseña única: `Demo1234*` para todo usuario `@demo.dobleyo.cafe` (admins/operarios, caficultores aprobados y pendiente, clientes y cuenta B2B).
+- Cobertura sembrada: solicitudes de caficultor, cosechas y lotes de trazabilidad; variantes de producto, reseñas aprobadas y newsletter; **55 ventas MercadoLibre** con geocoordenadas (mapa de calor) en 20 ciudades; pedidos e-commerce pagados/enviados con geocoding; ventas por canales externos; **36 registros de demanda** por categoría/período; CRM B2B (cuentas, contactos, interacciones); producción (estaciones, equipos, perfiles, BOMs, órdenes en varios estados); movimientos de inventario; y finanzas (plan de cuentas, diarios, métodos de pago, centros de costo, bancos, impuestos, proveedores, facturas de venta/compra con líneas, pagos con asignaciones y gastos).
+- Ejecutar: `node server/migrations/seed_demo.js`.
+
+---
+
 ## 📅 2026-06-14 — CRUD de demanda 100% Python (módulo aislado) (Agente: Claude)
 
 ### Contexto
