@@ -18,19 +18,13 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       >
         <button
           id="tabLotes"
-          onclick="switchTab('lotes')"
           style="flex: 1; padding: 0.75rem 1rem; background: #8b6f47; color: white; border: none; border-radius: 6px; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: all 0.2s;"
-          onmouseover="if(this.id !== 'tabLotes' || this.style.background === '#6b5437') this.style.background='#6b5437'"
-          onmouseout="if(this.id !== 'tabLotes' || this.style.background !== '#8b6f47') this.style.background='#8b6f47'"
         >
           📦 Desde Lotes Preparados
         </button>
         <button
           id="tabCero"
-          onclick="switchTab('cero')"
           style="flex: 1; padding: 0.75rem 1rem; background: #ddd; color: #333; border: none; border-radius: 6px; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: all 0.2s;"
-          onmouseover="this.style.background='#ccc'"
-          onmouseout="this.style.background='#ddd'"
         >
           ✏️ Crear de Cero
         </button>
