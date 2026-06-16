@@ -734,12 +734,12 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     try {
       const res  = await fetch('/api/system/changelog', { credentials: 'include' });
       const { data } = await res.json();
-      const el   = el('changelogTimeline');
+      const timelineEl = el('changelogTimeline');
 
-      if (!data.length) { el.innerHTML = '<div class="loading-row">Sin entradas de changelog.</div>'; return; }
+      if (!data.length) { timelineEl.innerHTML = '<div class="loading-row">Sin entradas de changelog.</div>'; return; }
 
       const typeBadge = { feature: 'badge-success', fix: 'badge-info', breaking: 'badge-error', security: 'badge-warning', performance: 'badge-neutral' };
-      el.innerHTML = data.map(e => {
+      timelineEl.innerHTML = data.map(e => {
         const date = e.published_at
           ? new Date(e.published_at).toLocaleDateString('es-CO')
           : new Date(e.created_at).toLocaleDateString('es-CO');

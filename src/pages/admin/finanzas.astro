@@ -945,7 +945,7 @@ async function loadExpenses() {
         <td class="adm-table__amount">${fmtCOP(exp.amount)}</td>
         <td>${badge(exp.state)}</td>
         <td>${exp.state === 'borrador'
-          ? `<button class="adm-btn adm-btn--sm adm-btn--outline" onclick="approveExpense(${exp.id})">Aprobar</button>`
+          ? `<button class="adm-btn adm-btn--sm adm-btn--outline" data-action="approve-expense" data-exp-id="${exp.id}">Aprobar</button>`
           : ''}</td>
       </tr>`).join('')}</tbody>
     </table></div>`;
