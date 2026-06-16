@@ -2,6 +2,22 @@
 
 ---
 
+## 📅 2026-06-16 — Drawer lateral de carrito como feedback al agregar (Agente: Claude)
+
+### Contexto
+Al agregar un producto al carrito (en la tienda, home, detalle de producto o cualquier página pública) no había retroalimentación visual inmediata más allá del cambio de texto del botón. Se agregó un panel lateral (drawer) que se abre automáticamente por el lado derecho mostrando el detalle del carrito como confirmación del ítem agregado.
+
+### Archivos modificados
+- `public/assets/js/cart.js` — `addToCart()` ahora emite el evento `cart:added`; `saveCart()` emite `cart:changed`. Permite que el drawer reaccione sin acoplarse a cada botón.
+- `src/components/CartDrawer.astro` — **nuevo**. Panel lateral global con lista de ítems, control de cantidad (+/−), eliminar, aviso «Producto agregado», barra de progreso de envío gratis, subtotal y CTA a checkout / carrito. Accesible (`role="dialog"`, `aria-modal`, cierre con Esc / overlay, bloqueo de scroll). Estilos con variables CSS, mobile-first (`width: min(420px, 100vw)`), respeta `prefers-reduced-motion`. Copy en español Colombia («usted»).
+- `src/layouts/Layout.astro` — importa y monta `<CartDrawer />` de forma global.
+
+### Notas
+- Compatible con todos los botones existentes que pasan por `window.Cart.addToCart` (tienda, index, producto/[id], handler global del Layout).
+- Build del servidor verificado ✓. El build del cliente falla por un error preexistente y ajeno a este cambio en `src/pages/admin/etiquetas.astro` (función `updateCeroSummary` declarada dos veces).
+
+---
+
 ## 📅 2026-06-16 — Refactor CSP estricto: eliminación de `'unsafe-inline'` en `script-src` (Agente: Claude)
 
 ### Contexto
