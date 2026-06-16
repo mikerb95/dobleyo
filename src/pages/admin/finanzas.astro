@@ -1282,4 +1282,20 @@ document.getElementById('formPayment').addEventListener('submit', async (e) => {
     }
   } catch { msgEl.style.color = '#991b1b'; msgEl.textContent = 'Error de conexión'; }
 });
+
+// ── Event delegation — reemplaza todos los onclick= inline ─────────────────
+document.getElementById('salesLines')?.addEventListener('click', (e) => {
+  if (e.target.closest('[data-action="remove-sale-line"]')) removeSaleLine(e.target.closest('[data-action="remove-sale-line"]'));
+});
+document.getElementById('purchaseLines')?.addEventListener('click', (e) => {
+  if (e.target.closest('[data-action="remove-purchase-line"]')) e.target.closest('.adm-line-row').remove();
+});
+document.getElementById('purchaseInvoicesTable')?.addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-action="mark-paid"]');
+  if (btn) markInvoicePaid(parseInt(btn.dataset.invId));
+});
+document.getElementById('expensesTable')?.addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-action="approve-expense"]');
+  if (btn) approveExpense(parseInt(btn.dataset.expId));
+});
 </script>
