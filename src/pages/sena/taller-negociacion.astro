@@ -1,0 +1,318 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { getCanonicalUrl } from "../../i18n/index.ts";
+
+// Modelos de ingreso aplicados a la plataforma DobleYo Café
+const modelos = [
+  {
+    n: 1,
+    stream: "Suscripción SaaS de trazabilidad + producción",
+    modelo: "Suscripción (recurrente)",
+    descripcion:
+      "Otras fincas y tostadores pagan una mensualidad por usar los módulos de trazabilidad finca→taza con QR, lotes de tueste y control de calidad (cupping SCA).",
+    precio: "$180.000/mes plan finca · $450.000/mes plan tostador (multi-lote)",
+    valor:
+      "Reemplaza hojas de cálculo y entrega un QR verificable al consumidor; el ingreso recurrente cubre soporte y nuevas funciones.",
+  },
+  {
+    n: 2,
+    stream: "Comisión por venta en la tienda online",
+    modelo: "Comisión / Marketplace",
+    descripcion:
+      "DobleYo cobra un porcentaje sobre cada venta B2C/B2B procesada por la tienda y la integración con MercadoLibre (sync de órdenes, envíos, heatmap).",
+    precio: "5% – 8% por transacción cerrada",
+    valor:
+      "El cobro escala con el éxito del cliente: solo se paga cuando se vende, lo que reduce el riesgo para ambas partes.",
+  },
+  {
+    n: 3,
+    stream: "Licencia white-label por fases + soporte mensual",
+    modelo: "Licencia + pago único por fases",
+    descripcion:
+      "Marcas de café compran la plataforma personalizada (su dominio, su marca). Se entrega por fases (MVP y luego módulos avanzados) más soporte mensual contratado.",
+    precio:
+      "$3.600.000 MVP + $900.000 módulo reportes · $450.000/mes soporte (mín. 3 meses)",
+    valor:
+      "El cliente reparte el pago, el proveedor protege alcance y margen, y se abre un ingreso recurrente por soporte.",
+  },
+];
+---
+
+<Layout
+  title="Taller de Negociación y Modelos de Ingreso — DobleYo Café"
+  description="Tres modelos de ingreso aplicados a la venta de la plataforma DobleYo Café: suscripción SaaS, comisión por venta y licencia por fases con soporte mensual."
+  lang="es"
+  canonical={getCanonicalUrl("/sena/taller-negociacion", "es")}
+>
+  <main class="taller">
+    <section class="taller-hero">
+      <div class="container">
+        <p class="taller-eyebrow">SENA · Negociación y modelos de ingreso</p>
+        <h1>Modelos de ingreso de DobleYo Café</h1>
+        <p class="taller-lead">
+          Tres streams de ingreso aplicados a la venta del software que estamos
+          desarrollando: una plataforma de e-commerce, trazabilidad QR,
+          producción y finanzas para café de especialidad colombiano.
+        </p>
+      </div>
+    </section>
+
+    <section class="taller-content">
+      <div class="container">
+        <h2>Tabla de modelos de ingreso</h2>
+
+        <!-- Tabla para pantallas medianas y grandes -->
+        <div class="tabla-wrapper">
+          <table class="tabla-modelos">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Stream de ingreso</th>
+                <th>Modelo</th>
+                <th>Cómo funciona</th>
+                <th>Precio estimado (COP)</th>
+                <th>Defensa del valor</th>
+              </tr>
+            </thead>
+            <tbody>
+              {
+                modelos.map((m) => (
+                  <tr>
+                    <td class="num">{m.n}</td>
+                    <td class="stream">{m.stream}</td>
+                    <td>{m.modelo}</td>
+                    <td>{m.descripcion}</td>
+                    <td class="precio">{m.precio}</td>
+                    <td>{m.valor}</td>
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Tarjetas para pantallas pequeñas -->
+        <div class="cards">
+          {
+            modelos.map((m) => (
+              <article class="card">
+                <header>
+                  <span class="card-num">{m.n}</span>
+                  <h3>{m.stream}</h3>
+                </header>
+                <dl>
+                  <dt>Modelo</dt>
+                  <dd>{m.modelo}</dd>
+                  <dt>Cómo funciona</dt>
+                  <dd>{m.descripcion}</dd>
+                  <dt>Precio estimado (COP)</dt>
+                  <dd class="precio">{m.precio}</dd>
+                  <dt>Defensa del valor</dt>
+                  <dd>{m.valor}</dd>
+                </dl>
+              </article>
+            ))
+          }
+        </div>
+
+        <aside class="nota">
+          <h2>Notas de negociación</h2>
+          <ul>
+            <li>
+              Los tres modelos <strong>defienden el valor</strong> en lugar de bajar
+              precio: recurrencia (1), pago atado a resultados (2) y entrega por
+              fases con algo a cambio del descuento (3).
+            </li>
+            <li>
+              Los precios son realistas para el mercado de microempresas y fincas
+              en Colombia.
+            </li>
+            <li>
+              Regla práctica de cierre: <em
+                >nunca conceda sin recibir algo a cambio</em
+              > — por eso el soporte mensual exige un mínimo de permanencia.
+            </li>
+          </ul>
+        </aside>
+      </div>
+    </section>
+  </main>
+</Layout>
+
+<style>
+  .taller {
+    padding-bottom: 4rem;
+  }
+
+  .taller-hero {
+    background: var(--coffee);
+    color: var(--cream);
+    padding: 3rem 0;
+  }
+
+  .taller-eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.8rem;
+    color: var(--accent);
+    margin: 0 0 0.5rem;
+  }
+
+  .taller-hero h1 {
+    margin: 0 0 1rem;
+    font-size: clamp(1.8rem, 5vw, 2.8rem);
+  }
+
+  .taller-lead {
+    max-width: 60ch;
+    margin: 0;
+    line-height: 1.6;
+    opacity: 0.92;
+  }
+
+  .taller-content {
+    padding-top: 2.5rem;
+  }
+
+  .taller-content h2 {
+    margin: 0 0 1.25rem;
+    color: var(--coffee);
+  }
+
+  /* Tabla */
+  .tabla-wrapper {
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+  }
+
+  .tabla-modelos {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 720px;
+    background: var(--card);
+    font-size: 0.95rem;
+  }
+
+  .tabla-modelos th {
+    background: var(--coffee);
+    color: var(--cream);
+    text-align: left;
+    padding: 0.85rem 1rem;
+    font-family: "Inter", sans-serif;
+    font-size: 0.85rem;
+  }
+
+  .tabla-modelos td {
+    padding: 0.9rem 1rem;
+    border-top: 1px solid var(--border);
+    vertical-align: top;
+    line-height: 1.5;
+  }
+
+  .tabla-modelos .num {
+    font-weight: 700;
+    color: var(--accent);
+    text-align: center;
+  }
+
+  .tabla-modelos .stream {
+    font-weight: 600;
+    color: var(--coffee);
+  }
+
+  .precio {
+    font-weight: 600;
+    color: var(--price);
+  }
+
+  /* Tarjetas (mobile) */
+  .cards {
+    display: none;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+  }
+
+  .card header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .card-num {
+    flex: 0 0 auto;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--accent-contrast);
+    display: grid;
+    place-items: center;
+    font-weight: 700;
+  }
+
+  .card h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: var(--coffee);
+  }
+
+  .card dl {
+    margin: 0;
+  }
+
+  .card dt {
+    font-family: "Inter", sans-serif;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted-fg);
+    margin-top: 0.85rem;
+  }
+
+  .card dd {
+    margin: 0.2rem 0 0;
+    line-height: 1.5;
+  }
+
+  /* Nota */
+  .nota {
+    margin-top: 2.5rem;
+    background: var(--footer-bg);
+    border-left: 4px solid var(--accent);
+    border-radius: 8px;
+    padding: 1.5rem;
+  }
+
+  .nota h2 {
+    margin-top: 0;
+  }
+
+  .nota ul {
+    margin: 0;
+    padding-left: 1.2rem;
+    line-height: 1.7;
+  }
+
+  .nota li {
+    margin-bottom: 0.6rem;
+  }
+
+  @media (max-width: 768px) {
+    .tabla-wrapper {
+      display: none;
+    }
+
+    .cards {
+      display: flex;
+    }
+  }
+</style>
