@@ -440,13 +440,17 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 </style>
 
 <script>
+  // ── Helper tipado para acceder a elementos del DOM ────────────────────────
+  type DomEl = HTMLInputElement & HTMLSelectElement & HTMLTextAreaElement & HTMLButtonElement;
+  const el = (id: string) => document.getElementById(id) as unknown as DomEl;
+
   // ── Estado de paginación de errores ───────────────────────────────────────
   let errOffset = 0;
   const ERR_LIMIT = 50;
   let errTotal = 0;
 
   // ── Tab switching ─────────────────────────────────────────────────────────
-  document.querySelectorAll('.sys-tab').forEach(btn => {
+  document.querySelectorAll('.sys-tab').forEach((btn: HTMLElement) => {
     btn.addEventListener('click', () => {
       const tab = btn.dataset.tab;
       document.querySelectorAll('.sys-tab').forEach(b => b.classList.remove('active'));
