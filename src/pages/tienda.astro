@@ -216,8 +216,11 @@ const shopJsonLd = {
     </section>
   </section>
 
-  <script is:inline define:vars={{ products }}>
+  <div id="shopData" data-products={JSON.stringify(products)} style="display:none"></div>
+
+  <script>
     (function () {
+      const products = JSON.parse(document.getElementById('shopData')?.dataset.products || '[]');
       const $ = (s, r = document) => r.querySelector(s);
       const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
 
