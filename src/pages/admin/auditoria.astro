@@ -363,6 +363,14 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     }
 
     loadLogs();
+
+    document.getElementById("btnApplyFilters")?.addEventListener("click", applyFilters);
+    document.getElementById("btnResetFilters")?.addEventListener("click", resetFilters);
+    document.querySelector(".table-wrap")?.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-show-details]");
+      if (!btn) return;
+      showDetails(btn.dataset.details, btn.dataset.logAction, btn.dataset.entityType, btn.dataset.entityId);
+    });
   </script>
 
   <style>
