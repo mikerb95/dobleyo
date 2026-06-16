@@ -487,7 +487,7 @@ async function seedCRM(U) {
          VALUES (?, ?, 'Compras', ?, ?, 1, datetime('now','-30 days'))`,
         [aid, `Contacto ${display}`, `compras@${display.toLowerCase().replace(/[^a-z]/g, '')}.com`, '60' + tax.slice(0, 7)]);
       // interacciones
-      const kinds = [['llamada', 'Llamada de descubrimiento'], ['email', 'Envío de catálogo y precios'], ['reunion', 'Cata de producto en sitio']];
+      const kinds = [['call', 'Llamada de descubrimiento'], ['email', 'Envío de catálogo y precios'], ['sample', 'Cata de producto en sitio'], ['quote', 'Cotización enviada']];
       for (let k = 0; k < kinds.length; k++) {
         await query(
           `INSERT INTO crm_interactions (account_id, kind, subject, body, occurred_at, created_by, created_at)
