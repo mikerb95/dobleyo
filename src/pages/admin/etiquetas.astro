@@ -833,6 +833,10 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
       // Cargar datos al iniciar
       document.addEventListener("DOMContentLoaded", loadPreparedLots);
+
+      // Tabs — event listeners en lugar de onclick= inline
+      document.getElementById("tabLotes")?.addEventListener("click", () => switchTab("lotes"));
+      document.getElementById("tabCero")?.addEventListener("click", () => switchTab("cero"));
     </script>
   </div>
 </AdminLayout>
