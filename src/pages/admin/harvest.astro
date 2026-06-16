@@ -215,18 +215,14 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       <!-- Botones de acción -->
       <div style="display: flex; gap: 1rem; flex-direction: column-reverse;">
         <button
-          onclick="document.getElementById('successModal').style.display = 'none'; document.getElementById('harvestForm').reset(); document.getElementById('farmInfo').style.display = 'none'; document.getElementById('lotInfo').style.display = 'none';"
+          id="closeHarvestSuccessBtn"
           style="padding: 0.75rem 1.5rem; background: #ddd; color: #333; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.95rem; transition: background 0.2s;"
-          onmouseover="this.style.background='#ccc'"
-          onmouseout="this.style.background='#ddd'"
         >
           Cerrar
         </button>
         <button
-          onclick="window.location.href='/admin/lotes';"
+          id="goToLotesFromHarvestBtn"
           style="padding: 0.75rem 1.5rem; background: #4a6741; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.95rem; transition: background 0.2s;"
-          onmouseover="this.style.background='#3a5431'"
-          onmouseout="this.style.background='#4a6741'"
         >
           Ver Lotes de Café Verde
         </button>
