@@ -2,6 +2,55 @@
 
 ---
 
+## 📅 2026-06-16 — Refactor CSP estricto: eliminación de `'unsafe-inline'` en `script-src` (Agente: Claude)
+
+### Contexto
+La política CSP configurada en fases anteriores incluía `'unsafe-inline'` en `script-src`, lo que anulaba la protección contra XSS al permitir la ejecución de cualquier script incrustado en el HTML. Para habilitar una CSP estricta fue necesario primero migrar todos los manejadores de eventos inline (`onclick=`, `onsubmit=`, `onmouseover=`, etc.) del código fuente Astro a listeners declarados en scripts bundleados o CSS `:hover`.
+
+### Archivos modificados (handlers inline → event listeners)
+
+**Páginas públicas:**
+- `src/pages/trazabilidad.astro` — eliminado `onsubmit="return false"` (redundante con keydown listener existente).
+- `src/pages/en/traceability.astro` — mismo patrón.
+- `src/pages/solicitar-caficultor.astro` — `onsubmit` → `addEventListener("submit", async (e) => { e.preventDefault(); ... })`. Corrección crítica: el callback original no tenía parámetro `e`, por lo que nunca se llamaba `preventDefault()`.
+- `src/pages/setup-db.astro` — `onfocus`/`onblur` en input → regla CSS `:focus`.
+
+**Layouts:**
+- `src/layouts/AppLayout.astro` — 3 botones `onclick="location.reload()"` dentro de strings `innerHTML` → IDs + `addEventListener("click", ...)` inyectado inmediatamente tras cada asignación de `innerHTML`.
+
+**Componentes:**
+- `src/components/AuthModal.astro` — `<script is:inline define:vars={{ googleClientId }}>` → `data-google-client-id` en nodo DOM + `<script>` bundleado que lee `dataset`.
+- `src/pages/tienda.astro` — `<script is:inline define:vars={{ products }}>` → `<div id="shopData" data-products={JSON.stringify(products)}>` + `<script>` bundleado.
+
+**Páginas admin (detrás de auth):**
+- `src/pages/admin/cupping.astro` — `is:inline` → `<script>` bundleado.
+- `src/pages/admin/devtools.astro` — `is:inline` → bundleado; `onmouseover`/`onmouseout` en 5 botones → CSS `:hover`.
+- `src/pages/admin/etiquetas.astro` — `is:inline` → bundleado; `onclick` en tabs → listeners; hovers → CSS.
+- `src/pages/admin/auditoria.astro` — `onclick` estáticos → IDs + listeners; botón dinámico en `displayLogs()` → `data-*` + event delegation en `.table-wrap`.
+- `src/pages/admin/harvest.astro` — botones de modal de éxito → IDs + listeners.
+- `src/pages/admin/inventory-storage.astro` — mismo patrón.
+- `src/pages/admin/roasted-storage.astro` — botones de modal → IDs + listeners.
+- `src/pages/admin/roasted-storage-detail.astro` — 3 botones de navegación → IDs + listeners.
+- `src/pages/admin/productos.astro` — 4 botones de modales → IDs + listeners; hovers → CSS.
+- `src/pages/admin/usuarios.astro` — botones dinámicos en filas de tabla → `data-action` + event delegation en `#usersTableBody`; hovers → CSS.
+- `src/pages/admin/venta.astro` — 5 delegaciones: detalle de venta, paginación, eliminar ítem de fila dinámica, `onchange`/`oninput` de inputs en filas → delegation en `#itemsContainer`.
+- `src/pages/admin/finanzas.astro` — 4 delegaciones: eliminar líneas de factura (HTML estático + templates JS), `marcarFacturaPagada`, `aprobarGasto`.
+
+### CSP actualizada (3 ubicaciones)
+- `vercel.json` — `script-src 'self' 'unsafe-inline' ...` → `script-src 'self' ...`
+- `server/index.js` — misma remoción en `helmet()`.
+- `api/index.js` — misma remoción en `helmet()` (paridad mantenida).
+- `style-src` conserva `'unsafe-inline'` intencionalmente (estilos inline ubicuos, relación riesgo/beneficio desfavorable para remover).
+
+### Verificación
+- `grep -rn " on[a-z]*=\"" src --include="*.astro"` → sin coincidencias (0 handlers inline).
+- Tests: 26/29 pasando (3 fallos preexistentes en `audit.test.js` con placeholders Postgres `$1`/`$2`, sin relación con este cambio).
+
+### Pendiente
+Validar en preview de Vercel los 4 flujos que dependen de scripts externos: pago Wompi, login Google, escáner QR de trazabilidad y mapa de calor de ventas.
+
+---
+
 ## 📅 2026-06-15 — Fix de estilos en `/admin/sistema` y sistema de diseño compartido (Agente: Claude)
 
 ### Contexto
