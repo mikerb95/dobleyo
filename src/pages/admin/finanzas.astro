@@ -900,7 +900,7 @@ async function loadPurchaseInvoices() {
         <td class="adm-table__amount">${fmtCOP(inv.amount_due)}</td>
         <td>${badge(inv.state)}</td>
         <td>${inv.state !== 'pagada' && inv.state !== 'cancelada'
-          ? `<button class="adm-btn adm-btn--sm adm-btn--primary" onclick="markInvoicePaid(${inv.id})">Marcar pagada</button>`
+          ? `<button class="adm-btn adm-btn--sm adm-btn--primary" data-action="mark-paid" data-inv-id="${inv.id}">Marcar pagada</button>`
           : ''}</td>
       </tr>`).join('')}</tbody>
     </table></div>`;
