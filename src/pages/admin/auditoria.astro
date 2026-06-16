@@ -115,8 +115,8 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       </select>
       <input type="text" id="entityIdFilter" placeholder="Filtrar por ID de entidad..." />
       <input type="text" id="userFilter" placeholder="Filtrar por usuario (email)..." />
-      <button class="btn-filter" onclick="applyFilters()">Filtrar</button>
-      <button class="btn-reset" onclick="resetFilters()">Limpiar</button>
+      <button id="btnApplyFilters" class="btn-filter">Filtrar</button>
+      <button id="btnResetFilters" class="btn-reset">Limpiar</button>
     </div>
 
     <div id="loading">Cargando logs de auditoría...</div>
