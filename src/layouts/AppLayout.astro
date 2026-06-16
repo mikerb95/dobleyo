@@ -53,12 +53,13 @@ import Head from "../components/Head.astro";
                 <h1 style="color:#d32f2f;margin-bottom:1rem;">Error del Servidor</h1>
                 <p style="color:#666;margin-bottom:2rem;">No se pudo conectar con el servidor. Intenta de nuevo.</p>
                 <p style="color:#999;font-size:0.9rem;margin-bottom:1rem;">Error: ${response.status}</p>
-                <button onclick="location.reload()" style="padding:0.75rem 2rem;background:#4a6741;color:white;border:none;border-radius:8px;cursor:pointer;font-size:1rem;">
+                <button id="retryBtn" style="padding:0.75rem 2rem;background:#4a6741;color:white;border:none;border-radius:8px;cursor:pointer;font-size:1rem;">
                   Reintentar
                 </button>
                 <a href="/" style="margin-top:1rem;color:#4a6741;">Volver al inicio</a>
               </div>
             `;
+            document.getElementById("retryBtn").addEventListener("click", () => location.reload());
             document.body.style.visibility = "visible";
             return;
           }
