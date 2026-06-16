@@ -1148,5 +1148,10 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
     // Cargar productos al inicio
     loadProducts();
+
+    document.getElementById("openCreateProductBtn")?.addEventListener("click", openCreateModal);
+    document.getElementById("closeProductModalBtn")?.addEventListener("click", () => { document.getElementById("productModal").style.display = "none"; });
+    document.getElementById("confirmDeleteBtn")?.addEventListener("click", confirmDelete);
+    document.getElementById("closeDeleteModalBtn")?.addEventListener("click", () => { document.getElementById("deleteModal").style.display = "none"; });
   </script>
 </AdminLayout>
