@@ -9,6 +9,8 @@
   function saveCart(list){
     localStorage.setItem(STORAGE_KEY, JSON.stringify(list||[]));
     updateCartCount();
+    // notificar a otros componentes (drawer, etc.) que el carrito cambio
+    try { window.dispatchEvent(new CustomEvent('cart:changed')); } catch {}
   }
   function addToCart(item){
     // item: {id, name, price, image, qty}
@@ -17,6 +19,8 @@
     if (idx >= 0){ cart[idx].qty = (cart[idx].qty||1) + (item.qty||1); }
     else { cart.push({ id:item.id, name:item.name, price:item.price, image:item.image, qty:item.qty||1 }); }
     saveCart(cart);
+    // notificar que se agrego un item (para abrir el drawer como feedback)
+    try { window.dispatchEvent(new CustomEvent('cart:added', { detail: item })); } catch {}
   }
   function removeFromCart(id){
     const cart = getCart().filter(p => p.id !== id);
