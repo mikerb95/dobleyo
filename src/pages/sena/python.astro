@@ -290,10 +290,7 @@ const smokeOutput = `→ create   201  { "success": true, ... }
       <pre class="sena-code"><code># Requiere las credenciales de Turso en variables de entorno
 TURSO_DATABASE_URL=… TURSO_AUTH_TOKEN=… python3 api/ml/demand.py</code></pre>
       <p>Salida esperada (resumida):</p>
-      <pre class="sena-code"><code>→ create   201  { "success": true, ... }
-→ read     200  count= 1
-→ update   200  { "success": true, ... }
-→ delete   200  { "success": true, "data": { "deleted": true } }</code></pre>
+      <pre class="sena-code"><code>{smokeOutput}</code></pre>
       <p>
         También se puede verificar que el código no tenga errores de sintaxis con:
       </p>
