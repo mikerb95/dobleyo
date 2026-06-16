@@ -1,6 +1,6 @@
 import { query } from './server/db.js';
-for (const t of ['external_sales','external_sale_items','accounting_journals','payment_methods','cost_centers','bank_accounts','tax_rates','product_suppliers','sales_invoice_lines','payment_allocations','purchase_invoices','expenses','work_centers','roasting_equipment','bill_of_materials','bom_components','roast_profiles','production_orders','inventory_movements','crm_accounts']) {
-  const r = await query(`PRAGMA table_info("${t}")`);
-  console.log(`${t}: ` + r.rows.map(c=>c.name).join(', '));
+for (const t of ['crm_accounts','crm_interactions','crm_contacts']) {
+  const r = await query(`SELECT sql FROM sqlite_master WHERE name=?`, [t]);
+  console.log(`\n=== ${t} ===\n` + (r.rows[0]?.sql||'').replace(/\s+/g,' '));
 }
 process.exit(0);
