@@ -346,7 +346,7 @@ const balancePositive = dashboard.month_balance >= 0;
             <input type="number" name="sl[0][discount_percent]" placeholder="0" min="0" max="100" step="0.1" value="0" class="adm-line-calc" />
             <input type="number" name="sl[0][tax_rate]" placeholder="19" min="0" max="100" step="0.1" value="19" class="adm-line-calc" />
             <span class="adm-line-total">$ 0</span>
-            <span class="adm-line-remove" onclick="removeSaleLine(this)">✕</span>
+            <span class="adm-line-remove" data-action="remove-sale-line">✕</span>
           </div>
         </div>
         <div class="adm-lines-footer">
@@ -453,7 +453,7 @@ const balancePositive = dashboard.month_balance >= 0;
             <input type="text" name="lines[0][lot_reference]" placeholder="Referencia lote" />
             <input type="number" name="lines[0][quantity]" placeholder="Kg" min="0.01" step="0.01" required />
             <input type="number" name="lines[0][unit_price]" placeholder="$/kg" min="0" step="1" required />
-            <span class="adm-line-remove" onclick="this.parentElement.remove()">✕</span>
+            <span class="adm-line-remove" data-action="remove-purchase-line">✕</span>
           </div>
         </div>
         <button type="button" class="adm-btn adm-btn--outline adm-btn--sm" id="addPurchaseLine">+ Agregar línea</button>
