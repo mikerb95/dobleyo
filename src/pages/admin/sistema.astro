@@ -681,7 +681,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   async function loadErrors(offset = 0) {
     errOffset = offset;
     const level = el('errLevelFilter').value;
-    const params = new URLSearchParams({ limit: ERR_LIMIT, offset });
+    const params = new URLSearchParams({ limit: String(ERR_LIMIT), offset: String(offset) });
     if (level) params.set('level', level);
 
     try {
