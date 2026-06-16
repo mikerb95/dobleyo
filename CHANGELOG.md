@@ -10,8 +10,11 @@ Entregable del taller «Negociación y modelos de ingreso» (SENA): tabla con 3 
 ### Archivos modificados
 - `src/pages/sena/taller-negociacion.astro` — **nueva**. Página pública con tabla de 3 streams de ingreso (Suscripción SaaS de trazabilidad/producción, Comisión por venta en tienda online, Licencia white-label por fases + soporte mensual): modelo, descripción, precio estimado en COP y defensa del valor. Usa `Layout.astro` + `<Head>` con SEO/canonical. Estilos con variables CSS, mobile-first (tabla con scroll en ≥768px, tarjetas en móvil). Copy en español Colombia.
 
+### Corrección de build (causa de 404 en Vercel)
+- `src/pages/admin/etiquetas.astro` — se eliminó un bloque de ~73 líneas duplicado en el `<script>` (listeners de sliders/cantidad de Tab 2, listener de `quantityLots` de Tab 1 y una segunda declaración de `function updateCeroSummary`). La declaración duplicada rompía el bundle de Rollup (`Identifier "updateCeroSummary" has already been declared`) y hacía fallar el `astro build` completo, impidiendo que Vercel desplegara nuevas páginas (incluida `/sena/taller-negociacion`). Sin cambios de comportamiento.
+
 ### Notas
-- Build de la fase de páginas verificado ✓. El build del cliente sigue fallando por el error preexistente y ajeno a este cambio en `src/pages/admin/etiquetas.astro` (`updateCeroSummary` declarada dos veces).
+- `astro build` completo verificado ✓ tras la corrección.
 
 ---
 
