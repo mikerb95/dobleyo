@@ -591,10 +591,10 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       }).join('');
 
       // Eventos de cambiar rol
-      tbody.querySelectorAll('.btn-change-role').forEach(btn => {
+      tbody.querySelectorAll('.btn-change-role').forEach((btn: HTMLElement) => {
         btn.addEventListener('click', () => {
           const uid = btn.dataset.uid;
-          const sel = tbody.querySelector(`.role-select[data-uid="${uid}"]`);
+          const sel = tbody.querySelector(`.role-select[data-uid="${uid}"]`) as HTMLSelectElement;
           if (sel.classList.contains('hidden')) {
             sel.classList.remove('hidden');
             btn.textContent = 'Guardar';
@@ -606,7 +606,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       });
 
       // Eventos de reset password
-      tbody.querySelectorAll('.btn-reset-pwd').forEach(btn => {
+      tbody.querySelectorAll('.btn-reset-pwd').forEach((btn: HTMLElement) => {
         btn.addEventListener('click', () => resetPassword(btn.dataset.uid));
       });
     } catch (err) {
