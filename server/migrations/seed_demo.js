@@ -812,6 +812,14 @@ export async function seedDemo() {
   await seedCaficultores(U);
   await seedLots();
   await seedProductExtras(U);
+  await seedSalesTracking();
+  await seedCustomerOrders(U);
+  await seedExternalSales(U);
+  await seedDemandRecords();
+  await seedCRM(U);
+  await seedProduction(U);
+  await seedInventoryMovements(U);
+  await seedFinance(U);
 
   return { users: U };
 }
