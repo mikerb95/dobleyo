@@ -1061,6 +1061,28 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     }
   });
 
+  // ── Event delegation para tabla, paginación e items dinámicos ──────────────
+  document.getElementById("salesBody")?.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-action='open-detail']");
+    if (btn) openDetail(parseInt(btn.dataset.saleId));
+  });
+
+  document.getElementById("pagination")?.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-action='page']");
+    if (btn && !btn.disabled) loadSales(parseInt(btn.dataset.page));
+  });
+
+  document.getElementById("itemsContainer")?.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-action='remove-item']");
+    if (btn) removeItemRow(btn);
+  });
+  document.getElementById("itemsContainer")?.addEventListener("change", (e) => {
+    if (e.target.matches(".item-product,.item-qty,.item-price")) recalcTotals();
+  });
+  document.getElementById("itemsContainer")?.addEventListener("input", (e) => {
+    if (e.target.matches(".item-qty,.item-price")) recalcTotals();
+  });
+
   // ── Init ───────────────────────────────────────────────────
   (async () => {
     await loadProducts();
