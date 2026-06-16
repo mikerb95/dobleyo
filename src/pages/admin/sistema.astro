@@ -849,7 +849,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   // Doble confirmación para purga
   let purgeConfirmTimer = null;
   el('btnPurge').addEventListener('click', async (e) => {
-    const btn = e.currentTarget;
+    const btn = e.currentTarget as HTMLButtonElement;
     if (btn.dataset.confirm === 'true') {
       clearTimeout(purgeConfirmTimer);
       btn.dataset.confirm = '';
