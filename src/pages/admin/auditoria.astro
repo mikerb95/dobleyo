@@ -262,7 +262,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
           <td style="font-size:0.82rem; color:var(--text-2)">${log.entity_type}</td>
           <td style="font-size:0.82rem; color:var(--text-2)">${log.entity_id}</td>
           <td>
-            <button class="btn-action" onclick="showDetails('${btoa(JSON.stringify(log.details))}', '${log.action}', '${log.entity_type}', '${log.entity_id}')">Ver</button>
+            <button class="btn-action" data-show-details data-details="${btoa(JSON.stringify(log.details))}" data-log-action="${log.action}" data-entity-type="${log.entity_type}" data-entity-id="${log.entity_id}">Ver</button>
           </td>
         `;
 
