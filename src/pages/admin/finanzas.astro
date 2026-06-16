@@ -1193,7 +1193,7 @@ document.getElementById('addSaleLine').addEventListener('click', () => {
     <input type="number" name="sl[${n}][discount_percent]" placeholder="0" min="0" max="100" step="0.1" value="0" class="adm-line-calc" />
     <input type="number" name="sl[${n}][tax_rate]" placeholder="19" min="0" max="100" step="0.1" value="19" class="adm-line-calc" />
     <span class="adm-line-total">$ 0</span>
-    <span class="adm-line-remove" onclick="removeSaleLine(this)">✕</span>
+    <span class="adm-line-remove" data-action="remove-sale-line">✕</span>
   `;
   document.getElementById('salesLines').appendChild(row);
 });
