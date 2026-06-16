@@ -437,5 +437,15 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         submitBtn.textContent = originalText;
       }
     });
+
+    document.getElementById("closeHarvestSuccessBtn")?.addEventListener("click", () => {
+      document.getElementById("successModal").style.display = "none";
+      document.getElementById("harvestForm").reset();
+      document.getElementById("farmInfo").style.display = "none";
+      document.getElementById("lotInfo").style.display = "none";
+    });
+    document.getElementById("goToLotesFromHarvestBtn")?.addEventListener("click", () => {
+      window.location.href = "/admin/lotes";
+    });
   </script>
 </AdminLayout>

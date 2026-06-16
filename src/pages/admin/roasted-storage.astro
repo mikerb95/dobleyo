@@ -211,8 +211,8 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       <div class="modal-actions">
         <button
           type="button"
+          id="storeAnotherBtn"
           class="btn-secondary"
-          onclick="closeSuccessModal(); document.getElementById('roastedStorageForm').reset(); document.getElementById('roastedInfoCard').style.display = 'none'; document.getElementById('summaryBox').style.display = 'none';"
         >
           Almacenar Otro
         </button>
@@ -220,7 +220,6 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
           type="button"
           class="btn-primary"
           id="viewDetailBtn"
-          onclick="viewStorageDetail()"
         >
           Ver Detalle →
         </button>
@@ -454,5 +453,13 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     function viewStorageDetail(storageId) {
       window.location.href = `/admin/roasted-storage-detail?id=${storageId}`;
     }
+
+    document.getElementById("storeAnotherBtn")?.addEventListener("click", () => {
+      closeSuccessModal();
+      document.getElementById("roastedStorageForm").reset();
+      document.getElementById("roastedInfoCard").style.display = "none";
+      document.getElementById("summaryBox").style.display = "none";
+    });
+    document.getElementById("viewDetailBtn")?.addEventListener("click", viewStorageDetail);
   </script>
 </AdminLayout>
