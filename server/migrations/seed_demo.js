@@ -827,6 +827,6 @@ export async function seedDemo() {
 // Ejecutado directamente
 if (import.meta.url === `file://${process.argv[1]}`) {
   seedDemo()
-    .then(() => { console.log('\n✅ Parte 1 del seed de demo completada.'); process.exit(0); })
+    .then(() => { console.log('\n✅ Seed de demo completado. Login demo: cualquier usuario @demo.dobleyo.cafe / Demo1234*'); process.exit(0); })
     .catch((err) => { console.error('\n❌ Error en seed de demo:', err); process.exit(1); });
 }
