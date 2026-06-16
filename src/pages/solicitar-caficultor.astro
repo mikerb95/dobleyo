@@ -109,7 +109,8 @@ import Layout from "../layouts/Layout.astro";
 
       checkAuth();
 
-      f.addEventListener("submit", async function () {
+      f.addEventListener("submit", async function (e) {
+        e.preventDefault();
         const farmName = (
           document.getElementById("farmName").value || ""
         ).trim();
