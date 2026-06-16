@@ -452,7 +452,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       document.querySelectorAll('.sys-tab').forEach(b => b.classList.remove('active'));
       document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
       btn.classList.add('active');
-      const panel = document.getElementById(`tab-${tab}`);
+      const panel = el(`tab-${tab}`);
       panel.classList.remove('hidden');
       if (!panel.dataset.loaded) activateTab(tab, panel);
     });
@@ -475,33 +475,33 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       const res = await fetch('/api/system/stats', { credentials: 'include' });
       const { data } = await res.json();
 
-      document.getElementById('kpiUsers').textContent     = data.users.total;
-      document.getElementById('kpiAdmins').textContent    = data.users.admins;
-      document.getElementById('kpiProducts').textContent  = data.products;
-      document.getElementById('kpiOrders').textContent    = data.orders;
-      document.getElementById('statAuditLogs').textContent = data.auditLogs.toLocaleString('es-CO');
-      document.getElementById('statErrorLogs').textContent = data.errorLogs.toLocaleString('es-CO');
-      document.getElementById('statUpdated').textContent   = new Date().toLocaleTimeString('es-CO');
+      el('kpiUsers').textContent     = data.users.total;
+      el('kpiAdmins').textContent    = data.users.admins;
+      el('kpiProducts').textContent  = data.products;
+      el('kpiOrders').textContent    = data.orders;
+      el('statAuditLogs').textContent = data.auditLogs.toLocaleString('es-CO');
+      el('statErrorLogs').textContent = data.errorLogs.toLocaleString('es-CO');
+      el('statUpdated').textContent   = new Date().toLocaleTimeString('es-CO');
 
-      const badge = document.getElementById('dbStatusBadge');
+      const badge = el('dbStatusBadge');
       if (data.db.ok) {
         badge.textContent = 'DB OK';
         badge.className = 'badge badge-success';
-        document.getElementById('dbLatency').textContent = `${data.db.latencyMs}ms`;
+        el('dbLatency').textContent = `${data.db.latencyMs}ms`;
       } else {
         badge.textContent = 'DB ERROR';
         badge.className = 'badge badge-error';
-        document.getElementById('dbLatency').textContent = data.db.error || 'Error';
+        el('dbLatency').textContent = data.db.error || 'Error';
       }
 
       const h = Math.floor(data.uptime / 3600);
       const m = Math.floor((data.uptime % 3600) / 60);
-      document.getElementById('sysUptime').textContent = `Proceso activo hace ${h}h ${m}m`;
+      el('sysUptime').textContent = `Proceso activo hace ${h}h ${m}m`;
 
-      const rolesEl = document.getElementById('rolesOverview');
+      const rolesEl = el('rolesOverview');
       rolesEl.innerHTML = renderRolesBars(data.users.byRole, data.users.total);
 
-      document.getElementById('tab-resumen').dataset.loaded = 'true';
+      el('tab-resumen').dataset.loaded = 'true';
     } catch (err) {
       console.error('loadStats error', err);
     }
@@ -526,17 +526,17 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       const res = await fetch('/api/system/users/stats', { credentials: 'include' });
       const { data } = await res.json();
 
-      document.getElementById('mActiveUsers').textContent = data.activeUsersLast30Days;
-      document.getElementById('mPending').textContent     = data.pendingCaficultorApps;
+      el('mActiveUsers').textContent = data.activeUsersLast30Days;
+      el('mPending').textContent     = data.pendingCaficultorApps;
 
       const vPct = data.verification.total > 0
         ? Math.round((data.verification.verified / data.verification.total) * 100) : 0;
-      document.getElementById('mVerified').textContent = `${data.verification.verified} / ${data.verification.total} (${vPct}%)`;
+      el('mVerified').textContent = `${data.verification.verified} / ${data.verification.total} (${vPct}%)`;
 
       // Bar chart de registros
       const months = data.registrationsByMonth;
       const max = Math.max(...months.map(m => Number(m.count)), 1);
-      document.getElementById('regChart').innerHTML = months.length === 0
+      el('regChart').innerHTML = months.length === 0
         ? '<div class="loading-row">Sin datos</div>'
         : `<div class="bar-chart">${months.map(m => {
             const h = Math.max(Math.round((Number(m.count) / max) * 100), 4);
@@ -550,7 +550,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
       // Roles chart
       const total = data.roleDistribution.reduce((s, r) => s + Number(r.count), 0);
-      document.getElementById('rolesChart').innerHTML = renderRolesBars(data.roleDistribution, total);
+      el('rolesChart').innerHTML = renderRolesBars(data.roleDistribution, total);
     } catch (err) {
       console.error('loadUserStats error', err);
     }
@@ -560,7 +560,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     try {
       const res  = await fetch('/api/system/admins', { credentials: 'include' });
       const { data } = await res.json();
-      const tbody = document.getElementById('adminsTableBody');
+      const tbody = el('adminsTableBody');
       if (!data.length) { tbody.innerHTML = '<tr><td colspan="5" class="loading-row">Sin usuarios</td></tr>'; return; }
 
       tbody.innerHTML = data.map(u => {
@@ -641,16 +641,16 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   }
 
   // Formulario nuevo admin
-  document.getElementById('btnShowNewAdmin').addEventListener('click', () => {
-    document.getElementById('newAdminForm').classList.remove('hidden');
+  el('btnShowNewAdmin').addEventListener('click', () => {
+    el('newAdminForm').classList.remove('hidden');
   });
-  document.getElementById('btnCancelNewAdmin').addEventListener('click', () => {
-    document.getElementById('newAdminForm').classList.add('hidden');
+  el('btnCancelNewAdmin').addEventListener('click', () => {
+    el('newAdminForm').classList.add('hidden');
   });
-  document.getElementById('btnCreateAdmin').addEventListener('click', async () => {
-    const email     = document.getElementById('naEmail').value.trim();
-    const firstName = document.getElementById('naFirstName').value.trim();
-    const lastName  = document.getElementById('naLastName').value.trim();
+  el('btnCreateAdmin').addEventListener('click', async () => {
+    const email     = el('naEmail').value.trim();
+    const firstName = el('naFirstName').value.trim();
+    const lastName  = el('naLastName').value.trim();
     if (!email) { alert('Email requerido'); return; }
 
     const res = await fetch('/api/system/admins', {
@@ -659,14 +659,14 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       body: JSON.stringify({ email, first_name: firstName, last_name: lastName }),
     });
     const json = await res.json();
-    const resultEl = document.getElementById('newAdminResult');
+    const resultEl = el('newAdminResult');
     resultEl.classList.remove('hidden');
 
     if (json.success) {
       resultEl.innerHTML = `<div style="color:green">Admin creado. Contraseña temporal: <strong>${json.data.tempPassword}</strong> — guárdala.</div>`;
-      document.getElementById('naEmail').value = '';
-      document.getElementById('naFirstName').value = '';
-      document.getElementById('naLastName').value = '';
+      el('naEmail').value = '';
+      el('naFirstName').value = '';
+      el('naLastName').value = '';
       await loadAdmins();
     } else {
       resultEl.innerHTML = `<div style="color:var(--c-error)">${json.error}</div>`;
@@ -676,7 +676,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   // ── Error logs ────────────────────────────────────────────────────────────
   async function loadErrors(offset = 0) {
     errOffset = offset;
-    const level = document.getElementById('errLevelFilter').value;
+    const level = el('errLevelFilter').value;
     const params = new URLSearchParams({ limit: ERR_LIMIT, offset });
     if (level) params.set('level', level);
 
@@ -685,7 +685,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       const json = await res.json();
       errTotal   = json.total;
 
-      const tbody = document.getElementById('errorsTableBody');
+      const tbody = el('errorsTableBody');
       if (!json.data.length) {
         tbody.innerHTML = '<tr><td colspan="5" class="loading-row">Sin error logs</td></tr>';
       } else {
@@ -703,23 +703,23 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         }).join('');
       }
 
-      const info = document.getElementById('errPaginationInfo');
+      const info = el('errPaginationInfo');
       const showing = Math.min(errOffset + ERR_LIMIT, errTotal);
       info.textContent = errTotal === 0 ? 'Sin registros' : `${errOffset + 1}–${showing} de ${errTotal}`;
 
-      document.getElementById('btnErrPrev').disabled = errOffset === 0;
-      document.getElementById('btnErrNext').disabled = errOffset + ERR_LIMIT >= errTotal;
+      el('btnErrPrev').disabled = errOffset === 0;
+      el('btnErrNext').disabled = errOffset + ERR_LIMIT >= errTotal;
     } catch (err) {
       console.error('loadErrors error', err);
     }
   }
 
-  document.getElementById('errLevelFilter').addEventListener('change', () => loadErrors(0));
-  document.getElementById('btnRefreshErrors').addEventListener('click', () => loadErrors(errOffset));
-  document.getElementById('btnErrPrev').addEventListener('click', () => loadErrors(Math.max(0, errOffset - ERR_LIMIT)));
-  document.getElementById('btnErrNext').addEventListener('click', () => loadErrors(errOffset + ERR_LIMIT));
+  el('errLevelFilter').addEventListener('change', () => loadErrors(0));
+  el('btnRefreshErrors').addEventListener('click', () => loadErrors(errOffset));
+  el('btnErrPrev').addEventListener('click', () => loadErrors(Math.max(0, errOffset - ERR_LIMIT)));
+  el('btnErrNext').addEventListener('click', () => loadErrors(errOffset + ERR_LIMIT));
 
-  document.getElementById('btnClearErrors').addEventListener('click', async () => {
+  el('btnClearErrors').addEventListener('click', async () => {
     if (!confirm(`¿Eliminar TODOS los error logs? Esta acción no se puede deshacer.`)) return;
     await fetch('/api/system/errors', { method: 'DELETE', credentials: 'include' });
     await loadErrors(0);
@@ -730,7 +730,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     try {
       const res  = await fetch('/api/system/changelog', { credentials: 'include' });
       const { data } = await res.json();
-      const el   = document.getElementById('changelogTimeline');
+      const el   = el('changelogTimeline');
 
       if (!data.length) { el.innerHTML = '<div class="loading-row">Sin entradas de changelog.</div>'; return; }
 
@@ -760,17 +760,17 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     }
   }
 
-  document.getElementById('btnSaveChangelog').addEventListener('click', async () => {
-    const version = document.getElementById('clVersion').value.trim();
-    const title   = document.getElementById('clTitle').value.trim();
+  el('btnSaveChangelog').addEventListener('click', async () => {
+    const version = el('clVersion').value.trim();
+    const title   = el('clTitle').value.trim();
     if (!version || !title) { alert('Versión y título son requeridos'); return; }
 
     const body = {
       version,
       title,
-      description:  document.getElementById('clDesc').value.trim() || null,
-      change_type:  document.getElementById('clType').value,
-      published_at: document.getElementById('clPublished').value || null,
+      description:  el('clDesc').value.trim() || null,
+      change_type:  el('clType').value,
+      published_at: el('clPublished').value || null,
     };
 
     const res  = await fetch('/api/system/changelog', {
@@ -779,16 +779,16 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       body: JSON.stringify(body),
     });
     const json = await res.json();
-    const resultEl = document.getElementById('clSaveResult');
+    const resultEl = el('clSaveResult');
 
     if (json.success) {
       resultEl.style.color = 'green';
       resultEl.textContent = 'Entrada guardada.';
-      document.getElementById('clVersion').value   = '';
-      document.getElementById('clTitle').value     = '';
-      document.getElementById('clDesc').value      = '';
-      document.getElementById('clPublished').value = '';
-      const panel = document.getElementById('tab-changelog');
+      el('clVersion').value   = '';
+      el('clTitle').value     = '';
+      el('clDesc').value      = '';
+      el('clPublished').value = '';
+      const panel = el('tab-changelog');
       panel.dataset.loaded = '';
       await loadChangelog();
     } else {
@@ -799,8 +799,8 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   });
 
   // ── Danger Zone ───────────────────────────────────────────────────────────
-  document.getElementById('btnBackup').addEventListener('click', async () => {
-    const btn = document.getElementById('btnBackup');
+  el('btnBackup').addEventListener('click', async () => {
+    const btn = el('btnBackup');
     btn.disabled = true;
     btn.textContent = 'Generando...';
     try {
@@ -820,11 +820,11 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     }
   });
 
-  document.getElementById('btnMigrate').addEventListener('click', async () => {
-    const btn = document.getElementById('btnMigrate');
+  el('btnMigrate').addEventListener('click', async () => {
+    const btn = el('btnMigrate');
     btn.disabled = true;
     btn.textContent = 'Ejecutando...';
-    const output = document.getElementById('migrateOutput');
+    const output = el('migrateOutput');
     output.classList.remove('hidden');
     output.textContent = 'Corriendo migraciones...';
 
@@ -844,17 +844,17 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
   // Doble confirmación para purga
   let purgeConfirmTimer = null;
-  document.getElementById('btnPurge').addEventListener('click', async (e) => {
+  el('btnPurge').addEventListener('click', async (e) => {
     const btn = e.currentTarget;
     if (btn.dataset.confirm === 'true') {
       clearTimeout(purgeConfirmTimer);
       btn.dataset.confirm = '';
       btn.textContent = 'Purgar Logs';
-      const days = parseInt(document.getElementById('purgeDays').value) || 90;
+      const days = parseInt(el('purgeDays').value) || 90;
       btn.disabled = true;
       const res  = await fetch(`/api/system/logs/old?days=${days}`, { method: 'DELETE', credentials: 'include' });
       const json = await res.json();
-      const result = document.getElementById('purgeResult');
+      const result = el('purgeResult');
       if (json.success) {
         result.style.color = 'green';
         result.textContent = `${json.data.deleted} registros eliminados (más viejos de ${days} días).`;
