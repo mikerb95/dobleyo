@@ -2,6 +2,29 @@
 
 ---
 
+## 📅 2026-06-15 — Fix de estilos en `/admin/sistema` y sistema de diseño compartido (Agente: Claude)
+
+### Contexto
+La página `/admin/sistema` mostraba un "revuelto" de estilos: el encabezado pegado al borde, las tarjetas KPI sin formato y el contenido sin contenedor. La causa raíz: el marcado usaba clases de un sistema de diseño compartido (`page-header`, `page-header-top`, `page-breadcrumb`, `page-title`, `page-header-actions`, `erp-body`, `kpi-grid`, `kpi-tile`, `kpi-label`, `kpi-value`, `kpi-sub`, `table-wrapper`) que **nunca se definieron como reglas CSS** en ninguna parte del repo. El mismo defecto afectaba a `mercadolibre`, `inventario-valor` y `perfil`, que comparten esa estructura.
+
+### Sistema de diseño en `AdminLayout.astro`
+- Se agregaron al `<style is:global>` las primitivas compartidas faltantes, construidas **solo con los tokens existentes** (`--paper`, `--rule`, `--color-primary`, `--c-success`, etc.): encabezado de página (breadcrumb, título, subtítulo, acciones), contenedor `.erp-body` (padding + max-width + breakpoint móvil), tarjetas `.kpi-tile` con barra de acento por variante (brand/success/info/warning/error) y `.table-wrapper` con scroll horizontal en móvil.
+- Se agregó `.badge-brand` (faltaba; el badge del rol *admin* salía sin estilo).
+- Las páginas con su propio `.page-header` scoped (lotes, pedidos, auditoría…) lo siguen sobreescribiendo por mayor especificidad → sin regresiones. El fix corrige `sistema` y sus tres páginas hermanas a la vez.
+
+### Limpieza en `sistema.astro`
+- Subtítulo descriptivo en el encabezado; banner de "Zona de peligro" tokenizado (`.danger-banner` con ícono) en vez del `--c-error-soft` inexistente.
+- Corregidos tokens rotos: `--surface`/`--surface-2` → `--paper`/`--hover`; `.form-input` con fondo correcto y anillo de foco con `--color-accent`.
+- Se eliminó el override local dorado de `.btn-primary` para que el botón primario sea consistente (marrón oscuro) con el resto del admin.
+- La hilera de pestañas pasa a ser el único separador inferior del header (se eliminó la doble línea).
+- Tipado del `<script>` del cliente (`HTMLInputElement`/`HTMLButtonElement`, etc.) para dejar `astro check` sin errores en la página.
+- Corrección es-CO: "Procede" → "Proceda" (trato de usted en mensajes del sistema).
+
+### Verificación
+- `astro dev` sirve `/admin/sistema` con **200**, sin overlay de error de Vite, y las reglas CSS compartidas (`.kpi-tile`, `.page-header`, `.badge-brand`, `.danger-banner`) llegan al HTML servido.
+
+---
+
 ## 📅 2026-06-15 — Seed de DEMO completo del sitio (Agente: Claude)
 
 ### Contexto
