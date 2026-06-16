@@ -1,0 +1,488 @@
+---
+// Drawer lateral del carrito.
+// Se abre automaticamente al agregar un producto (evento 'cart:added')
+// como feedback visual, y se mantiene sincronizado con 'cart:changed'.
+---
+
+<div id="cartDrawer" class="cart-drawer" aria-hidden="true">
+  <div class="cart-drawer__overlay" id="cartDrawerOverlay"></div>
+  <aside
+    class="cart-drawer__panel"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="cartDrawerTitle"
+    tabindex="-1"
+  >
+    <header class="cart-drawer__head">
+      <h2 id="cartDrawerTitle" class="cart-drawer__title">Tu carrito</h2>
+      <button
+        type="button"
+        class="cart-drawer__close"
+        id="cartDrawerClose"
+        aria-label="Cerrar carrito"
+      >
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+          <path d="M5 5l10 10M15 5L5 15" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </header>
+
+    <!-- Aviso de producto agregado -->
+    <div class="cart-drawer__added" id="cartDrawerAdded" hidden>
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <path d="M3 8.5l3 3 7-7" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span>Producto agregado al carrito</span>
+    </div>
+
+    <div class="cart-drawer__body" id="cartDrawerBody">
+      <!-- contenido inyectado por script -->
+    </div>
+
+    <footer class="cart-drawer__foot" id="cartDrawerFoot" hidden>
+      <div class="cart-drawer__progress" id="cartDrawerProgress" hidden>
+        <p class="cart-drawer__progress-text">
+          Le faltan <strong id="cartDrawerFspAmount"></strong> para envío gratis
+        </p>
+        <div class="cart-drawer__bar-bg"><div class="cart-drawer__bar-fill" id="cartDrawerFspFill"></div></div>
+      </div>
+      <div class="cart-drawer__free" id="cartDrawerFree" hidden>
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+          <path d="M2 7l3.5 3.5L12 3.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        ¡Envío gratis en este pedido!
+      </div>
+      <div class="cart-drawer__subtotal">
+        <span>Subtotal</span>
+        <span id="cartDrawerSubtotal" class="cart-drawer__subtotal-amount">$0</span>
+      </div>
+      <a href="/checkout" class="cart-drawer__checkout" id="cartDrawerCheckout">
+        Ir a pagar
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
+      <a href="/cart" class="cart-drawer__view" data-link>Ver carrito completo</a>
+    </footer>
+  </aside>
+</div>
+
+<script>
+  (function () {
+    const FREE_SHIP_THRESHOLD = 120000;
+
+    function ready(fn) {
+      if (document.readyState !== 'loading') fn();
+      else document.addEventListener('DOMContentLoaded', fn);
+    }
+    function whenCart(fn) { if (window.Cart) fn(); else setTimeout(() => whenCart(fn), 30); }
+
+    ready(() => whenCart(function () {
+      const drawer   = document.getElementById('cartDrawer');
+      const overlay  = document.getElementById('cartDrawerOverlay');
+      const panel    = drawer.querySelector('.cart-drawer__panel');
+      const closeBtn = document.getElementById('cartDrawerClose');
+      const body     = document.getElementById('cartDrawerBody');
+      const foot     = document.getElementById('cartDrawerFoot');
+      const added    = document.getElementById('cartDrawerAdded');
+      const subtotalEl = document.getElementById('cartDrawerSubtotal');
+      const progress = document.getElementById('cartDrawerProgress');
+      const free     = document.getElementById('cartDrawerFree');
+      const fspAmount = document.getElementById('cartDrawerFspAmount');
+      const fspFill  = document.getElementById('cartDrawerFspFill');
+
+      let addedTimer = null;
+      let lastFocused = null;
+
+      const fmt = (n) => '$' + Number(n || 0).toLocaleString('es-CO');
+      const esc = (s) => (s || '').replace(/[&<>"]+/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+      function render() {
+        const cart = window.Cart.getCart();
+        const sub  = window.Cart.subtotal();
+
+        if (!cart.length) {
+          body.innerHTML = `
+            <div class="cart-drawer__empty">
+              <p class="cart-drawer__empty-title">Su carrito está vacío</p>
+              <p class="cart-drawer__empty-sub">Descubra nuestros cafés de origen único.</p>
+              <a href="/tienda" class="cart-drawer__shop" data-link>Ir a la tienda</a>
+            </div>`;
+          foot.hidden = true;
+          return;
+        }
+
+        body.innerHTML = cart.map((p) => `
+          <div class="cart-drawer__item" data-id="${esc(p.id)}">
+            <img class="cart-drawer__item-img" src="${esc(p.image) || '/assets/logo.png'}" alt="${esc(p.name)}" width="56" height="56" loading="lazy" />
+            <div class="cart-drawer__item-body">
+              <p class="cart-drawer__item-name">${esc(p.name)}</p>
+              <p class="cart-drawer__item-price">${fmt(p.price)}</p>
+              <div class="cart-drawer__item-bottom">
+                <div class="cart-drawer__qty" role="group" aria-label="Cantidad">
+                  <button type="button" class="cart-drawer__step" data-id="${esc(p.id)}" data-dir="down" aria-label="Reducir cantidad">−</button>
+                  <span class="cart-drawer__qty-val">${p.qty || 1}</span>
+                  <button type="button" class="cart-drawer__step" data-id="${esc(p.id)}" data-dir="up" aria-label="Aumentar cantidad">+</button>
+                </div>
+                <button type="button" class="cart-drawer__remove" data-id="${esc(p.id)}" aria-label="Eliminar ${esc(p.name)}">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                </button>
+              </div>
+            </div>
+            <span class="cart-drawer__item-total">${fmt((p.price || 0) * (p.qty || 1))}</span>
+          </div>`).join('');
+
+        foot.hidden = false;
+        subtotalEl.textContent = fmt(sub);
+
+        const pct = Math.min(100, Math.round((sub / FREE_SHIP_THRESHOLD) * 100));
+        if (sub >= FREE_SHIP_THRESHOLD) {
+          free.hidden = false;
+          progress.hidden = true;
+        } else {
+          free.hidden = true;
+          progress.hidden = false;
+          fspAmount.textContent = fmt(FREE_SHIP_THRESHOLD - sub);
+          fspFill.style.width = pct + '%';
+        }
+      }
+
+      function open() {
+        render();
+        drawer.classList.add('cart-drawer--open');
+        drawer.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('cart-drawer-lock');
+        lastFocused = document.activeElement;
+        panel.focus();
+      }
+
+      function close() {
+        drawer.classList.remove('cart-drawer--open');
+        drawer.setAttribute('aria-hidden', 'true');
+        document.body.classList.remove('cart-drawer-lock');
+        if (lastFocused && typeof lastFocused.focus === 'function') lastFocused.focus();
+      }
+
+      function flashAdded() {
+        added.hidden = false;
+        if (addedTimer) clearTimeout(addedTimer);
+        addedTimer = setTimeout(() => { added.hidden = true; }, 2600);
+      }
+
+      // Eventos del drawer
+      overlay.addEventListener('click', close);
+      closeBtn.addEventListener('click', close);
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && drawer.classList.contains('cart-drawer--open')) close();
+      });
+
+      body.addEventListener('click', (e) => {
+        const step = e.target.closest('.cart-drawer__step');
+        const rm   = e.target.closest('.cart-drawer__remove');
+        if (step) {
+          const id = step.dataset.id;
+          const item = window.Cart.getCart().find((p) => p.id === id);
+          if (!item) return;
+          const next = (item.qty || 1) + (step.dataset.dir === 'down' ? -1 : 1);
+          if (next < 1) window.Cart.removeFromCart(id);
+          else window.Cart.updateQty(id, next);
+        } else if (rm) {
+          window.Cart.removeFromCart(rm.dataset.id);
+        }
+      });
+
+      // Abrir como feedback al agregar
+      window.addEventListener('cart:added', () => { open(); flashAdded(); });
+      // Mantener sincronizado ante cualquier cambio
+      window.addEventListener('cart:changed', () => {
+        if (drawer.classList.contains('cart-drawer--open')) render();
+      });
+
+      // Permitir abrir el drawer desde el icono del header (opcional)
+      window.CartDrawer = { open, close };
+    }));
+  })();
+</script>
+
+<style is:global>
+  .cart-drawer {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    visibility: hidden;
+    pointer-events: none;
+  }
+  .cart-drawer--open { visibility: visible; pointer-events: auto; }
+
+  .cart-drawer__overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(37, 26, 20, 0.45);
+    opacity: 0;
+    transition: opacity .28s ease;
+  }
+  .cart-drawer--open .cart-drawer__overlay { opacity: 1; }
+
+  .cart-drawer__panel {
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 100%;
+    width: min(420px, 100vw);
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    box-shadow: -8px 0 32px rgba(37, 26, 20, .18);
+    transform: translateX(100%);
+    transition: transform .3s cubic-bezier(.4, 0, .2, 1);
+    outline: none;
+  }
+  .cart-drawer--open .cart-drawer__panel { transform: translateX(0); }
+
+  .cart-drawer__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .cart-drawer__title {
+    font-family: 'Lora', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--coffee);
+    margin: 0;
+  }
+  .cart-drawer__close {
+    background: none;
+    border: none;
+    padding: .375rem;
+    cursor: pointer;
+    color: var(--muted-fg);
+    border-radius: .5rem;
+    display: inline-flex;
+    transition: color .15s, background .15s;
+  }
+  .cart-drawer__close:hover { color: var(--coffee); background: #f5f0eb; }
+
+  .cart-drawer__added {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    margin: .875rem 1.5rem 0;
+    padding: .6rem .875rem;
+    background: #edfbf2;
+    color: #15803d;
+    border: 1px solid #bbf7d0;
+    border-radius: .625rem;
+    font-size: .82rem;
+    font-weight: 600;
+  }
+
+  .cart-drawer__body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: .25rem;
+  }
+
+  .cart-drawer__item {
+    display: grid;
+    grid-template-columns: 56px 1fr auto;
+    gap: .875rem;
+    padding: .875rem 0;
+    border-bottom: 1px solid var(--border);
+    align-items: start;
+  }
+  .cart-drawer__item:last-child { border-bottom: none; }
+  .cart-drawer__item-img {
+    width: 56px;
+    height: 56px;
+    border-radius: .5rem;
+    object-fit: cover;
+    background: #f5f0eb;
+  }
+  .cart-drawer__item-body { min-width: 0; }
+  .cart-drawer__item-name {
+    font-size: .9rem;
+    font-weight: 600;
+    color: var(--coffee);
+    margin: 0;
+    line-height: 1.3;
+  }
+  .cart-drawer__item-price {
+    font-size: .78rem;
+    color: var(--muted-fg);
+    margin: .15rem 0 .5rem;
+  }
+  .cart-drawer__item-bottom {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+  }
+  .cart-drawer__qty {
+    display: inline-flex;
+    align-items: center;
+    border: 1.5px solid var(--border);
+    border-radius: .5rem;
+    overflow: hidden;
+    height: 30px;
+  }
+  .cart-drawer__step {
+    width: 28px;
+    height: 28px;
+    background: #faf8f6;
+    border: none;
+    font-size: 1rem;
+    line-height: 1;
+    cursor: pointer;
+    color: var(--coffee);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background .15s;
+  }
+  .cart-drawer__step:hover { background: #f0ebe4; }
+  .cart-drawer__qty-val {
+    min-width: 30px;
+    text-align: center;
+    font-size: .85rem;
+    font-weight: 600;
+    color: var(--coffee);
+  }
+  .cart-drawer__remove {
+    background: none;
+    border: none;
+    padding: .25rem;
+    cursor: pointer;
+    color: #c4bbb4;
+    border-radius: .375rem;
+    display: inline-flex;
+    transition: color .15s, background .15s;
+  }
+  .cart-drawer__remove:hover { color: #dc2626; background: #fee2e2; }
+  .cart-drawer__item-total {
+    font-size: .9rem;
+    font-weight: 700;
+    color: var(--coffee);
+    white-space: nowrap;
+  }
+
+  /* Vacío */
+  .cart-drawer__empty {
+    margin: auto;
+    text-align: center;
+    padding: 2rem 1rem;
+  }
+  .cart-drawer__empty-title {
+    font-family: 'Lora', Georgia, serif;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--coffee);
+    margin: 0 0 .35rem;
+  }
+  .cart-drawer__empty-sub {
+    font-size: .85rem;
+    color: var(--muted-fg);
+    margin: 0 0 1.25rem;
+  }
+  .cart-drawer__shop {
+    display: inline-block;
+    padding: .65rem 1.5rem;
+    background: var(--coffee);
+    color: #fff;
+    border-radius: .625rem;
+    font-size: .9rem;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  /* Footer */
+  .cart-drawer__foot {
+    flex-shrink: 0;
+    border-top: 1px solid var(--border);
+    padding: 1.125rem 1.5rem calc(1.125rem + env(safe-area-inset-bottom, 0px));
+    background: var(--cream);
+  }
+  .cart-drawer__progress { margin-bottom: .875rem; }
+  .cart-drawer__progress-text { font-size: .78rem; color: var(--muted-fg); margin: 0 0 .45rem; }
+  .cart-drawer__bar-bg {
+    height: 5px;
+    background: #ddd6ce;
+    border-radius: 9999px;
+    overflow: hidden;
+  }
+  .cart-drawer__bar-fill {
+    height: 100%;
+    width: 0;
+    background: linear-gradient(90deg, var(--accent), #e09a70);
+    border-radius: 9999px;
+    transition: width .4s ease;
+  }
+  .cart-drawer__free {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    background: #edfbf2;
+    color: #15803d;
+    font-size: .78rem;
+    font-weight: 600;
+    padding: .5rem .875rem;
+    border-radius: .5rem;
+    margin-bottom: .875rem;
+    border: 1px solid #bbf7d0;
+  }
+  .cart-drawer__subtotal {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: .9rem;
+    color: var(--muted-fg);
+    margin-bottom: 1rem;
+  }
+  .cart-drawer__subtotal-amount {
+    font-family: 'Lora', Georgia, serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--coffee);
+  }
+  .cart-drawer__checkout {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    width: 100%;
+    padding: .85rem 1.5rem;
+    background: var(--coffee);
+    color: #fff;
+    border: none;
+    border-radius: .75rem;
+    font-size: .95rem;
+    font-weight: 700;
+    text-decoration: none;
+    box-shadow: 0 2px 8px rgba(37, 26, 20, .25);
+    transition: opacity .15s, box-shadow .15s;
+  }
+  .cart-drawer__checkout:hover { opacity: .9; box-shadow: 0 4px 14px rgba(37, 26, 20, .3); }
+  .cart-drawer__view {
+    display: block;
+    text-align: center;
+    margin-top: .75rem;
+    font-size: .85rem;
+    color: var(--muted-fg);
+    text-decoration: none;
+  }
+  .cart-drawer__view:hover { color: var(--coffee); text-decoration: underline; }
+
+  /* Bloqueo de scroll del body cuando el drawer esta abierto */
+  body.cart-drawer-lock { overflow: hidden; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cart-drawer__panel,
+    .cart-drawer__overlay,
+    .cart-drawer__bar-fill { transition: none; }
+  }
+</style>
