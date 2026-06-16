@@ -287,6 +287,31 @@ Todo texto en español visible en la UI (etiquetas, mensajes de error, placehold
 
 ---
 
+## 10.1 Datos de DEMO / Seed
+
+Para exponer la plataforma en vivo existe un seed **idempotente** que puebla todos los módulos del sitio.
+
+- **Script**: `server/migrations/seed_demo.js` — ejecutar con `node server/migrations/seed_demo.js`.
+- **Idempotente**: se puede correr varias veces sin duplicar (usa `INSERT OR IGNORE` y guardas por clave natural). Verificado contra la BD viva, no contra `schema.sql`.
+- **Cobertura**: usuarios (con login real), caficultores, cosechas y lotes, variantes/reseñas/newsletter, ventas MercadoLibre con geocoordenadas (mapa de calor), pedidos e-commerce, ventas por canales externos, demanda (`demand_records`), CRM B2B, producción (estaciones/equipos/perfiles/BOMs/órdenes), movimientos de inventario y finanzas (plan de cuentas, facturas, pagos, gastos).
+
+### Credenciales de demo
+
+- **Contraseña única para todos los usuarios demo**: `Demo1234*`
+- Todos los usuarios demo usan el dominio `@demo.dobleyo.cafe`. Ejemplos por rol:
+
+| Rol | Email | Notas |
+|---|---|---|
+| Admin / operario | `operario.tueste@demo.dobleyo.cafe` | Acceso a app operativa y admin |
+| Caficultor (aprobado) | `caficultor.huila@demo.dobleyo.cafe` | Finca El Paraíso, Huila |
+| Caficultor (pendiente) | `caficultor.cauca@demo.dobleyo.cafe` | Muestra flujo de aprobación |
+| Cliente | `cliente.andrea@demo.dobleyo.cafe` | Pedidos e-commerce asociados |
+| Cliente B2B | `compras.cafebar@demo.dobleyo.cafe` | Owner de cuentas CRM |
+
+> ⚠️ Estos usuarios son **solo para entornos de demo/desarrollo**. No usar en producción real con datos sensibles.
+
+---
+
 ## 11. Deployment & CI/CD
 
 - **Platform**: Vercel (Astro SSR + Serverless Functions).
