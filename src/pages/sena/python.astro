@@ -1,0 +1,463 @@
+---
+import Layout from "../../layouts/Layout.astro";
+
+// Página documental (SENA) — explica todo lo relacionado a Python en el proyecto.
+const title = "Documentación Python — DobleYo Café (SENA)";
+const description =
+  "Explicación técnica del módulo Python de DobleYo Café: analítica de demanda, CRUD 100% Python, acceso a Turso, autenticación JWT y despliegue serverless en Vercel.";
+
+// Ejemplos de código con llaves { } — se definen aquí para que Astro no los
+// interprete como expresiones dentro del marcado.
+const respExample = `// Éxito
+{ "success": true, "data": { ... } }
+
+// Error de validación
+{ "success": false, "errors": ["demand_value debe ser >= 0"] }`;
+
+const smokeOutput = `→ create   201  { "success": true, ... }
+→ read     200  count= 1
+→ update   200  { "success": true, ... }
+→ delete   200  { "success": true, "data": { "deleted": true } }`;
+---
+
+<Layout title={title} description={description}>
+  <article class="sena">
+    <!-- ── Encabezado ───────────────────────────────────────────── -->
+    <header class="sena-hero">
+      <span class="sena-tag">Documentación técnica · SENA</span>
+      <h1>Python en DobleYo Café</h1>
+      <p class="sena-lead">
+        Cómo funciona toda la capa Python del proyecto: la analítica de
+        demanda, el CRUD 100&nbsp;% en Python, el acceso a la base de datos,
+        la seguridad y el despliegue serverless en Vercel.
+      </p>
+    </header>
+
+    <!-- ── Índice ───────────────────────────────────────────────── -->
+    <nav class="sena-toc" aria-label="Contenido">
+      <strong>Contenido</strong>
+      <ol>
+        <li><a href="#vision">1. Visión general: ¿por qué Python?</a></li>
+        <li><a href="#archivos">2. Archivos Python del proyecto</a></li>
+        <li><a href="#vercel">3. Cómo Vercel ejecuta Python</a></li>
+        <li><a href="#turso">4. Acceso a la base de datos (Turso/Hrana)</a></li>
+        <li><a href="#crud">5. CRUD de demanda 100&nbsp;% Python</a></li>
+        <li><a href="#forecast">6. Pronóstico de demanda (analítica)</a></li>
+        <li><a href="#auth">7. Seguridad: verificación JWT</a></li>
+        <li><a href="#pruebas">8. Cómo ejecutar y probar</a></li>
+      </ol>
+    </nav>
+
+    <!-- ── 1. Visión general ────────────────────────────────────── -->
+    <section id="vision" class="sena-section">
+      <h2>1. Visión general: ¿por qué Python?</h2>
+      <p>
+        DobleYo Café es una plataforma de comercio de café construida con
+        <strong>Astro</strong> (frontend) y <strong>Express/Node</strong>
+        (backend). Sin embargo, la parte de <strong>analítica de datos</strong>
+        se implementó en <strong>Python</strong>, porque es el lenguaje estándar
+        para cálculo numérico y manejo de series de datos gracias a librerías
+        como <code>pandas</code> y <code>numpy</code>.
+      </p>
+      <p>
+        Python se ejecuta como <strong>funciones serverless</strong> dentro de
+        la carpeta <code>api/</code>. Cada archivo <code>.py</code> se convierte
+        automáticamente en un endpoint HTTP cuando el proyecto se despliega en
+        Vercel. Así conviven Node y Python en el mismo proyecto, cada uno en lo
+        que mejor hace.
+      </p>
+      <div class="sena-note">
+        <strong>Arquitectura en una frase:</strong> Node atiende la tienda y las
+        APIs transaccionales; Python hace el cálculo numérico (pronóstico) y, en
+        el módulo académico, el CRUD completo de la demanda.
+      </div>
+    </section>
+
+    <!-- ── 2. Archivos ──────────────────────────────────────────── -->
+    <section id="archivos" class="sena-section">
+      <h2>2. Archivos Python del proyecto</h2>
+      <div class="sena-table-wrap">
+        <table class="sena-table">
+          <thead>
+            <tr><th>Archivo</th><th>Propósito</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>requirements.txt</code></td>
+              <td>Dependencias Python: <code>numpy</code> y <code>pandas</code>. Deliberadamente mínimo para que la función entre en los límites de tamaño de Vercel.</td>
+            </tr>
+            <tr>
+              <td><code>api/ml/demand.py</code></td>
+              <td><strong>CRUD 100&nbsp;% Python</strong> de la demanda por categoría (el módulo académico). Crea, lee, actualiza y elimina registros.</td>
+            </tr>
+            <tr>
+              <td><code>api/ml/recompute.py</code></td>
+              <td>Pronóstico de demanda: lee las ventas, calcula la proyección a 8 semanas y guarda el resultado.</td>
+            </tr>
+            <tr>
+              <td><code>migrate_placeholders.py</code></td>
+              <td>Script utilitario puntual (mantenimiento de datos).</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── 3. Vercel ────────────────────────────────────────────── -->
+    <section id="vercel" class="sena-section">
+      <h2>3. Cómo Vercel ejecuta Python</h2>
+      <p>
+        Vercel usa <strong>enrutamiento por archivos</strong>: el archivo
+        <code>api/ml/demand.py</code> se publica en la URL
+        <code>/api/ml/demand</code>. Dentro de cada archivo se define una clase
+        <code>handler</code> que hereda de <code>BaseHTTPRequestHandler</code>
+        (librería estándar de Python) con un método por verbo HTTP:
+      </p>
+      <pre class="sena-code"><code>class handler(BaseHTTPRequestHandler):
+    def do_GET(self):    ...   # Leer
+    def do_POST(self):   ...   # Crear
+    def do_PUT(self):    ...   # Actualizar
+    def do_DELETE(self): ...   # Eliminar</code></pre>
+      <p>
+        Como el proyecto también tiene un backend en Node (<code>api/index.js</code>),
+        en <code>vercel.json</code> se le indica a Vercel que <strong>no</strong>
+        envíe las rutas Python al backend Node, sino que las sirva como funciones
+        Python nativas:
+      </p>
+      <pre class="sena-code"><code>// vercel.json — el resto de /api/* va a Node,
+// excepto ml/recompute y ml/demand (Python):
+"source": "/api/((?!ml/(recompute|demand)).*)",
+"destination": "/api/index.js"</code></pre>
+    </section>
+
+    <!-- ── 4. Turso ─────────────────────────────────────────────── -->
+    <section id="turso" class="sena-section">
+      <h2>4. Acceso a la base de datos (Turso/Hrana)</h2>
+      <p>
+        La base de datos es <strong>Turso</strong> (libSQL, compatible con
+        SQLite). Node usa un cliente oficial, pero desde Python se accede por la
+        <strong>API HTTP de Turso (protocolo Hrana)</strong>, usando solo
+        <code>urllib</code> de la librería estándar — sin instalar nada extra.
+      </p>
+      <p>Una consulta se envía como JSON a la URL <code>…/v2/pipeline</code>:</p>
+      <pre class="sena-code"><code>def turso_batch(statements):
+    # Cada (sql, args) se envía con sus parámetros tipados.
+    # Se usan parámetros posicionales (?) — nunca se
+    # interpola texto en el SQL (previene inyección).
+    ...</code></pre>
+      <div class="sena-note">
+        <strong>Buenas prácticas aplicadas:</strong> parámetros posicionales
+        <code>?</code> (no <code>$1</code>), fechas con
+        <code>datetime('now')</code> y booleanos como 0/1 — convenciones de
+        SQLite/Turso.
+      </div>
+    </section>
+
+    <!-- ── 5. CRUD ──────────────────────────────────────────────── -->
+    <section id="crud" class="sena-section sena-highlight">
+      <h2>5. CRUD de demanda 100&nbsp;% Python</h2>
+      <p>
+        Es el módulo central de la entrega. Un único archivo
+        (<code>api/ml/demand.py</code>) implementa el ciclo de vida completo de
+        los registros de demanda sobre la tabla <code>demand_records</code>, que
+        el propio Python crea si no existe (<code>CREATE TABLE IF NOT EXISTS</code>).
+      </p>
+
+      <h3>La tabla <code>demand_records</code></h3>
+      <div class="sena-table-wrap">
+        <table class="sena-table">
+          <thead><tr><th>Campo</th><th>Tipo</th><th>Descripción</th></tr></thead>
+          <tbody>
+            <tr><td><code>id</code></td><td>INTEGER</td><td>Clave primaria autoincremental</td></tr>
+            <tr><td><code>category</code></td><td>TEXT</td><td>Categoría de demanda (obligatorio)</td></tr>
+            <tr><td><code>product_key</code></td><td>TEXT</td><td>Producto asociado (opcional)</td></tr>
+            <tr><td><code>period</code></td><td>TEXT</td><td>Período, p. ej. <code>2026-W24</code> (opcional)</td></tr>
+            <tr><td><code>demand_value</code></td><td>REAL</td><td>Valor de la demanda (obligatorio, ≥ 0)</td></tr>
+            <tr><td><code>unit</code></td><td>TEXT</td><td>Unidad (por defecto <code>units</code>)</td></tr>
+            <tr><td><code>notes</code></td><td>TEXT</td><td>Observaciones (opcional)</td></tr>
+            <tr><td><code>created_at</code> / <code>updated_at</code></td><td>TEXT</td><td>Marcas de tiempo</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Las cuatro operaciones</h3>
+      <div class="sena-table-wrap">
+        <table class="sena-table">
+          <thead><tr><th>Operación</th><th>Verbo y ruta</th><th>Qué hace</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><span class="sena-pill sena-pill--c">Create</span></td>
+              <td><code>POST /api/ml/demand</code></td>
+              <td>Inserta un registro. Valida que <code>category</code> y <code>demand_value</code> sean correctos.</td>
+            </tr>
+            <tr>
+              <td><span class="sena-pill sena-pill--r">Read</span></td>
+              <td><code>GET /api/ml/demand</code></td>
+              <td>Lista los registros. Filtros opcionales: <code>?id=</code>, <code>?category=</code>, <code>?limit=</code>.</td>
+            </tr>
+            <tr>
+              <td><span class="sena-pill sena-pill--u">Update</span></td>
+              <td><code>PUT /api/ml/demand?id=</code></td>
+              <td>Actualiza los campos enviados de un registro y refresca <code>updated_at</code>.</td>
+            </tr>
+            <tr>
+              <td><span class="sena-pill sena-pill--d">Delete</span></td>
+              <td><code>DELETE /api/ml/demand?id=</code></td>
+              <td>Elimina el registro indicado por su <code>id</code>.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Formato de respuesta</h3>
+      <p>Todas las respuestas siguen el estándar del proyecto:</p>
+      <pre class="sena-code"><code>{respExample}</code></pre>
+
+      <h3>Interfaz visual</h3>
+      <p>
+        El CRUD se opera desde el panel de administración en
+        <code>/admin/demanda</code> (solo rol <em>admin</em>): formulario de
+        alta, listado con filtro por categoría, edición en una ventana modal y
+        borrado con confirmación.
+      </p>
+    </section>
+
+    <!-- ── 6. Forecast ──────────────────────────────────────────── -->
+    <section id="forecast" class="sena-section">
+      <h2>6. Pronóstico de demanda (analítica)</h2>
+      <p>
+        El archivo <code>api/ml/recompute.py</code> es la parte de analítica.
+        Su flujo es:
+      </p>
+      <ol class="sena-steps">
+        <li>Lee las ventas reales desde la tabla <code>sales_tracking</code> (datos de MercadoLibre).</li>
+        <li>Con <code>pandas</code>, agrupa la demanda <strong>por semana</strong> y por producto.</li>
+        <li>Pronostica las próximas <strong>8 semanas</strong> con dos modelos según cuánta historia haya:
+          <ul>
+            <li><strong>Suavizado exponencial de Holt</strong> (nivel + tendencia) cuando hay ≥ 6 semanas.</li>
+            <li><strong>Media móvil</strong> como respaldo cuando hay pocos datos.</li>
+          </ul>
+        </li>
+        <li>Calcula una <strong>banda de confianza ~95&nbsp;%</strong> y guarda la "corrida" en la tabla <code>demand_forecasts</code>.</li>
+      </ol>
+      <p>
+        Se ejecuta automáticamente cada día mediante un <strong>Cron de Vercel</strong>,
+        y también puede dispararse a mano desde el panel de Estadísticas. Está
+        protegido con un secreto (<code>CRON_SECRET</code>).
+      </p>
+      <div class="sena-note">
+        <strong>Diferencia clave con el CRUD:</strong> el pronóstico
+        <em>calcula y solo escribe</em> resultados derivados; el CRUD permite
+        <em>gestionar a mano</em> registros de demanda. Son módulos
+        independientes.
+      </div>
+    </section>
+
+    <!-- ── 7. Seguridad ─────────────────────────────────────────── -->
+    <section id="auth" class="sena-section">
+      <h2>7. Seguridad: verificación JWT</h2>
+      <p>
+        El CRUD reutiliza el <strong>mismo token de sesión (JWT)</strong> que
+        emite el backend Node al iniciar sesión. El token viaja en una cookie
+        <code>HttpOnly</code> llamada <code>auth_token</code>.
+      </p>
+      <p>
+        Lo interesante: Python <strong>verifica la firma del token con la
+        librería estándar</strong> (<code>hmac</code> + <code>hashlib</code>),
+        sin instalar ninguna librería de JWT. Comprueba que:
+      </p>
+      <ul class="sena-list">
+        <li>La firma <strong>HS256</strong> es válida con el secreto compartido (<code>JWT_SECRET</code>).</li>
+        <li>El token <strong>no esté vencido</strong> (campo <code>exp</code>).</li>
+        <li>No sea un token de verificación de correo (rechaza los que traen <code>type</code>).</li>
+        <li>El usuario tenga el rol <strong><code>admin</code></strong>.</li>
+      </ul>
+      <p>
+        Así el módulo Python queda protegido igual que las rutas de Node, pero
+        sin duplicar ni alterar la lógica de autenticación existente.
+      </p>
+    </section>
+
+    <!-- ── 8. Pruebas ───────────────────────────────────────────── -->
+    <section id="pruebas" class="sena-section">
+      <h2>8. Cómo ejecutar y probar</h2>
+      <p>
+        Las funciones Python solo se ejecutan en el despliegue de Vercel o con
+        <code>vercel dev</code> (no en el servidor Express local). Para probar el
+        CRUD de forma aislada existe un <strong>smoke test</strong> incluido que
+        crea, lee, actualiza y borra un registro de prueba:
+      </p>
+      <pre class="sena-code"><code># Requiere las credenciales de Turso en variables de entorno
+TURSO_DATABASE_URL=… TURSO_AUTH_TOKEN=… python3 api/ml/demand.py</code></pre>
+      <p>Salida esperada (resumida):</p>
+      <pre class="sena-code"><code>→ create   201  { "success": true, ... }
+→ read     200  count= 1
+→ update   200  { "success": true, ... }
+→ delete   200  { "success": true, "data": { "deleted": true } }</code></pre>
+      <p>
+        También se puede verificar que el código no tenga errores de sintaxis con:
+      </p>
+      <pre class="sena-code"><code>python3 -m py_compile api/ml/demand.py</code></pre>
+
+      <div class="sena-note sena-note--ok">
+        <strong>Resumen para la sustentación:</strong> el módulo demuestra un
+        CRUD completo en Python (las 4 operaciones), validación de datos,
+        acceso a base de datos con consultas parametrizadas, autenticación por
+        JWT y despliegue serverless — todo en un solo archivo fácil de explicar.
+      </div>
+
+      <p class="sena-back"><a href="/admin/demanda">→ Ir al panel de gestión de demanda</a></p>
+    </section>
+  </article>
+
+  <style>
+    .sena {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 2rem 0 4rem;
+      color: var(--fg, #1f2937);
+      line-height: 1.7;
+    }
+    .sena-hero {
+      padding: 2rem 0 1.5rem;
+      border-bottom: 2px solid var(--border, #e6e6e6);
+      margin-bottom: 2rem;
+    }
+    .sena-tag {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent, #c67b4e);
+      margin-bottom: 0.75rem;
+    }
+    .sena-hero h1 {
+      font-size: clamp(1.9rem, 5vw, 2.6rem);
+      color: var(--coffee, #251a14);
+      margin: 0 0 0.75rem;
+      line-height: 1.15;
+    }
+    .sena-lead { font-size: 1.1rem; color: var(--muted-fg, #6b7280); margin: 0; }
+
+    .sena-toc {
+      background: var(--card, #fff);
+      border: 1px solid var(--border, #e6e6e6);
+      border-left: 4px solid var(--accent, #c67b4e);
+      border-radius: 10px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 2.5rem;
+    }
+    .sena-toc strong {
+      display: block; color: var(--coffee, #251a14);
+      text-transform: uppercase; font-size: 0.78rem;
+      letter-spacing: 0.08em; margin-bottom: 0.5rem;
+    }
+    .sena-toc ol { margin: 0; padding-left: 1.25rem; }
+    .sena-toc li { margin: 0.25rem 0; }
+    .sena-toc a { color: var(--fg, #1f2937); text-decoration: none; }
+    .sena-toc a:hover { color: var(--accent, #c67b4e); text-decoration: underline; }
+
+    .sena-section { margin-bottom: 2.75rem; scroll-margin-top: 2rem; }
+    .sena-section h2 {
+      font-size: 1.5rem;
+      color: var(--coffee, #251a14);
+      margin: 0 0 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border, #e6e6e6);
+    }
+    .sena-section h3 {
+      font-size: 1.1rem; color: var(--coffee, #251a14);
+      margin: 1.75rem 0 0.75rem;
+    }
+    .sena-section p { margin: 0 0 1rem; }
+    .sena-section code {
+      background: rgba(var(--coffee-rgb, 37, 26, 20), 0.06);
+      padding: 0.1rem 0.4rem;
+      border-radius: 5px;
+      font-size: 0.9em;
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    }
+
+    .sena-highlight {
+      background: rgba(var(--coffee-rgb, 37, 26, 20), 0.03);
+      border: 1px solid var(--border, #e6e6e6);
+      border-radius: 12px;
+      padding: 1.75rem;
+    }
+
+    .sena-code {
+      background: var(--coffee, #251a14);
+      color: #f3ede6;
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      overflow-x: auto;
+      font-size: 0.86rem;
+      line-height: 1.55;
+      margin: 0 0 1.25rem;
+    }
+    .sena-code code { background: none; padding: 0; color: inherit; font-size: inherit; }
+
+    .sena-note {
+      background: var(--card, #fff);
+      border: 1px solid var(--border, #e6e6e6);
+      border-left: 4px solid var(--accent, #c67b4e);
+      border-radius: 8px;
+      padding: 0.9rem 1.2rem;
+      margin: 1.25rem 0;
+      font-size: 0.95rem;
+    }
+    .sena-note--ok { border-left-color: #2e7d5b; }
+
+    .sena-list, .sena-steps { margin: 0 0 1rem; padding-left: 1.4rem; }
+    .sena-list li, .sena-steps li { margin: 0.4rem 0; }
+    .sena-steps ul { margin: 0.4rem 0; }
+
+    .sena-table-wrap { overflow-x: auto; margin: 0 0 1.25rem; }
+    .sena-table {
+      width: 100%; border-collapse: collapse;
+      font-size: 0.92rem;
+      background: var(--card, #fff);
+      border: 1px solid var(--border, #e6e6e6);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .sena-table th {
+      text-align: left; background: rgba(var(--coffee-rgb, 37, 26, 20), 0.05);
+      color: var(--coffee, #251a14); font-size: 0.78rem;
+      text-transform: uppercase; letter-spacing: 0.05em;
+      padding: 0.7rem 1rem;
+    }
+    .sena-table td {
+      padding: 0.7rem 1rem;
+      border-top: 1px solid var(--border, #e6e6e6);
+      vertical-align: top;
+    }
+
+    .sena-pill {
+      display: inline-block;
+      padding: 0.15rem 0.6rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #fff;
+    }
+    .sena-pill--c { background: #2e7d5b; }
+    .sena-pill--r { background: #2563eb; }
+    .sena-pill--u { background: #c67b4e; }
+    .sena-pill--d { background: #c0392b; }
+
+    .sena-back { margin-top: 2rem; }
+    .sena-back a {
+      color: var(--accent, #c67b4e);
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .sena-back a:hover { text-decoration: underline; }
+
+    @media (max-width: 768px) {
+      .sena { padding: 1rem 0 3rem; }
+      .sena-highlight { padding: 1.25rem; }
+    }
+  </style>
+</Layout>
