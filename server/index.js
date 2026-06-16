@@ -56,7 +56,7 @@ app.use(helmet({
       objectSrc: ["'none'"],
       frameAncestors: ["'self'"], // anti-clickjacking
       formAction: ["'self'", "https://checkout.wompi.co", "https://www.mercadopago.com"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "https://checkout.wompi.co", "https://www.mercadopago.com", "https://sdk.mercadopago.com", "https://cdn.jsdelivr.net", "https://accounts.google.com", "https://www.gstatic.com"],
+      scriptSrc: ["'self'", "https://checkout.wompi.co", "https://www.mercadopago.com", "https://sdk.mercadopago.com", "https://cdn.jsdelivr.net", "https://accounts.google.com", "https://www.gstatic.com"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://unpkg.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       imgSrc: ["'self'", "data:", "https:", "blob:"],
