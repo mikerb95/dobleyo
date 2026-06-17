@@ -228,59 +228,7 @@ const _hreflang = getHreflangPair("/contacto");
   </div>
 </Layout>
 
-<script>
-  document
-    .getElementById("contactForm")
-    ?.addEventListener("submit", async (e) => {
-      e.preventDefault();
-
-      const form = e.target as HTMLFormElement;
-      const status = document.getElementById("formStatus");
-      const submitBtn = form.querySelector(
-        'button[type="submit"]',
-      ) as HTMLButtonElement;
-
-      if (!status) return;
-
-      // Deshabilitar botón
-      submitBtn.disabled = true;
-      submitBtn.textContent = "Enviando...";
-
-      const formData = {
-        name: (form.querySelector("#name") as HTMLInputElement).value,
-        email: (form.querySelector("#email") as HTMLInputElement).value,
-        phone: (form.querySelector("#phone") as HTMLInputElement).value,
-        subject: (form.querySelector("#subject") as HTMLSelectElement).value,
-        message: (form.querySelector("#message") as HTMLTextAreaElement).value,
-      };
-
-      try {
-        const response = await fetch("/api/contact", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(formData),
-        });
-
-        if (response.ok) {
-          status.textContent =
-            "¡Mensaje enviado con éxito! Te responderemos pronto.";
-          status.className = "form-status success";
-          form.reset();
-        } else {
-          throw new Error("Error al enviar el mensaje");
-        }
-      } catch (error) {
-        status.textContent =
-          "Hubo un error al enviar el mensaje. Por favor intenta de nuevo o contáctanos por WhatsApp.";
-        status.className = "form-status error";
-      } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = "Enviar Mensaje";
-      }
-    });
-</script>
+<script is:inline src="/assets/js/contacto.js"></script>
 
 <style>
   .contact-page {
