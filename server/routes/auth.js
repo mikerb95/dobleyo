@@ -350,6 +350,88 @@ authRouter.post('/google', loginLimiter, async (req, res) => {
   }
 });
 
+// Apple Sign-In — verificación de id_token con JWKS de Apple
+authRouter.post('/apple', loginLimiter, async (req, res) => {
+  const { id_token, first_name, last_name } = req.body;
+  if (!id_token) return res.status(400).json({ error: 'Token de Apple requerido' });
+
+  if (!process.env.APPLE_CLIENT_ID) {
+    return res.status(503).json({ error: 'Apple auth no configurado' });
+  }
+
+  try {
+    // Leer kid del header del JWT sin verificar aún
+    const [headerB64] = id_token.split('.');
+    const header = JSON.parse(Buffer.from(headerB64, 'base64url').toString());
+
+    const jwk = await getApplePublicKey(header.kid);
+    if (!jwk) {
+      return res.status(401).json({ error: 'Clave pública de Apple no encontrada' });
+    }
+
+    // Convertir JWK → PEM con el módulo crypto nativo de Node ≥18
+    const publicKey = crypto.createPublicKey({ key: jwk, format: 'jwk' });
+    const pem = publicKey.export({ type: 'spki', format: 'pem' });
+
+    const payload = jwt.verify(id_token, pem, {
+      algorithms: ['RS256'],
+      issuer: 'https://appleid.apple.com',
+      audience: process.env.APPLE_CLIENT_ID,
+    });
+
+    const { sub: appleId, email } = payload;
+
+    // Buscar usuario por apple_id o email
+    let result = await db.query(
+      'SELECT * FROM users WHERE apple_id = ? OR (email = ? AND email IS NOT NULL) LIMIT 1',
+      [appleId, email ?? '']
+    );
+    let user = result.rows[0];
+
+    if (!user) {
+      // Primera vez: crear usuario (Apple solo envía nombre en la primera autorización)
+      const insert = await db.query(
+        `INSERT INTO users (email, first_name, last_name, role, is_verified, apple_id)
+         VALUES (?, ?, ?, 'client', 1, ?) RETURNING *`,
+        [email ?? null, first_name || 'Usuario', last_name || '', appleId]
+      );
+      user = insert.rows[0];
+    } else if (!user.apple_id) {
+      // Cuenta existente por email — vincular apple_id
+      await db.query('UPDATE users SET apple_id = ? WHERE id = ?', [appleId, user.id]);
+    }
+
+    // Emitir tokens igual que en el login normal
+    const accessToken = auth.generateToken(user);
+    const refreshToken = auth.generateRefreshToken();
+    const refreshExpires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    const hashedRefreshToken = auth.hashRefreshToken(refreshToken);
+
+    await db.query(
+      'INSERT INTO refresh_tokens (user_id, token_hash, expires_at) VALUES (?, ?, ?)',
+      [user.id, hashedRefreshToken, refreshExpires]
+    );
+    await db.query("UPDATE users SET last_login_at = datetime('now') WHERE id = ?", [user.id]);
+
+    const isProd = process.env.NODE_ENV === 'production';
+    res.cookie('auth_token', accessToken, {
+      httpOnly: true, secure: isProd, sameSite: 'lax', maxAge: 15 * 60 * 1000,
+    });
+    res.cookie('refresh_token', refreshToken, {
+      httpOnly: true, secure: isProd, sameSite: 'lax',
+      path: '/api/auth/refresh', maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    res.json({
+      message: 'Login con Apple exitoso',
+      user: { id: user.id, first_name: user.first_name, last_name: user.last_name, role: user.role },
+    });
+  } catch (err) {
+    logger.error({ err }, '[POST /api/auth/apple] Error:');
+    res.status(401).json({ error: 'Token de Apple inválido' });
+  }
+});
+
 // Check auth status
 authRouter.get('/me', auth.authenticateToken, async (req, res) => {
   // Usuario dev sintético (id=0) — no existe en BD
