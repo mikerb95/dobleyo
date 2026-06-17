@@ -27,7 +27,6 @@ let appleJwksCacheTime = 0;
 async function getApplePublicKey(kid) {
   const now = Date.now();
   if (!appleJwksCache || now - appleJwksCacheTime > 3_600_000) {
-    const { default: fetch } = await import('node-fetch');
     const resp = await fetch('https://appleid.apple.com/auth/keys');
     appleJwksCache = await resp.json();
     appleJwksCacheTime = now;
