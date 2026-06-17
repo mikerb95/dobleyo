@@ -1,4 +1,9 @@
 {
+  "functions": {
+    "api/ml/*.py": {
+      "excludeFiles": "{**/tests/**,**/test/**,**/testing/**,**/*.pyi,**/pandas/tests/**,**/numpy/**/tests/**,**/numpy/_core/include/**,**/numpy/_core/lib/**,**/*.pyc,**/__pycache__/**,**/*.dist-info/**}"
+    }
+  },
   "rewrites": [
     {
       "source": "/:path*",
