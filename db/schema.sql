@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE INDEX idx_users_role ON users(role);
 CREATE INDEX idx_users_caficultor_status ON users(caficultor_status);
 CREATE INDEX IF NOT EXISTS idx_users_google_id ON users(google_id);
+CREATE INDEX IF NOT EXISTS idx_users_apple_id ON users(apple_id);
 
 -- Caficultor Applications
 CREATE TABLE IF NOT EXISTS caficultor_applications (
