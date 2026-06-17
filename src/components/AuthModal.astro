@@ -604,6 +604,68 @@ const appleClientId  = import.meta.env.PUBLIC_APPLE_CLIENT_ID  || '';
     setTimeout(() => clearInterval(waitForGSI), 10000);
   }
 
+  // ── Apple Sign-In ──────────────────────────────────────────────────────────────
+  async function handleAppleResponse(data) {
+    showAlert('loginError', '');
+    try {
+      const idToken   = data.authorization?.id_token;
+      const firstName = data.user?.name?.firstName ?? '';
+      const lastName  = data.user?.name?.lastName  ?? '';
+
+      if (!idToken) throw new Error('No se recibió token de Apple');
+
+      const res = await fetch('/api/auth/apple', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ id_token: idToken, first_name: firstName, last_name: lastName }),
+      });
+      const resData = await res.json();
+      if (!res.ok) throw new Error(resData.error || 'Error al iniciar sesión con Apple');
+      redirectAfterLogin(resData.user?.role);
+    } catch (e) {
+      showAlert('loginError', e.message);
+    }
+  }
+
+  const appleBtn = document.getElementById('appleSignInBtn');
+  if (appleBtn && appleClientId) {
+    // Inicializar el SDK cuando cargue (carga async)
+    const initApple = () => {
+      if (!window.AppleID) return;
+      window.AppleID.auth.init({
+        clientId: appleClientId,
+        scope: 'name email',
+        redirectURI: window.location.origin,
+        usePopup: true,
+      });
+    };
+
+    appleBtn.addEventListener('click', async () => {
+      if (!window.AppleID) {
+        showAlert('loginError', 'Cargando Apple Sign-In, intenta en un momento.');
+        return;
+      }
+      try {
+        const data = await window.AppleID.auth.signIn();
+        await handleAppleResponse(data);
+      } catch (e) {
+        // El usuario canceló el popup — no mostrar error
+        if (e?.error !== 'popup_closed_by_user') {
+          showAlert('loginError', 'Error al iniciar sesión con Apple. Intente de nuevo.');
+        }
+      }
+    });
+
+    // Inicializar cuando el SDK esté listo
+    if (window.AppleID) {
+      initApple();
+    } else {
+      document.querySelector('script[src*="appleid.cdn-apple.com"]')
+        ?.addEventListener('load', initApple);
+    }
+  }
+
   // ── Submit LOGIN ───────────────────────────────────────────────────────────────
   const loginForm = document.getElementById('loginForm');
   if (loginForm) {
