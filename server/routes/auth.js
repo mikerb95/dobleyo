@@ -5,6 +5,7 @@ import * as db from '../db.js';
 import * as auth from '../auth.js';
 import { sendVerificationEmail } from '../services/email.js';
 import crypto from 'crypto';
+import jwt from 'jsonwebtoken';
 import { loginLimiter, registerLimiter, refreshLimiter } from '../middleware/rateLimit.js';
 
 // google-auth-library se carga perezosamente dentro del handler /google para
@@ -17,6 +18,21 @@ async function getGoogleClient() {
     );
   }
   return googleClientPromise;
+}
+
+// Apple JWKS — caché de 1 hora para no consultar en cada request
+let appleJwksCache = null;
+let appleJwksCacheTime = 0;
+
+async function getApplePublicKey(kid) {
+  const now = Date.now();
+  if (!appleJwksCache || now - appleJwksCacheTime > 3_600_000) {
+    const { default: fetch } = await import('node-fetch');
+    const resp = await fetch('https://appleid.apple.com/auth/keys');
+    appleJwksCache = await resp.json();
+    appleJwksCacheTime = now;
+  }
+  return appleJwksCache.keys.find((k) => k.kid === kid) ?? null;
 }
 
 export const authRouter = Router();
