@@ -276,10 +276,13 @@ const appleClientId  = import.meta.env.PUBLIC_APPLE_CLIENT_ID  || '';
 </div>
 
 {googleClientId && <script is:inline src="https://accounts.google.com/gsi/client" async defer></script>}
+{appleClientId && <script is:inline src="https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js" async defer></script>}
 
 <script>
 (function () {
-  const googleClientId = document.getElementById('authModalOverlay')?.dataset.googleClientId ?? '';
+  const overlay = document.getElementById('authModalOverlay');
+  const googleClientId = overlay?.dataset.googleClientId ?? '';
+  const appleClientId  = overlay?.dataset.appleClientId  ?? '';
 
   // ── Constantes ──────────────────────────────────────────────────────────────
   const REGEX = {
