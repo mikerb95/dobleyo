@@ -10,11 +10,16 @@ async function migrate() {
   try {
     console.log('Iniciando migración: add_apple_auth...');
 
-    await query(`
-      ALTER TABLE users
-        ADD COLUMN IF NOT EXISTS apple_id VARCHAR(255) UNIQUE
-    `);
-    console.log('✓ Columna apple_id agregada');
+    try {
+      await query(`ALTER TABLE users ADD COLUMN apple_id VARCHAR(255) UNIQUE`);
+      console.log('✓ Columna apple_id agregada');
+    } catch (e) {
+      if (e.message?.includes('duplicate column')) {
+        console.log('· Columna apple_id ya existe, se omite');
+      } else {
+        throw e;
+      }
+    }
 
     await query(`
       CREATE INDEX IF NOT EXISTS idx_users_apple_id ON users(apple_id)
