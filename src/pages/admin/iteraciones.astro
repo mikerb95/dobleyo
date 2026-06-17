@@ -382,11 +382,11 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     // ============================================================
     const fmt = (n) => new Intl.NumberFormat("es-CO").format(n);
     const NS = "http://www.w3.org/2000/svg";
+    const SVG_TAGS = new Set(["svg","g","path","line","rect","circle","polyline","text"]);
     const el = (tag, attrs = {}, ...kids) => {
-      const node = document.createElementNS(
-        tag === "svg" || tag === "g" || tag === "path" || tag === "line" ||
-        tag === "rect" || tag === "circle" || tag === "polyline" || tag === "text"
-          ? NS : null, tag);
+      const node = SVG_TAGS.has(tag)
+        ? document.createElementNS(NS, tag)
+        : document.createElement(tag);
       for (const [k, v] of Object.entries(attrs)) node.setAttribute(k, v);
       kids.forEach((k) => node.appendChild(typeof k === "string" ? document.createTextNode(k) : k));
       return node;
