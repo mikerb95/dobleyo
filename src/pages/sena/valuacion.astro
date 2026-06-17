@@ -1,0 +1,497 @@
+---
+import Layout from "../../layouts/Layout.astro";
+
+// Página documental (SENA) — sustenta la valuación / presupuesto de elaboración
+// del proyecto DobleYo Café, cumpliendo la "regla de oro": cada rubro con
+// fórmula, responsable, Sprint asociado y evidencia de cálculo.
+const title = "Valuación del proyecto — DobleYo Café (SENA)";
+const description =
+  "Sustentación del presupuesto de elaboración de DobleYo Café: distribución por rubros, fórmulas de cálculo, responsables, Sprint asociado y evidencia, con apéndice económico listo para la sustentación.";
+
+// Ejemplo de fórmula con llaves — se define aquí para que Astro no lo
+// interprete como expresión dentro del marcado.
+const formulaTalento = `Costo_rol = Σ ( horas_estimadas_por_sprint × tarifa_hora_rol )
+
+Costo_talento = Σ Costo_rol  (todos los roles)`;
+---
+
+<Layout title={title} description={description}>
+  <article class="sena">
+    <!-- ── Encabezado ───────────────────────────────────────────── -->
+    <header class="sena-hero">
+      <span class="sena-tag">Apéndice económico · SENA</span>
+      <h1>Valuación del proyecto</h1>
+      <p class="sena-lead">
+        Cómo se sustenta el presupuesto de elaboración de DobleYo Café: la
+        distribución por rubros, la fórmula de cada uno, su responsable, el
+        Sprint asociado y la evidencia de cálculo. Aquí se justifica, una a una,
+        cada cifra del presupuesto.
+      </p>
+    </header>
+
+    <!-- ── Índice ───────────────────────────────────────────────── -->
+    <nav class="sena-toc" aria-label="Contenido">
+      <strong>Contenido</strong>
+      <ol>
+        <li><a href="#regla">1. La regla de oro de la valuación</a></li>
+        <li><a href="#distribucion">2. Distribución sugerida del presupuesto</a></li>
+        <li><a href="#talento">3. Talento humano (50&nbsp;%): la base</a></li>
+        <li><a href="#tecnologia">4. Tecnología (18&nbsp;%): costo real</a></li>
+        <li><a href="#pruebas">5. Pruebas (12&nbsp;%) y gestión (10&nbsp;%)</a></li>
+        <li><a href="#contingencia">6. Contingencia (10&nbsp;%) y riesgos</a></li>
+        <li><a href="#no-incluir">7. Qué NO se incluye</a></li>
+        <li><a href="#apendice">8. Apéndice económico (tablas)</a></li>
+        <li><a href="#sustentar">9. Cómo defenderlo ante el evaluador</a></li>
+      </ol>
+    </nav>
+
+    <!-- ── 1. Regla de oro ──────────────────────────────────────── -->
+    <section id="regla" class="sena-section">
+      <h2>1. La regla de oro de la valuación</h2>
+      <p>
+        Un presupuesto no se sustenta solo con porcentajes: cada rubro debe ser
+        <strong>verificable</strong>. Por eso toda línea del presupuesto cumple
+        cuatro requisitos:
+      </p>
+      <ul class="sena-list">
+        <li><strong>Fórmula</strong> — cómo se obtuvo el número (horas × tarifa, % derivado, costo real de factura).</li>
+        <li><strong>Responsable</strong> — quién ejecuta y responde por ese rubro.</li>
+        <li><strong>Sprint asociado</strong> — en qué iteración se consume, ligado a un entregable concreto.</li>
+        <li><strong>Evidencia de cálculo</strong> — la fuente: hoja de horas, factura/plan de servicio, plan de pruebas.</li>
+      </ul>
+      <div class="sena-note">
+        <strong>En una frase:</strong> el costo del <em>talento humano</em> es el
+        ancla; los demás rubros se derivan de él como porcentaje o se sustentan
+        con su costo real facturable.
+      </div>
+    </section>
+
+    <!-- ── 2. Distribución ──────────────────────────────────────── -->
+    <section id="distribucion" class="sena-section">
+      <h2>2. Distribución sugerida del presupuesto</h2>
+      <p>
+        Estos son los componentes mínimos del apéndice económico y su peso
+        relativo:
+      </p>
+
+      <div class="sena-bar" role="img" aria-label="Distribución del presupuesto: Talento humano 50%, Tecnología 18%, Pruebas 12%, Gestión 10%, Contingencia 10%">
+        <span class="sena-bar__seg sena-bar__seg--talento" style="flex:50">50&nbsp;%</span>
+        <span class="sena-bar__seg sena-bar__seg--tec" style="flex:18">18&nbsp;%</span>
+        <span class="sena-bar__seg sena-bar__seg--pru" style="flex:12">12&nbsp;%</span>
+        <span class="sena-bar__seg sena-bar__seg--ges" style="flex:10">10&nbsp;%</span>
+        <span class="sena-bar__seg sena-bar__seg--con" style="flex:10">10&nbsp;%</span>
+      </div>
+      <ul class="sena-legend">
+        <li><span class="sena-dot sena-bar__seg--talento"></span> Talento humano</li>
+        <li><span class="sena-dot sena-bar__seg--tec"></span> Tecnología</li>
+        <li><span class="sena-dot sena-bar__seg--pru"></span> Pruebas</li>
+        <li><span class="sena-dot sena-bar__seg--ges"></span> Gestión</li>
+        <li><span class="sena-dot sena-bar__seg--con"></span> Contingencia</li>
+      </ul>
+
+      <div class="sena-table-wrap">
+        <table class="sena-table">
+          <thead>
+            <tr><th>Rubro</th><th>Peso</th><th>Naturaleza del costo</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Talento humano</td><td>50&nbsp;%</td><td>Horas del equipo × tarifa</td></tr>
+            <tr><td>Tecnología (herramientas y servicios)</td><td>18&nbsp;%</td><td>Costo real facturable</td></tr>
+            <tr><td>Pruebas</td><td>12&nbsp;%</td><td>Horas QA o % del talento</td></tr>
+            <tr><td>Gestión</td><td>10&nbsp;%</td><td>Horas PM/Scrum × tarifa</td></tr>
+            <tr><td>Contingencia</td><td>10&nbsp;%</td><td>% derivado (riesgo)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── 3. Talento humano ────────────────────────────────────── -->
+    <section id="talento" class="sena-section sena-highlight">
+      <h2>3. Talento humano (50&nbsp;%): la base de todo</h2>
+      <p>
+        Todo el presupuesto se ancla aquí. Se calcula a partir de las
+        <strong>horas estimadas por rol</strong> multiplicadas por la
+        <strong>tarifa por hora</strong>. Las horas se estiman sobre los módulos
+        reales del proyecto, que sirven como evidencia.
+      </p>
+
+      <h3>Fórmula</h3>
+      <pre class="sena-code"><code>{formulaTalento}</code></pre>
+
+      <h3>Estimación por rol (evidencia en el repositorio)</h3>
+      <div class="sena-table-wrap">
+        <table class="sena-table">
+          <thead>
+            <tr><th>Rol</th><th>Entregable (evidencia)</th><th>Sprint</th><th>Horas</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Análisis / Diseño</td><td>Modelo de datos (<code>db/schema.sql</code>, 35+ tablas)</td><td>S1</td><td>80</td></tr>
+            <tr><td>Backend</td><td>Routers Express: auth, coffee, production, ML</td><td>S2–S5</td><td>220</td></tr>
+            <tr><td>Frontend</td><td>Páginas Astro: tienda, trazabilidad, admin, app</td><td>S3–S6</td><td>200</td></tr>
+            <tr><td>Base de datos</td><td>Migración a Turso + migraciones incrementales</td><td>S2</td><td>60</td></tr>
+            <tr><td>Documentación</td><td><code>AGENTS.md</code>, <code>CHANGELOG.md</code>, páginas SENA</td><td>S1–S6</td><td>40</td></tr>
+            <tr><td class="sena-total" colspan="3">Total horas de desarrollo</td><td class="sena-total">600</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="sena-note">
+        <strong>Evidencia de cálculo:</strong> hoja de horas (timesheet) +
+        tablero de Sprints. La <em>tarifa/hora</em> se sustenta con la tabla
+        salarial SENA o el salario mínimo colombiano más prestaciones.
+      </div>
+    </section>
+
+    <!-- ── 4. Tecnología ────────────────────────────────────────── -->
+    <section id="tecnologia" class="sena-section">
+      <h2>4. Tecnología (18&nbsp;%): costo real, no estimado</h2>
+      <p>
+        Este rubro <strong>no se estima</strong>: se suma el costo facturable de
+        cada servicio que el proyecto usa de verdad. La evidencia son los planes
+        y facturas de cada proveedor.
+      </p>
+      <div class="sena-table-wrap">
+        <table class="sena-table">
+          <thead>
+            <tr><th>Servicio</th><th>Uso en el proyecto</th><th>Evidencia</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Vercel</td><td>Despliegue SSR + funciones serverless</td><td>Plan / factura</td></tr>
+            <tr><td>Dominio <code>dobleyo.cafe</code></td><td>Dominio principal y subdominio EN</td><td>Factura registrador</td></tr>
+            <tr><td>Turso (libSQL)</td><td>Base de datos</td><td>Plan</td></tr>
+            <tr><td>Resend</td><td>Correo transaccional</td><td>Plan</td></tr>
+            <tr><td>MercadoLibre API</td><td>Sync de órdenes y ventas</td><td>Cuenta vendedor</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="sena-note">
+        <strong>Regla:</strong> solo se incluyen herramientas que
+        <em>realmente se usan</em> y producen un entregable. Las que no se usan
+        van a la sección <a href="#no-incluir">«No incluir»</a>.
+      </div>
+    </section>
+
+    <!-- ── 5. Pruebas y gestión ─────────────────────────────────── -->
+    <section id="pruebas" class="sena-section">
+      <h2>5. Pruebas (12&nbsp;%) y gestión (10&nbsp;%)</h2>
+      <p>
+        Estos rubros se sustentan como <strong>porcentaje derivado del costo de
+        talento</strong>, o bien con sus propias horas si el equipo las registra
+        por separado.
+      </p>
+      <div class="sena-table-wrap">
+        <table class="sena-table">
+          <thead>
+            <tr><th>Rubro</th><th>Fórmula</th><th>Responsable</th><th>Evidencia</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Pruebas</td>
+              <td><code>0.12 × Costo_talento</code> (o horas QA × tarifa)</td>
+              <td>QA / Tester</td>
+              <td>Plan de pruebas y casos por Sprint</td>
+            </tr>
+            <tr>
+              <td>Gestión</td>
+              <td><code>0.10 × Costo_talento</code> (o horas PM × tarifa)</td>
+              <td>Líder / Scrum Master</td>
+              <td>Actas de daily, planning y review</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── 6. Contingencia ──────────────────────────────────────── -->
+    <section id="contingencia" class="sena-section">
+      <h2>6. Contingencia (10&nbsp;%) y riesgos</h2>
+      <p>
+        La contingencia es un margen por cambios de alcance e imprevistos. Se
+        calcula como un porcentaje del costo directo y se justifica con
+        <strong>riesgos concretos</strong> del proyecto.
+      </p>
+      <pre class="sena-code"><code>Contingencia = 0.10 × ( Costo_talento + Costo_tecnología )</code></pre>
+      <h3>Riesgos que justifican el margen</h3>
+      <ul class="sena-list">
+        <li>Pasarela de <strong>pagos deshabilitada</strong> (Fase 4 pendiente): retrabajo al integrarla.</li>
+        <li><strong>Paridad</strong> entre <code>server/index.js</code> y <code>api/index.js</code>: riesgo de divergencia.</li>
+        <li>Migración de sub-routers de producción de <strong>CommonJS a ESM</strong> aún pendiente.</li>
+        <li>Migración de datos estáticos (<code>products.ts</code>, blog) a base de datos.</li>
+      </ul>
+    </section>
+
+    <!-- ── 7. No incluir ────────────────────────────────────────── -->
+    <section id="no-incluir" class="sena-section">
+      <h2>7. Qué NO se incluye</h2>
+      <p>
+        Un presupuesto defendible también declara lo que deja por fuera. No se
+        incluyen:
+      </p>
+      <ul class="sena-list">
+        <li>Gastos sin relación con un entregable del proyecto.</li>
+        <li>Valores <strong>sin fuente</strong> verificable.</li>
+        <li>Herramientas que no se usarán.</li>
+        <li>Costos <strong>duplicados</strong> entre rubros.</li>
+      </ul>
+    </section>
+
+    <!-- ── 8. Apéndice ──────────────────────────────────────────── -->
+    <section id="apendice" class="sena-section sena-highlight">
+      <h2>8. Apéndice económico (tablas)</h2>
+      <p>
+        El apéndice consolida tres tablas. Las tarifas y totales monetarios se
+        completan con los valores que defina el equipo (se dejan como
+        <code>—</code> hasta fijarlos).
+      </p>
+
+      <h3>Tabla A — Horas por rol y Sprint</h3>
+      <div class="sena-table-wrap">
+        <table class="sena-table">
+          <thead>
+            <tr><th>Rol</th><th>Horas</th><th>Tarifa/h</th><th>Subtotal</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Análisis / Diseño</td><td>80</td><td>—</td><td>—</td></tr>
+            <tr><td>Backend</td><td>220</td><td>—</td><td>—</td></tr>
+            <tr><td>Frontend</td><td>200</td><td>—</td><td>—</td></tr>
+            <tr><td>Base de datos</td><td>60</td><td>—</td><td>—</td></tr>
+            <tr><td>Documentación</td><td>40</td><td>—</td><td>—</td></tr>
+            <tr><td class="sena-total">Total talento</td><td class="sena-total">600</td><td></td><td class="sena-total">—</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Tabla B — Tecnología (costo real)</h3>
+      <div class="sena-table-wrap">
+        <table class="sena-table">
+          <thead>
+            <tr><th>Servicio</th><th>Periodicidad</th><th>Costo</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Vercel</td><td>Mensual</td><td>—</td></tr>
+            <tr><td>Dominio</td><td>Anual</td><td>—</td></tr>
+            <tr><td>Turso</td><td>Mensual</td><td>—</td></tr>
+            <tr><td>Resend</td><td>Mensual</td><td>—</td></tr>
+            <tr><td class="sena-total">Total tecnología</td><td></td><td class="sena-total">—</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Tabla C — Rubros derivados</h3>
+      <div class="sena-table-wrap">
+        <table class="sena-table">
+          <thead>
+            <tr><th>Rubro</th><th>Fórmula</th><th>Valor</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Pruebas</td><td><code>0.12 × talento</code></td><td>—</td></tr>
+            <tr><td>Gestión</td><td><code>0.10 × talento</code></td><td>—</td></tr>
+            <tr><td>Contingencia</td><td><code>0.10 × (talento + tecnología)</code></td><td>—</td></tr>
+            <tr><td class="sena-total">TOTAL PROYECTO</td><td></td><td class="sena-total">—</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── 9. Cómo defenderlo ───────────────────────────────────── -->
+    <section id="sustentar" class="sena-section">
+      <h2>9. Cómo defenderlo ante el evaluador</h2>
+      <ol class="sena-steps">
+        <li><strong>Cada cifra apunta a una fuente.</strong> Talento → timesheet; tecnología → factura/plan; rubros derivados → fórmula escrita.</li>
+        <li><strong>Trazabilidad rubro → Sprint → entregable.</strong> Ej.: «Backend trazabilidad = Sprint&nbsp;5, entregables <code>coffee.js</code> + <code>trazabilidad.astro</code>».</li>
+        <li><strong>Responsable por rubro.</strong> Nombre y rol que responde por cada línea.</li>
+        <li><strong>Apéndice con tres tablas:</strong> horas por rol/Sprint, tecnología real y rubros derivados como % de las anteriores.</li>
+      </ol>
+
+      <div class="sena-note sena-note--ok">
+        <strong>Resumen para la sustentación:</strong> el presupuesto se sostiene
+        porque cada rubro tiene fórmula, responsable, Sprint y evidencia. El
+        talento humano (50&nbsp;%) ancla el cálculo; tecnología es costo real;
+        pruebas, gestión y contingencia se derivan con porcentajes justificados;
+        y lo irrelevante queda explícitamente excluido.
+      </div>
+
+      <p class="sena-back"><a href="/sena/python">→ Ver documentación del módulo Python</a></p>
+    </section>
+  </article>
+
+  <style>
+    .sena {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 2rem 0 4rem;
+      color: var(--fg, #1f2937);
+      line-height: 1.7;
+    }
+    .sena-hero {
+      padding: 2rem 0 1.5rem;
+      border-bottom: 2px solid var(--border, #e6e6e6);
+      margin-bottom: 2rem;
+    }
+    .sena-tag {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent, #c67b4e);
+      margin-bottom: 0.75rem;
+    }
+    .sena-hero h1 {
+      font-size: clamp(1.9rem, 5vw, 2.6rem);
+      color: var(--coffee, #251a14);
+      margin: 0 0 0.75rem;
+      line-height: 1.15;
+    }
+    .sena-lead { font-size: 1.1rem; color: var(--muted-fg, #6b7280); margin: 0; }
+
+    .sena-toc {
+      background: var(--card, #fff);
+      border: 1px solid var(--border, #e6e6e6);
+      border-left: 4px solid var(--accent, #c67b4e);
+      border-radius: 10px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 2.5rem;
+    }
+    .sena-toc strong {
+      display: block; color: var(--coffee, #251a14);
+      text-transform: uppercase; font-size: 0.78rem;
+      letter-spacing: 0.08em; margin-bottom: 0.5rem;
+    }
+    .sena-toc ol { margin: 0; padding-left: 1.25rem; }
+    .sena-toc li { margin: 0.25rem 0; }
+    .sena-toc a { color: var(--fg, #1f2937); text-decoration: none; }
+    .sena-toc a:hover { color: var(--accent, #c67b4e); text-decoration: underline; }
+
+    .sena-section { margin-bottom: 2.75rem; scroll-margin-top: 2rem; }
+    .sena-section h2 {
+      font-size: 1.5rem;
+      color: var(--coffee, #251a14);
+      margin: 0 0 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border, #e6e6e6);
+    }
+    .sena-section h3 {
+      font-size: 1.1rem; color: var(--coffee, #251a14);
+      margin: 1.75rem 0 0.75rem;
+    }
+    .sena-section p { margin: 0 0 1rem; }
+    .sena-section code {
+      background: rgba(var(--coffee-rgb, 37, 26, 20), 0.06);
+      padding: 0.1rem 0.4rem;
+      border-radius: 5px;
+      font-size: 0.9em;
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    }
+
+    .sena-highlight {
+      background: rgba(var(--coffee-rgb, 37, 26, 20), 0.03);
+      border: 1px solid var(--border, #e6e6e6);
+      border-radius: 12px;
+      padding: 1.75rem;
+    }
+
+    .sena-code {
+      background: var(--coffee, #251a14);
+      color: #f3ede6;
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      overflow-x: auto;
+      font-size: 0.86rem;
+      line-height: 1.55;
+      margin: 0 0 1.25rem;
+    }
+    .sena-code code { background: none; padding: 0; color: inherit; font-size: inherit; }
+
+    .sena-note {
+      background: var(--card, #fff);
+      border: 1px solid var(--border, #e6e6e6);
+      border-left: 4px solid var(--accent, #c67b4e);
+      border-radius: 8px;
+      padding: 0.9rem 1.2rem;
+      margin: 1.25rem 0;
+      font-size: 0.95rem;
+    }
+    .sena-note--ok { border-left-color: #2e7d5b; }
+
+    .sena-list, .sena-steps { margin: 0 0 1rem; padding-left: 1.4rem; }
+    .sena-list li, .sena-steps li { margin: 0.4rem 0; }
+    .sena-steps ul { margin: 0.4rem 0; }
+
+    .sena-table-wrap { overflow-x: auto; margin: 0 0 1.25rem; }
+    .sena-table {
+      width: 100%; border-collapse: collapse;
+      font-size: 0.92rem;
+      background: var(--card, #fff);
+      border: 1px solid var(--border, #e6e6e6);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .sena-table th {
+      text-align: left; background: rgba(var(--coffee-rgb, 37, 26, 20), 0.05);
+      color: var(--coffee, #251a14); font-size: 0.78rem;
+      text-transform: uppercase; letter-spacing: 0.05em;
+      padding: 0.7rem 1rem;
+    }
+    .sena-table td {
+      padding: 0.7rem 1rem;
+      border-top: 1px solid var(--border, #e6e6e6);
+      vertical-align: top;
+    }
+    .sena-total { font-weight: 700; color: var(--coffee, #251a14); }
+
+    /* Barra de distribución del presupuesto */
+    .sena-bar {
+      display: flex;
+      width: 100%;
+      border-radius: 8px;
+      overflow: hidden;
+      margin: 0 0 0.9rem;
+      min-height: 2.6rem;
+    }
+    .sena-bar__seg {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.85rem;
+      padding: 0.5rem 0.25rem;
+    }
+    .sena-bar__seg--talento { background: #1f7a44; }
+    .sena-bar__seg--tec     { background: #e08a1e; }
+    .sena-bar__seg--pru     { background: #6cae6c; }
+    .sena-bar__seg--ges     { background: #8a8f98; }
+    .sena-bar__seg--con     { background: #a98b5d; }
+
+    .sena-legend {
+      list-style: none;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem 1.1rem;
+      margin: 0 0 1.5rem;
+      padding: 0;
+      font-size: 0.85rem;
+      color: var(--muted-fg, #6b7280);
+    }
+    .sena-legend li { display: flex; align-items: center; gap: 0.4rem; }
+    .sena-dot {
+      width: 0.8rem; height: 0.8rem;
+      border-radius: 3px;
+      display: inline-block;
+    }
+
+    .sena-back { margin-top: 2rem; }
+    .sena-back a {
+      color: var(--accent, #c67b4e);
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .sena-back a:hover { text-decoration: underline; }
+
+    @media (max-width: 768px) {
+      .sena { padding: 1rem 0 3rem; }
+      .sena-highlight { padding: 1.25rem; }
+      .sena-bar__seg { font-size: 0.72rem; }
+    }
+  </style>
+</Layout>
