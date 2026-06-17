@@ -306,7 +306,9 @@ const productJsonLd = {
     </section>
   </section>
 
-  <script>
+  <!-- Acciones de producto + reseñas (externalizado por CSP estricta) -->
+  <script is:inline src="/assets/js/producto.js"></script>
+  <script type="text/skip-old-block-do-not-render" data-removed>
     (function () {
       const actions = document.getElementById("productActions");
       if (!actions) return;
