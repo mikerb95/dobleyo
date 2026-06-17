@@ -239,24 +239,24 @@ Costo_talento = Σ Costo_rol  (todos los roles)`;
     <section id="apendice" class="sena-section sena-highlight">
       <h2>8. Apéndice económico (tablas)</h2>
       <p>
-        El apéndice consolida tres tablas. Las tarifas y totales monetarios se
-        completan con los valores que defina el equipo (se dejan como
-        <code>—</code> hasta fijarlos).
+        El apéndice consolida tres tablas. Los valores monetarios se muestran
+        con el <strong>escenario recomendado (freelance junior, $25.000/h)</strong>
+        de la sección 9; basta cambiar la tarifa/hora para recalcular todo.
       </p>
 
       <h3>Tabla A — Horas por rol y Sprint</h3>
       <div class="sena-table-wrap">
         <table class="sena-table">
           <thead>
-            <tr><th>Rol</th><th>Horas</th><th>Tarifa/h</th><th>Subtotal</th></tr>
+            <tr><th>Rol</th><th>Horas</th><th>Tarifa/h</th><th>Subtotal (COP)</th></tr>
           </thead>
           <tbody>
-            <tr><td>Análisis / Diseño</td><td>80</td><td>—</td><td>—</td></tr>
-            <tr><td>Backend</td><td>220</td><td>—</td><td>—</td></tr>
-            <tr><td>Frontend</td><td>200</td><td>—</td><td>—</td></tr>
-            <tr><td>Base de datos</td><td>60</td><td>—</td><td>—</td></tr>
-            <tr><td>Documentación</td><td>40</td><td>—</td><td>—</td></tr>
-            <tr><td class="sena-total">Total talento</td><td class="sena-total">600</td><td></td><td class="sena-total">—</td></tr>
+            <tr><td>Análisis / Diseño</td><td>80</td><td>$25.000</td><td>$2.000.000</td></tr>
+            <tr><td>Backend</td><td>220</td><td>$25.000</td><td>$5.500.000</td></tr>
+            <tr><td>Frontend</td><td>200</td><td>$25.000</td><td>$5.000.000</td></tr>
+            <tr><td>Base de datos</td><td>60</td><td>$25.000</td><td>$1.500.000</td></tr>
+            <tr><td>Documentación</td><td>40</td><td>$25.000</td><td>$1.000.000</td></tr>
+            <tr><td class="sena-total">Total talento</td><td class="sena-total">600</td><td></td><td class="sena-total">$15.000.000</td></tr>
           </tbody>
         </table>
       </div>
@@ -265,37 +265,93 @@ Costo_talento = Σ Costo_rol  (todos los roles)`;
       <div class="sena-table-wrap">
         <table class="sena-table">
           <thead>
-            <tr><th>Servicio</th><th>Periodicidad</th><th>Costo</th></tr>
+            <tr><th>Servicio</th><th>Periodicidad</th><th>Costo (COP)</th></tr>
           </thead>
           <tbody>
-            <tr><td>Vercel</td><td>Mensual</td><td>—</td></tr>
-            <tr><td>Dominio</td><td>Anual</td><td>—</td></tr>
-            <tr><td>Turso</td><td>Mensual</td><td>—</td></tr>
-            <tr><td>Resend</td><td>Mensual</td><td>—</td></tr>
-            <tr><td class="sena-total">Total tecnología</td><td></td><td class="sena-total">—</td></tr>
+            <tr><td>Vercel (Hobby/Pro)</td><td>~6 meses</td><td>$480.000</td></tr>
+            <tr><td>Dominio <code>dobleyo.cafe</code></td><td>Anual</td><td>$160.000</td></tr>
+            <tr><td>Turso (free/starter)</td><td>~6 meses</td><td>$200.000</td></tr>
+            <tr><td>Resend (free/starter)</td><td>~6 meses</td><td>$160.000</td></tr>
+            <tr><td class="sena-total">Total tecnología</td><td></td><td class="sena-total">$1.000.000</td></tr>
           </tbody>
         </table>
       </div>
 
-      <h3>Tabla C — Rubros derivados</h3>
+      <h3>Tabla C — Rubros derivados y total</h3>
       <div class="sena-table-wrap">
         <table class="sena-table">
           <thead>
-            <tr><th>Rubro</th><th>Fórmula</th><th>Valor</th></tr>
+            <tr><th>Rubro</th><th>Fórmula</th><th>Valor (COP)</th></tr>
           </thead>
           <tbody>
-            <tr><td>Pruebas</td><td><code>0.12 × talento</code></td><td>—</td></tr>
-            <tr><td>Gestión</td><td><code>0.10 × talento</code></td><td>—</td></tr>
-            <tr><td>Contingencia</td><td><code>0.10 × (talento + tecnología)</code></td><td>—</td></tr>
-            <tr><td class="sena-total">TOTAL PROYECTO</td><td></td><td class="sena-total">—</td></tr>
+            <tr><td>Talento humano</td><td>600 h × $25.000</td><td>$15.000.000</td></tr>
+            <tr><td>Tecnología</td><td>Costo real (Tabla B)</td><td>$1.000.000</td></tr>
+            <tr><td>Pruebas</td><td><code>0.12 × talento</code></td><td>$1.800.000</td></tr>
+            <tr><td>Gestión</td><td><code>0.10 × talento</code></td><td>$1.500.000</td></tr>
+            <tr><td>Contingencia</td><td><code>0.10 × (talento + tecnología)</code></td><td>$1.600.000</td></tr>
+            <tr><td class="sena-total">TOTAL PROYECTO</td><td></td><td class="sena-total">≈ $20.900.000</td></tr>
           </tbody>
         </table>
       </div>
     </section>
 
-    <!-- ── 9. Cómo defenderlo ───────────────────────────────────── -->
+    <!-- ── 9. Cuánto cuesta ─────────────────────────────────────── -->
+    <section id="costo" class="sena-section sena-highlight">
+      <h2>9. ¿Cuánto cuesta el proyecto?</h2>
+      <p>
+        El costo total depende de la <strong>tarifa/hora</strong>, porque el
+        talento humano (las 600 horas estimadas) es el ancla. Se presentan tres
+        escenarios para Colombia (2026). La tecnología (~$1.000.000 por ~6 meses)
+        y las fórmulas de los rubros derivados son las mismas en los tres.
+      </p>
+
+      <div class="sena-table-wrap">
+        <table class="sena-table">
+          <thead>
+            <tr>
+              <th>Rubro</th>
+              <th>A · SENA<br/>$12.000/h</th>
+              <th>B · Junior<br/>$25.000/h</th>
+              <th>C · Mid<br/>$40.000/h</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Talento (600 h)</td><td>$7.200.000</td><td>$15.000.000</td><td>$24.000.000</td></tr>
+            <tr><td>Pruebas (12&nbsp;%)</td><td>$864.000</td><td>$1.800.000</td><td>$2.880.000</td></tr>
+            <tr><td>Gestión (10&nbsp;%)</td><td>$720.000</td><td>$1.500.000</td><td>$2.400.000</td></tr>
+            <tr><td>Tecnología</td><td>$1.000.000</td><td>$1.000.000</td><td>$1.000.000</td></tr>
+            <tr><td>Contingencia (10&nbsp;%)</td><td>$820.000</td><td>$1.600.000</td><td>$2.500.000</td></tr>
+            <tr>
+              <td class="sena-total">TOTAL (COP)</td>
+              <td class="sena-total">≈ $10.600.000</td>
+              <td class="sena-total">≈ $20.900.000</td>
+              <td class="sena-total">≈ $32.800.000</td>
+            </tr>
+            <tr>
+              <td>Equivalente USD*</td>
+              <td>~$2.650</td>
+              <td>~$5.200</td>
+              <td>~$8.200</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="sena-fine">* Conversión referencial a ~$4.000 COP/USD.</p>
+
+      <div class="sena-note sena-note--ok">
+        <strong>Cifra recomendada para la sustentación:</strong> el escenario
+        <strong>A (base SENA)</strong> o <strong>B (junior)</strong> es el más
+        defendible, porque la tarifa se sustenta con la tabla salarial o el
+        salario mínimo + prestaciones — evidencia verificable, sin «valores sin
+        fuente». Las 600 horas no son inventadas: salen de los entregables
+        reales del repositorio (schema con 35+ tablas, routers Express, páginas
+        Astro).
+      </div>
+    </section>
+
+    <!-- ── 10. Cómo defenderlo ──────────────────────────────────── -->
     <section id="sustentar" class="sena-section">
-      <h2>9. Cómo defenderlo ante el evaluador</h2>
+      <h2>10. Cómo defenderlo ante el evaluador</h2>
       <ol class="sena-steps">
         <li><strong>Cada cifra apunta a una fuente.</strong> Talento → timesheet; tecnología → factura/plan; rubros derivados → fórmula escrita.</li>
         <li><strong>Trazabilidad rubro → Sprint → entregable.</strong> Ej.: «Backend trazabilidad = Sprint&nbsp;5, entregables <code>coffee.js</code> + <code>trazabilidad.astro</code>».</li>
