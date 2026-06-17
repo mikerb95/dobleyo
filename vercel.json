@@ -11,7 +11,15 @@
       "destination": "/en/:path*"
     },
     {
-      "source": "/api/(?!ml/(?:recompute|demand)).*",
+      "source": "/api/ml/recompute",
+      "destination": "/api/ml/recompute"
+    },
+    {
+      "source": "/api/ml/demand",
+      "destination": "/api/ml/demand"
+    },
+    {
+      "source": "/api/:path*",
       "destination": "/api/index.js"
     }
   ],
