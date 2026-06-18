@@ -1,0 +1,663 @@
+---
+import Layout from "../layouts/Layout.astro";
+
+// Página de defensa académica: cómo se construyó DobleYo Café con asistencia de IA.
+// noindex: documento interno de sustentación, accesible por URL pero fuera de buscadores.
+
+const secciones = [
+  { id: "resumen", label: "1. Resumen ejecutivo" },
+  { id: "metodologia", label: "2. Cómo trabajé con la IA" },
+  { id: "mvp", label: "3. Por qué es un MVP funcional" },
+  { id: "arquitectura", label: "4. Arquitectura y stack" },
+  { id: "seguridad", label: "5. Seguridad (defensa en profundidad)" },
+  { id: "osint", label: "6. Capa OSINT, PII y Ley 1581" },
+  { id: "usabilidad", label: "7. Usabilidad y accesibilidad" },
+  { id: "escalabilidad", label: "8. Escalabilidad" },
+  { id: "buenas-practicas", label: "9. Buenas prácticas" },
+  { id: "infraestructura", label: "10. Infraestructura, dominio y SSL" },
+  { id: "deuda", label: "11. Honestidad: deuda técnica" },
+  { id: "defensa", label: "12. Sustentación ante el docente" },
+];
+---
+
+<Layout
+  title="Desarrollo asistido por IA — DobleYo Café"
+  description="Documento de sustentación: cómo se construyó la plataforma DobleYo Café con asistencia de IA, garantizando funcionalidad de MVP, seguridad, usabilidad, escalabilidad y buenas prácticas."
+  noindex={true}
+  hideWhatsApp={true}
+>
+  <div class="devia">
+    <!-- Encabezado -->
+    <header class="devia-hero">
+      <p class="devia-kicker">Proyecto de grado · Documento de sustentación</p>
+      <h1>Cómo construí DobleYo Café con ayuda de la IA</h1>
+      <p class="devia-lead">
+        Esta página justifica, con evidencia del propio código, por qué
+        <strong>DobleYo Café</strong> es un MVP funcional que cumple con
+        seguridad, usabilidad, escalabilidad y buenas prácticas de ingeniería.
+        La tesis central es simple: cuando una parte del código se genera con
+        IA, la competencia profesional que se evalúa ya no es <em>escribir</em>
+        cada línea, sino <strong>auditarla, entenderla y decidir con criterio</strong>.
+      </p>
+      <p class="devia-meta">Última revisión: <strong>18 de junio de 2026</strong></p>
+    </header>
+
+    <div class="devia-grid">
+      <!-- Índice lateral -->
+      <nav class="devia-toc" aria-label="Índice del documento">
+        <p class="devia-toc__title">Contenido</p>
+        <ol>
+          {secciones.map((s) => (
+            <li><a href={`#${s.id}`}>{s.label}</a></li>
+          ))}
+        </ol>
+      </nav>
+
+      <article class="devia-content">
+        <!-- 1. RESUMEN -->
+        <section id="resumen">
+          <h2>1. Resumen ejecutivo</h2>
+          <p>
+            DobleYo Café es una plataforma de comercio electrónico de café de
+            especialidad colombiano. No es un sitio estático ni una maqueta:
+            maneja <strong>dinero, datos personales y trazabilidad real</strong>
+            del grano (finca → cosecha → tostión → empaque → venta), con un panel
+            administrativo/ERP, integración con MercadoLibre y un módulo financiero
+            de contabilidad de doble partida.
+          </p>
+          <div class="devia-callout">
+            <strong>El argumento en una frase.</strong> Usé la IA como un
+            <em>programador par muy rápido</em>, pero cada pieza que produjo pasó
+            por un filtro humano de lectura crítica: validar supuestos, comprobar
+            paridad entre entornos, cerrar agujeros de seguridad y rechazar lo que
+            «se veía bien» pero era riesgoso. El resultado es un sistema
+            defendible, no un copy-paste.
+          </div>
+        </section>
+
+        <!-- 2. METODOLOGÍA -->
+        <section id="metodologia">
+          <h2>2. Cómo trabajé con la IA (de escribir a auditar)</h2>
+          <p>
+            La IA produce código que <em>casi siempre funciona</em>. El riesgo
+            rara vez está en que no compile —compila—, sino en
+            <strong>supuestos silenciosos</strong>: un token reutilizado para dos
+            propósitos, una política de seguridad que solo cubre la mitad de la
+            app, un endpoint de depuración que se queda en producción. Ninguno
+            rompe una demo; todos son explotables.
+          </p>
+          <p>Mi flujo de trabajo con IA tuvo cuatro reglas fijas:</p>
+          <ul>
+            <li>
+              <strong>Contexto antes que código.</strong> El repositorio tiene un
+              <code>CLAUDE.md</code> y un <code>AGENTS.md</code> con convenciones
+              obligatorias (ESM, parámetros SQL posicionales, formato de respuesta
+              de API, español de Colombia, paridad de entrypoints). La IA opera
+              dentro de esas reglas, no a su antojo.
+            </li>
+            <li>
+              <strong>Lectura por capas de defensa.</strong> Todo lo generado se
+              revisa en orden: autenticación → autorización → validación de
+              entrada → transporte (headers) → persistencia (SQL).
+            </li>
+            <li>
+              <strong>Verificación, no confianza.</strong> Cada cambio se valida
+              con <code>vitest</code> (unitarios), <code>astro check</code>
+              (tipos), <code>eslint</code> (estilo) y pruebas <code>playwright</code>
+              de humo, todo orquestado en CI.
+            </li>
+            <li>
+              <strong>Honestidad documental.</strong> Lo que quedó pendiente se
+              escribe como deuda técnica (ver §11), no se esconde.
+            </li>
+          </ul>
+          <p>
+            La evidencia de este trabajo de auditoría está versionada en el repo:
+            <code>seguridad.md</code> (auditoría completa), <code>AGENTS.md</code>
+            (convenciones) y <code>CHANGELOG.md</code> (historial de decisiones).
+          </p>
+        </section>
+
+        <!-- 3. MVP -->
+        <section id="mvp">
+          <h2>3. Por qué es un MVP funcional</h2>
+          <p>
+            Un MVP no es «un demo bonito»: es el conjunto mínimo de funciones que
+            entrega valor de extremo a extremo. DobleYo cubre los flujos
+            completos del negocio:
+          </p>
+          <div class="devia-cards">
+            <div class="devia-card">
+              <h3>Tienda</h3>
+              <p>Catálogo, carrito, checkout, cupones y newsletter (B2C Colombia + B2B/USA en subdominio inglés).</p>
+            </div>
+            <div class="devia-card">
+              <h3>Trazabilidad</h3>
+              <p>Pipeline cosecha → almacenamiento → tostión → empaque → venta, con etiquetas QR consultables.</p>
+            </div>
+            <div class="devia-card">
+              <h3>Producción</h3>
+              <p>Órdenes de producción, lotes de tueste y control de calidad (cupping SCA).</p>
+            </div>
+            <div class="devia-card">
+              <h3>Finanzas</h3>
+              <p>Contabilidad de doble partida, facturación, pagos multifactura y presupuestos.</p>
+            </div>
+            <div class="devia-card">
+              <h3>Admin / ERP</h3>
+              <p>Inventario, usuarios, fincas, CRM, mapa de calor de ventas y auditoría.</p>
+            </div>
+            <div class="devia-card">
+              <h3>Integraciones</h3>
+              <p>MercadoLibre (sync de órdenes y geocodificación), Resend (email) y Google Auth.</p>
+            </div>
+          </div>
+          <p>
+            Cada módulo tiene su router de Express, su validación de entrada y su
+            registro de auditoría. El front consume una API estandarizada con el
+            contrato <code>{`{ success, data | error }`}</code>.
+          </p>
+        </section>
+
+        <!-- 4. ARQUITECTURA -->
+        <section id="arquitectura">
+          <h2>4. Arquitectura y stack</h2>
+          <p>
+            Arquitectura de tres capas desplegada sobre Vercel, con un detalle
+            clave: la API Express tiene <strong>dos entrypoints</strong> que deben
+            mantenerse en paridad — <code>server/index.js</code> (standalone, para
+            desarrollo) y <code>api/index.js</code> (serverless, para producción).
+          </p>
+          <div class="devia-table-wrap">
+            <table>
+              <thead>
+                <tr><th>Capa</th><th>Tecnología</th><th>Rol</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Frontend SSR</td><td>Astro 5.16 + adaptador Vercel</td><td>HTML estático + SSR en rutas dinámicas</td></tr>
+                <tr><td>UI interactiva</td><td>React 19 + Framer Motion</td><td>Solo donde hace falta estado/animación</td></tr>
+                <tr><td>Backend API</td><td>Express 4.19 (ESM)</td><td>Lógica de negocio, montada en dos entrypoints</td></tr>
+                <tr><td>Base de datos</td><td>Turso (libSQL/SQLite)</td><td>35+ tablas, consultas parametrizadas</td></tr>
+                <tr><td>Auth</td><td>JWT + bcrypt</td><td>Access 15 min + refresh opaco 7 días en cookies HttpOnly</td></tr>
+                <tr><td>Email</td><td>Resend</td><td>Verificación, confirmación de orden, contacto</td></tr>
+                <tr><td>Mapas</td><td>Leaflet + leaflet.heat</td><td>Mapa de calor de ventas en admin</td></tr>
+                <tr><td>Deploy</td><td>Vercel</td><td>SSR + funciones serverless + cron</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>
+            La separación SSR/serverless tiene una consecuencia de seguridad que
+            resultó decisiva: en Vercel, <strong>Express solo atiende
+            <code>/api/*</code></strong>; las páginas HTML las sirve el adaptador
+            de Astro. Eso obligó a aplicar los headers de seguridad en
+            <code>vercel.json</code> y no solo en Express (ver §5, Hallazgo F).
+          </p>
+        </section>
+
+        <!-- 5. SEGURIDAD -->
+        <section id="seguridad">
+          <h2>5. Seguridad: defensa en profundidad</h2>
+          <p>
+            El principio rector es que <strong>ninguna capa es suficiente por sí
+            sola</strong>; si una falla, otra contiene el daño. Una petición
+            atraviesa nueve controles antes de tocar y después de tocar la base de
+            datos:
+          </p>
+          <pre class="devia-diagram">Petición ─▶ [1] HTTPS/HSTS ─▶ [2] CSP + headers ─▶ [3] CORS ─▶ [4] Rate limit
+         ─▶ [5] Autenticación (JWT) ─▶ [6] Autorización (roles)
+         ─▶ [7] Validación de entrada ─▶ [8] Consultas parametrizadas ─▶ BD
+                                                              └─▶ [9] Auditoría</pre>
+
+          <h3>Controles destacados</h3>
+          <ul>
+            <li><strong>Transporte:</strong> HSTS con <code>max-age=63072000; includeSubDomains; preload</code> (2 años) fuerza HTTPS.</li>
+            <li><strong>CSP y headers:</strong> <code>helmet</code> en la API y política replicada en <code>vercel.json</code> para las páginas; <code>X-Frame-Options</code>, <code>nosniff</code>, <code>Referrer-Policy</code> y <code>Permissions-Policy</code>.</li>
+            <li><strong>Autenticación:</strong> contraseñas con <code>bcrypt</code> (salt 10), access token JWT de 15 min y refresh token <em>opaco</em> de 40 bytes guardado en BD como hash SHA-256. Los secretos JWT son obligatorios: el servidor no arranca sin ellos (<em>fail-fast</em>).</li>
+            <li><strong>Sesiones:</strong> cookies <code>HttpOnly</code> — aunque un atacante logre un XSS, JavaScript no puede leer la sesión.</li>
+            <li><strong>Autorización:</strong> middleware <code>requireRole</code> con roles admin / client / provider / caficultor.</li>
+            <li><strong>Validación:</strong> <code>express-validator</code> en cada endpoint de escritura, con respuesta <code>422</code> estandarizada.</li>
+            <li><strong>SQL:</strong> 100% de consultas parametrizadas con <code>?</code>. Cero interpolación de variables → sin inyección SQL.</li>
+            <li><strong>Auditoría:</strong> tabla <code>audit_logs</code> que registra quién hizo qué y sobre qué recurso.</li>
+          </ul>
+
+          <h3>Rate limiting por acción</h3>
+          <div class="devia-table-wrap">
+            <table>
+              <thead><tr><th>Acción</th><th>Ventana</th><th>Máximo</th><th>Nota</th></tr></thead>
+              <tbody>
+                <tr><td>Login</td><td>15 min</td><td>5</td><td>Cuenta todos los intentos</td></tr>
+                <tr><td>Registro</td><td>1 hora</td><td>3</td><td>Solo cuenta fallos</td></tr>
+                <tr><td>Refresh</td><td>5 min</td><td>10</td><td>Detecta abuso de rotación</td></tr>
+                <tr><td>Global <code>/api</code></td><td>15 min</td><td>600</td><td>Excluye webhooks y <code>/health</code></td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3>Auditoría de seguridad: hallazgos y correcciones</h3>
+          <p>
+            La revisión del código generado encontró y corrigió vulnerabilidades
+            reales. Esta tabla es el corazón de la sustentación: muestra
+            <em>criterio</em>, no solo configuración.
+          </p>
+          <div class="devia-table-wrap">
+            <table>
+              <thead><tr><th>#</th><th>Hallazgo</th><th>Severidad</th><th>Estado</th></tr></thead>
+              <tbody>
+                <tr><td>A</td><td>Token de verificación reutilizable como token de sesión</td><td><span class="sev sev--high">Alta</span></td><td>Corregido</td></tr>
+                <tr><td>B</td><td>Longitud mínima de contraseña inconsistente (6 vs 8)</td><td><span class="sev sev--med">Media</span></td><td>Corregido</td></tr>
+                <tr><td>C</td><td>Endpoint <code>/api/debug/config</code> filtraba la configuración</td><td><span class="sev sev--med">Media</span></td><td>Eliminado</td></tr>
+                <tr><td>D</td><td>CORS respondía con 500 y traza de pila</td><td><span class="sev sev--med">Media</span></td><td>Corregido</td></tr>
+                <tr><td>E</td><td><code>'unsafe-inline'</code> en la CSP debilita anti-XSS</td><td><span class="sev sev--med">Media</span></td><td>Documentado (fase posterior)</td></tr>
+                <tr><td>F</td><td>Las páginas en producción no tenían ningún header de seguridad</td><td><span class="sev sev--high">Alta</span></td><td>Corregido</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="devia-callout">
+            <strong>El hallazgo F explicado (el más importante).</strong>
+            <code>helmet</code> estaba montado dentro de Express, pero en Vercel
+            Express solo atiende <code>/api/*</code>. Conclusión: en producción
+            <em>todas las páginas HTML iban sin CSP, sin HSTS, sin
+            X-Frame-Options</em>. «Configuramos helmet, estamos protegidos» es
+            justo el supuesto que la IA reproduce y que la auditoría debe
+            cuestionar: <em>¿protegidos dónde, exactamente?</em> La corrección
+            exigió entender el modelo de despliegue, no solo el código.
+          </div>
+        </section>
+
+        <!-- 6. OSINT -->
+        <section id="osint">
+          <h2>6. Capa OSINT, datos personales y Ley 1581</h2>
+          <p>
+            OSINT (<em>Open Source Intelligence</em>) es el reconocimiento que un
+            atacante hace <strong>antes</strong> de atacar, usando solo
+            información pública. La meta aquí es minimizar la
+            <strong>huella explotable</strong> del proyecto.
+          </p>
+
+          <h3>Reducción de la huella de reconocimiento</h3>
+          <ul>
+            <li><strong>Sin secretos en el repositorio:</strong> <code>.env</code> está en <code>.gitignore</code>; solo se versiona <code>.env.example</code> con claves vacías. Los secretos viven en variables de entorno de Vercel.</li>
+            <li><strong>Sin secretos en el bundle del cliente:</strong> tokens, claves de API y credenciales nunca llegan al navegador; se usan solo en el servidor.</li>
+            <li><strong>Endpoints de debug eliminados:</strong> el hallazgo C cerró un endpoint que revelaba qué integraciones estaban activas — reconocimiento gratuito para un atacante.</li>
+            <li><strong>Mensajes de error sobrios:</strong> el cliente recibe «Error interno del servidor», no trazas de pila (el hallazgo D eliminó un 500 con stack trace en CORS).</li>
+            <li><strong>Headers visibles a escáneres:</strong> un escaneo de <em>securityheaders.com</em> o <code>nmap</code> ahora encuentra CSP, HSTS y anti-clickjacking en todas las rutas, no agujeros.</li>
+            <li><strong>Superficie privada fuera de buscadores:</strong> el panel admin y este mismo documento llevan <code>noindex, nofollow</code>; el <code>sitemap.xml</code> solo lista páginas públicas.</li>
+            <li><strong>Enumeración contenida:</strong> el rate limiting frena el sondeo automatizado de login y endpoints.</li>
+          </ul>
+
+          <h3>Protección de datos personales (PII)</h3>
+          <p>
+            La plataforma recolecta PII (nombres, direcciones, teléfonos,
+            documentos) de clientes y caficultores. El tratamiento se alinea con
+            la <strong>Ley 1581 de 2012</strong> (habeas data, Colombia):
+          </p>
+          <ul>
+            <li>Banner de consentimiento de cookies en el layout público.</li>
+            <li>Páginas de <a href="/privacidad">privacidad</a>, <a href="/terminos">términos</a> y baja de newsletter con token de desuscripción.</li>
+            <li>Minimización: la PII vive en la base de datos protegida por auth y roles, nunca expuesta en el front ni en respuestas públicas.</li>
+            <li>Accesibilidad como derecho (<a href="/accesibilidad">Ley 1618 de 2013</a>), no solo como mejora.</li>
+          </ul>
+        </section>
+
+        <!-- 7. USABILIDAD -->
+        <section id="usabilidad">
+          <h2>7. Usabilidad y accesibilidad</h2>
+          <ul>
+            <li><strong>Mobile-first</strong> con breakpoints estándar (480 / 768 / 1024 / 1400) y áreas táctiles ≥ 44×44 px.</li>
+            <li><strong>WCAG 2.1 AA</strong> (conformidad parcial documentada): contraste ≥ 4.5:1, navegación por teclado, foco visible, HTML semántico y ARIA en iconos y modales.</li>
+            <li><strong>Movimiento reducido:</strong> animaciones desactivadas con <code>prefers-reduced-motion</code>.</li>
+            <li><strong>Internacionalización es/en:</strong> contenido en <code>src/i18n</code> y subdominio <code>en.dobleyo.cafe</code> enrutado en <code>vercel.json</code>.</li>
+            <li><strong>Español de Colombia</strong> formal y consistente en toda la UI (tratamiento de «usted», sin voseo), como norma del proyecto.</li>
+            <li><strong>SEO:</strong> meta tags, Open Graph, canonical, hreflang y JSON-LD de organización en cada página pública.</li>
+          </ul>
+        </section>
+
+        <!-- 8. ESCALABILIDAD -->
+        <section id="escalabilidad">
+          <h2>8. Escalabilidad</h2>
+          <ul>
+            <li><strong>Serverless por diseño:</strong> la API corre como funciones en Vercel; escala con la demanda sin servidores que administrar.</li>
+            <li><strong>Base de datos en el borde:</strong> Turso (libSQL) replica cerca del usuario y reduce latencia.</li>
+            <li><strong>Modularidad:</strong> +30 routers independientes y servicios desacoplados (<code>email</code>, <code>mercadolibre</code>, <code>geocoding</code>, <code>audit</code>) — agregar un módulo no toca a los demás.</li>
+            <li><strong>Migraciones incrementales:</strong> <code>server/migrations/*</code> versiona la evolución del esquema de forma reproducible.</li>
+            <li><strong>Trabajos programados:</strong> cron de Vercel (recálculo diario de demanda con un módulo Python de ML) sin infraestructura adicional.</li>
+            <li><strong>Caché y CDN:</strong> assets estáticos servidos por la CDN de Vercel; SSR solo donde aporta.</li>
+          </ul>
+        </section>
+
+        <!-- 9. BUENAS PRÁCTICAS -->
+        <section id="buenas-practicas">
+          <h2>9. Buenas prácticas de ingeniería</h2>
+          <ul>
+            <li><strong>ESM consistente</strong> (<code>"type": "module"</code>), sin <code>require()</code>.</li>
+            <li><strong>Contrato de API estandarizado:</strong> <code>{`{ success, data | error }`}</code> en todas las respuestas.</li>
+            <li><strong>Paridad de entrypoints:</strong> toda corrección se aplica a <code>server/index.js</code> y <code>api/index.js</code> para evitar brechas dev/prod.</li>
+            <li><strong>Pruebas:</strong> unitarias con Vitest (auth, orders, audit), e2e de humo con Playwright y reporte de cobertura.</li>
+            <li><strong>CI en GitHub Actions:</strong> <code>lint → typecheck → test → build</code> en cada push y PR; backup automatizado aparte.</li>
+            <li><strong>Calidad estática:</strong> ESLint + <code>astro check</code> (TypeScript).</li>
+            <li><strong>Convenciones documentadas:</strong> <code>AGENTS.md</code> y <code>CLAUDE.md</code> como contrato de estilo para humanos y para la IA.</li>
+            <li><strong>CSS mantenible:</strong> solo variables CSS, sin colores hex sueltos, sin breakpoints inventados.</li>
+          </ul>
+        </section>
+
+        <!-- 10. INFRAESTRUCTURA -->
+        <section id="infraestructura">
+          <h2>10. Infraestructura, despliegue, dominio y SSL</h2>
+          <p>
+            Conozco y administro la infraestructura completa de extremo a extremo:
+          </p>
+          <ul>
+            <li><strong>Despliegue:</strong> Vercel construye Astro (SSR) y publica la API como funciones serverless; <code>vercel.json</code> define rewrites, headers y cron.</li>
+            <li><strong>Base de datos:</strong> Turso/libSQL en la nube, conectada por <code>@libsql/client</code> con URL y token de auth en variables de entorno.</li>
+            <li><strong>Dominio:</strong> <code>dobleyo.cafe</code> con el subdominio <code>en.dobleyo.cafe</code> reescrito a <code>/en/*</code> para el sitio en inglés.</li>
+            <li><strong>SSL/TLS:</strong> certificados gestionados automáticamente por Vercel, reforzados con HSTS <code>preload</code> y <code>upgrade-insecure-requests</code> en la CSP.</li>
+            <li><strong>Variables de entorno:</strong> separadas por ambiente; el build falla si faltan secretos críticos (JWT, Turso).</li>
+            <li><strong>Node 20</strong> fijado en <code>engines</code> y <code>.nvmrc</code> para builds reproducibles.</li>
+          </ul>
+        </section>
+
+        <!-- 11. DEUDA TÉCNICA -->
+        <section id="deuda">
+          <h2>11. Honestidad: deuda técnica conocida</h2>
+          <p>
+            Una buena sustentación no oculta lo pendiente. Lo que falta está
+            documentado, priorizado y es consciente:
+          </p>
+          <ul>
+            <li><strong>CSP con <code>'unsafe-inline'</code></strong> (hallazgo E): eliminarlo exige refactorizar decenas de scripts y manejadores en línea hacia <code>addEventListener</code>; planificado como fase posterior.</li>
+            <li><strong>Pasarela de pagos deshabilitada:</strong> el checkout existe pero los pagos (Wompi / MercadoPago) están en fase de integración.</li>
+            <li><strong>Migración de datos estáticos a BD:</strong> algunos catálogos viven aún en archivos (<code>src/data/products.ts</code>) y se moverán a la base de datos.</li>
+            <li><strong>ARIA completo en el panel admin</strong> y verificación de headers en cada nuevo deploy.</li>
+          </ul>
+        </section>
+
+        <!-- 12. DEFENSA -->
+        <section id="defensa">
+          <h2>12. Sustentación ante el docente</h2>
+          <p>Si me preguntan «¿qué hiciste tú si lo escribió la IA?», esta es la respuesta:</p>
+          <ul>
+            <li><strong>Diseñé la arquitectura</strong> y las reglas (paridad de entrypoints, contrato de API, defensa en profundidad) dentro de las cuales la IA podía operar.</li>
+            <li><strong>Audité el código generado</strong> y encontré seis vulnerabilidades reales —dos de severidad alta— que la IA dejó pasar; entendí por qué eran riesgos y las corregí.</li>
+            <li><strong>Tomé decisiones de criterio</strong>, no de fuerza bruta: por ejemplo, endurecer la contraseña en el registro pero <em>no</em> en el login, para no bloquear usuarios sin ganar seguridad real.</li>
+            <li><strong>Conecté la infraestructura</strong> completa: base de datos en la nube, despliegue serverless, dominio, subdominio internacional y SSL con HSTS.</li>
+            <li><strong>Verifiqué</strong> con pruebas automatizadas y CI, y documenté honestamente la deuda técnica.</li>
+          </ul>
+          <div class="devia-callout devia-callout--final">
+            La IA aceleró la escritura; la <strong>ingeniería, el criterio de
+            seguridad y la responsabilidad sobre el resultado son míos</strong>.
+            Eso es lo que este documento demuestra con evidencia del propio
+            repositorio.
+          </div>
+          <p class="devia-refs">
+            Documentos de respaldo en el repositorio:
+            <code>seguridad.md</code>, <code>AGENTS.md</code>,
+            <code>CHANGELOG.md</code>, <code>vercel.json</code>,
+            <code>server/middleware/rateLimit.js</code> y
+            <code>server/auth.js</code>.
+          </p>
+        </section>
+      </article>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .devia {
+    max-width: var(--page-width);
+    margin: 0 auto;
+    padding: 1rem 0 4rem;
+    line-height: 1.7;
+    color: var(--fg);
+  }
+
+  /* Hero */
+  .devia-hero {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 1.75rem;
+    margin-bottom: 2rem;
+  }
+  .devia-kicker {
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--accent);
+    margin: 0 0 0.5rem;
+  }
+  .devia-hero h1 {
+    font-size: clamp(1.8rem, 5vw, 2.8rem);
+    color: var(--coffee);
+    line-height: 1.15;
+    margin: 0 0 1rem;
+  }
+  .devia-lead {
+    font-size: clamp(1rem, 2.2vw, 1.15rem);
+    max-width: 70ch;
+    color: var(--fg);
+  }
+  .devia-meta {
+    color: var(--muted-fg);
+    font-size: 0.85rem;
+    margin-top: 1rem;
+  }
+
+  /* Layout de dos columnas */
+  .devia-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+  }
+
+  /* Índice */
+  .devia-toc {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 0.6rem;
+    padding: 1.25rem 1.25rem 1.5rem;
+  }
+  .devia-toc__title {
+    font-weight: 700;
+    color: var(--coffee);
+    margin: 0 0 0.75rem;
+    font-size: 0.95rem;
+  }
+  .devia-toc ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    counter-reset: none;
+  }
+  .devia-toc li {
+    margin: 0.3rem 0;
+  }
+  .devia-toc a {
+    color: var(--fg);
+    text-decoration: none;
+    font-size: 0.9rem;
+    display: block;
+    padding: 0.2rem 0;
+    border-left: 2px solid transparent;
+    padding-left: 0.6rem;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .devia-toc a:hover {
+    color: var(--accent);
+    border-left-color: var(--accent);
+  }
+
+  /* Contenido */
+  .devia-content {
+    min-width: 0;
+  }
+  .devia-content section {
+    margin-bottom: 3rem;
+    scroll-margin-top: 6rem;
+  }
+  .devia-content h2 {
+    font-size: clamp(1.3rem, 3vw, 1.65rem);
+    color: var(--coffee);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0.45rem;
+    margin: 0 0 1rem;
+  }
+  .devia-content h3 {
+    font-size: 1.1rem;
+    color: var(--coffee);
+    margin: 1.75rem 0 0.6rem;
+  }
+  .devia-content p {
+    max-width: 75ch;
+  }
+  .devia-content ul {
+    padding-left: 1.3rem;
+    max-width: 75ch;
+  }
+  .devia-content li {
+    margin: 0.45rem 0;
+  }
+  .devia-content a {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+  .devia-content a:hover {
+    color: var(--coffee);
+  }
+
+  code {
+    background: #f3f4f6;
+    padding: 0.1em 0.4em;
+    border-radius: 0.25rem;
+    font-size: 0.86em;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+
+  /* Callout */
+  .devia-callout {
+    background: #fef3c7;
+    border-left: 4px solid var(--accent);
+    padding: 1rem 1.25rem;
+    border-radius: 0 0.4rem 0.4rem 0;
+    margin: 1.5rem 0;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    max-width: 75ch;
+  }
+  .devia-callout--final {
+    background: var(--coffee);
+    color: var(--cream);
+    border-left-color: var(--accent);
+  }
+  .devia-callout--final strong {
+    color: #fff;
+  }
+
+  /* Diagrama ASCII */
+  .devia-diagram {
+    background: var(--coffee);
+    color: var(--cream);
+    padding: 1.1rem 1.25rem;
+    border-radius: 0.5rem;
+    overflow-x: auto;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+
+  /* Tarjetas de módulos */
+  .devia-cards {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    margin: 1.25rem 0;
+  }
+  .devia-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+    padding: 1rem 1.1rem;
+  }
+  .devia-card h3 {
+    margin: 0 0 0.4rem;
+    font-size: 1rem;
+    color: var(--accent);
+  }
+  .devia-card p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--muted-fg);
+  }
+
+  /* Tablas */
+  .devia-table-wrap {
+    overflow-x: auto;
+    margin: 1.25rem 0;
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+  }
+  .devia-content table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+    min-width: 460px;
+  }
+  .devia-content th,
+  .devia-content td {
+    text-align: left;
+    padding: 0.6rem 0.8rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  .devia-content thead th {
+    background: var(--footer-bg);
+    color: var(--coffee);
+    font-weight: 700;
+  }
+  .devia-content tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  /* Etiquetas de severidad */
+  .sev {
+    display: inline-block;
+    padding: 0.1rem 0.5rem;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .sev--high {
+    background: #fee2e2;
+    color: #b91c1c;
+  }
+  .sev--med {
+    background: #fef3c7;
+    color: #92400e;
+  }
+
+  .devia-refs {
+    font-size: 0.85rem;
+    color: var(--muted-fg);
+    margin-top: 1.25rem;
+  }
+
+  /* Desktop: índice fijo a la izquierda */
+  @media (min-width: 1024px) {
+    .devia-grid {
+      grid-template-columns: 240px 1fr;
+      align-items: start;
+    }
+    .devia-toc {
+      position: sticky;
+      top: calc(var(--header-height, 96px) + 1rem);
+    }
+    .devia-cards {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  @media (min-width: 768px) and (max-width: 1023px) {
+    .devia-cards {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+</style>
