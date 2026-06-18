@@ -984,9 +984,11 @@ async function loadPayments() {
   try {
     const r = await fetch('/api/finance/payments?limit=50', { credentials: 'include' });
     const json = await r.json();
-    if (!json.success) { el.innerHTML = `<p class="adm-empty">Error: ${json.error}</p>`; return; }
-    if (!json.data.length) { el.innerHTML = '<p class="adm-empty">Sin pagos registrados</p>'; return; }
-    el.innerHTML = `<div style="overflow-x:auto"><table class="adm-table">
+    if (!json.success) { el.innerHTML = `<div class="adm-table-card"><p class="adm-empty">Error: ${json.error}</p></div>`; return; }
+    if (!json.data.length) { el.innerHTML = '<div class="adm-table-card"><p class="adm-empty">Sin pagos registrados</p></div>'; return; }
+    el.innerHTML = `<div class="adm-table-card">
+      <h2 class="adm-table-card__title">Pagos</h2>
+      <div class="adm-table-wrap"><table class="adm-table">
       <thead><tr><th>Número</th><th>Tipo</th><th>Fecha</th><th>Socio</th><th>Monto</th><th>Referencia</th><th>Estado</th></tr></thead>
       <tbody>${json.data.map(p => `<tr>
         <td class="adm-table__mono">${p.payment_number}</td>
@@ -997,8 +999,8 @@ async function loadPayments() {
         <td class="adm-table__mono">${p.reference ?? '—'}</td>
         <td>${badge(p.state)}</td>
       </tr>`).join('')}</tbody>
-    </table></div>`;
-  } catch { el.innerHTML = '<p class="adm-empty">Error al cargar</p>'; }
+    </table></div></div>`;
+  } catch { el.innerHTML = '<div class="adm-table-card"><p class="adm-empty">Error al cargar</p></div>'; }
 }
 
 // ================================================================
