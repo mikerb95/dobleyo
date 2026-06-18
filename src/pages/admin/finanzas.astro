@@ -958,9 +958,11 @@ async function loadExpenses() {
   try {
     const r = await fetch('/api/finance/expenses?limit=50', { credentials: 'include' });
     const json = await r.json();
-    if (!json.success) { el.innerHTML = `<p class="adm-empty">Error: ${json.error}</p>`; return; }
-    if (!json.data.length) { el.innerHTML = '<p class="adm-empty">Sin gastos registrados</p>'; return; }
-    el.innerHTML = `<div style="overflow-x:auto"><table class="adm-table">
+    if (!json.success) { el.innerHTML = `<div class="adm-table-card"><p class="adm-empty">Error: ${json.error}</p></div>`; return; }
+    if (!json.data.length) { el.innerHTML = '<div class="adm-table-card"><p class="adm-empty">Sin gastos registrados</p></div>'; return; }
+    el.innerHTML = `<div class="adm-table-card">
+      <h2 class="adm-table-card__title">Gastos</h2>
+      <div class="adm-table-wrap"><table class="adm-table">
       <thead><tr><th>Número</th><th>Fecha</th><th>Categoría</th><th>Descripción</th><th>Monto</th><th>Estado</th><th></th></tr></thead>
       <tbody>${json.data.map(exp => `<tr>
         <td class="adm-table__mono">${exp.expense_number}</td>
@@ -973,8 +975,8 @@ async function loadExpenses() {
           ? `<button class="adm-btn adm-btn--sm adm-btn--outline" data-action="approve-expense" data-exp-id="${exp.id}">Aprobar</button>`
           : ''}</td>
       </tr>`).join('')}</tbody>
-    </table></div>`;
-  } catch { el.innerHTML = '<p class="adm-empty">Error al cargar</p>'; }
+    </table></div></div>`;
+  } catch { el.innerHTML = '<div class="adm-table-card"><p class="adm-empty">Error al cargar</p></div>'; }
 }
 
 async function loadPayments() {
