@@ -99,25 +99,56 @@ const balancePositive = dashboard.month_balance >= 0;
 
     <!-- KPIs -->
     <div class="adm-kpis">
-      <div class="adm-kpi adm-kpi--green">
-        <div class="adm-kpi__icon">📈</div>
-        <div class="adm-kpi__label">Ingresos del mes</div>
+      <div class="adm-kpi adm-kpi--ok">
+        <div class="adm-kpi__head">
+          <span class="adm-kpi__icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>
+            </svg>
+          </span>
+          <span class="adm-kpi__label">Ingresos del mes</span>
+        </div>
         <div class="adm-kpi__value">{fmtCOP(dashboard.month_revenue)}</div>
+        <div class="adm-kpi__sub">Ventas facturadas este mes</div>
       </div>
-      <div class="adm-kpi adm-kpi--red">
-        <div class="adm-kpi__icon">📦</div>
-        <div class="adm-kpi__label">Costos del mes</div>
+
+      <div class="adm-kpi adm-kpi--brand">
+        <div class="adm-kpi__head">
+          <span class="adm-kpi__icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
+            </svg>
+          </span>
+          <span class="adm-kpi__label">Costos del mes</span>
+        </div>
         <div class="adm-kpi__value">{fmtCOP(dashboard.month_costs)}</div>
+        <div class="adm-kpi__sub">Costo de producción</div>
       </div>
-      <div class="adm-kpi adm-kpi--amber">
-        <div class="adm-kpi__icon">🧾</div>
-        <div class="adm-kpi__label">Gastos del mes</div>
+
+      <div class="adm-kpi adm-kpi--info">
+        <div class="adm-kpi__head">
+          <span class="adm-kpi__icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16l3-2 3 2 3-2 3 2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="14" y2="13"/>
+            </svg>
+          </span>
+          <span class="adm-kpi__label">Gastos del mes</span>
+        </div>
         <div class="adm-kpi__value">{fmtCOP(dashboard.month_expenses)}</div>
+        <div class="adm-kpi__sub">Operación y administración</div>
       </div>
-      <div class={`adm-kpi ${balancePositive ? 'adm-kpi--blue' : 'adm-kpi--red'}`}>
-        <div class="adm-kpi__icon">{balancePositive ? '✅' : '⚠️'}</div>
-        <div class="adm-kpi__label">Balance del mes</div>
-        <div class="adm-kpi__value">{fmtCOP(dashboard.month_balance)}</div>
+
+      <div class={`adm-kpi ${balancePositive ? 'adm-kpi--ok' : 'adm-kpi--danger'} adm-kpi--balance`}>
+        <div class="adm-kpi__head">
+          <span class="adm-kpi__icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="2" x2="12" y2="22"/><path d="M5 7h11a3 3 0 0 1 0 6H8a3 3 0 0 0 0 6h11"/>
+            </svg>
+          </span>
+          <span class="adm-kpi__label">Balance del mes</span>
+        </div>
+        <div class={`adm-kpi__value ${balancePositive ? 'is-pos' : 'is-neg'}`}>{fmtCOP(dashboard.month_balance)}</div>
+        <div class="adm-kpi__sub">{balancePositive ? 'Resultado positivo' : 'Ingresos menos costos y gastos'}</div>
       </div>
     </div>
 
@@ -506,28 +537,82 @@ const balancePositive = dashboard.month_balance >= 0;
     margin-bottom: 1.5rem;
   }
 
-  /* KPIs */
+  /* KPIs — tarjetas limpias con chip de acento (sistema Claude Design) */
   .adm-kpis {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 1rem;
     margin-bottom: 1.5rem;
   }
-  @media (min-width: 768px) {
+  @media (min-width: 900px) {
     .adm-kpis { grid-template-columns: repeat(4, 1fr); }
   }
   .adm-kpi {
-    padding: 1.25rem;
-    border-radius: 0.75rem;
-    color: white;
+    --accent: var(--color-accent, #c9893d);
+    position: relative;
+    padding: 1.15rem 1.25rem 1.2rem;
+    background: var(--paper, #fff);
+    border: 1px solid var(--rule, #e7e2da);
+    border-radius: 14px;
+    box-shadow: 0 1px 2px color-mix(in oklab, var(--color-primary, #3a2618) 6%, transparent),
+                0 12px 30px -24px color-mix(in oklab, var(--color-primary, #3a2618) 45%, transparent);
+    overflow: hidden;
+    transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
   }
-  .adm-kpi--green { background: linear-gradient(135deg, #2d6a4f, #1e5a3f); }
-  .adm-kpi--red   { background: linear-gradient(135deg, #dc2626, #b91c1c); }
-  .adm-kpi--amber { background: linear-gradient(135deg, #d97706, #b45309); }
-  .adm-kpi--blue  { background: linear-gradient(135deg, #1d4ed8, #1e40af); }
-  .adm-kpi__icon  { font-size: 1.5rem; margin-bottom: 0.25rem; }
-  .adm-kpi__label { font-size: 0.75rem; opacity: 0.85; margin-bottom: 0.25rem; }
-  .adm-kpi__value { font-size: 1.5rem; font-weight: 700; }
+  .adm-kpi::before {
+    content: "";
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--accent);
+  }
+  .adm-kpi:hover {
+    transform: translateY(-2px);
+    border-color: color-mix(in oklab, var(--accent) 35%, var(--rule, #e7e2da));
+    box-shadow: 0 2px 4px color-mix(in oklab, var(--color-primary, #3a2618) 8%, transparent),
+                0 18px 36px -22px color-mix(in oklab, var(--accent) 55%, transparent);
+  }
+  .adm-kpi--ok     { --accent: var(--ok, #2e7d5b); }
+  .adm-kpi--brand  { --accent: var(--color-accent, #c9893d); }
+  .adm-kpi--info   { --accent: color-mix(in oklab, var(--color-primary, #3a2618) 55%, #6a86c4); }
+  .adm-kpi--danger { --accent: var(--danger, #c0392b); }
+
+  .adm-kpi__head {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 0.85rem;
+  }
+  .adm-kpi__icon {
+    flex-shrink: 0;
+    width: 34px; height: 34px;
+    display: grid; place-items: center;
+    border-radius: 9px;
+    color: var(--accent);
+    background: color-mix(in oklab, var(--accent) 12%, #fff);
+  }
+  .adm-kpi__label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--muted, #7a6652);
+  }
+  .adm-kpi__value {
+    font-size: 1.7rem;
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    color: var(--color-primary, #3a2618);
+    font-variant-numeric: tabular-nums;
+  }
+  .adm-kpi__value.is-pos { color: var(--ok, #2e7d5b); }
+  .adm-kpi__value.is-neg { color: var(--danger, #c0392b); }
+  .adm-kpi__sub {
+    margin-top: 0.4rem;
+    font-size: 0.76rem;
+    color: var(--muted, #7a6652);
+  }
 
   /* Alerta */
   .adm-alert {
