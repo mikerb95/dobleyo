@@ -8,91 +8,20 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   <div class="page-header">
     <div class="page-header-top">
       <div>
-        <div class="page-breadcrumb">Configuración</div>
-        <h1 class="page-title">DevTools</h1>
-        <p class="page-subtitle">Tablero de sprints y herramientas de mantenimiento.</p>
+        <div class="page-breadcrumb">DevTools</div>
+        <h1 class="page-title">Zona de peligro</h1>
+        <p class="page-subtitle">Acciones destructivas e irreversibles. Solo para desarrollo y testing.</p>
       </div>
       <div class="page-header-actions">
-        <div class="dt-tabs" role="tablist" id="dtTabs">
-          <button class="dt-tab dt-tab--on" data-tab="sprints" type="button" role="tab">Sprints</button>
-          <button class="dt-tab" data-tab="danger" type="button" role="tab">Zona de peligro</button>
-        </div>
+        <a href="/admin/iteraciones" class="btn btn-secondary">Ver iteraciones</a>
       </div>
     </div>
   </div>
 
   <!-- ═══════════════════════════════════════════════════════════
-       TAB 1 — SPRINTS
+       ZONA DE PELIGRO
   ════════════════════════════════════════════════════════════ -->
-  <div class="erp-body" id="tab-sprints">
-
-    <!-- Controles del sprint -->
-    <div class="dt-sprint-bar">
-      <label class="dt-sprint-label" for="iterSprint">
-        <span>Sprint</span>
-        <select id="iterSprint"></select>
-      </label>
-      <div class="dt-view-toggle" id="iterViewToggle" role="tablist" aria-label="Vista">
-        <button class="dt-view-btn dt-view-btn--on" data-view="board" type="button">Tablero</button>
-        <button class="dt-view-btn" data-view="charts" type="button">Gráficos</button>
-      </div>
-    </div>
-
-    <!-- KPIs -->
-    <div class="kpi-grid" id="iterSummary" style="margin-bottom:16px"></div>
-
-    <!-- Barra de progreso -->
-    <div class="card" id="iterProgressCard" style="padding:16px 20px;margin-bottom:16px">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px">
-        <div>
-          <h2 class="card-title" id="iterProgressTitle" style="margin:0">Progreso del sprint</h2>
-          <p style="font-size:12px;color:var(--muted);margin:3px 0 0;font-variant-numeric:tabular-nums" id="iterProgressMeta"></p>
-        </div>
-        <span id="iterProgressPct" style="font-size:26px;font-weight:700;color:var(--color-primary);font-variant-numeric:tabular-nums;letter-spacing:-0.02em;line-height:1">0%</span>
-      </div>
-      <div class="iter-bar" id="iterBar"></div>
-      <div class="iter-bar__legend" id="iterBarLegend"></div>
-    </div>
-
-    <!-- Tablero kanban -->
-    <div class="iter-board" id="iterBoard"></div>
-
-    <!-- Gráficos -->
-    <div class="iter-charts" id="iterCharts" hidden>
-      <div class="card iter-chart">
-        <div class="iter-chart__head">
-          <div>
-            <h2 class="iter-chart__title">Burndown</h2>
-            <p class="iter-chart__sub">Puntos restantes vs. ideal a lo largo del sprint.</p>
-          </div>
-          <div class="iter-chart__keys">
-            <span class="iter-key"><i class="iter-key__dot iter-key__dot--ideal"></i>Ideal</span>
-            <span class="iter-key"><i class="iter-key__dot iter-key__dot--real"></i>Real</span>
-          </div>
-        </div>
-        <div class="iter-chart__canvas" id="iterBurndown"></div>
-      </div>
-      <div class="card iter-chart">
-        <div class="iter-chart__head">
-          <div>
-            <h2 class="iter-chart__title">Velocidad</h2>
-            <p class="iter-chart__sub">Puntos comprometidos vs. completados por sprint.</p>
-          </div>
-          <div class="iter-chart__keys">
-            <span class="iter-key"><i class="iter-key__dot iter-key__dot--plan"></i>Comprometido</span>
-            <span class="iter-key"><i class="iter-key__dot iter-key__dot--done"></i>Completado</span>
-          </div>
-        </div>
-        <div class="iter-chart__canvas" id="iterVelocity"></div>
-        <p class="iter-chart__foot" id="iterVelocityAvg"></p>
-      </div>
-    </div>
-  </div>
-
-  <!-- ═══════════════════════════════════════════════════════════
-       TAB 2 — ZONA DE PELIGRO
-  ════════════════════════════════════════════════════════════ -->
-  <div class="erp-body" id="tab-danger" hidden>
+  <div class="erp-body" id="tab-danger">
 
     <!-- Advertencia -->
     <div class="alert alert--error" style="margin-bottom:20px">
