@@ -148,6 +148,7 @@ const balancePositive = dashboard.month_balance >= 0;
           {dashboard.recent_invoices.length === 0
             ? <p class="adm-empty">Sin facturas recientes</p>
             : (
+              <div class="adm-table-wrap">
               <table class="adm-table">
                 <thead>
                   <tr>
@@ -175,6 +176,7 @@ const balancePositive = dashboard.month_balance >= 0;
                   })}
                 </tbody>
               </table>
+              </div>
             )
           }
           <a href="#" class="adm-link" data-switch-tab="sales-invoices">Ver todas →</a>
