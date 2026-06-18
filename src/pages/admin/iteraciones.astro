@@ -1,3 +1,718 @@
 ---
-return Astro.redirect('/admin/devtools', 301);
+import AdminLayout from "../../layouts/AdminLayout.astro";
 ---
+
+<AdminLayout title="Iteraciones — DobleYo ERP" section="devtools">
+
+  <!-- ── Encabezado ──────────────────────────────────────────── -->
+  <div class="page-header">
+    <div class="page-header-top">
+      <div>
+        <div class="page-breadcrumb">DevTools</div>
+        <h1 class="page-title">Iteraciones</h1>
+        <p class="page-subtitle">Tablero XP — historias, progreso y velocidad por iteración.</p>
+      </div>
+      <div class="page-header-actions">
+        <a href="/admin/devtools" class="btn btn-secondary">Zona de peligro</a>
+        <div class="dt-view-toggle" id="iterViewToggle" role="tablist" aria-label="Vista">
+          <button class="dt-view-btn dt-view-btn--on" data-view="board" type="button">Tablero</button>
+          <button class="dt-view-btn" data-view="charts" type="button">Gráficos</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Cuerpo ───────────────────────────────────────────────── -->
+  <div class="erp-body">
+
+    <!-- Selector de iteración -->
+    <div class="dt-iter-bar">
+      <label class="dt-iter-label" for="iterSelect">
+        <span>Iteración</span>
+        <select id="iterSelect"></select>
+      </label>
+    </div>
+
+    <!-- KPIs -->
+    <div class="kpi-grid" id="iterSummary" style="margin-bottom:16px"></div>
+
+    <!-- Barra de progreso -->
+    <div class="card" id="iterProgressCard" style="padding:16px 20px;margin-bottom:16px">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px">
+        <div>
+          <h2 class="card-title" id="iterProgressTitle" style="margin:0"></h2>
+          <p style="font-size:12px;color:var(--muted);margin:3px 0 0;font-variant-numeric:tabular-nums" id="iterProgressMeta"></p>
+        </div>
+        <span id="iterProgressPct" style="font-size:26px;font-weight:700;color:var(--color-primary);font-variant-numeric:tabular-nums;letter-spacing:-0.02em;line-height:1">0%</span>
+      </div>
+      <div class="iter-bar" id="iterBar"></div>
+      <div class="iter-bar__legend" id="iterBarLegend"></div>
+    </div>
+
+    <!-- Tablero kanban -->
+    <div class="iter-board" id="iterBoard"></div>
+
+    <!-- Gráficos -->
+    <div class="iter-charts" id="iterCharts" hidden>
+      <div class="card iter-chart">
+        <div class="iter-chart__head">
+          <div>
+            <h2 class="iter-chart__title">Burndown</h2>
+            <p class="iter-chart__sub">Días ideales restantes vs. línea ideal de la iteración.</p>
+          </div>
+          <div class="iter-chart__keys">
+            <span class="iter-key"><i class="iter-key__dot iter-key__dot--ideal"></i>Ideal</span>
+            <span class="iter-key"><i class="iter-key__dot iter-key__dot--real"></i>Real</span>
+          </div>
+        </div>
+        <div class="iter-chart__canvas" id="iterBurndown"></div>
+      </div>
+      <div class="card iter-chart">
+        <div class="iter-chart__head">
+          <div>
+            <h2 class="iter-chart__title">Velocidad</h2>
+            <p class="iter-chart__sub">Días ideales comprometidos vs. completados por iteración.</p>
+          </div>
+          <div class="iter-chart__keys">
+            <span class="iter-key"><i class="iter-key__dot iter-key__dot--plan"></i>Comprometido</span>
+            <span class="iter-key"><i class="iter-key__dot iter-key__dot--done"></i>Completado</span>
+          </div>
+        </div>
+        <div class="iter-chart__canvas" id="iterVelocity"></div>
+        <p class="iter-chart__foot" id="iterVelocityAvg"></p>
+      </div>
+    </div>
+
+  </div>
+
+</AdminLayout>
+
+<style is:global>
+  /* ── Selector de iteración ────────────────────────────────── */
+  .dt-iter-bar {
+    display: flex; align-items: center; gap: 12px;
+    flex-wrap: wrap; margin-bottom: 16px;
+  }
+  .dt-iter-label {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--paper); border: 1px solid var(--rule);
+    border-radius: 8px; padding: 6px 12px;
+  }
+  .dt-iter-label > span {
+    font-size: 11px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.08em; color: var(--muted);
+  }
+  .dt-iter-label select {
+    appearance: none; border: 0; background: transparent; font: inherit;
+    font-size: 13px; font-weight: 600; color: var(--color-primary);
+    padding: 2px 20px 2px 2px; cursor: pointer; outline: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='3'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 2px center;
+  }
+
+  /* ── Toggle tablero/gráficos ──────────────────────────────── */
+  .dt-view-toggle {
+    display: inline-flex; background: var(--paper);
+    border: 1px solid var(--rule); border-radius: 8px; padding: 3px;
+  }
+  .dt-view-btn {
+    appearance: none; border: 0; background: transparent; cursor: pointer;
+    font: inherit; font-size: 13px; font-weight: 500;
+    color: var(--color-text); padding: 6px 14px; border-radius: 6px;
+    transition: background .12s;
+  }
+  .dt-view-btn:hover { background: var(--hover); }
+  .dt-view-btn--on { background: var(--color-primary); color: #fff; }
+  .dt-view-btn--on:hover { background: color-mix(in oklab, var(--color-primary) 90%, black); }
+
+  /* ── Barra de progreso ────────────────────────────────────── */
+  .iter-bar {
+    display: flex; height: 10px; border-radius: 999px; overflow: hidden;
+    background: color-mix(in oklab, var(--color-primary) 8%, white);
+  }
+  .iter-bar__seg { height: 100%; transition: width 0.4s ease; }
+  .iter-bar__seg--done       { background: var(--ok); }
+  .iter-bar__seg--aceptacion { background: var(--color-accent); }
+  .iter-bar__seg--desarrollo { background: var(--info); }
+  .iter-bar__legend {
+    display: flex; gap: 16px; flex-wrap: wrap; margin-top: 10px;
+    font-size: 12px; color: var(--muted);
+  }
+  .iter-bar__legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .iter-bar__legend i {
+    width: 9px; height: 9px; border-radius: 3px; display: inline-block;
+  }
+
+  /* ── Tablero kanban (5 columnas XP) ──────────────────────── */
+  .iter-board {
+    display: grid; gap: 14px; align-items: start;
+    grid-template-columns: repeat(5, minmax(200px, 1fr));
+    overflow-x: auto; padding-bottom: 8px;
+  }
+  @media (max-width: 1200px) {
+    .iter-board {
+      grid-auto-flow: column; grid-auto-columns: 72%;
+      grid-template-columns: none;
+    }
+  }
+  .iter-col {
+    background: color-mix(in oklab, var(--color-primary) 3%, white);
+    border: 1px solid var(--rule); border-radius: var(--radius);
+    display: flex; flex-direction: column; min-height: 120px;
+  }
+  .iter-col__head {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 14px; border-bottom: 1px solid var(--rule);
+  }
+  .iter-col__dot { width: 8px; height: 8px; border-radius: 999px; flex-shrink: 0; }
+  .iter-col__name {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.07em; color: var(--color-primary);
+  }
+  .iter-col__count {
+    margin-left: auto; font-size: 11px; font-weight: 600;
+    color: var(--muted); font-variant-numeric: tabular-nums;
+    background: var(--paper); border: 1px solid var(--rule);
+    border-radius: 999px; padding: 1px 8px;
+  }
+  .iter-col__body {
+    padding: 10px; display: flex; flex-direction: column; gap: 8px;
+  }
+  .iter-col__empty {
+    text-align: center; color: var(--muted-2); font-size: 12px;
+    padding: 18px 8px; border: 1px dashed var(--rule-2); border-radius: 8px;
+  }
+
+  /* ── Tarjeta de historia ──────────────────────────────────── */
+  .iter-card {
+    background: var(--paper); border: 1px solid var(--rule);
+    border-radius: var(--radius-sm); padding: 12px;
+    box-shadow: 0 1px 2px color-mix(in oklab, var(--color-primary) 6%, transparent);
+    display: flex; flex-direction: column; gap: 8px;
+    transition: border-color .12s, box-shadow .12s, transform .12s;
+  }
+  .iter-card:hover {
+    border-color: var(--rule-2);
+    box-shadow: 0 6px 18px -10px color-mix(in oklab, var(--color-primary) 35%, transparent);
+    transform: translateY(-1px);
+  }
+  .iter-card__top { display: flex; align-items: center; gap: 8px; }
+  .iter-card__id {
+    font-family: ui-monospace, Menlo, monospace;
+    font-size: 11px; font-weight: 600; color: var(--muted);
+  }
+  .iter-card__type {
+    font-size: 9px; font-weight: 700; letter-spacing: 0.08em;
+    text-transform: uppercase; padding: 2px 7px; border-radius: 999px;
+  }
+  .iter-card__type--historia {
+    background: color-mix(in oklab, var(--info) 15%, white);
+    color: var(--info);
+  }
+  .iter-card__type--bug {
+    background: color-mix(in oklab, var(--danger) 12%, white);
+    color: var(--danger);
+  }
+  .iter-card__type--tarea { background: var(--hover); color: var(--muted); }
+  .iter-card__type--spike {
+    background: color-mix(in oklab, var(--color-accent) 18%, white);
+    color: color-mix(in oklab, var(--color-accent) 80%, black);
+  }
+  .iter-card__pts {
+    margin-left: auto; font-size: 11px; font-weight: 700;
+    font-variant-numeric: tabular-nums; color: var(--color-primary);
+    background: var(--active-bg); border-radius: 6px; padding: 2px 8px;
+  }
+  .iter-card__title {
+    margin: 0; font-size: 13px; font-weight: 600; line-height: 1.35;
+    color: var(--color-text);
+  }
+  .iter-card__tags { display: flex; flex-wrap: wrap; gap: 4px; }
+  .iter-tag {
+    font-size: 10.5px; color: var(--muted); background: var(--hover);
+    border-radius: 5px; padding: 2px 6px;
+  }
+  .iter-card__foot {
+    display: flex; align-items: center; gap: 8px;
+    padding-top: 8px; border-top: 1px solid var(--rule);
+  }
+  .iter-card__valor {
+    font-size: 10.5px; font-weight: 600;
+    display: inline-flex; align-items: center; gap: 4px;
+  }
+  .iter-card__valor i { width: 7px; height: 7px; border-radius: 999px; display: inline-block; }
+  .iter-card__valor--alto  { color: var(--danger); }
+  .iter-card__valor--medio { color: var(--color-accent); }
+  .iter-card__valor--bajo  { color: var(--muted); }
+  .iter-card__pair {
+    margin-left: auto; display: inline-flex; align-items: center; gap: 4px;
+    font-size: 11px; color: var(--muted);
+  }
+  .iter-avatar {
+    width: 22px; height: 22px; border-radius: 999px; color: #fff;
+    display: grid; place-items: center; font-size: 10px; font-weight: 700;
+  }
+
+  /* ── Gráficos SVG ─────────────────────────────────────────── */
+  .iter-charts {
+    display: grid; gap: 16px; grid-template-columns: 1fr;
+    margin-top: 16px;
+  }
+  @media (min-width: 980px) { .iter-charts { grid-template-columns: 1fr 1fr; } }
+  .iter-chart { padding: 16px 18px; }
+  .iter-chart__head {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: 12px; margin-bottom: 14px; flex-wrap: wrap;
+  }
+  .iter-chart__title { margin: 0; font-size: 14px; font-weight: 600; color: var(--color-primary); }
+  .iter-chart__sub { margin: 3px 0 0; font-size: 12px; color: var(--muted); }
+  .iter-chart__keys { display: flex; gap: 14px; flex-wrap: wrap; }
+  .iter-key { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+  .iter-key__dot { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+  .iter-key__dot--ideal { background: var(--muted-2); }
+  .iter-key__dot--real  { background: var(--color-accent); }
+  .iter-key__dot--plan  { background: color-mix(in oklab, var(--color-primary) 22%, white); }
+  .iter-key__dot--done  { background: var(--color-accent); }
+  .iter-chart__canvas { width: 100%; }
+  .iter-chart__canvas svg { display: block; width: 100%; height: auto; }
+  .iter-chart__foot { margin: 10px 0 0; font-size: 12px; color: var(--muted); }
+  .iter-chart__foot b { color: var(--color-primary); font-weight: 600; }
+</style>
+
+<script is:inline>
+(() => {
+  // ═══════════════════════════════════════════════════════════
+  // DATOS XP — DobleYo Café
+  // Unidad: días ideales (1 día ideal = 1 programador trabajando sin interrupciones)
+  // ═══════════════════════════════════════════════════════════
+
+  const PARES = {
+    MR: { nombre: 'Mike Restrepo',  color: '#3a2618' },
+    DC: { nombre: 'Dev Contratado', color: '#2a6f97' },
+  };
+
+  // 5 columnas XP
+  const COLUMNAS = [
+    { id: 'cola',        nombre: 'Cola',           color: '#9aa0a6' },
+    { id: 'iteracion',   nombre: 'Esta iteración', color: '#5319e7' },
+    { id: 'desarrollo',  nombre: 'En desarrollo',  color: '#2a6f97' },
+    { id: 'aceptacion',  nombre: 'En aceptación',  color: '#c9893d' },
+    { id: 'aceptada',    nombre: 'Aceptada',        color: '#2e7d5b' },
+  ];
+
+  const ITERACIONES = [
+    {
+      id: 'i12',
+      nombre: 'Iteración 12 · Pagos & Checkout',
+      rango: '9 jun – 20 jun 2026',
+      dias: 10,
+      comprometido: 14,
+      burndown: [14, 14, 13, 11, 10, 8, 6, null, null, null, null],
+      historias: [
+        {
+          id: 'DY-211',
+          titulo: 'Como cliente, quiero pagar con tarjeta mediante Wompi para completar mi compra sin salir del sitio',
+          tipo: 'historia', dias: 3, valor: 'alto',
+          col: 'desarrollo', par: 'MR',
+          tags: ['pagos', 'checkout'],
+        },
+        {
+          id: 'DY-212',
+          titulo: 'Como sistema, necesito procesar el webhook de Wompi para confirmar órdenes automáticamente',
+          tipo: 'historia', dias: 2, valor: 'alto',
+          col: 'aceptacion', par: 'MR',
+          tags: ['pagos', 'api'],
+        },
+        {
+          id: 'DY-208',
+          titulo: 'Crear tablas orders y order_items en la base de datos',
+          tipo: 'tarea', dias: 1, valor: 'alto',
+          col: 'aceptada', par: 'MR',
+          tags: ['bd'],
+        },
+        {
+          id: 'DY-215',
+          titulo: 'Como cliente, quiero recibir un correo de confirmación de mi orden para tener constancia de la compra',
+          tipo: 'historia', dias: 1, valor: 'medio',
+          col: 'aceptada', par: 'MR',
+          tags: ['email'],
+        },
+        {
+          id: 'DY-219',
+          titulo: 'Como sistema, debo validar el stock disponible antes de confirmar el pago para evitar sobreventa',
+          tipo: 'historia', dias: 2, valor: 'alto',
+          col: 'iteracion', par: 'DC',
+          tags: ['inventario'],
+        },
+        {
+          id: 'DY-221',
+          titulo: '[Spike] Evaluar MercadoPago Colombia vs Wompi — límite: 1 día ideal',
+          tipo: 'spike', dias: 1, valor: 'medio',
+          col: 'aceptada', par: 'MR',
+          tags: ['research'],
+        },
+        {
+          id: 'DY-223',
+          titulo: 'Bug: el carrito pierde ítems al cerrar sesión',
+          tipo: 'bug', dias: 1, valor: 'alto',
+          col: 'aceptacion', par: 'DC',
+          tags: ['carrito'],
+        },
+        {
+          id: 'DY-225',
+          titulo: 'Como cliente, quiero ver una página de confirmación de orden para saber que mi compra fue exitosa',
+          tipo: 'historia', dias: 2, valor: 'medio',
+          col: 'cola', par: 'DC',
+          tags: ['ui'],
+        },
+        {
+          id: 'DY-226',
+          titulo: 'Como cliente, quiero poder reintentar un pago fallido sin perder mi carrito',
+          tipo: 'historia', dias: 2, valor: 'medio',
+          col: 'cola', par: 'DC',
+          tags: ['pagos'],
+        },
+      ],
+    },
+    {
+      id: 'i11',
+      nombre: 'Iteración 11 · Blog & Contenido',
+      rango: '26 may – 6 jun 2026',
+      dias: 10,
+      comprometido: 11,
+      burndown: [11, 10, 9, 8, 6, 5, 3, 2, 1, 0, 0],
+      historias: [
+        {
+          id: 'DY-195',
+          titulo: 'Como editor, quiero crear y publicar entradas de blog desde el admin para compartir contenido con los clientes',
+          tipo: 'historia', dias: 3, valor: 'alto',
+          col: 'aceptada', par: 'MR',
+          tags: ['blog', 'admin'],
+        },
+        {
+          id: 'DY-197',
+          titulo: 'Como visitante, quiero leer entradas de blog en el sitio para conocer más sobre el café de DobleYo',
+          tipo: 'historia', dias: 2, valor: 'alto',
+          col: 'aceptada', par: 'MR',
+          tags: ['blog', 'ui'],
+        },
+        {
+          id: 'DY-199',
+          titulo: 'Como editor, quiero guardar borradores de blog para publicarlos cuando estén listos',
+          tipo: 'historia', dias: 2, valor: 'medio',
+          col: 'aceptada', par: 'DC',
+          tags: ['blog'],
+        },
+        {
+          id: 'DY-201',
+          titulo: 'Migrar datos de blog de localStorage a la base de datos Turso',
+          tipo: 'tarea', dias: 2, valor: 'alto',
+          col: 'aceptada', par: 'MR',
+          tags: ['bd', 'migración'],
+        },
+        {
+          id: 'DY-203',
+          titulo: 'Bug: markdown no renderiza en la vista de detalle del artículo',
+          tipo: 'bug', dias: 1, valor: 'alto',
+          col: 'aceptada', par: 'DC',
+          tags: ['blog'],
+        },
+        {
+          id: 'DY-205',
+          titulo: 'Agregar endpoint GET /api/admin/posts para listar todos los artículos incluyendo borradores',
+          tipo: 'tarea', dias: 1, valor: 'medio',
+          col: 'aceptada', par: 'MR',
+          tags: ['api'],
+        },
+      ],
+    },
+    {
+      id: 'i10',
+      nombre: 'Iteración 10 · Migración a Turso',
+      rango: '12 may – 23 may 2026',
+      dias: 10,
+      comprometido: 10,
+      burndown: [10, 10, 9, 7, 6, 5, 4, 2, 1, 0, 0],
+      historias: [
+        {
+          id: 'DY-170',
+          titulo: 'Migrar el driver de base de datos de PostgreSQL a @libsql/client (Turso)',
+          tipo: 'tarea', dias: 3, valor: 'alto',
+          col: 'aceptada', par: 'MR',
+          tags: ['bd', 'turso'],
+        },
+        {
+          id: 'DY-173',
+          titulo: 'Adaptar todas las queries a sintaxis SQLite: parámetros ?, datetime("now"), sin type casts',
+          tipo: 'tarea', dias: 3, valor: 'alto',
+          col: 'aceptada', par: 'MR',
+          tags: ['bd'],
+        },
+        {
+          id: 'DY-176',
+          titulo: 'Reescribir migraciones incrementales para libSQL',
+          tipo: 'tarea', dias: 2, valor: 'medio',
+          col: 'aceptada', par: 'MR',
+          tags: ['bd'],
+        },
+        {
+          id: 'DY-179',
+          titulo: '[Spike] Evaluar Turso vs PlanetScale para el stack Colombia+USA — límite: 1 día ideal',
+          tipo: 'spike', dias: 1, valor: 'alto',
+          col: 'aceptada', par: 'MR',
+          tags: ['research'],
+        },
+        {
+          id: 'DY-181',
+          titulo: 'Configurar variables TURSO_DATABASE_URL y TURSO_AUTH_TOKEN en Vercel',
+          tipo: 'tarea', dias: 1, valor: 'alto',
+          col: 'aceptada', par: 'MR',
+          tags: ['infra', 'vercel'],
+        },
+      ],
+    },
+  ];
+
+  const VELOCIDAD = [
+    { iter: 'I8',  plan: 8,  done: 7  },
+    { iter: 'I9',  plan: 10, done: 9  },
+    { iter: 'I10', plan: 10, done: 10 },
+    { iter: 'I11', plan: 11, done: 11 },
+    { iter: 'I12', plan: 14, done: 6  },
+  ];
+
+  // ── Helpers ───────────────────────────────────────────────
+  const NS = 'http://www.w3.org/2000/svg';
+  const SVG_TAGS = new Set(['svg','g','path','line','rect','circle','polyline','text']);
+  const el = (tag, attrs = {}, ...kids) => {
+    const node = SVG_TAGS.has(tag)
+      ? document.createElementNS(NS, tag)
+      : document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs)) node.setAttribute(k, v);
+    kids.forEach(k => node.appendChild(typeof k === 'string' ? document.createTextNode(k) : k));
+    return node;
+  };
+
+  let iterActual = ITERACIONES[0];
+
+  // Selector
+  const sel = document.getElementById('iterSelect');
+  ITERACIONES.forEach(it => {
+    const o = document.createElement('option');
+    o.value = it.id;
+    o.textContent = it.nombre;
+    sel.appendChild(o);
+  });
+  sel.addEventListener('change', () => {
+    iterActual = ITERACIONES.find(i => i.id === sel.value) || ITERACIONES[0];
+    render();
+  });
+
+  // Toggle vista
+  document.getElementById('iterViewToggle').addEventListener('click', (e) => {
+    const btn = e.target.closest('.dt-view-btn');
+    if (!btn) return;
+    document.querySelectorAll('.dt-view-btn').forEach(b => b.classList.toggle('dt-view-btn--on', b === btn));
+    const charts = btn.dataset.view === 'charts';
+    document.getElementById('iterBoard').hidden = charts;
+    document.getElementById('iterProgressCard').hidden = charts;
+    document.getElementById('iterCharts').hidden = !charts;
+    if (charts) renderCharts();
+  });
+
+  // ── Render principal ───────────────────────────────────────
+  function render() {
+    const h = iterActual.historias;
+    const total      = h.reduce((a, s) => a + s.dias, 0);
+    const aceptadas  = h.filter(s => s.col === 'aceptada').reduce((a, s) => a + s.dias, 0);
+    const enAcept    = h.filter(s => s.col === 'aceptacion').reduce((a, s) => a + s.dias, 0);
+    const enDesarr   = h.filter(s => s.col === 'desarrollo').reduce((a, s) => a + s.dias, 0);
+    const pct        = total ? Math.round((aceptadas / total) * 100) : 0;
+    const dayIdx     = iterActual.burndown.filter(v => v !== null).length - 1;
+
+    // KPIs
+    const summary = document.getElementById('iterSummary');
+    summary.innerHTML = '';
+    [
+      { label: 'Historias',      value: h.length,                                          sub: `${h.filter(s => s.col === 'aceptada').length} aceptadas`,    tone: '' },
+      { label: 'Días ideales',   value: `${aceptadas}/${total}`,                           sub: `${total - aceptadas} restantes`,                              tone: 'info' },
+      { label: 'Completado',     value: `${pct}%`,                                         sub: `${enDesarr} días en desarrollo`,                              tone: 'success' },
+      { label: 'Día de iteración', value: `${Math.min(dayIdx + 1, iterActual.dias)}/${iterActual.dias}`, sub: iterActual.rango, tone: 'warning' },
+    ].forEach(k => {
+      const tile = document.createElement('div');
+      tile.className = `kpi-tile${k.tone ? ' ' + k.tone : ''}`;
+      tile.innerHTML = `<div class="kpi-label">${k.label}</div><div class="kpi-value">${k.value}</div><div class="kpi-sub">${k.sub}</div>`;
+      summary.appendChild(tile);
+    });
+
+    // Progreso
+    document.getElementById('iterProgressTitle').textContent = iterActual.nombre;
+    document.getElementById('iterProgressMeta').textContent =
+      `${aceptadas} de ${total} días ideales · ${iterActual.rango}`;
+    document.getElementById('iterProgressPct').textContent = pct + '%';
+
+    const bar = document.getElementById('iterBar');
+    bar.innerHTML = '';
+    [
+      { cls: 'done',       v: aceptadas },
+      { cls: 'aceptacion', v: enAcept   },
+      { cls: 'desarrollo', v: enDesarr  },
+    ].forEach(s => {
+      if (s.v <= 0) return;
+      const d = document.createElement('div');
+      d.className = `iter-bar__seg iter-bar__seg--${s.cls}`;
+      d.style.width = (s.v / total * 100) + '%';
+      bar.appendChild(d);
+    });
+    const cola = total - aceptadas - enAcept - enDesarr;
+    document.getElementById('iterBarLegend').innerHTML =
+      `<span><i style="background:var(--ok)"></i>Aceptadas ${aceptadas}d</span>` +
+      `<span><i style="background:var(--color-accent)"></i>En aceptación ${enAcept}d</span>` +
+      `<span><i style="background:var(--info)"></i>En desarrollo ${enDesarr}d</span>` +
+      `<span><i style="background:color-mix(in oklab,var(--color-primary) 8%,white)"></i>Cola ${cola}d</span>`;
+
+    // Tablero
+    const board = document.getElementById('iterBoard');
+    board.innerHTML = '';
+    COLUMNAS.forEach(col => {
+      const items = h.filter(s => s.col === col.id);
+      const dias  = items.reduce((a, s) => a + s.dias, 0);
+      const colEl = document.createElement('div');
+      colEl.className = 'iter-col';
+      const head = document.createElement('div');
+      head.className = 'iter-col__head';
+      head.appendChild(el('span', { class: 'iter-col__dot', style: `background:${col.color}` }));
+      head.appendChild(el('span', { class: 'iter-col__name' }, col.nombre));
+      head.appendChild(el('span', { class: 'iter-col__count' }, `${items.length} · ${dias}d`));
+      colEl.appendChild(head);
+      const body = document.createElement('div');
+      body.className = 'iter-col__body';
+      if (!items.length) {
+        body.appendChild(el('div', { class: 'iter-col__empty' }, 'Sin historias'));
+      } else {
+        items.forEach(s => body.appendChild(historiaCard(s)));
+      }
+      colEl.appendChild(body);
+      board.appendChild(colEl);
+    });
+  }
+
+  function historiaCard(s) {
+    const par = PARES[s.par] || { nombre: s.par, color: '#888' };
+    const tipoLabel = { historia: 'Historia', bug: 'Bug', tarea: 'Tarea', spike: 'Spike' };
+    const valorLabel = { alto: 'Valor alto', medio: 'Valor medio', bajo: 'Valor bajo' };
+
+    const card = document.createElement('div');
+    card.className = 'iter-card';
+
+    const top = document.createElement('div');
+    top.className = 'iter-card__top';
+    top.appendChild(el('span', { class: 'iter-card__id' }, s.id));
+    top.appendChild(el('span', { class: `iter-card__type iter-card__type--${s.tipo}` }, tipoLabel[s.tipo] || s.tipo));
+    top.appendChild(el('span', { class: 'iter-card__pts' }, `${s.dias}d`));
+    card.appendChild(top);
+
+    const title = document.createElement('p');
+    title.className = 'iter-card__title';
+    title.textContent = s.titulo;
+    card.appendChild(title);
+
+    if (s.tags && s.tags.length) {
+      const tags = document.createElement('div');
+      tags.className = 'iter-card__tags';
+      s.tags.forEach(t => {
+        const span = document.createElement('span');
+        span.className = 'iter-tag';
+        span.textContent = '#' + t;
+        tags.appendChild(span);
+      });
+      card.appendChild(tags);
+    }
+
+    const foot = document.createElement('div');
+    foot.className = 'iter-card__foot';
+
+    const valor = document.createElement('span');
+    valor.className = `iter-card__valor iter-card__valor--${s.valor}`;
+    const dot = document.createElement('i');
+    valor.appendChild(dot);
+    valor.appendChild(document.createTextNode(valorLabel[s.valor] || s.valor));
+
+    const pair = document.createElement('span');
+    pair.className = 'iter-card__pair';
+    pair.title = par.nombre;
+    const avatar = document.createElement('span');
+    avatar.className = 'iter-avatar';
+    avatar.style.background = par.color;
+    avatar.textContent = s.par;
+    pair.appendChild(avatar);
+
+    foot.appendChild(valor);
+    foot.appendChild(pair);
+    card.appendChild(foot);
+    return card;
+  }
+
+  // ── Gráficos SVG ──────────────────────────────────────────
+  function renderCharts() { renderBurndown(); renderVelocity(); }
+
+  function renderBurndown() {
+    const W = 520, H = 260, pad = { t: 16, r: 16, b: 30, l: 40 };
+    const cw = W - pad.l - pad.r, ch = H - pad.t - pad.b;
+    const data = iterActual.burndown;
+    const n = data.length - 1;
+    const maxY = iterActual.comprometido;
+    const x = i => pad.l + (i / n) * cw;
+    const y = v => pad.t + (1 - v / maxY) * ch;
+
+    const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': 'Burndown' });
+    for (let i = 0; i <= 4; i++) {
+      const v = (maxY / 4) * i, yy = y(v);
+      svg.appendChild(el('line', { x1: pad.l, y1: yy, x2: W - pad.r, y2: yy, stroke: '#e5e1da', 'stroke-width': '1' }));
+      svg.appendChild(el('text', { x: pad.l - 8, y: yy + 4, 'text-anchor': 'end', 'font-size': '10', fill: '#a09080' }, String(Math.round(v))));
+    }
+    for (let i = 0; i <= n; i += Math.ceil(n / 5)) {
+      svg.appendChild(el('text', { x: x(i), y: H - 10, 'text-anchor': 'middle', 'font-size': '10', fill: '#a09080' }, 'D' + i));
+    }
+    svg.appendChild(el('line', { x1: x(0), y1: y(maxY), x2: x(n), y2: y(0), stroke: '#c5bdb5', 'stroke-width': '1.5', 'stroke-dasharray': '5 4' }));
+    const reales = data.map((v, i) => ({ v, i })).filter(p => p.v !== null);
+    svg.appendChild(el('polyline', {
+      points: reales.map(p => `${x(p.i)},${y(p.v)}`).join(' '),
+      fill: 'none', stroke: '#c9893d', 'stroke-width': '2.5',
+      'stroke-linejoin': 'round', 'stroke-linecap': 'round',
+    }));
+    reales.forEach(p => svg.appendChild(el('circle', { cx: x(p.i), cy: y(p.v), r: '3', fill: '#c9893d' })));
+    const box = document.getElementById('iterBurndown');
+    box.innerHTML = ''; box.appendChild(svg);
+  }
+
+  function renderVelocity() {
+    const W = 520, H = 260, pad = { t: 16, r: 16, b: 34, l: 40 };
+    const cw = W - pad.l - pad.r, ch = H - pad.t - pad.b;
+    const maxY = Math.max(...VELOCIDAD.map(d => Math.max(d.plan, d.done))) * 1.1;
+    const y = v => pad.t + (1 - v / maxY) * ch;
+    const band = cw / VELOCIDAD.length, bw = Math.min(24, band / 3);
+
+    const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': 'Velocidad' });
+    for (let i = 0; i <= 4; i++) {
+      const v = (maxY / 4) * i, yy = y(v);
+      svg.appendChild(el('line', { x1: pad.l, y1: yy, x2: W - pad.r, y2: yy, stroke: '#e5e1da', 'stroke-width': '1' }));
+      svg.appendChild(el('text', { x: pad.l - 8, y: yy + 4, 'text-anchor': 'end', 'font-size': '10', fill: '#a09080' }, String(Math.round(v))));
+    }
+    VELOCIDAD.forEach((d, i) => {
+      const cx = pad.l + band * i + band / 2, x1 = cx - bw - 2, x2 = cx + 2;
+      svg.appendChild(el('rect', { x: x1, y: y(d.plan), width: bw, height: pad.t + ch - y(d.plan), rx: '3', fill: '#d4c9be' }));
+      svg.appendChild(el('rect', { x: x2, y: y(d.done), width: bw, height: pad.t + ch - y(d.done), rx: '3', fill: '#c9893d' }));
+      svg.appendChild(el('text', { x: cx, y: H - 12, 'text-anchor': 'middle', 'font-size': '10', fill: '#a09080' }, d.iter));
+    });
+    const box = document.getElementById('iterVelocity');
+    box.innerHTML = ''; box.appendChild(svg);
+    const cerradas = VELOCIDAD.filter(d => d.done > 0);
+    const avg = cerradas.length ? Math.round(cerradas.reduce((a, d) => a + d.done, 0) / cerradas.length) : 0;
+    document.getElementById('iterVelocityAvg').innerHTML =
+      `Velocidad promedio: <b>${avg} días ideales</b> por iteración (últimas ${cerradas.length}).`;
+  }
+
+  render();
+})();
+</script>
