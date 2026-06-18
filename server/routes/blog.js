@@ -41,6 +41,22 @@ blogRouter.get('/', async (req, res) => {
     }
 });
 
+// GET /api/blog/admin/all — todos los posts, incluidos borradores (solo admin)
+blogRouter.get('/admin/all', authenticateToken, requireRole('admin'), async (req, res) => {
+    try {
+        const result = await query(
+            `SELECT id, slug, title, excerpt, content_md, cover_image_url, author,
+                    reading_time_min, tags, is_published, published_at, created_at, updated_at
+             FROM blog_posts
+             ORDER BY COALESCE(published_at, created_at) DESC, id DESC`
+        );
+        res.json({ success: true, data: result.rows });
+    } catch (err) {
+        logger.error({ err }, '[GET /api/blog/admin/all] Error:');
+        res.status(500).json({ success: false, error: 'Error interno' });
+    }
+});
+
 // GET /api/blog/:slug — post individual
 blogRouter.get('/:slug', async (req, res) => {
     try {
