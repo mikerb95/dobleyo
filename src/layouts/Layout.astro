@@ -16,6 +16,7 @@ export interface Props {
   hreflangEn?: string;
   jsonLd?: Record<string, unknown> | Record<string, unknown>[];
   hideWhatsApp?: boolean;
+  noindex?: boolean;
 }
 
 const {
@@ -27,6 +28,7 @@ const {
   hreflangEn,
   jsonLd,
   hideWhatsApp = false,
+  noindex = false,
 } = Astro.props;
 ---
 
@@ -41,6 +43,7 @@ const {
       hreflangEs={hreflangEs}
       hreflangEn={hreflangEn}
       jsonLd={jsonLd}
+      noindex={noindex}
     />
   </head>
   <body class="font-sans bg-cream text-ink">
