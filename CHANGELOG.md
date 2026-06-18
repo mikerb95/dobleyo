@@ -2,6 +2,27 @@
 
 ---
 
+## 📅 2026-06-18 — Blog: contenido editorial, gestor en admin y página de detalle (Agente: Claude)
+
+### Contexto
+El blog tenía 3 posts semilla con contenido esquemático, no existía página pública para leer un post (la portada enlazaba a `/blog/<slug>` que daba 404) y no había forma de gestionar contenido desde el admin (solo la API).
+
+### Archivos modificados
+- `server/migrations/add_blog_posts.js` — reescrito el `content_md`, títulos y `excerpt` de los 3 posts semilla (`receta-v60`, `notas-cata-huila`, `guia-molienda`) con redacción humana y cálida en español Colombia (tono editorial «tú», sin voseo). Ajustados `reading_time_min`. **Nota:** el seed usa `ON CONFLICT (slug) DO NOTHING`, por lo que solo aplica en BD nuevas; las BD existentes deben editarse vía el gestor del admin.
+- `src/pages/blog.astro` — actualizado el arreglo de respaldo `STATIC_POSTS` (títulos/excerpts/tiempos) para que coincida con el nuevo contenido cuando la BD no esté disponible.
+- `server/routes/blog.js` — **nuevo endpoint** `GET /api/blog/admin/all` (auth `admin`) que lista todos los posts incluidos borradores, con todos los campos. Colocado antes de `GET /:slug` para evitar colisión de rutas.
+- `src/pages/admin/blog.astro` — **nueva**. Gestor de contenido: tabla con estado (publicado/borrador), KPIs y modales crear/editar/eliminar. Auto-slug desde el título (solo al crear; el slug se bloquea al editar). Consume `GET /api/blog/admin/all`, `POST /api/blog`, `PATCH /api/blog/:id`, `DELETE /api/blog/:id`. Usa el sistema de diseño de `AdminLayout` (page-header, erp-table, modal, form-group, badges).
+- `src/layouts/AdminLayout.astro` — enlace «Blog» en la sección Catálogo del nav (`data-roles="admin"`, `data-section="blog"`).
+- `src/pages/blog/[slug].astro` — **nueva**. Página pública de detalle (`prerender = false`). Trae el post de `GET /api/blog/:slug`, renderiza `content_md` con `marked`, 404 → redirige a `/blog`. SEO completo: `<Head>`, canonical, JSON-LD `BlogPosting` + `BreadcrumbList`. Estilos con variables CSS, mobile-first.
+- `package.json` — agregada dependencia `marked` (render de Markdown en SSR).
+
+### Notas
+- Paridad `server/index.js` ↔ `api/index.js`: `blogRouter` ya estaba montado en ambos, así que el nuevo endpoint queda disponible en standalone y serverless sin cambios adicionales.
+- El render de `content_md` usa `set:html`; el contenido es de autoría exclusiva de admins (rol de confianza).
+- `astro build` completo verificado ✓.
+
+---
+
 ## 📅 2026-06-16 — Página taller SENA: modelos de ingreso (Agente: Claude)
 
 ### Contexto
