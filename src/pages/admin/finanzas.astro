@@ -540,24 +540,33 @@ const balancePositive = dashboard.month_balance >= 0;
   /* Tabs */
   .adm-tabs {
     display: flex;
-    gap: 0.25rem;
-    border-bottom: 2px solid #e5e7eb;
+    gap: 0.35rem;
+    border-bottom: 1px solid var(--rule, #e7e2da);
     margin-bottom: 1.5rem;
     overflow-x: auto;
     scrollbar-width: none;
   }
+  .adm-tabs::-webkit-scrollbar { display: none; }
   .adm-tab {
-    padding: 0.625rem 1.125rem;
+    padding: 0.7rem 1.15rem;
     background: none;
     border: none;
     cursor: pointer;
-    font-size: 0.9rem;
-    color: #6b7280;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--muted, #7a6652);
     white-space: nowrap;
     border-bottom: 2px solid transparent;
-    margin-bottom: -2px;
+    margin-bottom: -1px;
+    border-radius: 8px 8px 0 0;
+    transition: color .15s, background .15s, border-color .15s;
   }
-  .adm-tab--active { color: var(--coffee, #8b6f47); border-bottom-color: var(--coffee, #8b6f47); font-weight: 600; }
+  .adm-tab:hover { color: var(--color-primary, #3a2618); background: var(--hover, #f7f3ed); }
+  .adm-tab--active {
+    color: var(--color-primary, #3a2618);
+    border-bottom-color: var(--color-accent, #c9893d);
+    font-weight: 600;
+  }
 
   /* Panels */
   .adm-panel--hidden { display: none; }
@@ -578,81 +587,89 @@ const balancePositive = dashboard.month_balance >= 0;
     flex-wrap: wrap;
   }
 
-  /* Tabla genérica */
+  /* Tarjeta de tabla — contenedor con cabecera + tabla edge-to-edge */
   .adm-table-card {
-    background: white;
-    border: 1px solid #e5e7eb;
-    border-radius: 0.75rem;
-    padding: 1.25rem;
+    background: var(--paper, #fff);
+    border: 1px solid var(--rule, #e7e2da);
+    border-radius: 12px;
     overflow: hidden;
+    box-shadow: 0 1px 2px color-mix(in oklab, var(--color-primary, #3a2618) 6%, transparent),
+                0 10px 28px -22px color-mix(in oklab, var(--color-primary, #3a2618) 40%, transparent);
   }
   .adm-table-card__title {
-    font-size: 1rem;
+    font-size: 0.9rem;
     font-weight: 600;
-    color: var(--ink, #251a14);
-    margin: 0 0 1rem;
+    letter-spacing: -0.01em;
+    color: var(--color-primary, #3a2618);
+    margin: 0;
+    padding: 0.95rem 1.25rem;
+    border-bottom: 1px solid var(--rule, #e7e2da);
   }
+  .adm-table-wrap { width: 100%; overflow-x: auto; }
+
   .adm-table {
     width: 100%;
     border-collapse: collapse;
     font-size: 0.85rem;
   }
-  .adm-table thead {
-    background: #fafafa;
-  }
-  .adm-table th {
-    padding: 10px 12px;
+  .adm-table thead th {
+    padding: 0.7rem 1.25rem;
     text-align: left;
     font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.07em;
+    font-weight: 600;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: var(--text-2, #6a6d70);
-    border-bottom: 1px solid var(--border, rgba(0,0,0,.09));
+    color: var(--muted, #7a6652);
+    background: color-mix(in oklab, var(--color-primary, #3a2618) 3%, #fff);
+    border-bottom: 1px solid var(--rule, #e7e2da);
     white-space: nowrap;
   }
-  .adm-table td {
-    padding: 10px 12px;
-    border-bottom: 1px solid rgba(0,0,0,.05);
-    color: var(--text-1, #32363a);
+  .adm-table tbody td {
+    padding: 0.8rem 1.25rem;
+    border-bottom: 1px solid color-mix(in oklab, var(--color-primary, #3a2618) 7%, #fff);
+    color: var(--color-text, #1a1410);
     vertical-align: middle;
     font-size: 13px;
   }
-  .adm-table tbody tr:hover td {
-    background: var(--nav-hover-bg, #f5f6f7);
-  }
-  .adm-table tbody tr:last-child td {
-    border-bottom: none;
-  }
-  .adm-table__mono   { font-family: monospace; font-size: 0.8rem; }
-  .adm-table__amount { font-weight: 600; color: #2d6a4f; }
+  .adm-table tbody tr { transition: background .12s; }
+  .adm-table tbody tr:hover { background: var(--hover, #f7f3ed); }
+  .adm-table tbody tr:last-child td { border-bottom: none; }
+  .adm-table__mono   { font-family: ui-monospace, Menlo, monospace; font-size: 0.78rem; color: var(--muted, #7a6652); }
+  .adm-table__amount { font-weight: 600; color: var(--color-primary, #3a2618); font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
   .adm-table__cat    { text-transform: capitalize; }
 
   .adm-badge {
-    padding: 0.2rem 0.6rem;
+    display: inline-flex;
+    align-items: center;
+    padding: 0.2rem 0.65rem;
     border-radius: 9999px;
-    font-size: 0.75rem;
-    font-weight: 500;
+    font-size: 0.72rem;
+    font-weight: 600;
+    line-height: 1.4;
     white-space: nowrap;
   }
   .adm-empty {
-    color: #9ca3af;
+    color: var(--muted, #9ca3af);
     font-size: 0.875rem;
     text-align: center;
-    padding: 2rem;
+    padding: 2.75rem 1.25rem;
+    margin: 0;
   }
   .adm-link {
     display: block;
-    margin-top: 0.75rem;
-    font-size: 0.875rem;
-    color: var(--coffee, #8b6f47);
+    padding: 0.85rem 1.25rem;
+    border-top: 1px solid var(--rule, #e7e2da);
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--color-accent, #c9893d);
     text-decoration: none;
     text-align: right;
   }
+  .adm-link:hover { color: var(--color-primary, #3a2618); }
   .adm-loading {
     text-align: center;
-    padding: 2rem;
-    color: #9ca3af;
+    padding: 2.75rem 1.25rem;
+    color: var(--muted, #9ca3af);
     font-size: 0.875rem;
   }
 
