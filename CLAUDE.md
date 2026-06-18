@@ -90,19 +90,21 @@
 | `src/pages/admin/usuarios.astro` | Gestión de usuarios |
 
 ### Frontend — App Operativa (Caficultor/Admin)
+> ⚠️ La app operativa **no** vive en `src/pages/app/` (esa carpeta no existe; `/app/*` da 404). Está consolidada bajo `src/pages/admin/` y se sirve en rutas `/admin/*`. La carpeta `apps/mobile/` es un proyecto aparte (app móvil), no rutas del sitio web.
+
 | Archivo | Propósito |
 |---|---|
-| `src/pages/app/harvest.astro` | Registro de cosechas |
-| `src/pages/app/inventory-storage.astro` | Almacenamiento de inventario verde |
-| `src/pages/app/send-roasting.astro` | Enviar a tostión |
-| `src/pages/app/roast-retrieval.astro` | Recibir café tostado |
-| `src/pages/app/roasted-storage.astro` | Almacén de café tostado |
-| `src/pages/app/packaging.astro` | Empaquetado |
-| `src/pages/app/etiquetas.astro` | Generación de etiquetas |
-| `src/pages/app/finanzas.astro` | Dashboard financiero (estructura base) |
-| `src/pages/app/ventas.astro` | Ventas MercadoLibre |
-| `src/pages/app/auditoria.astro` | Logs de auditoría |
-| `src/pages/app/estadisticas.astro` | Estadísticas |
+| `src/pages/admin/harvest.astro` | Registro de cosechas |
+| `src/pages/admin/inventory-storage.astro` | Almacenamiento de inventario verde |
+| `src/pages/admin/send-roasting.astro` | Enviar a tostión |
+| `src/pages/admin/roast-retrieval.astro` | Recibir café tostado |
+| `src/pages/admin/roasted-storage.astro` | Almacén de café tostado |
+| `src/pages/admin/packaging.astro` | Empaquetado |
+| `src/pages/admin/etiquetas.astro` | Generación de etiquetas |
+| `src/pages/admin/finanzas.astro` | Dashboard financiero (estructura base) |
+| `src/pages/admin/ventas.astro` | Ventas MercadoLibre |
+| `src/pages/admin/auditoria.astro` | Logs de auditoría |
+| `src/pages/admin/estadisticas.astro` | Estadísticas |
 
 ### Componentes
 | Archivo | Tipo | Propósito |
