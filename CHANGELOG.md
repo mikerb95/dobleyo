@@ -2,6 +2,20 @@
 
 ---
 
+## 📅 2026-06-18 — Finanzas: estilos de tablas/pestañas en paneles cargados por JS (Agente: Claude)
+
+### Contexto
+En `/admin/finanzas`, los paneles **Pagos**, **Facturas de compra**, **Facturas de venta** y **Gastos** se veían como texto plano (tablas sin estilo, badges sin pastilla). Causa: el bloque `<style>` de la página estaba scopeado por Astro, y esas tablas se inyectan por JS (`innerHTML`) en runtime, por lo que no recibían el atributo de scope ni las reglas `.adm-table`, `.adm-badge`, etc. El panel **Resumen** sí se veía bien porque está en el template.
+
+### Archivos modificados
+- `src/pages/admin/finanzas.astro`
+  - El segundo bloque `<style>` ahora es `is:global` para que las reglas `.adm-*` apliquen también al HTML inyectado por JS. Las clases `.adm-*` no colisionan con las de `AdminLayout` (`.erp-*`, `.btn`, `.badge`, `.card`).
+  - Rediseño de tablas, pestañas, títulos y badges alineado al sistema visual Claude Design (tokens `--color-primary`, `--color-accent`, `--rule`, `--hover`, `color-mix`): tarjeta `.adm-table-card` con cabecera y tabla edge-to-edge, cabecera de tabla con fondo sutil, hover de fila, montos con `tabular-nums` alineados a la derecha, pestañas con acento.
+  - Los cuatro loaders JS envuelven la tabla en `.adm-table-card` + `.adm-table-wrap` con título; estados vacíos/error también dentro de tarjeta.
+  - Tablas del panel Resumen envueltas en `.adm-table-wrap` para scroll horizontal en móvil.
+
+---
+
 ## 📅 2026-06-18 — Blog: contenido editorial, gestor en admin y página de detalle (Agente: Claude)
 
 ### Contexto
