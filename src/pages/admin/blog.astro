@@ -1,0 +1,411 @@
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+---
+
+<AdminLayout title="Blog — DobleYo Café">
+  <header class="page-header">
+    <div class="page-header-top">
+      <div>
+        <div class="page-breadcrumb">Catálogo · Contenido</div>
+        <h1 class="page-title">Blog</h1>
+        <p class="page-subtitle">
+          Cree, edite y publique recetas, notas de origen y guías de preparación.
+        </p>
+      </div>
+      <div class="page-header-actions">
+        <a href="/blog" target="_blank" class="btn btn-secondary">Ver blog público</a>
+        <button id="newPostBtn" class="btn btn-primary">+ Nuevo post</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="erp-body">
+    <!-- KPIs -->
+    <div class="kpi-grid" style="margin-bottom: 20px;">
+      <div class="kpi-tile brand">
+        <div class="kpi-label">Total</div>
+        <div class="kpi-value" id="kpiTotal">—</div>
+      </div>
+      <div class="kpi-tile success">
+        <div class="kpi-label">Publicados</div>
+        <div class="kpi-value" id="kpiPublished">—</div>
+      </div>
+      <div class="kpi-tile warning">
+        <div class="kpi-label">Borradores</div>
+        <div class="kpi-value" id="kpiDrafts">—</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <h2 class="card-title">Publicaciones</h2>
+          <div class="card-subtitle">Ordenadas por fecha de publicación</div>
+        </div>
+      </div>
+      <div class="table-wrapper">
+        <table class="erp-table">
+          <thead>
+            <tr>
+              <th>Título</th>
+              <th>Slug</th>
+              <th>Estado</th>
+              <th>Lectura</th>
+              <th>Fecha</th>
+              <th style="text-align:right;">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="postsBody">
+            <tr><td colspan="6" class="empty-state">Cargando publicaciones…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Modal crear/editar ───────────────────────────────── -->
+  <div class="modal" id="postModal" style="display:none;">
+    <div class="modal-content" style="max-width: 760px;">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modalTitle">Nuevo post</h3>
+        <button class="shell-btn" id="closeModalBtn" aria-label="Cerrar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="postForm">
+          <input type="hidden" id="postId" />
+
+          <div class="form-grid">
+            <div class="form-group wide">
+              <label for="f_title">Título <span class="required">*</span></label>
+              <input type="text" id="f_title" required maxlength="200" />
+            </div>
+
+            <div class="form-group wide">
+              <label for="f_slug">Slug <span class="required">*</span></label>
+              <input type="text" id="f_slug" required pattern="[a-z0-9-]+"
+                placeholder="ej: receta-v60" />
+              <span class="form-hint" id="slugHint">
+                Solo minúsculas, números y guiones. Se genera del título; el slug no se puede cambiar al editar.
+              </span>
+            </div>
+
+            <div class="form-group wide">
+              <label for="f_excerpt">Resumen</label>
+              <textarea id="f_excerpt" rows="2"
+                placeholder="Frase corta que aparece en la lista del blog."></textarea>
+            </div>
+
+            <div class="form-group">
+              <label for="f_cover">URL de imagen de portada</label>
+              <input type="url" id="f_cover" placeholder="https://…" />
+            </div>
+
+            <div class="form-group">
+              <label for="f_author">Autor</label>
+              <input type="text" id="f_author" placeholder="DobleYo Café" />
+            </div>
+
+            <div class="form-group">
+              <label for="f_reading">Minutos de lectura</label>
+              <input type="number" id="f_reading" min="1" max="60" value="3" />
+            </div>
+
+            <div class="form-group">
+              <label for="f_tags">Etiquetas</label>
+              <input type="text" id="f_tags" placeholder="receta, v60, preparacion" />
+              <span class="form-hint">Separadas por comas.</span>
+            </div>
+
+            <div class="form-group wide">
+              <label for="f_content">Contenido (Markdown)</label>
+              <textarea id="f_content" rows="14" style="font-family: ui-monospace, Menlo, monospace; font-size: 13px;"
+                placeholder="# Título&#10;&#10;Escriba el contenido en Markdown…"></textarea>
+            </div>
+
+            <div class="form-group wide">
+              <label class="checkbox-item" style="max-width: 320px;">
+                <input type="checkbox" id="f_published" />
+                Publicar (visible en el blog público)
+              </label>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" id="cancelBtn">Cancelar</button>
+        <button type="submit" form="postForm" class="btn-save btn" id="saveBtn">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Modal eliminar ───────────────────────────────────── -->
+  <div class="modal" id="deleteModal" style="display:none;">
+    <div class="modal-content" style="max-width: 420px;">
+      <div class="modal-header">
+        <h3 class="modal-title">Eliminar post</h3>
+      </div>
+      <div class="modal-body">
+        <p style="margin:0 0 12px; color: var(--muted);">
+          ¿Está seguro de que desea eliminar esta publicación? Esta acción no se puede deshacer.
+        </p>
+        <div class="error-box" id="deleteName"></div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" id="cancelDeleteBtn">Cancelar</button>
+        <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Eliminar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let posts = [];
+    let editingId = null;
+    let deletingId = null;
+
+    const $ = (id) => document.getElementById(id);
+
+    function slugify(text) {
+      return text
+        .toLowerCase()
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9\s-]/g, "")
+        .trim()
+        .replace(/\s+/g, "-")
+        .replace(/-+/g, "-");
+    }
+
+    function fmtDate(d) {
+      if (!d) return "—";
+      try {
+        return new Date(d).toLocaleDateString("es-CO", {
+          year: "numeric", month: "short", day: "numeric",
+        });
+      } catch { return "—"; }
+    }
+
+    function parseTags(tags) {
+      if (!tags) return [];
+      if (Array.isArray(tags)) return tags;
+      try { return JSON.parse(tags); } catch { return []; }
+    }
+
+    function escapeHtml(s) {
+      return String(s ?? "").replace(/[&<>"']/g, (c) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+      }[c]));
+    }
+
+    async function loadPosts() {
+      const body = $("postsBody");
+      try {
+        const res = await fetch("/api/blog/admin/all", { credentials: "include" });
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        const json = await res.json();
+        posts = json.data || [];
+        renderPosts();
+        renderStats();
+      } catch (err) {
+        console.error("[blog admin] load error:", err);
+        body.innerHTML =
+          '<tr><td colspan="6" class="empty-state">No se pudieron cargar las publicaciones.</td></tr>';
+      }
+    }
+
+    function renderStats() {
+      const published = posts.filter((p) => p.is_published).length;
+      $("kpiTotal").textContent = posts.length;
+      $("kpiPublished").textContent = published;
+      $("kpiDrafts").textContent = posts.length - published;
+    }
+
+    function renderPosts() {
+      const body = $("postsBody");
+      if (!posts.length) {
+        body.innerHTML =
+          '<tr><td colspan="6" class="empty-state">Aún no hay publicaciones. Cree la primera con “Nuevo post”.</td></tr>';
+        return;
+      }
+      body.innerHTML = posts.map((p) => {
+        const badge = p.is_published
+          ? '<span class="badge badge-success">Publicado</span>'
+          : '<span class="badge badge-neutral">Borrador</span>';
+        return `
+          <tr>
+            <td style="font-weight:600; color: var(--color-primary);">${escapeHtml(p.title)}</td>
+            <td style="font-family: ui-monospace, Menlo, monospace; font-size:12px; color: var(--muted);">${escapeHtml(p.slug)}</td>
+            <td>${badge}</td>
+            <td>${p.reading_time_min ?? 3} min</td>
+            <td style="color: var(--muted);">${fmtDate(p.published_at || p.created_at)}</td>
+            <td style="text-align:right; white-space:nowrap;">
+              <button class="btn btn-secondary editBtn" data-id="${p.id}" style="padding:5px 10px;">Editar</button>
+              <button class="btn btn-danger delBtn" data-id="${p.id}" style="padding:5px 10px;">Eliminar</button>
+            </td>
+          </tr>`;
+      }).join("");
+
+      body.querySelectorAll(".editBtn").forEach((b) =>
+        b.addEventListener("click", () => openEdit(Number(b.dataset.id))));
+      body.querySelectorAll(".delBtn").forEach((b) =>
+        b.addEventListener("click", () => openDelete(Number(b.dataset.id))));
+    }
+
+    function openCreate() {
+      editingId = null;
+      $("modalTitle").textContent = "Nuevo post";
+      $("postForm").reset();
+      $("postId").value = "";
+      $("f_reading").value = "3";
+      $("f_slug").disabled = false;
+      $("slugHint").style.display = "block";
+      $("postModal").style.display = "grid";
+      $("f_title").focus();
+    }
+
+    function openEdit(id) {
+      const p = posts.find((x) => x.id === id);
+      if (!p) return;
+      editingId = id;
+      $("modalTitle").textContent = "Editar post";
+      $("postId").value = p.id;
+      $("f_title").value = p.title || "";
+      $("f_slug").value = p.slug || "";
+      $("f_slug").disabled = true; // el slug no se cambia al editar
+      $("slugHint").style.display = "none";
+      $("f_excerpt").value = p.excerpt || "";
+      $("f_cover").value = p.cover_image_url || "";
+      $("f_author").value = p.author || "";
+      $("f_reading").value = p.reading_time_min ?? 3;
+      $("f_tags").value = parseTags(p.tags).join(", ");
+      $("f_content").value = p.content_md || "";
+      $("f_published").checked = !!p.is_published;
+      $("postModal").style.display = "grid";
+    }
+
+    function closeModal() {
+      $("postModal").style.display = "none";
+      editingId = null;
+    }
+
+    function openDelete(id) {
+      const p = posts.find((x) => x.id === id);
+      if (!p) return;
+      deletingId = id;
+      $("deleteName").textContent = p.title;
+      $("deleteModal").style.display = "grid";
+    }
+
+    function closeDelete() {
+      $("deleteModal").style.display = "none";
+      deletingId = null;
+    }
+
+    // Auto-slug desde el título (solo al crear)
+    $("f_title").addEventListener("input", (e) => {
+      if (editingId === null && !$("f_slug").dataset.touched) {
+        $("f_slug").value = slugify(e.target.value);
+      }
+    });
+    $("f_slug").addEventListener("input", () => {
+      $("f_slug").dataset.touched = "1";
+    });
+
+    // Guardar (crear o editar)
+    $("postForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const tags = $("f_tags").value
+        .split(",").map((t) => t.trim()).filter(Boolean);
+
+      const payload = {
+        title: $("f_title").value.trim(),
+        excerpt: $("f_excerpt").value.trim() || null,
+        content_md: $("f_content").value || null,
+        cover_image_url: $("f_cover").value.trim() || null,
+        author: $("f_author").value.trim() || "DobleYo Café",
+        reading_time_min: parseInt($("f_reading").value) || 3,
+        tags: tags.length ? tags : null,
+        is_published: $("f_published").checked,
+      };
+
+      const saveBtn = $("saveBtn");
+      saveBtn.disabled = true;
+      saveBtn.textContent = "Guardando…";
+
+      try {
+        let res;
+        if (editingId !== null) {
+          res = await fetch(`/api/blog/${editingId}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify(payload),
+          });
+        } else {
+          payload.slug = $("f_slug").value.trim();
+          res = await fetch("/api/blog", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify(payload),
+          });
+        }
+
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          const msg = data.errors?.[0]?.msg || data.error || "No se pudo guardar.";
+          alert("Error: " + msg);
+          return;
+        }
+        closeModal();
+        await loadPosts();
+      } catch (err) {
+        console.error("[blog admin] save error:", err);
+        alert("Error de conexión al guardar.");
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = "Guardar";
+      }
+    });
+
+    // Confirmar eliminación
+    $("confirmDeleteBtn").addEventListener("click", async () => {
+      if (deletingId === null) return;
+      const btn = $("confirmDeleteBtn");
+      btn.disabled = true;
+      try {
+        const res = await fetch(`/api/blog/${deletingId}`, {
+          method: "DELETE",
+          credentials: "include",
+        });
+        if (!res.ok) {
+          alert("No se pudo eliminar la publicación.");
+          return;
+        }
+        closeDelete();
+        await loadPosts();
+      } catch (err) {
+        console.error("[blog admin] delete error:", err);
+        alert("Error de conexión al eliminar.");
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
+    // Listeners de UI
+    $("newPostBtn").addEventListener("click", openCreate);
+    $("closeModalBtn").addEventListener("click", closeModal);
+    $("cancelBtn").addEventListener("click", closeModal);
+    $("cancelDeleteBtn").addEventListener("click", closeDelete);
+    $("postModal").addEventListener("click", (e) => {
+      if (e.target.id === "postModal") closeModal();
+    });
+    $("deleteModal").addEventListener("click", (e) => {
+      if (e.target.id === "deleteModal") closeDelete();
+    });
+
+    loadPosts();
+  </script>
+</AdminLayout>
