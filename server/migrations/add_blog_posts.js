@@ -62,7 +62,15 @@ export async function addBlogPosts() {
         await query(
             `INSERT INTO blog_posts (slug, title, excerpt, content_md, cover_image_url, reading_time_min, tags, is_published, published_at)
              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-             ON CONFLICT (slug) DO NOTHING`,
+             ON CONFLICT (slug) DO UPDATE SET
+                title            = excluded.title,
+                excerpt          = excluded.excerpt,
+                content_md       = excluded.content_md,
+                cover_image_url  = excluded.cover_image_url,
+                reading_time_min = excluded.reading_time_min,
+                tags             = excluded.tags,
+                is_published     = excluded.is_published,
+                updated_at       = datetime('now')`,
             [p.slug, p.title, p.excerpt, p.content_md, p.cover_image_url, p.reading_time_min, p.tags, p.is_published, p.published_at]
         );
     }
