@@ -935,9 +935,11 @@ async function loadSalesInvoices() {
   try {
     const r = await fetch('/api/finance/sales-invoices?limit=50', { credentials: 'include' });
     const json = await r.json();
-    if (!json.success) { el.innerHTML = `<p class="adm-empty">Error: ${json.error}</p>`; return; }
-    if (!json.data.length) { el.innerHTML = '<p class="adm-empty">Sin facturas de venta</p>'; return; }
-    el.innerHTML = `<div style="overflow-x:auto"><table class="adm-table">
+    if (!json.success) { el.innerHTML = `<div class="adm-table-card"><p class="adm-empty">Error: ${json.error}</p></div>`; return; }
+    if (!json.data.length) { el.innerHTML = '<div class="adm-table-card"><p class="adm-empty">Sin facturas de venta</p></div>'; return; }
+    el.innerHTML = `<div class="adm-table-card">
+      <h2 class="adm-table-card__title">Facturas de venta</h2>
+      <div class="adm-table-wrap"><table class="adm-table">
       <thead><tr><th>Número</th><th>Cliente</th><th>Fecha</th><th>Total</th><th>Por cobrar</th><th>Estado</th></tr></thead>
       <tbody>${json.data.map(inv => `<tr>
         <td class="adm-table__mono">${inv.invoice_number}</td>
@@ -947,8 +949,8 @@ async function loadSalesInvoices() {
         <td class="adm-table__amount">${fmtCOP(inv.amount_due)}</td>
         <td>${badge(inv.state)}</td>
       </tr>`).join('')}</tbody>
-    </table></div>`;
-  } catch { el.innerHTML = '<p class="adm-empty">Error al cargar</p>'; }
+    </table></div></div>`;
+  } catch { el.innerHTML = '<div class="adm-table-card"><p class="adm-empty">Error al cargar</p></div>'; }
 }
 
 async function loadExpenses() {
