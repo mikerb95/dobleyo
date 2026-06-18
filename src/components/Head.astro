@@ -53,7 +53,10 @@ const organizationSchema = {
 ---
 
 {/* Robots — noindex en páginas privadas */}
-<meta name="robots" content={isAdmin ? "noindex, nofollow" : "index, follow"} />
+<meta
+  name="robots"
+  content={isAdmin || noindex ? "noindex, nofollow" : "index, follow"}
+/>
 
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
