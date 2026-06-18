@@ -132,22 +132,96 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   }
   .dt-log-entry--ok   { color: var(--ok); }
   .dt-log-entry--warn { color: var(--color-accent); }
+</style>
 
-  /* ─ fin ─ */
-  .dt-UNUSED-sentinel {
-    display: inline-flex;
-    background: var(--paper); border: 1px solid var(--rule);
-    border-radius: 8px; padding: 3px;
+<script is:inline>
+(() => {
+  const REPO_LINK = 'github.com/mikerb95/dobleyo';
+  let pendingEndpoint = null;
+
+  const modal        = document.getElementById('confirmModal');
+  const modalBody    = document.getElementById('modalBody');
+  const logBody      = document.getElementById('logBody');
+  const logContent   = document.getElementById('logContent');
+  const modalTitle   = document.getElementById('modalTitle');
+  const confirmInput = document.getElementById('confirmInput');
+  const confirmBtn   = document.getElementById('confirmBtn');
+  const cancelBtn    = document.getElementById('cancelBtn');
+
+  function openModal(endpoint) {
+    pendingEndpoint = endpoint;
+    modalTitle.textContent = 'Confirmar acción destructiva';
+    modalTitle.style.color = '';
+    modalBody.style.display = '';
+    logBody.style.display = 'none';
+    confirmBtn.style.display = '';
+    cancelBtn.textContent = 'Cancelar';
+    confirmInput.value = '';
+    modal.style.display = 'grid';
+    setTimeout(() => confirmInput.focus(), 50);
   }
-  .dt-tab {
-    appearance: none; border: 0; background: transparent; cursor: pointer;
-    font: inherit; font-size: 13px; font-weight: 500;
-    color: var(--color-text); padding: 7px 18px; border-radius: 6px;
-    transition: background .12s, color .12s;
+
+  function closeModal() {
+    modal.style.display = 'none';
+    pendingEndpoint = null;
   }
-  .dt-tab:hover { background: var(--hover); }
-  .dt-tab--on { background: var(--color-primary); color: #fff; }
-  .dt-tab--on:hover { background: color-mix(in oklab, var(--color-primary) 90%, black); }
+
+  document.getElementById('modalCloseBtn').addEventListener('click', closeModal);
+  cancelBtn.addEventListener('click', closeModal);
+  modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+  confirmInput.addEventListener('keydown', e => { if (e.key === 'Enter') confirmBtn.click(); });
+
+  confirmBtn.addEventListener('click', async () => {
+    if (confirmInput.value.trim() !== REPO_LINK) {
+      confirmInput.style.borderColor = 'var(--danger)';
+      setTimeout(() => confirmInput.style.borderColor = '', 1200);
+      confirmInput.focus();
+      return;
+    }
+    await runAction(pendingEndpoint);
+  });
+
+  async function runAction(endpoint) {
+    modalBody.style.display = 'none';
+    confirmBtn.style.display = 'none';
+    logBody.style.display = '';
+    logContent.innerHTML = '<div class="dt-log-entry" style="color:var(--color-accent)">Procesando…</div>';
+    modalTitle.textContent = 'Ejecutando…';
+    try {
+      const res = await fetch(endpoint, { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' } });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || res.statusText);
+      modalTitle.textContent = 'Operación completada';
+      modalTitle.style.color = 'var(--ok)';
+      let html = `<div class="dt-log-entry dt-log-entry--ok" style="font-weight:600;margin-bottom:10px">${data.message}</div>`;
+      if (Array.isArray(data.details)) {
+        data.details.forEach(line => {
+          const cls = line.includes('✓') ? 'dt-log-entry--ok' : line.includes('⚠') ? 'dt-log-entry--warn' : '';
+          html += `<div class="dt-log-entry ${cls}">${line}</div>`;
+        });
+      }
+      if (data.deletedCount !== undefined) {
+        html += `<div class="dt-log-entry" style="margin-top:10px;padding-top:10px;border-top:1px solid var(--rule)">Tablas procesadas: <strong>${data.deletedCount}</strong></div>`;
+      }
+      logContent.innerHTML = html;
+    } catch (err) {
+      modalTitle.textContent = 'Error en la operación';
+      modalTitle.style.color = 'var(--danger)';
+      logContent.innerHTML = `<div class="dt-log-entry" style="color:var(--danger);font-weight:600">${err.message}</div>`;
+    } finally {
+      cancelBtn.textContent = 'Cerrar';
+    }
+  }
+
+  document.getElementById('cleanUsersBtn').addEventListener('click', () => openModal('/api/devtools/clean-users'));
+  document.getElementById('cleanLotsBtn').addEventListener('click', () => openModal('/api/devtools/clean-lots'));
+  document.getElementById('cleanProductsBtn').addEventListener('click', () => openModal('/api/devtools/clean-products'));
+})();
+</script>
+
+<!-- BLOQUE ELIMINADO — estilos/script de sprints se mueven a iteraciones.astro -->
+<style is:global>
+  .dt-REMOVED-sentinel {
 
   /* ── Sprint bar ───────────────────────────────────────────── */
   .dt-sprint-bar {
