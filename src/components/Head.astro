@@ -8,6 +8,8 @@ export interface Props {
   title?: string;
   description?: string;
   isAdmin?: boolean;
+  /** Fuerza noindex,nofollow sin aplicar el resto del modo admin (p. ej. fuentes) */
+  noindex?: boolean;
   lang?: "es" | "en";
   canonical?: string;
   hreflangEs?: string;
