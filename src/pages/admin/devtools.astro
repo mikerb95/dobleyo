@@ -122,8 +122,19 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 </AdminLayout>
 
 <style is:global>
-  /* ── Tabs principales ─────────────────────────────────────── */
-  .dt-tabs {
+  .dt-action-status:not(:empty) {
+    padding: 12px 18px; border-top: 1px solid var(--rule);
+    font-size: 13px;
+  }
+  .dt-log-entry {
+    padding: 4px 0; font-size: 12.5px; font-family: ui-monospace, Menlo, monospace;
+    line-height: 1.5; color: var(--muted);
+  }
+  .dt-log-entry--ok   { color: var(--ok); }
+  .dt-log-entry--warn { color: var(--color-accent); }
+
+  /* ── BLOQUE ELIMINADO — estilos de sprints movidos a iteraciones.astro ── */
+  .dt-tabs--UNUSED {
     display: inline-flex;
     background: var(--paper); border: 1px solid var(--rule);
     border-radius: 8px; padding: 3px;
