@@ -2,6 +2,27 @@
 
 ---
 
+## 📅 2026-06-18 — Preparar para Venta: rediseño + plan de empaque en vivo en `/admin/packaging` (Agente: Claude)
+
+### Contexto
+Formulario vertical largo con estilos inline y hex hardcodeados (`#666`, `#c67b4e`, `#eee`), sliders de cata maquetados a mano, `alert()` para toda validación y éxito, y sin contexto operativo. No usaba el sistema de diseño compartido ni consumía `GET /api/coffee/packaged` (que ya existía).
+
+### Archivos modificados
+- `src/pages/admin/packaging.astro` — reescrita por completo:
+  - Migrada a `page-header` + `erp-body` + botón **Actualizar**; layout de **dos columnas** (formulario / plan).
+  - **4 KPIs** (`kpi-tile`): cafés tostados disponibles, peso disponible total, lotes preparados y unidades empacadas — desde `/api/coffee/roasted-coffee` y `/api/coffee/packaged`.
+  - **Plan de empaque en vivo** (funcionalidad nueva): panel sticky que se actualiza en tiempo real con lote, tueste, origen, barras de perfil (acidez/cuerpo/balance), puntaje y desglose (presentación, molienda, tamaño, unidades, peso a usar, inventario), con estado vacío.
+  - Sliders con clases del sistema (`slider-field`/`slider-value`/`slider-scale`); info de café y origen con `detail-grid`/`info-box`.
+  - **Toasts** en reemplazo de todos los `alert()`; botón con estado «Registrando…» y `disabled`.
+  - **Tabla «Empaques recientes»** (`erp-table`) desde `/api/coffee/packaged` (antes sin uso en UI), con escape de HTML y fecha en formato `es-CO`.
+  - Copy en español Colombia formal (usted): «Seleccione», «Debe completar…».
+
+### Notas
+- Sin cambios de backend; mismo payload a `POST /api/coffee/packaging`. Se quitó la prop `description` no soportada por `AdminLayout`.
+- Los avisos `ts(2339/2551)` de `astro check` por DOM sin tipar son consistentes con el resto del módulo y no afectan `astro build`.
+
+---
+
 ## 📅 2026-06-18 — Generador de Etiquetas: rediseño + vista previa en vivo en `/admin/etiquetas` (Agente: Claude)
 
 ### Contexto
