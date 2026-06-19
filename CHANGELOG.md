@@ -2,6 +2,26 @@
 
 ---
 
+## 📅 2026-06-18 — CRM: arreglo de carga de cuentas + vinculación de ventas ML (Agente: Claude)
+
+### Contexto
+`/admin/crm` mostraba **"No pudimos cargar las cuentas"** y *0 resultados*. La vista `crm_account_overview` estaba rota: referenciaba `sales_tracking.crm_account_id` y `sales_tracking.total_cents`, columnas inexistentes (la tabla tiene `total_amount` en pesos y no tenía vínculo a CRM). SQLite no valida columnas de vistas al crearlas sino al consultarlas, por eso `GET /api/crm/accounts` devolvía 500. La causa de fondo: la migración `db/migrations/crm.sql` nunca se incluyó en `run_all_migrations.js` y dejaba el `ALTER TABLE` del vínculo comentado como "ejecutar manualmente".
+
+Además, las ventas de MercadoLibre no estaban vinculadas a ninguna cuenta, así que el LTV salía en $0.
+
+### Archivos modificados
+- `db/migrations/crm.sql` — el `ALTER TABLE sales_tracking ADD COLUMN crm_account_id` ahora va **antes** de la vista (ya no comentado); la vista usa `SUM(total_amount * 100)` para `lifetime_value_cents` (el frontend formatea dividiendo por 100).
+- `server/migrations/create_crm_tables.js` — **nuevo**. Migrador ESM idempotente: crea tablas/índices/triggers CRM, añade `sales_tracking.crm_account_id` si falta y recrea la vista apuntando a columnas existentes.
+- `server/migrations/run_all_migrations.js` — registrada la migración CRM (antes quedaba fuera del runner).
+- `server/routes/crm.js` — el detalle de cuenta (`GET /accounts/:id`) ahora incluye `sales`. Nuevos endpoints (auth admin): `GET /accounts/:id/sales`, `GET /sales/unlinked?q=`, `POST /accounts/:id/sales` (vincular, registra interacción `order`), `DELETE /sales/:saleId/link` (desvincular).
+- `src/components/crm/components/constants.js` — `formatPesos()` para valores ya en pesos (`total_amount`).
+- `src/components/crm/components/ClientCard.jsx` — panel **"Ventas vinculadas"** con total, desvincular y buscador (`SalePicker`) de ventas sin vincular; al vincular/desvincular refresca y actualiza el LTV.
+
+### Nota
+La vinculación es **manual**: `sales_tracking` no guarda identidad del comprador (solo ciudad/departamento), por lo que un auto-match sería poco fiable. La migración ya se ejecutó contra la base de Turso de producción.
+
+---
+
 ## 📅 2026-06-18 — Cupping SCA: rediseño profesional de `/admin/cupping` (Agente: Claude)
 
 ### Contexto
