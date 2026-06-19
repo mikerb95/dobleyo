@@ -935,7 +935,10 @@ export async function seedDemo() {
 
 // Ejecutado directamente
 if (import.meta.url === `file://${process.argv[1]}`) {
-  seedDemo()
-    .then(() => { console.log('\n✅ Seed de demo completado. Login demo: cualquier usuario @demo.dobleyo.cafe / Demo1234*'); process.exit(0); })
-    .catch((err) => { console.error('\n❌ Error en seed de demo:', err); process.exit(1); });
+  // `node seed_demo.js --trace` siembra solo la cadena de trazabilidad.
+  const onlyTrace = process.argv.includes('--trace');
+  const run = onlyTrace ? seedTraceabilityChain : seedDemo;
+  run()
+    .then(() => { console.log('\n✅ Seed completado.' + (onlyTrace ? '' : ' Login demo: cualquier usuario @demo.dobleyo.cafe / Demo1234*')); process.exit(0); })
+    .catch((err) => { console.error('\n❌ Error en seed:', err); process.exit(1); });
 }
