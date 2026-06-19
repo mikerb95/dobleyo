@@ -19,7 +19,7 @@ Nueva tabla `sales_tracking` con los siguientes campos:
 - `id` - Identificador único
 - `ml_order_id` - ID de la orden en MercadoLibre (único)
 - `purchase_date` - Fecha y hora de la compra
-- `total_amount` - Monto total en ARS
+- `total_amount` - Monto total en COP
 - `order_status` - Estado de la orden (pending, confirmed, shipped, delivered, cancelled)
 - `shipping_method` - Método de envío utilizado
 - `recipient_city` - Ciudad de destino
