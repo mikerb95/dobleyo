@@ -148,13 +148,6 @@ const productJsonLd = {
           </div>
         )}
 
-        {product.sca_score && (
-          <div class="sca-badge" title="Puntuación SCA (Specialty Coffee Association)">
-            <span class="sca-score">{product.sca_score}</span>
-            <span class="sca-label">pts SCA</span>
-          </div>
-        )}
-
         <div class="product-price">
           <span class="price-cop">${product.price.toLocaleString("es-CO")}</span>
           {product.price_usd && (
