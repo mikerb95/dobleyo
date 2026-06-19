@@ -88,4 +88,14 @@
       ]
     }
   ],
+  "crons": [
+    {
+      "path": "/api/ml/recompute",
+      "schedule": "0 7 * * *"
+    },
+    {
+      "path": "/api/mercadolibre/cron-sync",
+      "schedule": "0 */6 * * *"
+    }
+  ]
 }
