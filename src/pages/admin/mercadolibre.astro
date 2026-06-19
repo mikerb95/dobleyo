@@ -688,7 +688,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   // ── CSV export ─────────────────────────────────────────────
   function exportCSV() {
     if (!allSalesCache.length) { alert('No hay datos para exportar. Carga órdenes primero.'); return; }
-    const headers = ['ID Orden ML','Fecha','Comprador','Ciudad','Dpto','Total COP','Estado Pago','Estado Envío'];
+    const headers = ['ID Orden ML','Fecha','Comprador','Ciudad','Dpto','Total COP','Estado Pago','Estado Envío','Cuenta CRM'];
     const rows = allSalesCache.map((r: any) => [
       r.ml_order_id ?? r.id ?? '',
       r.purchase_date ?? r.created_at ?? '',
@@ -698,6 +698,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       r.total_amount ?? 0,
       r.payment_status ?? '',
       r.shipping_status ?? '',
+      r.crm_account_name ?? '',
     ]);
     const csv = [headers, ...rows].map((row: any[]) =>
       row.map((v: any) => `"${String(v).replace(/"/g, '""')}"`).join(',')
