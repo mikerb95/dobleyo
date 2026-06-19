@@ -29,26 +29,106 @@ class MercadoLibreService {
    * @param {string} sellerId - Seller ID in MercadoLibre
    * @returns {Promise<Array>} Array of orders
    */
-  async fetchOrders(sellerId) {
+  async fetchOrders(sellerId, { since = null, limit = 50, maxPages = 40 } = {}) {
     try {
-      const url = `${this.baseUrl}/orders/search?seller_id=${sellerId}&sort=date_desc&limit=100`;
-      const response = await fetch(url, {
-        headers: {
-          'Authorization': `Bearer ${this.accessToken}`,
-          'Content-Type': 'application/json'
-        }
-      });
+      const all = [];
+      let offset = 0;
 
-      if (!response.ok) {
-        throw new Error(`MercadoLibre API error: ${response.status}`);
+      for (let page = 0; page < maxPages; page++) {
+        let url = `${this.baseUrl}/orders/search?seller_id=${sellerId}&sort=date_desc&limit=${limit}&offset=${offset}`;
+        if (since) url += `&order.date_created.from=${encodeURIComponent(since)}`;
+
+        const response = await fetch(url, {
+          headers: {
+            'Authorization': `Bearer ${this.accessToken}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error(`MercadoLibre API error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        const results = data.results || [];
+        all.push(...results);
+
+        const total = data.paging?.total ?? all.length;
+        offset += limit;
+        if (results.length === 0 || offset >= total) break;
       }
 
-      const data = await response.json();
-      return data.results || [];
+      return all;
     } catch (error) {
       logger.error('Error fetching orders from MercadoLibre:', error);
       throw error;
     }
+  }
+
+  /**
+   * Fecha (texto 'YYYY-MM-DD HH:MM:SS' UTC) de la orden más reciente en BD.
+   * Sirve de punto de partida para el sync incremental.
+   */
+  async getLastOrderDate() {
+    const r = await db.query('SELECT MAX(purchase_date) AS d FROM sales_tracking', []);
+    return r.rows[0]?.d ?? null;
+  }
+
+  /**
+   * Orquesta una sincronización completa: trae órdenes (incremental por defecto),
+   * obtiene detalle + envío de cada una, transforma y persiste (upsert).
+   * Reutilizado por la ruta manual POST /sync y por el cron.
+   * @returns {Promise<Object>} resumen { processed, failed, saved, total_orders_fetched, since }
+   */
+  async syncOrders({ incremental = true } = {}) {
+    const sellerId = process.env.ML_SELLER_ID;
+
+    let since = null;
+    if (incremental) {
+      const last = await this.getLastOrderDate();
+      if (last) {
+        // Solapamiento de 1 día para no perder órdenes en el borde; el upsert
+        // por ml_order_id hace el reprocesamiento idempotente.
+        const d = new Date(`${String(last).replace(' ', 'T')}Z`);
+        if (!Number.isNaN(d.getTime())) {
+          d.setUTCDate(d.getUTCDate() - 1);
+          since = d.toISOString();
+        }
+      }
+    }
+
+    const orders = await this.fetchOrders(sellerId, { since });
+    if (!orders.length) {
+      return { processed: 0, failed: 0, saved: 0, total_orders_fetched: 0, since };
+    }
+
+    const salesData = [];
+    let processed = 0;
+    let failed = 0;
+
+    for (const order of orders) {
+      try {
+        const orderDetails = await this.fetchOrderDetails(order.id);
+
+        let shipment = null;
+        if (orderDetails.shipping && orderDetails.shipping.id) {
+          try {
+            shipment = await this.fetchShipment(orderDetails.shipping.id);
+          } catch (shipmentError) {
+            logger.warn(`Could not fetch shipment for order ${order.id}:`, shipmentError.message);
+          }
+        }
+
+        salesData.push(await this.transformOrderData(order, orderDetails, shipment));
+        processed++;
+      } catch (orderError) {
+        logger.error(`Error processing order ${order.id}:`, orderError.message);
+        failed++;
+      }
+    }
+
+    const insertedIds = await this.saveSalesData(salesData);
+    return { processed, failed, saved: insertedIds.length, total_orders_fetched: orders.length, since };
   }
 
   /**
