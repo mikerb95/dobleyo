@@ -2,768 +2,1023 @@
 import AdminLayout from "../../layouts/AdminLayout.astro";
 ---
 
-<AdminLayout>
-  <div style="max-width: 1200px; margin: 0 auto; padding: 2rem 1.5rem;">
-    <div
-      style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;"
-    >
-      <h1 style="font-size: 2rem; font-weight: 700; color: #251a14; margin: 0;">
-        🏷️ Crear Etiquetas
-      </h1>
-    </div>
-
-    <div style="margin-bottom: 2rem;">
-      <div
-        style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;"
-      >
-        <button
-          id="tabLotes"
-          style="flex: 1; padding: 0.75rem 1rem; background: #8b6f47; color: white; border: none; border-radius: 6px; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: all 0.2s;"
-        >
-          📦 Desde Lotes Preparados
-        </button>
-        <button
-          id="tabCero"
-          style="flex: 1; padding: 0.75rem 1rem; background: #ddd; color: #333; border: none; border-radius: 6px; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: all 0.2s;"
-        >
-          ✏️ Crear de Cero
+<AdminLayout title="Generación de Etiquetas — DobleYo">
+  <!-- ── Encabezado de página ──────────────────────────────────────────── -->
+  <div class="page-header">
+    <div class="page-header-top">
+      <div>
+        <div class="page-breadcrumb">Producción · Trazabilidad</div>
+        <h1 class="page-title">Generación de Etiquetas</h1>
+        <p class="page-subtitle">
+          Cree etiquetas con código QR de trazabilidad desde un lote preparado o
+          a partir de un perfil de café personalizado.
+        </p>
+      </div>
+      <div class="page-header-actions">
+        <button type="button" class="btn btn-secondary" id="refreshBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline>
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+          </svg>
+          Actualizar
         </button>
       </div>
+    </div>
+  </div>
 
-      <!-- TAB 1: Desde Lotes Preparados -->
-      <div id="tabLotesContent">
-        <form id="labelsFromLotsForm">
-          <!-- Selección de Lote Preparado -->
-          <div class="form-group">
-            <label for="preparedLotSelect"
-              >Lote Preparado para Venta <span class="required">*</span></label
-            >
-            <select id="preparedLotSelect" name="preparedLot" required>
-              <option value="">Selecciona un lote preparado...</option>
-            </select>
-            <div class="form-hint">
-              Cafés ya procesados con perfil de taza definido
-            </div>
+  <div class="erp-body">
+    <!-- ── KPIs ──────────────────────────────────────────────────────── -->
+    <div class="kpi-grid" style="margin-bottom: 22px;">
+      <div class="kpi-tile brand">
+        <div class="kpi-label">Etiquetas generadas</div>
+        <div class="kpi-value" id="kpiTotal">—</div>
+        <div class="kpi-sub">Histórico acumulado</div>
+      </div>
+      <div class="kpi-tile info">
+        <div class="kpi-label">Desde lotes</div>
+        <div class="kpi-value" id="kpiFromLots">—</div>
+        <div class="kpi-sub">Con trazabilidad completa</div>
+      </div>
+      <div class="kpi-tile success">
+        <div class="kpi-label">Personalizadas</div>
+        <div class="kpi-value" id="kpiCustom">—</div>
+        <div class="kpi-sub">Perfil creado a mano</div>
+      </div>
+      <div class="kpi-tile warning">
+        <div class="kpi-label">Lotes disponibles</div>
+        <div class="kpi-value" id="kpiAvailable">—</div>
+        <div class="kpi-sub">Listos para etiquetar</div>
+      </div>
+    </div>
+
+    <!-- ── Workbench: formulario + vista previa ──────────────────────── -->
+    <div class="labels-grid">
+      <!-- Columna izquierda: formulario -->
+      <section class="card">
+        <div class="card-header">
+          <div>
+            <h3 class="card-title">Datos de la etiqueta</h3>
+            <div class="card-subtitle">Elija el origen de los datos del café</div>
+          </div>
+        </div>
+        <div class="card-pad">
+          <!-- Segmented control -->
+          <div class="seg" role="tablist">
+            <button type="button" class="seg-btn is-active" id="tabLotes" role="tab">
+              📦 Desde lote preparado
+            </button>
+            <button type="button" class="seg-btn" id="tabCero" role="tab">
+              ✏️ Crear desde cero
+            </button>
           </div>
 
-          <!-- Información del Lote -->
-          <div class="card" id="lotInfoCard" style="display: none;">
-            <h3>Información del Café</h3>
-            <div
-              style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 0.95rem; margin-bottom: 1.5rem;"
-            >
-              <div>
-                <div style="color: #666; font-size: 0.85rem;">Lote ID</div>
-                <div style="font-weight: 600;" id="lotIdDisplay">—</div>
-              </div>
-              <div>
-                <div style="color: #666; font-size: 0.85rem;">Origen</div>
-                <div style="font-weight: 600;" id="lotOriginDisplay">—</div>
-              </div>
-              <div>
-                <div style="color: #666; font-size: 0.85rem;">Variedad</div>
-                <div style="font-weight: 600;" id="lotVarietyDisplay">—</div>
-              </div>
-              <div>
-                <div style="color: #666; font-size: 0.85rem;">Tueste</div>
-                <div style="font-weight: 600;" id="lotRoastDisplay">—</div>
-              </div>
-              <div>
-                <div style="color: #666; font-size: 0.85rem;">Presentación</div>
-                <div style="font-weight: 600;" id="lotPresentationDisplay">
-                  —
+          <!-- TAB 1: Desde Lotes Preparados -->
+          <div id="tabLotesContent">
+            <form id="labelsFromLotsForm">
+              <div class="form-group">
+                <label for="preparedLotSelect">
+                  Lote preparado para venta <span class="required">*</span>
+                </label>
+                <select id="preparedLotSelect" name="preparedLot" required>
+                  <option value="">Seleccione un lote preparado…</option>
+                </select>
+                <div class="form-hint">
+                  Cafés ya procesados con perfil de taza definido.
                 </div>
               </div>
-              <div>
-                <div style="color: #666; font-size: 0.85rem;">
-                  Peso Disponible
-                </div>
-                <div
-                  style="font-weight: 600; color: #c67b4e;"
-                  id="lotWeightDisplay"
-                >
-                  —
-                </div>
-              </div>
-            </div>
 
-            <!-- Propiedades de Cata (Mostradas) -->
-            <div
-              style="margin-top: 1.5rem; padding: 1rem; background: #f9f7f4; border-radius: 6px; border-left: 4px solid #c67b4e;"
-            >
-              <h4 style="margin: 0 0 1rem 0; color: #251a14;">
-                ☕ Perfil de Taza
-              </h4>
-              <div
-                style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 0.95rem;"
-              >
-                <div>
-                  <div style="color: #666; font-size: 0.85rem;">Acidez</div>
-                  <div style="font-weight: 600;" id="lotAcidityDisplay">—</div>
+              <!-- Información del Lote -->
+              <div class="lot-info" id="lotInfoCard" hidden>
+                <div class="form-section"><h3>Información del café</h3></div>
+                <div class="detail-grid">
+                  <div class="detail-item">
+                    <dt>Lote ID</dt><dd id="lotIdDisplay">—</dd>
+                  </div>
+                  <div class="detail-item">
+                    <dt>Origen</dt><dd id="lotOriginDisplay">—</dd>
+                  </div>
+                  <div class="detail-item">
+                    <dt>Variedad</dt><dd id="lotVarietyDisplay">—</dd>
+                  </div>
+                  <div class="detail-item">
+                    <dt>Tueste</dt><dd id="lotRoastDisplay">—</dd>
+                  </div>
+                  <div class="detail-item">
+                    <dt>Presentación</dt><dd id="lotPresentationDisplay">—</dd>
+                  </div>
+                  <div class="detail-item">
+                    <dt>Peso disponible</dt>
+                    <dd style="color: var(--color-accent);" id="lotWeightDisplay">—</dd>
+                  </div>
                 </div>
-                <div>
-                  <div style="color: #666; font-size: 0.85rem;">Cuerpo</div>
-                  <div style="font-weight: 600;" id="lotBodyDisplay">—</div>
-                </div>
-                <div>
-                  <div style="color: #666; font-size: 0.85rem;">Balance</div>
-                  <div style="font-weight: 600;" id="lotBalanceDisplay">—</div>
-                </div>
-                <div>
-                  <div style="color: #666; font-size: 0.85rem;">Puntuación</div>
-                  <div
-                    style="font-weight: 600; color: #c67b4e;"
-                    id="lotScoreDisplay"
-                  >
-                    —
+
+                <div class="info-box" style="margin-top: 16px;">
+                  <strong>☕ Perfil de taza</strong>
+                  <div class="detail-grid" style="margin-top: 12px;">
+                    <div class="detail-item">
+                      <dt>Acidez</dt><dd id="lotAcidityDisplay">—</dd>
+                    </div>
+                    <div class="detail-item">
+                      <dt>Cuerpo</dt><dd id="lotBodyDisplay">—</dd>
+                    </div>
+                    <div class="detail-item">
+                      <dt>Balance</dt><dd id="lotBalanceDisplay">—</dd>
+                    </div>
+                    <div class="detail-item">
+                      <dt>Puntuación</dt>
+                      <dd style="color: var(--color-accent);" id="lotScoreDisplay">—</dd>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
 
-          <!-- Cantidad de Etiquetas -->
-          <div class="form-group" style="margin-top: 1.5rem;">
-            <label for="quantityLots"
-              >Cantidad de Etiquetas a Generar <span class="required">*</span
-              ></label
-            >
-            <input
-              type="number"
-              id="quantityLots"
-              name="quantityLots"
-              placeholder="Ej: 25"
-              min="1"
-              max="1000"
-              required
-              style="width: 100%;"
-            />
-            <div class="form-hint">¿Cuántas etiquetas deseas imprimir?</div>
-          </div>
-
-          <!-- Incluir código QR -->
-          <div class="form-group">
-            <label
-              style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;"
-            >
-              <input
-                type="checkbox"
-                id="includeQRLots"
-                name="includeQR"
-                checked
-                style="cursor: pointer;"
-              />
-              <span>Incluir Código QR de Trazabilidad</span>
-            </label>
-            <div class="form-hint">
-              Permite a los clientes escanear información del café
-            </div>
-          </div>
-
-          <!-- Resumen -->
-          <div
-            class="info-box"
-            id="summaryBoxLots"
-            style="display: none; margin-top: 1.5rem;"
-          >
-            <strong>Resumen de Etiquetas:</strong>
-            <div
-              style="margin-top: 0.75rem; font-size: 0.95rem; line-height: 1.6;"
-            >
-              <div>
-                📦 Lote: <span id="summaryCoffeeLot" style="font-weight: 600;"
-                  >—</span
-                >
-              </div>
-              <div>
-                🏷️ Cantidad: <span
-                  id="summaryLabelCount"
-                  style="font-weight: 600;">—</span
-                >
-              </div>
-              <div>
-                ☕ Perfil: <span id="summaryProfile" style="font-weight: 600;"
-                  >—</span
-                >
-              </div>
-            </div>
-          </div>
-
-          <!-- Botón Submit -->
-          <button
-            type="submit"
-            style="width: 100%; padding: 0.875rem; background: #8b6f47; color: white; border: none; border-radius: 6px; font-size: 1rem; font-weight: 600; cursor: pointer; margin-top: 1.5rem; transition: background 0.2s;"
-          >
-            Generar Etiquetas
-          </button>
-        </form>
-      </div>
-
-      <!-- TAB 2: Crear de Cero -->
-      <div id="tabCeroContent" style="display: none;">
-        <form id="labelFromScratchForm">
-          <!-- Información General -->
-          <div class="form-group">
-            <label for="customCoffeeOrigin"
-              >Origen del Café <span class="required">*</span></label
-            >
-            <input
-              type="text"
-              id="customCoffeeOrigin"
-              name="origin"
-              placeholder="Ej: Sierra Nevada, Huila"
-              required
-              style="width: 100%;"
-            />
-          </div>
-
-          <div class="form-group">
-            <label for="customCoffeeFarm">Finca (Opcional)</label>
-            <input
-              type="text"
-              id="customCoffeeFarm"
-              name="farm"
-              placeholder="Ej: Finca La Aurora"
-              style="width: 100%;"
-            />
-          </div>
-
-          <!-- Variedad y Tueste -->
-          <div
-            style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;"
-          >
-            <div class="form-group">
-              <label for="customVariety"
-                >Variedad <span class="required">*</span></label
-              >
-              <input
-                type="text"
-                id="customVariety"
-                name="variety"
-                placeholder="Ej: Caturra, Bourbon"
-                required
-                style="width: 100%;"
-              />
-            </div>
-            <div class="form-group">
-              <label for="customRoast"
-                >Nivel de Tueste <span class="required">*</span></label
-              >
-              <select
-                id="customRoast"
-                name="roast"
-                required
-                style="width: 100%;"
-              >
-                <option value="">Selecciona...</option>
-                <option value="Claro">Claro (Light)</option>
-                <option value="Medio">Medio (Medium)</option>
-                <option value="Oscuro">Oscuro (Dark)</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- Proceso y Altitud -->
-          <div
-            style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;"
-          >
-            <div class="form-group">
-              <label for="customProcess">Proceso (Opcional)</label>
-              <select id="customProcess" name="process" style="width: 100%;">
-                <option value="">Sin especificar</option>
-                <option value="Lavado">Lavado</option>
-                <option value="Natural">Natural</option>
-                <option value="Honey">Honey</option>
-                <option value="Anaeróbico">Anaeróbico</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="customAltitude">Altitud (Opcional)</label>
-              <input
-                type="text"
-                id="customAltitude"
-                name="altitude"
-                placeholder="Ej: 1800 m"
-                style="width: 100%;"
-              />
-            </div>
-          </div>
-
-          <!-- Perfil de Taza -->
-          <div
-            style="margin: 2rem 0 1.5rem 0; padding: 1rem; background: #f9f7f4; border-radius: 6px; border-left: 4px solid #c67b4e;"
-          >
-            <h4 style="margin: 0 0 1rem 0; color: #251a14;">
-              ☕ Perfil de Taza
-            </h4>
-
-            <!-- Acidez -->
-            <div style="margin-bottom: 1.5rem;">
-              <label for="customAcidity"
-                >Acidez <span class="required">*</span></label
-              >
-              <div style="display: flex; gap: 0.5rem; margin: 0.75rem 0;">
+              <div class="form-group" style="margin-top: 16px;">
+                <label for="quantityLots">
+                  Cantidad de etiquetas a generar <span class="required">*</span>
+                </label>
                 <input
-                  type="range"
-                  id="customAcidity"
-                  name="acidity"
-                  min="1"
-                  max="5"
-                  value="3"
-                  style="flex: 1; cursor: pointer;"
+                  type="number" id="quantityLots" name="quantityLots"
+                  placeholder="Ej: 25" min="1" max="1000" required
                 />
-                <div
-                  style="min-width: 50px; text-align: center; font-weight: 600;"
-                  id="customAcidityValue"
-                >
-                  3/5
+                <div class="form-hint">¿Cuántas etiquetas desea imprimir?</div>
+              </div>
+
+              <label class="checkbox-item" style="margin-bottom: 8px;">
+                <input type="checkbox" id="includeQRLots" name="includeQR" checked />
+                <span>Incluir código QR de trazabilidad</span>
+              </label>
+              <div class="form-hint" style="margin-bottom: 8px;">
+                Permite a los clientes escanear la información del café.
+              </div>
+
+              <div class="form-actions">
+                <button type="submit" class="btn btn-save" id="submitLots">
+                  Generar etiquetas
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- TAB 2: Crear de Cero -->
+          <div id="tabCeroContent" hidden>
+            <form id="labelFromScratchForm">
+              <div class="form-grid">
+                <div class="form-group form-group--wide">
+                  <label for="customCoffeeOrigin">
+                    Origen del café <span class="required">*</span>
+                  </label>
+                  <input
+                    type="text" id="customCoffeeOrigin" name="origin"
+                    placeholder="Ej: Sierra Nevada, Huila" required
+                  />
+                </div>
+
+                <div class="form-group form-group--wide">
+                  <label for="customCoffeeFarm">Finca (opcional)</label>
+                  <input
+                    type="text" id="customCoffeeFarm" name="farm"
+                    placeholder="Ej: Finca La Aurora"
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label for="customVariety">
+                    Variedad <span class="required">*</span>
+                  </label>
+                  <input
+                    type="text" id="customVariety" name="variety"
+                    placeholder="Ej: Caturra, Bourbon" required
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="customRoast">
+                    Nivel de tueste <span class="required">*</span>
+                  </label>
+                  <select id="customRoast" name="roast" required>
+                    <option value="">Seleccione…</option>
+                    <option value="Claro">Claro (Light)</option>
+                    <option value="Medio">Medio (Medium)</option>
+                    <option value="Oscuro">Oscuro (Dark)</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="customProcess">Proceso (opcional)</label>
+                  <select id="customProcess" name="process">
+                    <option value="">Sin especificar</option>
+                    <option value="Lavado">Lavado</option>
+                    <option value="Natural">Natural</option>
+                    <option value="Honey">Honey</option>
+                    <option value="Anaeróbico">Anaeróbico</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="customAltitude">Altitud (opcional)</label>
+                  <input
+                    type="text" id="customAltitude" name="altitude"
+                    placeholder="Ej: 1800 m"
+                  />
                 </div>
               </div>
-              <div
-                style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.25rem; font-size: 0.75rem; color: #666;"
-              >
-                <div style="text-align: center;">Baja</div>
-                <div></div>
-                <div style="text-align: center;">Media</div>
-                <div></div>
-                <div style="text-align: center;">Alta</div>
-              </div>
-            </div>
 
-            <!-- Cuerpo -->
-            <div style="margin-bottom: 1.5rem;">
-              <label for="customBody"
-                >Cuerpo <span class="required">*</span></label
-              >
-              <div style="display: flex; gap: 0.5rem; margin: 0.75rem 0;">
-                <input
-                  type="range"
-                  id="customBody"
-                  name="body"
-                  min="1"
-                  max="5"
-                  value="3"
-                  style="flex: 1; cursor: pointer;"
-                />
-                <div
-                  style="min-width: 50px; text-align: center; font-weight: 600;"
-                  id="customBodyValue"
-                >
-                  3/5
+              <!-- Perfil de Taza -->
+              <div class="form-section"><h3>☕ Perfil de taza</h3></div>
+
+              <div class="slider-field">
+                <label for="customAcidity">
+                  Acidez <span class="required">*</span>
+                  <span class="slider-value" id="customAcidityValue">3/5</span>
+                </label>
+                <input type="range" id="customAcidity" name="acidity" min="1" max="5" value="3" />
+                <div class="slider-scale">
+                  <span>Baja</span><span>Media</span><span>Alta</span>
                 </div>
               </div>
-              <div
-                style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.25rem; font-size: 0.75rem; color: #666;"
-              >
-                <div style="text-align: center;">Ligero</div>
-                <div></div>
-                <div style="text-align: center;">Medio</div>
-                <div></div>
-                <div style="text-align: center;">Pesado</div>
-              </div>
-            </div>
 
-            <!-- Balance -->
-            <div style="margin-bottom: 1.5rem;">
-              <label for="customBalance"
-                >Balance <span class="required">*</span></label
-              >
-              <div style="display: flex; gap: 0.5rem; margin: 0.75rem 0;">
-                <input
-                  type="range"
-                  id="customBalance"
-                  name="balance"
-                  min="1"
-                  max="5"
-                  value="3"
-                  style="flex: 1; cursor: pointer;"
-                />
-                <div
-                  style="min-width: 50px; text-align: center; font-weight: 600;"
-                  id="customBalanceValue"
-                >
-                  3/5
+              <div class="slider-field">
+                <label for="customBody">
+                  Cuerpo <span class="required">*</span>
+                  <span class="slider-value" id="customBodyValue">3/5</span>
+                </label>
+                <input type="range" id="customBody" name="body" min="1" max="5" value="3" />
+                <div class="slider-scale">
+                  <span>Ligero</span><span>Medio</span><span>Pesado</span>
                 </div>
               </div>
-              <div
-                style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.25rem; font-size: 0.75rem; color: #666;"
-              >
-                <div style="text-align: center;">Desbalanceado</div>
-                <div></div>
-                <div style="text-align: center;">Balanceado</div>
-                <div></div>
-                <div style="text-align: center;">Muy Balanceado</div>
+
+              <div class="slider-field">
+                <label for="customBalance">
+                  Balance <span class="required">*</span>
+                  <span class="slider-value" id="customBalanceValue">3/5</span>
+                </label>
+                <input type="range" id="customBalance" name="balance" min="1" max="5" value="3" />
+                <div class="slider-scale">
+                  <span>Desbalanceado</span><span>Balanceado</span><span>Muy balanceado</span>
+                </div>
+              </div>
+
+              <div class="form-group" style="margin-top: 16px;">
+                <label for="customFlavorNotes">Notas de sabor (opcional)</label>
+                <textarea
+                  id="customFlavorNotes" name="flavorNotes"
+                  placeholder="Ej: Chocolate, nueces, caramelo, frutas tropicales"
+                ></textarea>
+                <div class="form-hint">Describa los sabores principales del café.</div>
+              </div>
+
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="customRoastDate">Fecha de tostión (opcional)</label>
+                  <input type="date" id="customRoastDate" name="roastDate" />
+                </div>
+                <div class="form-group">
+                  <label for="customRegion">Región (opcional)</label>
+                  <select id="customRegion" name="region">
+                    <option value="">Seleccione…</option>
+                    <option value="Huila">Huila</option>
+                    <option value="Nariño">Nariño</option>
+                    <option value="Cauca">Cauca</option>
+                    <option value="Tolima">Tolima</option>
+                    <option value="Cundinamarca">Cundinamarca</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="customClimate">Clima (opcional)</label>
+                  <select id="customClimate" name="climate">
+                    <option value="">Seleccione…</option>
+                    <option value="Seco">Seco</option>
+                    <option value="Lluvioso">Lluvioso</option>
+                    <option value="Templado">Templado</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="quantityCero">
+                    Cantidad de etiquetas <span class="required">*</span>
+                  </label>
+                  <input
+                    type="number" id="quantityCero" name="quantityCero"
+                    placeholder="Ej: 25" min="1" max="1000" required
+                  />
+                </div>
+              </div>
+
+              <div class="form-actions">
+                <button type="submit" class="btn btn-save" id="submitCero">
+                  Generar etiquetas
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- Columna derecha: vista previa -->
+      <aside class="labels-side">
+        <section class="card">
+          <div class="card-header">
+            <div>
+              <h3 class="card-title">Vista previa</h3>
+              <div class="card-subtitle">Así se verá la etiqueta impresa</div>
+            </div>
+            <span class="badge badge-neutral" id="previewCount">0 etiquetas</span>
+          </div>
+          <div class="card-pad">
+            <!-- Etiqueta -->
+            <div class="lbl" id="labelPreview">
+              <div class="lbl-head">
+                <div class="lbl-brand">DobleYo<span>Café</span></div>
+                <div class="lbl-origin" id="pvOrigin">Origen del café</div>
+              </div>
+
+              <div class="lbl-variety" id="pvVariety">Variedad</div>
+
+              <div class="lbl-tags">
+                <span class="lbl-tag" id="pvRoast" hidden></span>
+                <span class="lbl-tag" id="pvProcess" hidden></span>
+                <span class="lbl-tag" id="pvFarm" hidden></span>
+              </div>
+
+              <div class="lbl-profile">
+                <div class="pv-row">
+                  <span class="pv-k">Acidez</span>
+                  <div class="pv-bars" data-bar="acidity">
+                    <i></i><i></i><i></i><i></i><i></i>
+                  </div>
+                </div>
+                <div class="pv-row">
+                  <span class="pv-k">Cuerpo</span>
+                  <div class="pv-bars" data-bar="body">
+                    <i></i><i></i><i></i><i></i><i></i>
+                  </div>
+                </div>
+                <div class="pv-row">
+                  <span class="pv-k">Balance</span>
+                  <div class="pv-bars" data-bar="balance">
+                    <i></i><i></i><i></i><i></i><i></i>
+                  </div>
+                </div>
+              </div>
+
+              <div class="lbl-notes" id="pvNotes">Notas de sabor del café…</div>
+
+              <div class="lbl-foot">
+                <div class="lbl-qr" id="pvQr" aria-hidden="true">
+                  <svg viewBox="0 0 29 29" width="56" height="56">
+                    <rect width="29" height="29" fill="#fff"></rect>
+                    <path fill="currentColor" d="M0 0h7v7H0zM2 2v3h3V2zM22 0h7v7h-7zM24 2v3h3V2zM0 22h7v7H0zM2 24v3h3v-3zM9 0h2v2H9zM13 2h2v3h-2zM9 9h2v2h2v2h-2v2H9v-2H7v-2h2zM16 9h2v2h-2zM20 9h2v2h-2zM24 9h3v2h-2v2h-2v-2h1zM16 13h3v2h-3zM22 13h2v4h-2zM9 16h2v2h-2zM13 16h2v2h-2zM18 16h2v2h-2zM26 16h3v2h-3zM16 18h2v2h-2zM20 18h2v3h-2zM24 18h2v2h-2zM9 20h3v2h-3zM13 22h2v2h-2zM17 22h2v2h-2zM22 23h2v2h-2zM26 22h3v3h-3zM13 26h4v3h-4zM20 26h2v3h-2zM24 26h2v2h-2z"></path>
+                  </svg>
+                </div>
+                <div class="lbl-meta">
+                  <div class="lbl-code" id="pvCode">LBL-—-0001</div>
+                  <div class="lbl-score">Puntaje: <strong id="pvScore">—</strong></div>
+                  <div class="lbl-tagline">Café de especialidad colombiano</div>
+                </div>
               </div>
             </div>
-          </div>
 
-          <!-- Notas de Sabor -->
-          <div class="form-group">
-            <label for="customFlavorNotes">Notas de Sabor (Opcional)</label>
-            <textarea
-              id="customFlavorNotes"
-              name="flavorNotes"
-              placeholder="Ej: Chocolate, Nueces, Caramelo, Frutas tropicales"
-              style="width: 100%; min-height: 80px;"></textarea>
-            <div class="form-hint">
-              Describe los sabores principales del café
+            <!-- Resumen -->
+            <div class="info-box" id="summaryBox" hidden style="margin-top: 16px;">
+              <strong>Resumen</strong>
+              <div id="summaryBody" style="margin-top: 8px; font-size: 13px; line-height: 1.7;"></div>
             </div>
           </div>
-
-          <!-- Fecha de Tostión -->
-          <div class="form-group">
-            <label for="customRoastDate">Fecha de Tostión (Opcional)</label>
-            <input
-              type="date"
-              id="customRoastDate"
-              name="roastDate"
-              style="width: 100%;"
-            />
-          </div>
-
-          <!-- Región y Ubicación -->
-          <div
-            style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;"
-          >
-            <div class="form-group">
-              <label for="customRegion">Región (Opcional)</label>
-              <select id="customRegion" name="region" style="width: 100%;">
-                <option value="">Selecciona...</option>
-                <option value="Huila">Huila</option>
-                <option value="Nariño">Nariño</option>
-                <option value="Cauca">Cauca</option>
-                <option value="Tolima">Tolima</option>
-                <option value="Cundinamarca">Cundinamarca</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="customClimate">Clima (Opcional)</label>
-              <select id="customClimate" name="climate" style="width: 100%;">
-                <option value="">Selecciona...</option>
-                <option value="Seco">Seco</option>
-                <option value="Lluvioso">Lluvioso</option>
-                <option value="Templado">Templado</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- Cantidad de Etiquetas -->
-          <div class="form-group">
-            <label for="quantityCero"
-              >Cantidad de Etiquetas <span class="required">*</span></label
-            >
-            <input
-              type="number"
-              id="quantityCero"
-              name="quantityCero"
-              placeholder="Ej: 25"
-              min="1"
-              max="1000"
-              required
-              style="width: 100%;"
-            />
-          </div>
-
-          <!-- Resumen Cero -->
-          <div
-            class="info-box"
-            id="summaryBoxCero"
-            style="display: none; margin-top: 1.5rem;"
-          >
-            <strong>Resumen de Etiquetas:</strong>
-            <div
-              style="margin-top: 0.75rem; font-size: 0.95rem; line-height: 1.6;"
-            >
-              <div>
-                ☕ Café: <span
-                  id="summaryCoffeeOriginCero"
-                  style="font-weight: 600;">—</span
-                >
-              </div>
-              <div>
-                🌱 Variedad: <span
-                  id="summaryCoffeeVarietyCero"
-                  style="font-weight: 600;">—</span
-                >
-              </div>
-              <div>
-                🔥 Tueste: <span
-                  id="summaryCoffeeRoastCero"
-                  style="font-weight: 600;">—</span
-                >
-              </div>
-              <div>
-                🏷️ Cantidad: <span
-                  id="summaryLabelCountCero"
-                  style="font-weight: 600;">—</span
-                >
-              </div>
-            </div>
-          </div>
-
-          <!-- Botón Submit -->
-          <button
-            type="submit"
-            style="width: 100%; padding: 0.875rem; background: #8b6f47; color: white; border: none; border-radius: 6px; font-size: 1rem; font-weight: 600; cursor: pointer; margin-top: 1.5rem; transition: background 0.2s;"
-          >
-            Generar Etiquetas
-          </button>
-        </form>
-      </div>
+        </section>
+      </aside>
     </div>
 
-    <!-- Estilos -->
-
-    <!-- Scripts -->
-    <script>
-      // Cambiar entre tabs
-      function switchTab(tab) {
-        const tabLotesContent = document.getElementById("tabLotesContent");
-        const tabCeroContent = document.getElementById("tabCeroContent");
-        const tabLotes = document.getElementById("tabLotes");
-        const tabCero = document.getElementById("tabCero");
-
-        if (tab === "lotes") {
-          tabLotesContent.style.display = "block";
-          tabCeroContent.style.display = "none";
-          tabLotes.style.background = "#8b6f47";
-          tabLotes.style.color = "white";
-          tabCero.style.background = "#ddd";
-          tabCero.style.color = "#333";
-        } else {
-          tabLotesContent.style.display = "none";
-          tabCeroContent.style.display = "block";
-          tabLotes.style.background = "#ddd";
-          tabLotes.style.color = "#333";
-          tabCero.style.background = "#8b6f47";
-          tabCero.style.color = "white";
-        }
-      }
-
-      // Cargar lotes preparados
-      async function loadPreparedLots() {
-        try {
-          const response = await fetch("/api/labels/prepared-lots");
-          if (!response.ok) throw new Error("Error al cargar lotes");
-
-          const lots = await response.json();
-          const select = document.getElementById("preparedLotSelect");
-          select.innerHTML =
-            '<option value="">Selecciona un lote preparado...</option>';
-
-          lots.forEach((lot) => {
-            const option = document.createElement("option");
-            option.value = JSON.stringify(lot);
-            option.textContent = `${lot.code} - ${lot.variety} (${lot.weight}kg)`;
-            select.appendChild(option);
-          });
-        } catch (error) {
-          console.error("Error cargando lotes:", error);
-        }
-      }
-
-      // Mostrar información del lote seleccionado
-      document
-        .getElementById("preparedLotSelect")
-        ?.addEventListener("change", (e) => {
-          if (!e.target.value) {
-            document.getElementById("lotInfoCard").style.display = "none";
-            document.getElementById("summaryBoxLots").style.display = "none";
-            return;
-          }
-
-          const lot = JSON.parse(e.target.value);
-          document.getElementById("lotIdDisplay").textContent = lot.code;
-          document.getElementById("lotOriginDisplay").textContent =
-            lot.origin || "—";
-          document.getElementById("lotVarietyDisplay").textContent =
-            lot.variety || "—";
-          document.getElementById("lotRoastDisplay").textContent =
-            lot.roast || "—";
-          document.getElementById("lotPresentationDisplay").textContent =
-            lot.presentation || "—";
-          document.getElementById("lotWeightDisplay").textContent =
-            `${lot.weight} kg`;
-          document.getElementById("lotAcidityDisplay").textContent =
-            `${lot.acidity || "—"}/5`;
-          document.getElementById("lotBodyDisplay").textContent =
-            `${lot.body || "—"}/5`;
-          document.getElementById("lotBalanceDisplay").textContent =
-            `${lot.balance || "—"}/5`;
-          document.getElementById("lotScoreDisplay").textContent = lot.score
-            ? lot.score.toFixed(1)
-            : "—";
-
-          document.getElementById("lotInfoCard").style.display = "block";
-        });
-
-      // Actualizar cantidad de etiquetas (Tab 1)
-      document
-        .getElementById("quantityLots")
-        ?.addEventListener("change", (e) => {
-          if (document.getElementById("preparedLotSelect").value) {
-            const lot = JSON.parse(
-              document.getElementById("preparedLotSelect").value
-            );
-            document.getElementById("summaryCoffeeLot").textContent = lot.code;
-            document.getElementById("summaryLabelCount").textContent =
-              e.target.value;
-            document.getElementById("summaryProfile").textContent =
-              `Acidez ${lot.acidity || "—"}, Cuerpo ${lot.body || "—"}, Balance ${lot.balance || "—"}`;
-            document.getElementById("summaryBoxLots").style.display = "block";
-          }
-        });
-
-      // Actualizar sliders de acidez (Tab 2)
-      document
-        .getElementById("customAcidity")
-        ?.addEventListener("input", (e) => {
-          document.getElementById("customAcidityValue").textContent =
-            `${e.target.value}/5`;
-          updateCeroSummary();
-        });
-
-      // Actualizar sliders de cuerpo (Tab 2)
-      document.getElementById("customBody")?.addEventListener("input", (e) => {
-        document.getElementById("customBodyValue").textContent =
-          `${e.target.value}/5`;
-        updateCeroSummary();
-      });
-
-      // Actualizar sliders de balance (Tab 2)
-      document
-        .getElementById("customBalance")
-        ?.addEventListener("input", (e) => {
-          document.getElementById("customBalanceValue").textContent =
-            `${e.target.value}/5`;
-          updateCeroSummary();
-        });
-
-      // Actualizar cantidad (Tab 2)
-      document
-        .getElementById("quantityCero")
-        ?.addEventListener("change", updateCeroSummary);
-      document
-        .getElementById("customCoffeeOrigin")
-        ?.addEventListener("change", updateCeroSummary);
-      document
-        .getElementById("customVariety")
-        ?.addEventListener("change", updateCeroSummary);
-      document
-        .getElementById("customRoast")
-        ?.addEventListener("change", updateCeroSummary);
-
-      function updateCeroSummary() {
-        const origin = document.getElementById("customCoffeeOrigin").value;
-        const variety = document.getElementById("customVariety").value;
-        const roast = document.getElementById("customRoast").value;
-        const quantity = document.getElementById("quantityCero").value;
-
-        if (origin && variety && roast && quantity) {
-          document.getElementById("summaryCoffeeOriginCero").textContent =
-            origin;
-          document.getElementById("summaryCoffeeVarietyCero").textContent =
-            variety;
-          document.getElementById("summaryCoffeeRoastCero").textContent = roast;
-          document.getElementById("summaryLabelCountCero").textContent =
-            quantity;
-          document.getElementById("summaryBoxCero").style.display = "block";
-        }
-      }
-
-      // Enviar formulario Tab 1
-      document
-        .getElementById("labelsFromLotsForm")
-        ?.addEventListener("submit", async (e) => {
-          e.preventDefault();
-
-          const lotValue = document.getElementById("preparedLotSelect").value;
-          if (!lotValue) {
-            alert("Selecciona un lote preparado");
-            return;
-          }
-
-          const lot = JSON.parse(lotValue);
-          const quantity = document.getElementById("quantityLots").value;
-          const includeQR = document.getElementById("includeQRLots").checked;
-
-          try {
-            const response = await fetch("/api/labels/generate-from-lot", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                lotId: lot.id,
-                quantity: parseInt(quantity),
-                includeQR: includeQR,
-              }),
-            });
-
-            if (!response.ok) throw new Error("Error al generar etiquetas");
-
-            const result = await response.json();
-            alert(`✅ ${quantity} etiquetas generadas exitosamente`);
-            document.getElementById("labelsFromLotsForm").reset();
-            document.getElementById("lotInfoCard").style.display = "none";
-            document.getElementById("summaryBoxLots").style.display = "none";
-          } catch (error) {
-            alert(`❌ Error: ${error.message}`);
-            console.error(error);
-          }
-        });
-
-      // Enviar formulario Tab 2
-      document
-        .getElementById("labelFromScratchForm")
-        ?.addEventListener("submit", async (e) => {
-          e.preventDefault();
-
-          const formData = {
-            origin: document.getElementById("customCoffeeOrigin").value,
-            farm: document.getElementById("customCoffeeFarm").value,
-            variety: document.getElementById("customVariety").value,
-            roast: document.getElementById("customRoast").value,
-            roastDate: document.getElementById("customRoastDate").value,
-            region: document.getElementById("customRegion").value,
-            climate: document.getElementById("customClimate").value,
-            process: document.getElementById("customProcess").value,
-            altitude: document.getElementById("customAltitude").value,
-            acidity: parseInt(document.getElementById("customAcidity").value),
-            body: parseInt(document.getElementById("customBody").value),
-            balance: parseInt(document.getElementById("customBalance").value),
-            flavorNotes: document.getElementById("customFlavorNotes").value,
-            quantity: parseInt(document.getElementById("quantityCero").value),
-          };
-
-          try {
-            const response = await fetch("/api/labels/generate-from-scratch", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(formData),
-            });
-
-            if (!response.ok) throw new Error("Error al generar etiquetas");
-
-            const result = await response.json();
-            alert(`✅ ${formData.quantity} etiquetas generadas exitosamente`);
-            document.getElementById("labelFromScratchForm").reset();
-            document.getElementById("summaryBoxCero").style.display = "none";
-          } catch (error) {
-            alert(`❌ Error: ${error.message}`);
-            console.error(error);
-          }
-        });
-
-      // Cargar datos al iniciar
-      document.addEventListener("DOMContentLoaded", loadPreparedLots);
-
-      // Tabs — event listeners en lugar de onclick= inline
-      document.getElementById("tabLotes")?.addEventListener("click", () => switchTab("lotes"));
-      document.getElementById("tabCero")?.addEventListener("click", () => switchTab("cero"));
-    </script>
+    <!-- ── Etiquetas recientes ───────────────────────────────────────── -->
+    <section class="card" style="margin-top: 22px;">
+      <div class="card-header">
+        <div>
+          <h3 class="card-title">Etiquetas recientes</h3>
+          <div class="card-subtitle">Últimas generaciones registradas</div>
+        </div>
+      </div>
+      <div class="table-wrapper">
+        <table class="erp-table">
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Lote</th>
+              <th>Origen</th>
+              <th>Variedad</th>
+              <th>Tueste</th>
+              <th>Puntaje</th>
+              <th style="text-align: right;">Acción</th>
+            </tr>
+          </thead>
+          <tbody id="recentBody">
+            <tr><td colspan="7" class="empty-state">Cargando…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
   </div>
+
+  <!-- Toasts -->
+  <div class="toast-stack" id="toastStack" aria-live="polite"></div>
+
+  <!-- Scripts -->
+  <script>
+    // ── Estado ──────────────────────────────────────────────────────
+    let activeTab = "lotes";
+    let selectedLot = null;
+    let availableCount = 0;
+
+    // ── Toast ───────────────────────────────────────────────────────
+    function toast(message, type = "info") {
+      const stack = document.getElementById("toastStack");
+      const el = document.createElement("div");
+      el.className = `toast toast--${type}`;
+      el.textContent = message;
+      stack.appendChild(el);
+      requestAnimationFrame(() => el.classList.add("is-in"));
+      setTimeout(() => {
+        el.classList.remove("is-in");
+        setTimeout(() => el.remove(), 250);
+      }, 3500);
+    }
+
+    // ── Tabs ────────────────────────────────────────────────────────
+    function switchTab(tab) {
+      activeTab = tab;
+      const isLotes = tab === "lotes";
+      document.getElementById("tabLotesContent").hidden = !isLotes;
+      document.getElementById("tabCeroContent").hidden = isLotes;
+      document.getElementById("tabLotes").classList.toggle("is-active", isLotes);
+      document.getElementById("tabCero").classList.toggle("is-active", !isLotes);
+      updatePreview();
+    }
+
+    // ── Vista previa en vivo ────────────────────────────────────────
+    function setBars(name, value) {
+      const wrap = document.querySelector(`.pv-bars[data-bar="${name}"]`);
+      if (!wrap) return;
+      const v = parseInt(value) || 0;
+      wrap.querySelectorAll("i").forEach((bar, idx) => {
+        bar.classList.toggle("is-on", idx < v);
+      });
+    }
+
+    function setTag(id, text) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (text) {
+        el.textContent = text;
+        el.hidden = false;
+      } else {
+        el.hidden = true;
+      }
+    }
+
+    function updatePreview() {
+      let data = {};
+      let qty = 0;
+      let code = "LBL-—-0001";
+
+      if (activeTab === "lotes" && selectedLot) {
+        data = {
+          origin: selectedLot.origin,
+          variety: selectedLot.variety,
+          roast: selectedLot.roast,
+          process: selectedLot.process,
+          farm: selectedLot.farm,
+          notes: selectedLot.flavorNotes,
+          acidity: selectedLot.acidity,
+          body: selectedLot.body,
+          balance: selectedLot.balance,
+          score: selectedLot.score,
+        };
+        qty = parseInt(document.getElementById("quantityLots").value) || 0;
+        code = `LBL-${selectedLot.code}-0001`;
+        document.getElementById("pvQr").style.display =
+          document.getElementById("includeQRLots").checked ? "" : "none";
+      } else if (activeTab === "cero") {
+        const acidity = document.getElementById("customAcidity").value;
+        const body = document.getElementById("customBody").value;
+        const balance = document.getElementById("customBalance").value;
+        data = {
+          origin: document.getElementById("customCoffeeOrigin").value,
+          variety: document.getElementById("customVariety").value,
+          roast: document.getElementById("customRoast").value,
+          process: document.getElementById("customProcess").value,
+          farm: document.getElementById("customCoffeeFarm").value,
+          notes: document.getElementById("customFlavorNotes").value,
+          acidity, body, balance,
+          score: ((+acidity + +body + +balance) / 3).toFixed(1),
+        };
+        qty = parseInt(document.getElementById("quantityCero").value) || 0;
+        const o = (data.origin || "XXX").substring(0, 3).toUpperCase();
+        const v = (data.variety || "XXX").substring(0, 3).toUpperCase();
+        code = `LBL-TMP-${o}-${v}-0001`;
+        document.getElementById("pvQr").style.display = "";
+      }
+
+      document.getElementById("pvOrigin").textContent = data.origin || "Origen del café";
+      document.getElementById("pvVariety").textContent = data.variety || "Variedad";
+      setTag("pvRoast", data.roast ? `Tueste ${data.roast}` : "");
+      setTag("pvProcess", data.process || "");
+      setTag("pvFarm", data.farm || "");
+      document.getElementById("pvNotes").textContent =
+        data.notes || "Notas de sabor del café…";
+      document.getElementById("pvCode").textContent = code;
+      document.getElementById("pvScore").textContent = data.score || "—";
+      setBars("acidity", data.acidity);
+      setBars("body", data.body);
+      setBars("balance", data.balance);
+
+      document.getElementById("previewCount").textContent =
+        `${qty || 0} ${qty === 1 ? "etiqueta" : "etiquetas"}`;
+
+      updateSummary(data, qty, code);
+    }
+
+    function updateSummary(data, qty, code) {
+      const box = document.getElementById("summaryBox");
+      if (!qty || !data.variety) {
+        box.hidden = true;
+        return;
+      }
+      box.hidden = false;
+      document.getElementById("summaryBody").innerHTML = `
+        <div>☕ Café: <strong>${data.origin || "—"} · ${data.variety}</strong></div>
+        <div>🔥 Tueste: <strong>${data.roast || "—"}</strong></div>
+        <div>🏷️ Cantidad: <strong>${qty}</strong></div>
+        <div>🔖 Primer código: <strong>${code}</strong></div>`;
+    }
+
+    // ── Cargar lotes preparados ─────────────────────────────────────
+    async function loadPreparedLots() {
+      try {
+        const response = await fetch("/api/labels/prepared-lots");
+        if (!response.ok) throw new Error("Error al cargar lotes");
+        const lots = await response.json();
+        availableCount = lots.length;
+        document.getElementById("kpiAvailable").textContent = lots.length;
+
+        const select = document.getElementById("preparedLotSelect");
+        select.innerHTML = '<option value="">Seleccione un lote preparado…</option>';
+        lots.forEach((lot) => {
+          const option = document.createElement("option");
+          option.value = JSON.stringify(lot);
+          option.textContent = `${lot.code} · ${lot.variety} (${lot.weight}kg)`;
+          select.appendChild(option);
+        });
+      } catch (error) {
+        console.error("Error cargando lotes:", error);
+        document.getElementById("kpiAvailable").textContent = "0";
+      }
+    }
+
+    // ── Estadísticas (KPIs) + recientes ─────────────────────────────
+    async function loadStats() {
+      try {
+        const [allRes, lotsRes, customRes] = await Promise.all([
+          fetch("/api/labels/list?limit=8"),
+          fetch("/api/labels/list?type=lots&limit=1"),
+          fetch("/api/labels/list?type=custom&limit=1"),
+        ]);
+        const all = await allRes.json();
+        const lots = await lotsRes.json();
+        const custom = await customRes.json();
+
+        document.getElementById("kpiTotal").textContent =
+          all.pagination?.total ?? 0;
+        document.getElementById("kpiFromLots").textContent =
+          lots.pagination?.total ?? 0;
+        document.getElementById("kpiCustom").textContent =
+          custom.pagination?.total ?? 0;
+
+        renderRecent(all.data || []);
+      } catch (error) {
+        console.error("Error cargando estadísticas:", error);
+        renderRecent([]);
+      }
+    }
+
+    function renderRecent(labels) {
+      const body = document.getElementById("recentBody");
+      if (!labels.length) {
+        body.innerHTML =
+          '<tr><td colspan="7" class="empty-state">Aún no hay etiquetas generadas.</td></tr>';
+        return;
+      }
+      body.innerHTML = labels
+        .map(
+          (l) => `
+        <tr>
+          <td style="font-family: ui-monospace, monospace; font-size: 12px;">${esc(l.label_code)}</td>
+          <td>${esc(l.lot_code) || "—"}</td>
+          <td>${esc(l.origin) || "—"}</td>
+          <td>${esc(l.variety) || "—"}</td>
+          <td>${esc(l.roast) || "—"}</td>
+          <td style="font-variant-numeric: tabular-nums;">${l.score ?? "—"}</td>
+          <td style="text-align: right;">
+            <button class="btn btn-danger btn-sm" data-del="${esc(l.label_code)}">Eliminar</button>
+          </td>
+        </tr>`
+        )
+        .join("");
+    }
+
+    function esc(s) {
+      if (s == null) return "";
+      return String(s).replace(/[&<>"']/g, (c) =>
+        ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])
+      );
+    }
+
+    async function deleteLabel(code) {
+      if (!confirm(`¿Eliminar la etiqueta ${code}?`)) return;
+      try {
+        const res = await fetch(`/api/labels/${encodeURIComponent(code)}`, {
+          method: "DELETE",
+        });
+        if (!res.ok) throw new Error("No se pudo eliminar");
+        toast("Etiqueta eliminada", "success");
+        loadStats();
+      } catch (error) {
+        toast(error.message, "error");
+      }
+    }
+
+    // ── Listeners ───────────────────────────────────────────────────
+    document.getElementById("preparedLotSelect")?.addEventListener("change", (e) => {
+      if (!e.target.value) {
+        selectedLot = null;
+        document.getElementById("lotInfoCard").hidden = true;
+        updatePreview();
+        return;
+      }
+      const lot = JSON.parse(e.target.value);
+      selectedLot = lot;
+      document.getElementById("lotIdDisplay").textContent = lot.code;
+      document.getElementById("lotOriginDisplay").textContent = lot.origin || "—";
+      document.getElementById("lotVarietyDisplay").textContent = lot.variety || "—";
+      document.getElementById("lotRoastDisplay").textContent = lot.roast || "—";
+      document.getElementById("lotPresentationDisplay").textContent = lot.presentation || "—";
+      document.getElementById("lotWeightDisplay").textContent = `${lot.weight} kg`;
+      document.getElementById("lotAcidityDisplay").textContent = `${lot.acidity || "—"}/5`;
+      document.getElementById("lotBodyDisplay").textContent = `${lot.body || "—"}/5`;
+      document.getElementById("lotBalanceDisplay").textContent = `${lot.balance || "—"}/5`;
+      document.getElementById("lotScoreDisplay").textContent = lot.score
+        ? Number(lot.score).toFixed(1)
+        : "—";
+      document.getElementById("lotInfoCard").hidden = false;
+      updatePreview();
+    });
+
+    document.getElementById("quantityLots")?.addEventListener("input", updatePreview);
+    document.getElementById("includeQRLots")?.addEventListener("change", updatePreview);
+
+    ["customAcidity", "customBody", "customBalance"].forEach((id) => {
+      document.getElementById(id)?.addEventListener("input", (e) => {
+        document.getElementById(`${id}Value`).textContent = `${e.target.value}/5`;
+        updatePreview();
+      });
+    });
+    [
+      "customCoffeeOrigin", "customCoffeeFarm", "customVariety", "customRoast",
+      "customProcess", "customFlavorNotes", "quantityCero",
+    ].forEach((id) => {
+      document.getElementById(id)?.addEventListener("input", updatePreview);
+    });
+
+    // ── Envío Tab 1 ─────────────────────────────────────────────────
+    document.getElementById("labelsFromLotsForm")?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (!selectedLot) return toast("Seleccione un lote preparado", "error");
+
+      const quantity = parseInt(document.getElementById("quantityLots").value);
+      const includeQR = document.getElementById("includeQRLots").checked;
+      const btn = document.getElementById("submitLots");
+      btn.disabled = true;
+      const prev = btn.textContent;
+      btn.textContent = "Generando…";
+
+      try {
+        const response = await fetch("/api/labels/generate-from-lot", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ lotId: selectedLot.id, quantity, includeQR }),
+        });
+        const result = await response.json();
+        if (!response.ok || result.success === false)
+          throw new Error(result.error || "Error al generar etiquetas");
+
+        toast(`${quantity} etiquetas generadas exitosamente`, "success");
+        e.target.reset();
+        selectedLot = null;
+        document.getElementById("lotInfoCard").hidden = true;
+        updatePreview();
+        loadStats();
+      } catch (error) {
+        toast(error.message, "error");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = prev;
+      }
+    });
+
+    // ── Envío Tab 2 ─────────────────────────────────────────────────
+    document.getElementById("labelFromScratchForm")?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const formData = {
+        origin: document.getElementById("customCoffeeOrigin").value,
+        farm: document.getElementById("customCoffeeFarm").value,
+        variety: document.getElementById("customVariety").value,
+        roast: document.getElementById("customRoast").value,
+        roastDate: document.getElementById("customRoastDate").value,
+        region: document.getElementById("customRegion").value,
+        climate: document.getElementById("customClimate").value,
+        process: document.getElementById("customProcess").value,
+        altitude: document.getElementById("customAltitude").value,
+        acidity: parseInt(document.getElementById("customAcidity").value),
+        body: parseInt(document.getElementById("customBody").value),
+        balance: parseInt(document.getElementById("customBalance").value),
+        flavorNotes: document.getElementById("customFlavorNotes").value,
+        quantity: parseInt(document.getElementById("quantityCero").value),
+      };
+
+      const btn = document.getElementById("submitCero");
+      btn.disabled = true;
+      const prev = btn.textContent;
+      btn.textContent = "Generando…";
+
+      try {
+        const response = await fetch("/api/labels/generate-from-scratch", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
+        });
+        const result = await response.json();
+        if (!response.ok || result.success === false)
+          throw new Error(result.error || "Error al generar etiquetas");
+
+        toast(`${formData.quantity} etiquetas generadas exitosamente`, "success");
+        e.target.reset();
+        ["customAcidityValue", "customBodyValue", "customBalanceValue"].forEach(
+          (id) => (document.getElementById(id).textContent = "3/5")
+        );
+        updatePreview();
+        loadStats();
+      } catch (error) {
+        toast(error.message, "error");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = prev;
+      }
+    });
+
+    // Delegación: eliminar etiqueta reciente
+    document.getElementById("recentBody")?.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-del]");
+      if (btn) deleteLabel(btn.dataset.del);
+    });
+
+    document.getElementById("tabLotes")?.addEventListener("click", () => switchTab("lotes"));
+    document.getElementById("tabCero")?.addEventListener("click", () => switchTab("cero"));
+    document.getElementById("refreshBtn")?.addEventListener("click", () => {
+      loadPreparedLots();
+      loadStats();
+      toast("Datos actualizados", "info");
+    });
+
+    // ── Init ────────────────────────────────────────────────────────
+    document.addEventListener("DOMContentLoaded", () => {
+      loadPreparedLots();
+      loadStats();
+      updatePreview();
+    });
+  </script>
 </AdminLayout>
 
 <style>
-  #labelsFromLotsForm button[type="submit"]:hover,
-  #labelFromScratchForm button[type="submit"]:hover { background: #6b5437 !important; }
+  /* ── Layout workbench ──────────────────────────────────────────── */
+  .labels-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+    align-items: start;
+  }
+  @media (min-width: 980px) {
+    .labels-grid { grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); }
+    .labels-side { position: sticky; top: 16px; }
+  }
+
+  .card-pad { padding: 18px; }
+
+  /* ── Segmented control (tabs) ──────────────────────────────────── */
+  .seg {
+    display: flex;
+    gap: 4px;
+    padding: 4px;
+    background: color-mix(in oklab, var(--color-primary) 5%, white);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-sm);
+    margin-bottom: 20px;
+  }
+  .seg-btn {
+    flex: 1;
+    appearance: none;
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 9px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  .seg-btn:hover { color: var(--color-primary); }
+  .seg-btn.is-active {
+    background: var(--paper);
+    color: var(--color-primary);
+    box-shadow: 0 1px 3px color-mix(in oklab, var(--color-primary) 14%, transparent);
+  }
+
+  .lot-info[hidden] { display: none; }
+
+  /* ── Sliders ───────────────────────────────────────────────────── */
+  .slider-field { margin-bottom: 18px; }
+  .slider-field > label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--color-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 10px;
+  }
+  .slider-value {
+    margin-left: auto;
+    background: var(--active-bg);
+    color: var(--color-primary);
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    letter-spacing: 0;
+    font-variant-numeric: tabular-nums;
+  }
+  .slider-field input[type="range"] {
+    width: 100%;
+    accent-color: var(--color-accent);
+    cursor: pointer;
+  }
+  .slider-scale {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 6px;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  /* ── Etiqueta (vista previa) ───────────────────────────────────── */
+  .lbl {
+    background:
+      radial-gradient(120% 120% at 0% 0%, color-mix(in oklab, var(--color-primary) 88%, black), var(--color-primary));
+    color: #f3e9dd;
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: 0 12px 30px -16px color-mix(in oklab, var(--color-primary) 60%, transparent);
+  }
+  .lbl-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid color-mix(in oklab, #f3e9dd 22%, transparent);
+  }
+  .lbl-brand {
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: #fff;
+  }
+  .lbl-brand span { color: var(--color-accent); margin-left: 4px; }
+  .lbl-origin {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: color-mix(in oklab, #f3e9dd 75%, transparent);
+    text-align: right;
+  }
+  .lbl-variety {
+    font-size: 22px;
+    font-weight: 700;
+    margin: 14px 0 10px;
+    color: #fff;
+    line-height: 1.15;
+  }
+  .lbl-tags { display: flex; flex-wrap: wrap; gap: 6px; min-height: 4px; }
+  .lbl-tag {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: color-mix(in oklab, var(--color-accent) 28%, transparent);
+    border: 1px solid color-mix(in oklab, var(--color-accent) 45%, transparent);
+    color: #fbeee0;
+  }
+  .lbl-tag[hidden] { display: none; }
+
+  .lbl-profile {
+    margin: 16px 0;
+    display: grid;
+    gap: 8px;
+  }
+  .pv-row { display: flex; align-items: center; gap: 12px; }
+  .pv-k {
+    width: 64px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: color-mix(in oklab, #f3e9dd 70%, transparent);
+  }
+  .pv-bars { display: flex; gap: 5px; flex: 1; }
+  .pv-bars i {
+    flex: 1;
+    height: 7px;
+    border-radius: 999px;
+    background: color-mix(in oklab, #f3e9dd 18%, transparent);
+    transition: background 0.15s;
+  }
+  .pv-bars i.is-on { background: var(--color-accent); }
+
+  .lbl-notes {
+    font-size: 12.5px;
+    font-style: italic;
+    line-height: 1.5;
+    color: color-mix(in oklab, #f3e9dd 82%, transparent);
+    padding: 10px 0;
+    border-top: 1px solid color-mix(in oklab, #f3e9dd 22%, transparent);
+  }
+  .lbl-foot {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding-top: 12px;
+    border-top: 1px solid color-mix(in oklab, #f3e9dd 22%, transparent);
+  }
+  .lbl-qr {
+    flex-shrink: 0;
+    background: #fff;
+    padding: 4px;
+    border-radius: 6px;
+    line-height: 0;
+    color: var(--color-primary);
+  }
+  .lbl-meta { font-size: 12px; min-width: 0; }
+  .lbl-code {
+    font-family: ui-monospace, Menlo, monospace;
+    font-size: 11px;
+    color: color-mix(in oklab, #f3e9dd 70%, transparent);
+    word-break: break-all;
+  }
+  .lbl-score { margin: 3px 0; }
+  .lbl-score strong { color: var(--color-accent); }
+  .lbl-tagline {
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: color-mix(in oklab, #f3e9dd 55%, transparent);
+  }
+
+  /* ── Botón pequeño ─────────────────────────────────────────────── */
+  .btn-sm { padding: 4px 10px; font-size: 12px; }
+
+  /* ── Toasts ────────────────────────────────────────────────────── */
+  .toast-stack {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 60;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .toast {
+    padding: 11px 16px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 500;
+    color: #fff;
+    background: var(--color-primary);
+    box-shadow: 0 8px 24px -8px color-mix(in oklab, var(--color-primary) 50%, transparent);
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.25s, transform 0.25s;
+    max-width: 320px;
+  }
+  .toast.is-in { opacity: 1; transform: translateY(0); }
+  .toast--success { background: var(--ok); }
+  .toast--error { background: var(--danger); }
+  .toast--info { background: var(--color-primary); }
+</style>
+</AdminLayout>
 </style>
