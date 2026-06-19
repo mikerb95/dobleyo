@@ -141,24 +141,17 @@ mercadolibreRouter.post('/webhook', async (req, res) => {
 mercadolibreRouter.get('/sales', auth.requireAuth, auth.requireAdmin, async (req, res) => {
   try {
     const {
-      limit = 50,
-      offset = 0,
-      city = null,
-      state = null,
-      dateFrom = null,
-      dateTo = null,
-      status = null
+      limit = 50, offset = 0,
+      city = null, state = null, dateFrom = null, dateTo = null, status = null,
+      search = null, sort = 'purchase_date', sortDir = 'desc',
     } = req.query;
 
     const mlService = new MercadoLibreService(process.env.ML_ACCESS_TOKEN);
     const result = await mlService.getSalesData({
       limit: parseInt(limit),
       offset: parseInt(offset),
-      city,
-      state,
-      dateFrom,
-      dateTo,
-      status
+      city, state, dateFrom, dateTo, status,
+      search, sort, sortDir,
     });
 
     res.json({
