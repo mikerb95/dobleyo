@@ -45,6 +45,13 @@ export function formatCOP(cents) {
   return `$ ${cop}`;
 }
 
+// Para valores ya en pesos (p. ej. sales_tracking.total_amount), no en centavos.
+export function formatPesos(amount) {
+  const n = Number(amount);
+  if (!Number.isFinite(n)) return "—";
+  return n.toLocaleString("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 });
+}
+
 export function timeAgo(iso) {
   if (!iso) return "—";
   const diff = Math.max(0, Date.now() - new Date(iso).getTime());
