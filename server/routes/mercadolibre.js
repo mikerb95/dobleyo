@@ -106,7 +106,8 @@ mercadolibreRouter.get('/sales', auth.requireAuth, auth.requireAdmin, async (req
       city = null,
       state = null,
       dateFrom = null,
-      dateTo = null
+      dateTo = null,
+      status = null
     } = req.query;
 
     const mlService = new MercadoLibreService(process.env.ML_ACCESS_TOKEN);
@@ -116,7 +117,8 @@ mercadolibreRouter.get('/sales', auth.requireAuth, auth.requireAdmin, async (req
       city,
       state,
       dateFrom,
-      dateTo
+      dateTo,
+      status
     });
 
     res.json({
