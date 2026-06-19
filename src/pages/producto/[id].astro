@@ -163,7 +163,7 @@ const productJsonLd = {
         )}
 
         <!-- Atributos del café -->
-        {(product.process || product.roast) && (
+        {(product.process || product.roast || (product.category === "cafe" && product.sca_score)) && (
           <div class="product-attrs">
             {product.process && (
               <div class="attr">
@@ -181,6 +181,12 @@ const productJsonLd = {
               <div class="attr">
                 <span class="attr-label">Origen</span>
                 <span class="attr-val">{product.origin}</span>
+              </div>
+            )}
+            {product.category === "cafe" && product.sca_score && (
+              <div class="attr attr-sca" title="Puntuación SCA (Specialty Coffee Association)">
+                <span class="attr-label">Puntaje SCA</span>
+                <span class="attr-val">{product.sca_score} pts</span>
               </div>
             )}
           </div>
