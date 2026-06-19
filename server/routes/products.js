@@ -3,6 +3,7 @@ import { logger } from '../logger.js';
 import { body, validationResult } from 'express-validator';
 import { query } from '../db.js';
 import { authenticateToken, requireRole } from '../auth.js';
+import { parseTastingNotes } from '../utils/tasting.js';
 
 export const productsRouter = Router();
 
