@@ -312,17 +312,17 @@ Module not found: Can't resolve 'leaflet'
 
 ---
 
-### 8. Mapa muestra toda las ciudades en Buenos Aires
+### 8. Mapa muestra toda las ciudades en Bogotá
 
 **Síntoma:**
 
-- Todos los círculos están en Buenos Aires
-- Incluso aunque dice "Córdoba", "Mendoza", etc.
+- Todos los círculos están en Bogotá
+- Incluso aunque dice "Medellín", "Cali", etc.
 
 **Causas:**
 
 - La ciudad no está en el diccionario de coordenadas
-- Fallback a Buenos Aires se activa
+- Fallback a Bogotá se activa
 
 **Soluciones:**
 
