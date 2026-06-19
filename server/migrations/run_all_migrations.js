@@ -78,6 +78,12 @@ async function runAll() {
   console.log(`✅ Exitosas: ${ok}  ❌ Fallidas: ${failed}`);
   if (failed > 0) {
     console.log('Revisa los errores. Las migraciones con IF NOT EXISTS son seguras de re-ejecutar.');
+    // MIGRATE_SOFT_FAIL=1 → no bloquear (p. ej. hook de build en Vercel): los
+    // fallos suelen ser de re-ejecución (columna ya existe) y son inofensivos.
+    if (process.env.MIGRATE_SOFT_FAIL) {
+      console.log('MIGRATE_SOFT_FAIL activo → se continúa sin bloquear el build.');
+      process.exit(0);
+    }
     process.exit(1);
   }
   process.exit(0);
