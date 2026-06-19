@@ -30,65 +30,105 @@ mercadolibreRouter.post('/sync', auth.requireAuth, auth.requireAdmin, async (req
 
     const mlService = new MercadoLibreService(accessToken);
 
-    // Fetch orders from MercadoLibre
-    console.log(`Fetching orders for seller ${sellerId}...`);
-    const orders = await mlService.fetchOrders(sellerId);
+    // full=1 fuerza una sincronización completa; por defecto es incremental.
+    const incremental = req.query.full !== '1';
+    console.log(`Sincronizando órdenes (${incremental ? 'incremental' : 'completo'}) para seller ${sellerId}...`);
+    const summary = await mlService.syncOrders({ incremental });
 
-    if (!orders || orders.length === 0) {
-      return res.json({
-        success: true,
-        message: 'No new orders found',
-        count: 0
-      });
+    if (summary.total_orders_fetched === 0) {
+      return res.json({ success: true, message: 'No new orders found', count: 0, ...summary });
     }
 
-    // Transform and save each order
-    const salesData = [];
-    let processed = 0;
-    let failed = 0;
-
-    for (const order of orders) {
-      try {
-        // Fetch full order details
-        const orderDetails = await mlService.fetchOrderDetails(order.id);
-
-        // Fetch shipment details if available
-        let shipment = null;
-        if (orderDetails.shipping && orderDetails.shipping.id) {
-          try {
-            shipment = await mlService.fetchShipment(orderDetails.shipping.id);
-          } catch (shipmentError) {
-            logger.warn(`Could not fetch shipment for order ${order.id}:`, shipmentError.message);
-          }
-        }
-
-        // Transform data
-        const transformedData = await mlService.transformOrderData(order, orderDetails, shipment);
-        salesData.push(transformedData);
-        processed++;
-      } catch (orderError) {
-        logger.error(`Error processing order ${order.id}:`, orderError.message);
-        failed++;
-      }
-    }
-
-    // Save all transformed data
-    const insertedIds = await mlService.saveSalesData(salesData);
-
-    res.json({
-      success: true,
-      message: 'Synchronization completed',
-      processed,
-      failed,
-      saved: insertedIds.length,
-      total_orders_fetched: orders.length
-    });
+    res.json({ success: true, message: 'Synchronization completed', ...summary });
   } catch (error) {
     logger.error('Error in /sync endpoint:', error);
     res.status(500).json({
       error: 'Synchronization failed',
       details: error.message
     });
+  }
+});
+
+/**
+ * GET /api/mercadolibre/cron-sync
+ * Sincronización automática disparada por el cron de Vercel.
+ * No usa sesión de admin; se protege con CRON_SECRET (header Authorization:
+ * Bearer <CRON_SECRET>, que Vercel Cron envía automáticamente si la env existe).
+ */
+mercadolibreRouter.get('/cron-sync', async (req, res) => {
+  const secret = process.env.CRON_SECRET;
+  if (!secret) {
+    return res.status(503).json({ error: 'CRON_SECRET no configurado' });
+  }
+  const authHeader = req.get('authorization') || '';
+  if (authHeader !== `Bearer ${secret}`) {
+    return res.status(401).json({ error: 'No autorizado' });
+  }
+  if (!process.env.ML_ACCESS_TOKEN || !process.env.ML_SELLER_ID) {
+    return res.status(400).json({ error: 'MercadoLibre credentials not configured' });
+  }
+
+  try {
+    const mlService = new MercadoLibreService(process.env.ML_ACCESS_TOKEN);
+    const summary = await mlService.syncOrders({ incremental: true });
+    logger.info('[cron-sync] completado', summary);
+    res.json({ success: true, ...summary });
+  } catch (error) {
+    logger.error('Error in /cron-sync endpoint:', error);
+    res.status(500).json({ error: 'Synchronization failed', details: error.message });
+  }
+});
+
+/**
+ * POST /api/mercadolibre/webhook
+ * Receptor de notifications de MercadoLibre (topic orders_v2 / orders / payments).
+ * Público (ML lo invoca sin sesión). Responde 200 rápido y sincroniza la orden
+ * referenciada de forma best-effort. Filtra por ML_SELLER_ID cuando viene.
+ */
+mercadolibreRouter.post('/webhook', async (req, res) => {
+  // Responder de inmediato: ML reintenta si no recibe 200 a tiempo.
+  res.status(200).json({ received: true });
+
+  try {
+    const { topic, resource, user_id } = req.body || {};
+    if (!topic || !resource) return;
+
+    // Si el seller está configurado, ignorar notifications de otros vendedores.
+    const sellerId = process.env.ML_SELLER_ID;
+    if (sellerId && user_id != null && String(user_id) !== String(sellerId)) {
+      logger.warn(`[webhook] ignorado: user_id ${user_id} != seller ${sellerId}`);
+      return;
+    }
+    if (!process.env.ML_ACCESS_TOKEN) {
+      logger.warn('[webhook] sin ML_ACCESS_TOKEN, no se procesa');
+      return;
+    }
+
+    // resource viene como "/orders/123" o "/payments/123"; solo procesamos órdenes.
+    const match = String(resource).match(/\/orders\/(\d+)/);
+    if (!String(topic).includes('order') || !match) {
+      logger.info(`[webhook] topic '${topic}' resource '${resource}' — sin acción`);
+      return;
+    }
+    const orderId = match[1];
+
+    const mlService = new MercadoLibreService(process.env.ML_ACCESS_TOKEN);
+    const orderDetails = await mlService.fetchOrderDetails(orderId);
+
+    let shipment = null;
+    if (orderDetails.shipping && orderDetails.shipping.id) {
+      try {
+        shipment = await mlService.fetchShipment(orderDetails.shipping.id);
+      } catch (e) {
+        logger.warn(`[webhook] shipment ${orderDetails.shipping.id} no disponible:`, e.message);
+      }
+    }
+
+    const transformed = await mlService.transformOrderData(orderDetails, orderDetails, shipment);
+    await mlService.saveSalesData([transformed]);
+    logger.info(`[webhook] orden ${orderId} sincronizada`);
+  } catch (error) {
+    logger.error('Error in /webhook handler:', error.message);
   }
 });
 
