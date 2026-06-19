@@ -90,7 +90,7 @@ export function useApi(path, { deps = [], enabled = true } = {}) {
     return () => ctrl.abort();
   }, [path, enabled]);
 
-  useEffect(() => run(), [run, ...deps]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => run(), [run, ...deps]);
 
   return { ...state, refetch: run };
 }
