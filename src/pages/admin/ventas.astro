@@ -768,7 +768,7 @@ function renderOrders(result) {
   tbody.innerHTML = data.map(o => {
     let products = '';
     try {
-      const prods = JSON.parse(o.products || '[]');
+      const prods = Array.isArray(o.products) ? o.products : JSON.parse(o.products || '[]');
       products = prods.map(p => `${p.title || '—'} ×${p.quantity}`).join(', ');
       if (products.length > 60) products = products.slice(0, 57) + '…';
     } catch { products = '—'; }
