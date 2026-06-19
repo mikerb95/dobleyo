@@ -194,15 +194,15 @@ Por cada orden de MercadoLibre:
 {
   "ml_order_id": 123456789,
   "purchase_date": "2026-01-06T15:30:00Z",
-  "total_amount": 1250.5,
+  "total_amount": 125000,
   "order_status": "confirmed",
   "shipping_method": "express",
-  "recipient_city": "Buenos Aires",
-  "recipient_state": "Buenos Aires",
-  "recipient_country": "AR",
-  "recipient_zip_code": "1425",
-  "latitude": -34.6037,
-  "longitude": -58.3816,
+  "recipient_city": "Bogotá",
+  "recipient_state": "Cundinamarca",
+  "recipient_country": "CO",
+  "recipient_zip_code": "110111",
+  "latitude": 4.7110,
+  "longitude": -74.0721,
   "products": [
     {
       "id": "MLC12345",
