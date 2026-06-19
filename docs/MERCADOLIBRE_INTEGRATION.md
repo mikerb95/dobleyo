@@ -47,8 +47,8 @@ Clase `MercadoLibreService` que proporciona:
 
 #### Características especiales:
 
-- Base de coordenadas pre-cargada para principales ciudades argentinas
-- Fallback a Buenos Aires si la ciudad no existe
+- Base de coordenadas pre-cargada para principales ciudades colombianas
+- Fallback a Bogotá si la ciudad no existe
 - Manejo de errores robusto en cada nivel
 
 ### 3. **API Endpoints** (`server/routes/mercadolibre.js`)
