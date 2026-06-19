@@ -4,56 +4,60 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
 <AdminLayout
   title="Enviar a Tostión"
-  description="Selecciona café verde del inventario para llevar a proceso de tostión"
+  description="Seleccione café verde del inventario para llevar a proceso de tostión"
 >
-  <form id="roastingForm">
+  <form id="roastingForm" class="send-roasting">
+    <header class="sr-head">
+      <h1>Enviar a Tostión</h1>
+      <p>
+        Seleccione café verde del inventario para llevarlo a proceso de tostión.
+      </p>
+    </header>
+
     <!-- Selección de Lote -->
     <div class="form-group">
       <label for="lotSelect"
-        >Lote de Café Verde <span class="required">*</span></label
+        >Lote de café verde <span class="required">*</span></label
       >
       <select id="lotSelect" name="lot" required>
-        <option value="">Selecciona un lote...</option>
+        <option value="">Seleccione un lote…</option>
       </select>
-      <div class="form-hint">Solo muestra lotes sin procesar</div>
+      <div class="form-hint">Solo se muestran lotes sin procesar</div>
     </div>
 
     <!-- Info del Lote Seleccionado -->
-    <div class="card" id="lotInfoCard" style="display: none;">
-      <h3>Información del Lote</h3>
-      <div
-        style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 0.95rem;"
-      >
-        <div>
-          <div style="color: #666; font-size: 0.85rem;">Lote ID</div>
-          <div style="font-weight: 600;" id="lotId">—</div>
-        </div>
-        <div>
-          <div style="color: #666; font-size: 0.85rem;">Variedad</div>
-          <div style="font-weight: 600;" id="lotVariety">—</div>
-        </div>
-        <div>
-          <div style="color: #666; font-size: 0.85rem;">Peso Disponible</div>
-          <div
-            style="font-weight: 600; color: #c67b4e;"
-            id="lotAvailableWeight"
-          >
-            —
+    <div class="card lot-info" id="lotInfoCard" style="display: none;">
+      <div class="card-header">
+        <h3 class="card-title">Información del lote</h3>
+      </div>
+      <div class="card-body">
+        <dl class="detail-grid">
+          <div class="detail-item">
+            <dt>Lote ID</dt>
+            <dd id="lotId">—</dd>
           </div>
-        </div>
-        <div>
-          <div style="color: #666; font-size: 0.85rem;">Ubicación Actual</div>
-          <div style="font-weight: 600;" id="lotLocation">—</div>
-        </div>
+          <div class="detail-item">
+            <dt>Variedad</dt>
+            <dd id="lotVariety">—</dd>
+          </div>
+          <div class="detail-item">
+            <dt>Peso disponible</dt>
+            <dd class="detail-value--accent" id="lotAvailableWeight">—</dd>
+          </div>
+          <div class="detail-item">
+            <dt>Ubicación actual</dt>
+            <dd id="lotLocation">—</dd>
+          </div>
+        </dl>
       </div>
     </div>
 
     <!-- Selección de Cantidad -->
     <div class="form-group">
       <label for="quantity"
-        >Cantidad para Tostión <span class="required">*</span></label
+        >Cantidad para tostión <span class="required">*</span></label
       >
-      <div style="display: flex; gap: 0.5rem;">
+      <div class="input-suffix">
         <input
           type="number"
           id="quantity"
@@ -62,37 +66,31 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
           step="0.1"
           min="0"
           required
-          style="flex: 1;"
         />
-        <div
-          id="unit"
-          style="display: flex; align-items: center; padding: 0 0.75rem; background: #f5f5f5; border-radius: 0.375rem; border: 1px solid #e6e6e6; min-width: 60px;"
-        >
-          kg
-        </div>
+        <span class="suffix" id="unit">kg</span>
       </div>
       <div class="form-hint" id="quantityHint">Máximo disponible: —</div>
     </div>
 
     <!-- Opción: Parcial o Todo -->
     <div class="info-box">
-      <strong>💡 Nota:</strong> Puedes enviar solo una parte del lote y el resto permanecerá
-      en inventario. Si envías todo, el lote se marcará como procesado.
+      <strong>💡 Nota:</strong> Puede enviar solo una parte del lote y el resto permanecerá
+      en inventario. Si envía todo, el lote se marcará como procesado.
     </div>
 
     <!-- Fecha de Envío -->
     <div class="form-group">
-      <label for="roastingDate">Fecha de Envío a Tostión</label>
+      <label for="roastingDate">Fecha de envío a tostión</label>
       <input type="date" id="roastingDate" name="roastingDate" disabled />
       <div class="form-hint">
-        Se registra automáticamente como la fecha actual
+        Se registra automáticamente con la fecha actual
       </div>
     </div>
 
     <!-- Temperatura Target -->
     <div class="form-group">
-      <label for="targetTemp">Temperatura Target (Opcional)</label>
-      <div style="display: flex; gap: 0.5rem;">
+      <label for="targetTemp">Temperatura objetivo (opcional)</label>
+      <div class="input-suffix">
         <input
           type="number"
           id="targetTemp"
@@ -101,13 +99,8 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
           step="1"
           min="180"
           max="230"
-          style="flex: 1;"
         />
-        <div
-          style="display: flex; align-items: center; padding: 0 0.75rem; background: #f5f5f5; border-radius: 0.375rem; border: 1px solid #e6e6e6; min-width: 60px;"
-        >
-          °C
-        </div>
+        <span class="suffix">°C</span>
       </div>
       <div class="form-hint">
         Temperatura sugerida para el desarrollo del tueste
@@ -116,43 +109,105 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
     <!-- Notas -->
     <div class="form-group">
-      <label for="notes">Notas (Opcional)</label>
+      <label for="notes">Notas (opcional)</label>
       <textarea
         id="notes"
         name="notes"
-        placeholder="Ej: Tueste medio, desarrollo lento, buscar notas de chocolate..."
+        placeholder="Ej: tueste medio, desarrollo lento, buscar notas de chocolate…"
       ></textarea>
     </div>
 
     <!-- Resumen -->
-    <div class="info-box" id="summaryBox" style="display: none;">
-      <strong>Resumen del Envío a Tostión:</strong>
-      <div style="margin-top: 0.75rem; font-size: 0.95rem; line-height: 1.6;">
-        <div>
-          📦 Lote: <span id="summaryLot" style="font-weight: 600;">—</span>
-        </div>
-        <div>
-          ⚖️ Cantidad: <span id="summaryQuantity" style="font-weight: 600;"
-            >—</span
-          >
-        </div>
-        <div>
-          🌡️ Temperatura: <span id="summaryTemp" style="font-weight: 600;"
-            >—</span
-          >
-        </div>
-        <div>
-          📅 Fecha: <span id="summaryDate" style="font-weight: 600;">—</span>
-        </div>
-      </div>
+    <div class="info-box summary-box" id="summaryBox" style="display: none;">
+      <strong>Resumen del envío a tostión</strong>
+      <dl class="summary-list">
+        <div><dt>📦 Lote</dt><dd id="summaryLot">—</dd></div>
+        <div><dt>⚖️ Cantidad</dt><dd id="summaryQuantity">—</dd></div>
+        <div><dt>🌡️ Temperatura</dt><dd id="summaryTemp">—</dd></div>
+        <div><dt>📅 Fecha</dt><dd id="summaryDate">—</dd></div>
+      </dl>
     </div>
 
     <!-- Botones de Acción -->
-    <div class="form-actions" style="margin-bottom: 2rem;">
+    <div class="form-actions">
       <button type="reset" class="btn-secondary">Limpiar</button>
-      <button type="submit" class="btn-primary">Enviar a Tostión</button>
+      <button type="submit" class="btn-primary">Enviar a tostión</button>
     </div>
   </form>
+
+  <style>
+    /* ── Encabezado de página ─────────────────────────────────────────────── */
+    .sr-head {
+      margin-bottom: 24px;
+    }
+    .sr-head p {
+      font-size: 13px;
+      color: var(--muted);
+      margin: 4px 0 0;
+      max-width: 60ch;
+    }
+
+    /* ── Tarjeta de información del lote ──────────────────────────────────── */
+    .lot-info {
+      margin-bottom: 16px;
+    }
+    .lot-info .card-body {
+      padding: 16px 18px;
+    }
+    .detail-value--accent {
+      color: var(--color-accent);
+    }
+
+    /* ── Input con sufijo de unidad (kg / °C) ─────────────────────────────── */
+    .input-suffix {
+      display: flex;
+    }
+    .input-suffix input {
+      flex: 1;
+      width: auto;
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+    .input-suffix .suffix {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 56px;
+      padding: 0 14px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      background: color-mix(in oklab, var(--color-primary) 4%, white);
+      border: 1px solid var(--rule);
+      border-left: 0;
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    }
+
+    /* ── Resumen del envío ────────────────────────────────────────────────── */
+    .summary-list {
+      display: grid;
+      gap: 8px;
+      margin: 12px 0 0;
+    }
+    .summary-list > div {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .summary-list dt {
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .summary-list dd {
+      margin: 0;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--color-primary);
+      font-variant-numeric: tabular-nums;
+      text-align: right;
+    }
+  </style>
 
   <script>
     const lotSelect = document.getElementById("lotSelect");
