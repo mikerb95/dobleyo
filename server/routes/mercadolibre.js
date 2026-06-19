@@ -206,3 +206,36 @@ mercadolibreRouter.get('/stats', auth.requireAuth, auth.requireAdmin, async (req
     });
   }
 });
+
+/**
+ * GET /api/mercadolibre/status
+ * Estado real de la integración: si las credenciales están configuradas y la
+ * última fecha de sincronización. No revela los valores de los secretos.
+ * Requires: admin role
+ */
+mercadolibreRouter.get('/status', auth.requireAuth, auth.requireAdmin, async (req, res) => {
+  try {
+    const hasToken  = !!process.env.ML_ACCESS_TOKEN;
+    const hasSeller = !!process.env.ML_SELLER_ID;
+
+    let lastSync = null;
+    try {
+      const r = await db.query('SELECT MAX(sync_date) AS last_sync FROM sales_tracking', []);
+      lastSync = r.rows[0]?.last_sync ?? null;
+    } catch { /* tabla puede no existir aún */ }
+
+    res.json({
+      success: true,
+      credentials: {
+        ml_access_token: hasToken,
+        ml_seller_id: hasSeller,
+        configured: hasToken && hasSeller,
+      },
+      cron_configured: !!process.env.CRON_SECRET,
+      last_sync: lastSync,
+    });
+  } catch (error) {
+    logger.error('Error in /status endpoint:', error);
+    res.status(500).json({ error: 'Failed to retrieve status', details: error.message });
+  }
+});
