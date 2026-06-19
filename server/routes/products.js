@@ -97,13 +97,14 @@ productsRouter.get('/:id', async (req, res) => {
     }
 
     const p = rows[0];
+    const tn = parseTastingNotes(p.tasting_notes);
     res.json({
       success: true,
       data: {
         ...p,
         categoryLabel: CATEGORY_LABEL[p.category] ?? p.category,
-        notes: p.tasting_notes?.es ?? null,
-        notesEn: p.tasting_notes?.en ?? null,
+        notes: tn?.es ?? null,
+        notesEn: tn?.en ?? null,
       },
     });
   } catch (err) {
