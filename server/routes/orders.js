@@ -3,7 +3,7 @@ import { logger } from '../logger.js';
 import crypto from 'crypto';
 import { body, validationResult } from 'express-validator';
 import { query } from '../db.js';
-import { authenticateToken, requireRole } from '../auth.js';
+import { authenticateToken, requireRole, optionalAuth } from '../auth.js';
 import { logAudit } from '../services/audit.js';
 import { sendOrderConfirmationEmail } from '../services/email.js';
 import { geocodeOrderAsync } from '../services/geocoding.js';
