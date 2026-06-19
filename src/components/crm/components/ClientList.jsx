@@ -55,22 +55,12 @@ function AccountRow({ account, onOpen }) {
   return (
     <li>
       <button type="button" className={styles.item} onClick={() => onOpen(account.id)}>
-        <div>
-          <div className={styles.item__top}>
-            <h3 className={styles.item__name}>{account.display_name}</h3>
-            <div className={styles.item__badges}>
-              <span className={styles.badge}>{account.country}</span>
-              {seg && <span className={styles.badge}>{seg.label}</span>}
-              <StageChip stage={account.pipeline_stage} />
-            </div>
-          </div>
-          {account.legal_name && account.legal_name !== account.display_name && (
-            <div className={styles.item__legal}>{account.legal_name}</div>
-          )}
-          <div className={styles.item__meta}>
-            {account.primary_contact_name && <span>contacto · <b>{account.primary_contact_name}</b></span>}
-            {account.city && <span>{account.city}{account.region ? `, ${account.region}` : ""}</span>}
-            <span>{account.interactions_count ?? 0} interacciones</span>
+        <div className={styles.item__top}>
+          <h3 className={styles.item__name}>{account.display_name}</h3>
+          <div className={styles.item__badges}>
+            <span className={styles.badge}>{account.country}</span>
+            {seg && <span className={styles.badge}>{seg.label}</span>}
+            <StageChip stage={account.pipeline_stage} />
           </div>
         </div>
         <div className={styles.item__right}>
@@ -78,6 +68,14 @@ function AccountRow({ account, onOpen }) {
           <div className={styles.item__when}>
             {account.last_interaction_at ? timeAgo(account.last_interaction_at) : "sin actividad"}
           </div>
+        </div>
+        {account.legal_name && account.legal_name !== account.display_name && (
+          <div className={styles.item__legal}>{account.legal_name}</div>
+        )}
+        <div className={styles.item__meta}>
+          {account.primary_contact_name && <span>contacto · <b>{account.primary_contact_name}</b></span>}
+          {account.city && <span>{account.city}{account.region ? `, ${account.region}` : ""}</span>}
+          <span>{account.interactions_count ?? 0} interacciones</span>
         </div>
       </button>
     </li>
