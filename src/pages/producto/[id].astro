@@ -166,12 +166,18 @@ const productJsonLd = {
         )}
 
         <!-- Atributos del café -->
-        {(product.process || product.roast || (product.category === "cafe" && product.sca_score)) && (
+        {(product.process || product.roast || product.variety || (product.category === "cafe" && product.sca_score)) && (
           <div class="product-attrs">
             {product.process && (
               <div class="attr">
                 <span class="attr-label">Proceso</span>
                 <span class="attr-val">{product.process}</span>
+              </div>
+            )}
+            {product.variety && (
+              <div class="attr">
+                <span class="attr-label">Variedad</span>
+                <span class="attr-val">{product.variety}</span>
               </div>
             )}
             {product.roast && (
