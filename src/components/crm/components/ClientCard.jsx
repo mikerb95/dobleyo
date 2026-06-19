@@ -71,6 +71,7 @@ export default function ClientCard({ accountId, onBack, onStageChange }) {
         <Timeline interactions={interactions} />
         <aside style={{ display: "grid", gap: 16, gridAutoRows: "min-content" }}>
           <Contacts contacts={contacts} />
+          <LinkedSales accountId={accountId} sales={sales} onChange={refetch} />
           <Datos account={account} />
         </aside>
       </div>
