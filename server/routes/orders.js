@@ -226,7 +226,7 @@ ordersRouter.post('/',
                 );
             }
 
-            await logAudit(null, 'create', 'customer_orders', orderId, { reference, total, discount: discountAmount });
+            await logAudit(req.user?.id || null, 'create', 'customer_orders', orderId, { reference, total, discount: discountAmount });
 
             // Geocodificación asíncrona — no bloquea la respuesta HTTP
             geocodeOrderAsync(orderId, shippingCity, shippingDepartment);
