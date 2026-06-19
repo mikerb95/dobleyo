@@ -321,8 +321,8 @@ Los productos se guardan como JSON en el campo `products`:
 
 ### Coordinadas
 
-- Las coordenadas se generan a partir de un diccionario pre-cargado de ciudades argentinas
-- Para ciudades no reconocidas, se usa Buenos Aires como fallback
+- Las coordenadas se generan a partir de un diccionario pre-cargado de ciudades colombianas
+- Para ciudades no reconocidas, se usa Bogotá como fallback
 - En producción, considera usar una API de geocoding (Google Maps, Nominatim)
 
 ### Rate Limiting
