@@ -141,6 +141,19 @@ class MercadoLibreService {
       // Get order status
       const orderStatus = orderDetails.status || order.status || 'pending';
 
+      // Comprador (la API de órdenes incluye order.buyer)
+      const buyer = orderDetails.buyer || order.buyer || {};
+      const buyerNickname = buyer.nickname || [buyer.first_name, buyer.last_name].filter(Boolean).join(' ') || null;
+      const buyerId = buyer.id != null ? Number(buyer.id) : null;
+
+      // Estado de pago: el más reciente de orderDetails.payments[]
+      const payments = orderDetails.payments || order.payments || [];
+      const lastPayment = payments.length ? payments[payments.length - 1] : null;
+      const paymentStatus = lastPayment?.status || null;
+
+      // Estado de envío: del shipment o de orderDetails.shipping
+      const shippingStatus = shipment?.status || orderDetails.shipping?.status || null;
+
       // Calculate approximate coordinates based on city (this is a simplified approach)
       const { latitude, longitude } = await this.getApproximateCoordinates(city, state, country);
 
@@ -149,7 +162,11 @@ class MercadoLibreService {
         purchase_date: toSqliteDatetime(order.date_created),
         total_amount: order.total_amount || orderDetails.total_amount || 0,
         order_status: orderStatus,
+        payment_status: paymentStatus,
+        shipping_status: shippingStatus,
         shipping_method: shippingMethod,
+        buyer_nickname: buyerNickname,
+        buyer_id: buyerId,
         recipient_city: city,
         recipient_state: state,
         recipient_country: country,
