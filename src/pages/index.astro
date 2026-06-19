@@ -2,6 +2,7 @@
 import Layout from "../layouts/Layout.astro";
 import { products as staticProducts } from "../data/products.ts";
 import { getCanonicalUrl, getHreflangPair } from "../i18n/index.ts";
+import { parseTastingNotes } from "../../server/utils/tasting.js";
 
 const _hreflang = getHreflangPair("/");
 
