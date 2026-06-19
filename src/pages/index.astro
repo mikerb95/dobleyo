@@ -11,7 +11,7 @@ let coffeeProducts: any[] = [];
 try {
   const { query } = await import("../../server/db.js");
   const result = await query(
-    `SELECT id, name, origin, process, roast, price, rating,
+    `SELECT id, name, origin, process, roast, tasting_notes, price, rating,
             is_bestseller AS bestseller, is_new AS new, image_url AS image,
             stock_quantity AS stock
      FROM products
@@ -22,7 +22,7 @@ try {
   if (result.rows.length > 0) {
     coffeeProducts = result.rows.map((p: any) => ({
       ...p,
-      notes: p.tasting_notes?.es ?? null,
+      notes: parseTastingNotes(p.tasting_notes)?.es ?? null,
     }));
   }
 } catch (_) {}
