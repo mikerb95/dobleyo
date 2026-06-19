@@ -505,15 +505,17 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
           <td style="font-weight:600;white-space:nowrap">${fmt(r.total_amount ?? 0)}</td>
           <td>${badgeStatus(r.payment_status)}</td>
           <td>${badgeShipping(r.shipping_status)}</td>
+          <td>${crmCell(r)}</td>
           <td>
             ${r.ml_order_id ? `<a href="https://www.mercadolibre.com.co/ventas/${r.ml_order_id}/detalle" target="_blank" class="btn btn-ghost" style="height:28px;padding:0 8px;font-size:11px" title="Ver en ML">↗</a>` : ''}
           </td>
         </tr>
       `).join('');
 
+      bindCrmButtons();
       renderPagination(json.pagination);
     } catch (e: any) {
-      tbody.innerHTML = `<tr><td colspan="9" class="empty-state">Error de red: ${e.message}</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="10" class="empty-state">Error de red: ${e.message}</td></tr>`;
     }
   }
 
