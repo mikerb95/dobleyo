@@ -2,6 +2,27 @@
 
 ---
 
+## 📅 2026-06-18 — Almacén de Tostado: workbench logístico tipo SAP en `/admin/roasted-storage` (Agente: Claude)
+
+### Contexto
+La página era un formulario vertical largo con estilos inline y `alert()` para validaciones y éxito. No daba contexto operativo (qué hay pendiente por ubicar, qué hay en bodega ni dónde). Se rediseñó como un módulo de logística de bodega al estilo SAP Fiori/EWM, orquestando los tres endpoints ya existentes sin tocar el backend.
+
+### Archivos modificados
+- `src/pages/admin/roasted-storage.astro` — **rediseño completo**. Mantiene el payload del POST (`roastedId, location, container, containerCount, conditions[], notes`) y los endpoints (`GET /api/coffee/roasted-for-storage`, `GET /api/coffee/roasted-coffee`, `POST /api/coffee/roasted-storage`, `DELETE /api/coffee/roasted-storage/:id`).
+  - **KPIs de cabecera**: pendiente por ubicar (nº + kg), lotes en bodega (+ ubicaciones), peso almacenado total, ubicaciones ocupadas (de 6).
+  - **Workbench de dos columnas**: *worklist* «Pendiente de ubicación» (sticky, con buscador por lote/variedad y selección de fila) + panel de **registro de entrada (put-away)** con estado vacío guía.
+  - **Formulario seccionado** estilo SAP: facet de mercancía seleccionada (lote, variedad, origen, peso, pérdida de tueste, temp, tiempo), ubicación de destino (select agrupado por zona vía `optgroup`), empaque y distribución con **barra de ocupación de capacidad** y validación no bloqueante (botón deshabilitado si la capacidad no alcanza), condiciones y notas. Footer con resumen en vivo y acciones.
+  - **Mapa de ocupación de ubicaciones**: 6 bins con kg, nº de lotes y barra de carga relativa, derivados del stock real.
+  - **Tabla de existencias** (`erp-table`): ubicación/zona, lote, variedad, tueste, empaque, peso, estado y acciones (ver detalle / retirar registro vía DELETE).
+  - Sustituidos todos los `alert()` por **toasts**; steppers para cantidades; sin modal de éxito (flujo continuo que recarga datos).
+  - Estilos en `<style is:global>` con prefijo `rs-` (no colisiona con `.erp-*`/`.btn`/`.badge`/`.kpi-*` de `AdminLayout`), sobre tokens Claude Design, mobile-first (workbench colapsa a una columna `<1080px`).
+
+### Notas
+- Sin cambios de backend ni de paridad `server/index.js` ↔ `api/index.js`.
+- `astro build` completo verificado ✓.
+
+---
+
 ## 📅 2026-06-18 — CRM: arreglo de carga de cuentas + vinculación de ventas ML (Agente: Claude)
 
 ### Contexto
