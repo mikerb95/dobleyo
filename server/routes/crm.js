@@ -231,6 +231,111 @@ crmRouter.post('/accounts/:id(\\d+)/interactions', async (req, res) => {
   }
 });
 
+// ─────────────────────────────────────────────────────────────
+// Vinculación de ventas MercadoLibre ↔ cuentas CRM
+// sales_tracking no guarda identidad del comprador, así que la
+// vinculación es manual: el admin asigna ventas a una cuenta y eso
+// alimenta el LTV (lifetime_value_cents) de la vista crm_account_overview.
+// ─────────────────────────────────────────────────────────────
+
+const SALE_COLS = `id, ml_order_id, purchase_date, total_amount, order_status,
+                   recipient_city, recipient_state, products, crm_account_id`;
+
+// GET /api/crm/accounts/:id/sales — ventas ya vinculadas a la cuenta
+crmRouter.get('/accounts/:id(\\d+)/sales', async (req, res) => {
+  const id = Number(req.params.id);
+  try {
+    const r = await query(
+      `SELECT ${SALE_COLS} FROM sales_tracking
+        WHERE crm_account_id = ? ORDER BY purchase_date DESC`,
+      [id]
+    );
+    ok(res, { items: r.rows, total: r.rows.length });
+  } catch (e) {
+    logger.error('[GET /api/crm/accounts/:id/sales]', e);
+    err(res, 500, 'db_error', e.message);
+  }
+});
+
+// GET /api/crm/sales/unlinked?q=&limit=50 — ventas sin cuenta asignada
+crmRouter.get('/sales/unlinked', async (req, res) => {
+  const { q } = req.query;
+  const limit = Math.min(Number(req.query.limit ?? 50), 200);
+
+  const where = ['crm_account_id IS NULL'], params = [];
+  if (q) {
+    where.push('(recipient_city LIKE ? OR recipient_state LIKE ? OR products LIKE ? OR CAST(ml_order_id AS TEXT) LIKE ?)');
+    const like = `%${q}%`;
+    params.push(like, like, like, like);
+  }
+
+  try {
+    const r = await query(
+      `SELECT ${SALE_COLS} FROM sales_tracking
+        WHERE ${where.join(' AND ')}
+        ORDER BY purchase_date DESC LIMIT ?`,
+      [...params, limit]
+    );
+    ok(res, { items: r.rows, total: r.rows.length });
+  } catch (e) {
+    logger.error('[GET /api/crm/sales/unlinked]', e);
+    err(res, 500, 'db_error', e.message);
+  }
+});
+
+// POST /api/crm/accounts/:id/sales — vincular ventas a la cuenta { sale_ids: [..] }
+crmRouter.post('/accounts/:id(\\d+)/sales', async (req, res) => {
+  const id = Number(req.params.id);
+  const saleIds = Array.isArray(req.body?.sale_ids) ? req.body.sale_ids.map(Number).filter(Number.isInteger) : [];
+  if (!saleIds.length) return err(res, 400, 'bad_payload', 'sale_ids requerido (array de IDs)');
+
+  try {
+    const acct = await query('SELECT id, display_name FROM crm_accounts WHERE id = ?', [id]);
+    if (!acct.rows[0]) return err(res, 404, 'not_found', 'Cuenta no encontrada');
+
+    let linked = 0;
+    await withTransaction(async ({ query: txq }) => {
+      const placeholders = saleIds.map(() => '?').join(',');
+      const upd = await txq(
+        `UPDATE sales_tracking SET crm_account_id = ?
+          WHERE id IN (${placeholders}) AND crm_account_id IS NULL`,
+        [id, ...saleIds]
+      );
+      linked = upd.rowCount ?? 0;
+      if (linked > 0) {
+        await txq(
+          `INSERT INTO crm_interactions(account_id, kind, subject, metadata, created_by)
+           VALUES (?, 'order', ?, ?, ?)`,
+          [id, `${linked} venta(s) de MercadoLibre vinculada(s)`,
+           JSON.stringify({ sale_ids: saleIds }), req.user?.id ?? null]
+        );
+      }
+    });
+
+    const row = await query('SELECT * FROM crm_account_overview WHERE id = ?', [id]);
+    ok(res, { linked, account: row.rows[0] });
+  } catch (e) {
+    logger.error('[POST /api/crm/accounts/:id/sales]', e);
+    err(res, 500, 'db_error', e.message);
+  }
+});
+
+// DELETE /api/crm/sales/:saleId/link — desvincular una venta de su cuenta
+crmRouter.delete('/sales/:saleId(\\d+)/link', async (req, res) => {
+  const saleId = Number(req.params.saleId);
+  try {
+    const result = await query(
+      `UPDATE sales_tracking SET crm_account_id = NULL WHERE id = ? AND crm_account_id IS NOT NULL`,
+      [saleId]
+    );
+    if (!result.rowCount) return err(res, 404, 'not_found', 'Venta no encontrada o ya sin vincular');
+    ok(res, { sale_id: saleId });
+  } catch (e) {
+    logger.error('[DELETE /api/crm/sales/:saleId/link]', e);
+    err(res, 500, 'db_error', e.message);
+  }
+});
+
 // POST /api/crm/accounts/:id/contacts
 crmRouter.post('/accounts/:id(\\d+)/contacts', async (req, res) => {
   const id = Number(req.params.id);
