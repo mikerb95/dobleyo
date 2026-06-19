@@ -177,6 +177,114 @@ async function seedCaficultores(U) {
   log(`${harvests.length} cosechas aseguradas`);
 }
 
+// ── 2.5 CADENA DE TRAZABILIDAD COMPLETA ─────────────────────────────────────
+// Completa la cadena de producción de cada cosecha para que /trazabilidad
+// muestre la historia entera: almacén verde → tostión → tostado → almacén
+// tostado → empaque (con SCA) → etiqueta (con notas de sabor). Idempotente.
+async function seedTraceabilityChain() {
+  section('Cadena de trazabilidad completa (cosecha → empaque → etiqueta)');
+
+  // acidity/body/balance en escala 1-5 (las barras SCA del frontend usan val/5).
+  const chain = [
+    {
+      lot: 'LOTE-HUI-2026-01', label: 'LBL-HUI-2026-0001',
+      green_kg: 60, green_loc: 'Bodega Verde A · Pitalito',
+      sent_kg: 55, target: 198, roast_level: 'Claro', roasted_kg: 46.5, loss: 15.5,
+      actual_temp: 196, roast_min: 12, roast_obs: 'Perfil filtro, primer crack a 9:30.',
+      rstore_loc: 'Almacén Tostado A', container: 'GrainPro', containers: 4,
+      acidity: 5, body: 4, balance: 5, score: 89.5,
+      presentation: 'Bolsa con válvula', grind: 'Grano entero', pkg_size: '500g', units: 90,
+      flavor: 'Bergamota, Durazno, Té negro, Jazmín',
+      origin: 'Huila', variety: 'Geisha', roast: 'Claro', process: 'Lavado', altitude: '1800 msnm', farm: 'Finca El Paraíso',
+    },
+    {
+      lot: 'LOTE-NAR-2026-01', label: 'LBL-NAR-2026-0001',
+      green_kg: 50, green_loc: 'Bodega Verde B · La Unión',
+      sent_kg: 45, target: 202, roast_level: 'Medio', roasted_kg: 38.7, loss: 14.0,
+      actual_temp: 201, roast_min: 14, roast_obs: 'Perfil balanceado, desarrollo 22%.',
+      rstore_loc: 'Almacén Tostado A', container: 'GrainPro', containers: 3,
+      acidity: 4, body: 4, balance: 5, score: 86.5,
+      presentation: 'Bolsa con válvula', grind: 'Grano entero', pkg_size: '500g', units: 75,
+      flavor: 'Naranja, Miel, Chocolate con leche, Panela',
+      origin: 'Nariño', variety: 'Castillo', roast: 'Medio', process: 'Honey', altitude: '2100 msnm', farm: 'Finca La Esperanza',
+    },
+    {
+      lot: 'LOTE-SIE-2026-01', label: 'LBL-SIE-2026-0001',
+      green_kg: 70, green_loc: 'Bodega Verde C · Santa Marta',
+      sent_kg: 65, target: 205, roast_level: 'Oscuro', roasted_kg: 54.6, loss: 16.0,
+      actual_temp: 204, roast_min: 15, roast_obs: 'Perfil espresso, segundo crack incipiente.',
+      rstore_loc: 'Almacén Tostado B', container: 'GrainPro', containers: 5,
+      acidity: 3, body: 5, balance: 4, score: 84.0,
+      presentation: 'Bolsa con válvula', grind: 'Grano entero', pkg_size: '500g', units: 105,
+      flavor: 'Mora, Vino tinto, Cacao, Frutos rojos',
+      origin: 'Magdalena', variety: 'Typica', roast: 'Oscuro', process: 'Natural', altitude: '1100 msnm', farm: 'Finca Sierra Azul',
+    },
+  ];
+
+  let n = 0;
+  for (const c of chain) {
+    const harvestId = await scalarId('SELECT id FROM coffee_harvests WHERE lot_id = ?', [c.lot]);
+    if (!harvestId) { log(`⚠️  Sin cosecha para ${c.lot}, omitido`); continue; }
+
+    // Etapa 2 — Almacén café verde
+    if (!await exists('SELECT 1 FROM green_coffee_inventory WHERE lot_id = ?', [c.lot])) {
+      await query(
+        `INSERT INTO green_coffee_inventory (harvest_id, lot_id, weight_kg, location, storage_date, notes, created_at)
+         VALUES (?, ?, ?, ?, ?, 'Ingreso por cosecha', datetime('now','-32 days'))`,
+        [harvestId, c.lot, c.green_kg, c.green_loc, daysAgo(32)]);
+    }
+
+    // Etapa 3 — Envío a tostión
+    let roastingId = await scalarId('SELECT id FROM roasting_batches WHERE lot_id = ?', [c.lot]);
+    if (!roastingId) {
+      const r = await query(
+        `INSERT INTO roasting_batches (lot_id, quantity_sent_kg, target_temp, notes, status, created_at)
+         VALUES (?, ?, ?, 'Lote enviado a tostión', 'roasted', datetime('now','-20 days'))`,
+        [c.lot, c.sent_kg, c.target]);
+      roastingId = Number(r.lastInsertRowid);
+    }
+
+    // Etapa 4 — Tueste
+    let roastedId = await scalarId('SELECT id FROM roasted_coffee WHERE roasting_id = ?', [roastingId]);
+    if (!roastedId) {
+      const r = await query(
+        `INSERT INTO roasted_coffee (roasting_id, roast_level, weight_kg, weight_loss_percent, actual_temp, roast_time_minutes, observations, status, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, 'stored', datetime('now','-19 days'))`,
+        [roastingId, c.roast_level, c.roasted_kg, c.loss, c.actual_temp, c.roast_min, c.roast_obs]);
+      roastedId = Number(r.lastInsertRowid);
+    }
+
+    // Etapa 5 — Almacén café tostado
+    let storeId = await scalarId('SELECT id FROM roasted_coffee_inventory WHERE roasted_id = ?', [roastedId]);
+    if (!storeId) {
+      const r = await query(
+        `INSERT INTO roasted_coffee_inventory (roasted_id, location, container_type, container_count, storage_conditions, notes, status, created_at)
+         VALUES (?, ?, ?, ?, 'Ambiente seco, 18°C', 'Listo para empaque', 'packaged', datetime('now','-18 days'))`,
+        [roastedId, c.rstore_loc, c.container, c.containers]);
+      storeId = Number(r.lastInsertRowid);
+    }
+
+    // Etapa 6 — Empaque + control de calidad SCA
+    if (!await exists('SELECT 1 FROM packaged_coffee WHERE roasted_storage_id = ?', [storeId])) {
+      await query(
+        `INSERT INTO packaged_coffee (roasted_storage_id, acidity, body, balance, score, presentation, grind_size, package_size, unit_count, notes, status, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'Empaque y cata final', 'ready_for_sale', datetime('now','-15 days'))`,
+        [storeId, c.acidity, c.body, c.balance, c.score, c.presentation, c.grind, c.pkg_size, c.units]);
+    }
+
+    // Etiqueta con QR (notas de sabor para los chips de la página pública)
+    const qrData = `https://dobleyo.cafe/trazabilidad?lote=${c.label}`;
+    await upsertId('generated_labels', 'label_code', c.label,
+      `INSERT INTO generated_labels (label_code, lot_code, origin, variety, roast, process, altitude, farm, acidity, body, balance, score, flavor_notes, qr_data, printed, sequence, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 1, datetime('now','-14 days'))`,
+      [c.label, c.lot, c.origin, c.variety, c.roast, c.process, c.altitude, c.farm,
+       c.acidity, c.body, c.balance, c.score, c.flavor, qrData]);
+
+    n++;
+  }
+  log(`${n} cadenas de trazabilidad completas (verde → tueste → empaque → etiqueta)`);
+}
+
 // ── 3. LOTES (trazabilidad) ─────────────────────────────────────────────────
 async function seedLots() {
   section('Lotes de trazabilidad');
