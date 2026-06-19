@@ -498,6 +498,14 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       if (!res.ok || !json.success) throw new Error('status');
       setBadge(cfgToken, !!json.credentials?.ml_access_token);
       setBadge(cfgSeller, !!json.credentials?.ml_seller_id);
+
+      const cron = document.getElementById('cfgCron')!;
+      cron.className = `badge badge-${json.cron_configured ? 'success' : 'neutral'}`;
+      cron.textContent = json.cron_configured ? 'Activo' : 'Inactivo';
+
+      const last = document.getElementById('cfgLastSync')!;
+      last.className = 'badge badge-neutral';
+      last.textContent = json.last_sync ? fmtDate(json.last_sync) : 'Nunca';
     } catch {
       cfgToken.className = 'badge badge-warning';
       cfgToken.textContent = 'Sin verificar';
