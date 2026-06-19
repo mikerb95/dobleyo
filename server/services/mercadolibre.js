@@ -292,7 +292,8 @@ class MercadoLibreService {
           // orden NO rompe el vínculo CRM existente.
           await db.query(
             `UPDATE sales_tracking
-            SET purchase_date = ?, total_amount = ?, order_status = ?, shipping_method = ?,
+            SET purchase_date = ?, total_amount = ?, order_status = ?, payment_status = ?,
+                shipping_status = ?, shipping_method = ?, buyer_nickname = ?, buyer_id = ?,
                 recipient_city = ?, recipient_state = ?, recipient_country = ?,
                 recipient_zip_code = ?, latitude = ?, longitude = ?, products = ?,
                 updated_at = datetime('now')
@@ -301,7 +302,11 @@ class MercadoLibreService {
               sale.purchase_date,
               sale.total_amount,
               sale.order_status,
+              sale.payment_status,
+              sale.shipping_status,
               sale.shipping_method,
+              sale.buyer_nickname,
+              sale.buyer_id,
               sale.recipient_city,
               sale.recipient_state,
               sale.recipient_country,
