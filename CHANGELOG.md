@@ -2,6 +2,28 @@
 
 ---
 
+## 📅 2026-06-18 — Mapa de ventas: arreglo de renderizado de Leaflet + rediseño (Agente: Claude)
+
+### Contexto
+`/admin/sales-map` cargaba el mapa de forma intermitente y, cuando cargaba, salía «recortado por cuadrados» (tiles desalineados). Causas: (1) el contenedor del mapa **no tenía altura CSS**; (2) se alternaba `display:none`/`block` según el estado de carga, por lo que Leaflet se inicializaba o cambiaba de tamaño estando oculto y no recalculaba; (3) **nunca se llamaba `map.invalidateSize()`** tras mostrarse o redimensionar (p. ej. al colapsar el sidebar). Además, toda la UI usaba colores hex hardcodeados (contra `AGENTS.md`/`CLAUDE.md`).
+
+### Archivos modificados
+- `src/components/SalesHeatmap.jsx`
+  - **Mapa siempre montado** con altura fija (`clamp(420px, 58vh, 640px)`); el estado de carga/vacío ahora es un **overlay** sobre el mapa en vez de ocultarlo con `display:none` (raíz del bug de tiles).
+  - `map.invalidateSize()` en `requestAnimationFrame` + a 250 ms y 800 ms tras inicializar, al actualizar capas, y vía **`ResizeObserver`** sobre el contenedor (corrige el recorte al colapsar el sidebar o redimensionar).
+  - `fitBounds`/`setView` automático a los puntos del filtro (el mapa ya no queda descentrado). Zoom con rueda solo al enfocar el mapa.
+  - Reemplazados los estilos inline con hex por clases del sistema (`kpi-tile`, `card`, `erp-table`, `btn`, `form-group`, `alert`); KPIs como tiles, tabla Top ciudades con `erp-table`.
+- `src/pages/admin/sales-map.astro`
+  - Migrada a `page-header` + `erp-body`; panel de geocodificación como `card` con icono de estado (ok/advertencia) y botón `btn-save`; panel «¿Cómo funciona?» como `card`.
+  - Bloque `<style is:global>` con clases prefijadas `sm-`/`hm-` sobre tokens Claude Design (sin hex hardcodeados); estética de `.leaflet-*` (popups, controles) alineada al sistema.
+  - El island pasó de `client:load` a **`client:only="react"`** (un mapa Leaflet no puede renderizar en SSR; evita el desajuste de hidratación).
+
+### Notas
+- Sin cambios de backend (`/api/heatmap`, `/api/heatmap/stats`, `/api/heatmap/backfill`).
+- `astro build` completo verificado ✓.
+
+---
+
 ## 📅 2026-06-18 — Almacén de Tostado: workbench logístico tipo SAP en `/admin/roasted-storage` (Agente: Claude)
 
 ### Contexto
