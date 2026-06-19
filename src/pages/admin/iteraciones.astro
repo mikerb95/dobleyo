@@ -850,9 +850,11 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     const par = PARES[s.par] || { nombre: s.par, color: '#888' };
     const tipoLabel = { historia: 'Historia', bug: 'Bug', tarea: 'Tarea', spike: 'Spike' };
     const valorLabel = { alto: 'Valor alto', medio: 'Valor medio', bajo: 'Valor bajo' };
+    const testIcon = { pass: '✓', fail: '✗', pend: '○' };
 
     const card = document.createElement('div');
     card.className = 'iter-card';
+    card.style.cursor = 'pointer';
 
     const top = document.createElement('div');
     top.className = 'iter-card__top';
@@ -878,6 +880,22 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       card.appendChild(tags);
     }
 
+    if (s.pruebas && s.pruebas.length) {
+      const tests = document.createElement('ul');
+      tests.className = 'iter-card__tests';
+      s.pruebas.forEach(p => {
+        const li = document.createElement('li');
+        li.className = 'iter-card__test';
+        const icon = document.createElement('span');
+        icon.className = `iter-card__test-icon iter-card__test-icon--${p.estado}`;
+        icon.textContent = testIcon[p.estado] || '○';
+        li.appendChild(icon);
+        li.appendChild(document.createTextNode(p.texto));
+        tests.appendChild(li);
+      });
+      card.appendChild(tests);
+    }
+
     const foot = document.createElement('div');
     foot.className = 'iter-card__foot';
 
@@ -899,8 +917,57 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     foot.appendChild(valor);
     foot.appendChild(pair);
     card.appendChild(foot);
+
+    card.addEventListener('click', () => openHistoriaModal(s));
     return card;
   }
+
+  // ── Modal de detalle de historia ──────────────────────────
+  const historiaModal = document.getElementById('historiaModal');
+
+  function openHistoriaModal(s) {
+    const par = PARES[s.par] || { nombre: s.par, color: '#888' };
+    const testIcon = { pass: '✓', fail: '✗', pend: '○' };
+    const colNombre = (COLUMNAS.find(c => c.id === s.col) || {}).nombre || s.col;
+
+    document.getElementById('hModalId').textContent = s.id;
+    document.getElementById('hModalTitle').textContent = s.titulo;
+    document.getElementById('hModalHistoria').textContent = s.titulo;
+
+    const testsList = document.getElementById('hModalTests');
+    testsList.innerHTML = '';
+    (s.pruebas || []).forEach(p => {
+      const li = document.createElement('li');
+      li.className = `xp-detail__test xp-detail__test--${p.estado}`;
+      const icon = document.createElement('span');
+      icon.className = `iter-card__test-icon iter-card__test-icon--${p.estado}`;
+      icon.textContent = testIcon[p.estado] || '○';
+      li.appendChild(icon);
+      li.appendChild(document.createTextNode(p.texto));
+      testsList.appendChild(li);
+    });
+
+    const meta = document.getElementById('hModalMeta');
+    meta.innerHTML = `
+      <span><strong>Estado:</strong> ${colNombre}</span>
+      <span><strong>Estimado:</strong> ${s.dias} día${s.dias !== 1 ? 's' : ''} ideal${s.dias !== 1 ? 'es' : ''}</span>
+      <span><strong>Par:</strong> <span style="display:inline-flex;align-items:center;gap:5px">
+        <span class="iter-avatar" style="background:${par.color};font-size:10px;width:18px;height:18px">${s.par}</span>
+        ${par.nombre}
+      </span></span>
+      ${s.tags && s.tags.length ? `<span><strong>Tags:</strong> ${s.tags.map(t => '#' + t).join(' ')}</span>` : ''}
+    `;
+
+    historiaModal.style.display = 'grid';
+  }
+
+  function closeHistoriaModal() {
+    historiaModal.style.display = 'none';
+  }
+
+  document.getElementById('hModalClose').addEventListener('click', closeHistoriaModal);
+  historiaModal.addEventListener('click', e => { if (e.target === historiaModal) closeHistoriaModal(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && historiaModal.style.display !== 'none') closeHistoriaModal(); });
 
   // ── Gráficos SVG ──────────────────────────────────────────
   function renderCharts() { renderBurndown(); renderVelocity(); }
