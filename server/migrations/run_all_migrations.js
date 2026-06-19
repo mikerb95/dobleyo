@@ -53,6 +53,7 @@ const steps = [
   { name: 'Gift sets column + seed',         run: () => runFn('add_gift_sets.js', 'addGiftSets') },
   { name: 'System tables (error_logs + system_changelog)', run: () => runFn('add_system_tables.js', 'addSystemTables') },
   { name: 'Demand forecasts table',          run: () => runFn('create_demand_forecasts.js', 'createDemandForecasts') },
+  { name: 'CRM tables + overview view',      run: () => runFn('create_crm_tables.js', 'createCrmTables') },
 ];
 
 async function runAll() {
