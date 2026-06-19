@@ -11,7 +11,7 @@ export default function ClientCard({ accountId, onBack, onStageChange }) {
   if (error)   return <DetailError onBack={onBack} onRetry={refetch} />;
   if (!data)   return null;
 
-  const { account, contacts, interactions } = data;
+  const { account, contacts, interactions, sales = [] } = data;
   const seg = SEGMENTS.find((s) => s.id === account.segment);
   const idx = stageIndex(account.pipeline_stage);
 
