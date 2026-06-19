@@ -475,25 +475,21 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   }
 
   // ── Check credentials ──────────────────────────────────────
+  // Usa el endpoint honesto /status, que verifica de verdad las env vars.
   async function checkCredentials() {
     const cfgToken = document.getElementById('cfgToken')!;
     const cfgSeller = document.getElementById('cfgSeller')!;
+    const setBadge = (el: HTMLElement, ok: boolean) => {
+      el.className = `badge badge-${ok ? 'success' : 'error'}`;
+      el.textContent = ok ? 'Configurado' : 'No configurado';
+    };
 
     try {
-      const res = await fetch('/api/mercadolibre/stats', { credentials: 'include' });
+      const res = await fetch('/api/mercadolibre/status', { credentials: 'include' });
       const json = await res.json();
-
-      if (res.status === 400 && json.error?.includes('credentials')) {
-        cfgToken.className = 'badge badge-error';
-        cfgToken.textContent = 'No configurado';
-        cfgSeller.className = 'badge badge-error';
-        cfgSeller.textContent = 'No configurado';
-      } else {
-        cfgToken.className = 'badge badge-success';
-        cfgToken.textContent = 'Configurado';
-        cfgSeller.className = 'badge badge-success';
-        cfgSeller.textContent = 'Configurado';
-      }
+      if (!res.ok || !json.success) throw new Error('status');
+      setBadge(cfgToken, !!json.credentials?.ml_access_token);
+      setBadge(cfgSeller, !!json.credentials?.ml_seller_id);
     } catch {
       cfgToken.className = 'badge badge-warning';
       cfgToken.textContent = 'Sin verificar';
