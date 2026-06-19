@@ -446,6 +446,74 @@ import Layout from "../layouts/Layout.astro";
         populateDepts();
         populateCities('');
 
+        // ── Sesión: precargar datos si el usuario está registrado ───────
+        const authBanner     = document.getElementById('coAuthBanner');
+        const authBannerText = document.getElementById('coAuthBannerText');
+
+        function setVal(id, value) {
+          const el = document.getElementById(id);
+          if (el && value && !el.value) el.value = value;
+        }
+
+        function prefillFromUser(user) {
+          const fullName = (user.name && user.name.trim())
+            || [user.first_name, user.last_name].filter(Boolean).join(' ').trim();
+          setVal('fName', fullName);
+          setVal('fEmail', user.email);
+          setVal('fAddr', user.address);
+
+          // Teléfono: separar indicativo si viene con prefijo conocido.
+          const rawPhone = user.mobile_phone || user.landline_phone;
+          if (rawPhone) {
+            const phoneEl = document.getElementById('fPhone');
+            const match = COUNTRIES.find(c => String(rawPhone).startsWith(c.code));
+            if (match) {
+              selectedCountry = match;
+              phoneFlagEl.textContent = match.flag;
+              phoneCodeEl.textContent = match.code;
+              if (phoneEl && !phoneEl.value) phoneEl.value = String(rawPhone).slice(match.code.length).trim();
+            } else if (phoneEl && !phoneEl.value) {
+              phoneEl.value = String(rawPhone).trim();
+            }
+          }
+
+          // Departamento → ciudad (best-effort por coincidencia de nombre).
+          if (user.state_province && !fDeptEl.value) {
+            const deptMatch = Array.from(fDeptEl.options).find(
+              o => o.value.toLowerCase() === String(user.state_province).toLowerCase()
+            );
+            if (deptMatch) {
+              fDeptEl.value = deptMatch.value;
+              populateCities(deptMatch.value);
+              if (user.city) {
+                const cityMatch = Array.from(fCityEl.options).find(
+                  o => o.value.toLowerCase() === String(user.city).toLowerCase()
+                );
+                if (cityMatch) fCityEl.value = cityMatch.value;
+              }
+            }
+          }
+        }
+
+        (async function loadSession() {
+          try {
+            const res = await fetch('/api/auth/me', { credentials: 'include' });
+            if (res.ok) {
+              const user = await res.json();
+              prefillFromUser(user);
+              authBannerText.textContent = `Comprando como ${user.email}. Hemos completado tus datos; puedes editarlos.`;
+              authBanner.classList.remove('co-auth-banner--guest');
+              authBanner.style.display = 'flex';
+            } else {
+              authBanner.classList.add('co-auth-banner--guest');
+              authBannerText.innerHTML = '¿Ya tiene cuenta? <a href="/login?redirect=/checkout">Inicie sesión</a> para agilizar su compra, o continúe como invitado.';
+              authBanner.style.display = 'flex';
+            }
+          } catch {
+            // Sin conexión al verificar sesión → continuar como invitado, sin aviso.
+          }
+        })();
+
         fDeptEl.addEventListener('change', () => {
           populateCities(fDeptEl.value);
           clearError(fDeptEl);
@@ -625,6 +693,29 @@ import Layout from "../layouts/Layout.astro";
       gap: 2.5rem;
       align-items: start;
     }
+
+    /* Aviso de sesión */
+    .co-auth-banner {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      background: #fffaf7;
+      border: 1px solid var(--border);
+      border-radius: .75rem;
+      padding: .75rem 1rem;
+      margin-bottom: 1rem;
+      font-size: .82rem;
+      color: var(--coffee);
+      line-height: 1.4;
+    }
+    .co-auth-banner svg { color: var(--coffee); flex-shrink: 0; }
+    .co-auth-banner--guest {
+      background: #fbfbfa;
+      color: var(--muted-fg);
+    }
+    .co-auth-banner--guest svg { color: var(--muted-fg); }
+    .co-auth-banner a { color: var(--accent); text-decoration: none; font-weight: 600; }
+    .co-auth-banner a:hover { text-decoration: underline; }
 
     /* Sections */
     .co-section {
