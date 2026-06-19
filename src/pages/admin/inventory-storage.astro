@@ -6,208 +6,289 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   title="Almacenar en Inventario"
   description="Registra el café verde en el inventario físico con peso y ubicación"
 >
-  <form id="inventoryForm">
-    <!-- Selección de Lote -->
-    <div class="form-group">
-      <label for="lotSelect">Lote de Café <span class="required">*</span></label
-      >
-      <select id="lotSelect" name="lot" required>
-        <option value="">Selecciona un lote...</option>
-      </select>
-      <div class="form-hint">Lotes disponibles sin almacenar</div>
-    </div>
+  <div class="inventory-storage">
+    <header class="is-head">
+      <h1>Almacenar en inventario</h1>
+      <p>
+        Registre el café verde en el inventario físico indicando peso y
+        ubicación en bodega.
+      </p>
+    </header>
 
-    <!-- Info del Lote Seleccionado -->
-    <div class="card" id="lotInfoCard" style="display: none;">
-      <h3>Información del Lote</h3>
-      <div
-        style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 0.95rem;"
-      >
-        <div>
-          <div style="color: #666; font-size: 0.85rem;">Variedad</div>
-          <div style="font-weight: 600;" id="lotVariety">—</div>
-        </div>
-        <div>
-          <div style="color: #666; font-size: 0.85rem;">Proceso</div>
-          <div style="font-weight: 600;" id="lotProcess">—</div>
-        </div>
-        <div>
-          <div style="color: #666; font-size: 0.85rem;">Finca</div>
-          <div style="font-weight: 600;" id="lotFarm">—</div>
-        </div>
-        <div>
-          <div style="color: #666; font-size: 0.85rem;">Recolectado</div>
-          <div style="font-weight: 600;" id="lotDate">—</div>
-        </div>
+    <!-- Estado actual del inventario verde -->
+    <div class="kpi-grid is-stats">
+      <div class="kpi-tile info">
+        <div class="kpi-label">Lotes en bodega</div>
+        <div class="kpi-value" id="statLots">—</div>
+        <div class="kpi-sub">café verde almacenado</div>
+      </div>
+      <div class="kpi-tile brand">
+        <div class="kpi-label">Peso total almacenado</div>
+        <div class="kpi-value" id="statWeight">—</div>
+        <div class="kpi-sub">kilogramos</div>
+      </div>
+      <div class="kpi-tile success">
+        <div class="kpi-label">Ubicaciones en uso</div>
+        <div class="kpi-value" id="statLocations">—</div>
+        <div class="kpi-sub">posiciones de bodega</div>
       </div>
     </div>
 
-    <!-- Peso Neto -->
-    <div class="form-group">
-      <label for="weight"
-        >Peso Neto de Café Verde <span class="required">*</span></label
-      >
-      <div style="display: flex; gap: 0.5rem;">
-        <input
-          type="number"
-          id="weight"
-          name="weight"
-          placeholder="Ej: 45.5"
-          step="0.1"
-          min="0"
-          required
-          style="flex: 1;"
-        />
-        <select style="width: 80px;" id="weightUnit" name="weightUnit">
-          <option value="kg">kg</option>
-          <option value="lb">lb</option>
+    <form id="inventoryForm">
+      <!-- Selección de Lote -->
+      <div class="form-group">
+        <label for="lotSelect"
+          >Lote de café <span class="required">*</span></label
+        >
+        <select id="lotSelect" name="lot" required>
+          <option value="">Seleccione un lote…</option>
         </select>
+        <div class="form-hint">Lotes disponibles sin almacenar</div>
       </div>
-      <div class="form-hint">Peso total del café verde para este lote</div>
-    </div>
 
-    <!-- Ubicación de Almacenamiento -->
-    <div class="form-group">
-      <label for="location"
-        >Ubicación en Bodega <span class="required">*</span></label
-      >
-      <select id="location" name="location" required>
-        <option value="">Selecciona una ubicación</option>
-        <option value="A-01">Sección A - Estante 01</option>
-        <option value="A-02">Sección A - Estante 02</option>
-        <option value="B-01">Sección B - Estante 01</option>
-        <option value="B-02">Sección B - Estante 02</option>
-        <option value="C-01"
-          >Sección C - Estante 01 (Temperatura controlada)</option
-        >
-        <option value="C-02"
-          >Sección C - Estante 02 (Temperatura controlada)</option
-        >
-      </select>
-      <div class="form-hint">Elige la ubicación física de almacenamiento</div>
-    </div>
-
-    <!-- Fecha de Almacenamiento -->
-    <div class="form-group">
-      <label for="storageDate">Fecha de Almacenamiento</label>
-      <input type="date" id="storageDate" name="storageDate" disabled />
-      <div class="form-hint">
-        Se registra automáticamente como la fecha actual
+      <!-- Info del Lote Seleccionado -->
+      <div class="card lot-info" id="lotInfoCard" style="display: none;">
+        <div class="card-header">
+          <h3 class="card-title">Información del lote</h3>
+        </div>
+        <div class="card-body">
+          <dl class="detail-grid">
+            <div class="detail-item">
+              <dt>Variedad</dt>
+              <dd id="lotVariety">—</dd>
+            </div>
+            <div class="detail-item">
+              <dt>Proceso</dt>
+              <dd id="lotProcess">—</dd>
+            </div>
+            <div class="detail-item">
+              <dt>Finca</dt>
+              <dd id="lotFarm">—</dd>
+            </div>
+            <div class="detail-item">
+              <dt>Recolectado</dt>
+              <dd id="lotDate">—</dd>
+            </div>
+          </dl>
+        </div>
       </div>
-    </div>
 
-    <!-- Notas Adicionales -->
-    <div class="form-group">
-      <label for="notes">Notas (Opcional)</label>
-      <textarea
-        id="notes"
-        name="notes"
-        placeholder="Ej: Empaques en buen estado, sin daño aparente..."
-      ></textarea>
-    </div>
+      <!-- Peso Neto -->
+      <div class="form-group">
+        <label for="weight"
+          >Peso neto de café verde <span class="required">*</span></label
+        >
+        <div class="input-suffix">
+          <input
+            type="number"
+            id="weight"
+            name="weight"
+            placeholder="Ej: 45.5"
+            step="0.1"
+            min="0"
+            required
+          />
+          <select class="suffix-select" id="weightUnit" name="weightUnit">
+            <option value="kg">kg</option>
+            <option value="lb">lb</option>
+          </select>
+        </div>
+        <div class="form-hint">Peso total del café verde para este lote</div>
+      </div>
 
-    <!-- Resumen -->
-    <div class="info-box" id="summaryBox" style="display: none;">
-      <strong>Resumen del Almacenamiento:</strong>
-      <div style="margin-top: 0.75rem; font-size: 0.95rem; line-height: 1.6;">
-        <div>
-          📦 Lote: <span id="summaryLot" style="font-weight: 600;">—</span>
-        </div>
-        <div>
-          ⚖️ Peso: <span id="summaryWeight" style="font-weight: 600;">—</span>
-        </div>
-        <div>
-          📍 Ubicación: <span id="summaryLocation" style="font-weight: 600;"
-            >—</span
+      <!-- Ubicación de Almacenamiento -->
+      <div class="form-group">
+        <label for="location"
+          >Ubicación en bodega <span class="required">*</span></label
+        >
+        <select id="location" name="location" required>
+          <option value="">Seleccione una ubicación</option>
+          <option value="A-01">Sección A · Estante 01</option>
+          <option value="A-02">Sección A · Estante 02</option>
+          <option value="B-01">Sección B · Estante 01</option>
+          <option value="B-02">Sección B · Estante 02</option>
+          <option value="C-01"
+            >Sección C · Estante 01 (temperatura controlada)</option
           >
-        </div>
-        <div>
-          📅 Fecha: <span id="summaryDate" style="font-weight: 600;">—</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Botones de Acción -->
-    <div class="form-actions" style="margin-bottom: 2rem;">
-      <button type="reset" class="btn-secondary">Limpiar</button>
-      <button type="submit" class="btn-primary">Almacenar Lote</button>
-    </div>
-  </form>
-
-  <!-- Modal de Confirmación -->
-  <div
-    id="successModal"
-    style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; padding: 1rem;"
-  >
-    <div
-      style="background: white; border-radius: 12px; padding: 2.5rem; max-width: 500px; width: 100%; box-shadow: 0 10px 40px rgba(0,0,0,0.2);"
-    >
-      <!-- Ícono de éxito -->
-      <div style="text-align: center; margin-bottom: 1.5rem;">
-        <div
-          style="font-size: 3.5rem; color: #4a6741; animation: scaleIn 0.5s ease;"
-        >
-          ✅
+          <option value="C-02"
+            >Sección C · Estante 02 (temperatura controlada)</option
+          >
+        </select>
+        <div class="form-hint">
+          Elija la ubicación física de almacenamiento
         </div>
       </div>
 
-      <!-- Título -->
-      <h2
-        style="text-align: center; color: #251a14; margin: 0 0 0.5rem 0; font-size: 1.5rem;"
-      >
-        ¡Almacenado!
-      </h2>
-
-      <!-- Mensaje -->
-      <div
-        style="text-align: center; color: #666; margin-bottom: 1.5rem; font-size: 1rem;"
-      >
-        <p id="successMessage" style="margin: 0.5rem 0;">
-          El lote <strong id="successLotId"></strong> ha sido almacenado correctamente.
-        </p>
-        <p style="margin: 0.5rem 0; font-size: 0.9rem; color: #999;">
-          Ahora está en el inventario de café verde.
-        </p>
-      </div>
-
-      <!-- Información del almacenamiento -->
-      <div
-        id="storageDetailsInfo"
-        style="background: #f9fafb; border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;"
-      >
-        <div style="font-size: 0.85rem; color: #666;">
-          <div style="margin-bottom: 0.75rem;">
-            <strong>Peso:</strong>
-            <span id="detailWeight"></span>
-          </div>
-          <div style="margin-bottom: 0.75rem;">
-            <strong>Ubicación:</strong>
-            <span id="detailLocation"></span>
-          </div>
-          <div>
-            <strong>Fecha:</strong>
-            <span id="detailDate"></span>
-          </div>
+      <!-- Fecha de Almacenamiento -->
+      <div class="form-group">
+        <label for="storageDate">Fecha de almacenamiento</label>
+        <input type="date" id="storageDate" name="storageDate" disabled />
+        <div class="form-hint">
+          Se registra automáticamente con la fecha actual
         </div>
       </div>
 
-      <!-- Botones de acción -->
-      <div style="display: flex; gap: 1rem; flex-direction: column-reverse;">
-        <button
-          id="closeInventorySuccessBtn"
-          style="padding: 0.75rem 1.5rem; background: #ddd; color: #333; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.95rem; transition: background 0.2s;"
-        >
-          Cerrar
-        </button>
-        <button
-          id="goToLotesFromInventoryBtn"
-          style="padding: 0.75rem 1.5rem; background: #4a6741; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.95rem; transition: background 0.2s;"
-        >
-          Ver Lotes de Café Verde
-        </button>
+      <!-- Notas Adicionales -->
+      <div class="form-group">
+        <label for="notes">Notas (opcional)</label>
+        <textarea
+          id="notes"
+          name="notes"
+          placeholder="Ej: empaques en buen estado, sin daño aparente…"
+        ></textarea>
+      </div>
+
+      <!-- Resumen -->
+      <div class="info-box summary-box" id="summaryBox" style="display: none;">
+        <strong>Resumen del almacenamiento</strong>
+        <dl class="summary-list">
+          <div><dt>📦 Lote</dt><dd id="summaryLot">—</dd></div>
+          <div><dt>⚖️ Peso</dt><dd id="summaryWeight">—</dd></div>
+          <div><dt>📍 Ubicación</dt><dd id="summaryLocation">—</dd></div>
+          <div><dt>📅 Fecha</dt><dd id="summaryDate">—</dd></div>
+        </dl>
+      </div>
+
+      <!-- Botones de Acción -->
+      <div class="form-actions">
+        <button type="reset" class="btn-secondary">Limpiar</button>
+        <button type="submit" class="btn-primary">Almacenar lote</button>
+      </div>
+    </form>
+
+    <!-- Modal de Confirmación -->
+    <div class="modal" id="successModal" style="display: none;">
+      <div class="modal-content modal-success">
+        <div class="modal-body success-body">
+          <div class="success-icon" aria-hidden="true">✅</div>
+          <h2 class="modal-title success-title">¡Lote almacenado!</h2>
+          <p>
+            El lote <strong id="successLotId"></strong> ha sido almacenado
+            correctamente.
+          </p>
+          <p class="success-sub">Ahora está en el inventario de café verde.</p>
+
+          <dl class="summary-list success-details">
+            <div><dt>Peso</dt><dd id="detailWeight">—</dd></div>
+            <div><dt>Ubicación</dt><dd id="detailLocation">—</dd></div>
+            <div><dt>Fecha</dt><dd id="detailDate">—</dd></div>
+          </dl>
+        </div>
+        <div class="modal-actions">
+          <button id="closeInventorySuccessBtn" class="btn btn-secondary">
+            Cerrar
+          </button>
+          <button id="goToLotesFromInventoryBtn" class="btn btn-primary">
+            Ver lotes de café verde
+          </button>
+        </div>
       </div>
     </div>
   </div>
+
+  <style>
+    /* ── Encabezado de página ─────────────────────────────────────────────── */
+    .is-head {
+      margin-bottom: 20px;
+    }
+    .is-head p {
+      font-size: 13px;
+      color: var(--muted);
+      margin: 4px 0 0;
+      max-width: 60ch;
+    }
+
+    /* ── Tira de métricas del inventario ──────────────────────────────────── */
+    .is-stats {
+      margin-bottom: 24px;
+    }
+
+    /* ── Tarjeta de información del lote ──────────────────────────────────── */
+    .lot-info {
+      margin-bottom: 16px;
+    }
+    .lot-info .card-body {
+      padding: 16px 18px;
+    }
+
+    /* ── Input con sufijo (selector de unidad kg / lb) ────────────────────── */
+    .input-suffix {
+      display: flex;
+    }
+    .input-suffix > input {
+      flex: 1;
+      width: auto;
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+    .input-suffix > .suffix-select {
+      width: auto;
+      min-width: 74px;
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+      margin-left: -1px;
+    }
+
+    /* ── Resumen del envío y detalles del modal ───────────────────────────── */
+    .summary-list {
+      display: grid;
+      gap: 8px;
+      margin: 12px 0 0;
+    }
+    .summary-list > div {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .summary-list dt {
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .summary-list dd {
+      margin: 0;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--color-primary);
+      font-variant-numeric: tabular-nums;
+      text-align: right;
+    }
+
+    /* ── Modal de éxito ───────────────────────────────────────────────────── */
+    .modal-success {
+      max-width: 440px;
+    }
+    .success-body {
+      text-align: center;
+    }
+    .success-icon {
+      font-size: 44px;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+    .success-title {
+      text-align: center;
+      font-size: 18px;
+      margin: 0 0 6px;
+    }
+    .success-body > p {
+      font-size: 13.5px;
+      color: var(--color-text);
+      margin: 4px 0;
+    }
+    .success-sub {
+      color: var(--muted) !important;
+      font-size: 12.5px !important;
+    }
+    .success-details {
+      margin-top: 16px;
+      text-align: left;
+      background: color-mix(in oklab, var(--color-primary) 3%, white);
+      border: 1px solid var(--rule);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+    }
+  </style>
 
   <script>
     const lotSelect = document.getElementById("lotSelect");
@@ -215,6 +296,28 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     const form = document.getElementById("inventoryForm");
     const summaryBox = document.getElementById("summaryBox");
     const lotInfoCard = document.getElementById("lotInfoCard");
+
+    const numberFmt = new Intl.NumberFormat("es-CO", {
+      maximumFractionDigits: 1,
+    });
+
+    // Actualizar la tira de métricas con el inventario verde actual
+    function updateInventoryStats(inventory) {
+      const totalWeight = inventory.reduce(
+        (sum, item) => sum + Number(item.weight_kg || 0),
+        0
+      );
+      const locations = new Set(
+        inventory.map((item) => item.location).filter(Boolean)
+      );
+      const set = (id, value) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = value;
+      };
+      set("statLots", String(inventory.length));
+      set("statWeight", numberFmt.format(totalWeight));
+      set("statLocations", String(locations.size));
+    }
 
     // Cargar lotes disponibles desde API
     async function loadAvailableLots() {
@@ -224,18 +327,20 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
         const harvests = await response.json();
 
-        // También obtener inventario para filtrar
+        // También obtener inventario para filtrar y para las métricas
         const inventoryResponse = await fetch("/api/coffee/green-inventory");
         const inventory = inventoryResponse.ok
           ? await inventoryResponse.json()
           : [];
+        updateInventoryStats(inventory);
+
         const storedLotIds = inventory.map((item) => item.lot_id);
 
         const available = harvests.filter(
           (h) => !storedLotIds.includes(h.lot_id)
         );
 
-        lotSelect.innerHTML = '<option value="">Selecciona un lote...</option>';
+        lotSelect.innerHTML = '<option value="">Seleccione un lote…</option>';
         available.forEach((harvest) => {
           const option = document.createElement("option");
           option.value = JSON.stringify(harvest);
@@ -305,7 +410,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       e.preventDefault();
 
       if (!lotSelect.value) {
-        alert("⚠️ Debes seleccionar un lote");
+        alert("⚠️ Debe seleccionar un lote");
         return;
       }
 
@@ -313,7 +418,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       const submitBtn = form.querySelector('button[type="submit"]');
       const originalText = submitBtn.textContent;
       submitBtn.disabled = true;
-      submitBtn.textContent = "Registrando...";
+      submitBtn.textContent = "Registrando…";
 
       try {
         const response = await fetch("/api/coffee/inventory-storage", {
@@ -347,7 +452,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         ).toLocaleDateString("es-CO");
 
         // Mostrar modal de éxito
-        document.getElementById("successModal").style.display = "flex";
+        document.getElementById("successModal").style.display = "grid";
       } catch (error) {
         console.error("Error:", error);
         alert(`❌ Error: ${error.message || "Error desconocido"}`);
@@ -360,15 +465,19 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     // Cargar lotes al iniciar
     loadAvailableLots();
 
-    document.getElementById("closeInventorySuccessBtn")?.addEventListener("click", () => {
-      document.getElementById("successModal").style.display = "none";
-      document.getElementById("inventoryForm").reset();
-      document.getElementById("lotInfoCard").style.display = "none";
-      document.getElementById("summaryBox").style.display = "none";
-      loadAvailableLots();
-    });
-    document.getElementById("goToLotesFromInventoryBtn")?.addEventListener("click", () => {
-      window.location.href = "/admin/lotes";
-    });
+    document
+      .getElementById("closeInventorySuccessBtn")
+      ?.addEventListener("click", () => {
+        document.getElementById("successModal").style.display = "none";
+        document.getElementById("inventoryForm").reset();
+        document.getElementById("lotInfoCard").style.display = "none";
+        document.getElementById("summaryBox").style.display = "none";
+        loadAvailableLots();
+      });
+    document
+      .getElementById("goToLotesFromInventoryBtn")
+      ?.addEventListener("click", () => {
+        window.location.href = "/admin/lotes";
+      });
   </script>
 </AdminLayout>
