@@ -285,6 +285,39 @@ async function seedTraceabilityChain() {
   log(`${n} cadenas de trazabilidad completas (verde → tueste → empaque → etiqueta)`);
 }
 
+// ── 2.6 FICHA DE PRODUCTO: descripción + puntaje SCA coherente ──────────────
+// Completa la descripción narrativa (solo si está vacía) y alinea el score de
+// los lotes con el puntaje SCA mostrado en trazabilidad, para coherencia.
+async function seedProductCopy() {
+  section('Ficha de producto (descripción + SCA coherente)');
+  const copy = [
+    {
+      id: 'cf-sierra', score: 84.0,
+      desc: 'Procedente de la Sierra Nevada de Santa Marta, este lavado de variedad Typica ofrece una taza redonda y reconfortante. Su tueste medio realza notas a cacao, nuez y caramelo, con cuerpo equilibrado y un final limpio. Versátil tanto en espresso como en métodos de filtrado.',
+    },
+    {
+      id: 'cf-huila', score: 89.5,
+      desc: 'De las montañas del Huila, este Geisha de proceso honey y tueste claro entrega una taza floral y vibrante. Destacan los cítricos, el dulzor a miel y un perfil aromático delicado a jazmín. Su acidez brillante luce especialmente en V60 y Chemex.',
+    },
+    {
+      id: 'cf-nar', score: 86.5,
+      desc: 'Cultivado en las alturas de Nariño, este Castillo natural de tueste oscuro es intenso y envolvente. Presenta notas a frutas rojas, chocolate y té negro, con cuerpo pronunciado y un dulzor profundo. Pensado para quienes disfrutan un café con carácter, ideal en espresso.',
+    },
+  ];
+  let nDesc = 0, nScore = 0;
+  for (const c of copy) {
+    const r = await query(
+      `UPDATE products SET description = ? WHERE id = ? AND (description IS NULL OR description = '')`,
+      [c.desc, c.id]);
+    if (r.rowsAffected) nDesc++;
+    const rs = await query(
+      `UPDATE lots SET score = ? WHERE product_id = ? AND score IS NOT NULL`,
+      [c.score, c.id]);
+    nScore += rs.rowsAffected || 0;
+  }
+  log(`${nDesc} descripciones añadidas · ${nScore} lotes con SCA alineado`);
+}
+
 // ── 3. LOTES (trazabilidad) ─────────────────────────────────────────────────
 async function seedLots() {
   section('Lotes de trazabilidad');
