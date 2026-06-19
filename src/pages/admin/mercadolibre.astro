@@ -195,22 +195,30 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
               <div class="config-label">ML_SELLER_ID</div>
               <div id="cfgSeller" class="badge badge-neutral">—</div>
             </div>
+            <div class="config-row" style="margin-top:8px">
+              <div class="config-label">Sync automático (cron)</div>
+              <div id="cfgCron" class="badge badge-neutral">—</div>
+            </div>
+            <div class="config-row" style="margin-top:8px">
+              <div class="config-label">Última sincronización</div>
+              <div id="cfgLastSync" class="badge badge-neutral">—</div>
+            </div>
             <div style="height:1px;background:var(--border);margin:12px 0"></div>
             <div class="config-row">
-              <div class="config-label">Webhook /sync</div>
+              <div class="config-label">Sync manual</div>
               <div class="badge badge-info">POST /api/mercadolibre/sync</div>
             </div>
             <div class="config-row" style="margin-top:8px">
-              <div class="config-label">Endpoint ventas</div>
-              <div class="badge badge-info">GET /api/mercadolibre/sales</div>
+              <div class="config-label">Cron (Vercel)</div>
+              <div class="badge badge-info">GET /api/mercadolibre/cron-sync</div>
             </div>
             <div class="config-row" style="margin-top:8px">
-              <div class="config-label">Heatmap data</div>
-              <div class="badge badge-info">GET /api/mercadolibre/heatmap-data</div>
+              <div class="config-label">Webhook ML</div>
+              <div class="badge badge-info">POST /api/mercadolibre/webhook</div>
             </div>
             <div style="height:1px;background:var(--border);margin:12px 0"></div>
             <div style="font-size:11px;color:var(--text-3);line-height:1.6">
-              Para automatizar la sincronización, configura un cron job que haga POST al endpoint de sync con las credenciales de admin. Todas las rutas requieren cookie de sesión con rol <code style="background:#f0f0f0;padding:1px 4px;border-radius:2px">admin</code>.
+              El cron de Vercel sincroniza cada 6 h (requiere <code style="background:#f0f0f0;padding:1px 4px;border-radius:2px">CRON_SECRET</code>). Para tiempo casi-real, registre el webhook en su app de MercadoLibre apuntando a la URL del webhook (topic <code style="background:#f0f0f0;padding:1px 4px;border-radius:2px">orders_v2</code>). El sync manual requiere rol <code style="background:#f0f0f0;padding:1px 4px;border-radius:2px">admin</code>.
             </div>
           </div>
         </div>
