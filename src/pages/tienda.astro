@@ -31,7 +31,7 @@ try {
     products = result.rows.map((p: any) => ({
       ...p,
       category: LABEL[p.category] ?? p.category,
-      notes: p.tasting_notes?.es ?? null,
+      notes: parseTastingNotes(p.tasting_notes)?.es ?? null,
     }));
   }
 } catch (_) { /* BD no disponible */ }
