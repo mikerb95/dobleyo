@@ -216,9 +216,10 @@ class MercadoLibreService {
       };
     }
 
-    // Default to Buenos Aires if city not found
-    logger.warn(`Coordinates not found for city: ${city}, using Buenos Aires as default`);
-    return { latitude: -34.6037, longitude: -58.3816 };
+    // Ciudad desconocida → Bogotá (capital) como aproximación; evita sesgar el
+    // mapa de calor con puntos fuera de Colombia.
+    logger.warn(`Coordinates not found for city: ${city}, using Bogotá as default`);
+    return { latitude: 4.7110, longitude: -74.0721 };
   }
 
   /**
