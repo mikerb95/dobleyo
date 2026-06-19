@@ -102,6 +102,7 @@
 | `src/pages/admin/packaging.astro` | Empaquetado |
 | `src/pages/admin/etiquetas.astro` | Generación de etiquetas |
 | `src/pages/admin/finanzas.astro` | Dashboard financiero (estructura base) |
+| `src/pages/admin/ventas.astro` | Dashboard de ventas: KPIs, timeline SVG, top productos/ciudades, tabla paginada |
 | `src/pages/admin/auditoria.astro` | Logs de auditoría |
 | `src/pages/admin/estadisticas.astro` | Estadísticas |
 
