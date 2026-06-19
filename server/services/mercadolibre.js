@@ -418,39 +418,42 @@ class MercadoLibreService {
       const {
         limit = 50, offset = 0,
         city = null, state = null, dateFrom = null, dateTo = null, status = null,
+        search = null, sort = 'purchase_date', sortDir = 'desc',
       } = options;
 
-      // WHERE compartido entre el conteo y la consulta de datos.
-      const where = ['1=1'];
+      // Columnas permitidas para ORDER BY (allowlist)
+      const SORT_COLS = { purchase_date: 'st.purchase_date', total_amount: 'st.total_amount', order_status: 'st.order_status', recipient_city: 'st.recipient_city', ml_order_id: 'st.ml_order_id' };
+      const orderBy  = SORT_COLS[sort] || 'st.purchase_date';
+      const orderDir = sortDir === 'asc' ? 'ASC' : 'DESC';
+
+      const where  = ['1=1'];
       const params = [];
 
-      if (city)     { where.push('st.recipient_city = ?');   params.push(city); }
-      if (state)    { where.push('st.recipient_state = ?');  params.push(state); }
-      if (dateFrom) { where.push('st.purchase_date >= ?');   params.push(toSqliteDatetime(dateFrom)); }
-      if (dateTo)   { where.push('st.purchase_date <= ?');   params.push(toSqliteDatetime(dateTo)); }
-      if (status)   { where.push('st.payment_status = ?');   params.push(status); }
+      if (city)     { where.push('st.recipient_city = ?');                 params.push(city); }
+      if (state)    { where.push('st.recipient_state = ?');                params.push(state); }
+      if (dateFrom) { where.push('st.purchase_date >= ?');                 params.push(toSqliteDatetime(dateFrom)); }
+      if (dateTo)   { where.push('st.purchase_date <= ?');                 params.push(toSqliteDatetime(dateTo)); }
+      if (status)   { where.push('st.order_status = ?');                   params.push(status); }
+      if (search)   { where.push('(CAST(st.ml_order_id AS TEXT) LIKE ? OR st.recipient_city LIKE ? OR st.recipient_state LIKE ?)'); const s = `%${search}%`; params.push(s, s, s); }
 
       const whereSql = where.join(' AND ');
 
-      // Conteo total (sin JOIN: más barato)
       const countResult = await db.query(
         `SELECT COUNT(*) AS total FROM sales_tracking st WHERE ${whereSql}`,
         params
       );
       const total = countResult.rows[0].total;
 
-      // Datos paginados, con la cuenta CRM vinculada (si la hay)
       const dataResult = await db.query(
         `SELECT st.*, ca.display_name AS crm_account_name
            FROM sales_tracking st
       LEFT JOIN crm_accounts ca ON ca.id = st.crm_account_id
           WHERE ${whereSql}
-          ORDER BY st.purchase_date DESC
+          ORDER BY ${orderBy} ${orderDir}
           LIMIT ? OFFSET ?`,
         [...params, limit, offset]
       );
 
-      // Parse products JSON (tolerante a NULL / JSON inválido)
       const parsedData = dataResult.rows.map((sale) => {
         let products = [];
         try { products = sale.products ? JSON.parse(sale.products) : []; } catch { products = []; }
