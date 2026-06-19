@@ -208,6 +208,102 @@ mercadolibreRouter.get('/stats', auth.requireAuth, auth.requireAdmin, async (req
 });
 
 /**
+ * GET /api/mercadolibre/analytics
+ * Dashboard de ventas: KPIs, timeline, top productos/ciudades, distribución por estado.
+ * Query params: dateFrom, dateTo, city, state, status, granularity (day|week|month)
+ */
+mercadolibreRouter.get('/analytics', auth.requireAuth, auth.requireAdmin, async (req, res) => {
+  try {
+    const { dateFrom, dateTo, city, state, status, granularity = 'day' } = req.query;
+
+    function buildWhere(from, to, filterCity, filterState, filterStatus) {
+      const clauses = [];
+      const params = [];
+      if (from)         { clauses.push("purchase_date >= ?");    params.push(from); }
+      if (to)           { clauses.push("purchase_date <= ?");     params.push(to + ' 23:59:59'); }
+      if (filterCity)   { clauses.push("recipient_city = ?");     params.push(filterCity); }
+      if (filterState)  { clauses.push("recipient_state = ?");    params.push(filterState); }
+      if (filterStatus) { clauses.push("order_status = ?");       params.push(filterStatus); }
+      return { w: clauses.length ? `WHERE ${clauses.join(' AND ')}` : '', p: params };
+    }
+
+    const { w, p } = buildWhere(dateFrom, dateTo, city, state, status);
+
+    // Período anterior (misma duración, desplazado atrás)
+    let pw = '', pp = [];
+    if (dateFrom && dateTo) {
+      const dFrom  = new Date(dateFrom);
+      const dTo    = new Date(dateTo);
+      const diffMs = dTo.getTime() - dFrom.getTime() + 86400000;
+      const pTo    = new Date(dFrom.getTime() - 1);
+      const pFrom  = new Date(pTo.getTime() - diffMs + 86400000);
+      const fmt    = d => d.toISOString().slice(0, 10);
+      const prev   = buildWhere(fmt(pFrom), fmt(pTo), city, state, status);
+      pw = prev.w; pp = prev.p;
+    }
+
+    const timeFmt = granularity === 'month'
+      ? "strftime('%Y-%m', purchase_date)"
+      : granularity === 'week'
+        ? "strftime('%Y-W%W', purchase_date)"
+        : "strftime('%Y-%m-%d', purchase_date)";
+
+    const [kpisR, prevKpisR, timelineR, byStatusR, topCitiesR, allProductsR, filterOptsR] = await Promise.all([
+      db.query(`SELECT
+          COUNT(*) as orders,
+          COALESCE(SUM(total_amount), 0) as revenue,
+          COALESCE(AVG(total_amount), 0) as aov,
+          COALESCE(MAX(total_amount), 0) as max_ticket,
+          COALESCE(MIN(CASE WHEN order_status != 'cancelled' THEN total_amount END), 0) as min_ticket,
+          COUNT(DISTINCT recipient_city) as cities,
+          SUM(CASE WHEN order_status = 'cancelled' THEN 1 ELSE 0 END) as cancelled
+        FROM sales_tracking ${w}`, p),
+      pw
+        ? db.query(`SELECT COUNT(*) as orders, COALESCE(SUM(total_amount),0) as revenue, COALESCE(AVG(total_amount),0) as aov FROM sales_tracking ${pw}`, pp)
+        : Promise.resolve({ rows: [null] }),
+      db.query(`SELECT ${timeFmt} as period, COUNT(*) as orders, SUM(total_amount) as revenue FROM sales_tracking ${w} GROUP BY period ORDER BY period`, [...p]),
+      db.query(`SELECT order_status as status, COUNT(*) as count, SUM(total_amount) as revenue FROM sales_tracking ${w} GROUP BY status ORDER BY count DESC`, [...p]),
+      db.query(`SELECT recipient_city as city, recipient_state as state, COUNT(*) as orders, SUM(total_amount) as revenue FROM sales_tracking ${w} GROUP BY city ORDER BY orders DESC LIMIT 12`, [...p]),
+      db.query(`SELECT products FROM sales_tracking ${w}`, [...p]),
+      db.query(`SELECT DISTINCT recipient_city as city, recipient_state as state FROM sales_tracking WHERE recipient_city IS NOT NULL AND recipient_city != 'Unknown' ORDER BY recipient_city`, []),
+    ]);
+
+    // Parsear productos del JSON almacenado
+    const productMap = {};
+    for (const row of allProductsR.rows) {
+      try {
+        const prods = JSON.parse(row.products);
+        for (const prod of (prods || [])) {
+          const key = (prod.title || 'Producto desconocido').slice(0, 70);
+          if (!productMap[key]) productMap[key] = { title: key, units: 0, revenue: 0 };
+          productMap[key].units   += Number(prod.quantity)   || 1;
+          productMap[key].revenue += (Number(prod.unit_price) || 0) * (Number(prod.quantity) || 1);
+        }
+      } catch { /* skip malformed */ }
+    }
+    const topProducts = Object.values(productMap)
+      .sort((a, b) => b.revenue - a.revenue)
+      .slice(0, 12);
+
+    res.json({
+      success: true,
+      kpis:         kpisR.rows[0],
+      prev_kpis:    prevKpisR.rows[0] || null,
+      timeline:     timelineR.rows,
+      by_status:    byStatusR.rows,
+      top_cities:   topCitiesR.rows,
+      top_products: topProducts,
+      filter_options: {
+        cities: filterOptsR.rows,
+      },
+    });
+  } catch (err) {
+    logger.error('[GET /analytics] Error:', err);
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
+  }
+});
+
+/**
  * GET /api/mercadolibre/status
  * Estado real de la integración: si las credenciales están configuradas y la
  * última fecha de sincronización. No revela los valores de los secretos.
