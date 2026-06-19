@@ -26,6 +26,7 @@ const lowStock   = typeof product.stock === "number" && product.stock > 0 && pro
       {product.process || ""}{product.process && product.roast ? " · " : ""}{product.roast || ""}
     </div>
     <div class="price">${product.price.toLocaleString("es-CO")}</div>
+    {product.sca_score && <span class="sca-pill">{product.sca_score} pts SCA</span>}
     {outOfStock && <span class="stock-badge out">Agotado</span>}
     {lowStock && <span class="stock-badge low">Últimas {product.stock}</span>}
   </div>
