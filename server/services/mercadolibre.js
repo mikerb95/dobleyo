@@ -296,7 +296,7 @@ class MercadoLibreService {
                 shipping_status = ?, shipping_method = ?, buyer_nickname = ?, buyer_id = ?,
                 recipient_city = ?, recipient_state = ?, recipient_country = ?,
                 recipient_zip_code = ?, latitude = ?, longitude = ?, products = ?,
-                updated_at = datetime('now')
+                sync_date = datetime('now'), updated_at = datetime('now')
             WHERE ml_order_id = ?`,
             [
               sale.purchase_date,
