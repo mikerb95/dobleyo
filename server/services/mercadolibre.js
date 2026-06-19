@@ -335,49 +335,47 @@ class MercadoLibreService {
    */
   async getSalesData(options = {}) {
     try {
-      const { limit = 50, offset = 0, city = null, state = null, dateFrom = null, dateTo = null } = options;
+      const {
+        limit = 50, offset = 0,
+        city = null, state = null, dateFrom = null, dateTo = null, status = null,
+      } = options;
 
-      let query = 'SELECT * FROM sales_tracking WHERE 1=1';
+      // WHERE compartido entre el conteo y la consulta de datos.
+      const where = ['1=1'];
       const params = [];
 
-      if (city) {
-        query += ' AND recipient_city = ?';
-        params.push(city);
-      }
+      if (city)     { where.push('st.recipient_city = ?');   params.push(city); }
+      if (state)    { where.push('st.recipient_state = ?');  params.push(state); }
+      if (dateFrom) { where.push('st.purchase_date >= ?');   params.push(toSqliteDatetime(dateFrom)); }
+      if (dateTo)   { where.push('st.purchase_date <= ?');   params.push(toSqliteDatetime(dateTo)); }
+      if (status)   { where.push('st.payment_status = ?');   params.push(status); }
 
-      if (state) {
-        query += ' AND recipient_state = ?';
-        params.push(state);
-      }
+      const whereSql = where.join(' AND ');
 
-      if (dateFrom) {
-        query += ' AND purchase_date >= ?';
-        params.push(toSqliteDatetime(dateFrom));
-      }
-
-      if (dateTo) {
-        query += ' AND purchase_date <= ?';
-        params.push(toSqliteDatetime(dateTo));
-      }
-
-      // Get total count
+      // Conteo total (sin JOIN: más barato)
       const countResult = await db.query(
-        query.replace('SELECT *', 'SELECT COUNT(*) as total'),
+        `SELECT COUNT(*) AS total FROM sales_tracking st WHERE ${whereSql}`,
         params
       );
       const total = countResult.rows[0].total;
 
-      // Get paginated data
-      query += ' ORDER BY purchase_date DESC LIMIT ? OFFSET ?';
-      params.push(limit, offset);
+      // Datos paginados, con la cuenta CRM vinculada (si la hay)
+      const dataResult = await db.query(
+        `SELECT st.*, ca.display_name AS crm_account_name
+           FROM sales_tracking st
+      LEFT JOIN crm_accounts ca ON ca.id = st.crm_account_id
+          WHERE ${whereSql}
+          ORDER BY st.purchase_date DESC
+          LIMIT ? OFFSET ?`,
+        [...params, limit, offset]
+      );
 
-      const dataResult = await db.query(query, params);
-
-      // Parse products JSON
-      const parsedData = dataResult.rows.map(sale => ({
-        ...sale,
-        products: JSON.parse(sale.products)
-      }));
+      // Parse products JSON (tolerante a NULL / JSON inválido)
+      const parsedData = dataResult.rows.map((sale) => {
+        let products = [];
+        try { products = sale.products ? JSON.parse(sale.products) : []; } catch { products = []; }
+        return { ...sale, products };
+      });
 
       return { data: parsedData, total };
     } catch (error) {
