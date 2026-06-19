@@ -77,6 +77,31 @@ export const authenticateToken = (req, res, next) => {
   }
 };
 
+// Middleware de autenticación opcional: adjunta req.user si hay un token de
+// sesión válido, pero NO bloquea si no hay sesión. Pensado para flujos que
+// funcionan tanto con usuario registrado como con invitado (p.ej. checkout).
+export const optionalAuth = (req, res, next) => {
+  let token = req.cookies['auth_token'];
+
+  if (!token) {
+    const authHeader = req.headers['authorization'];
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.substring(7);
+    }
+  }
+
+  if (!token) return next();
+
+  try {
+    const verified = verifyToken(token);
+    // Ignorar tokens que no son de sesión (p.ej. verificación de email).
+    if (!verified.type) req.user = verified;
+  } catch {
+    // Token vencido/inválido → continuar como invitado, sin error.
+  }
+  next();
+};
+
 // Middleware para roles (soporta string unico o array de roles)
 export const requireRole = (roles) => {
   return (req, res, next) => {
