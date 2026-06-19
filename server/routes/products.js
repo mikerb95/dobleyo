@@ -55,12 +55,15 @@ productsRouter.get('/', async (req, res) => {
     ]);
 
     const total = countResult.rows[0].total;
-    const data = rows.map(p => ({
-      ...p,
-      categoryLabel: CATEGORY_LABEL[p.category] ?? p.category,
-      notes: p.tasting_notes?.es ?? null,
-      notesEn: p.tasting_notes?.en ?? null,
-    }));
+    const data = rows.map(p => {
+      const tn = parseTastingNotes(p.tasting_notes);
+      return {
+        ...p,
+        categoryLabel: CATEGORY_LABEL[p.category] ?? p.category,
+        notes: tn?.es ?? null,
+        notesEn: tn?.en ?? null,
+      };
+    });
 
     res.json({ success: true, data, total, page: pageNum, limit: pageSize, pages: Math.ceil(total / pageSize) });
   } catch (err) {
