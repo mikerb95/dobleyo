@@ -918,6 +918,7 @@ export async function seedDemo() {
 
   const U = await seedUsers(passwordHash);
   await seedCaficultores(U);
+  await seedTraceabilityChain();
   await seedLots();
   await seedProductExtras(U);
   await seedSalesTracking();
