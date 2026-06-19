@@ -712,6 +712,103 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     URL.revokeObjectURL(url);
   }
 
+  // ── CRM linking ────────────────────────────────────────────
+  let crmAccounts: any[] = [];
+  let crmModalSaleId: number | null = null;
+
+  const esc = (s: any) => String(s ?? '').replace(/[&<>"']/g, (c: string) =>
+    ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c] as string));
+
+  function crmCell(r: any) {
+    const saleId = r.id;
+    if (r.crm_account_id) {
+      return `<span class="crm-chip">
+        <span class="crm-chip-name" title="${esc(r.crm_account_name)}">${esc(r.crm_account_name ?? 'Cuenta')}</span>
+        <button class="crm-unlink js-crm-unlink" data-sale-id="${saleId}" title="Desvincular">✕</button>
+      </span>`;
+    }
+    return `<button class="btn btn-ghost js-crm-link" data-sale-id="${saleId}" data-order-id="${esc(r.ml_order_id ?? '')}"
+      style="height:28px;padding:0 10px;font-size:11px">+ Vincular</button>`;
+  }
+
+  function bindCrmButtons() {
+    document.querySelectorAll('.js-crm-link').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const saleId = Number((btn as HTMLElement).dataset.saleId);
+        const orderId = (btn as HTMLElement).dataset.orderId ?? '';
+        openCrmModal(saleId, orderId);
+      });
+    });
+    document.querySelectorAll('.js-crm-unlink').forEach(btn => {
+      btn.addEventListener('click', () => doUnlink(Number((btn as HTMLElement).dataset.saleId)));
+    });
+  }
+
+  async function loadCrmAccounts() {
+    try {
+      const res = await fetch('/api/crm/accounts?limit=200', { credentials: 'include' });
+      const json = await res.json();
+      crmAccounts = json?.data?.items ?? [];
+    } catch { crmAccounts = []; }
+  }
+
+  function openCrmModal(saleId: number, orderId: string) {
+    crmModalSaleId = saleId;
+    document.getElementById('crmModalOrderId')!.textContent = orderId || `#${saleId}`;
+    const sel = document.getElementById('crmAccountSelect') as HTMLSelectElement;
+    if (!crmAccounts.length) {
+      sel.innerHTML = '<option value="">No hay cuentas CRM — créelas en /admin/crm</option>';
+    } else {
+      sel.innerHTML = '<option value="">Seleccione una cuenta…</option>' +
+        crmAccounts.map((a: any) => `<option value="${a.id}">${esc(a.display_name)}</option>`).join('');
+    }
+    document.getElementById('crmModal')!.style.display = 'flex';
+  }
+
+  function closeCrmModal() {
+    document.getElementById('crmModal')!.style.display = 'none';
+    crmModalSaleId = null;
+  }
+
+  async function confirmCrmLink() {
+    const sel = document.getElementById('crmAccountSelect') as HTMLSelectElement;
+    const accountId = Number(sel.value);
+    if (!accountId || !crmModalSaleId) { alert('Seleccione una cuenta.'); return; }
+    try {
+      const res = await fetch(`/api/crm/accounts/${accountId}/sales`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sale_ids: [crmModalSaleId] }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) { alert(`No se pudo vincular: ${json?.error?.message ?? 'error'}`); return; }
+      closeCrmModal();
+      loadOrders(currentPage);
+    } catch (e: any) {
+      alert(`Error de red: ${e.message}`);
+    }
+  }
+
+  async function doUnlink(saleId: number) {
+    if (!confirm('¿Desvincular esta orden de la cuenta CRM?')) return;
+    try {
+      const res = await fetch(`/api/crm/sales/${saleId}/link`, { method: 'DELETE', credentials: 'include' });
+      const json = await res.json();
+      if (!res.ok || !json.success) { alert(`No se pudo desvincular: ${json?.error?.message ?? 'error'}`); return; }
+      loadOrders(currentPage);
+    } catch (e: any) {
+      alert(`Error de red: ${e.message}`);
+    }
+  }
+
+  document.getElementById('crmModalClose')?.addEventListener('click', closeCrmModal);
+  document.getElementById('crmModalCancel')?.addEventListener('click', closeCrmModal);
+  document.getElementById('crmModalConfirm')?.addEventListener('click', confirmCrmLink);
+  document.getElementById('crmModal')?.addEventListener('click', (e: MouseEvent) => {
+    if ((e.target as HTMLElement).id === 'crmModal') closeCrmModal();
+  });
+
   // ── Event listeners ────────────────────────────────────────
   document.getElementById('btnSync')?.addEventListener('click', doSync);
   document.getElementById('btnSyncQuick')?.addEventListener('click', doSync);
