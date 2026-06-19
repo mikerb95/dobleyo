@@ -2,6 +2,35 @@
 
 ---
 
+## 📅 2026-06-18 — MercadoLibre: captura de datos, sync automático, webhook y vínculo CRM (Agente: Claude)
+
+### Contexto
+`/admin/mercadolibre` mostraba columnas que el backend nunca poblaba (Comprador, Estado pago, Estado envío siempre vacías; filtro de estado siempre devolvía vacío) y la tarjeta de configuración mentía sobre las credenciales. Además el sync era 100% manual y reprocesaba todo en cada corrida.
+
+### Captura de datos (#1-3)
+- `server/migrations/add_ml_sales_fields.js` — **nueva** migración idempotente: agrega `buyer_nickname`, `buyer_id`, `payment_status`, `shipping_status` a `sales_tracking` (+ índice en `payment_status`). Registrada en `run_all_migrations.js`. Ejecutada contra Turso.
+- `server/services/mercadolibre.js` — `transformOrderData` ahora captura comprador (`buyer.nickname`/`id`), estado de pago (`payments[].status`) y de envío (`shipment.status`); `saveSalesData` los persiste (INSERT/UPDATE) y setea `sync_date`.
+- `server/routes/mercadolibre.js` — `GET /sales` acepta filtro `status` server-side; nuevo `GET /status` honesto (verifica env vars reales, cron y última sincronización, sin exponer secretos).
+- `src/pages/admin/mercadolibre.astro` — filtro de estado server-side (se eliminó el filtro roto en cliente); `checkCredentials` usa `/status` y muestra cron + última sync.
+
+### Sync automático + incremental
+- `mercadolibre.js` — `fetchOrders` ahora pagina y soporta `since` (incremental); nuevo `getLastOrderDate()` y `syncOrders()` (orquestación reutilizable, incremental con solapamiento de 1 día e idempotente por `ml_order_id`).
+- `routes` — `POST /sync` usa `syncOrders` (`?full=1` fuerza completo); nuevo `GET /cron-sync` protegido por `CRON_SECRET`.
+- `vercel.json` — cron `/api/mercadolibre/cron-sync` cada 6 h.
+
+### Webhook real de ML
+- `routes` — nuevo `POST /webhook` (público): responde 200 de inmediato, valida `user_id` vs `ML_SELLER_ID` y sincroniza la orden referenciada (topic orders) de forma best-effort.
+
+### Vincular venta → cuenta CRM
+- `mercadolibre.js` — `getSalesData` hace `LEFT JOIN crm_accounts` y devuelve `crm_account_name`; parseo de `products` tolerante a NULL.
+- `src/pages/admin/mercadolibre.astro` — columna "Cuenta CRM" con chip + desvincular y modal de vinculación (usa los endpoints CRM `POST /accounts/:id/sales` y `DELETE /sales/:id/link`); CSV incluye la cuenta CRM.
+- `.env.example` — `CRON_SECRET` ahora documentado también para el cron de ML; sección ML con notas de cron/webhook.
+
+### Verificación
+`npm run build` OK. Probado contra Turso: captura de campos, filtro por estado, JOIN CRM y vincular/desvincular.
+
+---
+
 ## 📅 2026-06-18 — Preparar para Venta: rediseño + plan de empaque en vivo en `/admin/packaging` (Agente: Claude)
 
 ### Contexto
