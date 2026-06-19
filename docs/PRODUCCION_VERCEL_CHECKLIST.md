@@ -230,7 +230,7 @@ vercel --prod
 ### Moneda y Localización
 
 - ✅ Todas las fechas en UTC
-- ✅ Formateo de ARS en cliente (navegador)
+- ✅ Formateo de COP en cliente (navegador)
 - ✅ Sin problemas de zona horaria
 
 ---
