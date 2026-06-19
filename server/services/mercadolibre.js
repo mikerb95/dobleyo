@@ -264,8 +264,8 @@ class MercadoLibreService {
             (ml_order_id, purchase_date, total_amount, order_status, payment_status,
              shipping_status, shipping_method, buyer_nickname, buyer_id,
              recipient_city, recipient_state, recipient_country, recipient_zip_code,
-             latitude, longitude, products)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+             latitude, longitude, products, sync_date)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))`,
             [
               sale.ml_order_id,
               sale.purchase_date,
