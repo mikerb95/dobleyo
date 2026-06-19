@@ -85,6 +85,93 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
   </div>
 
+  <!-- ── Bibliografía XP ─────────────────────────────────────── -->
+  <div class="erp-body" style="padding-top:0">
+    <div class="card xp-biblio">
+      <div class="card-header">
+        <div>
+          <h2 class="card-title">Marco metodológico — XP &amp; Programación en Pareja con IA</h2>
+          <p class="card-subtitle">Referencias académicas que sustentan la adaptación de XP con asistente de IA como par.</p>
+        </div>
+      </div>
+      <div class="xp-biblio__body">
+
+        <div class="xp-biblio__section">Fundamentos de Extreme Programming</div>
+        <ol class="xp-biblio__list">
+          <li>
+            Beck, K. (2000). <em>Extreme Programming Explained: Embrace Change.</em> Addison-Wesley.
+            <span class="xp-biblio__note">Obra fundacional de XP. Define iteraciones cortas, historias de usuario, pruebas de aceptación y programación en pares como prácticas centrales.</span>
+          </li>
+          <li>
+            Williams, L., Kessler, R. R., Cunningham, W., &amp; Jeffries, R. (2000). Strengthening the Case for Pair Programming. <em>IEEE Software, 17</em>(4), 19–25.
+            <a class="xp-biblio__link" href="https://dl.acm.org/doi/10.1109/52.854064" target="_blank" rel="noopener">doi:10.1109/52.854064</a>
+            <span class="xp-biblio__note">Estudio empírico seminal: código escrito en pares aprueba el 90 % de las pruebas de aceptación vs. 75 % en programación individual.</span>
+          </li>
+          <li>
+            Dybå, T., &amp; Dingsøyr, T. (2008). Empirical Studies of Agile Software Development: A Systematic Review. <em>Information and Software Technology, 50</em>(9–10), 833–859.
+            <span class="xp-biblio__note">Revisión sistemática de 36 estudios empíricos sobre métodos ágiles, incluyendo XP. Documenta la efectividad de sus prácticas en proyectos reales.</span>
+          </li>
+        </ol>
+
+        <div class="xp-biblio__section">Programación en Pareja Humano–IA</div>
+        <ol class="xp-biblio__list" start="4">
+          <li>
+            Imai, S., Yoshida, N., Imai, K., &amp; Shirafuji, S. (2022). Is GitHub Copilot a Substitute for Human Pair-programming? An Empirical Study. <em>Proceedings of the 44th International Conference on Software Engineering (ICSE-NIER).</em>
+            <span class="xp-biblio__note">Primer estudio comparativo entre pares humanos y Copilot como par. Concluye que la IA puede cumplir el rol de navegador en pares asimétricos de experiencia.</span>
+          </li>
+          <li>
+            Peng, S., Kalliamvakou, E., Cihon, P., &amp; Demirer, M. (2023). The Impact of AI on Developer Productivity: Evidence from GitHub Copilot. <em>arXiv preprint arXiv:2302.06590.</em>
+            <a class="xp-biblio__link" href="https://www.researchgate.net/publication/368473822_The_Impact_of_AI_on_Developer_Productivity_Evidence_from_GitHub_Copilot" target="_blank" rel="noopener">ResearchGate</a>
+            <span class="xp-biblio__note">Experimento controlado: GitHub Copilot aumentó la productividad individual en ~55 %, el mayor incremento documentado por herramienta de asistencia en desarrollo de software.</span>
+          </li>
+          <li>
+            Jiang, S., Wang, Y., &amp; Shi, Y. (2023). Is AI the Better Programming Partner? Human-Human Pair Programming vs. Human-AI Pair Programming. <em>Proceedings of the 2023 Conference on Learning at Scale.</em>
+            <a class="xp-biblio__link" href="https://www.cs.cmu.edu/~sherryw/assets/pubs/2023-pair.pdf" target="_blank" rel="noopener">PDF (CMU)</a>
+            <span class="xp-biblio__note">Compara directamente pares humano–humano con humano–IA. Encuentra que la IA es más eficaz como navegador para tareas de implementación, pero el par humano supera en diseño y depuración.</span>
+          </li>
+          <li>
+            Pinto, G., et al. (2024). The Impact of AI-Assisted Pair Programming on Student Motivation, Programming Anxiety, Collaborative Learning, and Programming Performance. <em>International Journal of STEM Education, 12</em>(1).
+            <a class="xp-biblio__link" href="https://stemeducationjournal.springeropen.com/articles/10.1186/s40594-025-00537-3" target="_blank" rel="noopener">SpringerOpen</a>
+            <span class="xp-biblio__note">Estudio cuasi-experimental con 234 estudiantes (GPT-3.5 en 2023, Claude 3 Opus en 2024). La programación en pareja asistida por IA redujo la ansiedad y mejoró el rendimiento respecto al trabajo individual.</span>
+          </li>
+          <li>
+            Siddiq, M. L., &amp; Santos, J. (2023). GitHub Copilot AI Pair Programmer: Asset or Liability? <em>Journal of Systems and Software, 203</em>, 111734.
+            <a class="xp-biblio__link" href="https://www.sciencedirect.com/science/article/abs/pii/S0164121223001292" target="_blank" rel="noopener">ScienceDirect</a>
+            <span class="xp-biblio__note">Evalúa calidad del código generado con Copilot. Concluye que es un activo para desarrolladores con experiencia y una responsabilidad para novatos, lo que refuerza la necesidad del rol de revisor humano en el par.</span>
+          </li>
+        </ol>
+
+        <div class="xp-biblio__note xp-biblio__context">
+          <strong>Nota metodológica:</strong> Este proyecto adapta la práctica de programación en pares de XP al contexto de un desarrollador individual asistido por Claude (Anthropic), actuando la IA como navegador: sugiere, cuestiona y revisa mientras el desarrollador humano conduce las decisiones de diseño y arquitectura. Esta modalidad está respaldada por los estudios [4], [6] y [7] de esta bibliografía.
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Modal de detalle de historia ────────────────────────── -->
+  <div class="modal" id="historiaModal" style="display:none">
+    <div class="modal-content" style="max-width:600px">
+      <div class="modal-header">
+        <div>
+          <span class="iter-card__id" id="hModalId"></span>
+          <h2 class="modal-title" id="hModalTitle" style="margin:4px 0 0"></h2>
+        </div>
+        <button class="shell-btn" id="hModalClose" aria-label="Cerrar">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p class="xp-detail__historia" id="hModalHistoria"></p>
+        <div class="xp-detail__section">Pruebas de aceptación</div>
+        <ul class="xp-detail__tests" id="hModalTests"></ul>
+        <div class="xp-detail__meta" id="hModalMeta"></div>
+      </div>
+    </div>
+  </div>
+
 </AdminLayout>
 
 <style is:global>
