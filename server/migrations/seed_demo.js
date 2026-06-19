@@ -953,6 +953,7 @@ export async function seedDemo() {
   await seedCaficultores(U);
   await seedTraceabilityChain();
   await seedLots();
+  await seedProductCopy();
   await seedProductExtras(U);
   await seedSalesTracking();
   await seedCustomerOrders(U);
