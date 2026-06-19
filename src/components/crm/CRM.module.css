@@ -139,7 +139,7 @@
 
 .item__right {
   display: flex; flex-direction: column; align-items: flex-end; gap: 4px;
-  text-align: right; grid-row: 1 / span 2;
+  text-align: right; grid-column: 2; grid-row: 1 / span 2;
 }
 .item__ltv  { font-size: 14px; font-weight: 600; color: var(--color-primary); font-variant-numeric: tabular-nums; }
 .item__when { font-size: 11.5px; color: var(--muted); }
@@ -314,5 +314,5 @@
   .topbar__title { font-size: 18px; }
   .detail__name  { font-size: 18px; }
   .item  { grid-template-columns: 1fr; }
-  .item__right { grid-row: auto; align-items: flex-start; flex-direction: row; gap: 12px; }
+  .item__right { grid-column: auto; grid-row: auto; align-items: flex-start; flex-direction: row; gap: 12px; }
 }
