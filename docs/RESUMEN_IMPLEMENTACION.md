@@ -39,7 +39,7 @@
   - Estadísticas resumen (4 tarjetas)
   - Top 10 ciudades con más pedidos
   - Expansión de productos por orden
-  - Formateo de moneda (ARS)
+  - Formateo de moneda (COP)
 
 ### 5. **Frontend - Componente Mapa de Calor**
 
@@ -164,7 +164,7 @@ Documentación:            2 archivos
 | Círculos de tamaño variable | ✅     |
 | Colores por intensidad      | ✅     |
 | Popups interactivos         | ✅     |
-| Centrado en Argentina       | ✅     |
+| Centrado en Colombia        | ✅     |
 | Leyenda explicativa         | ✅     |
 | Tabla de top 10             | ✅     |
 | Responsive                  | ✅     |
