@@ -456,7 +456,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   async function loadOrders(page = 0) {
     currentPage = page;
     const tbody = document.getElementById('ordersBody')!;
-    tbody.innerHTML = '<tr><td colspan="9" class="empty-state">Cargando…</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="10" class="empty-state">Cargando…</td></tr>';
 
     const city = (document.getElementById('filterCity') as HTMLInputElement).value.trim();
     const dateFrom = (document.getElementById('filterFrom') as HTMLInputElement).value;
@@ -469,6 +469,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       ...(city && { city }),
       ...(dateFrom && { dateFrom }),
       ...(dateTo && { dateTo }),
+      ...(status && { status }),
     });
 
     try {
@@ -476,14 +477,11 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       const json = await res.json();
 
       if (!res.ok || !json.success) {
-        tbody.innerHTML = `<tr><td colspan="9" class="empty-state">Error: ${json.error ?? 'desconocido'}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="10" class="empty-state">Error: ${json.error ?? 'desconocido'}</td></tr>`;
         return;
       }
 
-      let rows: any[] = json.data ?? [];
-
-      // Client-side status filter (field may vary)
-      if (status) rows = rows.filter((r: any) => (r.payment_status ?? '').toLowerCase() === status);
+      const rows: any[] = json.data ?? [];
 
       allSalesCache = rows;
       totalOrders = json.pagination?.total ?? rows.length;
@@ -492,7 +490,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         `${totalOrders.toLocaleString('es-CO')} órdenes encontradas`;
 
       if (rows.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="9" class="empty-state">Sin órdenes para los filtros seleccionados</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="10" class="empty-state">Sin órdenes para los filtros seleccionados</td></tr>';
         document.getElementById('paginationBar')!.style.display = 'none';
         return;
       }
