@@ -15,7 +15,7 @@
   - Consumo de API de órdenes de MercadoLibre
   - Consumo de API de shipments
   - Transformación de datos
-  - Geocoding simplificado (25 ciudades argentinas preloaded)
+  - Geocoding simplificado (25 ciudades colombianas preloaded)
   - Métodos CRUD para BD local
   - Agregación de datos para mapas
 
