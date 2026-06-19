@@ -163,7 +163,7 @@ Interfaz interactiva para:
 **Características:**
 
 - Actualización en tiempo real
-- Formateo de moneda local (ARS)
+- Formateo de moneda local (COP)
 - Estados con badges de color
 - Responsive design
 
@@ -183,7 +183,7 @@ Visualización geográfica interactiva usando Leaflet:
 - Popup interactivo al hacer clic
 - Tabla de top 10 ciudades
 - Leyenda con explicaciones
-- Centro automático en Argentina
+- Centro automático en Colombia
 
 ### 6. **Páginas Astro**
 
