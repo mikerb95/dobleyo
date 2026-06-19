@@ -75,7 +75,7 @@
 | `src/pages/index.astro` | Homepage con hero video, productos featured |
 | `src/pages/tienda.astro` | Catálogo con filtros. Lee de `src/data/products.ts` (migrar a BD) |
 | `src/pages/cart.astro` | Carrito (localStorage via `cart.js`) |
-| `src/pages/checkout.astro` | Checkout (⚠️ PAGOS DESHABILITADOS) |
+| `src/pages/checkout.astro` | Checkout con Wompi (pago como usuario registrado o invitado) |
 | `src/pages/trazabilidad.astro` | Scanner QR + búsqueda manual de lotes |
 | `src/pages/en/index.astro` | Landing B2B en inglés (1127 líneas, página autónoma) |
 | `src/pages/contacto.astro` | Formulario de contacto |
