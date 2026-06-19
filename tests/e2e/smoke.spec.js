@@ -88,10 +88,10 @@ test.describe('Trazabilidad (/trazabilidad)', () => {
 test.describe('Sitemap XML (/sitemap.xml)', () => {
     test('debe retornar XML válido con URLs del sitio', async ({ page }) => {
         const res = await page.goto('/sitemap.xml');
-        expect(res!.status()).toBe(200);
-        const contentType = res!.headers()['content-type'];
+        expect(res.status()).toBe(200);
+        const contentType = res.headers()['content-type'];
         expect(contentType).toContain('xml');
-        const body = await res!.text();
+        const body = await res.text();
         expect(body).toContain('<urlset');
         expect(body).toContain('dobleyo.cafe');
         expect(body).toContain('/tienda');
