@@ -2,6 +2,20 @@
 
 ---
 
+## 📅 2026-06-19 — CRM: corrección de layout en las cards de la lista de cuentas (Agente: Claude)
+
+### Contexto
+En `/admin/crm/` (vista Lista) el contenido de cada card aparecía amontonado a la derecha, con el bloque de valor/fecha (`$0 · hace 10 d`) a la izquierda del nombre y un gran vacío.
+
+### Causa
+El CSS de `.item` (`CRM.module.css`) está diseñado como un grid de hijos **planos** (`grid-template-columns: 1fr auto`), donde `.item__meta` ocupa todo el ancho (`grid-column: 1 / -1`) y `.item__right` va a la columna derecha. En el JSX (`ClientList.jsx`) todo el contenido izquierdo estaba envuelto en un `<div>` sin clase, así que el grid solo veía 2 hijos. Como `.item__right` tenía `grid-row: 1 / span 2` con columna automática, el algoritmo de auto-placement de CSS Grid lo colocaba **primero** en la columna 1, empujando el contenido a la derecha.
+
+### Arreglo
+- `src/components/crm/components/ClientList.jsx` — se aplanó `AccountRow`: `item__top`, `item__right`, `item__legal` y `item__meta` ahora son hijos directos de `.item`.
+- `src/components/crm/CRM.module.css` — `.item__right` ahora fija `grid-column: 2` (antes solo `grid-row`), y el breakpoint móvil (`max-width: 540px`) resetea `grid-column: auto` para no crear una columna implícita en la vista de una sola columna.
+
+---
+
 ## 📅 2026-06-19 — Checkout: compra como usuario registrado o invitado (Agente: Claude)
 
 ### Contexto
