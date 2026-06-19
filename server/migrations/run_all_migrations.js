@@ -54,6 +54,7 @@ const steps = [
   { name: 'System tables (error_logs + system_changelog)', run: () => runFn('add_system_tables.js', 'addSystemTables') },
   { name: 'Demand forecasts table',          run: () => runFn('create_demand_forecasts.js', 'createDemandForecasts') },
   { name: 'CRM tables + overview view',      run: () => runFn('create_crm_tables.js', 'createCrmTables') },
+  { name: 'ML sales fields (buyer/status)',  run: () => runFn('add_ml_sales_fields.js', 'addMlSalesFields') },
 ];
 
 async function runAll() {
