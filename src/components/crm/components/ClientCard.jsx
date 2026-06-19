@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import styles from "../CRM.module.css";
 import StageChip from "./StageChip.jsx";
-import { STAGES, SEGMENTS, KINDS, formatCOP, timeAgo, stageIndex } from "./constants.js";
+import { STAGES, SEGMENTS, KINDS, formatCOP, formatPesos, timeAgo, stageIndex } from "./constants.js";
 import { useApi, api } from "../../../lib/api.js";
 
 export default function ClientCard({ accountId, onBack, onStageChange }) {
