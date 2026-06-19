@@ -41,6 +41,14 @@ Además, las ventas de MercadoLibre no estaban vinculadas a ninguna cuenta, así
 ### Nota
 La vinculación es **manual**: `sales_tracking` no guarda identidad del comprador (solo ciudad/departamento), por lo que un auto-match sería poco fiable. La migración ya se ejecutó contra la base de Turso de producción.
 
+### Saneamiento de `server/services/mercadolibre.js`
+Al revisar el servicio de sincronización ML (a raíz de la vinculación CRM) se corrigieron defectos latentes en `saveSalesData` / `transformOrderData` / `getSalesData`:
+- **Bug real:** `result.rows.insertId` (estilo PostgreSQL/MySQL) era siempre `undefined`; `db.query` devuelve `lastInsertRowid`. Los IDs de filas nuevas caían al fallback `ml_order_id`. → ahora usa `Number(result.lastInsertRowid)`.
+- **`purchase_date` como objeto `Date`:** libSQL lo guardaba como entero de milisegundos, incompatible con las filas existentes (texto `'YYYY-MM-DD HH:MM:SS'`) y con `new Date()` del frontend. → nuevo helper `toSqliteDatetime()` que normaliza a texto UTC. También aplicado a los filtros `dateFrom`/`dateTo` de `getSalesData`.
+- **Convención:** placeholders `$1..$N` → `?` y `CURRENT_TIMESTAMP` → `datetime('now')` (CLAUDE.md). Nota: `$N` funcionaba en libSQL (SQLite los acepta como params nombrados), no era la causa de ningún fallo.
+- **Geocoding:** el fallback de ciudad desconocida apuntaba a **Buenos Aires** (resto de plantilla) → cambiado a **Bogotá** para no sesgar el heatmap fuera de Colombia.
+- El `INSERT` no toca `crm_account_id` (ventas nuevas quedan sin vincular) y el `UPDATE` lo preserva (re-sincronizar no rompe el vínculo CRM).
+
 ---
 
 ## 📅 2026-06-18 — Cupping SCA: rediseño profesional de `/admin/cupping` (Agente: Claude)
