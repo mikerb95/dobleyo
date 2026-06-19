@@ -448,7 +448,7 @@ ordersRouter.post('/:id/cancel', async (req, res) => {
     const cancelNote = `\nCancelada: ${reason || 'Sin motivo especificado'}`;
 
     await query(
-      "UPDATE production_orders SET state = ?, notes = COALESCE(notes, \'\') || ?, updated_at = datetime('now') WHERE id = ?",
+      "UPDATE production_orders SET state = ?, notes = COALESCE(notes, '') || ?, updated_at = datetime('now') WHERE id = ?",
       ['cancelada', cancelNote, id]
     );
 
