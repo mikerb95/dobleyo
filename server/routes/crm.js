@@ -62,7 +62,7 @@ crmRouter.get('/accounts/:id(\\d+)', async (req, res) => {
     const account = acctRes.rows[0];
     if (!account) return err(res, 404, 'not_found', 'Cuenta no encontrada');
 
-    const [contactsRes, interactionsRes] = await Promise.all([
+    const [contactsRes, interactionsRes, salesRes] = await Promise.all([
       query(`SELECT * FROM crm_contacts WHERE account_id = ? ORDER BY is_primary DESC, full_name`, [id]),
       query(
         `SELECT i.*, c.full_name AS contact_name, u.name AS author_name
@@ -73,9 +73,17 @@ crmRouter.get('/accounts/:id(\\d+)', async (req, res) => {
           ORDER BY i.occurred_at DESC LIMIT 30`,
         [id]
       ),
+      query(
+        `SELECT id, ml_order_id, purchase_date, total_amount, order_status,
+                recipient_city, recipient_state, products
+           FROM sales_tracking
+          WHERE crm_account_id = ?
+          ORDER BY purchase_date DESC`,
+        [id]
+      ),
     ]);
 
-    ok(res, { account, contacts: contactsRes.rows, interactions: interactionsRes.rows });
+    ok(res, { account, contacts: contactsRes.rows, interactions: interactionsRes.rows, sales: salesRes.rows });
   } catch (e) {
     logger.error('[GET /api/crm/accounts/:id]', e);
     err(res, 500, 'db_error', e.message);
