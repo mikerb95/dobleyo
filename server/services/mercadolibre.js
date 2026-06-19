@@ -221,18 +221,20 @@ class MercadoLibreService {
       for (const sale of salesData) {
         // Check if order already exists
         const existingResult = await db.query(
-          'SELECT id FROM sales_tracking WHERE ml_order_id = $1',
+          'SELECT id FROM sales_tracking WHERE ml_order_id = ?',
           [sale.ml_order_id]
         );
 
         if (existingResult.rows.length === 0) {
-          // Insert new sale
+          // Insert new sale.
+          // NOTA: no se toca crm_account_id → las ventas nuevas quedan sin
+          // vincular (NULL) y se asignan a una cuenta CRM manualmente.
           const result = await db.query(
-            `INSERT INTO sales_tracking 
-            (ml_order_id, purchase_date, total_amount, order_status, shipping_method, 
-             recipient_city, recipient_state, recipient_country, recipient_zip_code, 
-             latitude, longitude, products) 
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
+            `INSERT INTO sales_tracking
+            (ml_order_id, purchase_date, total_amount, order_status, shipping_method,
+             recipient_city, recipient_state, recipient_country, recipient_zip_code,
+             latitude, longitude, products)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
               sale.ml_order_id,
               sale.purchase_date,
@@ -248,16 +250,18 @@ class MercadoLibreService {
               sale.products
             ]
           );
-          insertedIds.push(result.rows.insertId || sale.ml_order_id);
+          insertedIds.push(Number(result.lastInsertRowid));
         } else {
-          // Update existing sale
+          // Update existing sale.
+          // crm_account_id se deja intacto a propósito → re-sincronizar una
+          // orden NO rompe el vínculo CRM existente.
           await db.query(
-            `UPDATE sales_tracking 
-            SET purchase_date = $1, total_amount = $2, order_status = $3, shipping_method = $4, 
-                recipient_city = $5, recipient_state = $6, recipient_country = $7, 
-                recipient_zip_code = $8, latitude = $9, longitude = $10, products = $11, 
-                updated_at = CURRENT_TIMESTAMP 
-            WHERE ml_order_id = $12`,
+            `UPDATE sales_tracking
+            SET purchase_date = ?, total_amount = ?, order_status = ?, shipping_method = ?,
+                recipient_city = ?, recipient_state = ?, recipient_country = ?,
+                recipient_zip_code = ?, latitude = ?, longitude = ?, products = ?,
+                updated_at = datetime('now')
+            WHERE ml_order_id = ?`,
             [
               sale.purchase_date,
               sale.total_amount,
