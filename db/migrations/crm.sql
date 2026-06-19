@@ -91,7 +91,3 @@ BEGIN
     json_object('from', OLD.pipeline_stage, 'to', NEW.pipeline_stage)
   );
 END;
-
--- Columna opcional en sales_tracking para vincular ventas ML a cuentas CRM
--- Nota: ejecutar manualmente si ya existe la tabla con datos
--- ALTER TABLE sales_tracking ADD COLUMN crm_account_id INTEGER REFERENCES crm_accounts(id) ON DELETE SET NULL;
