@@ -2,7 +2,7 @@
 import type { Product } from "../data/products";
 
 interface Props {
-  product: Product & { stock?: number };
+  product: Product & { stock?: number; sca_score?: number | null };
 }
 
 const { product } = Astro.props;
