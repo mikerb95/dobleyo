@@ -2,307 +2,829 @@
 import AdminLayout from "../../layouts/AdminLayout.astro";
 ---
 
-<AdminLayout
-  title="Cupping SCA"
-  description="Formulario de catación SCA para evaluar la calidad del café"
->
-  <form id="cuppingForm">
-    <!-- Selección de Lote Tostado -->
-    <div class="form-group">
-      <label for="roastedSelect">Lote Tostado <span class="required">*</span></label>
-      <select id="roastedSelect" name="roastedId" required>
-        <option value="">Selecciona un lote...</option>
-      </select>
-      <div class="form-hint">Lotes tostados disponibles para catación</div>
-    </div>
-
-    <!-- Info del Lote -->
-    <div class="card" id="lotInfoCard" style="display: none;">
-      <h3>Información del Lote</h3>
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 0.95rem;">
-        <div>
-          <div style="color: #666; font-size: 0.85rem;">Lote ID</div>
-          <div style="font-weight: 600;" id="infoLotId">—</div>
-        </div>
-        <div>
-          <div style="color: #666; font-size: 0.85rem;">Variedad</div>
-          <div style="font-weight: 600;" id="infoVariety">—</div>
-        </div>
-        <div>
-          <div style="color: #666; font-size: 0.85rem;">Nivel de Tueste</div>
-          <div style="font-weight: 600;" id="infoRoastLevel">—</div>
-        </div>
-        <div>
-          <div style="color: #666; font-size: 0.85rem;">Peso</div>
-          <div style="font-weight: 600;" id="infoWeight">—</div>
-        </div>
+<AdminLayout title="Catación SCA — DobleYo">
+  <!-- ── Encabezado de página ──────────────────────────────────────────── -->
+  <div class="page-header">
+    <div class="page-header-top">
+      <div>
+        <div class="page-breadcrumb">Producción · Control de calidad</div>
+        <h1 class="page-title">Catación SCA</h1>
+        <p class="page-subtitle">
+          Evaluación sensorial de café tostado según el protocolo de la Specialty Coffee Association.
+        </p>
       </div>
-    </div>
-
-    <!-- Datos de la Sesión -->
-    <div class="form-group" style="margin-top: 1.5rem;">
-      <label style="font-weight: 600; font-size: 1.1rem; margin-bottom: 1rem; display: block;">
-        Datos de la Sesión
-      </label>
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-        <div>
-          <label for="cuppingDate">Fecha <span class="required">*</span></label>
-          <input type="date" id="cuppingDate" name="cuppingDate" required />
-        </div>
-        <div>
-          <label for="checkType">Tipo de Control</label>
-          <select id="checkType" name="checkType">
-            <option value="post_tostado">Post-Tostado</option>
-            <option value="catacion" selected>Catación</option>
-            <option value="final">Control Final</option>
-          </select>
-        </div>
+      <div class="page-header-actions">
+        <span class="header-badge">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8z"/>
+          </svg>
+          Protocolo SCA
+        </span>
+        <button type="button" class="btn btn-secondary" id="resetBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+          </svg>
+          Reiniciar
+        </button>
       </div>
-    </div>
-
-    <!-- Atributos SCA -->
-    <div style="margin-top: 1.5rem;">
-      <label style="font-weight: 600; font-size: 1.1rem; margin-bottom: 0.5rem; display: block;">
-        Atributos SCA <span style="font-size: 0.85rem; font-weight: 400; color: #666;">(6–10 puntos c/u)</span>
-      </label>
-      <div class="form-hint" style="margin-bottom: 1.5rem;">
-        Protocolo SCA: 6 = Bueno · 7 = Muy Bueno · 8 = Excelente · 9 = Sobresaliente · 10 = Perfecto
-      </div>
-
-      <!-- Aroma -->
-      <div class="sca-attr">
-        <div class="sca-attr-header">
-          <label for="aromaScore">Aroma</label>
-          <div class="sca-score-display" id="aromaDisplay">7.0</div>
-        </div>
-        <input type="range" id="aromaScore" name="aromaScore" min="6" max="10" step="0.25" value="7" class="sca-range" />
-        <div class="sca-range-labels"><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span></div>
-      </div>
-
-      <!-- Sabor -->
-      <div class="sca-attr">
-        <div class="sca-attr-header">
-          <label for="flavorScore">Sabor</label>
-          <div class="sca-score-display" id="flavorDisplay">7.0</div>
-        </div>
-        <input type="range" id="flavorScore" name="flavorScore" min="6" max="10" step="0.25" value="7" class="sca-range" />
-        <div class="sca-range-labels"><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span></div>
-      </div>
-
-      <!-- Retrogusto -->
-      <div class="sca-attr">
-        <div class="sca-attr-header">
-          <label for="aftertasteScore">Retrogusto</label>
-          <div class="sca-score-display" id="aftertasteDisplay">7.0</div>
-        </div>
-        <input type="range" id="aftertasteScore" name="aftertasteScore" min="6" max="10" step="0.25" value="7" class="sca-range" />
-        <div class="sca-range-labels"><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span></div>
-      </div>
-
-      <!-- Acidez -->
-      <div class="sca-attr">
-        <div class="sca-attr-header">
-          <label for="acidityScore">Acidez</label>
-          <div class="sca-score-display" id="acidityDisplay">7.0</div>
-        </div>
-        <input type="range" id="acidityScore" name="acidityScore" min="6" max="10" step="0.25" value="7" class="sca-range" />
-        <div class="sca-range-labels"><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span></div>
-      </div>
-
-      <!-- Cuerpo -->
-      <div class="sca-attr">
-        <div class="sca-attr-header">
-          <label for="bodyScore">Cuerpo</label>
-          <div class="sca-score-display" id="bodyDisplay">7.0</div>
-        </div>
-        <input type="range" id="bodyScore" name="bodyScore" min="6" max="10" step="0.25" value="7" class="sca-range" />
-        <div class="sca-range-labels"><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span></div>
-      </div>
-
-      <!-- Balance -->
-      <div class="sca-attr">
-        <div class="sca-attr-header">
-          <label for="balanceScore">Balance</label>
-          <div class="sca-score-display" id="balanceDisplay">7.0</div>
-        </div>
-        <input type="range" id="balanceScore" name="balanceScore" min="6" max="10" step="0.25" value="7" class="sca-range" />
-        <div class="sca-range-labels"><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span></div>
-      </div>
-
-      <!-- Uniformidad (5 tazas × 2 pts = máx 10) -->
-      <div class="sca-attr">
-        <div class="sca-attr-header">
-          <label for="uniformityScore">Uniformidad</label>
-          <div class="sca-score-display" id="uniformityDisplay">10.0</div>
-        </div>
-        <input type="range" id="uniformityScore" name="uniformityScore" min="0" max="10" step="2" value="10" class="sca-range" />
-        <div class="sca-range-labels"><span>0</span><span>2</span><span>4</span><span>6</span><span>8</span><span>10</span></div>
-      </div>
-
-      <!-- Taza Limpia (5 tazas × 2 pts = máx 10) -->
-      <div class="sca-attr">
-        <div class="sca-attr-header">
-          <label for="cleanCupScore">Taza Limpia</label>
-          <div class="sca-score-display" id="cleanCupDisplay">10.0</div>
-        </div>
-        <input type="range" id="cleanCupScore" name="cleanCupScore" min="0" max="10" step="2" value="10" class="sca-range" />
-        <div class="sca-range-labels"><span>0</span><span>2</span><span>4</span><span>6</span><span>8</span><span>10</span></div>
-      </div>
-
-      <!-- Dulzura (5 tazas × 2 pts = máx 10) -->
-      <div class="sca-attr">
-        <div class="sca-attr-header">
-          <label for="sweetnessScore">Dulzura</label>
-          <div class="sca-score-display" id="sweetnessDisplay">10.0</div>
-        </div>
-        <input type="range" id="sweetnessScore" name="sweetnessScore" min="0" max="10" step="2" value="10" class="sca-range" />
-        <div class="sca-range-labels"><span>0</span><span>2</span><span>4</span><span>6</span><span>8</span><span>10</span></div>
-      </div>
-    </div>
-
-    <!-- Defectos -->
-    <div class="form-group" style="margin-top: 1.5rem;">
-      <label style="font-weight: 600; font-size: 1.1rem; margin-bottom: 1rem; display: block;">
-        Defectos
-      </label>
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-        <div>
-          <label for="defectsCount">Cantidad de Defectos</label>
-          <input type="number" id="defectsCount" name="defectsCount" min="0" max="50" value="0" />
-          <div class="form-hint">Tazas defectuosas (×4 pts c/u)</div>
-        </div>
-        <div>
-          <label for="defectsFound">Descripción</label>
-          <input type="text" id="defectsFound" name="defectsFound" placeholder="Ej: tierra, moho..." />
-        </div>
-      </div>
-    </div>
-
-    <!-- Puntaje Total (en vivo) -->
-    <div class="sca-total-card" id="totalCard">
-      <div class="sca-total-label">Puntaje Total SCA</div>
-      <div class="sca-total-score" id="totalScore">63.0</div>
-      <div class="sca-total-badge" id="totalBadge">Muy Bueno</div>
-      <div class="sca-total-formula">Suma de atributos − (defectos × 4)</div>
-    </div>
-
-    <!-- Datos adicionales -->
-    <div class="form-group" style="margin-top: 1.5rem;">
-      <label for="moisturePercent">Humedad del Grano (%)</label>
-      <input type="number" id="moisturePercent" name="moisturePercent" min="0" max="30" step="0.1" placeholder="Ej: 11.5" />
-    </div>
-
-    <div class="form-group">
-      <label for="colorAgtron">Color Agtron</label>
-      <input type="number" id="colorAgtron" name="colorAgtron" min="0" max="100" placeholder="Ej: 55" />
-      <div class="form-hint">Escala Agtron: 25 (oscuro) – 95 (claro)</div>
-    </div>
-
-    <div class="form-group">
-      <label for="observations">Observaciones</label>
-      <textarea id="observations" name="observations" rows="3" placeholder="Notas del catador..."></textarea>
-    </div>
-
-    <div class="form-group">
-      <label for="correctiveActions">Acciones Correctivas</label>
-      <textarea id="correctiveActions" name="correctiveActions" rows="2" placeholder="Si aplica..."></textarea>
-    </div>
-
-    <!-- Resultado -->
-    <div class="form-group" style="margin-top: 0.5rem;">
-      <label style="display: flex; align-items: center; gap: 0.75rem; font-weight: 600; cursor: pointer;">
-        <input type="checkbox" id="passedCheck" name="passed" style="width: 20px; height: 20px; cursor: pointer;" />
-        Lote Aprobado
-      </label>
-      <div class="form-hint">Marcar si el lote cumple los estándares de calidad</div>
-    </div>
-
-    <button type="submit" class="btn" style="width: 100%; margin-top: 1.5rem;">
-      Registrar Cupping
-    </button>
-  </form>
-
-  <!-- Historial -->
-  <div style="margin-top: 2rem;">
-    <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 1rem;">Últimos Cuppings</h3>
-    <div id="historyList">
-      <div class="form-hint">Cargando historial...</div>
     </div>
   </div>
 
+  <div class="erp-body cup-page">
+
+    <!-- ── KPIs ───────────────────────────────────────────────────────── -->
+    <div class="kpi-grid" id="cupKpis" style="margin-bottom: 22px;">
+      <div class="kpi-tile brand">
+        <div class="kpi-label">Cataciones</div>
+        <div class="kpi-value" id="kpiCount">—</div>
+        <div class="kpi-sub">Registradas en el sistema</div>
+      </div>
+      <div class="kpi-tile info">
+        <div class="kpi-label">Puntaje promedio</div>
+        <div class="kpi-value" id="kpiAvg">—</div>
+        <div class="kpi-sub">Sobre 90 puntos SCA</div>
+      </div>
+      <div class="kpi-tile success">
+        <div class="kpi-label">Tasa de aprobación</div>
+        <div class="kpi-value" id="kpiPass">—</div>
+        <div class="kpi-sub">Lotes que pasaron el control</div>
+      </div>
+      <div class="kpi-tile warning">
+        <div class="kpi-label">Mejor puntaje</div>
+        <div class="kpi-value" id="kpiBest">—</div>
+        <div class="kpi-sub" id="kpiBestLot">Sin registros</div>
+      </div>
+    </div>
+
+    <!-- ── Layout principal: formulario + scoresheet ──────────────────── -->
+    <form id="cuppingForm">
+      <div class="cup-grid">
+
+        <!-- ============ COLUMNA IZQUIERDA: FORMULARIO ============ -->
+        <div class="cup-form-col">
+
+          <!-- Lote y sesión -->
+          <section class="card cup-card">
+            <div class="card-header">
+              <div>
+                <h3 class="card-title">Lote y sesión</h3>
+                <div class="card-subtitle">Seleccione la muestra a evaluar</div>
+              </div>
+              <span class="cup-step">01</span>
+            </div>
+            <div class="cup-card-body">
+              <div class="form-group">
+                <label for="roastedSelect">Lote tostado <span class="required">*</span></label>
+                <select id="roastedSelect" name="roastedId" required>
+                  <option value="">Seleccione un lote…</option>
+                </select>
+                <div class="form-hint">Lotes tostados disponibles para catación.</div>
+              </div>
+
+              <div class="cup-lot-info" id="lotInfoCard" hidden>
+                <div class="cup-lot-item">
+                  <span class="cup-lot-k">Lote</span>
+                  <span class="cup-lot-v" id="infoLotId">—</span>
+                </div>
+                <div class="cup-lot-item">
+                  <span class="cup-lot-k">Variedad</span>
+                  <span class="cup-lot-v" id="infoVariety">—</span>
+                </div>
+                <div class="cup-lot-item">
+                  <span class="cup-lot-k">Tueste</span>
+                  <span class="cup-lot-v" id="infoRoastLevel">—</span>
+                </div>
+                <div class="cup-lot-item">
+                  <span class="cup-lot-k">Peso</span>
+                  <span class="cup-lot-v" id="infoWeight">—</span>
+                </div>
+                <div class="cup-lot-item">
+                  <span class="cup-lot-k">Origen</span>
+                  <span class="cup-lot-v" id="infoRegion">—</span>
+                </div>
+              </div>
+
+              <div class="form-grid" style="margin-top: 4px;">
+                <div class="form-group" style="margin-bottom:0;">
+                  <label for="cuppingDate">Fecha de catación <span class="required">*</span></label>
+                  <input type="date" id="cuppingDate" name="cuppingDate" required />
+                </div>
+                <div class="form-group" style="margin-bottom:0;">
+                  <label for="checkType">Tipo de control</label>
+                  <select id="checkType" name="checkType">
+                    <option value="catacion" selected>Catación de calidad</option>
+                    <option value="post_tostado">Post-tostado</option>
+                    <option value="final">Control final</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Atributos sensoriales -->
+          <section class="card cup-card">
+            <div class="card-header">
+              <div>
+                <h3 class="card-title">Atributos sensoriales</h3>
+                <div class="card-subtitle">Escala SCA 6–10 · paso 0,25</div>
+              </div>
+              <span class="cup-step">02</span>
+            </div>
+            <div class="cup-card-body cup-sliders" id="sliderHost">
+              <!-- Sliders inyectados por JS -->
+            </div>
+            <div class="cup-scale-legend">
+              <span><b>6</b> Bueno</span>
+              <span><b>7</b> Muy bueno</span>
+              <span><b>8</b> Excelente</span>
+              <span><b>9</b> Sobresaliente</span>
+              <span><b>10</b> Excepcional</span>
+            </div>
+          </section>
+
+          <!-- Atributos por taza -->
+          <section class="card cup-card">
+            <div class="card-header">
+              <div>
+                <h3 class="card-title">Atributos por taza</h3>
+                <div class="card-subtitle">5 tazas · 2 puntos cada una</div>
+              </div>
+              <span class="cup-step">03</span>
+            </div>
+            <div class="cup-card-body cup-cup-attrs" id="cupHost">
+              <!-- Atributos de tazas inyectados por JS -->
+            </div>
+          </section>
+
+          <!-- Defectos -->
+          <section class="card cup-card">
+            <div class="card-header">
+              <div>
+                <h3 class="card-title">Defectos</h3>
+                <div class="card-subtitle">Penalización de 4 puntos por taza defectuosa</div>
+              </div>
+              <span class="cup-step">04</span>
+            </div>
+            <div class="cup-card-body">
+              <div class="form-grid">
+                <div class="form-group" style="margin-bottom:0;">
+                  <label for="defectsCount">Tazas defectuosas</label>
+                  <div class="cup-stepper">
+                    <button type="button" class="cup-stepper-btn" data-step="-1" data-target="defectsCount" aria-label="Restar">−</button>
+                    <input type="number" id="defectsCount" name="defectsCount" min="0" max="50" value="0" />
+                    <button type="button" class="cup-stepper-btn" data-step="1" data-target="defectsCount" aria-label="Sumar">+</button>
+                  </div>
+                  <div class="form-hint">Penalización total: <b id="defectPenalty">−0,0</b> pts</div>
+                </div>
+                <div class="form-group" style="margin-bottom:0;">
+                  <label for="defectsFound">Descripción del defecto</label>
+                  <input type="text" id="defectsFound" name="defectsFound" placeholder="Ej.: fenólico, fermento, moho…" />
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Datos físicos y notas -->
+          <section class="card cup-card">
+            <div class="card-header">
+              <div>
+                <h3 class="card-title">Datos físicos y notas</h3>
+                <div class="card-subtitle">Mediciones complementarias</div>
+              </div>
+              <span class="cup-step">05</span>
+            </div>
+            <div class="cup-card-body">
+              <div class="form-grid">
+                <div class="form-group" style="margin-bottom:0;">
+                  <label for="moisturePercent">Humedad del grano (%)</label>
+                  <input type="number" id="moisturePercent" name="moisturePercent" min="0" max="30" step="0.1" placeholder="Ej.: 11,5" />
+                  <div class="form-hint">Rango óptimo: 10–12 %</div>
+                </div>
+                <div class="form-group" style="margin-bottom:0;">
+                  <label for="colorAgtron">Color Agtron</label>
+                  <div class="cup-agtron">
+                    <input type="number" id="colorAgtron" name="colorAgtron" min="0" max="100" placeholder="Ej.: 55" />
+                    <span class="cup-agtron-swatch" id="agtronSwatch" title="Vista previa del tueste"></span>
+                  </div>
+                  <div class="form-hint">25 oscuro · 95 claro</div>
+                </div>
+              </div>
+              <div class="form-group" style="margin-top:16px; margin-bottom:14px;">
+                <label for="observations">Observaciones del catador</label>
+                <textarea id="observations" name="observations" rows="3" placeholder="Notas de cata: aromas, acidez, cuerpo, retrogusto…"></textarea>
+              </div>
+              <div class="form-group" style="margin-bottom:0;">
+                <label for="correctiveActions">Acciones correctivas</label>
+                <textarea id="correctiveActions" name="correctiveActions" rows="2" placeholder="Si el lote no cumple el estándar, indique las acciones a tomar…"></textarea>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <!-- ============ COLUMNA DERECHA: SCORESHEET ============ -->
+        <aside class="cup-score-col">
+          <div class="card cup-scoresheet">
+            <div class="cup-score-head">
+              <span class="cup-score-eyebrow">Puntaje total SCA</span>
+              <div class="cup-gauge">
+                <svg viewBox="0 0 140 140" class="cup-gauge-svg" aria-hidden="true">
+                  <circle cx="70" cy="70" r="60" class="cup-gauge-track"></circle>
+                  <circle cx="70" cy="70" r="60" class="cup-gauge-fill" id="gaugeFill"></circle>
+                </svg>
+                <div class="cup-gauge-center">
+                  <span class="cup-gauge-score" id="totalScore">0,0</span>
+                  <span class="cup-gauge-max">/ 90</span>
+                </div>
+              </div>
+              <span class="cup-class-badge" id="totalBadge">—</span>
+              <span class="cup-score-formula">Σ atributos − (defectos × 4)</span>
+            </div>
+
+            <!-- Radar sensorial -->
+            <div class="cup-radar-wrap">
+              <svg viewBox="0 0 220 200" id="cupRadar" class="cup-radar" aria-label="Perfil sensorial"></svg>
+            </div>
+
+            <!-- Desglose -->
+            <div class="cup-breakdown" id="cupBreakdown"></div>
+
+            <!-- Resultado + envío -->
+            <div class="cup-verdict">
+              <label class="cup-pass-toggle">
+                <input type="checkbox" id="passedCheck" name="passed" />
+                <span class="cup-pass-track"><span class="cup-pass-thumb"></span></span>
+                <span class="cup-pass-text">
+                  <b>Lote aprobado</b>
+                  <small>Cumple los estándares de calidad</small>
+                </span>
+              </label>
+              <button type="submit" class="btn btn-save cup-submit">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20 6L9 17l-5-5"/>
+                </svg>
+                Registrar catación
+              </button>
+            </div>
+          </div>
+        </aside>
+
+      </div>
+    </form>
+
+    <!-- ── Historial ──────────────────────────────────────────────────── -->
+    <section class="card" style="margin-top: 24px;">
+      <div class="card-header">
+        <div>
+          <h3 class="card-title">Cataciones recientes</h3>
+          <div class="card-subtitle">Historial de controles de calidad</div>
+        </div>
+      </div>
+      <div class="table-wrapper">
+        <table class="erp-table cup-history-table">
+          <thead>
+            <tr>
+              <th>Control</th>
+              <th>Tipo</th>
+              <th>Fecha</th>
+              <th style="text-align:right;">Puntaje</th>
+              <th>Clasificación</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody id="historyList">
+            <tr><td colspan="6" class="empty-state">Cargando historial…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Toast -->
+  <div class="cup-toast" id="cupToast" role="status" aria-live="polite"></div>
+
+  <style is:global>
+    /* =================================================================
+       Catación SCA — interfaz dedicada (Claude Design)
+       ============================================================== */
+    .cup-page { max-width: 1280px; }
+
+    .cup-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 360px;
+      gap: 22px;
+      align-items: start;
+    }
+    @media (max-width: 1080px) {
+      .cup-grid { grid-template-columns: 1fr; }
+    }
+
+    .cup-form-col { display: grid; gap: 18px; min-width: 0; }
+
+    .cup-card .card-header { align-items: flex-start; }
+    .cup-step {
+      font-size: 12px; font-weight: 700;
+      color: var(--color-accent);
+      font-variant-numeric: tabular-nums;
+      background: var(--active-bg);
+      border-radius: 999px;
+      padding: 3px 10px;
+      letter-spacing: 0.04em;
+    }
+    .cup-card-body { padding: 18px; }
+
+    /* Info del lote */
+    .cup-lot-info {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+      gap: 12px;
+      padding: 14px 16px;
+      margin-bottom: 18px;
+      background: color-mix(in oklab, var(--color-primary) 3%, white);
+      border: 1px solid var(--rule);
+      border-radius: var(--radius-sm);
+    }
+    .cup-lot-item { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+    .cup-lot-k {
+      font-size: 10px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.07em; color: var(--muted-2);
+    }
+    .cup-lot-v {
+      font-size: 13.5px; font-weight: 600; color: var(--color-primary);
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+
+    /* ===== Sliders sensoriales ===== */
+    .cup-sliders { display: grid; gap: 18px; }
+    .cup-attr { display: grid; gap: 9px; }
+    .cup-attr-head {
+      display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
+    }
+    .cup-attr-name {
+      font-size: 13.5px; font-weight: 600; color: var(--color-primary);
+    }
+    .cup-attr-right { display: flex; align-items: center; gap: 10px; }
+    .cup-attr-q {
+      font-size: 11px; font-weight: 600; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .cup-attr-val {
+      font-size: 17px; font-weight: 700; color: var(--color-accent);
+      font-variant-numeric: tabular-nums; min-width: 44px; text-align: right;
+    }
+
+    .cup-range {
+      -webkit-appearance: none; appearance: none;
+      width: 100%; height: 6px; border-radius: 999px;
+      background: var(--rule); outline: none; cursor: pointer; margin: 0;
+    }
+    .cup-range::-webkit-slider-thumb {
+      -webkit-appearance: none; appearance: none;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: var(--color-accent); border: 3px solid #fff;
+      box-shadow: 0 1px 5px color-mix(in oklab, var(--color-primary) 40%, transparent);
+      cursor: pointer; transition: transform .1s;
+    }
+    .cup-range::-webkit-slider-thumb:hover { transform: scale(1.12); }
+    .cup-range::-moz-range-thumb {
+      width: 20px; height: 20px; border-radius: 50%;
+      background: var(--color-accent); border: 3px solid #fff;
+      box-shadow: 0 1px 5px color-mix(in oklab, var(--color-primary) 40%, transparent);
+      cursor: pointer;
+    }
+    .cup-range:focus-visible { box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-accent) 25%, transparent); }
+    .cup-range-ticks {
+      display: flex; justify-content: space-between;
+      font-size: 10px; color: var(--muted-2); font-variant-numeric: tabular-nums;
+      padding: 0 2px;
+    }
+
+    .cup-scale-legend {
+      display: flex; flex-wrap: wrap; gap: 6px 16px;
+      padding: 12px 18px;
+      border-top: 1px solid var(--rule);
+      background: color-mix(in oklab, var(--color-primary) 2%, white);
+    }
+    .cup-scale-legend span { font-size: 11px; color: var(--muted); }
+    .cup-scale-legend b { color: var(--color-primary); font-weight: 700; }
+
+    /* ===== Atributos por taza ===== */
+    .cup-cup-attrs { display: grid; gap: 16px; }
+    .cup-cup-attr {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 14px; flex-wrap: wrap;
+    }
+    .cup-cup-label { font-size: 13.5px; font-weight: 600; color: var(--color-primary); }
+    .cup-cup-row { display: flex; align-items: center; gap: 12px; }
+    .cup-cups { display: flex; gap: 6px; }
+    .cup-cup {
+      width: 34px; height: 34px; border-radius: 9px;
+      border: 1px solid var(--rule); background: var(--paper);
+      display: grid; place-items: center; cursor: pointer;
+      color: var(--muted-2); transition: all .12s;
+    }
+    .cup-cup:hover { border-color: var(--color-accent); }
+    .cup-cup.on {
+      background: var(--active-bg); border-color: var(--color-accent);
+      color: var(--color-accent);
+    }
+    .cup-cup svg { width: 17px; height: 17px; }
+    .cup-cup-pts {
+      font-size: 15px; font-weight: 700; color: var(--color-accent);
+      font-variant-numeric: tabular-nums; min-width: 30px; text-align: right;
+    }
+
+    /* ===== Stepper ===== */
+    .cup-stepper {
+      display: inline-flex; align-items: stretch;
+      border: 1px solid var(--rule); border-radius: var(--radius-sm);
+      overflow: hidden; width: 100%; max-width: 180px;
+    }
+    .cup-stepper-btn {
+      appearance: none; border: 0; background: var(--paper);
+      width: 40px; font-size: 18px; font-weight: 600; line-height: 1;
+      color: var(--color-primary); cursor: pointer;
+    }
+    .cup-stepper-btn:hover { background: var(--hover); }
+    .cup-stepper input {
+      border: 0 !important; border-radius: 0 !important;
+      text-align: center; flex: 1; min-width: 0;
+      -moz-appearance: textfield;
+    }
+    .cup-stepper input::-webkit-outer-spin-button,
+    .cup-stepper input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    .cup-stepper input:focus { box-shadow: none !important; }
+
+    /* ===== Agtron ===== */
+    .cup-agtron { display: flex; align-items: center; gap: 10px; }
+    .cup-agtron input { flex: 1; }
+    .cup-agtron-swatch {
+      width: 38px; height: 38px; border-radius: 9px; flex-shrink: 0;
+      border: 1px solid var(--rule);
+      background: #d8c4a8;
+      transition: background .15s;
+    }
+
+    /* =========================================================
+       SCORESHEET (columna derecha sticky)
+       ========================================================= */
+    .cup-score-col { position: sticky; top: calc(var(--shell-h) + 18px); }
+    @media (max-width: 1080px) { .cup-score-col { position: static; } }
+
+    .cup-scoresheet { padding: 22px 20px; }
+
+    .cup-score-head { display: grid; justify-items: center; gap: 12px; text-align: center; }
+    .cup-score-eyebrow {
+      font-size: 11px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.08em; color: var(--muted);
+    }
+    .cup-gauge { position: relative; width: 150px; height: 150px; }
+    .cup-gauge-svg { width: 150px; height: 150px; transform: rotate(-90deg); }
+    .cup-gauge-track {
+      fill: none; stroke: var(--rule); stroke-width: 11;
+    }
+    .cup-gauge-fill {
+      fill: none; stroke: var(--color-accent); stroke-width: 11;
+      stroke-linecap: round;
+      stroke-dasharray: 377;
+      stroke-dashoffset: 377;
+      transition: stroke-dashoffset .4s ease, stroke .3s ease;
+    }
+    .cup-gauge-center {
+      position: absolute; inset: 0;
+      display: grid; place-content: center; gap: 0;
+    }
+    .cup-gauge-score {
+      font-size: 38px; font-weight: 800; line-height: 1;
+      color: var(--color-primary); font-variant-numeric: tabular-nums;
+    }
+    .cup-gauge-max { font-size: 12px; color: var(--muted); font-weight: 600; }
+
+    .cup-class-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 13px; font-weight: 700;
+      padding: 5px 16px; border-radius: 999px;
+      background: var(--active-bg); color: var(--color-primary);
+      transition: background .2s, color .2s;
+    }
+    .cup-score-formula { font-size: 11px; color: var(--muted-2); }
+
+    .cup-radar-wrap {
+      margin: 18px 0 6px; padding: 6px 0;
+      border-top: 1px solid var(--rule);
+    }
+    .cup-radar { width: 100%; height: auto; display: block; }
+    .cup-radar-grid { fill: none; stroke: var(--rule); }
+    .cup-radar-axis { stroke: var(--rule); }
+    .cup-radar-area {
+      fill: color-mix(in oklab, var(--color-accent) 22%, transparent);
+      stroke: var(--color-accent); stroke-width: 2; stroke-linejoin: round;
+    }
+    .cup-radar-dot { fill: var(--color-accent); }
+    .cup-radar-label { fill: var(--muted); font-size: 9.5px; font-weight: 600; }
+
+    .cup-breakdown {
+      display: grid; gap: 8px;
+      padding-top: 14px; border-top: 1px solid var(--rule);
+    }
+    .cup-bd-row { display: grid; grid-template-columns: 78px 1fr 34px; align-items: center; gap: 10px; }
+    .cup-bd-name { font-size: 11.5px; color: var(--muted); }
+    .cup-bd-bar { height: 6px; border-radius: 999px; background: var(--rule); overflow: hidden; }
+    .cup-bd-fill { height: 100%; border-radius: 999px; background: var(--color-accent); transition: width .3s; }
+    .cup-bd-val {
+      font-size: 12px; font-weight: 700; color: var(--color-primary);
+      text-align: right; font-variant-numeric: tabular-nums;
+    }
+
+    /* Resultado */
+    .cup-verdict {
+      margin-top: 18px; padding-top: 18px;
+      border-top: 1px solid var(--rule);
+      display: grid; gap: 14px;
+    }
+    .cup-pass-toggle {
+      display: flex; align-items: center; gap: 12px; cursor: pointer;
+      padding: 10px 12px; border: 1px solid var(--rule); border-radius: var(--radius-sm);
+      transition: border-color .15s, background .15s;
+    }
+    .cup-pass-toggle:has(input:checked) {
+      border-color: color-mix(in oklab, var(--ok) 45%, white);
+      background: color-mix(in oklab, var(--ok) 7%, white);
+    }
+    .cup-pass-toggle input { position: absolute; opacity: 0; pointer-events: none; }
+    .cup-pass-track {
+      position: relative; flex-shrink: 0;
+      width: 40px; height: 22px; border-radius: 999px;
+      background: var(--rule-2); transition: background .2s;
+    }
+    .cup-pass-thumb {
+      position: absolute; top: 2px; left: 2px;
+      width: 18px; height: 18px; border-radius: 50%;
+      background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.25);
+      transition: transform .2s;
+    }
+    .cup-pass-toggle input:checked ~ .cup-pass-track { background: var(--ok); }
+    .cup-pass-toggle input:checked ~ .cup-pass-track .cup-pass-thumb { transform: translateX(18px); }
+    .cup-pass-text { display: grid; line-height: 1.3; }
+    .cup-pass-text b { font-size: 13.5px; color: var(--color-primary); }
+    .cup-pass-text small { font-size: 11.5px; color: var(--muted); }
+
+    .cup-submit { width: 100%; justify-content: center; padding: 11px; font-size: 14px; }
+    .cup-submit:disabled { opacity: .6; cursor: not-allowed; }
+
+    /* ===== Historial ===== */
+    .cup-history-table td { vertical-align: middle; }
+    .cup-history-control { font-family: ui-monospace, Menlo, monospace; font-weight: 600; color: var(--color-primary); }
+    .cup-history-score { font-size: 15px; font-weight: 700; color: var(--color-accent); font-variant-numeric: tabular-nums; text-align: right; }
+
+    /* ===== Toast ===== */
+    .cup-toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translate(-50%, 20px);
+      background: var(--color-primary); color: #fff;
+      padding: 12px 20px; border-radius: 999px;
+      font-size: 13.5px; font-weight: 500;
+      box-shadow: 0 12px 32px -8px color-mix(in oklab, var(--color-primary) 60%, transparent);
+      opacity: 0; visibility: hidden; transition: all .25s ease; z-index: 60;
+      display: flex; align-items: center; gap: 9px;
+    }
+    .cup-toast.show { opacity: 1; visibility: visible; transform: translate(-50%, 0); }
+    .cup-toast.ok { background: var(--ok); }
+    .cup-toast.err { background: var(--danger); }
+  </style>
+
   <script>
-    // ── Mapa de clasificación SCA ──────────────────────────────────────────────
-    const SCA_LABELS = [
-      { min: 90, label: 'Sobresaliente' },
-      { min: 85, label: 'Excelente' },
-      { min: 80, label: 'Muy Bueno' },
-      { min: 70, label: 'Bueno' },
-      { min: 60, label: 'Aceptable' },
-      { min: 0,  label: 'Por Debajo del Estándar' },
+    // ── Clasificación SCA (compartida) ────────────────────────────────────────
+    const CLASSES = [
+      { min: 85, label: 'Excelente',    color: 'var(--ok)' },
+      { min: 80, label: 'Especialidad', color: 'var(--color-accent)' },
+      { min: 70, label: 'Muy bueno',    color: 'var(--c-info)' },
+      { min: 60, label: 'Bueno',        color: 'var(--c-warning)' },
+      { min: 0,  label: 'Por mejorar',  color: 'var(--c-error)' },
     ];
+    const classify = (s) => CLASSES.find((c) => s >= c.min) || CLASSES[CLASSES.length - 1];
+    const qualityWord = (v) => v >= 9.75 ? 'Excepcional' : v >= 8.75 ? 'Sobresaliente' : v >= 7.75 ? 'Excelente' : v >= 6.75 ? 'Muy bueno' : 'Bueno';
+    const fmt = (n) => Number(n).toFixed(1).replace('.', ',');
 
-    function scaLabel(score) {
-      return (SCA_LABELS.find(l => score >= l.min) || SCA_LABELS[SCA_LABELS.length - 1]).label;
-    }
-
-    // ── Inputs de atributos ────────────────────────────────────────────────────
-    const ATTRS = [
-      { id: 'aromaScore',       display: 'aromaDisplay' },
-      { id: 'flavorScore',      display: 'flavorDisplay' },
-      { id: 'aftertasteScore',  display: 'aftertasteDisplay' },
-      { id: 'acidityScore',     display: 'acidityDisplay' },
-      { id: 'bodyScore',        display: 'bodyDisplay' },
-      { id: 'balanceScore',     display: 'balanceDisplay' },
-      { id: 'uniformityScore',  display: 'uniformityDisplay' },
-      { id: 'cleanCupScore',    display: 'cleanCupDisplay' },
-      { id: 'sweetnessScore',   display: 'sweetnessDisplay' },
+    // ── Definición de atributos ───────────────────────────────────────────────
+    const SENSORY = [
+      { id: 'aromaScore',      label: 'Aroma' },
+      { id: 'flavorScore',     label: 'Sabor' },
+      { id: 'aftertasteScore', label: 'Retrogusto' },
+      { id: 'acidityScore',    label: 'Acidez' },
+      { id: 'bodyScore',       label: 'Cuerpo' },
+      { id: 'balanceScore',    label: 'Balance' },
     ];
+    const CUPS = [
+      { id: 'uniformityScore', label: 'Uniformidad' },
+      { id: 'cleanCupScore',   label: 'Taza limpia' },
+      { id: 'sweetnessScore',  label: 'Dulzura' },
+    ];
+    const ALL = [...SENSORY, ...CUPS];
 
-    function calcTotal() {
-      const sum = ATTRS.reduce((acc, a) => {
-        return acc + parseFloat(document.getElementById(a.id).value || 0);
-      }, 0);
-      const defects = parseInt(document.getElementById('defectsCount').value || 0);
-      return Math.max(0, sum - defects * 4);
+    // ── Construir sliders sensoriales ──────────────────────────────────────────
+    const sliderHost = document.getElementById('sliderHost');
+    sliderHost.innerHTML = SENSORY.map((a) => `
+      <div class="cup-attr">
+        <div class="cup-attr-head">
+          <span class="cup-attr-name">${a.label}</span>
+          <div class="cup-attr-right">
+            <span class="cup-attr-q" id="${a.id}Q">Muy bueno</span>
+            <span class="cup-attr-val" id="${a.id}Val">7,0</span>
+          </div>
+        </div>
+        <input type="range" id="${a.id}" name="${a.id}" min="6" max="10" step="0.25" value="7" class="cup-range" />
+        <div class="cup-range-ticks"><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span></div>
+      </div>
+    `).join('');
+
+    function paintRange(el) {
+      const pct = ((el.value - el.min) / (el.max - el.min)) * 100;
+      el.style.background = `linear-gradient(90deg, var(--color-accent) ${pct}%, var(--rule) ${pct}%)`;
     }
 
-    function updateTotal() {
-      const total = calcTotal();
-      document.getElementById('totalScore').textContent = total.toFixed(2);
-      document.getElementById('totalBadge').textContent = scaLabel(total);
-    }
-
-    ATTRS.forEach(({ id, display }) => {
-      const input = document.getElementById(id);
-      const disp  = document.getElementById(display);
+    SENSORY.forEach((a) => {
+      const input = document.getElementById(a.id);
       input.addEventListener('input', () => {
-        disp.textContent = parseFloat(input.value).toFixed(2);
-        updateTotal();
+        document.getElementById(a.id + 'Val').textContent = fmt(input.value);
+        document.getElementById(a.id + 'Q').textContent = qualityWord(parseFloat(input.value));
+        paintRange(input);
+        recompute();
       });
     });
 
-    document.getElementById('defectsCount').addEventListener('input', updateTotal);
+    // ── Construir atributos por taza (5 tazas) ─────────────────────────────────
+    const cupHost = document.getElementById('cupHost');
+    const cupSVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8z"/></svg>`;
+    cupHost.innerHTML = CUPS.map((a) => `
+      <div class="cup-cup-attr">
+        <span class="cup-cup-label">${a.label}</span>
+        <div class="cup-cup-row">
+          <div class="cup-cups" id="${a.id}Cups" data-target="${a.id}">
+            ${[1,2,3,4,5].map((n) => `<button type="button" class="cup-cup on" data-n="${n}" aria-label="${a.label} ${n*2} pts">${cupSVG}</button>`).join('')}
+          </div>
+          <span class="cup-cup-pts" id="${a.id}Pts">10,0</span>
+        </div>
+        <input type="hidden" id="${a.id}" name="${a.id}" value="10" />
+      </div>
+    `).join('');
 
-    // ── Poner fecha de hoy ─────────────────────────────────────────────────────
+    CUPS.forEach((a) => {
+      const wrap = document.getElementById(a.id + 'Cups');
+      wrap.querySelectorAll('.cup-cup').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          let n = parseInt(btn.dataset.n);
+          const current = wrap.querySelectorAll('.cup-cup.on').length;
+          if (current === n) n = n - 1; // clic en la última taza encendida → apagar
+          setCups(a.id, n);
+          recompute();
+        });
+      });
+    });
+
+    function setCups(id, n) {
+      const wrap = document.getElementById(id + 'Cups');
+      wrap.querySelectorAll('.cup-cup').forEach((b) => {
+        b.classList.toggle('on', parseInt(b.dataset.n) <= n);
+      });
+      const pts = n * 2;
+      document.getElementById(id).value = pts;
+      document.getElementById(id + 'Pts').textContent = fmt(pts);
+    }
+
+    // ── Steppers genéricos ──────────────────────────────────────────────────────
+    document.querySelectorAll('.cup-stepper-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const input = document.getElementById(btn.dataset.target);
+        const step = parseInt(btn.dataset.step);
+        const min = input.min !== '' ? parseInt(input.min) : -Infinity;
+        const max = input.max !== '' ? parseInt(input.max) : Infinity;
+        input.value = Math.max(min, Math.min(max, (parseInt(input.value) || 0) + step));
+        input.dispatchEvent(new Event('input'));
+      });
+    });
+    document.getElementById('defectsCount').addEventListener('input', recompute);
+
+    // ── Agtron swatch ───────────────────────────────────────────────────────────
+    document.getElementById('colorAgtron').addEventListener('input', (e) => {
+      const v = parseInt(e.target.value);
+      const sw = document.getElementById('agtronSwatch');
+      if (isNaN(v)) { sw.style.background = '#d8c4a8'; return; }
+      // 25 (oscuro) → 95 (claro): interpolar luminosidad de un café
+      const t = Math.max(0, Math.min(1, (v - 25) / 70));
+      const l = 18 + t * 52; // 18%..70%
+      sw.style.background = `hsl(28 38% ${l}%)`;
+    });
+
+    // ── Cálculo total ───────────────────────────────────────────────────────────
+    function calcTotal() {
+      const sum = ALL.reduce((acc, a) => acc + (parseFloat(document.getElementById(a.id).value) || 0), 0);
+      const defects = parseInt(document.getElementById('defectsCount').value) || 0;
+      return Math.max(0, sum - defects * 4);
+    }
+
+    const GAUGE_C = 2 * Math.PI * 60; // circunferencia
+    function recompute() {
+      const total = calcTotal();
+      const cls = classify(total);
+
+      document.getElementById('totalScore').textContent = fmt(total);
+      const badge = document.getElementById('totalBadge');
+      badge.textContent = cls.label;
+      badge.style.background = `color-mix(in oklab, ${cls.color} 16%, white)`;
+      badge.style.color = cls.color;
+
+      // gauge (sobre 90)
+      const frac = Math.max(0, Math.min(1, total / 90));
+      const fill = document.getElementById('gaugeFill');
+      fill.style.strokeDashoffset = String(GAUGE_C * (1 - frac));
+      fill.style.stroke = cls.color;
+
+      // penalización
+      const defects = parseInt(document.getElementById('defectsCount').value) || 0;
+      document.getElementById('defectPenalty').textContent = '−' + fmt(defects * 4);
+
+      drawRadar();
+      drawBreakdown();
+    }
+
+    // ── Radar sensorial (6 ejes) ────────────────────────────────────────────────
+    const RX = 110, RY = 95, MAXR = 70;
+    const radarPoint = (i, val) => {
+      const ang = (-90 + i * 60) * Math.PI / 180;
+      const r = ((Math.max(5, Math.min(10, val)) - 5) / 5) * MAXR;
+      return [RX + Math.cos(ang) * r, RY + Math.sin(ang) * r];
+    };
+    function drawRadar() {
+      let g = '';
+      // anillos
+      [6, 7, 8, 9, 10].forEach((lvl) => {
+        const pts = SENSORY.map((_, i) => radarPoint(i, lvl).map((n) => n.toFixed(1)).join(',')).join(' ');
+        g += `<polygon class="cup-radar-grid" points="${pts}" stroke-width="${lvl === 10 ? 1.2 : 0.8}"></polygon>`;
+      });
+      // ejes + etiquetas
+      SENSORY.forEach((a, i) => {
+        const [ex, ey] = radarPoint(i, 10);
+        g += `<line class="cup-radar-axis" x1="${RX}" y1="${RY}" x2="${ex.toFixed(1)}" y2="${ey.toFixed(1)}" stroke-width="0.8"></line>`;
+        const ang = (-90 + i * 60) * Math.PI / 180;
+        const lx = RX + Math.cos(ang) * (MAXR + 16);
+        const ly = RY + Math.sin(ang) * (MAXR + 12);
+        const anchor = Math.abs(Math.cos(ang)) < 0.3 ? 'middle' : (Math.cos(ang) > 0 ? 'start' : 'end');
+        g += `<text class="cup-radar-label" x="${lx.toFixed(1)}" y="${(ly + 3).toFixed(1)}" text-anchor="${anchor}">${a.label}</text>`;
+      });
+      // área de valores
+      const vpts = SENSORY.map((a, i) => radarPoint(i, parseFloat(document.getElementById(a.id).value)).map((n) => n.toFixed(1)).join(',')).join(' ');
+      g += `<polygon class="cup-radar-area" points="${vpts}"></polygon>`;
+      SENSORY.forEach((a, i) => {
+        const [x, y] = radarPoint(i, parseFloat(document.getElementById(a.id).value));
+        g += `<circle class="cup-radar-dot" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2.6"></circle>`;
+      });
+      document.getElementById('cupRadar').innerHTML = g;
+    }
+
+    // ── Desglose ────────────────────────────────────────────────────────────────
+    function drawBreakdown() {
+      document.getElementById('cupBreakdown').innerHTML = ALL.map((a) => {
+        const v = parseFloat(document.getElementById(a.id).value) || 0;
+        return `
+          <div class="cup-bd-row">
+            <span class="cup-bd-name">${a.label}</span>
+            <span class="cup-bd-bar"><span class="cup-bd-fill" style="width:${(v / 10 * 100).toFixed(0)}%"></span></span>
+            <span class="cup-bd-val">${fmt(v)}</span>
+          </div>`;
+      }).join('');
+    }
+
+    // ── Toast ───────────────────────────────────────────────────────────────────
+    let toastTimer;
+    function toast(msg, type = '') {
+      const t = document.getElementById('cupToast');
+      t.textContent = msg;
+      t.className = 'cup-toast show ' + type;
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => { t.className = 'cup-toast ' + type; }, 3200);
+    }
+
+    // ── Fecha de hoy ────────────────────────────────────────────────────────────
     const today = new Date().toISOString().slice(0, 10);
     document.getElementById('cuppingDate').value = today;
 
-    // ── Cargar lotes tostados ──────────────────────────────────────────────────
+    // ── Cargar lotes tostados ───────────────────────────────────────────────────
     async function loadRoastedLots() {
       try {
         const res = await fetch('/api/coffee/roasted-for-cupping', { credentials: 'include' });
         if (!res.ok) return;
         const lots = await res.json();
         const sel = document.getElementById('roastedSelect');
-        sel.innerHTML = '<option value="">Selecciona un lote...</option>';
-        lots.forEach(lot => {
+        sel.innerHTML = '<option value="">Seleccione un lote…</option>';
+        lots.forEach((lot) => {
           const opt = document.createElement('option');
           opt.value = lot.id;
-          opt.textContent = `${lot.lot_id} — ${lot.variety || '—'} (${lot.roast_level || '—'})`;
-          opt.dataset.lotId     = lot.lot_id     || '—';
-          opt.dataset.variety   = lot.variety    || '—';
-          opt.dataset.roastLevel= lot.roast_level|| '—';
-          opt.dataset.weight    = lot.weight_kg  || '—';
+          opt.textContent = `${lot.lot_id || 'Lote'} — ${lot.variety || 'Sin variedad'} (${lot.roast_level || '—'})`;
+          opt.dataset.lotId      = lot.lot_id      || '—';
+          opt.dataset.variety    = lot.variety     || '—';
+          opt.dataset.roastLevel = lot.roast_level || '—';
+          opt.dataset.weight     = lot.weight_kg   != null ? lot.weight_kg + ' kg' : '—';
+          opt.dataset.region     = lot.region      || '—';
           sel.appendChild(opt);
         });
       } catch (e) {
@@ -313,56 +835,100 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     document.getElementById('roastedSelect').addEventListener('change', function () {
       const opt = this.options[this.selectedIndex];
       const card = document.getElementById('lotInfoCard');
-      if (!opt.value) { card.style.display = 'none'; return; }
-      document.getElementById('infoLotId').textContent     = opt.dataset.lotId;
-      document.getElementById('infoVariety').textContent   = opt.dataset.variety;
-      document.getElementById('infoRoastLevel').textContent= opt.dataset.roastLevel;
-      document.getElementById('infoWeight').textContent    = opt.dataset.weight + ' kg';
-      card.style.display = 'block';
+      if (!opt.value) { card.hidden = true; return; }
+      document.getElementById('infoLotId').textContent      = opt.dataset.lotId;
+      document.getElementById('infoVariety').textContent    = opt.dataset.variety;
+      document.getElementById('infoRoastLevel').textContent = opt.dataset.roastLevel;
+      document.getElementById('infoWeight').textContent     = opt.dataset.weight;
+      document.getElementById('infoRegion').textContent     = opt.dataset.region;
+      card.hidden = false;
     });
 
-    // ── Historial ──────────────────────────────────────────────────────────────
+    // ── Historial + KPIs ────────────────────────────────────────────────────────
     async function loadHistory() {
+      const tbody = document.getElementById('historyList');
       try {
         const res = await fetch('/api/coffee/cupping', { credentials: 'include' });
-        if (!res.ok) { document.getElementById('historyList').innerHTML = '<div class="form-hint">No hay registros aún.</div>'; return; }
-        const data = await res.json();
-        const list = document.getElementById('historyList');
-        if (!data.length) { list.innerHTML = '<div class="form-hint">No hay registros aún.</div>'; return; }
-        list.innerHTML = data.slice(0, 8).map(c => `
-          <div class="history-item">
-            <div class="history-item-header">
-              <div>
-                <div class="history-lot">${c.lot_id || '—'}</div>
-                <div class="history-meta">${c.check_type} · ${new Date(c.check_date).toLocaleDateString('es-CO')}</div>
-              </div>
-              <div style="text-align: right;">
-                <div class="history-score">${parseFloat(c.overall_score || 0).toFixed(2)}</div>
-                <span class="${c.passed ? 'badge-approved' : 'badge-rejected'}">${c.passed ? 'Aprobado' : 'Rechazado'}</span>
-              </div>
-            </div>
-          </div>
-        `).join('');
+        const data = res.ok ? await res.json() : [];
+        renderKpis(data);
+        if (!Array.isArray(data) || !data.length) {
+          tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Aún no hay cataciones registradas.</td></tr>';
+          return;
+        }
+        const TYPE_LABEL = { catacion: 'Catación', post_tostado: 'Post-tostado', final: 'Control final' };
+        tbody.innerHTML = data.slice(0, 12).map((c) => {
+          const score = parseFloat(c.overall_score || 0);
+          const cls = classify(score);
+          const date = c.check_date ? new Date(c.check_date).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
+          return `
+            <tr>
+              <td><span class="cup-history-control">${c.check_number || '—'}</span></td>
+              <td>${TYPE_LABEL[c.check_type] || c.check_type || '—'}</td>
+              <td>${date}</td>
+              <td class="cup-history-score">${fmt(score)}</td>
+              <td><span class="badge" style="background:color-mix(in oklab, ${cls.color} 15%, white); color:${cls.color};">${cls.label}</span></td>
+              <td>${c.passed ? '<span class="badge-approved">Aprobado</span>' : '<span class="badge-rejected">Rechazado</span>'}</td>
+            </tr>`;
+        }).join('');
       } catch (e) {
-        document.getElementById('historyList').innerHTML = '<div class="form-hint">No hay registros aún.</div>';
+        tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No se pudo cargar el historial.</td></tr>';
       }
     }
 
-    // ── Envío del formulario ───────────────────────────────────────────────────
+    function renderKpis(data) {
+      const list = Array.isArray(data) ? data : [];
+      const count = list.length;
+      document.getElementById('kpiCount').textContent = count;
+      if (!count) {
+        document.getElementById('kpiAvg').textContent = '—';
+        document.getElementById('kpiPass').textContent = '—';
+        document.getElementById('kpiBest').textContent = '—';
+        return;
+      }
+      const scores = list.map((c) => parseFloat(c.overall_score || 0));
+      const avg = scores.reduce((a, b) => a + b, 0) / count;
+      const passed = list.filter((c) => c.passed).length;
+      const best = list.reduce((m, c) => (parseFloat(c.overall_score || 0) > parseFloat(m.overall_score || 0) ? c : m), list[0]);
+      document.getElementById('kpiAvg').textContent = fmt(avg);
+      document.getElementById('kpiPass').textContent = Math.round(passed / count * 100) + '%';
+      document.getElementById('kpiBest').textContent = fmt(parseFloat(best.overall_score || 0));
+      document.getElementById('kpiBestLot').textContent = best.check_number || 'Mejor catación';
+    }
+
+    // ── Reiniciar formulario ────────────────────────────────────────────────────
+    function resetForm() {
+      SENSORY.forEach((a) => {
+        const input = document.getElementById(a.id);
+        input.value = '7';
+        document.getElementById(a.id + 'Val').textContent = '7,0';
+        document.getElementById(a.id + 'Q').textContent = qualityWord(7);
+        paintRange(input);
+      });
+      CUPS.forEach((a) => setCups(a.id, 5));
+      document.getElementById('defectsCount').value = '0';
+      document.getElementById('defectsFound').value = '';
+      document.getElementById('moisturePercent').value = '';
+      document.getElementById('colorAgtron').value = '';
+      document.getElementById('agtronSwatch').style.background = '#d8c4a8';
+      document.getElementById('observations').value = '';
+      document.getElementById('correctiveActions').value = '';
+      document.getElementById('passedCheck').checked = false;
+      recompute();
+    }
+    document.getElementById('resetBtn').addEventListener('click', resetForm);
+
+    // ── Envío ───────────────────────────────────────────────────────────────────
     document.getElementById('cuppingForm').addEventListener('submit', async function (e) {
       e.preventDefault();
       const btn = this.querySelector('button[type="submit"]');
-      btn.disabled = true;
-      btn.textContent = 'Registrando...';
 
       const roastedId = document.getElementById('roastedSelect').value;
-      if (!roastedId) {
-        alert('Selecciona un lote tostado.');
-        btn.disabled = false;
-        btn.textContent = 'Registrar Cupping';
-        return;
-      }
+      if (!roastedId) { toast('Seleccione un lote tostado para continuar.', 'err'); return; }
 
+      btn.disabled = true;
+      btn.innerHTML = 'Registrando…';
+
+      const num = (id) => document.getElementById(id).value ? parseFloat(document.getElementById(id).value) : null;
       const payload = {
         roastedId:         parseInt(roastedId),
         checkType:         document.getElementById('checkType').value,
@@ -376,9 +942,9 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         uniformityScore:   parseFloat(document.getElementById('uniformityScore').value),
         cleanCupScore:     parseFloat(document.getElementById('cleanCupScore').value),
         sweetnessScore:    parseFloat(document.getElementById('sweetnessScore').value),
-        defectsCount:      parseInt(document.getElementById('defectsCount').value || 0),
+        defectsCount:      parseInt(document.getElementById('defectsCount').value || '0'),
         defectsFound:      document.getElementById('defectsFound').value.trim() || null,
-        moisturePercent:   document.getElementById('moisturePercent').value ? parseFloat(document.getElementById('moisturePercent').value) : null,
+        moisturePercent:   num('moisturePercent'),
         colorAgtron:       document.getElementById('colorAgtron').value ? parseInt(document.getElementById('colorAgtron').value) : null,
         observations:      document.getElementById('observations').value.trim() || null,
         correctiveActions: document.getElementById('correctiveActions').value.trim() || null,
@@ -394,30 +960,27 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
           body: JSON.stringify(payload),
         });
         const data = await res.json();
-
         if (res.ok && data.success) {
-          alert(`Cupping registrado. Puntaje final: ${data.overallScore}`);
+          toast(`Catación registrada · Puntaje ${fmt(parseFloat(data.overallScore))}`, 'ok');
+          resetForm();
           document.getElementById('cuppingForm').reset();
           document.getElementById('cuppingDate').value = today;
-          document.getElementById('lotInfoCard').style.display = 'none';
-          ATTRS.forEach(({ id, display }) => {
-            const v = id.includes('uniformity') || id.includes('cleanCup') || id.includes('sweetness') ? '10' : '7';
-            document.getElementById(id).value = v;
-            document.getElementById(display).textContent = parseFloat(v).toFixed(2);
-          });
-          updateTotal();
+          document.getElementById('lotInfoCard').hidden = true;
           loadHistory();
         } else {
-          alert('Error: ' + (data.error || 'No se pudo registrar el cupping'));
+          toast('Error: ' + (data.error || 'No se pudo registrar la catación.'), 'err');
         }
       } catch (err) {
-        alert('Error de conexión: ' + err.message);
+        toast('Error de conexión: ' + err.message, 'err');
       } finally {
         btn.disabled = false;
-        btn.textContent = 'Registrar Cupping';
+        btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Registrar catación`;
       }
     });
 
+    // ── Init ────────────────────────────────────────────────────────────────────
+    SENSORY.forEach((a) => paintRange(document.getElementById(a.id)));
+    recompute();
     loadRoastedLots();
     loadHistory();
   </script>
