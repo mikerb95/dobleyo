@@ -391,6 +391,40 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   /* Spin animation for sync */
   @keyframes spin { to { transform: rotate(360deg); } }
   .spinning { animation: spin 0.8s linear infinite; display: inline-block; }
+
+  /* CRM cell */
+  .crm-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--c-success-bg); color: var(--c-success);
+    border: 1px solid var(--c-success-border);
+    padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;
+    max-width: 160px;
+  }
+  .crm-chip-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .crm-unlink {
+    background: none; border: none; cursor: pointer; color: inherit;
+    font-size: 11px; line-height: 1; padding: 0; opacity: .6;
+  }
+  .crm-unlink:hover { opacity: 1; }
+
+  /* CRM modal */
+  .crm-modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,.4);
+    display: flex; align-items: center; justify-content: center; z-index: 1000;
+    padding: 16px;
+  }
+  .crm-modal {
+    background: var(--card-bg); border-radius: 8px; width: 100%; max-width: 420px;
+    box-shadow: 0 16px 48px -12px rgba(0,0,0,.3); border: 1px solid var(--border);
+  }
+  .crm-modal-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 16px; border-bottom: 1px solid var(--border);
+  }
+  .crm-modal-close {
+    background: none; border: none; cursor: pointer; font-size: 16px;
+    color: var(--text-2); line-height: 1;
+  }
 </style>
 
 <script>
