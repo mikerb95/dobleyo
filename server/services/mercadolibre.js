@@ -324,12 +324,12 @@ class MercadoLibreService {
 
       if (dateFrom) {
         query += ' AND purchase_date >= ?';
-        params.push(new Date(dateFrom));
+        params.push(toSqliteDatetime(dateFrom));
       }
 
       if (dateTo) {
         query += ' AND purchase_date <= ?';
-        params.push(new Date(dateTo));
+        params.push(toSqliteDatetime(dateTo));
       }
 
       // Get total count
