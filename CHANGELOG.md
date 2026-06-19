@@ -2,6 +2,30 @@
 
 ---
 
+## 📅 2026-06-18 — Cupping SCA: rediseño profesional de `/admin/cupping` (Agente: Claude)
+
+### Contexto
+La página de catación era un formulario plano con estilos inline. Peor aún, usaba clases (`.sca-attr`, `.sca-range`, `.sca-total-card`, `.sca-score-display`…) **que no existían** en el CSS global de `AdminLayout`, por lo que los sliders y la tarjeta de puntaje se renderizaban sin estilo. Además, `updateTotal()` nunca se invocaba al cargar: el puntaje total mostraba un `63.0` hardcodeado hasta mover un slider.
+
+### Archivos modificados
+- `src/pages/admin/cupping.astro` — **rediseño completo** manteniendo IDs de campos y el payload del POST para no tocar el backend (`/api/coffee/cupping`, `/api/coffee/roasted-for-cupping`).
+  - **Layout de dos columnas**: formulario por pasos (01–05) a la izquierda + **scoresheet sticky** a la derecha. Una sola columna en móvil (`<1080px`).
+  - **KPIs** derivados del historial: nº de cataciones, puntaje promedio, tasa de aprobación y mejor puntaje.
+  - **Atributos sensoriales** (Aroma, Sabor, Retrogusto, Acidez, Cuerpo, Balance) como sliders 6–10 con relleno de acento en vivo, valor numérico y palabra de calidad (Bueno → Excepcional).
+  - **Atributos por taza** (Uniformidad, Taza limpia, Dulzura) con UI de **5 tazas clicables** (2 pts c/u) en vez de sliders genéricos.
+  - **Scoresheet en vivo**: medidor circular SVG (sobre 90), badge de clasificación con color, **radar sensorial SVG de 6 ejes**, desglose con barras de los 9 atributos, toggle de aprobación y botón de envío.
+  - Stepper de defectos con penalización en vivo (×4), vista previa del **color Agtron** (swatch), y **toast** de confirmación en vez de `alert()`.
+  - Historial reconvertido a **tabla** (`erp-table`) con clasificación coloreada y estado aprobado/rechazado.
+  - **Bug corregido**: el total ahora se calcula al iniciar (`recompute()` en init) en lugar de quedar en el placeholder hardcodeado.
+  - Estilos en bloque `<style is:global>` con prefijo `cup-` (no colisiona con `.erp-*`/`.btn`/`.badge` de `AdminLayout`), 100% sobre tokens Claude Design (`--color-primary`, `--color-accent`, `--rule`, `color-mix`), mobile-first.
+
+### Notas
+- Sin cambios de backend ni de paridad `server/index.js` ↔ `api/index.js`: los endpoints ya existían.
+- El puntaje cliente replica la fórmula del backend (`Σ 9 atributos − defectos × 4`, máx. 90) para que coincida con `createCupping` en `server/services/coffeeService.js`.
+- `astro build` completo verificado ✓ (los avisos `ts(2339)` en el `<script>` son el patrón de vanilla JS común a todo el panel admin; no afectan el build).
+
+---
+
 ## 📅 2026-06-18 — Finanzas: estilos de tablas/pestañas en paneles cargados por JS (Agente: Claude)
 
 ### Contexto
