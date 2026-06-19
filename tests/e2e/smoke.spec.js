@@ -33,8 +33,8 @@ test.describe('Homepage (/)', () => {
     test('debe tener enlace al sitemap en robots.txt', async ({ page }) => {
         const res = await page.goto('/robots.txt');
         await expect(res).not.toBeNull();
-        expect(res!.status()).toBe(200);
-        const body = await res!.text();
+        expect(res.status()).toBe(200);
+        const body = await res.text();
         expect(body).toContain('Sitemap');
         expect(body).toContain('sitemap.xml');
     });
