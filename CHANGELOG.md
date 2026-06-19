@@ -2,6 +2,27 @@
 
 ---
 
+## 📅 2026-06-18 — Generador de Etiquetas: rediseño + vista previa en vivo en `/admin/etiquetas` (Agente: Claude)
+
+### Contexto
+La página era la última sin optimizar del módulo de producción: estilos inline con colores hex hardcodeados (`#8b6f47`, `#251a14`, `#c67b4e`, `#ddd`), tabs con cambio de estilo por JS, `alert()` para validación y éxito, y sin ningún contexto operativo. No usaba nada del sistema de diseño compartido (`page-header`, KPIs, `card`, tokens). Además el endpoint `GET /api/labels/list` estaba sin consumir desde el frontend.
+
+### Archivos modificados
+- `src/pages/admin/etiquetas.astro` — reescrita por completo:
+  - Migrada a `page-header` (breadcrumb + título + subtítulo) + `erp-body` + botón **Actualizar**.
+  - **4 KPIs** (`kpi-tile`): etiquetas generadas, desde lotes, personalizadas y lotes disponibles — alimentados por `/api/labels/list` (`type=lots`/`type=custom`) y `/prepared-lots`.
+  - **Vista previa en vivo de la etiqueta** (funcionalidad nueva): tarjeta tipo empaque de café que se actualiza en tiempo real con origen, variedad, tueste, proceso, barras de perfil (acidez/cuerpo/balance), notas, puntaje, código y QR; refleja el checkbox de QR.
+  - Tabs convertidos en **segmented control** accesible (`role="tab"`, estado `is-active`); formularios con clases del sistema (`form-grid`, `form-group`, `detail-grid`, `info-box`, sliders con escala).
+  - **Toasts** en reemplazo de `alert()`; botones con estado «Generando…» y `disabled` durante el envío.
+  - **Tabla «Etiquetas recientes»** (`erp-table`) con eliminación vía `DELETE /api/labels/:labelId` (antes sin uso en UI). Escape de HTML en el render.
+  - Copy en español Colombia formal (usted): «Seleccione», «¿Cuántas etiquetas desea imprimir?».
+
+### Notas
+- Sin cambios de backend; se consumen los endpoints ya existentes en `server/routes/labels.js` (incluidos `/list` y `DELETE` que no se usaban desde el front).
+- Los avisos `ts(2339)` de `astro check` por acceso al DOM sin tipar son consistentes con el resto del módulo (productos, cupping, finanzas…) y no afectan `astro build`.
+
+---
+
 ## 📅 2026-06-18 — Mapa de ventas: arreglo de renderizado de Leaflet + rediseño (Agente: Claude)
 
 ### Contexto
