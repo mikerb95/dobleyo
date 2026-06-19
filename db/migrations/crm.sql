@@ -59,12 +59,17 @@ CREATE TABLE IF NOT EXISTS crm_interactions (
 CREATE INDEX IF NOT EXISTS idx_crm_interactions_account_time
   ON crm_interactions(account_id, occurred_at DESC);
 
+-- Columna que vincula ventas ML a cuentas CRM. Debe existir ANTES de crear la
+-- vista, porque crm_account_overview la referencia. sales_tracking.total_amount
+-- está en pesos (COP), por eso se multiplica por 100 para expresar centavos.
+ALTER TABLE sales_tracking ADD COLUMN crm_account_id INTEGER REFERENCES crm_accounts(id) ON DELETE SET NULL;
+
 CREATE VIEW IF NOT EXISTS crm_account_overview AS
 SELECT
   a.*,
   (SELECT COUNT(*) FROM crm_interactions i WHERE i.account_id = a.id)          AS interactions_count,
   (SELECT MAX(occurred_at) FROM crm_interactions i WHERE i.account_id = a.id)  AS last_interaction_at,
-  (SELECT IFNULL(SUM(total_cents), 0) FROM sales_tracking s WHERE s.crm_account_id = a.id) AS lifetime_value_cents,
+  (SELECT IFNULL(SUM(s.total_amount * 100), 0) FROM sales_tracking s WHERE s.crm_account_id = a.id) AS lifetime_value_cents,
   (SELECT c.full_name FROM crm_contacts c WHERE c.account_id = a.id AND c.is_primary = 1 LIMIT 1) AS primary_contact_name,
   (SELECT c.email    FROM crm_contacts c WHERE c.account_id = a.id AND c.is_primary = 1 LIMIT 1) AS primary_contact_email
 FROM crm_accounts a;
