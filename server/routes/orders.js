@@ -80,6 +80,7 @@ function verifyWompiEventSignature(event) {
 // Crea una orden en estado pending_payment y devuelve la URL de pago Wompi
 
 ordersRouter.post('/',
+    optionalAuth,
     [
         body('customerName').trim().notEmpty().withMessage('Nombre requerido'),
         body('customerEmail').isEmail().withMessage('Correo inválido'),
