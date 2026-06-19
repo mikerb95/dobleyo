@@ -2,6 +2,30 @@
 
 ---
 
+## 📅 2026-06-19 — Checkout: compra como usuario registrado o invitado (Agente: Claude)
+
+### Contexto
+`POST /api/orders` se creó sin autenticación, por lo que el checkout solo operaba de facto como invitado: aunque el usuario tuviera sesión activa, la orden se guardaba siempre con `user_id = NULL` y la auditoría con actor `null`. Se requería soportar ambos caminos (registrado e invitado) sin romper el flujo existente.
+
+### Backend
+- `server/auth.js` — nuevo middleware `optionalAuth`: adjunta `req.user` si hay un token de sesión válido (cookie o `Authorization`), pero **no** bloquea cuando no hay sesión. Ignora tokens que no son de sesión (p.ej. verificación de email).
+- `server/routes/orders.js` — `POST /api/orders` ahora pasa por `optionalAuth`:
+  - Usuario con sesión → la orden se asocia a su `user_id` (antes siempre `null`).
+  - Invitado → sin cambios, sigue funcionando.
+  - `logAudit` se atribuye a `req.user?.id` en lugar de `null`.
+  - **Paridad** intacta: `ordersRouter` es el mismo router montado en `server/index.js` y `api/index.js`.
+
+### Frontend
+- `src/pages/checkout.astro` — al cargar consulta `GET /api/auth/me`:
+  - Con sesión: precarga nombre, email, dirección, teléfono (separando el indicativo conocido) y departamento → ciudad (best-effort por coincidencia de nombre). Banner: "Comprando como …". Campos editables; solo se rellenan si están vacíos.
+  - Sin sesión: banner con enlace `/login?redirect=/checkout` para iniciar sesión o continuar como invitado.
+  - Estilos `.co-auth-banner` con variables CSS, mobile-first, español formal (usted).
+
+### Verificación
+`node --check` OK en `server/auth.js` y `server/routes/orders.js`.
+
+---
+
 ## 📅 2026-06-18 — MercadoLibre: captura de datos, sync automático, webhook y vínculo CRM (Agente: Claude)
 
 ### Contexto
