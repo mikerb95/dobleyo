@@ -80,7 +80,7 @@ Sigue estos pasos:
 
 6. **Obtén tu Seller ID:**
    - Ve a tu perfil de vendedor
-   - Tu ID está en la URL: `https://www.mercadolibre.com.ar/p/seller_id_here`
+   - Tu ID está en la URL: `https://www.mercadolibre.com.co/p/seller_id_here`
    - O en "Cuenta" > "Información de Vendedor"
    - Úsalo en `.env` como `ML_SELLER_ID`
 
