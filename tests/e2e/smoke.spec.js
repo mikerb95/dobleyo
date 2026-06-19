@@ -104,7 +104,7 @@ test.describe('Robots meta en páginas privadas', () => {
         await page.goto('/login');
         const robotsMeta = page.locator('meta[name="robots"]');
         // El login puede tener noindex opcionalmente, verificar que al menos carga
-        const status = (await page.goto('/login'))!.status();
+        const status = (await page.goto('/login')).status();
         expect([200, 302]).toContain(status);
     });
 });
