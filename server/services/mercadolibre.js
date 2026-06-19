@@ -6,6 +6,18 @@
 import * as db from '../db.js';
 import { logger } from '../logger.js';
 
+/**
+ * Convierte una fecha a texto 'YYYY-MM-DD HH:MM:SS' (UTC), el mismo formato que
+ * produce datetime('now') en SQLite. Evita que libSQL guarde objetos Date como
+ * enteros de milisegundos, lo que rompería el ORDER BY y los filtros por fecha.
+ */
+function toSqliteDatetime(value) {
+  if (value == null) return null;
+  const d = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(d.getTime())) return null;
+  return d.toISOString().slice(0, 19).replace('T', ' ');
+}
+
 class MercadoLibreService {
   constructor(accessToken) {
     this.accessToken = accessToken;
