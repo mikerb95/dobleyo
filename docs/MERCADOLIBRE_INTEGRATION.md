@@ -365,7 +365,7 @@ Los productos se guardan como JSON en el campo `products`:
 
 **Solución:** Verifica que `ML_ACCESS_TOKEN` y `ML_SELLER_ID` estén en `.env`
 
-### Las coordenadas muestran Buenos Aires para todas las ciudades
+### Las coordenadas muestran Bogotá para todas las ciudades
 
 **Solución:** La ciudad no está en la lista de diccionario. Agrégala en `getApproximateCoordinates()`
 
