@@ -182,6 +182,135 @@ function Contacts({ contacts }) {
   );
 }
 
+function LinkedSales({ accountId, sales, onChange }) {
+  const [linking, setLinking] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  const total = sales.reduce((sum, s) => sum + Number(s.total_amount || 0), 0);
+
+  const unlink = async (saleId) => {
+    if (!confirm("¿Desvincular esta venta de la cuenta?")) return;
+    setBusy(true);
+    try {
+      await api.del(`/crm/sales/${saleId}/link`);
+      onChange?.();
+    } catch (e) {
+      alert(`No se pudo desvincular: ${e.message}`);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <section className={styles.panel}>
+      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8 }}>
+        <h2 className={styles.panel__title} style={{ margin: 0 }}>
+          Ventas vinculadas · {sales.length}
+        </h2>
+        <button type="button" className={styles.btn} onClick={() => setLinking((v) => !v)}>
+          {linking ? "Cerrar" : "Vincular venta"}
+        </button>
+      </div>
+
+      {sales.length > 0 && (
+        <div style={{ fontSize: 13, color: "var(--muted)", margin: "4px 0 10px" }}>
+          Total: <b style={{ color: "var(--color-text)" }}>{formatPesos(total)}</b>
+        </div>
+      )}
+
+      {sales.length === 0 ? (
+        <p style={{ color: "var(--muted)", fontSize: 13 }}>Aún no hay ventas de MercadoLibre vinculadas.</p>
+      ) : (
+        <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "grid", gap: 8 }}>
+          {sales.map((s) => (
+            <li key={s.id} style={{
+              display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8,
+              fontSize: 13, borderBottom: "1px solid var(--rule)", paddingBottom: 6,
+            }}>
+              <div>
+                <div style={{ fontWeight: 600 }}>{formatPesos(s.total_amount)}</div>
+                <div style={{ color: "var(--muted)", fontSize: 12 }}>
+                  #{s.ml_order_id} · {s.recipient_city ?? "—"} · {new Date(s.purchase_date).toLocaleDateString("es-CO")}
+                </div>
+              </div>
+              <button type="button" className={styles.btn} disabled={busy}
+                      onClick={() => unlink(s.id)} title="Desvincular">✕</button>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {linking && <SalePicker accountId={accountId} onLinked={() => { setLinking(false); onChange?.(); }} />}
+    </section>
+  );
+}
+
+function SalePicker({ accountId, onLinked }) {
+  const [q, setQ] = useState("");
+  const [debounced, setDebounced] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    const t = setTimeout(() => setDebounced(q.trim()), 300);
+    return () => clearTimeout(t);
+  }, [q]);
+
+  const { data, loading, error } = useApi(
+    `/crm/sales/unlinked?limit=20${debounced ? `&q=${encodeURIComponent(debounced)}` : ""}`,
+    { deps: [debounced] }
+  );
+  const items = data?.items ?? [];
+
+  const link = async (saleId) => {
+    setBusy(true);
+    try {
+      await api.post(`/crm/accounts/${accountId}/sales`, { sale_ids: [saleId] });
+      onLinked?.();
+    } catch (e) {
+      alert(`No se pudo vincular: ${e.message}`);
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div style={{ marginTop: 12, borderTop: "1px solid var(--rule)", paddingTop: 12 }}>
+      <input
+        type="search"
+        value={q}
+        onChange={(e) => setQ(e.target.value)}
+        placeholder="Buscar venta sin vincular (ciudad, producto, # orden)…"
+        style={{
+          width: "100%", padding: "8px 10px", fontSize: 13,
+          border: "1px solid var(--rule)", borderRadius: 8, boxSizing: "border-box",
+        }}
+      />
+      <div style={{ marginTop: 8, maxHeight: 240, overflowY: "auto" }}>
+        {loading && <p style={{ color: "var(--muted)", fontSize: 13 }}>Buscando…</p>}
+        {error && <p style={{ color: "var(--danger)", fontSize: 13 }}>No se pudieron cargar las ventas.</p>}
+        {!loading && !error && items.length === 0 && (
+          <p style={{ color: "var(--muted)", fontSize: 13 }}>No hay ventas sin vincular.</p>
+        )}
+        <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "grid", gap: 6 }}>
+          {items.map((s) => (
+            <li key={s.id} style={{
+              display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, fontSize: 13,
+            }}>
+              <div>
+                <div style={{ fontWeight: 600 }}>{formatPesos(s.total_amount)}</div>
+                <div style={{ color: "var(--muted)", fontSize: 12 }}>
+                  #{s.ml_order_id} · {s.recipient_city ?? "—"} · {new Date(s.purchase_date).toLocaleDateString("es-CO")}
+                </div>
+              </div>
+              <button type="button" className={[styles.btn, styles["btn--primary"]].join(" ")}
+                      disabled={busy} onClick={() => link(s.id)}>Vincular</button>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+}
+
 function Datos({ account }) {
   return (
     <section className={styles.panel}>
