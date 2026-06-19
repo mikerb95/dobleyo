@@ -114,12 +114,12 @@ Obtiene datos agregados por ciudad para el mapa de calor.
   "success": true,
   "data": [
     {
-      "city": "Buenos Aires",
-      "state": "Buenos Aires",
-      "latitude": -34.6037,
-      "longitude": -58.3816,
+      "city": "Bogotá",
+      "state": "Cundinamarca",
+      "latitude": 4.7110,
+      "longitude": -74.0721,
       "order_count": 45,
-      "total_sales": 15450.50
+      "total_sales": 5450000
     },
     ...
   ]
