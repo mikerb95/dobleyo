@@ -146,7 +146,7 @@ class MercadoLibreService {
 
       return {
         ml_order_id: order.id,
-        purchase_date: new Date(order.date_created),
+        purchase_date: toSqliteDatetime(order.date_created),
         total_amount: order.total_amount || orderDetails.total_amount || 0,
         order_status: orderStatus,
         shipping_method: shippingMethod,
