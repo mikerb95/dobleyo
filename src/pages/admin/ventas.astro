@@ -945,7 +945,8 @@ async function exportCSV() {
   const rows = json.data.map(o => {
     let products = '';
     try {
-      products = JSON.parse(o.products || '[]').map(p => `${p.title} x${p.quantity}`).join(' | ');
+      const prods = Array.isArray(o.products) ? o.products : JSON.parse(o.products || '[]');
+      products = prods.map(p => `${p.title} x${p.quantity}`).join(' | ');
     } catch {}
     return [
       o.ml_order_id, o.purchase_date, o.recipient_city, o.recipient_state,
