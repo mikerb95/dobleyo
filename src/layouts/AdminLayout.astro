@@ -1224,14 +1224,30 @@ const { title = "Admin — DobleYo Café", section = "" } = Astro.props;
         }
       })();
 
-      // Active nav
+      // Active nav — resalta el ítem cuya URL coincide con la ruta actual.
+      // Se empareja por href (no por data-section) para cubrir TODAS las
+      // páginas, incluidas las de Operación (harvest, send-roasting, etc.)
+      // que no tienen data-section. Para subrutas (p. ej. /admin/lotes/123)
+      // gana el href más específico que sea prefijo de la ruta.
       (() => {
-        const seg = window.location.pathname.split('/').filter(Boolean);
-        const section = seg[1] ?? 'dashboard';
-        document.querySelectorAll('.nav-item[data-section]').forEach((a) => {
-          if ((a as HTMLAnchorElement).getAttribute('data-section') === section)
-            a.classList.add('active');
+        const path = window.location.pathname.replace(/\/+$/, '') || '/admin';
+        let best: Element | null = null;
+        let bestLen = -1;
+        document.querySelectorAll('.nav-item').forEach((a) => {
+          const href = (a as HTMLAnchorElement).getAttribute('href');
+          if (!href) return;
+          const hrefPath = href.replace(/\/+$/, '');
+          const isMatch =
+            path === hrefPath ||
+            (hrefPath !== '/admin' && path.startsWith(hrefPath + '/'));
+          if (isMatch && hrefPath.length > bestLen) {
+            best = a;
+            bestLen = hrefPath.length;
+          }
         });
+        if (best) (best as Element).classList.add('active');
+        // Marca también la sección que contiene el ítem activo (a11y).
+        best?.closest('.nav-section')?.setAttribute('data-active-section', 'true');
       })();
 
       // Nav toggle
