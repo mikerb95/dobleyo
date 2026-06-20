@@ -1046,8 +1046,11 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   // `node seed_demo.js --products` → solo la ficha de producto (descripción + SCA).
   const onlyTrace = process.argv.includes('--trace');
   const onlyProducts = process.argv.includes('--products');
-  const run = onlyTrace ? seedTraceabilityChain : (onlyProducts ? seedProductCopy : seedDemo);
-  const partial = onlyTrace || onlyProducts;
+  const onlyFarms = process.argv.includes('--farms');
+  const run = onlyTrace ? seedTraceabilityChain
+    : (onlyProducts ? seedProductCopy
+    : (onlyFarms ? seedFarms : seedDemo));
+  const partial = onlyTrace || onlyProducts || onlyFarms;
   run()
     .then(() => { console.log('\n✅ Seed completado.' + (partial ? '' : ' Login demo: cualquier usuario @demo.dobleyo.cafe / Demo1234*')); process.exit(0); })
     .catch((err) => { console.error('\n❌ Error en seed:', err); process.exit(1); });
