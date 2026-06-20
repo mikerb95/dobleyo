@@ -575,7 +575,8 @@ const accountHref = lang === "en" ? "/account" : "/cuenta";
           <span class="cart-preview-item-name">${item.name}<span class="cart-preview-item-qty"> × ${item.qty || 1}</span></span>
           <span class="cart-preview-item-price">${fmt((item.price || 0) * (item.qty || 1))}</span>
         </div>`).join('');
-      const extra = cart.length > 4 ? `<p class="cart-preview-empty">+${cart.length - 4} más</p>` : '';
+      const moreLbl = lang === 'en' ? 'more' : 'más';
+      const extra = cart.length > 4 ? `<p class="cart-preview-empty">+${cart.length - 4} ${moreLbl}</p>` : '';
       const subtotal = window.Cart.subtotal();
       inner.innerHTML = items + extra + `
         <div style="border-top:1px solid var(--border);margin-top:0.4rem;padding-top:0.5rem;display:flex;justify-content:space-between;align-items:center;">
