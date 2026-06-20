@@ -87,14 +87,18 @@ const { title = "Admin — DobleYo Café", section = "" } = Astro.props;
 
         --radius:    10px;
         --radius-sm: 8px;
+
+        /* Tipografía de marca (ya cargadas vía Head.astro) */
+        --font-ui:      "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+        --font-display: "Playfair Display", Georgia, "Times New Roman", Times, serif;
+        --font-serif:   "Lora", Georgia, "Times New Roman", Times, serif;
       }
 
       * { box-sizing: border-box; }
 
       html, body {
         margin: 0; padding: 0;
-        font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
-        font-feature-settings: "ss01", "cv11";
+        font-family: var(--font-ui);
         color: var(--color-text);
         background: var(--bg);
         min-height: 100vh;
