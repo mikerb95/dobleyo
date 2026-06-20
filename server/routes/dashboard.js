@@ -146,6 +146,12 @@ dashboardRouter.get('/summary', async (req, res) => {
       if (r.estado === 'tostado') production.roasted = num(r.n);
     }
 
+    // Serie de producción por período: lotes registrados vs. tostados.
+    const prodPeriods = {};
+    for (const r of prodRegR.rows)   { (prodPeriods[r.period] ??= { period: r.period, registered: 0, roasted: 0 }).registered = num(r.n); }
+    for (const r of prodRoastR.rows) { (prodPeriods[r.period] ??= { period: r.period, registered: 0, roasted: 0 }).roasted = num(r.n); }
+    const prodTimeline = Object.values(prodPeriods).sort((a, b) => a.period.localeCompare(b.period));
+
     ok(res, {
       range,
       sales: {
