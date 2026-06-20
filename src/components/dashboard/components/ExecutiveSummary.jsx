@@ -206,6 +206,57 @@ function StatusBreakdown({ items }) {
   );
 }
 
+/* ── Tendencia de producción (registrados vs. tostados) ──────────── */
+function ProductionTrend({ timeline }) {
+  const totalReg = timeline.reduce((s, p) => s + (p.registered || 0), 0);
+  const totalRoast = timeline.reduce((s, p) => s + (p.roasted || 0), 0);
+  return (
+    <article className={styles.card}>
+      <header className={styles.card__head}>
+        <h3 className={styles.card__title}>Producción de lotes</h3>
+        <span className={styles.card__sub}>por período</span>
+      </header>
+      {timeline.length === 0 ? (
+        <p className={styles.feed__empty}>Sin lotes registrados en el período.</p>
+      ) : (
+        <>
+          <GroupedBars data={timeline} />
+          <ul className={styles.legend}>
+            <li className={styles.legend__item}>
+              <span className={[styles.legend__dot, styles["statusbar__seg--0"]].join(" ")} aria-hidden="true" />
+              <span className={styles.legend__label}>Registrados</span>
+              <span className={styles.legend__count}>{fmtNum(totalReg)}</span>
+            </li>
+            <li className={styles.legend__item}>
+              <span className={[styles.legend__dot, styles["statusbar__seg--1"]].join(" ")} aria-hidden="true" />
+              <span className={styles.legend__label}>Tostados</span>
+              <span className={styles.legend__count}>{fmtNum(totalRoast)}</span>
+            </li>
+          </ul>
+        </>
+      )}
+    </article>
+  );
+}
+
+function GroupedBars({ data }) {
+  const max = Math.max(...data.flatMap((d) => [d.registered || 0, d.roasted || 0]), 1);
+  return (
+    <div className={styles.gbars} role="img" aria-label="Lotes registrados y tostados por período">
+      {data.map((d) => (
+        <div key={d.period} className={styles.gbars__col} title={`${d.period} · ${d.registered} reg. / ${d.roasted} tost.`}>
+          <div className={styles.gbars__pair}>
+            <span className={[styles.gbars__bar, styles["gbars__bar--reg"]].join(" ")}
+                  style={{ height: `${((d.registered || 0) / max) * 100}%` }} />
+            <span className={[styles.gbars__bar, styles["gbars__bar--roast"]].join(" ")}
+                  style={{ height: `${((d.roasted || 0) / max) * 100}%` }} />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 /* ── Snapshots de producción e inventario ────────────────────────── */
 function Snapshots({ production, inventory }) {
   return (
