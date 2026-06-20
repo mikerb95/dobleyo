@@ -2,412 +2,249 @@
 import AdminLayout from "../../layouts/AdminLayout.astro";
 ---
 
-<AdminLayout>
-  <div style="max-width: 1400px; margin: 0 auto; padding: 1.5rem;">
-    <div
-      style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;"
-    >
-      <h1 style="font-size: 2rem; font-weight: 700; color: #8b6f47;">
-        📦 Gestión de Productos
-      </h1>
-      <button
-        id="openCreateProductBtn"
-        style="background: #8b6f47; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 6px; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: background 0.2s;"
-      >
-        ➕ Nuevo Producto
-      </button>
+<AdminLayout title="Productos — DobleYo">
+  <!-- ── Encabezado de página ──────────────────────────────────────────── -->
+  <div class="page-header">
+    <div class="page-header-top">
+      <div>
+        <div class="page-breadcrumb">Catálogo · Productos</div>
+        <h1 class="page-title">Gestión de productos</h1>
+        <p class="page-subtitle">
+          Catálogo, precios e inventario de la tienda. Controle stock,
+          márgenes y disponibilidad en un solo lugar.
+        </p>
+      </div>
+      <div class="page-header-actions">
+        <button type="button" class="btn btn-secondary" id="refreshBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline>
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+          </svg>
+          Actualizar
+        </button>
+        <button type="button" class="btn btn-save" id="openCreateProductBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          Nuevo producto
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="erp-body">
+    <!-- ── KPIs ──────────────────────────────────────────────────────── -->
+    <div class="kpi-grid" style="margin-bottom: 22px;">
+      <div class="kpi-tile brand">
+        <div class="kpi-label">Productos en catálogo</div>
+        <div class="kpi-value" id="kpiTotal">—</div>
+        <div class="kpi-sub" id="kpiActiveSub">—</div>
+      </div>
+      <div class="kpi-tile info">
+        <div class="kpi-label">Valor de inventario</div>
+        <div class="kpi-value" id="kpiValue">—</div>
+        <div class="kpi-sub">Precio × stock disponible</div>
+      </div>
+      <div class="kpi-tile warning">
+        <div class="kpi-label">Stock bajo</div>
+        <div class="kpi-value" id="kpiLow">—</div>
+        <div class="kpi-sub">En o bajo el mínimo definido</div>
+      </div>
+      <div class="kpi-tile error">
+        <div class="kpi-label">Agotados</div>
+        <div class="kpi-value" id="kpiOut">—</div>
+        <div class="kpi-sub">Sin unidades disponibles</div>
+      </div>
     </div>
 
-    <!-- Filtros -->
-    <div
-      style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;"
-    >
-      <select
-        id="categoryFilter"
-        style="padding: 0.5rem 1rem; border: 1px solid #ddd; border-radius: 6px; font-size: 0.95rem;"
-      >
-        <option value="">Todas las categorías</option>
-        <option value="cafe">Café</option>
-        <option value="accesorio">Accesorio</option>
-        <option value="merchandising">Merchandising</option>
-      </select>
+    <!-- ── Catálogo ──────────────────────────────────────────────────── -->
+    <section class="card">
+      <div class="card-header">
+        <div>
+          <h3 class="card-title">Catálogo</h3>
+          <div class="card-subtitle" id="resultCount">—</div>
+        </div>
+      </div>
 
-      <select
-        id="activeFilter"
-        style="padding: 0.5rem 1rem; border: 1px solid #ddd; border-radius: 6px; font-size: 0.95rem;"
-      >
-        <option value="">Todos los productos</option>
-        <option value="true">Activos</option>
-        <option value="false">Inactivos</option>
-      </select>
+      <!-- Filtros -->
+      <div class="filters">
+        <div class="search-field">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="search" id="searchInput" placeholder="Buscar por nombre, SKU o descripción…" />
+        </div>
+        <select id="categoryFilter" class="filter-select">
+          <option value="">Todas las categorías</option>
+          <option value="cafe">Café</option>
+          <option value="accesorio">Accesorio</option>
+          <option value="merchandising">Merchandising</option>
+        </select>
+        <select id="activeFilter" class="filter-select">
+          <option value="">Todos los estados</option>
+          <option value="true">Activos</option>
+          <option value="false">Inactivos</option>
+        </select>
+        <select id="stockFilter" class="filter-select">
+          <option value="">Todo el stock</option>
+          <option value="low">Stock bajo</option>
+          <option value="out">Agotados</option>
+        </select>
+      </div>
 
-      <input
-        type="search"
-        id="searchInput"
-        placeholder="Buscar por nombre, SKU o descripción..."
-        style="padding: 0.5rem 1rem; border: 1px solid #ddd; border-radius: 6px; font-size: 0.95rem; flex: 1; min-width: 250px;"
-      />
-    </div>
+      <div class="table-wrapper">
+        <table class="erp-table products-table">
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th>Categoría</th>
+              <th style="text-align: right;">Precio</th>
+              <th style="text-align: right;">Margen</th>
+              <th style="text-align: center;">Stock</th>
+              <th>Estado</th>
+              <th style="text-align: right;">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="productsTableBody">
+            <tr><td colspan="7" class="empty-state">Cargando productos…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
 
-    <!-- Loading -->
-    <div id="loading" style="text-align: center; padding: 2rem; color: #666;">
-      Cargando productos...
-    </div>
-
-    <!-- Error -->
-    <div
-      id="error"
-      style="display: none; background: #fee; border: 1px solid #fcc; border-radius: 6px; padding: 1rem; color: #c00;"
-    >
-    </div>
-
-    <!-- Tabla de productos -->
-    <div
-      style="overflow-x: auto; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);"
-    >
-      <table
-        id="productsTable"
-        style="width: 100%; border-collapse: collapse; display: none;"
-      >
-        <thead>
-          <tr style="background: #f9fafb; border-bottom: 2px solid #e5e7eb;">
-            <th
-              style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;"
-              >ID</th
-            >
-            <th
-              style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;"
-              >Nombre</th
-            >
-            <th
-              style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;"
-              >SKU</th
-            >
-            <th
-              style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;"
-              >Categoría</th
-            >
-            <th
-              style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;"
-              >Precio</th
-            >
-            <th
-              style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;"
-              >Stock</th
-            >
-            <th
-              style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;"
-              >Estado</th
-            >
-            <th
-              style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;"
-              >Creado</th
-            >
-            <th
-              style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;"
-              >Acciones</th
-            >
-          </tr>
-        </thead>
-        <tbody id="productsTableBody"> </tbody>
-      </table>
-    </div>
-
-    <!-- Modal Crear/Editar Producto -->
-    <div
-      id="productModal"
-      style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: flex-start; overflow-y: auto; padding: 2rem 0;"
-    >
-      <div
-        style="background: white; border-radius: 8px; padding: 2rem; max-width: 700px; width: 90%; max-height: 90vh; overflow-y: auto;"
-      >
-        <h2 id="modalTitle" style="margin-bottom: 1.5rem; color: #251a14;">
-          Nuevo Producto
-        </h2>
+  <!-- ── Modal Crear/Editar ──────────────────────────────────────────── -->
+  <div class="modal" id="productModal" hidden>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title" id="modalTitle">Nuevo producto</h2>
+        <button type="button" class="modal-close" id="closeProductModalX" aria-label="Cerrar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
         <form id="productForm">
-          <!-- ID (solo para crear) -->
-          <div id="idFieldContainer" style="margin-bottom: 1rem;">
-            <label
-              style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
-              >ID del Producto:</label
-            >
-            <input
-              type="text"
-              id="productId"
-              style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;"
-              placeholder="ej: cafe-001"
-            />
-          </div>
+          <!-- Datos básicos -->
+          <div class="form-section"><h3>Información básica</h3></div>
 
-          <!-- Nombre -->
-          <div style="margin-bottom: 1rem;">
-            <label
-              style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
-              >Nombre:</label
-            >
-            <input
-              type="text"
-              id="productName"
-              style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;"
-              required
-            />
-          </div>
-
-          <!-- SKU -->
-          <div style="margin-bottom: 1rem;">
-            <label
-              style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
-              >SKU:</label
-            >
-            <input
-              type="text"
-              id="productSku"
-              style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;"
-            />
-          </div>
-
-          <!-- Descripción -->
-          <div style="margin-bottom: 1rem;">
-            <label
-              style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
-              >Descripción:</label
-            >
-            <textarea
-              id="productDescription"
-              style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; font-family: inherit; resize: vertical; min-height: 80px;"
-            ></textarea>
-          </div>
-
-          <!-- Categoría -->
-          <div style="margin-bottom: 1rem;">
-            <label
-              style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
-              >Categoría:</label
-            >
-            <select
-              id="productCategory"
-              style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;"
-              required
-            >
-              <option value="cafe">Café</option>
-              <option value="accesorio">Accesorio</option>
-              <option value="merchandising">Merchandising</option>
-            </select>
-          </div>
-
-          <!-- Subcategoría -->
-          <div style="margin-bottom: 1rem;">
-            <label
-              style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
-              >Subcategoría:</label
-            >
-            <input
-              type="text"
-              id="productSubcategory"
-              style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;"
-              placeholder="ej: Origen, Tipo de accesorio, etc"
-            />
-          </div>
-
-          <!-- Campos específicos para Café -->
-          <div id="coffeeFields" style="display: none;">
-            <div style="margin-bottom: 1rem;">
-              <label
-                style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
-                >Origen:</label
-              >
-              <input
-                type="text"
-                id="productOrigin"
-                style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;"
-              />
+          <div class="form-grid">
+            <div class="form-group" id="idFieldContainer">
+              <label for="productId">ID del producto <span class="required">*</span></label>
+              <input type="text" id="productId" placeholder="ej: cafe-001" />
+              <div class="form-hint">Identificador único, no editable después.</div>
             </div>
-
-            <div style="margin-bottom: 1rem;">
-              <label
-                style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
-                >Proceso:</label
-              >
-              <input
-                type="text"
-                id="productProcess"
-                style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;"
-                placeholder="ej: Lavado, Honey, Natural"
-              />
+            <div class="form-group">
+              <label for="productName">Nombre <span class="required">*</span></label>
+              <input type="text" id="productName" required />
             </div>
+          </div>
 
-            <div style="margin-bottom: 1rem;">
-              <label
-                style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
-                >Tostado:</label
-              >
-              <input
-                type="text"
-                id="productRoast"
-                style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;"
-                placeholder="ej: Claro, Medio, Oscuro"
-              />
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="productSku">SKU</label>
+              <input type="text" id="productSku" placeholder="Código de referencia" />
             </div>
-
-            <!-- Checkbox Es Trazable -->
-            <div style="margin-bottom: 1rem;">
-              <label
-                style="display: flex; align-items: center; font-weight: 500;"
-              >
-                <input
-                  type="checkbox"
-                  id="productTraceable"
-                  style="margin-right: 0.5rem; cursor: pointer;"
-                />
-                Es trazable
-              </label>
+            <div class="form-group">
+              <label for="productCategory">Categoría <span class="required">*</span></label>
+              <select id="productCategory" required>
+                <option value="cafe">Café</option>
+                <option value="accesorio">Accesorio</option>
+                <option value="merchandising">Merchandising</option>
+              </select>
             </div>
+          </div>
 
-            <!-- Campos Trazabilidad (condicionales) -->
-            <div
-              id="traceabilityFields"
-              style="display: none; border: 1px solid #e5d5c8; border-radius: 6px; padding: 1rem; background: #faf8f5; margin-bottom: 1rem;"
-            >
-              <div style="margin-bottom: 1rem;">
-                <label
-                  style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
-                  >Finca:</label
-                >
-                <input
-                  type="text"
-                  id="productFarm"
-                  style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;"
-                  placeholder="Nombre de la finca"
-                />
+          <div class="form-group">
+            <label for="productSubcategory">Subcategoría</label>
+            <input type="text" id="productSubcategory" placeholder="ej: Origen, tipo de accesorio…" />
+          </div>
+
+          <div class="form-group">
+            <label for="productDescription">Descripción</label>
+            <textarea id="productDescription"></textarea>
+          </div>
+
+          <!-- Campos específicos de café -->
+          <div id="coffeeFields" hidden>
+            <div class="form-section"><h3>☕ Detalles del café</h3></div>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="productOrigin">Origen</label>
+                <input type="text" id="productOrigin" placeholder="ej: Huila, Nariño" />
               </div>
-
-              <div style="margin-bottom: 1rem;">
-                <label
-                  style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
-                  >Variedad:</label
-                >
-                <input
-                  type="text"
-                  id="productVariety"
-                  style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;"
-                  placeholder="ej: Bourbon, Geisha, Typica"
-                />
+              <div class="form-group">
+                <label for="productProcess">Proceso</label>
+                <input type="text" id="productProcess" placeholder="ej: Lavado, Honey, Natural" />
               </div>
+            </div>
+            <div class="form-group">
+              <label for="productRoast">Tostado</label>
+              <input type="text" id="productRoast" placeholder="ej: Claro, Medio, Oscuro" />
+            </div>
 
-              <div style="margin-bottom: 1rem;">
-                <label
-                  style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
-                  >Fecha de Tostión:</label
-                >
-                <input
-                  type="date"
-                  id="productRoastDate"
-                  style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;"
-                />
+            <label class="checkbox-item" style="margin-bottom: 4px;">
+              <input type="checkbox" id="productTraceable" />
+              <span>📍 Producto trazable (mostrar origen y lote en tienda)</span>
+            </label>
+
+            <div id="traceabilityFields" class="trace-box" hidden>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="productFarm">Finca</label>
+                  <input type="text" id="productFarm" placeholder="Nombre de la finca" />
+                </div>
+                <div class="form-group">
+                  <label for="productVariety">Variedad</label>
+                  <input type="text" id="productVariety" placeholder="ej: Bourbon, Geisha" />
+                </div>
               </div>
-
-              <div style="margin-bottom: 0;">
-                <label
-                  style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
-                  >Aroma:</label
-                >
-                <input
-                  type="text"
-                  id="productAroma"
-                  style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;"
-                  placeholder="ej: Florales, Frutas, Chocolate"
-                />
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="productRoastDate">Fecha de tostión</label>
+                  <input type="date" id="productRoastDate" />
+                </div>
+                <div class="form-group">
+                  <label for="productAroma">Aroma</label>
+                  <input type="text" id="productAroma" placeholder="ej: Florales, chocolate" />
+                </div>
               </div>
             </div>
           </div>
 
-          <!-- Precio y Costo -->
-          <div
-            style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;"
-          >
-            <div>
-              <label
-                style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
-                >Precio (COP):</label
-              >
-              <input
-                type="number"
-                id="productPrice"
-                style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;"
-                required
-                min="0"
-              />
+          <!-- Precios e inventario -->
+          <div class="form-section"><h3>💵 Precios e inventario</h3></div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="productPrice">Precio de venta (COP) <span class="required">*</span></label>
+              <input type="number" id="productPrice" required min="0" />
             </div>
-            <div>
-              <label
-                style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
-                >Costo (COP):</label
-              >
-              <input
-                type="number"
-                id="productCost"
-                style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;"
-                min="0"
-              />
+            <div class="form-group">
+              <label for="productCost">Costo (COP)</label>
+              <input type="number" id="productCost" min="0" />
+              <div class="form-hint" id="marginHint">Margen: —</div>
             </div>
           </div>
-
-          <!-- Stock -->
-          <div
-            style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;"
-          >
-            <div>
-              <label
-                style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
-                >Stock Actual:</label
-              >
-              <input
-                type="number"
-                id="productStock"
-                style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;"
-                min="0"
-              />
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="productStock">Stock actual</label>
+              <input type="number" id="productStock" min="0" />
             </div>
-            <div>
-              <label
-                style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
-                >Stock Mínimo:</label
-              >
-              <input
-                type="number"
-                id="productStockMin"
-                style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;"
-                min="0"
-              />
+            <div class="form-group">
+              <label for="productStockMin">Stock mínimo</label>
+              <input type="number" id="productStockMin" min="0" />
+              <div class="form-hint">Umbral para la alerta de stock bajo.</div>
             </div>
           </div>
-
-          <!-- Peso -->
-          <div
-            style="display: grid; grid-template-columns: 2fr 1fr; gap: 1rem; margin-bottom: 1rem;"
-          >
-            <div>
-              <label
-                style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
-                >Peso:</label
-              >
-              <input
-                type="number"
-                id="productWeight"
-                style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;"
-                step="0.01"
-                min="0"
-              />
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="productWeight">Peso</label>
+              <input type="number" id="productWeight" step="0.01" min="0" />
             </div>
-            <div>
-              <label
-                style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
-                >Unidad:</label
-              >
-              <select
-                id="productWeightUnit"
-                style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;"
-              >
+            <div class="form-group">
+              <label for="productWeightUnit">Unidad</label>
+              <select id="productWeightUnit">
                 <option value="g">g</option>
                 <option value="kg">kg</option>
                 <option value="ml">ml</option>
@@ -416,742 +253,632 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
               </select>
             </div>
           </div>
-
-          <!-- URL Imagen -->
-          <div style="margin-bottom: 1rem;">
-            <label
-              style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
-              >URL de Imagen Principal:</label
-            >
-            <input
-              type="url"
-              id="productImageUrl"
-              style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;"
-            />
+          <div class="form-group">
+            <label for="productDimensions">Dimensiones</label>
+            <input type="text" id="productDimensions" placeholder="ej: 10x10x5 cm" />
           </div>
 
-          <!-- Imágenes Adicionales (JSON) -->
-          <div style="margin-bottom: 1rem;">
-            <label
-              style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
-              >Imágenes Adicionales (URLs separadas por comas):</label
-            >
-            <textarea
-              id="productImages"
-              style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; font-family: inherit; resize: vertical; min-height: 60px;"
-              placeholder="ej: https://ejemplo.com/img1.jpg, https://ejemplo.com/img2.jpg"
-            ></textarea>
+          <!-- Medios -->
+          <div class="form-section"><h3>🖼️ Medios y reputación</h3></div>
+          <div class="form-group">
+            <label for="productImageUrl">URL de imagen principal</label>
+            <input type="url" id="productImageUrl" placeholder="https://…" />
+          </div>
+          <div class="form-group">
+            <label for="productImages">Imágenes adicionales (URLs separadas por comas)</label>
+            <textarea id="productImages" placeholder="https://…/img1.jpg, https://…/img2.jpg"></textarea>
+          </div>
+          <div class="form-group">
+            <label for="productRating">Calificación (0–5)</label>
+            <input type="number" id="productRating" min="0" max="5" step="0.1" value="0" />
           </div>
 
-          <!-- Rating -->
-          <div style="margin-bottom: 1rem;">
-            <label
-              style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
-              >Calificación (0-5):</label
-            >
-            <input
-              type="number"
-              id="productRating"
-              style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;"
-              min="0"
-              max="5"
-              step="0.1"
-              value="0"
-            />
+          <!-- Etiquetas comerciales -->
+          <div class="form-section"><h3>🏷️ Etiquetas comerciales</h3></div>
+          <div class="flags-grid">
+            <label class="checkbox-item"><input type="checkbox" id="productDeal" /><span>Oferta</span></label>
+            <label class="checkbox-item"><input type="checkbox" id="productBestseller" /><span>Best seller</span></label>
+            <label class="checkbox-item"><input type="checkbox" id="productNew" /><span>Nuevo</span></label>
+            <label class="checkbox-item"><input type="checkbox" id="productFast" /><span>Entrega rápida</span></label>
           </div>
-
-          <!-- Dimensiones -->
-          <div style="margin-bottom: 1rem;">
-            <label
-              style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
-              >Dimensiones:</label
-            >
-            <input
-              type="text"
-              id="productDimensions"
-              style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;"
-              placeholder="ej: 10x10x5 cm"
-            />
-          </div>
-
-          <!-- Flags -->
-          <div
-            style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;"
-          >
-            <label
-              style="display: flex; align-items: center; font-weight: 500;"
-            >
-              <input
-                type="checkbox"
-                id="productDeal"
-                style="margin-right: 0.5rem;"
-              />
-              Es Oferta
-            </label>
-            <label
-              style="display: flex; align-items: center; font-weight: 500;"
-            >
-              <input
-                type="checkbox"
-                id="productBestseller"
-                style="margin-right: 0.5rem;"
-              />
-              Best Seller
-            </label>
-            <label
-              style="display: flex; align-items: center; font-weight: 500;"
-            >
-              <input
-                type="checkbox"
-                id="productNew"
-                style="margin-right: 0.5rem;"
-              />
-              Nuevo
-            </label>
-            <label
-              style="display: flex; align-items: center; font-weight: 500;"
-            >
-              <input
-                type="checkbox"
-                id="productFast"
-                style="margin-right: 0.5rem;"
-              />
-              Entrega Rápida
-            </label>
-          </div>
-
-          <!-- Activo -->
-          <div style="margin-bottom: 1.5rem;">
-            <label
-              style="display: flex; align-items: center; font-weight: 500;"
-            >
-              <input
-                type="checkbox"
-                id="productActive"
-                checked
-                style="margin-right: 0.5rem;"
-              />
-              Producto Activo (visible en tienda)
-            </label>
-          </div>
+          <label class="checkbox-item" style="margin-top: 8px;">
+            <input type="checkbox" id="productActive" checked />
+            <span>✅ Producto activo (visible en la tienda)</span>
+          </label>
 
           <!-- SEO -->
-          <div style="margin-bottom: 1rem;">
-            <label
-              style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
-              >Meta Keywords (SEO):</label
-            >
-            <input
-              type="text"
-              id="productMetaKeywords"
-              style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;"
-            />
+          <div class="form-section"><h3>🔍 SEO</h3></div>
+          <div class="form-group">
+            <label for="productMetaKeywords">Meta keywords</label>
+            <input type="text" id="productMetaKeywords" placeholder="café, especialidad, huila…" />
           </div>
-
-          <div style="margin-bottom: 1.5rem;">
-            <label
-              style="display: block; font-weight: 500; margin-bottom: 0.5rem;"
-              >Meta Descripción (SEO):</label
-            >
-            <textarea
-              id="productMetaDescription"
-              style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; font-family: inherit; resize: vertical; min-height: 60px;"
-            ></textarea>
-          </div>
-
-          <div style="display: flex; gap: 1rem;">
-            <button
-              type="submit"
-              style="flex: 1; padding: 0.75rem; background: #8b6f47; color: white; border: none; border-radius: 4px; font-weight: 500; cursor: pointer;"
-            >
-              Guardar Producto
-            </button>
-            <button
-              type="button"
-              id="closeProductModalBtn"
-              style="flex: 1; padding: 0.75rem; background: #ddd; color: #333; border: none; border-radius: 4px; font-weight: 500; cursor: pointer;"
-            >
-              Cancelar
-            </button>
+          <div class="form-group">
+            <label for="productMetaDescription">Meta descripción</label>
+            <textarea id="productMetaDescription"></textarea>
           </div>
         </form>
       </div>
-    </div>
-
-    <!-- Modal Eliminar Producto -->
-    <div
-      id="deleteModal"
-      style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;"
-    >
-      <div
-        style="background: white; border-radius: 8px; padding: 2rem; max-width: 400px; width: 90%;"
-      >
-        <h2 style="margin-bottom: 1rem; color: #c00;">Eliminar Producto</h2>
-        <p style="margin-bottom: 1rem; color: #666;">
-          ¿Estás seguro de que deseas eliminar este producto? Esta acción no se
-          puede deshacer.
-        </p>
-        <p
-          style="margin-bottom: 1.5rem; background: #fee; padding: 1rem; border-radius: 4px; color: #c00;"
-        >
-          Producto: <strong id="deleteProductName"></strong>
-        </p>
-        <div style="display: flex; gap: 1rem;">
-          <button
-            id="confirmDeleteBtn"
-            style="flex: 1; padding: 0.75rem; background: #c00; color: white; border: none; border-radius: 4px; font-weight: 500; cursor: pointer;"
-          >
-            Eliminar
-          </button>
-          <button
-            id="closeDeleteModalBtn"
-            style="flex: 1; padding: 0.75rem; background: #ddd; color: #333; border: none; border-radius: 4px; font-weight: 500; cursor: pointer;"
-          >
-            Cancelar
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Estadísticas -->
-    <div
-      style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 2rem;"
-    >
-      <div
-        style="background: #dbeafe; border-radius: 8px; padding: 1.5rem; text-align: center;"
-      >
-        <div
-          style="font-size: 2rem; font-weight: 700; color: #1e40af;"
-          id="totalProducts"
-        >
-          0
-        </div>
-        <div style="color: #1e40af; font-size: 0.9rem; margin-top: 0.5rem;">
-          Total Productos
-        </div>
-      </div>
-      <div
-        style="background: #fef3c7; border-radius: 8px; padding: 1.5rem; text-align: center;"
-      >
-        <div
-          style="font-size: 2rem; font-weight: 700; color: #92400e;"
-          id="totalCafe"
-        >
-          0
-        </div>
-        <div style="color: #92400e; font-size: 0.9rem; margin-top: 0.5rem;">
-          Cafés
-        </div>
-      </div>
-      <div
-        style="background: #d1fae5; border-radius: 8px; padding: 1.5rem; text-align: center;"
-      >
-        <div
-          style="font-size: 2rem; font-weight: 700; color: #065f46;"
-          id="totalAccesorios"
-        >
-          0
-        </div>
-        <div style="color: #065f46; font-size: 0.9rem; margin-top: 0.5rem;">
-          Accesorios
-        </div>
-      </div>
-      <div
-        style="background: #e0e7ff; border-radius: 8px; padding: 1.5rem; text-align: center;"
-      >
-        <div
-          style="font-size: 2rem; font-weight: 700; color: #3730a3;"
-          id="totalMerchandising"
-        >
-          0
-        </div>
-        <div style="color: #3730a3; font-size: 0.9rem; margin-top: 0.5rem;">
-          Merchandising
-        </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" id="closeProductModalBtn">Cancelar</button>
+        <button type="submit" form="productForm" class="btn btn-save" id="saveProductBtn">Guardar producto</button>
       </div>
     </div>
   </div>
+
+  <!-- ── Modal Eliminar ──────────────────────────────────────────────── -->
+  <div class="modal" id="deleteModal" hidden>
+    <div class="modal-content" style="max-width: 420px;">
+      <div class="modal-header">
+        <h2 class="modal-title" style="color: var(--danger);">Eliminar producto</h2>
+      </div>
+      <div class="modal-body">
+        <p style="margin: 0 0 12px; color: var(--muted); font-size: 14px;">
+          Esta acción no se puede deshacer. Se eliminará permanentemente del catálogo.
+        </p>
+        <div class="error-box">
+          Producto: <strong id="deleteProductName"></strong>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" id="closeDeleteModalBtn">Cancelar</button>
+        <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Eliminar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toasts -->
+  <div class="toast-stack" id="toastStack" aria-live="polite"></div>
 
   <script>
     let allProducts = [];
     let currentEditProductId = null;
 
-    // Exponer funciones al objeto window para que sean accesibles desde onclick
-    window.openCreateModal = function () {
-      currentEditProductId = null;
-      document.getElementById("modalTitle").textContent = "Nuevo Producto";
-      document.getElementById("idFieldContainer").style.display = "block";
-      document.getElementById("productId").disabled = false;
-      document.getElementById("productForm").reset();
-      document.getElementById("productActive").checked = true;
-      document.getElementById("productModal").style.display = "flex";
+    // ── Toast ───────────────────────────────────────────────────────
+    function toast(message, type = "info") {
+      const stack = document.getElementById("toastStack");
+      const el = document.createElement("div");
+      el.className = `toast toast--${type}`;
+      el.textContent = message;
+      stack.appendChild(el);
+      requestAnimationFrame(() => el.classList.add("is-in"));
+      setTimeout(() => {
+        el.classList.remove("is-in");
+        setTimeout(() => el.remove(), 250);
+      }, 4000);
+    }
+
+    // ── Helpers ─────────────────────────────────────────────────────
+    function esc(s) {
+      if (s == null) return "";
+      return String(s).replace(/[&<>"']/g, (c) =>
+        ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])
+      );
+    }
+    function cop(n) {
+      const v = Number(n) || 0;
+      return "$" + v.toLocaleString("es-CO");
+    }
+    function compactCop(n) {
+      const v = Number(n) || 0;
+      if (v >= 1_000_000) return "$" + (v / 1_000_000).toFixed(1).replace(".0", "") + "M";
+      if (v >= 1_000) return "$" + Math.round(v / 1_000) + "k";
+      return "$" + v;
+    }
+    function isLow(p) {
+      return Number(p.stock_min) > 0 && Number(p.stock_quantity) <= Number(p.stock_min);
+    }
+    function isOut(p) {
+      return Number(p.stock_quantity) <= 0;
+    }
+    const CATEGORY = {
+      cafe: { label: "Café", cls: "badge-warning" },
+      accesorio: { label: "Accesorio", cls: "badge-success" },
+      merchandising: { label: "Merchandising", cls: "badge-info" },
     };
 
-    window.openEditModal = function (productId) {
-      const product = allProducts.find((p) => p.id === productId);
-      if (!product) return;
-
-      currentEditProductId = productId;
-      document.getElementById("modalTitle").textContent =
-        "Editar Producto: " + product.name;
-      document.getElementById("idFieldContainer").style.display = "none";
-      document.getElementById("productId").value = product.id;
-      document.getElementById("productId").disabled = true;
-
-      document.getElementById("productName").value = product.name || "";
-      document.getElementById("productSku").value = product.sku || "";
-      document.getElementById("productDescription").value =
-        product.description || "";
-      document.getElementById("productCategory").value = product.category;
-      document.getElementById("productSubcategory").value =
-        product.subcategory || "";
-      document.getElementById("productOrigin").value = product.origin || "";
-      document.getElementById("productProcess").value = product.process || "";
-      document.getElementById("productRoast").value = product.roast || "";
-      document.getElementById("productPrice").value = product.price || "";
-      document.getElementById("productCost").value = product.cost || "";
-      document.getElementById("productStock").value =
-        product.stock_quantity || "";
-      document.getElementById("productStockMin").value =
-        product.stock_min || "";
-      document.getElementById("productWeight").value = product.weight || "";
-      document.getElementById("productWeightUnit").value =
-        product.weight_unit || "g";
-      document.getElementById("productImageUrl").value =
-        product.image_url || "";
-      document.getElementById("productDimensions").value =
-        product.dimensions || "";
-
-      // Convertir array de imágenes a string separado por comas
-      if (product.images) {
-        try {
-          const imagesArray =
-            typeof product.images === "string"
-              ? JSON.parse(product.images)
-              : product.images;
-          document.getElementById("productImages").value =
-            imagesArray.join(", ");
-        } catch (e) {
-          document.getElementById("productImages").value = product.images;
-        }
-      }
-
-      document.getElementById("productRating").value = product.rating || "0";
-      document.getElementById("productDeal").checked = product.is_deal || false;
-      document.getElementById("productBestseller").checked =
-        product.is_bestseller || false;
-      document.getElementById("productNew").checked = product.is_new || false;
-      document.getElementById("productFast").checked = product.is_fast || false;
-      document.getElementById("productActive").checked =
-        product.is_active !== false;
-      document.getElementById("productMetaKeywords").value =
-        product.meta_keywords || "";
-      document.getElementById("productMetaDescription").value =
-        product.meta_description || "";
-
-      // Campos de trazabilidad
-      const isTraceable =
-        product.farm || product.variety || product.roast_date || product.aroma;
-      document.getElementById("productTraceable").checked = !!isTraceable;
-      document.getElementById("productFarm").value = product.farm || "";
-      document.getElementById("productVariety").value = product.variety || "";
-      document.getElementById("productRoastDate").value =
-        product.roast_date || "";
-      document.getElementById("productAroma").value = product.aroma || "";
-
-      updateCoffeeFieldsVisibility();
-      updateTraceabilityFieldsVisibility();
-      document.getElementById("productModal").style.display = "flex";
-    };
-
-    window.openDeleteModal = function (productId, productName) {
-      currentEditProductId = productId;
-      document.getElementById("deleteProductName").textContent = productName;
-      document.getElementById("deleteModal").style.display = "flex";
-    };
-
-    window.confirmDelete = async function () {
-      if (!currentEditProductId) return;
-
-      try {
-        const response = await fetch(
-          `/api/inventory/products/${currentEditProductId}`,
-          {
-            method: "DELETE",
-            credentials: "include",
-          }
-        );
-
-        if (!response.ok) {
-          const data = await response.json();
-          alert("Error: " + (data.error || "No se pudo eliminar el producto"));
-          return;
-        }
-
-        alert("Producto eliminado exitosamente");
-        document.getElementById("deleteModal").style.display = "none";
-        loadProducts();
-      } catch (err) {
-        console.error("Error:", err);
-        alert("Error al eliminar el producto");
-      }
-    };
-
-    window.closeModal = function (modalId) {
-      document.getElementById(modalId).style.display = "none";
-    };
-
-    window.closeDeleteModal = function () {
-      document.getElementById("deleteModal").style.display = "none";
-    };
-
-    // Hacer funciones globales para onclick handlers
-    window.openCreateModal = function () {
-      currentEditProductId = null;
-      document.getElementById("modalTitle").textContent = "Nuevo Producto";
-      document.getElementById("idFieldContainer").style.display = "block";
-      document.getElementById("productId").disabled = false;
-      document.getElementById("productForm").reset();
-      document.getElementById("productActive").checked = true;
-      document.getElementById("productModal").style.display = "flex";
-    };
-
-    window.openDeleteModal = function (productId, productName) {
-      currentEditProductId = productId;
-      document.getElementById("deleteProductName").textContent = productName;
-      document.getElementById("deleteModal").style.display = "flex";
-    };
-
-    window.confirmDelete = async function () {
-      if (!currentEditProductId) return;
-
-      try {
-        const response = await fetch(
-          `/api/inventory/products/${currentEditProductId}`,
-          {
-            method: "DELETE",
-            credentials: "include",
-          }
-        );
-
-        if (!response.ok) {
-          const data = await response.json();
-          alert("Error: " + (data.error || "No se pudo eliminar el producto"));
-          return;
-        }
-
-        alert("Producto eliminado exitosamente");
-        document.getElementById("deleteModal").style.display = "none";
-        loadProducts();
-      } catch (err) {
-        console.error("Error:", err);
-        alert("Error al eliminar el producto");
-      }
-    };
-
+    // ── Carga ───────────────────────────────────────────────────────
     async function loadProducts() {
+      const tbody = document.getElementById("productsTableBody");
       try {
-        const response = await fetch("/api/inventory/products", {
-          credentials: "include",
-        });
-
-        if (!response.ok) {
-          throw new Error("Error al cargar productos");
-        }
-
+        const response = await fetch("/api/inventory/products", { credentials: "include" });
+        if (!response.ok) throw new Error("Error al cargar productos");
         const data = await response.json();
-        allProducts = data.products || [];
-
-        displayProducts(allProducts);
+        allProducts = (data.products || []).map((p) => ({
+          ...p,
+          is_active: !!p.is_active,
+          is_deal: !!p.is_deal,
+          is_bestseller: !!p.is_bestseller,
+          is_new: !!p.is_new,
+          is_fast: !!p.is_fast,
+        }));
         updateStats(allProducts);
-
-        document.getElementById("loading").style.display = "none";
-        document.getElementById("productsTable").style.display = "table";
+        filterProducts();
       } catch (err) {
         console.error("Error:", err);
-        document.getElementById("loading").style.display = "none";
-        const errorDiv = document.getElementById("error");
-        errorDiv.textContent =
-          "Error al cargar los productos. Intenta recargar la página.";
-        errorDiv.style.display = "block";
+        tbody.innerHTML =
+          '<tr><td colspan="7" class="empty-state">No se pudieron cargar los productos. Intente actualizar.</td></tr>';
+        toast("Error al cargar los productos", "error");
       }
     }
 
+    function updateStats(products) {
+      const total = products.length;
+      const active = products.filter((p) => p.is_active).length;
+      const value = products.reduce(
+        (s, p) => s + (Number(p.price) || 0) * (Number(p.stock_quantity) || 0), 0
+      );
+      const low = products.filter((p) => isLow(p) && !isOut(p)).length;
+      const out = products.filter(isOut).length;
+
+      document.getElementById("kpiTotal").textContent = total;
+      document.getElementById("kpiActiveSub").textContent =
+        `${active} activos · ${total - active} inactivos`;
+      document.getElementById("kpiValue").textContent = compactCop(value);
+      document.getElementById("kpiLow").textContent = low;
+      document.getElementById("kpiOut").textContent = out;
+    }
+
+    // ── Render tabla ────────────────────────────────────────────────
     function displayProducts(products) {
       const tbody = document.getElementById("productsTableBody");
-      tbody.innerHTML = "";
+      document.getElementById("resultCount").textContent =
+        `${products.length} de ${allProducts.length} producto${allProducts.length === 1 ? "" : "s"}`;
 
-      if (products.length === 0) {
+      if (!products.length) {
         tbody.innerHTML =
-          '<tr><td colspan="9" style="padding: 2rem; text-align: center; color: #666;">No se encontraron productos</td></tr>';
+          '<tr><td colspan="7" class="empty-state">No se encontraron productos con los filtros aplicados.</td></tr>';
         return;
       }
 
-      products.forEach((product) => {
-        const row = document.createElement("tr");
-        row.style.borderBottom = "1px solid #e5e7eb";
-        row.style.transition = "background-color 0.2s";
-        row.onmouseenter = () => (row.style.backgroundColor = "#f9fafb");
-        row.onmouseleave = () => (row.style.backgroundColor = "transparent");
+      tbody.innerHTML = products.map((p) => {
+        const cat = CATEGORY[p.category] || { label: p.category || "—", cls: "badge-neutral" };
+        const price = Number(p.price) || 0;
+        const cost = Number(p.cost) || 0;
+        const margin = cost > 0 && price > 0 ? Math.round(((price - cost) / price) * 100) : null;
+        const marginCell = margin == null
+          ? '<span style="color: var(--muted-2);">—</span>'
+          : `<span style="color: ${margin >= 30 ? "var(--ok)" : margin >= 10 ? "var(--color-accent)" : "var(--danger)"}; font-weight: 600;">${margin}%</span>`;
 
-        const categoryBadgeColors = {
-          cafe: "background: #fef3c7; color: #92400e;",
-          accesorio: "background: #d1fae5; color: #065f46;",
-          merchandising: "background: #e0e7ff; color: #3730a3;",
-        };
+        const stock = Number(p.stock_quantity) || 0;
+        let stockCell;
+        if (isOut(p)) {
+          stockCell = `<span class="badge badge-error">Agotado</span>`;
+        } else if (isLow(p)) {
+          stockCell = `<span class="stock-num">${stock}</span> <span class="badge badge-warning">Bajo</span>`;
+        } else {
+          stockCell = `<span class="stock-num">${stock}</span>`;
+        }
 
-        const statusBadge = product.is_active
-          ? '<span style="background: #d1fae5; color: #065f46; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">✓ Activo</span>'
-          : '<span style="background: #fee; color: #c00; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">Inactivo</span>';
+        const statusBadge = p.is_active
+          ? '<span class="badge badge-success">Activo</span>'
+          : '<span class="badge badge-neutral">Inactivo</span>';
 
-        row.innerHTML = `
-          <td style="padding: 1rem; font-size: 0.85rem; color: #666;">${product.id}</td>
-          <td style="padding: 1rem; font-weight: 500;">${product.name || "—"}</td>
-          <td style="padding: 1rem; font-size: 0.85rem; color: #666;">${product.sku || "—"}</td>
-          <td style="padding: 1rem;">
-            <span style="${categoryBadgeColors[product.category] || ""} padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.85rem; font-weight: 500;">
-              ${product.category}
-            </span>
+        const thumb = p.image_url
+          ? `<img src="${esc(p.image_url)}" alt="" class="prod-thumb" loading="lazy" />`
+          : `<div class="prod-thumb prod-thumb--empty">${esc((p.name || "?").charAt(0).toUpperCase())}</div>`;
+
+        const tags = [
+          p.is_deal && "Oferta", p.is_bestseller && "Best seller",
+          p.is_new && "Nuevo", p.is_fast && "Rápida",
+        ].filter(Boolean);
+
+        return `
+        <tr>
+          <td>
+            <div class="prod-cell">
+              ${thumb}
+              <div class="prod-meta">
+                <span class="prod-name">${esc(p.name) || "—"}</span>
+                <span class="prod-sub">${esc(p.sku || p.id)}${tags.length ? " · " + tags.map(esc).join(" · ") : ""}</span>
+              </div>
+            </div>
           </td>
-          <td style="padding: 1rem; font-weight: 500;">\$${product.price.toLocaleString("es-CO")}</td>
-          <td style="padding: 1rem; text-align: center; font-weight: 500;">${product.stock_quantity}</td>
-          <td style="padding: 1rem;">${statusBadge}</td>
-          <td style="padding: 1rem; font-size: 0.85rem; color: #666;">${new Date(product.created_at).toLocaleDateString("es-ES")}</td>
-          <td style="padding: 1rem; white-space: nowrap;">
-            <button class="editBtn" data-product-id="${product.id}" style="padding: 0.4rem 0.8rem; background: #8b6f47; color: white; border: none; border-radius: 4px; font-size: 0.85rem; cursor: pointer; margin-right: 0.5rem;">✏️ Editar</button>
-            <button class="deleteBtn" data-product-id="${product.id}" data-product-name="${product.name}" style="padding: 0.4rem 0.8rem; background: #c00; color: white; border: none; border-radius: 4px; font-size: 0.85rem; cursor: pointer;">🗑️ Eliminar</button>
+          <td><span class="badge ${cat.cls}">${esc(cat.label)}</span></td>
+          <td style="text-align: right; font-weight: 600;">${cop(price)}</td>
+          <td style="text-align: right;">${marginCell}</td>
+          <td style="text-align: center; white-space: nowrap;">${stockCell}</td>
+          <td>${statusBadge}</td>
+          <td style="text-align: right; white-space: nowrap;">
+            <button class="icon-btn editBtn" data-product-id="${esc(p.id)}" title="Editar" aria-label="Editar">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+              </svg>
+            </button>
+            <button class="icon-btn icon-btn--danger deleteBtn" data-product-id="${esc(p.id)}" data-product-name="${esc(p.name)}" title="Eliminar" aria-label="Eliminar">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+            </button>
           </td>
-        `;
-
-        tbody.appendChild(row);
-      });
+        </tr>`;
+      }).join("");
 
       attachButtonListeners();
     }
 
-    function updateStats(products) {
-      document.getElementById("totalProducts").textContent = products.length;
-      document.getElementById("totalCafe").textContent = products.filter(
-        (p) => p.category === "cafe"
-      ).length;
-      document.getElementById("totalAccesorios").textContent = products.filter(
-        (p) => p.category === "accesorio"
-      ).length;
-      document.getElementById("totalMerchandising").textContent =
-        products.filter((p) => p.category === "merchandising").length;
-    }
-
+    // ── Filtros ─────────────────────────────────────────────────────
     function filterProducts() {
       const categoryFilter = document.getElementById("categoryFilter").value;
       const activeFilter = document.getElementById("activeFilter").value;
-      const searchTerm = document
-        .getElementById("searchInput")
-        .value.toLowerCase();
+      const stockFilter = document.getElementById("stockFilter").value;
+      const searchTerm = document.getElementById("searchInput").value.toLowerCase();
 
-      const filtered = allProducts.filter((product) => {
-        const matchesCategory =
-          !categoryFilter || product.category === categoryFilter;
-        const matchesActive =
-          activeFilter === ""
-            ? true
-            : product.is_active === (activeFilter === "true");
-        const matchesSearch =
-          !searchTerm ||
-          product.name?.toLowerCase().includes(searchTerm) ||
-          product.sku?.toLowerCase().includes(searchTerm) ||
-          product.description?.toLowerCase().includes(searchTerm);
-
-        return matchesCategory && matchesActive && matchesSearch;
+      const filtered = allProducts.filter((p) => {
+        const matchesCategory = !categoryFilter || p.category === categoryFilter;
+        const matchesActive = activeFilter === "" ? true : p.is_active === (activeFilter === "true");
+        const matchesStock =
+          stockFilter === "low" ? (isLow(p) && !isOut(p))
+          : stockFilter === "out" ? isOut(p)
+          : true;
+        const matchesSearch = !searchTerm ||
+          p.name?.toLowerCase().includes(searchTerm) ||
+          p.sku?.toLowerCase().includes(searchTerm) ||
+          p.id?.toLowerCase().includes(searchTerm) ||
+          p.description?.toLowerCase().includes(searchTerm);
+        return matchesCategory && matchesActive && matchesStock && matchesSearch;
       });
 
       displayProducts(filtered);
     }
 
-    function updateCoffeeFieldsVisibility() {
+    // ── Visibilidad de campos ───────────────────────────────────────
+    function updateCoffeeFieldsVisibility(reset = true) {
       const category = document.getElementById("productCategory").value;
-      document.getElementById("coffeeFields").style.display =
-        category === "cafe" ? "block" : "none";
-      // Reset traceability when changing category
-      document.getElementById("productTraceable").checked = false;
-      document.getElementById("traceabilityFields").style.display = "none";
+      document.getElementById("coffeeFields").hidden = category !== "cafe";
+      if (reset) {
+        document.getElementById("productTraceable").checked = false;
+        document.getElementById("traceabilityFields").hidden = true;
+      }
     }
-
     function updateTraceabilityFieldsVisibility() {
-      const isTraceable = document.getElementById("productTraceable").checked;
-      document.getElementById("traceabilityFields").style.display = isTraceable
-        ? "block"
-        : "none";
+      document.getElementById("traceabilityFields").hidden =
+        !document.getElementById("productTraceable").checked;
+    }
+    function updateMarginHint() {
+      const price = parseFloat(document.getElementById("productPrice").value) || 0;
+      const cost = parseFloat(document.getElementById("productCost").value) || 0;
+      const hint = document.getElementById("marginHint");
+      if (price > 0 && cost > 0) {
+        const m = Math.round(((price - cost) / price) * 100);
+        hint.textContent = `Margen: ${m}% · utilidad ${cop(price - cost)}`;
+      } else {
+        hint.textContent = "Margen: —";
+      }
     }
 
-    document
-      .getElementById("productCategory")
-      .addEventListener("change", updateCoffeeFieldsVisibility);
+    // ── Modales ─────────────────────────────────────────────────────
+    function openCreateModal() {
+      currentEditProductId = null;
+      document.getElementById("modalTitle").textContent = "Nuevo producto";
+      document.getElementById("idFieldContainer").hidden = false;
+      document.getElementById("productId").disabled = false;
+      document.getElementById("productForm").reset();
+      document.getElementById("productActive").checked = true;
+      updateCoffeeFieldsVisibility();
+      updateMarginHint();
+      document.getElementById("productModal").hidden = false;
+    }
 
-    document
-      .getElementById("productTraceable")
-      .addEventListener("change", updateTraceabilityFieldsVisibility);
+    function openEditModal(productId) {
+      const product = allProducts.find((p) => p.id === productId);
+      if (!product) return;
+      currentEditProductId = productId;
+      document.getElementById("modalTitle").textContent = "Editar: " + product.name;
+      document.getElementById("idFieldContainer").hidden = true;
+      document.getElementById("productId").value = product.id;
+      document.getElementById("productId").disabled = true;
 
-    document
-      .getElementById("productForm")
-      .addEventListener("submit", async (e) => {
-        e.preventDefault();
+      const set = (id, v) => { document.getElementById(id).value = v ?? ""; };
+      set("productName", product.name);
+      set("productSku", product.sku);
+      set("productDescription", product.description);
+      document.getElementById("productCategory").value = product.category || "cafe";
+      set("productSubcategory", product.subcategory);
+      set("productOrigin", product.origin);
+      set("productProcess", product.process);
+      set("productRoast", product.roast);
+      set("productPrice", product.price);
+      set("productCost", product.cost);
+      set("productStock", product.stock_quantity);
+      set("productStockMin", product.stock_min);
+      set("productWeight", product.weight);
+      document.getElementById("productWeightUnit").value = product.weight_unit || "g";
+      set("productImageUrl", product.image_url);
+      set("productDimensions", product.dimensions);
 
-        const productData = {
-          name: document.getElementById("productName").value,
-          sku: document.getElementById("productSku").value || null,
-          description: document.getElementById("productDescription").value,
-          category: document.getElementById("productCategory").value,
-          subcategory: document.getElementById("productSubcategory").value,
-          origin: document.getElementById("productOrigin").value || null,
-          process: document.getElementById("productProcess").value || null,
-          roast: document.getElementById("productRoast").value || null,
-          price: parseInt(document.getElementById("productPrice").value),
-          cost: document.getElementById("productCost").value
-            ? parseInt(document.getElementById("productCost").value)
-            : null,
-          stock_quantity: document.getElementById("productStock").value
-            ? parseInt(document.getElementById("productStock").value)
-            : 0,
-          stock_min: document.getElementById("productStockMin").value
-            ? parseInt(document.getElementById("productStockMin").value)
-            : 0,
-          weight: document.getElementById("productWeight").value
-            ? parseFloat(document.getElementById("productWeight").value)
-            : null,
-          weight_unit: document.getElementById("productWeightUnit").value,
-          image_url: document.getElementById("productImageUrl").value || null,
-          dimensions:
-            document.getElementById("productDimensions").value || null,
-          rating:
-            parseFloat(document.getElementById("productRating").value) || 0,
-          is_deal: document.getElementById("productDeal").checked,
-          is_bestseller: document.getElementById("productBestseller").checked,
-          is_new: document.getElementById("productNew").checked,
-          is_fast: document.getElementById("productFast").checked,
-          is_active: document.getElementById("productActive").checked,
-          meta_keywords:
-            document.getElementById("productMetaKeywords").value || null,
-          meta_description:
-            document.getElementById("productMetaDescription").value || null,
-          farm: document.getElementById("productFarm").value || null,
-          variety: document.getElementById("productVariety").value || null,
-          roast_date: document.getElementById("productRoastDate").value || null,
-          aroma: document.getElementById("productAroma").value || null,
-        };
-
-        // Procesar imágenes adicionales (convertir CSV a JSON array)
-        const imagesInput = document
-          .getElementById("productImages")
-          .value.trim();
-        if (imagesInput) {
-          productData.images = imagesInput
-            .split(",")
-            .map((img) => img.trim())
-            .filter((img) => img.length > 0);
-        } else {
-          productData.images = null;
-        }
-
+      if (product.images) {
         try {
-          let response;
-          if (currentEditProductId) {
-            // Editar
-            response = await fetch(
-              `/api/inventory/products/${currentEditProductId}`,
-              {
-                method: "PUT",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                credentials: "include",
-                body: JSON.stringify(productData),
-              }
-            );
-          } else {
-            // Crear
-            const productId = document.getElementById("productId").value;
-            if (!productId) {
-              alert("El ID del producto es requerido");
-              return;
-            }
-            productData.id = productId;
-
-            response = await fetch("/api/inventory/products", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              credentials: "include",
-              body: JSON.stringify(productData),
-            });
-          }
-
-          if (!response.ok) {
-            const data = await response.json();
-            alert("Error: " + (data.error || "No se pudo guardar el producto"));
-            return;
-          }
-
-          alert(
-            currentEditProductId
-              ? "Producto actualizado exitosamente"
-              : "Producto creado exitosamente"
-          );
-          document.getElementById("productModal").style.display = "none";
-          loadProducts();
-        } catch (err) {
-          console.error("Error:", err);
-          alert("Error al guardar el producto");
+          const arr = typeof product.images === "string" ? JSON.parse(product.images) : product.images;
+          document.getElementById("productImages").value = Array.isArray(arr) ? arr.join(", ") : product.images;
+        } catch (e) {
+          document.getElementById("productImages").value = product.images;
         }
-      });
+      } else {
+        document.getElementById("productImages").value = "";
+      }
+
+      set("productRating", product.rating || "0");
+      document.getElementById("productDeal").checked = !!product.is_deal;
+      document.getElementById("productBestseller").checked = !!product.is_bestseller;
+      document.getElementById("productNew").checked = !!product.is_new;
+      document.getElementById("productFast").checked = !!product.is_fast;
+      document.getElementById("productActive").checked = product.is_active !== false;
+      set("productMetaKeywords", product.meta_keywords);
+      set("productMetaDescription", product.meta_description);
+
+      const isTraceable = product.farm || product.variety || product.roast_date || product.aroma;
+      document.getElementById("productTraceable").checked = !!isTraceable;
+      set("productFarm", product.farm);
+      set("productVariety", product.variety);
+      set("productRoastDate", product.roast_date);
+      set("productAroma", product.aroma);
+
+      updateCoffeeFieldsVisibility(false);
+      updateTraceabilityFieldsVisibility();
+      updateMarginHint();
+      document.getElementById("productModal").hidden = false;
+    }
+
+    function openDeleteModal(productId, productName) {
+      currentEditProductId = productId;
+      document.getElementById("deleteProductName").textContent = productName;
+      document.getElementById("deleteModal").hidden = false;
+    }
+
+    async function confirmDelete() {
+      if (!currentEditProductId) return;
+      try {
+        const response = await fetch(`/api/inventory/products/${currentEditProductId}`, {
+          method: "DELETE", credentials: "include",
+        });
+        if (!response.ok) {
+          const data = await response.json().catch(() => ({}));
+          toast(data.error || "No se pudo eliminar el producto", "error");
+          return;
+        }
+        toast("Producto eliminado correctamente", "success");
+        document.getElementById("deleteModal").hidden = true;
+        loadProducts();
+      } catch (err) {
+        console.error("Error:", err);
+        toast("Error al eliminar el producto", "error");
+      }
+    }
+
+    // ── Guardar ─────────────────────────────────────────────────────
+    document.getElementById("productForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const productData = {
+        name: document.getElementById("productName").value,
+        sku: document.getElementById("productSku").value || null,
+        description: document.getElementById("productDescription").value,
+        category: document.getElementById("productCategory").value,
+        subcategory: document.getElementById("productSubcategory").value,
+        origin: document.getElementById("productOrigin").value || null,
+        process: document.getElementById("productProcess").value || null,
+        roast: document.getElementById("productRoast").value || null,
+        price: parseInt(document.getElementById("productPrice").value),
+        cost: document.getElementById("productCost").value ? parseInt(document.getElementById("productCost").value) : null,
+        stock_quantity: document.getElementById("productStock").value ? parseInt(document.getElementById("productStock").value) : 0,
+        stock_min: document.getElementById("productStockMin").value ? parseInt(document.getElementById("productStockMin").value) : 0,
+        weight: document.getElementById("productWeight").value ? parseFloat(document.getElementById("productWeight").value) : null,
+        weight_unit: document.getElementById("productWeightUnit").value,
+        image_url: document.getElementById("productImageUrl").value || null,
+        dimensions: document.getElementById("productDimensions").value || null,
+        rating: parseFloat(document.getElementById("productRating").value) || 0,
+        is_deal: document.getElementById("productDeal").checked,
+        is_bestseller: document.getElementById("productBestseller").checked,
+        is_new: document.getElementById("productNew").checked,
+        is_fast: document.getElementById("productFast").checked,
+        is_active: document.getElementById("productActive").checked,
+        meta_keywords: document.getElementById("productMetaKeywords").value || null,
+        meta_description: document.getElementById("productMetaDescription").value || null,
+        farm: document.getElementById("productFarm").value || null,
+        variety: document.getElementById("productVariety").value || null,
+        roast_date: document.getElementById("productRoastDate").value || null,
+        aroma: document.getElementById("productAroma").value || null,
+      };
+
+      const imagesInput = document.getElementById("productImages").value.trim();
+      productData.images = imagesInput
+        ? imagesInput.split(",").map((s) => s.trim()).filter(Boolean)
+        : null;
+
+      const saveBtn = document.getElementById("saveProductBtn");
+      const originalText = saveBtn.textContent;
+      saveBtn.disabled = true;
+      saveBtn.textContent = "Guardando…";
+
+      try {
+        let response;
+        if (currentEditProductId) {
+          response = await fetch(`/api/inventory/products/${currentEditProductId}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify(productData),
+          });
+        } else {
+          const productId = document.getElementById("productId").value;
+          if (!productId) { toast("El ID del producto es requerido", "error"); return; }
+          productData.id = productId;
+          response = await fetch("/api/inventory/products", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify(productData),
+          });
+        }
+
+        if (!response.ok) {
+          const data = await response.json().catch(() => ({}));
+          toast(data.error || "No se pudo guardar el producto", "error");
+          return;
+        }
+        toast(currentEditProductId ? "Producto actualizado correctamente" : "Producto creado correctamente", "success");
+        document.getElementById("productModal").hidden = true;
+        loadProducts();
+      } catch (err) {
+        console.error("Error:", err);
+        toast("Error al guardar el producto", "error");
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = originalText;
+      }
+    });
 
     function attachButtonListeners() {
       document.querySelectorAll(".editBtn").forEach((btn) => {
-        btn.addEventListener("click", (e) => {
-          const productId = e.target.dataset.productId;
-          openEditModal(productId);
-        });
+        btn.addEventListener("click", () => openEditModal(btn.getAttribute("data-product-id")));
       });
-
       document.querySelectorAll(".deleteBtn").forEach((btn) => {
-        btn.addEventListener("click", (e) => {
-          const productId = e.target.dataset.productId;
-          const productName = e.target.dataset.productName;
-          openDeleteModal(productId, productName);
-        });
+        btn.addEventListener("click", () =>
+          openDeleteModal(btn.getAttribute("data-product-id"), btn.getAttribute("data-product-name"))
+        );
       });
     }
 
-    // Cerrar modales al hacer clic fuera
+    // ── Eventos ─────────────────────────────────────────────────────
+    document.getElementById("productCategory").addEventListener("change", () => updateCoffeeFieldsVisibility());
+    document.getElementById("productTraceable").addEventListener("change", updateTraceabilityFieldsVisibility);
+    document.getElementById("productPrice").addEventListener("input", updateMarginHint);
+    document.getElementById("productCost").addEventListener("input", updateMarginHint);
+
+    document.getElementById("categoryFilter").addEventListener("change", filterProducts);
+    document.getElementById("activeFilter").addEventListener("change", filterProducts);
+    document.getElementById("stockFilter").addEventListener("change", filterProducts);
+    document.getElementById("searchInput").addEventListener("input", filterProducts);
+
+    document.getElementById("openCreateProductBtn").addEventListener("click", openCreateModal);
+    document.getElementById("refreshBtn").addEventListener("click", () => { loadProducts(); toast("Datos actualizados", "info"); });
+    document.getElementById("closeProductModalBtn").addEventListener("click", () => { document.getElementById("productModal").hidden = true; });
+    document.getElementById("closeProductModalX").addEventListener("click", () => { document.getElementById("productModal").hidden = true; });
+    document.getElementById("confirmDeleteBtn").addEventListener("click", confirmDelete);
+    document.getElementById("closeDeleteModalBtn").addEventListener("click", () => { document.getElementById("deleteModal").hidden = true; });
+
+    // Cerrar al hacer clic en el backdrop
     document.getElementById("productModal").addEventListener("click", (e) => {
-      if (e.target.id === "productModal") {
-        e.target.style.display = "none";
-      }
+      if (e.target.id === "productModal") e.target.hidden = true;
     });
-
     document.getElementById("deleteModal").addEventListener("click", (e) => {
-      if (e.target.id === "deleteModal") {
-        e.target.style.display = "none";
-      }
+      if (e.target.id === "deleteModal") e.target.hidden = true;
     });
 
-    // Event listeners
-    document
-      .getElementById("categoryFilter")
-      .addEventListener("change", filterProducts);
-    document
-      .getElementById("activeFilter")
-      .addEventListener("change", filterProducts);
-    document
-      .getElementById("searchInput")
-      .addEventListener("input", filterProducts);
-
-    // Cargar productos al inicio
+    // ── Init ────────────────────────────────────────────────────────
     loadProducts();
-
-    document.getElementById("openCreateProductBtn")?.addEventListener("click", openCreateModal);
-    document.getElementById("closeProductModalBtn")?.addEventListener("click", () => { document.getElementById("productModal").style.display = "none"; });
-    document.getElementById("confirmDeleteBtn")?.addEventListener("click", confirmDelete);
-    document.getElementById("closeDeleteModalBtn")?.addEventListener("click", () => { document.getElementById("deleteModal").style.display = "none"; });
   </script>
 </AdminLayout>
+
+<style>
+  /* ── Filtros ───────────────────────────────────────────────────── */
+  .filters {
+    display: flex; flex-wrap: wrap; gap: 10px;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .search-field {
+    position: relative; flex: 1; min-width: 220px;
+    display: flex; align-items: center;
+  }
+  .search-field svg {
+    position: absolute; left: 12px; color: var(--muted); pointer-events: none;
+  }
+  .search-field input {
+    width: 100%; padding: 9px 12px 9px 34px;
+    font: inherit; font-size: 14px;
+    border: 1px solid var(--rule); border-radius: var(--radius-sm);
+    background: var(--paper); color: var(--color-text);
+  }
+  .search-field input:focus {
+    outline: none; border-color: var(--color-accent);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-accent) 18%, transparent);
+  }
+  .filter-select {
+    padding: 9px 12px; font: inherit; font-size: 13px;
+    border: 1px solid var(--rule); border-radius: var(--radius-sm);
+    background: var(--paper); color: var(--color-text); cursor: pointer;
+  }
+  .filter-select:focus {
+    outline: none; border-color: var(--color-accent);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-accent) 18%, transparent);
+  }
+
+  /* ── Celda de producto ─────────────────────────────────────────── */
+  .products-table tbody td { vertical-align: middle; }
+  .prod-cell { display: flex; align-items: center; gap: 12px; }
+  .prod-thumb {
+    width: 38px; height: 38px; flex-shrink: 0;
+    border-radius: var(--radius-sm); object-fit: cover;
+    border: 1px solid var(--rule); background: var(--hover);
+  }
+  .prod-thumb--empty {
+    display: grid; place-items: center;
+    font-size: 15px; font-weight: 700; color: var(--color-accent);
+    background: var(--active-bg);
+  }
+  .prod-meta { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .prod-name { font-weight: 600; color: var(--color-primary); }
+  .prod-sub {
+    font-size: 11.5px; color: var(--muted);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 280px;
+  }
+  .stock-num { font-weight: 600; color: var(--color-primary); }
+
+  /* ── Botones de icono (acciones de fila) ───────────────────────── */
+  .icon-btn {
+    appearance: none; cursor: pointer;
+    width: 30px; height: 30px;
+    display: inline-grid; place-items: center;
+    border: 1px solid var(--rule); border-radius: var(--radius-sm);
+    background: var(--paper); color: var(--muted);
+    margin-left: 4px;
+    transition: background .12s, color .12s, border-color .12s;
+  }
+  .icon-btn:hover { background: var(--hover); color: var(--color-primary); border-color: var(--rule-2); }
+  .icon-btn--danger:hover {
+    background: color-mix(in oklab, var(--danger) 8%, white);
+    color: var(--danger); border-color: color-mix(in oklab, var(--danger) 30%, white);
+  }
+
+  /* ── Modal extras ──────────────────────────────────────────────── */
+  .modal[hidden] { display: none; }
+  .modal-close {
+    appearance: none; border: 0; background: transparent; cursor: pointer;
+    width: 32px; height: 32px; display: grid; place-items: center;
+    color: var(--muted); border-radius: 8px;
+  }
+  .modal-close:hover { background: var(--hover); color: var(--color-primary); }
+  .trace-box {
+    border: 1px solid var(--rule); border-radius: var(--radius-sm);
+    background: color-mix(in oklab, var(--color-primary) 3%, white);
+    padding: 14px; margin: 8px 0 16px;
+  }
+  .trace-box[hidden] { display: none; }
+  #coffeeFields[hidden], #idFieldContainer[hidden] { display: none; }
+  .flags-grid {
+    display: grid; gap: 8px;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  }
+
+  /* ── Toasts ────────────────────────────────────────────────────── */
+  .toast-stack {
+    position: fixed; bottom: 20px; right: 20px; z-index: 60;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .toast {
+    padding: 11px 16px; border-radius: var(--radius-sm);
+    font-size: 13px; font-weight: 500; color: #fff;
+    background: var(--color-primary);
+    box-shadow: 0 8px 24px -8px color-mix(in oklab, var(--color-primary) 50%, transparent);
+    opacity: 0; transform: translateY(8px);
+    transition: opacity 0.25s, transform 0.25s;
+    max-width: 340px;
+  }
+  .toast.is-in { opacity: 1; transform: translateY(0); }
+  .toast--success { background: var(--ok); }
+  .toast--error { background: var(--danger); }
+  .toast--info { background: var(--color-primary); }
+</style>
