@@ -1,33 +1,34 @@
 // Migración: Tabla de fincas (farms) — Fase 7
-// Landing pages de fincas y caficultores
+// Landing pages de fincas y caficultores.
+// Turso/libSQL (SQLite): sin TEXT[]/JSONB/TIMESTAMPTZ. Las listas (varieties,
+// certifications, processes, gallery_urls) se almacenan como JSON en columnas TEXT.
 import { query } from '../db.js';
 
 export async function createFarmsTable() {
-    // Tabla principal de fincas
     await query(`
     CREATE TABLE IF NOT EXISTS farms (
-      id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-      caficultor_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      caficultor_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
       name VARCHAR(160) NOT NULL,
       slug VARCHAR(160) NOT NULL UNIQUE,
       region VARCHAR(80) NOT NULL,
       municipality VARCHAR(120),
-      altitude_min INT,
-      altitude_max INT,
-      hectares DECIMAL(10,2),
-      varieties TEXT[],
-      certifications TEXT[],
+      altitude_min INTEGER,
+      altitude_max INTEGER,
+      hectares REAL,
+      varieties TEXT,         -- JSON array
+      certifications TEXT,    -- JSON array
       soil_type VARCHAR(100),
-      processes TEXT[],
+      processes TEXT,         -- JSON array
       story TEXT,
       short_description VARCHAR(300),
       cover_image_url TEXT,
-      gallery_urls JSONB DEFAULT '[]',
-      latitude DECIMAL(10,7),
-      longitude DECIMAL(10,7),
-      is_published BOOLEAN DEFAULT FALSE,
-      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-      updated_at TIMESTAMPTZ
+      gallery_urls TEXT DEFAULT '[]',  -- JSON array
+      latitude REAL,
+      longitude REAL,
+      is_published INTEGER DEFAULT 0,
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP
     )
   `, []);
 
