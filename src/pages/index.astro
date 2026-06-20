@@ -240,8 +240,35 @@ try {
         </div>
       </div>
 
-      <div class="pipeline-cta">
-        <a href="/trazabilidad" class="btn" data-link>Explorar trazabilidad</a>
+      <div class="trace-cta">
+        <div class="trace-cta__glow" aria-hidden="true"></div>
+        <div class="trace-cta__visual" aria-hidden="true">
+          <div class="trace-cta__qr">
+            <svg viewBox="0 0 100 100" width="116" height="116" fill="none">
+              <rect x="6" y="6" width="26" height="26" rx="3" stroke="currentColor" stroke-width="4"/>
+              <rect x="14" y="14" width="10" height="10" rx="1.5" fill="currentColor"/>
+              <rect x="68" y="6" width="26" height="26" rx="3" stroke="currentColor" stroke-width="4"/>
+              <rect x="76" y="14" width="10" height="10" rx="1.5" fill="currentColor"/>
+              <rect x="6" y="68" width="26" height="26" rx="3" stroke="currentColor" stroke-width="4"/>
+              <rect x="14" y="76" width="10" height="10" rx="1.5" fill="currentColor"/>
+              <path d="M44 8h8v8h-8zM60 8h-8v16h8zM44 24h8v8h-8z M68 40h8v8h-8zM84 40h8v8h-8zM44 40h16v8H44zM8 44h24v8H8z M44 60h8v8h-8zM60 60h8v8h-8zM84 60h8v8h-8z M44 76h8v16h8v-8h8v8h8v-8h-8v-8h-8v8h-8z M76 76h8v8h-8z" fill="currentColor"/>
+            </svg>
+            <span class="trace-cta__scan" aria-hidden="true"></span>
+          </div>
+        </div>
+        <div class="trace-cta__copy">
+          <p class="trace-cta__eyebrow">Trazabilidad QR · Origen verificado</p>
+          <h3 class="trace-cta__title">Cada taza guarda una historia.<br />Descúbrala antes de tomarla.</h3>
+          <p class="trace-cta__sub">
+            Escanee el código de su bolsa o ingrese el número de lote y recorra el
+            viaje completo de su café: la finca que lo cultivó, el caficultor detrás
+            del grano, la fecha exacta de tueste y el control de calidad de su lote.
+          </p>
+          <div class="trace-cta__actions">
+            <a href="/trazabilidad" class="btn trace-cta__btn" data-link>Trazar mi café</a>
+            <span class="trace-cta__hint">Sin registro · Resultados al instante</span>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -758,9 +785,116 @@ try {
     }
     .pipeline-connector svg { width: 20px; height: 20px; flex-shrink: 0; }
 
-    .pipeline-cta {
+    /* CTA destacado de trazabilidad */
+    .trace-cta {
+      position: relative;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      align-items: center;
+      gap: 2.5rem;
+      background: var(--coffee);
+      border-radius: 1.25rem;
+      padding: 2.75rem 3rem;
+      overflow: hidden;
+      box-shadow: 0 24px 60px -20px rgba(37,26,20,.5);
+    }
+    .trace-cta__glow {
+      position: absolute;
+      top: -40%;
+      right: -10%;
+      width: 460px;
+      height: 460px;
+      background: radial-gradient(circle, rgba(193,138,90,.32) 0%, rgba(193,138,90,0) 70%);
+      pointer-events: none;
+    }
+    .trace-cta__visual {
+      position: relative;
+      z-index: 1;
+    }
+    .trace-cta__qr {
+      position: relative;
+      width: 148px;
+      height: 148px;
       display: flex;
+      align-items: center;
       justify-content: center;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 1rem;
+      color: #fff;
+      overflow: hidden;
+    }
+    .trace-cta__scan {
+      position: absolute;
+      left: 10%;
+      right: 10%;
+      height: 2px;
+      top: 14%;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      box-shadow: 0 0 12px 2px rgba(193,138,90,.6);
+      animation: traceScan 2.6s ease-in-out infinite;
+    }
+    @keyframes traceScan {
+      0%, 100% { transform: translateY(0); opacity: .35; }
+      50% { transform: translateY(540%); opacity: 1; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .trace-cta__scan { animation: none; }
+    }
+    .trace-cta__copy { position: relative; z-index: 1; }
+    .trace-cta__eyebrow {
+      font-family: 'Inter', sans-serif;
+      font-size: .68rem;
+      font-weight: 700;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin: 0 0 .75rem;
+    }
+    .trace-cta__title {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: clamp(1.5rem, 3vw, 2.1rem);
+      font-weight: 700;
+      line-height: 1.2;
+      color: #fff;
+      margin: 0 0 .9rem;
+    }
+    .trace-cta__sub {
+      font-size: .95rem;
+      line-height: 1.65;
+      color: rgba(255,255,255,.7);
+      margin: 0 0 1.6rem;
+      max-width: 56ch;
+    }
+    .trace-cta__actions {
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+      flex-wrap: wrap;
+    }
+    .trace-cta__btn {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      box-shadow: 0 10px 24px -8px rgba(193,138,90,.7);
+    }
+    .trace-cta__btn:hover { filter: brightness(1.06); }
+    .trace-cta__hint {
+      font-family: 'Inter', sans-serif;
+      font-size: .78rem;
+      letter-spacing: .04em;
+      color: rgba(255,255,255,.5);
+    }
+    @media (max-width: 760px) {
+      .trace-cta {
+        grid-template-columns: 1fr;
+        text-align: center;
+        padding: 2.25rem 1.5rem;
+        gap: 1.75rem;
+      }
+      .trace-cta__visual { justify-self: center; }
+      .trace-cta__sub { margin-left: auto; margin-right: auto; }
+      .trace-cta__actions { justify-content: center; }
     }
 
     @media (max-width: 900px) {
