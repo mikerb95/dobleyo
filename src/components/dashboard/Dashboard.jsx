@@ -1,15 +1,18 @@
-import React from "react";
-import KPICard      from "./components/KPICard.jsx";
-import AlertsBanner from "./components/AlertsBanner.jsx";
-import ActivityFeed from "./components/ActivityFeed.jsx";
-import QuickActions from "./components/QuickActions.jsx";
-import { useApi }   from "../../lib/api.js";
-import styles       from "./Dashboard.module.css";
+import React, { useState } from "react";
+import KPICard         from "./components/KPICard.jsx";
+import AlertsBanner    from "./components/AlertsBanner.jsx";
+import ActivityFeed    from "./components/ActivityFeed.jsx";
+import QuickActions    from "./components/QuickActions.jsx";
+import ExecutiveSummary from "./components/ExecutiveSummary.jsx";
+import { useApi }      from "../../lib/api.js";
+import styles          from "./Dashboard.module.css";
 
 export default function Dashboard({ user = null }) {
-  const kpis   = useApi("/dashboard/kpis");
-  const alerts = useApi("/dashboard/alerts");
-  const feed   = useApi("/dashboard/activity");
+  const [range, setRange] = useState("30d");
+  const kpis    = useApi("/dashboard/kpis");
+  const summary = useApi(`/dashboard/summary?range=${range}`, { deps: [range] });
+  const alerts  = useApi("/dashboard/alerts");
+  const feed    = useApi("/dashboard/activity");
   const actions = useQuickActions(user?.role ?? "admin");
 
   return (
