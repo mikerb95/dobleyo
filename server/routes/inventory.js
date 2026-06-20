@@ -561,6 +561,363 @@ inventoryRouter.get('/alerts/low-stock', async (req, res) => {
   }
 });
 
+// ============================================================================
+// VISTA OPERATIVA DE INVENTARIO  (consumida por src/components/InventarioApp.jsx)
+// Envoltorio estándar: { success: true, data }
+// Tabs: green / roast (tabla lots) · pack (products) · labels (generated_labels)
+// ============================================================================
+
+// Bodega única por ahora: el modelo de datos no segmenta almacenes.
+const DEFAULT_WAREHOUSE = 'Principal';
+// Categorías de products que se gestionan como insumos/empaque con stock por unidad.
+const PACK_CATEGORIES = ['accesorio', 'merchandising'];
+
+// Parsea humedad almacenada como texto ("11.5%", "11,5") a número.
+function parseHumidity(raw) {
+  if (raw == null) return null;
+  const n = parseFloat(String(raw).replace(',', '.').replace('%', '').trim());
+  return Number.isFinite(n) ? n : null;
+}
+
+// Días transcurridos desde una fecha ISO hasta hoy.
+function daysSince(iso) {
+  if (!iso) return null;
+  const ms = Date.now() - new Date(iso).getTime();
+  if (Number.isNaN(ms)) return null;
+  return Math.max(0, Math.floor(ms / 86400000));
+}
+
+// Estado de un lote de café verde.
+function greenStatus(kg, days) {
+  if (kg != null && kg < 30) return 'low';
+  if (days != null && days > 180) return 'warn';
+  return 'ok';
+}
+// Estado de un lote tostado (frescura).
+function roastStatus(kg, days) {
+  if (kg != null && kg < 10) return 'low';
+  if (days != null && days > 14) return 'warn';
+  return 'ok';
+}
+// Estado de un SKU con stock/mín.
+function stockStatus(stock, min) {
+  const s = Number(stock) || 0;
+  const m = Number(min) || 0;
+  if (m > 0 && s <= m) return 'low';
+  if (m > 0 && s <= m * 1.5) return 'warn';
+  return 'ok';
+}
+
+// GET - Resumen para tabs + KPIs
+inventoryRouter.get('/summary', async (req, res) => {
+  try {
+    const packPlaceholders = PACK_CATEGORIES.map(() => '?').join(', ');
+
+    const [green, roast, pack, labels] = await Promise.all([
+      query(`SELECT
+                COALESCE(SUM(weight), 0) AS total,
+                COUNT(*) AS lots,
+                SUM(CASE WHEN weight < 30
+                          OR (julianday('now') - julianday(COALESCE(harvest_date, created_at))) > 180
+                         THEN 1 ELSE 0 END) AS alerts
+              FROM lots WHERE estado = 'verde'`),
+      query(`SELECT
+                COALESCE(SUM(weight), 0) AS total,
+                COUNT(*) AS lots,
+                SUM(CASE WHEN weight < 10
+                          OR (julianday('now') - julianday(COALESCE(fecha_tostado, roast_date, created_at))) > 14
+                         THEN 1 ELSE 0 END) AS alerts
+              FROM lots WHERE estado = 'tostado'`),
+      query(`SELECT
+                COALESCE(SUM(stock_quantity), 0) AS total,
+                COUNT(*) AS skus,
+                SUM(CASE WHEN stock_min > 0 AND stock_quantity <= stock_min THEN 1 ELSE 0 END) AS below_min
+              FROM products
+              WHERE is_active = TRUE AND category IN (${packPlaceholders})`, PACK_CATEGORIES),
+      query(`SELECT
+                COUNT(*) AS total,
+                COUNT(DISTINCT COALESCE(lot_code, label_code)) AS skus,
+                SUM(CASE WHEN printed = 0 OR printed IS NULL THEN 1 ELSE 0 END) AS below_min
+              FROM generated_labels`),
+    ]);
+
+    const suppliers = await query(
+      `SELECT COUNT(DISTINCT psp.supplier_id) AS n
+         FROM product_supplier_prices psp
+         JOIN products p ON p.id = psp.product_id
+        WHERE p.category IN (${packPlaceholders})`, PACK_CATEGORIES);
+
+    const g = green.rows[0], r = roast.rows[0], pk = pack.rows[0], lb = labels.rows[0];
+
+    res.json({
+      success: true,
+      data: {
+        green: { total: Number(g.total) || 0, lots: Number(g.lots) || 0, reserved: 0, alerts: Number(g.alerts) || 0 },
+        roast: { total: Number(r.total) || 0, lots: Number(r.lots) || 0, reserved: 0, alerts: Number(r.alerts) || 0 },
+        pack: {
+          total: Number(pk.total) || 0, skus: Number(pk.skus) || 0,
+          below_min: Number(pk.below_min) || 0,
+          suppliers: Number(suppliers.rows[0]?.n) || 0, in_transit: null,
+        },
+        labels: {
+          total: Number(lb.total) || 0, skus: Number(lb.skus) || 0,
+          below_min: Number(lb.below_min) || 0, qr_version: null, printer: null,
+        },
+      },
+    });
+  } catch (error) {
+    logger.error('[GET /inventory/summary] Error:', error);
+    res.status(500).json({ success: false, error: { code: 'summary_failed', message: error.message } });
+  }
+});
+
+// GET - Ítems por tipo (green | roast | pack | labels)
+// Cada item.id es compuesto: "<type>:<id real>" para que /items/:id sepa la tabla.
+inventoryRouter.get('/items', async (req, res) => {
+  const type = String(req.query.type || 'green');
+  try {
+    if (type === 'green' || type === 'roast') {
+      const estado = type === 'green' ? 'verde' : 'tostado';
+      const result = await query(
+        `SELECT id, code, origin, producer, variety, roast, moisture, weight,
+                harvest_date, roast_date, fecha_tostado, created_at
+           FROM lots WHERE estado = ? ORDER BY created_at DESC`, [estado]);
+
+      const data = result.rows.map((l) => {
+        const kg = l.weight != null ? Number(l.weight) : null;
+        if (type === 'green') {
+          const days = daysSince(l.harvest_date || l.created_at);
+          return {
+            id: `green:${l.id}`, code: l.code, origin: l.origin, farmer: l.producer,
+            warehouse: DEFAULT_WAREHOUSE, variety: l.variety, kg,
+            days_in_storage: days, humidity_pct: parseHumidity(l.moisture),
+            reserved_kg: 0, status: greenStatus(kg, days),
+          };
+        }
+        const days = daysSince(l.fecha_tostado || l.roast_date || l.created_at);
+        return {
+          id: `roast:${l.id}`, code: l.code, origin: l.origin, farmer: l.producer,
+          warehouse: DEFAULT_WAREHOUSE, profile: l.roast, kg,
+          days_since_roast: days, reserved_kg: 0, reserved_for: null,
+          status: roastStatus(kg, days),
+        };
+      });
+      return res.json({ success: true, data });
+    }
+
+    if (type === 'pack') {
+      const packPlaceholders = PACK_CATEGORIES.map(() => '?').join(', ');
+      const result = await query(
+        `SELECT p.id, p.sku, p.name, p.stock_quantity, p.stock_min,
+                sup.name AS supplier_name, psp.lead_time_days,
+                (SELECT MAX(created_at) FROM inventory_movements im
+                  WHERE im.product_id = p.id AND im.movement_type IN ('entrada','devolucion')) AS last_in,
+                (SELECT MAX(created_at) FROM inventory_movements im
+                  WHERE im.product_id = p.id AND im.movement_type IN ('salida','merma')) AS last_out
+           FROM products p
+           LEFT JOIN product_supplier_prices psp
+                  ON psp.product_id = p.id AND psp.is_preferred = TRUE
+           LEFT JOIN product_suppliers sup ON sup.id = psp.supplier_id
+          WHERE p.is_active = TRUE AND p.category IN (${packPlaceholders})
+          ORDER BY p.name ASC`, PACK_CATEGORIES);
+
+      const data = result.rows.map((p) => {
+        const stock = Number(p.stock_quantity) || 0;
+        const min = Number(p.stock_min) || 0;
+        const max = min > 0 ? min * 5 : Math.max(stock, 100);
+        return {
+          id: `pack:${p.id}`, sku: p.sku || p.id, name: p.name,
+          supplier: p.supplier_name, lead_days: p.lead_time_days,
+          stock, min, max, last_in: p.last_in, last_out: p.last_out,
+          status: stockStatus(stock, min),
+        };
+      });
+      return res.json({ success: true, data });
+    }
+
+    if (type === 'labels') {
+      // Agrupa etiquetas generadas por plantilla (lote de origen).
+      const result = await query(
+        `SELECT MIN(id) AS id,
+                COALESCE(lot_code, label_code) AS template,
+                origin, variety,
+                COUNT(*) AS total,
+                SUM(CASE WHEN printed = 1 THEN 1 ELSE 0 END) AS printed_count,
+                MAX(printed_at) AS last_print
+           FROM generated_labels
+          GROUP BY COALESCE(lot_code, label_code)
+          ORDER BY MAX(created_at) DESC`);
+
+      const data = result.rows.map((g) => {
+        const stock = Number(g.total) || 0;
+        const min = 0;
+        return {
+          id: `labels:${g.id}`, sku: g.template,
+          name: [g.origin, g.variety].filter(Boolean).join(' · ') || 'Etiqueta',
+          qr_template: g.template, printer: null,
+          stock, min, max: Math.max(stock, 1),
+          last_print: g.last_print, status: stockStatus(stock, min),
+        };
+      });
+      return res.json({ success: true, data });
+    }
+
+    return res.status(400).json({ success: false, error: { code: 'bad_type', message: 'Tipo inválido' } });
+  } catch (error) {
+    logger.error('[GET /inventory/items] Error:', error);
+    res.status(500).json({ success: false, error: { code: 'items_failed', message: error.message } });
+  }
+});
+
+// GET - Detalle de un ítem (id compuesto "<type>:<id>") + movimientos
+inventoryRouter.get('/items/:id', async (req, res) => {
+  try {
+    const raw = String(req.params.id);
+    const sep = raw.indexOf(':');
+    const type = sep > 0 ? raw.slice(0, sep) : 'green';
+    const realId = sep > 0 ? raw.slice(sep + 1) : raw;
+
+    if (type === 'green' || type === 'roast') {
+      const result = await query(`SELECT * FROM lots WHERE id = ?`, [realId]);
+      if (!result.rows.length) {
+        return res.status(404).json({ success: false, error: { code: 'not_found', message: 'Lote no encontrado' } });
+      }
+      const l = result.rows[0];
+      const kg = l.weight != null ? Number(l.weight) : null;
+      const isGreen = type === 'green';
+      const days = isGreen
+        ? daysSince(l.harvest_date || l.created_at)
+        : daysSince(l.fecha_tostado || l.roast_date || l.created_at);
+
+      const item = isGreen
+        ? {
+            id: `green:${l.id}`, code: l.code, origin: l.origin, farmer: l.producer,
+            warehouse: DEFAULT_WAREHOUSE, variety: l.variety, kg,
+            days_in_storage: days, humidity_pct: parseHumidity(l.moisture),
+            reserved_kg: 0, status: greenStatus(kg, days), note: l.notes,
+          }
+        : {
+            id: `roast:${l.id}`, code: l.code, origin: l.origin, farmer: l.producer,
+            warehouse: DEFAULT_WAREHOUSE, profile: l.roast, kg,
+            days_since_roast: days, reserved_kg: 0, reserved_for: null,
+            status: roastStatus(kg, days), note: l.notes,
+          };
+
+      // Movimientos asociados al lote (referenciados por su código).
+      const mv = await query(
+        `SELECT id, movement_type, quantity, reason, reference, created_at
+           FROM inventory_movements
+          WHERE reference LIKE ? ORDER BY created_at DESC LIMIT 10`, [`%${l.code}%`]);
+      const movements = mv.rows.map((m) => ({
+        id: m.id, when: m.created_at, what: m.reason || m.movement_type,
+        qty: ['salida', 'merma'].includes(m.movement_type) ? -Math.abs(m.quantity) : Math.abs(m.quantity),
+        unit: 'kg',
+      }));
+
+      return res.json({ success: true, data: { item, movements } });
+    }
+
+    if (type === 'pack') {
+      const result = await query(
+        `SELECT p.*, sup.name AS supplier_name, psp.lead_time_days
+           FROM products p
+           LEFT JOIN product_supplier_prices psp ON psp.product_id = p.id AND psp.is_preferred = TRUE
+           LEFT JOIN product_suppliers sup ON sup.id = psp.supplier_id
+          WHERE p.id = ?`, [realId]);
+      if (!result.rows.length) {
+        return res.status(404).json({ success: false, error: { code: 'not_found', message: 'SKU no encontrado' } });
+      }
+      const p = result.rows[0];
+      const stock = Number(p.stock_quantity) || 0;
+      const min = Number(p.stock_min) || 0;
+      const lastIn = await query(
+        `SELECT MAX(created_at) AS t FROM inventory_movements WHERE product_id = ? AND movement_type IN ('entrada','devolucion')`, [realId]);
+      const lastOut = await query(
+        `SELECT MAX(created_at) AS t FROM inventory_movements WHERE product_id = ? AND movement_type IN ('salida','merma')`, [realId]);
+
+      const item = {
+        id: `pack:${p.id}`, sku: p.sku || p.id, name: p.name,
+        supplier: p.supplier_name, lead_days: p.lead_time_days,
+        stock, min, max: min > 0 ? min * 5 : Math.max(stock, 100),
+        last_in: lastIn.rows[0]?.t, last_out: lastOut.rows[0]?.t,
+        status: stockStatus(stock, min), note: p.description,
+      };
+
+      const mv = await query(
+        `SELECT id, movement_type, quantity, reason, created_at
+           FROM inventory_movements WHERE product_id = ? ORDER BY created_at DESC LIMIT 10`, [realId]);
+      const movements = mv.rows.map((m) => ({
+        id: m.id, when: m.created_at, what: m.reason || m.movement_type,
+        qty: ['salida', 'merma'].includes(m.movement_type) ? -Math.abs(m.quantity) : Math.abs(m.quantity),
+        unit: 'u',
+      }));
+
+      return res.json({ success: true, data: { item, movements } });
+    }
+
+    if (type === 'labels') {
+      const result = await query(`SELECT * FROM generated_labels WHERE id = ?`, [realId]);
+      if (!result.rows.length) {
+        return res.status(404).json({ success: false, error: { code: 'not_found', message: 'Etiqueta no encontrada' } });
+      }
+      const g = result.rows[0];
+      const template = g.lot_code || g.label_code;
+      const agg = await query(
+        `SELECT COUNT(*) AS total, MAX(printed_at) AS last_print
+           FROM generated_labels WHERE COALESCE(lot_code, label_code) = ?`, [template]);
+      const stock = Number(agg.rows[0]?.total) || 1;
+
+      const item = {
+        id: `labels:${g.id}`, sku: template,
+        name: [g.origin, g.variety].filter(Boolean).join(' · ') || 'Etiqueta',
+        qr_template: template, printer: null,
+        stock, min: 0, max: Math.max(stock, 1),
+        last_print: agg.rows[0]?.last_print, status: 'ok',
+        note: g.flavor_notes,
+      };
+      return res.json({ success: true, data: { item, movements: [] } });
+    }
+
+    return res.status(400).json({ success: false, error: { code: 'bad_type', message: 'Tipo inválido' } });
+  } catch (error) {
+    logger.error('[GET /inventory/items/:id] Error:', error);
+    res.status(500).json({ success: false, error: { code: 'detail_failed', message: error.message } });
+  }
+});
+
+// GET - Feed de movimientos recientes (últimas 72 h) para la vista operativa
+inventoryRouter.get('/feed', async (req, res) => {
+  try {
+    const result = await query(
+      `SELECT im.id, im.movement_type, im.quantity, im.reason, im.reference, im.created_at,
+              p.name AS product_name, u.name AS user_name
+         FROM inventory_movements im
+         LEFT JOIN products p ON p.id = im.product_id
+         LEFT JOIN users u ON u.id = im.user_id
+        WHERE im.created_at >= datetime('now', '-3 days')
+        ORDER BY im.created_at DESC LIMIT 50`);
+
+    const data = result.rows.map((m) => {
+      const out = ['salida', 'merma'].includes(m.movement_type);
+      const adj = m.movement_type === 'ajuste';
+      return {
+        id: m.id,
+        type: adj ? 'mv' : out ? 'out' : 'in',
+        when: m.created_at,
+        what: m.reason || m.product_name || m.movement_type,
+        qty: out ? -Math.abs(m.quantity) : Math.abs(m.quantity),
+        unit: 'u',
+        by: m.user_name || 'Sistema',
+      };
+    });
+
+    res.json({ success: true, data });
+  } catch (error) {
+    logger.error('[GET /inventory/feed] Error:', error);
+    res.status(500).json({ success: false, error: { code: 'feed_failed', message: error.message } });
+  }
+});
+
 // ============================================
 // ESTADÍSTICAS DE INVENTARIO
 // ============================================
