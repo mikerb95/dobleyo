@@ -26,6 +26,7 @@ Ejecución local para pruebas:
   TURSO_DATABASE_URL=... TURSO_AUTH_TOKEN=... python3 api/ml/demand.py
 """
 
+import io
 import os
 import json
 import time
@@ -36,6 +37,9 @@ import urllib.request
 import urllib.error
 from urllib.parse import urlparse, parse_qs
 from http.server import BaseHTTPRequestHandler
+
+import openpyxl
+from openpyxl.styles import Font, PatternFill, Alignment
 
 
 # ── Acceso a Turso (HTTP API / Hrana) ─────────────────────────────────────────
