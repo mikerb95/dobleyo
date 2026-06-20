@@ -67,6 +67,7 @@ export default function ExecutiveSummary({ data, loading, error, range, onRangeC
             />
             <StatusBreakdown items={data.by_status ?? []} />
             <Snapshots production={data.production} inventory={data.inventory} />
+            <ProductionTrend timeline={data.production?.timeline ?? []} />
           </div>
         </>
       )}
