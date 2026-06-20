@@ -1,0 +1,26 @@
+# Cobro recurrente de suscripciones de café.
+# Scheduler externo gratuito (NO usa Vercel Cron): GitHub Actions invoca a diario
+# el endpoint protegido /api/subscriptions/run-billing, que cobra las suscripciones
+# vencidas vía Wompi.
+#
+# Requiere dos secretos en el repo (Settings → Secrets and variables → Actions):
+#   - SITE_BASE_URL            p.ej. https://dobleyo.cafe
+#   - SUBSCRIPTIONS_CRON_SECRET  el mismo valor configurado en Vercel
+name: Cobro de suscripciones
+
+on:
+  schedule:
+    - cron: "0 13 * * *"   # 13:00 UTC ≈ 08:00 Colombia, todos los días
+  workflow_dispatch: {}      # permite ejecutarlo manualmente
+
+jobs:
+  run-billing:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Disparar cobro de suscripciones vencidas
+        run: |
+          code=$(curl -sS -o /tmp/out.json -w "%{http_code}" \
+            -X POST "${{ secrets.SITE_BASE_URL }}/api/subscriptions/run-billing" \
+            -H "x-cron-secret: ${{ secrets.SUBSCRIPTIONS_CRON_SECRET }}")
+          echo "HTTP $code"; cat /tmp/out.json
+          test "$code" = "200"
