@@ -169,6 +169,7 @@ dashboardRouter.get('/summary', async (req, res) => {
         green_lots: production.green,
         roasted_lots: production.roasted,
         avg_score: Number(num(scoreR.rows[0].avg_score).toFixed(1)),
+        timeline: prodTimeline,
       },
       inventory: {
         total_products: num(inventoryR.rows[0].total_products),
