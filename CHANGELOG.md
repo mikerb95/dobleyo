@@ -2,6 +2,19 @@
 
 ---
 
+## 📅 2026-06-20 — Usuarios: rediseño profesional de `/admin/usuarios` (Agente: Claude)
+
+- **Rediseño completo al sistema de diseño compartido.** Se eliminaron todos los estilos inline con hex hardcodeados (`#4a6741`, `#e0e7ff`, `#fef3c7`, `#dc2626`, etc.), el emoji del título y las cajas de estadística de colores; el contenido se envolvió en `.erp-body` (antes quedaba a borde completo) y adopta `page-header`/`page-breadcrumb` ("Configuración · Usuarios"), `kpi-tile`, `card`, `erp-table`, `badge`, `modal`, `form-group`/`form-grid`/`form-section`.
+- **4 KPIs accionables:** total de usuarios (con subtítulo de administradores), verificados (con sin-verificar), caficultores y **solicitudes de caficultor pendientes** de revisar.
+- **Tabla profesional:** celda de usuario con avatar de iniciales + nombre + email, badge de rol (con etiqueta en español), estado de verificación, estado de caficultor y último ingreso (`es-CO`); acciones con botones de icono editar/eliminar.
+- **Modal de creación/edición** reorganizado por secciones (Cuenta, Contacto) con `modal` del sistema, cierre por backdrop y botón ✕; el correo queda de solo lectura al editar.
+- **Nuevo modal de credenciales:** al crear un usuario, la **contraseña temporal** se muestra en un modal con **botón de copiar al portapapeles** (antes se mostraba en un `alert()` fácil de perder); incluye aviso de que no se volverá a mostrar.
+- **UX:** se reemplazaron todos los `alert()` por **toasts**; botón Guardar con estado «Guardando…»; normalización de `is_verified` (0/1 de SQLite) que corrige el filtro de verificación.
+- **Sin cambios de backend.** Mismos endpoints `GET/POST/PUT/DELETE /api/users`.
+- **Copy** en español Colombia formal (usted).
+
+---
+
 ## 📅 2026-06-20 — Inventario: implementación del backend faltante de `/admin/inventario` (Agente: Claude)
 
 - **Corrección del bug "No se pudo cargar".** El componente `InventarioApp.jsx` consumía endpoints que **nunca se habían implementado** en `server/routes/inventory.js`, por lo que la página quedaba en estado de error con todo en skeleton. Se agregaron los endpoints de lectura que la vista necesita, con el envoltorio estándar `{ success, data }` y errores `{ success:false, error:{ code, message } }`.
