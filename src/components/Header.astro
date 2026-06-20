@@ -1,22 +1,55 @@
 ---
+import type { Lang } from "../i18n/index.ts";
 
+interface Props { lang?: Lang; }
+const { lang = "es" } = Astro.props;
+
+// Navegación por idioma. En el subdominio en. las rutas planas (/shop, /cart…)
+// se reescriben a /en/* vía vercel.json, por eso van sin prefijo /en.
+const NAV = {
+  es: [
+    { href: "/", label: "Inicio" },
+    { href: "/tienda", label: "Tienda" },
+    { href: "/suscripcion", label: "Suscripción" },
+    { href: "/regalos", label: "Regalos" },
+    { href: "/blog", label: "Blog" },
+    { href: "/trazabilidad", label: "Trazabilidad" },
+    { href: "/envios-devoluciones", label: "Envíos" },
+  ],
+  en: [
+    { href: "/", label: "Home" },
+    { href: "/shop", label: "Shop" },
+    { href: "/wholesale", label: "Wholesale" },
+    { href: "/traceability", label: "Traceability" },
+    { href: "/contact", label: "Contact" },
+  ],
+};
+const L = {
+  es: { cart: "Carrito de compras", cartEmpty: "Tu carrito está vacío", profile: "Perfil",
+        apps: "Panel de apps", products: "Productos", audit: "📋 Auditoría",
+        logout: "Cerrar sesión", login: "Iniciar sesión", register: "Registrarse",
+        account: "Mi Cuenta", menu: "Menú de usuario" },
+  en: { cart: "Shopping cart", cartEmpty: "Your cart is empty", profile: "Profile",
+        apps: "Apps panel", products: "Products", audit: "📋 Audit",
+        logout: "Sign out", login: "Sign in", register: "Sign up",
+        account: "My Account", menu: "User menu" },
+};
+const nav = NAV[lang] ?? NAV.es;
+const tx = L[lang] ?? L.es;
+const homeHref = "/";
+const cartHref = "/cart";
+const accountHref = lang === "en" ? "/account" : "/cuenta";
 ---
 
 
-<header class="site-header" id="siteHeader">
+<header class="site-header" id="siteHeader" data-lang={lang} data-cart-empty={tx.cartEmpty}>
   <div class="container">
     <div class="nav-beans" aria-hidden="true"></div>
-    <a class="brand" href="/" data-link>
+    <a class="brand" href={homeHref} data-link>
       <img src="/assets/logo.png" alt="DobleYo" height="80" />
     </a>
     <nav class="nav">
-      <a href="/" data-link>Inicio</a>
-      <a href="/tienda" data-link>Tienda</a>
-      <a href="/suscripcion" data-link>Suscripción</a>
-      <a href="/regalos" data-link>Regalos</a>
-      <a href="/blog" data-link>Blog</a>
-      <a href="/trazabilidad" data-link>Trazabilidad</a>
-      <a href="/envios-devoluciones" data-link>Envíos</a>
+      {nav.map((item) => <a href={item.href} data-link>{item.label}</a>)}
     </nav>
     <div class="actions">
       <div class="cart-preview-wrap" id="cartPreviewWrap">
