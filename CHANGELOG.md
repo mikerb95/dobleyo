@@ -2,6 +2,19 @@
 
 ---
 
+## 📅 2026-06-20 — Tostión: rediseño + resumen del envío en vivo en `/admin/send-roasting` (Agente: Claude)
+
+- **Rediseño al sistema de diseño compartido.** Se reemplazó el encabezado propio (`.sr-head`) por `page-header`/`page-breadcrumb` ("Producción · Tostión") y se consolidó el formulario en `card` + `.card-pad`, `form-section`, `form-grid`, `detail-grid`, `info-box`, `erp-table`, `btn`.
+- **4 KPIs:** lotes verdes disponibles y peso total (`/api/coffee/green-inventory`), lotes en tostión y kg en proceso (`/api/coffee/roasting-batches`).
+- **Workbench de dos columnas:** formulario a la izquierda y panel **«Resumen del envío» en vivo** a la derecha (sticky en ≥980px) que calcula en tiempo real cantidad a enviar, restante en bodega, porcentaje del lote, temperatura, fecha y si el lote quedará procesado o parcial, con estado vacío.
+- **Tabla «En tostión actualmente»** con lote, cantidad, temperatura, notas y fecha (`es-CO`), desde `/api/coffee/roasting-batches` (antes sin consumir en esta vista).
+- **UX:** se reemplazaron los `alert()` de validación, error y éxito por **toasts**; botón con estado «Registrando…»; botón **Actualizar** en el encabezado.
+- **Sin cambios de backend.** Mismo payload a `POST /api/coffee/send-roasting`; se conserva el cálculo de máximo disponible, la fecha automática y el manejo de `detail.available_kg` en errores.
+- **Copy** en español Colombia formal (usted).
+- Nota: `astro check` solo reporta el ruido habitual de scripts de cliente sin tipar, idéntico al resto del módulo; no afecta `astro build`.
+
+---
+
 ## 📅 2026-06-20 — Cosecha: rediseño + vista previa del lote en vivo en `/admin/harvest` (Agente: Claude)
 
 - **Rediseño al sistema de diseño compartido.** Se reemplazaron los estilos inline con hex hardcodeados (`#666`, `#251a14`, `#4a6741`, `#f9fafb`, etc.) por los tokens y clases de `AdminLayout`: `page-header`/`page-breadcrumb` ("Producción · Cosecha"), `erp-body`, `kpi-tile`, `card` + `.card-pad`, `form-section`, `radio-group`, `erp-table`, `btn`.
