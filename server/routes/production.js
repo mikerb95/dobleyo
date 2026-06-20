@@ -23,6 +23,7 @@ productionRouter.use('/orders', ordersRouter);
 productionRouter.use('/batches', batchesRouter);
 productionRouter.use('/quality', qualityRouter);
 productionRouter.use('/dashboard', dashboardRouter);
+productionRouter.use('/lots', lotsRouter);
 
 // ==========================================
 // ENDPOINTS ADICIONALES
