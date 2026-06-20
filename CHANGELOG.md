@@ -2,6 +2,14 @@
 
 ---
 
+## 📅 2026-06-20 — Menú lateral admin: resalta la opción de la sección actual (Agente: Claude)
+
+- **Corrección del estado activo del menú lateral (`AdminLayout.astro`).** El resaltado (clase `.active`: fondo de acento, barra lateral y negrita) solo se aplicaba a los ítems con atributo `data-section`, por lo que toda la sección **Operación** (`harvest`, `send-roasting`, `inventory-storage`, `roast-retrieval`, `roasted-storage`, `packaging`, `etiquetas`, `cupping`, etc.) nunca aparecía resaltada al navegar a esas páginas.
+- Ahora el ítem activo se determina **comparando la ruta actual con el `href`** de cada `.nav-item`, de forma uniforme para todas las páginas. Para subrutas (p. ej. `/admin/lotes/123`) gana el `href` más específico que sea prefijo de la ruta; el prefijo exige `/` para evitar falsos positivos (`/admin/lotes` no marca `/admin/lotes-entregados`).
+- El hover ya estaba estilizado; sin cambios de CSS ni de backend.
+
+---
+
 ## 📅 2026-06-20 — Tostión: rediseño + resumen del envío en vivo en `/admin/send-roasting` (Agente: Claude)
 
 - **Rediseño al sistema de diseño compartido.** Se reemplazó el encabezado propio (`.sr-head`) por `page-header`/`page-breadcrumb` ("Producción · Tostión") y se consolidó el formulario en `card` + `.card-pad`, `form-section`, `form-grid`, `detail-grid`, `info-box`, `erp-table`, `btn`.
