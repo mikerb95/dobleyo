@@ -2,6 +2,26 @@
 
 ---
 
+## 📅 2026-06-20 — Admin: jerarquía tipográfica con tipografía de marca (Agente: Claude)
+
+### Contexto
+El panel admin se sentía genérico/sin carácter: usaba solo Inter (incluso con los stylistic sets `ss01`/`cv11` que daban formas raras a la `a`/`g`/`l`) y no aprovechaba la tipografía de marca del sitio público. Además el admin **no cargaba** Playfair Display ni Lora, solo Inter.
+
+### Arreglo
+- `src/components/Head.astro` — la rama `isAdmin` ahora también carga `Playfair Display` (700) y `Lora` (500/600), no solo Inter.
+- `src/layouts/AdminLayout.astro`:
+  - Nuevos tokens `--font-ui` (Inter), `--font-display` (Playfair Display), `--font-serif` (Lora).
+  - Se quitó `font-feature-settings: "ss01", "cv11"` del `body` (formas de letra inconsistentes).
+  - Títulos de página y `h1`/`h2` de páginas legacy → Playfair Display 700 (26/19px).
+  - `h3` → Lora 600.
+  - Valores de KPI → Playfair Display 700 (28px), conservando `tabular-nums`.
+  - Celdas de tabla (`.erp-table tbody td`) → `font-variant-numeric: tabular-nums` para alinear precios/cantidades.
+
+### Resultado
+El ERP recupera la voz editorial de la marca de café en títulos y métricas, mantiene Inter para UI densa y alinea correctamente los datos numéricos. Sin peso de fuentes nuevas más allá de los pesos puntuales reutilizados.
+
+---
+
 ## 📅 2026-06-19 — CRM: corrección de layout en las cards de la lista de cuentas (Agente: Claude)
 
 ### Contexto
