@@ -2,243 +2,283 @@
 import AdminLayout from "../../layouts/AdminLayout.astro";
 ---
 
-<AdminLayout
-  title="Recoger Lote en Finca"
-  description="Registra los datos de recolección de café en la finca del caficultor"
->
-  <form id="harvestForm">
-    <!-- Selección de Finca -->
-    <div class="form-group">
-      <label for="farmSelect">Finca <span class="required">*</span></label>
-      <select id="farmSelect" name="farm" required>
-        <option value="">Selecciona una finca</option>
-        <option value="finca-la-sierra"
-          >La Sierra - Huila (1800m, Franco arcilloso)</option
-        >
-        <option value="finca-nariño"
-          >Nariño Premium - Nariño (1900m, Franco arcilloso)</option
-        >
-        <option value="finca-cauca"
-          >Cauca Estate - Cauca (1750m, Franco arcilloso)</option
-        >
-      </select>
-      <div class="form-hint">
-        La información de altura y tipo de suelo se carga automáticamente
-      </div>
-    </div>
-
-    <!-- Info de la Finca (solo lectura) -->
-    <div class="card" id="farmInfo" style="display: none;">
-      <h3>Información de la Finca</h3>
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-        <div>
-          <div style="font-size: 0.85rem; color: #666;">Altura</div>
-          <div style="font-weight: 600; font-size: 1.1rem;" id="farmAltitude">
-            —
-          </div>
-        </div>
-        <div>
-          <div style="font-size: 0.85rem; color: #666;">Tipo de Suelo</div>
-          <div style="font-weight: 600; font-size: 1.1rem;" id="farmSoil">
-            —
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Variedad de Café -->
-    <div class="form-group">
-      <label for="variety"
-        >Variedad de Café <span class="required">*</span></label
-      >
-      <select id="variety" name="variety" required>
-        <option value="">Selecciona una variedad</option>
-        <option value="CAT">Caturra</option>
-        <option value="TIP">Típica</option>
-        <option value="BOB">Bourbon</option>
-        <option value="GER">Geisha</option>
-        <option value="PAC">Pacamara</option>
-      </select>
-      <div class="form-hint">Código de 3 letras (ej: CAT)</div>
-    </div>
-
-    <!-- Clima -->
-    <div class="form-group">
-      <label
-        >Clima en la Época de Recolección <span class="required">*</span></label
-      >
-      <div class="radio-group">
-        <label class="radio-item">
-          <input type="radio" name="climate" value="SECO" required />
-          <span>🌞 Seco</span>
-        </label>
-        <label class="radio-item">
-          <input type="radio" name="climate" value="LLUV" required />
-          <span>🌧️ Lluvioso</span>
-        </label>
-        <label class="radio-item">
-          <input type="radio" name="climate" value="TEMP" required />
-          <span>🌤️ Templado</span>
-        </label>
-      </div>
-    </div>
-
-    <!-- Proceso -->
-    <div class="form-group">
-      <label>Proceso <span class="required">*</span></label>
-      <div class="radio-group">
-        <label class="radio-item">
-          <input type="radio" name="process" value="NAT" required />
-          <span>Natural (Secado en cereza)</span>
-        </label>
-        <label class="radio-item">
-          <input type="radio" name="process" value="HUM" required />
-          <span>Húmedo (Lavado)</span>
-        </label>
-        <label class="radio-item">
-          <input type="radio" name="process" value="ANH" required />
-          <span>Anaeróbico</span>
-        </label>
-      </div>
-    </div>
-
-    <!-- Aroma -->
-    <div class="form-group">
-      <label for="aroma">Aroma Detectado <span class="required">*</span></label>
-      <input
-        type="text"
-        id="aroma"
-        name="aroma"
-        placeholder="Ej: Chocolate, Frutal, Floral"
-        required
-      />
-      <div class="form-hint">Describe los aromas principales</div>
-    </div>
-
-    <!-- Notas de Sabor -->
-    <div class="form-group">
-      <label for="tasteNotes"
-        >Notas de Sabor <span class="required">*</span></label
-      >
-      <textarea
-        id="tasteNotes"
-        name="tasteNotes"
-        placeholder="Ej: Notas de chocolate amargo, cereza, avellana..."
-        required></textarea>
-      <div class="form-hint">
-        Describe los sabores y características detectadas
-      </div>
-    </div>
-
-    <!-- ID de Lote Generado -->
-    <div class="info-box" id="lotInfo" style="display: none;">
-      <strong>ID de Lote Generado:</strong>
-      <div
-        style="font-size: 1.4rem; font-weight: bold; color: #251a14; margin-top: 0.5rem; font-family: 'Courier New', monospace;"
-        id="lotId"
-      >
-        COL-XXX-0000-XXX-XX-00
-      </div>
-      <div style="font-size: 0.85rem; color: #666; margin-top: 0.75rem;">
-        <strong>Formato:</strong> País-Región-Altura-Variedad-Proceso-Número
-      </div>
-    </div>
-
-    <!-- Botones de Acción -->
-    <div class="form-actions">
-      <button type="reset" class="btn-secondary">Limpiar</button>
-      <button type="submit" class="btn-primary">Crear Lote</button>
-    </div>
-  </form>
-
-  <!-- Modal de Confirmación -->
-  <div
-    id="successModal"
-    style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; padding: 1rem;"
-  >
-    <div
-      style="background: white; border-radius: 12px; padding: 2.5rem; max-width: 500px; width: 100%; box-shadow: 0 10px 40px rgba(0,0,0,0.2);"
-    >
-      <!-- Ícono de éxito -->
-      <div style="text-align: center; margin-bottom: 1.5rem;">
-        <div
-          style="font-size: 3.5rem; color: #4a6741; animation: scaleIn 0.5s ease;"
-        >
-          ✅
-        </div>
-      </div>
-
-      <!-- Título -->
-      <h2
-        style="text-align: center; color: #251a14; margin: 0 0 0.5rem 0; font-size: 1.5rem;"
-      >
-        ¡Lote Creado!
-      </h2>
-
-      <!-- Mensaje -->
-      <div
-        style="text-align: center; color: #666; margin-bottom: 1.5rem; font-size: 1rem;"
-      >
-        <p id="successMessage" style="margin: 0.5rem 0;">
-          El lote <strong id="newLotId"></strong> ha sido registrado correctamente.
-        </p>
-        <p style="margin: 0.5rem 0; font-size: 0.9rem; color: #999;">
-          Ahora está disponible en la sección de café verde.
+<AdminLayout title="Recoger Lote en Finca — DobleYo">
+  <!-- ── Encabezado de página ──────────────────────────────────────────── -->
+  <div class="page-header">
+    <div class="page-header-top">
+      <div>
+        <div class="page-breadcrumb">Producción · Cosecha</div>
+        <h1 class="page-title">Recoger Lote en Finca</h1>
+        <p class="page-subtitle">
+          Registre los datos de recolección en finca y genere el lote de
+          trazabilidad que iniciará el ciclo de café verde.
         </p>
       </div>
-
-      <!-- Información del lote -->
-      <div
-        id="lotDetailsInfo"
-        style="background: #f9fafb; border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem; display: none;"
-      >
-        <div style="font-size: 0.85rem; color: #666;">
-          <div style="margin-bottom: 0.75rem;">
-            <strong>Finca:</strong>
-            <span id="detailFinca"></span>
-          </div>
-          <div style="margin-bottom: 0.75rem;">
-            <strong>Variedad:</strong>
-            <span id="detailVariedad"></span>
-          </div>
-          <div style="margin-bottom: 0.75rem;">
-            <strong>Clima:</strong>
-            <span id="detailClima"></span>
-          </div>
-          <div>
-            <strong>Proceso:</strong>
-            <span id="detailProceso"></span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Botones de acción -->
-      <div style="display: flex; gap: 1rem; flex-direction: column-reverse;">
-        <button
-          id="closeHarvestSuccessBtn"
-          style="padding: 0.75rem 1.5rem; background: #ddd; color: #333; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.95rem; transition: background 0.2s;"
-        >
-          Cerrar
-        </button>
-        <button
-          id="goToLotesFromHarvestBtn"
-          style="padding: 0.75rem 1.5rem; background: #4a6741; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.95rem; transition: background 0.2s;"
-        >
-          Ver Lotes de Café Verde
+      <div class="page-header-actions">
+        <a class="btn btn-secondary" href="/admin/lotes">Ver lotes</a>
+        <button type="button" class="btn btn-secondary" id="refreshBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline>
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+          </svg>
+          Actualizar
         </button>
       </div>
     </div>
   </div>
 
+  <div class="erp-body">
+    <!-- ── KPIs ──────────────────────────────────────────────────────── -->
+    <div class="kpi-grid" style="margin-bottom: 22px;">
+      <div class="kpi-tile brand">
+        <div class="kpi-label">Cosechas registradas</div>
+        <div class="kpi-value" id="kpiHarvests">—</div>
+        <div class="kpi-sub">Total histórico</div>
+      </div>
+      <div class="kpi-tile info">
+        <div class="kpi-label">Fincas activas</div>
+        <div class="kpi-value" id="kpiFarms">—</div>
+        <div class="kpi-sub">Con lotes registrados</div>
+      </div>
+      <div class="kpi-tile success">
+        <div class="kpi-label">Lotes este mes</div>
+        <div class="kpi-value" id="kpiMonth">—</div>
+        <div class="kpi-sub">Recolectados en el mes en curso</div>
+      </div>
+      <div class="kpi-tile warning">
+        <div class="kpi-label">Última cosecha</div>
+        <div class="kpi-value" id="kpiLast">—</div>
+        <div class="kpi-sub">Fecha del registro más reciente</div>
+      </div>
+    </div>
+
+    <!-- ── Workbench: formulario + preview del lote ──────────────────── -->
+    <div class="hv-grid">
+      <!-- Columna izquierda: formulario -->
+      <section class="card">
+        <div class="card-header">
+          <div>
+            <h3 class="card-title">Datos de recolección</h3>
+            <div class="card-subtitle">Finca, variedad y características del lote</div>
+          </div>
+        </div>
+        <div class="card-pad">
+          <form id="harvestForm">
+            <!-- Selección de Finca -->
+            <div class="form-group">
+              <label for="farmSelect">Finca <span class="required">*</span></label>
+              <select id="farmSelect" name="farm" required>
+                <option value="">Seleccione una finca…</option>
+                <option value="finca-la-sierra">La Sierra — Huila (1800m)</option>
+                <option value="finca-nariño">Nariño Premium — Nariño (1900m)</option>
+                <option value="finca-cauca">Cauca Estate — Cauca (1750m)</option>
+              </select>
+              <div class="form-hint">
+                La altura y la región se cargan automáticamente desde la finca.
+              </div>
+            </div>
+
+            <!-- Variedad de Café -->
+            <div class="form-group">
+              <label for="variety">Variedad de café <span class="required">*</span></label>
+              <select id="variety" name="variety" required>
+                <option value="">Seleccione una variedad…</option>
+                <option value="CAT">Caturra</option>
+                <option value="TIP">Típica</option>
+                <option value="BOB">Bourbon</option>
+                <option value="GER">Geisha</option>
+                <option value="PAC">Pacamara</option>
+              </select>
+              <div class="form-hint">Código de 3 letras incluido en el ID del lote.</div>
+            </div>
+
+            <!-- Clima -->
+            <div class="form-group">
+              <label>Clima en la época de recolección <span class="required">*</span></label>
+              <div class="radio-group">
+                <label class="radio-item">
+                  <input type="radio" name="climate" value="SECO" required />
+                  <span>🌞 Seco</span>
+                </label>
+                <label class="radio-item">
+                  <input type="radio" name="climate" value="LLUV" required />
+                  <span>🌧️ Lluvioso</span>
+                </label>
+                <label class="radio-item">
+                  <input type="radio" name="climate" value="TEMP" required />
+                  <span>🌤️ Templado</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Proceso -->
+            <div class="form-group">
+              <label>Proceso <span class="required">*</span></label>
+              <div class="radio-group">
+                <label class="radio-item">
+                  <input type="radio" name="process" value="NAT" required />
+                  <span>Natural (secado en cereza)</span>
+                </label>
+                <label class="radio-item">
+                  <input type="radio" name="process" value="HUM" required />
+                  <span>Húmedo (lavado)</span>
+                </label>
+                <label class="radio-item">
+                  <input type="radio" name="process" value="ANH" required />
+                  <span>Anaeróbico</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Perfil sensorial -->
+            <div class="form-section"><h3>☕ Perfil sensorial</h3></div>
+
+            <div class="form-group">
+              <label for="aroma">Aroma detectado <span class="required">*</span></label>
+              <input
+                type="text" id="aroma" name="aroma"
+                placeholder="Ej: Chocolate, frutal, floral" required
+              />
+              <div class="form-hint">Describa los aromas principales.</div>
+            </div>
+
+            <div class="form-group">
+              <label for="tasteNotes">Notas de sabor <span class="required">*</span></label>
+              <textarea
+                id="tasteNotes" name="tasteNotes"
+                placeholder="Ej: Notas de chocolate amargo, cereza, avellana…" required></textarea>
+              <div class="form-hint">Sabores y características detectadas en la taza.</div>
+            </div>
+
+            <div class="form-actions">
+              <button type="reset" class="btn btn-secondary">Limpiar</button>
+              <button type="submit" class="btn btn-save" id="submitBtn">
+                Crear lote
+              </button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- Columna derecha: preview del lote en vivo -->
+      <aside class="hv-side">
+        <section class="card">
+          <div class="card-header">
+            <div>
+              <h3 class="card-title">Vista previa del lote</h3>
+              <div class="card-subtitle">Se genera en tiempo real</div>
+            </div>
+          </div>
+          <div class="card-pad">
+            <!-- Estado vacío -->
+            <div class="lot-empty" id="lotEmpty">
+              <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                <path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path>
+              </svg>
+              <p><b>Seleccione una finca</b><br />Complete los datos para ver el lote que se generará.</p>
+            </div>
+
+            <!-- Preview -->
+            <div id="lotBody" hidden>
+              <div class="lot-id-box">
+                <span class="lot-id-label">ID de lote</span>
+                <div class="lot-id" id="lotId">—</div>
+                <div class="lot-id-format">País · Región · Altura · Variedad · Proceso · Nº</div>
+              </div>
+
+              <div class="lot-list">
+                <div class="lot-row"><span>Finca</span><b id="pvFarm">—</b></div>
+                <div class="lot-row"><span>Altura</span><b id="pvAltitude">—</b></div>
+                <div class="lot-row"><span>Variedad</span><b id="pvVariety">—</b></div>
+                <div class="lot-row"><span>Clima</span><b id="pvClimate">—</b></div>
+                <div class="lot-row"><span>Proceso</span><b id="pvProcess">—</b></div>
+                <div class="lot-row"><span>Aroma</span><b id="pvAroma">—</b></div>
+              </div>
+
+              <div class="lot-notes" id="pvNotesWrap" hidden>
+                <span>Notas de sabor</span>
+                <p id="pvNotes">—</p>
+              </div>
+            </div>
+          </div>
+        </section>
+      </aside>
+    </div>
+
+    <!-- ── Cosechas recientes ────────────────────────────────────────── -->
+    <section class="card" style="margin-top: 22px;">
+      <div class="card-header">
+        <div>
+          <h3 class="card-title">Cosechas recientes</h3>
+          <div class="card-subtitle">Últimos lotes recolectados en finca</div>
+        </div>
+      </div>
+      <div class="table-wrapper">
+        <table class="erp-table">
+          <thead>
+            <tr>
+              <th>ID de lote</th>
+              <th>Finca</th>
+              <th>Variedad</th>
+              <th>Clima</th>
+              <th>Proceso</th>
+              <th>Fecha</th>
+            </tr>
+          </thead>
+          <tbody id="recentBody">
+            <tr><td colspan="6" class="empty-state">Cargando…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <!-- Toasts -->
+  <div class="toast-stack" id="toastStack" aria-live="polite"></div>
+
   <script>
+    // ── Mapas de etiquetas ──────────────────────────────────────────
+    const varietyMap = { CAT: "Caturra", TIP: "Típica", BOB: "Bourbon", GER: "Geisha", PAC: "Pacamara" };
+    const processMap = { NAT: "Natural (secado en cereza)", HUM: "Húmedo (lavado)", ANH: "Anaeróbico" };
+    const climateMap = { SECO: "🌞 Seco", LLUV: "🌧️ Lluvioso", TEMP: "🌤️ Templado" };
+
     // Mapa de fincas: cargado dinámicamente desde la API, con fallback estático
     let farmData = {
-      "finca-la-sierra": { altitude: "1800m", soil: "Franco arcilloso", region: "HUI", displayName: "La Sierra - Huila" },
-      "finca-nariño":    { altitude: "1900m", soil: "Franco arcilloso", region: "NAR", displayName: "Nariño Premium" },
-      "finca-cauca":     { altitude: "1750m", soil: "Franco arcilloso", region: "CAU", displayName: "Cauca Estate" },
+      "finca-la-sierra": { altitude: "1800m", altitudeRaw: 1800, region: "HUI", displayName: "La Sierra — Huila" },
+      "finca-nariño":    { altitude: "1900m", altitudeRaw: 1900, region: "NAR", displayName: "Nariño Premium" },
+      "finca-cauca":     { altitude: "1750m", altitudeRaw: 1750, region: "CAU", displayName: "Cauca Estate" },
     };
 
-    // Cargar fincas del usuario desde la API
+    const form = document.getElementById("harvestForm");
+    const farmSelect = document.getElementById("farmSelect");
+    const variety = document.getElementById("variety");
+
+    // ── Toast ───────────────────────────────────────────────────────
+    function toast(message, type = "info") {
+      const stack = document.getElementById("toastStack");
+      const el = document.createElement("div");
+      el.className = `toast toast--${type}`;
+      el.textContent = message;
+      stack.appendChild(el);
+      requestAnimationFrame(() => el.classList.add("is-in"));
+      setTimeout(() => {
+        el.classList.remove("is-in");
+        setTimeout(() => el.remove(), 250);
+      }, 4000);
+    }
+
+    function esc(s) {
+      if (s == null) return "";
+      return String(s).replace(/[&<>"']/g, (c) =>
+        ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])
+      );
+    }
+    function fmtDate(d) {
+      return d ? new Date(d).toLocaleDateString("es-CO", { day: "2-digit", month: "short", year: "numeric" }) : "—";
+    }
+
+    // ── Cargar fincas del usuario desde la API ──────────────────────
     (async function loadFarms() {
       try {
         const res = await fetch("/api/farms/my?list=true", { credentials: "include" });
@@ -247,205 +287,275 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         const farms = json.data ?? [];
         if (!farms.length) return;
 
-        // Reconstruir farmData con datos reales
         const newFarmData = {};
-        farms.forEach(f => {
+        farms.forEach((f) => {
           const key = f.slug || `farm-${f.id}`;
           newFarmData[key] = {
-            id:          f.id,
-            altitude:    f.altitude_min ? `${f.altitude_min}m` : "—",
+            id: f.id,
+            altitude: f.altitude_min ? `${f.altitude_min}m` : "—",
             altitudeRaw: f.altitude_min ?? 0,
-            soil:        "Franco arcilloso", // campo no disponible en select actual
-            region:      f.region ?? "COL",
+            region: f.region ?? "COL",
             displayName: f.name,
             municipality: f.municipality ?? "",
           };
         });
         farmData = newFarmData;
 
-        // Repoblar el select con las fincas reales
-        const select = document.getElementById("farmSelect");
-        if (!select) return;
-        // Conservar la primera opción vacía
-        while (select.options.length > 1) select.remove(1);
-        farms.forEach(f => {
-          const key  = f.slug || `farm-${f.id}`;
+        while (farmSelect.options.length > 1) farmSelect.remove(1);
+        farms.forEach((f) => {
+          const key = f.slug || `farm-${f.id}`;
           const label = `${f.name}${f.municipality ? " — " + f.municipality : ""}${f.altitude_min ? " (" + f.altitude_min + "m)" : ""}`;
-          const opt  = new Option(label, key);
-          select.appendChild(opt);
+          farmSelect.appendChild(new Option(label, key));
         });
       } catch (_) {
-        // Si falla, el select ya tiene las opciones hardcodeadas como fallback
+        // Fallback: el select conserva las opciones estáticas
       }
     })();
 
-    const varietyMap = {
-      CAT: "Caturra",
-      TIP: "Típica",
-      BOB: "Bourbon",
-      GER: "Geisha",
-      PAC: "Pacamara",
-    };
-
-    const processMap = {
-      NAT: "Natural",
-      HUM: "Húmedo",
-      ANH: "Anaeróbico",
-    };
-
-    const form = document.getElementById("harvestForm");
-    const farmSelect = document.getElementById("farmSelect");
-    const farmInfo = document.getElementById("farmInfo");
-    const lotInfo = document.getElementById("lotInfo");
-
-    // Actualizar información de finca
-    farmSelect.addEventListener("change", () => {
-      const selectedFarm = farmSelect.value;
-      if (selectedFarm && farmData[selectedFarm]) {
-        const farm = farmData[selectedFarm];
-        document.getElementById("farmAltitude").textContent = farm.altitude;
-        document.getElementById("farmSoil").textContent = farm.soil;
-        farmInfo.style.display = "block";
-        generateLotId();
-      } else {
-        farmInfo.style.display = "none";
-        lotInfo.style.display = "none";
-      }
-    });
-
-    // Mostrar preview del formato de lote (el ID real lo genera el servidor)
-    function generateLotId() {
+    // ── Vista previa del lote en vivo ───────────────────────────────
+    function updatePreview() {
+      const empty = document.getElementById("lotEmpty");
+      const body = document.getElementById("lotBody");
       const farm = farmData[farmSelect.value];
-      if (!farm) return;
 
-      const variety = document.getElementById("variety").value;
-      const process =
-        document.querySelector('input[name="process"]:checked')?.value || "XX";
-
-      if (!variety || !process || process === "XX") {
-        lotInfo.style.display = "none";
+      if (!farm) {
+        empty.hidden = false;
+        body.hidden = true;
         return;
       }
+      empty.hidden = true;
+      body.hidden = false;
 
-      const altitude = (farm.altitudeRaw || farm.altitude.replace("m", ""));
-      // Mostrar formato aproximado — el sufijo real lo genera el servidor con crypto
-      const lotId = `COL-${farm.region}-${altitude}-${variety}-${process}-****`;
+      const v = variety.value;
+      const process = document.querySelector('input[name="process"]:checked')?.value;
+      const climate = document.querySelector('input[name="climate"]:checked')?.value;
+      const aroma = document.getElementById("aroma").value.trim();
+      const notes = document.getElementById("tasteNotes").value.trim();
+      const altitude = farm.altitudeRaw || String(farm.altitude).replace("m", "");
+
+      const lotId = (v && process)
+        ? `COL-${farm.region}-${altitude}-${v}-${process}-····`
+        : `COL-${farm.region}-${altitude}-···`;
       document.getElementById("lotId").textContent = lotId;
-      lotInfo.style.display = "block";
+
+      document.getElementById("pvFarm").textContent = farm.displayName;
+      document.getElementById("pvAltitude").textContent = farm.altitude;
+      document.getElementById("pvVariety").textContent = v ? varietyMap[v] || v : "Por seleccionar";
+      document.getElementById("pvClimate").textContent = climate ? climateMap[climate] : "Por seleccionar";
+      document.getElementById("pvProcess").textContent = process ? processMap[process] : "Por seleccionar";
+      document.getElementById("pvAroma").textContent = aroma || "Por especificar";
+
+      const notesWrap = document.getElementById("pvNotesWrap");
+      document.getElementById("pvNotes").textContent = notes;
+      notesWrap.hidden = !notes;
     }
 
-    // Regenerar ID al cambiar variedad o proceso
-    document
-      .getElementById("variety")
-      .addEventListener("change", generateLotId);
-    document.querySelectorAll('input[name="process"]').forEach((radio) => {
-      radio.addEventListener("change", generateLotId);
-    });
+    farmSelect.addEventListener("change", updatePreview);
+    variety.addEventListener("change", updatePreview);
+    document.getElementById("aroma").addEventListener("input", updatePreview);
+    document.getElementById("tasteNotes").addEventListener("input", updatePreview);
+    document.querySelectorAll('input[name="process"], input[name="climate"]').forEach((r) =>
+      r.addEventListener("change", updatePreview)
+    );
 
-    // Enviar formulario a la API
+    // ── KPIs + cosechas recientes ───────────────────────────────────
+    async function loadHarvests() {
+      try {
+        const res = await fetch("/api/coffee/harvests", { credentials: "include" });
+        const rows = res.ok ? await res.json() : [];
+
+        document.getElementById("kpiHarvests").textContent = rows.length;
+        document.getElementById("kpiFarms").textContent =
+          new Set(rows.map((r) => r.farm).filter(Boolean)).size;
+
+        const now = new Date();
+        const thisMonth = rows.filter((r) => {
+          if (!r.created_at) return false;
+          const d = new Date(r.created_at);
+          return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+        }).length;
+        document.getElementById("kpiMonth").textContent = thisMonth;
+        document.getElementById("kpiLast").textContent = rows[0] ? fmtDate(rows[0].created_at) : "—";
+
+        renderRecent(rows.slice(0, 8));
+      } catch (error) {
+        console.error("[Harvest] Error cargando cosechas:", error);
+        renderRecent([]);
+      }
+    }
+
+    function farmLabel(slug) {
+      return farmData[slug]?.displayName || slug || "—";
+    }
+
+    function renderRecent(rows) {
+      const body = document.getElementById("recentBody");
+      if (!rows.length) {
+        body.innerHTML = '<tr><td colspan="6" class="empty-state">Aún no hay cosechas registradas.</td></tr>';
+        return;
+      }
+      body.innerHTML = rows.map((r) => `
+        <tr>
+          <td style="font-family: ui-monospace, Menlo, monospace; font-size: 12px;">${esc(r.lot_id) || "—"}</td>
+          <td>${esc(farmLabel(r.farm))}</td>
+          <td>${esc(varietyMap[r.variety] || r.variety) || "—"}</td>
+          <td>${esc((climateMap[r.climate] || r.climate || "—"))}</td>
+          <td>${esc(processMap[r.process]?.split(" ")[0] || r.process) || "—"}</td>
+          <td>${esc(fmtDate(r.created_at))}</td>
+        </tr>`).join("");
+    }
+
+    // ── Envío ───────────────────────────────────────────────────────
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
 
-      const submitBtn = form.querySelector('button[type="submit"]');
+      const farm = farmData[farmSelect.value];
+      if (!farm) return toast("Debe seleccionar una finca", "error");
+
+      const climate = document.querySelector('input[name="climate"]:checked')?.value;
+      const process = document.querySelector('input[name="process"]:checked')?.value;
+      if (!variety.value || !climate || !process)
+        return toast("Debe completar todos los campos requeridos", "error");
+
+      const submitBtn = document.getElementById("submitBtn");
       const originalText = submitBtn.textContent;
       submitBtn.disabled = true;
-      submitBtn.textContent = "Registrando...";
+      submitBtn.textContent = "Registrando…";
 
       try {
         const response = await fetch("/api/coffee/harvest", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             farm: farmSelect.value,
-            region: farmData[farmSelect.value]?.region || "",
-            altitude: parseInt(farmData[farmSelect.value]?.altitude || "0"),
-            variety: document.getElementById("variety").value,
-            climate: document.querySelector('input[name="climate"]:checked')
-              .value,
-            process: document.querySelector('input[name="process"]:checked')
-              .value,
+            region: farm.region || "",
+            altitude: parseInt(String(farm.altitude).replace("m", "")) || farm.altitudeRaw || 0,
+            variety: variety.value,
+            climate,
+            process,
             aroma: document.getElementById("aroma").value,
             tasteNotes: document.getElementById("tasteNotes").value,
           }),
         });
 
         let data;
-        const contentType = response.headers.get("content-type");
-        if (contentType && contentType.includes("application/json")) {
+        const contentType = response.headers.get("content-type") || "";
+        if (contentType.includes("application/json")) {
           data = await response.json();
         } else {
-          const text = await response.text();
-          throw new Error(`Respuesta inválida del servidor: ${text}`);
+          throw new Error(`Respuesta inválida del servidor: ${await response.text()}`);
         }
+        if (!response.ok) throw new Error(data.error || data.message || "Error al registrar lote");
 
-        if (!response.ok) {
-          throw new Error(
-            data.error || data.message || "Error al registrar lote"
-          );
-        }
+        toast(`Lote ${data.lotId} creado correctamente`, "success");
 
-        const lotId = data.lotId;
-
-        // Llenar datos del modal
-        document.getElementById("newLotId").textContent = lotId;
-
-        // Llenar información del lote
-        const varietyMap = {
-          CAT: "Caturra",
-          TIP: "Típica",
-          BOB: "Bourbon",
-          GER: "Geisha",
-          PAC: "Pacamara",
-        };
-        const climateMap = {
-          SECO: "🌞 Seco",
-          LLUV: "🌧️ Lluvioso",
-          TEMP: "🌤️ Templado",
-        };
-        const processMap = {
-          NAT: "Natural (Secado en cereza)",
-          HUM: "Húmedo (Lavado)",
-          ANH: "Anaeróbico",
-        };
-
-        document.getElementById("detailFinca").textContent =
-          farmData[farmSelect.value]?.displayName || farmSelect.value;
-        document.getElementById("detailVariedad").textContent =
-          varietyMap[document.getElementById("variety").value] ||
-          document.getElementById("variety").value;
-        document.getElementById("detailClima").textContent =
-          climateMap[
-            document.querySelector('input[name="climate"]:checked').value
-          ];
-        document.getElementById("detailProceso").textContent =
-          processMap[
-            document.querySelector('input[name="process"]:checked').value
-          ];
-
-        // Mostrar modal de éxito
-        document.getElementById("lotDetailsInfo").style.display = "block";
-        document.getElementById("successModal").style.display = "flex";
+        form.reset();
+        document.getElementById("lotEmpty").hidden = false;
+        document.getElementById("lotBody").hidden = true;
+        loadHarvests();
       } catch (error) {
         console.error("Error:", error);
-        alert(
-          `❌ Error al registrar lote: ${error.message || "Error desconocido"}`
-        );
+        toast(error.message || "Error al registrar lote", "error");
       } finally {
         submitBtn.disabled = false;
         submitBtn.textContent = originalText;
       }
     });
 
-    document.getElementById("closeHarvestSuccessBtn")?.addEventListener("click", () => {
-      document.getElementById("successModal").style.display = "none";
-      document.getElementById("harvestForm").reset();
-      document.getElementById("farmInfo").style.display = "none";
-      document.getElementById("lotInfo").style.display = "none";
+    form.addEventListener("reset", () => {
+      setTimeout(() => {
+        document.getElementById("lotEmpty").hidden = false;
+        document.getElementById("lotBody").hidden = true;
+      }, 0);
     });
-    document.getElementById("goToLotesFromHarvestBtn")?.addEventListener("click", () => {
-      window.location.href = "/admin/lotes";
+
+    document.getElementById("refreshBtn").addEventListener("click", () => {
+      loadHarvests();
+      toast("Datos actualizados", "info");
     });
+
+    // ── Init ────────────────────────────────────────────────────────
+    loadHarvests();
   </script>
 </AdminLayout>
+
+<style>
+  /* ── Layout workbench ──────────────────────────────────────────── */
+  .hv-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+    align-items: start;
+  }
+  @media (min-width: 980px) {
+    .hv-grid { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); }
+    .hv-side { position: sticky; top: 16px; }
+  }
+  .card-pad { padding: 18px; }
+
+  /* ── Estado vacío ──────────────────────────────────────────────── */
+  .lot-empty {
+    text-align: center; color: var(--muted);
+    padding: 28px 12px; display: grid; gap: 10px; justify-items: center;
+  }
+  .lot-empty p { margin: 0; font-size: 13px; line-height: 1.5; }
+  .lot-empty b { color: var(--color-primary); }
+
+  /* ── Caja del ID de lote ───────────────────────────────────────── */
+  .lot-id-box {
+    padding: 16px; margin-bottom: 14px; text-align: center;
+    background: color-mix(in oklab, var(--color-primary) 4%, white);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-sm);
+  }
+  .lot-id-label {
+    display: block; font-size: 11px; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px;
+  }
+  .lot-id {
+    font-size: 18px; font-weight: 700; color: var(--color-primary);
+    font-family: ui-monospace, Menlo, monospace; word-break: break-all;
+  }
+  .lot-id-format { font-size: 11px; color: var(--muted); margin-top: 8px; }
+
+  /* ── Lista de detalles ─────────────────────────────────────────── */
+  .lot-list { display: grid; gap: 0; }
+  .lot-row {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; padding: 9px 0;
+    border-bottom: 1px solid var(--rule); font-size: 13px;
+  }
+  .lot-row:last-child { border-bottom: 0; }
+  .lot-row span { color: var(--muted); }
+  .lot-row b { color: var(--color-primary); font-weight: 600; text-align: right; }
+
+  /* ── Notas ─────────────────────────────────────────────────────── */
+  .lot-notes { margin-top: 14px; }
+  .lot-notes > span {
+    display: block; font-size: 11px; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;
+  }
+  .lot-notes p {
+    margin: 0; font-size: 13px; color: var(--color-text); line-height: 1.5;
+  }
+
+  /* ── Toasts ────────────────────────────────────────────────────── */
+  .toast-stack {
+    position: fixed; bottom: 20px; right: 20px; z-index: 60;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .toast {
+    padding: 11px 16px; border-radius: var(--radius-sm);
+    font-size: 13px; font-weight: 500; color: #fff;
+    background: var(--color-primary);
+    box-shadow: 0 8px 24px -8px color-mix(in oklab, var(--color-primary) 50%, transparent);
+    opacity: 0; transform: translateY(8px);
+    transition: opacity 0.25s, transform 0.25s;
+    max-width: 340px;
+  }
+  .toast.is-in { opacity: 1; transform: translateY(0); }
+  .toast--success { background: var(--ok); }
+  .toast--error { background: var(--danger); }
+  .toast--info { background: var(--color-primary); }
+</style>
