@@ -6,6 +6,7 @@ import { body, param, validationResult } from 'express-validator';
 import { query } from '../db.js';
 import { authenticateToken, requireRole } from '../auth.js';
 import { logAudit } from '../services/audit.js';
+import { parseFarmRow, serializeList } from '../utils/farms.js';
 
 export const farmsRouter = Router();
 
