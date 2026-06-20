@@ -21,10 +21,11 @@ const pct = (cur, prev) => {
 
 // Rangos soportados por el resumen ejecutivo.
 const RANGES = {
-  '30d': { days: 30, fmt: "strftime('%Y-%m-%d', purchase_date)", points: 30 },
-  '90d': { days: 90, fmt: "strftime('%Y-W%W', purchase_date)",   points: 13 },
-  '12m': { days: 365, fmt: "strftime('%Y-%m', purchase_date)",   points: 12 },
+  '30d': { days: 30,  pattern: '%Y-%m-%d', points: 30 },
+  '90d': { days: 90,  pattern: '%Y-W%W',   points: 13 },
+  '12m': { days: 365, pattern: '%Y-%m',    points: 12 },
 };
+const tf = (pattern, col) => `strftime('${pattern}', ${col})`;
 
 // ──────────────────────────────────────────────────────────────────────────
 // GET /api/dashboard/kpis — KPIs con tendencia (delta vs período anterior) y
