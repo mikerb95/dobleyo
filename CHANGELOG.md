@@ -2,6 +2,22 @@
 
 ---
 
+## 📅 2026-06-20 — Inventario: implementación del backend faltante de `/admin/inventario` (Agente: Claude)
+
+- **Corrección del bug "No se pudo cargar".** El componente `InventarioApp.jsx` consumía endpoints que **nunca se habían implementado** en `server/routes/inventory.js`, por lo que la página quedaba en estado de error con todo en skeleton. Se agregaron los endpoints de lectura que la vista necesita, con el envoltorio estándar `{ success, data }` y errores `{ success:false, error:{ code, message } }`.
+- **Nuevos endpoints** (todos `authenticateToken` + `requireRole('admin')`, montados ya en `server/index.js` y `api/index.js` → paridad garantizada):
+  - `GET /api/inventory/summary` — KPIs por tab (verde, tostado, empaque, etiquetas).
+  - `GET /api/inventory/items?type=green|roast|pack|labels` — listado por tipo. Cada `id` es compuesto (`"<type>:<id real>"`) para que el detalle sepa a qué tabla consultar.
+  - `GET /api/inventory/items/:id` — ficha del ítem + movimientos recientes.
+  - `GET /api/inventory/feed` — movimientos de las últimas 72 h para el feed en vivo.
+- **Mapeo a tablas reales:** café verde/tostado desde `lots` (`estado='verde'|'tostado'`), empaque desde `products` (categorías `accesorio`/`merchandising`) con proveedor preferido vía `product_supplier_prices`, y etiquetas agrupadas desde `generated_labels`. El estado (`ok`/`warn`/`low`) se calcula por kg/edad/stock-mínimo.
+- **Notas de modelo:** el esquema no segmenta almacenes (se usa bodega única `"Principal"`) ni modela reservas (`reserved = 0`); `humidity_pct` se parsea desde el texto `moisture`. Campos sin respaldo en BD (versión QR, impresora) se devuelven `null`.
+- **Frontend:** el feed del componente pasó de `/inventory/movements` a `/inventory/feed` (el `GET /movements` existente conserva su contrato).
+- **Sin endpoints nuevos en el cliente:** `/inventory/products` y demás rutas existentes quedaron intactas.
+- **Verificado** contra la base de datos Turso real (login admin + curl a los 4 endpoints y sus variantes de detalle: 200 con datos reales; id inexistente → 404).
+
+---
+
 ## 📅 2026-06-20 — Lotes: rediseño de `/admin/lotes` y corrección de tabla a borde completo (Agente: Claude)
 
 - **Corrección estética principal:** la página no envolvía su contenido en `.erp-body`, por lo que la tabla y la barra de filtros se estiraban de borde a borde del viewport. Ahora todo va dentro de `.erp-body` (ancho máximo 1280px, centrado y con padding), igual que el resto del módulo.
