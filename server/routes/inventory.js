@@ -773,7 +773,6 @@ inventoryRouter.get('/items', async (req, res) => {
 inventoryRouter.get('/items/:id', async (req, res) => {
   try {
     const raw = String(req.params.id);
-    console.log('[DEBUG /items/:id] entered raw=' + raw);
     const sep = raw.indexOf(':');
     const type = sep > 0 ? raw.slice(0, sep) : 'green';
     const realId = sep > 0 ? raw.slice(sep + 1) : raw;
