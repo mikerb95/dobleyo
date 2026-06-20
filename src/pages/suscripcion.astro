@@ -1,0 +1,201 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { getCanonicalUrl, getHreflangPair } from "../i18n/index.ts";
+
+export const prerender = false;
+
+const _hreflang = getHreflangPair("/suscripcion");
+
+// Cafés disponibles para suscripción
+let coffees: any[] = [];
+try {
+  const { query } = await import("../../server/db.js");
+  const { rows } = await query(
+    `SELECT id, name, origin, roast, price, image_url AS image
+     FROM products
+     WHERE is_active = 1 AND category = 'cafe'
+     ORDER BY is_bestseller DESC, rating DESC`
+  );
+  coffees = rows;
+} catch (_) { /* BD no disponible */ }
+
+const pageTitle = "Suscripción de café — DobleYo Café";
+const pageDescription =
+  "Reciba café de especialidad colombiano recién tostado en su casa cada 15 o 30 días, con descuento de suscriptor. Cancele cuando quiera.";
+---
+
+<Layout
+  lang="es"
+  title={pageTitle}
+  description={pageDescription}
+  canonical={getCanonicalUrl("/suscripcion", "es")}
+  hreflangEs={_hreflang?.es}
+  hreflangEn={_hreflang?.en}
+>
+  <section class="sub-hero">
+    <div class="sub-hero__inner">
+      <p class="sub-hero__eyebrow">Suscripción</p>
+      <h1 class="sub-hero__title">Café fresco, sin que se le acabe</h1>
+      <p class="sub-hero__sub">
+        Reciba su café de especialidad recién tostado cada 15 o 30 días, con
+        <strong>descuento de suscriptor</strong> y envío incluido. Cancele cuando quiera.
+      </p>
+    </div>
+  </section>
+
+  <div class="container sub-wrap">
+    {coffees.length === 0 ? (
+      <p class="sub-empty">La suscripción no está disponible por el momento. Intente más tarde.</p>
+    ) : (
+      <form id="subForm" class="sub-form" novalidate>
+        <!-- 1. Café -->
+        <fieldset class="sub-step">
+          <legend><span class="sub-step__n">1</span> Elija su café</legend>
+          <div class="sub-coffees" id="subCoffees">
+            {coffees.map((c, i) => (
+              <label class:list={["sub-coffee", { active: i === 0 }]}>
+                <input type="radio" name="coffee" value={c.id} data-price={c.price} data-name={c.name} checked={i === 0} />
+                <img src={c.image} alt={c.name} class="sub-coffee__img" loading="lazy" />
+                <span class="sub-coffee__name">{c.name}</span>
+                <span class="sub-coffee__meta">{[c.origin, c.roast].filter(Boolean).join(" · ")}</span>
+                <span class="sub-coffee__price">${Number(c.price).toLocaleString("es-CO")}</span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+
+        <!-- 2. Frecuencia y cantidad -->
+        <fieldset class="sub-step">
+          <legend><span class="sub-step__n">2</span> Frecuencia y cantidad</legend>
+          <div class="sub-row">
+            <div class="sub-field">
+              <label>Frecuencia</label>
+              <div class="sub-toggle" id="subFreq">
+                <button type="button" class="sub-toggle__btn active" data-freq="30">Cada 30 días</button>
+                <button type="button" class="sub-toggle__btn" data-freq="15">Cada 15 días</button>
+              </div>
+            </div>
+            <div class="sub-field">
+              <label for="subQty">Bolsas por entrega</label>
+              <input id="subQty" name="quantity" type="number" min="1" max="10" value="1" class="sub-input" />
+            </div>
+          </div>
+        </fieldset>
+
+        <!-- 3. Datos de envío -->
+        <fieldset class="sub-step">
+          <legend><span class="sub-step__n">3</span> Datos de envío</legend>
+          <div class="sub-grid">
+            <div class="sub-field"><label for="cName">Nombre completo *</label><input id="cName" name="customerName" class="sub-input" required /></div>
+            <div class="sub-field"><label for="cEmail">Correo *</label><input id="cEmail" name="customerEmail" type="email" class="sub-input" required /></div>
+            <div class="sub-field"><label for="cPhone">Teléfono</label><input id="cPhone" name="customerPhone" class="sub-input" /></div>
+            <div class="sub-field sub-field--full"><label for="cAddr">Dirección *</label><input id="cAddr" name="shippingAddress" class="sub-input" required /></div>
+            <div class="sub-field"><label for="cCity">Ciudad *</label><input id="cCity" name="shippingCity" class="sub-input" required /></div>
+            <div class="sub-field"><label for="cDept">Departamento</label><input id="cDept" name="shippingDepartment" class="sub-input" /></div>
+          </div>
+        </fieldset>
+
+        <!-- 4. Pago -->
+        <fieldset class="sub-step">
+          <legend><span class="sub-step__n">4</span> Tarjeta</legend>
+          <p class="sub-secure">🔒 Procesado de forma segura por Wompi. Sus datos de tarjeta no se almacenan en nuestros servidores.</p>
+          <div class="sub-grid">
+            <div class="sub-field sub-field--full"><label for="ccNum">Número de tarjeta *</label><input id="ccNum" inputmode="numeric" autocomplete="cc-number" class="sub-input" placeholder="4242 4242 4242 4242" required /></div>
+            <div class="sub-field"><label for="ccName">Titular *</label><input id="ccName" autocomplete="cc-name" class="sub-input" required /></div>
+            <div class="sub-field"><label for="ccExp">Vence (MM/AA) *</label><input id="ccExp" autocomplete="cc-exp" class="sub-input" placeholder="MM/AA" required /></div>
+            <div class="sub-field"><label for="ccCvc">CVC *</label><input id="ccCvc" inputmode="numeric" autocomplete="cc-csc" class="sub-input" placeholder="123" required /></div>
+          </div>
+          <label class="sub-accept">
+            <input type="checkbox" id="subAccept" required />
+            <span>Acepto el <a href="#" id="acceptLink" target="_blank" rel="noopener">reglamento y la autorización de datos personales</a> y el cobro recurrente.</span>
+          </label>
+        </fieldset>
+
+        <!-- Resumen + acción -->
+        <div class="sub-summary">
+          <div class="sub-summary__line">
+            <span>Por entrega (<span id="sumDiscount">0</span>% dto.)</span>
+            <strong id="sumTotal">$0</strong>
+          </div>
+          <p class="sub-summary__note" id="sumNote">Primer cobro hoy, luego cada 30 días. Cancele cuando quiera.</p>
+          <div id="subMsg" class="sub-msg" style="display:none"></div>
+          <button type="submit" id="subSubmit" class="sub-submit">Suscribirme</button>
+        </div>
+      </form>
+    )}
+
+    <!-- Beneficios -->
+    <aside class="sub-benefits">
+      <h2>¿Por qué suscribirse?</h2>
+      <ul>
+        <li><span aria-hidden="true">🔥</span> Café siempre fresco, tostado para usted.</li>
+        <li><span aria-hidden="true">💸</span> Descuento exclusivo de suscriptor.</li>
+        <li><span aria-hidden="true">🚚</span> Envío incluido en cada entrega.</li>
+        <li><span aria-hidden="true">✋</span> Pause o cancele cuando quiera.</li>
+      </ul>
+    </aside>
+  </div>
+
+  <script is:inline src="/assets/js/suscripcion.js"></script>
+
+  <style>
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 1.25rem; }
+
+    .sub-hero { background: var(--coffee); color: var(--cream); padding: 3rem 1.5rem 2.5rem; text-align: center; }
+    .sub-hero__inner { max-width: 640px; margin: 0 auto; }
+    .sub-hero__eyebrow { text-transform: uppercase; letter-spacing: .12em; font-size: .8rem; opacity: .75; margin: 0 0 .6rem; }
+    .sub-hero__title { font-family: var(--font-heading, serif); font-size: clamp(1.8rem, 5vw, 2.8rem); margin: 0 0 .8rem; }
+    .sub-hero__sub { font-size: 1.05rem; line-height: 1.6; opacity: .92; margin: 0; }
+
+    .sub-wrap { display: grid; grid-template-columns: 1fr; gap: 2rem; padding: 2.5rem 1.25rem 4rem; }
+    @media (min-width: 1024px) { .sub-wrap { grid-template-columns: 1fr 300px; align-items: start; } }
+    .sub-empty { text-align: center; color: var(--ink, #666); padding: 2rem 0; }
+
+    .sub-form { display: flex; flex-direction: column; gap: 1.5rem; }
+    .sub-step { border: 1px solid rgba(0,0,0,.1); border-radius: 12px; padding: 1.25rem; margin: 0; }
+    .sub-step legend { font-weight: 700; color: var(--coffee); padding: 0 .5rem; display: flex; align-items: center; gap: .5rem; }
+    .sub-step__n { background: var(--accent); color: #fff; width: 1.5rem; height: 1.5rem; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: .85rem; }
+
+    .sub-coffees { display: grid; grid-template-columns: repeat(2, 1fr); gap: .75rem; }
+    @media (min-width: 640px) { .sub-coffees { grid-template-columns: repeat(3, 1fr); } }
+    .sub-coffee { position: relative; display: flex; flex-direction: column; align-items: center; text-align: center; border: 2px solid rgba(0,0,0,.1); border-radius: 10px; padding: .85rem .5rem; cursor: pointer; transition: border-color .15s, background .15s; }
+    .sub-coffee.active { border-color: var(--accent); background: rgba(198,123,78,.06); }
+    .sub-coffee input { position: absolute; opacity: 0; }
+    .sub-coffee__img { width: 64px; height: 64px; object-fit: cover; border-radius: 50%; margin-bottom: .5rem; }
+    .sub-coffee__name { font-weight: 700; color: var(--coffee); font-size: .95rem; }
+    .sub-coffee__meta { font-size: .72rem; color: #888; }
+    .sub-coffee__price { font-size: .85rem; font-weight: 600; color: var(--accent); margin-top: .2rem; }
+
+    .sub-row { display: flex; flex-wrap: wrap; gap: 1.25rem; }
+    .sub-field { display: flex; flex-direction: column; gap: .35rem; flex: 1; min-width: 140px; }
+    .sub-field label { font-size: .8rem; color: #666; font-weight: 600; }
+    .sub-input { padding: .6rem .75rem; border: 1.5px solid rgba(0,0,0,.15); border-radius: 8px; font-size: .95rem; font-family: inherit; }
+    .sub-input:focus { outline: none; border-color: var(--accent); }
+    .sub-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .9rem; }
+    .sub-field--full { grid-column: 1 / -1; }
+
+    .sub-toggle { display: flex; border: 1.5px solid rgba(0,0,0,.15); border-radius: 8px; overflow: hidden; }
+    .sub-toggle__btn { flex: 1; padding: .6rem; background: transparent; border: none; cursor: pointer; font-size: .9rem; font-weight: 600; color: var(--coffee); }
+    .sub-toggle__btn.active { background: var(--accent); color: #fff; }
+
+    .sub-secure { font-size: .82rem; color: #4a6741; margin: 0 0 1rem; }
+    .sub-accept { display: flex; gap: .5rem; align-items: flex-start; margin-top: 1rem; font-size: .85rem; color: #555; }
+    .sub-accept a { color: var(--accent); }
+
+    .sub-summary { background: var(--cream); border-radius: 12px; padding: 1.25rem; }
+    .sub-summary__line { display: flex; justify-content: space-between; align-items: baseline; font-size: 1rem; }
+    .sub-summary__line strong { font-size: 1.5rem; color: var(--accent); }
+    .sub-summary__note { font-size: .82rem; color: #777; margin: .5rem 0 1rem; }
+    .sub-submit { width: 100%; padding: .85rem; background: var(--accent); color: #fff; border: none; border-radius: 999px; font-size: 1rem; font-weight: 700; cursor: pointer; min-height: 48px; }
+    .sub-submit:hover { filter: brightness(1.05); }
+    .sub-submit:disabled { opacity: .6; cursor: not-allowed; }
+    .sub-msg { padding: .65rem .9rem; border-radius: 8px; font-size: .9rem; margin-bottom: 1rem; }
+    .sub-msg.success { background: #f0fdf4; color: #15803d; }
+    .sub-msg.error { background: #fee2e2; color: #b91c1c; }
+
+    .sub-benefits { background: var(--cream); border-radius: 12px; padding: 1.5rem; }
+    .sub-benefits h2 { font-size: 1.1rem; color: var(--coffee); margin: 0 0 1rem; }
+    .sub-benefits ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: .85rem; }
+    .sub-benefits li { display: flex; gap: .6rem; font-size: .9rem; color: #555; line-height: 1.4; }
+  </style>
+</Layout>
