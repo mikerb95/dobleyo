@@ -481,7 +481,7 @@ export default function InventarioApp() {
   const items   = useApi(`/inventory/items?type=${tab}`, { deps: [tab] });
   const detail  = useApi(selected ? `/inventory/items/${selected}` : null,
     { deps: [selected], enabled: !!selected });
-  const movs    = useApi('/inventory/movements');
+  const movs    = useApi('/inventory/feed');
 
   useEffect(() => { setSelected(null); }, [tab]);
 
