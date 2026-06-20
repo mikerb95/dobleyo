@@ -117,6 +117,10 @@ dashboardRouter.get('/summary', async (req, res) => {
                 SUM(CASE WHEN stock_quantity <= 0 THEN 1 ELSE 0 END) AS out_of_stock,
                 IFNULL(SUM(stock_quantity * IFNULL(cost, price)), 0) AS inventory_value
                FROM products WHERE is_active = 1`),
+      query(`SELECT ${tf(pattern, 'created_at')} AS period, COUNT(*) AS n
+               FROM lots WHERE created_at >= ${since} GROUP BY period`),
+      query(`SELECT ${tf(pattern, 'fecha_tostado')} AS period, COUNT(*) AS n
+               FROM lots WHERE fecha_tostado IS NOT NULL AND fecha_tostado >= ${since} GROUP BY period`),
     ]);
 
     // Top productos: parsear el JSON de cada venta.
