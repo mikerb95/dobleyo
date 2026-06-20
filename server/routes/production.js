@@ -8,6 +8,7 @@ import { ordersRouter } from './production/orders.js';
 import { batchesRouter } from './production/batches.js';
 import { qualityRouter } from './production/quality.js';
 import { dashboardRouter } from './production/dashboard.js';
+import { lotsRouter } from './production/lots.js';
 
 export const productionRouter = express.Router();
 
