@@ -1026,6 +1026,7 @@ export async function seedDemo() {
   await seedTraceabilityChain();
   await seedLots();
   await seedProductCopy();
+  await seedFarms();
   await seedProductExtras(U);
   await seedSalesTracking();
   await seedCustomerOrders(U);
