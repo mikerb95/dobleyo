@@ -105,9 +105,9 @@ farmsRouter.get('/my', authenticateToken, async (req, res) => {
             [req.user.id]
         );
         if (isList) {
-            return res.json({ success: true, data: rows });
+            return res.json({ success: true, data: rows.map(parseFarmRow) });
         }
-        res.json({ success: true, data: rows[0] ?? null });
+        res.json({ success: true, data: rows[0] ? parseFarmRow(rows[0]) : null });
     } catch (err) {
         logger.error({ err }, '[GET /api/farms/my]');
         res.status(500).json({ success: false, error: 'Error al obtener tu finca' });
