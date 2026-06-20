@@ -41,7 +41,8 @@ productionRouter.get('/', (req, res) => {
       orders: '/api/production/orders',
       batches: '/api/production/batches',
       quality: '/api/production/quality',
-      dashboard: '/api/production/dashboard'
+      dashboard: '/api/production/dashboard',
+      lots: '/api/production/lots'
     },
     version: '1.0.0'
   });
