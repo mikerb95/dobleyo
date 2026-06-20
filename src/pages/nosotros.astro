@@ -1,0 +1,394 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { getCanonicalUrl, getHreflangPair } from "../i18n/index.ts";
+
+export const prerender = false;
+
+const _hreflang = getHreflangPair("/nosotros");
+
+// ─── Caficultores aprobados (desde BD) ──────────────────────────────────────
+let caficultores: any[] = [];
+try {
+  const { query } = await import("../../server/db.js");
+  const { rows } = await query(
+    `SELECT
+       u.name, u.city, u.state_province,
+       a.farm_name, a.farm_location, a.farm_size_hectares, a.annual_production_kg,
+       a.coffee_varieties, a.certifications, a.experience_years, a.motivation,
+       (SELECT ch.lot_id FROM coffee_harvests ch
+          WHERE ch.farm = a.farm_name ORDER BY ch.created_at DESC LIMIT 1) AS lot_id
+     FROM users u
+     JOIN caficultor_applications a ON a.user_id = u.id
+     WHERE u.role = 'caficultor' AND a.status = 'approved'
+     ORDER BY a.experience_years DESC`
+  );
+  caficultores = rows;
+} catch (_) {
+  // BD no disponible → la página sigue mostrando la historia de marca
+}
+
+// Helpers
+const splitList = (s: string | null) =>
+  s ? s.split(/[,;]+/).map((x) => x.trim()).filter(Boolean) : [];
+
+const initials = (name: string) =>
+  (name || "")
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((w) => w[0])
+    .join("")
+    .toUpperCase();
+
+// Imagen ambiente por región (paisaje cafetero, no rostros)
+const REGION_IMG: Record<string, string> = {
+  Huila:
+    "https://images.unsplash.com/photo-1599639668273-01755a4f1f9a?q=80&w=800&auto=format&fit=crop",
+  Nariño:
+    "https://images.unsplash.com/photo-1503150092550-2f8e3b6e3a5f?q=80&w=800&auto=format&fit=crop",
+  Magdalena:
+    "https://images.unsplash.com/photo-1447933601403-0c6688de566e?q=80&w=800&auto=format&fit=crop",
+};
+const farmImage = (state?: string) =>
+  REGION_IMG[state ?? ""] ??
+  "https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=800&auto=format&fit=crop";
+
+const pageTitle = "Sobre nosotros — DobleYo Café";
+const pageDescription =
+  "DobleYo Café nace para llevar el café de especialidad colombiano de la finca a su taza, con trazabilidad real y comercio directo con los caficultores. Conozca a las familias detrás de cada cosecha.";
+---
+
+<Layout
+  lang="es"
+  title={pageTitle}
+  description={pageDescription}
+  canonical={getCanonicalUrl("/nosotros", "es")}
+  hreflangEs={_hreflang?.es}
+  hreflangEn={_hreflang?.en}
+>
+  <!-- ─── Hero ─────────────────────────────────────────────────────── -->
+  <section class="nos-hero">
+    <div class="nos-hero__inner">
+      <p class="nos-hero__eyebrow">Sobre nosotros</p>
+      <h1 class="nos-hero__title">Más que café, una herencia en cada taza</h1>
+      <p class="nos-hero__sub">
+        DobleYo nació de una convicción simple: el café de especialidad
+        colombiano merece llegar a su taza con la misma historia con la que
+        salió de la finca. Por eso unimos a los caficultores con quienes lo
+        disfrutan, sin intermediarios que borren el origen.
+      </p>
+    </div>
+  </section>
+
+  <!-- ─── Historia / propósito ─────────────────────────────────────── -->
+  <section class="nos-story">
+    <div class="container nos-story__grid">
+      <div class="nos-story__col">
+        <h2 class="nos-h2">Nuestra historia</h2>
+        <p>
+          El nombre <strong>DobleYo</strong> representa el encuentro de dos
+          voluntades: la del caficultor que cultiva con dedicación y la de
+          quien busca una taza honesta. Dos «yo» que se necesitan y que, juntos,
+          hacen posible un café con identidad.
+        </p>
+        <p>
+          Trabajamos con familias cafeteras de regiones como Huila, Nariño y la
+          Sierra Nevada, comprando de forma directa y pagando un precio justo.
+          Cada lote se tuesta fresco y se empaca con un código que le permite
+          rastrear toda su historia, del grano a la taza.
+        </p>
+      </div>
+      <div class="nos-story__col">
+        <h2 class="nos-h2">En qué creemos</h2>
+        <ul class="nos-values">
+          <li>
+            <span class="nos-values__icon" aria-hidden="true">🔍</span>
+            <div>
+              <h3>Trazabilidad real</h3>
+              <p>Un QR por lote: finca, cosecha, tueste y control de calidad.</p>
+            </div>
+          </li>
+          <li>
+            <span class="nos-values__icon" aria-hidden="true">🤝</span>
+            <div>
+              <h3>Comercio directo</h3>
+              <p>Compramos a los caficultores sin intermediarios, con precio justo.</p>
+            </div>
+          </li>
+          <li>
+            <span class="nos-values__icon" aria-hidden="true">🔥</span>
+            <div>
+              <h3>Tueste fresco</h3>
+              <p>Tostamos dentro de los 15 días previos a la entrega.</p>
+            </div>
+          </li>
+          <li>
+            <span class="nos-values__icon" aria-hidden="true">🌱</span>
+            <div>
+              <h3>Origen con identidad</h3>
+              <p>Cafés de altura, con su variedad, proceso y región a la vista.</p>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Caficultores ─────────────────────────────────────────────── -->
+  <section class="nos-caf">
+    <div class="container">
+      <h2 class="nos-h2 nos-h2--center">Nuestros caficultores</h2>
+      <p class="nos-caf__lead">
+        Detrás de cada bolsa hay una familia y una finca. Estas son algunas de
+        las personas que hacen posible su taza.
+      </p>
+
+      {caficultores.length === 0 ? (
+        <p class="nos-empty">Pronto le presentaremos a las familias cafeteras que nos acompañan.</p>
+      ) : (
+        <ul class="nos-caf__grid" role="list">
+          {caficultores.map((c) => (
+            <li class="caf-card">
+              <div class="caf-card__media">
+                <img
+                  src={farmImage(c.state_province)}
+                  alt={`Paisaje cafetero de ${c.state_province ?? "Colombia"}`}
+                  loading="lazy"
+                  class="caf-card__cover"
+                  width="400"
+                  height="220"
+                />
+                <span class="caf-card__avatar" aria-hidden="true">{initials(c.name)}</span>
+              </div>
+              <div class="caf-card__body">
+                <h3 class="caf-card__name">{c.name}</h3>
+                <p class="caf-card__farm">
+                  {c.farm_name}
+                  {c.farm_location ? ` · ${c.farm_location}` : ""}
+                </p>
+
+                {c.motivation && (
+                  <blockquote class="caf-card__quote">“{c.motivation}”</blockquote>
+                )}
+
+                <dl class="caf-card__meta">
+                  {c.experience_years != null && (
+                    <div>
+                      <dt>Experiencia</dt>
+                      <dd>{c.experience_years} años</dd>
+                    </div>
+                  )}
+                  {c.farm_size_hectares != null && (
+                    <div>
+                      <dt>Finca</dt>
+                      <dd>{c.farm_size_hectares} ha</dd>
+                    </div>
+                  )}
+                </dl>
+
+                {splitList(c.coffee_varieties).length > 0 && (
+                  <div class="caf-card__chips">
+                    <span class="caf-card__chips-label">Variedades</span>
+                    <div class="caf-card__chips-row">
+                      {splitList(c.coffee_varieties).map((v) => (
+                        <span class="chip-soft">{v}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {splitList(c.certifications).length > 0 && (
+                  <div class="caf-card__chips">
+                    <span class="caf-card__chips-label">Certificaciones</span>
+                    <div class="caf-card__chips-row">
+                      {splitList(c.certifications).map((cert) => (
+                        <span class="chip-cert">{cert}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {c.lot_id && (
+                  <a class="caf-card__trace" href={`/trazabilidad?lote=${encodeURIComponent(c.lot_id)}`} data-link>
+                    🔍 Rastrear un café de esta finca
+                  </a>
+                )}
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  </section>
+
+  <!-- ─── CTA ─────────────────────────────────────────────────────── -->
+  <section class="nos-cta">
+    <div class="nos-cta__inner">
+      <h2>Pruebe el origen, taza por taza</h2>
+      <p>Explore nuestros cafés de especialidad o rastree la historia del suyo.</p>
+      <div class="nos-cta__btns">
+        <a class="btn-primary" href="/tienda" data-link>Ver la tienda</a>
+        <a class="btn-ghost" href="/trazabilidad" data-link>Rastrear mi café</a>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .container { max-width: 1200px; margin: 0 auto; padding: 0 1.25rem; }
+  .nos-h2 {
+    font-family: var(--font-heading, serif);
+    font-size: clamp(1.4rem, 3vw, 2rem);
+    color: var(--coffee);
+    margin: 0 0 1rem;
+  }
+  .nos-h2--center { text-align: center; }
+
+  /* Hero */
+  .nos-hero {
+    background: var(--coffee);
+    color: var(--cream);
+    padding: 3.5rem 1.5rem 3rem;
+    text-align: center;
+  }
+  .nos-hero__inner { max-width: 720px; margin: 0 auto; }
+  .nos-hero__eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-size: 0.8rem;
+    opacity: 0.75;
+    margin: 0 0 0.75rem;
+  }
+  .nos-hero__title {
+    font-family: var(--font-heading, serif);
+    font-size: clamp(1.9rem, 5vw, 3rem);
+    line-height: 1.15;
+    margin: 0 0 1rem;
+  }
+  .nos-hero__sub { font-size: 1.05rem; line-height: 1.65; opacity: 0.9; margin: 0; }
+
+  /* Historia */
+  .nos-story { background: var(--cream); padding: 3rem 0; }
+  .nos-story__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+  }
+  .nos-story__col p { line-height: 1.7; color: var(--ink, #444); margin: 0 0 1rem; }
+  .nos-values { list-style: none; margin: 0; padding: 0; display: grid; gap: 1.1rem; }
+  .nos-values li { display: flex; gap: 0.85rem; align-items: flex-start; }
+  .nos-values__icon { font-size: 1.5rem; line-height: 1.2; }
+  .nos-values h3 { margin: 0 0 0.2rem; font-size: 1rem; color: var(--coffee); }
+  .nos-values p { margin: 0; font-size: 0.92rem; color: var(--ink, #555); line-height: 1.5; }
+
+  /* Caficultores */
+  .nos-caf { background: #fff; padding: 3.5rem 0; }
+  .nos-caf__lead {
+    text-align: center;
+    max-width: 620px;
+    margin: 0 auto 2.5rem;
+    color: var(--ink, #555);
+    line-height: 1.6;
+  }
+  .nos-empty { text-align: center; color: var(--ink, #666); padding: 2rem 0; }
+
+  .nos-caf__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.75rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  @media (min-width: 768px) { .nos-caf__grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 1024px) { .nos-caf__grid { grid-template-columns: repeat(3, 1fr); } }
+
+  .caf-card {
+    display: flex;
+    flex-direction: column;
+    background: var(--cream);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.08);
+  }
+  .caf-card__media { position: relative; aspect-ratio: 16/9; overflow: hidden; }
+  .caf-card__cover { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .caf-card__avatar {
+    position: absolute;
+    left: 1.1rem;
+    bottom: -1.5rem;
+    width: 3.25rem;
+    height: 3.25rem;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.05rem;
+    border: 3px solid var(--cream);
+  }
+
+  .caf-card__body { padding: 2rem 1.25rem 1.25rem; flex: 1; display: flex; flex-direction: column; }
+  .caf-card__name { margin: 0 0 0.15rem; font-size: 1.2rem; color: var(--coffee); }
+  .caf-card__farm { margin: 0 0 0.85rem; font-size: 0.85rem; color: var(--accent); font-weight: 600; }
+  .caf-card__quote {
+    margin: 0 0 1rem;
+    padding: 0 0 0 0.85rem;
+    border-left: 3px solid var(--accent);
+    font-style: italic;
+    color: var(--ink, #555);
+    line-height: 1.55;
+    font-size: 0.92rem;
+  }
+
+  .caf-card__meta { display: flex; gap: 1.5rem; margin: 0 0 1rem; }
+  .caf-card__meta dt { font-size: 0.72rem; color: #888; text-transform: uppercase; letter-spacing: 0.04em; }
+  .caf-card__meta dd { margin: 0; font-weight: 700; color: var(--coffee); }
+
+  .caf-card__chips { margin: 0 0 0.7rem; }
+  .caf-card__chips-label { display: block; font-size: 0.72rem; color: #888; text-transform: uppercase; letter-spacing: 0.04em; margin: 0 0 0.35rem; }
+  .caf-card__chips-row { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+  .chip-soft, .chip-cert {
+    font-size: 0.76rem;
+    font-weight: 600;
+    padding: 0.18rem 0.6rem;
+    border-radius: 999px;
+  }
+  .chip-soft { background: rgba(198, 123, 78, 0.12); color: var(--accent); }
+  .chip-cert { background: rgba(74, 103, 65, 0.12); color: #4a6741; border: 1px solid rgba(74, 103, 65, 0.25); }
+
+  .caf-card__trace {
+    margin-top: auto;
+    padding-top: 0.85rem;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--accent);
+    text-decoration: none;
+  }
+  .caf-card__trace:hover { text-decoration: underline; }
+
+  /* CTA */
+  .nos-cta { background: var(--coffee); color: var(--cream); padding: 3rem 1.5rem; text-align: center; }
+  .nos-cta__inner { max-width: 600px; margin: 0 auto; }
+  .nos-cta h2 { font-family: var(--font-heading, serif); font-size: clamp(1.5rem, 4vw, 2.2rem); margin: 0 0 0.6rem; }
+  .nos-cta p { opacity: 0.9; margin: 0 0 1.5rem; }
+  .nos-cta__btns { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
+  .btn-primary, .btn-ghost {
+    display: inline-block;
+    padding: 0.7rem 1.5rem;
+    border-radius: 999px;
+    font-weight: 600;
+    text-decoration: none;
+    min-height: 44px;
+    line-height: 1.6;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { filter: brightness(1.05); }
+  .btn-ghost { border: 1.5px solid var(--cream); color: var(--cream); }
+  .btn-ghost:hover { background: var(--cream); color: var(--coffee); }
+
+  @media (min-width: 768px) {
+    .nos-story__grid { grid-template-columns: 1fr 1fr; gap: 3rem; }
+  }
+</style>
