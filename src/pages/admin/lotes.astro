@@ -2,313 +2,132 @@
 import AdminLayout from "../../layouts/AdminLayout.astro";
 ---
 
-<AdminLayout title="Lotes — DobleYo Admin" section="lotes">
-  <style>
-    .page-header {
-      margin-bottom: 1.75rem;
-    }
-    .page-header h1 {
-      font-size: 1.75rem;
-      font-weight: 700;
-      color: #251a14;
-      margin: 0 0 0.25rem;
-    }
-    .page-header p {
-      margin: 0;
-      color: #7a6652;
-      font-size: 0.95rem;
-    }
-
-    .toolbar {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.75rem;
-      align-items: center;
-      margin-bottom: 1.5rem;
-    }
-    .tab-btn {
-      padding: 0.45rem 1rem;
-      border-radius: 20px;
-      border: 1px solid #ddd;
-      background: #fff;
-      font-size: 0.85rem;
-      font-weight: 600;
-      cursor: pointer;
-      color: #7a6652;
-      transition: all 0.15s;
-    }
-    .tab-btn.active {
-      background: #4a6741;
-      color: #fff;
-      border-color: #4a6741;
-    }
-    .tab-btn:hover:not(.active) {
-      border-color: #c8a96e;
-      color: #251a14;
-    }
-    .spacer {
-      flex: 1;
-    }
-    .btn-primary {
-      padding: 0.5rem 1.1rem;
-      background: #4a6741;
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      font-size: 0.88rem;
-      font-weight: 600;
-      cursor: pointer;
-    }
-    .btn-primary:hover {
-      background: #3a5331;
-    }
-
-    .table-wrap {
-      background: #fff;
-      border-radius: 8px;
-      border: 1px solid var(--border, rgba(0,0,0,.09));
-      box-shadow: var(--card-shadow, 0 0 0 1px rgba(0,0,0,.06), 0 2px 8px rgba(0,0,0,.05));
-      overflow-x: auto;
-      margin-bottom: 1.5rem;
-    }
-
-    .badge-lote {
-      display: inline-flex;
-      align-items: center;
-      padding: 2px 8px;
-      border-radius: 10px;
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      border: 1px solid transparent;
-      white-space: nowrap;
-    }
-    .badge-verde     { background: var(--c-success-bg, #f1fdf6); color: var(--c-success, #107e3e); border-color: var(--c-success-border, #b5e8cd); }
-    .badge-tostado   { background: var(--c-warning-bg, #fef3e2); color: var(--c-warning, #c96800); border-color: var(--c-warning-border, #f5c87a); }
-    .badge-en_tostado { background: #fff8f1; color: #92400e; border-color: #fed7aa; }
-    .badge-pendiente { background: var(--c-info-bg, #e8f2ff); color: var(--c-info, #0064d9); border-color: var(--c-info-border, #91c2f5); }
-    .badge-default   { background: #f0f0f0; color: #555; border-color: #ddd; }
-
-    .btn-action {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      padding: 0 10px;
-      height: 28px;
-      font-size: 12px;
-      font-weight: 600;
-      font-family: inherit;
-      border: 1px solid var(--border, rgba(0,0,0,.09));
-      border-radius: 4px;
-      background: var(--card-bg, #fff);
-      cursor: pointer;
-      color: var(--text-1, #32363a);
-      transition: background 0.12s, border-color 0.12s;
-      white-space: nowrap;
-    }
-    .btn-action:hover {
-      background: var(--nav-hover-bg, #f5f6f7);
-      border-color: #bbb;
-    }
-    .btn-action.danger {
-      color: var(--c-error, #aa0000);
-      border-color: var(--c-error-border, #f5bcbc);
-    }
-    .btn-action.danger:hover {
-      background: var(--c-error-bg, #ffeaea);
-    }
-
-    .empty {
-      text-align: center;
-      padding: 2.5rem;
-      color: #7a6652;
-      font-style: italic;
-    }
-
-    /* ── Modal ─────────────────────────────────────── */
-    .modal-back {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.45);
-      z-index: 300;
-      align-items: flex-start;
-      justify-content: center;
-      padding: 2rem 1rem;
-      overflow-y: auto;
-    }
-    .modal-back.open {
-      display: flex;
-    }
-    .modal {
-      background: #fff;
-      border-radius: 12px;
-      width: 100%;
-      max-width: 580px;
-      box-shadow: 0 8px 32px rgba(37, 26, 20, 0.22);
-      margin: auto;
-    }
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 1.2rem 1.5rem;
-      border-bottom: 1px solid #ede8e2;
-    }
-    .modal-header h2 {
-      margin: 0;
-      font-size: 1.1rem;
-      color: #251a14;
-    }
-    .modal-close {
-      background: none;
-      border: none;
-      cursor: pointer;
-      color: #7a6652;
-      font-size: 1.4rem;
-      line-height: 1;
-      padding: 0.2rem;
-    }
-    .modal-body {
-      padding: 1.5rem;
-    }
-    .form-grid {
-      display: grid;
-      gap: 1rem;
-      grid-template-columns: 1fr 1fr;
-    }
-    .form-group {
-      display: flex;
-      flex-direction: column;
-      gap: 0.3rem;
-    }
-    .form-group.full {
-      grid-column: 1 / -1;
-    }
-    .form-group label {
-      font-size: 0.75rem;
-      font-weight: 700;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      color: #7a6652;
-    }
-    .form-group input,
-    .form-group select,
-    .form-group textarea {
-      padding: 0.55rem 0.75rem;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      font-size: 0.88rem;
-      background: #faf8f5;
-      color: #251a14;
-      outline: none;
-    }
-    .form-group input:focus,
-    .form-group select:focus,
-    .form-group textarea:focus {
-      border-color: #c8a96e;
-    }
-    .form-group textarea {
-      resize: vertical;
-      min-height: 80px;
-    }
-    .modal-footer {
-      display: flex;
-      gap: 0.75rem;
-      justify-content: flex-end;
-      padding: 1rem 1.5rem;
-      border-top: 1px solid #ede8e2;
-    }
-    .btn-cancel {
-      padding: 0.55rem 1rem;
-      background: transparent;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      font-size: 0.88rem;
-      cursor: pointer;
-      color: #7a6652;
-    }
-    .btn-cancel:hover {
-      border-color: #bbb;
-      color: #251a14;
-    }
-    .form-msg {
-      font-size: 0.82rem;
-      margin-top: 0.5rem;
-    }
-  </style>
-
-  <header class="page-header">
-    <h1>Lotes de café</h1>
-    <p>Gestión de lotes verdes y tostados · trazabilidad completa</p>
-  </header>
-
-  <div class="toolbar">
-    <button class="tab-btn active" data-tab="all">Todos</button>
-    <button class="tab-btn" data-tab="verde">Verde</button>
-    <button class="tab-btn" data-tab="en_tostado">En tostado</button>
-    <button class="tab-btn" data-tab="pendiente">Pendiente almacén</button>
-    <button class="tab-btn" data-tab="tostado">Tostado</button>
-    <span class="spacer"></span>
-    <button class="btn-primary" id="btnNewLot">+ Nuevo lote</button>
+<AdminLayout title="Lotes — DobleYo" section="lotes">
+  <!-- ── Encabezado de página ──────────────────────────────────────────── -->
+  <div class="page-header">
+    <div class="page-header-top">
+      <div>
+        <div class="page-breadcrumb">Catálogo · Lotes</div>
+        <h1 class="page-title">Lotes de café</h1>
+        <p class="page-subtitle">
+          Gestión de lotes verdes y tostados con trazabilidad completa del
+          grano: finca, cosecha, tostión y almacén.
+        </p>
+      </div>
+      <div class="page-header-actions">
+        <button type="button" class="btn btn-secondary" id="refreshBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline>
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+          </svg>
+          Actualizar
+        </button>
+        <button type="button" class="btn btn-save" id="btnNewLot">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          Nuevo lote
+        </button>
+      </div>
+    </div>
   </div>
 
-  <div class="table-wrap">
-    <table class="erp-table">
-      <thead>
-        <tr>
-          <th>ID de lote</th>
-          <th>Finca</th>
-          <th>Región</th>
-          <th>Variedad</th>
-          <th>Proceso</th>
-          <th>Peso (kg)</th>
-          <th>Estado</th>
-          <th>Fecha</th>
-        </tr>
-      </thead>
-      <tbody id="lotsBody">
-        <tr><td colspan="8" class="empty">Cargando lotes...</td></tr>
-      </tbody>
-    </table>
+  <div class="erp-body">
+    <!-- ── KPIs ──────────────────────────────────────────────────────── -->
+    <div class="kpi-grid" style="margin-bottom: 22px;">
+      <div class="kpi-tile brand">
+        <div class="kpi-label">Total de lotes</div>
+        <div class="kpi-value" id="kpiTotal">—</div>
+        <div class="kpi-sub">Trazabilidad completa</div>
+      </div>
+      <div class="kpi-tile success">
+        <div class="kpi-label">Verde</div>
+        <div class="kpi-value" id="kpiVerde">—</div>
+        <div class="kpi-sub">En inventario verde</div>
+      </div>
+      <div class="kpi-tile warning">
+        <div class="kpi-label">En proceso</div>
+        <div class="kpi-value" id="kpiProceso">—</div>
+        <div class="kpi-sub">Tostión + pendiente de almacén</div>
+      </div>
+      <div class="kpi-tile info">
+        <div class="kpi-label">Tostado</div>
+        <div class="kpi-value" id="kpiTostado">—</div>
+        <div class="kpi-sub">Almacenado y listo</div>
+      </div>
+    </div>
+
+    <!-- ── Lotes ─────────────────────────────────────────────────────── -->
+    <section class="card">
+      <div class="card-header">
+        <div>
+          <h3 class="card-title">Lotes registrados</h3>
+          <div class="card-subtitle" id="resultCount">—</div>
+        </div>
+      </div>
+
+      <!-- Filtros por estado -->
+      <div class="seg-row">
+        <div class="seg" role="tablist" aria-label="Filtrar por estado">
+          <button class="seg-btn is-active" data-tab="all" role="tab">Todos</button>
+          <button class="seg-btn" data-tab="verde" role="tab">Verde</button>
+          <button class="seg-btn" data-tab="en_tostado" role="tab">En tostado</button>
+          <button class="seg-btn" data-tab="pendiente" role="tab">Pendiente almacén</button>
+          <button class="seg-btn" data-tab="tostado" role="tab">Tostado</button>
+        </div>
+      </div>
+
+      <div class="table-wrapper">
+        <table class="erp-table">
+          <thead>
+            <tr>
+              <th>ID de lote</th>
+              <th>Finca</th>
+              <th>Región</th>
+              <th>Variedad</th>
+              <th>Proceso</th>
+              <th style="text-align: right;">Peso</th>
+              <th>Estado</th>
+              <th>Fecha</th>
+            </tr>
+          </thead>
+          <tbody id="lotsBody">
+            <tr><td colspan="8" class="empty-state">Cargando lotes…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
   </div>
 
-  <!-- Create / Edit modal -->
-  <div class="modal-back" id="modalBack">
-    <div
-      class="modal"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="modalTitle"
-    >
+  <!-- ── Modal Crear ─────────────────────────────────────────────────── -->
+  <div class="modal" id="modalBack" hidden>
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
       <div class="modal-header">
-        <h2 id="modalTitle">Nuevo lote</h2>
-        <button class="modal-close" id="modalClose" aria-label="Cerrar"
-          >&times;</button
-        >
+        <h2 class="modal-title" id="modalTitle">Nuevo lote</h2>
+        <button type="button" class="modal-close" id="modalClose" aria-label="Cerrar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
       </div>
       <div class="modal-body">
+        <div class="form-section"><h3>Identificación</h3></div>
         <div class="form-grid">
           <div class="form-group">
-            <label for="fCode">Código *</label>
+            <label for="fCode">Código <span class="required">*</span></label>
             <input type="text" id="fCode" placeholder="DY-2026-001" />
           </div>
           <div class="form-group">
-            <label for="fName">Nombre *</label>
-            <input
-              type="text"
-              id="fName"
-              placeholder="Sierra Nevada Especial"
-            />
+            <label for="fName">Nombre <span class="required">*</span></label>
+            <input type="text" id="fName" placeholder="Sierra Nevada Especial" />
           </div>
+        </div>
+
+        <div class="form-section"><h3>Origen</h3></div>
+        <div class="form-grid">
           <div class="form-group">
             <label for="fOrigin">Origen / Región</label>
-            <input
-              type="text"
-              id="fOrigin"
-              placeholder="Sierra Nevada, Magdalena"
-            />
+            <input type="text" id="fOrigin" placeholder="Sierra Nevada, Magdalena" />
           </div>
           <div class="form-group">
             <label for="fFarm">Finca</label>
@@ -319,17 +138,21 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
             <input type="text" id="fProducer" placeholder="Juan Rodríguez" />
           </div>
           <div class="form-group">
+            <label for="fAltitude">Altitud (msnm)</label>
+            <input type="number" id="fAltitude" placeholder="1800" />
+          </div>
+        </div>
+
+        <div class="form-section"><h3>Características</h3></div>
+        <div class="form-grid">
+          <div class="form-group">
             <label for="fVariety">Variedad</label>
-            <input
-              type="text"
-              id="fVariety"
-              placeholder="Castillo, Caturra..."
-            />
+            <input type="text" id="fVariety" placeholder="Castillo, Caturra…" />
           </div>
           <div class="form-group">
             <label for="fProcess">Proceso</label>
             <select id="fProcess">
-              <option value="">Seleccionar...</option>
+              <option value="">Seleccionar…</option>
               <option value="Lavado">Lavado</option>
               <option value="Natural">Natural</option>
               <option value="Honey">Honey</option>
@@ -338,188 +161,179 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
             </select>
           </div>
           <div class="form-group">
-            <label for="fAltitude">Altitud (msnm)</label>
-            <input type="number" id="fAltitude" placeholder="1800" />
-          </div>
-          <div class="form-group">
             <label for="fWeightKg">Peso verde (kg)</label>
             <input type="number" id="fWeightKg" placeholder="120" step="0.1" />
           </div>
           <div class="form-group">
             <label for="fScore">Score SCA</label>
-            <input
-              type="number"
-              id="fScore"
-              placeholder="86.5"
-              step="0.5"
-              min="0"
-              max="100"
-            />
+            <input type="number" id="fScore" placeholder="86.5" step="0.5" min="0" max="100" />
           </div>
           <div class="form-group">
-            <label for="fHarvestDate">Fecha cosecha</label>
+            <label for="fHarvestDate">Fecha de cosecha</label>
             <input type="date" id="fHarvestDate" />
           </div>
           <div class="form-group">
             <label for="fMoisture">Humedad (%)</label>
             <input type="number" id="fMoisture" placeholder="11.5" step="0.1" />
           </div>
-          <div class="form-group full">
-            <label for="fNotes">Notas de cata / descripción</label>
-            <textarea
-              id="fNotes"
-              placeholder="Notas de sabor, características especiales..."
-            ></textarea>
-          </div>
         </div>
-        <div class="form-msg" id="formMsg"></div>
+
+        <div class="form-group form-group--wide">
+          <label for="fNotes">Notas de cata / descripción</label>
+          <textarea id="fNotes" placeholder="Notas de sabor, características especiales…"></textarea>
+        </div>
       </div>
-      <div class="modal-footer">
-        <button class="btn-cancel" id="modalCancel">Cancelar</button>
-        <button class="btn-primary" id="btnSaveLot">Crear lote</button>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" id="modalCancel">Cancelar</button>
+        <button type="button" class="btn btn-save" id="btnSaveLot">Crear lote</button>
       </div>
     </div>
   </div>
 
+  <!-- Toasts -->
+  <div class="toast-stack" id="toastStack" aria-live="polite"></div>
+
   <script>
-    // ── State ─────────────────────────────────────────────────
+    // ── Estado ──────────────────────────────────────────────────────
     let allLots: any[] = [];
     let currentTab = "all";
 
-    // ── Formatters ────────────────────────────────────────────
-    const fmtDate = (s: string) =>
-      s
-        ? new Date(s).toLocaleDateString("es-CO", {
-            day: "2-digit",
-            month: "short",
-            year: "numeric",
-          })
-        : "—";
-
-    const STATUS_LABELS: Record<string, string> = {
-      verde: "Verde",
-      en_tostado: "En tostado",
-      pendiente: "Pendiente almacén",
-      tostado: "Tostado",
-    };
-
-    function statusBadge(status: string) {
-      const cls = ["verde", "tostado", "en_tostado", "pendiente"].includes(status)
-        ? `badge-lote badge-${status}`
-        : "badge-lote badge-default";
-      return `<span class="${cls}">${STATUS_LABELS[status] ?? status ?? "—"}</span>`;
+    // ── Toast ───────────────────────────────────────────────────────
+    function toast(message: string, type = "info") {
+      const stack = document.getElementById("toastStack")!;
+      const el = document.createElement("div");
+      el.className = `toast toast--${type}`;
+      el.textContent = message;
+      stack.appendChild(el);
+      requestAnimationFrame(() => el.classList.add("is-in"));
+      setTimeout(() => {
+        el.classList.remove("is-in");
+        setTimeout(() => el.remove(), 250);
+      }, 4000);
     }
 
-    // ── Load lots ─────────────────────────────────────────────
+    function esc(s: any) {
+      if (s == null) return "";
+      return String(s).replace(/[&<>"']/g, (c) =>
+        ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!)
+      );
+    }
+    const fmtDate = (s: string) =>
+      s ? new Date(s).toLocaleDateString("es-CO", { day: "2-digit", month: "short", year: "numeric" }) : "—";
+
+    const STATUS_LABELS: Record<string, string> = {
+      verde: "Verde", en_tostado: "En tostado",
+      pendiente: "Pendiente almacén", tostado: "Tostado",
+    };
+    const STATUS_BADGE: Record<string, string> = {
+      verde: "badge-success", en_tostado: "badge-warning",
+      pendiente: "badge-neutral", tostado: "badge-info",
+    };
+    function statusBadge(status: string) {
+      const cls = STATUS_BADGE[status] || "badge-neutral";
+      return `<span class="badge ${cls}">${esc(STATUS_LABELS[status] ?? status ?? "—")}</span>`;
+    }
+
+    // ── Carga ───────────────────────────────────────────────────────
     async function loadLots() {
       const tbody = document.getElementById("lotsBody")!;
-      tbody.innerHTML = `<tr><td colspan="8" class="empty">Cargando...</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="8" class="empty-state">Cargando…</td></tr>`;
       try {
         const res = await fetch("/api/coffee/lots", { credentials: "include" });
         if (!res.ok) throw new Error("Error al cargar");
         const data = await res.json();
         allLots = data.lots ?? [];
+        updateStats(data.breakdown ?? {});
         renderTable();
       } catch {
-        tbody.innerHTML = `<tr><td colspan="8" class="empty">Error al cargar lotes. Verifica tu sesión.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" class="empty-state">Error al cargar lotes. Verifique su sesión.</td></tr>`;
+        toast("Error al cargar los lotes", "error");
       }
+    }
+
+    function updateStats(b: Record<string, number>) {
+      const verde = b.verde ?? 0, enTostado = b.en_tostado ?? 0;
+      const pendiente = b.pendiente ?? 0, tostado = b.tostado ?? 0;
+      document.getElementById("kpiTotal")!.textContent = String(allLots.length);
+      document.getElementById("kpiVerde")!.textContent = String(verde);
+      document.getElementById("kpiProceso")!.textContent = String(enTostado + pendiente);
+      document.getElementById("kpiTostado")!.textContent = String(tostado);
     }
 
     function renderTable() {
       const tbody = document.getElementById("lotsBody")!;
-      const filtered =
-        currentTab === "all"
-          ? allLots
-          : allLots.filter((l) => l.status === currentTab);
+      const filtered = currentTab === "all" ? allLots : allLots.filter((l) => l.status === currentTab);
+
+      document.getElementById("resultCount")!.textContent =
+        `${filtered.length} de ${allLots.length} lote${allLots.length === 1 ? "" : "s"}`;
 
       if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" class="empty">No hay lotes${currentTab !== "all" ? " en estado " + (STATUS_LABELS[currentTab] ?? currentTab) : ""}.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" class="empty-state">No hay lotes${currentTab !== "all" ? " en estado " + (STATUS_LABELS[currentTab] ?? currentTab) : ""}.</td></tr>`;
         return;
       }
 
-      tbody.innerHTML = filtered
-        .map(
-          (l) => `
+      tbody.innerHTML = filtered.map((l) => `
         <tr>
-          <td><strong style="font-family:monospace;font-size:.82rem">${l.lot_id ?? "—"}</strong></td>
-          <td>${l.farm_name ?? "—"}</td>
-          <td style="color:#7a6652">${l.region ?? "—"}</td>
-          <td style="color:#7a6652">${l.variety ?? "—"}</td>
-          <td style="color:#7a6652">${l.process ?? "—"}</td>
-          <td>${l.weight != null ? Number(l.weight).toFixed(1) + " kg" : "—"}</td>
+          <td style="font-family: ui-monospace, Menlo, monospace; font-size: 12px; font-weight: 600; color: var(--color-primary);">${esc(l.lot_id) || "—"}</td>
+          <td>${esc(l.farm_name) || "—"}</td>
+          <td style="color: var(--muted);">${esc(l.region) || "—"}</td>
+          <td style="color: var(--muted);">${esc(l.variety) || "—"}</td>
+          <td style="color: var(--muted);">${esc(l.process) || "—"}</td>
+          <td style="text-align: right; font-variant-numeric: tabular-nums;">${l.weight != null ? Number(l.weight).toFixed(1) + " kg" : "—"}</td>
           <td>${statusBadge(l.status)}</td>
-          <td style="color:#7a6652;font-size:.82rem">${fmtDate(l.created_at)}</td>
-        </tr>
-      `,
-        )
-        .join("");
+          <td style="color: var(--muted); white-space: nowrap;">${esc(fmtDate(l.created_at))}</td>
+        </tr>`).join("");
     }
 
-    // ── Tab filter ─────────────────────────────────────────────
-    document.querySelectorAll(".tab-btn").forEach((btn) => {
+    // ── Filtro por estado ───────────────────────────────────────────
+    document.querySelectorAll<HTMLElement>(".seg-btn").forEach((btn) => {
       btn.addEventListener("click", () => {
-        document
-          .querySelectorAll(".tab-btn")
-          .forEach((b) => b.classList.remove("active"));
-        btn.classList.add("active");
-        currentTab = (btn as HTMLElement).dataset.tab ?? "all";
+        document.querySelectorAll(".seg-btn").forEach((b) => b.classList.remove("is-active"));
+        btn.classList.add("is-active");
+        currentTab = btn.dataset.tab ?? "all";
         renderTable();
       });
     });
 
-    // ── Modal helpers ──────────────────────────────────────────
+    // ── Modal ───────────────────────────────────────────────────────
     function getVal(id: string) {
-      return (
-        (document.getElementById(id) as HTMLInputElement)?.value?.trim() ?? ""
-      );
-    }
-    function setVal(id: string, v: any) {
-      const el = document.getElementById(id) as HTMLInputElement;
-      if (el) el.value = v ?? "";
+      return (document.getElementById(id) as HTMLInputElement)?.value?.trim() ?? "";
     }
     function resetForm() {
-      [
-        "fCode", "fName", "fOrigin", "fFarm", "fProducer", "fVariety",
-        "fProcess", "fAltitude", "fWeightKg", "fScore", "fHarvestDate",
-        "fMoisture", "fNotes",
-      ].forEach((id) => setVal(id, ""));
-      document.getElementById("formMsg")!.textContent = "";
+      ["fCode","fName","fOrigin","fFarm","fProducer","fVariety","fProcess",
+       "fAltitude","fWeightKg","fScore","fHarvestDate","fMoisture","fNotes"]
+        .forEach((id) => { const el = document.getElementById(id) as HTMLInputElement; if (el) el.value = ""; });
     }
     function openCreateModal() {
       resetForm();
-      document.getElementById("modalBack")!.classList.add("open");
+      document.getElementById("modalBack")!.hidden = false;
     }
     function closeModal() {
-      document.getElementById("modalBack")!.classList.remove("open");
+      document.getElementById("modalBack")!.hidden = true;
     }
 
     document.getElementById("btnNewLot")?.addEventListener("click", openCreateModal);
     document.getElementById("modalClose")?.addEventListener("click", closeModal);
     document.getElementById("modalCancel")?.addEventListener("click", closeModal);
+    document.getElementById("refreshBtn")?.addEventListener("click", () => { loadLots(); toast("Datos actualizados", "info"); });
     document.getElementById("modalBack")?.addEventListener("click", (e) => {
       if (e.target === e.currentTarget) closeModal();
     });
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") closeModal();
-    });
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
 
-    // ── Save ───────────────────────────────────────────────────
+    // ── Guardar ─────────────────────────────────────────────────────
     document.getElementById("btnSaveLot")?.addEventListener("click", async () => {
-      const msg = document.getElementById("formMsg")!;
       const btn = document.getElementById("btnSaveLot") as HTMLButtonElement;
-      msg.textContent = "";
 
       const code = getVal("fCode");
       const name = getVal("fName");
       if (!code || !name) {
-        msg.textContent = "⚠️ Código y nombre son obligatorios.";
-        msg.style.color = "#856404";
+        toast("Código y nombre son obligatorios", "error");
         return;
       }
 
       const body: Record<string, any> = {
-        code,
-        name,
+        code, name,
         origin: getVal("fOrigin") || null,
         farm: getVal("fFarm") || null,
         producer: getVal("fProducer") || null,
@@ -534,8 +348,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       };
 
       btn.disabled = true;
-      btn.textContent = "Guardando...";
-
+      btn.textContent = "Guardando…";
       try {
         const res = await fetch("/api/lots", {
           method: "POST",
@@ -543,23 +356,73 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(body),
         });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error ?? "Error");
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error ?? "Error al crear el lote");
 
-        msg.textContent = "✅ Lote creado correctamente.";
-        msg.style.color = "#155724";
+        toast(`Lote ${code} creado correctamente`, "success");
+        closeModal();
         await loadLots();
-        setTimeout(closeModal, 1200);
       } catch (err: any) {
-        msg.textContent = `❌ ${err.message}`;
-        msg.style.color = "#721c24";
+        toast(err.message || "Error al crear el lote", "error");
       } finally {
         btn.disabled = false;
         btn.textContent = "Crear lote";
       }
     });
 
-    // ── Init ──────────────────────────────────────────────────
+    // ── Init ────────────────────────────────────────────────────────
     loadLots();
   </script>
 </AdminLayout>
+
+<style>
+  /* ── Segmented control (filtro por estado) ─────────────────────── */
+  .seg-row { padding: 14px 18px; border-bottom: 1px solid var(--rule); }
+  .seg {
+    display: inline-flex; flex-wrap: wrap; gap: 4px;
+    padding: 4px; border-radius: var(--radius-sm);
+    background: color-mix(in oklab, var(--color-primary) 4%, white);
+    border: 1px solid var(--rule);
+  }
+  .seg-btn {
+    appearance: none; cursor: pointer;
+    border: 0; background: transparent;
+    padding: 7px 14px; border-radius: 6px;
+    font: inherit; font-size: 13px; font-weight: 600;
+    color: var(--muted);
+    transition: background .12s, color .12s;
+  }
+  .seg-btn:hover { color: var(--color-primary); }
+  .seg-btn.is-active {
+    background: var(--paper); color: var(--color-primary);
+    box-shadow: 0 1px 2px color-mix(in oklab, var(--color-primary) 14%, transparent);
+  }
+
+  /* ── Modal ─────────────────────────────────────────────────────── */
+  .modal[hidden] { display: none; }
+  .modal-close {
+    appearance: none; border: 0; background: transparent; cursor: pointer;
+    width: 32px; height: 32px; display: grid; place-items: center;
+    color: var(--muted); border-radius: 8px;
+  }
+  .modal-close:hover { background: var(--hover); color: var(--color-primary); }
+
+  /* ── Toasts ────────────────────────────────────────────────────── */
+  .toast-stack {
+    position: fixed; bottom: 20px; right: 20px; z-index: 60;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .toast {
+    padding: 11px 16px; border-radius: var(--radius-sm);
+    font-size: 13px; font-weight: 500; color: #fff;
+    background: var(--color-primary);
+    box-shadow: 0 8px 24px -8px color-mix(in oklab, var(--color-primary) 50%, transparent);
+    opacity: 0; transform: translateY(8px);
+    transition: opacity 0.25s, transform 0.25s;
+    max-width: 340px;
+  }
+  .toast.is-in { opacity: 1; transform: translateY(0); }
+  .toast--success { background: var(--ok); }
+  .toast--error { background: var(--danger); }
+  .toast--info { background: var(--color-primary); }
+</style>
