@@ -53,7 +53,7 @@ const accountHref = lang === "en" ? "/account" : "/cuenta";
     </nav>
     <div class="actions">
       <div class="cart-preview-wrap" id="cartPreviewWrap">
-        <a href="/cart" class="icon-btn" data-link aria-label="Carrito de compras">
+        <a href={cartHref} class="icon-btn" data-link aria-label={tx.cart}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
             <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4H6zm0 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
             <path d="M3 6h18M16 10a4 4 0 01-8 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -62,7 +62,7 @@ const accountHref = lang === "en" ? "/account" : "/cuenta";
         </a>
         <div class="cart-preview" id="cartPreview" role="tooltip" aria-live="polite">
           <div class="cart-preview-inner" id="cartPreviewInner">
-            <p class="cart-preview-empty">Tu carrito está vacío</p>
+            <p class="cart-preview-empty">{tx.cartEmpty}</p>
           </div>
         </div>
       </div>
