@@ -67,7 +67,7 @@ farmsRouter.get('/', async (req, res) => {
             `SELECT COUNT(*) AS total FROM farms f ${where}`, countParams
         );
 
-        res.json({ success: true, data: rows, total: parseInt(countRows[0].total, 10) });
+        res.json({ success: true, data: rows.map(parseFarmRow), total: parseInt(countRows[0].total, 10) });
     } catch (err) {
         logger.error({ err }, '[GET /api/farms]');
         res.status(500).json({ success: false, error: 'Error al obtener las fincas' });
