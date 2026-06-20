@@ -231,6 +231,7 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
         <div style="display:flex;gap:8px;align-items:center">
           <input type="text" id="filter-category" placeholder="Filtrar por categoría…" style="max-width:220px" />
           <button class="btn btn-secondary" id="btn-refresh" type="button">Actualizar</button>
+          <button class="btn btn-secondary" id="btn-export" type="button">Exportar Excel</button>
         </div>
       </div>
       <div style="overflow-x:auto">
@@ -597,6 +598,12 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
     });
 
     $("btn-refresh").addEventListener("click", load);
+
+    $("btn-export").addEventListener("click", () => {
+      const cat = ($("filter-category") as HTMLInputElement).value.trim();
+      const qs = cat ? `?export=xlsx&category=${encodeURIComponent(cat)}` : "?export=xlsx";
+      window.location.href = API + qs;
+    });
     let filterTimer: any;
     ($("filter-category") as HTMLInputElement).addEventListener("input", () => {
       clearTimeout(filterTimer);
