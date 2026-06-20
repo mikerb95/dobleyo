@@ -2,6 +2,19 @@
 
 ---
 
+## 📅 2026-06-20 — Lotes: rediseño de `/admin/lotes` y corrección de tabla a borde completo (Agente: Claude)
+
+- **Corrección estética principal:** la página no envolvía su contenido en `.erp-body`, por lo que la tabla y la barra de filtros se estiraban de borde a borde del viewport. Ahora todo va dentro de `.erp-body` (ancho máximo 1280px, centrado y con padding), igual que el resto del módulo.
+- **Rediseño al sistema de diseño compartido.** Se reemplazó el `.page-header` propio con hex hardcodeados (`#251a14`, `#7a6652`, `#4a6741`) por `page-header`/`page-breadcrumb` ("Catálogo · Lotes"); la tabla se montó dentro de una `card` con `erp-table` y los badges de estado usan las variantes del sistema (`badge-success`/`badge-warning`/`badge-neutral`/`badge-info`).
+- **4 KPIs** desde el `breakdown` del endpoint: total de lotes, verde, en proceso (tostión + pendiente de almacén) y tostado.
+- **Filtros por estado** convertidos en un **segmented control** (Todos / Verde / En tostado / Pendiente almacén / Tostado), con contador de resultados en la cabecera de la tarjeta.
+- **Modal de creación** rediseñado con `modal`/`modal-content` del sistema, organizado por secciones (Identificación, Origen, Características) y cierre por backdrop, botón ✕ y `Esc`.
+- **UX:** se reemplazaron los mensajes inline coloreados por **toasts**; botón Guardar con estado «Guardando…».
+- **Sin cambios de backend.** Mismos endpoints `GET /api/coffee/lots` y `POST /api/lots`.
+- **Copy** en español Colombia formal (usted).
+
+---
+
 ## 📅 2026-06-20 — Productos: rediseño profesional de `/admin/productos` para ventas/inventario (Agente: Claude)
 
 - **Rediseño completo al sistema de diseño compartido.** Se eliminaron todos los estilos inline con hex hardcodeados (`#8b6f47`, `#dbeafe`, `#fef3c7`, `#c00`, etc.) y los emojis de títulos; se adoptaron `page-header`/`page-breadcrumb` ("Catálogo · Productos"), `erp-body`, `kpi-tile`, `card`, `erp-table`, `badge`, `modal`, `form-group`/`form-grid`/`form-section`, `btn`.
