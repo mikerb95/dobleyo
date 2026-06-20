@@ -180,6 +180,67 @@ def verify_jwt(token):
     return payload
 
 
+# ── Exportación Excel ────────────────────────────────────────────────────────
+_HEADER_FILL = PatternFill(start_color="251A14", end_color="251A14", fill_type="solid")
+_HEADER_FONT = Font(bold=True, color="FFFFFF", size=11)
+_COLS = [
+    ("ID",         "id",           8),
+    ("Categoría",  "category",     20),
+    ("Producto",   "product_key",  30),
+    ("Período",    "period",       14),
+    ("Demanda",    "demand_value", 12),
+    ("Unidad",     "unit",         10),
+    ("Notas",      "notes",        35),
+    ("Creado",     "created_at",   18),
+    ("Actualizado","updated_at",   18),
+]
+
+def export_xlsx(params):
+    """Lee demand_records con los mismos filtros que read_records y devuelve bytes .xlsx."""
+    ensure_table()
+    category = (params.get("category") or [None])[0]
+    limit_raw = (params.get("limit") or ["5000"])[0]
+    try:
+        limit = max(1, min(10000, int(limit_raw)))
+    except (ValueError, TypeError):
+        limit = 5000
+
+    if category:
+        rows = turso_batch([(
+            "SELECT * FROM demand_records WHERE category = ? "
+            "ORDER BY created_at DESC, id DESC LIMIT ?",
+            [category.strip(), limit],
+        )])[0]
+    else:
+        rows = turso_batch([(
+            "SELECT * FROM demand_records ORDER BY created_at DESC, id DESC LIMIT ?",
+            [limit],
+        )])[0]
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Registros de demanda"
+
+    # Encabezados
+    for col_idx, (label, _, width) in enumerate(_COLS, start=1):
+        cell = ws.cell(row=1, column=col_idx, value=label)
+        cell.font = _HEADER_FONT
+        cell.fill = _HEADER_FILL
+        cell.alignment = Alignment(horizontal="center")
+        ws.column_dimensions[cell.column_letter].width = width
+
+    # Filas
+    for row_idx, record in enumerate(rows, start=2):
+        for col_idx, (_, key, _) in enumerate(_COLS, start=1):
+            ws.cell(row=row_idx, column=col_idx, value=record.get(key))
+
+    ws.freeze_panes = "A2"
+
+    buf = io.BytesIO()
+    wb.save(buf)
+    return buf.getvalue()
+
+
 # ── Operaciones CRUD ──────────────────────────────────────────────────────────
 _FIELDS = ("category", "product_key", "period", "demand_value", "unit", "notes")
 
