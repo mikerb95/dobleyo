@@ -556,13 +556,19 @@ const accountHref = lang === "en" ? "/account" : "/cuenta";
       preview.style.right = (window.innerWidth - rect.right) + "px";
     }
 
+    const headerEl = document.getElementById('siteHeader');
+    const lang = headerEl?.dataset.lang === 'en' ? 'en' : 'es';
+    const emptyMsg = headerEl?.dataset.cartEmpty || 'Tu carrito está vacío';
+    const locale = lang === 'en' ? 'en-US' : 'es-CO';
+    const currency = lang === 'en' ? 'USD' : 'COP';
+
     function renderPreview() {
       const cart = window.Cart ? window.Cart.getCart() : [];
       if (cart.length === 0) {
-        inner.innerHTML = '<p class="cart-preview-empty">Tu carrito está vacío</p>';
+        inner.innerHTML = '<p class="cart-preview-empty">' + emptyMsg + '</p>';
         return;
       }
-      const fmt = (n) => '$' + Number(n).toLocaleString('es-CO');
+      const fmt = (n) => new Intl.NumberFormat(locale, { style: 'currency', currency, maximumFractionDigits: 0 }).format(Number(n));
       const items = cart.slice(0, 4).map(item => `
         <div class="cart-preview-item">
           <img src="${item.image || '/assets/logo.png'}" alt="" width="20" height="20" loading="lazy" style="width:20px;height:20px;min-width:20px;flex-shrink:0">
