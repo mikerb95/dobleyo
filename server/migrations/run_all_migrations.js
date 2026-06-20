@@ -43,6 +43,7 @@ const steps = [
   { name: 'Finance tables',                  run: () => runFn('create_finance_tables.js', 'createFinanceTables') },
   { name: 'Inventory tables',                run: () => runFn('create_inventory_tables.js', 'migrateInventoryTables') },
   { name: 'Customer orders tables',          run: () => runFn('create_customer_orders.js', 'createCustomerOrdersTables') },
+  { name: 'Subscriptions tables',            run: () => runFn('create_subscriptions.js', 'createSubscriptionsTables') },
   { name: 'Geocoding on orders',             run: () => runFn('add_geocoding_to_orders.js', 'addGeocodingToOrders') },
   { name: 'Split name fields',               run: () => runFn('split_name_fields.js', 'splitNameFields') },
   { name: 'Product variants table',          run: () => runFn('add_product_variants.js', 'addProductVariants') },
