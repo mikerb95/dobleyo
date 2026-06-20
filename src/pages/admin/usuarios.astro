@@ -2,684 +2,700 @@
 import AdminLayout from "../../layouts/AdminLayout.astro";
 ---
 
-<AdminLayout>
-  <div style="margin: 0; padding: 2rem 1.5rem;">
-    <div
-      style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;"
-    >
-      <h1 style="font-size: 2.5rem; font-weight: 700; color: #251a14;">
-        👥 Gestor de Usuarios
-      </h1>
-      <button
-        id="addUserBtn"
-        style="background: #4a6741; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background 0.2s;"
-      >
-        + Nuevo Usuario
-      </button>
+<AdminLayout title="Usuarios — DobleYo" section="usuarios">
+  <!-- ── Encabezado de página ──────────────────────────────────────────── -->
+  <div class="page-header">
+    <div class="page-header-top">
+      <div>
+        <div class="page-breadcrumb">Configuración · Usuarios</div>
+        <h1 class="page-title">Gestor de usuarios</h1>
+        <p class="page-subtitle">
+          Administre cuentas, roles y verificación. Atienda las solicitudes de
+          caficultores y mantenga el acceso bajo control.
+        </p>
+      </div>
+      <div class="page-header-actions">
+        <button type="button" class="btn btn-secondary" id="refreshBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline>
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+          </svg>
+          Actualizar
+        </button>
+        <button type="button" class="btn btn-save" id="addUserBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          Nuevo usuario
+        </button>
+      </div>
     </div>
   </div>
 
-  <!-- Filtros y búsqueda -->
-  <div
-    style="background: white; border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08);"
-  >
-    <div
-      style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1rem;"
-    >
-      <div>
-        <label
-          style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #251a14;"
-          >Rol</label
-        >
-        <select
-          id="roleFilter"
-          style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px;"
-        >
-          <option value="">Todos</option>
-          <option value="admin">Admin</option>
+  <div class="erp-body">
+    <!-- ── KPIs ──────────────────────────────────────────────────────── -->
+    <div class="kpi-grid" style="margin-bottom: 22px;">
+      <div class="kpi-tile brand">
+        <div class="kpi-label">Total de usuarios</div>
+        <div class="kpi-value" id="kpiTotal">—</div>
+        <div class="kpi-sub" id="kpiAdminSub">—</div>
+      </div>
+      <div class="kpi-tile success">
+        <div class="kpi-label">Verificados</div>
+        <div class="kpi-value" id="kpiVerified">—</div>
+        <div class="kpi-sub" id="kpiVerifiedSub">—</div>
+      </div>
+      <div class="kpi-tile info">
+        <div class="kpi-label">Caficultores</div>
+        <div class="kpi-value" id="kpiCaficultor">—</div>
+        <div class="kpi-sub">Cuentas con rol caficultor</div>
+      </div>
+      <div class="kpi-tile warning">
+        <div class="kpi-label">Solicitudes pendientes</div>
+        <div class="kpi-value" id="kpiPending">—</div>
+        <div class="kpi-sub">Caficultores por revisar</div>
+      </div>
+    </div>
+
+    <!-- ── Usuarios ──────────────────────────────────────────────────── -->
+    <section class="card">
+      <div class="card-header">
+        <div>
+          <h3 class="card-title">Usuarios</h3>
+          <div class="card-subtitle" id="resultCount">—</div>
+        </div>
+      </div>
+
+      <!-- Filtros -->
+      <div class="filters">
+        <div class="search-field">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="search" id="searchInput" placeholder="Buscar por nombre o email…" />
+        </div>
+        <select id="roleFilter" class="filter-select">
+          <option value="">Todos los roles</option>
+          <option value="admin">Administrador</option>
           <option value="caficultor">Caficultor</option>
           <option value="client">Cliente</option>
           <option value="provider">Proveedor</option>
         </select>
-      </div>
-      <div>
-        <label
-          style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #251a14;"
-          >Verificación</label
-        >
-        <select
-          id="verifiedFilter"
-          style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px;"
-        >
-          <option value="">Todos</option>
+        <select id="verifiedFilter" class="filter-select">
+          <option value="">Verificación</option>
           <option value="true">Verificado</option>
           <option value="false">No verificado</option>
         </select>
-      </div>
-      <div>
-        <label
-          style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #251a14;"
-          >Estado Caficultor</label
-        >
-        <select
-          id="caficultorFilter"
-          style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px;"
-        >
-          <option value="">Todos</option>
+        <select id="caficultorFilter" class="filter-select">
+          <option value="">Estado caficultor</option>
           <option value="none">Sin solicitud</option>
           <option value="pending">Pendiente</option>
           <option value="approved">Aprobado</option>
           <option value="rejected">Rechazado</option>
         </select>
       </div>
-      <div>
-        <label
-          style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #251a14;"
-          >Búsqueda</label
-        >
-        <input
-          type="search"
-          id="searchInput"
-          placeholder="Nombre o email..."
-          style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px;"
-        />
+
+      <div class="table-wrapper">
+        <table class="erp-table users-table">
+          <thead>
+            <tr>
+              <th>Usuario</th>
+              <th>Rol</th>
+              <th>Verificado</th>
+              <th>Caficultor</th>
+              <th>Último ingreso</th>
+              <th style="text-align: right;">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="usersTableBody">
+            <tr><td colspan="6" class="empty-state">Cargando usuarios…</td></tr>
+          </tbody>
+        </table>
       </div>
-    </div>
+    </section>
   </div>
 
-  <!-- Estadísticas -->
-  <div
-    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;"
-  >
-    <div
-      style="background: #e0e7ff; border-radius: 8px; padding: 1.5rem; text-align: center;"
-    >
-      <div
-        style="font-size: 2.5rem; font-weight: 700; color: #3730a3;"
-        id="totalCount"
-      >
-        0
+  <!-- ── Modal Crear/Editar ──────────────────────────────────────────── -->
+  <div class="modal" id="userModal" hidden>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title" id="modalTitle">Nuevo usuario</h2>
+        <button type="button" class="modal-close" id="userModalX" aria-label="Cerrar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
       </div>
-      <div style="color: #3730a3; margin-top: 0.5rem; font-weight: 600;">
-        Total Usuarios
-      </div>
-    </div>
-    <div
-      style="background: #fef3c7; border-radius: 8px; padding: 1.5rem; text-align: center;"
-    >
-      <div
-        style="font-size: 2.5rem; font-weight: 700; color: #92400e;"
-        id="adminCount"
-      >
-        0
-      </div>
-      <div style="color: #92400e; margin-top: 0.5rem; font-weight: 600;">
-        Administradores
-      </div>
-    </div>
-    <div
-      style="background: #d1fae5; border-radius: 8px; padding: 1.5rem; text-align: center;"
-    >
-      <div
-        style="font-size: 2.5rem; font-weight: 700; color: #065f46;"
-        id="caficultorCount"
-      >
-        0
-      </div>
-      <div style="color: #065f46; margin-top: 0.5rem; font-weight: 600;">
-        Caficultores
-      </div>
-    </div>
-    <div
-      style="background: #fed7aa; border-radius: 8px; padding: 1.5rem; text-align: center;"
-    >
-      <div
-        style="font-size: 2.5rem; font-weight: 700; color: #7c2d12;"
-        id="verifiedCount"
-      >
-        0
-      </div>
-      <div style="color: #7c2d12; margin-top: 0.5rem; font-weight: 600;">
-        Verificados
-      </div>
-    </div>
-  </div>
+      <div class="modal-body">
+        <form id="userForm" novalidate>
+          <div class="form-section"><h3>Cuenta</h3></div>
+          <div class="form-grid">
+            <div class="form-group form-group--wide">
+              <label for="emailInput">Correo electrónico <span class="required">*</span></label>
+              <input id="emailInput" type="email" placeholder="usuario@correo.com" required />
+              <div class="form-hint" id="emailHint">No editable después de crear la cuenta.</div>
+            </div>
+            <div class="form-group">
+              <label for="firstNameInput">Nombre <span class="required">*</span></label>
+              <input id="firstNameInput" type="text" placeholder="Juan" required />
+            </div>
+            <div class="form-group">
+              <label for="lastNameInput">Apellido</label>
+              <input id="lastNameInput" type="text" placeholder="Pérez" />
+            </div>
+            <div class="form-group">
+              <label for="roleInput">Rol <span class="required">*</span></label>
+              <select id="roleInput" required>
+                <option value="client">Cliente</option>
+                <option value="caficultor">Caficultor</option>
+                <option value="admin">Administrador</option>
+                <option value="provider">Proveedor</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="taxIdInput">NIT / Cédula</label>
+              <input id="taxIdInput" type="text" placeholder="900123456-7" />
+            </div>
+          </div>
 
-  <!-- Tabla -->
-  <div class="card" style="overflow: hidden;">
-    <div style="overflow-x: auto;">
-      <table class="erp-table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Nombre</th>
-            <th>Email</th>
-            <th>Rol</th>
-            <th>Verificado</th>
-            <th>Caficultor</th>
-            <th>Último Login</th>
-            <th style="text-align:center">Acciones</th>
-          </tr>
-        </thead>
-        <tbody id="usersTableBody">
-          <tr>
-            <td colspan="8" class="empty-state">Cargando usuarios...</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</AdminLayout>
+          <div class="form-section"><h3>Contacto</h3></div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="mobilePhoneInput">Celular</label>
+              <input id="mobilePhoneInput" type="tel" placeholder="+57 300 123 4567" />
+            </div>
+            <div class="form-group">
+              <label for="landlinePhoneInput">Teléfono fijo</label>
+              <input id="landlinePhoneInput" type="tel" placeholder="+57 1 234 5678" />
+            </div>
+            <div class="form-group">
+              <label for="cityInput">Ciudad</label>
+              <input id="cityInput" type="text" placeholder="Bogotá" />
+            </div>
+            <div class="form-group">
+              <label for="stateProvinceInput">Departamento</label>
+              <input id="stateProvinceInput" type="text" placeholder="Cundinamarca" />
+            </div>
+            <div class="form-group">
+              <label for="countryInput">País</label>
+              <input id="countryInput" type="text" placeholder="Colombia" />
+            </div>
+            <div class="form-group form-group--wide">
+              <label for="addressInput">Dirección</label>
+              <textarea id="addressInput" rows="2" placeholder="Calle 123 # 45-67, Apto 8"></textarea>
+            </div>
+          </div>
 
-<!-- Modal Crear/Editar Usuario -->
-<div
-  id="userModal"
-  style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;"
->
-  <div
-    style="background: white; border-radius: 12px; padding: 2rem; width: 90%; max-width: 500px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);"
-  >
-    <h2
-      id="modalTitle"
-      style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem; color: #251a14;"
-    >
-      Nuevo Usuario
-    </h2>
-
-    <form id="userForm" class="modal-form" novalidate>
-      <div class="form-group form-group--full">
-        <label for="emailInput">Correo electrónico <span class="required">*</span></label>
-        <input id="emailInput" type="email" placeholder="usuario@correo.com" required />
+          <label class="checkbox-item" style="margin-top: 8px;">
+            <input id="verifiedInput" type="checkbox" />
+            <span>✓ Cuenta verificada</span>
+          </label>
+        </form>
       </div>
-
-      <div class="form-grid">
-        <div class="form-group">
-          <label for="firstNameInput">Nombre <span class="required">*</span></label>
-          <input id="firstNameInput" type="text" placeholder="Juan" required />
-        </div>
-        <div class="form-group">
-          <label for="lastNameInput">Apellido</label>
-          <input id="lastNameInput" type="text" placeholder="Pérez" />
-        </div>
-        <div class="form-group">
-          <label for="mobilePhoneInput">Celular</label>
-          <input id="mobilePhoneInput" type="tel" placeholder="+57 300 123 4567" />
-        </div>
-        <div class="form-group">
-          <label for="landlinePhoneInput">Teléfono fijo</label>
-          <input id="landlinePhoneInput" type="tel" placeholder="+57 1 234 5678" />
-        </div>
-        <div class="form-group">
-          <label for="taxIdInput">NIT / Cédula</label>
-          <input id="taxIdInput" type="text" placeholder="900123456-7" />
-        </div>
-        <div class="form-group">
-          <label for="roleInput">Rol <span class="required">*</span></label>
-          <select id="roleInput" required>
-            <option value="client">Cliente</option>
-            <option value="caficultor">Caficultor</option>
-            <option value="admin">Administrador</option>
-            <option value="provider">Proveedor</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="cityInput">Ciudad</label>
-          <input id="cityInput" type="text" placeholder="Bogotá" />
-        </div>
-        <div class="form-group">
-          <label for="stateProvinceInput">Departamento</label>
-          <input id="stateProvinceInput" type="text" placeholder="Cundinamarca" />
-        </div>
-        <div class="form-group">
-          <label for="countryInput">País</label>
-          <input id="countryInput" type="text" placeholder="Colombia" />
-        </div>
-        <div class="form-group form-group--full">
-          <label for="addressInput">Dirección</label>
-          <textarea id="addressInput" rows="2" placeholder="Calle 123 # 45-67, Apto 8"></textarea>
-        </div>
-      </div>
-
-      <label class="checkbox-label">
-        <input id="verifiedInput" type="checkbox" />
-        Cuenta verificada
-      </label>
-
-      <div class="form-actions">
+      <div class="modal-actions">
         <button type="button" class="btn btn-secondary" id="cancelBtn">Cancelar</button>
-        <button type="submit" class="btn btn-primary">Guardar</button>
+        <button type="submit" form="userForm" class="btn btn-save" id="saveUserBtn">Guardar</button>
       </div>
-    </form>
-  </div>
-</div>
-
-<!-- Modal Eliminar -->
-<div
-  id="deleteModal"
-  style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;"
->
-  <div
-    style="background: white; border-radius: 12px; padding: 2rem; width: 90%; max-width: 400px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);"
-  >
-    <h2
-      style="font-size: 1.3rem; font-weight: 700; margin-bottom: 1rem; color: #251a14;"
-    >
-      Eliminar Usuario
-    </h2>
-    <p style="color: #666; margin-bottom: 1.5rem;">
-      ¿Estás seguro de que deseas eliminar a <strong id="deleteUserName"
-      ></strong>? Esta acción no se puede deshacer.
-    </p>
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-      <button
-        id="deleteCancel"
-        style="padding: 0.75rem; background: #e5e7eb; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background 0.2s;"
-      >
-        Cancelar
-      </button>
-      <button
-        id="deleteConfirm"
-        style="padding: 0.75rem; background: #dc2626; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background 0.2s;"
-      >
-        Eliminar
-      </button>
     </div>
   </div>
-</div>
 
-<style>
-  /* Modal form */
-  .modal-form { display: flex; flex-direction: column; gap: 1rem; }
+  <!-- ── Modal Credenciales (tras crear) ─────────────────────────────── -->
+  <div class="modal" id="credModal" hidden>
+    <div class="modal-content" style="max-width: 440px;">
+      <div class="modal-header">
+        <h2 class="modal-title">Usuario creado</h2>
+      </div>
+      <div class="modal-body">
+        <p style="margin: 0 0 14px; color: var(--muted); font-size: 14px;">
+          Comparta esta contraseña temporal con el usuario. Deberá cambiarla en
+          su primer ingreso. <strong>No se volverá a mostrar.</strong>
+        </p>
+        <div class="cred-row">
+          <span>Correo</span>
+          <b id="credEmail">—</b>
+        </div>
+        <div class="cred-row">
+          <span>Contraseña temporal</span>
+          <code id="credPassword">—</code>
+        </div>
+        <button type="button" class="btn btn-secondary" id="copyCredBtn" style="margin-top: 14px; width: 100%;">
+          Copiar contraseña
+        </button>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-save" id="credCloseBtn">Entendido</button>
+      </div>
+    </div>
+  </div>
 
-  .form-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 0.75rem 1rem;
-  }
+  <!-- ── Modal Eliminar ──────────────────────────────────────────────── -->
+  <div class="modal" id="deleteModal" hidden>
+    <div class="modal-content" style="max-width: 420px;">
+      <div class="modal-header">
+        <h2 class="modal-title" style="color: var(--danger);">Eliminar usuario</h2>
+      </div>
+      <div class="modal-body">
+        <p style="margin: 0 0 12px; color: var(--muted); font-size: 14px;">
+          Esta acción no se puede deshacer.
+        </p>
+        <div class="error-box">
+          Usuario: <strong id="deleteUserName"></strong>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" id="deleteCancel">Cancelar</button>
+        <button type="button" class="btn btn-danger" id="deleteConfirm">Eliminar</button>
+      </div>
+    </div>
+  </div>
 
-  .form-group { display: flex; flex-direction: column; gap: 4px; }
-  .form-group--full { grid-column: 1 / -1; }
+  <!-- Toasts -->
+  <div class="toast-stack" id="toastStack" aria-live="polite"></div>
 
-  .form-group label {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text-2, #4b5563);
-  }
+  <script>
+    let allUsers: any[] = [];
+    let currentEditId: number | null = null;
+    let currentDeleteId: number | null = null;
 
-  .form-group input,
-  .form-group textarea,
-  .form-group select {
-    padding: 0.5rem 0.75rem;
-    border: 1px solid var(--border, #e5e7eb);
-    border-radius: 4px;
-    font-size: 13.5px;
-    font-family: inherit;
-    color: var(--text-1, #251a14);
-    background: #fff;
-    transition: border-color 0.15s;
-  }
-
-  .form-group input:focus,
-  .form-group textarea:focus,
-  .form-group select:focus {
-    outline: none;
-    border-color: var(--brand, #8b6f47);
-    box-shadow: 0 0 0 3px rgba(139,111,71,.15);
-  }
-
-  .form-group input[readonly] {
-    background: var(--erp-bg, #f9fafb);
-    color: var(--text-3, #9ca3af);
-    cursor: not-allowed;
-  }
-
-  .form-group textarea { resize: vertical; }
-
-  .required { color: #dc2626; }
-
-  .checkbox-label {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 13.5px;
-    font-weight: 600;
-    color: var(--text-1, #251a14);
-    cursor: pointer;
-  }
-  .checkbox-label input[type="checkbox"] { width: 1rem; height: 1rem; cursor: pointer; }
-
-  .form-actions {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.75rem;
-    margin-top: 0.5rem;
-    padding-top: 1rem;
-    border-top: 1px solid var(--border, #e5e7eb);
-  }
-
-  .btn {
-    padding: 0.65rem 1rem;
-    border: none;
-    border-radius: 6px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.15s, opacity 0.15s;
-  }
-  .btn:disabled { opacity: 0.6; cursor: not-allowed; }
-  .btn-primary  { background: #4a6741; color: #fff; }
-  .btn-primary:hover  { background: #3a5331; }
-  .btn-secondary { background: #e5e7eb; color: #374151; }
-  .btn-secondary:hover { background: #d1d5db; }
-  #addUserBtn:hover   { background: #3a5331 !important; }
-  #deleteCancel:hover { background: #d1d5db !important; }
-  #deleteConfirm:hover { background: #b91c1c !important; }
-</style>
-
-<script>
-  let allUsers = [];
-  let currentEditId = null;
-  let currentDeleteId = null;
-
-  // Load users
-  async function loadUsers() {
-    try {
-      const response = await fetch("/api/users", {
-        credentials: "include",
-      });
-
-      if (!response.ok) throw new Error("Error al cargar usuarios");
-
-      const data = await response.json();
-      allUsers = data.users || [];
-      displayUsers(allUsers);
-      updateStats(allUsers);
-    } catch (err) {
-      console.error("Error:", err);
-      alert("Error al cargar usuarios: " + err.message);
-    }
-  }
-
-  // Display users table
-  function displayUsers(users) {
-    const tbody = document.getElementById("usersTableBody");
-    tbody.innerHTML = "";
-
-    if (users.length === 0) {
-      tbody.innerHTML =
-        '<tr style="border-bottom: 1px solid #e5e7eb;"><td colspan="8" style="padding: 2rem; text-align: center; color: #666;">No se encontraron usuarios</td></tr>';
-      return;
+    // ── Toast ───────────────────────────────────────────────────────
+    function toast(message: string, type = "info") {
+      const stack = document.getElementById("toastStack")!;
+      const el = document.createElement("div");
+      el.className = `toast toast--${type}`;
+      el.textContent = message;
+      stack.appendChild(el);
+      requestAnimationFrame(() => el.classList.add("is-in"));
+      setTimeout(() => {
+        el.classList.remove("is-in");
+        setTimeout(() => el.remove(), 250);
+      }, 4000);
     }
 
-    users.forEach((user) => {
-      const row = document.createElement("tr");
-      row.style.borderBottom = "1px solid #e5e7eb";
-
-      const formatDate = (date) => {
-        if (!date) return "Nunca";
-        return new Date(date).toLocaleDateString("es-ES");
-      };
-
-      const roleColors = {
-        admin: "background: #fef3c7; color: #92400e;",
-        caficultor: "background: #d1fae5; color: #065f46;",
-        client: "background: #e0e7ff; color: #3730a3;",
-        provider: "background: #ede9fe; color: #5b21b6;",
-      };
-
-      const caficultorStatusText = {
-        none: "Sin solicitud",
-        pending: "Pendiente",
-        approved: "Aprobado",
-        rejected: "Rechazado",
-      };
-
-      row.innerHTML = `
-          <td style="padding: 1rem; color: #666;">${user.id}</td>
-          <td style="padding: 1rem; color: #251a14; font-weight: 500;">${[user.first_name, user.last_name].filter(Boolean).join(" ") || user.name || "N/A"}</td>
-          <td style="padding: 1rem; color: #666;">${user.email}</td>
-          <td style="padding: 1rem;">
-            <span style="display: inline-block; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.85rem; font-weight: 600; ${roleColors[user.role] || "background: #f3f4f6; color: #6b7280;"}">
-              ${user.role}
-            </span>
-          </td>
-          <td style="padding: 1rem;">
-            <span style="display: inline-block; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.85rem; font-weight: 600; background: ${user.is_verified ? "#d1fae5" : "#fee2e2"}; color: ${user.is_verified ? "#065f46" : "#991b1b"};">
-              ${user.is_verified ? "✓ Sí" : "✗ No"}
-            </span>
-          </td>
-          <td style="padding: 1rem; color: #666;">
-            ${caficultorStatusText[user.caficultor_status] || "N/A"}
-          </td>
-          <td style="padding: 1rem; color: #666; font-size: 0.9rem;">
-            ${formatDate(user.last_login_at)}
-          </td>
-          <td style="padding: 1rem; text-align: center;">
-            <button data-action="edit-user" data-user-id="${user.id}" style="padding: 0.4rem 0.8rem; background: #8b6f47; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; margin-right: 0.5rem;">✏️ Editar</button>
-            <button data-action="delete-user" data-user-id="${user.id}" data-user-email="${user.email.replace(/"/g, '&quot;')}" style="padding: 0.4rem 0.8rem; background: #dc2626; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem;">🗑️ Eliminar</button>
-          </td>
-        `;
-      tbody.appendChild(row);
-    });
-  }
-
-  // Update stats
-  function updateStats(users) {
-    document.getElementById("totalCount").textContent = users.length;
-    document.getElementById("adminCount").textContent = users.filter(
-      (u) => u.role === "admin"
-    ).length;
-    document.getElementById("caficultorCount").textContent = users.filter(
-      (u) => u.role === "caficultor"
-    ).length;
-    document.getElementById("verifiedCount").textContent = users.filter(
-      (u) => u.is_verified
-    ).length;
-  }
-
-  // Filter users
-  function applyFilters() {
-    const role = document.getElementById("roleFilter").value;
-    const verified = document.getElementById("verifiedFilter").value;
-    const caficultor = document.getElementById("caficultorFilter").value;
-    const search = document.getElementById("searchInput").value.toLowerCase();
-
-    const filtered = allUsers.filter((user) => {
-      const matchRole = !role || user.role === role;
-      const matchVerified =
-        verified === "" || String(user.is_verified) === verified;
-      const matchCaficultor =
-        !caficultor || user.caficultor_status === caficultor;
-      const fullName = [user.first_name, user.last_name].filter(Boolean).join(" ") || user.name || "";
-      const matchSearch =
-        !search ||
-        user.email.toLowerCase().includes(search) ||
-        fullName.toLowerCase().includes(search);
-      return matchRole && matchVerified && matchCaficultor && matchSearch;
-    });
-
-    displayUsers(filtered);
-  }
-
-  // Edit user
-  window.editUser = function (userId) {
-    const user = allUsers.find((u) => u.id === userId);
-    if (!user) return;
-
-    currentEditId = userId;
-    document.getElementById("modalTitle").textContent = "Editar Usuario";
-    document.getElementById("emailInput").value = user.email;
-    document.getElementById("firstNameInput").value = user.first_name || "";
-    document.getElementById("lastNameInput").value = user.last_name || "";
-    document.getElementById("mobilePhoneInput").value = user.mobile_phone || "";
-    document.getElementById("landlinePhoneInput").value = user.landline_phone || "";
-    document.getElementById("taxIdInput").value = user.tax_id || "";
-    document.getElementById("roleInput").value = user.role;
-    document.getElementById("cityInput").value = user.city || "";
-    document.getElementById("stateProvinceInput").value = user.state_province || "";
-    document.getElementById("countryInput").value = user.country || "";
-    document.getElementById("addressInput").value = user.address || "";
-    document.getElementById("verifiedInput").checked = user.is_verified;
-    document.getElementById("emailInput").readOnly = true;
-
-    document.getElementById("userModal").style.display = "flex";
-  };
-
-  // Delete user
-  window.deleteUser = function (userId, userEmail) {
-    currentDeleteId = userId;
-    document.getElementById("deleteUserName").textContent = userEmail;
-    document.getElementById("deleteModal").style.display = "flex";
-  };
-
-  // Close modals
-  function closeUserModal() {
-    document.getElementById("userModal").style.display = "none";
-    currentEditId = null;
-    document.getElementById("emailInput").readOnly = false;
-    document.getElementById("userForm").reset();
-    document.getElementById("modalTitle").textContent = "Nuevo Usuario";
-    document.getElementById("countryInput").value = "Colombia";
-  }
-
-  function closeDeleteModal() {
-    document.getElementById("deleteModal").style.display = "none";
-    currentDeleteId = null;
-  }
-
-  // Save user
-  document.getElementById("userForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const first_name = document.getElementById("firstNameInput").value.trim();
-    const last_name = document.getElementById("lastNameInput").value.trim();
-    const userData = {
-      email: document.getElementById("emailInput").value,
-      first_name,
-      last_name,
-      name: [first_name, last_name].filter(Boolean).join(" "),
-      mobile_phone: document.getElementById("mobilePhoneInput").value.trim(),
-      landline_phone: document.getElementById("landlinePhoneInput").value.trim(),
-      tax_id: document.getElementById("taxIdInput").value.trim(),
-      role: document.getElementById("roleInput").value,
-      city: document.getElementById("cityInput").value.trim(),
-      state_province: document.getElementById("stateProvinceInput").value.trim(),
-      country: document.getElementById("countryInput").value.trim(),
-      address: document.getElementById("addressInput").value.trim(),
-      is_verified: document.getElementById("verifiedInput").checked,
+    // ── Helpers ─────────────────────────────────────────────────────
+    function esc(s: any) {
+      if (s == null) return "";
+      return String(s).replace(/[&<>"']/g, (c) =>
+        ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!)
+      );
+    }
+    const fmtDate = (d: string) =>
+      d ? new Date(d).toLocaleDateString("es-CO", { day: "2-digit", month: "short", year: "numeric" }) : "Nunca";
+    const setVal = (id: string, v: any) => {
+      const el = document.getElementById(id) as HTMLInputElement;
+      if (el) el.value = v ?? "";
     };
+    const getVal = (id: string) => (document.getElementById(id) as HTMLInputElement)?.value?.trim() ?? "";
 
-    try {
-      let endpoint, method;
+    const ROLE = {
+      admin: { label: "Administrador", cls: "badge-warning" },
+      caficultor: { label: "Caficultor", cls: "badge-success" },
+      client: { label: "Cliente", cls: "badge-info" },
+      provider: { label: "Proveedor", cls: "badge-brand" },
+    } as Record<string, { label: string; cls: string }>;
 
-      if (currentEditId) {
-        // Editar - no puede cambiar email
-        delete userData.email;
-        endpoint = `/api/users/${currentEditId}`;
-        method = "PUT";
-      } else {
-        // Crear nuevo usuario
-        endpoint = "/api/users";
-        method = "POST";
+    const CAFICULTOR = {
+      none: { label: "Sin solicitud", cls: "badge-neutral" },
+      pending: { label: "Pendiente", cls: "badge-warning" },
+      approved: { label: "Aprobado", cls: "badge-success" },
+      rejected: { label: "Rechazado", cls: "badge-error" },
+    } as Record<string, { label: string; cls: string }>;
+
+    // ── Carga ───────────────────────────────────────────────────────
+    async function loadUsers() {
+      const tbody = document.getElementById("usersTableBody")!;
+      try {
+        const response = await fetch("/api/users", { credentials: "include" });
+        if (!response.ok) throw new Error("Error al cargar usuarios");
+        const data = await response.json();
+        allUsers = (data.users || []).map((u: any) => ({ ...u, is_verified: !!u.is_verified }));
+        updateStats(allUsers);
+        applyFilters();
+      } catch (err: any) {
+        console.error("Error:", err);
+        tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No se pudieron cargar los usuarios.</td></tr>';
+        toast("Error al cargar usuarios", "error");
+      }
+    }
+
+    function updateStats(users: any[]) {
+      const total = users.length;
+      const admins = users.filter((u) => u.role === "admin").length;
+      const verified = users.filter((u) => u.is_verified).length;
+      const caficultores = users.filter((u) => u.role === "caficultor").length;
+      const pending = users.filter((u) => u.caficultor_status === "pending").length;
+
+      document.getElementById("kpiTotal")!.textContent = String(total);
+      document.getElementById("kpiAdminSub")!.textContent = `${admins} administrador${admins === 1 ? "" : "es"}`;
+      document.getElementById("kpiVerified")!.textContent = String(verified);
+      document.getElementById("kpiVerifiedSub")!.textContent = `${total - verified} sin verificar`;
+      document.getElementById("kpiCaficultor")!.textContent = String(caficultores);
+      document.getElementById("kpiPending")!.textContent = String(pending);
+    }
+
+    // ── Render ──────────────────────────────────────────────────────
+    function displayUsers(users: any[]) {
+      const tbody = document.getElementById("usersTableBody")!;
+      document.getElementById("resultCount")!.textContent =
+        `${users.length} de ${allUsers.length} usuario${allUsers.length === 1 ? "" : "s"}`;
+
+      if (!users.length) {
+        tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No se encontraron usuarios con los filtros aplicados.</td></tr>';
+        return;
       }
 
-      const response = await fetch(endpoint, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(userData),
+      tbody.innerHTML = users.map((u) => {
+        const fullName = [u.first_name, u.last_name].filter(Boolean).join(" ") || u.name || "Sin nombre";
+        const initials = fullName.split(" ").slice(0, 2).map((w: string) => w[0]).join("").toUpperCase();
+        const role = ROLE[u.role] || { label: u.role || "—", cls: "badge-neutral" };
+        const caf = CAFICULTOR[u.caficultor_status] || { label: "—", cls: "badge-neutral" };
+        const verified = u.is_verified
+          ? '<span class="badge badge-success">Verificado</span>'
+          : '<span class="badge badge-error">Sin verificar</span>';
+        const cafCell = u.caficultor_status && u.caficultor_status !== "none"
+          ? `<span class="badge ${caf.cls}">${esc(caf.label)}</span>`
+          : '<span style="color: var(--muted-2);">—</span>';
+
+        return `
+        <tr>
+          <td>
+            <div class="user-cell">
+              <div class="user-avatar">${esc(initials || "?")}</div>
+              <div class="user-meta">
+                <span class="user-name">${esc(fullName)}</span>
+                <span class="user-email">${esc(u.email)}</span>
+              </div>
+            </div>
+          </td>
+          <td><span class="badge ${role.cls}">${esc(role.label)}</span></td>
+          <td>${verified}</td>
+          <td>${cafCell}</td>
+          <td style="color: var(--muted); white-space: nowrap;">${esc(fmtDate(u.last_login_at))}</td>
+          <td style="text-align: right; white-space: nowrap;">
+            <button class="icon-btn" data-action="edit-user" data-user-id="${u.id}" title="Editar" aria-label="Editar">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+              </svg>
+            </button>
+            <button class="icon-btn icon-btn--danger" data-action="delete-user" data-user-id="${u.id}" data-user-email="${esc(u.email)}" title="Eliminar" aria-label="Eliminar">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+            </button>
+          </td>
+        </tr>`;
+      }).join("");
+    }
+
+    // ── Filtros ─────────────────────────────────────────────────────
+    function applyFilters() {
+      const role = (document.getElementById("roleFilter") as HTMLSelectElement).value;
+      const verified = (document.getElementById("verifiedFilter") as HTMLSelectElement).value;
+      const caficultor = (document.getElementById("caficultorFilter") as HTMLSelectElement).value;
+      const search = getVal("searchInput").toLowerCase();
+
+      const filtered = allUsers.filter((u) => {
+        const matchRole = !role || u.role === role;
+        const matchVerified = verified === "" || String(u.is_verified) === verified;
+        const matchCaficultor = !caficultor || (u.caficultor_status || "none") === caficultor;
+        const fullName = [u.first_name, u.last_name].filter(Boolean).join(" ") || u.name || "";
+        const matchSearch = !search ||
+          (u.email || "").toLowerCase().includes(search) ||
+          fullName.toLowerCase().includes(search);
+        return matchRole && matchVerified && matchCaficultor && matchSearch;
       });
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Error al guardar usuario");
-      }
-
-      const result = await response.json();
-
-      closeUserModal();
-      loadUsers();
-
-      if (method === "POST") {
-        alert(
-          `Usuario creado exitosamente.\n\nContraseña temporal: ${result.tempPassword}\n\nAsegúrate de que el usuario cambie su contraseña en el siguiente login.`
-        );
-      } else {
-        alert("Usuario actualizado exitosamente");
-      }
-    } catch (err) {
-      alert("Error: " + err.message);
+      displayUsers(filtered);
     }
-  });
 
-  // Confirm delete
-  document
-    .getElementById("deleteConfirm")
-    .addEventListener("click", async () => {
+    // ── Modal usuario ───────────────────────────────────────────────
+    function openCreateModal() {
+      currentEditId = null;
+      (document.getElementById("userForm") as HTMLFormElement).reset();
+      document.getElementById("modalTitle")!.textContent = "Nuevo usuario";
+      const email = document.getElementById("emailInput") as HTMLInputElement;
+      email.readOnly = false;
+      document.getElementById("emailHint")!.textContent = "No editable después de crear la cuenta.";
+      setVal("countryInput", "Colombia");
+      document.getElementById("userModal")!.hidden = false;
+    }
+
+    function openEditModal(userId: number) {
+      const user = allUsers.find((u) => u.id === userId);
+      if (!user) return;
+      currentEditId = userId;
+      document.getElementById("modalTitle")!.textContent = "Editar usuario";
+      setVal("emailInput", user.email);
+      setVal("firstNameInput", user.first_name);
+      setVal("lastNameInput", user.last_name);
+      setVal("mobilePhoneInput", user.mobile_phone);
+      setVal("landlinePhoneInput", user.landline_phone);
+      setVal("taxIdInput", user.tax_id);
+      (document.getElementById("roleInput") as HTMLSelectElement).value = user.role;
+      setVal("cityInput", user.city);
+      setVal("stateProvinceInput", user.state_province);
+      setVal("countryInput", user.country);
+      setVal("addressInput", user.address);
+      (document.getElementById("verifiedInput") as HTMLInputElement).checked = !!user.is_verified;
+      const email = document.getElementById("emailInput") as HTMLInputElement;
+      email.readOnly = true;
+      document.getElementById("emailHint")!.textContent = "El correo no se puede modificar.";
+      document.getElementById("userModal")!.hidden = false;
+    }
+
+    function closeUserModal() {
+      document.getElementById("userModal")!.hidden = true;
+      currentEditId = null;
+      (document.getElementById("emailInput") as HTMLInputElement).readOnly = false;
+      (document.getElementById("userForm") as HTMLFormElement).reset();
+    }
+
+    function openDeleteModal(userId: number, userEmail: string) {
+      currentDeleteId = userId;
+      document.getElementById("deleteUserName")!.textContent = userEmail;
+      document.getElementById("deleteModal")!.hidden = false;
+    }
+    function closeDeleteModal() {
+      document.getElementById("deleteModal")!.hidden = true;
+      currentDeleteId = null;
+    }
+
+    // ── Guardar ─────────────────────────────────────────────────────
+    document.getElementById("userForm")!.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const first_name = getVal("firstNameInput");
+      const last_name = getVal("lastNameInput");
+      if (!getVal("emailInput") || !first_name) {
+        toast("Correo y nombre son obligatorios", "error");
+        return;
+      }
+
+      const userData: Record<string, any> = {
+        email: getVal("emailInput"),
+        first_name, last_name,
+        name: [first_name, last_name].filter(Boolean).join(" "),
+        mobile_phone: getVal("mobilePhoneInput"),
+        landline_phone: getVal("landlinePhoneInput"),
+        tax_id: getVal("taxIdInput"),
+        role: (document.getElementById("roleInput") as HTMLSelectElement).value,
+        city: getVal("cityInput"),
+        state_province: getVal("stateProvinceInput"),
+        country: getVal("countryInput"),
+        address: getVal("addressInput"),
+        is_verified: (document.getElementById("verifiedInput") as HTMLInputElement).checked,
+      };
+
+      const saveBtn = document.getElementById("saveUserBtn") as HTMLButtonElement;
+      const originalText = saveBtn.textContent;
+      saveBtn.disabled = true;
+      saveBtn.textContent = "Guardando…";
+
       try {
-        const response = await fetch(`/api/users/${currentDeleteId}`, {
-          method: "DELETE",
-          credentials: "include",
-        });
-
-        if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.error || "Error al eliminar usuario");
+        let endpoint: string, method: string;
+        if (currentEditId) {
+          delete userData.email;
+          endpoint = `/api/users/${currentEditId}`;
+          method = "PUT";
+        } else {
+          endpoint = "/api/users";
+          method = "POST";
         }
 
-        closeDeleteModal();
-        loadUsers();
-        alert("Usuario eliminado exitosamente");
-      } catch (err) {
-        alert("Error: " + err.message);
+        const response = await fetch(endpoint, {
+          method,
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify(userData),
+        });
+        if (!response.ok) {
+          const error = await response.json().catch(() => ({}));
+          throw new Error(error.error || "Error al guardar usuario");
+        }
+        const result = await response.json();
+
+        const email = userData.email;
+        closeUserModal();
+        await loadUsers();
+
+        if (method === "POST") {
+          toast("Usuario creado correctamente", "success");
+          document.getElementById("credEmail")!.textContent = email;
+          document.getElementById("credPassword")!.textContent = result.tempPassword || "—";
+          document.getElementById("credModal")!.hidden = false;
+        } else {
+          toast("Usuario actualizado correctamente", "success");
+        }
+      } catch (err: any) {
+        toast(err.message || "Error al guardar usuario", "error");
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = originalText;
       }
     });
 
-  // Event listeners
-  document
-    .getElementById("cancelBtn")
-    .addEventListener("click", closeUserModal);
-  document
-    .getElementById("deleteCancel")
-    .addEventListener("click", closeDeleteModal);
-  document.getElementById("addUserBtn").addEventListener("click", () => {
-    currentEditId = null;
-    document.getElementById("userForm").reset();
-    document.getElementById("modalTitle").textContent = "Nuevo Usuario";
-    document.getElementById("emailInput").readOnly = false;
-    document.getElementById("countryInput").value = "Colombia";
-    document.getElementById("userModal").style.display = "flex";
-  });
+    // ── Eliminar ────────────────────────────────────────────────────
+    document.getElementById("deleteConfirm")!.addEventListener("click", async () => {
+      if (!currentDeleteId) return;
+      try {
+        const response = await fetch(`/api/users/${currentDeleteId}`, {
+          method: "DELETE", credentials: "include",
+        });
+        if (!response.ok) {
+          const error = await response.json().catch(() => ({}));
+          throw new Error(error.error || "Error al eliminar usuario");
+        }
+        closeDeleteModal();
+        await loadUsers();
+        toast("Usuario eliminado correctamente", "success");
+      } catch (err: any) {
+        toast(err.message || "Error al eliminar usuario", "error");
+      }
+    });
 
-  document
-    .getElementById("roleFilter")
-    .addEventListener("change", applyFilters);
-  document
-    .getElementById("verifiedFilter")
-    .addEventListener("change", applyFilters);
-  document
-    .getElementById("caficultorFilter")
-    .addEventListener("change", applyFilters);
-  document
-    .getElementById("searchInput")
-    .addEventListener("input", applyFilters);
+    // ── Credenciales: copiar ────────────────────────────────────────
+    document.getElementById("copyCredBtn")!.addEventListener("click", async () => {
+      const pwd = document.getElementById("credPassword")!.textContent || "";
+      try {
+        await navigator.clipboard.writeText(pwd);
+        toast("Contraseña copiada al portapapeles", "success");
+      } catch {
+        toast("No se pudo copiar automáticamente", "error");
+      }
+    });
+    document.getElementById("credCloseBtn")!.addEventListener("click", () => {
+      document.getElementById("credModal")!.hidden = true;
+    });
 
-  // Close modal when clicking outside
-  document.getElementById("userModal").addEventListener("click", (e) => {
-    if (e.target === document.getElementById("userModal")) closeUserModal();
-  });
+    // ── Eventos ─────────────────────────────────────────────────────
+    document.getElementById("addUserBtn")!.addEventListener("click", openCreateModal);
+    document.getElementById("refreshBtn")!.addEventListener("click", () => { loadUsers(); toast("Datos actualizados", "info"); });
+    document.getElementById("cancelBtn")!.addEventListener("click", closeUserModal);
+    document.getElementById("userModalX")!.addEventListener("click", closeUserModal);
+    document.getElementById("deleteCancel")!.addEventListener("click", closeDeleteModal);
 
-  document.getElementById("deleteModal").addEventListener("click", (e) => {
-    if (e.target === document.getElementById("deleteModal")) closeDeleteModal();
-  });
+    document.getElementById("roleFilter")!.addEventListener("change", applyFilters);
+    document.getElementById("verifiedFilter")!.addEventListener("change", applyFilters);
+    document.getElementById("caficultorFilter")!.addEventListener("change", applyFilters);
+    document.getElementById("searchInput")!.addEventListener("input", applyFilters);
 
-  // Load on init
-  loadUsers();
+    document.getElementById("userModal")!.addEventListener("click", (e) => {
+      if (e.target === document.getElementById("userModal")) closeUserModal();
+    });
+    document.getElementById("deleteModal")!.addEventListener("click", (e) => {
+      if (e.target === document.getElementById("deleteModal")) closeDeleteModal();
+    });
 
-  document.getElementById("usersTableBody")?.addEventListener("click", (e) => {
-    const btn = e.target.closest("[data-action]");
-    if (!btn) return;
-    if (btn.dataset.action === "edit-user") window.editUser(parseInt(btn.dataset.userId));
-    if (btn.dataset.action === "delete-user") window.deleteUser(parseInt(btn.dataset.userId), btn.dataset.userEmail);
-  });
-</script>
+    document.getElementById("usersTableBody")!.addEventListener("click", (e) => {
+      const btn = (e.target as HTMLElement).closest("[data-action]") as HTMLElement | null;
+      if (!btn) return;
+      const id = parseInt(btn.dataset.userId!);
+      if (btn.dataset.action === "edit-user") openEditModal(id);
+      if (btn.dataset.action === "delete-user") openDeleteModal(id, btn.dataset.userEmail!);
+    });
+
+    // ── Init ────────────────────────────────────────────────────────
+    loadUsers();
+  </script>
+</AdminLayout>
+
+<style>
+  /* ── Filtros ───────────────────────────────────────────────────── */
+  .filters {
+    display: flex; flex-wrap: wrap; gap: 10px;
+    padding: 14px 18px; border-bottom: 1px solid var(--rule);
+  }
+  .search-field {
+    position: relative; flex: 1; min-width: 220px;
+    display: flex; align-items: center;
+  }
+  .search-field svg { position: absolute; left: 12px; color: var(--muted); pointer-events: none; }
+  .search-field input {
+    width: 100%; padding: 9px 12px 9px 34px;
+    font: inherit; font-size: 14px;
+    border: 1px solid var(--rule); border-radius: var(--radius-sm);
+    background: var(--paper); color: var(--color-text);
+  }
+  .search-field input:focus, .filter-select:focus {
+    outline: none; border-color: var(--color-accent);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-accent) 18%, transparent);
+  }
+  .filter-select {
+    padding: 9px 12px; font: inherit; font-size: 13px;
+    border: 1px solid var(--rule); border-radius: var(--radius-sm);
+    background: var(--paper); color: var(--color-text); cursor: pointer;
+  }
+
+  /* ── Celda de usuario ──────────────────────────────────────────── */
+  .users-table tbody td { vertical-align: middle; }
+  .user-cell { display: flex; align-items: center; gap: 12px; }
+  .user-avatar {
+    width: 36px; height: 36px; flex-shrink: 0;
+    border-radius: 999px; display: grid; place-items: center;
+    font-size: 13px; font-weight: 700; color: var(--color-primary);
+    background: var(--active-bg);
+  }
+  .user-meta { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+  .user-name { font-weight: 600; color: var(--color-primary); }
+  .user-email {
+    font-size: 12px; color: var(--muted);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 260px;
+  }
+
+  /* ── Botones de icono ──────────────────────────────────────────── */
+  .icon-btn {
+    appearance: none; cursor: pointer;
+    width: 30px; height: 30px; display: inline-grid; place-items: center;
+    border: 1px solid var(--rule); border-radius: var(--radius-sm);
+    background: var(--paper); color: var(--muted); margin-left: 4px;
+    transition: background .12s, color .12s, border-color .12s;
+  }
+  .icon-btn:hover { background: var(--hover); color: var(--color-primary); border-color: var(--rule-2); }
+  .icon-btn--danger:hover {
+    background: color-mix(in oklab, var(--danger) 8%, white);
+    color: var(--danger); border-color: color-mix(in oklab, var(--danger) 30%, white);
+  }
+
+  /* ── Modal ─────────────────────────────────────────────────────── */
+  .modal[hidden] { display: none; }
+  .modal-close {
+    appearance: none; border: 0; background: transparent; cursor: pointer;
+    width: 32px; height: 32px; display: grid; place-items: center;
+    color: var(--muted); border-radius: 8px;
+  }
+  .modal-close:hover { background: var(--hover); color: var(--color-primary); }
+
+  /* ── Credenciales ──────────────────────────────────────────────── */
+  .cred-row {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; padding: 10px 12px; margin-bottom: 8px;
+    border: 1px solid var(--rule); border-radius: var(--radius-sm);
+    background: color-mix(in oklab, var(--color-primary) 3%, white);
+  }
+  .cred-row span { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  .cred-row b { font-size: 13px; color: var(--color-primary); word-break: break-all; }
+  .cred-row code {
+    font-family: ui-monospace, Menlo, monospace; font-size: 14px; font-weight: 600;
+    color: var(--color-accent); word-break: break-all;
+  }
+
+  /* ── Toasts ────────────────────────────────────────────────────── */
+  .toast-stack {
+    position: fixed; bottom: 20px; right: 20px; z-index: 60;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .toast {
+    padding: 11px 16px; border-radius: var(--radius-sm);
+    font-size: 13px; font-weight: 500; color: #fff;
+    background: var(--color-primary);
+    box-shadow: 0 8px 24px -8px color-mix(in oklab, var(--color-primary) 50%, transparent);
+    opacity: 0; transform: translateY(8px);
+    transition: opacity 0.25s, transform 0.25s;
+    max-width: 340px;
+  }
+  .toast.is-in { opacity: 1; transform: translateY(0); }
+  .toast--success { background: var(--ok); }
+  .toast--error { background: var(--danger); }
+  .toast--info { background: var(--color-primary); }
+</style>
