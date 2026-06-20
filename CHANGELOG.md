@@ -2,6 +2,23 @@
 
 ---
 
+## 📅 2026-06-20 — Admin: línea de producción sin datos — endpoint faltante (Agente: Claude)
+
+### Contexto
+En `/admin/produccion` no aparecía nada en la línea de producción. El componente `src/components/production/ProductionPipeline.jsx` consume `GET /api/production/lots`, `GET /api/production/lots/:id` y `POST /api/production/lots/:id/advance`, pero ese endpoint **nunca existió**: `server/routes/production.js` solo montaba `/orders`, `/batches`, `/quality` y `/dashboard`. Las llamadas caían en 404 y el pipeline quedaba vacío.
+
+### Cambios
+- `server/routes/production/lots.js` (nuevo): sub-router que reconstruye la trazabilidad del lote a partir de las tablas operativas encadenadas por `lot_id` (`coffee_harvests` → `green_coffee_inventory` → `roasting_batches` → `roasted_coffee_inventory` → `packaged_coffee` → `generated_labels`).
+  - `GET /lots`: lista de lotes con su etapa actual para el selector.
+  - `GET /lots/:id`: datos del lote + detalle/estado por etapa (cosecha, verde, tostión, tostado, empaque, etiquetado).
+  - `POST /lots/:id/advance`: el avance real requiere datos propios de cada etapa, así que redirige al operador a la página de registro correspondiente.
+- `server/routes/production.js`: monta `/lots` y lo lista en el índice del módulo.
+
+### Resultado
+La línea de producción muestra lotes y su trazabilidad por etapa. Paridad `server/index.js` ↔ `api/index.js` intacta (el router padre ya estaba montado en ambos). Import del router verificado.
+
+---
+
 ## 📅 2026-06-20 — Admin: dashboard con resumen ejecutivo e indicadores con tendencia (Agente: Claude)
 
 ### Contexto
