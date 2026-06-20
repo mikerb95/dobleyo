@@ -93,37 +93,37 @@ const accountHref = lang === "en" ? "/account" : "/cuenta";
         <div class="dropdown-menu" id="userDropdownMenu">
           <!-- Opciones autenticado -->
           <div id="authenticatedMenu" style="display: none;">
-            <a href="/cuenta" class="dropdown-item" data-link>Perfil</a>
+            <a href={accountHref} class="dropdown-item" data-link>{tx.profile}</a>
             <a
               href="/admin"
               class="dropdown-item"
               id="appsLink"
               data-link
-              style="display: none;">Panel de apps</a
+              style="display: none;">{tx.apps}</a
             >
             <a
               href="/admin/productos"
               class="dropdown-item"
               id="productosLink"
               data-link
-              style="display: none;">Productos</a
+              style="display: none;">{tx.products}</a
             >
             <a
               href="/admin/auditoria"
               class="dropdown-item"
               id="auditLink"
               data-link
-              style="display: none;">📋 Auditoría</a
+              style="display: none;">{tx.audit}</a
             >
-            <button class="dropdown-item" id="logoutBtn">Cerrar sesión</button>
+            <button class="dropdown-item" id="logoutBtn">{tx.logout}</button>
           </div>
           <!-- Opciones no autenticado -->
           <div
             id="unauthenticatedMenu"
             style="display: flex; flex-direction: column;"
           >
-            <button class="dropdown-item" id="openLoginModal">Iniciar sesión</button>
-            <button class="dropdown-item" id="openRegisterModal">Registrarse</button>
+            <button class="dropdown-item" id="openLoginModal">{tx.login}</button>
+            <button class="dropdown-item" id="openRegisterModal">{tx.register}</button>
           </div>
         </div>
       </div>
