@@ -42,6 +42,15 @@ export default function Dashboard({ user = null }) {
         onAction={(a) => a.action?.href && (window.location.href = a.action.href)}
       />
 
+      <ExecutiveSummary
+        data={summary.data}
+        loading={summary.loading}
+        error={summary.error}
+        range={range}
+        onRangeChange={setRange}
+        onRetry={summary.refetch}
+      />
+
       <div className={styles.split}>
         <ActivityFeed items={feed.data} loading={feed.loading} limit={10} />
         <QuickActions actions={actions} />
