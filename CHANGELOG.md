@@ -2,6 +2,19 @@
 
 ---
 
+## 📅 2026-06-20 — Cosecha: rediseño + vista previa del lote en vivo en `/admin/harvest` (Agente: Claude)
+
+- **Rediseño al sistema de diseño compartido.** Se reemplazaron los estilos inline con hex hardcodeados (`#666`, `#251a14`, `#4a6741`, `#f9fafb`, etc.) por los tokens y clases de `AdminLayout`: `page-header`/`page-breadcrumb` ("Producción · Cosecha"), `erp-body`, `kpi-tile`, `card` + `.card-pad`, `form-section`, `radio-group`, `erp-table`, `btn`.
+- **4 KPIs** alimentados por `/api/coffee/harvests`: cosechas registradas (total), fincas activas (distintas), lotes del mes en curso y fecha de la última cosecha.
+- **Workbench de dos columnas:** formulario a la izquierda y panel **«Vista previa del lote» en vivo** a la derecha (sticky en ≥980px) que arma el ID de lote en tiempo real (`COL-Región-Altura-Variedad-Proceso-Nº`) y muestra finca, altura, variedad, clima, proceso, aroma y notas a medida que se completan, con estado vacío.
+- **Tabla «Cosechas recientes»** con ID de lote, finca, variedad, clima, proceso y fecha (`es-CO`), desde `/api/coffee/harvests`.
+- **UX:** se reemplazaron el `alert()` de error y el modal de éxito por **toasts**; botón con estado «Registrando…»; botón **Actualizar** y enlace **Ver lotes** en el encabezado.
+- **Sin cambios de backend.** Mismo payload a `POST /api/coffee/harvest`; se conserva la carga dinámica de fincas vía `/api/farms/my?list=true` con fallback estático.
+- **Copy** en español Colombia formal (usted): "Seleccione…", "Complete…".
+- Nota: `astro check` solo reporta el ruido habitual de scripts de cliente sin tipar (`ts2339/2551/2322` sobre `HTMLElement` y la reasignación de `farmData`), idéntico al resto del módulo; no afecta `astro build`.
+
+---
+
 ## 📅 2026-06-20 — Admin: línea de producción sin datos — endpoint faltante (Agente: Claude)
 
 ### Contexto
