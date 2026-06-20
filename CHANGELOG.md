@@ -2,6 +2,20 @@
 
 ---
 
+## 📅 2026-06-20 — Productos: rediseño profesional de `/admin/productos` para ventas/inventario (Agente: Claude)
+
+- **Rediseño completo al sistema de diseño compartido.** Se eliminaron todos los estilos inline con hex hardcodeados (`#8b6f47`, `#dbeafe`, `#fef3c7`, `#c00`, etc.) y los emojis de títulos; se adoptaron `page-header`/`page-breadcrumb` ("Catálogo · Productos"), `erp-body`, `kpi-tile`, `card`, `erp-table`, `badge`, `modal`, `form-group`/`form-grid`/`form-section`, `btn`.
+- **4 KPIs orientados a la operación:** productos en catálogo (con desglose activos/inactivos), **valor de inventario** (precio × stock, formato compacto), **stock bajo** (≤ mínimo) y **agotados** (stock 0).
+- **Tabla profesional:** miniatura del producto (o inicial), nombre + SKU/etiquetas comerciales, badge de categoría, precio en COP, **margen %** calculado desde costo (con color por rango), stock con indicador **Bajo/Agotado**, estado y acciones con botones de icono (editar/eliminar).
+- **Filtros ampliados:** búsqueda (nombre/SKU/ID/descripción), categoría, estado y **nuevo filtro por stock** (bajo / agotado); contador de resultados en la cabecera de la tarjeta.
+- **Modal de creación/edición** reorganizado por secciones (Básico, Café + trazabilidad condicional, Precios e inventario con **hint de margen en vivo**, Medios, Etiquetas comerciales, SEO), con cierre por backdrop y botón ✕.
+- **UX:** se reemplazaron todos los `alert()` por **toasts**; botón Guardar con estado «Guardando…»; normalización de booleanos (`is_active`, etc.) que venían como 0/1 desde SQLite, corrigiendo el filtro de activos/inactivos.
+- **Sin cambios de backend.** Mismos endpoints `GET/POST/PUT/DELETE /api/inventory/products`.
+- **Copy** en español Colombia formal (usted).
+- Nota: `astro check` solo reporta el ruido habitual de scripts de cliente sin tipar; no afecta `astro build`.
+
+---
+
 ## 📅 2026-06-20 — Menú lateral admin: resalta la opción de la sección actual (Agente: Claude)
 
 - **Corrección del estado activo del menú lateral (`AdminLayout.astro`).** El resaltado (clase `.active`: fondo de acento, barra lateral y negrita) solo se aplicaba a los ítems con atributo `data-section`, por lo que toda la sección **Operación** (`harvest`, `send-roasting`, `inventory-storage`, `roast-retrieval`, `roasted-storage`, `packaging`, `etiquetas`, `cupping`, etc.) nunca aparecía resaltada al navegar a esas páginas.
