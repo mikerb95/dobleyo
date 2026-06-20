@@ -214,14 +214,14 @@ farmsRouter.post('/', authenticateToken, [
     `, [
             req.user.id, name, slug, region, municipality ?? null,
             altitude_min ?? null, altitude_max ?? null, hectares ?? null,
-            varieties ?? null, certifications ?? null, soil_type ?? null, processes ?? null,
+            serializeList(varieties), serializeList(certifications), soil_type ?? null, serializeList(processes),
             story ?? null, short_description ?? null, cover_image_url ?? null,
-            JSON.stringify(gallery_urls ?? []),
+            serializeList(gallery_urls) ?? '[]',
             latitude ?? null, longitude ?? null,
         ]);
 
         await logAudit(req.user.id, 'create', 'farm', rows[0].id, { name, slug });
-        res.status(201).json({ success: true, data: rows[0] });
+        res.status(201).json({ success: true, data: parseFarmRow(rows[0]) });
     } catch (err) {
         if (err.code === '23505') return res.status(409).json({ success: false, error: 'El slug de la finca ya existe' });
         logger.error({ err }, '[POST /api/farms]');
