@@ -318,6 +318,78 @@ async function seedProductCopy() {
   log(`${nDesc} descripciones añadidas · ${nScore} lotes con SCA alineado`);
 }
 
+// ── 2.7 FINCAS (landing pages /fincas y /finca/[slug]) ──────────────────────
+// Puebla la tabla farms (publicadas) para los caficultores aprobados. Las listas
+// se guardan como JSON. Idempotente por slug.
+async function seedFarms() {
+  section('Fincas (landing pages)');
+
+  const COVER = {
+    Huila: 'https://images.unsplash.com/photo-1599639668273-01755a4f1f9a?q=80&w=1200&auto=format&fit=crop',
+    Nariño: 'https://images.unsplash.com/photo-1503150092550-2f8e3b6e3a5f?q=80&w=1200&auto=format&fit=crop',
+    Magdalena: 'https://images.unsplash.com/photo-1447933601403-0c6688de566e?q=80&w=1200&auto=format&fit=crop',
+  };
+  const GALLERY = [
+    'https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=800&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1524350876685-274059332603?q=80&w=800&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1497935586351-b67a49e012bf?q=80&w=800&auto=format&fit=crop',
+  ];
+
+  const farms = [
+    {
+      email: 'caficultor.huila@demo.dobleyo.cafe',
+      name: 'Finca El Paraíso', slug: 'finca-el-paraiso',
+      region: 'Huila', municipality: 'Pitalito',
+      altitude_min: 1700, altitude_max: 1850, hectares: 25.5,
+      varieties: ['Geisha', 'Caturra'], certifications: ['FLO', 'Orgánico'],
+      processes: ['Lavado', 'Honey'], soil_type: 'Franco-volcánico',
+      short_description: 'Café de especialidad cultivado a la sombra en lo alto de Pitalito, con tres generaciones de tradición.',
+      story: 'En lo alto de Pitalito, la familia Pérez cultiva café desde hace tres generaciones. Don Juan heredó la Finca El Paraíso de su padre y la convirtió en un referente de café de especialidad en el Huila.\nA 1.800 metros sobre el nivel del mar, los cafetos de variedad Geisha y Caturra maduran lentamente bajo la sombra de árboles nativos. Cada cosecha se recolecta a mano, grano a grano, seleccionando solo las cerezas en su punto óptimo.\nEl compromiso con prácticas orgánicas y el comercio justo hace de cada taza una historia de respeto por la tierra y por quienes la trabajan.',
+      latitude: 1.8531, longitude: -76.0508,
+    },
+    {
+      email: 'caficultor.narino@demo.dobleyo.cafe',
+      name: 'Finca La Esperanza', slug: 'finca-la-esperanza',
+      region: 'Nariño', municipality: 'La Unión',
+      altitude_min: 2000, altitude_max: 2200, hectares: 12.0,
+      varieties: ['Castillo', 'Caturra'], certifications: ['Rainforest Alliance'],
+      processes: ['Honey', 'Lavado'], soil_type: 'Franco-arcilloso',
+      short_description: 'Café de altura en el frío de montaña de Nariño, con dulzor concentrado y certificación Rainforest.',
+      story: 'La Finca La Esperanza nació del sueño de Rosa Martínez por demostrar que en La Unión, Nariño, se produce uno de los mejores cafés del mundo.\nA 2.100 metros de altura, el clima frío de montaña obliga al grano a desarrollarse despacio, concentrando azúcares y acidez. Aquí se cultivan las variedades Castillo y Caturra con procesos honey que resaltan su dulzor natural.\nCon certificación Rainforest Alliance, la finca protege el ecosistema y la biodiversidad que rodea cada cafetal.',
+      latitude: 1.6017, longitude: -77.1314,
+    },
+    {
+      email: 'caficultor.sierra@demo.dobleyo.cafe',
+      name: 'Finca Sierra Azul', slug: 'finca-sierra-azul',
+      region: 'Magdalena', municipality: 'Santa Marta',
+      altitude_min: 1000, altitude_max: 1200, hectares: 40.0,
+      varieties: ['Typica', 'Bourbon'], certifications: ['Orgánico'],
+      processes: ['Natural', 'Lavado'], soil_type: 'Franco-arenoso',
+      short_description: 'Microclima único en la Sierra Nevada de Santa Marta: cuerpo intenso y notas a frutos rojos.',
+      story: 'En las faldas de la Sierra Nevada de Santa Marta, la Finca Sierra Azul combina la herencia ancestral del territorio con el cuidado de Luis Sánchez y su familia.\nLa cercanía al mar y la altitud de la sierra crean un microclima único donde las variedades Typica y Bourbon desarrollan un cuerpo intenso y notas a frutos rojos.\nDesde hace dos décadas, la finca trabaja con prácticas orgánicas, respetando los ciclos naturales y las comunidades que habitan este territorio.',
+      latitude: 11.2408, longitude: -74.1990,
+    },
+  ];
+
+  let n = 0;
+  for (const f of farms) {
+    const cafId = await scalarId('SELECT id FROM users WHERE email = ?', [f.email]);
+    if (!cafId) { log(`⚠️  Sin usuario ${f.email}, finca omitida`); continue; }
+    await upsertId('farms', 'slug', f.slug,
+      `INSERT INTO farms
+        (caficultor_id, name, slug, region, municipality, altitude_min, altitude_max, hectares,
+         varieties, certifications, soil_type, processes, story, short_description,
+         cover_image_url, gallery_urls, latitude, longitude, is_published, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, datetime('now'))`,
+      [cafId, f.name, f.slug, f.region, f.municipality, f.altitude_min, f.altitude_max, f.hectares,
+       JSON.stringify(f.varieties), JSON.stringify(f.certifications), f.soil_type, JSON.stringify(f.processes),
+       f.story, f.short_description, COVER[f.region] ?? null, JSON.stringify(GALLERY),
+       f.latitude, f.longitude]);
+    n++;
+  }
+  log(`${n} fincas publicadas aseguradas`);
+}
+
 // ── 3. LOTES (trazabilidad) ─────────────────────────────────────────────────
 async function seedLots() {
   section('Lotes de trazabilidad');
