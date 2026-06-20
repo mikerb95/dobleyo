@@ -24,7 +24,7 @@
   background: var(--bg);
 
   display: grid;
-  grid-template-rows: auto auto auto 1fr;
+  grid-template-rows: auto auto auto auto 1fr;
   gap: 20px;
   padding: 24px;
   max-width: 1280px;
