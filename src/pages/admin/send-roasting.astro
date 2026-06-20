@@ -2,361 +2,516 @@
 import AdminLayout from "../../layouts/AdminLayout.astro";
 ---
 
-<AdminLayout
-  title="Enviar a Tostión"
-  description="Seleccione café verde del inventario para llevar a proceso de tostión"
->
-  <form id="roastingForm" class="send-roasting">
-    <header class="sr-head">
-      <h1>Enviar a Tostión</h1>
-      <p>
-        Seleccione café verde del inventario para llevarlo a proceso de tostión.
-      </p>
-    </header>
+<AdminLayout title="Enviar a Tostión — DobleYo">
+  <!-- ── Encabezado de página ──────────────────────────────────────────── -->
+  <div class="page-header">
+    <div class="page-header-top">
+      <div>
+        <div class="page-breadcrumb">Producción · Tostión</div>
+        <h1 class="page-title">Enviar a Tostión</h1>
+        <p class="page-subtitle">
+          Seleccione café verde del inventario y envíe total o parcialmente el
+          lote al proceso de tostión.
+        </p>
+      </div>
+      <div class="page-header-actions">
+        <button type="button" class="btn btn-secondary" id="refreshBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline>
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+          </svg>
+          Actualizar
+        </button>
+      </div>
+    </div>
+  </div>
 
-    <!-- Selección de Lote -->
-    <div class="form-group">
-      <label for="lotSelect"
-        >Lote de café verde <span class="required">*</span></label
-      >
-      <select id="lotSelect" name="lot" required>
-        <option value="">Seleccione un lote…</option>
-      </select>
-      <div class="form-hint">Solo se muestran lotes sin procesar</div>
+  <div class="erp-body">
+    <!-- ── KPIs ──────────────────────────────────────────────────────── -->
+    <div class="kpi-grid" style="margin-bottom: 22px;">
+      <div class="kpi-tile brand">
+        <div class="kpi-label">Lotes disponibles</div>
+        <div class="kpi-value" id="kpiLots">—</div>
+        <div class="kpi-sub">Café verde en inventario</div>
+      </div>
+      <div class="kpi-tile info">
+        <div class="kpi-label">Peso verde disponible</div>
+        <div class="kpi-value" id="kpiWeight">—</div>
+        <div class="kpi-sub">Total en bodega verde</div>
+      </div>
+      <div class="kpi-tile warning">
+        <div class="kpi-label">Lotes en tostión</div>
+        <div class="kpi-value" id="kpiInRoasting">—</div>
+        <div class="kpi-sub">En proceso actualmente</div>
+      </div>
+      <div class="kpi-tile success">
+        <div class="kpi-label">Kg en tostión</div>
+        <div class="kpi-value" id="kpiRoastKg">—</div>
+        <div class="kpi-sub">Café en proceso</div>
+      </div>
     </div>
 
-    <!-- Info del Lote Seleccionado -->
-    <div class="card lot-info" id="lotInfoCard" style="display: none;">
+    <!-- ── Workbench: formulario + resumen del envío ─────────────────── -->
+    <div class="sr-grid">
+      <!-- Columna izquierda: formulario -->
+      <section class="card">
+        <div class="card-header">
+          <div>
+            <h3 class="card-title">Datos del envío</h3>
+            <div class="card-subtitle">Lote, cantidad y parámetros de tueste</div>
+          </div>
+        </div>
+        <div class="card-pad">
+          <form id="roastingForm">
+            <!-- Selección de Lote -->
+            <div class="form-group">
+              <label for="lotSelect">Lote de café verde <span class="required">*</span></label>
+              <select id="lotSelect" name="lot" required>
+                <option value="">Seleccione un lote…</option>
+              </select>
+              <div class="form-hint">Solo se muestran lotes con café verde disponible.</div>
+            </div>
+
+            <!-- Info del Lote Seleccionado -->
+            <div class="lot-info" id="lotInfoCard" hidden>
+              <div class="form-section"><h3>Información del lote</h3></div>
+              <dl class="detail-grid">
+                <div class="detail-item"><dt>Lote ID</dt><dd id="lotId">—</dd></div>
+                <div class="detail-item"><dt>Variedad</dt><dd id="lotVariety">—</dd></div>
+                <div class="detail-item">
+                  <dt>Peso disponible</dt>
+                  <dd style="color: var(--color-accent);" id="lotAvailableWeight">—</dd>
+                </div>
+                <div class="detail-item"><dt>Ubicación actual</dt><dd id="lotLocation">—</dd></div>
+              </dl>
+            </div>
+
+            <!-- Cantidad -->
+            <div class="form-group">
+              <label for="quantity">Cantidad para tostión <span class="required">*</span></label>
+              <div class="input-suffix">
+                <input type="number" id="quantity" name="quantity" placeholder="Ej: 25" step="0.1" min="0" required />
+                <span class="suffix">kg</span>
+              </div>
+              <div class="form-hint" id="quantityHint">Máximo disponible: —</div>
+            </div>
+
+            <div class="info-box">
+              <strong>💡 Nota:</strong> Puede enviar solo una parte del lote y el
+              resto permanecerá en inventario. Si envía todo, el lote se marcará
+              como procesado.
+            </div>
+
+            <!-- Parámetros de tueste -->
+            <div class="form-section"><h3>🌡️ Parámetros de tueste</h3></div>
+
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="roastingDate">Fecha de envío</label>
+                <input type="date" id="roastingDate" name="roastingDate" disabled />
+                <div class="form-hint">Se registra con la fecha actual.</div>
+              </div>
+              <div class="form-group">
+                <label for="targetTemp">Temperatura objetivo (opcional)</label>
+                <div class="input-suffix">
+                  <input type="number" id="targetTemp" name="targetTemp" placeholder="Ej: 210" step="1" min="180" max="230" />
+                  <span class="suffix">°C</span>
+                </div>
+                <div class="form-hint">Sugerida para el desarrollo del tueste.</div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="notes">Notas (opcional)</label>
+              <textarea id="notes" name="notes"
+                placeholder="Ej: tueste medio, desarrollo lento, buscar notas de chocolate…"></textarea>
+            </div>
+
+            <div class="form-actions">
+              <button type="reset" class="btn btn-secondary">Limpiar</button>
+              <button type="submit" class="btn btn-save" id="submitBtn">Enviar a tostión</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- Columna derecha: resumen en vivo -->
+      <aside class="sr-side">
+        <section class="card">
+          <div class="card-header">
+            <div>
+              <h3 class="card-title">Resumen del envío</h3>
+              <div class="card-subtitle">Se actualiza en tiempo real</div>
+            </div>
+          </div>
+          <div class="card-pad">
+            <!-- Estado vacío -->
+            <div class="sum-empty" id="sumEmpty">
+              <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M3 3h18v4H3z"></path><path d="M5 7v14h14V7"></path><path d="M9 11h6"></path>
+              </svg>
+              <p><b>Seleccione un lote</b><br />Elija un lote y la cantidad para ver el resumen del envío.</p>
+            </div>
+
+            <!-- Resumen -->
+            <div id="sumBody" hidden>
+              <div class="sum-facet">
+                <span class="sum-lot" id="sumLot">—</span>
+                <span class="badge badge-brand" id="sumPct">—</span>
+              </div>
+              <div class="sum-sub" id="sumMeta">—</div>
+
+              <div class="sum-list">
+                <div class="sum-row"><span>Cantidad a enviar</span><b id="sumQuantity">—</b></div>
+                <div class="sum-row"><span>Restante en bodega</span><b id="sumRemaining">—</b></div>
+                <div class="sum-row"><span>Temperatura objetivo</span><b id="sumTemp">—</b></div>
+                <div class="sum-row"><span>Fecha</span><b id="sumDate">—</b></div>
+                <div class="sum-row"><span>Estado del lote</span><b id="sumState">—</b></div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </aside>
+    </div>
+
+    <!-- ── En tostión actualmente ────────────────────────────────────── -->
+    <section class="card" style="margin-top: 22px;">
       <div class="card-header">
-        <h3 class="card-title">Información del lote</h3>
+        <div>
+          <h3 class="card-title">En tostión actualmente</h3>
+          <div class="card-subtitle">Lotes enviados y aún en proceso</div>
+        </div>
       </div>
-      <div class="card-body">
-        <dl class="detail-grid">
-          <div class="detail-item">
-            <dt>Lote ID</dt>
-            <dd id="lotId">—</dd>
-          </div>
-          <div class="detail-item">
-            <dt>Variedad</dt>
-            <dd id="lotVariety">—</dd>
-          </div>
-          <div class="detail-item">
-            <dt>Peso disponible</dt>
-            <dd class="detail-value--accent" id="lotAvailableWeight">—</dd>
-          </div>
-          <div class="detail-item">
-            <dt>Ubicación actual</dt>
-            <dd id="lotLocation">—</dd>
-          </div>
-        </dl>
+      <div class="table-wrapper">
+        <table class="erp-table">
+          <thead>
+            <tr>
+              <th>Lote</th>
+              <th>Cantidad</th>
+              <th>Temperatura</th>
+              <th>Notas</th>
+              <th>Enviado</th>
+            </tr>
+          </thead>
+          <tbody id="recentBody">
+            <tr><td colspan="5" class="empty-state">Cargando…</td></tr>
+          </tbody>
+        </table>
       </div>
-    </div>
+    </section>
+  </div>
 
-    <!-- Selección de Cantidad -->
-    <div class="form-group">
-      <label for="quantity"
-        >Cantidad para tostión <span class="required">*</span></label
-      >
-      <div class="input-suffix">
-        <input
-          type="number"
-          id="quantity"
-          name="quantity"
-          placeholder="Ej: 25"
-          step="0.1"
-          min="0"
-          required
-        />
-        <span class="suffix" id="unit">kg</span>
-      </div>
-      <div class="form-hint" id="quantityHint">Máximo disponible: —</div>
-    </div>
-
-    <!-- Opción: Parcial o Todo -->
-    <div class="info-box">
-      <strong>💡 Nota:</strong> Puede enviar solo una parte del lote y el resto permanecerá
-      en inventario. Si envía todo, el lote se marcará como procesado.
-    </div>
-
-    <!-- Fecha de Envío -->
-    <div class="form-group">
-      <label for="roastingDate">Fecha de envío a tostión</label>
-      <input type="date" id="roastingDate" name="roastingDate" disabled />
-      <div class="form-hint">
-        Se registra automáticamente con la fecha actual
-      </div>
-    </div>
-
-    <!-- Temperatura Target -->
-    <div class="form-group">
-      <label for="targetTemp">Temperatura objetivo (opcional)</label>
-      <div class="input-suffix">
-        <input
-          type="number"
-          id="targetTemp"
-          name="targetTemp"
-          placeholder="Ej: 210"
-          step="1"
-          min="180"
-          max="230"
-        />
-        <span class="suffix">°C</span>
-      </div>
-      <div class="form-hint">
-        Temperatura sugerida para el desarrollo del tueste
-      </div>
-    </div>
-
-    <!-- Notas -->
-    <div class="form-group">
-      <label for="notes">Notas (opcional)</label>
-      <textarea
-        id="notes"
-        name="notes"
-        placeholder="Ej: tueste medio, desarrollo lento, buscar notas de chocolate…"
-      ></textarea>
-    </div>
-
-    <!-- Resumen -->
-    <div class="info-box summary-box" id="summaryBox" style="display: none;">
-      <strong>Resumen del envío a tostión</strong>
-      <dl class="summary-list">
-        <div><dt>📦 Lote</dt><dd id="summaryLot">—</dd></div>
-        <div><dt>⚖️ Cantidad</dt><dd id="summaryQuantity">—</dd></div>
-        <div><dt>🌡️ Temperatura</dt><dd id="summaryTemp">—</dd></div>
-        <div><dt>📅 Fecha</dt><dd id="summaryDate">—</dd></div>
-      </dl>
-    </div>
-
-    <!-- Botones de Acción -->
-    <div class="form-actions">
-      <button type="reset" class="btn-secondary">Limpiar</button>
-      <button type="submit" class="btn-primary">Enviar a tostión</button>
-    </div>
-  </form>
-
-  <style>
-    /* ── Encabezado de página ─────────────────────────────────────────────── */
-    .sr-head {
-      margin-bottom: 24px;
-    }
-    .sr-head p {
-      font-size: 13px;
-      color: var(--muted);
-      margin: 4px 0 0;
-      max-width: 60ch;
-    }
-
-    /* ── Tarjeta de información del lote ──────────────────────────────────── */
-    .lot-info {
-      margin-bottom: 16px;
-    }
-    .lot-info .card-body {
-      padding: 16px 18px;
-    }
-    .detail-value--accent {
-      color: var(--color-accent);
-    }
-
-    /* ── Input con sufijo de unidad (kg / °C) ─────────────────────────────── */
-    .input-suffix {
-      display: flex;
-    }
-    .input-suffix input {
-      flex: 1;
-      width: auto;
-      border-top-right-radius: 0;
-      border-bottom-right-radius: 0;
-    }
-    .input-suffix .suffix {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-width: 56px;
-      padding: 0 14px;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--muted);
-      background: color-mix(in oklab, var(--color-primary) 4%, white);
-      border: 1px solid var(--rule);
-      border-left: 0;
-      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-    }
-
-    /* ── Resumen del envío ────────────────────────────────────────────────── */
-    .summary-list {
-      display: grid;
-      gap: 8px;
-      margin: 12px 0 0;
-    }
-    .summary-list > div {
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-      gap: 12px;
-    }
-    .summary-list dt {
-      font-size: 13px;
-      color: var(--muted);
-    }
-    .summary-list dd {
-      margin: 0;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--color-primary);
-      font-variant-numeric: tabular-nums;
-      text-align: right;
-    }
-  </style>
+  <!-- Toasts -->
+  <div class="toast-stack" id="toastStack" aria-live="polite"></div>
 
   <script>
+    // ── Refs ────────────────────────────────────────────────────────
     const lotSelect = document.getElementById("lotSelect");
     const roastingDate = document.getElementById("roastingDate");
     const form = document.getElementById("roastingForm");
-    const summaryBox = document.getElementById("summaryBox");
     const lotInfoCard = document.getElementById("lotInfoCard");
     const quantityInput = document.getElementById("quantity");
+    const targetTemp = document.getElementById("targetTemp");
 
-    // Cargar lotes disponibles desde API
-    async function loadAvailableLots() {
-      try {
-        const response = await fetch("/api/coffee/green-inventory");
-        if (!response.ok) throw new Error("Error al cargar inventario");
-
-        const inventory = await response.json();
-
-        lotSelect.innerHTML = '<option value="">Selecciona un lote...</option>';
-        inventory.forEach((item) => {
-          const option = document.createElement("option");
-          option.value = JSON.stringify(item);
-          option.textContent = `${item.lot_id} (${item.weight_kg} kg disponible)`;
-          lotSelect.appendChild(option);
-        });
-      } catch (error) {
-        console.error("Error cargando inventario:", error);
-        alert("Error al cargar inventario disponible");
-      }
-    }
-
-    // Establecer fecha actual
     const today = new Date().toISOString().split("T")[0];
     roastingDate.value = today;
 
-    // Actualizar información del lote
-    lotSelect.addEventListener("change", () => {
-      if (!lotSelect.value) {
-        lotInfoCard.style.display = "none";
-        summaryBox.style.display = "none";
-        return;
-      }
+    // ── Toast ───────────────────────────────────────────────────────
+    function toast(message, type = "info") {
+      const stack = document.getElementById("toastStack");
+      const el = document.createElement("div");
+      el.className = `toast toast--${type}`;
+      el.textContent = message;
+      stack.appendChild(el);
+      requestAnimationFrame(() => el.classList.add("is-in"));
+      setTimeout(() => {
+        el.classList.remove("is-in");
+        setTimeout(() => el.remove(), 250);
+      }, 4000);
+    }
 
-      const item = JSON.parse(lotSelect.value);
-      document.getElementById("lotId").textContent = item.lot_id;
-      document.getElementById("lotVariety").textContent = item.variety || "—";
-      document.getElementById("lotLocation").textContent = item.location;
-      document.getElementById("lotAvailableWeight").textContent =
-        `${item.weight_kg} kg`;
-      document.getElementById("quantityHint").textContent =
-        `Máximo disponible: ${item.weight_kg} kg`;
+    function esc(s) {
+      if (s == null) return "";
+      return String(s).replace(/[&<>"']/g, (c) =>
+        ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])
+      );
+    }
+    function fmtDate(d) {
+      return d ? new Date(d).toLocaleDateString("es-CO", { day: "2-digit", month: "short", year: "numeric" }) : "—";
+    }
 
-      quantityInput.max = item.weight_kg;
-      lotInfoCard.style.display = "block";
-      updateSummary();
-    });
+    // ── Carga de lotes disponibles ──────────────────────────────────
+    async function loadAvailableLots() {
+      try {
+        const response = await fetch("/api/coffee/green-inventory", { credentials: "include" });
+        if (!response.ok) throw new Error("Error al cargar inventario");
+        const inventory = await response.json();
 
-    // Actualizar resumen
-    function updateSummary() {
-      const quantity = parseFloat(quantityInput.value) || 0;
-      const temp = document.getElementById("targetTemp").value || "—";
-      const lotItem = lotSelect.value ? JSON.parse(lotSelect.value) : null;
+        document.getElementById("kpiLots").textContent = inventory.length;
+        const totalKg = inventory.reduce((s, i) => s + (Number(i.weight_kg) || 0), 0);
+        document.getElementById("kpiWeight").textContent = `${totalKg.toFixed(1)} kg`;
 
-      if (quantity > 0 && lotItem) {
-        document.getElementById("summaryLot").textContent = lotItem.lot_id;
-        document.getElementById("summaryQuantity").textContent =
-          `${quantity} kg`;
-        document.getElementById("summaryTemp").textContent =
-          temp !== "—" ? `${temp}°C` : "No especificada";
-        document.getElementById("summaryDate").textContent = new Date(
-          roastingDate.value
-        ).toLocaleDateString("es-CO");
-        summaryBox.style.display = "block";
-      } else {
-        summaryBox.style.display = "none";
+        lotSelect.innerHTML = '<option value="">Seleccione un lote…</option>';
+        if (!inventory.length) {
+          const opt = new Option("No hay café verde disponible", "");
+          opt.disabled = true;
+          lotSelect.appendChild(opt);
+          return;
+        }
+        inventory.forEach((item) => {
+          const opt = new Option(`${item.lot_id} · ${item.weight_kg} kg disponible`, JSON.stringify(item));
+          lotSelect.appendChild(opt);
+        });
+      } catch (error) {
+        console.error("Error cargando inventario:", error);
+        toast("Error al cargar el inventario verde", "error");
+        document.getElementById("kpiLots").textContent = "0";
       }
     }
 
-    quantityInput.addEventListener("input", updateSummary);
-    document
-      .getElementById("targetTemp")
-      .addEventListener("input", updateSummary);
+    // ── En tostión: KPIs + tabla ────────────────────────────────────
+    async function loadRoasting() {
+      try {
+        const res = await fetch("/api/coffee/roasting-batches", { credentials: "include" });
+        const rows = res.ok ? await res.json() : [];
+        document.getElementById("kpiInRoasting").textContent = rows.length;
+        const kg = rows.reduce((s, r) => s + (Number(r.quantity_sent_kg) || 0), 0);
+        document.getElementById("kpiRoastKg").textContent = `${kg.toFixed(1)} kg`;
+        renderRecent(rows.slice(0, 8));
+      } catch (error) {
+        console.error("Error cargando tostión:", error);
+        renderRecent([]);
+      }
+    }
 
-    // Enviar formulario a la API
+    function renderRecent(rows) {
+      const body = document.getElementById("recentBody");
+      if (!rows.length) {
+        body.innerHTML = '<tr><td colspan="5" class="empty-state">No hay lotes en tostión.</td></tr>';
+        return;
+      }
+      body.innerHTML = rows.map((r) => `
+        <tr>
+          <td style="font-family: ui-monospace, Menlo, monospace; font-size: 12px;">${esc(r.lot_id) || "—"}</td>
+          <td style="font-variant-numeric: tabular-nums;">${r.quantity_sent_kg != null ? r.quantity_sent_kg + " kg" : "—"}</td>
+          <td style="font-variant-numeric: tabular-nums;">${r.target_temp != null ? r.target_temp + " °C" : "—"}</td>
+          <td>${esc(r.notes) || "—"}</td>
+          <td>${esc(fmtDate(r.created_at))}</td>
+        </tr>`).join("");
+    }
+
+    // ── Lote seleccionado ───────────────────────────────────────────
+    function selectedLot() {
+      return lotSelect.value ? JSON.parse(lotSelect.value) : null;
+    }
+
+    lotSelect.addEventListener("change", () => {
+      const item = selectedLot();
+      if (!item) {
+        lotInfoCard.hidden = true;
+        updateSummary();
+        return;
+      }
+      document.getElementById("lotId").textContent = item.lot_id;
+      document.getElementById("lotVariety").textContent = item.variety || "—";
+      document.getElementById("lotLocation").textContent = item.location || "—";
+      document.getElementById("lotAvailableWeight").textContent = `${item.weight_kg} kg`;
+      document.getElementById("quantityHint").textContent = `Máximo disponible: ${item.weight_kg} kg`;
+      quantityInput.max = item.weight_kg;
+      lotInfoCard.hidden = false;
+      updateSummary();
+    });
+
+    // ── Resumen en vivo ─────────────────────────────────────────────
+    function updateSummary() {
+      const empty = document.getElementById("sumEmpty");
+      const sumBody = document.getElementById("sumBody");
+      const item = selectedLot();
+      const quantity = parseFloat(quantityInput.value) || 0;
+
+      if (!item || quantity <= 0) {
+        empty.hidden = false;
+        sumBody.hidden = true;
+        return;
+      }
+      empty.hidden = true;
+      sumBody.hidden = false;
+
+      const available = Number(item.weight_kg) || 0;
+      const capped = Math.min(quantity, available);
+      const remaining = Math.max(available - capped, 0);
+      const pct = available > 0 ? Math.round((capped / available) * 100) : 0;
+      const temp = targetTemp.value;
+
+      document.getElementById("sumLot").textContent = item.lot_id;
+      document.getElementById("sumPct").textContent = `${pct}%`;
+      document.getElementById("sumMeta").textContent =
+        `${[item.variety, item.location].filter(Boolean).join(" · ") || "Sin datos"} · ${available} kg disponibles`;
+      document.getElementById("sumQuantity").textContent = `${capped} kg`;
+      document.getElementById("sumRemaining").textContent = `${remaining.toFixed(1)} kg`;
+      document.getElementById("sumTemp").textContent = temp ? `${temp} °C` : "No especificada";
+      document.getElementById("sumDate").textContent = fmtDate(roastingDate.value);
+      document.getElementById("sumState").textContent =
+        remaining === 0 ? "Se marca como procesado" : "Permanece parcial en bodega";
+    }
+
+    quantityInput.addEventListener("input", updateSummary);
+    targetTemp.addEventListener("input", updateSummary);
+
+    // ── Envío ───────────────────────────────────────────────────────
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
 
-      if (!lotSelect.value) {
-        alert("⚠️ Debes seleccionar un lote");
-        return;
-      }
+      const item = selectedLot();
+      if (!item) return toast("Debe seleccionar un lote", "error");
 
-      const item = JSON.parse(lotSelect.value);
       const quantity = parseFloat(quantityInput.value);
+      if (!(quantity > 0)) return toast("La cantidad debe ser mayor a 0", "error");
+      if (quantity > Number(item.weight_kg))
+        return toast("La cantidad excede el peso disponible", "error");
 
-      if (quantity <= 0) {
-        alert("⚠️ La cantidad debe ser mayor a 0");
-        return;
-      }
-
-      if (quantity > item.weight_kg) {
-        alert("⚠️ La cantidad excede el peso disponible");
-        return;
-      }
-
-      const submitBtn = form.querySelector('button[type="submit"]');
+      const submitBtn = document.getElementById("submitBtn");
       const originalText = submitBtn.textContent;
       submitBtn.disabled = true;
-      submitBtn.textContent = "Registrando...";
+      submitBtn.textContent = "Registrando…";
 
       try {
         const response = await fetch("/api/coffee/send-roasting", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             lotId: item.lot_id,
             quantitySent: quantity,
-            targetTemp: document.getElementById("targetTemp").value || null,
+            targetTemp: targetTemp.value || null,
             notes: document.getElementById("notes").value,
           }),
         });
 
         if (!response.ok) {
-          const error = await response.json();
-          const msg = error.error || error.message || "Error al enviar a tostión";
-          const detail = error.detail ? `\nDisponible: ${error.detail.available_kg} kg` : "";
-          throw new Error(msg + detail);
+          const error = await response.json().catch(() => ({}));
+          let msg = error.error || error.message || "Error al enviar a tostión";
+          if (error.detail?.available_kg !== undefined)
+            msg += ` (disponible ${error.detail.available_kg} kg)`;
+          throw new Error(msg);
         }
 
-        alert(
-          `✅ Lote ${item.lot_id} enviado a tostión correctamente\n${quantity} kg en proceso`
-        );
+        toast(`Lote ${item.lot_id} enviado a tostión · ${quantity} kg en proceso`, "success");
 
         form.reset();
         roastingDate.value = today;
-        lotInfoCard.style.display = "none";
-        summaryBox.style.display = "none";
+        lotInfoCard.hidden = true;
+        document.getElementById("sumEmpty").hidden = false;
+        document.getElementById("sumBody").hidden = true;
         loadAvailableLots();
+        loadRoasting();
       } catch (error) {
         console.error("Error:", error);
-        alert(`❌ Error: ${error.message || "Error desconocido"}`);
+        toast(error.message || "Error desconocido", "error");
       } finally {
         submitBtn.disabled = false;
         submitBtn.textContent = originalText;
       }
     });
 
-    // Cargar lotes al iniciar
+    form.addEventListener("reset", () => {
+      setTimeout(() => {
+        roastingDate.value = today;
+        lotInfoCard.hidden = true;
+        document.getElementById("sumEmpty").hidden = false;
+        document.getElementById("sumBody").hidden = true;
+      }, 0);
+    });
+
+    document.getElementById("refreshBtn").addEventListener("click", () => {
+      loadAvailableLots();
+      loadRoasting();
+      toast("Datos actualizados", "info");
+    });
+
+    // ── Init ────────────────────────────────────────────────────────
     loadAvailableLots();
+    loadRoasting();
   </script>
 </AdminLayout>
+
+<style>
+  /* ── Layout workbench ──────────────────────────────────────────── */
+  .sr-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+    align-items: start;
+  }
+  @media (min-width: 980px) {
+    .sr-grid { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); }
+    .sr-side { position: sticky; top: 16px; }
+  }
+  .card-pad { padding: 18px; }
+  .lot-info[hidden] { display: none; }
+
+  /* ── Input con sufijo de unidad ────────────────────────────────── */
+  .input-suffix { display: flex; }
+  .input-suffix input {
+    flex: 1; width: auto;
+    border-top-right-radius: 0; border-bottom-right-radius: 0;
+  }
+  .input-suffix .suffix {
+    display: flex; align-items: center; justify-content: center;
+    min-width: 56px; padding: 0 14px;
+    font-size: 13px; font-weight: 600; color: var(--muted);
+    background: color-mix(in oklab, var(--color-primary) 4%, white);
+    border: 1px solid var(--rule); border-left: 0;
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  }
+
+  /* ── Resumen (panel) ───────────────────────────────────────────── */
+  .sum-empty {
+    text-align: center; color: var(--muted);
+    padding: 28px 12px; display: grid; gap: 10px; justify-items: center;
+  }
+  .sum-empty p { margin: 0; font-size: 13px; line-height: 1.5; }
+  .sum-empty b { color: var(--color-primary); }
+
+  .sum-facet {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 10px; margin-bottom: 4px;
+  }
+  .sum-lot {
+    font-size: 15px; font-weight: 700; color: var(--color-primary);
+    font-family: ui-monospace, Menlo, monospace; word-break: break-all;
+  }
+  .sum-sub { font-size: 12px; color: var(--muted); margin-bottom: 14px; }
+
+  .sum-list { display: grid; gap: 0; }
+  .sum-row {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; padding: 9px 0;
+    border-bottom: 1px solid var(--rule); font-size: 13px;
+  }
+  .sum-row:last-child { border-bottom: 0; }
+  .sum-row span { color: var(--muted); }
+  .sum-row b {
+    color: var(--color-primary); font-weight: 600; text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ── Toasts ────────────────────────────────────────────────────── */
+  .toast-stack {
+    position: fixed; bottom: 20px; right: 20px; z-index: 60;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .toast {
+    padding: 11px 16px; border-radius: var(--radius-sm);
+    font-size: 13px; font-weight: 500; color: #fff;
+    background: var(--color-primary);
+    box-shadow: 0 8px 24px -8px color-mix(in oklab, var(--color-primary) 50%, transparent);
+    opacity: 0; transform: translateY(8px);
+    transition: opacity 0.25s, transform 0.25s;
+    max-width: 340px;
+  }
+  .toast.is-in { opacity: 1; transform: translateY(0); }
+  .toast--success { background: var(--ok); }
+  .toast--error { background: var(--danger); }
+  .toast--info { background: var(--color-primary); }
+</style>
