@@ -442,8 +442,21 @@ class handler(BaseHTTPRequestHandler):
     def do_GET(self):
         if not self._guard():
             return
+        params = self._params()
+        if (params.get("export") or [None])[0] == "xlsx":
+            try:
+                xlsx_bytes = export_xlsx(params)
+                self.send_response(200)
+                self.send_header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                self.send_header("Content-Disposition", 'attachment; filename="demanda.xlsx"')
+                self.send_header("Content-Length", str(len(xlsx_bytes)))
+                self.end_headers()
+                self.wfile.write(xlsx_bytes)
+            except Exception as err:  # noqa: BLE001
+                self._respond(500, {"success": False, "error": str(err)})
+            return
         try:
-            status, payload = read_records(self._params())
+            status, payload = read_records(params)
             self._respond(status, payload)
         except Exception as err:  # noqa: BLE001 — superficie de error controlada
             self._respond(500, {"success": False, "error": str(err)})
