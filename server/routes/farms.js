@@ -149,7 +149,7 @@ farmsRouter.get('/:slug', async (req, res) => {
             return res.status(404).json({ success: false, error: 'Finca no encontrada' });
         }
 
-        const farm = rows[0];
+        const farm = parseFarmRow(rows[0]);
 
         // Lotes recientes de la finca (últimas 5 cosechas)
         const { rows: lots } = await query(`
