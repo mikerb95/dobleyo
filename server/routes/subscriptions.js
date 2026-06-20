@@ -161,7 +161,12 @@ subscriptionsRouter.get('/acceptance', async (_req, res) => {
     const tokens = await getAcceptanceTokens();
     res.json({
       success: true,
-      data: { ...tokens, public_key: wompiConfig.publicKey, discount_percent: DEFAULT_DISCOUNT },
+      data: {
+        ...tokens,
+        public_key: wompiConfig.publicKey,
+        api_base: wompiConfig.apiBase,
+        discount_percent: DEFAULT_DISCOUNT,
+      },
     });
   } catch (err) {
     logger.error({ err }, '[GET /api/subscriptions/acceptance]');
