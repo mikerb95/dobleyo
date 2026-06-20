@@ -82,14 +82,15 @@ dashboardRouter.get('/kpis', async (req, res) => {
 // ──────────────────────────────────────────────────────────────────────────
 dashboardRouter.get('/summary', async (req, res) => {
   const range = RANGES[req.query.range] ? req.query.range : '30d';
-  const { days, fmt } = RANGES[range];
+  const { days, pattern } = RANGES[range];
+  const fmt = tf(pattern, 'purchase_date');
   const since = `datetime('now', '-${days} days')`;
   const prevSince = `datetime('now', '-${days * 2} days')`;
 
   try {
     const [
       curR, prevR, timelineR, statusR, citiesR, productsR,
-      productionR, scoreR, inventoryR,
+      productionR, scoreR, inventoryR, prodRegR, prodRoastR,
     ] = await Promise.all([
       query(`SELECT COUNT(*) AS orders, IFNULL(SUM(total_amount),0) AS revenue
                FROM sales_tracking WHERE purchase_date >= ${since}`),
