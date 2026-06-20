@@ -2,6 +2,25 @@
 
 ---
 
+## 📅 2026-06-20 — Admin: dashboard con resumen ejecutivo e indicadores con tendencia (Agente: Claude)
+
+### Contexto
+El dashboard del panel admin (`/admin`) era pobre: cuatro KPIs sin tendencia, una barra de alertas de stock, un feed de actividad y accesos rápidos. Sin gráficas, sin resúmenes ejecutivos ni interactividad. Además estaba **parcialmente roto**: `/api/dashboard/kpis` y `/alerts` consultaban columnas inexistentes (`total_cop`, `stock`, `min_stock`) en vez de las reales del schema (`total_amount`, `stock_quantity`, `stock_min`), por lo que los KPIs de ventas/stock salían vacíos.
+
+### Cambios
+- `server/routes/dashboard.js`:
+  - `/kpis` corregido (columnas reales) y enriquecido: deltas reales vs. período anterior (30d) y sparkline de ventas de los últimos 14 días. KPIs: Ventas, Pedidos, Ticket promedio, Stock bajo.
+  - **Nuevo** `/summary?range=30d|90d|12m`: resumen ejecutivo con tendencia de ingresos, top productos, top ciudades, desglose por estado de pedido, snapshot de producción (lotes verdes/tostados, puntaje SCA) e inventario (valor, productos activos, stock bajo/agotado), con comparación vs. período anterior.
+  - `/alerts` corregido a `stock_quantity`/`stock_min`.
+- `src/components/dashboard/components/ExecutiveSummary.jsx` (nuevo): gráfica de área SVG, listas de barras, barra de estados con leyenda, snapshots y selector de rango interactivo (30d/90d/12m).
+- `src/components/dashboard/Dashboard.jsx`: integra el resumen ejecutivo con estado de rango.
+- `src/components/dashboard/Dashboard.module.css`: estilos derivados de las 3 variables CSS existentes (sin hex hardcodeado), responsive mobile-first.
+
+### Resultado
+El dashboard pasa de accesos estáticos a una vista ejecutiva con datos reales, tendencias, gráficas e interactividad por rango de tiempo. Paridad `server/index.js` ↔ `api/index.js` intacta (router ya montado en ambos). Build OK.
+
+---
+
 ## 📅 2026-06-20 — Admin: jerarquía tipográfica con tipografía de marca (Agente: Claude)
 
 ### Contexto

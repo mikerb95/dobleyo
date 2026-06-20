@@ -256,16 +256,11 @@ farmsRouter.patch('/:id', authenticateToken, [
         const updates = [];
         const vals = [];
 
+        const LIST_FIELDS = new Set(['varieties', 'certifications', 'processes', 'gallery_urls']);
         for (const key of allowed) {
             if (req.body[key] !== undefined) {
-                vals.push(req.body[key]);
-                if (key === 'varieties' || key === 'certifications' || key === 'processes') {
-                    updates.push(`${key} = ?`);
-                } else if (key === 'gallery_urls') {
-                    updates.push(`${key} = ?`);
-                } else {
-                    updates.push(`${key} = ?`);
-                }
+                vals.push(LIST_FIELDS.has(key) ? serializeList(req.body[key]) : req.body[key]);
+                updates.push(`${key} = ?`);
             }
         }
 
@@ -278,7 +273,7 @@ farmsRouter.patch('/:id', authenticateToken, [
         );
 
         await logAudit(req.user.id, 'update', 'farm', id, req.body);
-        res.json({ success: true, data: rows[0] });
+        res.json({ success: true, data: parseFarmRow(rows[0]) });
     } catch (err) {
         logger.error({ err }, '[PATCH /api/farms/:id]');
         res.status(500).json({ success: false, error: 'Error al actualizar la finca' });
