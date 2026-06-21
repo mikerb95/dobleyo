@@ -110,6 +110,7 @@ app.use('/api', globalLimiter);
 
 // Routes
 app.use('/api/auth', authRouter);
+app.use('/api/account', accountRouter);
 app.use('/api/stock', stockRouter);
 app.use('/api/lots', lotsRouter);
 app.use('/api/setup', setupRouter);
