@@ -43,7 +43,7 @@ const accountHref = lang === "en" ? "/account" : "/cuenta";
 ---
 
 
-<header class="site-header" id="siteHeader" data-lang={lang} data-cart-empty={tx.cartEmpty}>
+<header class="site-header" id="siteHeader" data-lang={lang} data-cart-empty={tx.cartEmpty} data-account-href={accountHref} data-menu-label={tx.menu}>
   <div class="container">
     <div class="nav-beans" aria-hidden="true"></div>
     <a class="brand" href={homeHref} data-link>
@@ -71,7 +71,7 @@ const accountHref = lang === "en" ? "/account" : "/cuenta";
       <div class="user-dropdown" id="userDropdown">
         <button
           class="icon-btn user-btn"
-          aria-label="Menú de usuario"
+          aria-label={tx.menu}
           aria-haspopup="true"
           aria-expanded="false"
           id="userNavBtn"
@@ -129,7 +129,7 @@ const accountHref = lang === "en" ? "/account" : "/cuenta";
           </div>
         </div>
       </div>
-      <button id="menuBtn" class="hamburger" aria-label="Menú">☰</button>
+      <button id="menuBtn" class="hamburger" aria-label={tx.menu}>☰</button>
     </div>
   </div>
   <div class="mobile-menu" id="mobileMenu" hidden>
