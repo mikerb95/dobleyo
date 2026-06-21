@@ -30,9 +30,8 @@ function wompiIntegrityHash(reference, amountCents, currency = 'COP') {
  * Construye la URL del checkout hosted de Wompi.
  * No requiere llamada a la API de Wompi — solo parámetros firmados.
  */
-function buildWompiCheckoutUrl(reference, amountCopPesos, customerEmail, redirectUrl) {
-    const amountCents = amountCopPesos * 100;
-    const currency = 'COP';
+function buildWompiCheckoutUrl(reference, amountPesos, customerEmail, redirectUrl, currency = 'COP') {
+    const amountCents = amountPesos * 100;
     const hash = wompiIntegrityHash(reference, amountCents, currency);
 
     const params = new URLSearchParams({
