@@ -630,10 +630,36 @@ const iterData = { PARES, COLUMNAS, ITERACIONES, COMMITS_POR_MES, REPO };
       const on = t.dataset.id === iterActual.id;
       t.classList.toggle('iter-tab--on', on);
       t.setAttribute('aria-selected', on ? 'true' : 'false');
-      if (on) t.scrollIntoView({ behavior: 'smooth', inline: 'nearest', block: 'nearest' });
     });
     render();
   }
+
+  // Flechas de desplazamiento
+  const tabsWrap = tabsBox.parentElement;
+  const prevBtn = document.getElementById('iterTabsPrev');
+  const nextBtn = document.getElementById('iterTabsNext');
+
+  function updateArrows() {
+    const max = tabsBox.scrollWidth - tabsBox.clientWidth;
+    const x = tabsBox.scrollLeft;
+    const hasPrev = x > 2;
+    const hasNext = x < max - 2;
+    prevBtn.hidden = !hasPrev;
+    nextBtn.hidden = !hasNext;
+    tabsWrap.classList.toggle('has-prev', hasPrev);
+    tabsWrap.classList.toggle('has-next', hasNext);
+  }
+
+  function scrollTabs(dir) {
+    const step = Math.max(tabsBox.clientWidth * 0.8, 220);
+    tabsBox.scrollBy({ left: dir * step, behavior: 'smooth' });
+  }
+
+  prevBtn.addEventListener('click', () => scrollTabs(-1));
+  nextBtn.addEventListener('click', () => scrollTabs(1));
+  tabsBox.addEventListener('scroll', updateArrows, { passive: true });
+  window.addEventListener('resize', updateArrows);
+  updateArrows();
 
   // Toggle vista
   document.getElementById('iterViewToggle').addEventListener('click', (e) => {
