@@ -44,6 +44,7 @@ const steps = [
   { name: 'Inventory tables',                run: () => runFn('create_inventory_tables.js', 'migrateInventoryTables') },
   { name: 'Customer orders tables',          run: () => runFn('create_customer_orders.js', 'createCustomerOrdersTables') },
   { name: 'Subscriptions tables',            run: () => runFn('create_subscriptions.js', 'createSubscriptionsTables') },
+  { name: 'Currency on customer_orders',     run: () => runFn('add_currency_to_orders.js', 'addCurrencyToOrders') },
   { name: 'Geocoding on orders',             run: () => runFn('add_geocoding_to_orders.js', 'addGeocodingToOrders') },
   { name: 'Split name fields',               run: () => runFn('split_name_fields.js', 'splitNameFields') },
   { name: 'Product variants table',          run: () => runFn('add_product_variants.js', 'addProductVariants') },
