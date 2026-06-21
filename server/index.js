@@ -111,6 +111,7 @@ app.use(cors({
 app.use('/api', globalLimiter);
 
 app.use('/api/auth', authRouter);
+app.use('/api/account', accountRouter);
 app.use('/api/stock', stockRouter);
 app.use('/api/caficultor', caficultorRouter);
 app.use('/api/setup', setupRouter);
