@@ -106,11 +106,9 @@ const r = isEn
       </div>
     </div>
     <div class="footer-disclaimer">
-      Las declaraciones hechas en este sitio no son evaluadas por entidades
-      regulatorias. Los productos ofrecidos no están destinados a diagnosticar,
-      tratar o curar enfermedades. La información provista no reemplaza una
-      consulta con tu profesional de salud y no debe interpretarse como consejo
-      médico individual.
+      {isEn
+        ? "Statements made on this site have not been evaluated by regulatory agencies. The products offered are not intended to diagnose, treat or cure any disease. The information provided does not replace a consultation with your health professional and should not be interpreted as individual medical advice."
+        : "Las declaraciones hechas en este sitio no son evaluadas por entidades regulatorias. Los productos ofrecidos no están destinados a diagnosticar, tratar o curar enfermedades. La información provista no reemplaza una consulta con tu profesional de salud y no debe interpretarse como consejo médico individual."}
     </div>
   </div>
 </footer>
