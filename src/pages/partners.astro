@@ -1,0 +1,160 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { getCanonicalUrl } from "../i18n/index.ts";
+
+export const prerender = false;
+
+const pageTitle = "Zona de partners — DobleYo Café";
+const pageDescription =
+  "Conviértase en aliado de DobleYo Café: cafeterías, restaurantes, tiendas y distribuidores. Café de especialidad colombiano con trazabilidad real y acompañamiento comercial.";
+
+const beneficios = [
+  {
+    icon: "🤝",
+    titulo: "Comercio directo",
+    texto: "Compramos a los caficultores sin intermediarios y le trasladamos esa calidad a precio de aliado.",
+  },
+  {
+    icon: "🔍",
+    titulo: "Trazabilidad real",
+    texto: "Cada lote llega con su QR: finca, cosecha, tueste y control de calidad para mostrar a sus clientes.",
+  },
+  {
+    icon: "🔥",
+    titulo: "Tueste a la medida",
+    texto: "Definimos el perfil de tueste según su método y volumen, con entregas frescas y programadas.",
+  },
+  {
+    icon: "📈",
+    titulo: "Acompañamiento",
+    texto: "Material de marca, capacitación de barismo y soporte para que su operación crezca con nosotros.",
+  },
+];
+
+const perfiles = [
+  "Cafeterías y coffee shops",
+  "Restaurantes y hoteles",
+  "Tiendas y mercados de especialidad",
+  "Distribuidores regionales",
+  "Oficinas y espacios corporativos",
+];
+---
+
+<Layout
+  lang="es"
+  title={pageTitle}
+  description={pageDescription}
+  canonical={getCanonicalUrl("/partners", "es")}
+>
+  <section class="pt-hero">
+    <div class="pt-hero__inner">
+      <p class="pt-hero__eyebrow">Zona de partners</p>
+      <h1 class="pt-hero__title">Crezcamos juntos con café de origen</h1>
+      <p class="pt-hero__sub">
+        Si su negocio vive del buen café, queremos ser su aliado. Le ofrecemos
+        café de especialidad colombiano con trazabilidad real, tueste a la medida
+        y el acompañamiento que su operación necesita.
+      </p>
+      <a class="btn-primary" href="/contacto" data-link>Quiero ser partner</a>
+    </div>
+  </section>
+
+  <section class="pt-benefits">
+    <div class="container">
+      <h2 class="pt-h2 pt-h2--center">Por qué aliarse con DobleYo</h2>
+      <ul class="pt-grid" role="list">
+        {beneficios.map((b) => (
+          <li class="pt-card">
+            <span class="pt-card__icon" aria-hidden="true">{b.icon}</span>
+            <h3 class="pt-card__title">{b.titulo}</h3>
+            <p class="pt-card__text">{b.texto}</p>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <section class="pt-profiles">
+    <div class="container pt-profiles__inner">
+      <h2 class="pt-h2">¿Para quién es?</h2>
+      <ul class="pt-profiles__list">
+        {perfiles.map((p) => <li>{p}</li>)}
+      </ul>
+      <p class="pt-profiles__note">
+        ¿Maneja volúmenes mayores? Conozca también nuestra opción para
+        <a href="/mayoristas" data-link>mayoristas</a>.
+      </p>
+    </div>
+  </section>
+
+  <section class="pt-cta">
+    <div class="pt-cta__inner">
+      <h2>Hablemos de su negocio</h2>
+      <p>Cuéntenos qué necesita y diseñamos una propuesta a su medida.</p>
+      <a class="btn-ghost" href="/contacto" data-link>Contáctenos</a>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 1.25rem; }
+  .pt-h2 {
+    font-family: var(--font-heading, serif);
+    font-size: clamp(1.4rem, 3vw, 2rem);
+    color: var(--coffee);
+    margin: 0 0 1.5rem;
+  }
+  .pt-h2--center { text-align: center; }
+
+  .pt-hero {
+    background: var(--coffee);
+    color: var(--cream);
+    padding: 3.5rem 1.5rem 3rem;
+    text-align: center;
+  }
+  .pt-hero__inner { max-width: 720px; margin: 0 auto; }
+  .pt-hero__eyebrow {
+    text-transform: uppercase; letter-spacing: 0.12em; font-size: 0.8rem;
+    opacity: 0.75; margin: 0 0 0.75rem;
+  }
+  .pt-hero__title {
+    font-family: var(--font-heading, serif);
+    font-size: clamp(1.9rem, 5vw, 3rem); line-height: 1.15; margin: 0 0 1rem;
+  }
+  .pt-hero__sub { font-size: 1.05rem; line-height: 1.65; opacity: 0.9; margin: 0 0 1.75rem; }
+
+  .pt-benefits { background: #fff; padding: 3.5rem 0; }
+  .pt-grid {
+    list-style: none; margin: 0; padding: 0;
+    display: grid; grid-template-columns: 1fr; gap: 1.5rem;
+  }
+  @media (min-width: 640px) { .pt-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 1024px) { .pt-grid { grid-template-columns: repeat(4, 1fr); } }
+  .pt-card {
+    background: var(--cream); border-radius: 14px; padding: 1.5rem 1.25rem;
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.08);
+  }
+  .pt-card__icon { font-size: 1.8rem; display: block; margin-bottom: 0.5rem; }
+  .pt-card__title { margin: 0 0 0.4rem; font-size: 1.1rem; color: var(--coffee); }
+  .pt-card__text { margin: 0; font-size: 0.9rem; line-height: 1.55; color: var(--ink, #555); }
+
+  .pt-profiles { background: var(--cream); padding: 3rem 0; }
+  .pt-profiles__inner { max-width: 760px; }
+  .pt-profiles__list { margin: 0 0 1rem; padding-left: 1.25rem; line-height: 1.8; color: var(--ink, #444); }
+  .pt-profiles__note { margin: 0; color: var(--ink, #555); }
+  .pt-profiles__note a { color: var(--accent); }
+
+  .pt-cta { background: var(--coffee); color: var(--cream); padding: 3rem 1.5rem; text-align: center; }
+  .pt-cta__inner { max-width: 600px; margin: 0 auto; }
+  .pt-cta h2 { font-family: var(--font-heading, serif); font-size: clamp(1.5rem, 4vw, 2.2rem); margin: 0 0 0.6rem; }
+  .pt-cta p { opacity: 0.9; margin: 0 0 1.5rem; }
+
+  .btn-primary, .btn-ghost {
+    display: inline-block; padding: 0.7rem 1.5rem; border-radius: 999px;
+    font-weight: 600; text-decoration: none; min-height: 44px; line-height: 1.6;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { filter: brightness(1.05); }
+  .btn-ghost { border: 1.5px solid var(--cream); color: var(--cream); }
+  .btn-ghost:hover { background: var(--cream); color: var(--coffee); }
+</style>
