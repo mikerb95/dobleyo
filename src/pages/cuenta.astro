@@ -2,58 +2,947 @@
 import Layout from "../layouts/Layout.astro";
 ---
 
-<Layout>
-  <section class="card" style="margin-top:1rem">
-    <div class="p">
-      <h1>Mi cuenta</h1>
-      <p class="muted" id="userEmail">—</p>
-      <button class="btn outline" id="logoutBtn" style="margin-top:1rem"
-        >Cerrar sesión</button
-      >
+<Layout
+  title="Mi cuenta — DobleYo Café"
+  description="Gestione su perfil, pedidos, direcciones, favoritos y preferencias en DobleYo Café."
+  noindex={true}
+>
+  <main class="container account">
+    <!-- Cargador inicial mientras se verifica la sesión -->
+    <div id="accountLoading" class="account-loading">
+      <div class="account-spinner" aria-hidden="true"></div>
+      <p class="muted">Cargando su cuenta…</p>
     </div>
-  </section>
 
-  <section class="card" style="margin-top:1rem">
-    <div class="p">
-      <h2>Pedidos</h2>
-      <div class="muted">Aun no hay pedidos.</div>
+    <div id="accountShell" class="account-shell" hidden>
+      <!-- Barra lateral -->
+      <aside class="account-sidebar">
+        <div class="account-id">
+          <div class="account-avatar" id="sideAvatar">—</div>
+          <div class="account-id-text">
+            <div class="account-id-name" id="sideName">—</div>
+            <div class="account-id-email muted" id="sideEmail">—</div>
+          </div>
+        </div>
+
+        <nav class="account-nav" id="accountNav" aria-label="Secciones de la cuenta">
+          <button class="account-nav-btn is-active" data-section="resumen"><span>Resumen</span></button>
+          <button class="account-nav-btn" data-section="perfil"><span>Perfil</span></button>
+          <button class="account-nav-btn" data-section="pedidos"><span>Pedidos</span></button>
+          <button class="account-nav-btn" data-section="favoritos"><span>Favoritos</span></button>
+          <button class="account-nav-btn" data-section="direcciones"><span>Direcciones</span></button>
+          <button class="account-nav-btn" data-section="suscripcion"><span>Suscripción</span></button>
+          <button class="account-nav-btn" data-section="caficultor"><span>Programa Caficultor</span></button>
+          <button class="account-nav-btn" data-section="preferencias"><span>Preferencias</span></button>
+          <button class="account-nav-btn" data-section="seguridad"><span>Seguridad</span></button>
+        </nav>
+
+        <button class="btn outline account-logout" id="logoutBtn">Cerrar sesión</button>
+      </aside>
+
+      <!-- Contenido -->
+      <div class="account-content">
+
+        <!-- ── RESUMEN ─────────────────────────────────────────── -->
+        <section class="account-panel is-active" data-panel="resumen">
+          <h1 class="account-title" id="welcomeTitle">Hola</h1>
+
+          <div class="account-banner" id="verifyBanner" hidden>
+            <span>Su correo aún no está verificado. Revise su bandeja de entrada para confirmar la cuenta.</span>
+          </div>
+
+          <div class="stat-grid">
+            <button class="stat-card" data-jump="pedidos">
+              <div class="stat-value" id="statOrders">0</div>
+              <div class="stat-label">Pedidos</div>
+            </button>
+            <button class="stat-card" data-jump="favoritos">
+              <div class="stat-value" id="statFavorites">0</div>
+              <div class="stat-label">Favoritos</div>
+            </button>
+            <button class="stat-card" data-jump="direcciones">
+              <div class="stat-value" id="statAddresses">0</div>
+              <div class="stat-label">Direcciones</div>
+            </button>
+            <button class="stat-card" data-jump="suscripcion">
+              <div class="stat-value" id="statSubs">0</div>
+              <div class="stat-label">Suscripciones</div>
+            </button>
+          </div>
+
+          <div class="account-card">
+            <h2 class="card-h">Datos de la cuenta</h2>
+            <div class="summary-meta">
+              <div class="meta-row"><span class="meta-label">Correo</span><span class="meta-value" id="sumEmail">—</span></div>
+              <div class="meta-row"><span class="meta-label">Tipo de cuenta</span><span class="meta-value" id="sumRole">—</span></div>
+              <div class="meta-row"><span class="meta-label">Miembro desde</span><span class="meta-value" id="sumCreated">—</span></div>
+              <div class="meta-row"><span class="meta-label">Último acceso</span><span class="meta-value" id="sumLastLogin">—</span></div>
+            </div>
+          </div>
+
+          <div class="quick-links">
+            <a class="quick-link" href="/tienda"><span>Ir a la tienda</span></a>
+            <a class="quick-link" href="/trazabilidad"><span>Rastrear un lote</span></a>
+            <a class="quick-link" href="/contacto"><span>Soporte / Contacto</span></a>
+          </div>
+        </section>
+
+        <!-- ── PERFIL ──────────────────────────────────────────── -->
+        <section class="account-panel" data-panel="perfil">
+          <h1 class="account-title">Perfil</h1>
+
+          <div class="account-card">
+            <div class="card-head">
+              <h2 class="card-h">Datos personales y de contacto</h2>
+              <button class="btn outline small" id="btnEditProfile">Editar</button>
+            </div>
+
+            <div id="profileView" class="field-grid">
+              <div class="field"><div class="field-label">Nombre</div><div class="field-value" id="vFirstName">—</div></div>
+              <div class="field"><div class="field-label">Apellido</div><div class="field-value" id="vLastName">—</div></div>
+              <div class="field"><div class="field-label">Celular</div><div class="field-value" id="vMobile">—</div></div>
+              <div class="field"><div class="field-label">Teléfono fijo</div><div class="field-value" id="vLandline">—</div></div>
+              <div class="field"><div class="field-label">NIT / Cédula</div><div class="field-value" id="vTaxId">—</div></div>
+              <div class="field"><div class="field-label">Ciudad</div><div class="field-value" id="vCity">—</div></div>
+              <div class="field"><div class="field-label">Departamento</div><div class="field-value" id="vState">—</div></div>
+              <div class="field"><div class="field-label">País</div><div class="field-value" id="vCountry">—</div></div>
+              <div class="field field--full"><div class="field-label">Dirección</div><div class="field-value" id="vAddress">—</div></div>
+            </div>
+
+            <form id="profileForm" class="form-grid" hidden novalidate>
+              <div class="form-group"><label for="fFirstName">Nombre <span class="req">*</span></label><input id="fFirstName" type="text" required /></div>
+              <div class="form-group"><label for="fLastName">Apellido <span class="req">*</span></label><input id="fLastName" type="text" required /></div>
+              <div class="form-group"><label for="fMobile">Celular</label><input id="fMobile" type="tel" /></div>
+              <div class="form-group"><label for="fLandline">Teléfono fijo</label><input id="fLandline" type="tel" /></div>
+              <div class="form-group"><label for="fTaxId">NIT / Cédula</label><input id="fTaxId" type="text" /></div>
+              <div class="form-group"><label for="fCity">Ciudad</label><input id="fCity" type="text" /></div>
+              <div class="form-group"><label for="fState">Departamento</label><input id="fState" type="text" /></div>
+              <div class="form-group"><label for="fCountry">País</label><input id="fCountry" type="text" /></div>
+              <div class="form-group form-group--full"><label for="fAddress">Dirección</label><textarea id="fAddress" rows="2"></textarea></div>
+              <div class="form-actions">
+                <button type="button" class="btn outline" id="btnCancelProfile">Cancelar</button>
+                <button type="submit" class="btn">Guardar cambios</button>
+              </div>
+              <div class="form-msg" id="profileMsg"></div>
+            </form>
+          </div>
+        </section>
+
+        <!-- ── PEDIDOS ─────────────────────────────────────────── -->
+        <section class="account-panel" data-panel="pedidos">
+          <h1 class="account-title">Mis pedidos</h1>
+          <div id="ordersList" class="orders-list"></div>
+        </section>
+
+        <!-- ── FAVORITOS ───────────────────────────────────────── -->
+        <section class="account-panel" data-panel="favoritos">
+          <h1 class="account-title">Favoritos</h1>
+          <div id="favoritesGrid" class="fav-grid"></div>
+        </section>
+
+        <!-- ── DIRECCIONES ─────────────────────────────────────── -->
+        <section class="account-panel" data-panel="direcciones">
+          <div class="card-head card-head--page">
+            <h1 class="account-title">Direcciones</h1>
+            <button class="btn small" id="btnNewAddress">Agregar dirección</button>
+          </div>
+
+          <form id="addressForm" class="account-card form-grid" hidden novalidate>
+            <h2 class="card-h form-group--full" id="addressFormTitle">Nueva dirección</h2>
+            <input type="hidden" id="aId" />
+            <div class="form-group"><label for="aLabel">Etiqueta (Casa, Oficina…)</label><input id="aLabel" type="text" /></div>
+            <div class="form-group"><label for="aRecipient">Destinatario <span class="req">*</span></label><input id="aRecipient" type="text" required /></div>
+            <div class="form-group"><label for="aPhone">Teléfono</label><input id="aPhone" type="tel" /></div>
+            <div class="form-group"><label for="aZip">Código postal</label><input id="aZip" type="text" /></div>
+            <div class="form-group form-group--full"><label for="aAddress">Dirección <span class="req">*</span></label><input id="aAddress" type="text" required /></div>
+            <div class="form-group"><label for="aCity">Ciudad <span class="req">*</span></label><input id="aCity" type="text" required /></div>
+            <div class="form-group"><label for="aState">Departamento</label><input id="aState" type="text" /></div>
+            <div class="form-group"><label for="aCountry">País</label><input id="aCountry" type="text" value="Colombia" /></div>
+            <div class="form-group form-group--full checkbox-row">
+              <label><input id="aDefault" type="checkbox" /> Usar como dirección predeterminada</label>
+            </div>
+            <div class="form-actions">
+              <button type="button" class="btn outline" id="btnCancelAddress">Cancelar</button>
+              <button type="submit" class="btn">Guardar dirección</button>
+            </div>
+            <div class="form-msg" id="addressMsg"></div>
+          </form>
+
+          <div id="addressesList" class="addresses-list"></div>
+        </section>
+
+        <!-- ── SUSCRIPCIÓN ─────────────────────────────────────── -->
+        <section class="account-panel" data-panel="suscripcion">
+          <h1 class="account-title">Suscripción de café</h1>
+          <div id="subsList" class="subs-list"></div>
+        </section>
+
+        <!-- ── CAFICULTOR ──────────────────────────────────────── -->
+        <section class="account-panel" data-panel="caficultor">
+          <h1 class="account-title">Programa Caficultor</h1>
+          <div class="account-card" id="caficultorCard">
+            <p class="muted" id="caficultorIntro">
+              ¿Cultiva café? Postúlese al programa de caficultores de DobleYo para registrar su finca,
+              gestionar cosechas y vender su café con trazabilidad completa.
+            </p>
+            <div id="caficultorStatus"></div>
+            <div class="form-actions form-actions--left" id="caficultorActions">
+              <a class="btn" href="/solicitar-caficultor">Postularme como caficultor</a>
+            </div>
+          </div>
+        </section>
+
+        <!-- ── PREFERENCIAS ────────────────────────────────────── -->
+        <section class="account-panel" data-panel="preferencias">
+          <h1 class="account-title">Preferencias</h1>
+          <form id="prefsForm" class="account-card">
+            <h2 class="card-h">Comunicaciones</h2>
+            <label class="switch-row"><input type="checkbox" id="prefNewsletter" /> <span>Boletín y novedades por correo</span></label>
+            <label class="switch-row"><input type="checkbox" id="prefOrders" /> <span>Notificaciones sobre mis pedidos</span></label>
+            <label class="switch-row"><input type="checkbox" id="prefPromos" /> <span>Promociones y ofertas</span></label>
+
+            <h2 class="card-h" style="margin-top:1.5rem">Regional</h2>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="prefLang">Idioma</label>
+                <select id="prefLang"><option value="es">Español</option><option value="en">English</option></select>
+              </div>
+              <div class="form-group">
+                <label for="prefCurrency">Moneda</label>
+                <select id="prefCurrency"><option value="COP">Peso colombiano (COP)</option><option value="USD">Dólar (USD)</option></select>
+              </div>
+            </div>
+
+            <div class="form-actions form-actions--left">
+              <button type="submit" class="btn">Guardar preferencias</button>
+            </div>
+            <div class="form-msg" id="prefsMsg"></div>
+          </form>
+        </section>
+
+        <!-- ── SEGURIDAD ───────────────────────────────────────── -->
+        <section class="account-panel" data-panel="seguridad">
+          <h1 class="account-title">Seguridad</h1>
+
+          <div class="account-card" id="loginMethodsCard">
+            <h2 class="card-h">Métodos de inicio de sesión</h2>
+            <ul class="methods-list" id="methodsList"></ul>
+          </div>
+
+          <form id="passwordForm" class="account-card" novalidate>
+            <h2 class="card-h">Cambiar contraseña</h2>
+            <div class="form-grid">
+              <div class="form-group form-group--full"><label for="pCurrent">Contraseña actual <span class="req">*</span></label><input id="pCurrent" type="password" autocomplete="current-password" required /></div>
+              <div class="form-group"><label for="pNew">Nueva contraseña <span class="req">*</span></label><input id="pNew" type="password" autocomplete="new-password" minlength="8" required /><div class="form-hint">Mínimo 8 caracteres</div></div>
+              <div class="form-group"><label for="pConfirm">Confirmar nueva <span class="req">*</span></label><input id="pConfirm" type="password" autocomplete="new-password" required /></div>
+            </div>
+            <div class="form-actions form-actions--left"><button type="submit" class="btn">Actualizar contraseña</button></div>
+            <div class="form-msg" id="passwordMsg"></div>
+          </form>
+
+          <div class="account-card danger-card">
+            <h2 class="card-h">Eliminar cuenta</h2>
+            <p class="muted">Esta acción es permanente. Se eliminarán su perfil, direcciones, favoritos y preferencias. El historial de pedidos se conserva de forma anónima por requisitos contables.</p>
+            <div class="form-actions form-actions--left"><button class="btn danger" id="btnDeleteAccount">Eliminar mi cuenta</button></div>
+          </div>
+        </section>
+
+      </div>
     </div>
-  </section>
 
-  <script>
-    (async function () {
-      const emailEl = document.getElementById("userEmail");
-      const logoutBtn = document.getElementById("logoutBtn");
-
-      // Verificar si el usuario está logueado llamando a /api/auth/me (HttpOnly cookie)
-      try {
-        const res = await fetch("/api/auth/me", {
-          credentials: "include",
-        });
-
-        if (!res.ok) {
-          // No logueado, redirigir a login
-          location.replace("/login");
-          return;
-        }
-
-        const user = await res.json();
-        emailEl.textContent = user.email || "—";
-
-        // Logout
-        if (logoutBtn) {
-          logoutBtn.addEventListener("click", async () => {
-            await fetch("/api/auth/logout", {
-              method: "POST",
-              credentials: "include",
-            });
-            location.href = "/";
-          });
-        }
-      } catch (err) {
-        console.error("Error checking auth:", err);
-        location.replace("/login");
-      }
-    })();
-  </script>
+    <!-- Modal de confirmación de eliminación -->
+    <div class="account-modal" id="deleteModal" hidden>
+      <div class="account-modal-box">
+        <h2 class="card-h">¿Eliminar su cuenta?</h2>
+        <p class="muted">Escriba su contraseña para confirmar. Esta acción no se puede deshacer.</p>
+        <div class="form-group" id="deletePwdGroup">
+          <label for="deletePassword">Contraseña</label>
+          <input id="deletePassword" type="password" autocomplete="current-password" />
+        </div>
+        <div class="form-actions">
+          <button class="btn outline" id="btnCancelDelete">Cancelar</button>
+          <button class="btn danger" id="btnConfirmDelete">Eliminar definitivamente</button>
+        </div>
+        <div class="form-msg" id="deleteMsg"></div>
+      </div>
+    </div>
+  </main>
 </Layout>
+
+<style>
+  .account { padding-top: 1.5rem; padding-bottom: 3rem; }
+
+  /* Loading */
+  .account-loading { display: grid; place-items: center; gap: 1rem; padding: 5rem 1rem; }
+  .account-spinner {
+    width: 38px; height: 38px; border-radius: 50%;
+    border: 3px solid var(--border); border-top-color: var(--accent);
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Shell */
+  .account-shell { display: grid; grid-template-columns: 250px 1fr; gap: 1.75rem; align-items: start; }
+
+  /* Sidebar */
+  .account-sidebar {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 1.25rem; position: sticky; top: 1.5rem;
+  }
+  .account-id { display: flex; align-items: center; gap: 0.75rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border); }
+  .account-avatar {
+    width: 46px; height: 46px; border-radius: 50%; flex: 0 0 auto;
+    background: var(--accent); color: var(--accent-contrast);
+    display: grid; place-items: center; font-weight: 700; font-size: 1.05rem;
+  }
+  .account-id-text { min-width: 0; }
+  .account-id-name { font-weight: 700; font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .account-id-email { font-size: 0.78rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  .account-nav { display: flex; flex-direction: column; gap: 2px; margin: 1rem 0; }
+  .account-nav-btn {
+    text-align: left; background: none; border: none; cursor: pointer;
+    padding: 0.6rem 0.75rem; border-radius: 8px; font: inherit; font-size: 0.9rem;
+    color: var(--fg); transition: background 0.15s, color 0.15s;
+  }
+  .account-nav-btn:hover { background: var(--bg); }
+  .account-nav-btn.is-active { background: var(--accent); color: var(--accent-contrast); font-weight: 600; }
+  .account-logout { width: 100%; }
+
+  /* Content */
+  .account-content { min-width: 0; }
+  .account-panel { display: none; }
+  .account-panel.is-active { display: block; animation: fade 0.2s ease; }
+  @keyframes fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+  .account-title { font-size: 1.5rem; margin: 0 0 1.25rem; }
+
+  .account-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 1.5rem; margin-bottom: 1.25rem;
+  }
+  .card-h { font-size: 1.05rem; margin: 0 0 1rem; }
+  .card-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
+  .card-head .card-h { margin: 0; }
+  .card-head--page { margin-bottom: 1.25rem; }
+
+  /* Banner */
+  .account-banner {
+    background: #fff7ed; border: 1px solid #fdba74; color: #9a3412;
+    padding: 0.85rem 1rem; border-radius: 10px; margin-bottom: 1.25rem; font-size: 0.9rem;
+  }
+
+  /* Stat cards */
+  .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.25rem; }
+  .stat-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 1.1rem 1rem; text-align: center; cursor: pointer; font: inherit;
+    transition: border-color 0.15s, transform 0.15s;
+  }
+  .stat-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .stat-value { font-size: 1.7rem; font-weight: 700; color: var(--accent); }
+  .stat-label { font-size: 0.8rem; color: var(--muted-fg); margin-top: 2px; }
+
+  /* Summary meta */
+  .summary-meta { display: grid; gap: 0.1rem; }
+  .meta-row { display: flex; justify-content: space-between; gap: 1rem; padding: 0.6rem 0; border-bottom: 1px solid var(--border); }
+  .meta-row:last-child { border-bottom: none; }
+  .meta-label { font-size: 0.82rem; color: var(--muted-fg); }
+  .meta-value { font-size: 0.9rem; font-weight: 500; text-align: right; word-break: break-word; }
+
+  /* Quick links */
+  .quick-links { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+  .quick-link {
+    display: block; text-align: center; text-decoration: none; color: var(--fg);
+    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+    padding: 1rem; font-weight: 500; transition: border-color 0.15s, color 0.15s;
+  }
+  .quick-link:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* Field grid (view) */
+  .field-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 1.1rem; }
+  .field--full { grid-column: 1 / -1; }
+  .field-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted-fg); margin-bottom: 3px; }
+  .field-value { font-size: 0.92rem; }
+
+  /* Forms */
+  .form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem 1.1rem; }
+  .form-group { display: flex; flex-direction: column; gap: 4px; }
+  .form-group--full { grid-column: 1 / -1; }
+  .form-group label { font-size: 0.82rem; font-weight: 600; color: var(--fg); }
+  .form-group input, .form-group textarea, .form-group select {
+    padding: 0.55rem 0.7rem; border: 1px solid var(--border); border-radius: 8px;
+    font: inherit; font-size: 0.9rem; background: var(--bg); color: var(--fg);
+  }
+  .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+    outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(198,123,78,.15);
+  }
+  .form-group textarea { resize: vertical; }
+  .form-hint { font-size: 0.72rem; color: var(--muted-fg); }
+  .req { color: #dc2626; }
+  .checkbox-row label { flex-direction: row; align-items: center; gap: 0.5rem; display: flex; font-weight: 500; }
+
+  .form-actions {
+    grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: 0.6rem;
+    margin-top: 0.5rem; padding-top: 1rem; border-top: 1px solid var(--border);
+  }
+  .form-actions--left { justify-content: flex-start; border-top: none; padding-top: 0.5rem; }
+  .form-msg { grid-column: 1 / -1; font-size: 0.85rem; min-height: 1.1em; margin-top: 0.4rem; }
+  .form-msg.ok { color: #15803d; }
+  .form-msg.err { color: #dc2626; }
+
+  .btn.small { padding: 0.4rem 0.9rem; font-size: 0.85rem; }
+  .btn.danger { background: #dc2626; color: #fff; border-color: #dc2626; }
+  .btn.danger:hover { background: #b91c1c; }
+
+  /* Switches */
+  .switch-row { display: flex; align-items: center; gap: 0.6rem; padding: 0.55rem 0; font-size: 0.92rem; cursor: pointer; }
+  .switch-row input { width: 18px; height: 18px; accent-color: var(--accent); }
+
+  /* Orders */
+  .orders-list { display: grid; gap: 1rem; }
+  .order-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1.1rem 1.25rem; }
+  .order-top { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem; }
+  .order-ref { font-weight: 700; }
+  .order-date { font-size: 0.82rem; color: var(--muted-fg); }
+  .order-items { display: grid; gap: 0.5rem; margin: 0.75rem 0; }
+  .order-item { display: flex; align-items: center; gap: 0.65rem; font-size: 0.88rem; }
+  .order-item img { width: 38px; height: 38px; border-radius: 6px; object-fit: cover; background: var(--bg); }
+  .order-item .qty { color: var(--muted-fg); }
+  .order-foot { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border); padding-top: 0.65rem; }
+  .order-total { font-weight: 700; }
+
+  .badge-status { font-size: 0.72rem; font-weight: 700; padding: 0.22rem 0.6rem; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.03em; }
+  .st-paid, .st-delivered { background: #dcfce7; color: #166534; }
+  .st-pending_payment, .st-processing { background: #fef9c3; color: #854d0e; }
+  .st-shipped { background: #dbeafe; color: #1e40af; }
+  .st-cancelled, .st-failed { background: #fee2e2; color: #991b1b; }
+  .st-default { background: var(--bg); color: var(--muted-fg); }
+
+  /* Favorites */
+  .fav-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1.1rem; }
+  .fav-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; }
+  .fav-card img { width: 100%; aspect-ratio: 1; object-fit: cover; background: var(--bg); }
+  .fav-body { padding: 0.85rem; display: flex; flex-direction: column; gap: 0.4rem; flex: 1; }
+  .fav-name { font-weight: 600; font-size: 0.92rem; }
+  .fav-name a { color: inherit; text-decoration: none; }
+  .fav-price { color: var(--price); font-weight: 700; }
+  .fav-actions { display: flex; gap: 0.4rem; margin-top: auto; }
+  .fav-actions .btn { flex: 1; padding: 0.45rem; font-size: 0.8rem; }
+
+  /* Addresses */
+  .addresses-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; }
+  .address-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1.1rem 1.25rem; position: relative; }
+  .address-card.is-default { border-color: var(--accent); }
+  .address-default-tag { font-size: 0.68rem; font-weight: 700; color: var(--accent-contrast); background: var(--accent); padding: 0.15rem 0.55rem; border-radius: 999px; }
+  .address-label { font-weight: 700; margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.5rem; }
+  .address-text { font-size: 0.86rem; color: var(--muted-fg); line-height: 1.5; }
+  .address-actions { display: flex; gap: 0.75rem; margin-top: 0.85rem; flex-wrap: wrap; }
+  .link-btn { background: none; border: none; cursor: pointer; font: inherit; font-size: 0.82rem; color: var(--accent); padding: 0; }
+  .link-btn.danger { color: #dc2626; }
+
+  /* Subscriptions */
+  .subs-list { display: grid; gap: 1rem; }
+  .sub-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1.1rem 1.25rem; }
+  .sub-top { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; }
+  .sub-name { font-weight: 700; }
+  .sub-meta { font-size: 0.85rem; color: var(--muted-fg); line-height: 1.6; }
+
+  /* Methods */
+  .methods-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.6rem; }
+  .methods-list li { display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; padding: 0.5rem 0; border-bottom: 1px solid var(--border); }
+  .methods-list li:last-child { border-bottom: none; }
+  .method-on { color: #15803d; font-weight: 600; font-size: 0.82rem; }
+  .method-off { color: var(--muted-fg); font-size: 0.82rem; }
+
+  .danger-card { border-color: #fecaca; }
+
+  /* Empty states */
+  .empty-state { text-align: center; padding: 2.5rem 1rem; color: var(--muted-fg); }
+  .empty-state .btn { margin-top: 1rem; }
+
+  /* Modal */
+  .account-modal { position: fixed; inset: 0; background: rgba(0,0,0,.5); display: grid; place-items: center; z-index: 1000; padding: 1rem; }
+  .account-modal-box { background: var(--card); border-radius: 14px; padding: 1.75rem; max-width: 420px; width: 100%; }
+
+  /* Responsive */
+  @media (max-width: 1024px) {
+    .account-shell { grid-template-columns: 1fr; }
+    .account-sidebar { position: static; }
+    .account-id { padding-bottom: 0.75rem; }
+    .account-nav { flex-direction: row; overflow-x: auto; gap: 0.4rem; margin: 0.85rem 0; padding-bottom: 0.3rem; }
+    .account-nav-btn { white-space: nowrap; flex: 0 0 auto; }
+    .account-logout { width: auto; }
+  }
+  @media (max-width: 640px) {
+    .stat-grid { grid-template-columns: repeat(2, 1fr); }
+    .quick-links { grid-template-columns: 1fr; }
+  }
+</style>
+
+<script>
+  const API = "/api";
+
+  // Estado local del usuario y secciones cargadas de forma perezosa.
+  let user = {};
+  const loaded = { pedidos: false, favoritos: false, direcciones: false, suscripcion: false, caficultor: false, preferencias: false };
+
+  // ── Helpers ────────────────────────────────────────────────
+  const $ = (id) => document.getElementById(id);
+  const setText = (id, v) => { const el = $(id); if (el) el.textContent = (v === null || v === undefined || v === "") ? "—" : v; };
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+  function fmtCOP(value) {
+    return new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(value || 0);
+  }
+  function fmtDate(raw) {
+    if (!raw) return "—";
+    const norm = typeof raw === "string" && raw.includes(" ") ? raw.replace(" ", "T") + "Z" : raw;
+    const d = new Date(norm);
+    if (isNaN(d.getTime())) return raw;
+    return d.toLocaleDateString("es-CO", { year: "numeric", month: "short", day: "numeric" });
+  }
+  const ROLE_LABEL = { client: "Cliente", admin: "Administrador", provider: "Proveedor", caficultor: "Caficultor" };
+  const STATUS_LABEL = {
+    pending_payment: "Pago pendiente", paid: "Pagado", processing: "En preparación",
+    shipped: "Enviado", delivered: "Entregado", cancelled: "Cancelado", failed: "Fallido",
+  };
+
+  async function api(path, opts = {}) {
+    const res = await fetch(API + path, { credentials: "include", headers: { "Content-Type": "application/json" }, ...opts });
+    let data = null;
+    try { data = await res.json(); } catch {}
+    return { ok: res.ok, status: res.status, data };
+  }
+
+  function setMsg(id, text, type) {
+    const el = $(id);
+    if (!el) return;
+    el.textContent = text || "";
+    el.className = "form-msg" + (type ? " " + type : "");
+  }
+  function errMsg(data, fallback) {
+    if (!data) return fallback;
+    if (data.error) return data.error;
+    if (data.errors && data.errors.length) return data.errors.map((x) => x.msg).join(", ");
+    return fallback;
+  }
+
+  // ── Navegación entre secciones ─────────────────────────────
+  function showSection(name) {
+    document.querySelectorAll(".account-panel").forEach((p) =>
+      p.classList.toggle("is-active", p.getAttribute("data-panel") === name));
+    document.querySelectorAll(".account-nav-btn").forEach((b) =>
+      b.classList.toggle("is-active", b.getAttribute("data-section") === name));
+    if (location.hash !== "#" + name) history.replaceState(null, "", "#" + name);
+    loadSection(name);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function loadSection(name) {
+    if (name === "pedidos" && !loaded.pedidos) loadOrders();
+    if (name === "favoritos" && !loaded.favoritos) loadFavorites();
+    if (name === "direcciones" && !loaded.direcciones) loadAddresses();
+    if (name === "suscripcion" && !loaded.suscripcion) loadSubscriptions();
+    if (name === "caficultor" && !loaded.caficultor) loadCaficultor();
+    if (name === "preferencias" && !loaded.preferencias) loadPreferences();
+  }
+
+  document.querySelectorAll(".account-nav-btn").forEach((btn) =>
+    btn.addEventListener("click", () => showSection(btn.getAttribute("data-section"))));
+  document.querySelectorAll("[data-jump]").forEach((el) =>
+    el.addEventListener("click", () => showSection(el.getAttribute("data-jump"))));
+
+  // ── Perfil ─────────────────────────────────────────────────
+  function renderProfile() {
+    const full = [user.first_name, user.last_name].filter(Boolean).join(" ") || user.email || "—";
+    const initials = full.split(" ").slice(0, 2).map((w) => w[0]).join("").toUpperCase();
+    setText("sideAvatar", initials || "U");
+    setText("sideName", full);
+    setText("sideEmail", user.email);
+    setText("welcomeTitle", "Hola, " + ((user.first_name || "").trim() || "bienvenido"));
+    setText("sumEmail", user.email);
+    setText("sumRole", ROLE_LABEL[user.role] || user.role);
+    setText("sumCreated", fmtDate(user.created_at));
+    setText("sumLastLogin", fmtDate(user.last_login_at));
+    $("verifyBanner").hidden = !!user.is_verified || !!user.has_google || !!user.has_apple;
+
+    setText("vFirstName", user.first_name);
+    setText("vLastName", user.last_name);
+    setText("vMobile", user.mobile_phone);
+    setText("vLandline", user.landline_phone);
+    setText("vTaxId", user.tax_id);
+    setText("vCity", user.city);
+    setText("vState", user.state_province);
+    setText("vCountry", user.country);
+    setText("vAddress", user.address);
+  }
+
+  function fillProfileForm() {
+    $("fFirstName").value = user.first_name || "";
+    $("fLastName").value = user.last_name || "";
+    $("fMobile").value = user.mobile_phone || "";
+    $("fLandline").value = user.landline_phone || "";
+    $("fTaxId").value = user.tax_id || "";
+    $("fCity").value = user.city || "";
+    $("fState").value = user.state_province || "";
+    $("fCountry").value = user.country || "Colombia";
+    $("fAddress").value = user.address || "";
+  }
+
+  $("btnEditProfile").addEventListener("click", () => {
+    fillProfileForm();
+    $("profileView").hidden = true;
+    $("profileForm").hidden = false;
+    $("btnEditProfile").hidden = true;
+  });
+  function closeProfileEdit() {
+    $("profileView").hidden = false;
+    $("profileForm").hidden = true;
+    $("btnEditProfile").hidden = false;
+    setMsg("profileMsg", "");
+  }
+  $("btnCancelProfile").addEventListener("click", closeProfileEdit);
+
+  $("profileForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const btn = e.target.querySelector('button[type="submit"]');
+    btn.disabled = true; btn.textContent = "Guardando…";
+    const body = {
+      first_name: $("fFirstName").value.trim(), last_name: $("fLastName").value.trim(),
+      mobile_phone: $("fMobile").value.trim(), landline_phone: $("fLandline").value.trim(),
+      tax_id: $("fTaxId").value.trim(), city: $("fCity").value.trim(),
+      state_province: $("fState").value.trim(), country: $("fCountry").value.trim(),
+      address: $("fAddress").value.trim(),
+    };
+    const { ok, data } = await api("/auth/profile", { method: "PUT", body: JSON.stringify(body) });
+    btn.disabled = false; btn.textContent = "Guardar cambios";
+    if (ok && data && data.success) {
+      user = { ...user, ...body };
+      renderProfile();
+      closeProfileEdit();
+    } else {
+      setMsg("profileMsg", errMsg(data, "Error al guardar"), "err");
+    }
+  });
+
+  // ── Pedidos ────────────────────────────────────────────────
+  async function loadOrders() {
+    loaded.pedidos = true;
+    const el = $("ordersList");
+    el.innerHTML = '<p class="muted">Cargando pedidos…</p>';
+    const { ok, data } = await api("/orders/mine");
+    const orders = ok && data && data.success ? data.data : [];
+    setText("statOrders", orders.length);
+    if (!orders.length) {
+      el.innerHTML = '<div class="empty-state"><p>Aún no tiene pedidos.</p><a class="btn" href="/tienda">Explorar la tienda</a></div>';
+      return;
+    }
+    el.innerHTML = orders.map((o) => {
+      const stClass = "st-" + (o.status || "default");
+      const items = (o.items || []).map((it) => `
+        <div class="order-item">
+          <img src="${esc(it.product_image || "/assets/img/placeholder.png")}" alt="" loading="lazy" />
+          <span>${esc(it.product_name)}</span>
+          <span class="qty">× ${it.quantity}</span>
+        </div>`).join("");
+      return `
+        <div class="order-card">
+          <div class="order-top">
+            <div><div class="order-ref">Pedido ${esc(o.reference)}</div><div class="order-date">${fmtDate(o.created_at)}</div></div>
+            <span class="badge-status ${stClass}">${esc(STATUS_LABEL[o.status] || o.status)}</span>
+          </div>
+          <div class="order-items">${items}</div>
+          <div class="order-foot">
+            <span class="muted">${esc(o.shipping_city || "")}</span>
+            <span class="order-total">${fmtCOP(o.total_cop)}</span>
+          </div>
+        </div>`;
+    }).join("");
+  }
+
+  // ── Favoritos ──────────────────────────────────────────────
+  async function loadFavorites() {
+    loaded.favoritos = true;
+    const el = $("favoritesGrid");
+    el.innerHTML = '<p class="muted">Cargando favoritos…</p>';
+    const { ok, data } = await api("/account/favorites");
+    const favs = ok && data && data.success ? data.data : [];
+    setText("statFavorites", favs.length);
+    if (!favs.length) {
+      el.innerHTML = '<div class="empty-state"><p>No tiene productos favoritos todavía.</p><a class="btn" href="/tienda">Ver productos</a></div>';
+      return;
+    }
+    el.innerHTML = favs.map((f) => {
+      const href = f.slug ? "/producto/" + f.slug : "/tienda";
+      const soldOut = f.is_active === 0;
+      return `
+        <div class="fav-card" data-pid="${esc(f.product_id)}">
+          <a href="${href}"><img src="${esc(f.image_url || "/assets/img/placeholder.png")}" alt="${esc(f.name)}" loading="lazy" /></a>
+          <div class="fav-body">
+            <div class="fav-name"><a href="${href}">${esc(f.name)}</a></div>
+            <div class="fav-price">${fmtCOP(f.price)}</div>
+            <div class="fav-actions">
+              <button class="btn fav-add" ${soldOut ? "disabled" : ""} data-name="${esc(f.name)}" data-price="${f.price}" data-img="${esc(f.image_url || "")}">${soldOut ? "Agotado" : "Agregar"}</button>
+              <button class="btn outline fav-remove" title="Quitar de favoritos">✕</button>
+            </div>
+          </div>
+        </div>`;
+    }).join("");
+
+    el.querySelectorAll(".fav-add").forEach((b) =>
+      b.addEventListener("click", () => {
+        const card = b.closest(".fav-card");
+        if (window.Cart) window.Cart.addToCart({ id: card.dataset.pid, name: b.dataset.name, price: Number(b.dataset.price), image: b.dataset.img, qty: 1 });
+      }));
+    el.querySelectorAll(".fav-remove").forEach((b) =>
+      b.addEventListener("click", async () => {
+        const card = b.closest(".fav-card");
+        await api("/account/favorites/" + encodeURIComponent(card.dataset.pid), { method: "DELETE" });
+        card.remove();
+        const n = el.querySelectorAll(".fav-card").length;
+        setText("statFavorites", n);
+        if (!n) { loaded.favoritos = false; loadFavorites(); }
+      }));
+  }
+
+  // ── Direcciones ────────────────────────────────────────────
+  async function loadAddresses() {
+    loaded.direcciones = true;
+    const el = $("addressesList");
+    el.innerHTML = '<p class="muted">Cargando direcciones…</p>';
+    const { ok, data } = await api("/account/addresses");
+    const list = ok && data && data.success ? data.data : [];
+    setText("statAddresses", list.length);
+    if (!list.length) {
+      el.innerHTML = '<div class="empty-state"><p>No tiene direcciones guardadas.</p></div>';
+      return;
+    }
+    el.innerHTML = list.map((a) => `
+      <div class="address-card ${a.is_default ? "is-default" : ""}">
+        <div class="address-label">${esc(a.label || "Dirección")} ${a.is_default ? '<span class="address-default-tag">Predeterminada</span>' : ""}</div>
+        <div class="address-text">
+          ${esc(a.recipient_name)}<br/>
+          ${esc(a.address)}<br/>
+          ${esc([a.city, a.state_province, a.country].filter(Boolean).join(", "))}${a.zip ? " · " + esc(a.zip) : ""}
+          ${a.phone ? "<br/>Tel: " + esc(a.phone) : ""}
+        </div>
+        <div class="address-actions">
+          ${a.is_default ? "" : `<button class="link-btn addr-default" data-id="${a.id}">Hacer predeterminada</button>`}
+          <button class="link-btn addr-edit" data-id="${a.id}">Editar</button>
+          <button class="link-btn danger addr-del" data-id="${a.id}">Eliminar</button>
+        </div>
+      </div>`).join("");
+
+    el.querySelectorAll(".addr-default").forEach((b) => b.addEventListener("click", async () => {
+      await api("/account/addresses/" + b.dataset.id + "/default", { method: "PUT" });
+      loaded.direcciones = false; loadAddresses();
+    }));
+    el.querySelectorAll(".addr-del").forEach((b) => b.addEventListener("click", async () => {
+      if (!confirm("¿Eliminar esta dirección?")) return;
+      await api("/account/addresses/" + b.dataset.id, { method: "DELETE" });
+      loaded.direcciones = false; loadAddresses();
+    }));
+    el.querySelectorAll(".addr-edit").forEach((b) => b.addEventListener("click", () => {
+      const a = list.find((x) => String(x.id) === b.dataset.id);
+      openAddressForm(a);
+    }));
+  }
+
+  function openAddressForm(a) {
+    const f = $("addressForm");
+    f.hidden = false;
+    setMsg("addressMsg", "");
+    $("addressFormTitle").textContent = a ? "Editar dirección" : "Nueva dirección";
+    $("aId").value = a ? a.id : "";
+    $("aLabel").value = a ? a.label || "" : "";
+    $("aRecipient").value = a ? a.recipient_name || "" : "";
+    $("aPhone").value = a ? a.phone || "" : "";
+    $("aZip").value = a ? a.zip || "" : "";
+    $("aAddress").value = a ? a.address || "" : "";
+    $("aCity").value = a ? a.city || "" : "";
+    $("aState").value = a ? a.state_province || "" : "";
+    $("aCountry").value = a ? a.country || "Colombia" : "Colombia";
+    $("aDefault").checked = a ? !!a.is_default : false;
+    f.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+
+  $("btnNewAddress").addEventListener("click", () => openAddressForm(null));
+  $("btnCancelAddress").addEventListener("click", () => { $("addressForm").hidden = true; });
+
+  $("addressForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const id = $("aId").value;
+    const body = {
+      label: $("aLabel").value.trim(), recipient_name: $("aRecipient").value.trim(),
+      phone: $("aPhone").value.trim(), zip: $("aZip").value.trim(),
+      address: $("aAddress").value.trim(), city: $("aCity").value.trim(),
+      state_province: $("aState").value.trim(), country: $("aCountry").value.trim() || "Colombia",
+      is_default: $("aDefault").checked,
+    };
+    const path = id ? "/account/addresses/" + id : "/account/addresses";
+    const { ok, data } = await api(path, { method: id ? "PUT" : "POST", body: JSON.stringify(body) });
+    if (ok && data && data.success) {
+      $("addressForm").hidden = true;
+      loaded.direcciones = false; loadAddresses();
+    } else {
+      setMsg("addressMsg", errMsg(data, "Error al guardar"), "err");
+    }
+  });
+
+  // ── Suscripciones ──────────────────────────────────────────
+  async function loadSubscriptions() {
+    loaded.suscripcion = true;
+    const el = $("subsList");
+    el.innerHTML = '<p class="muted">Cargando suscripciones…</p>';
+    const { ok, data } = await api("/subscriptions/me");
+    const subs = ok && data && data.success ? data.data : [];
+    const active = subs.filter((s) => s.status !== "cancelled").length;
+    setText("statSubs", active);
+    if (!subs.length) {
+      el.innerHTML = '<div class="empty-state"><p>No tiene suscripciones activas.</p><a class="btn" href="/suscripcion">Crear una suscripción</a></div>';
+      return;
+    }
+    el.innerHTML = subs.map((s) => {
+      const cancelled = s.status === "cancelled";
+      return `
+        <div class="sub-card">
+          <div class="sub-top">
+            <span class="sub-name">${esc(s.product_name)}</span>
+            <span class="badge-status ${cancelled ? "st-cancelled" : "st-paid"}">${cancelled ? "Cancelada" : "Activa"}</span>
+          </div>
+          <div class="sub-meta">
+            ${s.variant_size ? "Presentación: " + esc(s.variant_size) + (s.variant_grind ? " · " + esc(s.variant_grind) : "") + "<br/>" : ""}
+            Cantidad: ${esc(s.quantity)} · Cada ${esc(s.frequency_days)} días<br/>
+            Valor: ${fmtCOP(s.amount_cop)}${cancelled ? "" : " · Próximo cobro: " + fmtDate(s.next_billing_date)}<br/>
+            Entregas realizadas: ${esc(s.charge_count || 0)}
+          </div>
+          ${cancelled ? "" : `<div class="address-actions"><button class="link-btn danger sub-cancel" data-ref="${esc(s.reference)}">Cancelar suscripción</button></div>`}
+        </div>`;
+    }).join("");
+
+    el.querySelectorAll(".sub-cancel").forEach((b) => b.addEventListener("click", async () => {
+      if (!confirm("¿Cancelar esta suscripción?")) return;
+      await api("/subscriptions/" + encodeURIComponent(b.dataset.ref) + "/cancel", { method: "POST", body: JSON.stringify({}) });
+      loaded.suscripcion = false; loadSubscriptions();
+    }));
+  }
+
+  // ── Caficultor ─────────────────────────────────────────────
+  async function loadCaficultor() {
+    loaded.caficultor = true;
+    const { ok, data } = await api("/auth/caficultor-status");
+    const statusEl = $("caficultorStatus");
+    const actionsEl = $("caficultorActions");
+    if (ok && data && data.hasApplication) {
+      const app = data.application;
+      const labels = { pending: "En revisión", approved: "Aprobada", rejected: "Rechazada" };
+      const cls = { pending: "st-processing", approved: "st-paid", rejected: "st-cancelled" };
+      statusEl.innerHTML = `
+        <div class="meta-row"><span class="meta-label">Estado de su solicitud</span>
+          <span class="badge-status ${cls[app.status] || "st-default"}">${labels[app.status] || app.status}</span></div>
+        ${app.admin_notes ? `<p class="muted" style="margin-top:.75rem">Notas: ${esc(app.admin_notes)}</p>` : ""}`;
+      if (user.role === "caficultor" || app.status === "approved") {
+        actionsEl.innerHTML = '<a class="btn" href="/admin">Ir a mi panel de caficultor</a>';
+      } else if (app.status === "pending") {
+        actionsEl.innerHTML = '<span class="muted">Le avisaremos cuando el administrador revise su solicitud.</span>';
+      } else {
+        actionsEl.innerHTML = '<a class="btn" href="/solicitar-caficultor">Volver a postular</a>';
+      }
+    }
+  }
+
+  // ── Preferencias ───────────────────────────────────────────
+  async function loadPreferences() {
+    loaded.preferencias = true;
+    const { ok, data } = await api("/account/preferences");
+    const p = ok && data && data.success ? data.data : { newsletter: 1, order_updates: 1, promotions: 1, language: "es", currency: "COP" };
+    $("prefNewsletter").checked = !!p.newsletter;
+    $("prefOrders").checked = !!p.order_updates;
+    $("prefPromos").checked = !!p.promotions;
+    $("prefLang").value = p.language || "es";
+    $("prefCurrency").value = p.currency || "COP";
+  }
+
+  $("prefsForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const btn = e.target.querySelector('button[type="submit"]');
+    btn.disabled = true; btn.textContent = "Guardando…";
+    const body = {
+      newsletter: $("prefNewsletter").checked, order_updates: $("prefOrders").checked,
+      promotions: $("prefPromos").checked, language: $("prefLang").value, currency: $("prefCurrency").value,
+    };
+    const { ok, data } = await api("/account/preferences", { method: "PUT", body: JSON.stringify(body) });
+    btn.disabled = false; btn.textContent = "Guardar preferencias";
+    const success = ok && data && data.success;
+    setMsg("prefsMsg", success ? "Preferencias guardadas." : errMsg(data, "Error al guardar."), success ? "ok" : "err");
+  });
+
+  // ── Seguridad: métodos + contraseña + eliminar ─────────────
+  function renderMethods() {
+    const m = $("methodsList");
+    const row = (name, on) => `<li><span>${name}</span><span class="${on ? "method-on" : "method-off"}">${on ? "Activo" : "No vinculado"}</span></li>`;
+    m.innerHTML =
+      row("Correo y contraseña", !!user.has_password) +
+      row("Google", !!user.has_google) +
+      row("Apple", !!user.has_apple);
+
+    // Cuenta solo social (sin contraseña): ocultar cambio de contraseña y campo de confirmación al eliminar.
+    $("passwordForm").style.display = user.has_password ? "" : "none";
+    $("deletePwdGroup").style.display = user.has_password ? "" : "none";
+  }
+
+  $("passwordForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const nw = $("pNew").value, cf = $("pConfirm").value;
+    if (nw !== cf) return setMsg("passwordMsg", "Las contraseñas no coinciden.", "err");
+    if (nw.length < 8) return setMsg("passwordMsg", "Mínimo 8 caracteres.", "err");
+    const btn = e.target.querySelector('button[type="submit"]');
+    btn.disabled = true; btn.textContent = "Actualizando…";
+    const { ok, data } = await api("/auth/password", { method: "PUT", body: JSON.stringify({ current_password: $("pCurrent").value, new_password: nw }) });
+    btn.disabled = false; btn.textContent = "Actualizar contraseña";
+    if (ok && data && data.success) { setMsg("passwordMsg", "Contraseña actualizada.", "ok"); e.target.reset(); }
+    else setMsg("passwordMsg", errMsg(data, "Error"), "err");
+  });
+
+  // Eliminar cuenta
+  $("btnDeleteAccount").addEventListener("click", () => { $("deleteModal").hidden = false; setMsg("deleteMsg", ""); });
+  $("btnCancelDelete").addEventListener("click", () => { $("deleteModal").hidden = true; });
+  $("btnConfirmDelete").addEventListener("click", async () => {
+    const btn = $("btnConfirmDelete");
+    btn.disabled = true; btn.textContent = "Eliminando…";
+    const body = user.has_password ? { current_password: $("deletePassword").value } : {};
+    const { ok, data } = await api("/account", { method: "DELETE", body: JSON.stringify(body) });
+    btn.disabled = false; btn.textContent = "Eliminar definitivamente";
+    if (ok && data && data.success) { alert("Su cuenta ha sido eliminada."); location.href = "/"; }
+    else setMsg("deleteMsg", errMsg(data, "No se pudo eliminar la cuenta."), "err");
+  });
+
+  // ── Logout ─────────────────────────────────────────────────
+  $("logoutBtn").addEventListener("click", async () => {
+    await api("/auth/logout", { method: "POST", body: JSON.stringify({}) });
+    location.href = "/";
+  });
+
+  // ── Inicialización ─────────────────────────────────────────
+  (async function init() {
+    const { ok, data } = await api("/auth/me");
+    if (!ok || !data || data.id === undefined || data.id === null) { location.replace("/login?next=/cuenta"); return; }
+    user = data;
+    $("accountLoading").hidden = true;
+    $("accountShell").hidden = false;
+    renderProfile();
+    renderMethods();
+
+    // Sección inicial según el hash de la URL.
+    const valid = ["resumen", "perfil", "pedidos", "favoritos", "direcciones", "suscripcion", "caficultor", "preferencias", "seguridad"];
+    const initial = valid.includes(location.hash.slice(1)) ? location.hash.slice(1) : "resumen";
+    showSection(initial);
+
+    // Precargar contadores del resumen sin bloquear la vista inicial.
+    if (initial !== "pedidos") loadOrders();
+    if (initial !== "favoritos") loadFavorites();
+    if (initial !== "direcciones") loadAddresses();
+    if (initial !== "suscripcion") loadSubscriptions();
+  })();
+</script>
