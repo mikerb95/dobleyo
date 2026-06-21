@@ -102,8 +102,9 @@ ordersRouter.post('/',
             const {
                 customerName, customerEmail, customerPhone,
                 shippingAddress, shippingCity, shippingDepartment, shippingZip,
-                items, notes, couponCode
+                items, notes, couponCode, currency = 'COP'
             } = req.body;
+            const isUSD = currency === 'USD';
 
             const productIds = [...new Set(items.map((item) => item.productId).filter(Boolean))];
             if (!productIds.length) {
