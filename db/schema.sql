@@ -1160,3 +1160,43 @@ CREATE TABLE IF NOT EXISTS client_operations (
     -- limpieza por retención (30 días) hace innecesario el ON DELETE.
 );
 CREATE INDEX idx_client_operations_created ON client_operations(created_at);
+
+-- ============================================================================
+-- CUENTA DE USUARIO (rol client): direcciones, favoritos, preferencias
+-- ============================================================================
+
+CREATE TABLE IF NOT EXISTS user_addresses (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id         INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    label           TEXT,
+    recipient_name  TEXT NOT NULL,
+    phone           TEXT,
+    address         TEXT NOT NULL,
+    city            TEXT NOT NULL,
+    state_province  TEXT,
+    country         TEXT NOT NULL DEFAULT 'Colombia',
+    zip             TEXT,
+    is_default      INTEGER NOT NULL DEFAULT 0,
+    created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_user_addresses_user ON user_addresses(user_id);
+
+CREATE TABLE IF NOT EXISTS user_favorites (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id     INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    product_id  TEXT NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+    created_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (user_id, product_id)
+);
+CREATE INDEX IF NOT EXISTS idx_user_favorites_user ON user_favorites(user_id);
+
+CREATE TABLE IF NOT EXISTS user_preferences (
+    user_id        INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+    newsletter     INTEGER NOT NULL DEFAULT 1,
+    order_updates  INTEGER NOT NULL DEFAULT 1,
+    promotions     INTEGER NOT NULL DEFAULT 1,
+    language       TEXT NOT NULL DEFAULT 'es',
+    currency       TEXT NOT NULL DEFAULT 'COP',
+    updated_at     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
