@@ -2,6 +2,38 @@
 
 ---
 
+## 📅 2026-06-21 — Footer: páginas faltantes + toggle de idioma EN/ES (Agente: Claude)
+
+### Contexto
+Varios enlaces del footer apuntaban a `href="#"` (links muertos sin destino). Se crearon las páginas faltantes y se enlazaron correctamente. Además, no existía un control para alternar entre español e inglés; se agregó un toggle EN/ES en el header.
+
+### Páginas nuevas (públicas, SSR `prerender = false`)
+- `src/pages/accesorios.astro` — catálogo de accesorios (reusa `ProductCard`, filtra `category === "Accesorios"`).
+- `src/pages/guias.astro` — guías de preparación (V60, Chemex, prensa francesa, greca) + consejos.
+- `src/pages/partners.astro` — zona de aliados B2B.
+- `src/pages/afiliados.astro` — programa de afiliados/referidos.
+- `src/pages/mayoristas.astro` — compra al por mayor (equivalente ES de `/en/wholesale`, con hreflang).
+- Todas con `Layout.astro`, SEO (`title`/`description`/`canonical`), español formal colombiano («usted»), mobile-first y solo variables CSS.
+
+### Enlazado del footer — `src/components/Footer.astro`
+- El objeto de rutas `r` incorpora `accessories`, `guides`, `account`, `partners`, `affiliates`; `wholesale` (es) pasó de `"#"` → `/mayoristas`.
+- Se reemplazaron los 5 `href="#"` restantes por sus rutas reales. **Cuenta** ahora apunta a `/cuenta` (página que ya existía). En EN, las rutas sin equivalente quedan en `"#"` y `accessories` → `/shop`.
+- Quedan en `"#"` a propósito Instagram/Facebook (faltan las URLs reales de redes).
+
+### Toggle de idioma EN/ES
+- `src/i18n/routes.ts` (nuevo) — módulo ligero (sin diccionarios JSON, reutilizable en SSR y cliente) con los pares de rutas equivalentes ES↔EN y `buildLangHref()`, que resuelve la URL destino según el entorno: **producción** cambia de subdominio (`dobleyo.cafe` ↔ `en.dobleyo.cafe`); **local/preview** usa el prefijo `/en/`.
+- `src/components/LangToggle.astro` (nuevo) — control segmentado ES/EN (variables CSS, responsive, `aria-current`, `hreflang`). Calcula los `href` en SSR y los recalcula en el cliente con la URL real del navegador (en páginas estáticas el host de build no es fiable).
+- `src/components/Header.astro` — toggle integrado en `.actions` (desktop) y en el menú móvil.
+- `src/i18n/index.ts` — `'/mayoristas': '/wholesale'` añadido a `HREFLANG_MAP`.
+
+### SEO — `src/pages/sitemap.xml.ts`
+- Agregadas al sitemap: `/accesorios`, `/guias`, `/partners`, `/afiliados`, `/mayoristas` y `/en/wholesale`.
+
+### Verificación
+- `npm run build` completa sin errores.
+
+---
+
 ## 📅 2026-06-21 — Inventario: «Nuevo movimiento» ahora cubre también lotes de café (Agente: Claude)
 
 ### Contexto
