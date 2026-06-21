@@ -139,7 +139,7 @@ const accountHref = lang === "en" ? "/account" : "/cuenta";
 
     <!-- Opciones autenticado en móvil -->
     <div id="mobileAuthenticatedMenu" style="display: none;">
-      <a href="/cuenta" class="user-btn" data-link>
+      <a href={accountHref} class="user-btn" data-link>
         <svg
           width="20"
           height="20"
@@ -173,7 +173,7 @@ const accountHref = lang === "en" ? "/account" : "/cuenta";
             d="M12 12c2.761 0 5-2.239 5-5s-2.239-5-5-5-5 2.239-5 5 2.239 5 5 5zm0 2c-4.418 0-8 2.239-8 5v1h16v-1c0-2.761-3.582-5-8-5z"
             fill="currentColor"></path></svg
         >
-        <span>Iniciar sesión</span>
+        <span>{tx.login}</span>
       </button>
       <button class="user-btn" id="mobileOpenRegisterModal">
         <svg
