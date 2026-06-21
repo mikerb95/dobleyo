@@ -33,7 +33,28 @@ async function request(path, { method = 'GET', body, signal } = {}) {
 
 const api = {
   get: (p, o) => request(p, { ...o, method: 'GET' }),
+  post: (p, body) => request(p, { method: 'POST', body }),
 };
+
+// Lista de productos para el selector de movimientos.
+// /inventory/products usa el envoltorio { success, products }, no { success, data },
+// por eso no pasa por request().
+async function fetchProducts() {
+  let res;
+  try {
+    res = await fetch('/api/inventory/products?active=true', {
+      credentials: 'include', headers: { Accept: 'application/json' },
+    });
+  } catch (e) {
+    throw new Error('No se pudo conectar con el servidor.');
+  }
+  let json = null;
+  try { json = await res.json(); } catch {}
+  if (!res.ok || !json?.success) {
+    throw new Error(json?.error || 'No se pudieron cargar los productos.');
+  }
+  return json.products || [];
+}
 
 function useApi(path, { deps = [], enabled = true } = {}) {
   const [state, setState] = useState({ data: null, error: null, loading: !!enabled });
