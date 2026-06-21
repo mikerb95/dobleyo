@@ -2,6 +2,28 @@
 
 ---
 
+## 📅 2026-06-21 — Inventario: «Nuevo movimiento» ahora cubre también lotes de café (Agente: Claude)
+
+### Contexto
+El modal de «Nuevo movimiento» solo operaba sobre productos/empaque (`inventory_movements`, unidades enteras). Los tabs **Café verde** y **Café tostado** muestran lotes (`lots.weight`, kg) sin forma de ajustar su peso desde la UI. Se extendió el flujo para ajustar peso de lotes.
+
+### Nueva tabla — `lot_movements`
+- Migración `server/migrations/create_lot_movements.js` (registrada en `run_all_migrations.js`) y reflejada en `db/schema.sql`. `inventory_movements` no servía: exige `product_id NOT NULL` y `quantity INTEGER`. La nueva tabla guarda peso decimal en kg (`quantity`, `weight_before`, `weight_after`), tipo (`entrada/salida/ajuste/merma`), motivo/referencia/notas, `user_id` y FK a `lots` (`ON DELETE CASCADE`). Idempotente (`IF NOT EXISTS`).
+
+### Backend — `server/routes/inventory.js`
+- **Nuevo endpoint** `POST /api/inventory/lots/:id/movement`: valida tipo y cantidad (>0), calcula el nuevo peso (entrada suma, salida/merma resta, ajuste fija el total), rechaza peso negativo, redondea a 2 decimales, actualiza `lots.weight`, inserta en `lot_movements` y registra `logAudit`.
+- **Detalle de lote** (`GET /items/:id`, green/roast): los «Movimientos recientes» se leen ahora desde `lot_movements` (kg), con delta real `weight_after − weight_before` (antes era un hack `reference LIKE '%code%'` sobre `inventory_movements`, en unidades).
+- **Feed** (`GET /feed`): fusiona movimientos de productos (u) y de lotes (kg), ordenados por fecha; ids prefijados (`p…`/`l…`) para evitar colisión entre ambas tablas.
+- Paridad `server/index.js` ↔ `api/index.js` intacta (solo se agregaron rutas al router ya montado).
+
+### Frontend — `src/components/InventarioApp.jsx` y `admin/inventario.astro`
+- El modal incorpora un **selector segmentado** «Producto / empaque» vs «Lote de café». En lotes la cantidad es decimal (kg) y excluye «devolución»; carga los lotes vía `fetchLots()` (verde + tostado). Según el tab activo se preselecciona el destino y el ítem (lote o SKU). Estilos `inv-seg` con variables CSS del sistema.
+
+### Pendiente operativo
+- ⚠️ Ejecutar la migración en la BD antes de usar la función: `npm run migrate` (o `node server/migrations/create_lot_movements.js`). En Vercel corre con el hook de build si está configurado.
+
+---
+
 ## 📅 2026-06-20 — Inventario: botones «Exportar CSV» y «Nuevo movimiento» funcionales (Agente: Claude)
 
 ### Contexto
