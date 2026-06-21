@@ -185,7 +185,8 @@ ordersRouter.post('/',
             }
 
             const discountedSubtotal = subtotal - discountAmount;
-            const shipping = discountedSubtotal >= 120000 ? 0 : 12000;
+            // Envío: COP cobra $12.000 bajo $120.000; USD gratis a todo el mundo (MVP).
+            const shipping = isUSD ? 0 : (discountedSubtotal >= 120000 ? 0 : 12000);
             const total = discountedSubtotal + shipping;
 
             // Referencia única: DY-timestamp-random4chars
