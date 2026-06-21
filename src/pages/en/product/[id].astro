@@ -30,7 +30,7 @@ try {
       categoryLabel: LABEL[p.category] ?? p.category,
       notes: tn?.en ?? tn?.es ?? null,
       priceUsd: p.price_usd ?? null,
-      description: p.description_en || p.description || null,
+      description: p.description || null,
     };
   }
 } catch (_) { /* fallthrough */ }
