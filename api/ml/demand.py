@@ -195,27 +195,55 @@ _COLS = [
     ("Actualizado","updated_at",   18),
 ]
 
+def _first(params, key, default=None):
+    return (params.get(key) or [default])[0]
+
+
 def export_xlsx(params):
-    """Lee demand_records con los mismos filtros que read_records y devuelve bytes .xlsx."""
+    """
+    Exporta demand_records a .xlsx con filtros multicriterio opcionales:
+      ?category=    texto parcial (LIKE)
+      ?product=     texto parcial en product_key (LIKE)
+      ?period=      texto parcial en period (LIKE)
+      ?value_min=   demand_value >= valor
+      ?value_max=   demand_value <= valor
+      ?limit=       máximo de filas (default 5000, max 10000)
+    """
     ensure_table()
-    category = (params.get("category") or [None])[0]
-    limit_raw = (params.get("limit") or ["5000"])[0]
+
+    category  = (_first(params, "category")  or "").strip()
+    product   = (_first(params, "product")   or "").strip()
+    period    = (_first(params, "period")    or "").strip()
+    value_min = _first(params, "value_min")
+    value_max = _first(params, "value_max")
     try:
-        limit = max(1, min(10000, int(limit_raw)))
+        limit = max(1, min(10000, int(_first(params, "limit", 5000))))
     except (ValueError, TypeError):
         limit = 5000
 
+    clauses, args = [], []
     if category:
-        rows = turso_batch([(
-            "SELECT * FROM demand_records WHERE category = ? "
-            "ORDER BY created_at DESC, id DESC LIMIT ?",
-            [category.strip(), limit],
-        )])[0]
-    else:
-        rows = turso_batch([(
-            "SELECT * FROM demand_records ORDER BY created_at DESC, id DESC LIMIT ?",
-            [limit],
-        )])[0]
+        clauses.append("category LIKE ?");  args.append(f"%{category}%")
+    if product:
+        clauses.append("product_key LIKE ?"); args.append(f"%{product}%")
+    if period:
+        clauses.append("period LIKE ?");     args.append(f"%{period}%")
+    if value_min not in (None, ""):
+        try:
+            clauses.append("demand_value >= ?"); args.append(float(value_min))
+        except (ValueError, TypeError):
+            pass
+    if value_max not in (None, ""):
+        try:
+            clauses.append("demand_value <= ?"); args.append(float(value_max))
+        except (ValueError, TypeError):
+            pass
+
+    where = ("WHERE " + " AND ".join(clauses)) if clauses else ""
+    rows = turso_batch([(
+        f"SELECT * FROM demand_records {where} ORDER BY created_at DESC, id DESC LIMIT ?",
+        args + [limit],
+    )])[0]
 
     wb = openpyxl.Workbook()
     ws = wb.active
@@ -229,12 +257,30 @@ def export_xlsx(params):
         cell.alignment = Alignment(horizontal="center")
         ws.column_dimensions[cell.column_letter].width = width
 
-    # Filas
+    # Filas de datos
     for row_idx, record in enumerate(rows, start=2):
         for col_idx, (_, key, _) in enumerate(_COLS, start=1):
             ws.cell(row=row_idx, column=col_idx, value=record.get(key))
 
     ws.freeze_panes = "A2"
+
+    # Hoja de filtros aplicados
+    ws2 = wb.create_sheet("Filtros aplicados")
+    ws2.column_dimensions["A"].width = 20
+    ws2.column_dimensions["B"].width = 30
+    filtro_label = Font(bold=True)
+    applied = [
+        ("Categoría",     category  or "—"),
+        ("Producto",      product   or "—"),
+        ("Período",       period    or "—"),
+        ("Demanda mínima",value_min or "—"),
+        ("Demanda máxima",value_max or "—"),
+        ("Límite",        str(limit)),
+        ("Total filas",   str(len(rows))),
+    ]
+    for r, (k, v) in enumerate(applied, start=1):
+        ws2.cell(row=r, column=1, value=k).font = filtro_label
+        ws2.cell(row=r, column=2, value=v)
 
     buf = io.BytesIO()
     wb.save(buf)
