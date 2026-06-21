@@ -126,11 +126,19 @@ ordersRouter.post('/',
             const productMap = new Map(productsResult.rows.map((p) => [p.id, p]));
 
             // Calcular totales en COP desde la BD (evita manipulación del cliente)
+            // En USD la fuente de verdad es products.price_usd; si falta, no se puede vender en USD.
+            if (isUSD) {
+                const missing = productsResult.rows.find((p) => p.price_usd == null);
+                if (missing) {
+                    return res.status(422).json({ success: false, error: 'Algún producto no tiene precio en USD' });
+                }
+            }
+
             let subtotal = 0;
             const normalizedItems = items.map((item) => {
                 const product = productMap.get(item.productId);
                 const quantity = Number(item.quantity);
-                const unitPrice = Number(product.price);
+                const unitPrice = isUSD ? Number(product.price_usd) : Number(product.price);
                 const itemSubtotal = unitPrice * quantity;
                 subtotal += itemSubtotal;
                 return {
