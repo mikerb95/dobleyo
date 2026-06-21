@@ -221,6 +221,48 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
       </div>
     </div>
 
+    <!-- Filtros de exportación -->
+    <div class="card" style="margin-bottom:1.5rem">
+      <div class="card-header">
+        <div>
+          <h2 class="card-title">Exportar a Excel</h2>
+          <p class="card-subtitle">Aplique los filtros y descargue solo los registros que necesita.</p>
+        </div>
+      </div>
+      <div style="padding:18px">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="ex-category">Categoría</label>
+            <input type="text" id="ex-category" placeholder="p. ej. cafe-grano" />
+          </div>
+          <div class="form-group">
+            <label for="ex-product">Producto</label>
+            <input type="text" id="ex-product" placeholder="p. ej. Huila Caturra" />
+          </div>
+          <div class="form-group">
+            <label for="ex-period">Período</label>
+            <input type="text" id="ex-period" placeholder="p. ej. 2026-W" />
+          </div>
+          <div class="form-group">
+            <label for="ex-value-min">Demanda mínima</label>
+            <input type="number" id="ex-value-min" min="0" step="0.01" placeholder="0" />
+          </div>
+          <div class="form-group">
+            <label for="ex-value-max">Demanda máxima</label>
+            <input type="number" id="ex-value-max" min="0" step="0.01" placeholder="sin límite" />
+          </div>
+          <div class="form-group">
+            <label for="ex-limit">Límite de filas</label>
+            <input type="number" id="ex-limit" min="1" max="10000" value="5000" />
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="button" id="btn-export" class="btn btn-save">Descargar Excel</button>
+          <button type="button" id="btn-export-clear" class="btn btn-secondary">Limpiar filtros</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Listado -->
     <div class="card">
       <div class="card-header">
@@ -231,7 +273,6 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
         <div style="display:flex;gap:8px;align-items:center">
           <input type="text" id="filter-category" placeholder="Filtrar por categoría…" style="max-width:220px" />
           <button class="btn btn-secondary" id="btn-refresh" type="button">Actualizar</button>
-          <button class="btn btn-secondary" id="btn-export" type="button">Exportar Excel</button>
         </div>
       </div>
       <div style="overflow-x:auto">
