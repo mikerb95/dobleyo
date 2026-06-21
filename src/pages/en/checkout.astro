@@ -1,0 +1,145 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { getCanonicalUrl } from "../../i18n/index.ts";
+---
+
+<Layout
+  lang="en"
+  title="Checkout — DobleYo Café"
+  description="Complete your order of Colombian specialty coffee. Worldwide shipping, prices in USD."
+  canonical={getCanonicalUrl("/checkout", "en")}
+>
+  <section class="co">
+    <h1 class="co-title">Checkout</h1>
+
+    <div id="coEmpty" class="co-empty" style="display:none">
+      <p>Your cart is empty.</p>
+      <a href="/shop" class="co-btn" data-link>Browse coffee</a>
+    </div>
+
+    <div id="coLayout" class="co-grid" style="display:none">
+      <form id="coForm" class="co-form" novalidate>
+        <h2>Shipping details</h2>
+        <div class="co-row">
+          <div class="co-field"><label for="fName">Full name *</label><input id="fName" required autocomplete="name" /></div>
+          <div class="co-field"><label for="fEmail">Email *</label><input id="fEmail" type="email" required autocomplete="email" /></div>
+        </div>
+        <div class="co-row">
+          <div class="co-field"><label for="fPhone">Phone</label><input id="fPhone" type="tel" autocomplete="tel" placeholder="+1 555 123 4567" /></div>
+          <div class="co-field"><label for="fCountry">Country *</label><input id="fCountry" required autocomplete="country-name" placeholder="United States" /></div>
+        </div>
+        <div class="co-field"><label for="fAddr">Address *</label><input id="fAddr" required autocomplete="street-address" /></div>
+        <div class="co-row">
+          <div class="co-field"><label for="fCity">City *</label><input id="fCity" required autocomplete="address-level2" /></div>
+          <div class="co-field"><label for="fState">State / Region</label><input id="fState" autocomplete="address-level1" /></div>
+        </div>
+
+        <h2 class="co-pay-h">Payment</h2>
+        <p class="co-secure">🔒 Secure payment by Wompi · charged in USD.</p>
+        <div id="coError" class="co-err" style="display:none"></div>
+        <button type="submit" id="coPay" class="co-btn co-btn--full">Pay <span id="coPayTotal"></span></button>
+        <p class="co-legal">By continuing you accept our terms. Prices in USD, shipping included.</p>
+      </form>
+
+      <aside class="co-summary">
+        <h2>Your order</h2>
+        <div id="coItems" class="co-items"></div>
+        <div class="co-sum-line"><span>Subtotal</span><strong id="coSubtotal">$0</strong></div>
+        <div class="co-sum-line co-sum-line--muted"><span>Shipping</span><span>Free worldwide</span></div>
+        <div class="co-sum-total"><span>Total</span><strong id="coTotal">$0</strong></div>
+      </aside>
+    </div>
+  </section>
+
+  <script is:inline src="/assets/js/cart.js"></script>
+  <script is:inline>
+    (function () {
+      const fmt = (n) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(Number(n) || 0);
+      function ready(fn) { document.readyState !== "loading" ? fn() : document.addEventListener("DOMContentLoaded", fn); }
+      function whenCart(fn) { window.Cart ? fn() : setTimeout(() => whenCart(fn), 40); }
+
+      ready(() => whenCart(function () {
+        const cart = window.Cart.getCart();
+        if (!cart.length) { document.getElementById("coEmpty").style.display = "block"; return; }
+        document.getElementById("coLayout").style.display = "grid";
+
+        const total = window.Cart.subtotal();
+        document.getElementById("coItems").innerHTML = cart.map((p) => `
+          <div class="co-item"><span>${p.name} × ${p.qty || 1}</span><span>${fmt((p.price||0)*(p.qty||1))}</span></div>`).join("");
+        document.getElementById("coSubtotal").textContent = fmt(total);
+        document.getElementById("coTotal").textContent = fmt(total);
+        document.getElementById("coPayTotal").textContent = "· " + fmt(total);
+
+        const err = document.getElementById("coError");
+        const payBtn = document.getElementById("coPay");
+
+        document.getElementById("coForm").addEventListener("submit", async (e) => {
+          e.preventDefault();
+          err.style.display = "none";
+          const form = e.target;
+          const get = (id) => document.getElementById(id).value.trim();
+          if (!form.checkValidity()) { form.reportValidity(); return; }
+
+          payBtn.disabled = true; payBtn.textContent = "Processing…";
+          try {
+            const res = await fetch("/api/orders", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              credentials: "include",
+              body: JSON.stringify({
+                currency: "USD",
+                customerName: get("fName"),
+                customerEmail: get("fEmail"),
+                customerPhone: get("fPhone") || undefined,
+                shippingAddress: get("fAddr"),
+                shippingCity: get("fCity"),
+                shippingDepartment: get("fState") || undefined,
+                notes: "Country: " + get("fCountry"),
+                items: window.Cart.getCart().map((p) => ({ productId: p.id, quantity: p.qty })),
+              }),
+            });
+            const data = await res.json();
+            if (!res.ok || !data.success) throw new Error(data.error || (data.errors && data.errors[0]?.msg) || "Order failed");
+            window.Cart.clearCart();
+            window.location.href = data.data.checkoutUrl || ("/confirmation?ref=" + data.data.reference);
+          } catch (e2) {
+            err.textContent = e2.message || "Something went wrong. Please try again.";
+            err.style.display = "block";
+            payBtn.disabled = false; payBtn.textContent = "Pay · " + fmt(total);
+          }
+        });
+      }));
+    })();
+  </script>
+
+  <style>
+    .co { max-width: 980px; margin: 0 auto; padding: 1.5rem 1.25rem 4rem; }
+    .co-title { font-family: var(--font-heading, serif); color: var(--coffee); margin: 0 0 1.5rem; }
+    .co-empty { text-align: center; padding: 3rem 0; color: #666; }
+    .co-grid { display: grid; grid-template-columns: 1fr; gap: 2rem; }
+    @media (min-width: 768px) { .co-grid { grid-template-columns: 1fr 320px; align-items: start; } }
+    .co-form { display: flex; flex-direction: column; gap: 1rem; }
+    .co-form h2 { font-size: 1.05rem; color: var(--coffee); margin: 0; }
+    .co-pay-h { margin-top: .5rem; }
+    .co-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    @media (max-width: 560px) { .co-row { grid-template-columns: 1fr; } }
+    .co-field { display: flex; flex-direction: column; gap: .35rem; }
+    .co-field label { font-size: .8rem; font-weight: 600; color: var(--coffee); }
+    .co-field input { padding: .65rem .85rem; border: 1.5px solid var(--border, #ddd); border-radius: 8px; font-size: .95rem; font-family: inherit; }
+    .co-field input:focus { outline: none; border-color: var(--accent); }
+    .co-secure { font-size: .82rem; color: #4a6741; margin: 0; }
+    .co-err { background: #fee2e2; color: #b91c1c; border-radius: 8px; padding: .6rem .9rem; font-size: .9rem; }
+    .co-btn { background: var(--accent); color: #fff; border: none; border-radius: 999px; padding: .85rem 1.5rem; font-size: 1rem; font-weight: 700; cursor: pointer; text-decoration: none; display: inline-block; }
+    .co-btn--full { width: 100%; min-height: 48px; }
+    .co-btn:disabled { opacity: .6; cursor: not-allowed; }
+    .co-legal { font-size: .75rem; color: #888; margin: 0; }
+    .co-summary { background: var(--cream); border-radius: 12px; padding: 1.25rem; }
+    .co-summary h2 { margin: 0 0 1rem; font-size: 1rem; color: var(--coffee); }
+    .co-items { display: flex; flex-direction: column; gap: .5rem; margin-bottom: 1rem; }
+    .co-item { display: flex; justify-content: space-between; font-size: .88rem; color: #444; }
+    .co-sum-line { display: flex; justify-content: space-between; font-size: .9rem; margin-bottom: .5rem; }
+    .co-sum-line--muted { color: #16a34a; }
+    .co-sum-total { display: flex; justify-content: space-between; border-top: 1px solid var(--border, #ddd); padding-top: .75rem; margin-top: .25rem; font-size: 1.05rem; }
+    .co-sum-total strong { color: var(--accent); }
+  </style>
+</Layout>
