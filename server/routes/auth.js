@@ -447,7 +447,7 @@ authRouter.get('/me', auth.authenticateToken, async (req, res) => {
 
   try {
     const result = await db.query(
-      'SELECT id, first_name, last_name, name, email, role, caficultor_status, mobile_phone, landline_phone, tax_id, city, state_province, country, address, last_login_at, created_at FROM users WHERE id = ?',
+      'SELECT id, first_name, last_name, name, email, role, caficultor_status, mobile_phone, landline_phone, tax_id, city, state_province, country, address, last_login_at, created_at, is_verified, password_hash, google_id, apple_id FROM users WHERE id = ?',
       [req.user.id]
     );
 
@@ -455,7 +455,13 @@ authRouter.get('/me', auth.authenticateToken, async (req, res) => {
       return res.status(404).json({ error: 'Usuario no encontrado' });
     }
 
-    res.json(result.rows[0]);
+    // No exponer hashes ni IDs externos: solo flags de métodos de acceso.
+    const { password_hash, google_id, apple_id, ...user } = result.rows[0];
+    user.has_password = !!password_hash;
+    user.has_google = !!google_id;
+    user.has_apple = !!apple_id;
+
+    res.json(user);
   } catch (err) {
     logger.error({ err }, '[/api/auth/me] Error:');
     res.status(500).json({ error: 'Error al obtener usuario' });
