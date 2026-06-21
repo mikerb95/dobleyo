@@ -1,27 +1,50 @@
 ---
+export const prerender = false;
+
 import Layout from "../../layouts/Layout.astro";
-import { products } from "../../data/products";
-import { t, getCanonicalUrl, getHreflangPair } from "../../i18n/index.ts";
+import { products as staticProducts } from "../../data/products";
+import { getCanonicalUrl, getHreflangPair } from "../../i18n/index.ts";
+import { parseTastingNotes } from "../../../server/utils/tasting.js";
 
 const lang = "en" as const;
 const hreflang = getHreflangPair("/tienda");
 
-// Ordenamiento inicial por relevancia
-const initialProducts = [...products].sort(
-    (a, b) =>
-        (b.bestseller ? 1 : 0) +
-        (b.new ? 1 : 0) +
-        (b.deal ? 1 : 0) +
-        (b.rating || 0) / 5 -
-        ((a.bestseller ? 1 : 0) +
-            (a.new ? 1 : 0) +
-            (a.deal ? 1 : 0) +
-            (a.rating || 0) / 5),
-);
+// Traducción es→en de etiquetas almacenadas en español
+const CAT_EN: Record<string, string> = { cafe: "Coffee", accesorio: "Accessories", merchandising: "Merch" };
+const PROC_EN: Record<string, string> = { Lavado: "Washed", Honey: "Honey", Natural: "Natural" };
+const ROAST_EN: Record<string, string> = { Claro: "Light", Medio: "Medium", Oscuro: "Dark" };
 
-// Serializar para el script del cliente
-const productsJson = JSON.stringify(
-    initialProducts.map((p) => ({
+// Cargar productos desde la BD (precios en USD); fallback al catálogo estático
+let rows: any[] = [];
+try {
+    const { query } = await import("../../../server/db.js");
+    const res = await query(
+        `SELECT id, name, name_en, category, origin, process, roast, tasting_notes,
+                price, price_usd, rating,
+                is_deal AS deal, is_bestseller AS bestseller, is_new AS new, is_fast AS fast,
+                image_url AS image
+         FROM products
+         WHERE is_active = 1
+         ORDER BY is_bestseller DESC, is_new DESC, is_deal DESC, rating DESC`
+    );
+    rows = res.rows;
+} catch (_) { /* BD no disponible */ }
+
+const mapped = rows.length
+    ? rows.map((p: any) => ({
+        id: p.id,
+        name: p.name_en || p.name,
+        category: CAT_EN[p.category] ?? p.category,
+        origin: p.origin ?? null,
+        process: p.process ? (PROC_EN[p.process] ?? p.process) : null,
+        roast: p.roast ? (ROAST_EN[p.roast] ?? p.roast) : null,
+        notes: parseTastingNotes(p.tasting_notes)?.en ?? parseTastingNotes(p.tasting_notes)?.es ?? [],
+        price: p.price_usd ?? Math.round(Number(p.price) / 4000),
+        rating: Number(p.rating) || 0,
+        deal: !!p.deal, bestseller: !!p.bestseller, new: !!p.new, fast: !!p.fast,
+        image: p.image,
+    }))
+    : staticProducts.map((p) => ({
         id: p.id,
         name: p.nameEn || p.name,
         category: p.categoryEn || p.category,
@@ -31,13 +54,12 @@ const productsJson = JSON.stringify(
         notes: p.notesEn || p.notes || [],
         price: p.priceUsd ?? Math.round(p.price / 4000),
         rating: p.rating,
-        deal: p.deal ?? false,
-        bestseller: p.bestseller ?? false,
-        new: p.new ?? false,
-        fast: p.fast ?? false,
+        deal: p.deal ?? false, bestseller: p.bestseller ?? false,
+        new: p.new ?? false, fast: p.fast ?? false,
         image: p.image,
-    })),
-);
+    }));
+
+const productsJson = JSON.stringify(mapped);
 ---
 
 <Layout
