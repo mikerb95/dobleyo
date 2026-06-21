@@ -25,7 +25,7 @@ export interface Par {
 }
 
 export const PARES: Record<string, Par> = {
-  MR: { nombre: "Mike Restrepo", rol: "Conductor (humano)", color: "#3a2618" },
+  MR: { nombre: "Mike Rodríguez", rol: "Conductor (humano)", color: "#3a2618" },
   IA: { nombre: "Claude", rol: "Navegador (IA)", color: "#2a6f97" },
   OP: { nombre: "Claude Opus", rol: "Navegador (IA)", color: "#5319e7" },
   CP: { nombre: "GitHub Copilot", rol: "Navegador (IA)", color: "#1f6feb" },
