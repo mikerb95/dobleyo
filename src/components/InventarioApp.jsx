@@ -562,6 +562,143 @@ function MovementsFeed({ data, loading }) {
   );
 }
 
+// ── New Movement Modal ──────────────────────────────────────────────────────────
+function NewMovementModal({ onClose, onDone, initialProductId }) {
+  const [products, setProducts] = useState(null);
+  const [loadError, setLoadError] = useState(null);
+  const [form, setForm] = useState({
+    product_id: initialProductId || '',
+    movement_type: 'entrada',
+    quantity: '',
+    reason: '',
+    reference: '',
+    notes: '',
+  });
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    let active = true;
+    fetchProducts()
+      .then((list) => { if (active) setProducts(list); })
+      .catch((e) => { if (active) setLoadError(e.message); });
+    return () => { active = false; };
+  }, []);
+
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
+  const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
+  const isAdjust = form.movement_type === 'ajuste';
+
+  const submit = async (e) => {
+    e.preventDefault();
+    setError(null);
+    const qty = Number(form.quantity);
+    if (!form.product_id) { setError('Seleccione un producto.'); return; }
+    if (!Number.isFinite(qty) || qty < 1) {
+      setError('Ingrese una cantidad válida (mínimo 1).');
+      return;
+    }
+    setSubmitting(true);
+    try {
+      await api.post('/inventory/movements', {
+        product_id: form.product_id,
+        movement_type: form.movement_type,
+        quantity: qty,
+        reason: form.reason.trim() || null,
+        reference: form.reference.trim() || null,
+        notes: form.notes.trim() || null,
+      });
+      onDone();
+    } catch (err) {
+      setError(err.message || 'No se pudo registrar el movimiento.');
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="inv-modal" role="dialog" aria-modal="true" aria-label="Nuevo movimiento"
+      onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <form className="inv-modal__card" onSubmit={submit}>
+        <div className="inv-modal__head">
+          <h2 className="inv-modal__title">Nuevo movimiento</h2>
+          <button type="button" className="inv-modal__close" aria-label="Cerrar" onClick={onClose}>×</button>
+        </div>
+
+        <div className="inv-modal__body">
+          <label className="inv-field">
+            <span>Producto</span>
+            {loadError ? (
+              <span className="inv-modal__error" style={{ margin: 0 }}>{loadError}</span>
+            ) : (
+              <select className="inv-input" value={form.product_id} onChange={set('product_id')}
+                disabled={!products} required>
+                <option value="">{products ? 'Seleccione un producto…' : 'Cargando…'}</option>
+                {products?.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name} — stock {fmtN(p.stock_quantity)}
+                  </option>
+                ))}
+              </select>
+            )}
+          </label>
+
+          <div className="inv-field-row">
+            <label className="inv-field">
+              <span>Tipo</span>
+              <select className="inv-input" value={form.movement_type} onChange={set('movement_type')}>
+                {MOVEMENT_TYPES.map((t) => (
+                  <option key={t.value} value={t.value}>{t.label}</option>
+                ))}
+              </select>
+            </label>
+            <label className="inv-field">
+              <span>Cantidad</span>
+              <input className="inv-input" type="number" min="1" step="1"
+                value={form.quantity} onChange={set('quantity')} required />
+            </label>
+          </div>
+          {isAdjust && (
+            <p className="inv-hint">En un ajuste, la cantidad es el nuevo stock total del producto.</p>
+          )}
+
+          <label className="inv-field">
+            <span>Motivo</span>
+            <input className="inv-input" type="text" value={form.reason} onChange={set('reason')}
+              placeholder="Ej.: Recepción de pedido, conteo físico…" />
+          </label>
+
+          <div className="inv-field-row">
+            <label className="inv-field">
+              <span>Referencia</span>
+              <input className="inv-input" type="text" value={form.reference} onChange={set('reference')}
+                placeholder="N.° de factura, orden…" />
+            </label>
+          </div>
+
+          <label className="inv-field">
+            <span>Notas</span>
+            <textarea className="inv-input" rows={2} value={form.notes} onChange={set('notes')} />
+          </label>
+
+          {error && <p className="inv-modal__error">{error}</p>}
+        </div>
+
+        <div className="inv-modal__foot">
+          <button type="button" className="inv-btn" onClick={onClose} disabled={submitting}>Cancelar</button>
+          <button type="submit" className="inv-btn inv-btn--primary" disabled={submitting}>
+            {submitting ? 'Registrando…' : 'Registrar movimiento'}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
 // ── Main App ──────────────────────────────────────────────────────────────────
 export default function InventarioApp() {
   const [tab, setTab]       = useState('green');
