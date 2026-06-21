@@ -263,7 +263,7 @@ ordersRouter.get('/:ref', async (req, res) => {
 
         const orderResult = await query(
             `SELECT o.id, o.reference, o.status,
-                            o.shipping_city, o.subtotal_cop, o.shipping_cop, o.total_cop,
+                            o.shipping_city, o.subtotal_cop, o.shipping_cop, o.total_cop, o.currency,
                             o.payment_method, o.created_at, o.updated_at
        FROM customer_orders o
        WHERE o.reference = ?`,
