@@ -1,0 +1,84 @@
+---
+import type { Lang } from "../i18n/routes.ts";
+import { buildLangHref } from "../i18n/routes.ts";
+
+interface Props { lang?: Lang; }
+const { lang = "es" } = Astro.props;
+
+// Href por defecto (SSR). El script del cliente los recalcula con la URL real
+// del navegador, ya que en páginas estáticas el host de build no es fiable.
+const hostname = Astro.url.hostname;
+const pathname = Astro.url.pathname;
+const esHref = buildLangHref("es", lang, hostname, pathname);
+const enHref = buildLangHref("en", lang, hostname, pathname);
+---
+
+<div class="lang-toggle" data-lang-toggle data-current={lang} role="group" aria-label="Idioma / Language">
+  <a
+    class="lang-opt"
+    data-lang-opt="es"
+    href={esHref}
+    hreflang="es"
+    lang="es"
+    aria-label="Cambiar a español"
+    aria-current={lang === "es" ? "true" : undefined}
+  >ES</a>
+  <span class="lang-sep" aria-hidden="true">/</span>
+  <a
+    class="lang-opt"
+    data-lang-opt="en"
+    href={enHref}
+    hreflang="en"
+    lang="en"
+    aria-label="Switch to English"
+    aria-current={lang === "en" ? "true" : undefined}
+  >EN</a>
+</div>
+
+<style>
+  .lang-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.15rem;
+    padding: 0.2rem 0.4rem;
+    border: 1px solid var(--border, rgba(0, 0, 0, 0.15));
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    line-height: 1;
+    background: transparent;
+  }
+  .lang-opt {
+    color: var(--muted-fg, #888);
+    text-decoration: none;
+    padding: 0.25rem 0.4rem;
+    border-radius: 999px;
+    min-width: 1.75rem;
+    text-align: center;
+    transition: color 0.15s ease, background-color 0.15s ease;
+  }
+  .lang-opt:hover { color: var(--coffee); }
+  .lang-opt[aria-current="true"] {
+    color: #fff;
+    background: var(--accent);
+  }
+  .lang-sep { color: var(--border, #ccc); }
+
+  @media (max-width: 768px) {
+    .lang-toggle { font-size: 0.85rem; }
+  }
+</style>
+
+<script>
+  import { buildLangHref } from "../i18n/routes.ts";
+
+  document.querySelectorAll("[data-lang-toggle]").forEach((toggle) => {
+    const current = (toggle.getAttribute("data-current") === "en" ? "en" : "es");
+    const { hostname, pathname } = window.location;
+    toggle.querySelectorAll("[data-lang-opt]").forEach((el) => {
+      const a = el as HTMLAnchorElement;
+      const target = a.getAttribute("data-lang-opt") === "en" ? "en" : "es";
+      a.href = buildLangHref(target, current, hostname, pathname);
+    });
+  });
+</script>
