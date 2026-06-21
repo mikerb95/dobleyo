@@ -2,6 +2,21 @@
 
 ---
 
+## 📅 2026-06-20 — Iteraciones: tablero XP reconstruido del historial real de GitHub + CHANGELOG (Agente: Claude)
+
+### Contexto
+`/admin/iteraciones` mostraba un tablero XP atractivo pero con **datos ficticios hardcodeados** (historias DY-211… en 3 iteraciones inventadas). Se reemplazó por el historial **real** del repositorio (1514 commits, ago 2025 → jun 2026) y por el plan de Fases 0–12 documentado en este CHANGELOG, estructurando historias de usuario con su **DoD (Definition of Done)** inferido de lo realmente desarrollado.
+
+### Archivos
+- `src/data/iteraciones.ts` — **nuevo** módulo tipado (convención `src/data/`) con `ITERACIONES`, `PARES`, `COLUMNAS`, `COMMITS_POR_MES` y `REPO`. 11 iteraciones cronológicas (Fundación tienda → Backend producción/contabilidad → las 13 Fases del plan agrupadas en 4 iteraciones temáticas → Turso/ML → app móvil → seguridad/Python → CRM/blog/cupping → rediseño del ERP), 41 historias y 109 criterios DoD. Cada iteración se ancla a su **rango de fechas real** y enlaza a los commits de ese periodo en GitHub (`/commits/main/?since=&until=`). El "par" refleja la programación en pareja humano–IA: **Mike Rodríguez** (conductor) + agente IA (Claude/Opus/Copilot, navegador).
+- `src/pages/admin/iteraciones.astro` — los datos se inyectan desde el módulo vía `<script type="application/json" id="iterData">` (sin git en runtime de Vercel). El script de cliente se reescribió para: KPIs basados en DoD (historias, criterios cumplidos/total, % completado, commits del periodo), barra de progreso por estado de DoD, enlace «Ver N commits en GitHub» por iteración, tarjetas con ratio de DoD + agente IA, modal con DoD y enlace a los commits, y dos gráficos reales (commits por mes del historial completo + commits por iteración). Se renombró «Pruebas de aceptación» → «Definition of Done (DoD)».
+
+### Notas
+- Página prerenderizada; el JSON inyectado valida con `JSON.parse` (109 criterios, 1518 commits agregados por mes). `astro build` completo verificado ✓.
+- Para refrescar tras nuevos commits, basta actualizar `src/data/iteraciones.ts` (fuente única de la vista).
+
+---
+
 ## 📅 2026-06-20 — Usuarios: rediseño profesional de `/admin/usuarios` (Agente: Claude)
 
 - **Rediseño completo al sistema de diseño compartido.** Se eliminaron todos los estilos inline con hex hardcodeados (`#4a6741`, `#e0e7ff`, `#fef3c7`, `#dc2626`, etc.), el emoji del título y las cajas de estadística de colores; el contenido se envolvió en `.erp-body` (antes quedaba a borde completo) y adopta `page-header`/`page-breadcrumb` ("Configuración · Usuarios"), `kpi-tile`, `card`, `erp-table`, `badge`, `modal`, `form-group`/`form-grid`/`form-section`.
