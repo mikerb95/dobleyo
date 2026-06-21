@@ -254,6 +254,51 @@ ordersRouter.post('/',
     }
 );
 
+// ─── GET /api/orders/mine ────────────────────────────────────────────────
+// Historial de pedidos del usuario autenticado. Debe declararse ANTES de
+// '/:ref' para que Express no interprete 'mine' como una referencia.
+
+ordersRouter.get('/mine', authenticateToken, async (req, res) => {
+    try {
+        const ordersResult = await query(
+            `SELECT id, reference, status, shipping_city, shipping_department,
+                    subtotal_cop, shipping_cop, total_cop, currency,
+                    payment_method, created_at
+             FROM customer_orders
+             WHERE user_id = ?
+             ORDER BY created_at DESC
+             LIMIT 100`,
+            [req.user.id]
+        );
+
+        const orders = ordersResult.rows;
+        if (!orders.length) return res.json({ success: true, data: [] });
+
+        // Traer todos los ítems en una sola consulta y agruparlos por orden.
+        const ids = orders.map((o) => o.id);
+        const placeholders = ids.map(() => '?').join(', ');
+        const itemsResult = await query(
+            `SELECT order_id, product_id, product_name, product_image, unit_price_cop, quantity, subtotal_cop
+             FROM customer_order_items
+             WHERE order_id IN (${placeholders})
+             ORDER BY id`,
+            ids
+        );
+
+        const itemsByOrder = new Map();
+        for (const item of itemsResult.rows) {
+            if (!itemsByOrder.has(item.order_id)) itemsByOrder.set(item.order_id, []);
+            itemsByOrder.get(item.order_id).push(item);
+        }
+
+        const data = orders.map((o) => ({ ...o, items: itemsByOrder.get(o.id) || [] }));
+        return res.json({ success: true, data });
+    } catch (err) {
+        logger.error({ err }, '[GET /api/orders/mine] Error:');
+        return res.status(500).json({ success: false, error: 'Error al consultar tus pedidos' });
+    }
+});
+
 // ─── GET /api/orders/:ref ────────────────────────────────────────────────
 // Consulta pública de estado de orden (para página de confirmación)
 
