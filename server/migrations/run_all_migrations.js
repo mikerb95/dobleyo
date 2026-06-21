@@ -58,6 +58,7 @@ const steps = [
   { name: 'CRM tables + overview view',      run: () => runFn('create_crm_tables.js', 'createCrmTables') },
   { name: 'ML sales fields (buyer/status)',  run: () => runFn('add_ml_sales_fields.js', 'addMlSalesFields') },
   { name: 'Lot movements table',             run: () => runFn('create_lot_movements.js', 'createLotMovements') },
+  { name: 'Account tables (addresses/favorites/preferences)', run: () => runFn('create_account_tables.js', 'createAccountTables') },
 ];
 
 async function runAll() {
