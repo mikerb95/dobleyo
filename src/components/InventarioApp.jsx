@@ -734,6 +734,23 @@ export default function InventarioApp() {
                     : tab === 'roast'  ? 'Buscar lote, perfil…'
                     : 'Buscar SKU, nombre, proveedor…';
 
+  const handleExport = useCallback(() => {
+    if (!filtered?.length) return;
+    const cols = CSV_COLUMNS[tab];
+    const stamp = new Date().toISOString().slice(0, 10);
+    downloadCSV(`inventario-${tab}-${stamp}.csv`, filtered, cols);
+  }, [filtered, tab]);
+
+  const handleMovementDone = useCallback(() => {
+    setMovOpen(false);
+    summary.refetch();
+    items.refetch();
+    movs.refetch();
+  }, [summary, items, movs]);
+
+  // Si hay un SKU (pack) seleccionado, se preselecciona en el modal.
+  const presetProductId = tab === 'pack' && selected ? selected.split(':')[1] : '';
+
   return (
     <main className="inv-shell">
       <header className="inv-head">
