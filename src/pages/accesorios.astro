@@ -1,0 +1,88 @@
+---
+import Layout from "../layouts/Layout.astro";
+import ProductCard from "../components/ProductCard.astro";
+import { products } from "../data/products";
+import { getCanonicalUrl } from "../i18n/index.ts";
+
+export const prerender = false;
+
+const accesorios = products.filter((p) => p.category === "Accesorios");
+
+const pageTitle = "Accesorios — DobleYo Café";
+const pageDescription =
+  "Molinillos, métodos de preparación y accesorios para disfrutar el café de especialidad colombiano en casa. Calidad seleccionada por DobleYo Café.";
+---
+
+<Layout
+  lang="es"
+  title={pageTitle}
+  description={pageDescription}
+  canonical={getCanonicalUrl("/accesorios", "es")}
+>
+  <section class="acc-hero">
+    <div class="acc-hero__inner">
+      <p class="acc-hero__eyebrow">Accesorios</p>
+      <h1 class="acc-hero__title">Todo para una taza perfecta</h1>
+      <p class="acc-hero__sub">
+        Molinillos, prensas y métodos de preparación seleccionados para sacarle
+        el máximo a cada lote de café de especialidad.
+      </p>
+    </div>
+  </section>
+
+  <section class="acc-list">
+    <div class="container">
+      {accesorios.length === 0 ? (
+        <p class="acc-empty">
+          Pronto encontrará aquí nuestra selección de accesorios. Mientras tanto,
+          explore <a href="/tienda" data-link>nuestros cafés</a>.
+        </p>
+      ) : (
+        <div class="acc-grid">
+          {accesorios.map((p) => (
+            <ProductCard product={p} />
+          ))}
+        </div>
+      )}
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .container { max-width: 1200px; margin: 0 auto; padding: 0 1.25rem; }
+
+  .acc-hero {
+    background: var(--coffee);
+    color: var(--cream);
+    padding: 3.5rem 1.5rem 3rem;
+    text-align: center;
+  }
+  .acc-hero__inner { max-width: 720px; margin: 0 auto; }
+  .acc-hero__eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-size: 0.8rem;
+    opacity: 0.75;
+    margin: 0 0 0.75rem;
+  }
+  .acc-hero__title {
+    font-family: var(--font-heading, serif);
+    font-size: clamp(1.9rem, 5vw, 3rem);
+    line-height: 1.15;
+    margin: 0 0 1rem;
+  }
+  .acc-hero__sub { font-size: 1.05rem; line-height: 1.65; opacity: 0.9; margin: 0; }
+
+  .acc-list { background: #fff; padding: 3rem 0 4rem; }
+  .acc-empty { text-align: center; color: var(--ink, #666); padding: 2rem 0; }
+  .acc-empty a { color: var(--accent); }
+
+  .acc-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  @media (min-width: 480px) { .acc-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 768px) { .acc-grid { grid-template-columns: repeat(3, 1fr); } }
+  @media (min-width: 1024px) { .acc-grid { grid-template-columns: repeat(4, 1fr); } }
+</style>
