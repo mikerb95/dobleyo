@@ -1,0 +1,92 @@
+---
+// Modal que sugiere la versión en inglés a visitantes con navegador en inglés.
+// Se incluye solo en páginas en español (ver Layout.astro). El texto está en inglés.
+---
+
+<div class="lang-suggest" id="langSuggest" role="dialog" aria-modal="true" aria-labelledby="langSuggestTitle" hidden>
+  <div class="lang-suggest__backdrop" id="langSuggestBackdrop"></div>
+  <div class="lang-suggest__card">
+    <button class="lang-suggest__close" id="langSuggestClose" aria-label="Close">✕</button>
+    <div class="lang-suggest__flag" aria-hidden="true">🌎</div>
+    <h2 class="lang-suggest__title" id="langSuggestTitle">Browse in English?</h2>
+    <p class="lang-suggest__text">
+      It looks like your browser is set to English. Would you like to visit the
+      English version of DobleYo Café, with prices in USD and worldwide shipping?
+    </p>
+    <div class="lang-suggest__actions">
+      <button class="lang-suggest__btn lang-suggest__btn--primary" id="langSuggestGo">View in English</button>
+      <button class="lang-suggest__btn lang-suggest__btn--ghost" id="langSuggestStay">Stay in Spanish</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    // Solo en páginas en español
+    if (document.documentElement.lang !== "es") return;
+
+    const PREF_KEY = "dy-lang-pref";
+    // Ya eligió antes, o ya se descartó en esta sesión → no molestar
+    if (localStorage.getItem(PREF_KEY)) return;
+    if (sessionStorage.getItem("dy-lang-dismissed")) return;
+
+    // ¿El navegador prefiere inglés?
+    const langs = navigator.languages && navigator.languages.length
+      ? navigator.languages
+      : [navigator.language || ""];
+    const prefersEn = langs.some((l) => String(l).toLowerCase().startsWith("en"));
+    if (!prefersEn) return;
+
+    const modal = document.getElementById("langSuggest");
+    if (!modal) return;
+
+    // Mapear la ruta actual a su equivalente en el sitio en inglés
+    const MAP = {
+      "/": "/", "/tienda": "/shop", "/trazabilidad": "/traceability",
+      "/contacto": "/contact", "/nosotros": "/", "/suscripcion": "/wholesale",
+    };
+    const enPath = MAP[location.pathname] || "/";
+    const enUrl = "https://en.dobleyo.cafe" + enPath;
+
+    function close() { modal.setAttribute("hidden", ""); }
+
+    document.getElementById("langSuggestGo")?.addEventListener("click", () => {
+      localStorage.setItem(PREF_KEY, "en");
+      window.location.href = enUrl;
+    });
+    document.getElementById("langSuggestStay")?.addEventListener("click", () => {
+      localStorage.setItem(PREF_KEY, "es");
+      close();
+    });
+    const dismiss = () => { sessionStorage.setItem("dy-lang-dismissed", "1"); close(); };
+    document.getElementById("langSuggestClose")?.addEventListener("click", dismiss);
+    document.getElementById("langSuggestBackdrop")?.addEventListener("click", dismiss);
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !modal.hasAttribute("hidden")) dismiss(); });
+
+    // Mostrar (pequeño delay para no competir con la carga inicial)
+    setTimeout(() => modal.removeAttribute("hidden"), 800);
+  })();
+</script>
+
+<style>
+  .lang-suggest { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+  .lang-suggest[hidden] { display: none; }
+  .lang-suggest__backdrop { position: absolute; inset: 0; background: rgba(0,0,0,.5); animation: ls-fade .2s ease; }
+  .lang-suggest__card {
+    position: relative; z-index: 1; background: #fff; border-radius: 16px;
+    max-width: 400px; width: 100%; padding: 2rem 1.75rem 1.75rem; text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,.3); animation: ls-pop .22s ease;
+  }
+  .lang-suggest__close { position: absolute; top: .75rem; right: .9rem; background: none; border: none; font-size: 1.1rem; color: #aaa; cursor: pointer; }
+  .lang-suggest__flag { font-size: 2.4rem; margin-bottom: .5rem; }
+  .lang-suggest__title { font-family: var(--font-heading, serif); color: var(--coffee, #251a14); margin: 0 0 .6rem; font-size: 1.4rem; }
+  .lang-suggest__text { color: #555; line-height: 1.55; font-size: .95rem; margin: 0 0 1.5rem; }
+  .lang-suggest__actions { display: flex; flex-direction: column; gap: .6rem; }
+  .lang-suggest__btn { padding: .75rem 1.25rem; border-radius: 999px; font-weight: 700; font-size: .95rem; cursor: pointer; border: none; min-height: 46px; }
+  .lang-suggest__btn--primary { background: var(--accent, #c67b4e); color: #fff; }
+  .lang-suggest__btn--primary:hover { filter: brightness(1.05); }
+  .lang-suggest__btn--ghost { background: transparent; color: var(--coffee, #251a14); border: 1.5px solid var(--border, #e5e0d8); }
+  .lang-suggest__btn--ghost:hover { background: var(--cream, #f7f3ef); }
+  @keyframes ls-fade { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes ls-pop { from { opacity: 0; transform: translateY(12px) scale(.98); } to { opacity: 1; transform: none; } }
+</style>

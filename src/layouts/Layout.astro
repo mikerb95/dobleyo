@@ -5,6 +5,7 @@ import Head from "../components/Head.astro";
 import CookieBanner from "../components/CookieBanner.astro";
 import AuthModal from "../components/AuthModal.astro";
 import CartDrawer from "../components/CartDrawer.astro";
+import LangSuggest from "../components/LangSuggest.astro";
 import type { Lang } from "../i18n/index.ts";
 
 export interface Props {
@@ -71,6 +72,8 @@ const {
     </main>
 
     <Footer lang={lang} />
+
+    {lang === "es" && <LangSuggest />}
 
     <!-- Banner de consentimiento de cookies (Ley 1581/2012) -->
     <CookieBanner />

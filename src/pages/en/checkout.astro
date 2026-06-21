@@ -52,7 +52,7 @@ import { getCanonicalUrl } from "../../i18n/index.ts";
   </section>
 
   <script is:inline src="/assets/js/cart.js"></script>
-  <script is:inline>
+  <script>
     (function () {
       const fmt = (n) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(Number(n) || 0);
       function ready(fn) { document.readyState !== "loading" ? fn() : document.addEventListener("DOMContentLoaded", fn); }
