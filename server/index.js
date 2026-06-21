@@ -35,6 +35,7 @@ import { externalSalesRouter } from './routes/external-sales.js';
 import { crmRouter } from './routes/crm.js';
 import { dashboardRouter } from './routes/dashboard.js';
 import { forecastRouter } from './routes/forecast.js';
+import { accountRouter } from './routes/account.js';
 import auditRouter from './routes/audit.js';
 import { globalLimiter } from './middleware/rateLimit.js';
 import { healthCheck } from './db.js';
