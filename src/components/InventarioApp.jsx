@@ -705,6 +705,7 @@ export default function InventarioApp() {
   const [q, setQ]           = useState('');
   const [filter, setFilter] = useState('all');
   const [selected, setSelected] = useState(null);
+  const [movOpen, setMovOpen] = useState(false);
 
   const summary = useApi('/inventory/summary');
   const items   = useApi(`/inventory/items?type=${tab}`, { deps: [tab] });
