@@ -57,6 +57,7 @@ const steps = [
   { name: 'Demand forecasts table',          run: () => runFn('create_demand_forecasts.js', 'createDemandForecasts') },
   { name: 'CRM tables + overview view',      run: () => runFn('create_crm_tables.js', 'createCrmTables') },
   { name: 'ML sales fields (buyer/status)',  run: () => runFn('add_ml_sales_fields.js', 'addMlSalesFields') },
+  { name: 'Lot movements table',             run: () => runFn('create_lot_movements.js', 'createLotMovements') },
 ];
 
 async function runAll() {
