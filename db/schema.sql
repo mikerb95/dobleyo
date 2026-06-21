@@ -240,6 +240,25 @@ CREATE INDEX idx_lots_product ON lots(product_id);
 CREATE INDEX idx_lots_estado ON lots(estado);
 CREATE INDEX idx_lots_parent ON lots(parent_lot_id);
 
+-- Lot Movements (ajustes de peso de lotes de café: entrada/salida/ajuste/merma)
+CREATE TABLE IF NOT EXISTS lot_movements (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    lot_id INTEGER NOT NULL,
+    movement_type TEXT NOT NULL CHECK (movement_type IN ('entrada', 'salida', 'ajuste', 'merma')),
+    quantity DECIMAL(10,2) NOT NULL,
+    weight_before DECIMAL(10,2) NOT NULL,
+    weight_after DECIMAL(10,2) NOT NULL,
+    reason VARCHAR(255),
+    reference VARCHAR(100),
+    notes TEXT,
+    user_id BIGINT,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (lot_id) REFERENCES lots(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+);
+CREATE INDEX idx_lot_movements_lot ON lot_movements(lot_id);
+CREATE INDEX idx_lot_movements_date ON lot_movements(created_at);
+
 -- Sales Tracking (MercadoLibre)
 CREATE TABLE IF NOT EXISTS sales_tracking (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
