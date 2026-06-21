@@ -1,0 +1,1026 @@
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+---
+
+<AdminLayout title="Presupuesto — DobleYo ERP" section="presupuesto">
+
+  <!-- ── Encabezado ──────────────────────────────────────────── -->
+  <div class="page-header">
+    <div class="page-header-top">
+      <div>
+        <div class="page-breadcrumb">DevTools · Documentación</div>
+        <h1 class="page-title">Presupuesto y Negociación Tecnológica</h1>
+        <p class="page-subtitle">Apéndice financiero y tecnológico — DobleYo Café · 12 sprints · Jun 2026</p>
+      </div>
+      <div class="page-header-actions">
+        <a href="/admin/iteraciones" class="btn btn-secondary">Ver iteraciones</a>
+        <a href="/admin/devtools" class="btn btn-secondary">Devtools</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="erp-body">
+
+    <!-- ── KPIs ─────────────────────────────────────────────── -->
+    <div class="kpi-grid" style="margin-bottom:24px">
+      <div class="kpi-tile brand">
+        <div class="kpi-label">Total estimado</div>
+        <div class="kpi-value">$51,8M</div>
+        <div class="kpi-sub">COP — con contingencia 15 %</div>
+      </div>
+      <div class="kpi-tile info">
+        <div class="kpi-label">Talento humano</div>
+        <div class="kpi-value">540 h</div>
+        <div class="kpi-sub">$43.200.000 · 83,3 % del total</div>
+      </div>
+      <div class="kpi-tile success">
+        <div class="kpi-label">Sprints</div>
+        <div class="kpi-value">12</div>
+        <div class="kpi-sub">2 semanas c/u · 24 semanas totales</div>
+      </div>
+      <div class="kpi-tile warning">
+        <div class="kpi-label">Fases completadas</div>
+        <div class="kpi-value">8 / 12</div>
+        <div class="kpi-sub">F0·F1·F2·F4·F5·F6·F8·F10 entregadas</div>
+      </div>
+    </div>
+
+    <!-- ── Tabs ─────────────────────────────────────────────── -->
+    <div class="pres-tabs" role="tablist" id="presTabs">
+      <button class="pres-tab pres-tab--on" data-tab="general"      role="tab">Datos generales</button>
+      <button class="pres-tab" data-tab="cronograma"                 role="tab">Cronograma</button>
+      <button class="pres-tab" data-tab="talento"                    role="tab">Talento humano</button>
+      <button class="pres-tab" data-tab="tecnologia"                 role="tab">Costos tecnológicos</button>
+      <button class="pres-tab" data-tab="negociacion"                role="tab">Negociación</button>
+      <button class="pres-tab" data-tab="riesgos"                    role="tab">Riesgos</button>
+      <button class="pres-tab" data-tab="conclusion"                 role="tab">Conclusión</button>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════
+         TAB 1 — DATOS GENERALES (Plantilla 1)
+         ═════════════════════════════════════════════════════ -->
+    <div class="pres-panel" id="tab-general">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">Plantilla 1 — Datos Generales del Proyecto</h2>
+            <p class="card-subtitle">Información base que sustenta el presupuesto completo</p>
+          </div>
+        </div>
+        <table class="erp-table">
+          <thead>
+            <tr><th style="width:30%">Campo</th><th>Respuesta</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="pres-field">Nombre del proyecto</td>
+              <td><strong>DobleYo Café</strong></td>
+            </tr>
+            <tr>
+              <td class="pres-field">Problema o necesidad</td>
+              <td>Los productores y comercializadores de café de especialidad colombiano carecen de una plataforma digital integrada que unifique la venta directa (B2C Colombia y B2B/B2C USA), la trazabilidad completa del grano (finca → cosecha → tostión → empaque → venta mediante código QR), la gestión de producción y el control financiero en un único sistema.</td>
+            </tr>
+            <tr>
+              <td class="pres-field">Producto de software</td>
+              <td>Aplicación web SSR con cinco módulos: <strong>(1)</strong> Tienda online con carrito, checkout y pasarelas de pago; <strong>(2)</strong> Pipeline de producción (cosecha, almacenamiento verde, tostión, empaque, etiquetado QR); <strong>(3)</strong> Trazabilidad con QR en empaque; <strong>(4)</strong> Módulo financiero con contabilidad de doble partida; <strong>(5)</strong> Panel Admin/ERP con inventario, lotes, usuarios, ventas y mapa de calor.</td>
+            </tr>
+            <tr>
+              <td class="pres-field">Duración total</td>
+              <td>24 semanas (12 sprints de 2 semanas cada uno)</td>
+            </tr>
+            <tr>
+              <td class="pres-field">Número de sprints</td>
+              <td>12</td>
+            </tr>
+            <tr>
+              <td class="pres-field">Duración de cada sprint</td>
+              <td>2 semanas</td>
+            </tr>
+            <tr>
+              <td class="pres-field">Moneda utilizada</td>
+              <td>Peso colombiano (COP) · Tasa de referencia: $4.150 COP/USD</td>
+            </tr>
+            <tr>
+              <td class="pres-field">Supuestos principales</td>
+              <td>
+                <ol style="margin:0;padding-left:18px;line-height:2">
+                  <li>Un solo desarrollador full-stack (Mike Rodríguez) asume todos los roles a <strong>$80.000/hora</strong>.</li>
+                  <li>Promedio de <strong>22,5 horas de trabajo por semana</strong>.</li>
+                  <li>La IA (Claude Pro) se registra como herramienta tecnológica, no como rol de personal.</li>
+                  <li>Los costos tecnológicos se calculan para <strong>6 meses continuos</strong> de operación.</li>
+                  <li>No se incluyen costos de oficina ni equipos (ya disponibles).</li>
+                  <li>La contingencia del <strong>15 %</strong> cubre cambios de alcance, integraciones de pago y variaciones en precios cloud.</li>
+                </ol>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════
+         TAB 2 — CRONOGRAMA (Plantilla 2)
+         ═════════════════════════════════════════════════════ -->
+    <div class="pres-panel" id="tab-cronograma" hidden>
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">Plantilla 2 — Cronograma de Sprints y Entregables</h2>
+            <p class="card-subtitle">12 sprints de 2 semanas · ago 2025 – feb 2026</p>
+          </div>
+        </div>
+        <div class="table-wrapper">
+          <table class="erp-table">
+            <thead>
+              <tr>
+                <th>Sprint</th>
+                <th>Fase</th>
+                <th>Fechas</th>
+                <th>Módulos / Historias</th>
+                <th>Entregable verificable</th>
+                <th>Dependencia tecnológica</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>S1</strong></td>
+                <td><span class="badge badge-neutral">F0</span> Documentación</td>
+                <td class="pres-date">25 ago – 05 sep 2025</td>
+                <td>Arquitectura, schema SQL (35+ tablas), CLAUDE.md, AGENTS.md, estructura de carpetas</td>
+                <td>Repositorio inicializado, schema aprobado, documentación técnica</td>
+                <td>Node.js 20, Git/GitHub, Turso (cuenta), Vercel (proyecto)</td>
+                <td><span class="badge badge-success">Completado</span></td>
+              </tr>
+              <tr>
+                <td><strong>S2</strong></td>
+                <td><span class="badge badge-neutral">F1</span> Tienda online</td>
+                <td class="pres-date">08 sep – 19 sep 2025</td>
+                <td>Catálogo, carrito, homepage hero video, checkout, layout público</td>
+                <td>Homepage publicada en dobleyo.cafe, carrito operativo, deploy Vercel</td>
+                <td>Astro 5, React 19, Vercel Pro, dominio .cafe, CSS variables</td>
+                <td><span class="badge badge-success">Completado</span></td>
+              </tr>
+              <tr>
+                <td><strong>S3</strong></td>
+                <td><span class="badge badge-neutral">F2</span> Pipeline producción</td>
+                <td class="pres-date">22 sep – 03 oct 2025</td>
+                <td>Cosecha, almacenamiento verde, tostión, recibo tostado, empaque, etiquetas QR</td>
+                <td>7 etapas del pipeline con formularios y endpoints API validados</td>
+                <td>Turso (libSQL), Express routes, AdminLayout, AppLayout, JWT auth</td>
+                <td><span class="badge badge-success">Completado</span></td>
+              </tr>
+              <tr>
+                <td><strong>S4</strong></td>
+                <td><span class="badge badge-neutral">F3</span> Legal / PQRS</td>
+                <td class="pres-date">06 oct – 17 oct 2025</td>
+                <td>Términos y condiciones, política de privacidad, formulario PQRS, aviso de cookies</td>
+                <td>Páginas legales publicadas con SEO, formulario de contacto enviando por Resend</td>
+                <td>Resend (email), Astro SSR, Head component con canonical URLs</td>
+                <td><span class="badge badge-warning">Pendiente</span></td>
+              </tr>
+              <tr>
+                <td><strong>S5</strong></td>
+                <td><span class="badge badge-neutral">F4</span> Pagos</td>
+                <td class="pres-date">20 oct – 31 oct 2025</td>
+                <td>Checkout Wompi (Colombia), MercadoPago (USA), confirmación de orden, emails</td>
+                <td>Pago end-to-end en sandbox, email de confirmación, orden en BD</td>
+                <td>Wompi SDK, MercadoPago API, Resend, Turso (orders), HTTPS/SSL</td>
+                <td><span class="badge badge-success">Completado</span></td>
+              </tr>
+              <tr>
+                <td><strong>S6</strong></td>
+                <td><span class="badge badge-neutral">F5</span> Trazabilidad QR</td>
+                <td class="pres-date">03 nov – 14 nov 2025</td>
+                <td>Scanner QR, búsqueda manual de lotes, página /t/[code], historial del lote</td>
+                <td>QR imprimible enlazado a URL pública, datos reales desde BD por código de lote</td>
+                <td>Turso (lots + pipeline tables), Astro SSR, generated_labels, QR library</td>
+                <td><span class="badge badge-success">Completado</span></td>
+              </tr>
+              <tr>
+                <td><strong>S7</strong></td>
+                <td><span class="badge badge-neutral">F6</span> Finanzas</td>
+                <td class="pres-date">17 nov – 28 nov 2025</td>
+                <td>Plan de cuentas (doble partida), asientos, facturación, pagos multi-factura, presupuestos</td>
+                <td>Dashboard financiero con KPIs reales, asientos automáticos al registrar ventas</td>
+                <td>Turso (accounting_accounts, entries, invoices, budgets), AdminLayout</td>
+                <td><span class="badge badge-success">Completado</span></td>
+              </tr>
+              <tr>
+                <td><strong>S8</strong></td>
+                <td><span class="badge badge-neutral">F7</span> Fincas</td>
+                <td class="pres-date">01 dic – 12 dic 2025</td>
+                <td>Landing pages /finca/[slug], galería de imágenes, datos del caficultor, mapa</td>
+                <td>Páginas de finca publicadas con SEO individual por finca</td>
+                <td>Astro SSR, Turso (farms), Leaflet (mapa), schema fincas</td>
+                <td><span class="badge badge-warning">Pendiente</span></td>
+              </tr>
+              <tr>
+                <td><strong>S9</strong></td>
+                <td><span class="badge badge-neutral">F8</span> Heatmap ventas</td>
+                <td class="pres-date">15 dic – 26 dic 2025</td>
+                <td>Integración MercadoLibre, sync órdenes, geocodificación, mapa de calor admin</td>
+                <td>Mapa de calor funcional con datos reales de ML, KPIs de ventas en tiempo real</td>
+                <td>MercadoLibre API, Leaflet + leaflet.heat, Turso (sales_tracking), React</td>
+                <td><span class="badge badge-success">Completado</span></td>
+              </tr>
+              <tr>
+                <td><strong>S10</strong></td>
+                <td><span class="badge badge-neutral">F9</span> i18n / USA</td>
+                <td class="pres-date">05 ene – 16 ene 2026</td>
+                <td>Versión en inglés en.dobleyo.cafe, landing B2B USA, i18n es.json/en.json, subdomain routing</td>
+                <td>Sitio en inglés publicado con SEO en inglés, hreflang configurado</td>
+                <td>Vercel subdomain routing, i18n JSON, Astro lang dinámico, vercel.json rewrites</td>
+                <td><span class="badge badge-warning">Pendiente</span></td>
+              </tr>
+              <tr>
+                <td><strong>S11</strong></td>
+                <td><span class="badge badge-neutral">F10</span> Admin / ERP</td>
+                <td class="pres-date">19 ene – 30 ene 2026</td>
+                <td>Panel admin: inventario, lotes, usuarios, ventas, auditoría, estadísticas, producción</td>
+                <td>Panel 100 % operativo con sistema de diseño unificado, todos los CRUD funcionales</td>
+                <td>Todos los endpoints API, Turso, React components, CSS design system</td>
+                <td><span class="badge badge-success">Completado</span></td>
+              </tr>
+              <tr>
+                <td><strong>S12</strong></td>
+                <td><span class="badge badge-neutral">F11+F12</span> SEO/CI/CD</td>
+                <td class="pres-date">02 feb – 13 feb 2026</td>
+                <td>Hardening OWASP, Core Web Vitals, JSON-LD, GitHub Actions CI/CD, monitoreo</td>
+                <td>Lighthouse ≥ 90, tests automatizados en CI, deploy automático en merge a main</td>
+                <td>GitHub Actions, Playwright, Vitest, Vercel CLI, helmet, rate-limit</td>
+                <td><span class="badge badge-warning">Pendiente</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════
+         TAB 3 — TALENTO HUMANO (Plantilla 3)
+         ═════════════════════════════════════════════════════ -->
+    <div class="pres-panel" id="tab-talento" hidden>
+
+      <div class="alert alert--info" style="margin-bottom:16px">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <div><strong>Nota metodológica:</strong> Mike Rodríguez ejerce todos los roles en este proyecto. Las horas se distribuyen por área funcional para reflejar el esfuerzo real en cada dimensión. <strong>Tarifa única: $80.000/hora</strong> para todos los roles.</div>
+      </div>
+
+      <!-- Sprints 1–6 -->
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-header">
+          <h2 class="card-title">Sprints 1 – 6</h2>
+          <span class="badge badge-info">F0 → F5</span>
+        </div>
+        <div class="table-wrapper">
+          <table class="erp-table pres-budget-table">
+            <thead>
+              <tr>
+                <th>Rol</th>
+                <th class="pres-th-rate">Tarifa/h</th>
+                <th>H S1</th><th>$ S1</th>
+                <th>H S2</th><th>$ S2</th>
+                <th>H S3</th><th>$ S3</th>
+                <th>H S4</th><th>$ S4</th>
+                <th>H S5</th><th>$ S5</th>
+                <th>H S6</th><th>$ S6</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>PO / Analista</td>
+                <td class="pres-rate">$80.000</td>
+                <td>3</td><td>$240.000</td>
+                <td>6</td><td>$480.000</td>
+                <td>6</td><td>$480.000</td>
+                <td>2</td><td>$160.000</td>
+                <td>5</td><td>$400.000</td>
+                <td>5</td><td>$400.000</td>
+              </tr>
+              <tr>
+                <td>Desarrollador Backend</td>
+                <td class="pres-rate">$80.000</td>
+                <td>10</td><td>$800.000</td>
+                <td>24</td><td>$1.920.000</td>
+                <td>24</td><td>$1.920.000</td>
+                <td>8</td><td>$640.000</td>
+                <td>20</td><td>$1.600.000</td>
+                <td>20</td><td>$1.600.000</td>
+              </tr>
+              <tr>
+                <td>Desarrollador Frontend</td>
+                <td class="pres-rate">$80.000</td>
+                <td>9</td><td>$720.000</td>
+                <td>21</td><td>$1.680.000</td>
+                <td>21</td><td>$1.680.000</td>
+                <td>7</td><td>$560.000</td>
+                <td>18</td><td>$1.440.000</td>
+                <td>18</td><td>$1.440.000</td>
+              </tr>
+              <tr>
+                <td>Tester QA</td>
+                <td class="pres-rate">$80.000</td>
+                <td>2</td><td>$160.000</td>
+                <td>6</td><td>$480.000</td>
+                <td>6</td><td>$480.000</td>
+                <td>2</td><td>$160.000</td>
+                <td>5</td><td>$400.000</td>
+                <td>5</td><td>$400.000</td>
+              </tr>
+              <tr>
+                <td>DevOps / Infraestructura</td>
+                <td class="pres-rate">$80.000</td>
+                <td>1</td><td>$80.000</td>
+                <td>3</td><td>$240.000</td>
+                <td>3</td><td>$240.000</td>
+                <td>1</td><td>$80.000</td>
+                <td>2</td><td>$160.000</td>
+                <td>2</td><td>$160.000</td>
+              </tr>
+              <tr class="pres-subtotal">
+                <td><strong>Subtotal sprint</strong></td>
+                <td></td>
+                <td><strong>25</strong></td><td><strong>$2.000.000</strong></td>
+                <td><strong>60</strong></td><td><strong>$4.800.000</strong></td>
+                <td><strong>60</strong></td><td><strong>$4.800.000</strong></td>
+                <td><strong>20</strong></td><td><strong>$1.600.000</strong></td>
+                <td><strong>50</strong></td><td><strong>$4.000.000</strong></td>
+                <td><strong>50</strong></td><td><strong>$4.000.000</strong></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Sprints 7–12 -->
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-header">
+          <h2 class="card-title">Sprints 7 – 12</h2>
+          <span class="badge badge-info">F6 → F12</span>
+        </div>
+        <div class="table-wrapper">
+          <table class="erp-table pres-budget-table">
+            <thead>
+              <tr>
+                <th>Rol</th>
+                <th class="pres-th-rate">Tarifa/h</th>
+                <th>H S7</th><th>$ S7</th>
+                <th>H S8</th><th>$ S8</th>
+                <th>H S9</th><th>$ S9</th>
+                <th>H S10</th><th>$ S10</th>
+                <th>H S11</th><th>$ S11</th>
+                <th>H S12</th><th>$ S12</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>PO / Analista</td>
+                <td class="pres-rate">$80.000</td>
+                <td>5</td><td>$400.000</td>
+                <td>4</td><td>$320.000</td>
+                <td>3</td><td>$240.000</td>
+                <td>4</td><td>$320.000</td>
+                <td>6</td><td>$480.000</td>
+                <td>4</td><td>$320.000</td>
+              </tr>
+              <tr>
+                <td>Desarrollador Backend</td>
+                <td class="pres-rate">$80.000</td>
+                <td>22</td><td>$1.760.000</td>
+                <td>16</td><td>$1.280.000</td>
+                <td>14</td><td>$1.120.000</td>
+                <td>16</td><td>$1.280.000</td>
+                <td>24</td><td>$1.920.000</td>
+                <td>18</td><td>$1.440.000</td>
+              </tr>
+              <tr>
+                <td>Desarrollador Frontend</td>
+                <td class="pres-rate">$80.000</td>
+                <td>20</td><td>$1.600.000</td>
+                <td>14</td><td>$1.120.000</td>
+                <td>13</td><td>$1.040.000</td>
+                <td>14</td><td>$1.120.000</td>
+                <td>21</td><td>$1.680.000</td>
+                <td>16</td><td>$1.280.000</td>
+              </tr>
+              <tr>
+                <td>Tester QA</td>
+                <td class="pres-rate">$80.000</td>
+                <td>5</td><td>$400.000</td>
+                <td>4</td><td>$320.000</td>
+                <td>3</td><td>$240.000</td>
+                <td>4</td><td>$320.000</td>
+                <td>6</td><td>$480.000</td>
+                <td>4</td><td>$320.000</td>
+              </tr>
+              <tr>
+                <td>DevOps / Infraestructura</td>
+                <td class="pres-rate">$80.000</td>
+                <td>3</td><td>$240.000</td>
+                <td>2</td><td>$160.000</td>
+                <td>2</td><td>$160.000</td>
+                <td>2</td><td>$160.000</td>
+                <td>3</td><td>$240.000</td>
+                <td>3</td><td>$240.000</td>
+              </tr>
+              <tr class="pres-subtotal">
+                <td><strong>Subtotal sprint</strong></td>
+                <td></td>
+                <td><strong>55</strong></td><td><strong>$4.400.000</strong></td>
+                <td><strong>40</strong></td><td><strong>$3.200.000</strong></td>
+                <td><strong>35</strong></td><td><strong>$2.800.000</strong></td>
+                <td><strong>40</strong></td><td><strong>$3.200.000</strong></td>
+                <td><strong>60</strong></td><td><strong>$4.800.000</strong></td>
+                <td><strong>45</strong></td><td><strong>$3.600.000</strong></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Totales por rol -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Totales por rol — todos los sprints</h2>
+          <span class="badge badge-brand">540 horas · $43.200.000</span>
+        </div>
+        <div class="table-wrapper">
+          <table class="erp-table">
+            <thead>
+              <tr>
+                <th>Rol</th>
+                <th>Tarifa/hora</th>
+                <th>Total horas</th>
+                <th>% del esfuerzo</th>
+                <th>Total costo</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>PO / Analista</td>
+                <td>$80.000</td>
+                <td>53 h</td>
+                <td><div class="pres-bar-wrap"><div class="pres-bar-fill" style="width:9.8%"></div><span>9,8 %</span></div></td>
+                <td><strong>$4.240.000</strong></td>
+              </tr>
+              <tr>
+                <td>Desarrollador Backend</td>
+                <td>$80.000</td>
+                <td>216 h</td>
+                <td><div class="pres-bar-wrap"><div class="pres-bar-fill" style="width:40%"></div><span>40,0 %</span></div></td>
+                <td><strong>$17.280.000</strong></td>
+              </tr>
+              <tr>
+                <td>Desarrollador Frontend</td>
+                <td>$80.000</td>
+                <td>192 h</td>
+                <td><div class="pres-bar-wrap"><div class="pres-bar-fill" style="width:35.6%"></div><span>35,6 %</span></div></td>
+                <td><strong>$15.360.000</strong></td>
+              </tr>
+              <tr>
+                <td>Tester QA</td>
+                <td>$80.000</td>
+                <td>52 h</td>
+                <td><div class="pres-bar-wrap"><div class="pres-bar-fill" style="width:9.6%"></div><span>9,6 %</span></div></td>
+                <td><strong>$4.160.000</strong></td>
+              </tr>
+              <tr>
+                <td>DevOps / Infraestructura</td>
+                <td>$80.000</td>
+                <td>27 h</td>
+                <td><div class="pres-bar-wrap"><div class="pres-bar-fill" style="width:5%"></div><span>5,0 %</span></div></td>
+                <td><strong>$2.160.000</strong></td>
+              </tr>
+              <tr class="pres-total-row">
+                <td><strong>TOTAL TALENTO HUMANO</strong></td>
+                <td><strong>$80.000</strong></td>
+                <td><strong>540 h</strong></td>
+                <td><strong>100 %</strong></td>
+                <td><strong style="font-size:15px;color:var(--color-primary)">$43.200.000</strong></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════
+         TAB 4 — TECNOLOGÍA (Plantillas 4 + 5)
+         ═════════════════════════════════════════════════════ -->
+    <div class="pres-panel" id="tab-tecnologia" hidden>
+
+      <!-- Plantilla 4 -->
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">Plantilla 4 — Costos Tecnológicos y Licencias</h2>
+            <p class="card-subtitle">6 meses · Tasa $4.150 COP/USD</p>
+          </div>
+          <span class="badge badge-brand">$1.898.000 total</span>
+        </div>
+        <div class="table-wrapper">
+          <table class="erp-table">
+            <thead>
+              <tr>
+                <th>Concepto</th>
+                <th>Proveedor</th>
+                <th>Sprint</th>
+                <th>Cantidad</th>
+                <th>Costo unitario</th>
+                <th>Subtotal</th>
+                <th>Justificación</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Vercel Pro</strong><br><span style="font-size:11px;color:var(--muted)">Hosting · deploy · CDN</span></td>
+                <td>Vercel</td>
+                <td>S1 – S12</td>
+                <td>6 meses</td>
+                <td>$83.000/mes<br><span style="font-size:11px;color:var(--muted)">$20 USD/mes</span></td>
+                <td><strong>$498.000</strong></td>
+                <td>Aloja el frontend Astro y funciones serverless. Incluye dominios custom, analytics, preview deployments por PR y SLA de disponibilidad.</td>
+              </tr>
+              <tr>
+                <td><strong>Turso Scaler</strong><br><span style="font-size:11px;color:var(--muted)">Base de datos libSQL</span></td>
+                <td>Turso.io</td>
+                <td>S1 – S12</td>
+                <td>6 meses</td>
+                <td>$120.000/mes<br><span style="font-size:11px;color:var(--muted)">$29 USD/mes</span></td>
+                <td><strong>$720.000</strong></td>
+                <td>SQLite distribuida para 35+ tablas del sistema. Plan Scaler: 500 DBs, 30 GB storage, réplicas edge, soporte vía Discord y tickets.</td>
+              </tr>
+              <tr>
+                <td><strong>Claude Pro</strong><br><span style="font-size:11px;color:var(--muted)">IA de desarrollo</span></td>
+                <td>Anthropic</td>
+                <td>S1 – S12</td>
+                <td>6 meses</td>
+                <td>$83.000/mes<br><span style="font-size:11px;color:var(--muted)">$20 USD/mes</span></td>
+                <td><strong>$498.000</strong></td>
+                <td>Co-desarrollo asistido por IA: generación de código, revisión de arquitectura, queries SQL y resolución de bugs. Reduce significativamente el tiempo de desarrollo individual.</td>
+              </tr>
+              <tr>
+                <td><strong>GitHub Pro</strong><br><span style="font-size:11px;color:var(--muted)">Repositorio · CI/CD</span></td>
+                <td>GitHub</td>
+                <td>S1 – S12</td>
+                <td>6 meses</td>
+                <td>$17.000/mes<br><span style="font-size:11px;color:var(--muted)">$4 USD/mes</span></td>
+                <td><strong>$102.000</strong></td>
+                <td>Repositorio privado, 1.585+ commits, GitHub Actions para CI/CD en F12, code review con pull requests.</td>
+              </tr>
+              <tr>
+                <td><strong>Resend</strong><br><span style="font-size:11px;color:var(--muted)">Correo transaccional</span></td>
+                <td>Resend</td>
+                <td>S1 – S12</td>
+                <td>6 meses</td>
+                <td>$0/mes</td>
+                <td><strong>$0</strong></td>
+                <td>Plan gratuito: hasta 3.000 emails/mes. Cubre verificación de correo, confirmaciones de orden y PQRS en el volumen actual del MVP.</td>
+              </tr>
+              <tr>
+                <td><strong>Dominio dobleyo.cafe</strong><br><span style="font-size:11px;color:var(--muted)">Dominio premium .cafe</span></td>
+                <td>Cloudflare Registrar</td>
+                <td>S12</td>
+                <td>1 año</td>
+                <td>$80.000</td>
+                <td><strong>$80.000</strong></td>
+                <td>Dominio premium .cafe para posicionamiento de marca en el sector cafetero. SSL/TLS gestionado automáticamente por Vercel.</td>
+              </tr>
+              <tr class="pres-subtotal">
+                <td colspan="5"><strong>SUBTOTAL TECNOLÓGICO</strong></td>
+                <td><strong>$1.898.000</strong></td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Plantilla 5 — Resumen financiero -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">Plantilla 5 — Resumen Financiero del Proyecto</h2>
+            <p class="card-subtitle">Subtotales, contingencia y total estimado</p>
+          </div>
+        </div>
+        <table class="erp-table">
+          <tbody>
+            <tr>
+              <td style="width:55%">Subtotal talento humano <span style="color:var(--muted);font-size:12px">(540 h × $80.000/h)</span></td>
+              <td><strong>$43.200.000</strong></td>
+              <td><span class="badge badge-neutral">83,3 %</span></td>
+            </tr>
+            <tr>
+              <td>Subtotal herramientas, licencias e infraestructura</td>
+              <td><strong>$1.898.000</strong></td>
+              <td><span class="badge badge-neutral">3,7 %</span></td>
+            </tr>
+            <tr>
+              <td>Subtotal pruebas, capacitación y documentación <span style="color:var(--muted);font-size:12px">(incluido en horas de QA y PO)</span></td>
+              <td><strong>$0</strong></td>
+              <td><span class="badge badge-neutral">0 %</span></td>
+            </tr>
+            <tr class="pres-subtotal">
+              <td><strong>Subtotal general antes de contingencia</strong></td>
+              <td><strong>$45.098.000</strong></td>
+              <td></td>
+            </tr>
+            <tr>
+              <td>Porcentaje de contingencia aplicado</td>
+              <td colspan="2"><strong>15 %</strong></td>
+            </tr>
+            <tr>
+              <td>Valor de contingencia</td>
+              <td colspan="2"><strong>$6.764.700</strong></td>
+            </tr>
+            <tr class="pres-total-row">
+              <td><strong style="font-size:15px">TOTAL ESTIMADO DEL PROYECTO</strong></td>
+              <td colspan="2"><strong style="font-size:22px;color:var(--color-primary);font-family:var(--font-display)">$51.862.700</strong></td>
+            </tr>
+          </tbody>
+        </table>
+        <div style="padding:16px 18px;background:var(--c-info-bg);border-top:1px solid var(--rule);font-size:13px;color:var(--color-text);line-height:1.6">
+          <strong>Lectura del presupuesto:</strong> El talento humano representa el 83,3 % ($43.200.000), lo esperado en proyectos de software con un único desarrollador senior. Los costos tecnológicos son contenidos ($1.898.000 = 3,7 %) gracias a la selección de servicios con planes escalables de bajo costo inicial. La contingencia del 15 % ($6.764.700) está dimensionada para absorber riesgos de las integraciones con Wompi, MercadoPago, MercadoLibre y la complejidad del módulo financiero de doble partida.
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════
+         TAB 5 — NEGOCIACIÓN (Plantilla 6)
+         ═════════════════════════════════════════════════════ -->
+    <div class="pres-panel" id="tab-negociacion" hidden>
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">Plantilla 6 — Matriz de Negociación Tecnológica</h2>
+            <p class="card-subtitle">Comparación: Turso (seleccionado) vs Supabase — Base de datos</p>
+          </div>
+        </div>
+        <div class="table-wrapper">
+          <table class="erp-table">
+            <thead>
+              <tr>
+                <th style="width:18%">Aspecto</th>
+                <th style="width:20%">Condición requerida</th>
+                <th style="width:22%">Turso — Scaler ($29 USD/mes) <span class="badge badge-success" style="margin-left:4px">Elegido</span></th>
+                <th style="width:22%">Supabase — Pro ($25 USD/mes)</th>
+                <th>Decisión / Acuerdo</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Alcance tecnológico</strong></td>
+                <td>BD relacional, compatible con Vercel, sin cold starts, multi-región</td>
+                <td>SQLite distribuido con réplicas edge automáticas. Compatible con cualquier framework JS vía <code>@libsql/client</code>.</td>
+                <td>PostgreSQL completo + Auth integrado + Storage + Realtime + Edge Functions incluidas.</td>
+                <td>Turso ofrece el alcance exacto requerido. Supabase incluye más funciones no necesarias actualmente.</td>
+              </tr>
+              <tr>
+                <td><strong>Licenciamiento</strong></td>
+                <td>Pago mensual, cancelable, sin contrato mínimo</td>
+                <td>$29 USD/mes (~$120.000 COP). Sin contrato mínimo. Cancelación inmediata.</td>
+                <td>$25 USD/mes (~$104.000 COP). Sin contrato mínimo. Cancelación inmediata.</td>
+                <td>Supabase es ligeramente más económico; diferencial de $4 USD es aceptable dado el fit técnico de Turso.</td>
+              </tr>
+              <tr>
+                <td><strong>Soporte</strong></td>
+                <td>Documentación + canal de soporte activo</td>
+                <td>Docs oficiales, Discord activo, tickets vía panel. Respuesta: 24–48 h.</td>
+                <td>Docs extensas, GitHub Discussions, tickets con respuesta en horas en plan Pro.</td>
+                <td>Ambos equivalentes. Turso tiene comunidad más pequeña pero respuestas técnicas directas.</td>
+              </tr>
+              <tr>
+                <td><strong>Disponibilidad / SLA</strong></td>
+                <td>≥ 99,9 % uptime documentado</td>
+                <td>99,9 % SLA documentado. Mantenimiento con aviso previo.</td>
+                <td>99,9 % SLA en plan Pro. Estado en status.supabase.com.</td>
+                <td><span class="badge badge-neutral">Equivalente</span> — Ambos cumplen el requisito.</td>
+              </tr>
+              <tr>
+                <td><strong>Seguridad y datos</strong></td>
+                <td>TLS en tránsito, autenticación, datos controlados</td>
+                <td>TLS obligatorio, tokens de auth por BD, datos en Fly.io (USA/EU).</td>
+                <td>TLS, Row Level Security (RLS) nativo en PostgreSQL, MFA, SOC 2, datos en AWS.</td>
+                <td>Supabase más robusto en seguridad/cumplimiento. Turso suficiente para el alcance actual.</td>
+              </tr>
+              <tr>
+                <td><strong>Escalabilidad</strong></td>
+                <td>Crecer en usuarios, storage y transacciones sin reconfiguración</td>
+                <td>Réplicas edge automáticas, sin límite de lecturas, escala horizontal sin cambio de código.</td>
+                <td>Compute adicional desde +$10 USD/mes, read replicas disponibles, branching para preview envs.</td>
+                <td>Turso escala mejor en lectura distribuida. Supabase mejor en workloads complejos con compute propio.</td>
+              </tr>
+              <tr>
+                <td><strong>Pagos y renovación</strong></td>
+                <td>Facturación predecible, sin costos ocultos</td>
+                <td>Factura mensual fija en plan Scaler. Ancho de banda y storage incluidos hasta el límite.</td>
+                <td>Factura base + cargos variables por compute excedente y egress.</td>
+                <td>Turso más predecible. Supabase puede generar cargos variables al crecer el tráfico.</td>
+              </tr>
+              <tr>
+                <td><strong>Propiedad de datos</strong></td>
+                <td>Exportación completa en cualquier momento, sin lock-in</td>
+                <td>Exportación vía SQL dump estándar, compatible con cualquier SQLite. Sin lock-in.</td>
+                <td>Exportación vía pg_dump estándar de PostgreSQL. Sin lock-in.</td>
+                <td><span class="badge badge-neutral">Equivalente</span> — Ambos permiten exportación total.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Conclusión de la negociación</h2>
+          <span class="badge badge-success">Turso seleccionado</span>
+        </div>
+        <div style="padding:18px;font-size:13.5px;line-height:1.7;color:var(--color-text)">
+          <p style="margin:0 0 12px"><strong>Se seleccionó Turso</strong> como proveedor de base de datos por: (1) compatibilidad nativa con el entorno Vercel edge, eliminando cold starts en funciones serverless; (2) uso del driver <code>@libsql/client</code> ya integrado en el proyecto desde la migración de abril 2026; (3) sintaxis SQL compatible con SQLite (<code>?</code> posicional, <code>datetime('now')</code>) que simplifica las queries; (4) costo mensual fijo sin cargos variables por tráfico.</p>
+          <p style="margin:0 0 12px">Supabase sería la alternativa recomendada si el proyecto requiriera autenticación OAuth nativa, almacenamiento de archivos multimedia o workloads transaccionales muy intensivos en el futuro.</p>
+          <div class="pres-conditions">
+            <span class="pres-condition">Precio fijo $29 USD/mes</span>
+            <span class="pres-condition">Cancelación sin penalidad</span>
+            <span class="pres-condition">Exportación de datos total</span>
+            <span class="pres-condition">Soporte Discord + tickets</span>
+            <span class="pres-condition">SLA 99,9 %</span>
+            <span class="pres-condition">TLS en tránsito</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════
+         TAB 6 — RIESGOS (Plantilla 7)
+         ═════════════════════════════════════════════════════ -->
+    <div class="pres-panel" id="tab-riesgos" hidden>
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">Plantilla 7 — Riesgos Económicos y Contingencia</h2>
+            <p class="card-subtitle">Contingencia 15 % = $6.764.700 · Reservas identificadas = $6.060.000</p>
+          </div>
+        </div>
+        <div class="table-wrapper">
+          <table class="erp-table">
+            <thead>
+              <tr>
+                <th>Riesgo</th>
+                <th>Impacto</th>
+                <th>Probabilidad</th>
+                <th>Medida de control</th>
+                <th>Reserva sugerida</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Cambio de alcance en módulos de pago (Wompi/MercadoPago) por cambios en API del proveedor o requisitos regulatorios</td>
+                <td><span class="badge badge-error">Alto</span></td>
+                <td><span class="badge badge-warning">Media</span></td>
+                <td>Usar SDKs oficiales y ambientes de sandbox. Mantener contrato API versionado. Sprint de pagos con margen de pruebas ampliado.</td>
+                <td><strong>$2.000.000</strong></td>
+              </tr>
+              <tr>
+                <td>Aumento de horas en módulo financiero (contabilidad de doble partida) por mayor complejidad contable</td>
+                <td><span class="badge badge-error">Alto</span></td>
+                <td><span class="badge badge-success">Baja</span></td>
+                <td>Estimación conservadora ya aplicada (+10 h vs promedio). Revisar alcance con contador antes del sprint 7.</td>
+                <td><strong>$1.500.000</strong></td>
+              </tr>
+              <tr>
+                <td>Incremento de precios en servicios cloud (Vercel, Turso) o cambio de planes</td>
+                <td><span class="badge badge-neutral">Bajo</span></td>
+                <td><span class="badge badge-success">Baja</span></td>
+                <td>Monitoreo mensual de costos. Alertas de consumo configuradas. Alternativas documentadas (Supabase, Railway).</td>
+                <td><strong>$400.000</strong></td>
+              </tr>
+              <tr>
+                <td>Problemas de compatibilidad entre Astro 5 y el adaptador de Vercel en actualizaciones de versión</td>
+                <td><span class="badge badge-warning">Medio</span></td>
+                <td><span class="badge badge-success">Baja</span></td>
+                <td>Fijar versiones en package.json. Revisar changelogs antes de actualizar. Preview deployments para validar antes de producción.</td>
+                <td><strong>$500.000</strong></td>
+              </tr>
+              <tr>
+                <td>Más defectos de calidad de los previstos en integración con MercadoLibre (geocodificación, sync de órdenes)</td>
+                <td><span class="badge badge-warning">Medio</span></td>
+                <td><span class="badge badge-warning">Media</span></td>
+                <td>Pruebas con datos reales en ambiente de staging. Suite de tests con Vitest + Playwright implementada en sprint 12.</td>
+                <td><strong>$1.500.000</strong></td>
+              </tr>
+              <tr>
+                <td>Sobrecosto en dominio .cafe o necesidad de dominios adicionales (.co, .com)</td>
+                <td><span class="badge badge-neutral">Bajo</span></td>
+                <td><span class="badge badge-success">Baja</span></td>
+                <td>Presupuestar solo dobleyo.cafe inicialmente. Evaluar dominios adicionales según crecimiento real.</td>
+                <td><strong>$160.000</strong></td>
+              </tr>
+              <tr class="pres-subtotal">
+                <td colspan="4"><strong>Total de reservas por riesgo identificadas</strong></td>
+                <td><strong>$6.060.000</strong></td>
+              </tr>
+              <tr class="pres-total-row">
+                <td colspan="4"><strong>Contingencia disponible (15 % del subtotal)</strong></td>
+                <td><strong style="color:var(--ok)">$6.764.700</strong></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="padding:14px 18px;background:var(--c-success-bg);border-top:1px solid var(--c-success-border);font-size:13px;color:var(--color-text)">
+          <strong style="color:var(--ok)">Cobertura confirmada:</strong> La contingencia del 15 % ($6.764.700) cubre holgadamente el total de reservas por riesgo identificadas ($6.060.000), con un colchón adicional de $704.700 para imprevistos no tipificados.
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════
+         TAB 7 — CONCLUSIÓN (Plantilla 8)
+         ═════════════════════════════════════════════════════ -->
+    <div class="pres-panel" id="tab-conclusion" hidden>
+
+      <!-- Resumen visual -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:20px">
+        <div class="pres-fact-card">
+          <div class="pres-fact-label">Total estimado</div>
+          <div class="pres-fact-value">$51.862.700</div>
+          <div class="pres-fact-sub">COP · 24 semanas</div>
+        </div>
+        <div class="pres-fact-card">
+          <div class="pres-fact-label">Mayor costo</div>
+          <div class="pres-fact-value">83,3 %</div>
+          <div class="pres-fact-sub">Talento humano</div>
+        </div>
+        <div class="pres-fact-card">
+          <div class="pres-fact-label">Sprints más costosos</div>
+          <div class="pres-fact-value">S2 · S3 · S7 · S11</div>
+          <div class="pres-fact-sub">$4.400.000 – $4.800.000 c/u</div>
+        </div>
+        <div class="pres-fact-card">
+          <div class="pres-fact-label">Fases entregadas</div>
+          <div class="pres-fact-value">8 / 12</div>
+          <div class="pres-fact-sub">67 % del proyecto completo</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">Plantilla 8 — Conclusión de Viabilidad Económica</h2>
+          </div>
+          <span class="badge badge-success">Proyecto viable</span>
+        </div>
+        <div style="padding:24px;font-size:14px;line-height:1.8;color:var(--color-text)">
+          <p>El proyecto <strong>DobleYo Café</strong> es económicamente viable con un costo total estimado de <strong>$51.862.700 COP</strong> para doce sprints de desarrollo ejecutados en veinticuatro semanas. El mayor costo se concentra en el talento humano, que representa el <strong>83,3 % del presupuesto total ($43.200.000)</strong>, ejecutado íntegramente por un desarrollador full-stack senior con tarifa de $80.000 por hora, quien asume los roles de Product Owner, desarrollador backend y frontend, tester QA y DevOps.</p>
+          <p>Los sprints de mayor inversión son <strong>S2 (Tienda online), S3 (App móvil de producción), S7 (Finanzas/contabilidad) y S11 (Admin/ERP)</strong>, con costos individuales de $4.400.000 a $4.800.000, por tratarse de los módulos más complejos en lógica de negocio e integración.</p>
+          <p>Los <strong>costos tecnológicos son moderados ($1.898.000, equivalente al 3,7 % del presupuesto)</strong>, gracias a la selección de servicios cloud con planes escalables de bajo costo: Vercel Pro para despliegue, Turso Scaler para la base de datos, Claude Pro como herramienta de desarrollo asistido por IA y GitHub Pro para el repositorio y CI/CD, con Resend en plan gratuito para correo transaccional.</p>
+          <p>La <strong>contingencia del 15 % ($6.764.700)</strong> está bien dimensionada para cubrir los principales riesgos identificados: cambios en las APIs de pasarelas de pago (Wompi, MercadoPago), mayor complejidad en el módulo contable de doble partida y posibles variaciones en costos de servicios cloud. Las reservas totales identificadas ascienden a $6.060.000, dejando un colchón adicional de $704.700.</p>
+          <p>A la fecha de elaboración de este documento (junio 2026), el proyecto cuenta con <strong>ocho de doce fases completamente entregadas y en producción</strong> (F0, F1, F2, F4, F5, F6, F8 y F10), lo que valida tanto la viabilidad técnica como la disciplina de ejecución. La decisión de utilizar Turso sobre Supabase como motor de base de datos garantiza escalabilidad controlada sin costos variables impredecibles.</p>
+          <p style="margin:0"><strong>En conclusión, el software es viable económicamente</strong> con el presupuesto estimado, el equipo disponible y la arquitectura tecnológica seleccionada.</p>
+        </div>
+
+        <!-- Lista de verificación -->
+        <div style="border-top:1px solid var(--rule);padding:18px">
+          <h3 style="font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin:0 0 14px">Lista de verificación</h3>
+          <div style="display:grid;gap:8px">
+            <div class="pres-check pres-check--ok">El presupuesto está alineado con el Cronograma de Sprints</div>
+            <div class="pres-check pres-check--ok">Cada costo tiene justificación y sprint asociado</div>
+            <div class="pres-check pres-check--ok">Las tarifas y horas son coherentes con el alcance ($80.000/h · 540 h totales)</div>
+            <div class="pres-check pres-check--ok">Se incluyen costos de herramientas, licencias e infraestructura (6 conceptos)</div>
+            <div class="pres-check pres-check--ok">Se calcula subtotal, contingencia y total del proyecto</div>
+            <div class="pres-check pres-check--ok">El marco de negociación contempla soporte, seguridad, datos y pagos (8 criterios)</div>
+            <div class="pres-check pres-check--ok">La conclusión explica la viabilidad del software a construir</div>
+            <div class="pres-check pres-check--ok">La bibliografía y evidencias de precios son verificables (fuentes oficiales)</div>
+          </div>
+        </div>
+
+        <!-- Evidencias -->
+        <div style="border-top:1px solid var(--rule);padding:18px">
+          <h3 style="font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin:0 0 12px">Evidencias de precios consultados</h3>
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            <span class="pres-condition">Vercel Pro · vercel.com/pricing</span>
+            <span class="pres-condition">Turso Scaler · turso.tech/pricing</span>
+            <span class="pres-condition">Claude Pro · anthropic.com/claude/pricing</span>
+            <span class="pres-condition">GitHub Pro · github.com/pricing</span>
+            <span class="pres-condition">Resend · resend.com/pricing</span>
+            <span class="pres-condition">Dominio .cafe · cloudflare.com/registrar</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /erp-body -->
+</AdminLayout>
+
+<style is:global>
+  /* ── Tabs ─────────────────────────────────────────────── */
+  .pres-tabs {
+    display: flex; gap: 2px;
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    padding: 4px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+  }
+  .pres-tab {
+    appearance: none; border: 0; cursor: pointer;
+    font: inherit; font-size: 13px; font-weight: 500;
+    padding: 7px 14px; border-radius: 7px;
+    background: transparent; color: var(--muted);
+    white-space: nowrap; transition: background .1s, color .1s;
+  }
+  .pres-tab:hover { background: var(--hover); color: var(--color-primary); }
+  .pres-tab--on   { background: var(--color-primary); color: #fff; }
+
+  /* ── Panels ───────────────────────────────────────────── */
+  .pres-panel { animation: fadeIn .18s ease; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(4px) } to { opacity:1; transform:none } }
+
+  /* ── Field label ──────────────────────────────────────── */
+  .pres-field { font-weight: 600; color: var(--color-primary); vertical-align: top; }
+  .pres-date  { white-space: nowrap; font-size: 12px; color: var(--muted); }
+
+  /* ── Budget table helpers ─────────────────────────────── */
+  .pres-budget-table th, .pres-budget-table td { font-size: 12px; padding: 9px 12px; }
+  .pres-th-rate { white-space: nowrap; }
+  .pres-rate { color: var(--muted); font-size: 12px; white-space: nowrap; }
+  .pres-subtotal td { background: color-mix(in oklab, var(--color-primary) 3%, white); }
+  .pres-total-row td { background: color-mix(in oklab, var(--color-accent) 8%, white); border-top: 2px solid var(--color-accent) !important; }
+
+  /* ── Progress bars (tabla totales) ───────────────────── */
+  .pres-bar-wrap {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 12px; color: var(--muted);
+  }
+  .pres-bar-fill {
+    height: 6px; border-radius: 3px;
+    background: var(--color-accent); min-width: 4px;
+  }
+
+  /* ── Fact cards (conclusión) ──────────────────────────── */
+  .pres-fact-card {
+    background: var(--paper); border: 1px solid var(--rule);
+    border-radius: var(--radius); padding: 16px 18px;
+    border-left: 3px solid var(--color-accent);
+  }
+  .pres-fact-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 6px; }
+  .pres-fact-value { font-family: var(--font-display); font-size: 20px; font-weight: 700; color: var(--color-primary); line-height: 1.2; }
+  .pres-fact-sub   { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+  /* ── Check items ──────────────────────────────────────── */
+  .pres-check {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 13px; padding: 8px 12px;
+    border-radius: var(--radius-sm);
+    background: var(--hover);
+  }
+  .pres-check::before {
+    content: ""; display: block; flex-shrink: 0;
+    width: 16px; height: 16px; border-radius: 50%;
+    border: 2px solid var(--rule);
+  }
+  .pres-check--ok { background: var(--c-success-bg); }
+  .pres-check--ok::before { background: var(--ok); border-color: var(--ok); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: center; }
+
+  /* ── Condition chips ──────────────────────────────────── */
+  .pres-conditions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+  .pres-condition {
+    font-size: 12px; font-weight: 500;
+    padding: 4px 10px; border-radius: 999px;
+    background: var(--active-bg); color: var(--color-primary);
+    border: 1px solid color-mix(in oklab, var(--color-accent) 30%, white);
+  }
+
+  /* ── Alert info (no estaba en AdminLayout) ────────────── */
+  .alert { display: flex; gap: 10px; padding: 12px 16px; border-radius: var(--radius-sm); font-size: 13px; line-height: 1.5; }
+  .alert--info  { background: var(--c-info-bg);  color: var(--color-text); border: 1px solid color-mix(in oklab,var(--c-info) 25%,white); }
+  .alert--error { background: var(--c-error-bg); color: var(--color-text); border: 1px solid var(--c-error-border); }
+
+  /* code inline */
+  code { font-family: ui-monospace, Menlo, monospace; font-size: 12px; background: var(--bg); padding: 1px 5px; border-radius: 4px; }
+
+  @media (max-width: 640px) {
+    .pres-fact-value { font-size: 16px; }
+    .pres-tab { font-size: 12px; padding: 6px 10px; }
+  }
+</style>
+
+<script is:inline>
+(() => {
+  const tabs   = document.querySelectorAll('.pres-tab');
+  const panels = document.querySelectorAll('.pres-panel');
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      const target = tab.dataset.tab;
+
+      tabs.forEach(t => t.classList.toggle('pres-tab--on', t === tab));
+      panels.forEach(p => {
+        const isTarget = p.id === 'tab-' + target;
+        p.hidden = !isTarget;
+      });
+    });
+  });
+})();
+</script>
