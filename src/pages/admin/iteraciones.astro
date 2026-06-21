@@ -68,25 +68,24 @@ const iterData = { PARES, COLUMNAS, ITERACIONES, COMMITS_POR_MES, REPO };
       <div class="card iter-chart">
         <div class="iter-chart__head">
           <div>
-            <h2 class="iter-chart__title">Burndown</h2>
-            <p class="iter-chart__sub">Días ideales restantes vs. línea ideal de la iteración.</p>
+            <h2 class="iter-chart__title">Actividad de commits</h2>
+            <p class="iter-chart__sub">Commits por mes en el historial real del repositorio.</p>
           </div>
           <div class="iter-chart__keys">
-            <span class="iter-key"><i class="iter-key__dot iter-key__dot--ideal"></i>Ideal</span>
-            <span class="iter-key"><i class="iter-key__dot iter-key__dot--real"></i>Real</span>
+            <span class="iter-key"><i class="iter-key__dot iter-key__dot--real"></i>Commits/mes</span>
           </div>
         </div>
-        <div class="iter-chart__canvas" id="iterBurndown"></div>
+        <div class="iter-chart__canvas" id="iterActividad"></div>
+        <p class="iter-chart__foot" id="iterActividadFoot"></p>
       </div>
       <div class="card iter-chart">
         <div class="iter-chart__head">
           <div>
-            <h2 class="iter-chart__title">Velocidad</h2>
-            <p class="iter-chart__sub">Días ideales comprometidos vs. completados por iteración.</p>
+            <h2 class="iter-chart__title">Commits por iteración</h2>
+            <p class="iter-chart__sub">Volumen de actividad de cada iteración con conteo conocido.</p>
           </div>
           <div class="iter-chart__keys">
-            <span class="iter-key"><i class="iter-key__dot iter-key__dot--plan"></i>Comprometido</span>
-            <span class="iter-key"><i class="iter-key__dot iter-key__dot--done"></i>Completado</span>
+            <span class="iter-key"><i class="iter-key__dot iter-key__dot--done"></i>Commits</span>
           </div>
         </div>
         <div class="iter-chart__canvas" id="iterVelocity"></div>
