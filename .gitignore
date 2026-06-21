@@ -34,3 +34,5 @@ coverage/
 *.swp
 .env.example
 .vercel
+docs/Negociacióntecnologica.docx
+docs/PresentacionNegociacion.pptx

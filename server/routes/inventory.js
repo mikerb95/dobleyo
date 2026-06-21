@@ -358,6 +358,84 @@ inventoryRouter.post('/movements', async (req, res) => {
   }
 });
 
+// POST - Registrar movimiento de peso sobre un lote de café (kg, decimal)
+// Ajusta lots.weight y deja traza en lot_movements. movement_type:
+//   entrada → suma kg · salida/merma → resta kg · ajuste → fija el peso total.
+inventoryRouter.post('/lots/:id/movement', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { movement_type, quantity, reason, reference, notes } = req.body;
+
+    const ALLOWED = ['entrada', 'salida', 'ajuste', 'merma'];
+    if (!movement_type || !ALLOWED.includes(movement_type)) {
+      return res.status(400).json({ success: false, error: 'Tipo de movimiento inválido' });
+    }
+
+    const qty = Number(quantity);
+    if (!Number.isFinite(qty) || qty <= 0) {
+      return res.status(400).json({ success: false, error: 'La cantidad debe ser un número mayor a 0' });
+    }
+
+    const lotResult = await query('SELECT id, code, weight FROM lots WHERE id = ?', [id]);
+    if (lotResult.rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'Lote no encontrado' });
+    }
+
+    const lot = lotResult.rows[0];
+    const before = Number(lot.weight) || 0;
+    let after = before;
+
+    switch (movement_type) {
+      case 'entrada':       after = before + qty; break;
+      case 'salida':
+      case 'merma':         after = before - qty; break;
+      case 'ajuste':        after = qty; break; // qty es el nuevo peso total
+    }
+
+    if (after < 0) {
+      return res.status(400).json({
+        success: false,
+        error: `Peso insuficiente. Peso actual: ${before} kg, intentando restar: ${qty} kg`
+      });
+    }
+
+    // Redondear a 2 decimales para evitar arrastre binario.
+    after = Math.round(after * 100) / 100;
+
+    await query(
+      `INSERT INTO lot_movements (
+        lot_id, movement_type, quantity, weight_before, weight_after,
+        reason, reference, notes, user_id
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        id, movement_type, qty, before, after,
+        reason || null, reference || null, notes || null,
+        req.user?.id || null
+      ]
+    );
+
+    await query(
+      'UPDATE lots SET weight = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+      [after, id]
+    );
+
+    await logAudit(req.user?.id, movement_type, 'lot', id, {
+      code: lot.code, weight_before: before, weight_after: after, quantity: qty, reason
+    });
+
+    res.json({
+      success: true,
+      lot_id: Number(id),
+      weight_before: before,
+      weight_after: after,
+      message: `Movimiento registrado en lote ${lot.code}. Peso: ${before} → ${after} kg`
+    });
+  } catch (error) {
+    logger.error('[POST /inventory/lots/:id/movement] Error:', error);
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
+  }
+});
+
 // GET - Historial de movimientos
 inventoryRouter.get('/movements', async (req, res) => {
   try {
@@ -804,14 +882,14 @@ inventoryRouter.get('/items/:id', async (req, res) => {
             status: roastStatus(kg, days), note: l.notes,
           };
 
-      // Movimientos asociados al lote (referenciados por su código).
+      // Movimientos de peso del lote (kg). El delta real se calcula con
+      // weight_after - weight_before para que 'ajuste' muestre el signo correcto.
       const mv = await query(
-        `SELECT id, movement_type, quantity, reason, reference, created_at
-           FROM inventory_movements
-          WHERE reference LIKE ? ORDER BY created_at DESC LIMIT 10`, [`%${l.code}%`]);
+        `SELECT id, movement_type, weight_before, weight_after, reason, created_at
+           FROM lot_movements WHERE lot_id = ? ORDER BY created_at DESC LIMIT 10`, [realId]);
       const movements = mv.rows.map((m) => ({
         id: m.id, when: m.created_at, what: m.reason || m.movement_type,
-        qty: ['salida', 'merma'].includes(m.movement_type) ? -Math.abs(m.quantity) : Math.abs(m.quantity),
+        qty: Math.round((Number(m.weight_after) - Number(m.weight_before)) * 100) / 100,
         unit: 'kg',
       }));
 
@@ -889,20 +967,31 @@ inventoryRouter.get('/items/:id', async (req, res) => {
 // GET - Feed de movimientos recientes (últimas 72 h) para la vista operativa
 inventoryRouter.get('/feed', async (req, res) => {
   try {
-    const result = await query(
-      `SELECT im.id, im.movement_type, im.quantity, im.reason, im.reference, im.created_at,
-              p.name AS product_name, u.name AS user_name
-         FROM inventory_movements im
-         LEFT JOIN products p ON p.id = im.product_id
-         LEFT JOIN users u ON u.id = im.user_id
-        WHERE im.created_at >= datetime('now', '-3 days')
-        ORDER BY im.created_at DESC LIMIT 50`);
+    const [prod, lots] = await Promise.all([
+      query(
+        `SELECT im.id, im.movement_type, im.quantity, im.reason, im.reference, im.created_at,
+                p.name AS product_name, u.name AS user_name
+           FROM inventory_movements im
+           LEFT JOIN products p ON p.id = im.product_id
+           LEFT JOIN users u ON u.id = im.user_id
+          WHERE im.created_at >= datetime('now', '-3 days')
+          ORDER BY im.created_at DESC LIMIT 50`),
+      query(
+        `SELECT lm.id, lm.movement_type, lm.weight_before, lm.weight_after, lm.reason, lm.created_at,
+                l.code AS lot_code, u.name AS user_name
+           FROM lot_movements lm
+           LEFT JOIN lots l ON l.id = lm.lot_id
+           LEFT JOIN users u ON u.id = lm.user_id
+          WHERE lm.created_at >= datetime('now', '-3 days')
+          ORDER BY lm.created_at DESC LIMIT 50`),
+    ]);
 
-    const data = result.rows.map((m) => {
+    // Prefijo en el id para evitar colisión entre ambas tablas (ambas autoincrement).
+    const prodItems = prod.rows.map((m) => {
       const out = ['salida', 'merma'].includes(m.movement_type);
       const adj = m.movement_type === 'ajuste';
       return {
-        id: m.id,
+        id: `p${m.id}`,
         type: adj ? 'mv' : out ? 'out' : 'in',
         when: m.created_at,
         what: m.reason || m.product_name || m.movement_type,
@@ -911,6 +1000,24 @@ inventoryRouter.get('/feed', async (req, res) => {
         by: m.user_name || 'Sistema',
       };
     });
+
+    const lotItems = lots.rows.map((m) => {
+      const delta = Math.round((Number(m.weight_after) - Number(m.weight_before)) * 100) / 100;
+      const adj = m.movement_type === 'ajuste';
+      return {
+        id: `l${m.id}`,
+        type: adj ? 'mv' : delta < 0 ? 'out' : 'in',
+        when: m.created_at,
+        what: m.reason || (m.lot_code ? `Lote ${m.lot_code}` : m.movement_type),
+        qty: delta,
+        unit: 'kg',
+        by: m.user_name || 'Sistema',
+      };
+    });
+
+    const data = [...prodItems, ...lotItems]
+      .sort((a, b) => new Date(b.when) - new Date(a.when))
+      .slice(0, 50);
 
     res.json({ success: true, data });
   } catch (error) {

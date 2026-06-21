@@ -56,6 +56,18 @@ async function fetchProducts() {
   return json.products || [];
 }
 
+// Lotes de café (verde + tostado) para el selector de movimientos de peso.
+async function fetchLots() {
+  const [green, roast] = await Promise.all([
+    api.get('/inventory/items?type=green'),
+    api.get('/inventory/items?type=roast'),
+  ]);
+  const map = (arr, estado) => (arr || []).map((it) => ({
+    id: String(it.id).split(':')[1], code: it.code, kg: it.kg, estado,
+  }));
+  return [...map(green, 'verde'), ...map(roast, 'tostado')];
+}
+
 function useApi(path, { deps = [], enabled = true } = {}) {
   const [state, setState] = useState({ data: null, error: null, loading: !!enabled });
   const reqIdRef = useRef(0);
