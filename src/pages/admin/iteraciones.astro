@@ -506,265 +506,15 @@ const iterData = { PARES, COLUMNAS, ITERACIONES, COMMITS_POR_MES, REPO };
 <script is:inline>
 (() => {
   // ═══════════════════════════════════════════════════════════
-  // DATOS XP — DobleYo Café
-  // Unidad: días ideales (1 día ideal = 1 programador trabajando sin interrupciones)
+  // Tablero XP — DobleYo Café
+  // Datos derivados del historial real de GitHub + CHANGELOG.
+  // Inyectados desde src/data/iteraciones.ts vía <script id="iterData">.
   // ═══════════════════════════════════════════════════════════
+  const DATA = JSON.parse(document.getElementById('iterData').textContent);
+  const { PARES, COLUMNAS, ITERACIONES, COMMITS_POR_MES, REPO } = DATA;
 
-  const PARES = {
-    MR: { nombre: 'Mike Restrepo',  color: '#3a2618' },
-    DC: { nombre: 'Dev Contratado', color: '#2a6f97' },
-  };
-
-  // 5 columnas XP
-  const COLUMNAS = [
-    { id: 'cola',        nombre: 'Cola',           color: '#9aa0a6' },
-    { id: 'iteracion',   nombre: 'Esta iteración', color: '#5319e7' },
-    { id: 'desarrollo',  nombre: 'En desarrollo',  color: '#2a6f97' },
-    { id: 'aceptacion',  nombre: 'En aceptación',  color: '#c9893d' },
-    { id: 'aceptada',    nombre: 'Aceptada',        color: '#2e7d5b' },
-  ];
-
-  const ITERACIONES = [
-    {
-      id: 'i12',
-      nombre: 'Iteración 12 · Pagos & Checkout',
-      rango: '9 jun – 20 jun 2026',
-      dias: 10,
-      comprometido: 14,
-      burndown: [14, 14, 13, 11, 10, 8, 6, null, null, null, null],
-      historias: [
-        {
-          id: 'DY-211',
-          titulo: 'Como cliente, quiero pagar con tarjeta mediante Wompi para completar mi compra sin salir del sitio',
-          tipo: 'historia', dias: 3, valor: 'alto', col: 'desarrollo', par: 'MR',
-          tags: ['pagos', 'checkout'],
-          pruebas: [
-            { texto: 'Dado que el carrito tiene ≥1 producto, cuando el cliente hace clic en «Pagar», entonces aparece el widget de Wompi con el monto correcto.', estado: 'pass' },
-            { texto: 'Dado que el pago es aprobado por Wompi, entonces la orden queda en estado «pagada» en la BD.', estado: 'pend' },
-            { texto: 'Dado que el pago es rechazado, entonces el cliente ve un mensaje claro y el carrito se conserva.', estado: 'pend' },
-          ],
-        },
-        {
-          id: 'DY-212',
-          titulo: 'Como sistema, necesito procesar el webhook de Wompi para confirmar órdenes automáticamente',
-          tipo: 'historia', dias: 2, valor: 'alto', col: 'aceptacion', par: 'MR',
-          tags: ['pagos', 'api'],
-          pruebas: [
-            { texto: 'Dado un webhook de pago aprobado, cuando llega al endpoint, entonces la orden se actualiza a «pagada».', estado: 'pass' },
-            { texto: 'Dado un webhook duplicado, cuando ya existe la orden, entonces responde 200 sin crear duplicado.', estado: 'pass' },
-            { texto: 'Dado un webhook con firma inválida, entonces responde 401 y no modifica la BD.', estado: 'pend' },
-          ],
-        },
-        {
-          id: 'DY-208',
-          titulo: 'Crear tablas orders y order_items en la base de datos',
-          tipo: 'tarea', dias: 1, valor: 'alto', col: 'aceptada', par: 'MR',
-          tags: ['bd'],
-          pruebas: [
-            { texto: 'Las tablas orders y order_items existen en el schema con las columnas requeridas.', estado: 'pass' },
-            { texto: 'La migración se ejecuta sin errores en entorno de producción (Turso).', estado: 'pass' },
-          ],
-        },
-        {
-          id: 'DY-215',
-          titulo: 'Como cliente, quiero recibir un correo de confirmación de mi orden para tener constancia de la compra',
-          tipo: 'historia', dias: 1, valor: 'medio', col: 'aceptada', par: 'MR',
-          tags: ['email'],
-          pruebas: [
-            { texto: 'Dado que la orden pasa a «pagada», entonces el cliente recibe un correo con número de orden, ítems y total.', estado: 'pass' },
-            { texto: 'El correo se envía correctamente en producción mediante Resend.', estado: 'pass' },
-          ],
-        },
-        {
-          id: 'DY-219',
-          titulo: 'Como sistema, debo validar el stock disponible antes de confirmar el pago para evitar sobreventa',
-          tipo: 'historia', dias: 2, valor: 'alto', col: 'iteracion', par: 'MR',
-          tags: ['inventario'],
-          pruebas: [
-            { texto: 'Dado que un producto no tiene stock suficiente, cuando el cliente intenta pagar, entonces el pago se bloquea con mensaje de error.', estado: 'pend' },
-            { texto: 'Dado que dos usuarios compran el último ítem simultáneamente, solo uno puede completar la orden.', estado: 'pend' },
-          ],
-        },
-        {
-          id: 'DY-221',
-          titulo: '[Spike] Evaluar MercadoPago Colombia vs Wompi — límite: 1 día ideal',
-          tipo: 'spike', dias: 1, valor: 'medio', col: 'aceptada', par: 'MR',
-          tags: ['research'],
-          pruebas: [
-            { texto: 'Se documenta comparativa de comisiones, tiempo de integración y requisitos legales de ambas pasarelas.', estado: 'pass' },
-            { texto: 'Se decide e informa qué pasarela usar en esta iteración.', estado: 'pass' },
-          ],
-        },
-        {
-          id: 'DY-223',
-          titulo: 'Bug: el carrito pierde ítems al cerrar sesión',
-          tipo: 'bug', dias: 1, valor: 'alto', col: 'aceptacion', par: 'MR',
-          tags: ['carrito'],
-          pruebas: [
-            { texto: 'Dado que el usuario cierra sesión con ítems en el carrito, entonces localStorage.cart queda vacío.', estado: 'pass' },
-            { texto: 'Dado que el JWT expira y el refresh falla, entonces el carrito se limpia antes de redirigir al login.', estado: 'pend' },
-          ],
-        },
-        {
-          id: 'DY-225',
-          titulo: 'Como cliente, quiero ver una página de confirmación de orden para saber que mi compra fue exitosa',
-          tipo: 'historia', dias: 2, valor: 'medio', col: 'cola', par: 'MR',
-          tags: ['ui'],
-          pruebas: [
-            { texto: 'Dado que el pago fue aprobado, cuando el cliente es redirigido, entonces ve número de orden, ítems y tiempo estimado de entrega.', estado: 'pend' },
-            { texto: 'La página es accesible directamente por URL solo si la orden pertenece al usuario autenticado.', estado: 'pend' },
-          ],
-        },
-        {
-          id: 'DY-226',
-          titulo: 'Como cliente, quiero poder reintentar un pago fallido sin perder mi carrito',
-          tipo: 'historia', dias: 2, valor: 'medio', col: 'cola', par: 'MR',
-          tags: ['pagos'],
-          pruebas: [
-            { texto: 'Dado un pago rechazado, cuando el cliente hace clic en «Reintentar», entonces vuelve al widget de Wompi con el mismo monto.', estado: 'pend' },
-            { texto: 'El carrito se conserva intacto tras el reintento.', estado: 'pend' },
-          ],
-        },
-      ],
-    },
-    {
-      id: 'i11',
-      nombre: 'Iteración 11 · Blog & Contenido',
-      rango: '26 may – 6 jun 2026',
-      dias: 10, comprometido: 11,
-      burndown: [11, 10, 9, 8, 6, 5, 3, 2, 1, 0, 0],
-      historias: [
-        {
-          id: 'DY-195',
-          titulo: 'Como editor, quiero crear y publicar entradas de blog desde el admin para compartir contenido con los clientes',
-          tipo: 'historia', dias: 3, valor: 'alto', col: 'aceptada', par: 'MR',
-          tags: ['blog', 'admin'],
-          pruebas: [
-            { texto: 'Dado que el editor completa el formulario, cuando hace clic en «Publicar», entonces la entrada aparece en /blog.', estado: 'pass' },
-            { texto: 'Los campos título, contenido e imagen son obligatorios; el formulario valida antes de enviar.', estado: 'pass' },
-            { texto: 'Solo usuarios con rol admin pueden acceder al formulario de creación.', estado: 'pass' },
-          ],
-        },
-        {
-          id: 'DY-197',
-          titulo: 'Como visitante, quiero leer entradas de blog en el sitio para conocer más sobre el café de DobleYo',
-          tipo: 'historia', dias: 2, valor: 'alto', col: 'aceptada', par: 'MR',
-          tags: ['blog', 'ui'],
-          pruebas: [
-            { texto: 'La página /blog lista todas las entradas publicadas ordenadas por fecha descendente.', estado: 'pass' },
-            { texto: 'Cada entrada tiene su propia URL en /blog/[slug] con el contenido completo.', estado: 'pass' },
-            { texto: 'El contenido Markdown se renderiza correctamente como HTML.', estado: 'pass' },
-          ],
-        },
-        {
-          id: 'DY-199',
-          titulo: 'Como editor, quiero guardar borradores de blog para publicarlos cuando estén listos',
-          tipo: 'historia', dias: 2, valor: 'medio', col: 'aceptada', par: 'MR',
-          tags: ['blog'],
-          pruebas: [
-            { texto: 'Un borrador no aparece en la página pública /blog.', estado: 'pass' },
-            { texto: 'El admin puede ver y editar borradores en el panel de administración.', estado: 'pass' },
-          ],
-        },
-        {
-          id: 'DY-201',
-          titulo: 'Migrar datos de blog de localStorage a la base de datos Turso',
-          tipo: 'tarea', dias: 2, valor: 'alto', col: 'aceptada', par: 'MR',
-          tags: ['bd', 'migración'],
-          pruebas: [
-            { texto: 'La tabla blog_posts existe en Turso con las columnas necesarias.', estado: 'pass' },
-            { texto: 'El frontend ya no lee datos de localStorage para el blog.', estado: 'pass' },
-          ],
-        },
-        {
-          id: 'DY-203',
-          titulo: 'Bug: markdown no renderiza en la vista de detalle del artículo',
-          tipo: 'bug', dias: 1, valor: 'alto', col: 'aceptada', par: 'MR',
-          tags: ['blog'],
-          pruebas: [
-            { texto: 'Dado un artículo con contenido Markdown, cuando se accede a /blog/[slug], entonces se ve el HTML formateado, no el texto plano.', estado: 'pass' },
-          ],
-        },
-        {
-          id: 'DY-205',
-          titulo: 'Agregar endpoint GET /api/admin/posts para listar todos los artículos incluyendo borradores',
-          tipo: 'tarea', dias: 1, valor: 'medio', col: 'aceptada', par: 'MR',
-          tags: ['api'],
-          pruebas: [
-            { texto: 'GET /api/admin/posts devuelve publicados y borradores con token de admin válido.', estado: 'pass' },
-            { texto: 'Sin token o con token de cliente, responde 403.', estado: 'pass' },
-          ],
-        },
-      ],
-    },
-    {
-      id: 'i10',
-      nombre: 'Iteración 10 · Migración a Turso',
-      rango: '12 may – 23 may 2026',
-      dias: 10, comprometido: 10,
-      burndown: [10, 10, 9, 7, 6, 5, 4, 2, 1, 0, 0],
-      historias: [
-        {
-          id: 'DY-170',
-          titulo: 'Migrar el driver de base de datos de PostgreSQL a @libsql/client (Turso)',
-          tipo: 'tarea', dias: 3, valor: 'alto', col: 'aceptada', par: 'MR',
-          tags: ['bd', 'turso'],
-          pruebas: [
-            { texto: 'El servidor arranca sin errores usando @libsql/client en producción.', estado: 'pass' },
-            { texto: 'Todas las rutas de API responden correctamente con la nueva conexión.', estado: 'pass' },
-          ],
-        },
-        {
-          id: 'DY-173',
-          titulo: 'Adaptar todas las queries a sintaxis SQLite: parámetros ?, datetime("now"), sin type casts',
-          tipo: 'tarea', dias: 3, valor: 'alto', col: 'aceptada', par: 'MR',
-          tags: ['bd'],
-          pruebas: [
-            { texto: 'Ninguna query usa $1/$2 ni ::text ni NOW(); todas usan ? y datetime("now").', estado: 'pass' },
-            { texto: 'Los valores booleanos se almacenan y recuperan como 0/1 correctamente.', estado: 'pass' },
-          ],
-        },
-        {
-          id: 'DY-176',
-          titulo: 'Reescribir migraciones incrementales para libSQL',
-          tipo: 'tarea', dias: 2, valor: 'medio', col: 'aceptada', par: 'MR',
-          tags: ['bd'],
-          pruebas: [
-            { texto: 'Las migraciones se ejecutan en orden sin errores en una BD nueva.', estado: 'pass' },
-            { texto: 'Cada migración es idempotente: ejecutarla dos veces no produce error.', estado: 'pass' },
-          ],
-        },
-        {
-          id: 'DY-179',
-          titulo: '[Spike] Evaluar Turso vs PlanetScale para el stack Colombia+USA — límite: 1 día ideal',
-          tipo: 'spike', dias: 1, valor: 'alto', col: 'aceptada', par: 'MR',
-          tags: ['research'],
-          pruebas: [
-            { texto: 'Se documenta latencia, precio y compatibilidad de cada opción.', estado: 'pass' },
-            { texto: 'Se toma y registra una decisión justificada antes de terminar el día ideal.', estado: 'pass' },
-          ],
-        },
-        {
-          id: 'DY-181',
-          titulo: 'Configurar variables TURSO_DATABASE_URL y TURSO_AUTH_TOKEN en Vercel',
-          tipo: 'tarea', dias: 1, valor: 'alto', col: 'aceptada', par: 'MR',
-          tags: ['infra', 'vercel'],
-          pruebas: [
-            { texto: 'Las variables existen en los entornos Preview y Production de Vercel.', estado: 'pass' },
-            { texto: 'El deploy en Vercel conecta a Turso sin errores de autenticación.', estado: 'pass' },
-          ],
-        },
-      ],
-    },
-  ];
-
-  const VELOCIDAD = [
-    { iter: 'I8',  plan: 8,  done: 7  },
-    { iter: 'I9',  plan: 10, done: 9  },
-    { iter: 'I10', plan: 10, done: 10 },
-    { iter: 'I11', plan: 11, done: 11 },
-    { iter: 'I12', plan: 14, done: 6  },
-  ];
+  const ghUrl = (since, until) =>
+    `${REPO}/commits/main/?since=${since}&until=${until}`;
 
   // ── Helpers ───────────────────────────────────────────────
   const NS = 'http://www.w3.org/2000/svg';
@@ -785,7 +535,7 @@ const iterData = { PARES, COLUMNAS, ITERACIONES, COMMITS_POR_MES, REPO };
   ITERACIONES.forEach(it => {
     const o = document.createElement('option');
     o.value = it.id;
-    o.textContent = it.nombre;
+    o.textContent = `${it.nombre} — ${it.rango}`;
     sel.appendChild(o);
   });
   sel.addEventListener('change', () => {
@@ -805,24 +555,32 @@ const iterData = { PARES, COLUMNAS, ITERACIONES, COMMITS_POR_MES, REPO };
     if (charts) renderCharts();
   });
 
+  // ── DoD agregado de una iteración ─────────────────────────
+  function dodStats(h) {
+    const dod = h.flatMap(s => s.dod || []);
+    const total = dod.length;
+    const pass = dod.filter(d => d.estado === 'pass').length;
+    const fail = dod.filter(d => d.estado === 'fail').length;
+    const pend = total - pass - fail;
+    const pct = total ? Math.round((pass / total) * 100) : 0;
+    return { total, pass, fail, pend, pct };
+  }
+
   // ── Render principal ───────────────────────────────────────
   function render() {
     const h = iterActual.historias;
-    const total      = h.reduce((a, s) => a + s.dias, 0);
-    const aceptadas  = h.filter(s => s.col === 'aceptada').reduce((a, s) => a + s.dias, 0);
-    const enAcept    = h.filter(s => s.col === 'aceptacion').reduce((a, s) => a + s.dias, 0);
-    const enDesarr   = h.filter(s => s.col === 'desarrollo').reduce((a, s) => a + s.dias, 0);
-    const pct        = total ? Math.round((aceptadas / total) * 100) : 0;
-    const dayIdx     = iterActual.burndown.filter(v => v !== null).length - 1;
+    const aceptadas = h.filter(s => s.col === 'aceptada').length;
+    const enCurso = h.filter(s => s.col === 'desarrollo' || s.col === 'aceptacion').length;
+    const d = dodStats(h);
 
     // KPIs
     const summary = document.getElementById('iterSummary');
     summary.innerHTML = '';
     [
-      { label: 'Historias',      value: h.length,                                          sub: `${h.filter(s => s.col === 'aceptada').length} aceptadas`,    tone: '' },
-      { label: 'Días ideales',   value: `${aceptadas}/${total}`,                           sub: `${total - aceptadas} restantes`,                              tone: 'info' },
-      { label: 'Completado',     value: `${pct}%`,                                         sub: `${enDesarr} días en desarrollo`,                              tone: 'success' },
-      { label: 'Día de iteración', value: `${Math.min(dayIdx + 1, iterActual.dias)}/${iterActual.dias}`, sub: iterActual.rango, tone: 'warning' },
+      { label: 'Historias',  value: h.length,                 sub: `${aceptadas} aceptadas`,        tone: '' },
+      { label: 'DoD',        value: `${d.pass}/${d.total}`,    sub: `${d.pend} pendientes`,          tone: 'info' },
+      { label: 'Completado', value: `${d.pct}%`,              sub: `${enCurso} en curso`,           tone: 'success' },
+      { label: 'Commits',    value: iterActual.commits != null ? iterActual.commits : '—', sub: iterActual.rango, tone: 'warning' },
     ].forEach(k => {
       const tile = document.createElement('div');
       tile.className = `kpi-tile${k.tone ? ' ' + k.tone : ''}`;
@@ -833,42 +591,49 @@ const iterData = { PARES, COLUMNAS, ITERACIONES, COMMITS_POR_MES, REPO };
     // Progreso
     document.getElementById('iterProgressTitle').textContent = iterActual.nombre;
     document.getElementById('iterProgressMeta').textContent =
-      `${aceptadas} de ${total} días ideales · ${iterActual.rango}`;
-    document.getElementById('iterProgressPct').textContent = pct + '%';
+      `${iterActual.fase} · ${iterActual.rango} · ${d.pass} de ${d.total} criterios DoD cumplidos`;
+    document.getElementById('iterProgressResumen').textContent = iterActual.resumen || '';
+    document.getElementById('iterProgressPct').textContent = d.pct + '%';
+
+    const gh = document.getElementById('iterProgressGh');
+    gh.href = ghUrl(iterActual.ghSince, iterActual.ghUntil);
+    document.getElementById('iterProgressGhText').textContent =
+      iterActual.commits != null
+        ? `Ver ${iterActual.commits} commits de este periodo en GitHub`
+        : 'Ver commits de este periodo en GitHub';
+    gh.hidden = false;
 
     const bar = document.getElementById('iterBar');
     bar.innerHTML = '';
     [
-      { cls: 'done',       v: aceptadas },
-      { cls: 'aceptacion', v: enAcept   },
-      { cls: 'desarrollo', v: enDesarr  },
+      { color: 'var(--ok)',           v: d.pass },
+      { color: 'var(--danger)',       v: d.fail },
+      { color: 'var(--info)',         v: d.pend },
     ].forEach(s => {
-      if (s.v <= 0) return;
-      const d = document.createElement('div');
-      d.className = `iter-bar__seg iter-bar__seg--${s.cls}`;
-      d.style.width = (s.v / total * 100) + '%';
-      bar.appendChild(d);
+      if (s.v <= 0 || !d.total) return;
+      const seg = document.createElement('div');
+      seg.className = 'iter-bar__seg';
+      seg.style.background = s.color;
+      seg.style.width = (s.v / d.total * 100) + '%';
+      bar.appendChild(seg);
     });
-    const cola = total - aceptadas - enAcept - enDesarr;
     document.getElementById('iterBarLegend').innerHTML =
-      `<span><i style="background:var(--ok)"></i>Aceptadas ${aceptadas}d</span>` +
-      `<span><i style="background:var(--color-accent)"></i>En aceptación ${enAcept}d</span>` +
-      `<span><i style="background:var(--info)"></i>En desarrollo ${enDesarr}d</span>` +
-      `<span><i style="background:color-mix(in oklab,var(--color-primary) 8%,white)"></i>Cola ${cola}d</span>`;
+      `<span><i style="background:var(--ok)"></i>Cumplidos ${d.pass}</span>` +
+      `<span><i style="background:var(--info)"></i>Pendientes ${d.pend}</span>` +
+      (d.fail ? `<span><i style="background:var(--danger)"></i>Fallidos ${d.fail}</span>` : '');
 
     // Tablero
     const board = document.getElementById('iterBoard');
     board.innerHTML = '';
     COLUMNAS.forEach(col => {
       const items = h.filter(s => s.col === col.id);
-      const dias  = items.reduce((a, s) => a + s.dias, 0);
       const colEl = document.createElement('div');
       colEl.className = 'iter-col';
       const head = document.createElement('div');
       head.className = 'iter-col__head';
       head.appendChild(el('span', { class: 'iter-col__dot', style: `background:${col.color}` }));
       head.appendChild(el('span', { class: 'iter-col__name' }, col.nombre));
-      head.appendChild(el('span', { class: 'iter-col__count' }, `${items.length} · ${dias}d`));
+      head.appendChild(el('span', { class: 'iter-col__count' }, String(items.length)));
       colEl.appendChild(head);
       const body = document.createElement('div');
       body.className = 'iter-col__body';
@@ -883,10 +648,12 @@ const iterData = { PARES, COLUMNAS, ITERACIONES, COMMITS_POR_MES, REPO };
   }
 
   function historiaCard(s) {
-    const par = PARES[s.par] || { nombre: s.par, color: '#888' };
+    const par = PARES[s.par] || { nombre: s.par, rol: '', color: '#888' };
     const tipoLabel = { historia: 'Historia', bug: 'Bug', tarea: 'Tarea', spike: 'Spike' };
     const valorLabel = { alto: 'Valor alto', medio: 'Valor medio', bajo: 'Valor bajo' };
     const testIcon = { pass: '✓', fail: '✗', pend: '○' };
+    const dod = s.dod || [];
+    const pass = dod.filter(p => p.estado === 'pass').length;
 
     const card = document.createElement('div');
     card.className = 'iter-card';
@@ -896,7 +663,7 @@ const iterData = { PARES, COLUMNAS, ITERACIONES, COMMITS_POR_MES, REPO };
     top.className = 'iter-card__top';
     top.appendChild(el('span', { class: 'iter-card__id' }, s.id));
     top.appendChild(el('span', { class: `iter-card__type iter-card__type--${s.tipo}` }, tipoLabel[s.tipo] || s.tipo));
-    top.appendChild(el('span', { class: 'iter-card__pts' }, `${s.dias}d`));
+    if (dod.length) top.appendChild(el('span', { class: 'iter-card__pts' }, `${pass}/${dod.length} DoD`));
     card.appendChild(top);
 
     const title = document.createElement('p');
@@ -916,10 +683,10 @@ const iterData = { PARES, COLUMNAS, ITERACIONES, COMMITS_POR_MES, REPO };
       card.appendChild(tags);
     }
 
-    if (s.pruebas && s.pruebas.length) {
+    if (dod.length) {
       const tests = document.createElement('ul');
       tests.className = 'iter-card__tests';
-      s.pruebas.forEach(p => {
+      dod.forEach(p => {
         const li = document.createElement('li');
         li.className = 'iter-card__test';
         const icon = document.createElement('span');
@@ -937,21 +704,22 @@ const iterData = { PARES, COLUMNAS, ITERACIONES, COMMITS_POR_MES, REPO };
 
     const valor = document.createElement('span');
     valor.className = `iter-card__valor iter-card__valor--${s.valor}`;
-    const dot = document.createElement('i');
-    valor.appendChild(dot);
+    valor.appendChild(document.createElement('i'));
     valor.appendChild(document.createTextNode(valorLabel[s.valor] || s.valor));
+    foot.appendChild(valor);
+
+    if (s.agente) foot.appendChild(el('span', { class: 'iter-agente' }, s.agente));
 
     const pair = document.createElement('span');
     pair.className = 'iter-card__pair';
-    pair.title = par.nombre;
+    pair.title = `${par.nombre} — ${par.rol}`;
     const avatar = document.createElement('span');
     avatar.className = 'iter-avatar';
     avatar.style.background = par.color;
     avatar.textContent = s.par;
     pair.appendChild(avatar);
-
-    foot.appendChild(valor);
     foot.appendChild(pair);
+
     card.appendChild(foot);
 
     card.addEventListener('click', () => openHistoriaModal(s));
@@ -962,7 +730,7 @@ const iterData = { PARES, COLUMNAS, ITERACIONES, COMMITS_POR_MES, REPO };
   const historiaModal = document.getElementById('historiaModal');
 
   function openHistoriaModal(s) {
-    const par = PARES[s.par] || { nombre: s.par, color: '#888' };
+    const par = PARES[s.par] || { nombre: s.par, rol: '', color: '#888' };
     const testIcon = { pass: '✓', fail: '✗', pend: '○' };
     const colNombre = (COLUMNAS.find(c => c.id === s.col) || {}).nombre || s.col;
 
@@ -972,7 +740,7 @@ const iterData = { PARES, COLUMNAS, ITERACIONES, COMMITS_POR_MES, REPO };
 
     const testsList = document.getElementById('hModalTests');
     testsList.innerHTML = '';
-    (s.pruebas || []).forEach(p => {
+    (s.dod || []).forEach(p => {
       const li = document.createElement('li');
       li.className = `xp-detail__test xp-detail__test--${p.estado}`;
       const icon = document.createElement('span');
@@ -983,86 +751,75 @@ const iterData = { PARES, COLUMNAS, ITERACIONES, COMMITS_POR_MES, REPO };
       testsList.appendChild(li);
     });
 
+    const fecha = s.fecha
+      ? new Date(s.fecha + 'T00:00:00').toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' })
+      : iterActual.rango;
     const meta = document.getElementById('hModalMeta');
     meta.innerHTML = `
       <span><strong>Estado:</strong> ${colNombre}</span>
-      <span><strong>Estimado:</strong> ${s.dias} día${s.dias !== 1 ? 's' : ''} ideal${s.dias !== 1 ? 'es' : ''}</span>
+      <span><strong>Fecha:</strong> ${fecha}</span>
       <span><strong>Par:</strong> <span style="display:inline-flex;align-items:center;gap:5px">
         <span class="iter-avatar" style="background:${par.color};font-size:10px;width:18px;height:18px">${s.par}</span>
-        ${par.nombre}
+        ${par.nombre} (${par.rol})
       </span></span>
+      ${s.agente ? `<span><strong>Navegador IA:</strong> ${s.agente}</span>` : ''}
       ${s.tags && s.tags.length ? `<span><strong>Tags:</strong> ${s.tags.map(t => '#' + t).join(' ')}</span>` : ''}
+      <span><strong>Iteración:</strong> ${iterActual.nombre}</span>
+      <span><a class="iter-gh-link" style="margin-top:0" href="${ghUrl(iterActual.ghSince, iterActual.ghUntil)}" target="_blank" rel="noopener">Ver commits del periodo en GitHub →</a></span>
     `;
 
     historiaModal.style.display = 'grid';
   }
 
-  function closeHistoriaModal() {
-    historiaModal.style.display = 'none';
-  }
+  function closeHistoriaModal() { historiaModal.style.display = 'none'; }
 
   document.getElementById('hModalClose').addEventListener('click', closeHistoriaModal);
   historiaModal.addEventListener('click', e => { if (e.target === historiaModal) closeHistoriaModal(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && historiaModal.style.display !== 'none') closeHistoriaModal(); });
 
   // ── Gráficos SVG ──────────────────────────────────────────
-  function renderCharts() { renderBurndown(); renderVelocity(); }
+  function renderCharts() { renderActividad(); renderVelocity(); }
 
-  function renderBurndown() {
-    const W = 520, H = 260, pad = { t: 16, r: 16, b: 30, l: 40 };
+  function barChart(boxId, data, color, footFn) {
+    const W = 520, H = 260, pad = { t: 16, r: 16, b: 34, l: 40 };
     const cw = W - pad.l - pad.r, ch = H - pad.t - pad.b;
-    const data = iterActual.burndown;
-    const n = data.length - 1;
-    const maxY = iterActual.comprometido;
-    const x = i => pad.l + (i / n) * cw;
+    const maxY = Math.max(1, ...data.map(d => d.v)) * 1.1;
     const y = v => pad.t + (1 - v / maxY) * ch;
+    const band = cw / data.length, bw = Math.min(34, band * 0.6);
 
-    const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': 'Burndown' });
+    const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': 'Gráfico de barras' });
     for (let i = 0; i <= 4; i++) {
       const v = (maxY / 4) * i, yy = y(v);
       svg.appendChild(el('line', { x1: pad.l, y1: yy, x2: W - pad.r, y2: yy, stroke: '#e5e1da', 'stroke-width': '1' }));
       svg.appendChild(el('text', { x: pad.l - 8, y: yy + 4, 'text-anchor': 'end', 'font-size': '10', fill: '#a09080' }, String(Math.round(v))));
     }
-    for (let i = 0; i <= n; i += Math.ceil(n / 5)) {
-      svg.appendChild(el('text', { x: x(i), y: H - 10, 'text-anchor': 'middle', 'font-size': '10', fill: '#a09080' }, 'D' + i));
-    }
-    svg.appendChild(el('line', { x1: x(0), y1: y(maxY), x2: x(n), y2: y(0), stroke: '#c5bdb5', 'stroke-width': '1.5', 'stroke-dasharray': '5 4' }));
-    const reales = data.map((v, i) => ({ v, i })).filter(p => p.v !== null);
-    svg.appendChild(el('polyline', {
-      points: reales.map(p => `${x(p.i)},${y(p.v)}`).join(' '),
-      fill: 'none', stroke: '#c9893d', 'stroke-width': '2.5',
-      'stroke-linejoin': 'round', 'stroke-linecap': 'round',
-    }));
-    reales.forEach(p => svg.appendChild(el('circle', { cx: x(p.i), cy: y(p.v), r: '3', fill: '#c9893d' })));
-    const box = document.getElementById('iterBurndown');
+    data.forEach((dd, i) => {
+      const cx = pad.l + band * i + band / 2;
+      svg.appendChild(el('rect', { x: cx - bw / 2, y: y(dd.v), width: bw, height: pad.t + ch - y(dd.v), rx: '3', fill: color }));
+      svg.appendChild(el('text', { x: cx, y: H - 12, 'text-anchor': 'middle', 'font-size': '9.5', fill: '#a09080' }, dd.label));
+    });
+    const box = document.getElementById(boxId);
     box.innerHTML = ''; box.appendChild(svg);
+    if (footFn) footFn();
+  }
+
+  function renderActividad() {
+    const data = COMMITS_POR_MES.map(m => ({ label: m.mes, v: m.commits }));
+    barChart('iterActividad', data, '#c9893d', () => {
+      const total = COMMITS_POR_MES.reduce((a, m) => a + m.commits, 0);
+      document.getElementById('iterActividadFoot').innerHTML =
+        `Total histórico: <b>${total.toLocaleString('es-CO')} commits</b> en ${COMMITS_POR_MES.length} meses con actividad.`;
+    });
   }
 
   function renderVelocity() {
-    const W = 520, H = 260, pad = { t: 16, r: 16, b: 34, l: 40 };
-    const cw = W - pad.l - pad.r, ch = H - pad.t - pad.b;
-    const maxY = Math.max(...VELOCIDAD.map(d => Math.max(d.plan, d.done))) * 1.1;
-    const y = v => pad.t + (1 - v / maxY) * ch;
-    const band = cw / VELOCIDAD.length, bw = Math.min(24, band / 3);
-
-    const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': 'Velocidad' });
-    for (let i = 0; i <= 4; i++) {
-      const v = (maxY / 4) * i, yy = y(v);
-      svg.appendChild(el('line', { x1: pad.l, y1: yy, x2: W - pad.r, y2: yy, stroke: '#e5e1da', 'stroke-width': '1' }));
-      svg.appendChild(el('text', { x: pad.l - 8, y: yy + 4, 'text-anchor': 'end', 'font-size': '10', fill: '#a09080' }, String(Math.round(v))));
-    }
-    VELOCIDAD.forEach((d, i) => {
-      const cx = pad.l + band * i + band / 2, x1 = cx - bw - 2, x2 = cx + 2;
-      svg.appendChild(el('rect', { x: x1, y: y(d.plan), width: bw, height: pad.t + ch - y(d.plan), rx: '3', fill: '#d4c9be' }));
-      svg.appendChild(el('rect', { x: x2, y: y(d.done), width: bw, height: pad.t + ch - y(d.done), rx: '3', fill: '#c9893d' }));
-      svg.appendChild(el('text', { x: cx, y: H - 12, 'text-anchor': 'middle', 'font-size': '10', fill: '#a09080' }, d.iter));
+    const conCommits = ITERACIONES.filter(i => i.commits != null).slice().reverse();
+    const data = conCommits.map(i => ({ label: i.id, v: i.commits }));
+    barChart('iterVelocity', data, '#2e7d5b', () => {
+      const avg = data.length ? Math.round(data.reduce((a, d) => a + d.v, 0) / data.length) : 0;
+      document.getElementById('iterVelocityAvg').innerHTML =
+        `Promedio: <b>${avg} commits</b> por iteración con conteo conocido (${data.length}).`;
     });
-    const box = document.getElementById('iterVelocity');
-    box.innerHTML = ''; box.appendChild(svg);
-    const cerradas = VELOCIDAD.filter(d => d.done > 0);
-    const avg = cerradas.length ? Math.round(cerradas.reduce((a, d) => a + d.done, 0) / cerradas.length) : 0;
-    document.getElementById('iterVelocityAvg').innerHTML =
-      `Velocidad promedio: <b>${avg} días ideales</b> por iteración (últimas ${cerradas.length}).`;
   }
 
   render();
