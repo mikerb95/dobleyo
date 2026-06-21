@@ -3,8 +3,6 @@ import Layout from "../../layouts/Layout.astro";
 import { getCanonicalUrl, getHreflangPair, formatPrice } from "../../i18n/index.ts";
 import { parseTastingNotes } from "../../../server/utils/tasting.js";
 
-export const prerender = false;
-
 const hreflang = getHreflangPair("/");
 
 // Cafés destacados desde BD (precios en USD)

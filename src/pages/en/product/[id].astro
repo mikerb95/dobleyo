@@ -1,9 +1,19 @@
 ---
-export const prerender = false;
-
 import Layout from "../../../layouts/Layout.astro";
 import { getCanonicalUrl, formatPrice } from "../../../i18n/index.ts";
 import { parseTastingNotes } from "../../../../server/utils/tasting.js";
+
+// Prerender estático: el subdominio en. sirve archivos estáticos vía rewrite.
+// SSR (prerender=false) da 404 bajo ese rewrite, por eso enumeramos rutas en build.
+export async function getStaticPaths() {
+  try {
+    const { query } = await import("../../../../server/db.js");
+    const { rows } = await query("SELECT id FROM products WHERE is_active = 1");
+    return rows.map((p: any) => ({ params: { id: String(p.id) } }));
+  } catch {
+    return [];
+  }
+}
 
 const { id } = Astro.params;
 
