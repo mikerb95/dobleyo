@@ -3,27 +3,83 @@ import Layout from "../../layouts/Layout.astro";
 import { getCanonicalUrl, getHreflangPair, formatPrice } from "../../i18n/index.ts";
 import { parseTastingNotes } from "../../../server/utils/tasting.js";
 
-const hreflang = getHreflangPair("/");
+const _hreflang = getHreflangPair("/");
 
-// Cafés destacados desde BD (precios en USD)
-let coffees: any[] = [];
+// Featured coffees from DB (USD prices)
+let coffeeProducts: any[] = [];
 try {
   const { query } = await import("../../../server/db.js");
-  const { rows } = await query(
-    `SELECT id, name, name_en, origin, process, roast, tasting_notes,
-            price_usd, image_url AS image
+  const result = await query(
+    `SELECT id, name, name_en, origin, process, roast, tasting_notes, price_usd,
+            is_bestseller AS bestseller, is_new AS new, image_url AS image,
+            stock_quantity AS stock
      FROM products
      WHERE is_active = 1 AND category = 'cafe'
      ORDER BY is_bestseller DESC, is_new DESC, rating DESC
      LIMIT 3`
   );
-  coffees = rows.map((p: any) => ({
-    ...p,
-    name: p.name_en || p.name,
-    price_usd: p.price_usd ?? Math.round(Number(p.price_usd) || 0),
-    notes: parseTastingNotes(p.tasting_notes)?.en ?? parseTastingNotes(p.tasting_notes)?.es ?? [],
+  if (result.rows.length > 0) {
+    coffeeProducts = result.rows.map((p: any) => ({
+      ...p,
+      name: p.name_en || p.name,
+      notes: parseTastingNotes(p.tasting_notes)?.en ?? parseTastingNotes(p.tasting_notes)?.es ?? [],
+    }));
+  }
+} catch (_) {}
+
+// Featured farms
+let featuredFarms: any[] = [];
+try {
+  const { query } = await import("../../../server/db.js");
+  const result = await query(
+    `SELECT name, slug, region, altitude_min, altitude_max, cover_image_url
+     FROM farms WHERE is_published = 1 ORDER BY created_at DESC LIMIT 3`
+  );
+  featuredFarms = result.rows;
+} catch (_) {}
+
+// Recent blog posts
+let recentPosts: any[] = [];
+try {
+  const { query } = await import("../../../server/db.js");
+  const result = await query(
+    `SELECT slug, title, excerpt, cover_image_url, reading_time_min, published_at
+     FROM blog_posts WHERE is_published = 1 ORDER BY published_at DESC LIMIT 3`
+  );
+  recentPosts = result.rows;
+} catch (_) {}
+
+// Gift kits
+let featuredKits: any[] = [];
+try {
+  const { query } = await import("../../../server/db.js");
+  const result = await query(
+    `SELECT id, name, name_en, description, price_usd, image_url AS image
+     FROM products WHERE is_gift_set = 1 AND is_active = 1
+     ORDER BY price_usd ASC LIMIT 3`
+  );
+  featuredKits = result.rows.map((k: any) => ({
+    ...k,
+    name: k.name_en || k.name,
   }));
-} catch (_) { /* BD no disponible */ }
+} catch (_) {}
+
+// Featured reviews
+let featuredReviews: any[] = [];
+try {
+  const { query } = await import("../../../server/db.js");
+  const result = await query(
+    `SELECT r.reviewer_name, r.rating, r.comment, p.name_en AS product_name_en, p.name AS product_name
+     FROM product_reviews r
+     JOIN products p ON p.id = r.product_id
+     WHERE r.is_approved = 1 AND r.comment IS NOT NULL AND r.comment != ''
+     ORDER BY r.created_at DESC LIMIT 3`
+  );
+  featuredReviews = result.rows.map((r: any) => ({
+    ...r,
+    product_name: r.product_name_en || r.product_name,
+  }));
+} catch (_) {}
 ---
 
 <Layout
@@ -31,147 +87,1196 @@ try {
   description="Single-origin Colombian specialty coffee, freshly roasted and shipped worldwide. Full QR traceability from farm to your cup."
   lang="en"
   canonical={getCanonicalUrl("/", "en")}
-  hreflangEs={hreflang?.es}
-  hreflangEn={hreflang?.en}
+  hreflangEs={_hreflang?.es}
+  hreflangEn={_hreflang?.en}
 >
-  <section class="b2c-hero">
-    <div class="b2c-hero__inner">
-      <p class="b2c-hero__eyebrow">Colombian Specialty Coffee</p>
-      <h1 class="b2c-hero__title">From our farms to your cup</h1>
-      <p class="b2c-hero__sub">
-        Single-origin lots, freshly roasted within 15 days and shipped to your door.
-        Every bag carries a QR code with its full story — farm, harvest, roast and cupping.
-      </p>
-      <div class="b2c-hero__cta">
-        <a class="b2c-btn b2c-btn--primary" href="/shop" data-link>Shop coffee</a>
-        <a class="b2c-btn b2c-btn--ghost" href="/traceability" data-link>Trace your coffee</a>
-      </div>
+  <section class="hero">
+    <div class="hero-media" aria-hidden="true">
+      <video
+        src="/assets/vids/hero.mp4"
+        autoplay
+        muted
+        loop
+        playsinline
+        disablePictureInPicture
+        preload="metadata"></video>
     </div>
+    <div class="hero-overlay" aria-hidden="true"></div>
+    <h1>More than coffee, a heritage in every cup.</h1>
+    <p>
+      We are the reflection of Colombia's cultural richness and the effort of
+      generations who cultivate in the heart of our land.<br />Discover the
+      flavor of our tradition and the passion of our soil.
+    </p>
+    <p><a class="btn" href="/shop" data-link>Shop now</a></p>
   </section>
 
-  <div class="b2c-strip" aria-hidden="true">
-    <span>Colombia · Single origin</span><span>·</span>
-    <span>1,400–1,900 masl</span><span>·</span>
-    <span>Washed · Honey · Natural</span><span>·</span>
-    <span>Roasted within 15 days</span>
+  <!-- Origin data strip -->
+  <div class="origin-strip" aria-hidden="true">
+    <div class="origin-strip__inner">
+      <span>Colombia · Single origin</span>
+      <span class="origin-strip__div"></span>
+      <span>1,400 – 1,900 masl</span>
+      <span class="origin-strip__div"></span>
+      <span>Washed · Honey · Natural</span>
+      <span class="origin-strip__div"></span>
+      <span>Freshly roasted within 15 days</span>
+    </div>
   </div>
 
-  <section class="b2c-feat">
-    <div class="b2c-container">
-      <div class="b2c-feat__head">
-        <h2>Our coffees</h2>
-        <a href="/shop" data-link class="b2c-all">Shop all →</a>
+  <!-- Featured coffees -->
+  <section class="cs-section" aria-labelledby="csSectionTitle">
+    <div class="cs-header container">
+      <div>
+        <p class="cs-eyebrow">Our coffees</p>
+        <h2 id="csSectionTitle" class="cs-title">Traceable origin, fresh roast</h2>
       </div>
-      {coffees.length === 0 ? (
-        <p class="b2c-empty">Our shop is being restocked. Please check back soon.</p>
-      ) : (
-        <div class="b2c-grid">
-          {coffees.map((p) => (
-            <article class="b2c-card">
-              <a href={`/product/${p.id}`} class="b2c-card__imglink" data-link>
-                <img src={p.image} alt={p.name} class="b2c-card__img" loading="lazy" width="400" height="420" />
-              </a>
-              <div class="b2c-card__body">
-                <p class="b2c-card__meta">{[p.origin, p.process].filter(Boolean).join(" · ")}</p>
-                <h3 class="b2c-card__name"><a href={`/product/${p.id}`} data-link>{p.name}</a></h3>
-                {p.notes?.length > 0 && <p class="b2c-card__notes">{p.notes.join(" · ")}</p>}
-                <div class="b2c-card__foot">
-                  <span class="b2c-card__price">{formatPrice(Number(p.price_usd), "en")}</span>
-                  <button
-                    class="b2c-card__add"
-                    data-id={p.id}
-                    data-name={p.name}
-                    data-price={p.price_usd}
-                    data-image={p.image}
-                    aria-label={`Add ${p.name} to cart`}
-                  >Add to cart</button>
-                </div>
+      <a href="/shop" class="cs-all-link" data-link>Shop all products →</a>
+    </div>
+
+    <div class="cs-grid container">
+      {
+        coffeeProducts.map((p) => (
+          <article class="cs-card">
+            <div class="cs-card__img-wrap">
+              <img src={p.image} alt={p.name} class="cs-card__img" loading="lazy" width="400" height="480" />
+              {p.bestseller && <span class="cs-card__flag">Best seller</span>}
+              {p.new && !p.bestseller && <span class="cs-card__flag cs-card__flag--new">New</span>}
+            </div>
+            <div class="cs-card__body">
+              <p class="cs-card__meta">
+                {p.origin}
+                {p.process && <span class="cs-card__dot" aria-hidden="true">·</span>}
+                {p.process && <span>{p.process}</span>}
+              </p>
+              <h3 class="cs-card__name">{p.name}</h3>
+              {p.notes && p.notes.length > 0 && (
+                <p class="cs-card__notes">{p.notes.join(" · ")}</p>
+              )}
+              <div class="cs-card__footer">
+                <span class="cs-card__price">{formatPrice(Number(p.price_usd), "en")}</span>
+                <button
+                  class="cs-card__add btn-add"
+                  aria-label={`Add ${p.name} to cart`}
+                  data-id={p.id}
+                  data-name={p.name}
+                  data-price={p.price_usd}
+                  data-image={p.image}
+                >
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                    <path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                  </svg>
+                </button>
               </div>
-            </article>
+            </div>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  <!-- Traceability pipeline -->
+  <section class="pipeline-section" aria-labelledby="pipelineTitle">
+    <div class="container">
+      <div class="pipeline-header">
+        <p class="pipeline-eyebrow">Full traceability</p>
+        <h2 id="pipelineTitle" class="pipeline-title">From bean to cup</h2>
+        <p class="pipeline-sub">
+          Every bag carries a QR code that documents this complete journey
+        </p>
+      </div>
+
+      <div class="pipeline-track" role="list">
+        <div class="pipeline-step" role="listitem">
+          <span class="pipeline-step__num" aria-hidden="true">01</span>
+          <svg class="pipeline-step__icon" width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+            <circle cx="12" cy="9" r="2.5" stroke="currentColor" stroke-width="1.5"/>
+          </svg>
+          <h3 class="pipeline-step__title">Harvest</h3>
+          <p class="pipeline-step__desc">Farm, farmer, municipality and altitude recorded for each lot</p>
+        </div>
+
+        <div class="pipeline-connector" aria-hidden="true">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+
+        <div class="pipeline-step" role="listitem">
+          <span class="pipeline-step__num" aria-hidden="true">02</span>
+          <svg class="pipeline-step__icon" width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 3C7 3 3 7.03 3 12s4 9 9 9 9-4.03 9-9-4-9-9-9z" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M8 12c0-2.21 1.79-4 4-4s4 1.79 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          <h3 class="pipeline-step__title">Processing</h3>
+          <p class="pipeline-step__desc">Method documented: washed, honey or natural according to the lot profile</p>
+        </div>
+
+        <div class="pipeline-connector" aria-hidden="true">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+
+        <div class="pipeline-step" role="listitem">
+          <span class="pipeline-step__num" aria-hidden="true">03</span>
+          <svg class="pipeline-step__icon" width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 2v4M6.34 6.34 3.51 3.51M2 12H6M6.34 17.66l-2.83 2.83M12 18v4M17.66 17.66l2.83 2.83M22 12h-4M17.66 6.34l2.83-2.83" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.5"/>
+          </svg>
+          <h3 class="pipeline-step__title">Roast</h3>
+          <p class="pipeline-step__desc">Roast curve, temperature and exact date. Within 15 days before your order</p>
+        </div>
+
+        <div class="pipeline-connector" aria-hidden="true">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+
+        <div class="pipeline-step" role="listitem">
+          <span class="pipeline-step__num" aria-hidden="true">04</span>
+          <svg class="pipeline-step__icon" width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <rect x="3" y="6" width="18" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M3 10h18M8 6V4M16 6V4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M8 15h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          <h3 class="pipeline-step__title">Your bag</h3>
+          <p class="pipeline-step__desc">QR on the package with the lot's full history, from the farm to your hands</p>
+        </div>
+      </div>
+
+      <div class="trace-cta">
+        <div class="trace-cta__glow" aria-hidden="true"></div>
+        <div class="trace-cta__visual" aria-hidden="true">
+          <div class="trace-cta__qr">
+            <svg viewBox="0 0 100 100" width="116" height="116" fill="none">
+              <rect x="6" y="6" width="26" height="26" rx="3" stroke="currentColor" stroke-width="4"/>
+              <rect x="14" y="14" width="10" height="10" rx="1.5" fill="currentColor"/>
+              <rect x="68" y="6" width="26" height="26" rx="3" stroke="currentColor" stroke-width="4"/>
+              <rect x="76" y="14" width="10" height="10" rx="1.5" fill="currentColor"/>
+              <rect x="6" y="68" width="26" height="26" rx="3" stroke="currentColor" stroke-width="4"/>
+              <rect x="14" y="76" width="10" height="10" rx="1.5" fill="currentColor"/>
+              <path d="M44 8h8v8h-8zM60 8h-8v16h8zM44 24h8v8h-8z M68 40h8v8h-8zM84 40h8v8h-8zM44 40h16v8H44zM8 44h24v8H8z M44 60h8v8h-8zM60 60h8v8h-8zM84 60h8v8h-8z M44 76h8v16h8v-8h8v8h8v-8h-8v-8h-8v8h-8z M76 76h8v8h-8z" fill="currentColor"/>
+            </svg>
+            <span class="trace-cta__scan" aria-hidden="true"></span>
+          </div>
+        </div>
+        <div class="trace-cta__copy">
+          <p class="trace-cta__eyebrow">QR Traceability · Verified origin</p>
+          <h3 class="trace-cta__title">Every cup holds a story.<br />Discover it before you brew.</h3>
+          <p class="trace-cta__sub">
+            Scan the code on your bag or enter the lot number and trace the
+            complete journey of your coffee: the farm that grew it, the farmer
+            behind the bean, the exact roast date and the quality control of
+            your lot.
+          </p>
+          <div class="trace-cta__actions">
+            <a href="/traceability" class="btn trace-cta__btn" data-link>Trace my coffee</a>
+            <span class="trace-cta__hint">No sign-up · Instant results</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Manifesto -->
+  <section class="manifesto-strip" aria-label="Our philosophy">
+    <div class="manifesto-inner container">
+      <blockquote class="manifesto-quote">
+        In Colombia, coffee is history accumulated in every bean.<br />
+        We are the bridge between those who grow it with care<br class="manifesto-br" />
+        and those who enjoy it with intention.
+      </blockquote>
+      <p class="manifesto-attr">DobleYo Café — Bogotá, Colombia</p>
+    </div>
+  </section>
+
+  <!-- Our Farms -->
+  {
+    featuredFarms.length > 0 && (
+      <section class="home-farms" aria-labelledby="homeFarmsTitle">
+        <div class="container">
+          <div class="home-farms__header">
+            <h2 id="homeFarmsTitle" class="home-farms__title">
+              Our Farms
+            </h2>
+            <a href="/farms" class="home-farms__link">
+              View all farms →
+            </a>
+          </div>
+          <ul class="home-farms__grid" role="list">
+            {featuredFarms.map((farm: any) => (
+              <li class="home-farm-card">
+                <a href={`/farm/${farm.slug}`} class="home-farm-card__link">
+                  {farm.cover_image_url ? (
+                    <img
+                      src={farm.cover_image_url}
+                      alt={`Farm ${farm.name} — ${farm.region}`}
+                      loading="lazy"
+                      class="home-farm-card__img"
+                      width="400"
+                      height="240"
+                    />
+                  ) : (
+                    <div
+                      class="home-farm-card__img home-farm-card__img--ph"
+                      aria-hidden="true"
+                    >
+                      🌿
+                    </div>
+                  )}
+                  <div class="home-farm-card__info">
+                    <span class="home-farm-card__region">{farm.region}</span>
+                    <strong class="home-farm-card__name">{farm.name}</strong>
+                    {farm.altitude_min && (
+                      <span class="home-farm-card__alt">
+                        {farm.altitude_min}
+                        {farm.altitude_max ? `–${farm.altitude_max}` : ""} masl
+                      </span>
+                    )}
+                  </div>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+    )
+  }
+
+  <!-- Why DobleYo -->
+  <section class="why-section" aria-labelledby="whyTitle">
+    <div class="container">
+      <div class="why-header">
+        <p class="why-eyebrow">Why choose us</p>
+        <h2 id="whyTitle" class="why-title">Coffee with purpose, from farm to cup</h2>
+      </div>
+      <div class="why-grid">
+        <div class="why-card">
+          <div class="why-icon" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+          </div>
+          <h3 class="why-card__title">QR traceability per lot</h3>
+          <p class="why-card__desc">Every bag includes a QR code documenting the farm, farmer, altitude and roast curve of the exact lot.</p>
+        </div>
+        <div class="why-card">
+          <div class="why-icon" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          </div>
+          <h3 class="why-card__title">Fresh roast within 15 days</h3>
+          <p class="why-card__desc">We roast in small batches and ship within 15 days of roasting. Never warehouse coffee.</p>
+        </div>
+        <div class="why-card">
+          <div class="why-icon" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </div>
+          <h3 class="why-card__title">Direct trade with farmers</h3>
+          <p class="why-card__desc">We work directly with Colombian farms. No middlemen: better price for the producer, better quality for you.</p>
+        </div>
+        <div class="why-card">
+          <div class="why-icon" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+          </div>
+          <h3 class="why-card__title">Free shipping over $50</h3>
+          <p class="why-card__desc">Worldwide shipping available. Free on orders over $50 USD.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Gift kits -->
+  {featuredKits.length > 0 && (
+    <section class="kits-section" aria-labelledby="kitsTitle">
+      <div class="container">
+        <div class="kits-header">
+          <div>
+            <p class="kits-eyebrow">Gift sets</p>
+            <h2 id="kitsTitle" class="kits-title">Kits designed to delight</h2>
+          </div>
+          <a href="/gifts" class="kits-link" data-link>Shop all kits →</a>
+        </div>
+        <div class="kits-grid">
+          {featuredKits.map((kit: any) => (
+            <a href={`/product/${kit.id}`} class="kit-card" data-link>
+              <div class="kit-card__img-wrap">
+                <img
+                  src={kit.image || 'https://images.unsplash.com/photo-1559496417-e7f25cb247f3?q=80&w=600&auto=format&fit=crop'}
+                  alt={kit.name}
+                  loading="lazy"
+                  class="kit-card__img"
+                />
+              </div>
+              <div class="kit-card__body">
+                <span class="kit-card__tag">Gift set</span>
+                <h3 class="kit-card__name">{kit.name}</h3>
+                {kit.description && <p class="kit-card__desc">{kit.description.slice(0, 90)}…</p>}
+                <span class="kit-card__price">{formatPrice(Number(kit.price_usd), "en")}</span>
+              </div>
+            </a>
           ))}
         </div>
-      )}
+      </div>
+    </section>
+  )}
+
+  <!-- Newsletter -->
+  <section class="newsletter-section" aria-labelledby="nlTitle">
+    <div class="container">
+      <div class="newsletter-inner">
+        <div class="newsletter-copy">
+          <p class="newsletter-eyebrow">Newsletter</p>
+          <h2 id="nlTitle" class="newsletter-title">10% off your first order</h2>
+          <p class="newsletter-sub">Subscribe and receive your code instantly. We'll also keep you posted on new harvests and releases.</p>
+        </div>
+        <form class="newsletter-form" id="homeNewsletterForm" novalidate>
+          <input
+            type="email"
+            id="homeNlEmail"
+            class="newsletter-input"
+            placeholder="your@email.com"
+            required
+            aria-label="Email address"
+          />
+          <button type="submit" class="newsletter-btn">Subscribe</button>
+        </form>
+        <p class="newsletter-msg" id="homeNlMsg" style="display:none"></p>
+      </div>
     </div>
   </section>
 
-  <section class="b2c-value">
-    <div class="b2c-container b2c-value__grid">
-      <div><span aria-hidden="true">🔍</span><h3>Full traceability</h3><p>A QR per lot: farm, harvest, roast and SCA cupping.</p></div>
-      <div><span aria-hidden="true">🔥</span><h3>Freshly roasted</h3><p>We roast within 15 days of delivery.</p></div>
-      <div><span aria-hidden="true">🤝</span><h3>Direct trade</h3><p>Bought straight from farmers, at a fair price.</p></div>
-      <div><span aria-hidden="true">🌎</span><h3>Worldwide shipping</h3><p>Prices in USD, delivered to your door.</p></div>
-    </div>
-  </section>
+  <!-- Recent blog posts -->
+  {recentPosts.length > 0 && (
+    <section class="blog-section" aria-labelledby="blogTitle">
+      <div class="container">
+        <div class="blog-home-header">
+          <div>
+            <p class="blog-eyebrow">Blog</p>
+            <h2 id="blogTitle" class="blog-home-title">Recipes, tasting notes and guides</h2>
+          </div>
+          <a href="/blog" class="blog-home-link" data-link>View all posts →</a>
+        </div>
+        <div class="blog-home-grid">
+          {recentPosts.map((post: any) => (
+            <a href={`/blog/${post.slug}`} class="blog-home-card" data-link>
+              <div class="blog-home-card__img-wrap">
+                <img
+                  src={post.cover_image_url || 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?q=80&w=600&auto=format&fit=crop'}
+                  alt={post.title}
+                  loading="lazy"
+                  class="blog-home-card__img"
+                />
+              </div>
+              <div class="blog-home-card__body">
+                <h3 class="blog-home-card__title">{post.title}</h3>
+                {post.excerpt && <p class="blog-home-card__exc">{post.excerpt.slice(0, 80)}…</p>}
+                <span class="blog-home-card__time">{post.reading_time_min ?? 3} min read</span>
+              </div>
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
 
-  <section class="b2c-wholesale">
-    <div class="b2c-container">
-      <h2>Are you a roaster or importer?</h2>
-      <p>We supply green and roasted Colombian coffee for business. Traceable lots, FOB/CIF, consistent quality.</p>
-      <a class="b2c-btn b2c-btn--primary" href="/wholesale" data-link>Wholesale & export →</a>
-    </div>
-  </section>
+  <!-- Reviews -->
+  {featuredReviews.length > 0 && (
+    <section class="reviews-home" aria-labelledby="reviewsHomeTitle">
+      <div class="container">
+        <div class="reviews-home-header">
+          <p class="reviews-eyebrow">What our customers say</p>
+          <h2 id="reviewsHomeTitle" class="reviews-home-title">Verified reviews</h2>
+        </div>
+        <div class="reviews-home-grid">
+          {featuredReviews.map((r: any) => (
+            <div class="review-home-card">
+              <div class="review-home-card__stars" aria-label={`${r.rating} stars`}>
+                {"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)}
+              </div>
+              <p class="review-home-card__comment">"{r.comment}"</p>
+              <div class="review-home-card__meta">
+                <strong>{r.reviewer_name}</strong>
+                {r.product_name && <span>on {r.product_name}</span>}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
 
-  <script is:inline src="/assets/js/cart.js"></script>
-  <script>
-    document.addEventListener("click", (e) => {
-      const btn = e.target.closest(".b2c-card__add");
-      if (!btn || !window.Cart) return;
-      window.Cart.add({
-        id: btn.dataset.id, name: btn.dataset.name,
-        price: Number(btn.dataset.price), image: btn.dataset.image, quantity: 1,
-      });
-      const orig = btn.textContent;
-      btn.textContent = "✓ Added";
-      setTimeout(() => { btn.textContent = orig; }, 1600);
-    });
-  </script>
-
+  <script is:inline src="/assets/js/home-en.js"></script>
   <style>
-    .b2c-container { max-width: 1200px; margin: 0 auto; padding: 0 1.25rem; }
-    .b2c-hero { background: var(--coffee); color: var(--cream); padding: 4rem 1.5rem; text-align: center; }
-    .b2c-hero__inner { max-width: 720px; margin: 0 auto; }
-    .b2c-hero__eyebrow { text-transform: uppercase; letter-spacing: .12em; font-size: .8rem; opacity: .75; margin: 0 0 .75rem; }
-    .b2c-hero__title { font-family: var(--font-heading, serif); font-size: clamp(2rem, 5vw, 3.2rem); margin: 0 0 1rem; line-height: 1.1; }
-    .b2c-hero__sub { font-size: 1.05rem; line-height: 1.6; opacity: .92; margin: 0 0 1.75rem; }
-    .b2c-hero__cta { display: flex; gap: .75rem; justify-content: center; flex-wrap: wrap; }
-    .b2c-btn { display: inline-block; padding: .75rem 1.5rem; border-radius: 999px; font-weight: 700; text-decoration: none; min-height: 44px; line-height: 1.7; }
-    .b2c-btn--primary { background: var(--accent); color: #fff; }
-    .b2c-btn--ghost { border: 1.5px solid var(--cream); color: var(--cream); }
-    .b2c-btn--ghost:hover { background: var(--cream); color: var(--coffee); }
+    /* =============================================
+       ORIGIN STRIP
+    ============================================= */
+    .origin-strip {
+      background: var(--coffee);
+      color: rgba(255,255,255,.72);
+      font-size: .72rem;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      overflow: hidden;
+      border-top: 1px solid rgba(255,255,255,.06);
+    }
+    .origin-strip__inner {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: .75rem 1.5rem;
+      padding: .75rem 1.25rem;
+      max-width: var(--page-width);
+      margin: 0 auto;
+    }
+    .origin-strip__div {
+      display: inline-block;
+      width: 1px;
+      height: 10px;
+      background: rgba(255,255,255,.25);
+      flex-shrink: 0;
+    }
+    @media (max-width: 640px) {
+      .origin-strip__div { display: none; }
+      .origin-strip__inner { gap: .5rem 1rem; }
+    }
 
-    .b2c-strip { background: var(--cream); display: flex; flex-wrap: wrap; gap: .6rem; justify-content: center; padding: .85rem 1rem; font-size: .82rem; color: var(--coffee); }
-    .b2c-strip span:nth-child(even) { opacity: .4; }
+    /* =============================================
+       COFFEE SECTION
+    ============================================= */
+    .cs-section {
+      padding: 4rem 0;
+      border-top: 1px solid var(--border);
+    }
+    .cs-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 1rem;
+      margin-bottom: 2.5rem;
+      flex-wrap: wrap;
+    }
+    .cs-eyebrow {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: .7rem;
+      font-weight: 600;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin: 0 0 .5rem;
+    }
+    .cs-title {
+      font-size: clamp(1.4rem, 3vw, 2rem);
+      color: var(--coffee);
+      margin: 0;
+      line-height: 1.1;
+    }
+    .cs-all-link {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: .85rem;
+      font-weight: 600;
+      color: var(--accent);
+      text-decoration: none;
+      white-space: nowrap;
+      padding-bottom: 1px;
+      border-bottom: 1px solid transparent;
+      transition: border-color .15s;
+    }
+    .cs-all-link:hover { border-bottom-color: var(--accent); }
 
-    .b2c-feat { padding: 3.5rem 0; }
-    .b2c-feat__head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 1.5rem; }
-    .b2c-feat__head h2 { font-family: var(--font-heading, serif); color: var(--coffee); margin: 0; font-size: clamp(1.5rem, 3vw, 2rem); }
-    .b2c-all { color: var(--accent); text-decoration: none; font-weight: 600; }
-    .b2c-empty { text-align: center; color: #666; padding: 2rem 0; }
-    .b2c-grid { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
-    @media (min-width: 640px) { .b2c-grid { grid-template-columns: repeat(3, 1fr); } }
+    .cs-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+    @media (max-width: 900px) { .cs-grid { grid-template-columns: repeat(2, 1fr); gap: 1rem; } }
+    @media (max-width: 540px)  { .cs-grid { grid-template-columns: 1fr; gap: 1rem; } }
 
-    .b2c-card { background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 5px rgba(0,0,0,.08); display: flex; flex-direction: column; }
-    .b2c-card__imglink { display: block; aspect-ratio: 1/1; overflow: hidden; }
-    .b2c-card__img { width: 100%; height: 100%; object-fit: cover; }
-    .b2c-card__body { padding: 1rem 1.1rem 1.1rem; display: flex; flex-direction: column; flex: 1; }
-    .b2c-card__meta { font-size: .75rem; text-transform: uppercase; letter-spacing: .04em; color: var(--accent); margin: 0 0 .25rem; }
-    .b2c-card__name { margin: 0 0 .4rem; font-size: 1.15rem; }
-    .b2c-card__name a { color: var(--coffee); text-decoration: none; }
-    .b2c-card__notes { font-size: .85rem; color: #666; margin: 0 0 .85rem; }
-    .b2c-card__foot { margin-top: auto; display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
-    .b2c-card__price { font-weight: 700; color: var(--coffee); font-size: 1.05rem; }
-    .b2c-card__add { background: var(--accent); color: #fff; border: none; border-radius: 999px; padding: .5rem .9rem; font-size: .85rem; font-weight: 600; cursor: pointer; }
-    .b2c-card__add:hover { filter: brightness(1.05); }
+    .cs-card {
+      display: flex;
+      flex-direction: column;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: .875rem;
+      overflow: hidden;
+      transition: box-shadow .2s ease, transform .2s ease;
+    }
+    .cs-card:hover {
+      box-shadow: 0 8px 32px rgba(37,26,20,.1);
+      transform: translateY(-3px);
+    }
 
-    .b2c-value { background: var(--cream); padding: 3rem 0; }
-    .b2c-value__grid { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
-    @media (min-width: 768px) { .b2c-value__grid { grid-template-columns: repeat(4, 1fr); } }
-    .b2c-value span { font-size: 1.6rem; }
-    .b2c-value h3 { margin: .5rem 0 .25rem; color: var(--coffee); font-size: 1rem; }
-    .b2c-value p { margin: 0; font-size: .9rem; color: #555; line-height: 1.5; }
+    .cs-card__img-wrap {
+      position: relative;
+      overflow: hidden;
+      background: #f5f0eb;
+      aspect-ratio: 4 / 5;
+    }
+    .cs-card__img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform .4s ease;
+    }
+    .cs-card:hover .cs-card__img { transform: scale(1.04); }
 
-    .b2c-wholesale { padding: 3rem 1.5rem; text-align: center; }
-    .b2c-wholesale h2 { font-family: var(--font-heading, serif); color: var(--coffee); margin: 0 0 .5rem; }
-    .b2c-wholesale p { color: #555; margin: 0 0 1.25rem; }
+    .cs-card__flag {
+      position: absolute;
+      top: .875rem;
+      left: .875rem;
+      background: var(--coffee);
+      color: #fff;
+      font-family: 'Inter', sans-serif;
+      font-size: .65rem;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      padding: .25rem .6rem;
+      border-radius: .25rem;
+    }
+    .cs-card__flag--new { background: #16a34a; }
+
+    .cs-card__body {
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: .375rem;
+      flex: 1;
+    }
+    .cs-card__meta {
+      font-family: 'Inter', sans-serif;
+      font-size: .72rem;
+      font-weight: 600;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin: 0;
+    }
+    .cs-card__dot { margin: 0 .2rem; opacity: .5; }
+    .cs-card__name {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--coffee);
+      margin: 0;
+      line-height: 1.2;
+    }
+    .cs-card__notes {
+      font-size: .8rem;
+      color: var(--muted-fg);
+      margin: 0;
+      line-height: 1.5;
+    }
+    .cs-card__footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: auto;
+      padding-top: .875rem;
+      border-top: 1px solid var(--border);
+    }
+    .cs-card__price {
+      font-family: 'Inter', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--coffee);
+    }
+    .cs-card__add {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: var(--coffee);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background .15s, transform .15s;
+      flex-shrink: 0;
+    }
+    .cs-card__add:hover { background: var(--accent); }
+    .cs-card__add--added {
+      background: #16a34a;
+      transform: scale(.92);
+    }
+
+    /* =============================================
+       PIPELINE
+    ============================================= */
+    .pipeline-section {
+      padding: 5rem 0;
+      background: var(--bg);
+      border-top: 1px solid var(--border);
+    }
+    .pipeline-header {
+      text-align: center;
+      margin-bottom: 4rem;
+    }
+    .pipeline-eyebrow {
+      font-family: 'Inter', sans-serif;
+      font-size: .7rem;
+      font-weight: 600;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin: 0 0 .75rem;
+    }
+    .pipeline-title {
+      font-size: clamp(1.6rem, 3.5vw, 2.4rem);
+      color: var(--coffee);
+      margin: 0 0 .875rem;
+      line-height: 1.1;
+    }
+    .pipeline-sub {
+      font-size: .95rem;
+      color: var(--muted-fg);
+      max-width: 50ch;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    .pipeline-track {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr auto 1fr auto 1fr;
+      align-items: start;
+      gap: 0;
+      margin-bottom: 3rem;
+    }
+
+    .pipeline-step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 0 1rem;
+    }
+    .pipeline-step__num {
+      font-family: 'Inter', sans-serif;
+      font-size: .65rem;
+      font-weight: 700;
+      letter-spacing: .1em;
+      color: var(--accent);
+      margin-bottom: .875rem;
+    }
+    .pipeline-step__icon {
+      width: 40px;
+      height: 40px;
+      color: var(--coffee);
+      margin-bottom: 1rem;
+      stroke-width: 1.3;
+    }
+    .pipeline-step__title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--coffee);
+      margin: 0 0 .5rem;
+    }
+    .pipeline-step__desc {
+      font-size: .8rem;
+      color: var(--muted-fg);
+      line-height: 1.55;
+      margin: 0;
+      max-width: 18ch;
+    }
+
+    .pipeline-connector {
+      display: flex;
+      align-items: flex-start;
+      padding-top: 2.25rem;
+      color: var(--border);
+    }
+    .pipeline-connector svg { width: 20px; height: 20px; flex-shrink: 0; }
+
+    /* Traceability CTA */
+    .trace-cta {
+      position: relative;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      align-items: center;
+      gap: 2.5rem;
+      background: var(--coffee);
+      border-radius: 1.25rem;
+      padding: 2.75rem 3rem;
+      overflow: hidden;
+      box-shadow: 0 24px 60px -20px rgba(37,26,20,.5);
+    }
+    .trace-cta__glow {
+      position: absolute;
+      top: -40%;
+      right: -10%;
+      width: 460px;
+      height: 460px;
+      background: radial-gradient(circle, rgba(198,123,78,.32) 0%, rgba(198,123,78,0) 70%);
+      pointer-events: none;
+    }
+    .trace-cta__visual {
+      position: relative;
+      z-index: 1;
+    }
+    .trace-cta__qr {
+      position: relative;
+      width: 148px;
+      height: 148px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 1rem;
+      color: #fff;
+      overflow: hidden;
+    }
+    .trace-cta__scan {
+      position: absolute;
+      left: 10%;
+      right: 10%;
+      height: 2px;
+      top: 14%;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      box-shadow: 0 0 12px 2px rgba(198,123,78,.6);
+      animation: traceScan 2.6s ease-in-out infinite;
+    }
+    @keyframes traceScan {
+      0%, 100% { transform: translateY(0); opacity: .35; }
+      50% { transform: translateY(540%); opacity: 1; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .trace-cta__scan { animation: none; }
+    }
+    .trace-cta__copy { position: relative; z-index: 1; }
+    .trace-cta__eyebrow {
+      font-family: 'Inter', sans-serif;
+      font-size: .68rem;
+      font-weight: 700;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin: 0 0 .75rem;
+    }
+    .trace-cta__title {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: clamp(1.5rem, 3vw, 2.1rem);
+      font-weight: 700;
+      line-height: 1.2;
+      color: #fff;
+      margin: 0 0 .9rem;
+    }
+    .trace-cta__sub {
+      font-size: .95rem;
+      line-height: 1.65;
+      color: rgba(255,255,255,.7);
+      margin: 0 0 1.6rem;
+      max-width: 56ch;
+    }
+    .trace-cta__actions {
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+      flex-wrap: wrap;
+    }
+    .trace-cta__btn {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      box-shadow: 0 10px 24px -8px rgba(198,123,78,.7);
+    }
+    .trace-cta__btn:hover { filter: brightness(1.06); }
+    .trace-cta__hint {
+      font-family: 'Inter', sans-serif;
+      font-size: .78rem;
+      letter-spacing: .04em;
+      color: rgba(255,255,255,.5);
+    }
+    @media (max-width: 760px) {
+      .trace-cta {
+        grid-template-columns: 1fr;
+        text-align: center;
+        padding: 2.25rem 1.5rem;
+        gap: 1.75rem;
+      }
+      .trace-cta__visual { justify-self: center; }
+      .trace-cta__sub { margin-left: auto; margin-right: auto; }
+      .trace-cta__actions { justify-content: center; }
+    }
+
+    @media (max-width: 900px) {
+      .pipeline-track {
+        grid-template-columns: 1fr;
+        max-width: 360px;
+        margin: 0 auto 3rem;
+      }
+      .pipeline-connector {
+        justify-content: center;
+        padding-top: 0;
+        padding: .75rem 0;
+        transform: rotate(90deg);
+      }
+      .pipeline-step { padding: 0; }
+      .pipeline-step__desc { max-width: 30ch; }
+    }
+
+    /* =============================================
+       MANIFESTO STRIP
+    ============================================= */
+    .manifesto-strip {
+      background: var(--coffee);
+      padding: 5rem 0;
+      text-align: center;
+      border-top: 1px solid rgba(255,255,255,.06);
+    }
+    .manifesto-inner { max-width: 760px; }
+    .manifesto-quote {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: clamp(1.25rem, 3.5vw, 1.9rem);
+      font-weight: 600;
+      line-height: 1.6;
+      color: rgba(255,255,255,.95);
+      margin: 0 0 1.75rem;
+      font-style: italic;
+      letter-spacing: .01em;
+      quotes: none;
+    }
+    .manifesto-attr {
+      font-family: 'Inter', sans-serif;
+      font-size: .75rem;
+      font-weight: 600;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.4);
+      margin: 0;
+    }
+    @media (max-width: 640px) {
+      .manifesto-strip { padding: 3.5rem 1.25rem; }
+      .manifesto-br { display: none; }
+    }
+
+    /* =============================================
+       WHY DOBLEYO
+    ============================================= */
+    .why-section {
+      padding: 5rem 0;
+      border-top: 1px solid var(--border);
+      background: var(--bg);
+    }
+    .why-header {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+    .why-eyebrow {
+      font-family: 'Inter', sans-serif;
+      font-size: .7rem;
+      font-weight: 600;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin: 0 0 .5rem;
+    }
+    .why-title {
+      font-size: clamp(1.4rem, 3vw, 2rem);
+      color: var(--coffee);
+      margin: 0;
+    }
+    .why-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 2rem;
+    }
+    .why-card {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: .75rem;
+    }
+    .why-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: .75rem;
+      background: var(--accent-light, #f0e8df);
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .why-card__title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--coffee);
+      margin: 0;
+    }
+    .why-card__desc {
+      font-size: .875rem;
+      color: var(--muted-fg);
+      margin: 0;
+      line-height: 1.6;
+    }
+    @media (max-width: 900px) { .why-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 480px) { .why-grid { grid-template-columns: 1fr; } }
+
+    /* =============================================
+       GIFT KITS
+    ============================================= */
+    .kits-section {
+      padding: 5rem 0;
+      border-top: 1px solid var(--border);
+      background: #faf7f4;
+    }
+    .kits-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 1rem;
+      margin-bottom: 2.5rem;
+      flex-wrap: wrap;
+    }
+    .kits-eyebrow {
+      font-family: 'Inter', sans-serif;
+      font-size: .7rem;
+      font-weight: 600;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin: 0 0 .5rem;
+    }
+    .kits-title {
+      font-size: clamp(1.4rem, 3vw, 2rem);
+      color: var(--coffee);
+      margin: 0;
+    }
+    .kits-link {
+      font-family: 'Inter', sans-serif;
+      font-size: .85rem;
+      font-weight: 600;
+      color: var(--accent);
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .kits-link:hover { text-decoration: underline; }
+    .kits-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+    .kit-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: .875rem;
+      overflow: hidden;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      transition: box-shadow .2s, transform .2s;
+    }
+    .kit-card:hover { box-shadow: 0 8px 28px rgba(37,26,20,.1); transform: translateY(-3px); }
+    .kit-card__img-wrap { aspect-ratio: 4/3; overflow: hidden; background: #f5f0eb; }
+    .kit-card__img { width: 100%; height: 100%; object-fit: cover; transition: transform .4s; }
+    .kit-card:hover .kit-card__img { transform: scale(1.04); }
+    .kit-card__body { padding: 1.25rem; display: flex; flex-direction: column; gap: .4rem; }
+    .kit-card__tag {
+      font-family: 'Inter', sans-serif;
+      font-size: .65rem;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+    .kit-card__name { font-size: 1.05rem; font-weight: 700; color: var(--coffee); margin: 0; }
+    .kit-card__desc { font-size: .82rem; color: var(--muted-fg); margin: 0; line-height: 1.5; }
+    .kit-card__price { font-family: 'Inter', sans-serif; font-size: 1rem; font-weight: 700; color: var(--coffee); margin-top: .25rem; }
+    @media (max-width: 900px) { .kits-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 480px) { .kits-grid { grid-template-columns: 1fr; } }
+
+    /* =============================================
+       NEWSLETTER
+    ============================================= */
+    .newsletter-section {
+      padding: 5rem 0;
+      background: var(--coffee);
+      border-top: 1px solid rgba(255,255,255,.06);
+    }
+    .newsletter-inner {
+      max-width: 640px;
+      margin: 0 auto;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+    }
+    .newsletter-eyebrow {
+      font-family: 'Inter', sans-serif;
+      font-size: .7rem;
+      font-weight: 600;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.5);
+      margin: 0;
+    }
+    .newsletter-title {
+      font-size: clamp(1.5rem, 3.5vw, 2.2rem);
+      color: #fff;
+      margin: 0;
+      line-height: 1.2;
+    }
+    .newsletter-sub {
+      font-size: .92rem;
+      color: rgba(255,255,255,.65);
+      margin: 0;
+      line-height: 1.6;
+      max-width: 48ch;
+    }
+    .newsletter-form {
+      display: flex;
+      gap: .5rem;
+      width: 100%;
+      max-width: 460px;
+      margin-top: .5rem;
+    }
+    .newsletter-input {
+      flex: 1;
+      padding: .7rem 1rem;
+      border: 1.5px solid rgba(255,255,255,.2);
+      border-radius: 6px;
+      background: rgba(255,255,255,.08);
+      color: #fff;
+      font-size: .95rem;
+      outline: none;
+      font-family: inherit;
+    }
+    .newsletter-input::placeholder { color: rgba(255,255,255,.4); }
+    .newsletter-input:focus { border-color: var(--accent); }
+    .newsletter-btn {
+      padding: .7rem 1.4rem;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: .9rem;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: opacity .15s;
+      font-family: inherit;
+    }
+    .newsletter-btn:hover { opacity: .88; }
+    .newsletter-btn:disabled { opacity: .5; cursor: not-allowed; }
+    .newsletter-msg { font-size: .88rem; margin: 0; }
+    .newsletter-msg.success { color: #86efac; }
+    .newsletter-msg.error { color: #fca5a5; }
+    @media (max-width: 480px) {
+      .newsletter-form { flex-direction: column; }
+      .newsletter-btn { width: 100%; }
+    }
+
+    /* =============================================
+       BLOG
+    ============================================= */
+    .blog-section {
+      padding: 5rem 0;
+      border-top: 1px solid var(--border);
+    }
+    .blog-home-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 1rem;
+      margin-bottom: 2.5rem;
+      flex-wrap: wrap;
+    }
+    .blog-eyebrow {
+      font-family: 'Inter', sans-serif;
+      font-size: .7rem;
+      font-weight: 600;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin: 0 0 .5rem;
+    }
+    .blog-home-title {
+      font-size: clamp(1.4rem, 3vw, 2rem);
+      color: var(--coffee);
+      margin: 0;
+    }
+    .blog-home-link {
+      font-family: 'Inter', sans-serif;
+      font-size: .85rem;
+      font-weight: 600;
+      color: var(--accent);
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .blog-home-link:hover { text-decoration: underline; }
+    .blog-home-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+    .blog-home-card {
+      border: 1px solid var(--border);
+      border-radius: .875rem;
+      overflow: hidden;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      background: #fff;
+      transition: box-shadow .2s, transform .2s;
+    }
+    .blog-home-card:hover { box-shadow: 0 6px 24px rgba(37,26,20,.09); transform: translateY(-2px); }
+    .blog-home-card__img-wrap { aspect-ratio: 16/9; overflow: hidden; background: #f5f0eb; }
+    .blog-home-card__img { width: 100%; height: 100%; object-fit: cover; transition: transform .4s; }
+    .blog-home-card:hover .blog-home-card__img { transform: scale(1.04); }
+    .blog-home-card__body { padding: 1.1rem; display: flex; flex-direction: column; gap: .35rem; flex: 1; }
+    .blog-home-card__title { font-size: .95rem; font-weight: 700; color: var(--coffee); margin: 0; line-height: 1.3; }
+    .blog-home-card__exc { font-size: .8rem; color: var(--muted-fg); margin: 0; line-height: 1.5; flex: 1; }
+    .blog-home-card__time { font-size: .72rem; color: var(--muted-fg); margin-top: auto; padding-top: .5rem; border-top: 1px solid var(--border); }
+    @media (max-width: 900px) { .blog-home-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 480px) { .blog-home-grid { grid-template-columns: 1fr; } }
+
+    /* =============================================
+       REVIEWS
+    ============================================= */
+    .reviews-home {
+      padding: 5rem 0;
+      background: #faf7f4;
+      border-top: 1px solid var(--border);
+    }
+    .reviews-home-header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+    .reviews-eyebrow {
+      font-family: 'Inter', sans-serif;
+      font-size: .7rem;
+      font-weight: 600;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin: 0 0 .5rem;
+    }
+    .reviews-home-title {
+      font-size: clamp(1.4rem, 3vw, 2rem);
+      color: var(--coffee);
+      margin: 0;
+    }
+    .reviews-home-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+    .review-home-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: .875rem;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: .75rem;
+    }
+    .review-home-card__stars { color: #f59e0b; font-size: 1.1rem; letter-spacing: .05em; }
+    .review-home-card__comment { font-size: .9rem; color: var(--fg); line-height: 1.65; margin: 0; font-style: italic; flex: 1; }
+    .review-home-card__meta { display: flex; flex-direction: column; gap: .1rem; padding-top: .75rem; border-top: 1px solid var(--border); font-size: .82rem; }
+    .review-home-card__meta strong { color: var(--coffee); }
+    .review-home-card__meta span { color: var(--muted-fg); }
+    @media (max-width: 900px) { .reviews-home-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 480px) { .reviews-home-grid { grid-template-columns: 1fr; } }
   </style>
 </Layout>
