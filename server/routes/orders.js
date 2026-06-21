@@ -197,13 +197,13 @@ ordersRouter.post('/',
                 `INSERT INTO customer_orders
            (reference, status, customer_name, customer_email, customer_phone,
             shipping_address, shipping_city, shipping_department, shipping_zip,
-            subtotal_cop, shipping_cop, discount_amount_cop, total_cop,
+            subtotal_cop, shipping_cop, discount_amount_cop, total_cop, currency,
             discount_code, notes, user_id)
-         VALUES (?, 'pending_payment', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         VALUES (?, 'pending_payment', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
          RETURNING id, reference`,
                 [ref, customerName, customerEmail, customerPhone || null,
                     shippingAddress, shippingCity, shippingDepartment || null, shippingZip || null,
-                    subtotal, shipping, discountAmount, total,
+                    subtotal, shipping, discountAmount, total, currency,
                     appliedCode, notes || null,
                     req.user?.id || null]
             );
