@@ -307,7 +307,8 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         const response = await fetch("/api/users", { credentials: "include" });
         if (!response.ok) throw new Error("Error al cargar usuarios");
         const data = await response.json();
-        allUsers = (data.users || []).map((u: any) => ({ ...u, is_verified: !!u.is_verified }));
+        const list = data.data ?? data.users ?? [];
+        allUsers = list.map((u: any) => ({ ...u, is_verified: !!u.is_verified }));
         updateStats(allUsers);
         applyFilters();
       } catch (err: any) {
