@@ -128,6 +128,58 @@ const STATUS_PILL = {
   low:  { label: 'Bajo stock', cls: 'inv-pill--low'  },
 };
 
+const statusLabel = (s) => STATUS_PILL[s]?.label ?? s ?? '';
+
+// Columnas de exportación CSV por tab (usa los mismos campos que la lista).
+const CSV_COLUMNS = {
+  green: [
+    { label: 'Lote',            get: (r) => r.code },
+    { label: 'Origen',          get: (r) => r.origin },
+    { label: 'Caficultor',      get: (r) => r.farmer },
+    { label: 'Bodega',          get: (r) => r.warehouse },
+    { label: 'Variedad',        get: (r) => r.variety },
+    { label: 'Kg',              get: (r) => r.kg },
+    { label: 'Días almacenado', get: (r) => r.days_in_storage },
+    { label: 'Humedad %',       get: (r) => r.humidity_pct },
+    { label: 'Estado',          get: (r) => statusLabel(r.status) },
+  ],
+  roast: [
+    { label: 'Lote',         get: (r) => r.code },
+    { label: 'Origen',       get: (r) => r.origin },
+    { label: 'Caficultor',   get: (r) => r.farmer },
+    { label: 'Bodega',       get: (r) => r.warehouse },
+    { label: 'Perfil',       get: (r) => r.profile },
+    { label: 'Kg',           get: (r) => r.kg },
+    { label: 'Días tostión', get: (r) => r.days_since_roast },
+    { label: 'Estado',       get: (r) => statusLabel(r.status) },
+  ],
+  pack: [
+    { label: 'SKU',       get: (r) => r.sku },
+    { label: 'Nombre',    get: (r) => r.name },
+    { label: 'Proveedor', get: (r) => r.supplier },
+    { label: 'Lead días', get: (r) => r.lead_days },
+    { label: 'Stock',     get: (r) => r.stock },
+    { label: 'Mínimo',    get: (r) => r.min },
+    { label: 'Máximo',    get: (r) => r.max },
+    { label: 'Estado',    get: (r) => statusLabel(r.status) },
+  ],
+  labels: [
+    { label: 'SKU',         get: (r) => r.sku },
+    { label: 'Nombre',      get: (r) => r.name },
+    { label: 'Plantilla QR', get: (r) => r.qr_template },
+    { label: 'Stock',       get: (r) => r.stock },
+    { label: 'Estado',      get: (r) => statusLabel(r.status) },
+  ],
+};
+
+const MOVEMENT_TYPES = [
+  { value: 'entrada',    label: 'Entrada' },
+  { value: 'salida',     label: 'Salida' },
+  { value: 'ajuste',     label: 'Ajuste' },
+  { value: 'merma',      label: 'Merma' },
+  { value: 'devolucion', label: 'Devolución' },
+];
+
 // ── Primitives ────────────────────────────────────────────────────────────────
 function Skel({ width, height = 14, style = {} }) {
   return <span className="inv-skel" style={{ width, height, ...style }} />;
