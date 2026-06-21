@@ -641,9 +641,22 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
     $("btn-refresh").addEventListener("click", load);
 
     $("btn-export").addEventListener("click", () => {
-      const cat = ($("filter-category") as HTMLInputElement).value.trim();
-      const qs = cat ? `?export=xlsx&category=${encodeURIComponent(cat)}` : "?export=xlsx";
-      window.location.href = API + qs;
+      const val = (id: string) => ($(`ex-${id}`) as HTMLInputElement).value.trim();
+      const qs = new URLSearchParams({ export: "xlsx" });
+      if (val("category"))  qs.set("category",  val("category"));
+      if (val("product"))   qs.set("product",   val("product"));
+      if (val("period"))    qs.set("period",    val("period"));
+      if (val("value-min")) qs.set("value_min", val("value-min"));
+      if (val("value-max")) qs.set("value_max", val("value-max"));
+      if (val("limit"))     qs.set("limit",     val("limit"));
+      window.location.href = `${API}?${qs.toString()}`;
+    });
+
+    $("btn-export-clear").addEventListener("click", () => {
+      ["category","product","period","value-min","value-max"].forEach(
+        (id) => { ($(`ex-${id}`) as HTMLInputElement).value = ""; }
+      );
+      ($("ex-limit") as HTMLInputElement).value = "5000";
     });
     let filterTimer: any;
     ($("filter-category") as HTMLInputElement).addEventListener("input", () => {
