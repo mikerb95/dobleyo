@@ -102,6 +102,7 @@ const HREFLANG_MAP: Record<string, string> = {
     '/tienda': '/shop',
     '/contacto': '/contact',
     '/trazabilidad': '/traceability',
+    '/mayoristas': '/wholesale',
 };
 
 export function getHreflangPair(
