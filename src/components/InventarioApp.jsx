@@ -826,8 +826,10 @@ export default function InventarioApp() {
     movs.refetch();
   }, [summary, items, movs]);
 
-  // Si hay un SKU (pack) seleccionado, se preselecciona en el modal.
+  // Preselección del modal según el tab/ítem activo.
   const presetProductId = tab === 'pack' && selected ? selected.split(':')[1] : '';
+  const presetLotId = (tab === 'green' || tab === 'roast') && selected ? selected.split(':')[1] : '';
+  const presetTarget = (tab === 'green' || tab === 'roast') ? 'lot' : 'product';
 
   return (
     <main className="inv-shell">
