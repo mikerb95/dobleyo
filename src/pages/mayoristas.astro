@@ -1,0 +1,175 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { getCanonicalUrl, getHreflangPair } from "../i18n/index.ts";
+
+export const prerender = false;
+
+const _hreflang = getHreflangPair("/mayoristas");
+
+const pageTitle = "Mayoristas — DobleYo Café";
+const pageDescription =
+  "Compre café de especialidad colombiano al por mayor. Precios por volumen, tueste a la medida y entregas programadas para cafeterías, distribuidores y empresas.";
+
+const beneficios = [
+  {
+    icon: "📦",
+    titulo: "Precios por volumen",
+    texto: "Escalas de precio según la cantidad, con condiciones preferenciales para pedidos recurrentes.",
+  },
+  {
+    icon: "🔥",
+    titulo: "Tueste a la medida",
+    texto: "Definimos el perfil de tueste y el empaque según su operación y su marca.",
+  },
+  {
+    icon: "🚚",
+    titulo: "Entregas programadas",
+    texto: "Coordinamos despachos frecuentes para que nunca le falte café fresco.",
+  },
+  {
+    icon: "📄",
+    titulo: "Facturación formal",
+    texto: "Documentos en regla y un contacto comercial dedicado para su cuenta.",
+  },
+];
+
+const escalas = [
+  { rango: "Desde 20 kg / mes", desc: "Ideal para cafeterías y pequeños negocios." },
+  { rango: "Desde 50 kg / mes", desc: "Para restaurantes, hoteles y cadenas." },
+  { rango: "Desde 100 kg / mes", desc: "Distribuidores y operaciones de alto volumen." },
+];
+---
+
+<Layout
+  lang="es"
+  title={pageTitle}
+  description={pageDescription}
+  canonical={getCanonicalUrl("/mayoristas", "es")}
+  hreflangEs={_hreflang?.es}
+  hreflangEn={_hreflang?.en}
+>
+  <section class="ma-hero">
+    <div class="ma-hero__inner">
+      <p class="ma-hero__eyebrow">Mayoristas</p>
+      <h1 class="ma-hero__title">Café de especialidad al por mayor</h1>
+      <p class="ma-hero__sub">
+        Abastezca su negocio con café colombiano de origen, trazabilidad real y
+        tueste a la medida. Precios por volumen y entregas programadas para que
+        nunca le falte producto fresco.
+      </p>
+      <a class="btn-primary" href="/contacto" data-link>Solicitar cotización</a>
+    </div>
+  </section>
+
+  <section class="ma-benefits">
+    <div class="container">
+      <h2 class="ma-h2 ma-h2--center">Ventajas para mayoristas</h2>
+      <ul class="ma-grid" role="list">
+        {beneficios.map((b) => (
+          <li class="ma-card">
+            <span class="ma-card__icon" aria-hidden="true">{b.icon}</span>
+            <h3 class="ma-card__title">{b.titulo}</h3>
+            <p class="ma-card__text">{b.texto}</p>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <section class="ma-scales">
+    <div class="container">
+      <h2 class="ma-h2 ma-h2--center">Escalas de compra</h2>
+      <div class="ma-scales__grid">
+        {escalas.map((e) => (
+          <div class="ma-scale">
+            <p class="ma-scale__rango">{e.rango}</p>
+            <p class="ma-scale__desc">{e.desc}</p>
+          </div>
+        ))}
+      </div>
+      <p class="ma-scales__note">
+        ¿Su operación es más pequeña? Conozca nuestra
+        <a href="/partners" data-link>zona de partners</a>.
+      </p>
+    </div>
+  </section>
+
+  <section class="ma-cta">
+    <div class="ma-cta__inner">
+      <h2>Construyamos su abastecimiento</h2>
+      <p>Cuéntenos sus volúmenes y le enviamos una propuesta a la medida.</p>
+      <a class="btn-ghost" href="/contacto" data-link>Hablar con ventas</a>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 1.25rem; }
+  .ma-h2 {
+    font-family: var(--font-heading, serif);
+    font-size: clamp(1.4rem, 3vw, 2rem);
+    color: var(--coffee);
+    margin: 0 0 1.5rem;
+  }
+  .ma-h2--center { text-align: center; }
+
+  .ma-hero {
+    background: var(--coffee);
+    color: var(--cream);
+    padding: 3.5rem 1.5rem 3rem;
+    text-align: center;
+  }
+  .ma-hero__inner { max-width: 720px; margin: 0 auto; }
+  .ma-hero__eyebrow {
+    text-transform: uppercase; letter-spacing: 0.12em; font-size: 0.8rem;
+    opacity: 0.75; margin: 0 0 0.75rem;
+  }
+  .ma-hero__title {
+    font-family: var(--font-heading, serif);
+    font-size: clamp(1.9rem, 5vw, 3rem); line-height: 1.15; margin: 0 0 1rem;
+  }
+  .ma-hero__sub { font-size: 1.05rem; line-height: 1.65; opacity: 0.9; margin: 0 0 1.75rem; }
+
+  .ma-benefits { background: #fff; padding: 3.5rem 0; }
+  .ma-grid {
+    list-style: none; margin: 0; padding: 0;
+    display: grid; grid-template-columns: 1fr; gap: 1.5rem;
+  }
+  @media (min-width: 640px) { .ma-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 1024px) { .ma-grid { grid-template-columns: repeat(4, 1fr); } }
+  .ma-card {
+    background: var(--cream); border-radius: 14px; padding: 1.5rem 1.25rem;
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.08);
+  }
+  .ma-card__icon { font-size: 1.8rem; display: block; margin-bottom: 0.5rem; }
+  .ma-card__title { margin: 0 0 0.4rem; font-size: 1.1rem; color: var(--coffee); }
+  .ma-card__text { margin: 0; font-size: 0.9rem; line-height: 1.55; color: var(--ink, #555); }
+
+  .ma-scales { background: var(--cream); padding: 3.5rem 0; }
+  .ma-scales__grid {
+    display: grid; grid-template-columns: 1fr; gap: 1.25rem; margin-bottom: 1.5rem;
+  }
+  @media (min-width: 768px) { .ma-scales__grid { grid-template-columns: repeat(3, 1fr); } }
+  .ma-scale {
+    background: #fff; border-radius: 14px; padding: 1.5rem 1.25rem; text-align: center;
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.08);
+  }
+  .ma-scale__rango { margin: 0 0 0.4rem; font-weight: 700; color: var(--coffee); font-size: 1.1rem; }
+  .ma-scale__desc { margin: 0; font-size: 0.9rem; color: var(--ink, #555); line-height: 1.5; }
+  .ma-scales__note { text-align: center; margin: 0; color: var(--ink, #555); }
+  .ma-scales__note a { color: var(--accent); }
+
+  .ma-cta { background: var(--coffee); color: var(--cream); padding: 3rem 1.5rem; text-align: center; }
+  .ma-cta__inner { max-width: 600px; margin: 0 auto; }
+  .ma-cta h2 { font-family: var(--font-heading, serif); font-size: clamp(1.5rem, 4vw, 2.2rem); margin: 0 0 0.6rem; }
+  .ma-cta p { opacity: 0.9; margin: 0 0 1.5rem; }
+
+  .btn-primary, .btn-ghost {
+    display: inline-block; padding: 0.7rem 1.5rem; border-radius: 999px;
+    font-weight: 600; text-decoration: none; min-height: 44px; line-height: 1.6;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { filter: brightness(1.05); }
+  .btn-ghost { border: 1.5px solid var(--cream); color: var(--cream); }
+  .btn-ghost:hover { background: var(--cream); color: var(--coffee); }
+</style>
