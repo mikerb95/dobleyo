@@ -154,7 +154,7 @@ ordersRouter.post('/',
             // Aplicar cupón si viene en el request
             let discountAmount = 0;
             let appliedCode = null;
-            if (couponCode) {
+            if (couponCode && !isUSD) {
                 const code = couponCode.trim().toUpperCase();
                 const codeResult = await query(
                     `SELECT * FROM discount_codes WHERE code = ? AND active = 1`,
