@@ -1,0 +1,71 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { getCanonicalUrl } from "../../i18n/index.ts";
+---
+
+<Layout
+  lang="en"
+  title="Order confirmation — DobleYo Café"
+  description="Your DobleYo Café order confirmation."
+  canonical={getCanonicalUrl("/confirmation", "en")}
+>
+  <section class="cf">
+    <div id="cfLoading" class="cf-state">Loading your order…</div>
+
+    <div id="cfNotFound" class="cf-state" style="display:none">
+      <h1>Order not found</h1>
+      <p>We couldn't find that order. If you just paid, it may take a moment.</p>
+      <a href="/shop" class="cf-btn" data-link>Back to shop</a>
+    </div>
+
+    <div id="cfOk" class="cf-card" style="display:none">
+      <div class="cf-check" aria-hidden="true">✓</div>
+      <h1 class="cf-h">Thank you for your order!</h1>
+      <p class="cf-sub">A confirmation has been sent to your email.</p>
+      <div class="cf-ref">Order <strong id="cfRef"></strong> · <span id="cfStatus"></span></div>
+      <div id="cfItems" class="cf-items"></div>
+      <div class="cf-total"><span>Total</span><strong id="cfTotal"></strong></div>
+      <a href="/shop" class="cf-btn" data-link>Continue shopping</a>
+    </div>
+  </section>
+
+  <script is:inline>
+    (function () {
+      const ref = new URLSearchParams(location.search).get("ref");
+      const loading = document.getElementById("cfLoading");
+      const notFound = document.getElementById("cfNotFound");
+      const ok = document.getElementById("cfOk");
+      if (!ref) { loading.style.display = "none"; notFound.style.display = "block"; return; }
+
+      fetch("/api/orders/" + encodeURIComponent(ref))
+        .then((r) => r.ok ? r.json() : Promise.reject())
+        .then((j) => {
+          const d = j.data;
+          const cur = d.currency || "USD";
+          const fmt = (n) => new Intl.NumberFormat(cur === "USD" ? "en-US" : "es-CO", { style: "currency", currency: cur, maximumFractionDigits: 0 }).format(Number(n) || 0);
+          loading.style.display = "none"; ok.style.display = "block";
+          document.getElementById("cfRef").textContent = d.reference;
+          document.getElementById("cfStatus").textContent = d.status;
+          document.getElementById("cfItems").innerHTML = (d.items || []).map((it) =>
+            `<div class="cf-item"><span>${it.product_name} × ${it.quantity}</span><span>${fmt(it.subtotal_cop)}</span></div>`).join("");
+          document.getElementById("cfTotal").textContent = fmt(d.total_cop);
+        })
+        .catch(() => { loading.style.display = "none"; notFound.style.display = "block"; });
+    })();
+  </script>
+
+  <style>
+    .cf { max-width: 600px; margin: 0 auto; padding: 3rem 1.25rem 5rem; }
+    .cf-state { text-align: center; color: #666; padding: 2rem 0; }
+    .cf-card { text-align: center; background: #fff; border: 1px solid var(--border, #eee); border-radius: 16px; padding: 2.5rem 1.5rem; }
+    .cf-check { width: 64px; height: 64px; border-radius: 50%; background: #16a34a; color: #fff; font-size: 2rem; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; }
+    .cf-h { font-family: var(--font-heading, serif); color: var(--coffee); margin: 0 0 .5rem; }
+    .cf-sub { color: #666; margin: 0 0 1.25rem; }
+    .cf-ref { font-size: .9rem; color: #444; margin-bottom: 1.5rem; }
+    .cf-items { text-align: left; display: flex; flex-direction: column; gap: .5rem; border-top: 1px solid var(--border, #eee); padding-top: 1rem; margin-bottom: 1rem; }
+    .cf-item { display: flex; justify-content: space-between; font-size: .9rem; color: #444; }
+    .cf-total { display: flex; justify-content: space-between; border-top: 1px solid var(--border, #eee); padding-top: 1rem; font-size: 1.1rem; color: var(--coffee); }
+    .cf-total strong { color: var(--accent); }
+    .cf-btn { display: inline-block; margin-top: 1.5rem; background: var(--accent); color: #fff; padding: .7rem 1.5rem; border-radius: 999px; text-decoration: none; font-weight: 700; }
+  </style>
+</Layout>
