@@ -575,11 +575,19 @@ function MovementsFeed({ data, loading }) {
 }
 
 // ── New Movement Modal ──────────────────────────────────────────────────────────
-function NewMovementModal({ onClose, onDone, initialProductId }) {
+// Soporta dos destinos: 'product' (empaque/SKU, unidades enteras vía
+// /inventory/movements) y 'lot' (lote de café, peso en kg vía
+// /inventory/lots/:id/movement). Los lotes no admiten 'devolucion'.
+const LOT_TYPES = MOVEMENT_TYPES.filter((t) => t.value !== 'devolucion');
+
+function NewMovementModal({ onClose, onDone, initialTarget, initialProductId, initialLotId }) {
+  const [target, setTarget] = useState(initialTarget === 'lot' ? 'lot' : 'product');
   const [products, setProducts] = useState(null);
+  const [lots, setLots] = useState(null);
   const [loadError, setLoadError] = useState(null);
   const [form, setForm] = useState({
     product_id: initialProductId || '',
+    lot_id: initialLotId || '',
     movement_type: 'entrada',
     quantity: '',
     reason: '',
@@ -589,13 +597,20 @@ function NewMovementModal({ onClose, onDone, initialProductId }) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
 
+  // Carga perezosa: solo se piden los datos del destino al verlo por primera vez.
   useEffect(() => {
     let active = true;
-    fetchProducts()
-      .then((list) => { if (active) setProducts(list); })
-      .catch((e) => { if (active) setLoadError(e.message); });
+    if (target === 'product' && products === null) {
+      fetchProducts()
+        .then((list) => { if (active) setProducts(list); })
+        .catch((e) => { if (active) setLoadError(e.message); });
+    } else if (target === 'lot' && lots === null) {
+      fetchLots()
+        .then((list) => { if (active) setLots(list); })
+        .catch((e) => { if (active) setLoadError(e.message); });
+    }
     return () => { active = false; };
-  }, []);
+  }, [target, products, lots]);
 
   useEffect(() => {
     const onKey = (e) => { if (e.key === 'Escape') onClose(); };
@@ -603,28 +618,50 @@ function NewMovementModal({ onClose, onDone, initialProductId }) {
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose]);
 
+  const isLot = target === 'lot';
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
+  const switchTarget = (t) => {
+    setError(null); setLoadError(null);
+    setForm((f) => ({ ...f, movement_type: 'entrada' }));
+    setTarget(t);
+  };
+  const types = isLot ? LOT_TYPES : MOVEMENT_TYPES;
   const isAdjust = form.movement_type === 'ajuste';
+  const unit = isLot ? 'kg' : 'unidades';
 
   const submit = async (e) => {
     e.preventDefault();
     setError(null);
     const qty = Number(form.quantity);
-    if (!form.product_id) { setError('Seleccione un producto.'); return; }
-    if (!Number.isFinite(qty) || qty < 1) {
-      setError('Ingrese una cantidad válida (mínimo 1).');
-      return;
+
+    if (isLot) {
+      if (!form.lot_id) { setError('Seleccione un lote.'); return; }
+      if (!Number.isFinite(qty) || qty <= 0) {
+        setError('Ingrese una cantidad válida (mayor a 0).');
+        return;
+      }
+    } else {
+      if (!form.product_id) { setError('Seleccione un producto.'); return; }
+      if (!Number.isFinite(qty) || qty < 1) {
+        setError('Ingrese una cantidad válida (mínimo 1).');
+        return;
+      }
     }
+
     setSubmitting(true);
     try {
-      await api.post('/inventory/movements', {
-        product_id: form.product_id,
+      const payload = {
         movement_type: form.movement_type,
         quantity: qty,
         reason: form.reason.trim() || null,
         reference: form.reference.trim() || null,
         notes: form.notes.trim() || null,
-      });
+      };
+      if (isLot) {
+        await api.post(`/inventory/lots/${form.lot_id}/movement`, payload);
+      } else {
+        await api.post('/inventory/movements', { product_id: form.product_id, ...payload });
+      }
       onDone();
     } catch (err) {
       setError(err.message || 'No se pudo registrar el movimiento.');
@@ -642,55 +679,84 @@ function NewMovementModal({ onClose, onDone, initialProductId }) {
         </div>
 
         <div className="inv-modal__body">
-          <label className="inv-field">
-            <span>Producto</span>
-            {loadError ? (
-              <span className="inv-modal__error" style={{ margin: 0 }}>{loadError}</span>
-            ) : (
-              <select className="inv-input" value={form.product_id} onChange={set('product_id')}
-                disabled={!products} required>
-                <option value="">{products ? 'Seleccione un producto…' : 'Cargando…'}</option>
-                {products?.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name} — stock {fmtN(p.stock_quantity)}
-                  </option>
-                ))}
-              </select>
-            )}
-          </label>
+          <div className="inv-seg" role="tablist" aria-label="Tipo de ítem">
+            <button type="button" role="tab" aria-selected={!isLot}
+              className={`inv-seg__btn${!isLot ? ' inv-seg__btn--on' : ''}`}
+              onClick={() => switchTarget('product')}>Producto / empaque</button>
+            <button type="button" role="tab" aria-selected={isLot}
+              className={`inv-seg__btn${isLot ? ' inv-seg__btn--on' : ''}`}
+              onClick={() => switchTarget('lot')}>Lote de café</button>
+          </div>
+
+          {isLot ? (
+            <label className="inv-field">
+              <span>Lote</span>
+              {loadError ? (
+                <span className="inv-modal__error" style={{ margin: 0 }}>{loadError}</span>
+              ) : (
+                <select className="inv-input" value={form.lot_id} onChange={set('lot_id')}
+                  disabled={!lots} required>
+                  <option value="">{lots ? 'Seleccione un lote…' : 'Cargando…'}</option>
+                  {lots?.map((l) => (
+                    <option key={l.id} value={l.id}>
+                      {l.code} — {l.estado} · {fmtKg(l.kg)}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </label>
+          ) : (
+            <label className="inv-field">
+              <span>Producto</span>
+              {loadError ? (
+                <span className="inv-modal__error" style={{ margin: 0 }}>{loadError}</span>
+              ) : (
+                <select className="inv-input" value={form.product_id} onChange={set('product_id')}
+                  disabled={!products} required>
+                  <option value="">{products ? 'Seleccione un producto…' : 'Cargando…'}</option>
+                  {products?.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name} — stock {fmtN(p.stock_quantity)}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </label>
+          )}
 
           <div className="inv-field-row">
             <label className="inv-field">
               <span>Tipo</span>
               <select className="inv-input" value={form.movement_type} onChange={set('movement_type')}>
-                {MOVEMENT_TYPES.map((t) => (
+                {types.map((t) => (
                   <option key={t.value} value={t.value}>{t.label}</option>
                 ))}
               </select>
             </label>
             <label className="inv-field">
-              <span>Cantidad</span>
-              <input className="inv-input" type="number" min="1" step="1"
+              <span>Cantidad ({unit})</span>
+              <input className="inv-input" type="number"
+                min={isLot ? '0.01' : '1'} step={isLot ? '0.01' : '1'}
                 value={form.quantity} onChange={set('quantity')} required />
             </label>
           </div>
           {isAdjust && (
-            <p className="inv-hint">En un ajuste, la cantidad es el nuevo stock total del producto.</p>
+            <p className="inv-hint">
+              En un ajuste, la cantidad es el nuevo {isLot ? 'peso total del lote' : 'stock total del producto'}.
+            </p>
           )}
 
           <label className="inv-field">
             <span>Motivo</span>
             <input className="inv-input" type="text" value={form.reason} onChange={set('reason')}
-              placeholder="Ej.: Recepción de pedido, conteo físico…" />
+              placeholder={isLot ? 'Ej.: Merma de tostión, conteo físico…' : 'Ej.: Recepción de pedido, conteo físico…'} />
           </label>
 
-          <div className="inv-field-row">
-            <label className="inv-field">
-              <span>Referencia</span>
-              <input className="inv-input" type="text" value={form.reference} onChange={set('reference')}
-                placeholder="N.° de factura, orden…" />
-            </label>
-          </div>
+          <label className="inv-field">
+            <span>Referencia</span>
+            <input className="inv-input" type="text" value={form.reference} onChange={set('reference')}
+              placeholder="N.° de factura, orden…" />
+          </label>
 
           <label className="inv-field">
             <span>Notas</span>
