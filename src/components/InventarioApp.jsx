@@ -888,7 +888,9 @@ export default function InventarioApp() {
         <NewMovementModal
           onClose={() => setMovOpen(false)}
           onDone={handleMovementDone}
+          initialTarget={presetTarget}
           initialProductId={presetProductId}
+          initialLotId={presetLotId}
         />
       )}
     </main>
