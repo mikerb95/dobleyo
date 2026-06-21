@@ -803,6 +803,14 @@ export default function InventarioApp() {
       </div>
 
       <MovementsFeed data={movs.data} loading={movs.loading} />
+
+      {movOpen && (
+        <NewMovementModal
+          onClose={() => setMovOpen(false)}
+          onDone={handleMovementDone}
+          initialProductId={presetProductId}
+        />
+      )}
     </main>
   );
 }
