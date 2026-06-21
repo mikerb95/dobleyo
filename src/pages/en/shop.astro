@@ -59,7 +59,8 @@ const mapped = rows.length
         image: p.image,
     }));
 
-const productsJson = JSON.stringify(mapped);
+// Escapar "<" para poder inyectar el JSON de forma segura en un <script type="application/json">
+const productsJson = JSON.stringify(mapped).replace(/</g, "\\u003c");
 ---
 
 <Layout
