@@ -1,0 +1,160 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { getCanonicalUrl } from "../i18n/index.ts";
+
+export const prerender = false;
+
+const pageTitle = "Programa de afiliados — DobleYo Café";
+const pageDescription =
+  "Gane comisiones recomendando café de especialidad colombiano. Únase al programa de afiliados de DobleYo Café: enlace propio, comisiones por venta y pagos mensuales.";
+
+const pasos = [
+  {
+    num: "1",
+    titulo: "Regístrese",
+    texto: "Solicite su acceso al programa desde el formulario de contacto. Revisamos su perfil y le damos la bienvenida.",
+  },
+  {
+    num: "2",
+    titulo: "Comparta su enlace",
+    texto: "Reciba un enlace de afiliado único para compartir en redes, blog o con su comunidad.",
+  },
+  {
+    num: "3",
+    titulo: "Gane comisiones",
+    texto: "Por cada compra realizada con su enlace, usted gana una comisión sobre la venta.",
+  },
+  {
+    num: "4",
+    titulo: "Reciba sus pagos",
+    texto: "Liquidamos sus comisiones de forma mensual una vez superado el mínimo de retiro.",
+  },
+];
+
+const ventajas = [
+  "Comisión competitiva sobre cada venta confirmada.",
+  "Cookie de seguimiento de 30 días.",
+  "Panel para consultar clics, ventas y comisiones.",
+  "Material gráfico y de marca listo para usar.",
+  "Sin costo de inscripción ni permanencia.",
+];
+---
+
+<Layout
+  lang="es"
+  title={pageTitle}
+  description={pageDescription}
+  canonical={getCanonicalUrl("/afiliados", "es")}
+>
+  <section class="af-hero">
+    <div class="af-hero__inner">
+      <p class="af-hero__eyebrow">Programa de afiliados</p>
+      <h1 class="af-hero__title">Recomiende café, gane comisiones</h1>
+      <p class="af-hero__sub">
+        Si le apasiona el buen café y tiene una comunidad que confía en usted,
+        conviértalo en ingresos. Comparta DobleYo y reciba una comisión por cada
+        venta que genere.
+      </p>
+      <a class="btn-primary" href="/contacto" data-link>Quiero afiliarme</a>
+    </div>
+  </section>
+
+  <section class="af-steps">
+    <div class="container">
+      <h2 class="af-h2 af-h2--center">Cómo funciona</h2>
+      <ol class="af-grid">
+        {pasos.map((p) => (
+          <li class="af-card">
+            <span class="af-card__num" aria-hidden="true">{p.num}</span>
+            <h3 class="af-card__title">{p.titulo}</h3>
+            <p class="af-card__text">{p.texto}</p>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <section class="af-perks">
+    <div class="container af-perks__inner">
+      <h2 class="af-h2">Ventajas del programa</h2>
+      <ul class="af-perks__list">
+        {ventajas.map((v) => <li>{v}</li>)}
+      </ul>
+    </div>
+  </section>
+
+  <section class="af-cta">
+    <div class="af-cta__inner">
+      <h2>Empiece a ganar hoy</h2>
+      <p>La inscripción es gratuita. Escríbanos y le activamos su enlace de afiliado.</p>
+      <a class="btn-ghost" href="/contacto" data-link>Solicitar acceso</a>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 1.25rem; }
+  .af-h2 {
+    font-family: var(--font-heading, serif);
+    font-size: clamp(1.4rem, 3vw, 2rem);
+    color: var(--coffee);
+    margin: 0 0 1.5rem;
+  }
+  .af-h2--center { text-align: center; }
+
+  .af-hero {
+    background: var(--coffee);
+    color: var(--cream);
+    padding: 3.5rem 1.5rem 3rem;
+    text-align: center;
+  }
+  .af-hero__inner { max-width: 720px; margin: 0 auto; }
+  .af-hero__eyebrow {
+    text-transform: uppercase; letter-spacing: 0.12em; font-size: 0.8rem;
+    opacity: 0.75; margin: 0 0 0.75rem;
+  }
+  .af-hero__title {
+    font-family: var(--font-heading, serif);
+    font-size: clamp(1.9rem, 5vw, 3rem); line-height: 1.15; margin: 0 0 1rem;
+  }
+  .af-hero__sub { font-size: 1.05rem; line-height: 1.65; opacity: 0.9; margin: 0 0 1.75rem; }
+
+  .af-steps { background: #fff; padding: 3.5rem 0; }
+  .af-grid {
+    list-style: none; margin: 0; padding: 0;
+    display: grid; grid-template-columns: 1fr; gap: 1.5rem;
+    counter-reset: none;
+  }
+  @media (min-width: 640px) { .af-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 1024px) { .af-grid { grid-template-columns: repeat(4, 1fr); } }
+  .af-card {
+    background: var(--cream); border-radius: 14px; padding: 1.5rem 1.25rem;
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.08);
+  }
+  .af-card__num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 2.25rem; height: 2.25rem; border-radius: 50%;
+    background: var(--accent); color: #fff; font-weight: 700; margin-bottom: 0.75rem;
+  }
+  .af-card__title { margin: 0 0 0.4rem; font-size: 1.1rem; color: var(--coffee); }
+  .af-card__text { margin: 0; font-size: 0.9rem; line-height: 1.55; color: var(--ink, #555); }
+
+  .af-perks { background: var(--cream); padding: 3rem 0; }
+  .af-perks__inner { max-width: 760px; }
+  .af-perks__list { margin: 0; padding-left: 1.25rem; line-height: 1.8; color: var(--ink, #444); }
+  .af-perks__list li { margin: 0.3rem 0; }
+
+  .af-cta { background: var(--coffee); color: var(--cream); padding: 3rem 1.5rem; text-align: center; }
+  .af-cta__inner { max-width: 600px; margin: 0 auto; }
+  .af-cta h2 { font-family: var(--font-heading, serif); font-size: clamp(1.5rem, 4vw, 2.2rem); margin: 0 0 0.6rem; }
+  .af-cta p { opacity: 0.9; margin: 0 0 1.5rem; }
+
+  .btn-primary, .btn-ghost {
+    display: inline-block; padding: 0.7rem 1.5rem; border-radius: 999px;
+    font-weight: 600; text-decoration: none; min-height: 44px; line-height: 1.6;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { filter: brightness(1.05); }
+  .btn-ghost { border: 1.5px solid var(--cream); color: var(--cream); }
+  .btn-ghost:hover { background: var(--cream); color: var(--coffee); }
+</style>
