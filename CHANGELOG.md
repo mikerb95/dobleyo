@@ -2,6 +2,25 @@
 
 ---
 
+## 📅 2026-06-20 — Inventario: botones «Exportar CSV» y «Nuevo movimiento» funcionales (Agente: Claude)
+
+### Contexto
+En `/admin/inventario` los dos botones del encabezado, **«Exportar CSV»** y **«+ Nuevo movimiento»**, eran puramente decorativos: no tenían handler `onClick` ni lógica asociada, por lo que no respondían al clic.
+
+### Cambios — `src/components/InventarioApp.jsx`
+- **Exportar CSV (lado cliente).** Exporta los ítems **visibles** del tab activo (respeta búsqueda y filtro «Solo alertas») con columnas específicas por tab (verde/tostado/empaque/etiquetas). Genera el archivo con BOM UTF-8 (`inventario-<tab>-<fecha>.csv`) para que Excel respete los acentos. El botón se deshabilita si no hay ítems.
+- **Nuevo movimiento (modal).** Nuevo `NewMovementModal` que registra un movimiento contra el endpoint existente `POST /api/inventory/movements` (producto, tipo, cantidad, motivo, referencia, notas). Carga los productos vía `GET /api/inventory/products?active=true`; si hay un SKU de empaque seleccionado, se preselecciona. Al guardar, refresca KPIs, lista y feed. Validación en cliente, estado «Registrando…», cierre por backdrop/Escape y aviso de que en «ajuste» la cantidad es el nuevo stock total.
+- Se agregó `api.post` y un `fetchProducts` dedicado (el endpoint de productos usa el envoltorio `{ success, products }`, no `{ success, data }`).
+
+### Cambios — `src/pages/admin/inventario.astro`
+- Estilos del modal (`inv-modal`, `inv-field`, `inv-input`, etc.) y estado `:disabled` de `inv-btn`, todos con variables CSS del sistema.
+
+### Notas
+- **Sin cambios de backend**: reutiliza endpoints ya existentes (`/inventory/movements`, `/inventory/products`), por lo que la paridad `server/index.js` ↔ `api/index.js` se mantiene.
+- `astro check` sin errores nuevos en los archivos tocados.
+
+---
+
 ## 📅 2026-06-20 — Iteraciones: tablero XP reconstruido del historial real de GitHub + CHANGELOG (Agente: Claude)
 
 ### Contexto
