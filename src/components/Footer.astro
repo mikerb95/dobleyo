@@ -28,10 +28,12 @@ const tx = isEn
 
 // Rutas por idioma (en el subdominio en. se reescriben a /en/*).
 const r = isEn
-  ? { shop: "/shop", subscription: "/wholesale", about: "/", blog: "/", contact: "/contact",
-      shipping: "/", privacy: "/", terms: "/", a11y: "/", wholesale: "/wholesale" }
-  : { shop: "/tienda", subscription: "/suscripcion", about: "/nosotros", blog: "/blog", contact: "/contacto",
-      shipping: "/envios-devoluciones", privacy: "/privacidad", terms: "/terminos", a11y: "/accesibilidad", wholesale: "#" };
+  ? { shop: "/shop", subscription: "/wholesale", accessories: "/shop", about: "/", blog: "/", guides: "#",
+      contact: "/contact", shipping: "/", account: "#", partners: "#", affiliates: "#",
+      privacy: "/", terms: "/", a11y: "/", wholesale: "/wholesale" }
+  : { shop: "/tienda", subscription: "/suscripcion", accessories: "/accesorios", about: "/nosotros", blog: "/blog", guides: "/guias",
+      contact: "/contacto", shipping: "/envios-devoluciones", account: "/cuenta", partners: "/partners", affiliates: "/afiliados",
+      privacy: "/privacidad", terms: "/terminos", a11y: "/accesibilidad", wholesale: "/mayoristas" };
 ---
 
 <footer class="site-footer">
