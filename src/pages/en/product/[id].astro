@@ -14,7 +14,7 @@ try {
   const { rows } = await query(
     `SELECT p.id, p.slug, p.name, p.name_en, p.category, p.origin, p.process, p.roast,
             p.tasting_notes, p.price, p.price_usd, p.rating, p.image_url AS image,
-            p.stock_quantity AS stock, p.description, p.description_en,
+            p.stock_quantity AS stock, p.description,
             (SELECT MAX(l.score) FROM lots l WHERE l.product_id = p.id AND l.score IS NOT NULL) AS sca_score,
             (SELECT l.variety FROM lots l WHERE l.product_id = p.id AND l.variety IS NOT NULL ORDER BY l.created_at DESC LIMIT 1) AS variety
      FROM products p
