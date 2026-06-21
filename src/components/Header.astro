@@ -135,6 +135,8 @@ const accountHref = lang === "en" ? "/account" : "/cuenta";
   <div class="mobile-menu" id="mobileMenu" hidden>
     {nav.map((item) => <a href={item.href} data-link>{item.label}</a>)}
 
+    <div class="mobile-lang"><LangToggle lang={lang} /></div>
+
     <!-- Opciones autenticado en móvil -->
     <div id="mobileAuthenticatedMenu" style="display: none;">
       <a href="/cuenta" class="user-btn" data-link>
