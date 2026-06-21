@@ -168,7 +168,6 @@ export const ITERACIONES: Iteracion[] = [
     rango: "16 – 18 jun 2026",
     ghSince: "2026-06-16",
     ghUntil: "2026-06-19",
-    commits: 401,
     resumen:
       "Conexión de datos reales en CRM y MercadoLibre (captura, sync automático y webhook), gestor de blog con página pública, y rediseño profesional de la catación SCA y otros workbenches de producción.",
     historias: [

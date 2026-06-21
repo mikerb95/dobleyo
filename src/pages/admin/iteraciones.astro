@@ -1,8 +1,14 @@
 ---
 import AdminLayout from "../../layouts/AdminLayout.astro";
+import { PARES, COLUMNAS, ITERACIONES, COMMITS_POR_MES, REPO } from "../../data/iteraciones";
+
+const iterData = { PARES, COLUMNAS, ITERACIONES, COMMITS_POR_MES, REPO };
 ---
 
 <AdminLayout title="Iteraciones — DobleYo ERP" section="devtools">
+
+  <!-- Datos derivados del historial real de GitHub + CHANGELOG -->
+  <script type="application/json" id="iterData" set:html={JSON.stringify(iterData)} />
 
   <!-- ── Encabezado ──────────────────────────────────────────── -->
   <div class="page-header">
@@ -10,7 +16,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       <div>
         <div class="page-breadcrumb">DevTools</div>
         <h1 class="page-title">Iteraciones</h1>
-        <p class="page-subtitle">Tablero XP — historias, progreso y velocidad por iteración.</p>
+        <p class="page-subtitle">Tablero XP reconstruido del historial real de GitHub y el CHANGELOG — historias con su DoD, ancladas a sus commits.</p>
       </div>
       <div class="page-header-actions">
         <a href="/admin/devtools" class="btn btn-secondary">Zona de peligro</a>
