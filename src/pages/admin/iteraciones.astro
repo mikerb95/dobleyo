@@ -559,18 +559,38 @@ const iterData = { PARES, COLUMNAS, ITERACIONES, COMMITS_POR_MES, REPO };
 
   let iterActual = ITERACIONES[0];
 
-  // Selector
-  const sel = document.getElementById('iterSelect');
-  ITERACIONES.forEach(it => {
-    const o = document.createElement('option');
-    o.value = it.id;
-    o.textContent = `${it.nombre} — ${it.rango}`;
-    sel.appendChild(o);
+  // Selector: fila de cuadros (timeline)
+  const tabsBox = document.getElementById('iterTabs');
+  const tabEls = ITERACIONES.map((it, idx) => {
+    const tab = document.createElement('button');
+    tab.type = 'button';
+    tab.className = 'iter-tab' + (idx === 0 ? ' iter-tab--on' : '');
+    tab.setAttribute('role', 'tab');
+    tab.setAttribute('aria-selected', idx === 0 ? 'true' : 'false');
+    tab.dataset.id = it.id;
+    tab.title = it.nombre;
+
+    tab.appendChild(el('span', { class: 'iter-tab__fase' }, it.fase));
+    tab.appendChild(el('span', { class: 'iter-tab__name' }, it.nombre));
+    const range = el('span', { class: 'iter-tab__range' }, it.rango);
+    if (it.commits != null) range.appendChild(el('span', { class: 'iter-tab__commits' }, `${it.commits} commits`));
+    tab.appendChild(range);
+
+    tab.addEventListener('click', () => selectIter(it.id));
+    tabsBox.appendChild(tab);
+    return tab;
   });
-  sel.addEventListener('change', () => {
-    iterActual = ITERACIONES.find(i => i.id === sel.value) || ITERACIONES[0];
+
+  function selectIter(id) {
+    iterActual = ITERACIONES.find(i => i.id === id) || ITERACIONES[0];
+    tabEls.forEach(t => {
+      const on = t.dataset.id === iterActual.id;
+      t.classList.toggle('iter-tab--on', on);
+      t.setAttribute('aria-selected', on ? 'true' : 'false');
+      if (on) t.scrollIntoView({ behavior: 'smooth', inline: 'nearest', block: 'nearest' });
+    });
     render();
-  });
+  }
 
   // Toggle vista
   document.getElementById('iterViewToggle').addEventListener('click', (e) => {
