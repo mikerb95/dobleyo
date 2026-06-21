@@ -9,9 +9,14 @@ export const GET: APIRoute = async () => {
     const staticPages = [
         { url: '/', priority: '1.0', changefreq: 'weekly' },
         { url: '/tienda', priority: '0.9', changefreq: 'weekly' },
+        { url: '/accesorios', priority: '0.7', changefreq: 'weekly' },
+        { url: '/mayoristas', priority: '0.7', changefreq: 'monthly' },
         { url: '/trazabilidad', priority: '0.8', changefreq: 'monthly' },
         { url: '/blog', priority: '0.7', changefreq: 'weekly' },
+        { url: '/guias', priority: '0.6', changefreq: 'monthly' },
         { url: '/fincas', priority: '0.7', changefreq: 'monthly' },
+        { url: '/partners', priority: '0.5', changefreq: 'monthly' },
+        { url: '/afiliados', priority: '0.5', changefreq: 'monthly' },
         { url: '/contacto', priority: '0.6', changefreq: 'yearly' },
         { url: '/envios-devoluciones', priority: '0.5', changefreq: 'yearly' },
         { url: '/privacidad', priority: '0.4', changefreq: 'yearly' },
@@ -20,6 +25,7 @@ export const GET: APIRoute = async () => {
         // Versión en inglés
         { url: '/en/', priority: '0.9', changefreq: 'weekly' },
         { url: '/en/shop', priority: '0.8', changefreq: 'weekly' },
+        { url: '/en/wholesale', priority: '0.6', changefreq: 'monthly' },
         { url: '/en/traceability', priority: '0.7', changefreq: 'monthly' },
         { url: '/en/contact', priority: '0.5', changefreq: 'yearly' },
     ];
