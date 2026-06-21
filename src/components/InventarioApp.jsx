@@ -95,6 +95,25 @@ const ageLabel = (iso) => {
   return `${Math.floor(h / 24)} d`;
 };
 
+// ── CSV export ─────────────────────────────────────────────────────────────────
+function downloadCSV(filename, rows, columns) {
+  const esc = (v) => {
+    const s = v == null ? '' : String(v);
+    return /[",\n;]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+  const header = columns.map((c) => esc(c.label)).join(',');
+  const body = rows.map((r) => columns.map((c) => esc(c.get(r))).join(',')).join('\n');
+  const csv = '﻿' + header + '\n' + body; // BOM para que Excel respete UTF-8
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
 // ── Constants ─────────────────────────────────────────────────────────────────
 const TABS = [
   { id: 'green',  label: 'Café verde',   unit: 'kg' },
