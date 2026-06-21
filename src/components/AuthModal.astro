@@ -520,7 +520,8 @@ const appleClientId  = import.meta.env.PUBLIC_APPLE_CLIENT_ID  || '';
       } else if (role === 'caficultor') {
         window.location.href = '/admin';
       } else {
-        window.location.href = '/cuenta';
+        const isEn = document.documentElement.lang === 'en';
+        window.location.href = isEn ? '/account' : '/cuenta';
       }
     }
   }
