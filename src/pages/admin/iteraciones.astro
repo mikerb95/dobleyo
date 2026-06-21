@@ -31,13 +31,8 @@ const iterData = { PARES, COLUMNAS, ITERACIONES, COMMITS_POR_MES, REPO };
   <!-- ── Cuerpo ───────────────────────────────────────────────── -->
   <div class="erp-body">
 
-    <!-- Selector de iteración -->
-    <div class="dt-iter-bar">
-      <label class="dt-iter-label" for="iterSelect">
-        <span>Iteración</span>
-        <select id="iterSelect"></select>
-      </label>
-    </div>
+    <!-- Selector de iteración: fila de cuadros (timeline) -->
+    <div class="iter-tabs" id="iterTabs" role="tablist" aria-label="Iteración"></div>
 
     <!-- KPIs -->
     <div class="kpi-grid" id="iterSummary" style="margin-bottom:16px"></div>
