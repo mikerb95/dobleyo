@@ -355,8 +355,9 @@ const accountHref = lang === "en" ? "/account" : "/cuenta";
           userMobileLabel.textContent = firstName;
         }
         if (userBtn) {
-          userBtn.href = "/cuenta";
-          userBtn.setAttribute("aria-label", `Cuenta de ${firstName}`);
+          const header = document.getElementById("siteHeader");
+          userBtn.href = header?.dataset.accountHref ?? "/cuenta";
+          userBtn.setAttribute("aria-label", `${firstName}`);
           userBtn.dataset.auth = "true";
         }
 
@@ -390,7 +391,8 @@ const accountHref = lang === "en" ? "/account" : "/cuenta";
           mobileUnauthenticatedMenu.style.display = "flex";
 
         if (userBtn) {
-          userBtn.setAttribute("aria-label", "Menú de usuario");
+          const header = document.getElementById("siteHeader");
+          userBtn.setAttribute("aria-label", header?.dataset.menuLabel ?? "User menu");
         }
       } else {
         // Error del servidor — mostrar menú no autenticado
