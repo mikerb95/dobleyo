@@ -269,7 +269,7 @@ const productsJson = JSON.stringify(
                 .join("") ?? "";
         return `
       <article class="product-card" role="listitem" tabindex="0">
-        <a href="/tienda/${p.id}" class="card-img-link">
+        <a href="/product/${p.id}" class="card-img-link">
           <div class="card-img-wrap">
             <img src="${p.image}" alt="${p.name}" loading="lazy" class="card-img" />
             <div class="card-badges">${badges}</div>
