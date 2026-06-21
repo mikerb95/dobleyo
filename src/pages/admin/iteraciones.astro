@@ -189,11 +189,46 @@ const iterData = { PARES, COLUMNAS, ITERACIONES, COMMITS_POR_MES, REPO };
 
 <style is:global>
   /* ── Selector de iteración: fila de cuadros (timeline) ────── */
+  .iter-tabs-wrap {
+    position: relative; margin-bottom: 16px;
+  }
+  .iter-tabs-arrow {
+    position: absolute; top: 0; bottom: 12px; z-index: 3;
+    width: 36px; appearance: none; cursor: pointer;
+    display: grid; place-items: center;
+    border: 1px solid var(--rule); border-radius: var(--radius-sm);
+    background: var(--paper); color: var(--color-primary);
+    box-shadow: 0 4px 14px -8px color-mix(in oklab, var(--color-primary) 45%, transparent);
+    transition: background .12s, color .12s, opacity .12s;
+  }
+  .iter-tabs-arrow:hover { background: var(--hover); }
+  .iter-tabs-arrow[hidden] { display: none; }
+  .iter-tabs-arrow--left { left: 0; }
+  .iter-tabs-arrow--right { right: 0; }
+  /* Degradados que insinúan más contenido bajo las flechas */
+  .iter-tabs-wrap::before,
+  .iter-tabs-wrap::after {
+    content: ""; position: absolute; top: 0; bottom: 12px; width: 48px;
+    z-index: 2; pointer-events: none; opacity: 0; transition: opacity .15s;
+  }
+  .iter-tabs-wrap::before {
+    left: 36px;
+    background: linear-gradient(to right, var(--paper-2, #faf8f5), transparent);
+  }
+  .iter-tabs-wrap::after {
+    right: 36px;
+    background: linear-gradient(to left, var(--paper-2, #faf8f5), transparent);
+  }
+  .iter-tabs-wrap.has-prev::before { opacity: 1; }
+  .iter-tabs-wrap.has-next::after { opacity: 1; }
+  .iter-tabs-wrap.has-prev .iter-tabs { padding-left: 44px; }
+  .iter-tabs-wrap.has-next .iter-tabs { padding-right: 44px; }
   .iter-tabs {
-    display: flex; gap: 10px; margin-bottom: 16px;
+    display: flex; gap: 10px;
     overflow-x: auto; padding: 2px 2px 10px;
     scroll-snap-type: x proximity;
     scrollbar-width: thin;
+    scroll-behavior: smooth;
   }
   .iter-tabs::-webkit-scrollbar { height: 8px; }
   .iter-tabs::-webkit-scrollbar-thumb {
