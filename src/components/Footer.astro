@@ -1,19 +1,51 @@
 ---
+import type { Lang } from "../i18n/index.ts";
+
+interface Props { lang?: Lang; }
+const { lang = "es" } = Astro.props;
 const year = new Date().getFullYear();
+
+const isEn = lang === "en";
+const tx = isEn
+  ? {
+      promo: "10% off your first order", emailPh: "Your email address", subscribe: "Subscribe",
+      shop: "Shop", learn: "Learn", support: "Support", inquiries: "Inquiries",
+      coffees: "Coffees", subscription: "Subscription", accessories: "Accessories", seeAll: "See all",
+      about: "About us", blog: "Blog", guides: "Guides",
+      contact: "Contact us", shipping: "Shipping & returns", account: "Account",
+      partners: "Partner zone", affiliates: "Affiliate program", wholesale: "Wholesale", admin: "Admin Panel",
+      rights: "All rights reserved.", privacy: "Privacy Policy", terms: "Terms & Conditions", a11y: "Accessibility",
+    }
+  : {
+      promo: "10% de descuento en tu primera compra", emailPh: "Tu correo electrónico", subscribe: "Suscribirse",
+      shop: "Tienda", learn: "Aprende", support: "Soporte", inquiries: "Consultas",
+      coffees: "Cafés", subscription: "Suscripción", accessories: "Accesorios", seeAll: "Ver todo",
+      about: "Sobre nosotros", blog: "Blog", guides: "Guías",
+      contact: "Contáctanos", shipping: "Envíos y devoluciones", account: "Cuenta",
+      partners: "Zona de partners", affiliates: "Programa de afiliados", wholesale: "Mayoristas", admin: "Admin Panel",
+      rights: "Todos los derechos reservados.", privacy: "Política de privacidad", terms: "Términos y condiciones", a11y: "Accesibilidad",
+    };
+
+// Rutas por idioma (en el subdominio en. se reescriben a /en/*).
+const r = isEn
+  ? { shop: "/shop", subscription: "/wholesale", about: "/", blog: "/", contact: "/contact",
+      shipping: "/", privacy: "/", terms: "/", a11y: "/", wholesale: "/wholesale" }
+  : { shop: "/tienda", subscription: "/suscripcion", about: "/nosotros", blog: "/blog", contact: "/contacto",
+      shipping: "/envios-devoluciones", privacy: "/privacidad", terms: "/terminos", a11y: "/accesibilidad", wholesale: "#" };
 ---
 
 <footer class="site-footer">
   <div class="container">
     <div class="footer-news">
-      <div class="label">10% de descuento en tu primera compra</div>
+      <div class="label">{tx.promo}</div>
       <div class="input" id="newsletterForm">
         <input
           id="newsletterEmail"
           type="email"
-          placeholder="Tu correo electrónico"
-          aria-label="Correo electrónico"
+          placeholder={tx.emailPh}
+          aria-label={tx.emailPh}
         />
-        <button class="arrow" id="newsletterBtn" aria-label="Suscribirse">→</button>
+        <button class="arrow" id="newsletterBtn" aria-label={tx.subscribe}>→</button>
       </div>
       <p id="newsletterMsg" style="font-size:0.85rem;margin-top:0.5rem;min-height:1.2em;"></p>
     </div>
@@ -25,37 +57,37 @@ const year = new Date().getFullYear();
       </div>
       <div class="footer-columns">
         <div>
-          <h4>Tienda</h4>
-          <a href="/tienda" data-link>Cafés</a>
-          <a href="/suscripcion" data-link>Suscripción</a>
-          <a href="#">Accesorios</a>
-          <a href="/tienda" data-link>Ver todo</a>
+          <h4>{tx.shop}</h4>
+          <a href={r.shop} data-link>{tx.coffees}</a>
+          <a href={r.subscription} data-link>{tx.subscription}</a>
+          <a href="#">{tx.accessories}</a>
+          <a href={r.shop} data-link>{tx.seeAll}</a>
         </div>
         <div>
-          <h4>Aprende</h4>
-          <a href="/nosotros" data-link>Sobre nosotros</a>
-          <a href="/blog" data-link>Blog</a>
-          <a href="#">Guías</a>
+          <h4>{tx.learn}</h4>
+          <a href={r.about} data-link>{tx.about}</a>
+          <a href={r.blog} data-link>{tx.blog}</a>
+          <a href="#">{tx.guides}</a>
         </div>
         <div>
-          <h4>Soporte</h4>
-          <a href="/contacto" data-link>Contáctanos</a>
-          <a href="/envios-devoluciones" data-link>Envíos y devoluciones</a>
-          <a href="#">Cuenta</a>
+          <h4>{tx.support}</h4>
+          <a href={r.contact} data-link>{tx.contact}</a>
+          <a href={r.shipping} data-link>{tx.shipping}</a>
+          <a href="#">{tx.account}</a>
         </div>
         <div>
-          <h4>Consultas</h4>
-          <a href="#">Zona de partners</a>
-          <a href="#">Programa de afiliados</a>
-          <a href="#">Mayoristas</a>
-          <a href="/admin" data-link>Admin Panel</a>
+          <h4>{tx.inquiries}</h4>
+          <a href="#">{tx.partners}</a>
+          <a href="#">{tx.affiliates}</a>
+          <a href={r.wholesale} data-link>{tx.wholesale}</a>
+          <a href="/admin" data-link>{tx.admin}</a>
         </div>
       </div>
     </div>
 
     <div class="footer-legal">
       <div>
-        © <span id="year">{year}</span> DobleYo Café. Todos los derechos reservados.
+        © <span id="year">{year}</span> DobleYo Café. {tx.rights}
       </div>
       <div style="font-size: 0.85rem; color: #999; margin-top: 0.5rem;">
         Design — <a
