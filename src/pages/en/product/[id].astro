@@ -1,0 +1,204 @@
+---
+export const prerender = false;
+
+import Layout from "../../../layouts/Layout.astro";
+import { getCanonicalUrl, formatPrice } from "../../../i18n/index.ts";
+import { parseTastingNotes } from "../../../../server/utils/tasting.js";
+
+const { id } = Astro.params;
+
+let product: any = null;
+try {
+  const { query } = await import("../../../../server/db.js");
+  const LABEL: Record<string, string> = { cafe: "Coffee", accesorio: "Accessories", merchandising: "Merch" };
+  const { rows } = await query(
+    `SELECT p.id, p.slug, p.name, p.name_en, p.category, p.origin, p.process, p.roast,
+            p.tasting_notes, p.price, p.price_usd, p.rating, p.image_url AS image,
+            p.stock_quantity AS stock, p.description, p.description_en,
+            (SELECT MAX(l.score) FROM lots l WHERE l.product_id = p.id AND l.score IS NOT NULL) AS sca_score,
+            (SELECT l.variety FROM lots l WHERE l.product_id = p.id AND l.variety IS NOT NULL ORDER BY l.created_at DESC LIMIT 1) AS variety
+     FROM products p
+     WHERE (p.id = ? OR p.slug = ?) AND p.is_active = 1`,
+    [id, id]
+  );
+  if (rows.length) {
+    const p = rows[0];
+    const tn = parseTastingNotes(p.tasting_notes);
+    product = {
+      ...p,
+      name: p.name_en || p.name,
+      categoryLabel: LABEL[p.category] ?? p.category,
+      notes: tn?.en ?? tn?.es ?? null,
+      priceUsd: p.price_usd ?? null,
+      description: p.description_en || p.description || null,
+    };
+  }
+} catch (_) { /* fallthrough */ }
+
+if (!product) return Astro.redirect("/shop", 302);
+
+const outOfStock = typeof product.stock === "number" && product.stock === 0;
+const priceLabel = product.priceUsd != null ? formatPrice(Number(product.priceUsd), "en") : null;
+
+const productJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Product",
+  name: product.name,
+  image: product.image,
+  description: product.description || (Array.isArray(product.notes) ? product.notes.join(", ") : ""),
+  brand: { "@type": "Brand", name: "DobleYo Café" },
+  offers: {
+    "@type": "Offer",
+    priceCurrency: "USD",
+    price: product.priceUsd ?? undefined,
+    availability: outOfStock ? "https://schema.org/OutOfStock" : "https://schema.org/InStock",
+    url: `https://en.dobleyo.cafe/product/${product.id}`,
+  },
+};
+---
+
+<Layout
+  lang="en"
+  title={`${product.name} — DobleYo Café`}
+  description={product.description ||
+    (Array.isArray(product.notes)
+      ? `${product.name}: ${product.notes.join(", ")}. Colombian specialty coffee.`
+      : `${product.name} — Colombian specialty coffee by DobleYo.`)}
+  canonical={getCanonicalUrl(`/product/${product.id}`, "en")}
+  jsonLd={productJsonLd}
+>
+  <section class="pp">
+    <nav class="pp-crumb" aria-label="Breadcrumb">
+      <a href="/shop" data-link>Shop</a><span aria-hidden="true">›</span><span>{product.name}</span>
+    </nav>
+
+    <div class="pp-layout">
+      <div class="pp-imgwrap">
+        <img src={product.image} alt={product.name} class="pp-img" loading="eager" />
+      </div>
+
+      <div class="pp-detail">
+        <p class="pp-meta">{product.categoryLabel}{product.origin && <span> · {product.origin}</span>}</p>
+        <h1 class="pp-title">{product.name}</h1>
+
+        {product.rating && (
+          <div class="pp-rating" aria-label={`Rating: ${product.rating} of 5`}>
+            {"★".repeat(Math.round(product.rating))}{"☆".repeat(5 - Math.round(product.rating))}
+            <span class="pp-rating-num">{product.rating}</span>
+          </div>
+        )}
+
+        {priceLabel && <div class="pp-price">{priceLabel}</div>}
+        {outOfStock && <p class="pp-stock">Temporarily out of stock</p>}
+
+        {(product.process || product.variety || product.roast || (product.category === "cafe" && product.sca_score)) && (
+          <div class="pp-attrs">
+            {product.process && <div class="pp-attr"><span>Process</span><strong>{product.process}</strong></div>}
+            {product.variety && <div class="pp-attr"><span>Variety</span><strong>{product.variety}</strong></div>}
+            {product.roast && <div class="pp-attr"><span>Roast</span><strong>{product.roast}</strong></div>}
+            {product.origin && <div class="pp-attr"><span>Origin</span><strong>{product.origin}</strong></div>}
+            {product.category === "cafe" && product.sca_score && (
+              <div class="pp-attr pp-attr--sca"><span>SCA Score</span><strong>{product.sca_score} pts</strong></div>
+            )}
+          </div>
+        )}
+
+        {Array.isArray(product.notes) && product.notes.length > 0 && (
+          <div class="pp-notes">
+            <p class="pp-notes-title">Tasting notes</p>
+            <div class="pp-notes-list">{product.notes.map((n: string) => <span class="pp-note">{n}</span>)}</div>
+          </div>
+        )}
+
+        {product.description && <p class="pp-desc">{product.description}</p>}
+
+        <div
+          class="pp-actions"
+          id="ppActions"
+          data-id={product.id}
+          data-name={product.name}
+          data-price={product.priceUsd ?? ""}
+          data-image={product.image}
+        >
+          <div class="pp-qty">
+            <button type="button" id="qDown" aria-label="Decrease quantity">−</button>
+            <input type="number" id="qInput" value="1" min="1" max={product.stock || 99} aria-label="Quantity" />
+            <button type="button" id="qUp" aria-label="Increase quantity">+</button>
+          </div>
+          <button class="pp-add" id="ppAdd" disabled={outOfStock || undefined}>
+            {outOfStock ? "Out of stock" : "Add to cart"}
+          </button>
+          <a class="pp-viewcart" href="/cart" data-link>View cart</a>
+        </div>
+
+        <p class="pp-ship">🌎 Worldwide shipping · prices in USD</p>
+        {product.category === "cafe" && (
+          <a href="/traceability" class="pp-trace" data-link>🔍 Trace this coffee's origin</a>
+        )}
+      </div>
+    </div>
+  </section>
+
+  <script is:inline src="/assets/js/cart.js"></script>
+  <script is:inline>
+    (function () {
+      const wrap = document.getElementById("ppActions");
+      const qInput = document.getElementById("qInput");
+      if (!wrap) return;
+      document.getElementById("qDown")?.addEventListener("click", () => {
+        qInput.value = Math.max(1, (parseInt(qInput.value, 10) || 1) - 1);
+      });
+      document.getElementById("qUp")?.addEventListener("click", () => {
+        qInput.value = (parseInt(qInput.value, 10) || 1) + 1;
+      });
+      document.getElementById("ppAdd")?.addEventListener("click", () => {
+        if (!window.Cart || !wrap.dataset.price) return;
+        window.Cart.add({
+          id: wrap.dataset.id, name: wrap.dataset.name,
+          price: Number(wrap.dataset.price), image: wrap.dataset.image,
+          quantity: Math.max(1, parseInt(qInput.value, 10) || 1),
+        });
+        const btn = document.getElementById("ppAdd");
+        const orig = btn.textContent; btn.textContent = "✓ Added to cart";
+        setTimeout(() => { btn.textContent = orig; }, 1800);
+      });
+    })();
+  </script>
+
+  <style>
+    .pp { max-width: 1100px; margin: 0 auto; padding: 1.5rem 1.25rem 4rem; }
+    .pp-crumb { display: flex; gap: .4rem; align-items: center; font-size: .85rem; color: #888; margin-bottom: 1.5rem; flex-wrap: wrap; }
+    .pp-crumb a { color: var(--accent); text-decoration: none; }
+    .pp-layout { display: grid; grid-template-columns: 1fr; gap: 2rem; }
+    @media (min-width: 768px) { .pp-layout { grid-template-columns: 1fr 1fr; gap: 3rem; } }
+    .pp-imgwrap { border-radius: .75rem; overflow: hidden; aspect-ratio: 1/1; background: var(--cream); }
+    .pp-img { width: 100%; height: 100%; object-fit: cover; }
+    .pp-meta { font-size: .85rem; text-transform: uppercase; letter-spacing: .06em; color: #888; margin: 0 0 .4rem; }
+    .pp-title { font-size: clamp(1.6rem, 4vw, 2.2rem); margin: 0 0 .5rem; }
+    .pp-rating { color: #f59e0b; margin-bottom: .75rem; }
+    .pp-rating-num { color: #888; font-size: .85rem; margin-left: .25rem; }
+    .pp-price { font-size: 1.75rem; font-weight: 700; color: var(--accent); margin-bottom: .75rem; }
+    .pp-stock { display: inline-block; background: #fee2e2; color: #b91c1c; padding: .2rem .65rem; border-radius: 99px; font-size: .8rem; font-weight: 600; }
+    .pp-attrs { display: flex; flex-wrap: wrap; gap: .65rem; margin: 1rem 0; }
+    .pp-attr { display: flex; flex-direction: column; background: var(--cream); border-radius: .5rem; padding: .4rem .75rem; min-width: 80px; }
+    .pp-attr span { font-size: .7rem; text-transform: uppercase; letter-spacing: .06em; color: #888; }
+    .pp-attr strong { font-size: .9rem; }
+    .pp-attr--sca { background: #f0f9f0; border: 1px solid #86efac; }
+    .pp-attr--sca span, .pp-attr--sca strong { color: #15803d; }
+    .pp-notes { margin: 1rem 0; }
+    .pp-notes-title { font-size: .8rem; text-transform: uppercase; letter-spacing: .06em; color: #888; margin-bottom: .4rem; }
+    .pp-notes-list { display: flex; flex-wrap: wrap; gap: .4rem; }
+    .pp-note { background: var(--accent-light, #f0e8df); color: var(--accent); font-size: .82rem; font-weight: 600; padding: .2rem .65rem; border-radius: 99px; }
+    .pp-desc { font-size: .95rem; line-height: 1.6; color: #333; margin: 1rem 0; }
+    .pp-actions { display: flex; flex-wrap: wrap; gap: .65rem; align-items: center; margin: 1.25rem 0 .75rem; }
+    .pp-qty { display: flex; align-items: center; border: 1px solid #ddd; border-radius: .375rem; overflow: hidden; }
+    .pp-qty button { width: 2.25rem; height: 2.5rem; background: none; border: none; cursor: pointer; font-size: 1.1rem; font-weight: 600; color: var(--accent); }
+    .pp-qty input { width: 3rem; height: 2.5rem; border: none; border-left: 1px solid #ddd; border-right: 1px solid #ddd; text-align: center; font-size: .95rem; font-weight: 600; -moz-appearance: textfield; }
+    .pp-qty input::-webkit-inner-spin-button { -webkit-appearance: none; }
+    .pp-add { flex: 1; min-width: 160px; min-height: 2.5rem; background: var(--accent); color: #fff; border: none; border-radius: .375rem; font-size: 1rem; font-weight: 700; cursor: pointer; }
+    .pp-add:disabled { opacity: .5; cursor: not-allowed; }
+    .pp-viewcart { padding: .65rem 1rem; border: 1.5px solid var(--accent); color: var(--accent); border-radius: .375rem; text-decoration: none; font-weight: 600; }
+    .pp-ship { font-size: .82rem; color: #4a6741; margin: .25rem 0 .75rem; }
+    .pp-trace { display: inline-block; font-size: .85rem; color: var(--accent); text-decoration: none; }
+  </style>
+</Layout>
