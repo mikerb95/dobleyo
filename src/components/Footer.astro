@@ -79,8 +79,8 @@ const r = isEn
         </div>
         <div>
           <h4>{tx.inquiries}</h4>
-          <a href="#">{tx.partners}</a>
-          <a href="#">{tx.affiliates}</a>
+          <a href={r.partners} data-link>{tx.partners}</a>
+          <a href={r.affiliates} data-link>{tx.affiliates}</a>
           <a href={r.wholesale} data-link>{tx.wholesale}</a>
           <a href="/admin" data-link>{tx.admin}</a>
         </div>
