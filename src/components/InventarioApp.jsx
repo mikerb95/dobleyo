@@ -761,8 +761,10 @@ export default function InventarioApp() {
           </p>
         </div>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          <button type="button" className="inv-btn">Exportar CSV</button>
-          <button type="button" className="inv-btn inv-btn--primary">+ Nuevo movimiento</button>
+          <button type="button" className="inv-btn" onClick={handleExport}
+            disabled={!filtered?.length}>Exportar CSV</button>
+          <button type="button" className="inv-btn inv-btn--primary"
+            onClick={() => setMovOpen(true)}>+ Nuevo movimiento</button>
         </div>
       </header>
 
