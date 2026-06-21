@@ -90,6 +90,7 @@ ordersRouter.post('/',
         body('items').isArray({ min: 1 }).withMessage('El carrito está vacío'),
         body('items.*.productId').notEmpty(),
         body('items.*.quantity').isInt({ min: 1 }),
+        body('currency').optional().isIn(['COP', 'USD']).withMessage('Moneda inválida'),
     ],
     async (req, res) => {
         const errors = validationResult(req);
