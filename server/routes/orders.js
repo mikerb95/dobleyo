@@ -221,12 +221,14 @@ ordersRouter.post('/',
                 );
             }
 
-            // Generar URL de checkout Wompi
-            const redirectUrl = `${SITE_URL}/confirmacion?ref=${reference}`;
+            // Generar URL de checkout Wompi (redirección a confirmación según idioma/moneda)
+            const redirectUrl = isUSD
+                ? `https://en.dobleyo.cafe/confirmation?ref=${reference}`
+                : `${SITE_URL}/confirmacion?ref=${reference}`;
             let checkoutUrl = null;
 
             if (WOMPI_PUBLIC_KEY && WOMPI_INTEGRITY_SECRET) {
-                checkoutUrl = buildWompiCheckoutUrl(reference, total, customerEmail, redirectUrl);
+                checkoutUrl = buildWompiCheckoutUrl(reference, total, customerEmail, redirectUrl, currency);
             }
 
             if (appliedCode) {
