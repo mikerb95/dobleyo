@@ -179,9 +179,10 @@ const productsJson = JSON.stringify(mapped).replace(/</g, "\\u003c");
     </section>
 </Layout>
 
-<script define:vars={{ productsJson }}>
+<script type="application/json" id="shopData" set:html={productsJson}></script>
+<script>
     /* Shop script — English version (USD) */
-    const ALL = JSON.parse(productsJson);
+    const ALL = JSON.parse(document.getElementById("shopData").textContent);
     let activeFlags = new Set();
     let activeCats = new Set();
     let activeOrigins = new Set();
