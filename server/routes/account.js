@@ -309,8 +309,18 @@ accountRouter.delete('/', authenticateToken, async (req, res) => {
 
     await logAudit(req.user.id, 'delete', 'user', String(req.user.id), { self: true });
 
-    // Limpieza explícita de datos vinculados. Las órdenes conservan historial
-    // contable con user_id → NULL (ON DELETE SET NULL definido en la tabla).
+    // Limpieza explícita: no dependemos de ON DELETE (la aplicación de claves
+    // foráneas en libSQL/Turso puede no estar activa). Los registros con valor
+    // contable/operativo se desligan (user_id → NULL); el resto se elimina.
+    const detach = ['customer_orders', 'subscriptions', 'product_reviews'];
+    for (const table of detach) {
+      try {
+        await query(`UPDATE ${table} SET user_id = NULL WHERE user_id = ?`, [req.user.id]);
+      } catch (e) {
+        logger.warn({ e, table }, '[DELETE /api/account] No se pudo desligar tabla');
+      }
+    }
+
     await query('DELETE FROM refresh_tokens WHERE user_id = ?', [req.user.id]);
     await query('DELETE FROM user_addresses WHERE user_id = ?', [req.user.id]);
     await query('DELETE FROM user_favorites WHERE user_id = ?', [req.user.id]);
