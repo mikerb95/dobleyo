@@ -70,21 +70,29 @@ export default function Dashboard({ user: userProp = null }) {
   );
 }
 
+function greeting() {
+  const h = new Date().getHours();
+  if (h < 12) return "Buenos días";
+  if (h < 19) return "Buenas tardes";
+  return "Buenas noches";
+}
+
 function Header({ user }) {
   const today = new Date().toLocaleDateString("es-CO", {
     weekday: "long", day: "2-digit", month: "short", year: "numeric",
   });
+  const name = user?.first_name ?? user?.name?.split(" ")[0] ?? null;
   return (
     <header className={styles.header}>
       <div>
         <h1 className={styles.header__hello}>
-          Buenos días, {user?.first_name ?? user?.name?.split(" ")[0] ?? "Admin"}
+          {greeting()}{name ? `, ${name}` : ""}
         </h1>
         <div className={styles.header__date}>{capitalize(today)}</div>
       </div>
       <div className={styles.header__right}>
         <div className={styles.avatar} aria-hidden="true">
-          {(user?.first_name?.[0] ?? user?.name?.[0] ?? "A").toUpperCase()}
+          {(user?.first_name?.[0] ?? user?.name?.[0] ?? "?").toUpperCase()}
         </div>
       </div>
     </header>
