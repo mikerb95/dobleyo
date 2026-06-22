@@ -32,6 +32,7 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
 ---
 
 <AdminLayout title="Módulo Python — DobleYo Admin" section="python">
+  <script type="application/json" id="catalogProductNames" set:html={JSON.stringify(catalogProducts.map(p => p.name))} />
   <header class="page-header">
     <h1>Módulo Python</h1>
     <p>Resultado y operación de la capa Python: pronóstico de demanda y CRUD de registros.</p>
@@ -656,18 +657,16 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
       return json;
     }
 
-    // ── Cargar productos en todos los <select class="product-select"> ──
-    async function loadProducts() {
-      try {
-        const res = await fetch("/api/inventory/products", { credentials: "include" });
-        const j   = await res.json();
-        const products: any[] = j.data || j.products || [];
-        document.querySelectorAll<HTMLSelectElement>(".product-select").forEach(sel => {
-          const firstText = sel.options[0]?.textContent ?? "— Sin especificar —";
-          sel.innerHTML = `<option value="">${firstText}</option>` +
-            products.map(p => `<option value="${esc(p.name)}">${esc(p.name)}</option>`).join("");
-        });
-      } catch { /* selects quedan con la opción por defecto */ }
+    // ── Poblar todos los <select class="product-select"> desde el catálogo inyectado ──
+    function loadProducts() {
+      const names: string[] = JSON.parse(
+        document.getElementById("catalogProductNames")!.textContent!
+      );
+      document.querySelectorAll<HTMLSelectElement>(".product-select").forEach(sel => {
+        const firstText = sel.options[0]?.textContent ?? "— Sin especificar —";
+        sel.innerHTML = `<option value="">${firstText}</option>` +
+          names.map(n => `<option value="${esc(n)}">${esc(n)}</option>`).join("");
+      });
     }
 
     // ── Period toggle ──
@@ -897,7 +896,7 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
     $("filter-category").addEventListener("change", () => load());
 
     // ── Init ──
-    loadProducts();
+    loadProducts(); // síncrono: lee del JSON inyectado por SSR
     load();
   </script>
 </AdminLayout>
