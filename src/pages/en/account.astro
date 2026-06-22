@@ -1,0 +1,818 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { getCanonicalUrl } from "../../i18n/index.ts";
+---
+
+<Layout
+  lang="en"
+  title="My Account — DobleYo Café"
+  description="Manage your profile, orders, addresses, favourites and preferences at DobleYo Café."
+  canonical={getCanonicalUrl("/account", "en")}
+  noindex={true}
+>
+  <main class="container account">
+    <div id="accountLoading" class="account-loading">
+      <div class="account-spinner" aria-hidden="true"></div>
+      <p class="muted">Loading your account…</p>
+    </div>
+
+    <div id="accountShell" class="account-shell" hidden>
+      <aside class="account-sidebar">
+        <div class="account-id">
+          <div class="account-avatar" id="sideAvatar">—</div>
+          <div class="account-id-text">
+            <div class="account-id-name" id="sideName">—</div>
+            <div class="account-id-email muted" id="sideEmail">—</div>
+          </div>
+        </div>
+
+        <nav class="account-nav" id="accountNav" aria-label="Account sections">
+          <button class="account-nav-btn is-active" data-section="summary"><span>Summary</span></button>
+          <button class="account-nav-btn" data-section="profile"><span>Profile</span></button>
+          <button class="account-nav-btn" data-section="orders"><span>Orders</span></button>
+          <button class="account-nav-btn" data-section="favourites"><span>Favourites</span></button>
+          <button class="account-nav-btn" data-section="addresses"><span>Addresses</span></button>
+          <button class="account-nav-btn" data-section="preferences"><span>Preferences</span></button>
+          <button class="account-nav-btn" data-section="security"><span>Security</span></button>
+        </nav>
+
+        <button class="btn outline account-logout" id="logoutBtn">Sign out</button>
+      </aside>
+
+      <div class="account-content">
+
+        <!-- SUMMARY -->
+        <section class="account-panel is-active" data-panel="summary">
+          <h1 class="account-title" id="welcomeTitle">Hello</h1>
+
+          <div class="account-banner" id="verifyBanner" hidden>
+            <span>Your email is not yet verified. Check your inbox to confirm your account.</span>
+          </div>
+
+          <div class="stat-grid">
+            <button class="stat-card" data-jump="orders">
+              <div class="stat-value" id="statOrders">0</div>
+              <div class="stat-label">Orders</div>
+            </button>
+            <button class="stat-card" data-jump="favourites">
+              <div class="stat-value" id="statFavourites">0</div>
+              <div class="stat-label">Favourites</div>
+            </button>
+            <button class="stat-card" data-jump="addresses">
+              <div class="stat-value" id="statAddresses">0</div>
+              <div class="stat-label">Addresses</div>
+            </button>
+          </div>
+
+          <div class="account-card">
+            <h2 class="card-h">Account details</h2>
+            <div class="summary-meta">
+              <div class="meta-row"><span class="meta-label">Email</span><span class="meta-value" id="sumEmail">—</span></div>
+              <div class="meta-row"><span class="meta-label">Account type</span><span class="meta-value" id="sumRole">—</span></div>
+              <div class="meta-row"><span class="meta-label">Member since</span><span class="meta-value" id="sumCreated">—</span></div>
+              <div class="meta-row"><span class="meta-label">Last sign-in</span><span class="meta-value" id="sumLastLogin">—</span></div>
+            </div>
+          </div>
+
+          <div class="quick-links">
+            <a class="quick-link" href="/shop"><span>Browse the shop</span></a>
+            <a class="quick-link" href="/traceability"><span>Trace a lot</span></a>
+            <a class="quick-link" href="/contact"><span>Support / Contact</span></a>
+          </div>
+        </section>
+
+        <!-- PROFILE -->
+        <section class="account-panel" data-panel="profile">
+          <h1 class="account-title">Profile</h1>
+          <div class="account-card">
+            <div class="card-head">
+              <h2 class="card-h">Personal & contact details</h2>
+              <button class="btn outline small" id="btnEditProfile">Edit</button>
+            </div>
+            <div id="profileView" class="field-grid">
+              <div class="field"><div class="field-label">First name</div><div class="field-value" id="vFirstName">—</div></div>
+              <div class="field"><div class="field-label">Last name</div><div class="field-value" id="vLastName">—</div></div>
+              <div class="field"><div class="field-label">Mobile</div><div class="field-value" id="vMobile">—</div></div>
+              <div class="field"><div class="field-label">Phone</div><div class="field-value" id="vLandline">—</div></div>
+              <div class="field"><div class="field-label">City</div><div class="field-value" id="vCity">—</div></div>
+              <div class="field"><div class="field-label">State / Region</div><div class="field-value" id="vState">—</div></div>
+              <div class="field"><div class="field-label">Country</div><div class="field-value" id="vCountry">—</div></div>
+              <div class="field field--full"><div class="field-label">Address</div><div class="field-value" id="vAddress">—</div></div>
+            </div>
+            <form id="profileForm" class="form-grid" hidden novalidate>
+              <div class="form-group"><label for="fFirstName">First name <span class="req">*</span></label><input id="fFirstName" type="text" required /></div>
+              <div class="form-group"><label for="fLastName">Last name <span class="req">*</span></label><input id="fLastName" type="text" required /></div>
+              <div class="form-group"><label for="fMobile">Mobile</label><input id="fMobile" type="tel" /></div>
+              <div class="form-group"><label for="fLandline">Phone</label><input id="fLandline" type="tel" /></div>
+              <div class="form-group"><label for="fCity">City</label><input id="fCity" type="text" /></div>
+              <div class="form-group"><label for="fState">State / Region</label><input id="fState" type="text" /></div>
+              <div class="form-group"><label for="fCountry">Country</label><input id="fCountry" type="text" /></div>
+              <div class="form-group form-group--full"><label for="fAddress">Address</label><textarea id="fAddress" rows="2"></textarea></div>
+              <div class="form-actions">
+                <button type="button" class="btn outline" id="btnCancelProfile">Cancel</button>
+                <button type="submit" class="btn">Save changes</button>
+              </div>
+              <div class="form-msg" id="profileMsg"></div>
+            </form>
+          </div>
+        </section>
+
+        <!-- ORDERS -->
+        <section class="account-panel" data-panel="orders">
+          <h1 class="account-title">My orders</h1>
+          <div id="ordersList" class="orders-list"></div>
+        </section>
+
+        <!-- FAVOURITES -->
+        <section class="account-panel" data-panel="favourites">
+          <h1 class="account-title">Favourites</h1>
+          <div id="favoritesGrid" class="fav-grid"></div>
+        </section>
+
+        <!-- ADDRESSES -->
+        <section class="account-panel" data-panel="addresses">
+          <div class="card-head card-head--page">
+            <h1 class="account-title">Addresses</h1>
+            <button class="btn small" id="btnNewAddress">Add address</button>
+          </div>
+          <form id="addressForm" class="account-card form-grid" hidden novalidate>
+            <h2 class="card-h form-group--full" id="addressFormTitle">New address</h2>
+            <input type="hidden" id="aId" />
+            <div class="form-group"><label for="aLabel">Label (Home, Office…)</label><input id="aLabel" type="text" /></div>
+            <div class="form-group"><label for="aRecipient">Recipient <span class="req">*</span></label><input id="aRecipient" type="text" required /></div>
+            <div class="form-group"><label for="aPhone">Phone</label><input id="aPhone" type="tel" /></div>
+            <div class="form-group"><label for="aZip">ZIP / Postal code</label><input id="aZip" type="text" /></div>
+            <div class="form-group form-group--full"><label for="aAddress">Street address <span class="req">*</span></label><input id="aAddress" type="text" required /></div>
+            <div class="form-group"><label for="aCity">City <span class="req">*</span></label><input id="aCity" type="text" required /></div>
+            <div class="form-group"><label for="aState">State / Region</label><input id="aState" type="text" /></div>
+            <div class="form-group"><label for="aCountry">Country</label><input id="aCountry" type="text" /></div>
+            <div class="form-group form-group--full checkbox-row">
+              <label><input id="aDefault" type="checkbox" /> Set as default address</label>
+            </div>
+            <div class="form-actions">
+              <button type="button" class="btn outline" id="btnCancelAddress">Cancel</button>
+              <button type="submit" class="btn">Save address</button>
+            </div>
+            <div class="form-msg" id="addressMsg"></div>
+          </form>
+          <div id="addressesList" class="addresses-list"></div>
+        </section>
+
+        <!-- PREFERENCES -->
+        <section class="account-panel" data-panel="preferences">
+          <h1 class="account-title">Preferences</h1>
+          <form id="prefsForm" class="account-card">
+            <h2 class="card-h">Communications</h2>
+            <label class="switch-row"><input type="checkbox" id="prefNewsletter" /> <span>Newsletter and new releases</span></label>
+            <label class="switch-row"><input type="checkbox" id="prefOrders" /> <span>Order notifications</span></label>
+            <label class="switch-row"><input type="checkbox" id="prefPromos" /> <span>Promotions and offers</span></label>
+
+            <h2 class="card-h" style="margin-top:1.5rem">Regional</h2>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="prefLang">Language</label>
+                <select id="prefLang"><option value="es">Español</option><option value="en">English</option></select>
+              </div>
+              <div class="form-group">
+                <label for="prefCurrency">Currency</label>
+                <select id="prefCurrency"><option value="COP">Colombian Peso (COP)</option><option value="USD">US Dollar (USD)</option></select>
+              </div>
+            </div>
+
+            <div class="form-actions form-actions--left">
+              <button type="submit" class="btn">Save preferences</button>
+            </div>
+            <div class="form-msg" id="prefsMsg"></div>
+          </form>
+        </section>
+
+        <!-- SECURITY -->
+        <section class="account-panel" data-panel="security">
+          <h1 class="account-title">Security</h1>
+
+          <div class="account-card" id="loginMethodsCard">
+            <h2 class="card-h">Sign-in methods</h2>
+            <ul class="methods-list" id="methodsList"></ul>
+          </div>
+
+          <form id="passwordForm" class="account-card" novalidate>
+            <h2 class="card-h">Change password</h2>
+            <div class="form-grid">
+              <div class="form-group form-group--full"><label for="pCurrent">Current password <span class="req">*</span></label><input id="pCurrent" type="password" autocomplete="current-password" required /></div>
+              <div class="form-group"><label for="pNew">New password <span class="req">*</span></label><input id="pNew" type="password" autocomplete="new-password" minlength="8" required /><div class="form-hint">Minimum 8 characters</div></div>
+              <div class="form-group"><label for="pConfirm">Confirm new password <span class="req">*</span></label><input id="pConfirm" type="password" autocomplete="new-password" required /></div>
+            </div>
+            <div class="form-actions form-actions--left"><button type="submit" class="btn">Update password</button></div>
+            <div class="form-msg" id="passwordMsg"></div>
+          </form>
+
+          <div class="account-card danger-card">
+            <h2 class="card-h">Delete account</h2>
+            <p class="muted">This action is permanent. Your profile, addresses, favourites and preferences will be deleted. Order history is retained anonymously for accounting purposes.</p>
+            <div class="form-actions form-actions--left"><button class="btn danger" id="btnDeleteAccount">Delete my account</button></div>
+          </div>
+        </section>
+
+      </div>
+    </div>
+
+    <div class="account-modal" id="deleteModal" hidden>
+      <div class="account-modal-box">
+        <h2 class="card-h">Delete your account?</h2>
+        <p class="muted">Enter your password to confirm. This cannot be undone.</p>
+        <div class="form-group" id="deletePwdGroup">
+          <label for="deletePassword">Password</label>
+          <input id="deletePassword" type="password" autocomplete="current-password" />
+        </div>
+        <div class="form-actions">
+          <button class="btn outline" id="btnCancelDelete">Cancel</button>
+          <button class="btn danger" id="btnConfirmDelete">Delete permanently</button>
+        </div>
+        <div class="form-msg" id="deleteMsg"></div>
+      </div>
+    </div>
+  </main>
+</Layout>
+
+<style>
+  .account { padding-top: 1.5rem; padding-bottom: 3rem; }
+
+  .account-loading { display: grid; place-items: center; gap: 1rem; padding: 5rem 1rem; }
+  .account-spinner {
+    width: 38px; height: 38px; border-radius: 50%;
+    border: 3px solid var(--border); border-top-color: var(--accent);
+    animation: spin .7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .account-spinner { animation: none; border-top-color: var(--accent); } }
+
+  .account-shell { display: grid; grid-template-columns: 220px 1fr; gap: 2rem; align-items: start; }
+
+  .account-sidebar {
+    position: sticky; top: 5rem; background: var(--card, #fff); border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem;
+  }
+  .account-id { display: flex; align-items: center; gap: 0.75rem; padding-bottom: 0.875rem; border-bottom: 1px solid var(--border); }
+  .account-avatar {
+    width: 44px; height: 44px; border-radius: 50%; background: var(--coffee); color: #fff;
+    display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1rem; flex-shrink: 0;
+  }
+  .account-id-name { font-weight: 700; font-size: 0.92rem; }
+  .account-id-email { font-size: 0.78rem; }
+
+  .account-nav { display: flex; flex-direction: column; gap: 0.2rem; }
+  .account-nav-btn {
+    background: none; border: none; cursor: pointer; text-align: left; padding: 0.55rem 0.75rem;
+    border-radius: 8px; font: inherit; font-size: 0.9rem; color: var(--fg, #333);
+    transition: background .12s;
+  }
+  .account-nav-btn:hover { background: var(--bg, #f5f0eb); }
+  .account-nav-btn.is-active { background: var(--coffee); color: #fff; font-weight: 600; }
+  .account-logout { margin-top: 0.5rem; width: 100%; }
+
+  .account-content { min-width: 0; }
+  .account-panel { display: none; }
+  .account-panel.is-active { display: block; }
+  .account-title { font-family: var(--font-heading, serif); font-size: clamp(1.5rem, 3vw, 2rem); color: var(--coffee); margin: 0 0 1.25rem; }
+
+  .account-banner { background: #fef3cd; border: 1px solid #f6c74d; border-radius: 8px; padding: 0.75rem 1rem; margin-bottom: 1.25rem; font-size: 0.9rem; }
+  .account-card { background: var(--card, #fff); border: 1px solid var(--border); border-radius: 14px; padding: 1.25rem 1.5rem; margin-bottom: 1.25rem; }
+
+  .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.875rem; margin-bottom: 1.25rem; }
+  .stat-card {
+    background: var(--card, #fff); border: 1px solid var(--border); border-radius: 12px;
+    padding: 1.1rem; display: flex; flex-direction: column; align-items: center; gap: 0.3rem;
+    cursor: pointer; transition: box-shadow .15s; font: inherit;
+  }
+  .stat-card:hover { box-shadow: 0 4px 14px rgba(37,26,20,.1); }
+  .stat-value { font-size: 1.6rem; font-weight: 700; color: var(--coffee); }
+  .stat-label { font-size: 0.75rem; color: var(--muted-fg); text-transform: uppercase; letter-spacing: 0.04em; }
+
+  .summary-meta { display: grid; gap: 0.5rem; }
+  .meta-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; padding: 0.4rem 0; border-bottom: 1px solid var(--border); }
+  .meta-row:last-child { border-bottom: none; }
+  .meta-label { color: var(--muted-fg); }
+  .meta-value { font-weight: 600; }
+
+  .quick-links { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-top: 1.25rem; }
+  .quick-link {
+    background: var(--card, #fff); border: 1px solid var(--border); border-radius: 10px;
+    padding: 0.875rem; text-align: center; text-decoration: none; color: var(--coffee);
+    font-size: 0.88rem; font-weight: 600; transition: background .12s;
+  }
+  .quick-link:hover { background: var(--bg, #f5f0eb); }
+
+  .card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+  .card-head--page { margin-bottom: 0; }
+  .card-h { font-size: 1rem; font-weight: 700; color: var(--coffee); margin: 0; }
+
+  .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem 1.5rem; }
+  .field--full { grid-column: 1 / -1; }
+  .field-label { font-size: 0.72rem; color: var(--muted-fg); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 0.15rem; }
+  .field-value { font-size: 0.95rem; color: var(--fg); }
+
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.875rem 1.25rem; }
+  .form-group { display: flex; flex-direction: column; gap: 0.3rem; }
+  .form-group--full { grid-column: 1 / -1; }
+  .form-group label { font-size: 0.82rem; color: var(--fg); font-weight: 500; }
+  .form-group input, .form-group textarea, .form-group select {
+    border: 1.5px solid var(--border); border-radius: 8px; padding: 0.6rem 0.75rem;
+    font: inherit; font-size: 0.9rem; background: #fff; width: 100%; box-sizing: border-box;
+    transition: border-color .12s;
+  }
+  .form-group input:focus, .form-group textarea:focus, .form-group select:focus { outline: none; border-color: var(--accent); }
+  .form-hint { font-size: 0.75rem; color: var(--muted-fg); }
+  .req { color: var(--accent); }
+  .checkbox-row label { flex-direction: row; align-items: center; gap: 0.5rem; font-size: 0.9rem; cursor: pointer; }
+  .checkbox-row input { width: auto; }
+
+  .form-actions { display: flex; gap: 0.75rem; grid-column: 1 / -1; margin-top: 0.25rem; }
+  .form-actions--left { justify-content: flex-start; margin-top: 1rem; }
+  .form-msg { font-size: 0.85rem; grid-column: 1 / -1; min-height: 1.2em; }
+  .form-msg.ok { color: #15803d; }
+  .form-msg.err { color: #dc2626; }
+
+  .switch-row { display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 0; border-bottom: 1px solid var(--border); cursor: pointer; font-size: 0.9rem; }
+  .switch-row:last-of-type { border-bottom: none; }
+  .switch-row input { width: 18px; height: 18px; accent-color: var(--accent); }
+
+  .orders-list { display: grid; gap: 1rem; }
+  .order-card { background: var(--card, #fff); border: 1px solid var(--border); border-radius: 12px; padding: 1.1rem 1.25rem; }
+  .order-top { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem; }
+  .order-ref { font-weight: 700; }
+  .order-date { font-size: 0.82rem; color: var(--muted-fg); }
+  .order-items { display: grid; gap: 0.5rem; margin: 0.75rem 0; }
+  .order-item { display: flex; align-items: center; gap: 0.65rem; font-size: 0.88rem; }
+  .order-item img { width: 38px; height: 38px; border-radius: 6px; object-fit: cover; background: var(--bg); }
+  .order-item .qty { color: var(--muted-fg); }
+  .order-foot { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border); padding-top: 0.65rem; }
+  .order-total { font-weight: 700; }
+
+  .badge-status { font-size: 0.72rem; font-weight: 700; padding: 0.22rem 0.6rem; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.03em; }
+  .st-paid, .st-delivered { background: #dcfce7; color: #166534; }
+  .st-pending_payment, .st-processing { background: #fef9c3; color: #854d0e; }
+  .st-shipped { background: #dbeafe; color: #1e40af; }
+  .st-cancelled, .st-failed { background: #fee2e2; color: #991b1b; }
+  .st-default { background: var(--bg); color: var(--muted-fg); }
+
+  .fav-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1.1rem; }
+  .fav-card { background: var(--card, #fff); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; }
+  .fav-card img { width: 100%; aspect-ratio: 1; object-fit: cover; }
+  .fav-body { padding: 0.85rem; display: flex; flex-direction: column; gap: 0.4rem; flex: 1; }
+  .fav-name { font-weight: 600; font-size: 0.92rem; }
+  .fav-name a { color: inherit; text-decoration: none; }
+  .fav-price { font-weight: 700; }
+  .fav-actions { display: flex; gap: 0.4rem; margin-top: auto; }
+  .fav-actions .btn { flex: 1; padding: 0.45rem; font-size: 0.8rem; }
+
+  .addresses-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; margin-top: 1rem; }
+  .address-card { background: var(--card, #fff); border: 1px solid var(--border); border-radius: 12px; padding: 1.1rem 1.25rem; }
+  .address-card.is-default { border-color: var(--accent); }
+  .address-default-tag { font-size: 0.68rem; font-weight: 700; color: #fff; background: var(--accent); padding: 0.15rem 0.55rem; border-radius: 999px; }
+  .address-label { font-weight: 700; margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.5rem; }
+  .address-text { font-size: 0.86rem; color: var(--muted-fg); line-height: 1.5; }
+  .address-actions { display: flex; gap: 0.75rem; margin-top: 0.85rem; flex-wrap: wrap; }
+  .link-btn { background: none; border: none; cursor: pointer; font: inherit; font-size: 0.82rem; color: var(--accent); padding: 0; }
+  .link-btn.danger { color: #dc2626; }
+
+  .methods-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.6rem; }
+  .methods-list li { display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; padding: 0.5rem 0; border-bottom: 1px solid var(--border); }
+  .methods-list li:last-child { border-bottom: none; }
+  .method-on { color: #15803d; font-weight: 600; font-size: 0.82rem; }
+  .method-off { color: var(--muted-fg); font-size: 0.82rem; }
+
+  .danger-card { border-color: #fecaca; }
+
+  .empty-state { text-align: center; padding: 2.5rem 1rem; color: var(--muted-fg); }
+  .empty-state .btn { margin-top: 1rem; }
+
+  .account-modal { position: fixed; inset: 0; background: rgba(0,0,0,.5); display: grid; place-items: center; z-index: 1000; padding: 1rem; }
+  .account-modal-box { background: var(--card, #fff); border-radius: 14px; padding: 1.75rem; max-width: 420px; width: 100%; }
+
+  @media (max-width: 1024px) {
+    .account-shell { grid-template-columns: 1fr; }
+    .account-sidebar { position: static; }
+    .account-id { padding-bottom: 0.75rem; }
+    .account-nav { flex-direction: row; overflow-x: auto; gap: 0.4rem; margin: 0.85rem 0; padding-bottom: 0.3rem; }
+    .account-nav-btn { white-space: nowrap; flex: 0 0 auto; }
+    .account-logout { width: auto; }
+  }
+  @media (max-width: 640px) {
+    .stat-grid { grid-template-columns: repeat(3, 1fr); }
+    .quick-links { grid-template-columns: 1fr; }
+    .field-grid, .form-grid { grid-template-columns: 1fr; }
+    .field--full, .form-group--full { grid-column: 1; }
+  }
+</style>
+
+<script>
+  const API = "/api";
+
+  let user: any = {};
+  const loaded: Record<string, boolean> = {
+    orders: false, favourites: false, addresses: false, preferences: false,
+  };
+
+  const $ = (id: string) => document.getElementById(id);
+  const setText = (id: string, v: any) => { const el = $(id); if (el) el.textContent = (v === null || v === undefined || v === "") ? "—" : String(v); };
+  const esc = (s: any) => String(s ?? "").replace(/[&<>"']/g, (c: string) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c] ?? c));
+
+  function fmtUSD(value: number) {
+    return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(value || 0);
+  }
+  function fmtDate(raw: string | null) {
+    if (!raw) return "—";
+    const norm = typeof raw === "string" && raw.includes(" ") ? raw.replace(" ", "T") + "Z" : raw;
+    const d = new Date(norm);
+    if (isNaN(d.getTime())) return raw;
+    return d.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+  }
+  const ROLE_LABEL: Record<string, string> = {
+    client: "Customer", admin: "Administrator", provider: "Provider", caficultor: "Coffee farmer",
+  };
+  const STATUS_LABEL: Record<string, string> = {
+    pending_payment: "Payment pending", paid: "Paid", processing: "Preparing",
+    shipped: "Shipped", delivered: "Delivered", cancelled: "Cancelled", failed: "Failed",
+  };
+
+  async function api(path: string, opts: RequestInit = {}) {
+    const res = await fetch(API + path, { credentials: "include", headers: { "Content-Type": "application/json" }, ...opts });
+    let data = null;
+    try { data = await res.json(); } catch {}
+    return { ok: res.ok, status: res.status, data };
+  }
+
+  function setMsg(id: string, text: string, type?: string) {
+    const el = $(id);
+    if (!el) return;
+    el.textContent = text || "";
+    el.className = "form-msg" + (type ? " " + type : "");
+  }
+  function errMsg(data: any, fallback: string) {
+    if (!data) return fallback;
+    if (data.error) return data.error;
+    if (data.errors && data.errors.length) return data.errors.map((x: any) => x.msg).join(", ");
+    return fallback;
+  }
+
+  function showSection(name: string) {
+    document.querySelectorAll(".account-panel").forEach((p) =>
+      p.classList.toggle("is-active", p.getAttribute("data-panel") === name));
+    document.querySelectorAll(".account-nav-btn").forEach((b) =>
+      b.classList.toggle("is-active", b.getAttribute("data-section") === name));
+    if (location.hash !== "#" + name) history.replaceState(null, "", "#" + name);
+    loadSection(name);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function loadSection(name: string) {
+    if (name === "orders" && !loaded.orders) loadOrders();
+    if (name === "favourites" && !loaded.favourites) loadFavourites();
+    if (name === "addresses" && !loaded.addresses) loadAddresses();
+    if (name === "preferences" && !loaded.preferences) loadPreferences();
+  }
+
+  document.querySelectorAll(".account-nav-btn").forEach((btn) =>
+    btn.addEventListener("click", () => showSection(btn.getAttribute("data-section") ?? "summary")));
+  document.querySelectorAll("[data-jump]").forEach((el) =>
+    el.addEventListener("click", () => showSection((el as HTMLElement).getAttribute("data-jump") ?? "summary")));
+
+  // ── Profile ─────────────────────────────────────────────────
+  function renderProfile() {
+    const full = [user.first_name, user.last_name].filter(Boolean).join(" ") || user.email || "—";
+    const initials = full.split(" ").slice(0, 2).map((w: string) => w[0]).join("").toUpperCase();
+    setText("sideAvatar", initials || "U");
+    setText("sideName", full);
+    setText("sideEmail", user.email);
+    setText("welcomeTitle", "Hello, " + ((user.first_name || "").trim() || "there"));
+    setText("sumEmail", user.email);
+    setText("sumRole", ROLE_LABEL[user.role] || user.role);
+    setText("sumCreated", fmtDate(user.created_at));
+    setText("sumLastLogin", fmtDate(user.last_login_at));
+    const banner = $("verifyBanner") as HTMLElement;
+    if (banner) banner.hidden = !!user.is_verified || !!user.has_google || !!user.has_apple;
+
+    setText("vFirstName", user.first_name);
+    setText("vLastName", user.last_name);
+    setText("vMobile", user.mobile_phone);
+    setText("vLandline", user.landline_phone);
+    setText("vCity", user.city);
+    setText("vState", user.state_province);
+    setText("vCountry", user.country);
+    setText("vAddress", user.address);
+  }
+
+  function fillProfileForm() {
+    ($("fFirstName") as HTMLInputElement).value = user.first_name || "";
+    ($("fLastName") as HTMLInputElement).value = user.last_name || "";
+    ($("fMobile") as HTMLInputElement).value = user.mobile_phone || "";
+    ($("fLandline") as HTMLInputElement).value = user.landline_phone || "";
+    ($("fCity") as HTMLInputElement).value = user.city || "";
+    ($("fState") as HTMLInputElement).value = user.state_province || "";
+    ($("fCountry") as HTMLInputElement).value = user.country || "";
+    ($("fAddress") as HTMLTextAreaElement).value = user.address || "";
+  }
+
+  $("btnEditProfile")!.addEventListener("click", () => {
+    fillProfileForm();
+    ($("profileView") as HTMLElement).hidden = true;
+    ($("profileForm") as HTMLElement).hidden = false;
+    ($("btnEditProfile") as HTMLElement).hidden = true;
+  });
+  function closeProfileEdit() {
+    ($("profileView") as HTMLElement).hidden = false;
+    ($("profileForm") as HTMLElement).hidden = true;
+    ($("btnEditProfile") as HTMLElement).hidden = false;
+    setMsg("profileMsg", "");
+  }
+  $("btnCancelProfile")!.addEventListener("click", closeProfileEdit);
+
+  ($("profileForm") as HTMLFormElement).addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const btn = (e.target as HTMLFormElement).querySelector('button[type="submit"]') as HTMLButtonElement;
+    btn.disabled = true; btn.textContent = "Saving…";
+    const body = {
+      first_name: ($("fFirstName") as HTMLInputElement).value.trim(),
+      last_name: ($("fLastName") as HTMLInputElement).value.trim(),
+      mobile_phone: ($("fMobile") as HTMLInputElement).value.trim(),
+      landline_phone: ($("fLandline") as HTMLInputElement).value.trim(),
+      city: ($("fCity") as HTMLInputElement).value.trim(),
+      state_province: ($("fState") as HTMLInputElement).value.trim(),
+      country: ($("fCountry") as HTMLInputElement).value.trim(),
+      address: ($("fAddress") as HTMLTextAreaElement).value.trim(),
+    };
+    const { ok, data } = await api("/auth/profile", { method: "PUT", body: JSON.stringify(body) });
+    btn.disabled = false; btn.textContent = "Save changes";
+    if (ok && data && data.success) {
+      user = { ...user, ...body };
+      renderProfile();
+      closeProfileEdit();
+    } else {
+      setMsg("profileMsg", errMsg(data, "Error saving changes"), "err");
+    }
+  });
+
+  // ── Orders ──────────────────────────────────────────────────
+  async function loadOrders() {
+    loaded.orders = true;
+    const el = $("ordersList")!;
+    el.innerHTML = '<p class="muted">Loading orders…</p>';
+    const { ok, data } = await api("/orders/mine");
+    const orders = ok && data && data.success ? data.data : [];
+    setText("statOrders", orders.length);
+    if (!orders.length) {
+      el.innerHTML = '<div class="empty-state"><p>You have no orders yet.</p><a class="btn" href="/shop">Browse the shop</a></div>';
+      return;
+    }
+    el.innerHTML = orders.map((o: any) => {
+      const stClass = "st-" + (o.status || "default");
+      const items = (o.items || []).map((it: any) => `
+        <div class="order-item">
+          <img src="${esc(it.product_image || "/assets/img/placeholder.png")}" alt="" loading="lazy" />
+          <span>${esc(it.product_name)}</span>
+          <span class="qty">× ${it.quantity}</span>
+        </div>`).join("");
+      return `
+        <div class="order-card">
+          <div class="order-top">
+            <div><div class="order-ref">Order ${esc(o.reference)}</div><div class="order-date">${fmtDate(o.created_at)}</div></div>
+            <span class="badge-status ${stClass}">${esc(STATUS_LABEL[o.status] || o.status)}</span>
+          </div>
+          <div class="order-items">${items}</div>
+          <div class="order-foot">
+            <span class="muted">${esc(o.shipping_city || "")}</span>
+            <span class="order-total">${fmtUSD(o.total_usd || o.total_cop / 4000)}</span>
+          </div>
+        </div>`;
+    }).join("");
+  }
+
+  // ── Favourites ──────────────────────────────────────────────
+  async function loadFavourites() {
+    loaded.favourites = true;
+    const el = $("favoritesGrid")!;
+    el.innerHTML = '<p class="muted">Loading favourites…</p>';
+    const { ok, data } = await api("/account/favorites");
+    const favs = ok && data && data.success ? data.data : [];
+    setText("statFavourites", favs.length);
+    if (!favs.length) {
+      el.innerHTML = '<div class="empty-state"><p>You have no favourite products yet.</p><a class="btn" href="/shop">Browse products</a></div>';
+      return;
+    }
+    el.innerHTML = favs.map((f: any) => {
+      const href = "/product/" + encodeURIComponent(f.slug || f.product_id);
+      const soldOut = f.is_active === 0;
+      return `
+        <div class="fav-card" data-pid="${esc(f.product_id)}">
+          <a href="${href}"><img src="${esc(f.image_url || "/assets/img/placeholder.png")}" alt="${esc(f.name_en || f.name)}" loading="lazy" /></a>
+          <div class="fav-body">
+            <div class="fav-name"><a href="${href}">${esc(f.name_en || f.name)}</a></div>
+            <div class="fav-price">${fmtUSD(f.price_usd || f.price / 4000)}</div>
+            <div class="fav-actions">
+              <button class="btn fav-add" ${soldOut ? "disabled" : ""} data-name="${esc(f.name_en || f.name)}" data-price="${f.price_usd || ""}" data-img="${esc(f.image_url || "")}">${soldOut ? "Sold out" : "Add to cart"}</button>
+              <button class="btn outline fav-remove" title="Remove from favourites">✕</button>
+            </div>
+          </div>
+        </div>`;
+    }).join("");
+
+    el.querySelectorAll(".fav-add").forEach((b) =>
+      b.addEventListener("click", () => {
+        const card = (b as HTMLElement).closest(".fav-card") as HTMLElement;
+        if (window.Cart) window.Cart.addToCart({ id: card.dataset.pid, name: (b as HTMLElement).dataset.name, price: Number((b as HTMLElement).dataset.price), image: (b as HTMLElement).dataset.img, qty: 1 });
+      }));
+    el.querySelectorAll(".fav-remove").forEach((b) =>
+      b.addEventListener("click", async () => {
+        const card = (b as HTMLElement).closest(".fav-card") as HTMLElement;
+        await api("/account/favorites/" + encodeURIComponent(card.dataset.pid ?? ""), { method: "DELETE" });
+        card.remove();
+        const n = el.querySelectorAll(".fav-card").length;
+        setText("statFavourites", n);
+        if (!n) { loaded.favourites = false; loadFavourites(); }
+      }));
+  }
+
+  // ── Addresses ───────────────────────────────────────────────
+  let _addressList: any[] = [];
+  async function loadAddresses() {
+    loaded.addresses = true;
+    const el = $("addressesList")!;
+    el.innerHTML = '<p class="muted">Loading addresses…</p>';
+    const { ok, data } = await api("/account/addresses");
+    _addressList = ok && data && data.success ? data.data : [];
+    setText("statAddresses", _addressList.length);
+    if (!_addressList.length) {
+      el.innerHTML = '<div class="empty-state"><p>No saved addresses.</p></div>';
+      return;
+    }
+    el.innerHTML = _addressList.map((a: any) => `
+      <div class="address-card ${a.is_default ? "is-default" : ""}">
+        <div class="address-label">${esc(a.label || "Address")} ${a.is_default ? '<span class="address-default-tag">Default</span>' : ""}</div>
+        <div class="address-text">
+          ${esc(a.recipient_name)}<br/>
+          ${esc(a.address)}<br/>
+          ${esc([a.city, a.state_province, a.country].filter(Boolean).join(", "))}${a.zip ? " · " + esc(a.zip) : ""}
+          ${a.phone ? "<br/>Tel: " + esc(a.phone) : ""}
+        </div>
+        <div class="address-actions">
+          ${a.is_default ? "" : `<button class="link-btn addr-default" data-id="${a.id}">Set as default</button>`}
+          <button class="link-btn addr-edit" data-id="${a.id}">Edit</button>
+          <button class="link-btn danger addr-del" data-id="${a.id}">Delete</button>
+        </div>
+      </div>`).join("");
+
+    el.querySelectorAll(".addr-default").forEach((b) => b.addEventListener("click", async () => {
+      await api("/account/addresses/" + (b as HTMLElement).dataset.id + "/default", { method: "PUT" });
+      loaded.addresses = false; loadAddresses();
+    }));
+    el.querySelectorAll(".addr-del").forEach((b) => b.addEventListener("click", async () => {
+      if (!confirm("Delete this address?")) return;
+      await api("/account/addresses/" + (b as HTMLElement).dataset.id, { method: "DELETE" });
+      loaded.addresses = false; loadAddresses();
+    }));
+    el.querySelectorAll(".addr-edit").forEach((b) => b.addEventListener("click", () => {
+      const a = _addressList.find((x) => String(x.id) === (b as HTMLElement).dataset.id);
+      openAddressForm(a);
+    }));
+  }
+
+  function openAddressForm(a: any) {
+    const f = $("addressForm") as HTMLElement;
+    f.hidden = false;
+    setMsg("addressMsg", "");
+    ($("addressFormTitle") as HTMLElement).textContent = a ? "Edit address" : "New address";
+    ($("aId") as HTMLInputElement).value = a ? a.id : "";
+    ($("aLabel") as HTMLInputElement).value = a ? a.label || "" : "";
+    ($("aRecipient") as HTMLInputElement).value = a ? a.recipient_name || "" : "";
+    ($("aPhone") as HTMLInputElement).value = a ? a.phone || "" : "";
+    ($("aZip") as HTMLInputElement).value = a ? a.zip || "" : "";
+    ($("aAddress") as HTMLInputElement).value = a ? a.address || "" : "";
+    ($("aCity") as HTMLInputElement).value = a ? a.city || "" : "";
+    ($("aState") as HTMLInputElement).value = a ? a.state_province || "" : "";
+    ($("aCountry") as HTMLInputElement).value = a ? a.country || "" : "";
+    ($("aDefault") as HTMLInputElement).checked = a ? !!a.is_default : false;
+    f.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+
+  $("btnNewAddress")!.addEventListener("click", () => openAddressForm(null));
+  $("btnCancelAddress")!.addEventListener("click", () => { ($("addressForm") as HTMLElement).hidden = true; });
+
+  ($("addressForm") as HTMLFormElement).addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const id = ($("aId") as HTMLInputElement).value;
+    const body = {
+      label: ($("aLabel") as HTMLInputElement).value.trim(),
+      recipient_name: ($("aRecipient") as HTMLInputElement).value.trim(),
+      phone: ($("aPhone") as HTMLInputElement).value.trim(),
+      zip: ($("aZip") as HTMLInputElement).value.trim(),
+      address: ($("aAddress") as HTMLInputElement).value.trim(),
+      city: ($("aCity") as HTMLInputElement).value.trim(),
+      state_province: ($("aState") as HTMLInputElement).value.trim(),
+      country: ($("aCountry") as HTMLInputElement).value.trim(),
+      is_default: ($("aDefault") as HTMLInputElement).checked,
+    };
+    const path = id ? "/account/addresses/" + id : "/account/addresses";
+    const { ok, data } = await api(path, { method: id ? "PUT" : "POST", body: JSON.stringify(body) });
+    if (ok && data && data.success) {
+      ($("addressForm") as HTMLElement).hidden = true;
+      loaded.addresses = false; loadAddresses();
+    } else {
+      setMsg("addressMsg", errMsg(data, "Error saving address"), "err");
+    }
+  });
+
+  // ── Preferences ─────────────────────────────────────────────
+  async function loadPreferences() {
+    loaded.preferences = true;
+    const { ok, data } = await api("/account/preferences");
+    const p = ok && data && data.success ? data.data : { newsletter: 1, order_updates: 1, promotions: 1, language: "en", currency: "USD" };
+    ($("prefNewsletter") as HTMLInputElement).checked = !!p.newsletter;
+    ($("prefOrders") as HTMLInputElement).checked = !!p.order_updates;
+    ($("prefPromos") as HTMLInputElement).checked = !!p.promotions;
+    ($("prefLang") as HTMLSelectElement).value = p.language || "en";
+    ($("prefCurrency") as HTMLSelectElement).value = p.currency || "USD";
+  }
+
+  ($("prefsForm") as HTMLFormElement).addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const btn = (e.target as HTMLFormElement).querySelector('button[type="submit"]') as HTMLButtonElement;
+    btn.disabled = true; btn.textContent = "Saving…";
+    const body = {
+      newsletter: ($("prefNewsletter") as HTMLInputElement).checked,
+      order_updates: ($("prefOrders") as HTMLInputElement).checked,
+      promotions: ($("prefPromos") as HTMLInputElement).checked,
+      language: ($("prefLang") as HTMLSelectElement).value,
+      currency: ($("prefCurrency") as HTMLSelectElement).value,
+    };
+    const { ok, data } = await api("/account/preferences", { method: "PUT", body: JSON.stringify(body) });
+    btn.disabled = false; btn.textContent = "Save preferences";
+    const success = ok && data && data.success;
+    setMsg("prefsMsg", success ? "Preferences saved." : errMsg(data, "Error saving."), success ? "ok" : "err");
+  });
+
+  // ── Security ─────────────────────────────────────────────────
+  function renderMethods() {
+    const m = $("methodsList")!;
+    const row = (name: string, on: boolean) =>
+      `<li><span>${name}</span><span class="${on ? "method-on" : "method-off"}">${on ? "Active" : "Not linked"}</span></li>`;
+    m.innerHTML =
+      row("Email & password", !!user.has_password) +
+      row("Google", !!user.has_google) +
+      row("Apple", !!user.has_apple);
+    ($("passwordForm") as HTMLElement).style.display = user.has_password ? "" : "none";
+    ($("deletePwdGroup") as HTMLElement).style.display = user.has_password ? "" : "none";
+  }
+
+  ($("passwordForm") as HTMLFormElement).addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const nw = ($("pNew") as HTMLInputElement).value;
+    const cf = ($("pConfirm") as HTMLInputElement).value;
+    if (nw !== cf) return setMsg("passwordMsg", "Passwords do not match.", "err");
+    if (nw.length < 8) return setMsg("passwordMsg", "Minimum 8 characters.", "err");
+    const btn = (e.target as HTMLFormElement).querySelector('button[type="submit"]') as HTMLButtonElement;
+    btn.disabled = true; btn.textContent = "Updating…";
+    const { ok, data } = await api("/auth/password", { method: "PUT", body: JSON.stringify({ current_password: ($("pCurrent") as HTMLInputElement).value, new_password: nw }) });
+    btn.disabled = false; btn.textContent = "Update password";
+    if (ok && data && data.success) { setMsg("passwordMsg", "Password updated.", "ok"); (e.target as HTMLFormElement).reset(); }
+    else setMsg("passwordMsg", errMsg(data, "Error"), "err");
+  });
+
+  $("btnDeleteAccount")!.addEventListener("click", () => { ($("deleteModal") as HTMLElement).hidden = false; setMsg("deleteMsg", ""); });
+  $("btnCancelDelete")!.addEventListener("click", () => { ($("deleteModal") as HTMLElement).hidden = true; });
+  $("btnConfirmDelete")!.addEventListener("click", async () => {
+    const btn = $("btnConfirmDelete") as HTMLButtonElement;
+    btn.disabled = true; btn.textContent = "Deleting…";
+    const body = user.has_password ? { current_password: ($("deletePassword") as HTMLInputElement).value } : {};
+    const { ok, data } = await api("/account", { method: "DELETE", body: JSON.stringify(body) });
+    btn.disabled = false; btn.textContent = "Delete permanently";
+    if (ok && data && data.success) { alert("Your account has been deleted."); location.href = "/"; }
+    else setMsg("deleteMsg", errMsg(data, "Could not delete account."), "err");
+  });
+
+  $("logoutBtn")!.addEventListener("click", async () => {
+    await api("/auth/logout", { method: "POST", body: JSON.stringify({}) });
+    location.href = "/";
+  });
+
+  // ── Init ────────────────────────────────────────────────────
+  (async function init() {
+    const { ok, data } = await api("/auth/me");
+    if (!ok || !data || data.id === undefined || data.id === null) {
+      location.replace("/login?next=/account");
+      return;
+    }
+    user = data;
+    ($("accountLoading") as HTMLElement).hidden = true;
+    ($("accountShell") as HTMLElement).hidden = false;
+    renderProfile();
+    renderMethods();
+
+    const valid = ["summary", "profile", "orders", "favourites", "addresses", "preferences", "security"];
+    const initial = valid.includes(location.hash.slice(1)) ? location.hash.slice(1) : "summary";
+    showSection(initial);
+
+    if (initial !== "orders") loadOrders();
+    if (initial !== "favourites") loadFavourites();
+    if (initial !== "addresses") loadAddresses();
+  })();
+</script>
