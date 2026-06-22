@@ -258,6 +258,20 @@ const productJsonLd = {
             {outOfStock ? "Agotado" : "Agregar al carrito"}
           </button>
           <a class="btn outline" href="/cart" data-link>Ver carrito</a>
+          <button
+            class="btn outline fav-toggle-btn"
+            data-fav={product.id}
+            aria-label="Agregar a favoritos"
+            aria-pressed="false"
+            title="Agregar a favoritos"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true" width="18" height="18">
+              <path
+                d="M12 21s-6.7-4.35-9.3-8.05C.9 10.3 1.6 6.9 4.4 5.7c2-.85 4.1-.1 5.2 1.5l.9 1.3.9-1.3c1.1-1.6 3.2-2.35 5.2-1.5 2.8 1.2 3.5 4.6 1.7 7.25C18.7 16.65 12 21 12 21z"
+              ></path>
+            </svg>
+            <span>Favorito</span>
+          </button>
         </div>
 
         <!-- Envío -->
