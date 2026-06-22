@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import KPICard         from "./components/KPICard.jsx";
 import AlertsBanner    from "./components/AlertsBanner.jsx";
 import ActivityFeed    from "./components/ActivityFeed.jsx";
@@ -7,13 +7,22 @@ import ExecutiveSummary from "./components/ExecutiveSummary.jsx";
 import { useApi }      from "../../lib/api.js";
 import styles          from "./Dashboard.module.css";
 
-export default function Dashboard({ user = null }) {
+export default function Dashboard({ user: userProp = null }) {
+  const [user, setUser] = useState(userProp);
   const [range, setRange] = useState("30d");
   const kpis    = useApi("/dashboard/kpis");
   const summary = useApi(`/dashboard/summary?range=${range}`, { deps: [range] });
   const alerts  = useApi("/dashboard/alerts");
   const feed    = useApi("/dashboard/activity");
   const actions = useQuickActions(user?.role ?? "admin");
+
+  useEffect(() => {
+    if (user) return;
+    fetch("/api/me", { credentials: "include" })
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => { if (data) setUser(data); })
+      .catch(() => {});
+  }, []);
 
   return (
     <main className={styles.shell}>
