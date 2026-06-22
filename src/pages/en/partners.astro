@@ -1,0 +1,177 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { getCanonicalUrl, getHreflangPair } from "../../i18n/index.ts";
+
+export const prerender = false;
+
+const hreflang = getHreflangPair("/partners");
+
+const benefits = [
+  {
+    icon: "🤝",
+    title: "Direct sourcing",
+    text: "We buy from farmers with no middlemen and pass that quality on to you at partner pricing.",
+  },
+  {
+    icon: "🔍",
+    title: "Real traceability",
+    text: "Every lot arrives with its QR code: farm, harvest, roast and quality control — something to show your customers.",
+  },
+  {
+    icon: "🔥",
+    title: "Custom roast profile",
+    text: "We define the roast curve based on your brewing method and volume, with fresh, scheduled deliveries.",
+  },
+  {
+    icon: "📈",
+    title: "Commercial support",
+    text: "Brand materials, barista training and ongoing support to help your operation grow with us.",
+  },
+  {
+    icon: "📦",
+    title: "Flexible quantities",
+    text: "From small cafés to multi-location chains — we adapt our supply to your actual needs.",
+  },
+  {
+    icon: "🌱",
+    title: "Sustainable story",
+    text: "Partner with a brand your customers can trust: transparent supply chain, fair trade, Colombian heritage.",
+  },
+];
+
+const types = [
+  { icon: "☕", label: "Specialty cafés" },
+  { icon: "🍽️", label: "Restaurants & hotels" },
+  { icon: "🏪", label: "Specialty retailers" },
+  { icon: "🏢", label: "Corporate offices" },
+  { icon: "🎁", label: "Gift & lifestyle brands" },
+  { icon: "🌍", label: "International importers" },
+];
+---
+
+<Layout
+  lang="en"
+  title="Partner Zone — DobleYo Café"
+  description="Become a DobleYo Café partner: cafés, restaurants, retailers and distributors. Colombian specialty coffee with real traceability, custom roasts and commercial support."
+  canonical={getCanonicalUrl("/partners", "en")}
+  hreflangEs={hreflang?.es}
+  hreflangEn={hreflang?.en}
+>
+  <!-- Hero -->
+  <section class="pt-hero">
+    <div class="pt-hero__inner">
+      <p class="pt-eyebrow">Partner zone</p>
+      <h1 class="pt-title">Bring traceable Colombian coffee to your customers</h1>
+      <p class="pt-sub">
+        We supply specialty cafés, restaurants, retailers and distributors with
+        freshly roasted, fully traceable Colombian coffee — direct from the farms.
+      </p>
+      <a href="/contact" class="pt-btn" data-link>Request information</a>
+    </div>
+  </section>
+
+  <!-- Who we work with -->
+  <section class="pt-types">
+    <div class="container">
+      <h2 class="pt-h2 pt-h2--center">Who we work with</h2>
+      <ul class="pt-types-grid" role="list">
+        {types.map((t) => (
+          <li class="pt-type-card">
+            <span class="pt-type-card__icon" aria-hidden="true">{t.icon}</span>
+            <span class="pt-type-card__label">{t.label}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <!-- Benefits -->
+  <section class="pt-benefits">
+    <div class="container">
+      <h2 class="pt-h2 pt-h2--center">Why partner with DobleYo</h2>
+      <ul class="pt-grid" role="list">
+        {benefits.map((b) => (
+          <li class="pt-card">
+            <span class="pt-card__icon" aria-hidden="true">{b.icon}</span>
+            <h3 class="pt-card__title">{b.title}</h3>
+            <p class="pt-card__text">{b.text}</p>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="pt-cta">
+    <div class="pt-cta__inner">
+      <h2>Ready to start?</h2>
+      <p>
+        Tell us about your operation — volume, brewing methods and needs — and
+        we'll put together a custom proposal for you.
+      </p>
+      <div class="pt-cta__btns">
+        <a href="/contact" class="pt-btn-primary" data-link>Contact us</a>
+        <a href="/wholesale" class="pt-btn-ghost" data-link>Wholesale info</a>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 1.25rem; }
+  .pt-h2 { font-family: var(--font-heading, serif); font-size: clamp(1.4rem, 3vw, 2rem); color: var(--coffee); margin: 0 0 2rem; }
+  .pt-h2--center { text-align: center; }
+
+  .pt-hero { background: var(--coffee); color: var(--cream); padding: 4rem 1.5rem 3.5rem; text-align: center; }
+  .pt-hero__inner { max-width: 680px; margin: 0 auto; }
+  .pt-eyebrow { text-transform: uppercase; letter-spacing: 0.12em; font-size: 0.78rem; opacity: 0.7; margin: 0 0 0.75rem; }
+  .pt-title { font-family: var(--font-heading, serif); font-size: clamp(1.9rem, 5vw, 3rem); line-height: 1.15; margin: 0 0 1rem; }
+  .pt-sub { font-size: 1.05rem; line-height: 1.7; opacity: 0.9; margin: 0 0 2rem; }
+  .pt-btn {
+    display: inline-block; padding: 0.75rem 1.75rem; border-radius: 999px;
+    background: var(--accent); color: #fff; font-weight: 700; text-decoration: none;
+    transition: filter .15s;
+  }
+  .pt-btn:hover { filter: brightness(1.08); }
+
+  .pt-types { background: var(--cream, #faf7f4); padding: 3.5rem 0; border-top: 1px solid var(--border); }
+  .pt-types-grid {
+    list-style: none; margin: 0; padding: 0;
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;
+  }
+  @media (min-width: 640px) { .pt-types-grid { grid-template-columns: repeat(6, 1fr); } }
+  .pt-type-card {
+    display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+    background: #fff; border: 1px solid var(--border); border-radius: 0.75rem;
+    padding: 1.25rem 0.75rem; text-align: center;
+  }
+  .pt-type-card__icon { font-size: 1.8rem; }
+  .pt-type-card__label { font-size: 0.8rem; font-weight: 600; color: var(--coffee); }
+
+  .pt-benefits { background: #fff; padding: 4rem 0; border-top: 1px solid var(--border); }
+  .pt-grid {
+    list-style: none; margin: 0; padding: 0;
+    display: grid; grid-template-columns: 1fr; gap: 1.5rem;
+  }
+  @media (min-width: 640px) { .pt-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 1024px) { .pt-grid { grid-template-columns: repeat(3, 1fr); } }
+
+  .pt-card { background: var(--cream, #faf7f4); border-radius: 1rem; padding: 1.5rem; }
+  .pt-card__icon { font-size: 2rem; display: block; margin-bottom: 0.75rem; }
+  .pt-card__title { font-size: 1.05rem; font-weight: 700; color: var(--coffee); margin: 0 0 0.4rem; }
+  .pt-card__text { font-size: 0.9rem; color: var(--fg, #555); line-height: 1.6; margin: 0; }
+
+  .pt-cta { background: var(--coffee); color: var(--cream); padding: 4rem 1.5rem; text-align: center; }
+  .pt-cta__inner { max-width: 600px; margin: 0 auto; }
+  .pt-cta h2 { font-family: var(--font-heading, serif); font-size: clamp(1.5rem, 4vw, 2.2rem); margin: 0 0 0.75rem; }
+  .pt-cta p { opacity: 0.88; line-height: 1.7; margin: 0 0 2rem; }
+  .pt-cta__btns { display: flex; gap: 0.875rem; justify-content: center; flex-wrap: wrap; }
+  .pt-btn-primary, .pt-btn-ghost {
+    display: inline-block; padding: 0.75rem 1.75rem; border-radius: 999px;
+    font-weight: 700; text-decoration: none; min-height: 44px;
+  }
+  .pt-btn-primary { background: var(--accent); color: #fff; }
+  .pt-btn-primary:hover { filter: brightness(1.06); }
+  .pt-btn-ghost { border: 1.5px solid var(--cream); color: var(--cream); }
+  .pt-btn-ghost:hover { background: var(--cream); color: var(--coffee); }
+</style>
