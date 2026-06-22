@@ -1,0 +1,163 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { getCanonicalUrl, getHreflangPair } from "../../i18n/index.ts";
+
+const hreflang = getHreflangPair("/terminos");
+---
+
+<Layout
+  lang="en"
+  title="Terms & Conditions — DobleYo Café"
+  description="Terms and conditions of use and purchase at DobleYo Café. Applies to all international orders placed through en.dobleyo.cafe."
+  canonical={getCanonicalUrl("/terms", "en")}
+  hreflangEs={hreflang?.es}
+  hreflangEn={hreflang?.en}
+>
+  <article class="prose legal-page">
+    <h1>Terms & Conditions</h1>
+    <p class="legal-meta">
+      Effective: <strong>March 1, 2025</strong> · Last updated: <strong>March 1, 2026</strong>
+    </p>
+
+    <div class="legal-alert">
+      By placing an order on <strong>en.dobleyo.cafe</strong> you agree to these Terms and Conditions.
+      Please read them carefully before purchasing.
+    </div>
+
+    <section>
+      <h2>1. About DobleYo Café</h2>
+      <p>
+        DobleYo Café is a Colombian specialty coffee company. We sell freshly roasted,
+        single-origin coffee and accessories through our online store. Our registered
+        address is in Colombia.
+      </p>
+      <ul>
+        <li><strong>Email:</strong> <a href="mailto:hello@dobleyo.cafe">hello@dobleyo.cafe</a></li>
+        <li><strong>Website:</strong> <a href="https://en.dobleyo.cafe">en.dobleyo.cafe</a></li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>2. Eligibility</h2>
+      <p>
+        You must be at least 18 years old and capable of entering a binding contract
+        to place an order. By purchasing you confirm that the information you provide
+        is accurate and complete.
+      </p>
+    </section>
+
+    <section>
+      <h2>3. Products & Pricing</h2>
+      <ul>
+        <li>All prices are displayed in <strong>USD</strong> and are inclusive of applicable taxes unless stated otherwise.</li>
+        <li>Prices may change at any time. The price charged is the one shown at the time of your order.</li>
+        <li>Product images are for illustration; the actual product may vary slightly in appearance.</li>
+        <li>Coffee is a perishable, seasonal product. Availability may vary between harvests.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>4. Orders & Payment</h2>
+      <ul>
+        <li>An order confirmation email does not constitute acceptance. We reserve the right to cancel orders due to stock issues or payment failure.</li>
+        <li>Payment is charged at the time of purchase.</li>
+        <li>We accept major credit and debit cards via our secure payment processor. We do not store card data.</li>
+        <li>If your payment is declined, the order will not be processed.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>5. Shipping</h2>
+      <p>
+        Please refer to our <a href="/shipping" data-link>Shipping & Returns</a> page for
+        full details on delivery times, costs and international shipping policies.
+      </p>
+      <ul>
+        <li>We ship worldwide. Delivery times are estimates, not guarantees.</li>
+        <li>Risk of loss and title pass to you upon handover to the carrier.</li>
+        <li>Import duties and taxes at the destination country are your responsibility.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>6. Returns & Refunds</h2>
+      <p>
+        Please refer to our <a href="/shipping" data-link>Shipping & Returns</a> page for
+        our full return and refund policy. In summary:
+      </p>
+      <ul>
+        <li>Sealed, unopened products may be returned within 15 days of delivery.</li>
+        <li>Opened coffee cannot be returned due to its perishable nature.</li>
+        <li>Damaged or incorrect products will be replaced or refunded in full.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>7. Freshness Guarantee</h2>
+      <p>
+        Every bag ships within 15 days of roasting. If you receive stale, damaged or
+        mislabelled coffee, contact us within 15 days of delivery and we will make it right.
+      </p>
+    </section>
+
+    <section>
+      <h2>8. Intellectual Property</h2>
+      <p>
+        All content on this website — including text, images, logos, videos and code —
+        is owned by or licensed to DobleYo Café. You may not reproduce, distribute or
+        use our content commercially without prior written permission.
+      </p>
+    </section>
+
+    <section>
+      <h2>9. Limitation of Liability</h2>
+      <p>
+        To the maximum extent permitted by law, DobleYo Café is not liable for
+        indirect, incidental or consequential damages arising from your use of our
+        products or website. Our liability for any claim is limited to the value of
+        the order in question.
+      </p>
+    </section>
+
+    <section>
+      <h2>10. Governing Law</h2>
+      <p>
+        These terms are governed by the laws of Colombia. Any dispute shall be resolved
+        through the competent courts of Colombia, without prejudice to your rights as a
+        consumer under the laws of your country of residence.
+      </p>
+    </section>
+
+    <section>
+      <h2>11. Changes to These Terms</h2>
+      <p>
+        We may update these terms from time to time. Changes are effective upon posting.
+        Continued use of our store after a change constitutes acceptance of the updated terms.
+      </p>
+    </section>
+
+    <section>
+      <h2>12. Contact</h2>
+      <p>
+        Questions? Email <a href="mailto:hello@dobleyo.cafe">hello@dobleyo.cafe</a> or use
+        our <a href="/contact" data-link>contact form</a>.
+      </p>
+    </section>
+  </article>
+</Layout>
+
+<style>
+  .prose { max-width: 800px; margin: 2rem auto; padding: 0 1.25rem 4rem; }
+  .legal-page h1 { font-size: clamp(1.8rem, 5vw, 2.5rem); color: var(--coffee); margin-bottom: 0.5rem; }
+  .legal-meta { font-size: 0.88rem; color: var(--muted-fg); margin-bottom: 2rem; }
+  .legal-alert {
+    background: #fdf6ee; border: 1px solid var(--accent); border-radius: 0.5rem;
+    padding: 1.25rem 1.5rem; margin-bottom: 2.5rem; font-size: 0.95rem; line-height: 1.7; color: var(--coffee);
+  }
+  .legal-page section { margin-bottom: 2.25rem; }
+  .legal-page h2 { font-family: var(--font-heading, serif); font-size: 1.3rem; color: var(--coffee); margin: 0 0 0.75rem; border-bottom: 1px solid var(--border); padding-bottom: 0.375rem; }
+  .legal-page p, .legal-page li { font-size: 0.95rem; line-height: 1.8; color: var(--fg, #444); }
+  .legal-page ul, .legal-page ol { margin: 0.5rem 0; padding-left: 1.5rem; }
+  .legal-page li { margin: 0.3rem 0; }
+  .legal-page a { color: var(--accent); }
+</style>
