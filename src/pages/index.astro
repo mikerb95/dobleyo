@@ -917,10 +917,10 @@ try {
        MANIFESTO STRIP
     ============================================= */
     .manifesto-strip {
-      background: var(--coffee);
+      background: transparent;
       padding: 5rem 0;
       text-align: center;
-      border-top: 1px solid rgba(255,255,255,.06);
+      border-top: 1px solid var(--border);
     }
     .manifesto-inner { max-width: 760px; }
     .manifesto-quote {
@@ -928,7 +928,7 @@ try {
       font-size: clamp(1.25rem, 3.5vw, 1.9rem);
       font-weight: 600;
       line-height: 1.6;
-      color: rgba(255,255,255,.95);
+      color: var(--coffee);
       margin: 0 0 1.75rem;
       font-style: italic;
       letter-spacing: .01em;
@@ -940,7 +940,7 @@ try {
       font-weight: 600;
       letter-spacing: .14em;
       text-transform: uppercase;
-      color: rgba(255,255,255,.4);
+      color: var(--muted-fg);
       margin: 0;
     }
     @media (max-width: 640px) {
