@@ -7,7 +7,7 @@
 
 ## Marco metodológico
 
-El proyecto adopta **Extreme Programming (XP)** adaptado a un equipo de uno: Mike Restrepo como conductor humano y Claude (Anthropic) como navegador IA. Cada iteración produce historias de usuario con su **Definition of Done (DoD)** verificable, ancladas a commits reales del repositorio.
+El proyecto adopta **Extreme Programming (XP)** adaptado a un equipo de uno: Mike Rodríguez como conductor humano y Claude (Anthropic) como navegador IA. Cada iteración produce historias de usuario con su **Definition of Done (DoD)** verificable, ancladas a commits reales del repositorio.
 
 Las fases no son waterfall: varias corrieron en paralelo y los sprints post-plan son el resultado de retroalimentación continua. El historial total a junio 2026 supera los **1 500 commits**.
 
@@ -204,4 +204,4 @@ Historias clave:
 | Commits en el historial | ~1 520 |
 | Mes de mayor actividad | Jun 2026 (474 commits) |
 | Criterios DoD cumplidos | ~95 % (mayoría `pass`, 2 `pend` activos) |
-| Pares de trabajo | Mike Restrepo (conductor) + Claude / Claude Opus / GitHub Copilot (navegadores) |
+| Pares de trabajo | Mike Rodríguez (conductor) + Claude / Claude Opus / GitHub Copilot (navegadores) |
