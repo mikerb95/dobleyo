@@ -1,0 +1,120 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { getCanonicalUrl, getHreflangPair } from "../../i18n/index.ts";
+
+const hreflang = getHreflangPair("/accesibilidad");
+---
+
+<Layout
+  lang="en"
+  title="Accessibility — DobleYo Café"
+  description="Accessibility statement for DobleYo Café. Our commitment to WCAG 2.1 Level AA and inclusive web design for all users."
+  canonical={getCanonicalUrl("/accessibility", "en")}
+  hreflangEs={hreflang?.es}
+  hreflangEn={hreflang?.en}
+>
+  <article class="prose legal-page">
+    <h1>Accessibility Statement</h1>
+    <p class="legal-meta">Last reviewed: <strong>March 1, 2026</strong></p>
+
+    <div class="legal-alert">
+      DobleYo Café is committed to ensuring its website is accessible to everyone,
+      including people with visual, auditory, motor or cognitive disabilities,
+      in accordance with international WCAG 2.1 standards.
+    </div>
+
+    <section>
+      <h2>1. Conformance Status</h2>
+      <p>
+        DobleYo Café aims to conform to <strong>WCAG 2.1 Level AA</strong>
+        (Web Content Accessibility Guidelines) published by the W3C.
+        The site is in <strong>partial conformance</strong> — we implement the
+        majority of Level AA criteria, with some areas under continuous improvement.
+      </p>
+    </section>
+
+    <section>
+      <h2>2. What We Have Done</h2>
+      <ul>
+        <li>Semantic HTML5 structure with proper heading hierarchy</li>
+        <li>All images include descriptive <code>alt</code> text</li>
+        <li>Full keyboard navigation support across the site</li>
+        <li>Sufficient colour contrast ratios (minimum 4.5:1 for body text)</li>
+        <li>Focus indicators visible on all interactive elements</li>
+        <li>ARIA labels and roles where native semantics are insufficient</li>
+        <li>Responsive design that works on all screen sizes</li>
+        <li>Animations respect <code>prefers-reduced-motion</code></li>
+        <li>Forms with associated labels and descriptive error messages</li>
+        <li>Skip-to-content link available via keyboard</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>3. Known Limitations</h2>
+      <p>We are aware of the following areas that do not yet fully meet WCAG 2.1 AA:</p>
+      <ul>
+        <li>Some legacy PDF documents may lack full accessibility tagging — we are working to update these.</li>
+        <li>The QR scanner on the traceability page requires camera access and may not be fully operable by keyboard alone — a text-entry alternative is always available.</li>
+        <li>Some third-party embedded content (maps, payment widgets) may not be fully under our control.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>4. Technical Approach</h2>
+      <ul>
+        <li>Built with Astro 5 and React 19, following accessible component patterns</li>
+        <li>CSS custom properties with sufficient contrast across colour themes</li>
+        <li>No reliance on colour alone to convey information</li>
+        <li>Interactive elements meet the 44×44 px minimum touch target size</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>5. Assistive Technologies Tested</h2>
+      <ul>
+        <li>NVDA + Chrome (Windows)</li>
+        <li>VoiceOver + Safari (macOS / iOS)</li>
+        <li>TalkBack + Chrome (Android)</li>
+        <li>Keyboard-only navigation on all major browsers</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>6. Feedback & Contact</h2>
+      <p>
+        If you experience any accessibility barriers on our website, please let us know.
+        Your feedback helps us improve. You can reach us by:
+      </p>
+      <ul>
+        <li><strong>Email:</strong> <a href="mailto:hello@dobleyo.cafe">hello@dobleyo.cafe</a> — subject line: "Accessibility"</li>
+        <li><strong>Contact form:</strong> <a href="/contact" data-link>dobleyo.cafe/contact</a></li>
+      </ul>
+      <p>We aim to respond to accessibility reports within <strong>5 business days</strong>.</p>
+    </section>
+
+    <section>
+      <h2>7. Enforcement</h2>
+      <p>
+        If you are not satisfied with our response to your accessibility concern, you may
+        contact your national or regional accessibility enforcement body for further assistance.
+      </p>
+    </section>
+  </article>
+</Layout>
+
+<style>
+  .prose { max-width: 800px; margin: 2rem auto; padding: 0 1.25rem 4rem; }
+  .legal-page h1 { font-size: clamp(1.8rem, 5vw, 2.5rem); color: var(--coffee); margin-bottom: 0.5rem; }
+  .legal-meta { font-size: 0.88rem; color: var(--muted-fg); margin-bottom: 2rem; }
+  .legal-alert {
+    background: #fdf6ee; border: 1px solid var(--accent); border-radius: 0.5rem;
+    padding: 1.25rem 1.5rem; margin-bottom: 2.5rem; font-size: 0.95rem; line-height: 1.7; color: var(--coffee);
+  }
+  .legal-page section { margin-bottom: 2.25rem; }
+  .legal-page h2 { font-family: var(--font-heading, serif); font-size: 1.3rem; color: var(--coffee); margin: 0 0 0.75rem; border-bottom: 1px solid var(--border); padding-bottom: 0.375rem; }
+  .legal-page p, .legal-page li { font-size: 0.95rem; line-height: 1.8; color: var(--fg, #444); }
+  .legal-page ul { margin: 0.5rem 0; padding-left: 1.5rem; }
+  .legal-page li { margin: 0.3rem 0; }
+  .legal-page a { color: var(--accent); }
+  .legal-page code { background: #f3ede8; padding: 0.1em 0.35em; border-radius: 3px; font-size: 0.88em; }
+</style>
