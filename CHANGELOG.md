@@ -2,6 +2,32 @@
 
 ---
 
+## 📅 2026-06-22 — Página de cuenta `/cuenta` como panel completo de usuario (Agente: Claude)
+
+### Contexto
+`/cuenta` era un placeholder (correo + logout + "Aún no hay pedidos"). Se reconstruyó como un panel tipo dashboard con barra lateral y se agregó el backend necesario para que todas las secciones funcionen de verdad (rol `client`).
+
+### Backend nuevo
+- **Migración** `server/migrations/create_account_tables.js` (idempotente; agregada a `run_all_migrations.js` y a `db/schema.sql`):
+  - `user_addresses` — libreta de direcciones de envío (múltiples + predeterminada).
+  - `user_favorites` — lista de deseos (FK a `products`, `UNIQUE(user_id, product_id)`).
+  - `user_preferences` — comunicaciones (newsletter, pedidos, promociones) + idioma/moneda.
+- **Router** `server/routes/account.js` montado en `/api/account` (paridad `server/index.js` ↔ `api/index.js`):
+  - Direcciones: `GET/POST/PUT/DELETE /addresses`, `PUT /addresses/:id/default` (autogestión de predeterminada).
+  - Favoritos: `GET /favorites`, `POST /favorites`, `DELETE /favorites/:productId`.
+  - Preferencias: `GET /preferences`, `PUT /preferences` (upsert).
+  - `DELETE /account` — elimina la cuenta (confirma contraseña si la tiene; órdenes quedan anónimas vía `ON DELETE SET NULL`).
+- `GET /api/orders/mine` (autenticado) — historial de pedidos del usuario, declarado antes de `/:ref`.
+- `GET /api/auth/me` ahora expone flags `has_password` / `has_google` / `has_apple` (sin filtrar hashes ni IDs externos).
+
+### Frontend
+- `src/pages/cuenta.astro` reescrito: panel con sidebar y secciones Resumen, Perfil (editar), Pedidos, Favoritos, Direcciones, Suscripción, Programa Caficultor, Preferencias y Seguridad (cambio de contraseña, métodos de inicio de sesión, eliminar cuenta). Carga perezosa por sección, navegación por hash, `noindex`, responsive y solo variables CSS. Reusa endpoints existentes (`/auth/profile`, `/auth/password`, `/subscriptions/me`, `/auth/caficultor-status`).
+- `public/assets/js/favorites.js` (nuevo, global vía `Layout.astro`) — `window.Favorites` con carga cacheada y toggle por delegación de `[data-fav]`; redirige a `/login` si no hay sesión.
+- Botón de corazón (favorito) en `src/components/ProductCard.astro` y en `src/pages/producto/[id].astro`.
+
+### Español Colombia
+- Toda la UI en español formal con tratamiento de «usted».
+
 ## 📅 2026-06-21 — Footer: páginas faltantes + toggle de idioma EN/ES (Agente: Claude)
 
 ### Contexto

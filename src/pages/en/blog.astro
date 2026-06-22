@@ -1,0 +1,127 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { getCanonicalUrl } from "../../i18n/index.ts";
+
+export const prerender = false;
+
+let posts: any[] = [];
+try {
+  const { query } = await import("../../../server/db.js");
+  const { rows } = await query(
+    `SELECT slug, title, excerpt, cover_image_url, reading_time_min, published_at, author_name
+     FROM blog_posts
+     WHERE is_published = 1
+     ORDER BY published_at DESC
+     LIMIT 24`
+  );
+  posts = rows;
+} catch (_) {}
+---
+
+<Layout
+  lang="en"
+  title="Blog — DobleYo Café"
+  description="Recipes, brewing guides, tasting notes and stories from the Colombian coffee world. DobleYo Café blog."
+  canonical={getCanonicalUrl("/blog", "en")}
+>
+  <section class="blog-hero">
+    <div class="blog-hero__inner">
+      <p class="blog-eyebrow">Blog</p>
+      <h1 class="blog-title">Recipes, notes & coffee stories</h1>
+      <p class="blog-sub">
+        Brewing guides, tasting notes and behind-the-scenes stories from
+        Colombia's coffee farms.
+      </p>
+    </div>
+  </section>
+
+  <section class="blog-content">
+    <div class="container">
+      {posts.length === 0 ? (
+        <div class="blog-empty">
+          <p class="blog-empty__icon" aria-hidden="true">☕</p>
+          <h2>Coming soon</h2>
+          <p>We're writing our first posts. Check back soon.</p>
+          <a href="/shop" class="blog-btn" data-link>Browse our coffees</a>
+        </div>
+      ) : (
+        <ul class="blog-grid" role="list">
+          {posts.map((post: any) => (
+            <li>
+              <a href={`/blog/${post.slug}`} class="blog-card" data-link>
+                <div class="blog-card__img-wrap">
+                  <img
+                    src={post.cover_image_url || "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?q=80&w=600&auto=format&fit=crop"}
+                    alt={post.title}
+                    loading="lazy"
+                    class="blog-card__img"
+                    width="600"
+                    height="340"
+                  />
+                </div>
+                <div class="blog-card__body">
+                  {post.published_at && (
+                    <time class="blog-card__date" datetime={post.published_at}>
+                      {new Date(post.published_at).toLocaleDateString("en-US", {
+                        year: "numeric", month: "long", day: "numeric",
+                      })}
+                    </time>
+                  )}
+                  <h2 class="blog-card__title">{post.title}</h2>
+                  {post.excerpt && <p class="blog-card__excerpt">{post.excerpt}</p>}
+                  <div class="blog-card__footer">
+                    {post.author_name && <span class="blog-card__author">By {post.author_name}</span>}
+                    <span class="blog-card__read">{post.reading_time_min ?? 3} min read →</span>
+                  </div>
+                </div>
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 1.25rem; }
+
+  .blog-hero { background: var(--coffee); color: var(--cream); padding: 3.5rem 1.5rem 3rem; text-align: center; }
+  .blog-hero__inner { max-width: 640px; margin: 0 auto; }
+  .blog-eyebrow { text-transform: uppercase; letter-spacing: 0.12em; font-size: 0.78rem; opacity: 0.7; margin: 0 0 0.75rem; }
+  .blog-title { font-family: var(--font-heading, serif); font-size: clamp(1.9rem, 5vw, 3rem); line-height: 1.15; margin: 0 0 0.875rem; }
+  .blog-sub { font-size: 1.05rem; line-height: 1.65; opacity: 0.88; margin: 0; }
+
+  .blog-content { padding: 3.5rem 0 4rem; background: var(--cream, #faf7f4); }
+
+  .blog-empty { text-align: center; padding: 4rem 1rem; }
+  .blog-empty__icon { font-size: 3rem; margin-bottom: 1rem; }
+  .blog-empty h2 { font-family: var(--font-heading, serif); font-size: 1.8rem; color: var(--coffee); margin: 0 0 0.5rem; }
+  .blog-empty p { color: var(--muted-fg); margin: 0 0 1.5rem; }
+  .blog-btn {
+    display: inline-block; padding: 0.7rem 1.5rem; border-radius: 999px;
+    background: var(--accent); color: #fff; font-weight: 600; text-decoration: none;
+  }
+
+  .blog-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr; gap: 2rem; }
+  @media (min-width: 640px) { .blog-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 1024px) { .blog-grid { grid-template-columns: repeat(3, 1fr); } }
+
+  .blog-card {
+    display: flex; flex-direction: column;
+    background: #fff; border: 1px solid var(--border); border-radius: 1rem;
+    overflow: hidden; text-decoration: none; color: inherit;
+    transition: box-shadow .2s, transform .2s;
+  }
+  .blog-card:hover { box-shadow: 0 8px 28px rgba(37,26,20,.1); transform: translateY(-3px); }
+  .blog-card__img-wrap { aspect-ratio: 16/9; overflow: hidden; background: #e8ddd4; }
+  .blog-card__img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .4s; }
+  .blog-card:hover .blog-card__img { transform: scale(1.04); }
+  .blog-card__body { padding: 1.25rem; display: flex; flex-direction: column; gap: 0.5rem; flex: 1; }
+  .blog-card__date { font-size: 0.75rem; color: var(--muted-fg); }
+  .blog-card__title { font-size: 1.05rem; font-weight: 700; color: var(--coffee); margin: 0; line-height: 1.35; }
+  .blog-card__excerpt { font-size: 0.88rem; color: var(--muted-fg); margin: 0; line-height: 1.6; flex: 1; }
+  .blog-card__footer { display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: 0.75rem; border-top: 1px solid var(--border); font-size: 0.78rem; }
+  .blog-card__author { color: var(--muted-fg); }
+  .blog-card__read { color: var(--accent); font-weight: 600; }
+</style>
