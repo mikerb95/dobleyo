@@ -1,0 +1,125 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { getCanonicalUrl, getHreflangPair } from "../../i18n/index.ts";
+
+const hreflang = getHreflangPair("/envios-devoluciones");
+---
+
+<Layout
+  lang="en"
+  title="Shipping & Returns — DobleYo Café"
+  description="Shipping times, costs and return policy for DobleYo Café international orders. Free shipping on orders over $50 USD worldwide."
+  canonical={getCanonicalUrl("/shipping", "en")}
+  hreflangEs={hreflang?.es}
+  hreflangEn={hreflang?.en}
+>
+  <section class="prose legal-page">
+    <h1>Shipping & Returns</h1>
+    <p class="legal-meta">Last updated: <strong>March 1, 2026</strong></p>
+
+    <div
+      style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-bottom: 3rem;"
+    >
+      <!-- Shipping -->
+      <div class="legal-card">
+        <h2>📦 International Shipping</h2>
+
+        <h3>Free Shipping</h3>
+        <p>Free worldwide shipping on all orders over <strong>$50 USD</strong>.</p>
+
+        <h3>Estimated Delivery Times</h3>
+        <ul>
+          <li><strong>United States & Canada:</strong> 7–12 business days</li>
+          <li><strong>Europe:</strong> 10–18 business days</li>
+          <li><strong>Rest of the world:</strong> 14–25 business days</li>
+        </ul>
+
+        <h3>Shipping Costs</h3>
+        <ul>
+          <li>Orders under $50 USD: calculated at checkout based on destination</li>
+          <li>Orders $50 USD and above: <strong>free</strong></li>
+        </ul>
+
+        <h3>Tracking</h3>
+        <p>
+          All international orders include a tracking number sent to your email
+          once your package ships. You can follow its journey in real time.
+        </p>
+
+        <h3>Customs & Import Duties</h3>
+        <p>
+          Import duties and taxes may apply depending on the destination country.
+          These charges are the buyer's responsibility. We declare the accurate
+          value and contents of all shipments.
+        </p>
+      </div>
+
+      <!-- Returns -->
+      <div class="legal-card">
+        <h2>↩️ Returns & Refunds</h2>
+
+        <h3>Freshness Guarantee</h3>
+        <p>
+          Every bag ships within 15 days of roasting. If you receive coffee that
+          is stale, damaged, or not as described, we will replace it or issue a
+          full refund — no questions asked.
+        </p>
+
+        <h3>Return Policy</h3>
+        <p>
+          We accept returns within <strong>15 calendar days</strong> of delivery
+          for sealed, unopened products. Once a bag has been opened, we cannot
+          accept returns due to the perishable nature of specialty coffee.
+        </p>
+
+        <h3>How to Request a Return</h3>
+        <ol>
+          <li>Email us at <a href="mailto:hello@dobleyo.cafe">hello@dobleyo.cafe</a> within 15 days of receiving your order.</li>
+          <li>Include your order number and a brief description of the issue.</li>
+          <li>We will respond within 1–2 business days with next steps.</li>
+        </ol>
+
+        <h3>Refund Timeline</h3>
+        <p>
+          Approved refunds are processed within 5–10 business days back to your
+          original payment method.
+        </p>
+
+        <h3>Damaged in Transit</h3>
+        <p>
+          If your package arrives visibly damaged, please photograph it and
+          contact us immediately at
+          <a href="mailto:hello@dobleyo.cafe">hello@dobleyo.cafe</a>. We will
+          arrange a replacement at no cost to you.
+        </p>
+      </div>
+    </div>
+
+    <div class="legal-alert">
+      <strong>Questions?</strong> Contact us at
+      <a href="mailto:hello@dobleyo.cafe">hello@dobleyo.cafe</a> or through our
+      <a href="/contact" data-link>contact form</a>. We typically respond within
+      one business day.
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .prose { max-width: 900px; margin: 2rem auto; padding: 0 1.25rem 4rem; }
+  .legal-page h1 { font-size: clamp(1.8rem, 5vw, 2.5rem); color: var(--coffee); margin-bottom: 0.5rem; }
+  .legal-meta { font-size: 0.88rem; color: var(--muted-fg); margin-bottom: 2rem; }
+  .legal-card {
+    background: #fff; border: 1px solid var(--border); border-radius: 0.75rem; padding: 2rem;
+  }
+  .legal-card h2 { font-size: 1.3rem; color: var(--coffee); margin: 0 0 1.25rem; }
+  .legal-card h3 { font-size: 1rem; font-weight: 600; color: var(--coffee); margin: 1.25rem 0 0.4rem; }
+  .legal-card p, .legal-card li { font-size: 0.95rem; line-height: 1.75; color: var(--fg, #444); }
+  .legal-card ul, .legal-card ol { margin: 0.5rem 0; padding-left: 1.5rem; }
+  .legal-card li { margin: 0.25rem 0; }
+  .legal-card a { color: var(--accent); }
+  .legal-alert {
+    background: #fdf6ee; border: 1px solid var(--accent); border-radius: 0.5rem;
+    padding: 1.25rem 1.5rem; font-size: 0.95rem; line-height: 1.7; color: var(--coffee);
+  }
+  .legal-alert a { color: var(--accent); font-weight: 600; }
+</style>
