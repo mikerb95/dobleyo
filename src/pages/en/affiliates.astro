@@ -1,0 +1,186 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { getCanonicalUrl, getHreflangPair } from "../../i18n/index.ts";
+
+export const prerender = false;
+
+const hreflang = getHreflangPair("/afiliados");
+
+const steps = [
+  {
+    num: "1",
+    title: "Apply",
+    text: "Request access to the program through our contact form. We review your profile and welcome you aboard.",
+  },
+  {
+    num: "2",
+    title: "Share your link",
+    text: "Receive a unique affiliate link to share on social media, your blog or with your community.",
+  },
+  {
+    num: "3",
+    title: "Earn commissions",
+    text: "For every purchase made through your link, you earn a commission on the sale.",
+  },
+  {
+    num: "4",
+    title: "Get paid",
+    text: "We settle your commissions monthly once the minimum withdrawal threshold is reached.",
+  },
+];
+
+const perks = [
+  { icon: "💰", text: "Competitive commission on every referred sale" },
+  { icon: "🔗", text: "Unique, trackable affiliate link" },
+  { icon: "📊", text: "Monthly earnings report" },
+  { icon: "☕", text: "Welcome discount on your first personal order" },
+  { icon: "🎨", text: "Ready-to-use brand assets and copy" },
+  { icon: "🤝", text: "Dedicated support from our team" },
+];
+---
+
+<Layout
+  lang="en"
+  title="Affiliate Program — DobleYo Café"
+  description="Earn commissions recommending Colombian specialty coffee. Join the DobleYo Café affiliate program: your own link, per-sale commissions and monthly payments."
+  canonical={getCanonicalUrl("/affiliates", "en")}
+  hreflangEs={hreflang?.es}
+  hreflangEn={hreflang?.en}
+>
+  <!-- Hero -->
+  <section class="af-hero">
+    <div class="af-hero__inner">
+      <p class="af-eyebrow">Affiliate program</p>
+      <h1 class="af-title">Share great coffee. Earn with every sale.</h1>
+      <p class="af-sub">
+        Love DobleYo coffee? Recommend it to your audience and earn a commission
+        on every order that comes through your link.
+      </p>
+      <a href="/contact" class="af-btn" data-link>Apply now</a>
+    </div>
+  </section>
+
+  <!-- Steps -->
+  <section class="af-steps">
+    <div class="container">
+      <h2 class="af-h2 af-h2--center">How it works</h2>
+      <ol class="af-steps-list" role="list">
+        {steps.map((s) => (
+          <li class="af-step">
+            <span class="af-step__num" aria-hidden="true">{s.num}</span>
+            <div>
+              <h3 class="af-step__title">{s.title}</h3>
+              <p class="af-step__text">{s.text}</p>
+            </div>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <!-- Perks -->
+  <section class="af-perks">
+    <div class="container">
+      <h2 class="af-h2 af-h2--center">What you get</h2>
+      <ul class="af-perks-grid" role="list">
+        {perks.map((p) => (
+          <li class="af-perk">
+            <span class="af-perk__icon" aria-hidden="true">{p.icon}</span>
+            <p class="af-perk__text">{p.text}</p>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="af-faq">
+    <div class="container af-faq__inner">
+      <h2 class="af-h2">Frequently asked questions</h2>
+      <dl class="af-faq-list">
+        <div class="af-faq-item">
+          <dt>Who can join the program?</dt>
+          <dd>Anyone with an active online presence — content creators, coffee enthusiasts, bloggers, newsletter writers or anyone who loves specialty coffee.</dd>
+        </div>
+        <div class="af-faq-item">
+          <dt>What is the commission rate?</dt>
+          <dd>Commission details are shared upon approval. We offer competitive rates benchmarked against the specialty coffee industry.</dd>
+        </div>
+        <div class="af-faq-item">
+          <dt>How long does the cookie last?</dt>
+          <dd>Your referral cookie is valid for 30 days from the click. Any purchase within that window counts as your referral.</dd>
+        </div>
+        <div class="af-faq-item">
+          <dt>When do I get paid?</dt>
+          <dd>Commissions are settled monthly, on the first week of each month, once you've reached the minimum payout threshold.</dd>
+        </div>
+      </dl>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="af-cta">
+    <div class="af-cta__inner">
+      <h2>Ready to join?</h2>
+      <p>Apply through our contact form and we'll get back to you within 2 business days.</p>
+      <a href="/contact" class="af-btn-cta" data-link>Apply now →</a>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .container { max-width: 1000px; margin: 0 auto; padding: 0 1.25rem; }
+  .af-h2 { font-family: var(--font-heading, serif); font-size: clamp(1.4rem, 3vw, 2rem); color: var(--coffee); margin: 0 0 2rem; }
+  .af-h2--center { text-align: center; }
+
+  .af-hero { background: var(--coffee); color: var(--cream); padding: 4rem 1.5rem 3.5rem; text-align: center; }
+  .af-hero__inner { max-width: 640px; margin: 0 auto; }
+  .af-eyebrow { text-transform: uppercase; letter-spacing: 0.12em; font-size: 0.78rem; opacity: 0.7; margin: 0 0 0.75rem; }
+  .af-title { font-family: var(--font-heading, serif); font-size: clamp(1.9rem, 5vw, 3rem); line-height: 1.15; margin: 0 0 1rem; }
+  .af-sub { font-size: 1.05rem; line-height: 1.7; opacity: 0.9; margin: 0 0 2rem; }
+  .af-btn {
+    display: inline-block; padding: 0.75rem 1.75rem; border-radius: 999px;
+    background: var(--accent); color: #fff; font-weight: 700; text-decoration: none;
+  }
+  .af-btn:hover { filter: brightness(1.08); }
+
+  .af-steps { background: #fff; padding: 4rem 0; border-top: 1px solid var(--border); }
+  .af-steps-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 1.5rem; }
+  @media (min-width: 640px) { .af-steps-list { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 1024px) { .af-steps-list { grid-template-columns: repeat(4, 1fr); } }
+
+  .af-step { display: flex; flex-direction: column; gap: 0.75rem; background: var(--cream, #faf7f4); border-radius: 1rem; padding: 1.5rem; }
+  .af-step__num {
+    width: 40px; height: 40px; border-radius: 50%; background: var(--coffee); color: #fff;
+    display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.1rem; flex-shrink: 0;
+  }
+  .af-step__title { font-size: 1.05rem; font-weight: 700; color: var(--coffee); margin: 0; }
+  .af-step__text { font-size: 0.9rem; color: var(--fg, #555); line-height: 1.6; margin: 0; }
+
+  .af-perks { background: var(--cream, #faf7f4); padding: 4rem 0; border-top: 1px solid var(--border); }
+  .af-perks-grid {
+    list-style: none; margin: 0; padding: 0;
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.25rem;
+  }
+  @media (min-width: 768px) { .af-perks-grid { grid-template-columns: repeat(3, 1fr); } }
+  .af-perk { display: flex; align-items: flex-start; gap: 0.75rem; background: #fff; border: 1px solid var(--border); border-radius: 0.75rem; padding: 1rem 1.25rem; }
+  .af-perk__icon { font-size: 1.4rem; flex-shrink: 0; }
+  .af-perk__text { font-size: 0.9rem; color: var(--fg); line-height: 1.55; margin: 0; }
+
+  .af-faq { background: #fff; padding: 4rem 0; border-top: 1px solid var(--border); }
+  .af-faq__inner { max-width: 720px; }
+  .af-faq-list { margin: 0; display: flex; flex-direction: column; gap: 1.25rem; }
+  .af-faq-item { border-bottom: 1px solid var(--border); padding-bottom: 1.25rem; }
+  .af-faq-item dt { font-size: 1rem; font-weight: 700; color: var(--coffee); margin-bottom: 0.375rem; }
+  .af-faq-item dd { margin: 0; font-size: 0.92rem; color: var(--fg, #555); line-height: 1.65; }
+
+  .af-cta { background: var(--coffee); color: var(--cream); padding: 3.5rem 1.5rem; text-align: center; }
+  .af-cta__inner { max-width: 520px; margin: 0 auto; }
+  .af-cta h2 { font-family: var(--font-heading, serif); font-size: clamp(1.5rem, 4vw, 2.2rem); margin: 0 0 0.6rem; }
+  .af-cta p { opacity: 0.88; line-height: 1.7; margin: 0 0 1.75rem; }
+  .af-btn-cta {
+    display: inline-block; padding: 0.75rem 2rem; border-radius: 999px;
+    background: var(--accent); color: #fff; font-weight: 700; text-decoration: none;
+  }
+  .af-btn-cta:hover { filter: brightness(1.06); }
+</style>
