@@ -311,7 +311,13 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
           <p class="card-subtitle" id="count-label">—</p>
         </div>
         <div style="display:flex;gap:8px;align-items:center">
-          <input type="text" id="filter-category" placeholder="Filtrar por categoría…" style="max-width:220px" />
+          <select id="filter-category" style="max-width:220px">
+            <option value="">Todas las categorías</option>
+            <option value="cafe-grano">Café en grano</option>
+            <option value="cafe-molido">Café molido</option>
+            <option value="accesorios">Accesorios</option>
+            <option value="otro">Otro</option>
+          </select>
           <button class="btn btn-secondary" id="btn-refresh" type="button">Actualizar</button>
         </div>
       </div>
