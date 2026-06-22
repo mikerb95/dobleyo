@@ -190,32 +190,56 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
           <div class="form-grid">
             <div class="form-group">
               <label for="c-category">Categoría <span class="required">*</span></label>
-              <input type="text" id="c-category" name="category" placeholder="p. ej. cafe-grano" required />
+              <select id="c-category" name="category" required>
+                <option value="">Seleccione una categoría…</option>
+                <option value="cafe-grano">Café en grano</option>
+                <option value="cafe-molido">Café molido</option>
+                <option value="accesorios">Accesorios</option>
+                <option value="otro">Otro</option>
+              </select>
             </div>
             <div class="form-group">
               <label for="c-product">Producto (opcional)</label>
-              <input type="text" id="c-product" name="product_key" placeholder="p. ej. Huila Caturra 500g" />
+              <select id="c-product" class="product-select">
+                <option value="">— Sin especificar —</option>
+              </select>
             </div>
-            <div class="form-group">
-              <label for="c-period">Período (opcional)</label>
-              <input type="text" id="c-period" name="period" placeholder="p. ej. 2026-W24 o 2026-06" />
+            <div class="form-group form-group--period">
+              <label>Período (opcional)</label>
+              <div class="period-wrap">
+                <div class="period-toggle" id="c-period-toggle">
+                  <button type="button" class="period-btn period-btn--on" data-mode="week">Semana</button>
+                  <button type="button" class="period-btn" data-mode="month">Mes</button>
+                </div>
+                <input type="week"  id="c-period-week"  class="period-input" />
+                <input type="month" id="c-period-month" class="period-input" style="display:none" />
+              </div>
             </div>
             <div class="form-group">
               <label for="c-value">Demanda <span class="required">*</span></label>
-              <input type="number" id="c-value" name="demand_value" min="0" step="0.01" placeholder="0" required />
+              <div class="stepper">
+                <button type="button" class="stepper-btn" data-target="c-value" data-delta="-1">−</button>
+                <input type="number" id="c-value" name="demand_value" min="0" step="1" value="0" required />
+                <button type="button" class="stepper-btn" data-target="c-value" data-delta="1">+</button>
+              </div>
             </div>
             <div class="form-group">
               <label for="c-unit">Unidad</label>
-              <input type="text" id="c-unit" name="unit" value="units" placeholder="units" />
+              <select id="c-unit" name="unit">
+                <option value="units">Unidades</option>
+                <option value="kg">Kilogramos (kg)</option>
+                <option value="lb">Libras (lb)</option>
+                <option value="sacos">Sacos</option>
+              </select>
             </div>
             <div class="form-group form-group--wide">
-              <label for="c-notes">Notas (opcional)</label>
-              <textarea id="c-notes" name="notes" placeholder="Observaciones…"></textarea>
+              <button type="button" class="notes-toggle" id="c-notes-toggle">+ Agregar nota</button>
+              <textarea id="c-notes" name="notes" placeholder="Observaciones…" style="display:none;margin-top:8px"></textarea>
             </div>
           </div>
           <div class="form-actions">
             <button type="submit" class="btn btn-save">Crear registro</button>
-            <button type="reset" class="btn btn-secondary">Limpiar</button>
+            <button type="button" class="btn btn-secondary" id="c-clear-btn">Limpiar</button>
           </div>
         </form>
       </div>
@@ -233,15 +257,31 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
         <div class="form-grid">
           <div class="form-group">
             <label for="ex-category">Categoría</label>
-            <input type="text" id="ex-category" placeholder="p. ej. cafe-grano" />
+            <select id="ex-category">
+              <option value="">Todas</option>
+              <option value="cafe-grano">Café en grano</option>
+              <option value="cafe-molido">Café molido</option>
+              <option value="accesorios">Accesorios</option>
+              <option value="otro">Otro</option>
+            </select>
           </div>
           <div class="form-group">
             <label for="ex-product">Producto</label>
-            <input type="text" id="ex-product" placeholder="p. ej. Huila Caturra" />
+            <select id="ex-product" class="product-select">
+              <option value="">Todos</option>
+            </select>
           </div>
-          <div class="form-group">
-            <label for="ex-period">Período</label>
-            <input type="text" id="ex-period" placeholder="p. ej. 2026-W" />
+          <div class="form-group form-group--period">
+            <label>Período</label>
+            <div class="period-wrap">
+              <div class="period-toggle" id="ex-period-toggle">
+                <button type="button" class="period-btn period-btn--on" data-mode="none">Cualquiera</button>
+                <button type="button" class="period-btn" data-mode="week">Semana</button>
+                <button type="button" class="period-btn" data-mode="month">Mes</button>
+              </div>
+              <input type="week"  id="ex-period-week"  class="period-input" style="display:none" />
+              <input type="month" id="ex-period-month" class="period-input" style="display:none" />
+            </div>
           </div>
           <div class="form-group">
             <label for="ex-value-min">Demanda mínima</label>
