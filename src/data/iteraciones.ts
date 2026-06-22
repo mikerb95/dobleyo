@@ -88,6 +88,80 @@ const pend = (texto: string): CriterioDoD => ({ texto, estado: "pend" });
 export const ITERACIONES: Iteracion[] = [
   // ───────────────────────────────────────────────────────────────────────────
   {
+    id: "jun-audit-crud",
+    fase: "Post-plan · Calidad",
+    nombre: "Auditoría CRUD del panel admin",
+    rango: "22 jun 2026",
+    ghSince: "2026-06-22",
+    ghUntil: "2026-06-22",
+    resumen:
+      "Revisión exhaustiva de todas las páginas del panel admin (23 módulos) para verificar que sus operaciones CRUD estén conectadas a la API real y no sean implementaciones dummy. Se identificaron 18 páginas completamente funcionales, 3 con implementación parcial y 2 con problemas críticos.",
+    historias: [
+      {
+        id: "DY-AUDIT-01",
+        titulo:
+          "Como equipo, queremos saber qué módulos del panel admin tienen CRUD real vs. dummy para priorizar correcciones",
+        tipo: "spike", valor: "alto", col: "aceptada", par: "MR", agente: "Claude",
+        fecha: "2026-06-22", tags: ["admin", "crud", "calidad", "auditoria"],
+        dod: [
+          ok("23 páginas admin auditadas: inventario, productos, usuarios, lotes, pedidos, finanzas, blog, crm, harvest, inventory-storage, send-roasting, roast-retrieval, roasted-storage, packaging, etiquetas, ventas, mercadolibre, produccion, cupping, transacciones, presupuesto, demanda, venta."),
+          ok("18 páginas con CRUD completamente conectado a la API real."),
+          ok("3 páginas con implementación parcial (crm, harvest, demanda) documentadas con su problema específico."),
+          ok("2 páginas con problemas críticos (presupuesto 100% estático, crm sin crear cuentas) registradas como bugs en cola."),
+        ],
+      },
+      {
+        id: "DY-AUDIT-02",
+        titulo:
+          "Como administrador, quiero poder crear nuevas cuentas de CRM desde el panel sin depender solo de la sincronización de MercadoLibre",
+        tipo: "bug", valor: "alto", col: "cola", par: "MR", agente: "Claude",
+        fecha: "2026-06-22", tags: ["crm", "admin", "crud"],
+        dod: [
+          pend("El botón 'Nueva cuenta' en crm.astro abre un modal funcional de creación (no un alert TODO)."),
+          pend("POST /api/crm/accounts acepta datos del formulario y crea la cuenta en la BD."),
+          pend("La lista de cuentas se recarga automáticamente tras crear."),
+        ],
+      },
+      {
+        id: "DY-AUDIT-03",
+        titulo:
+          "Como administrador, quiero que el formulario de cosecha no muestre fincas ficticias si no hay fincas registradas en la base de datos",
+        tipo: "bug", valor: "medio", col: "cola", par: "MR", agente: "Claude",
+        fecha: "2026-06-22", tags: ["harvest", "admin", "crud"],
+        dod: [
+          pend("El <select> de fincas en harvest.astro elimina las 3 opciones hardcodeadas (La Sierra, Nariño Premium, Cauca Estate)."),
+          pend("Si /api/farms/my retorna vacío o falla, el select muestra un estado vacío con mensaje 'No hay fincas registradas'."),
+          pend("No se pueden crear cosechas con IDs de finca inválidos."),
+        ],
+      },
+      {
+        id: "DY-AUDIT-04",
+        titulo:
+          "Como equipo, queremos definir si la página de Presupuesto debe conectarse a datos reales o mantenerse como documentación estática del proyecto",
+        tipo: "tarea", valor: "bajo", col: "cola", par: "MR", agente: "Claude",
+        fecha: "2026-06-22", tags: ["presupuesto", "admin", "documentacion"],
+        dod: [
+          pend("Se decide si presupuesto.astro conecta a una tabla de BD o se convierte en una página de documentación explícita (sin pretender ser un módulo ERP)."),
+          pend("Si es documentación: se agrega un aviso visible que la distingue de los módulos operativos."),
+          pend("Si es módulo: se diseña el schema y los endpoints correspondientes."),
+        ],
+      },
+      {
+        id: "DY-AUDIT-05",
+        titulo:
+          "Como desarrollador, quiero que demanda.astro muestre un estado de error claro cuando el endpoint Python no está disponible en desarrollo local",
+        tipo: "bug", valor: "bajo", col: "cola", par: "MR", agente: "Claude",
+        fecha: "2026-06-22", tags: ["demanda", "admin", "devx"],
+        dod: [
+          pend("demanda.astro muestra un banner de aviso visible cuando el endpoint /api/ml/demand no responde (solo funciona en Vercel)."),
+          pend("El aviso explica que esta función requiere 'vercel dev' o el entorno de producción en Vercel."),
+          pend("Las operaciones CRUD de la página quedan deshabilitadas visualmente cuando el endpoint no está disponible."),
+        ],
+      },
+    ],
+  },
+  // ───────────────────────────────────────────────────────────────────────────
+  {
     id: "jun-erp",
     fase: "Post-plan · Evolución",
     nombre: "Rediseño del ERP, checkout e internacionalización",
