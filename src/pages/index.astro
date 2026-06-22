@@ -1090,8 +1090,8 @@ try {
     ============================================= */
     .newsletter-section {
       padding: 5rem 0;
-      background: var(--coffee);
-      border-top: 1px solid rgba(255,255,255,.06);
+      background: transparent;
+      border-top: 1px solid var(--border);
     }
     .newsletter-inner {
       max-width: 640px;
@@ -1108,18 +1108,18 @@ try {
       font-weight: 600;
       letter-spacing: .14em;
       text-transform: uppercase;
-      color: rgba(255,255,255,.5);
+      color: var(--accent);
       margin: 0;
     }
     .newsletter-title {
       font-size: clamp(1.5rem, 3.5vw, 2.2rem);
-      color: #fff;
+      color: var(--coffee);
       margin: 0;
       line-height: 1.2;
     }
     .newsletter-sub {
       font-size: .92rem;
-      color: rgba(255,255,255,.65);
+      color: var(--muted-fg);
       margin: 0;
       line-height: 1.6;
       max-width: 48ch;
@@ -1134,15 +1134,15 @@ try {
     .newsletter-input {
       flex: 1;
       padding: .7rem 1rem;
-      border: 1.5px solid rgba(255,255,255,.2);
+      border: 1.5px solid var(--border);
       border-radius: 6px;
-      background: rgba(255,255,255,.08);
-      color: #fff;
+      background: #fff;
+      color: var(--coffee);
       font-size: .95rem;
       outline: none;
       font-family: inherit;
     }
-    .newsletter-input::placeholder { color: rgba(255,255,255,.4); }
+    .newsletter-input::placeholder { color: var(--muted-fg); }
     .newsletter-input:focus { border-color: var(--accent); }
     .newsletter-btn {
       padding: .7rem 1.4rem;
