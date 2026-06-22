@@ -507,14 +507,14 @@ try {
        ORIGIN STRIP
     ============================================= */
     .origin-strip {
-      background: var(--coffee);
-      color: rgba(255,255,255,.72);
+      background: transparent;
+      color: var(--muted-fg);
       font-size: .72rem;
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
       letter-spacing: .12em;
       text-transform: uppercase;
       overflow: hidden;
-      border-top: 1px solid rgba(255,255,255,.06);
+      border-top: 1px solid var(--border);
     }
     .origin-strip__inner {
       display: flex;
@@ -530,7 +530,7 @@ try {
       display: inline-block;
       width: 1px;
       height: 10px;
-      background: rgba(255,255,255,.25);
+      background: var(--border);
       flex-shrink: 0;
     }
     @media (max-width: 640px) {
