@@ -39,15 +39,6 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
   </header>
 
   <div class="page-body">
-    <div class="info-box" style="margin-top:0">
-      <strong>Dos funciones Python en una vista.</strong> Arriba, el
-      <strong>pronóstico</strong> que calcula <code>api/ml/recompute.py</code>
-      y guarda en <code>demand_forecasts</code> (Node lo lee, por eso se ve aun
-      en local). Abajo, el <strong>CRUD</strong> servido por
-      <code>api/ml/demand.py</code> sobre Turso; en desarrollo local con Express
-      la función no corre (solo en el deploy de Vercel o con <code>vercel dev</code>).
-    </div>
-
     <!-- ═══ 1. Pronóstico (recompute.py) ════════════════════════════════════ -->
     <div class="section-divider" style="margin-top:1.5rem">
       <div>
