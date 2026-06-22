@@ -30,11 +30,8 @@ const between = (src, open, close) => {
   return src.slice(i + open.length, j);
 };
 
-// Markup: entre la apertura de <AdminLayout …> y </AdminLayout>
-let markup = between(page, ">", "</AdminLayout>");
-markup = markup.slice(page.indexOf("<AdminLayout") === -1 ? 0 : 0); // no-op de seguridad
-// Recortar de forma robusta: tomar desde el primer comentario tras AdminLayout
-markup = page.slice(
+// Markup: desde el primer comentario tras <AdminLayout> hasta </AdminLayout>
+let markup = page.slice(
   page.indexOf("<!-- Datos derivados"),
   page.indexOf("</AdminLayout>")
 );
@@ -136,10 +133,11 @@ const baseCss = `
 .dy-iter .modal-body { padding: 20px; }
 `;
 
-// El boardStyle de la página usa selectores bare (.iter-*, .xp-*, .dt-*). Los
-// prefijamos con .dy-iter para que vivan dentro del wrapper. Reglas @media y
-// @keyframes se mantienen; sus selectores internos también se prefijan.
-const scopedBoard = scopeCss(boardStyle, ".dy-iter");
+// El boardStyle usa clases ya únicas (.iter-*, .xp-*, .dt-*) que no colisionan
+// con un sitio externo, y referencian variables CSS que se heredan desde el
+// wrapper .dy-iter. Se emite verbatim. Las clases genéricas que SÍ podrían
+// colisionar (card, modal, kpi, btn, page-header) van scoped en baseCss.
+const scopedBoard = boardStyle;
 
 const html = `<!doctype html>
 <!--
@@ -168,60 +166,3 @@ await mkdir(outDir, { recursive: true });
 const outFile = resolve(outDir, "proyectos-iteraciones.html");
 await writeFile(outFile, html, "utf8");
 console.log(`✓ Bundle generado: export/proyectos-iteraciones.html (${(html.length / 1024).toFixed(1)} KB)`);
-
-// ── Prefijar selectores CSS con un scope, respetando @media/@keyframes ───────
-function scopeCss(css, scope) {
-  // Procesa bloque por bloque. Para @media, prefija los selectores internos.
-  // Para @keyframes, deja el contenido intacto.
-  let out = "";
-  let i = 0;
-  while (i < css.length) {
-    // Comentarios
-    if (css.startsWith("/*", i)) {
-      const end = css.indexOf("*/", i + 2);
-      out += css.slice(i, end + 2);
-      i = end + 2;
-      continue;
-    }
-    // At-rules
-    if (css[i] === "@") {
-      const braceStart = css.indexOf("{", i);
-      const atName = css.slice(i, braceStart).trim();
-      const blockEnd = matchBrace(css, braceStart);
-      const inner = css.slice(braceStart + 1, blockEnd);
-      if (/^@keyframes/i.test(atName)) {
-        out += `${atName} {${inner}}`; // intacto
-      } else {
-        out += `${atName} {${scopeCss(inner, scope)}}`;
-      }
-      i = blockEnd + 1;
-      continue;
-    }
-    // Regla normal: selector { … }
-    const braceStart = css.indexOf("{", i);
-    if (braceStart === -1) { out += css.slice(i); break; }
-    const selector = css.slice(i, braceStart);
-    const blockEnd = matchBrace(css, braceStart);
-    const body = css.slice(braceStart + 1, blockEnd);
-    const scoped = selector
-      .split(",")
-      .map((s) => {
-        const t = s.trim();
-        if (!t) return t;
-        return `${scope} ${t}`;
-      })
-      .join(", ");
-    out += `${scoped} {${body}}`;
-    i = blockEnd + 1;
-  }
-  return out;
-}
-
-function matchBrace(css, openIdx) {
-  let depth = 0;
-  for (let k = openIdx; k < css.length; k++) {
-    if (css[k] === "{") depth++;
-    else if (css[k] === "}") { depth--; if (depth === 0) return k; }
-  }
-  return css.length - 1;
-}
