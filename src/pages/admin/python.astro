@@ -529,6 +529,63 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
       color: #6a5a48;
       margin-top: 1rem;
     }
+
+    /* ── Stepper +/- ── */
+    .stepper {
+      display: flex; align-items: stretch;
+      border: 1px solid var(--rule); border-radius: var(--radius-sm, 6px);
+      overflow: hidden;
+    }
+    .stepper input[type="number"] {
+      flex: 1; border: 0;
+      border-left: 1px solid var(--rule); border-right: 1px solid var(--rule);
+      border-radius: 0; text-align: center;
+      font-weight: 700; font-variant-numeric: tabular-nums;
+      min-width: 64px;
+    }
+    .stepper input[type="number"]::-webkit-inner-spin-button,
+    .stepper input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
+    .stepper input[type="number"] { -moz-appearance: textfield; }
+    .stepper-btn {
+      appearance: none; border: 0;
+      background: var(--hover, #f5f0eb); color: var(--color-primary, #251a14);
+      cursor: pointer; font-size: 18px; font-weight: 700; line-height: 1;
+      padding: 0 14px; transition: background .12s;
+    }
+    .stepper-btn:hover  { background: var(--rule,   #e5ddd4); }
+    .stepper-btn:active { background: var(--rule-2, #cec6bc); }
+
+    /* ── Period toggle semana/mes ── */
+    .period-wrap { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .period-toggle {
+      display: inline-flex;
+      background: var(--paper, #faf8f5); border: 1px solid var(--rule, #e5ddd4);
+      border-radius: 6px; padding: 2px; flex-shrink: 0;
+    }
+    .period-btn {
+      appearance: none; border: 0; background: transparent; cursor: pointer;
+      font: inherit; font-size: 12px; font-weight: 500;
+      color: var(--color-text, #3a2618); padding: 4px 10px; border-radius: 4px;
+      transition: background .12s; white-space: nowrap;
+    }
+    .period-btn:hover { background: var(--hover, #f0ebe4); }
+    .period-btn--on   { background: var(--color-primary, #251a14); color: #fff; }
+    .period-btn--on:hover { background: color-mix(in oklab, var(--color-primary, #251a14) 88%, black); }
+    .period-input { flex: 1; min-width: 140px; }
+
+    /* ── Notas toggle ── */
+    .notes-toggle {
+      appearance: none; width: 100%; text-align: left;
+      border: 1px dashed var(--rule-2, #c8bfb4); background: transparent;
+      color: var(--muted, #7a6652); cursor: pointer; font: inherit;
+      font-size: 13px; padding: 7px 12px; border-radius: 6px;
+      transition: border-color .12s, color .12s, background .12s;
+    }
+    .notes-toggle:hover {
+      border-color: var(--color-primary, #251a14);
+      color: var(--color-primary, #251a14);
+      background: var(--hover, #f0ebe4);
+    }
   </style>
 
   <!-- ── Script 1: recalcular pronóstico (recompute.py) ── -->
