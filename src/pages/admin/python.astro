@@ -43,7 +43,7 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
     <div class="section-divider" style="margin-top:1.5rem">
       <div>
         <h2>Pronóstico de Demanda</h2>
-        <p>Proyección de las próximas 8 semanas desde ventas de MercadoLibre · calculado con Python</p>
+        <p>Estimación de ventas para las próximas 8 semanas a partir del historial de MercadoLibre. El modelo recalcula automáticamente cada noche; si acaba de sincronizar ventas nuevas, actualícelo con el botón.</p>
         {fcGeneratedAt && (
           <span class="fc-meta">
             Última actualización: {new Date(fcGeneratedAt + " UTC").toLocaleString("es-CO", { dateStyle: "medium", timeStyle: "short" })}
