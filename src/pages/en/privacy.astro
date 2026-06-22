@@ -1,0 +1,182 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { getCanonicalUrl, getHreflangPair } from "../../i18n/index.ts";
+
+const hreflang = getHreflangPair("/privacidad");
+---
+
+<Layout
+  lang="en"
+  title="Privacy Policy — DobleYo Café"
+  description="Privacy policy and personal data processing practices of DobleYo Café. Learn how we collect, use and protect your information."
+  canonical={getCanonicalUrl("/privacy", "en")}
+  hreflangEs={hreflang?.es}
+  hreflangEn={hreflang?.en}
+>
+  <article class="prose legal-page">
+    <h1>Privacy Policy</h1>
+    <p class="legal-meta">
+      Effective: <strong>March 1, 2025</strong> · Last updated: <strong>March 1, 2026</strong>
+    </p>
+
+    <div class="legal-alert">
+      <strong>DobleYo Café</strong> acts as the data controller for the personal information
+      collected through this website. We are committed to protecting your privacy and handling
+      your data with transparency and care.
+    </div>
+
+    <section>
+      <h2>1. Data Controller</h2>
+      <p>
+        <strong>DobleYo Café</strong>, a Colombian specialty coffee company based in Colombia,
+        is responsible for processing personal data collected through <strong>dobleyo.cafe</strong>
+        and <strong>en.dobleyo.cafe</strong>. To exercise your rights or make inquiries, contact us at:
+      </p>
+      <ul>
+        <li><strong>Email:</strong> <a href="mailto:privacy@dobleyo.cafe">privacy@dobleyo.cafe</a></li>
+        <li><strong>Website:</strong> <a href="https://dobleyo.cafe">dobleyo.cafe</a></li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>2. Data We Collect</h2>
+      <p>We collect data you provide directly and data generated automatically:</p>
+      <h3>Data you provide</h3>
+      <ul>
+        <li>Name and email address (account registration, newsletter, contact form)</li>
+        <li>Shipping address and phone number (orders)</li>
+        <li>Payment data (processed by our payment provider — we do not store card numbers)</li>
+        <li>Messages and feedback you send us</li>
+      </ul>
+      <h3>Data collected automatically</h3>
+      <ul>
+        <li>IP address and browser type</li>
+        <li>Pages visited and time spent on site</li>
+        <li>Referring URL and device type</li>
+        <li>Cookie identifiers (see our Cookie Policy below)</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>3. How We Use Your Data</h2>
+      <ul>
+        <li>To process and fulfill your orders</li>
+        <li>To send order confirmations, shipping updates and receipts</li>
+        <li>To send newsletters and promotional offers (only with your explicit consent)</li>
+        <li>To respond to inquiries and provide customer support</li>
+        <li>To improve our website, products and services</li>
+        <li>To comply with legal obligations</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>4. Legal Basis for Processing</h2>
+      <ul>
+        <li><strong>Contract performance</strong> — processing your order requires handling your name, address and contact details.</li>
+        <li><strong>Legitimate interest</strong> — website analytics, fraud prevention and improving our services.</li>
+        <li><strong>Consent</strong> — marketing emails and non-essential cookies. You may withdraw consent at any time.</li>
+        <li><strong>Legal obligation</strong> — tax records and invoicing requirements.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>5. Data Sharing</h2>
+      <p>We do not sell your personal data. We share it only with:</p>
+      <ul>
+        <li><strong>Shipping carriers</strong> — to deliver your order</li>
+        <li><strong>Payment processors</strong> — to handle transactions securely</li>
+        <li><strong>Email service provider</strong> — to send transactional and marketing emails</li>
+        <li><strong>Analytics tools</strong> — aggregated, anonymised data only</li>
+        <li><strong>Legal authorities</strong> — when required by law</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>6. International Transfers</h2>
+      <p>
+        As an international e-commerce store, your data may be processed in countries
+        outside your own. We ensure appropriate safeguards are in place (standard
+        contractual clauses or equivalent mechanisms) for all cross-border transfers.
+      </p>
+    </section>
+
+    <section>
+      <h2>7. Data Retention</h2>
+      <ul>
+        <li>Order data: 7 years (accounting and tax requirements)</li>
+        <li>Account data: while your account is active, plus 2 years after closure</li>
+        <li>Marketing consent: until you unsubscribe</li>
+        <li>Contact form messages: 2 years</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>8. Your Rights</h2>
+      <p>Depending on your location, you may have the right to:</p>
+      <ul>
+        <li>Access the personal data we hold about you</li>
+        <li>Correct inaccurate or incomplete data</li>
+        <li>Request erasure of your data</li>
+        <li>Restrict or object to processing</li>
+        <li>Data portability</li>
+        <li>Withdraw consent at any time</li>
+        <li>Lodge a complaint with your local data protection authority</li>
+      </ul>
+      <p>To exercise any of these rights, email <a href="mailto:privacy@dobleyo.cafe">privacy@dobleyo.cafe</a>.</p>
+    </section>
+
+    <section>
+      <h2>9. Cookies</h2>
+      <p>
+        We use essential cookies for site functionality (session management, cart) and
+        optional cookies for analytics. You can manage your preferences through the
+        cookie banner shown on your first visit.
+      </p>
+    </section>
+
+    <section>
+      <h2>10. Security</h2>
+      <p>
+        We implement technical and organisational measures to protect your data,
+        including HTTPS encryption, access controls and regular security reviews.
+        No system is 100% secure; in the event of a breach we will notify you as
+        required by law.
+      </p>
+    </section>
+
+    <section>
+      <h2>11. Changes to This Policy</h2>
+      <p>
+        We may update this policy from time to time. We will notify you of significant
+        changes by email or via a banner on our website. The date at the top of this
+        page always reflects the latest revision.
+      </p>
+    </section>
+
+    <section>
+      <h2>12. Contact</h2>
+      <p>
+        Questions about this policy? Email us at
+        <a href="mailto:privacy@dobleyo.cafe">privacy@dobleyo.cafe</a> or use our
+        <a href="/contact" data-link>contact form</a>.
+      </p>
+    </section>
+  </article>
+</Layout>
+
+<style>
+  .prose { max-width: 800px; margin: 2rem auto; padding: 0 1.25rem 4rem; }
+  .legal-page h1 { font-size: clamp(1.8rem, 5vw, 2.5rem); color: var(--coffee); margin-bottom: 0.5rem; }
+  .legal-meta { font-size: 0.88rem; color: var(--muted-fg); margin-bottom: 2rem; }
+  .legal-alert {
+    background: #fdf6ee; border: 1px solid var(--accent); border-radius: 0.5rem;
+    padding: 1.25rem 1.5rem; margin-bottom: 2.5rem; font-size: 0.95rem; line-height: 1.7; color: var(--coffee);
+  }
+  .legal-page section { margin-bottom: 2.25rem; }
+  .legal-page h2 { font-family: var(--font-heading, serif); font-size: 1.3rem; color: var(--coffee); margin: 0 0 0.75rem; border-bottom: 1px solid var(--border); padding-bottom: 0.375rem; }
+  .legal-page h3 { font-size: 1rem; font-weight: 600; color: var(--coffee); margin: 1rem 0 0.3rem; }
+  .legal-page p, .legal-page li { font-size: 0.95rem; line-height: 1.8; color: var(--fg, #444); }
+  .legal-page ul, .legal-page ol { margin: 0.5rem 0; padding-left: 1.5rem; }
+  .legal-page li { margin: 0.3rem 0; }
+  .legal-page a { color: var(--accent); }
+</style>
