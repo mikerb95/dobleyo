@@ -319,6 +319,25 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     });
 
     $("btn-refresh").addEventListener("click", load);
+
+    $("btn-export").addEventListener("click", () => {
+      const cat = ($("filter-category") as HTMLInputElement).value.trim();
+      const qs = new URLSearchParams({ export: "xlsx" });
+      if (cat) qs.set("category", cat);
+      const btn = $("btn-export") as HTMLButtonElement;
+      btn.disabled = true;
+      btn.textContent = "Generando…";
+      const a = document.createElement("a");
+      a.href = API + "?" + qs.toString();
+      a.download = "demanda.xlsx";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => {
+        btn.disabled = false;
+        btn.textContent = "⬇ Exportar Excel";
+      }, 2000);
+    });
     let filterTimer: any;
     ($("filter-category") as HTMLInputElement).addEventListener("input", () => {
       clearTimeout(filterTimer);
