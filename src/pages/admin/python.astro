@@ -356,27 +356,51 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
           <div class="form-grid">
             <div class="form-group">
               <label for="e-category">Categoría <span class="required">*</span></label>
-              <input type="text" id="e-category" required />
+              <select id="e-category" required>
+                <option value="">Seleccione…</option>
+                <option value="cafe-grano">Café en grano</option>
+                <option value="cafe-molido">Café molido</option>
+                <option value="accesorios">Accesorios</option>
+                <option value="otro">Otro</option>
+              </select>
             </div>
             <div class="form-group">
               <label for="e-product">Producto</label>
-              <input type="text" id="e-product" />
+              <select id="e-product" class="product-select">
+                <option value="">— Sin especificar —</option>
+              </select>
             </div>
-            <div class="form-group">
-              <label for="e-period">Período</label>
-              <input type="text" id="e-period" />
+            <div class="form-group form-group--period">
+              <label>Período</label>
+              <div class="period-wrap">
+                <div class="period-toggle" id="e-period-toggle">
+                  <button type="button" class="period-btn period-btn--on" data-mode="week">Semana</button>
+                  <button type="button" class="period-btn" data-mode="month">Mes</button>
+                </div>
+                <input type="week"  id="e-period-week"  class="period-input" />
+                <input type="month" id="e-period-month" class="period-input" style="display:none" />
+              </div>
             </div>
             <div class="form-group">
               <label for="e-value">Demanda <span class="required">*</span></label>
-              <input type="number" id="e-value" min="0" step="0.01" required />
+              <div class="stepper">
+                <button type="button" class="stepper-btn" data-target="e-value" data-delta="-1">−</button>
+                <input type="number" id="e-value" min="0" step="1" required />
+                <button type="button" class="stepper-btn" data-target="e-value" data-delta="1">+</button>
+              </div>
             </div>
             <div class="form-group">
               <label for="e-unit">Unidad</label>
-              <input type="text" id="e-unit" />
+              <select id="e-unit">
+                <option value="units">Unidades</option>
+                <option value="kg">Kilogramos (kg)</option>
+                <option value="lb">Libras (lb)</option>
+                <option value="sacos">Sacos</option>
+              </select>
             </div>
             <div class="form-group form-group--wide">
               <label for="e-notes">Notas</label>
-              <textarea id="e-notes"></textarea>
+              <textarea id="e-notes" placeholder="Observaciones…"></textarea>
             </div>
           </div>
         </div>
