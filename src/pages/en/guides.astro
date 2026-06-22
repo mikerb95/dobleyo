@@ -1,0 +1,164 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { getCanonicalUrl, getHreflangPair } from "../../i18n/index.ts";
+
+export const prerender = false;
+
+const hreflang = getHreflangPair("/guias");
+
+const guides = [
+  {
+    icon: "⚗️",
+    name: "V60 Pour-Over",
+    summary: "A clean, filter brew that highlights the floral and citrus notes of single-origin coffees.",
+    ratio: "1:16 (15 g coffee · 240 ml water)",
+    grind: "Medium",
+    time: "2:30 – 3:00 min",
+    temp: "92 – 94 °C / 198 – 201 °F",
+  },
+  {
+    icon: "🧪",
+    name: "Chemex",
+    summary: "A thick filter for a crisp, light-bodied cup — ideal for sharing with friends.",
+    ratio: "1:15 (40 g coffee · 600 ml water)",
+    grind: "Medium-coarse",
+    time: "4:00 – 5:00 min",
+    temp: "93 – 95 °C / 199 – 203 °F",
+  },
+  {
+    icon: "🫖",
+    name: "French Press",
+    summary: "Full immersion for a full-bodied, rich cup with more natural oils present.",
+    ratio: "1:14 (30 g coffee · 420 ml water)",
+    grind: "Coarse",
+    time: "4:00 min",
+    temp: "93 °C / 199 °F",
+  },
+  {
+    icon: "☕",
+    name: "Moka Pot",
+    summary: "The stovetop classic: intense, concentrated and ready in minutes.",
+    ratio: "Fill the basket without pressing",
+    grind: "Fine-medium",
+    time: "4:00 – 5:00 min",
+    temp: "Medium-low heat",
+  },
+];
+
+const tips = [
+  "Use filtered water — coffee is 98% water, so its quality matters.",
+  "Grind just before brewing to preserve volatile aromas.",
+  "Weigh both coffee and water with a scale for consistent results.",
+  "Consume within 4 weeks of the roast date for peak flavor.",
+  "Store whole beans in an airtight container, away from light and heat.",
+];
+---
+
+<Layout
+  lang="en"
+  title="Brewing Guides — DobleYo Café"
+  description="Step-by-step brewing guides to get the most out of your Colombian specialty coffee. V60, Chemex, French Press, Moka Pot and expert tips."
+  canonical={getCanonicalUrl("/guides", "en")}
+  hreflangEs={hreflang?.es}
+  hreflangEn={hreflang?.en}
+>
+  <section class="gu-hero">
+    <div class="gu-hero__inner">
+      <p class="gu-hero__eyebrow">Guides</p>
+      <h1 class="gu-hero__title">Brew a better cup at home</h1>
+      <p class="gu-hero__sub">
+        Step-by-step recipes to unlock the full potential of our specialty
+        coffees, whatever brewing method you prefer.
+      </p>
+    </div>
+  </section>
+
+  <section class="gu-methods">
+    <div class="container">
+      <h2 class="gu-h2 gu-h2--center">Brewing methods</h2>
+      <ul class="gu-grid" role="list">
+        {guides.map((g) => (
+          <li class="gu-card">
+            <span class="gu-card__icon" aria-hidden="true">{g.icon}</span>
+            <h3 class="gu-card__title">{g.name}</h3>
+            <p class="gu-card__summary">{g.summary}</p>
+            <dl class="gu-card__specs">
+              <div><dt>Ratio</dt><dd>{g.ratio}</dd></div>
+              <div><dt>Grind</dt><dd>{g.grind}</dd></div>
+              <div><dt>Time</dt><dd>{g.time}</dd></div>
+              <div><dt>Temperature</dt><dd>{g.temp}</dd></div>
+            </dl>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <section class="gu-tips">
+    <div class="container gu-tips__inner">
+      <h2 class="gu-h2">5 essential tips</h2>
+      <ul class="gu-tips__list">
+        {tips.map((tip) => <li>{tip}</li>)}
+      </ul>
+    </div>
+  </section>
+
+  <section class="gu-cta">
+    <div class="gu-cta__inner">
+      <h2>Put these guides to the test</h2>
+      <p>Pick a specialty coffee and start experimenting in your cup.</p>
+      <div class="gu-cta__btns">
+        <a class="btn-primary" href="/shop" data-link>Browse coffees</a>
+        <a class="btn-ghost" href="/shop" data-link>Shop accessories</a>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 1.25rem; }
+  .gu-h2 {
+    font-family: var(--font-heading, serif);
+    font-size: clamp(1.4rem, 3vw, 2rem);
+    color: var(--coffee); margin: 0 0 1.5rem;
+  }
+  .gu-h2--center { text-align: center; }
+
+  .gu-hero { background: var(--coffee); color: var(--cream); padding: 3.5rem 1.5rem 3rem; text-align: center; }
+  .gu-hero__inner { max-width: 720px; margin: 0 auto; }
+  .gu-hero__eyebrow { text-transform: uppercase; letter-spacing: 0.12em; font-size: 0.8rem; opacity: 0.75; margin: 0 0 0.75rem; }
+  .gu-hero__title { font-family: var(--font-heading, serif); font-size: clamp(1.9rem, 5vw, 3rem); line-height: 1.15; margin: 0 0 1rem; }
+  .gu-hero__sub { font-size: 1.05rem; line-height: 1.65; opacity: 0.9; margin: 0; }
+
+  .gu-methods { background: #fff; padding: 3.5rem 0; }
+  .gu-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
+  @media (min-width: 640px) { .gu-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 1024px) { .gu-grid { grid-template-columns: repeat(4, 1fr); } }
+
+  .gu-card { background: var(--cream); border-radius: 14px; padding: 1.5rem 1.25rem; box-shadow: 0 1px 5px rgba(0,0,0,.08); }
+  .gu-card__icon { font-size: 1.8rem; display: block; margin-bottom: 0.5rem; }
+  .gu-card__title { margin: 0 0 0.4rem; font-size: 1.15rem; color: var(--coffee); }
+  .gu-card__summary { margin: 0 0 1rem; font-size: 0.9rem; line-height: 1.55; color: var(--fg, #555); }
+  .gu-card__specs { margin: 0; display: grid; gap: 0.6rem; }
+  .gu-card__specs dt { font-size: 0.7rem; color: #888; text-transform: uppercase; letter-spacing: 0.04em; }
+  .gu-card__specs dd { margin: 0; font-size: 0.9rem; font-weight: 600; color: var(--coffee); }
+
+  .gu-tips { background: var(--cream); padding: 3rem 0; }
+  .gu-tips__inner { max-width: 760px; }
+  .gu-tips__list { margin: 0; padding-left: 1.25rem; line-height: 1.8; color: var(--fg, #444); }
+  .gu-tips__list li { margin: 0.3rem 0; }
+
+  .gu-cta { background: var(--coffee); color: var(--cream); padding: 3rem 1.5rem; text-align: center; }
+  .gu-cta__inner { max-width: 600px; margin: 0 auto; }
+  .gu-cta h2 { font-family: var(--font-heading, serif); font-size: clamp(1.5rem, 4vw, 2.2rem); margin: 0 0 0.6rem; }
+  .gu-cta p { opacity: 0.9; margin: 0 0 1.5rem; }
+  .gu-cta__btns { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
+  .btn-primary, .btn-ghost {
+    display: inline-block; padding: 0.7rem 1.5rem; border-radius: 999px;
+    font-weight: 600; text-decoration: none; min-height: 44px; line-height: 1.6;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { filter: brightness(1.05); }
+  .btn-ghost { border: 1.5px solid var(--cream); color: var(--cream); }
+  .btn-ghost:hover { background: var(--cream); color: var(--coffee); }
+</style>
