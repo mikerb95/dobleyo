@@ -1,6 +1,8 @@
 ---
 import Layout from "../../layouts/Layout.astro";
-import { getCanonicalUrl } from "../../i18n/index.ts";
+import { getCanonicalUrl, getHreflangPair } from "../../i18n/index.ts";
+
+const hreflang = getHreflangPair("/mayoristas");
 ---
 
 <Layout
@@ -8,6 +10,8 @@ import { getCanonicalUrl } from "../../i18n/index.ts";
   description="Green and roasted Colombian specialty coffee for roasters and importers worldwide. Traceable lots, FOB/CIF, consistent quality. Request a quote."
   lang="en"
   canonical={getCanonicalUrl("/wholesale", "en")}
+  hreflangEs={hreflang?.es}
+  hreflangEn={hreflang?.en}
 >
   <div class="en-page">
     <!-- Hero Section -->
