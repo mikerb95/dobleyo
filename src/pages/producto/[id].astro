@@ -598,6 +598,26 @@ const productJsonLd = {
       font-size: 1rem;
     }
 
+    .fav-toggle-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: .4rem;
+      min-height: 2.5rem;
+    }
+
+    .fav-toggle-btn svg path {
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.8;
+    }
+
+    .fav-toggle-btn.is-fav {
+      color: #dc2626;
+      border-color: #dc2626;
+    }
+
+    .fav-toggle-btn.is-fav svg path { fill: currentColor; }
+
     .ship-note {
       font-size: .82rem;
       color: #4a6741;
