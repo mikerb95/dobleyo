@@ -616,11 +616,10 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
   <!-- ── Script 2: CRUD de demanda (demand.py) ── -->
   <script>
     const API = "/api/ml/demand";
-    const $ = (id: string) => document.getElementById(id) as HTMLElement;
-    const rowsEl = $("rows") as HTMLTableSectionElement;
+    const $   = (id: string) => document.getElementById(id)!;
+    const rowsEl  = $("rows") as HTMLTableSectionElement;
     const alertEl = $("alert");
     const countEl = $("count-label");
-
     let cache: any[] = [];
 
     function showAlert(msg: string, kind: "error" | "success" = "error") {
@@ -641,15 +640,14 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
       return isNaN(+d) ? s : d.toLocaleString("es-CO", { dateStyle: "short", timeStyle: "short" });
     }
 
-    async function api(method: string, body?: any, qs = ""): Promise<any> {
+    async function apiReq(method: string, body?: any, qs = ""): Promise<any> {
       const res = await fetch(API + qs, {
-        method,
-        credentials: "include",
+        method, credentials: "include",
         headers: body ? { "Content-Type": "application/json" } : undefined,
         body: body ? JSON.stringify(body) : undefined,
       });
       let json: any = null;
-      try { json = await res.json(); } catch { /* respuesta no-JSON */ }
+      try { json = await res.json(); } catch { /* no-JSON */ }
       if (!res.ok || !json?.success) {
         const err = json?.error || (json?.errors ? json.errors.join(", ") : `Error ${res.status}`);
         throw new Error(err);
@@ -657,6 +655,94 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
       return json;
     }
 
+    // ── Cargar productos en todos los <select class="product-select"> ──
+    async function loadProducts() {
+      try {
+        const res = await fetch("/api/inventory/products", { credentials: "include" });
+        const j   = await res.json();
+        const products: any[] = j.data || j.products || [];
+        document.querySelectorAll<HTMLSelectElement>(".product-select").forEach(sel => {
+          const firstText = sel.options[0]?.textContent ?? "— Sin especificar —";
+          sel.innerHTML = `<option value="">${firstText}</option>` +
+            products.map(p => `<option value="${esc(p.name)}">${esc(p.name)}</option>`).join("");
+        });
+      } catch { /* selects quedan con la opción por defecto */ }
+    }
+
+    // ── Period toggle ──
+    function setPeriodMode(prefix: string, mode: string) {
+      const toggle   = $(`${prefix}-period-toggle`);
+      const weekEl   = document.getElementById(`${prefix}-period-week`)  as HTMLInputElement | null;
+      const monthEl  = document.getElementById(`${prefix}-period-month`) as HTMLInputElement | null;
+      toggle.querySelectorAll<HTMLButtonElement>(".period-btn").forEach(b =>
+        b.classList.toggle("period-btn--on", b.dataset.mode === mode));
+      if (weekEl)  weekEl.style.display  = mode === "week"  ? "" : "none";
+      if (monthEl) monthEl.style.display = mode === "month" ? "" : "none";
+    }
+
+    function getPeriodValue(prefix: string): string {
+      const toggle = document.getElementById(`${prefix}-period-toggle`);
+      const mode   = (toggle?.querySelector(".period-btn--on") as HTMLElement | null)?.dataset.mode ?? "week";
+      if (mode === "none") return "";
+      return (document.getElementById(`${prefix}-period-${mode}`) as HTMLInputElement | null)?.value ?? "";
+    }
+
+    function setPeriodValue(prefix: string, value: string) {
+      const weekEl  = document.getElementById(`${prefix}-period-week`)  as HTMLInputElement | null;
+      const monthEl = document.getElementById(`${prefix}-period-month`) as HTMLInputElement | null;
+      if (!value) {
+        setPeriodMode(prefix, "week");
+        if (weekEl)  weekEl.value  = "";
+        if (monthEl) monthEl.value = "";
+        return;
+      }
+      if (/^\d{4}-W\d{2}$/.test(value)) {
+        setPeriodMode(prefix, "week");
+        if (weekEl) weekEl.value = value;
+      } else if (/^\d{4}-\d{2}$/.test(value)) {
+        setPeriodMode(prefix, "month");
+        if (monthEl) monthEl.value = value;
+      }
+    }
+
+    ["c", "e", "ex"].forEach(prefix => {
+      document.getElementById(`${prefix}-period-toggle`)?.addEventListener("click", e => {
+        const btn = (e.target as HTMLElement).closest<HTMLButtonElement>(".period-btn");
+        if (btn?.dataset.mode) setPeriodMode(prefix, btn.dataset.mode);
+      });
+    });
+
+    // ── Stepper +/− ──
+    document.addEventListener("click", e => {
+      const btn = (e.target as HTMLElement).closest<HTMLButtonElement>(".stepper-btn");
+      if (!btn) return;
+      const input = document.getElementById(btn.dataset.target!) as HTMLInputElement | null;
+      if (!input) return;
+      input.value = String(Math.max(0, (parseFloat(input.value) || 0) + (parseFloat(btn.dataset.delta!) || 1)));
+    });
+
+    // ── Notas toggle (creación) ──
+    $("c-notes-toggle").addEventListener("click", () => {
+      const notes  = $("c-notes");
+      const toggle = $("c-notes-toggle");
+      const showing = notes.style.display !== "none";
+      notes.style.display  = showing ? "none" : "block";
+      toggle.textContent   = showing ? "+ Agregar nota" : "− Ocultar nota";
+    });
+
+    // ── Limpiar formulario de creación ──
+    $("c-clear-btn").addEventListener("click", () => {
+      ($("c-category") as HTMLSelectElement).value   = "";
+      ($("c-product")  as HTMLSelectElement).value   = "";
+      setPeriodValue("c", "");
+      ($("c-value") as HTMLInputElement).value       = "0";
+      ($("c-unit")  as HTMLSelectElement).value      = "units";
+      ($("c-notes") as HTMLTextAreaElement).value    = "";
+      $("c-notes").style.display                     = "none";
+      $("c-notes-toggle").textContent                = "+ Agregar nota";
+    });
+
+    // ── Render tabla ──
     function render(records: any[]) {
       cache = records;
       countEl.textContent = `${records.length} registro(s)`;
@@ -676,17 +762,17 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
           <td>
             <div class="row-actions">
               <button class="btn btn-secondary" data-edit="${r.id}" type="button">Editar</button>
-              <button class="btn btn-danger" data-del="${r.id}" type="button">Borrar</button>
+              <button class="btn btn-danger"    data-del="${r.id}"  type="button">Borrar</button>
             </div>
           </td>
         </tr>`).join("");
     }
 
     async function load() {
-      const cat = ($("filter-category") as HTMLInputElement).value.trim();
+      const cat = ($("filter-category") as HTMLSelectElement).value.trim();
       rowsEl.innerHTML = `<tr><td colspan="8" class="empty-state">Cargando…</td></tr>`;
       try {
-        const json = await api("GET", undefined, cat ? `?category=${encodeURIComponent(cat)}` : "");
+        const json = await apiReq("GET", undefined, cat ? `?category=${encodeURIComponent(cat)}` : "");
         render(json.data || []);
       } catch (e: any) {
         rowsEl.innerHTML = `<tr><td colspan="8" class="empty-state">No se pudo cargar: ${esc(e.message)}</td></tr>`;
@@ -696,19 +782,24 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
     // ── Crear ──
     ($("create-form") as HTMLFormElement).addEventListener("submit", async (ev) => {
       ev.preventDefault();
-      const f = ev.target as HTMLFormElement;
       const payload = {
-        category: (f.elements.namedItem("category") as HTMLInputElement).value,
-        product_key: (f.elements.namedItem("product_key") as HTMLInputElement).value,
-        period: (f.elements.namedItem("period") as HTMLInputElement).value,
-        demand_value: (f.elements.namedItem("demand_value") as HTMLInputElement).value,
-        unit: (f.elements.namedItem("unit") as HTMLInputElement).value,
-        notes: (f.elements.namedItem("notes") as HTMLTextAreaElement).value,
+        category:     ($("c-category") as HTMLSelectElement).value,
+        product_key:  ($("c-product")  as HTMLSelectElement).value,
+        period:       getPeriodValue("c"),
+        demand_value: ($("c-value")    as HTMLInputElement).value,
+        unit:         ($("c-unit")     as HTMLSelectElement).value,
+        notes:        ($("c-notes")    as HTMLTextAreaElement).value,
       };
       try {
-        await api("POST", payload);
-        f.reset();
-        (f.elements.namedItem("unit") as HTMLInputElement).value = "units";
+        await apiReq("POST", payload);
+        ($("c-category") as HTMLSelectElement).value  = "";
+        ($("c-product")  as HTMLSelectElement).value  = "";
+        setPeriodValue("c", "");
+        ($("c-value") as HTMLInputElement).value      = "0";
+        ($("c-unit")  as HTMLSelectElement).value     = "units";
+        ($("c-notes") as HTMLTextAreaElement).value   = "";
+        $("c-notes").style.display                    = "none";
+        $("c-notes-toggle").textContent               = "+ Agregar nota";
         showAlert("Registro creado correctamente.", "success");
         load();
       } catch (e: any) { showAlert(e.message); }
@@ -716,49 +807,59 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
 
     // ── Editar / Borrar (delegación) ──
     rowsEl.addEventListener("click", async (ev) => {
-      const t = ev.target as HTMLElement;
+      const t     = ev.target as HTMLElement;
       const editId = t.getAttribute("data-edit");
-      const delId = t.getAttribute("data-del");
+      const delId  = t.getAttribute("data-del");
       if (editId) openEdit(Number(editId));
       if (delId) {
         if (!confirm("¿Eliminar este registro de demanda? Esta acción no se puede deshacer.")) return;
         try {
-          await api("DELETE", undefined, `?id=${delId}`);
+          await apiReq("DELETE", undefined, `?id=${delId}`);
           showAlert("Registro eliminado.", "success");
           load();
         } catch (e: any) { showAlert(e.message); }
       }
     });
 
+    function setSelectOrAppend(sel: HTMLSelectElement, value: string) {
+      sel.value = value;
+      if (sel.value !== value && value) {
+        const opt = document.createElement("option");
+        opt.value = value; opt.textContent = value;
+        sel.appendChild(opt); sel.value = value;
+      }
+    }
+
     function openEdit(id: number) {
       const r = cache.find((x) => x.id === id);
       if (!r) return;
       ($("e-id") as HTMLInputElement).value = String(r.id);
-      ($("e-category") as HTMLInputElement).value = r.category ?? "";
-      ($("e-product") as HTMLInputElement).value = r.product_key ?? "";
-      ($("e-period") as HTMLInputElement).value = r.period ?? "";
+      setSelectOrAppend($("e-category") as HTMLSelectElement, r.category ?? "");
+      setSelectOrAppend($("e-product")  as HTMLSelectElement, r.product_key ?? "");
+      setPeriodValue("e", r.period ?? "");
       ($("e-value") as HTMLInputElement).value = r.demand_value ?? "";
-      ($("e-unit") as HTMLInputElement).value = r.unit ?? "";
+      setSelectOrAppend($("e-unit") as HTMLSelectElement, r.unit ?? "units");
       ($("e-notes") as HTMLTextAreaElement).value = r.notes ?? "";
       $("edit-modal").style.display = "grid";
     }
+
     function closeEdit() { $("edit-modal").style.display = "none"; }
-    $("edit-close").addEventListener("click", closeEdit);
+    $("edit-close").addEventListener("click",  closeEdit);
     $("edit-cancel").addEventListener("click", closeEdit);
 
     ($("edit-form") as HTMLFormElement).addEventListener("submit", async (ev) => {
       ev.preventDefault();
       const id = ($("e-id") as HTMLInputElement).value;
       const payload = {
-        category: ($("e-category") as HTMLInputElement).value,
-        product_key: ($("e-product") as HTMLInputElement).value,
-        period: ($("e-period") as HTMLInputElement).value,
-        demand_value: ($("e-value") as HTMLInputElement).value,
-        unit: ($("e-unit") as HTMLInputElement).value,
-        notes: ($("e-notes") as HTMLTextAreaElement).value,
+        category:     ($("e-category") as HTMLSelectElement).value,
+        product_key:  ($("e-product")  as HTMLSelectElement).value,
+        period:       getPeriodValue("e"),
+        demand_value: ($("e-value")    as HTMLInputElement).value,
+        unit:         ($("e-unit")     as HTMLSelectElement).value,
+        notes:        ($("e-notes")    as HTMLTextAreaElement).value,
       };
       try {
-        await api("PUT", payload, `?id=${id}`);
+        await apiReq("PUT", payload, `?id=${id}`);
         closeEdit();
         showAlert("Registro actualizado.", "success");
         load();
@@ -768,11 +869,13 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
     $("btn-refresh").addEventListener("click", load);
 
     $("btn-export").addEventListener("click", () => {
-      const val = (id: string) => ($(`ex-${id}`) as HTMLInputElement).value.trim();
+      const val = (id: string) =>
+        (document.getElementById(`ex-${id}`) as HTMLInputElement | HTMLSelectElement | null)?.value?.trim() ?? "";
       const qs = new URLSearchParams({ export: "xlsx" });
       if (val("category"))  qs.set("category",  val("category"));
       if (val("product"))   qs.set("product",   val("product"));
-      if (val("period"))    qs.set("period",    val("period"));
+      const period = getPeriodValue("ex");
+      if (period)           qs.set("period",    period);
       if (val("value-min")) qs.set("value_min", val("value-min"));
       if (val("value-max")) qs.set("value_max", val("value-max"));
       if (val("limit"))     qs.set("limit",     val("limit"));
@@ -780,17 +883,20 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
     });
 
     $("btn-export-clear").addEventListener("click", () => {
-      ["category","product","period","value-min","value-max"].forEach(
-        (id) => { ($(`ex-${id}`) as HTMLInputElement).value = ""; }
-      );
-      ($("ex-limit") as HTMLInputElement).value = "5000";
-    });
-    let filterTimer: any;
-    ($("filter-category") as HTMLInputElement).addEventListener("input", () => {
-      clearTimeout(filterTimer);
-      filterTimer = setTimeout(load, 350);
+      ($("ex-category") as HTMLSelectElement).value = "";
+      ($("ex-product")  as HTMLSelectElement).value = "";
+      setPeriodMode("ex", "none");
+      (document.getElementById("ex-period-week")  as HTMLInputElement).value = "";
+      (document.getElementById("ex-period-month") as HTMLInputElement).value = "";
+      ($("ex-value-min") as HTMLInputElement).value = "";
+      ($("ex-value-max") as HTMLInputElement).value = "";
+      ($("ex-limit")     as HTMLInputElement).value = "5000";
     });
 
+    $("filter-category").addEventListener("change", () => load());
+
+    // ── Init ──
+    loadProducts();
     load();
   </script>
 </AdminLayout>
