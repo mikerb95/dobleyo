@@ -674,7 +674,7 @@ import Layout from "../layouts/Layout.astro";
       return;
     }
     el.innerHTML = favs.map((f) => {
-      const href = f.slug ? "/producto/" + f.slug : "/tienda";
+      const href = "/producto/" + encodeURIComponent(f.slug || f.product_id);
       const soldOut = f.is_active === 0;
       return `
         <div class="fav-card" data-pid="${esc(f.product_id)}">
