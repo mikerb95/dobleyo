@@ -140,7 +140,9 @@ forecastRouter.post('/forecast/demo-sale', authenticateToken, requireRole('admin
       [orderId, now, total, place.city, place.state, place.lat, place.lon, JSON.stringify(items)]
     );
 
-    await logAudit(req.user.id, 'create', 'sales_tracking', null, { orderId, total, city: place.city, items });
+    try {
+      await logAudit(req.user.id, 'create', 'sales_tracking', null, { orderId, total, city: place.city });
+    } catch (_) { /* auditoría no-crítica */ }
 
     res.json({ success: true, data: { orderId, total, city: place.city, items } });
   } catch (err) {

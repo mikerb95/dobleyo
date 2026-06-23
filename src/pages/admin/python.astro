@@ -604,23 +604,26 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
     btnDemo?.addEventListener("click", async () => {
       btnDemo.disabled = true;
       btnDemo.textContent = "Simulando…";
-      status.textContent = "";
+      if (status) status.textContent = "Enviando solicitud…";
+      let msg = "";
       try {
         const r = await fetch("/api/ml/forecast/demo-sale", { method: "POST", credentials: "include" });
-        const j = await r.json();
-        if (r.ok && j.success) {
-          const d = j.data;
-          const items = (d.items as any[]).map((i: any) => `${i.quantity}× ${i.title}`).join(", ");
-          status.textContent = `Venta simulada en ${d.city}: ${items}. Ahora haga clic en "Recalcular ahora".`;
-          btnDemo.textContent = "+ Simular venta";
+        let j: any = null;
+        try { j = await r.json(); } catch { j = null; }
+        if (r.ok && j?.success) {
+          const d = j.data ?? {};
+          const itemList = Array.isArray(d.items)
+            ? d.items.map((i: any) => `${i.quantity}× ${i.title}`).join(", ")
+            : "";
+          msg = `✓ Venta registrada en ${d.city ?? "—"}: ${itemList}. Ahora haga clic en "Recalcular ahora".`;
         } else {
-          status.textContent = j.error || "No se pudo simular la venta.";
-          btnDemo.textContent = "+ Simular venta";
+          msg = `⚠ Error ${r.status}: ${j?.error ?? "respuesta inesperada del servidor."}`;
         }
-      } catch {
-        status.textContent = "Error de red.";
-        btnDemo.textContent = "+ Simular venta";
+      } catch (e: any) {
+        msg = "⚠ Error de red: " + (e?.message ?? "sin detalles");
       }
+      if (status) status.textContent = msg;
+      btnDemo.textContent = "+ Simular venta";
       btnDemo.disabled = false;
     });
 

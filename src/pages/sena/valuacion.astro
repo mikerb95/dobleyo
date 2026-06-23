@@ -12,7 +12,7 @@ Total talento = 540 h × $80.000/h = $43.200.000 COP`;
 
 const formulaContingencia = `Contingencia = 15 % × Subtotal_general_antes_contingencia
 
-= 0.15 × $45.098.000 = $6.764.700 COP`;
+= 0.15 × $45.770.000 = $6.865.500 COP`;
 ---
 
 <Layout title={title} description={description}>
@@ -116,6 +116,8 @@ const formulaContingencia = `Contingencia = 15 % × Subtotal_general_antes_conti
               <th>Módulos / Historias</th>
               <th>Entregable verificable</th>
               <th>Dependencia tecnológica</th>
+              <th>Horas</th>
+              <th>Costo sprint</th>
             </tr>
           </thead>
           <tbody>
@@ -126,6 +128,8 @@ const formulaContingencia = `Contingencia = 15 % × Subtotal_general_antes_conti
               <td>Arquitectura del sistema, schema SQL, estructura de carpetas, CLAUDE.md, AGENTS.md</td>
               <td>Repositorio inicializado, schema completo (35+ tablas), documentación técnica aprobada</td>
               <td>Node.js 20, Git/GitHub, VS Code, Turso (cuenta), Vercel (proyecto enlazado)</td>
+              <td class="sena-sprint-h">25 h</td>
+              <td class="sena-sprint-cost">$2.000.000</td>
             </tr>
             <tr>
               <td><strong>S2</strong></td>
@@ -134,6 +138,8 @@ const formulaContingencia = `Contingencia = 15 % × Subtotal_general_antes_conti
               <td>Catálogo de productos, carrito (localStorage), homepage con hero video, layout público</td>
               <td>Homepage publicada, catálogo funcional, carrito operativo, deploy en Vercel con dominio dobleyo.cafe</td>
               <td>Astro 5, React 19, Express 4, Vercel Pro, dominio .cafe, CSS variables</td>
+              <td class="sena-sprint-h">60 h</td>
+              <td class="sena-sprint-cost">$4.800.000</td>
             </tr>
             <tr>
               <td><strong>S3</strong></td>
@@ -142,6 +148,8 @@ const formulaContingencia = `Contingencia = 15 % × Subtotal_general_antes_conti
               <td>Cosecha, almacenamiento verde, envío a tostión, recibo tostado, almacén tostado, empaque, generación de etiquetas QR</td>
               <td>Pipeline completo: 7 etapas de producción con formularios y endpoints API validados</td>
               <td>Turso (libSQL), Express routes, AdminLayout, AppLayout, JWT auth</td>
+              <td class="sena-sprint-h">60 h</td>
+              <td class="sena-sprint-cost">$4.800.000</td>
             </tr>
             <tr>
               <td><strong>S4</strong></td>
@@ -150,6 +158,8 @@ const formulaContingencia = `Contingencia = 15 % × Subtotal_general_antes_conti
               <td>Términos y condiciones, política de privacidad, formulario de contacto PQRS, aviso de cookies</td>
               <td>Páginas legales publicadas con SEO, formulario de contacto con envío por Resend</td>
               <td>Resend (email), Astro SSR, Head component con canonical URLs</td>
+              <td class="sena-sprint-h">20 h</td>
+              <td class="sena-sprint-cost">$1.600.000</td>
             </tr>
             <tr>
               <td><strong>S5</strong></td>
@@ -158,6 +168,8 @@ const formulaContingencia = `Contingencia = 15 % × Subtotal_general_antes_conti
               <td>Checkout con Wompi (Colombia), integración MercadoPago, flujo de confirmación de orden, emails de confirmación</td>
               <td>Pago exitoso end-to-end en sandbox, email de confirmación enviado, orden registrada en BD</td>
               <td>Wompi SDK, MercadoPago API, Resend, Turso (tabla orders), HTTPS/SSL</td>
+              <td class="sena-sprint-h">50 h</td>
+              <td class="sena-sprint-cost">$4.000.000</td>
             </tr>
             <tr>
               <td><strong>S6</strong></td>
@@ -166,6 +178,8 @@ const formulaContingencia = `Contingencia = 15 % × Subtotal_general_antes_conti
               <td>Scanner QR en empaque, búsqueda manual de lotes, página /t/[code], historial completo del lote</td>
               <td>QR imprimible enlazado a URL pública de trazabilidad, datos reales desde BD por código de lote</td>
               <td>Turso (lots + pipeline tables), Astro SSR, generated_labels table, QR library</td>
+              <td class="sena-sprint-h">50 h</td>
+              <td class="sena-sprint-cost">$4.000.000</td>
             </tr>
             <tr>
               <td><strong>S7</strong></td>
@@ -174,6 +188,8 @@ const formulaContingencia = `Contingencia = 15 % × Subtotal_general_antes_conti
               <td>Plan de cuentas (doble partida), asientos contables, facturación (ventas y compras), pagos multi-factura, presupuestos</td>
               <td>Dashboard financiero con KPIs reales, asientos automáticos al registrar ventas, exportación de informes</td>
               <td>Turso (accounting_accounts, accounting_entries, invoices, budgets), AdminLayout</td>
+              <td class="sena-sprint-h">55 h</td>
+              <td class="sena-sprint-cost">$4.400.000</td>
             </tr>
             <tr>
               <td><strong>S8</strong></td>
@@ -182,6 +198,8 @@ const formulaContingencia = `Contingencia = 15 % × Subtotal_general_antes_conti
               <td>Landing pages de fincas con slug, galería de imágenes, datos del caficultor, certificaciones, mapa de ubicación</td>
               <td>Páginas /finca/[slug] publicadas con SEO individual por finca, datos desde BD</td>
               <td>Astro SSR, Turso (farms table), Leaflet (mapa), schema.sql fincas</td>
+              <td class="sena-sprint-h">40 h</td>
+              <td class="sena-sprint-cost">$3.200.000</td>
             </tr>
             <tr>
               <td><strong>S9</strong></td>
@@ -190,6 +208,8 @@ const formulaContingencia = `Contingencia = 15 % × Subtotal_general_antes_conti
               <td>Integración MercadoLibre (sync órdenes), geocodificación de ventas, mapa de calor interactivo en panel admin</td>
               <td>Mapa de calor funcional con datos reales de ML, KPIs de ventas en tiempo real</td>
               <td>MercadoLibre API, Leaflet + leaflet.heat, Turso (sales_tracking), React component</td>
+              <td class="sena-sprint-h">35 h</td>
+              <td class="sena-sprint-cost">$2.800.000</td>
             </tr>
             <tr>
               <td><strong>S10</strong></td>
@@ -198,6 +218,8 @@ const formulaContingencia = `Contingencia = 15 % × Subtotal_general_antes_conti
               <td>Versión en inglés (en.dobleyo.cafe), landing B2B para USA, i18n con archivos es.json/en.json, subdomain routing</td>
               <td>Sitio en inglés publicado en en.dobleyo.cafe con SEO en inglés, hreflang configurado</td>
               <td>Vercel subdomain routing, i18n JSON, Astro lang dinámico, vercel.json rewrites</td>
+              <td class="sena-sprint-h">40 h</td>
+              <td class="sena-sprint-cost">$3.200.000</td>
             </tr>
             <tr>
               <td><strong>S11</strong></td>
@@ -206,6 +228,8 @@ const formulaContingencia = `Contingencia = 15 % × Subtotal_general_antes_conti
               <td>Panel admin rediseñado: inventario, lotes, usuarios, ventas, auditoría, estadísticas, producción</td>
               <td>Panel admin 100 % operativo con sistema de diseño unificado, todos los CRUD funcionales con datos reales</td>
               <td>Todos los endpoints API, Turso, React components (InventarioApp, SalesTable, RoastForm), CSS design system</td>
+              <td class="sena-sprint-h">60 h</td>
+              <td class="sena-sprint-cost">$4.800.000</td>
             </tr>
             <tr>
               <td><strong>S12</strong></td>
@@ -214,6 +238,13 @@ const formulaContingencia = `Contingencia = 15 % × Subtotal_general_antes_conti
               <td>Hardening de seguridad (OWASP), optimización Core Web Vitals, structured data JSON-LD, pipelines CI/CD con GitHub Actions, monitoreo</td>
               <td>Lighthouse score ≥ 90, tests automatizados en CI, deploy automático a producción en merge a main</td>
               <td>GitHub Actions, Playwright (E2E), Vitest (unitarias), Vercel CLI, helmet, rate-limit</td>
+              <td class="sena-sprint-h">45 h</td>
+              <td class="sena-sprint-cost">$3.600.000</td>
+            </tr>
+            <tr class="sena-row-total">
+              <td colspan="6"><strong>TOTAL</strong></td>
+              <td><strong>540 h</strong></td>
+              <td><strong>$43.200.000</strong></td>
             </tr>
           </tbody>
         </table>
@@ -454,13 +485,22 @@ const formulaContingencia = `Contingencia = 15 % × Subtotal_general_antes_conti
               <td>Repositorio privado, historial ilimitado (1.585+ commits), GitHub Actions para CI/CD en Fase 12, code review con pull requests.</td>
             </tr>
             <tr>
-              <td>Resend (correo transaccional)</td>
+              <td>Resend Pro (correo transaccional)</td>
               <td>Resend</td>
               <td>S1 – S12</td>
               <td>6 meses</td>
-              <td>$0 / mes</td>
-              <td class="sena-price">$0</td>
-              <td>Plan gratuito: hasta 3.000 emails/mes. Cubre verificación de correo, confirmaciones de orden y contacto PQRS en el volumen actual del MVP.</td>
+              <td>$83.000 / mes</td>
+              <td class="sena-price">$498.000</td>
+              <td>Plan Pro: hasta 50.000 emails/mes. Cubre verificación de correo, confirmaciones de orden, PQRS y notificaciones de producción con dominio personalizado y analytics de entrega.</td>
+            </tr>
+            <tr>
+              <td>Render Individual (servidor Express standalone)</td>
+              <td>Render</td>
+              <td>S1 – S12</td>
+              <td>6 meses</td>
+              <td>$29.000 / mes</td>
+              <td class="sena-price">$174.000</td>
+              <td>Plan Individual ($7 USD/mes): ejecuta el servidor Express standalone (<code>server/index.js</code>) con todos los routers (auth, coffee, production, inventory, ML, labels, stock) y endpoints de auditoría y health. Sin sleep por inactividad, SLA 99,9 %.</td>
             </tr>
             <tr>
               <td>Dominio dobleyo.cafe</td>
@@ -473,7 +513,7 @@ const formulaContingencia = `Contingencia = 15 % × Subtotal_general_antes_conti
             </tr>
             <tr class="sena-row-total">
               <td colspan="5"><strong>SUBTOTAL TECNOLÓGICO</strong></td>
-              <td class="sena-price"><strong>$1.898.000</strong></td>
+              <td class="sena-price"><strong>$2.570.000</strong></td>
               <td></td>
             </tr>
           </tbody>
@@ -485,14 +525,14 @@ const formulaContingencia = `Contingencia = 15 % × Subtotal_general_antes_conti
     <section id="resumen" class="sena-section sena-highlight">
       <h2>Plantilla 5 — Resumen financiero del proyecto</h2>
 
-      <div class="sena-bar" role="img" aria-label="Distribución del presupuesto: Talento humano 83.3%, Tecnología 3.7%, Contingencia 13%">
-        <span class="sena-bar__seg sena-bar__seg--talento" style="flex:83">83,3&nbsp;%</span>
-        <span class="sena-bar__seg sena-bar__seg--tec" style="flex:4">3,7&nbsp;%</span>
+      <div class="sena-bar" role="img" aria-label="Distribución del presupuesto: Talento humano 82%, Tecnología 5%, Contingencia 13%">
+        <span class="sena-bar__seg sena-bar__seg--talento" style="flex:82">82&nbsp;%</span>
+        <span class="sena-bar__seg sena-bar__seg--tec" style="flex:5">5&nbsp;%</span>
         <span class="sena-bar__seg sena-bar__seg--con" style="flex:13">13&nbsp;%</span>
       </div>
       <ul class="sena-legend">
-        <li><span class="sena-dot sena-bar__seg--talento"></span> Talento humano (83,3 %)</li>
-        <li><span class="sena-dot sena-bar__seg--tec"></span> Tecnología (3,7 %)</li>
+        <li><span class="sena-dot sena-bar__seg--talento"></span> Talento humano (82 %)</li>
+        <li><span class="sena-dot sena-bar__seg--tec"></span> Tecnología (5 %)</li>
         <li><span class="sena-dot sena-bar__seg--con"></span> Contingencia (13 %)</li>
       </ul>
 
@@ -508,7 +548,7 @@ const formulaContingencia = `Contingencia = 15 % × Subtotal_general_antes_conti
             </tr>
             <tr>
               <td>Subtotal herramientas, licencias e infraestructura</td>
-              <td class="sena-price">$1.898.000</td>
+              <td class="sena-price">$2.570.000</td>
             </tr>
             <tr>
               <td>Subtotal pruebas, capacitación y documentación</td>
@@ -516,7 +556,7 @@ const formulaContingencia = `Contingencia = 15 % × Subtotal_general_antes_conti
             </tr>
             <tr>
               <td><strong>Subtotal general antes de contingencia</strong></td>
-              <td class="sena-price"><strong>$45.098.000</strong></td>
+              <td class="sena-price"><strong>$45.770.000</strong></td>
             </tr>
             <tr>
               <td>Porcentaje de contingencia aplicado</td>
@@ -524,11 +564,11 @@ const formulaContingencia = `Contingencia = 15 % × Subtotal_general_antes_conti
             </tr>
             <tr>
               <td>Valor de contingencia</td>
-              <td class="sena-price">$6.764.700</td>
+              <td class="sena-price">$6.865.500</td>
             </tr>
             <tr class="sena-row-total">
               <td><strong>TOTAL ESTIMADO DEL PROYECTO</strong></td>
-              <td class="sena-price"><strong>$51.862.700</strong></td>
+              <td class="sena-price"><strong>$52.635.500</strong></td>
             </tr>
           </tbody>
         </table>
@@ -538,7 +578,7 @@ const formulaContingencia = `Contingencia = 15 % × Subtotal_general_antes_conti
       <pre class="sena-code"><code>{formulaContingencia}</code></pre>
 
       <div class="sena-note sena-note--ok">
-        <strong>Lectura del presupuesto:</strong> El talento humano representa el 83,3 % del presupuesto ($43.200.000), lo que es esperado en proyectos de software con un único desarrollador senior. Los costos tecnológicos son contenidos ($1.898.000 = 3,7 %) gracias a la selección de servicios con planes escalables de bajo costo inicial. La contingencia del 15 % ($6.764.700) está dimensionada para absorber los riesgos de las integraciones con plataformas externas (Wompi, MercadoPago, MercadoLibre) y la complejidad del módulo financiero de doble partida.
+        <strong>Lectura del presupuesto:</strong> El talento humano representa el 82 % del presupuesto ($43.200.000), lo que es esperado en proyectos de software con un único desarrollador senior. Los costos tecnológicos ($2.570.000 = 5 %) incluyen exclusivamente planes de pago: Vercel Pro, Turso Scaler, Claude Pro, GitHub Pro, Resend Pro y Render Individual, más el dominio; no hay servicios en capa gratuita. La contingencia del 15 % ($6.865.500) está dimensionada para absorber los riesgos de las integraciones con plataformas externas (Wompi, MercadoPago, MercadoLibre) y la complejidad del módulo financiero de doble partida.
       </div>
     </section>
 
@@ -694,7 +734,7 @@ const formulaContingencia = `Contingencia = 15 % × Subtotal_general_antes_conti
         </table>
       </div>
       <div class="sena-note sena-note--ok">
-        La contingencia del 15 % calculada (<strong>$6.764.700</strong>) cubre holgadamente el total de reservas por riesgo identificadas (<strong>$6.060.000</strong>), confirmando que el porcentaje es adecuado para el perfil de riesgo del proyecto.
+        La contingencia del 15 % calculada (<strong>$6.865.500</strong>) cubre holgadamente el total de reservas por riesgo identificadas (<strong>$6.060.000</strong>), confirmando que el porcentaje es adecuado para el perfil de riesgo del proyecto.
       </div>
     </section>
 
@@ -703,7 +743,7 @@ const formulaContingencia = `Contingencia = 15 % × Subtotal_general_antes_conti
       <h2>Plantilla 8 — Conclusión de viabilidad económica</h2>
       <p>
         El proyecto <strong>DobleYo Café</strong> es económicamente viable con un costo total estimado de
-        <strong>$51.862.700 COP</strong> para doce sprints de desarrollo ejecutados en veinticuatro semanas.
+        <strong>$52.635.500 COP</strong> para doce sprints de desarrollo ejecutados en veinticuatro semanas.
       </p>
       <ul class="sena-list">
         <li>
@@ -716,12 +756,12 @@ const formulaContingencia = `Contingencia = 15 % × Subtotal_general_antes_conti
           con costos individuales de $4.400.000 a $4.800.000, por tratarse de los módulos más complejos en lógica de negocio e integración.
         </li>
         <li>
-          Los <strong>costos tecnológicos son moderados</strong> ($1.898.000, equivalente al 3,7 % del presupuesto), gracias a la selección de servicios cloud
-          con planes escalables de bajo costo: Vercel Pro para despliegue, Turso Scaler para la base de datos, Claude Pro como herramienta de desarrollo
-          asistido por IA y GitHub Pro para el repositorio y CI/CD, con Resend en plan gratuito para correo transaccional.
+          Los <strong>costos tecnológicos son controlados</strong> ($2.570.000, equivalente al 5 % del presupuesto). Todos los servicios operan en planes de pago:
+          Vercel Pro para despliegue, Turso Scaler para la base de datos, Claude Pro como herramienta de desarrollo asistido por IA,
+          GitHub Pro para el repositorio y CI/CD, Resend Pro para correo transaccional y Render Individual para el servidor Express standalone.
         </li>
         <li>
-          La contingencia del 15 % ($6.764.700) está bien dimensionada para cubrir los principales riesgos identificados: cambios en las APIs de pasarelas
+          La contingencia del 15 % ($6.865.500) está bien dimensionada para cubrir los principales riesgos identificados: cambios en las APIs de pasarelas
           de pago (Wompi, MercadoPago), mayor complejidad en el módulo contable de doble partida y posibles variaciones en costos de servicios cloud.
         </li>
         <li>
@@ -767,9 +807,14 @@ const formulaContingencia = `Contingencia = 15 % × Subtotal_general_antes_conti
               <td><code>github.com/pricing</code></td>
             </tr>
             <tr>
-              <td>Resend (plan gratuito)</td>
-              <td>$0 USD/mes</td>
+              <td>Resend Pro</td>
+              <td>$20 USD/mes</td>
               <td><code>resend.com/pricing</code></td>
+            </tr>
+            <tr>
+              <td>Render Individual (web service)</td>
+              <td>$7 USD/mes</td>
+              <td><code>render.com/pricing</code></td>
             </tr>
             <tr>
               <td>Dominio .cafe (precio anual)</td>
@@ -814,7 +859,7 @@ const formulaContingencia = `Contingencia = 15 % × Subtotal_general_antes_conti
             <tr>
               <td>Se calcula subtotal, contingencia y total del proyecto</td>
               <td class="sena-check">Sí</td>
-              <td>Plantilla 5: subtotal $45.098.000 + contingencia 15 % = total $51.862.700</td>
+              <td>Plantilla 5: subtotal $45.770.000 + contingencia 15 % = total $52.635.500</td>
             </tr>
             <tr>
               <td>El marco de negociación contempla soporte, seguridad, datos y pagos</td>
@@ -997,6 +1042,18 @@ const formulaContingencia = `Contingencia = 15 % × Subtotal_general_antes_conti
     }
     .sena-price { font-weight: 600; color: var(--coffee, #251a14); }
     .sena-check { font-weight: 700; color: #2e7d5b; }
+    .sena-sprint-h {
+      text-align: right;
+      white-space: nowrap;
+      color: var(--muted-fg, #6b7280);
+      font-size: 0.85rem;
+    }
+    .sena-sprint-cost {
+      text-align: right;
+      white-space: nowrap;
+      font-weight: 700;
+      color: var(--coffee, #251a14);
+    }
     .sena-fine { font-size: 0.82rem; color: var(--muted-fg, #6b7280); margin: -0.75rem 0 1rem; }
 
     /* Barra de distribución */
