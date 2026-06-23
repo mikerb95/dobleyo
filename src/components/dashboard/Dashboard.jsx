@@ -18,7 +18,7 @@ export default function Dashboard({ user: userProp = null }) {
 
   useEffect(() => {
     if (user) return;
-    fetch("/api/me", { credentials: "include" })
+    fetch("/api/auth/me", { credentials: "include" })
       .then((r) => r.ok ? r.json() : null)
       .then((data) => { if (data) setUser(data); })
       .catch(() => {});
