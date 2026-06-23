@@ -1,350 +1,864 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 
-// Página documental (SENA) — sustenta la valuación / presupuesto de elaboración
-// del proyecto DobleYo Café, cumpliendo la "regla de oro": cada rubro con
-// fórmula, responsable, Sprint asociado y evidencia de cálculo.
-const title = "Valuación del proyecto — DobleYo Café (SENA)";
+const title = "Presupuesto de Elaboración y Marco de Negociación Tecnológica — DobleYo Café (SENA)";
 const description =
-  "Sustentación del presupuesto de elaboración de DobleYo Café: distribución por rubros, fórmulas de cálculo, responsables, Sprint asociado y evidencia, con apéndice económico listo para la sustentación.";
+  "Apéndice económico del proyecto DobleYo Café: 8 plantillas con cronograma de sprints, presupuesto por rol, costos tecnológicos, resumen financiero, negociación Turso vs Supabase, riesgos y conclusión de viabilidad.";
 
-// Ejemplo de fórmula con llaves — se define aquí para que Astro no lo
-// interprete como expresión dentro del marcado.
-const formulaTalento = `Costo_rol = Σ ( horas_estimadas_por_sprint × tarifa_hora_rol )
+const formulaTalento = `Costo_rol = Σ ( horas_sprint × $80.000 )
 
-Costo_talento = Σ Costo_rol  (todos los roles)`;
+Costo_talento = Σ Costo_rol  (todos los roles)
+Total talento = 540 h × $80.000/h = $43.200.000 COP`;
+
+const formulaContingencia = `Contingencia = 15 % × Subtotal_general_antes_contingencia
+
+= 0.15 × $45.098.000 = $6.764.700 COP`;
 ---
 
 <Layout title={title} description={description}>
   <article class="sena">
-    <!-- ── Encabezado ───────────────────────────────────────────── -->
+
+    <!-- ── Encabezado ──────────────────────────────────────────────── -->
     <header class="sena-hero">
-      <span class="sena-tag">Apéndice económico · SENA</span>
-      <h1>Valuación del proyecto</h1>
+      <span class="sena-tag">Apéndice económico · SENA · Junio 2026</span>
+      <h1>Presupuesto de Elaboración y Marco de Negociación Tecnológica</h1>
       <p class="sena-lead">
-        Cómo se sustenta el presupuesto de elaboración de DobleYo Café: la
-        distribución por rubros, la fórmula de cada uno, su responsable, el
-        Sprint asociado y la evidencia de cálculo. Aquí se justifica, una a una,
-        cada cifra del presupuesto.
+        Sustentación del presupuesto del proyecto <strong>DobleYo Café</strong>:
+        datos generales, cronograma de 12 sprints, distribución del costo por rol,
+        costos tecnológicos con evidencia de precio, resumen financiero, negociación
+        Turso vs Supabase, análisis de riesgos y conclusión de viabilidad económica.
       </p>
     </header>
 
-    <!-- ── Índice ───────────────────────────────────────────────── -->
+    <!-- ── Índice ───────────────────────────────────────────────────── -->
     <nav class="sena-toc" aria-label="Contenido">
       <strong>Contenido</strong>
       <ol>
-        <li><a href="#regla">1. La regla de oro de la valuación</a></li>
-        <li><a href="#distribucion">2. Distribución sugerida del presupuesto</a></li>
-        <li><a href="#talento">3. Talento humano (50&nbsp;%): la base</a></li>
-        <li><a href="#tecnologia">4. Tecnología (18&nbsp;%): costo real</a></li>
-        <li><a href="#pruebas">5. Pruebas (12&nbsp;%) y gestión (10&nbsp;%)</a></li>
-        <li><a href="#contingencia">6. Contingencia (10&nbsp;%) y riesgos</a></li>
-        <li><a href="#no-incluir">7. Qué NO se incluye</a></li>
-        <li><a href="#apendice">8. Apéndice económico (tablas)</a></li>
-        <li><a href="#costo">9. ¿Cuánto cuesta el proyecto?</a></li>
+        <li><a href="#generales">Plantilla 1 — Datos generales del proyecto</a></li>
+        <li><a href="#cronograma">Plantilla 2 — Cronograma de sprints y entregables</a></li>
+        <li><a href="#talento">Plantilla 3 — Presupuesto por rol y sprint</a></li>
+        <li><a href="#tecnologia">Plantilla 4 — Costos tecnológicos y licencias</a></li>
+        <li><a href="#resumen">Plantilla 5 — Resumen financiero del proyecto</a></li>
+        <li><a href="#negociacion">Plantilla 6 — Matriz de negociación tecnológica</a></li>
+        <li><a href="#riesgos">Plantilla 7 — Riesgos económicos y contingencia</a></li>
+        <li><a href="#viabilidad">Plantilla 8 — Conclusión de viabilidad económica</a></li>
+        <li><a href="#evidencias">Evidencias de precios consultados</a></li>
+        <li><a href="#checklist">Lista de verificación</a></li>
+        <li><a href="#glosario">Glosario</a></li>
       </ol>
     </nav>
 
-    <!-- ── 1. Regla de oro ──────────────────────────────────────── -->
-    <section id="regla" class="sena-section">
-      <h2>1. La regla de oro de la valuación</h2>
-      <p>
-        Un presupuesto no se sustenta solo con porcentajes: cada rubro debe ser
-        <strong>verificable</strong>. Por eso toda línea del presupuesto cumple
-        cuatro requisitos:
-      </p>
-      <ul class="sena-list">
-        <li><strong>Fórmula</strong> — cómo se obtuvo el número (horas × tarifa, % derivado, costo real de factura).</li>
-        <li><strong>Responsable</strong> — quién ejecuta y responde por ese rubro.</li>
-        <li><strong>Sprint asociado</strong> — en qué iteración se consume, ligado a un entregable concreto.</li>
-        <li><strong>Evidencia de cálculo</strong> — la fuente: hoja de horas, factura/plan de servicio, plan de pruebas.</li>
-      </ul>
-      <div class="sena-note">
-        <strong>En una frase:</strong> el costo del <em>talento humano</em> es el
-        ancla; los demás rubros se derivan de él como porcentaje o se sustentan
-        con su costo real facturable.
-      </div>
-    </section>
-
-    <!-- ── 2. Distribución ──────────────────────────────────────── -->
-    <section id="distribucion" class="sena-section">
-      <h2>2. Distribución sugerida del presupuesto</h2>
-      <p>
-        Estos son los componentes mínimos del apéndice económico y su peso
-        relativo:
-      </p>
-
-      <div class="sena-bar" role="img" aria-label="Distribución del presupuesto: Talento humano 50%, Tecnología 18%, Pruebas 12%, Gestión 10%, Contingencia 10%">
-        <span class="sena-bar__seg sena-bar__seg--talento" style="flex:50">50&nbsp;%</span>
-        <span class="sena-bar__seg sena-bar__seg--tec" style="flex:18">18&nbsp;%</span>
-        <span class="sena-bar__seg sena-bar__seg--pru" style="flex:12">12&nbsp;%</span>
-        <span class="sena-bar__seg sena-bar__seg--ges" style="flex:10">10&nbsp;%</span>
-        <span class="sena-bar__seg sena-bar__seg--con" style="flex:10">10&nbsp;%</span>
-      </div>
-      <ul class="sena-legend">
-        <li><span class="sena-dot sena-bar__seg--talento"></span> Talento humano</li>
-        <li><span class="sena-dot sena-bar__seg--tec"></span> Tecnología</li>
-        <li><span class="sena-dot sena-bar__seg--pru"></span> Pruebas</li>
-        <li><span class="sena-dot sena-bar__seg--ges"></span> Gestión</li>
-        <li><span class="sena-dot sena-bar__seg--con"></span> Contingencia</li>
-      </ul>
-
+    <!-- ── Plantilla 1 — Datos generales ────────────────────────────── -->
+    <section id="generales" class="sena-section">
+      <h2>Plantilla 1 — Datos generales del proyecto</h2>
       <div class="sena-table-wrap">
         <table class="sena-table">
           <thead>
-            <tr><th>Rubro</th><th>Peso</th><th>Naturaleza del costo</th></tr>
+            <tr><th>Campo</th><th>Respuesta</th></tr>
           </thead>
           <tbody>
-            <tr><td>Talento humano</td><td>50&nbsp;%</td><td>Horas del equipo × tarifa</td></tr>
-            <tr><td>Tecnología (herramientas y servicios)</td><td>18&nbsp;%</td><td>Costo real facturable</td></tr>
-            <tr><td>Pruebas</td><td>12&nbsp;%</td><td>Horas QA o % del talento</td></tr>
-            <tr><td>Gestión</td><td>10&nbsp;%</td><td>Horas PM/Scrum × tarifa</td></tr>
-            <tr><td>Contingencia</td><td>10&nbsp;%</td><td>% derivado (riesgo)</td></tr>
+            <tr>
+              <td><strong>Nombre del proyecto</strong></td>
+              <td>DobleYo Café</td>
+            </tr>
+            <tr>
+              <td><strong>Problema o necesidad que atiende</strong></td>
+              <td>Los productores y comercializadores de café de especialidad colombiano carecen de una plataforma digital integrada que unifique la venta directa (B2C Colombia y B2B/B2C USA), la trazabilidad completa del grano (finca → cosecha → tostión → empaque → venta mediante código QR), la gestión de producción y el control financiero en un único sistema.</td>
+            </tr>
+            <tr>
+              <td><strong>Producto de software a construir</strong></td>
+              <td>Aplicación web SSR con cinco módulos: (1) Tienda online con carrito, checkout y pasarelas de pago; (2) Pipeline de producción (cosecha, almacenamiento verde, tostión, recibo tostado, empaque, etiquetado); (3) Trazabilidad con QR en empaque; (4) Módulo financiero con contabilidad de doble partida; (5) Panel Admin/ERP con inventario, lotes, usuarios, ventas y mapa de calor.</td>
+            </tr>
+            <tr>
+              <td><strong>Duración total del proyecto</strong></td>
+              <td>24 semanas (12 sprints de 2 semanas cada uno)</td>
+            </tr>
+            <tr>
+              <td><strong>Número de sprints</strong></td>
+              <td>12</td>
+            </tr>
+            <tr>
+              <td><strong>Duración de cada sprint</strong></td>
+              <td>2 semanas</td>
+            </tr>
+            <tr>
+              <td><strong>Moneda utilizada</strong></td>
+              <td>Peso colombiano (COP). Tasa de referencia: $4.150 COP/USD</td>
+            </tr>
+            <tr>
+              <td><strong>Supuestos principales del presupuesto</strong></td>
+              <td>
+                <ol class="sena-inner-list">
+                  <li>Un solo desarrollador full-stack (Mike Rodríguez) asume todos los roles funcionales a $80.000/hora.</li>
+                  <li>Promedio de 22,5 horas de trabajo por semana.</li>
+                  <li>La inteligencia artificial (Claude Pro) se registra como herramienta tecnológica, no como rol de personal.</li>
+                  <li>Los costos tecnológicos se calculan para 6 meses continuos de operación.</li>
+                  <li>No se incluyen costos de oficina ni equipos de cómputo (ya disponibles).</li>
+                  <li>La contingencia del 15 % cubre cambios de alcance, integraciones de pago y variaciones en precios de servicios cloud.</li>
+                </ol>
+              </td>
+            </tr>
           </tbody>
         </table>
       </div>
     </section>
 
-    <!-- ── 3. Talento humano ────────────────────────────────────── -->
-    <section id="talento" class="sena-section sena-highlight">
-      <h2>3. Talento humano (50&nbsp;%): la base de todo</h2>
-      <p>
-        Todo el presupuesto se ancla aquí. Se calcula a partir de las
-        <strong>horas estimadas por rol</strong> multiplicadas por la
-        <strong>tarifa por hora</strong>. Las horas se estiman sobre los módulos
-        reales del proyecto, que sirven como evidencia.
-      </p>
+    <!-- ── Plantilla 2 — Cronograma ──────────────────────────────────── -->
+    <section id="cronograma" class="sena-section">
+      <h2>Plantilla 2 — Cronograma de sprints y entregables</h2>
+      <div class="sena-table-wrap">
+        <table class="sena-table">
+          <thead>
+            <tr>
+              <th>Sprint</th>
+              <th>Fase</th>
+              <th>Fechas</th>
+              <th>Módulos / Historias</th>
+              <th>Entregable verificable</th>
+              <th>Dependencia tecnológica</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>S1</strong></td>
+              <td>F0 — Documentación base</td>
+              <td>25 ago – 05 sep 2025</td>
+              <td>Arquitectura del sistema, schema SQL, estructura de carpetas, CLAUDE.md, AGENTS.md</td>
+              <td>Repositorio inicializado, schema completo (35+ tablas), documentación técnica aprobada</td>
+              <td>Node.js 20, Git/GitHub, VS Code, Turso (cuenta), Vercel (proyecto enlazado)</td>
+            </tr>
+            <tr>
+              <td><strong>S2</strong></td>
+              <td>F1 — Tienda online</td>
+              <td>08 sep – 19 sep 2025</td>
+              <td>Catálogo de productos, carrito (localStorage), homepage con hero video, layout público</td>
+              <td>Homepage publicada, catálogo funcional, carrito operativo, deploy en Vercel con dominio dobleyo.cafe</td>
+              <td>Astro 5, React 19, Express 4, Vercel Pro, dominio .cafe, CSS variables</td>
+            </tr>
+            <tr>
+              <td><strong>S3</strong></td>
+              <td>F2 — Pipeline de producción</td>
+              <td>22 sep – 03 oct 2025</td>
+              <td>Cosecha, almacenamiento verde, envío a tostión, recibo tostado, almacén tostado, empaque, generación de etiquetas QR</td>
+              <td>Pipeline completo: 7 etapas de producción con formularios y endpoints API validados</td>
+              <td>Turso (libSQL), Express routes, AdminLayout, AppLayout, JWT auth</td>
+            </tr>
+            <tr>
+              <td><strong>S4</strong></td>
+              <td>F3 — Legal y PQRS</td>
+              <td>06 oct – 17 oct 2025</td>
+              <td>Términos y condiciones, política de privacidad, formulario de contacto PQRS, aviso de cookies</td>
+              <td>Páginas legales publicadas con SEO, formulario de contacto con envío por Resend</td>
+              <td>Resend (email), Astro SSR, Head component con canonical URLs</td>
+            </tr>
+            <tr>
+              <td><strong>S5</strong></td>
+              <td>F4 — Pagos</td>
+              <td>20 oct – 31 oct 2025</td>
+              <td>Checkout con Wompi (Colombia), integración MercadoPago, flujo de confirmación de orden, emails de confirmación</td>
+              <td>Pago exitoso end-to-end en sandbox, email de confirmación enviado, orden registrada en BD</td>
+              <td>Wompi SDK, MercadoPago API, Resend, Turso (tabla orders), HTTPS/SSL</td>
+            </tr>
+            <tr>
+              <td><strong>S6</strong></td>
+              <td>F5 — Trazabilidad QR</td>
+              <td>03 nov – 14 nov 2025</td>
+              <td>Scanner QR en empaque, búsqueda manual de lotes, página /t/[code], historial completo del lote</td>
+              <td>QR imprimible enlazado a URL pública de trazabilidad, datos reales desde BD por código de lote</td>
+              <td>Turso (lots + pipeline tables), Astro SSR, generated_labels table, QR library</td>
+            </tr>
+            <tr>
+              <td><strong>S7</strong></td>
+              <td>F6 — Finanzas / Contabilidad</td>
+              <td>17 nov – 28 nov 2025</td>
+              <td>Plan de cuentas (doble partida), asientos contables, facturación (ventas y compras), pagos multi-factura, presupuestos</td>
+              <td>Dashboard financiero con KPIs reales, asientos automáticos al registrar ventas, exportación de informes</td>
+              <td>Turso (accounting_accounts, accounting_entries, invoices, budgets), AdminLayout</td>
+            </tr>
+            <tr>
+              <td><strong>S8</strong></td>
+              <td>F7 — Fincas / Caficultores</td>
+              <td>01 dic – 12 dic 2025</td>
+              <td>Landing pages de fincas con slug, galería de imágenes, datos del caficultor, certificaciones, mapa de ubicación</td>
+              <td>Páginas /finca/[slug] publicadas con SEO individual por finca, datos desde BD</td>
+              <td>Astro SSR, Turso (farms table), Leaflet (mapa), schema.sql fincas</td>
+            </tr>
+            <tr>
+              <td><strong>S9</strong></td>
+              <td>F8 — Heatmap de ventas</td>
+              <td>15 dic – 26 dic 2025</td>
+              <td>Integración MercadoLibre (sync órdenes), geocodificación de ventas, mapa de calor interactivo en panel admin</td>
+              <td>Mapa de calor funcional con datos reales de ML, KPIs de ventas en tiempo real</td>
+              <td>MercadoLibre API, Leaflet + leaflet.heat, Turso (sales_tracking), React component</td>
+            </tr>
+            <tr>
+              <td><strong>S10</strong></td>
+              <td>F9 — Internacionalización / USA</td>
+              <td>05 ene – 16 ene 2026</td>
+              <td>Versión en inglés (en.dobleyo.cafe), landing B2B para USA, i18n con archivos es.json/en.json, subdomain routing</td>
+              <td>Sitio en inglés publicado en en.dobleyo.cafe con SEO en inglés, hreflang configurado</td>
+              <td>Vercel subdomain routing, i18n JSON, Astro lang dinámico, vercel.json rewrites</td>
+            </tr>
+            <tr>
+              <td><strong>S11</strong></td>
+              <td>F10 — Admin / ERP completo</td>
+              <td>19 ene – 30 ene 2026</td>
+              <td>Panel admin rediseñado: inventario, lotes, usuarios, ventas, auditoría, estadísticas, producción</td>
+              <td>Panel admin 100 % operativo con sistema de diseño unificado, todos los CRUD funcionales con datos reales</td>
+              <td>Todos los endpoints API, Turso, React components (InventarioApp, SalesTable, RoastForm), CSS design system</td>
+            </tr>
+            <tr>
+              <td><strong>S12</strong></td>
+              <td>F11+F12 — SEO / Seguridad / CI/CD</td>
+              <td>02 feb – 13 feb 2026</td>
+              <td>Hardening de seguridad (OWASP), optimización Core Web Vitals, structured data JSON-LD, pipelines CI/CD con GitHub Actions, monitoreo</td>
+              <td>Lighthouse score ≥ 90, tests automatizados en CI, deploy automático a producción en merge a main</td>
+              <td>GitHub Actions, Playwright (E2E), Vitest (unitarias), Vercel CLI, helmet, rate-limit</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
 
-      <h3>Fórmula</h3>
+    <!-- ── Plantilla 3 — Talento humano ─────────────────────────────── -->
+    <section id="talento" class="sena-section sena-highlight">
+      <h2>Plantilla 3 — Presupuesto por rol y sprint</h2>
+      <div class="sena-note">
+        <strong>Nota metodológica:</strong> Mike Rodríguez ejerce todos los roles funcionales en este proyecto. Las horas se distribuyen por área funcional para reflejar el esfuerzo real en cada dimensión del trabajo. Tarifa única: <strong>$80.000 / hora</strong> para todos los roles.
+      </div>
+
+      <h3>Fórmula de cálculo</h3>
       <pre class="sena-code"><code>{formulaTalento}</code></pre>
 
-      <h3>Estimación por rol (evidencia en el repositorio)</h3>
+      <h3>Parte A — Sprints 1 a 6</h3>
       <div class="sena-table-wrap">
         <table class="sena-table">
           <thead>
-            <tr><th>Rol</th><th>Entregable (evidencia)</th><th>Sprint</th><th>Horas</th></tr>
+            <tr>
+              <th>Rol</th>
+              <th>Tarifa/h</th>
+              <th>H S1</th><th>Costo S1</th>
+              <th>H S2</th><th>Costo S2</th>
+              <th>H S3</th><th>Costo S3</th>
+              <th>H S4</th><th>Costo S4</th>
+              <th>H S5</th><th>Costo S5</th>
+              <th>H S6</th><th>Costo S6</th>
+            </tr>
           </thead>
           <tbody>
-            <tr><td>Análisis / Diseño</td><td>Modelo de datos (<code>db/schema.sql</code>, 35+ tablas)</td><td>S1</td><td>80</td></tr>
-            <tr><td>Backend</td><td>Routers Express: auth, coffee, production, ML</td><td>S2–S5</td><td>220</td></tr>
-            <tr><td>Frontend</td><td>Páginas Astro: tienda, trazabilidad, admin, app</td><td>S3–S6</td><td>200</td></tr>
-            <tr><td>Base de datos</td><td>Migración a Turso + migraciones incrementales</td><td>S2</td><td>60</td></tr>
-            <tr><td>Documentación</td><td><code>AGENTS.md</code>, <code>CHANGELOG.md</code>, páginas SENA</td><td>S1–S6</td><td>40</td></tr>
-            <tr><td class="sena-total" colspan="3">Total horas de desarrollo</td><td class="sena-total">600</td></tr>
+            <tr>
+              <td>Product Owner / Analista</td><td>$80.000</td>
+              <td>3</td><td>$240.000</td>
+              <td>6</td><td>$480.000</td>
+              <td>6</td><td>$480.000</td>
+              <td>2</td><td>$160.000</td>
+              <td>5</td><td>$400.000</td>
+              <td>5</td><td>$400.000</td>
+            </tr>
+            <tr>
+              <td>Desarrollador Backend</td><td>$80.000</td>
+              <td>10</td><td>$800.000</td>
+              <td>24</td><td>$1.920.000</td>
+              <td>24</td><td>$1.920.000</td>
+              <td>8</td><td>$640.000</td>
+              <td>20</td><td>$1.600.000</td>
+              <td>20</td><td>$1.600.000</td>
+            </tr>
+            <tr>
+              <td>Desarrollador Frontend</td><td>$80.000</td>
+              <td>9</td><td>$720.000</td>
+              <td>21</td><td>$1.680.000</td>
+              <td>21</td><td>$1.680.000</td>
+              <td>7</td><td>$560.000</td>
+              <td>18</td><td>$1.440.000</td>
+              <td>18</td><td>$1.440.000</td>
+            </tr>
+            <tr>
+              <td>Tester QA</td><td>$80.000</td>
+              <td>2</td><td>$160.000</td>
+              <td>6</td><td>$480.000</td>
+              <td>6</td><td>$480.000</td>
+              <td>2</td><td>$160.000</td>
+              <td>5</td><td>$400.000</td>
+              <td>5</td><td>$400.000</td>
+            </tr>
+            <tr>
+              <td>DevOps / Infraestructura</td><td>$80.000</td>
+              <td>1</td><td>$80.000</td>
+              <td>3</td><td>$240.000</td>
+              <td>3</td><td>$240.000</td>
+              <td>1</td><td>$80.000</td>
+              <td>2</td><td>$160.000</td>
+              <td>2</td><td>$160.000</td>
+            </tr>
+            <tr class="sena-row-total">
+              <td><strong>Subtotal sprint</strong></td><td></td>
+              <td><strong>25</strong></td><td><strong>$2.000.000</strong></td>
+              <td><strong>60</strong></td><td><strong>$4.800.000</strong></td>
+              <td><strong>60</strong></td><td><strong>$4.800.000</strong></td>
+              <td><strong>20</strong></td><td><strong>$1.600.000</strong></td>
+              <td><strong>50</strong></td><td><strong>$4.000.000</strong></td>
+              <td><strong>50</strong></td><td><strong>$4.000.000</strong></td>
+            </tr>
           </tbody>
         </table>
       </div>
-      <div class="sena-note">
-        <strong>Evidencia de cálculo:</strong> hoja de horas (timesheet) +
-        tablero de Sprints. La <em>tarifa/hora</em> se sustenta con la tabla
-        salarial SENA o el salario mínimo colombiano más prestaciones.
+
+      <h3>Parte B — Sprints 7 a 12</h3>
+      <div class="sena-table-wrap">
+        <table class="sena-table">
+          <thead>
+            <tr>
+              <th>Rol</th>
+              <th>Tarifa/h</th>
+              <th>H S7</th><th>Costo S7</th>
+              <th>H S8</th><th>Costo S8</th>
+              <th>H S9</th><th>Costo S9</th>
+              <th>H S10</th><th>Costo S10</th>
+              <th>H S11</th><th>Costo S11</th>
+              <th>H S12</th><th>Costo S12</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Product Owner / Analista</td><td>$80.000</td>
+              <td>5</td><td>$400.000</td>
+              <td>4</td><td>$320.000</td>
+              <td>3</td><td>$240.000</td>
+              <td>4</td><td>$320.000</td>
+              <td>6</td><td>$480.000</td>
+              <td>4</td><td>$320.000</td>
+            </tr>
+            <tr>
+              <td>Desarrollador Backend</td><td>$80.000</td>
+              <td>22</td><td>$1.760.000</td>
+              <td>16</td><td>$1.280.000</td>
+              <td>14</td><td>$1.120.000</td>
+              <td>16</td><td>$1.280.000</td>
+              <td>24</td><td>$1.920.000</td>
+              <td>18</td><td>$1.440.000</td>
+            </tr>
+            <tr>
+              <td>Desarrollador Frontend</td><td>$80.000</td>
+              <td>20</td><td>$1.600.000</td>
+              <td>14</td><td>$1.120.000</td>
+              <td>13</td><td>$1.040.000</td>
+              <td>14</td><td>$1.120.000</td>
+              <td>21</td><td>$1.680.000</td>
+              <td>16</td><td>$1.280.000</td>
+            </tr>
+            <tr>
+              <td>Tester QA</td><td>$80.000</td>
+              <td>5</td><td>$400.000</td>
+              <td>4</td><td>$320.000</td>
+              <td>3</td><td>$240.000</td>
+              <td>4</td><td>$320.000</td>
+              <td>6</td><td>$480.000</td>
+              <td>4</td><td>$320.000</td>
+            </tr>
+            <tr>
+              <td>DevOps / Infraestructura</td><td>$80.000</td>
+              <td>3</td><td>$240.000</td>
+              <td>2</td><td>$160.000</td>
+              <td>2</td><td>$160.000</td>
+              <td>2</td><td>$160.000</td>
+              <td>3</td><td>$240.000</td>
+              <td>3</td><td>$240.000</td>
+            </tr>
+            <tr class="sena-row-total">
+              <td><strong>Subtotal sprint</strong></td><td></td>
+              <td><strong>55</strong></td><td><strong>$4.400.000</strong></td>
+              <td><strong>40</strong></td><td><strong>$3.200.000</strong></td>
+              <td><strong>35</strong></td><td><strong>$2.800.000</strong></td>
+              <td><strong>40</strong></td><td><strong>$3.200.000</strong></td>
+              <td><strong>60</strong></td><td><strong>$4.800.000</strong></td>
+              <td><strong>45</strong></td><td><strong>$3.600.000</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Parte C — Totales por rol (todos los sprints)</h3>
+      <div class="sena-table-wrap">
+        <table class="sena-table">
+          <thead>
+            <tr><th>Rol</th><th>Tarifa/h</th><th>Total horas</th><th>Total costo</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Product Owner / Analista</td><td>$80.000</td><td>53 h</td><td>$4.240.000</td></tr>
+            <tr><td>Desarrollador Backend</td><td>$80.000</td><td>216 h</td><td>$17.280.000</td></tr>
+            <tr><td>Desarrollador Frontend</td><td>$80.000</td><td>192 h</td><td>$15.360.000</td></tr>
+            <tr><td>Tester QA</td><td>$80.000</td><td>52 h</td><td>$4.160.000</td></tr>
+            <tr><td>DevOps / Infraestructura</td><td>$80.000</td><td>27 h</td><td>$2.160.000</td></tr>
+            <tr class="sena-row-total">
+              <td><strong>TOTAL TALENTO HUMANO</strong></td><td></td>
+              <td><strong>540 h</strong></td>
+              <td><strong>$43.200.000</strong></td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </section>
 
-    <!-- ── 4. Tecnología ────────────────────────────────────────── -->
+    <!-- ── Plantilla 4 — Costos tecnológicos ─────────────────────────── -->
     <section id="tecnologia" class="sena-section">
-      <h2>4. Tecnología (18&nbsp;%): costo real, no estimado</h2>
-      <p>
-        Este rubro <strong>no se estima</strong>: se suma el costo facturable de
-        cada servicio que el proyecto usa de verdad. La evidencia son los planes
-        y facturas de cada proveedor.
-      </p>
+      <h2>Plantilla 4 — Costos tecnológicos y licencias</h2>
       <div class="sena-table-wrap">
         <table class="sena-table">
           <thead>
-            <tr><th>Servicio</th><th>Uso en el proyecto</th><th>Evidencia</th></tr>
-          </thead>
-          <tbody>
-            <tr><td>Vercel</td><td>Despliegue SSR + funciones serverless</td><td>Plan / factura</td></tr>
-            <tr><td>Dominio <code>dobleyo.cafe</code></td><td>Dominio principal y subdominio EN</td><td>Factura registrador</td></tr>
-            <tr><td>Turso (libSQL)</td><td>Base de datos</td><td>Plan</td></tr>
-            <tr><td>Resend</td><td>Correo transaccional</td><td>Plan</td></tr>
-            <tr><td>MercadoLibre API</td><td>Sync de órdenes y ventas</td><td>Cuenta vendedor</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="sena-note">
-        <strong>Regla:</strong> solo se incluyen herramientas que
-        <em>realmente se usan</em> y producen un entregable. Las que no se usan
-        van a la sección <a href="#no-incluir">«No incluir»</a>.
-      </div>
-    </section>
-
-    <!-- ── 5. Pruebas y gestión ─────────────────────────────────── -->
-    <section id="pruebas" class="sena-section">
-      <h2>5. Pruebas (12&nbsp;%) y gestión (10&nbsp;%)</h2>
-      <p>
-        Estos rubros se sustentan como <strong>porcentaje derivado del costo de
-        talento</strong>, o bien con sus propias horas si el equipo las registra
-        por separado.
-      </p>
-      <div class="sena-table-wrap">
-        <table class="sena-table">
-          <thead>
-            <tr><th>Rubro</th><th>Fórmula</th><th>Responsable</th><th>Evidencia</th></tr>
+            <tr>
+              <th>Concepto</th>
+              <th>Proveedor</th>
+              <th>Sprint</th>
+              <th>Cantidad</th>
+              <th>Costo unitario</th>
+              <th>Subtotal</th>
+              <th>Justificación</th>
+            </tr>
           </thead>
           <tbody>
             <tr>
-              <td>Pruebas</td>
-              <td><code>0.12 × Costo_talento</code> (o horas QA × tarifa)</td>
-              <td>QA / Tester</td>
-              <td>Plan de pruebas y casos por Sprint</td>
+              <td>Vercel Pro (hosting, deploy, CDN)</td>
+              <td>Vercel</td>
+              <td>S1 – S12</td>
+              <td>6 meses</td>
+              <td>$83.000 / mes</td>
+              <td class="sena-price">$498.000</td>
+              <td>Alojamiento del frontend Astro y funciones serverless. Incluye dominios custom (dobleyo.cafe, en.dobleyo.cafe), analytics básico, preview deployments por PR y SLA de disponibilidad.</td>
             </tr>
             <tr>
-              <td>Gestión</td>
-              <td><code>0.10 × Costo_talento</code> (o horas PM × tarifa)</td>
-              <td>Líder / Scrum Master</td>
-              <td>Actas de daily, planning y review</td>
+              <td>Turso Scaler (base de datos libSQL)</td>
+              <td>Turso.io</td>
+              <td>S1 – S12</td>
+              <td>6 meses</td>
+              <td>$120.000 / mes</td>
+              <td class="sena-price">$720.000</td>
+              <td>Base de datos SQLite distribuida para todos los módulos del sistema (35+ tablas). Plan Scaler: hasta 500 DBs, 30 GB storage, réplicas edge, soporte vía Discord y tickets.</td>
+            </tr>
+            <tr>
+              <td>Claude Pro (IA de desarrollo)</td>
+              <td>Anthropic</td>
+              <td>S1 – S12</td>
+              <td>6 meses</td>
+              <td>$83.000 / mes</td>
+              <td class="sena-price">$498.000</td>
+              <td>Herramienta de asistencia en generación de código, revisión de arquitectura, escritura de queries SQL y resolución de bugs. Reduce significativamente el tiempo de desarrollo individual.</td>
+            </tr>
+            <tr>
+              <td>GitHub Pro (repositorio privado + CI)</td>
+              <td>GitHub</td>
+              <td>S1 – S12</td>
+              <td>6 meses</td>
+              <td>$17.000 / mes</td>
+              <td class="sena-price">$102.000</td>
+              <td>Repositorio privado, historial ilimitado (1.585+ commits), GitHub Actions para CI/CD en Fase 12, code review con pull requests.</td>
+            </tr>
+            <tr>
+              <td>Resend (correo transaccional)</td>
+              <td>Resend</td>
+              <td>S1 – S12</td>
+              <td>6 meses</td>
+              <td>$0 / mes</td>
+              <td class="sena-price">$0</td>
+              <td>Plan gratuito: hasta 3.000 emails/mes. Cubre verificación de correo, confirmaciones de orden y contacto PQRS en el volumen actual del MVP.</td>
+            </tr>
+            <tr>
+              <td>Dominio dobleyo.cafe</td>
+              <td>Cloudflare Registrar</td>
+              <td>S12</td>
+              <td>1 año</td>
+              <td>$80.000</td>
+              <td class="sena-price">$80.000</td>
+              <td>Dominio premium .cafe para posicionamiento de marca en el sector cafetero. SSL/TLS gestionado automáticamente por Vercel.</td>
+            </tr>
+            <tr class="sena-row-total">
+              <td colspan="5"><strong>SUBTOTAL TECNOLÓGICO</strong></td>
+              <td class="sena-price"><strong>$1.898.000</strong></td>
+              <td></td>
             </tr>
           </tbody>
         </table>
       </div>
     </section>
 
-    <!-- ── 6. Contingencia ──────────────────────────────────────── -->
-    <section id="contingencia" class="sena-section">
-      <h2>6. Contingencia (10&nbsp;%) y riesgos</h2>
-      <p>
-        La contingencia es un margen por cambios de alcance e imprevistos. Se
-        calcula como un porcentaje del costo directo y se justifica con
-        <strong>riesgos concretos</strong> del proyecto.
-      </p>
-      <pre class="sena-code"><code>Contingencia = 0.10 × ( Costo_talento + Costo_tecnología )</code></pre>
-      <h3>Riesgos que justifican el margen</h3>
-      <ul class="sena-list">
-        <li>Pasarela de <strong>pagos deshabilitada</strong> (Fase 4 pendiente): retrabajo al integrarla.</li>
-        <li><strong>Paridad</strong> entre <code>server/index.js</code> y <code>api/index.js</code>: riesgo de divergencia.</li>
-        <li>Migración de sub-routers de producción de <strong>CommonJS a ESM</strong> aún pendiente.</li>
-        <li>Migración de datos estáticos (<code>products.ts</code>, blog) a base de datos.</li>
+    <!-- ── Plantilla 5 — Resumen financiero ──────────────────────────── -->
+    <section id="resumen" class="sena-section sena-highlight">
+      <h2>Plantilla 5 — Resumen financiero del proyecto</h2>
+
+      <div class="sena-bar" role="img" aria-label="Distribución del presupuesto: Talento humano 83.3%, Tecnología 3.7%, Contingencia 13%">
+        <span class="sena-bar__seg sena-bar__seg--talento" style="flex:83">83,3&nbsp;%</span>
+        <span class="sena-bar__seg sena-bar__seg--tec" style="flex:4">3,7&nbsp;%</span>
+        <span class="sena-bar__seg sena-bar__seg--con" style="flex:13">13&nbsp;%</span>
+      </div>
+      <ul class="sena-legend">
+        <li><span class="sena-dot sena-bar__seg--talento"></span> Talento humano (83,3 %)</li>
+        <li><span class="sena-dot sena-bar__seg--tec"></span> Tecnología (3,7 %)</li>
+        <li><span class="sena-dot sena-bar__seg--con"></span> Contingencia (13 %)</li>
       </ul>
-    </section>
 
-    <!-- ── 7. No incluir ────────────────────────────────────────── -->
-    <section id="no-incluir" class="sena-section">
-      <h2>7. Qué NO se incluye</h2>
-      <p>
-        Un presupuesto defendible también declara lo que deja por fuera. No se
-        incluyen:
-      </p>
-      <ul class="sena-list">
-        <li>Gastos sin relación con un entregable del proyecto.</li>
-        <li>Valores <strong>sin fuente</strong> verificable.</li>
-        <li>Herramientas que no se usarán.</li>
-        <li>Costos <strong>duplicados</strong> entre rubros.</li>
-      </ul>
-    </section>
-
-    <!-- ── 8. Apéndice ──────────────────────────────────────────── -->
-    <section id="apendice" class="sena-section sena-highlight">
-      <h2>8. Apéndice económico (tablas)</h2>
-      <p>
-        El apéndice consolida tres tablas. Los valores monetarios se muestran
-        con el <strong>escenario recomendado (freelance junior, $25.000/h)</strong>
-        de la sección 9; basta cambiar la tarifa/hora para recalcular todo.
-      </p>
-
-      <h3>Tabla A — Horas por rol y Sprint</h3>
       <div class="sena-table-wrap">
         <table class="sena-table">
           <thead>
-            <tr><th>Rol</th><th>Horas</th><th>Tarifa/h</th><th>Subtotal (COP)</th></tr>
+            <tr><th>Concepto</th><th>Valor</th></tr>
           </thead>
           <tbody>
-            <tr><td>Análisis / Diseño</td><td>80</td><td>$25.000</td><td>$2.000.000</td></tr>
-            <tr><td>Backend</td><td>220</td><td>$25.000</td><td>$5.500.000</td></tr>
-            <tr><td>Frontend</td><td>200</td><td>$25.000</td><td>$5.000.000</td></tr>
-            <tr><td>Base de datos</td><td>60</td><td>$25.000</td><td>$1.500.000</td></tr>
-            <tr><td>Documentación</td><td>40</td><td>$25.000</td><td>$1.000.000</td></tr>
-            <tr><td class="sena-total">Total talento</td><td class="sena-total">600</td><td></td><td class="sena-total">$15.000.000</td></tr>
-          </tbody>
-        </table>
-      </div>
-
-      <h3>Tabla B — Tecnología (costo real)</h3>
-      <div class="sena-table-wrap">
-        <table class="sena-table">
-          <thead>
-            <tr><th>Servicio</th><th>Periodicidad</th><th>Costo (COP)</th></tr>
-          </thead>
-          <tbody>
-            <tr><td>Vercel (Hobby/Pro)</td><td>~6 meses</td><td>$480.000</td></tr>
-            <tr><td>Dominio <code>dobleyo.cafe</code></td><td>Anual</td><td>$160.000</td></tr>
-            <tr><td>Turso (free/starter)</td><td>~6 meses</td><td>$200.000</td></tr>
-            <tr><td>Resend (free/starter)</td><td>~6 meses</td><td>$160.000</td></tr>
-            <tr><td class="sena-total">Total tecnología</td><td></td><td class="sena-total">$1.000.000</td></tr>
-          </tbody>
-        </table>
-      </div>
-
-      <h3>Tabla C — Rubros derivados y total</h3>
-      <div class="sena-table-wrap">
-        <table class="sena-table">
-          <thead>
-            <tr><th>Rubro</th><th>Fórmula</th><th>Valor (COP)</th></tr>
-          </thead>
-          <tbody>
-            <tr><td>Talento humano</td><td>600 h × $25.000</td><td>$15.000.000</td></tr>
-            <tr><td>Tecnología</td><td>Costo real (Tabla B)</td><td>$1.000.000</td></tr>
-            <tr><td>Pruebas</td><td><code>0.12 × talento</code></td><td>$1.800.000</td></tr>
-            <tr><td>Gestión</td><td><code>0.10 × talento</code></td><td>$1.500.000</td></tr>
-            <tr><td>Contingencia</td><td><code>0.10 × (talento + tecnología)</code></td><td>$1.600.000</td></tr>
-            <tr><td class="sena-total">TOTAL PROYECTO</td><td></td><td class="sena-total">≈ $20.900.000</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- ── 9. Cuánto cuesta ─────────────────────────────────────── -->
-    <section id="costo" class="sena-section sena-highlight">
-      <h2>9. ¿Cuánto cuesta el proyecto?</h2>
-      <p>
-        El costo total depende de la <strong>tarifa/hora</strong>, porque el
-        talento humano (las 600 horas estimadas) es el ancla. Se presentan tres
-        escenarios para Colombia (2026). La tecnología (~$1.000.000 por ~6 meses)
-        y las fórmulas de los rubros derivados son las mismas en los tres.
-      </p>
-
-      <div class="sena-table-wrap">
-        <table class="sena-table">
-          <thead>
             <tr>
-              <th>Rubro</th>
-              <th>A · SENA<br/>$12.000/h</th>
-              <th>B · Junior<br/>$25.000/h</th>
-              <th>C · Mid<br/>$40.000/h</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr><td>Talento (600 h)</td><td>$7.200.000</td><td>$15.000.000</td><td>$24.000.000</td></tr>
-            <tr><td>Pruebas (12&nbsp;%)</td><td>$864.000</td><td>$1.800.000</td><td>$2.880.000</td></tr>
-            <tr><td>Gestión (10&nbsp;%)</td><td>$720.000</td><td>$1.500.000</td><td>$2.400.000</td></tr>
-            <tr><td>Tecnología</td><td>$1.000.000</td><td>$1.000.000</td><td>$1.000.000</td></tr>
-            <tr><td>Contingencia (10&nbsp;%)</td><td>$820.000</td><td>$1.600.000</td><td>$2.500.000</td></tr>
-            <tr>
-              <td class="sena-total">TOTAL (COP)</td>
-              <td class="sena-total">≈ $10.600.000</td>
-              <td class="sena-total">≈ $20.900.000</td>
-              <td class="sena-total">≈ $32.800.000</td>
+              <td>Subtotal talento humano (540 h × $80.000/h)</td>
+              <td class="sena-price">$43.200.000</td>
             </tr>
             <tr>
-              <td>Equivalente USD*</td>
-              <td>~$2.650</td>
-              <td>~$5.200</td>
-              <td>~$8.200</td>
+              <td>Subtotal herramientas, licencias e infraestructura</td>
+              <td class="sena-price">$1.898.000</td>
+            </tr>
+            <tr>
+              <td>Subtotal pruebas, capacitación y documentación</td>
+              <td class="sena-price">$0 <em style="font-weight:400;font-size:0.88em">(incluido en las horas de talento humano de QA y PO)</em></td>
+            </tr>
+            <tr>
+              <td><strong>Subtotal general antes de contingencia</strong></td>
+              <td class="sena-price"><strong>$45.098.000</strong></td>
+            </tr>
+            <tr>
+              <td>Porcentaje de contingencia aplicado</td>
+              <td>15 %</td>
+            </tr>
+            <tr>
+              <td>Valor de contingencia</td>
+              <td class="sena-price">$6.764.700</td>
+            </tr>
+            <tr class="sena-row-total">
+              <td><strong>TOTAL ESTIMADO DEL PROYECTO</strong></td>
+              <td class="sena-price"><strong>$51.862.700</strong></td>
             </tr>
           </tbody>
         </table>
       </div>
-      <p class="sena-fine">* Conversión referencial a ~$4.000 COP/USD.</p>
+
+      <h3>Fórmula de contingencia</h3>
+      <pre class="sena-code"><code>{formulaContingencia}</code></pre>
 
       <div class="sena-note sena-note--ok">
-        <strong>Cifra recomendada para la sustentación:</strong> el escenario
-        <strong>A (base SENA)</strong> o <strong>B (junior)</strong> es el más
-        defendible, porque la tarifa se sustenta con la tabla salarial o el
-        salario mínimo + prestaciones — evidencia verificable, sin «valores sin
-        fuente». Las 600 horas no son inventadas: salen de los entregables
-        reales del repositorio (schema con 35+ tablas, routers Express, páginas
-        Astro).
+        <strong>Lectura del presupuesto:</strong> El talento humano representa el 83,3 % del presupuesto ($43.200.000), lo que es esperado en proyectos de software con un único desarrollador senior. Los costos tecnológicos son contenidos ($1.898.000 = 3,7 %) gracias a la selección de servicios con planes escalables de bajo costo inicial. La contingencia del 15 % ($6.764.700) está dimensionada para absorber los riesgos de las integraciones con plataformas externas (Wompi, MercadoPago, MercadoLibre) y la complejidad del módulo financiero de doble partida.
+      </div>
+    </section>
+
+    <!-- ── Plantilla 6 — Negociación tecnológica ─────────────────────── -->
+    <section id="negociacion" class="sena-section">
+      <h2>Plantilla 6 — Matriz de negociación tecnológica</h2>
+      <p>
+        <strong>Situación de negociación:</strong> Para la capa de base de datos del sistema se evaluaron dos alternativas:
+        <strong>Turso (libSQL/SQLite distribuido)</strong> vs <strong>Supabase (PostgreSQL + auth + storage)</strong>.
+      </p>
+      <div class="sena-table-wrap">
+        <table class="sena-table">
+          <thead>
+            <tr>
+              <th>Aspecto</th>
+              <th>Condición requerida</th>
+              <th>Turso — Scaler ($29 USD/mes)</th>
+              <th>Supabase — Pro ($25 USD/mes)</th>
+              <th>Decisión o acuerdo</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Alcance tecnológico</strong></td>
+              <td>Base de datos relacional compatible con Vercel, sin cold starts, multi-región</td>
+              <td>Base de datos SQLite distribuida con réplicas edge automáticas. Compatible con cualquier framework JS vía <code>@libsql/client</code>.</td>
+              <td>PostgreSQL completo + Auth integrado + Storage de archivos + Realtime + Edge Functions incluidas en el plan.</td>
+              <td>Turso ofrece el alcance exacto requerido (BD relacional). Supabase incluye más funciones no requeridas actualmente.</td>
+            </tr>
+            <tr>
+              <td><strong>Licenciamiento</strong></td>
+              <td>Pago mensual, cancelable, sin contrato mínimo</td>
+              <td>$29 USD/mes (~$120.000 COP). Sin contrato mínimo. Cancelación inmediata.</td>
+              <td>$25 USD/mes (~$104.000 COP). Sin contrato mínimo. Cancelación inmediata.</td>
+              <td>Supabase es ligeramente más económico; Turso es aceptable dado el diferencial de $4 USD.</td>
+            </tr>
+            <tr>
+              <td><strong>Soporte</strong></td>
+              <td>Documentación completa + canal de soporte activo</td>
+              <td>Documentación oficial, Discord activo, tickets vía panel. Tiempo de respuesta: 24-48 h.</td>
+              <td>Documentación extensa, foro GitHub Discussions, tickets (respuesta en horas en Pro).</td>
+              <td>Ambos tienen soporte equivalente. Turso tiene comunidad más pequeña pero respuestas técnicas directas.</td>
+            </tr>
+            <tr>
+              <td><strong>Disponibilidad / SLA</strong></td>
+              <td>≥ 99,9 % uptime documentado</td>
+              <td>99,9 % SLA documentado. Mantenimiento programado con aviso previo.</td>
+              <td>99,9 % SLA en plan Pro. Estado en status.supabase.com.</td>
+              <td>Equivalente. Ambos cumplen el requisito mínimo del proyecto.</td>
+            </tr>
+            <tr>
+              <td><strong>Seguridad y datos</strong></td>
+              <td>TLS en tránsito, autenticación, datos en región controlada</td>
+              <td>TLS obligatorio, tokens de autenticación por base de datos, datos alojados en Fly.io (USA/EU).</td>
+              <td>TLS, Row Level Security (RLS) nativo en PostgreSQL, MFA, cumplimiento SOC 2, datos en AWS.</td>
+              <td>Supabase es más robusto en seguridad y cumplimiento normativo. Turso es suficiente para el alcance actual.</td>
+            </tr>
+            <tr>
+              <td><strong>Escalabilidad</strong></td>
+              <td>Crecer en usuarios, storage y transacciones sin reconfiguración</td>
+              <td>Réplicas edge automáticas, sin límite de lecturas, escala horizontal sin cambio de código.</td>
+              <td>Compute adicional desde +$10 USD/mes, read replicas disponibles, branching para preview envs.</td>
+              <td>Turso escala mejor en lectura distribuida. Supabase escala mejor en compute y workloads complejos.</td>
+            </tr>
+            <tr>
+              <td><strong>Pagos y renovación</strong></td>
+              <td>Facturación predecible, sin costos ocultos por uso moderado</td>
+              <td>Factura mensual fija en plan Scaler. Ancho de banda y storage incluidos hasta el límite del plan.</td>
+              <td>Factura mensual base + cargos variables por compute excedente y egress.</td>
+              <td>Turso tiene costo más predecible. Supabase puede generar cargos variables si crece el tráfico.</td>
+            </tr>
+            <tr>
+              <td><strong>Propiedad intelectual y datos</strong></td>
+              <td>Exportación completa de datos en cualquier momento</td>
+              <td>Exportación vía SQL dump estándar, compatible con cualquier SQLite. Sin lock-in.</td>
+              <td>Exportación vía pg_dump estándar de PostgreSQL. Sin lock-in de proveedor.</td>
+              <td>Ambos permiten exportación total. Sin restricciones contractuales sobre los datos del usuario.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Conclusión de la negociación</h3>
+      <div class="sena-note sena-note--ok">
+        <strong>Se seleccionó Turso</strong> como proveedor de base de datos por las siguientes razones: (1) compatibilidad nativa con el entorno de Vercel edge, eliminando cold starts en las funciones serverless; (2) uso del driver <code>@libsql/client</code> ya integrado en el proyecto; (3) sintaxis SQL compatible con SQLite (<code>?</code> posicional, <code>datetime('now')</code>) que simplifica las queries frente a PostgreSQL; (4) costo predecible sin cargos variables. Supabase sería la alternativa recomendada si el proyecto requiriera autenticación OAuth nativa, almacenamiento de archivos multimedia o workloads transaccionales muy intensivos en el futuro.
+        <br /><br />
+        <strong>Condiciones mínimas negociadas:</strong> precio mensual fijo de $29 USD, cancelación sin penalidad, exportación de datos en cualquier momento, soporte vía Discord y tickets, SLA 99,9 %, cifrado TLS en tránsito.
+      </div>
+    </section>
+
+    <!-- ── Plantilla 7 — Riesgos ──────────────────────────────────────── -->
+    <section id="riesgos" class="sena-section">
+      <h2>Plantilla 7 — Riesgos económicos y contingencia</h2>
+      <div class="sena-table-wrap">
+        <table class="sena-table">
+          <thead>
+            <tr>
+              <th>Riesgo</th>
+              <th>Impacto en costo</th>
+              <th>Probabilidad</th>
+              <th>Medida de control</th>
+              <th>Reserva sugerida</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Cambio de alcance en módulos de pago (Wompi/MercadoPago) por cambios en API del proveedor o requisitos regulatorios</td>
+              <td>Alto</td>
+              <td>Media</td>
+              <td>Usar SDKs oficiales y ambientes de sandbox. Mantener contrato API versionado. Sprint de pagos con margen de pruebas ampliado.</td>
+              <td class="sena-price">$2.000.000</td>
+            </tr>
+            <tr>
+              <td>Aumento de horas en módulo financiero (contabilidad de doble partida) por mayor complejidad contable de la que se estimó</td>
+              <td>Alto</td>
+              <td>Baja</td>
+              <td>Estimación conservadora ya aplicada (+10 h vs promedio). Revisar alcance con contador antes del sprint 7.</td>
+              <td class="sena-price">$1.500.000</td>
+            </tr>
+            <tr>
+              <td>Incremento de precios en servicios cloud (Vercel, Turso) o cambio de planes</td>
+              <td>Bajo</td>
+              <td>Baja</td>
+              <td>Monitoreo mensual de costos. Alertas de consumo configuradas. Alternativas documentadas (Supabase, Railway).</td>
+              <td class="sena-price">$400.000</td>
+            </tr>
+            <tr>
+              <td>Problemas de compatibilidad entre Astro 5 y el adaptador de Vercel en actualizaciones de versión</td>
+              <td>Medio</td>
+              <td>Baja</td>
+              <td>Fijar versiones en package.json. Revisar changelogs antes de actualizar. Preview deployments para validar antes de producción.</td>
+              <td class="sena-price">$500.000</td>
+            </tr>
+            <tr>
+              <td>Más defectos de calidad de los previstos en integración con MercadoLibre (geocodificación, sync de órdenes)</td>
+              <td>Medio</td>
+              <td>Media</td>
+              <td>Pruebas con datos reales en ambiente de staging. Suite de tests con Vitest + Playwright implementada en sprint 12.</td>
+              <td class="sena-price">$1.500.000</td>
+            </tr>
+            <tr>
+              <td>Sobrecosto en dominio .cafe o necesidad de dominios adicionales (.co, .com)</td>
+              <td>Bajo</td>
+              <td>Baja</td>
+              <td>Presupuestar solo dobleyo.cafe inicialmente. Evaluar dominios adicionales según crecimiento.</td>
+              <td class="sena-price">$160.000</td>
+            </tr>
+            <tr class="sena-row-total">
+              <td colspan="4"><strong>Total de reservas por riesgo</strong></td>
+              <td class="sena-price"><strong>$6.060.000</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="sena-note sena-note--ok">
+        La contingencia del 15 % calculada (<strong>$6.764.700</strong>) cubre holgadamente el total de reservas por riesgo identificadas (<strong>$6.060.000</strong>), confirmando que el porcentaje es adecuado para el perfil de riesgo del proyecto.
+      </div>
+    </section>
+
+    <!-- ── Plantilla 8 — Viabilidad económica ────────────────────────── -->
+    <section id="viabilidad" class="sena-section sena-highlight">
+      <h2>Plantilla 8 — Conclusión de viabilidad económica</h2>
+      <p>
+        El proyecto <strong>DobleYo Café</strong> es económicamente viable con un costo total estimado de
+        <strong>$51.862.700 COP</strong> para doce sprints de desarrollo ejecutados en veinticuatro semanas.
+      </p>
+      <ul class="sena-list">
+        <li>
+          El mayor costo se concentra en el <strong>talento humano</strong>, que representa el 83,3 % del presupuesto total ($43.200.000),
+          ejecutado íntegramente por un desarrollador full-stack senior con tarifa de $80.000 por hora, quien asume los roles de
+          Product Owner, desarrollador backend y frontend, tester QA y DevOps.
+        </li>
+        <li>
+          Los sprints de mayor inversión son <strong>S2 (Tienda online), S3 (App móvil de producción), S7 (Finanzas/contabilidad) y S11 (Admin/ERP)</strong>,
+          con costos individuales de $4.400.000 a $4.800.000, por tratarse de los módulos más complejos en lógica de negocio e integración.
+        </li>
+        <li>
+          Los <strong>costos tecnológicos son moderados</strong> ($1.898.000, equivalente al 3,7 % del presupuesto), gracias a la selección de servicios cloud
+          con planes escalables de bajo costo: Vercel Pro para despliegue, Turso Scaler para la base de datos, Claude Pro como herramienta de desarrollo
+          asistido por IA y GitHub Pro para el repositorio y CI/CD, con Resend en plan gratuito para correo transaccional.
+        </li>
+        <li>
+          La contingencia del 15 % ($6.764.700) está bien dimensionada para cubrir los principales riesgos identificados: cambios en las APIs de pasarelas
+          de pago (Wompi, MercadoPago), mayor complejidad en el módulo contable de doble partida y posibles variaciones en costos de servicios cloud.
+        </li>
+        <li>
+          A la fecha de elaboración de este documento (junio 2026), el proyecto cuenta con <strong>ocho de doce fases completamente entregadas y en producción</strong>
+          (F0, F1, F2, F4, F5, F6, F8 y F10), lo que valida tanto la viabilidad técnica como la disciplina de ejecución.
+        </li>
+        <li>
+          La decisión de utilizar Turso sobre Supabase como motor de base de datos garantiza escalabilidad controlada sin costos variables impredecibles.
+        </li>
+      </ul>
+      <div class="sena-note sena-note--ok">
+        <strong>En conclusión:</strong> el software es viable económicamente con el presupuesto estimado, el equipo disponible y la arquitectura tecnológica seleccionada.
+      </div>
+    </section>
+
+    <!-- ── Evidencias de precios ──────────────────────────────────────── -->
+    <section id="evidencias" class="sena-section">
+      <h2>Evidencias de precios consultados</h2>
+      <div class="sena-table-wrap">
+        <table class="sena-table">
+          <thead>
+            <tr><th>Herramienta / Servicio</th><th>Precio de referencia</th><th>Fuente oficial</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Vercel Pro</td>
+              <td>$20 USD/mes</td>
+              <td><code>vercel.com/pricing</code></td>
+            </tr>
+            <tr>
+              <td>Turso Scaler</td>
+              <td>$29 USD/mes</td>
+              <td><code>turso.tech/pricing</code></td>
+            </tr>
+            <tr>
+              <td>Claude Pro</td>
+              <td>$20 USD/mes</td>
+              <td><code>anthropic.com/claude/pricing</code></td>
+            </tr>
+            <tr>
+              <td>GitHub Pro</td>
+              <td>$4 USD/mes</td>
+              <td><code>github.com/pricing</code></td>
+            </tr>
+            <tr>
+              <td>Resend (plan gratuito)</td>
+              <td>$0 USD/mes</td>
+              <td><code>resend.com/pricing</code></td>
+            </tr>
+            <tr>
+              <td>Dominio .cafe (precio anual)</td>
+              <td>~$80.000 COP/año</td>
+              <td><code>cloudflare.com/products/registrar</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="sena-fine">* Tasa de conversión de referencia utilizada: $4.150 COP/USD (junio 2026).</p>
+    </section>
+
+    <!-- ── Lista de verificación ──────────────────────────────────────── -->
+    <section id="checklist" class="sena-section">
+      <h2>Lista de verificación</h2>
+      <div class="sena-table-wrap">
+        <table class="sena-table">
+          <thead>
+            <tr><th>Criterio de revisión</th><th>Cumple</th><th>Observaciones</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>El presupuesto está alineado con el Cronograma de Sprints</td>
+              <td class="sena-check">Sí</td>
+              <td>Cada sprint tiene horas, costos y dependencias tecnológicas específicas</td>
+            </tr>
+            <tr>
+              <td>Cada costo tiene justificación y sprint asociado</td>
+              <td class="sena-check">Sí</td>
+              <td>Plantillas 3 y 4 cruzan sprint, rol y justificación para cada ítem</td>
+            </tr>
+            <tr>
+              <td>Las tarifas u horas usadas son coherentes con el alcance</td>
+              <td class="sena-check">Sí</td>
+              <td>$80.000/h corresponde al mercado colombiano para full-stack senior. 540 h totales = 22,5 h/sem × 24 semanas</td>
+            </tr>
+            <tr>
+              <td>Se incluyen costos de herramientas, licencias o infraestructura</td>
+              <td class="sena-check">Sí</td>
+              <td>Plantilla 4 detalla 6 conceptos tecnológicos con proveedor, sprint, cantidad y costo</td>
+            </tr>
+            <tr>
+              <td>Se calcula subtotal, contingencia y total del proyecto</td>
+              <td class="sena-check">Sí</td>
+              <td>Plantilla 5: subtotal $45.098.000 + contingencia 15 % = total $51.862.700</td>
+            </tr>
+            <tr>
+              <td>El marco de negociación contempla soporte, seguridad, datos y pagos</td>
+              <td class="sena-check">Sí</td>
+              <td>Plantilla 6: 8 criterios comparados entre Turso y Supabase con decisión documentada</td>
+            </tr>
+            <tr>
+              <td>La conclusión explica la viabilidad del software a construir</td>
+              <td class="sena-check">Sí</td>
+              <td>Plantilla 8 con costo total, sprints costosos, riesgos, contingencia y condiciones negociadas</td>
+            </tr>
+            <tr>
+              <td>La bibliografía y evidencias de precios son verificables</td>
+              <td class="sena-check">Sí</td>
+              <td>Tabla de evidencias con URLs oficiales de cada proveedor</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── Glosario ───────────────────────────────────────────────────── -->
+    <section id="glosario" class="sena-section">
+      <h2>Glosario</h2>
+      <div class="sena-table-wrap">
+        <table class="sena-table">
+          <thead>
+            <tr><th>Término</th><th>Definición en contexto del proyecto</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Presupuesto de elaboración</strong></td><td>Estimación de los recursos económicos para construir los 12 módulos del sistema DobleYo Café.</td></tr>
+            <tr><td><strong>Sprint</strong></td><td>Periodo de 2 semanas con un objetivo específico, entregables verificables y dependencias tecnológicas definidas.</td></tr>
+            <tr><td><strong>Entregable</strong></td><td>Resultado funcional producido al finalizar el sprint (p. ej. checkout operativo, pipeline de producción completo).</td></tr>
+            <tr><td><strong>Talento humano</strong></td><td>Costo del tiempo del desarrollador full-stack Mike Rodríguez en cada área funcional del sprint.</td></tr>
+            <tr><td><strong>Contingencia</strong></td><td>Reserva del 15 % sobre el subtotal para cubrir cambios de alcance, errores de estimación y riesgos tecnológicos.</td></tr>
+            <tr><td><strong>SLA</strong></td><td>Acuerdo de nivel de servicio; en Vercel y Turso define el 99,9 % de disponibilidad garantizada.</td></tr>
+            <tr><td><strong>Licenciamiento</strong></td><td>Condiciones de uso de cada herramienta (mensual, cancelable, sin contrato mínimo).</td></tr>
+            <tr><td><strong>TCO</strong></td><td>Costo total de propiedad: incluye talento, suscripciones, dominio y contingencia durante 6 meses de desarrollo.</td></tr>
+            <tr><td><strong>Negociación tecnológica</strong></td><td>Proceso de evaluación y selección de Turso sobre Supabase basado en 8 criterios técnicos, económicos y operativos.</td></tr>
+            <tr><td><strong>libSQL / SQLite</strong></td><td>Motor de base de datos de Turso, compatible con SQLite estándar y distribuido en nodos edge globales.</td></tr>
+            <tr><td><strong>SSR</strong></td><td>Server-Side Rendering: técnica usada con Astro 5 para generar HTML en el servidor, mejorando SEO y rendimiento inicial.</td></tr>
+            <tr><td><strong>Edge</strong></td><td>Infraestructura distribuida geográficamente que ejecuta funciones cerca del usuario final, reduciendo latencia.</td></tr>
+          </tbody>
+        </table>
       </div>
     </section>
 
@@ -352,7 +866,7 @@ Costo_talento = Σ Costo_rol  (todos los roles)`;
 
   <style>
     .sena {
-      max-width: 860px;
+      max-width: 960px;
       margin: 0 auto;
       padding: 2rem 0 4rem;
       color: var(--fg, #1f2937);
@@ -373,12 +887,12 @@ Costo_talento = Σ Costo_rol  (todos los roles)`;
       margin-bottom: 0.75rem;
     }
     .sena-hero h1 {
-      font-size: clamp(1.9rem, 5vw, 2.6rem);
+      font-size: clamp(1.7rem, 4vw, 2.4rem);
       color: var(--coffee, #251a14);
       margin: 0 0 0.75rem;
-      line-height: 1.15;
+      line-height: 1.2;
     }
-    .sena-lead { font-size: 1.1rem; color: var(--muted-fg, #6b7280); margin: 0; }
+    .sena-lead { font-size: 1.05rem; color: var(--muted-fg, #6b7280); margin: 0; }
 
     .sena-toc {
       background: var(--card, #fff);
@@ -400,27 +914,27 @@ Costo_talento = Σ Costo_rol  (todos los roles)`;
 
     .sena-section { margin-bottom: 2.75rem; scroll-margin-top: 2rem; }
     .sena-section h2 {
-      font-size: 1.5rem;
+      font-size: 1.4rem;
       color: var(--coffee, #251a14);
       margin: 0 0 1rem;
       padding-bottom: 0.5rem;
       border-bottom: 1px solid var(--border, #e6e6e6);
     }
     .sena-section h3 {
-      font-size: 1.1rem; color: var(--coffee, #251a14);
+      font-size: 1.05rem; color: var(--coffee, #251a14);
       margin: 1.75rem 0 0.75rem;
     }
     .sena-section p { margin: 0 0 1rem; }
     .sena-section code {
-      background: rgba(var(--coffee-rgb, 37, 26, 20), 0.06);
+      background: rgba(37, 26, 20, 0.07);
       padding: 0.1rem 0.4rem;
       border-radius: 5px;
-      font-size: 0.9em;
+      font-size: 0.88em;
       font-family: ui-monospace, "SF Mono", Menlo, monospace;
     }
 
     .sena-highlight {
-      background: rgba(var(--coffee-rgb, 37, 26, 20), 0.03);
+      background: rgba(37, 26, 20, 0.03);
       border: 1px solid var(--border, #e6e6e6);
       border-radius: 12px;
       padding: 1.75rem;
@@ -449,34 +963,43 @@ Costo_talento = Σ Costo_rol  (todos los roles)`;
     }
     .sena-note--ok { border-left-color: #2e7d5b; }
 
-    .sena-list, .sena-steps { margin: 0 0 1rem; padding-left: 1.4rem; }
-    .sena-list li, .sena-steps li { margin: 0.4rem 0; }
-    .sena-steps ul { margin: 0.4rem 0; }
+    .sena-list { margin: 0 0 1rem; padding-left: 1.4rem; }
+    .sena-list li { margin: 0.5rem 0; }
+
+    .sena-inner-list { margin: 0; padding-left: 1.2rem; }
+    .sena-inner-list li { margin: 0.3rem 0; }
 
     .sena-table-wrap { overflow-x: auto; margin: 0 0 1.25rem; }
     .sena-table {
       width: 100%; border-collapse: collapse;
-      font-size: 0.92rem;
+      font-size: 0.88rem;
       background: var(--card, #fff);
       border: 1px solid var(--border, #e6e6e6);
       border-radius: 8px;
       overflow: hidden;
     }
     .sena-table th {
-      text-align: left; background: rgba(var(--coffee-rgb, 37, 26, 20), 0.05);
-      color: var(--coffee, #251a14); font-size: 0.78rem;
+      text-align: left; background: rgba(37, 26, 20, 0.06);
+      color: var(--coffee, #251a14); font-size: 0.75rem;
       text-transform: uppercase; letter-spacing: 0.05em;
-      padding: 0.7rem 1rem;
+      padding: 0.65rem 0.9rem;
     }
     .sena-table td {
-      padding: 0.7rem 1rem;
+      padding: 0.65rem 0.9rem;
       border-top: 1px solid var(--border, #e6e6e6);
       vertical-align: top;
+      line-height: 1.5;
     }
-    .sena-total { font-weight: 700; color: var(--coffee, #251a14); }
+    .sena-row-total td {
+      background: rgba(37, 26, 20, 0.04);
+      font-weight: 700;
+      color: var(--coffee, #251a14);
+    }
+    .sena-price { font-weight: 600; color: var(--coffee, #251a14); }
+    .sena-check { font-weight: 700; color: #2e7d5b; }
     .sena-fine { font-size: 0.82rem; color: var(--muted-fg, #6b7280); margin: -0.75rem 0 1rem; }
 
-    /* Barra de distribución del presupuesto */
+    /* Barra de distribución */
     .sena-bar {
       display: flex;
       width: 100%;
@@ -496,8 +1019,6 @@ Costo_talento = Σ Costo_rol  (todos los roles)`;
     }
     .sena-bar__seg--talento { background: #1f7a44; }
     .sena-bar__seg--tec     { background: #e08a1e; }
-    .sena-bar__seg--pru     { background: #6cae6c; }
-    .sena-bar__seg--ges     { background: #8a8f98; }
     .sena-bar__seg--con     { background: #a98b5d; }
 
     .sena-legend {
@@ -517,18 +1038,12 @@ Costo_talento = Σ Costo_rol  (todos los roles)`;
       display: inline-block;
     }
 
-    .sena-back { margin-top: 2rem; }
-    .sena-back a {
-      color: var(--accent, #c67b4e);
-      font-weight: 600;
-      text-decoration: none;
-    }
-    .sena-back a:hover { text-decoration: underline; }
-
     @media (max-width: 768px) {
       .sena { padding: 1rem 0 3rem; }
       .sena-highlight { padding: 1.25rem; }
-      .sena-bar__seg { font-size: 0.72rem; }
+      .sena-bar__seg { font-size: 0.7rem; }
+      .sena-table { font-size: 0.82rem; }
+      .sena-table th, .sena-table td { padding: 0.55rem 0.7rem; }
     }
   </style>
 </Layout>
