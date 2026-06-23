@@ -97,6 +97,59 @@ forecastRouter.get('/forecast', authenticateToken, requireRole('admin'), async (
 });
 
 // ───────────────────────────────────────────────
+// POST /api/ml/forecast/demo-sale
+// Inserta una venta de demostración con fecha de hoy para que el pronóstico cambie
+// al hacer clic en "Recalcular ahora". Solo disponible para admin.
+// ───────────────────────────────────────────────
+const DEMO_PRODUCTS = [
+  { title: 'Café Sierra Nevada 500g',   unit_price: 48000 },
+  { title: 'Café Nariño Castillo 500g', unit_price: 48000 },
+  { title: 'Café Huila Geisha 500g',    unit_price: 48000 },
+  { title: 'Kit Iniciación Barista',    unit_price: 89900 },
+  { title: 'Kit Regalo Especial',       unit_price: 89900 },
+  { title: 'Molinillo Manual',          unit_price: 52800 },
+];
+const DEMO_CITIES = [
+  { city: 'Bogotá',       state: 'Cundinamarca', lat: 4.6545,  lon: -74.0886 },
+  { city: 'Medellín',     state: 'Antioquia',    lat: 6.2530,  lon: -75.5699 },
+  { city: 'Cali',         state: 'Valle del Cauca', lat: 3.4372, lon: -76.5225 },
+  { city: 'Barranquilla', state: 'Atlántico',    lat: 10.9878, lon: -74.7889  },
+  { city: 'Bucaramanga',  state: 'Santander',    lat: 7.1254,  lon: -73.1198  },
+];
+
+forecastRouter.post('/forecast/demo-sale', authenticateToken, requireRole('admin'), async (req, res) => {
+  try {
+    // Elegir 1-3 productos aleatorios
+    const shuffled = [...DEMO_PRODUCTS].sort(() => Math.random() - 0.5);
+    const items = shuffled.slice(0, 1 + Math.floor(Math.random() * 3)).map(p => ({
+      title: p.title,
+      quantity: 1 + Math.floor(Math.random() * 3),
+      unit_price: p.unit_price,
+    }));
+    const total = items.reduce((s, i) => s + i.quantity * i.unit_price, 0);
+    const place = DEMO_CITIES[Math.floor(Math.random() * DEMO_CITIES.length)];
+    const orderId = '91' + String(Date.now()).slice(-7);
+    const now = new Date().toISOString().replace('T', ' ').slice(0, 19);
+
+    await query(
+      `INSERT OR IGNORE INTO sales_tracking
+         (ml_order_id, purchase_date, total_amount, order_status, shipping_method,
+          recipient_city, recipient_state, recipient_country,
+          latitude, longitude, products, sync_date, created_at)
+       VALUES (?, ?, ?, 'delivered', 'Mercado Envíos', ?, ?, 'Colombia', ?, ?, ?, datetime('now'), datetime('now'))`,
+      [orderId, now, total, place.city, place.state, place.lat, place.lon, JSON.stringify(items)]
+    );
+
+    await logAudit(req.user.id, 'create', 'sales_tracking', null, { orderId, total, city: place.city, items });
+
+    res.json({ success: true, data: { orderId, total, city: place.city, items } });
+  } catch (err) {
+    logger.error({ err }, '[POST /api/ml/forecast/demo-sale]');
+    res.status(500).json({ success: false, error: 'No se pudo insertar la venta de demostración.' });
+  }
+});
+
+// ───────────────────────────────────────────────
 // POST /api/ml/forecast/recompute
 // Dispara la función Python (server-to-server con CRON_SECRET) y devuelve su resultado.
 // ───────────────────────────────────────────────

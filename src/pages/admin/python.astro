@@ -50,8 +50,11 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
           </span>
         )}
       </div>
-      <div>
-        <button id="btn-recalc" class="btn-recalc" type="button">Recalcular ahora</button>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+        <div style="display:flex;gap:8px;align-items:center">
+          <button id="btn-demo-sale" class="btn-demo" type="button">+ Simular venta</button>
+          <button id="btn-recalc" class="btn-recalc" type="button">Recalcular ahora</button>
+        </div>
         <span id="fc-status" class="fc-status"></span>
       </div>
     </div>
@@ -496,7 +499,20 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
     }
     .btn-recalc:hover:not(:disabled) { filter: brightness(.95); }
     .btn-recalc:disabled { opacity: .6; cursor: progress; }
-    .fc-status { font-size: .8rem; margin-left: .75rem; color: #7a6652; }
+    .btn-demo {
+      background: #f0ebe4;
+      color: #251a14;
+      border: 1px solid #c8bfb4;
+      border-radius: 6px;
+      padding: .5rem 1rem;
+      font-size: .82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .15s;
+    }
+    .btn-demo:hover:not(:disabled) { background: #e5ddd4; }
+    .btn-demo:disabled { opacity: .6; cursor: progress; }
+    .fc-status { font-size: .8rem; color: #7a6652; }
 
     .badge {
       display: inline-block;
@@ -581,25 +597,49 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
 
   <!-- ── Script 1: recalcular pronóstico (recompute.py) ── -->
   <script>
-    const btn = document.getElementById("btn-recalc") as HTMLButtonElement | null;
-    const status = document.getElementById("fc-status");
-    btn?.addEventListener("click", async () => {
-      if (!status) return;
-      btn.disabled = true;
+    const btnRecalc = document.getElementById("btn-recalc") as HTMLButtonElement | null;
+    const btnDemo   = document.getElementById("btn-demo-sale") as HTMLButtonElement | null;
+    const status    = document.getElementById("fc-status")!;
+
+    btnDemo?.addEventListener("click", async () => {
+      btnDemo.disabled = true;
+      btnDemo.textContent = "Simulando…";
+      status.textContent = "";
+      try {
+        const r = await fetch("/api/ml/forecast/demo-sale", { method: "POST", credentials: "include" });
+        const j = await r.json();
+        if (r.ok && j.success) {
+          const d = j.data;
+          const items = (d.items as any[]).map((i: any) => `${i.quantity}× ${i.title}`).join(", ");
+          status.textContent = `Venta simulada en ${d.city}: ${items}. Ahora haga clic en "Recalcular ahora".`;
+          btnDemo.textContent = "+ Simular venta";
+        } else {
+          status.textContent = j.error || "No se pudo simular la venta.";
+          btnDemo.textContent = "+ Simular venta";
+        }
+      } catch {
+        status.textContent = "Error de red.";
+        btnDemo.textContent = "+ Simular venta";
+      }
+      btnDemo.disabled = false;
+    });
+
+    btnRecalc?.addEventListener("click", async () => {
+      btnRecalc.disabled = true;
       status.textContent = "Calculando…";
       try {
         const r = await fetch("/api/ml/forecast/recompute", { method: "POST", credentials: "include" });
         const j = await r.json();
         if (r.ok && j.success) {
-          status.textContent = `Listo: ${j.data?.rows_written ?? 0} filas. Recargando…`;
+          status.textContent = `Listo: ${j.data?.rows_written ?? 0} filas escritas. Recargando…`;
           setTimeout(() => location.reload(), 900);
         } else {
           status.textContent = j.error || "No se pudo recalcular.";
-          btn.disabled = false;
+          btnRecalc.disabled = false;
         }
       } catch {
         status.textContent = "Error de red al recalcular.";
-        btn.disabled = false;
+        btnRecalc.disabled = false;
       }
     });
   </script>
