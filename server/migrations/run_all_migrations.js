@@ -51,6 +51,7 @@ const steps = [
   { name: 'Newsletter subscribers table',    run: () => runFn('add_newsletter_subscribers.js', 'addNewsletterSubscribers') },
   { name: 'Newsletter unsubscribe token',    run: () => runFn('add_newsletter_unsubscribe_token.js', 'addNewsletterUnsubscribeToken') },
   { name: 'Blog posts table + seed',         run: () => runFn('add_blog_posts.js', 'addBlogPosts') },
+  { name: 'Blog posts (lote 2: 5 posts)',     run: () => runFn('add_blog_posts_batch2.js', 'addBlogPostsBatch2') },
   { name: 'Product reviews table',           run: () => runFn('add_product_reviews.js', 'addProductReviews') },
   { name: 'Gift sets column + seed',         run: () => runFn('add_gift_sets.js', 'addGiftSets') },
   { name: 'System tables (error_logs + system_changelog)', run: () => runFn('add_system_tables.js', 'addSystemTables') },

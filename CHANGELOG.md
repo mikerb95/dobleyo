@@ -2,6 +2,23 @@
 
 ---
 
+## 📅 2026-06-24 — 5 entradas nuevas de blog con identidad cafetera colombiana (Agente: Claude)
+
+### Contexto
+El blog tenía 3 posts seed. Se agregaron 5 entradas nuevas de café de especialidad con voz natural y enfoque colombiano (origen, preparación y cultura).
+
+### Cambios
+- **Migración** `server/migrations/add_blog_posts_batch2.js` (idempotente vía `ON CONFLICT (slug)`; agregada a `run_all_migrations.js` después del seed base de blog). Siembra 5 posts publicados:
+  - `cafe-narino` — «Nariño: el café que crece donde casi no debería» (origen/altura).
+  - `greca-en-casa` — «La greca de la casa: cómo sacarle un buen café al método más nuestro» (preparación).
+  - `procesos-lavado-honey-natural` — «Lavado, honey o natural: lo que le pasa al café antes de llegar a tu taza» (procesos).
+  - `del-tinto-al-especialidad` — «Del tinto de la esquina al café de especialidad» (cultura).
+  - `dia-de-cosecha` — «Un día de cosecha: lo que cuesta cada grano que te tomas» (caficultores).
+- `src/pages/blog.astro` — los 5 posts agregados al fallback `STATIC_POSTS` (orden por fecha desc) para paridad cuando la BD no esté disponible.
+- Migración ejecutada contra Turso: 5 posts sembrados.
+
+---
+
 ## 📅 2026-06-22 — Página de cuenta `/cuenta` como panel completo de usuario (Agente: Claude)
 
 ### Contexto
