@@ -35,7 +35,6 @@ const pageTitle = `${farm.name} — Farm in ${farm.region} | DobleYo Café`;
 const pageDesc = farm.short_description
   ?? `Discover ${farm.name} in ${farm.region}${altText ? ` at ${altText}` : ""}. Colombian specialty coffee with full traceability.`;
 const canonicalUrl = getCanonicalUrl(`/farm/${slug}`, "en");
-const coverImg = farm.cover_image_url ?? "https://dobleyo.cafe/assets/img/og-fincas.jpg";
 
 const structuredData = {
   "@context": "https://schema.org",
