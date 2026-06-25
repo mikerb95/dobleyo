@@ -10,7 +10,21 @@ En el home EN (`/en`) todos los enlaces daban 404 fuera del subdominio `en.doble
 ### Cambios
 - **`public/assets/js/layout.js`** — nuevo bloque (3): en páginas servidas bajo el prefijo `/en` (local/preview, no en el subdominio de prod), antepone `/en` a los enlaces internos para que la navegación EN funcione. Excluye el selector de idioma (`[data-lang-toggle]`), `/api`, `/assets` y rutas ya prefijadas. CSP-safe (archivo externo desde `self`).
 - **`src/pages/en/blog/[slug].astro`** (nuevo) — detalle de post en inglés (espejo del ES con textos EN). Antes `/blog/:slug` no tenía página EN → 404 desde el home y desde la lista `en/blog`.
-- **`src/pages/en/index.astro`** — reapuntados los enlaces sin página EN: «View all farms» y las tarjetas de finca → `/traceability`; «Shop all kits» → `/shop`. (La sección EN de fincas queda pendiente para Fase 7.)
+- **`src/pages/en/index.astro`** — «Shop all kits» reapuntado a `/shop` (no hay página EN de gifts).
+
+---
+
+## 📅 2026-06-25 — Sección de fincas en inglés (Agente: Claude)
+
+### Contexto
+El sitio EN no tenía sección de fincas (`/farms`, `/farm/[slug]`), así que el home EN enlazaba a páginas inexistentes. Se construyó la versión EN espejando la ES (`/fincas`, `/finca/[slug]`).
+
+### Cambios
+- **`src/pages/en/farms.astro`** (nuevo) — listado de fincas en inglés con filtro por región; consume `/api/farms` y `/api/farms/regions` (mismos endpoints que la ES).
+- **`src/pages/en/farm/[slug].astro`** (nuevo) — landing de finca en inglés (hero, historia, cosechas recientes, galería, ficha técnica, variedades, procesos, certificaciones, CTA). El enlace de trazabilidad por lote apunta a `/traceability` (no existe `/t` en EN).
+- **`src/pages/en/index.astro`** — restaurados los enlaces de fincas del home: «View all farms» → `/farms` y tarjetas → `/farm/[slug]`.
+- **`src/i18n/routes.ts`** — par de rutas `['/fincas', '/farms']` y mapeo dinámico `/finca/:slug` ↔ `/farm/:slug` para que el selector de idioma cambie correctamente.
+- **`src/i18n/index.ts`** — `HREFLANG_MAP`: `'/fincas' → '/farms'` para los `alternate` hreflang.
 
 ---
 
