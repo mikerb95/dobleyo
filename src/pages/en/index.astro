@@ -296,14 +296,14 @@ try {
             <h2 id="homeFarmsTitle" class="home-farms__title">
               Our Farms
             </h2>
-            <a href="/traceability" class="home-farms__link">
+            <a href="/farms" class="home-farms__link">
               View all farms →
             </a>
           </div>
           <ul class="home-farms__grid" role="list">
             {featuredFarms.map((farm: any) => (
               <li class="home-farm-card">
-                <a href="/traceability" class="home-farm-card__link">
+                <a href={`/farm/${farm.slug}`} class="home-farm-card__link">
                   {farm.cover_image_url ? (
                     <img
                       src={farm.cover_image_url}

@@ -103,6 +103,7 @@ const HREFLANG_MAP: Record<string, string> = {
     '/contacto': '/contact',
     '/trazabilidad': '/traceability',
     '/mayoristas': '/wholesale',
+    '/fincas': '/farms',
     '/nosotros': '/about',
     '/blog': '/blog',
     '/guias': '/guides',

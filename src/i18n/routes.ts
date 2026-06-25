@@ -21,6 +21,7 @@ const ROUTE_PAIRS: Array<[string, string]> = [
   ['/contacto', '/contact'],
   ['/trazabilidad', '/traceability'],
   ['/mayoristas', '/wholesale'],
+  ['/fincas', '/farms'],
   ['/cart', '/cart'],
   ['/checkout', '/checkout'],
   ['/confirmacion', '/confirmation'],
@@ -32,11 +33,15 @@ const EN_TO_ES = new Map(ROUTE_PAIRS.map(([es, en]) => [en, es]));
 /** Rutas dinámicas que comparten estructura con distinto slug base. */
 function dynamicMap(path: string, dir: 'es2en' | 'en2es'): string | null {
   if (dir === 'es2en') {
-    const m = path.match(/^\/producto\/(.+)$/);
-    if (m) return `/product/${m[1]}`;
+    const mp = path.match(/^\/producto\/(.+)$/);
+    if (mp) return `/product/${mp[1]}`;
+    const mf = path.match(/^\/finca\/(.+)$/);
+    if (mf) return `/farm/${mf[1]}`;
   } else {
-    const m = path.match(/^\/product\/(.+)$/);
-    if (m) return `/producto/${m[1]}`;
+    const mp = path.match(/^\/product\/(.+)$/);
+    if (mp) return `/producto/${mp[1]}`;
+    const mf = path.match(/^\/farm\/(.+)$/);
+    if (mf) return `/finca/${mf[1]}`;
   }
   return null;
 }
