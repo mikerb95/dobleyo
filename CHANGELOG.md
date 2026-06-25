@@ -2,6 +2,18 @@
 
 ---
 
+## 📅 2026-06-25 — Fix: enlaces 404 en la home en inglés (Agente: Claude)
+
+### Contexto
+En el home EN (`/en`) todos los enlaces daban 404 fuera del subdominio `en.dobleyo.cafe`. En producción el edge reescribe `/* → /en/*`, así que las rutas planas (`/shop`, `/blog`…) funcionan en el subdominio; pero en local y en previews de Vercel la home queda en `/en` y esas rutas planas caían en la raíz (ES inexistente) → 404. Además, dos enlaces apuntaban a páginas EN que no existen.
+
+### Cambios
+- **`public/assets/js/layout.js`** — nuevo bloque (3): en páginas servidas bajo el prefijo `/en` (local/preview, no en el subdominio de prod), antepone `/en` a los enlaces internos para que la navegación EN funcione. Excluye el selector de idioma (`[data-lang-toggle]`), `/api`, `/assets` y rutas ya prefijadas. CSP-safe (archivo externo desde `self`).
+- **`src/pages/en/blog/[slug].astro`** (nuevo) — detalle de post en inglés (espejo del ES con textos EN). Antes `/blog/:slug` no tenía página EN → 404 desde el home y desde la lista `en/blog`.
+- **`src/pages/en/index.astro`** — reapuntados los enlaces sin página EN: «View all farms» y las tarjetas de finca → `/traceability`; «Shop all kits» → `/shop`. (La sección EN de fincas queda pendiente para Fase 7.)
+
+---
+
 ## 📅 2026-06-24 — 5 entradas nuevas de blog con identidad cafetera colombiana (Agente: Claude)
 
 ### Contexto
