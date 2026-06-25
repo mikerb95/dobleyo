@@ -62,3 +62,29 @@ document.addEventListener("click", (e) => {
     });
   }
 })();
+
+// 3) Localización de enlaces internos en páginas EN servidas bajo /en
+//    (entorno local y previews de Vercel). En el subdominio en.dobleyo.cafe
+//    las rutas planas (/shop, /blog…) ya se reescriben a /en/* vía vercel.json,
+//    así que ahí la URL del navegador no lleva el prefijo /en y esto no actúa.
+//    Sin el prefijo, en local/preview los enlaces planos caían en la raíz (ES)
+//    y daban 404. Aquí se les antepone /en para que la navegación EN funcione.
+(function () {
+  const path = location.pathname;
+  const onEn = path === "/en" || path.indexOf("/en/") === 0;
+  if (!onEn) return;
+  if (location.hostname === "en.dobleyo.cafe") return; // prod: lo maneja el edge
+
+  document.querySelectorAll('a[href^="/"]').forEach((a) => {
+    // No tocar el selector de idioma (ES/EN): sus hrefs ya son correctos.
+    if (a.closest("[data-lang-toggle]")) return;
+
+    const href = a.getAttribute("href");
+    if (!href) return;
+    // Ya prefijado, o ruta no navegable que no debe llevar /en.
+    if (href === "/en" || href.indexOf("/en/") === 0) return;
+    if (href.indexOf("/api") === 0 || href.indexOf("/assets") === 0) return;
+
+    a.setAttribute("href", href === "/" ? "/en" : "/en" + href);
+  });
+})();
