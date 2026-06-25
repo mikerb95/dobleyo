@@ -1,0 +1,267 @@
+---
+import Layout from "../../../layouts/Layout.astro";
+import { getCanonicalUrl } from "../../../i18n/index.ts";
+import { marked } from "marked";
+
+export const prerender = false;
+
+const { slug } = Astro.params;
+
+let post: any = null;
+let notFound = false;
+
+try {
+  const res = await fetch(`${Astro.url.origin}/api/blog/${slug}`);
+  if (res.status === 404) {
+    notFound = true;
+  } else if (res.ok) {
+    const data = await res.json();
+    post = data.data;
+  } else {
+    notFound = true;
+  }
+} catch (_) {
+  notFound = true;
+}
+
+if (notFound || !post) {
+  return Astro.redirect("/blog", 302);
+}
+
+marked.setOptions({ gfm: true, breaks: false });
+const contentHtml = post.content_md ? marked.parse(post.content_md) : "";
+
+let tags: string[] = [];
+try {
+  tags = post.tags
+    ? Array.isArray(post.tags) ? post.tags : JSON.parse(post.tags)
+    : [];
+} catch (_) { tags = []; }
+
+function fmtDate(d: any) {
+  if (!d) return "";
+  try {
+    return new Date(d).toLocaleDateString("en-US", {
+      year: "numeric", month: "long", day: "numeric",
+    });
+  } catch { return ""; }
+}
+
+const canonicalUrl = getCanonicalUrl(`/blog/${slug}`, "en");
+const coverImg =
+  post.cover_image_url ||
+  "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?q=80&w=1200&auto=format&fit=crop";
+
+const structuredData = {
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": post.title,
+  "description": post.excerpt || "",
+  "image": coverImg,
+  "author": { "@type": "Organization", "name": post.author || "DobleYo Café" },
+  "publisher": {
+    "@type": "Organization",
+    "name": "DobleYo Café",
+    "logo": { "@type": "ImageObject", "url": "https://dobleyo.cafe/assets/img/logo.png" },
+  },
+  ...(post.published_at ? { "datePublished": post.published_at } : {}),
+  ...(post.updated_at ? { "dateModified": post.updated_at } : {}),
+  "mainEntityOfPage": { "@type": "WebPage", "@id": canonicalUrl },
+};
+
+const breadcrumbData = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://en.dobleyo.cafe" },
+    { "@type": "ListItem", "position": 2, "name": "Blog", "item": "https://en.dobleyo.cafe/blog" },
+    { "@type": "ListItem", "position": 3, "name": post.title, "item": canonicalUrl },
+  ],
+};
+---
+
+<Layout
+  lang="en"
+  title={`${post.title} — DobleYo Café Blog`}
+  description={post.excerpt || `Read "${post.title}" on the DobleYo Café blog.`}
+  canonical={canonicalUrl}
+  jsonLd={[structuredData, breadcrumbData]}
+>
+  <article class="post">
+    <nav class="post-breadcrumb" aria-label="Breadcrumb">
+      <a href="/">Home</a>
+      <span>/</span>
+      <a href="/blog">Blog</a>
+      <span>/</span>
+      <span class="post-breadcrumb__current">{post.title}</span>
+    </nav>
+
+    <header class="post-header">
+      {post.published_at && <time class="post-date">{fmtDate(post.published_at)}</time>}
+      <h1 class="post-title">{post.title}</h1>
+      {post.excerpt && <p class="post-excerpt">{post.excerpt}</p>}
+      <div class="post-meta">
+        <span>{post.author || "DobleYo Café"}</span>
+        <span class="post-meta__dot">·</span>
+        <span>{post.reading_time_min ?? 3} min read</span>
+      </div>
+    </header>
+
+    <img class="post-cover" src={coverImg} alt={post.title} />
+
+    <div class="post-content" set:html={contentHtml} />
+
+    {tags.length > 0 && (
+      <div class="post-tags">
+        {tags.map((t) => <span class="post-tag">#{t}</span>)}
+      </div>
+    )}
+
+    <footer class="post-footer">
+      <a href="/blog" class="post-back">← Back to blog</a>
+    </footer>
+  </article>
+
+  <style>
+    .post {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 2rem 1.25rem 5rem;
+    }
+
+    .post-breadcrumb {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: .5rem;
+      font-size: .82rem;
+      color: var(--muted-fg, #888);
+      margin-bottom: 2rem;
+    }
+    .post-breadcrumb a { color: var(--muted-fg, #888); text-decoration: none; }
+    .post-breadcrumb a:hover { color: var(--accent); }
+    .post-breadcrumb__current {
+      color: var(--fg, #251a14);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 50vw;
+    }
+
+    .post-header { margin-bottom: 2rem; }
+    .post-date {
+      font-size: .78rem;
+      color: var(--muted-fg, #888);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+    .post-title {
+      font-size: clamp(1.8rem, 4.5vw, 2.8rem);
+      line-height: 1.15;
+      margin: .5rem 0 1rem;
+    }
+    .post-excerpt {
+      font-size: 1.15rem;
+      line-height: 1.5;
+      color: var(--muted-fg, #666);
+      margin: 0 0 1rem;
+    }
+    .post-meta {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      font-size: .9rem;
+      color: var(--muted-fg, #888);
+    }
+    .post-meta__dot { opacity: .6; }
+
+    .post-cover {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+      border-radius: .75rem;
+      margin-bottom: 2.5rem;
+    }
+
+    /* ── Markdown-rendered content ── */
+    .post-content {
+      font-size: 1.05rem;
+      line-height: 1.75;
+      color: var(--fg, #251a14);
+    }
+    .post-content :global(h1),
+    .post-content :global(h2),
+    .post-content :global(h3) {
+      line-height: 1.25;
+      margin: 2.2rem 0 .9rem;
+    }
+    .post-content :global(h1) { font-size: 1.7rem; }
+    .post-content :global(h2) { font-size: 1.4rem; }
+    .post-content :global(h3) { font-size: 1.15rem; }
+    .post-content :global(p) { margin: 0 0 1.2rem; }
+    .post-content :global(ul),
+    .post-content :global(ol) { margin: 0 0 1.2rem; padding-left: 1.4rem; }
+    .post-content :global(li) { margin-bottom: .4rem; }
+    .post-content :global(strong) { color: var(--fg, #251a14); font-weight: 700; }
+    .post-content :global(a) { color: var(--accent); }
+    .post-content :global(blockquote) {
+      margin: 1.5rem 0;
+      padding: .5rem 1.2rem;
+      border-left: 3px solid var(--accent);
+      color: var(--muted-fg, #666);
+      font-style: italic;
+    }
+    .post-content :global(code) {
+      background: rgba(0,0,0,.06);
+      padding: .15em .4em;
+      border-radius: 4px;
+      font-size: .9em;
+    }
+    .post-content :global(table) {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.5rem 0;
+      font-size: .95rem;
+    }
+    .post-content :global(th),
+    .post-content :global(td) {
+      border: 1px solid var(--border, #e6e6e6);
+      padding: .6rem .8rem;
+      text-align: left;
+    }
+    .post-content :global(th) {
+      background: rgba(0,0,0,.04);
+      font-weight: 600;
+    }
+    .post-content :global(img) {
+      max-width: 100%;
+      border-radius: .5rem;
+    }
+
+    .post-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .5rem;
+      margin: 2.5rem 0 0;
+    }
+    .post-tag {
+      font-size: .82rem;
+      color: var(--muted-fg, #888);
+      background: rgba(0,0,0,.05);
+      padding: .3rem .7rem;
+      border-radius: 999px;
+    }
+
+    .post-footer {
+      margin-top: 3rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border, #e6e6e6);
+    }
+    .post-back {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .post-back:hover { text-decoration: underline; }
+  </style>
+</Layout>
