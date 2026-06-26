@@ -395,13 +395,18 @@ import Layout from "../layouts/Layout.astro";
   /* Stat cards */
   .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.25rem; }
   .stat-card {
+    display: flex; flex-direction: column; align-items: flex-start; gap: 1px;
     background: var(--card); border: 1px solid var(--border); border-radius: 12px;
-    padding: 1.1rem 1rem; text-align: center; cursor: pointer; font: inherit;
-    transition: border-color 0.15s, transform 0.15s;
+    padding: 1rem 1.1rem; text-align: left; cursor: pointer; font: inherit;
+    transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s;
   }
-  .stat-card:hover { border-color: var(--accent); transform: translateY(-2px); }
-  .stat-value { font-size: 1.7rem; font-weight: 700; color: var(--accent); }
-  .stat-label { font-size: 0.8rem; color: var(--muted-fg); margin-top: 2px; }
+  .stat-card:hover {
+    border-color: var(--accent); transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(var(--coffee-rgb), 0.08);
+  }
+  .stat-eyebrow { font-size: 0.6rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted-fg); }
+  .stat-value { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 700; color: var(--coffee); line-height: 1.1; }
+  .stat-label { font-size: 0.8rem; color: var(--muted-fg); }
 
   /* Summary meta */
   .summary-meta { display: grid; gap: 0.1rem; }
