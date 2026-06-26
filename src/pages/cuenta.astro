@@ -693,22 +693,41 @@ import Layout from "../layouts/Layout.astro";
       const items = (o.items || []).map((it) => `
         <div class="order-item">
           <img src="${esc(it.product_image || "/assets/img/placeholder.png")}" alt="" loading="lazy" />
-          <span>${esc(it.product_name)}</span>
+          <span class="order-item-name">${esc(it.product_name)}</span>
           <span class="qty">× ${it.quantity}</span>
         </div>`).join("");
       return `
-        <div class="order-card">
+        <article class="order-card">
           <div class="order-top">
-            <div><div class="order-ref">Pedido ${esc(o.reference)}</div><div class="order-date">${fmtDate(o.created_at)}</div></div>
+            <div>
+              <span class="order-ref-label">Pedido</span>
+              <div class="order-ref">${esc(o.reference)}</div>
+              <div class="order-date">${fmtDate(o.created_at)}${o.shipping_city ? " · " + esc(o.shipping_city) : ""}</div>
+            </div>
             <span class="badge-status ${stClass}">${esc(STATUS_LABEL[o.status] || o.status)}</span>
           </div>
+          ${orderTimeline(o.status)}
           <div class="order-items">${items}</div>
           <div class="order-foot">
-            <span class="muted">${esc(o.shipping_city || "")}</span>
             <span class="order-total">${fmtCOP(o.total_cop)}</span>
+            <div class="order-actions">
+              <a class="link-btn order-trace" href="/trazabilidad">Rastrear el café</a>
+              <button class="btn outline small order-reorder" data-oid="${esc(o.id)}">Volver a pedir</button>
+            </div>
           </div>
-        </div>`;
+        </article>`;
     }).join("");
+
+    el.querySelectorAll(".order-reorder").forEach((b) => b.addEventListener("click", () => {
+      const o = orders.find((x) => String(x.id) === b.dataset.oid);
+      if (!o || !window.Cart) return;
+      (o.items || []).forEach((it) => window.Cart.addToCart({
+        id: it.product_id, name: it.product_name, price: it.unit_price_cop,
+        image: it.product_image, qty: it.quantity || 1,
+      }));
+      b.textContent = "Agregado al carrito";
+      setTimeout(() => { b.textContent = "Volver a pedir"; }, 1800);
+    }));
   }
 
   // ── Favoritos ──────────────────────────────────────────────
