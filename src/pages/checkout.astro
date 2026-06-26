@@ -611,11 +611,51 @@ import Layout from "../layouts/Layout.astro";
               return;
             }
 
+            const reference = data.data.reference;
+            const confirmUrl = `/confirmacion?ref=${reference}`;
+            const wompi = data.data.wompi;
+
+            function resetPayBtn() {
+              payBtn.disabled = false;
+              payBtnText.textContent = 'Confirmar y pagar';
+              payBtn.classList.remove('co-btn-primary--loading');
+              if (coMbPayBtn) { coMbPayBtn.disabled = false; if (coMbPayText) coMbPayText.textContent = 'Confirmar y pagar'; }
+            }
+
+            // Widget embebido: abre el checkout de Wompi como modal sobre la página.
+            if (wompi && typeof window.WidgetCheckout === 'function') {
+              const checkout = new window.WidgetCheckout({
+                currency:      wompi.currency,
+                amountInCents: wompi.amountInCents,
+                reference:     wompi.reference,
+                publicKey:     wompi.publicKey,
+                signature:     { integrity: wompi.signature },
+                redirectUrl:   wompi.redirectUrl,
+                customerData: {
+                  email:    fEmail,
+                  fullName: fName,
+                  ...(fPhoneRaw ? { phoneNumber: fPhoneRaw, phoneNumberPrefix: selectedCountry.code } : {}),
+                },
+              });
+
+              checkout.open(function (result) {
+                if (result && result.transaction) {
+                  // Pago iniciado/completado — el webhook confirma el estado real.
+                  if (window.Cart.clearCart) window.Cart.clearCart();
+                  sessionStorage.removeItem('dy_coupon');
+                  window.location.href = confirmUrl;
+                } else {
+                  // El usuario cerró el modal sin completar el pago: permitir reintento.
+                  resetPayBtn();
+                }
+              });
+              return;
+            }
+
+            // Fallback: checkout hosted (redirección) si el widget no está disponible.
             if (window.Cart.clearCart) window.Cart.clearCart();
             sessionStorage.removeItem('dy_coupon');
-            window.location.href = data.data.checkoutUrl
-              ? data.data.checkoutUrl
-              : `/confirmacion?ref=${data.data.reference}`;
+            window.location.href = data.data.checkoutUrl || confirmUrl;
 
           } catch {
             payError.textContent = 'Error de conexión. Inténtalo de nuevo.';
