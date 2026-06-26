@@ -66,24 +66,29 @@ import Layout from "../layouts/Layout.astro";
 
           <div class="stat-grid">
             <button class="stat-card" data-jump="pedidos">
-              <div class="stat-value" id="statOrders">0</div>
-              <div class="stat-label">Pedidos</div>
+              <span class="stat-eyebrow">Historial</span>
+              <span class="stat-value" id="statOrders">0</span>
+              <span class="stat-label">Pedidos</span>
             </button>
             <button class="stat-card" data-jump="favoritos">
-              <div class="stat-value" id="statFavorites">0</div>
-              <div class="stat-label">Favoritos</div>
+              <span class="stat-eyebrow">Guardados</span>
+              <span class="stat-value" id="statFavorites">0</span>
+              <span class="stat-label">Favoritos</span>
             </button>
             <button class="stat-card" data-jump="direcciones">
-              <div class="stat-value" id="statAddresses">0</div>
-              <div class="stat-label">Direcciones</div>
+              <span class="stat-eyebrow">Envíos</span>
+              <span class="stat-value" id="statAddresses">0</span>
+              <span class="stat-label">Direcciones</span>
             </button>
             <button class="stat-card" data-jump="suscripcion">
-              <div class="stat-value" id="statSubs">0</div>
-              <div class="stat-label">Suscripciones</div>
+              <span class="stat-eyebrow">Recurrentes</span>
+              <span class="stat-value" id="statSubs">0</span>
+              <span class="stat-label">Suscripciones</span>
             </button>
           </div>
 
           <div class="account-card">
+            <span class="card-eyebrow">Ficha de cliente</span>
             <h2 class="card-h">Datos de la cuenta</h2>
             <div class="summary-meta">
               <div class="meta-row"><span class="meta-label">Correo</span><span class="meta-value" id="sumEmail">—</span></div>
@@ -516,11 +521,41 @@ import Layout from "../layouts/Layout.astro";
     if (isNaN(d.getTime())) return raw;
     return d.toLocaleDateString("es-CO", { year: "numeric", month: "short", day: "numeric" });
   }
+  function fmtSince(raw) {
+    if (!raw) return "—";
+    const norm = typeof raw === "string" && raw.includes(" ") ? raw.replace(" ", "T") + "Z" : raw;
+    const d = new Date(norm);
+    if (isNaN(d.getTime())) return "—";
+    return d.toLocaleDateString("es-CO", { year: "numeric", month: "long" });
+  }
   const ROLE_LABEL = { client: "Cliente", admin: "Administrador", provider: "Proveedor", caficultor: "Caficultor" };
   const STATUS_LABEL = {
     pending_payment: "Pago pendiente", paid: "Pagado", processing: "En preparación",
     shipped: "Enviado", delivered: "Entregado", cancelled: "Cancelado", failed: "Fallido",
   };
+
+  // El viaje del pedido: confirmación → tostado/empacado → en camino → entregado.
+  const ORDER_FLOW = ["paid", "processing", "shipped", "delivered"];
+  const FLOW_LABEL = { paid: "Pago confirmado", processing: "Preparando", shipped: "En camino", delivered: "Entregado" };
+
+  function orderTimeline(status) {
+    if (status === "cancelled" || status === "failed") {
+      return `<div class="order-halt">${status === "failed" ? "El pago de este pedido falló." : "Este pedido fue cancelado."}</div>`;
+    }
+    // Índice de la última etapa alcanzada. 'pending_payment' aún no completa ninguna.
+    const activeIdx = status === "pending_payment" ? -1 : ORDER_FLOW.indexOf(status);
+    const steps = ORDER_FLOW.map((s, i) => {
+      const done = activeIdx >= i;
+      const current = activeIdx === i;
+      return `<li class="trk-step${done ? " is-done" : ""}${current ? " is-current" : ""}">
+        <span class="trk-dot" aria-hidden="true"></span>
+        <span class="trk-label">${FLOW_LABEL[s]}</span>
+      </li>`;
+    }).join("");
+    const note = status === "pending_payment"
+      ? '<div class="order-pending-note">Esperando la confirmación del pago.</div>' : "";
+    return note + `<ol class="order-track" aria-label="Estado del pedido">${steps}</ol>`;
+  }
 
   async function api(path, opts = {}) {
     const res = await fetch(API + path, { credentials: "include", headers: { "Content-Type": "application/json" }, ...opts });
@@ -579,6 +614,7 @@ import Layout from "../layouts/Layout.astro";
     setText("sumRole", ROLE_LABEL[user.role] || user.role);
     setText("sumCreated", fmtDate(user.created_at));
     setText("sumLastLogin", fmtDate(user.last_login_at));
+    setText("sideSince", fmtSince(user.created_at));
     $("verifyBanner").hidden = !!user.is_verified || !!user.has_google || !!user.has_apple;
 
     setText("vFirstName", user.first_name);
