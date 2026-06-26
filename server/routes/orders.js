@@ -244,9 +244,11 @@ ordersRouter.post('/',
                 ? `https://en.dobleyo.cafe/confirmation?ref=${reference}`
                 : `${SITE_URL}/confirmacion?ref=${reference}`;
             let checkoutUrl = null;
+            let wompi = null;
 
             if (WOMPI_PUBLIC_KEY && WOMPI_INTEGRITY_SECRET) {
                 checkoutUrl = buildWompiCheckoutUrl(reference, total, customerEmail, redirectUrl, currency);
+                wompi = buildWompiWidgetData(reference, total, customerEmail, redirectUrl, currency);
             }
 
             if (appliedCode) {
