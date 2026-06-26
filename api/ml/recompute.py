@@ -11,21 +11,22 @@ Flujo:
 Disparada por Vercel Cron (GET) o por el proxy admin de Express (POST).
 Protegida por CRON_SECRET: header `Authorization: Bearer <CRON_SECRET>`.
 
-Diseño deliberado: solo pandas + numpy (sin statsmodels/scipy) para que el
-bundle de la función entre holgado en los límites de Vercel. El modelo es
-suavizado exponencial de Holt cuando hay historia suficiente, con fallback a
-media móvil — honesto para el volumen de datos típico de un café de especialidad.
+Diseño deliberado: 100% biblioteca estándar (sin pandas/numpy/statsmodels/scipy)
+para que el bundle de la función serverless entre holgado en los límites de
+tamaño de Vercel. El modelo es suavizado exponencial de Holt cuando hay historia
+suficiente, con fallback a media móvil — honesto para el volumen de datos típico
+de un café de especialidad. La agregación semanal se hace con diccionarios y la
+estadística con el módulo `statistics` (desviación poblacional, equivalente a
+`numpy.std` con ddof=0).
 """
 
 import os
 import json
+import statistics
 import urllib.request
 import urllib.error
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from http.server import BaseHTTPRequestHandler
-
-import numpy as np
-import pandas as pd
 
 # ── Parámetros del modelo ─────────────────────────────────────────────────────
 HORIZON_WEEKS = 8          # semanas a pronosticar
@@ -107,6 +108,16 @@ def turso_batch(statements):
     return out
 
 
+# ── Estadística (stdlib, equivalente a numpy con ddof=0) ──────────────────────
+def _pstdev(xs):
+    """Desviación estándar poblacional (= numpy.std). 0.0 con <2 elementos."""
+    return float(statistics.pstdev(xs)) if len(xs) > 1 else 0.0
+
+
+def _mean(xs):
+    return float(statistics.fmean(xs))
+
+
 # ── Pronóstico ────────────────────────────────────────────────────────────────
 def _holt(y, h, alpha=0.5, beta=0.3):
     """Suavizado exponencial de Holt (nivel + tendencia). Retorna (forecast, sigma)."""
@@ -118,8 +129,8 @@ def _holt(y, h, alpha=0.5, beta=0.3):
         level = alpha * y[t] + (1 - alpha) * (level + trend)
         trend = beta * (level - prev_level) + (1 - beta) * trend
         fitted.append(prev_level + trend)  # predicción un-paso-adelante
-    resid = np.array(y, dtype=float) - np.array(fitted, dtype=float)
-    sigma = float(np.std(resid)) if len(resid) > 1 else 0.0
+    resid = [float(y[i]) - float(fitted[i]) for i in range(len(y))]
+    sigma = _pstdev(resid)
     forecast = [level + (i + 1) * trend for i in range(h)]
     return forecast, sigma
 
@@ -127,8 +138,8 @@ def _holt(y, h, alpha=0.5, beta=0.3):
 def _moving_avg(y, h, window):
     """Media móvil plana. Retorna (forecast, sigma)."""
     w = min(window, len(y))
-    base = float(np.mean(y[-w:]))
-    sigma = float(np.std(y[-w:])) if w > 1 else 0.0
+    base = _mean(y[-w:])
+    sigma = _pstdev(y[-w:]) if w > 1 else 0.0
     return [base] * h, sigma
 
 
@@ -161,8 +172,39 @@ def forecast_series(values, h):
     return model, n, rows
 
 
-def _future_mondays(last_monday, h):
-    return [last_monday + pd.Timedelta(weeks=i + 1) for i in range(h)]
+def _parse_purchase_date(value):
+    """
+    Equivale a pd.to_datetime(value, utc=True, errors='coerce') y devuelve la
+    FECHA (UTC) de la venta. Acepta ISO (naive, con offset o 'Z') y unos pocos
+    formatos comunes; cualquier valor no parseable → None (se omite).
+    """
+    if not value:
+        return None
+    txt = str(value).strip()
+    if not txt:
+        return None
+    dt = None
+    try:
+        dt = datetime.fromisoformat(txt.replace("Z", "+00:00"))
+    except ValueError:
+        for fmt in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%dT%H:%M:%S", "%Y-%m-%d",
+                    "%Y/%m/%d %H:%M:%S", "%Y/%m/%d"):
+            try:
+                dt = datetime.strptime(txt, fmt)
+                break
+            except ValueError:
+                dt = None
+    if dt is None:
+        return None
+    # Naive se interpreta como UTC (como pandas con utc=True); con tz, se convierte.
+    if dt.tzinfo is not None:
+        dt = dt.astimezone(timezone.utc).replace(tzinfo=None)
+    return dt.date()
+
+
+def _monday(d):
+    """Lunes (date) de la semana de la fecha `d`."""
+    return d - timedelta(days=d.weekday())
 
 
 def build_forecasts():
@@ -178,11 +220,12 @@ def build_forecasts():
     if not sales:
         return None, []
 
-    # Explotar el JSON de productos a filas [fecha, product_key, ml_id, qty, revenue]
+    # Explotar el JSON de productos a filas [semana, product_key, ml_id, qty, revenue].
+    # La semana es el lunes (UTC) — bucketing consistente, sin desfases.
     records = []
     for s in sales:
-        ts = pd.to_datetime(s["purchase_date"], utc=True, errors="coerce")
-        if pd.isna(ts):
+        d = _parse_purchase_date(s["purchase_date"])
+        if d is None:
             continue
         try:
             items = json.loads(s["products"]) if s["products"] else []
@@ -195,7 +238,7 @@ def build_forecasts():
             qty = it.get("quantity") or 0
             unit = it.get("unit_price") or it.get("full_price") or 0
             records.append({
-                "date": ts,
+                "week": _monday(d),
                 "product_key": title,
                 "product_ml_id": str(it.get("id") or "") or None,
                 "qty": float(qty),
@@ -205,29 +248,39 @@ def build_forecasts():
     if not records:
         return None, []
 
-    df = pd.DataFrame(records)
-    # Lunes (00:00, naive UTC) de la semana de cada venta — bucketing consistente
-    # para que el reindex semanal alinee sin desfases.
-    day = df["date"].dt.tz_localize(None).dt.normalize()
-    df["week"] = day - pd.to_timedelta(day.dt.weekday, unit="D")
-    weeks = pd.date_range(df["week"].min(), df["week"].max(), freq="7D")
+    # Rejilla semanal completa: todos los lunes entre la primera y la última venta.
+    week_set = {r["week"] for r in records}
+    week = min(week_set)
+    week_max = max(week_set)
+    weeks = []
+    while week <= week_max:
+        weeks.append(week)
+        week += timedelta(days=7)
     last_monday = weeks[-1]
-    future = _future_mondays(last_monday, HORIZON_WEEKS)
+    future = [last_monday + timedelta(weeks=i + 1) for i in range(HORIZON_WEEKS)]
     generated_at = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+
+    # Agregación con diccionarios (reemplaza groupby/unstack/reindex de pandas).
+    units = {}                                  # product_key → {semana → unidades}
+    ids = {}                                    # product_key → primer ml_id no nulo
+    revenue_by_week = {wk: 0.0 for wk in weeks}  # semana → ingresos
+    for r in records:
+        pk = r["product_key"]
+        bucket = units.setdefault(pk, {})
+        bucket[r["week"]] = bucket.get(r["week"], 0.0) + r["qty"]
+        if pk not in ids:
+            ids[pk] = r["product_ml_id"]
+        elif ids[pk] is None and r["product_ml_id"] is not None:
+            ids[pk] = r["product_ml_id"]
+        revenue_by_week[r["week"]] = revenue_by_week.get(r["week"], 0.0) + r["revenue"]
 
     out_rows = []
 
     # ── Demanda por SKU (unidades) ────────────────────────────────────────────
-    ids = df.groupby("product_key")["product_ml_id"].agg(
-        lambda x: x.dropna().iloc[0] if x.dropna().size else None
-    )
-    units = (
-        df.groupby(["product_key", "week"])["qty"].sum()
-          .unstack(fill_value=0)
-          .reindex(columns=weeks, fill_value=0)
-    )
-    for product_key, series in units.iterrows():
-        model, hist, rows = forecast_series(series.values.tolist(), HORIZON_WEEKS)
+    for product_key in sorted(units.keys()):
+        bucket = units[product_key]
+        series = [bucket.get(wk, 0.0) for wk in weeks]
+        model, hist, rows = forecast_series(series, HORIZON_WEEKS)
         for r in rows:
             out_rows.append({
                 "product_key": product_key,
@@ -240,11 +293,8 @@ def build_forecasts():
             })
 
     # ── Ingresos totales (revenue) ────────────────────────────────────────────
-    revenue = (
-        df.groupby("week")["revenue"].sum()
-          .reindex(weeks, fill_value=0)
-    )
-    model, hist, rows = forecast_series(revenue.values.tolist(), HORIZON_WEEKS)
+    revenue = [revenue_by_week.get(wk, 0.0) for wk in weeks]
+    model, hist, rows = forecast_series(revenue, HORIZON_WEEKS)
     for r in rows:
         out_rows.append({
             "product_key": "TOTAL",

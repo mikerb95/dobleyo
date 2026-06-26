@@ -1,5 +1,7 @@
-# Dependencias de las funciones Python en api/ (analítica de demanda).
-# Deliberadamente mínimo: sin statsmodels/scipy para mantener el bundle ligero.
-numpy>=1.26,<3
-pandas>=2.1,<3
+# Dependencias de las funciones Python en api/ml/.
+# - recompute.py: 100% biblioteca estándar (sin dependencias externas).
+# - demand.py: solo openpyxl para exportar/importar Excel.
+# numpy y pandas se eliminaron: la analítica de demanda se reescribió en stdlib
+# puro para mantener el bundle de la función serverless por debajo del límite
+# de tamaño de Vercel (225 MB).
 openpyxl>=3.1,<4
