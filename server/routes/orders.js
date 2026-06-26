@@ -47,6 +47,24 @@ function buildWompiCheckoutUrl(reference, amountPesos, customerEmail, redirectUr
 }
 
 /**
+ * Parámetros firmados para el Widget Checkout embebido de Wompi (modal in-page).
+ * Mismos datos que la URL hosted, pero estructurados para `new WidgetCheckout(...)`.
+ * Solo expone la firma de integridad (hash), nunca el secreto.
+ */
+function buildWompiWidgetData(reference, amountPesos, customerEmail, redirectUrl, currency = 'COP') {
+    const amountInCents = amountPesos * 100;
+    return {
+        publicKey: WOMPI_PUBLIC_KEY,
+        currency,
+        amountInCents,
+        reference,
+        signature: wompiIntegrityHash(reference, amountInCents, currency),
+        redirectUrl,
+        customerEmail,
+    };
+}
+
+/**
  * Verifica la firma de un evento (webhook) de Wompi.
  * checksum = SHA256( valores_de_properties (en orden) + timestamp + eventsSecret ).
  * `properties` son rutas relativas a `data`, p.ej. "transaction.id".
