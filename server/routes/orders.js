@@ -265,7 +265,7 @@ ordersRouter.post('/',
 
             return res.status(201).json({
                 success: true,
-                data: { orderId, reference, subtotal, discountAmount, shipping, total, currency, checkoutUrl }
+                data: { orderId, reference, subtotal, discountAmount, shipping, total, currency, checkoutUrl, wompi }
             });
         } catch (err) {
             logger.error({ err }, '[POST /api/orders] Error:');
