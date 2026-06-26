@@ -377,7 +377,11 @@ import Layout from "../layouts/Layout.astro";
     background: var(--card); border: 1px solid var(--border); border-radius: 12px;
     padding: 1.5rem; margin-bottom: 1.25rem;
   }
-  .card-h { font-size: 1.05rem; margin: 0 0 1rem; }
+  .card-eyebrow {
+    display: block; font-size: 0.62rem; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 0.35rem;
+  }
+  .card-h { font-size: 1.05rem; margin: 0 0 1rem; font-family: 'Playfair Display', serif; }
   .card-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
   .card-head .card-h { margin: 0; }
   .card-head--page { margin-bottom: 1.25rem; }
