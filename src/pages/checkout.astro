@@ -308,9 +308,9 @@ import Layout from "../layouts/Layout.astro";
         const sumShipping = document.getElementById('sumShipping');
         const sumTotal    = document.getElementById('sumTotal');
         const shipNote    = document.getElementById('shipNote');
-        const payBtn      = document.getElementById('payBtn');
-        const payBtnText  = document.getElementById('payBtnText');
-        const payError    = document.getElementById('payError');
+        const payBtn      = /** @type {HTMLButtonElement} */ (document.getElementById('payBtn'));
+        const payBtnText  = /** @type {HTMLElement} */ (document.getElementById('payBtnText'));
+        const payError    = /** @type {HTMLElement} */ (document.getElementById('payError'));
         const fDeptEl     = document.getElementById('fDept');
         const fCityEl     = document.getElementById('fCity');
 
@@ -580,7 +580,11 @@ import Layout from "../layouts/Layout.astro";
           if (coMbPayBtn) { coMbPayBtn.disabled = true; if (coMbPayText) coMbPayText.textContent = 'Procesando…'; }
 
           try {
-            const currentCart = window.Cart.getCart();
+            // Globales inyectados por scripts externos (cart.js y widget.js de Wompi),
+            // tipados aquí para que el bloque del widget no sume diagnósticos.
+            const win = /** @type {Window & { Cart: { getCart: () => Array<{ id: string, qty: number }>, clearCart?: () => void }, WidgetCheckout?: new (opts: object) => { open: (cb: (result: { transaction?: unknown } | null) => void) => void } }} */ (/** @type {any} */ (window));
+
+            const currentCart = win.Cart.getCart();
             const res = await fetch('/api/orders', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -623,8 +627,8 @@ import Layout from "../layouts/Layout.astro";
             }
 
             // Widget embebido: abre el checkout de Wompi como modal sobre la página.
-            if (wompi && typeof window.WidgetCheckout === 'function') {
-              const checkout = new window.WidgetCheckout({
+            if (wompi && typeof win.WidgetCheckout === 'function') {
+              const checkout = new win.WidgetCheckout({
                 currency:      wompi.currency,
                 amountInCents: wompi.amountInCents,
                 reference:     wompi.reference,
@@ -641,7 +645,7 @@ import Layout from "../layouts/Layout.astro";
               checkout.open(function (result) {
                 if (result && result.transaction) {
                   // Pago iniciado/completado — el webhook confirma el estado real.
-                  if (window.Cart.clearCart) window.Cart.clearCart();
+                  if (win.Cart.clearCart) win.Cart.clearCart();
                   sessionStorage.removeItem('dy_coupon');
                   window.location.href = confirmUrl;
                 } else {
@@ -653,7 +657,7 @@ import Layout from "../layouts/Layout.astro";
             }
 
             // Fallback: checkout hosted (redirección) si el widget no está disponible.
-            if (window.Cart.clearCart) window.Cart.clearCart();
+            if (win.Cart.clearCart) win.Cart.clearCart();
             sessionStorage.removeItem('dy_coupon');
             window.location.href = data.data.checkoutUrl || confirmUrl;
 
