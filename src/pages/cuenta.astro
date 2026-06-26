@@ -591,14 +591,17 @@ import Layout from "../layouts/Layout.astro";
   @media (max-width: 1024px) {
     .account-shell { grid-template-columns: 1fr; }
     .account-sidebar { position: static; }
-    .account-id { padding-bottom: 0.75rem; }
     .account-nav { flex-direction: row; overflow-x: auto; gap: 0.4rem; margin: 0.85rem 0; padding-bottom: 0.3rem; }
-    .account-nav-btn { white-space: nowrap; flex: 0 0 auto; }
+    .account-nav-btn { white-space: nowrap; flex: 0 0 auto; border-left: none; border-bottom: 2px solid transparent; }
+    .account-nav-btn.is-active { border-left-color: transparent; border-bottom-color: var(--accent); }
     .account-logout { width: auto; }
   }
   @media (max-width: 640px) {
     .stat-grid { grid-template-columns: repeat(2, 1fr); }
     .quick-links { grid-template-columns: 1fr; }
+    .trk-label { font-size: 0.62rem; }
+    .order-foot { flex-direction: column; align-items: flex-start; }
+    .order-actions { width: 100%; justify-content: space-between; }
   }
 </style>
 
