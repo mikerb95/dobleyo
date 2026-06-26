@@ -465,17 +465,52 @@ import Layout from "../layouts/Layout.astro";
   .switch-row input { width: 18px; height: 18px; accent-color: var(--accent); }
 
   /* Orders */
-  .orders-list { display: grid; gap: 1rem; }
-  .order-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1.1rem 1.25rem; }
-  .order-top { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem; }
-  .order-ref { font-weight: 700; }
-  .order-date { font-size: 0.82rem; color: var(--muted-fg); }
-  .order-items { display: grid; gap: 0.5rem; margin: 0.75rem 0; }
+  .orders-list { display: grid; gap: 1.25rem; }
+  .order-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 1.25rem 1.35rem; }
+  .order-top { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.1rem; }
+  .order-ref-label { font-size: 0.6rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted-fg); }
+  .order-ref { font-family: 'Playfair Display', serif; font-weight: 700; font-size: 1.05rem; line-height: 1.2; }
+  .order-date { font-size: 0.8rem; color: var(--muted-fg); margin-top: 1px; }
+
+  /* El viaje del pedido — línea de tiempo horizontal. */
+  .order-track {
+    list-style: none; margin: 0 0 1.1rem; padding: 0;
+    display: grid; grid-template-columns: repeat(4, 1fr);
+  }
+  .trk-step { position: relative; text-align: center; padding-top: 1.55rem; min-width: 0; }
+  .trk-dot {
+    position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+    width: 13px; height: 13px; border-radius: 50%;
+    background: var(--card); border: 2px solid var(--border); z-index: 1;
+  }
+  /* Conector entre pasos. */
+  .trk-step::before {
+    content: ""; position: absolute; top: 6px; right: 50%; width: 100%; height: 2px;
+    background: var(--border);
+  }
+  .trk-step:first-child::before { display: none; }
+  .trk-step.is-done .trk-dot { background: var(--accent); border-color: var(--accent); }
+  .trk-step.is-done::before { background: var(--accent); }
+  .trk-step.is-current .trk-dot { box-shadow: 0 0 0 4px rgba(198, 123, 78, 0.18); }
+  .trk-label { font-size: 0.72rem; color: var(--muted-fg); line-height: 1.25; display: block; padding: 0 2px; }
+  .trk-step.is-done .trk-label { color: var(--fg); }
+  .trk-step.is-current .trk-label { color: var(--accent); font-weight: 600; }
+
+  .order-pending-note, .order-halt {
+    font-size: 0.82rem; padding: 0.6rem 0.8rem; border-radius: 8px; margin-bottom: 1.1rem;
+  }
+  .order-pending-note { background: #fef9c3; color: #854d0e; }
+  .order-halt { background: #fee2e2; color: #991b1b; }
+
+  .order-items { display: grid; gap: 0.5rem; margin: 0 0 1rem; }
   .order-item { display: flex; align-items: center; gap: 0.65rem; font-size: 0.88rem; }
-  .order-item img { width: 38px; height: 38px; border-radius: 6px; object-fit: cover; background: var(--bg); }
-  .order-item .qty { color: var(--muted-fg); }
-  .order-foot { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border); padding-top: 0.65rem; }
-  .order-total { font-weight: 700; }
+  .order-item img { width: 38px; height: 38px; border-radius: 6px; object-fit: cover; background: var(--bg); flex: 0 0 auto; }
+  .order-item-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .order-item .qty { color: var(--muted-fg); margin-left: auto; flex: 0 0 auto; }
+  .order-foot { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; border-top: 1px solid var(--border); padding-top: 0.9rem; }
+  .order-total { font-family: 'Playfair Display', serif; font-weight: 700; font-size: 1.15rem; color: var(--coffee); }
+  .order-actions { display: flex; align-items: center; gap: 1rem; }
+  .order-trace { text-decoration: none; }
 
   .badge-status { font-size: 0.72rem; font-weight: 700; padding: 0.22rem 0.6rem; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.03em; }
   .st-paid, .st-delivered { background: #dcfce7; color: #166534; }
