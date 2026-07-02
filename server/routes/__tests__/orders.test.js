@@ -11,6 +11,7 @@ vi.mock('../../db.js', () => ({ query: vi.fn() }));
 
 vi.mock('../../auth.js', () => ({
     authenticateToken: (req, _res, next) => { req.user = null; next(); },
+    optionalAuth: (req, _res, next) => { req.user = null; next(); },
     requireRole: () => (_req, _res, next) => next(),
 }));
 
