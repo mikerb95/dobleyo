@@ -4,6 +4,7 @@ import crypto from 'crypto';
 import { body, validationResult } from 'express-validator';
 import { query } from '../db.js';
 import { authenticateToken, requireRole, optionalAuth } from '../auth.js';
+import { checkoutLimiter } from '../middleware/rateLimit.js';
 import { logAudit } from '../services/audit.js';
 import { sendOrderConfirmationEmail } from '../services/email.js';
 import { geocodeOrderAsync } from '../services/geocoding.js';
@@ -97,6 +98,7 @@ function verifyWompiEventSignature(event) {
 // Crea una orden en estado pending_payment y devuelve la URL de pago Wompi
 
 ordersRouter.post('/',
+    checkoutLimiter,
     optionalAuth,
     [
         body('customerName').trim().notEmpty().withMessage('Nombre requerido'),
@@ -251,12 +253,9 @@ ordersRouter.post('/',
                 wompi = buildWompiWidgetData(reference, total, customerEmail, redirectUrl, currency);
             }
 
-            if (appliedCode) {
-                await query(
-                    `UPDATE discount_codes SET uses_count = uses_count + 1 WHERE code = ?`,
-                    [appliedCode]
-                );
-            }
+            // El uso del cupón se contabiliza al CONFIRMAR el pago (webhook), no aquí:
+            // incrementar en la creación permitía agotar promociones con órdenes que
+            // nunca se pagan. Ver POST /wompi/webhook.
 
             await logAudit(req.user?.id || null, 'create', 'customer_orders', orderId, { reference, total, discount: discountAmount });
 
@@ -474,7 +473,7 @@ ordersRouter.post('/wompi/webhook', async (req, res) => {
         if (!reference) return res.sendStatus(400);
 
         const orderLookup = await query(
-            `SELECT id, status, total_cop, payment_transaction_id
+            `SELECT id, status, total_cop, payment_transaction_id, discount_code
        FROM customer_orders
        WHERE reference = ?`,
             [reference]
