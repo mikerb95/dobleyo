@@ -2,6 +2,18 @@
 
 ---
 
+## 📅 2026-07-01 — Imágenes pendientes y URLs rotas (Agente: Claude)
+
+### Contexto
+Varios campos de imagen estaban vacíos o apuntaban a fotos de Unsplash que ya no existen (404): las portadas de Finca El Paraíso y Finca La Esperanza, el Molinillo Manual y la Chemex. Además, 26 ítems de pedido no tenían imagen y el fallback `/assets/img/placeholder.png|.webp` referenciado por `cuenta.astro`, `cart.astro` y `checkout.astro` no existía como archivo.
+
+### Cambios
+- **URLs rotas reemplazadas** (verificadas con HTTP 200 y revisión visual) en `src/data/products.ts`, `src/pages/nosotros.astro`, `src/pages/en/about.astro`, `server/seed_products.js`, `server/migrations/20260411_seed_products_store.js`, `server/migrations/seed_demo.js` y en la BD (`products`, `farms`): molinillo → foto de molino de café; Chemex → cafetera de vidrio pour-over; El Paraíso → montañas verdes; La Esperanza → valle andino.
+- **BD `products.images`** — galería (2–3 fotos acordes) para los 8 productos: granos/taza para cafés, molienda/servido para accesorios, latte art/prensa y cajas de regalo para kits.
+- **BD `farms.gallery_urls`** — galerías diferenciadas por finca (antes las 3 compartían las mismas fotos genéricas); portada de Sierra Azul cambiada de una foto de granos a paisaje de montaña.
+- **BD `customer_order_items.product_image`** — 26 ítems sin imagen rellenados desde `products.image_url` (mapeo de ids legados `sierra-nevada`→`cf-sierra`, `huila`→`cf-huila`).
+- **`public/assets/img/placeholder.png` y `.webp`** (nuevos) — placeholder de marca (logo DobleYo sobre fondo crema, 800×800) para los fallbacks de carrito, checkout y cuenta.
+
 ## 📅 2026-06-25 — Fix: enlaces 404 en la home en inglés (Agente: Claude)
 
 ### Contexto
