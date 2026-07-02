@@ -535,6 +535,17 @@ ordersRouter.post('/wompi/webhook', async (req, res) => {
 
         const updatedOrder = orderResult.rows[0];
 
+        // Contabilizar el uso del cupón SOLO al aprobarse el pago. El UPDATE es atómico
+        // y tope-seguro: la condición evita superar max_uses ante webhooks concurrentes.
+        if (newStatus === 'paid' && order.discount_code) {
+            await query(
+                `UPDATE discount_codes
+           SET uses_count = uses_count + 1
+         WHERE code = ? AND (max_uses IS NULL OR uses_count < max_uses)`,
+                [order.discount_code]
+            );
+        }
+
         // Enviar email de confirmación solo si el pago fue aprobado
         if (newStatus === 'paid') {
             const itemsResult = await query(

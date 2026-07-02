@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { logger } from '../logger.js';
 import { query } from '../db.js';
+import { checkoutLimiter } from '../middleware/rateLimit.js';
 
 export const couponsRouter = Router();
 
@@ -10,7 +11,7 @@ export const couponsRouter = Router();
  * Valida el código y verifica la condición de primera compra.
  * No autenticación requerida — el email se usa solo para la verificación.
  */
-couponsRouter.post('/validate', async (req, res) => {
+couponsRouter.post('/validate', checkoutLimiter, async (req, res) => {
   try {
     const code  = (req.body.code  || '').trim().toUpperCase();
     const email = (req.body.email || '').trim().toLowerCase();
