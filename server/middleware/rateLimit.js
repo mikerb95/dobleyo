@@ -58,6 +58,25 @@ export const apiLimiter = rateLimit({
   keyGenerator: ipKeyGenerator
 });
 
+// Limiter para el flujo de compra: creación de órdenes y validación de cupones.
+// Evita la creación masiva de órdenes 'pending' —bloat de BD, quema de cupones y
+// disparo de geocoding externo (Nominatim)— sin estorbar un checkout normal, que
+// hace pocas peticiones. Más estricto que el globalLimiter (red amplia).
+export const checkoutLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 20, // Máximo 20 órdenes/validaciones por IP
+  message: {
+    error: 'Demasiados intentos de compra. Por favor, espere unos minutos e intente de nuevo.',
+    retryAfter: 900
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: ipKeyGenerator,
+  // En tests el router se monta aislado; el contador en memoria persistiría entre
+  // casos y los volvería no deterministas. En producción/dev sí aplica.
+  skip: () => process.env.NODE_ENV === 'test',
+});
+
 // Limiter global montado en todo /api — red de seguridad contra abuso/scraping.
 // Holgado para no romper navegación normal de la SPA (muchos GET por sesión).
 // Excluye webhooks server-to-server (Wompi/MercadoPago) y health checks, que no
