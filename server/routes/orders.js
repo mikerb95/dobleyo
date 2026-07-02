@@ -482,27 +482,42 @@ ordersRouter.post('/wompi/webhook', async (req, res) => {
         if (!orderLookup.rows.length) return res.sendStatus(200);
 
         const order = orderLookup.rows[0];
-        if (order.payment_transaction_id && order.payment_transaction_id === txId) {
-            return res.sendStatus(200);
-        }
-        if (order.payment_transaction_id && order.payment_transaction_id !== txId) {
-            logger.warn('[Wompi webhook] Transacción distinta para ref:', reference);
-            return res.sendStatus(200);
-        }
 
-        const expectedAmount = Number(order.total_cop) * 100;
-        if (Number(amount_in_cents) !== expectedAmount || (currency && currency !== 'COP')) {
-            // Monto/moneda no coinciden con la orden: acusamos recibo (200, sin
-            // reintentos de Wompi) pero NO marcamos la orden como pagada.
-            logger.warn('[Wompi webhook] Monto/moneda inválidos para ref:', reference);
-            return res.sendStatus(200);
-        }
-
-        // Mapear estado de Wompi → estado interno
+        // Mapear estado de Wompi → estado interno.
         const statusMap = { APPROVED: 'paid', DECLINED: 'cancelled', VOIDED: 'cancelled', ERROR: 'pending_payment' };
         const newStatus = statusMap[txStatus] || 'pending_payment';
 
-        if (order.status !== 'pending_payment' && order.status !== newStatus) {
+        // Idempotencia: el mismo evento (misma transacción y mismo estado resultante)
+        // ya fue aplicado → acusamos recibo sin reprocesar (evita reenviar el correo).
+        if (order.payment_transaction_id === txId && order.status === newStatus) {
+            return res.sendStatus(200);
+        }
+
+        // El monto y la moneda deben coincidir con la orden. Acusamos recibo (200, sin
+        // reintentos de Wompi) pero NO tocamos la orden si no cuadran.
+        const expectedAmount = Number(order.total_cop) * 100;
+        if (Number(amount_in_cents) !== expectedAmount || (currency && currency !== 'COP')) {
+            logger.warn({ reference, txId }, '[Wompi webhook] Monto/moneda inválidos; se ignora');
+            return res.sendStatus(200);
+        }
+
+        // Una orden ya pagada no se degrada por una transacción DISTINTA (p. ej. un
+        // segundo intento con otra tarjeta que llega tarde). Solo un evento de la MISMA
+        // transacción (un VOID/contracargo) puede cambiarla.
+        if (order.status === 'paid' && order.payment_transaction_id && order.payment_transaction_id !== txId) {
+            logger.warn({ reference, txId }, '[Wompi webhook] Orden ya pagada por otra transacción; se ignora');
+            return res.sendStatus(200);
+        }
+
+        // Un pago APROBADO gana sobre intentos previos fallidos: aunque un DECLINED
+        // anterior haya dejado la orden en 'cancelled', un APPROVED posterior (nueva
+        // transacción, misma referencia) la marca como pagada. Para estados que NO son
+        // 'paid', no pisamos una orden que ya avanzó en el fulfillment, salvo que el
+        // evento venga de la misma transacción registrada (p. ej. un VOID posterior).
+        if (newStatus !== 'paid'
+            && order.status !== 'pending_payment'
+            && order.status !== 'cancelled'
+            && order.payment_transaction_id !== txId) {
             return res.sendStatus(200);
         }
 
