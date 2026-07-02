@@ -84,7 +84,7 @@ export const products: Product[] = [
     deal: true,
     fast: true,
     image:
-      "https://images.unsplash.com/photo-1507133750040-4a8f57021524?q=80&w=800&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1611854779393-1b2da9d400fe?q=80&w=800&auto=format&fit=crop",
   },
   {
     id: "acc-chemex",
@@ -97,6 +97,6 @@ export const products: Product[] = [
     rating: 4.9,
     new: true,
     image:
-      "https://images.unsplash.com/photo-1503481766315-7a586b20f66f?q=80&w=800&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1545665225-b23b99e4d45e?q=80&w=800&auto=format&fit=crop",
   },
 ];

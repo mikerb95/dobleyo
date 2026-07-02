@@ -49,14 +49,14 @@ export async function seedStoreProducts() {
       category: 'accesorio',
       price: 199900, price_usd: 52, rating: 4.3,
       is_deal: 1, is_fast: 1, is_active: 1, stock_quantity: 15,
-      image_url: 'https://images.unsplash.com/photo-1507133750040-4a8f57021524?q=80&w=800&auto=format&fit=crop',
+      image_url: 'https://images.unsplash.com/photo-1611854779393-1b2da9d400fe?q=80&w=800&auto=format&fit=crop',
     },
     {
       id: 'acc-chemex', slug: 'chemex-6-tazas', name: 'Chemex 6 tazas', name_en: 'Chemex 6-cup',
       category: 'accesorio',
       price: 269900, price_usd: 70, rating: 4.9,
       is_new: 1, is_active: 1, stock_quantity: 8,
-      image_url: 'https://images.unsplash.com/photo-1503481766315-7a586b20f66f?q=80&w=800&auto=format&fit=crop',
+      image_url: 'https://images.unsplash.com/photo-1545665225-b23b99e4d45e?q=80&w=800&auto=format&fit=crop',
     },
   ];
 

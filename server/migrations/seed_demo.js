@@ -325,8 +325,8 @@ async function seedFarms() {
   section('Fincas (landing pages)');
 
   const COVER = {
-    Huila: 'https://images.unsplash.com/photo-1599639668273-01755a4f1f9a?q=80&w=1200&auto=format&fit=crop',
-    Nariño: 'https://images.unsplash.com/photo-1503150092550-2f8e3b6e3a5f?q=80&w=1200&auto=format&fit=crop',
+    Huila: 'https://images.unsplash.com/photo-1501854140801-50d01698950b?q=80&w=1200&auto=format&fit=crop',
+    Nariño: 'https://images.unsplash.com/photo-1536048810607-3dc7f86981cb?q=80&w=1200&auto=format&fit=crop',
     Magdalena: 'https://images.unsplash.com/photo-1447933601403-0c6688de566e?q=80&w=1200&auto=format&fit=crop',
   };
   const GALLERY = [
