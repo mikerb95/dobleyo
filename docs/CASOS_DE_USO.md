@@ -340,6 +340,37 @@ flowchart LR
 
 ---
 
+### CU-028 — Ver detalle de producto
+
+| Campo | Valor |
+|---|---|
+| **Actor primario** | Visitante / Cliente |
+| **Prioridad / Fase** | P2 / Fase 2 |
+| **Trazabilidad** | RF-006 · HU-001 |
+
+**Descripción:** El usuario consulta la página de detalle de un producto con galería, descripción extendida, notas de cata y perfil visual de tueste antes de decidir la compra.
+
+**Precondiciones:**
+- El producto existe y está activo en el catálogo.
+
+**Flujo principal:**
+1. El usuario accede al detalle desde el grid de la tienda (CU-001) o por URL directa.
+2. El sistema muestra: galería de imágenes, descripción extendida, notas de cata y perfil visual de tueste (RF-006), junto con precio, origen y proceso.
+3. El usuario navega la galería y selecciona la cantidad.
+4. El usuario agrega el producto al carrito (CU-002).
+
+**Flujos alternativos:**
+- **2a. Producto agotado:** el sistema muestra el badge "Agotado" (RF-005) y deshabilita el botón de agregar al carrito.
+- **4a. Producto de una finca vinculada:** el usuario navega a la landing de la finca de origen desde el badge (RF-083 → CU-017).
+
+**Flujos de excepción:**
+- **1a. Producto inexistente o inactivo:** el sistema responde 404 con enlace de retorno a la tienda.
+
+**Postcondiciones:**
+- Ninguna persistente (consulta de solo lectura).
+
+---
+
 ## Módulo: Autenticación
 
 ### CU-005 — Registrarse y verificar email
@@ -411,6 +442,99 @@ flowchart LR
 
 **Postcondiciones:**
 - Sesión activa con tokens en cookies HttpOnly; ningún token en `localStorage` (RF-142).
+
+---
+
+## Módulo: Cuenta del Cliente y Contacto
+
+### CU-029 — Consultar historial de pedidos
+
+| Campo | Valor |
+|---|---|
+| **Actor primario** | Cliente |
+| **Prioridad / Fase** | P2 / Fase 4 |
+| **Trazabilidad** | RF-046 · HU-004 |
+| **Relaciones** | «include» CU-006 |
+
+**Descripción:** El cliente consulta sus pedidos anteriores con estado actual para rastrear sus compras.
+
+**Precondiciones:**
+- Sesión activa de cliente («include» CU-006).
+- El cliente tiene al menos un pedido (CU-003).
+
+**Flujo principal:**
+1. El cliente accede a su cuenta y abre el historial de pedidos (RF-046).
+2. El sistema lista los pedidos del cliente con fecha, total y estado (pendiente, pagado, en proceso, enviado, entregado).
+3. El cliente abre el detalle de un pedido: ítems, cantidades, precios y dirección de envío.
+4. Si el pedido está enviado, el sistema muestra el enlace de seguimiento del envío.
+
+**Flujos alternativos:**
+- **2a. Sin pedidos:** el sistema muestra estado vacío con enlace a la tienda.
+
+**Flujos de excepción:**
+- **3a. Intento de acceder a un pedido de otro usuario:** el sistema responde 403 (el filtro por usuario aplica en el backend, no solo en la UI).
+
+**Postcondiciones:**
+- Ninguna persistente (consulta de solo lectura).
+
+---
+
+### CU-030 — Gestionar perfil de cuenta
+
+| Campo | Valor |
+|---|---|
+| **Actor primario** | Cliente |
+| **Prioridad / Fase** | P2 / Fase 4 |
+| **Trazabilidad** | RF-045 · HU-007 |
+| **Relaciones** | «include» CU-006 |
+
+**Descripción:** El cliente consulta y edita sus datos personales para mantener actualizada su información de envío.
+
+**Precondiciones:**
+- Sesión activa de cliente («include» CU-006).
+
+**Flujo principal:**
+1. El cliente accede a su cuenta y abre la sección de perfil.
+2. El sistema muestra los datos editables: nombre, apellido, dirección, teléfono, ciudad, departamento (RF-045).
+3. El cliente modifica los campos y guarda.
+4. El sistema valida los datos, persiste los cambios y confirma.
+
+**Flujos de excepción:**
+- **4a. Datos inválidos (ej. teléfono con formato incorrecto):** el sistema marca los errores y no guarda.
+
+**Postcondiciones:**
+- Perfil actualizado; el checkout (CU-003) prellena los datos de envío con esta información.
+
+---
+
+### CU-031 — Contactar a DobleYo
+
+| Campo | Valor |
+|---|---|
+| **Actor primario** | Visitante / Cliente |
+| **Actores secundarios** | Servicio de email |
+| **Prioridad / Fase** | — (sin RF asociado; ver nota) |
+| **Trazabilidad** | HU-008 |
+
+> **Nota:** HU-008 no tiene requisito funcional asociado en `REQUISITOS_FUNCIONALES.md`. Se recomienda formalizar un RF (ej. RF-007) para cerrar la brecha de trazabilidad. La funcionalidad ya existe en `/contacto`.
+
+**Descripción:** El usuario envía un mensaje al equipo de DobleYo para resolver dudas, hacer sugerencias o reportar problemas.
+
+**Precondiciones:**
+- Ninguna (formulario público).
+
+**Flujo principal:**
+1. El usuario accede a `/contacto` y diligencia: nombre, email, asunto, mensaje.
+2. El sistema valida el formulario (con rate limiting, RF-143).
+3. El sistema guarda el mensaje en BD y notifica al administrador por email.
+4. El sistema muestra confirmación visual y envía email de confirmación al usuario.
+
+**Flujos de excepción:**
+- **2a. Datos inválidos:** el sistema marca los errores y no envía.
+- **3a/4a. Fallo del servicio de email:** el mensaje queda guardado en BD; el sistema informa que la notificación por correo falló.
+
+**Postcondiciones:**
+- Mensaje persistido; administrador notificado; usuario con confirmación.
 
 ---
 
@@ -655,6 +779,33 @@ flowchart LR
 
 **Postcondiciones:**
 - Etiqueta registrada y disponible para impresión; el QR resuelve a CU-007.
+
+---
+
+### CU-032 — Consultar dashboard de producción
+
+| Campo | Valor |
+|---|---|
+| **Actor primario** | Administrador |
+| **Prioridad / Fase** | P2 / Fase 5 |
+| **Trazabilidad** | RF-066 · HU-024 |
+
+**Descripción:** El administrador consulta las métricas operativas de producción para monitorear el estado de la planta.
+
+**Precondiciones:**
+- Sesión con rol `admin`.
+- Existen registros de la cadena de producción (CU-008..CU-013).
+
+**Flujo principal:**
+1. El administrador accede al dashboard de producción.
+2. El sistema calcula y muestra: lotes en proceso (por etapa), producción del mes, merma promedio y cupping promedio (RF-066).
+3. El administrador navega desde cada métrica al detalle de los lotes que la componen.
+
+**Flujos alternativos:**
+- **2a. Mes sin producción:** el sistema muestra las métricas en cero indicándolo explícitamente.
+
+**Postcondiciones:**
+- Ninguna persistente (consulta de solo lectura).
 
 ---
 
@@ -968,7 +1119,7 @@ flowchart LR
 |---|---|
 | **Actor primario** | Visitante |
 | **Prioridad / Fase** | P1 / Fase 3 |
-| **Trazabilidad** | RF-110, RF-111, RF-112, RF-113, RF-114 · HU-028, HU-029, HU-030 |
+| **Trazabilidad** | RF-110, RF-111, RF-112, RF-113, RF-114, RF-116 (P2) · HU-028, HU-029, HU-030, HU-031 |
 
 **Descripción:** El visitante consulta las páginas legales (privacidad, términos y condiciones, datos del vendedor) y gestiona su consentimiento de cookies conforme a las Leyes 1581 de 2012 y 1480 de 2011.
 
@@ -978,7 +1129,7 @@ flowchart LR
 **Flujo principal:**
 1. En la primera visita, el sistema muestra el banner de cookies con opciones aceptar / rechazar / personalizar (RF-112).
 2. El visitante elige una opción y el sistema persiste la preferencia.
-3. El visitante accede desde el footer a: política de privacidad y tratamiento de datos (RF-110), términos y condiciones con derecho de retracto de 5 días (RF-111) e información del vendedor: razón social, NIT, dirección, teléfono, email (RF-114).
+3. El visitante accede desde el footer a: política de privacidad y tratamiento de datos (RF-110), términos y condiciones con derecho de retracto de 5 días (RF-111), información del vendedor: razón social, NIT, dirección, teléfono, email (RF-114), y el enlace a la SIC (RF-116).
 4. En registro y checkout, el sistema exige el checkbox de aceptación de términos antes de continuar (RF-113).
 
 **Flujos alternativos:**
