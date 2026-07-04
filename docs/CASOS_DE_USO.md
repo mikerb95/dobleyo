@@ -1,7 +1,7 @@
 # Casos de Uso Extendidos — DobleYo Café
 
 > Especificación de casos de uso en formato extendido, derivados de los requisitos funcionales (`REQUISITOS_FUNCIONALES.md`) y las historias de usuario (`HISTORIAS_USUARIO.md`).
-> Esta primera versión cubre los casos de uso que agrupan requisitos de **prioridad P1 (críticos)**. Los P2/P3 se incorporarán en iteraciones posteriores.
+> Cobertura: CU-001..CU-027 especifican los requisitos de **prioridad P1 (críticos)**; CU-028..CU-037 incorporan los **P2/P3**. Varios RF P2/P3 que son variaciones de un caso existente se integraron como pasos o flujos alternativos del CU correspondiente (RF-005 → CU-001, RF-014 → CU-002, RF-026 → CU-003, RF-056 → CU-007, RF-083 → CU-018, RF-092 → CU-019, RF-116 → CU-025) en lugar de crear casos de uso artificiales.
 >
 > Convenciones:
 > - ID: `CU-XXX`, trazable con `RF-XXX` y `HU-XXX`.
@@ -58,6 +58,16 @@
 | CU-025 | Consultar información legal y gestionar cookies | Visitante | RF-110..114 | HU-028..030 |
 | CU-026 | Presentar PQRS | Cliente/Visitante | RF-115 | HU-031 |
 | CU-027 | Navegar el sitio en inglés | Visitante | RF-120..126 | HU-009, HU-032 |
+| CU-028 | Ver detalle de producto | Visitante/Cliente | RF-006 | HU-001 |
+| CU-029 | Consultar historial de pedidos | Cliente | RF-046 | HU-004 |
+| CU-030 | Gestionar perfil de cuenta | Cliente | RF-045 | HU-007 |
+| CU-031 | Contactar a DobleYo | Visitante/Cliente | — (sin RF) | HU-008 |
+| CU-032 | Consultar dashboard de producción | Administrador | RF-066 | HU-024 |
+| CU-033 | Gestionar presupuestos | Administrador | RF-075 | HU-020 |
+| CU-034 | Gestionar facturación | Administrador | RF-076 | HU-018 |
+| CU-035 | Gestionar blog | Administrador | RF-105 | HU-024 |
+| CU-036 | Consultar logs de auditoría | Administrador | — (sin RF) | HU-036 |
+| CU-037 | Exportar reportes y datos | Administrador | RF-077, RF-094 | HU-018, HU-023 |
 
 ### Relaciones entre casos de uso
 
@@ -67,10 +77,13 @@
 - CU-008..CU-012 forman la **cadena de trazabilidad** (RF-050): cada uno precede al siguiente.
 - CU-014 «include» CU-012 (solo se etiquetan lotes empaquetados).
 - CU-021..CU-024 «include» CU-006 con rol `admin` (RF-044).
+- CU-029, CU-030 «include» CU-006 (requieren sesión de cliente).
+- CU-037 «extend» CU-015 y CU-019 (punto de extensión: botón de exportación en cada dashboard).
 
 ### Diagrama de casos de uso
 
 > Mermaid no tiene notación UML nativa de casos de uso; se aproxima con un diagrama de flujo: actores como rectángulos, casos de uso como elipses (nodos redondeados), módulos como contenedores. Las flechas punteadas indican «include»/«extend».
+> El diagrama muestra la vista P1 (CU-001..CU-027); los CU P2/P3 se omiten para mantenerlo legible.
 
 ```mermaid
 flowchart LR
@@ -179,8 +192,8 @@ flowchart LR
 |---|---|
 | **Actor primario** | Visitante / Cliente |
 | **Actores secundarios** | — |
-| **Prioridad / Fase** | P1 / Fase 1 |
-| **Trazabilidad** | RF-001, RF-002, RF-003, RF-004 · HU-001 |
+| **Prioridad / Fase** | P1 / Fase 1 (RF-005: P2 / Fase 2) |
+| **Trazabilidad** | RF-001, RF-002, RF-003, RF-004, RF-005 · HU-001 |
 
 **Descripción:** El usuario explora el catálogo de cafés y accesorios, aplicando filtros y ordenamientos para encontrar el producto que busca.
 
@@ -189,12 +202,12 @@ flowchart LR
 
 **Flujo principal:**
 1. El usuario accede a `/tienda`.
-2. El sistema consulta los productos activos en la BD y muestra el grid con imagen, nombre, precio, origen, proceso y tueste (RF-001).
+2. El sistema consulta los productos activos en la BD y muestra el grid con imagen, nombre, precio, origen, proceso y tueste (RF-001), con badge de "Nuevo", "Más vendido" o "Agotado" según corresponda (RF-005).
 3. El usuario aplica uno o más filtros: categoría, origen, proceso, nivel de tueste, rango de precio (RF-002).
 4. El sistema actualiza el grid mostrando solo los productos que cumplen todos los filtros.
 5. El usuario selecciona un criterio de ordenamiento (precio asc/desc, nombre A-Z/Z-A, más recientes) (RF-003).
 6. El sistema reordena el grid.
-7. El usuario selecciona un producto y el sistema navega a su página de detalle.
+7. El usuario selecciona un producto y el sistema navega a su página de detalle (CU-028).
 
 **Flujos alternativos:**
 - **3a. Sin filtros:** el usuario navega el catálogo completo; el flujo continúa en el paso 5 o 7.
@@ -214,8 +227,8 @@ flowchart LR
 |---|---|
 | **Actor primario** | Visitante / Cliente |
 | **Actores secundarios** | — |
-| **Prioridad / Fase** | P1 / Fases 1–4 |
-| **Trazabilidad** | RF-010, RF-011, RF-012, RF-013, RF-015 · HU-002 |
+| **Prioridad / Fase** | P1 / Fases 1–4 (RF-014: P2 / Fase 4) |
+| **Trazabilidad** | RF-010, RF-011, RF-012, RF-013, RF-014, RF-015 · HU-002 |
 
 **Descripción:** El usuario acumula productos en un carrito persistente, modifica cantidades y visualiza el subtotal antes de iniciar el checkout.
 
@@ -224,7 +237,7 @@ flowchart LR
 
 **Flujo principal:**
 1. El usuario pulsa "Agregar al carrito" desde la tienda o el detalle de producto.
-2. El sistema agrega el ítem al carrito en `localStorage` y actualiza el contador del header (RF-013).
+2. El sistema valida el stock disponible del producto (RF-014), agrega el ítem al carrito en `localStorage` y actualiza el contador del header (RF-013).
 3. Si el usuario está autenticado, el sistema sincroniza el carrito con la BD (RF-010).
 4. El usuario accede a `/cart` y ve por cada ítem: thumbnail, nombre, precio unitario, cantidad y total (RF-015).
 5. El usuario modifica la cantidad de un ítem o lo elimina (RF-011).
@@ -237,6 +250,7 @@ flowchart LR
 - **3a. Usuario inicia sesión con carrito local:** el sistema fusiona el carrito de `localStorage` con el carrito guardado en BD.
 
 **Flujos de excepción:**
+- **2a. Stock insuficiente (RF-014):** el sistema no agrega el ítem (o limita la cantidad al disponible) e informa la existencia actual.
 - **5a. Cantidad inválida (≤ 0 o no numérica):** el sistema rechaza el cambio y conserva la cantidad anterior.
 
 **Postcondiciones:**
@@ -251,7 +265,7 @@ flowchart LR
 | **Actor primario** | Cliente |
 | **Actores secundarios** | Pasarela de pagos (Wompi / MercadoPago), Servicio de geocodificación, Servicio de email |
 | **Prioridad / Fase** | P1 / Fase 4 |
-| **Trazabilidad** | RF-020, RF-021, RF-022, RF-023, RF-024, RF-025, RF-027, RF-028, RF-030, RF-093 · HU-003 |
+| **Trazabilidad** | RF-020, RF-021, RF-022, RF-023, RF-024, RF-025, RF-026 (P2), RF-027, RF-028, RF-030, RF-093 · HU-003 |
 | **Relaciones** | «include» CU-006 · «extend» Aplicar cupón · «extend» CU-007 |
 
 **Descripción:** El cliente ingresa sus datos de envío, selecciona un método de pago, completa la transacción y recibe la confirmación de su pedido.
@@ -265,7 +279,7 @@ flowchart LR
 2. El sistema verifica la sesión («include» CU-006).
 3. El cliente diligencia los datos de envío: nombre completo, documento, departamento, ciudad, barrio, dirección, teléfono, email y notas (RF-021).
 4. El sistema valida el formulario y geocodifica la dirección para obtener coordenadas lat/lng (RF-022, RF-093).
-5. El sistema muestra el resumen: ítems, subtotal, IVA 19 % sobre productos gravados (RF-025) y total.
+5. El sistema muestra el resumen: ítems, subtotal, IVA 19 % sobre productos gravados (RF-025), costo de envío según la ubicación del destinatario (RF-026) y total.
    - *Punto de extensión — Aplicar cupón:* el cliente ingresa un código; el sistema valida vigencia y límite de uso y recalcula el total.
 6. El cliente selecciona el método de pago Wompi: PSE, tarjeta crédito/débito, Nequi o Bancolombia QR (RF-023).
 7. El sistema redirige/abre el widget de la pasarela y el cliente completa el pago.
@@ -409,7 +423,7 @@ flowchart LR
 | **Actor primario** | Visitante / Cliente (comprador con empaque físico) |
 | **Actores secundarios** | — |
 | **Prioridad / Fase** | P1 / Fase 5 |
-| **Trazabilidad** | RF-050, RF-052, RF-053, RF-054, RF-055 · HU-005 |
+| **Trazabilidad** | RF-050, RF-052, RF-053, RF-054, RF-055, RF-056 (P2) · HU-005 |
 
 **Descripción:** El comprador escanea el QR del empaque (o ingresa el código manualmente) y consulta la cadena completa de trazabilidad del lote.
 
@@ -423,6 +437,7 @@ flowchart LR
 3. El sistema consulta la cadena del lote: cosecha → almacenamiento → tostión → empaque → venta (RF-050).
 4. El sistema muestra el timeline visual con todos los pasos (RF-052) y los datos: finca, altitud, variedad, proceso, fecha de cosecha, fecha de tostión, perfil de tueste, puntuación SCA y empaquetador (RF-055).
 5. El comprador explora los detalles de cada etapa.
+6. El comprador navega a la landing de la finca de origen desde el enlace de la página (RF-056 → CU-017).
 
 **Flujos alternativos:**
 - **1a. Búsqueda manual:** el usuario accede a `/trazabilidad` e ingresa el código del lote; el flujo continúa en el paso 3.
@@ -742,7 +757,7 @@ flowchart LR
 |---|---|
 | **Actor primario** | Administrador |
 | **Prioridad / Fase** | P1 / Fase 7 |
-| **Trazabilidad** | RF-080, RF-082 · HU-022 |
+| **Trazabilidad** | RF-080, RF-082, RF-083 (P2) · HU-022 |
 
 **Descripción:** El administrador crea, edita y gestiona las fincas proveedoras con todos sus datos públicos y de origen.
 
@@ -754,7 +769,8 @@ flowchart LR
 2. Crea o edita una finca: nombre, slug, región, departamento, altitud, coordenadas, descripción, historia, variedades, procesos, certificaciones, imágenes y datos del caficultor (RF-080).
 3. El sistema valida unicidad del slug y formato de coordenadas.
 4. El administrador previsualiza la landing (RF-082).
-5. El administrador guarda; el sistema persiste y registra auditoría.
+5. El administrador vincula la finca con sus lotes y productos de la tienda, lo que habilita el badge clickeable de origen en el catálogo (RF-083).
+6. El administrador guarda; el sistema persiste y registra auditoría.
 
 **Flujos alternativos:**
 - **5a. Desactivar finca:** la finca deja de mostrarse públicamente pero conserva su vínculo histórico con lotes ya trazados.
@@ -776,7 +792,7 @@ flowchart LR
 | **Actor primario** | Administrador |
 | **Actores secundarios** | MercadoLibre (fuente de datos) |
 | **Prioridad / Fase** | P1 / Fase 8 |
-| **Trazabilidad** | RF-090, RF-091 (y RF-093 como precondición de datos) · HU-023 |
+| **Trazabilidad** | RF-090, RF-091, RF-092 (P2) (y RF-093 como precondición de datos) · HU-023 |
 
 **Descripción:** El administrador analiza la concentración geográfica de ventas combinando ventas web y de MercadoLibre en un mapa de calor Leaflet.
 
@@ -789,7 +805,8 @@ flowchart LR
 2. El sistema carga y combina las ventas web directas y de MercadoLibre, y renderiza el mapa de calor (RF-090).
 3. El administrador aplica filtros: período (7/30/90 días o custom), canal (web/ML) y producto (RF-091).
 4. El sistema actualiza el mapa según los filtros.
-5. El administrador explora zonas de concentración para decisiones de cobertura.
+5. El sistema muestra el panel de análisis: Top 10 barrios, zonas sin cobertura y tendencia por zona (RF-092).
+6. El administrador explora zonas de concentración para decisiones de cobertura, y puede exportar los datos filtrados (CU-037).
 
 **Flujos alternativos:**
 - **2a. Sin datos en el período:** el sistema muestra el mapa vacío indicando la ausencia de datos para los filtros activos.
