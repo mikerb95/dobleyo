@@ -9,6 +9,8 @@ El proyecto tenía requisitos funcionales (`RF-XXX`) e historias de usuario (`HU
 
 ### Cambios
 - **`docs/CASOS_DE_USO.md`** (nuevo) — 27 casos de uso extendidos (CU-001..CU-027) que cubren los RF de prioridad P1: tienda (catálogo, carrito, checkout/pagos, webhook), auth, trazabilidad QR, cadena de producción (cosecha → almacenamiento → tostión → empaque → cupping → etiquetas), finanzas, fincas, mapa de calor, panel admin, compliance legal e i18n. Cada CU incluye actores, precondiciones, flujo principal, flujos alternativos/de excepción, postcondiciones y trazabilidad RF/HU. Incluye tabla de actores, índice, relaciones «include»/«extend» y lista de pendientes P2/P3.
+- **`docs/CASOS_DE_USO.md`** — diagrama de casos de uso en Mermaid (actores, CUs por módulo, sistemas externos, relaciones «include»/«extend» y cadena de producción; validado con mermaid-cli) y matriz de trazabilidad consolidada HU ↔ RF ↔ CU con estado de cobertura (cubierto / pendiente P2-P3 / transversal) y verificación de que todos los RF P1 no transversales tienen CU.
+- **`docs/REQUISITOS_FUNCIONALES.md`** — RF-004 decía "base de datos PostgreSQL"; corregido a "Turso (libSQL/SQLite)", acorde a la migración de abril 2026 (única mención restante de PostgreSQL en los docs de requisitos).
 
 ## 📅 2026-07-01 — Imágenes pendientes y URLs rotas (Agente: Claude)
 

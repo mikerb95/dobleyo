@@ -1039,7 +1039,54 @@ flowchart LR
 
 ---
 
+## Matriz de Trazabilidad HU ↔ RF ↔ CU
+
+> Verificación de cobertura: cada historia de usuario con sus requisitos y el caso de uso que los especifica.
+> Estados: **Cubierto** (CU redactado en este documento) · **Pendiente P2/P3** (próximas iteraciones) · **Transversal** (restricción de sistema, no se modela como CU) · **Sin RF** (historia sin requisito funcional asociado aún).
+
+| HU | Historia | RF asociados | CU | Estado |
+|---|---|---|---|---|
+| HU-001 | Navegar catálogo | RF-001..004 (P1), RF-005, RF-006 (P2) | CU-001 | Cubierto (P1) · RF-005/006 pendientes P2 |
+| HU-002 | Agregar al carrito | RF-010..013, RF-015 (P1), RF-014 (P2) | CU-002 | Cubierto (P1) · RF-014 pendiente P2 |
+| HU-003 | Completar compra | RF-020..025, RF-027..030, RF-093 (P1), RF-026 (P2) | CU-003, CU-004 | Cubierto (P1) · RF-026 pendiente P2 |
+| HU-004 | Historial de pedidos | RF-046 (P2) | — | Pendiente P2 |
+| HU-005 | Escanear QR del empaque | RF-052..055 (P1), RF-056 (P2) | CU-007 | Cubierto (P1) · RF-056 pendiente P2 |
+| HU-006 | Registro y autenticación | RF-040..044 (P1) | CU-005, CU-006 | Cubierto |
+| HU-007 | Gestionar cuenta | RF-045 (P2) | — | Pendiente P2 |
+| HU-008 | Contactar a DobleYo | — | — | Sin RF asociado |
+| HU-009 | Tienda en inglés | RF-121, RF-125, RF-126 (P1) | CU-027 | Cubierto |
+| HU-010 | Envíos internacionales | RF-126 (P1) | CU-027 | Cubierto |
+| HU-011 | Registrar cosecha | RF-051, RF-060 (P1) | CU-008 | Cubierto |
+| HU-012 | Almacenar café verde | RF-061 (P1) | CU-009 | Cubierto |
+| HU-013 | Enviar a tostión | RF-062 (P1) | CU-010 | Cubierto |
+| HU-014 | Registrar tostión | RF-063 (P1) | CU-011 | Cubierto |
+| HU-015 | Empaquetar | RF-064 (P1) | CU-012 | Cubierto |
+| HU-016 | Generar etiqueta QR | RF-054 (P1) | CU-014 | Cubierto |
+| HU-017 | Cupping SCA | RF-065 (P1) | CU-013 | Cubierto |
+| HU-018 | Dashboard financiero | RF-070..073 (P1), RF-076 (P2), RF-077 (P3) | CU-015 | Cubierto (P1) · RF-076/077 pendientes |
+| HU-019 | Registrar gastos | RF-074 (P1) | CU-016 | Cubierto |
+| HU-020 | Presupuestos | RF-075 (P2) | — | Pendiente P2 |
+| HU-021 | Landing de finca | RF-080, RF-081 (P1) | CU-017, CU-018 | Cubierto |
+| HU-022 | Administrar fincas | RF-082 (P1), RF-083 (P2) | CU-018 | Cubierto (P1) · RF-083 pendiente P2 |
+| HU-023 | Mapa de calor | RF-090, RF-091, RF-093 (P1), RF-092 (P2), RF-094 (P3) | CU-019 (RF-093 también en CU-003) | Cubierto (P1) · RF-092/094 pendientes |
+| HU-024 | Dashboard admin | RF-100, RF-104 (P1), RF-066, RF-105..107 (P2) | CU-020, CU-024 | Cubierto (P1) · P2 pendientes |
+| HU-025 | Gestionar productos | RF-101 (P1) | CU-021 | Cubierto |
+| HU-026 | Gestionar órdenes | RF-102 (P1) | CU-022 | Cubierto |
+| HU-027 | Gestionar usuarios | RF-103 (P1) | CU-023 | Cubierto |
+| HU-028 | Política de privacidad | RF-110 (P1) | CU-025 | Cubierto |
+| HU-029 | Consentimiento de cookies | RF-112 (P1) | CU-025 | Cubierto |
+| HU-030 | Términos y condiciones | RF-111, RF-113, RF-114 (P1) | CU-025 | Cubierto |
+| HU-031 | PQRS | RF-115 (P1), RF-116 (P2) | CU-026 | Cubierto (P1) · RF-116 pendiente P2 |
+| HU-032 | Cambiar idioma | RF-120, RF-122..124 (P1) | CU-027 | Cubierto |
+| HU-033 | SEO / Google | RF-130..136 (P1) | — | Transversal (restricción de sistema) |
+| HU-034 | Navegación móvil | — | — | Transversal (criterios en `REQUISITOS_NO_FUNCIONALES.md`) |
+| HU-035 | Seguridad de pagos y plataforma | RF-140..146 (P1) | — | Transversal (aplica a todos los CU; RF-142/143 referenciados en CU-006) |
+| HU-036 | Auditoría | — | — | Transversal (registro de auditoría referenciado en CU-008..CU-024) |
+
+**Verificación de cobertura P1:** todos los RF de prioridad P1 de los módulos 1–12 están cubiertos por un CU, excepto los transversales de SEO (RF-130..136) y Seguridad (RF-140..146), que por su naturaleza no se modelan como casos de uso (ver convenciones al inicio).
+
+---
+
 ## Pendientes (próximas iteraciones)
 
 - Casos de uso de requisitos **P2/P3**: historial de pedidos (RF-046), perfil editable (RF-045), validación de stock en carrito (RF-014), costos de envío (RF-026), presupuestos (RF-075), facturación (RF-076), análisis de zonas (RF-092), blog (RF-105), exportaciones (RF-077, RF-094), landing de finca desde trazabilidad (RF-056), vinculación finca-producto (RF-083).
-- Diagrama de casos de uso UML (actores y relaciones «include»/«extend») como complemento visual de este documento.
