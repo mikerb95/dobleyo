@@ -2,6 +2,14 @@
 
 ---
 
+## 📅 2026-07-04 — Casos de uso extendidos (Agente: Claude)
+
+### Contexto
+El proyecto tenía requisitos funcionales (`RF-XXX`) e historias de usuario (`HU-XXX`) pero no casos de uso en formato extendido. Se documentaron los derivados de los requisitos P1.
+
+### Cambios
+- **`docs/CASOS_DE_USO.md`** (nuevo) — 27 casos de uso extendidos (CU-001..CU-027) que cubren los RF de prioridad P1: tienda (catálogo, carrito, checkout/pagos, webhook), auth, trazabilidad QR, cadena de producción (cosecha → almacenamiento → tostión → empaque → cupping → etiquetas), finanzas, fincas, mapa de calor, panel admin, compliance legal e i18n. Cada CU incluye actores, precondiciones, flujo principal, flujos alternativos/de excepción, postcondiciones y trazabilidad RF/HU. Incluye tabla de actores, índice, relaciones «include»/«extend» y lista de pendientes P2/P3.
+
 ## 📅 2026-07-01 — Imágenes pendientes y URLs rotas (Agente: Claude)
 
 ### Contexto
