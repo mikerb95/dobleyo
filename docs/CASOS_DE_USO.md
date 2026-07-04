@@ -1362,7 +1362,7 @@ flowchart LR
 ## Matriz de Trazabilidad HU ↔ RF ↔ CU
 
 > Verificación de cobertura: cada historia de usuario con sus requisitos y el caso de uso que los especifica.
-> Estados: **Cubierto** (CU redactado en este documento) · **Pendiente P2/P3** (próximas iteraciones) · **Transversal** (restricción de sistema, no se modela como CU) · **Sin RF** (historia sin requisito funcional asociado aún).
+> Estados: **Cubierto** (CU redactado en este documento) · **Transversal** (restricción de sistema, no se modela como CU) · **Sin RF asociado** (historia con CU pero sin requisito funcional formalizado).
 
 | HU | Historia | RF asociados | CU | Estado |
 |---|---|---|---|---|
