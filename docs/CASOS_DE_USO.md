@@ -68,6 +68,107 @@
 - CU-014 «include» CU-012 (solo se etiquetan lotes empaquetados).
 - CU-021..CU-024 «include» CU-006 con rol `admin` (RF-044).
 
+### Diagrama de casos de uso
+
+> Mermaid no tiene notación UML nativa de casos de uso; se aproxima con un diagrama de flujo: actores como rectángulos, casos de uso como elipses (nodos redondeados), módulos como contenedores. Las flechas punteadas indican «include»/«extend».
+
+```mermaid
+flowchart LR
+    %% Actores humanos
+    VIS["🧑 Visitante"]
+    CLI["🧑 Cliente"]
+    CAF["🧑 Caficultor"]
+    OPE["🧑 Operador de producción"]
+    CAT["🧑 Catador"]
+    ADM["🧑 Administrador"]
+
+    %% Sistemas externos
+    PAS["🖥️ Pasarela de pagos<br/>(Wompi / MercadoPago)"]
+    EML["🖥️ Servicio de email<br/>(Resend)"]
+    GEO["🖥️ Servicio de<br/>geocodificación"]
+
+    subgraph TIENDA["Tienda Online"]
+        CU001([CU-001<br/>Navegar catálogo])
+        CU002([CU-002<br/>Gestionar carrito])
+        CU003([CU-003<br/>Checkout y pago])
+        CU004([CU-004<br/>Webhook de pago])
+        CUPON([Aplicar cupón])
+    end
+
+    subgraph AUTH["Autenticación"]
+        CU005([CU-005<br/>Registrarse y verificar email])
+        CU006([CU-006<br/>Iniciar sesión])
+    end
+
+    subgraph TRAZA["Trazabilidad"]
+        CU007([CU-007<br/>Consultar trazabilidad])
+    end
+
+    subgraph PROD["Producción"]
+        CU008([CU-008<br/>Registrar cosecha])
+        CU009([CU-009<br/>Almacenar café verde])
+        CU010([CU-010<br/>Enviar a tostión])
+        CU011([CU-011<br/>Registrar tostión])
+        CU012([CU-012<br/>Registrar empaquetado])
+        CU013([CU-013<br/>Registrar cupping SCA])
+        CU014([CU-014<br/>Generar etiquetas QR])
+    end
+
+    subgraph FIN["Finanzas"]
+        CU015([CU-015<br/>Dashboard financiero])
+        CU016([CU-016<br/>Registrar y aprobar gastos])
+    end
+
+    subgraph FINCAS["Fincas"]
+        CU017([CU-017<br/>Ver landing de finca])
+        CU018([CU-018<br/>Administrar fincas])
+    end
+
+    subgraph ADMIN["Analítica y Administración"]
+        CU019([CU-019<br/>Mapa de calor de ventas])
+        CU020([CU-020<br/>Dashboard admin])
+        CU021([CU-021<br/>Gestionar productos])
+        CU022([CU-022<br/>Gestionar órdenes])
+        CU023([CU-023<br/>Gestionar usuarios])
+        CU024([CU-024<br/>Gestionar inventario])
+    end
+
+    subgraph LEGAL["Compliance Legal"]
+        CU025([CU-025<br/>Info legal y cookies])
+        CU026([CU-026<br/>Presentar PQRS])
+    end
+
+    subgraph I18N["Internacionalización"]
+        CU027([CU-027<br/>Navegar en inglés])
+    end
+
+    %% Asociaciones actor → caso de uso
+    VIS --> CU001 & CU002 & CU005 & CU007 & CU017 & CU025 & CU026 & CU027
+    CLI --> CU001 & CU002 & CU003 & CU006 & CU007 & CU026
+    CAF --> CU008
+    OPE --> CU009 & CU010 & CU011 & CU012 & CU014
+    CAT --> CU013
+    ADM --> CU008 & CU015 & CU016 & CU018 & CU019 & CU020 & CU021 & CU022 & CU023 & CU024
+
+    %% Sistemas externos ← casos de uso
+    PAS --> CU004
+    CU003 --> PAS
+    CU003 --> GEO
+    CU003 --> EML
+    CU004 --> EML
+    CU005 --> EML
+    CU022 --> EML
+    CU026 --> EML
+
+    %% Relaciones include / extend
+    CU003 -.->|«include»| CU006
+    CUPON -.->|«extend»| CU003
+    CU003 -.->|«extend»| CU007
+    CU014 -.->|«include»| CU012
+    CU008 -.-> CU009 -.-> CU010 -.-> CU011 -.-> CU012
+    CU011 -.-> CU013
+```
+
 ---
 
 ## Módulo: Tienda Online
