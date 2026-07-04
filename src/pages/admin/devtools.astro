@@ -19,56 +19,179 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     </div>
   </div>
 
-  <!-- ── Zona de peligro ─────────────────────────────────────── -->
+  <!-- ── Navegación por pestañas ─────────────────────────────── -->
   <div class="erp-body">
 
-    <div class="alert alert--error" style="margin-bottom:20px">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;margin-top:1px">
-        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-        <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
-      </svg>
-      <div>
-        <strong>Acciones destructivas e irreversibles.</strong> Solo para desarrollo y testing.
-        No ejecutar en producción con datos reales.
+    <div class="adm-tabs" id="tabNav">
+      <button class="adm-tab adm-tab--active" data-tab="danger">Zona de peligro</button>
+      <button class="adm-tab" data-tab="uml">Diagrama UML</button>
+    </div>
+
+    <!-- ── Panel: Zona de peligro ────────────────────────────── -->
+    <div class="adm-panel" id="panel-danger">
+
+      <div class="alert alert--error" style="margin-bottom:20px">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;margin-top:1px">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+        <div>
+          <strong>Acciones destructivas e irreversibles.</strong> Solo para desarrollo y testing.
+          No ejecutar en producción con datos reales.
+        </div>
+      </div>
+
+      <div style="display:grid;gap:12px">
+
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Limpiar usuarios</h2>
+              <p class="card-subtitle">Elimina todos los usuarios excepto los 2 primeros (admins).</p>
+            </div>
+            <button class="btn btn-danger" id="cleanUsersBtn">Ejecutar</button>
+          </div>
+          <div id="cleanUsersStatus" class="dt-action-status"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Limpiar lotes de café</h2>
+              <p class="card-subtitle">Elimina todos los lotes registrados: cosechas, inventarios, tostiones.</p>
+            </div>
+            <button class="btn btn-danger" id="cleanLotsBtn">Ejecutar</button>
+          </div>
+          <div id="cleanLotsStatus" class="dt-action-status"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Limpiar productos</h2>
+              <p class="card-subtitle">Elimina todos los productos disponibles en la tienda.</p>
+            </div>
+            <button class="btn btn-danger" id="cleanProductsBtn">Ejecutar</button>
+          </div>
+          <div id="cleanProductsStatus" class="dt-action-status"></div>
+        </div>
+
       </div>
     </div>
 
-    <div style="display:grid;gap:12px">
-
+    <!-- ── Panel: Diagrama UML ───────────────────────────────── -->
+    <div class="adm-panel adm-panel--hidden" id="panel-uml">
       <div class="card">
         <div class="card-header">
           <div>
-            <h2 class="card-title">Limpiar usuarios</h2>
-            <p class="card-subtitle">Elimina todos los usuarios excepto los 2 primeros (admins).</p>
+            <h2 class="card-title">Diagrama de casos de uso</h2>
+            <p class="card-subtitle">Fuente: <code>docs/CASOS_DE_USO.md</code> (vista P1: CU-001..CU-027).</p>
           </div>
-          <button class="btn btn-danger" id="cleanUsersBtn">Ejecutar</button>
+          <button class="btn btn-secondary" id="downloadUmlBtn" disabled>Descargar SVG</button>
         </div>
-        <div id="cleanUsersStatus" class="dt-action-status"></div>
-      </div>
+        <div class="dt-uml-wrap">
+          <div id="umlLoading" class="dt-action-status">Renderizando diagrama…</div>
+          <div id="umlError" class="dt-action-status" style="display:none;color:var(--danger)"></div>
+          <pre class="mermaid" id="umlDiagram">
+flowchart LR
+    %% Actores humanos
+    VIS["🧑 Visitante"]
+    CLI["🧑 Cliente"]
+    CAF["🧑 Caficultor"]
+    OPE["🧑 Operador de producción"]
+    CAT["🧑 Catador"]
+    ADM["🧑 Administrador"]
 
-      <div class="card">
-        <div class="card-header">
-          <div>
-            <h2 class="card-title">Limpiar lotes de café</h2>
-            <p class="card-subtitle">Elimina todos los lotes registrados: cosechas, inventarios, tostiones.</p>
-          </div>
-          <button class="btn btn-danger" id="cleanLotsBtn">Ejecutar</button>
+    %% Sistemas externos
+    PAS["🖥️ Pasarela de pagos&lt;br/&gt;(Wompi / MercadoPago)"]
+    EML["🖥️ Servicio de email&lt;br/&gt;(Resend)"]
+    GEO["🖥️ Servicio de&lt;br/&gt;geocodificación"]
+
+    subgraph TIENDA["Tienda Online"]
+        CU001([CU-001&lt;br/&gt;Navegar catálogo])
+        CU002([CU-002&lt;br/&gt;Gestionar carrito])
+        CU003([CU-003&lt;br/&gt;Checkout y pago])
+        CU004([CU-004&lt;br/&gt;Webhook de pago])
+        CUPON([Aplicar cupón])
+    end
+
+    subgraph AUTH["Autenticación"]
+        CU005([CU-005&lt;br/&gt;Registrarse y verificar email])
+        CU006([CU-006&lt;br/&gt;Iniciar sesión])
+    end
+
+    subgraph TRAZA["Trazabilidad"]
+        CU007([CU-007&lt;br/&gt;Consultar trazabilidad])
+    end
+
+    subgraph PROD["Producción"]
+        CU008([CU-008&lt;br/&gt;Registrar cosecha])
+        CU009([CU-009&lt;br/&gt;Almacenar café verde])
+        CU010([CU-010&lt;br/&gt;Enviar a tostión])
+        CU011([CU-011&lt;br/&gt;Registrar tostión])
+        CU012([CU-012&lt;br/&gt;Registrar empaquetado])
+        CU013([CU-013&lt;br/&gt;Registrar cupping SCA])
+        CU014([CU-014&lt;br/&gt;Generar etiquetas QR])
+    end
+
+    subgraph FIN["Finanzas"]
+        CU015([CU-015&lt;br/&gt;Dashboard financiero])
+        CU016([CU-016&lt;br/&gt;Registrar y aprobar gastos])
+    end
+
+    subgraph FINCAS["Fincas"]
+        CU017([CU-017&lt;br/&gt;Ver landing de finca])
+        CU018([CU-018&lt;br/&gt;Administrar fincas])
+    end
+
+    subgraph ADMIN["Analítica y Administración"]
+        CU019([CU-019&lt;br/&gt;Mapa de calor de ventas])
+        CU020([CU-020&lt;br/&gt;Dashboard admin])
+        CU021([CU-021&lt;br/&gt;Gestionar productos])
+        CU022([CU-022&lt;br/&gt;Gestionar órdenes])
+        CU023([CU-023&lt;br/&gt;Gestionar usuarios])
+        CU024([CU-024&lt;br/&gt;Gestionar inventario])
+    end
+
+    subgraph LEGAL["Compliance Legal"]
+        CU025([CU-025&lt;br/&gt;Info legal y cookies])
+        CU026([CU-026&lt;br/&gt;Presentar PQRS])
+    end
+
+    subgraph I18N["Internacionalización"]
+        CU027([CU-027&lt;br/&gt;Navegar en inglés])
+    end
+
+    %% Asociaciones actor → caso de uso
+    VIS --> CU001 &amp; CU002 &amp; CU005 &amp; CU007 &amp; CU017 &amp; CU025 &amp; CU026 &amp; CU027
+    CLI --> CU001 &amp; CU002 &amp; CU003 &amp; CU006 &amp; CU007 &amp; CU026
+    CAF --> CU008
+    OPE --> CU009 &amp; CU010 &amp; CU011 &amp; CU012 &amp; CU014
+    CAT --> CU013
+    ADM --> CU008 &amp; CU015 &amp; CU016 &amp; CU018 &amp; CU019 &amp; CU020 &amp; CU021 &amp; CU022 &amp; CU023 &amp; CU024
+
+    %% Sistemas externos ← casos de uso
+    PAS --> CU004
+    CU003 --> PAS
+    CU003 --> GEO
+    CU003 --> EML
+    CU004 --> EML
+    CU005 --> EML
+    CU022 --> EML
+    CU026 --> EML
+
+    %% Relaciones include / extend
+    CU003 -.->|«include»| CU006
+    CUPON -.->|«extend»| CU003
+    CU003 -.->|«extend»| CU007
+    CU014 -.->|«include»| CU012
+    CU008 -.-> CU009 -.-> CU010 -.-> CU011 -.-> CU012
+    CU011 -.-> CU013
+          </pre>
         </div>
-        <div id="cleanLotsStatus" class="dt-action-status"></div>
       </div>
-
-      <div class="card">
-        <div class="card-header">
-          <div>
-            <h2 class="card-title">Limpiar productos</h2>
-            <p class="card-subtitle">Elimina todos los productos disponibles en la tienda.</p>
-          </div>
-          <button class="btn btn-danger" id="cleanProductsBtn">Ejecutar</button>
-        </div>
-        <div id="cleanProductsStatus" class="dt-action-status"></div>
-      </div>
-
     </div>
+
   </div>
 
   <!-- ── Modal de confirmación ───────────────────────────────── -->
@@ -116,6 +239,30 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   }
   .dt-log-entry--ok   { color: var(--ok); }
   .dt-log-entry--warn { color: var(--color-accent); }
+
+  /* Pestañas (mismo patrón que /admin/finanzas) */
+  .adm-tabs {
+    display: flex; gap: 0.35rem; border-bottom: 1px solid var(--rule, #e7e2da);
+    margin-bottom: 20px; overflow-x: auto; scrollbar-width: none;
+  }
+  .adm-tabs::-webkit-scrollbar { display: none; }
+  .adm-tab {
+    padding: 0.7rem 1.15rem; background: none; border: none; cursor: pointer;
+    font-size: 0.875rem; font-weight: 500; color: var(--muted, #7a6652);
+    white-space: nowrap; border-bottom: 2px solid transparent; margin-bottom: -1px;
+    border-radius: 8px 8px 0 0; transition: color .15s, background .15s, border-color .15s;
+  }
+  .adm-tab:hover { color: var(--color-primary, #3a2618); background: var(--hover, #f7f3ed); }
+  .adm-tab--active {
+    color: var(--color-primary, #3a2618); border-bottom-color: var(--color-accent, #c9893d);
+    font-weight: 600;
+  }
+  .adm-panel--hidden { display: none; }
+
+  /* Diagrama UML */
+  .dt-uml-wrap { padding: 18px; overflow-x: auto; }
+  .dt-uml-wrap .mermaid { display: flex; justify-content: center; min-width: 900px; }
+  .dt-uml-wrap .mermaid svg { max-width: none; }
 </style>
 
 <script is:inline>
@@ -203,5 +350,64 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   document.getElementById('cleanUsersBtn').addEventListener('click', () => openModal('/api/devtools/clean-users'));
   document.getElementById('cleanLotsBtn').addEventListener('click', () => openModal('/api/devtools/clean-lots'));
   document.getElementById('cleanProductsBtn').addEventListener('click', () => openModal('/api/devtools/clean-products'));
+
+  // ── Pestañas ────────────────────────────────────────────────
+  document.querySelectorAll('.adm-tab').forEach(tab => {
+    tab.addEventListener('click', () => switchTab(tab.dataset.tab));
+  });
+
+  let umlRendered = false;
+
+  function switchTab(name) {
+    document.querySelectorAll('.adm-tab').forEach(t => t.classList.toggle('adm-tab--active', t.dataset.tab === name));
+    document.querySelectorAll('.adm-panel').forEach(p => p.classList.add('adm-panel--hidden'));
+    const panel = document.getElementById(`panel-${name}`);
+    if (panel) panel.classList.remove('adm-panel--hidden');
+    if (name === 'uml' && !umlRendered) { umlRendered = true; renderUml(); }
+  }
+
+  // ── Diagrama UML (Mermaid, cargado desde CDN ya permitido en el CSP) ──
+  async function renderUml() {
+    const loading  = document.getElementById('umlLoading');
+    const errorBox = document.getElementById('umlError');
+    const downloadBtn = document.getElementById('downloadUmlBtn');
+    try {
+      await loadMermaid();
+      window.mermaid.initialize({ startOnLoad: false, theme: 'neutral', securityLevel: 'strict' });
+      await window.mermaid.run({ nodes: [document.getElementById('umlDiagram')] });
+      loading.style.display = 'none';
+      const svg = document.querySelector('#panel-uml svg');
+      if (svg) {
+        downloadBtn.disabled = false;
+        downloadBtn.addEventListener('click', () => downloadSvg(svg));
+      }
+    } catch (err) {
+      loading.style.display = 'none';
+      errorBox.style.display = '';
+      errorBox.textContent = 'No se pudo renderizar el diagrama: ' + err.message;
+    }
+  }
+
+  function loadMermaid() {
+    return new Promise((resolve, reject) => {
+      if (window.mermaid) return resolve();
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js';
+      script.onload = () => resolve();
+      script.onerror = () => reject(new Error('No se pudo cargar mermaid.js desde el CDN'));
+      document.head.appendChild(script);
+    });
+  }
+
+  function downloadSvg(svgEl) {
+    const serialized = new XMLSerializer().serializeToString(svgEl);
+    const blob = new Blob([serialized], { type: 'image/svg+xml' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'dobleyo-casos-de-uso-uml.svg';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
 })();
 </script>
