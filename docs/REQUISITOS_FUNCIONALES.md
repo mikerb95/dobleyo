@@ -12,7 +12,7 @@
 | RF-001 | El sistema debe mostrar un catálogo de productos con imagen, nombre, precio, origen, proceso y tueste | HU-001 | P1 | 1 |
 | RF-002 | El sistema debe permitir filtrar productos por: categoría (café, accesorio, merchandising), origen, proceso (lavado, honey, natural), nivel de tueste, rango de precio | HU-001 | P1 | 1 |
 | RF-003 | El sistema debe permitir ordenar productos por: precio asc/desc, nombre A-Z/Z-A, más recientes | HU-001 | P1 | 1 |
-| RF-004 | Los productos deben cargarse desde la base de datos PostgreSQL, no desde archivos estáticos | HU-001 | P1 | 1 |
+| RF-004 | Los productos deben cargarse desde la base de datos Turso (libSQL/SQLite), no desde archivos estáticos | HU-001 | P1 | 1 |
 | RF-005 | El sistema debe mostrar badge de "Nuevo", "Más vendido" o "Agotado" según corresponda | HU-001 | P2 | 2 |
 | RF-006 | Cada producto debe tener una página de detalle con galería de imágenes, descripción extendida, notas de cata, y perfil visual de tueste | HU-001 | P2 | 2 |
 
