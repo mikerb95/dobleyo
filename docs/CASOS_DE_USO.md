@@ -1,0 +1,944 @@
+# Casos de Uso Extendidos — DobleYo Café
+
+> Especificación de casos de uso en formato extendido, derivados de los requisitos funcionales (`REQUISITOS_FUNCIONALES.md`) y las historias de usuario (`HISTORIAS_USUARIO.md`).
+> Esta primera versión cubre los casos de uso que agrupan requisitos de **prioridad P1 (críticos)**. Los P2/P3 se incorporarán en iteraciones posteriores.
+>
+> Convenciones:
+> - ID: `CU-XXX`, trazable con `RF-XXX` y `HU-XXX`.
+> - «include»: el caso de uso incluido se ejecuta siempre como parte del flujo.
+> - «extend»: comportamiento opcional que extiende el caso base en un punto de extensión.
+> - Los requisitos de SEO (RF-130..136) y varios de Seguridad (RF-140..146) son requisitos de sistema/transversales sin interacción de actor, por lo que **no se modelan como casos de uso**; aplican como restricciones a todos los CU.
+
+---
+
+## Actores
+
+| Actor | Descripción |
+|---|---|
+| **Visitante** | Usuario anónimo que navega el sitio público. |
+| **Cliente** | Usuario con rol `client`, registrado y con email verificado. |
+| **Caficultor** | Usuario con rol `caficultor`. Registra cosechas y opera la app de producción. |
+| **Operador de producción** | Rol operativo (admin o caficultor autorizado) que ejecuta almacenamiento, tostión, empaque y etiquetado. |
+| **Catador** | Quien registra sesiones de cupping SCA (admin u operador autorizado). |
+| **Administrador** | Usuario con rol `admin`. Acceso total al panel `/admin`. |
+| **Pasarela de pagos** | Sistema externo (Wompi / MercadoPago) que procesa pagos y notifica por webhook. |
+| **Servicio de email** | Sistema externo (Resend) que envía correos transaccionales. |
+| **Servicio de geocodificación** | Sistema externo que convierte direcciones en coordenadas lat/lng. |
+
+---
+
+## Índice de Casos de Uso
+
+| ID | Nombre | Actor primario | RF | HU |
+|---|---|---|---|---|
+| CU-001 | Navegar catálogo de productos | Visitante/Cliente | RF-001..004 | HU-001 |
+| CU-002 | Gestionar carrito de compras | Visitante/Cliente | RF-010..013, 015 | HU-002 |
+| CU-003 | Realizar checkout y pagar pedido | Cliente | RF-020..025, 027..030, 093 | HU-003 |
+| CU-004 | Procesar notificación de pago (webhook) | Pasarela de pagos | RF-029 | HU-003 |
+| CU-005 | Registrarse y verificar email | Visitante | RF-040, 041 | HU-006 |
+| CU-006 | Iniciar sesión y mantener sesión | Visitante | RF-042..044 | HU-006 |
+| CU-007 | Consultar trazabilidad de un lote | Visitante/Cliente | RF-050, 052..055 | HU-005 |
+| CU-008 | Registrar cosecha | Caficultor | RF-051, 060 | HU-011 |
+| CU-009 | Registrar almacenamiento de café verde | Operador de producción | RF-061 | HU-012 |
+| CU-010 | Enviar lote a tostión | Operador de producción | RF-062 | HU-013 |
+| CU-011 | Registrar resultado de tostión | Operador de producción | RF-063 | HU-014 |
+| CU-012 | Registrar empaquetado | Operador de producción | RF-064 | HU-015 |
+| CU-013 | Registrar cupping SCA | Catador | RF-065 | HU-017 |
+| CU-014 | Generar etiquetas con QR | Operador de producción | RF-054 | HU-016 |
+| CU-015 | Consultar dashboard financiero | Administrador | RF-070..073 | HU-018 |
+| CU-016 | Registrar y aprobar gastos | Administrador | RF-074 | HU-019 |
+| CU-017 | Ver landing de finca | Visitante | RF-081 | HU-021 |
+| CU-018 | Administrar fincas | Administrador | RF-080, 082 | HU-022 |
+| CU-019 | Analizar mapa de calor de ventas | Administrador | RF-090, 091 | HU-023 |
+| CU-020 | Consultar dashboard administrativo | Administrador | RF-100 | HU-024 |
+| CU-021 | Gestionar productos | Administrador | RF-101 | HU-025 |
+| CU-022 | Gestionar órdenes | Administrador | RF-102 | HU-026 |
+| CU-023 | Gestionar usuarios | Administrador | RF-103 | HU-027 |
+| CU-024 | Gestionar inventario | Administrador | RF-104 | HU-024 |
+| CU-025 | Consultar información legal y gestionar cookies | Visitante | RF-110..114 | HU-028..030 |
+| CU-026 | Presentar PQRS | Cliente/Visitante | RF-115 | HU-031 |
+| CU-027 | Navegar el sitio en inglés | Visitante | RF-120..126 | HU-009, HU-032 |
+
+### Relaciones entre casos de uso
+
+- CU-003 «include» CU-006 (el checkout requiere sesión activa).
+- CU-003 «extend» **Aplicar cupón de descuento** (punto de extensión: resumen del pedido).
+- CU-003 «extend» CU-007 (la confirmación enlaza a la trazabilidad del lote comprado).
+- CU-008..CU-012 forman la **cadena de trazabilidad** (RF-050): cada uno precede al siguiente.
+- CU-014 «include» CU-012 (solo se etiquetan lotes empaquetados).
+- CU-021..CU-024 «include» CU-006 con rol `admin` (RF-044).
+
+---
+
+## Módulo: Tienda Online
+
+### CU-001 — Navegar catálogo de productos
+
+| Campo | Valor |
+|---|---|
+| **Actor primario** | Visitante / Cliente |
+| **Actores secundarios** | — |
+| **Prioridad / Fase** | P1 / Fase 1 |
+| **Trazabilidad** | RF-001, RF-002, RF-003, RF-004 · HU-001 |
+
+**Descripción:** El usuario explora el catálogo de cafés y accesorios, aplicando filtros y ordenamientos para encontrar el producto que busca.
+
+**Precondiciones:**
+- Existen productos activos en la base de datos (RF-004: el catálogo se sirve desde BD, no desde archivos estáticos).
+
+**Flujo principal:**
+1. El usuario accede a `/tienda`.
+2. El sistema consulta los productos activos en la BD y muestra el grid con imagen, nombre, precio, origen, proceso y tueste (RF-001).
+3. El usuario aplica uno o más filtros: categoría, origen, proceso, nivel de tueste, rango de precio (RF-002).
+4. El sistema actualiza el grid mostrando solo los productos que cumplen todos los filtros.
+5. El usuario selecciona un criterio de ordenamiento (precio asc/desc, nombre A-Z/Z-A, más recientes) (RF-003).
+6. El sistema reordena el grid.
+7. El usuario selecciona un producto y el sistema navega a su página de detalle.
+
+**Flujos alternativos:**
+- **3a. Sin filtros:** el usuario navega el catálogo completo; el flujo continúa en el paso 5 o 7.
+- **4a. Sin resultados:** ningún producto cumple los filtros; el sistema muestra un estado vacío con mensaje y opción de limpiar filtros.
+
+**Flujos de excepción:**
+- **2a. Error de BD:** el sistema muestra un mensaje de error y un estado de reintento; no muestra datos parciales o desactualizados.
+
+**Postcondiciones:**
+- Ninguna persistente (consulta de solo lectura).
+
+---
+
+### CU-002 — Gestionar carrito de compras
+
+| Campo | Valor |
+|---|---|
+| **Actor primario** | Visitante / Cliente |
+| **Actores secundarios** | — |
+| **Prioridad / Fase** | P1 / Fases 1–4 |
+| **Trazabilidad** | RF-010, RF-011, RF-012, RF-013, RF-015 · HU-002 |
+
+**Descripción:** El usuario acumula productos en un carrito persistente, modifica cantidades y visualiza el subtotal antes de iniciar el checkout.
+
+**Precondiciones:**
+- El producto a agregar está activo en el catálogo.
+
+**Flujo principal:**
+1. El usuario pulsa "Agregar al carrito" desde la tienda o el detalle de producto.
+2. El sistema agrega el ítem al carrito en `localStorage` y actualiza el contador del header (RF-013).
+3. Si el usuario está autenticado, el sistema sincroniza el carrito con la BD (RF-010).
+4. El usuario accede a `/cart` y ve por cada ítem: thumbnail, nombre, precio unitario, cantidad y total (RF-015).
+5. El usuario modifica la cantidad de un ítem o lo elimina (RF-011).
+6. El sistema recalcula el subtotal en tiempo real (RF-012).
+7. El usuario pulsa "Proceder al pago" y el sistema inicia CU-003.
+
+**Flujos alternativos:**
+- **1a. Producto ya en el carrito:** el sistema incrementa la cantidad del ítem existente en lugar de duplicarlo.
+- **4a. Carrito vacío:** el sistema muestra estado vacío con enlace a la tienda; el flujo termina.
+- **3a. Usuario inicia sesión con carrito local:** el sistema fusiona el carrito de `localStorage` con el carrito guardado en BD.
+
+**Flujos de excepción:**
+- **5a. Cantidad inválida (≤ 0 o no numérica):** el sistema rechaza el cambio y conserva la cantidad anterior.
+
+**Postcondiciones:**
+- El carrito queda persistido en `localStorage` (y en BD si hay sesión) con las cantidades actualizadas.
+
+---
+
+### CU-003 — Realizar checkout y pagar pedido
+
+| Campo | Valor |
+|---|---|
+| **Actor primario** | Cliente |
+| **Actores secundarios** | Pasarela de pagos (Wompi / MercadoPago), Servicio de geocodificación, Servicio de email |
+| **Prioridad / Fase** | P1 / Fase 4 |
+| **Trazabilidad** | RF-020, RF-021, RF-022, RF-023, RF-024, RF-025, RF-027, RF-028, RF-030, RF-093 · HU-003 |
+| **Relaciones** | «include» CU-006 · «extend» Aplicar cupón · «extend» CU-007 |
+
+**Descripción:** El cliente ingresa sus datos de envío, selecciona un método de pago, completa la transacción y recibe la confirmación de su pedido.
+
+**Precondiciones:**
+- El carrito contiene al menos un ítem.
+- El usuario está autenticado (RF-020); si no, el sistema ejecuta CU-006 antes de continuar.
+
+**Flujo principal:**
+1. El cliente accede a `/checkout` desde el carrito.
+2. El sistema verifica la sesión («include» CU-006).
+3. El cliente diligencia los datos de envío: nombre completo, documento, departamento, ciudad, barrio, dirección, teléfono, email y notas (RF-021).
+4. El sistema valida el formulario y geocodifica la dirección para obtener coordenadas lat/lng (RF-022, RF-093).
+5. El sistema muestra el resumen: ítems, subtotal, IVA 19 % sobre productos gravados (RF-025) y total.
+   - *Punto de extensión — Aplicar cupón:* el cliente ingresa un código; el sistema valida vigencia y límite de uso y recalcula el total.
+6. El cliente selecciona el método de pago Wompi: PSE, tarjeta crédito/débito, Nequi o Bancolombia QR (RF-023).
+7. El sistema redirige/abre el widget de la pasarela y el cliente completa el pago.
+8. La pasarela retorna la transacción aprobada.
+9. El sistema crea la orden en BD con ítems, totales, dirección, método de pago, referencia de transacción y coordenadas, en estado `paid` (RF-027).
+10. El sistema envía el email de confirmación con el resumen de la orden (RF-028) y descuenta/actualiza el uso del cupón si aplicó.
+11. El sistema muestra la página de confirmación con número de referencia, resumen y datos de trazabilidad del lote (RF-030), con enlace a CU-007.
+
+**Flujos alternativos:**
+- **6a. Pago con MercadoPago (RF-024):** el cliente elige la pasarela alternativa; el flujo continúa igual desde el paso 7.
+- **8a. Pago pendiente (ej. PSE en proceso):** el sistema crea la orden en estado `pending` y la confirmación definitiva llega por CU-004; la página de confirmación indica que el pago está en verificación.
+- **4a. Geocodificación sin resultado:** el sistema registra la orden sin coordenadas y marca la dirección para geocodificación posterior; el flujo no se bloquea.
+
+**Flujos de excepción:**
+- **4b. Formulario inválido:** el sistema marca los campos con error y no permite continuar.
+- **5a. Cupón inválido, vencido o agotado:** el sistema muestra el motivo del rechazo y mantiene el total sin descuento.
+- **8b. Pago rechazado:** el sistema muestra el error de la pasarela y permite reintentar con otro método; no se crea orden en estado `paid`.
+- **9a. Error al crear la orden con pago ya aprobado:** el sistema registra el incidente (log/auditoría) con la referencia de la transacción para conciliación manual; muestra al cliente un mensaje con la referencia de pago.
+
+**Postcondiciones:**
+- Orden registrada en BD con estado acorde al resultado del pago, con referencia de transacción y coordenadas.
+- Email de confirmación enviado (si el pago fue aprobado).
+- Carrito vaciado.
+
+---
+
+### CU-004 — Procesar notificación de pago (webhook)
+
+| Campo | Valor |
+|---|---|
+| **Actor primario** | Pasarela de pagos (Wompi / MercadoPago) |
+| **Actores secundarios** | Servicio de email |
+| **Prioridad / Fase** | P1 / Fase 4 |
+| **Trazabilidad** | RF-029 · HU-003 |
+
+**Descripción:** La pasarela notifica de forma asíncrona el cambio de estado de una transacción y el sistema actualiza la orden correspondiente.
+
+**Precondiciones:**
+- Existe una orden con la referencia de transacción notificada.
+
+**Flujo principal:**
+1. La pasarela envía un POST al endpoint de webhook con el evento de la transacción.
+2. El sistema valida la firma/secreto del evento (`WOMPI_EVENTS_SECRET` o equivalente de MercadoPago).
+3. El sistema localiza la orden por referencia de transacción.
+4. El sistema actualiza el estado de la orden (`paid`, `declined`, `voided`) según el evento (RF-029).
+5. Si la transición es a `paid` y no se había confirmado antes, el sistema envía el email de confirmación y actualiza el uso del cupón si aplica.
+6. El sistema responde `200 OK` a la pasarela.
+
+**Flujos alternativos:**
+- **4a. Evento duplicado (mismo estado ya aplicado):** el sistema responde `200 OK` sin efectos adicionales (idempotencia).
+
+**Flujos de excepción:**
+- **2a. Firma inválida:** el sistema responde `4xx`, no modifica datos y registra el intento en auditoría.
+- **3a. Orden no encontrada:** el sistema registra el evento para conciliación manual y responde `200` para evitar reintentos infinitos de la pasarela.
+
+**Postcondiciones:**
+- El estado de la orden refleja el estado real de la transacción en la pasarela.
+
+---
+
+## Módulo: Autenticación
+
+### CU-005 — Registrarse y verificar email
+
+| Campo | Valor |
+|---|---|
+| **Actor primario** | Visitante |
+| **Actores secundarios** | Servicio de email |
+| **Prioridad / Fase** | P1 / Fase 1 |
+| **Trazabilidad** | RF-040, RF-041 · HU-006 |
+
+**Descripción:** El visitante crea una cuenta con email y contraseña y verifica su email mediante un enlace con token de propósito específico.
+
+**Precondiciones:**
+- El email no está registrado previamente.
+
+**Flujo principal:**
+1. El visitante accede al formulario de registro.
+2. Diligencia email, nombre, apellido y contraseña (mínimo 8 caracteres, al menos 1 número y 1 mayúscula) (RF-040).
+3. El sistema valida el formulario y crea el usuario con rol `client` y estado "no verificado".
+4. El sistema genera un JWT de verificación de propósito específico (no reutiliza el access token) y envía el email con el enlace (RF-041).
+5. El usuario abre el enlace de verificación.
+6. El sistema valida el token, marca el email como verificado y muestra confirmación.
+7. El usuario puede iniciar sesión (CU-006).
+
+**Flujos alternativos:**
+- **5a. Token vencido:** el sistema ofrece reenviar el email de verificación con un token nuevo.
+
+**Flujos de excepción:**
+- **2a. Contraseña débil o campos inválidos:** el sistema muestra los errores de validación y no crea la cuenta.
+- **3a. Email ya registrado:** el sistema informa el conflicto sin revelar datos de la cuenta existente.
+- **4a. Fallo del servicio de email:** la cuenta queda creada; el sistema informa que el correo no pudo enviarse y ofrece reintento.
+
+**Postcondiciones:**
+- Usuario creado en BD; email verificado tras completar el flujo.
+
+---
+
+### CU-006 — Iniciar sesión y mantener sesión
+
+| Campo | Valor |
+|---|---|
+| **Actor primario** | Visitante (con cuenta) |
+| **Actores secundarios** | — |
+| **Prioridad / Fase** | P1 / Fase 1 |
+| **Trazabilidad** | RF-042, RF-043, RF-044 · HU-006 |
+
+**Descripción:** El usuario se autentica con email y contraseña; el sistema emite tokens JWT en cookies HttpOnly y renueva la sesión de forma transparente.
+
+**Precondiciones:**
+- Cuenta creada y email verificado (CU-005).
+
+**Flujo principal:**
+1. El usuario ingresa email y contraseña en el formulario de login.
+2. El sistema valida las credenciales.
+3. El sistema emite access token (15 min) y refresh token (7 días) en cookies HttpOnly (RF-042).
+4. El sistema redirige según rol: `client` → tienda/cuenta; `admin`/`caficultor` → panel correspondiente (RF-044).
+5. Mientras la sesión está activa, el cliente renueva el access token automáticamente antes de expirar, sin intervención del usuario (RF-043).
+6. Al acceder a endpoints protegidos, el middleware `requireRole()` verifica el rol (RF-044).
+
+**Flujos alternativos:**
+- **5a. Refresh token vencido:** el sistema cierra la sesión y redirige al login conservando la URL de retorno.
+- **6a. Cierre de sesión:** el usuario pulsa "Cerrar sesión"; el sistema invalida las cookies.
+
+**Flujos de excepción:**
+- **2a. Credenciales inválidas:** el sistema muestra error genérico (sin revelar si el email existe). Aplica rate limiting (RF-143).
+- **2b. Email no verificado:** el sistema bloquea el acceso e indica cómo reenviar la verificación.
+- **6b. Rol insuficiente:** el sistema responde `403` y la UI redirige o muestra acceso denegado.
+
+**Postcondiciones:**
+- Sesión activa con tokens en cookies HttpOnly; ningún token en `localStorage` (RF-142).
+
+---
+
+## Módulo: Trazabilidad
+
+### CU-007 — Consultar trazabilidad de un lote
+
+| Campo | Valor |
+|---|---|
+| **Actor primario** | Visitante / Cliente (comprador con empaque físico) |
+| **Actores secundarios** | — |
+| **Prioridad / Fase** | P1 / Fase 5 |
+| **Trazabilidad** | RF-050, RF-052, RF-053, RF-054, RF-055 · HU-005 |
+
+**Descripción:** El comprador escanea el QR del empaque (o ingresa el código manualmente) y consulta la cadena completa de trazabilidad del lote.
+
+**Precondiciones:**
+- El lote existe y tiene código único `DBY-YYYY-MM-XXX` (RF-051).
+- La etiqueta con QR fue generada (CU-014).
+
+**Flujo principal:**
+1. El comprador escanea el QR del empaque con la cámara de su móvil (RF-053).
+2. El QR resuelve a `dobleyo.cafe/t/{LOT_CODE}` (RF-054) y el navegador abre la página.
+3. El sistema consulta la cadena del lote: cosecha → almacenamiento → tostión → empaque → venta (RF-050).
+4. El sistema muestra el timeline visual con todos los pasos (RF-052) y los datos: finca, altitud, variedad, proceso, fecha de cosecha, fecha de tostión, perfil de tueste, puntuación SCA y empaquetador (RF-055).
+5. El comprador explora los detalles de cada etapa.
+
+**Flujos alternativos:**
+- **1a. Búsqueda manual:** el usuario accede a `/trazabilidad` e ingresa el código del lote; el flujo continúa en el paso 3.
+- **1b. Cámara no disponible o sin permiso:** el sistema ofrece la búsqueda manual (flujo 1a).
+
+**Flujos de excepción:**
+- **3a. Código inexistente o con formato inválido:** el sistema muestra "Lote no encontrado" con la opción de verificar el código e intentar de nuevo.
+- **3b. Cadena incompleta (lote en proceso):** el sistema muestra el timeline hasta la última etapa registrada, indicando las etapas pendientes.
+
+**Postcondiciones:**
+- Ninguna persistente (consulta pública de solo lectura).
+
+---
+
+## Módulo: Producción
+
+> Los CU-008 a CU-012 forman la cadena de trazabilidad (RF-050): cada etapa exige que la anterior esté registrada y deja el lote en el estado que habilita la siguiente. Todos requieren sesión con rol autorizado («include» CU-006) y registran auditoría (HU-036).
+
+### CU-008 — Registrar cosecha
+
+| Campo | Valor |
+|---|---|
+| **Actor primario** | Caficultor / Administrador |
+| **Prioridad / Fase** | P1 / Fase 5 |
+| **Trazabilidad** | RF-051, RF-060 · HU-011 |
+
+**Descripción:** El caficultor registra una cosecha en finca, lo que crea el lote e inicia su cadena de trazabilidad.
+
+**Precondiciones:**
+- Sesión activa con rol `caficultor` o `admin`.
+- La finca está registrada en el sistema.
+
+**Flujo principal:**
+1. El actor accede a `/admin/harvest`.
+2. Diligencia: finca, variedad, peso (kg), fecha de cosecha, proceso y notas (RF-060).
+3. El sistema valida los datos (peso > 0, fecha no futura).
+4. El sistema genera el código único de lote `DBY-YYYY-MM-XXX` con consecutivo del mes (RF-051).
+5. El sistema crea el lote en estado "cosechado" y registra la acción en auditoría.
+6. El sistema muestra confirmación con el código del lote generado.
+
+**Flujos de excepción:**
+- **3a. Datos inválidos:** el sistema muestra los errores por campo y no crea el registro.
+- **4a. Colisión de consecutivo (concurrencia):** el sistema reintenta la generación del código dentro de la transacción.
+
+**Postcondiciones:**
+- Lote creado con código único, en estado "cosechado", listo para CU-009.
+
+---
+
+### CU-009 — Registrar almacenamiento de café verde
+
+| Campo | Valor |
+|---|---|
+| **Actor primario** | Operador de producción |
+| **Prioridad / Fase** | P1 / Fase 5 |
+| **Trazabilidad** | RF-061 · HU-012 |
+
+**Descripción:** El operador registra el ingreso del café verde al almacén con sus datos de secado y humedad, continuando la trazabilidad del lote.
+
+**Precondiciones:**
+- Lote en estado "cosechado" (CU-008).
+
+**Flujo principal:**
+1. El operador accede a `/admin/inventory-storage` y selecciona el lote cosechado.
+2. Diligencia los datos de humedad y secado (RF-061), peso de ingreso y ubicación de almacenamiento.
+3. El sistema valida los datos y registra el movimiento en el inventario de café verde.
+4. El sistema actualiza el estado del lote a "almacenado" y registra auditoría.
+
+**Flujos de excepción:**
+- **1a. El lote no está en estado "cosechado":** el sistema no lo lista como seleccionable, preservando el orden de la cadena.
+- **2a. Peso de ingreso mayor al peso cosechado:** el sistema advierte la inconsistencia y exige corrección o justificación en notas.
+
+**Postcondiciones:**
+- Inventario verde actualizado; lote en estado "almacenado", listo para CU-010.
+
+---
+
+### CU-010 — Enviar lote a tostión
+
+| Campo | Valor |
+|---|---|
+| **Actor primario** | Operador de producción |
+| **Prioridad / Fase** | P1 / Fase 5 |
+| **Trazabilidad** | RF-062 · HU-013 |
+
+**Descripción:** El operador selecciona un lote de café verde almacenado y registra su envío al tostador, vinculado al lote original.
+
+**Precondiciones:**
+- Lote en estado "almacenado" con inventario verde disponible (CU-009).
+
+**Flujo principal:**
+1. El operador accede a `/admin/send-roasting` y selecciona el lote verde.
+2. Diligencia peso enviado, tostador de destino y fecha de envío.
+3. El sistema valida que el peso enviado no exceda el disponible.
+4. El sistema crea el registro de envío vinculado al lote verde original (RF-062), descuenta el inventario y cambia el estado a "en tostión".
+
+**Flujos de excepción:**
+- **3a. Peso enviado mayor al disponible:** el sistema rechaza la operación indicando el disponible actual.
+
+**Postcondiciones:**
+- Lote en estado "en tostión"; inventario verde descontado; listo para CU-011.
+
+---
+
+### CU-011 — Registrar resultado de tostión
+
+| Campo | Valor |
+|---|---|
+| **Actor primario** | Operador de producción / Tostador |
+| **Prioridad / Fase** | P1 / Fase 5 |
+| **Trazabilidad** | RF-063 · HU-014 |
+
+**Descripción:** El actor registra el resultado de la tostión con los datos de curva y peso final, y el sistema calcula la merma.
+
+**Precondiciones:**
+- Lote en estado "en tostión" (CU-010).
+
+**Flujo principal:**
+1. El actor accede a `/admin/roast-retrieval` y selecciona el lote en tostión.
+2. Diligencia: perfil de tueste, temperatura, duración, peso final, first crack, second crack (RF-063).
+3. El sistema valida que el peso final sea menor al peso enviado y calcula la merma % (RF-063).
+4. El sistema registra el batch de tostión, actualiza el estado del lote a "tostado" y registra auditoría.
+
+**Flujos alternativos:**
+- **3a. Merma fuera de rango típico (ej. > 25 %):** el sistema advierte el valor atípico y solicita confirmación antes de guardar.
+
+**Flujos de excepción:**
+- **3b. Peso final ≥ peso enviado:** el sistema rechaza el registro por inconsistencia física.
+
+**Postcondiciones:**
+- Batch de tostión registrado con curva y merma; lote en estado "tostado", listo para CU-012 y CU-013.
+
+---
+
+### CU-012 — Registrar empaquetado
+
+| Campo | Valor |
+|---|---|
+| **Actor primario** | Operador de producción |
+| **Prioridad / Fase** | P1 / Fase 5 |
+| **Trazabilidad** | RF-064 · HU-015 |
+
+**Descripción:** El operador registra el empaquetado del café tostado: peso por bolsa, cantidad de bolsas y tipo de empaque.
+
+**Precondiciones:**
+- Lote en estado "tostado" con inventario tostado disponible (CU-011).
+
+**Flujo principal:**
+1. El operador accede a `/admin/packaging` y selecciona el lote tostado.
+2. Diligencia: peso por bolsa, cantidad de bolsas, tipo de empaque (RF-064).
+3. El sistema valida que `peso por bolsa × cantidad` no exceda el peso tostado disponible.
+4. El sistema registra el empaquetado, descuenta el inventario tostado y actualiza el estado del lote a "empaquetado".
+
+**Flujos alternativos:**
+- **4a. Empaquetado parcial:** queda saldo de café tostado del lote; el lote admite empaquetados adicionales posteriores.
+
+**Flujos de excepción:**
+- **3a. Cantidad excede el disponible:** el sistema rechaza la operación indicando el saldo disponible.
+
+**Postcondiciones:**
+- Producto final registrado y disponible; lote en estado "empaquetado", habilitado para CU-014.
+
+---
+
+### CU-013 — Registrar cupping SCA
+
+| Campo | Valor |
+|---|---|
+| **Actor primario** | Catador / Administrador |
+| **Prioridad / Fase** | P1 / Fase 5 |
+| **Trazabilidad** | RF-065 · HU-017 |
+
+**Descripción:** El catador registra una sesión de cupping bajo protocolo SCA y el sistema calcula el puntaje total del lote, visible luego en la trazabilidad pública.
+
+**Precondiciones:**
+- Lote con tostión registrada (CU-011).
+
+**Flujo principal:**
+1. El catador selecciona el lote tostado y abre el formulario de cupping.
+2. Diligencia las puntuaciones: aroma, sabor, acidez, cuerpo, balance, uniformidad, limpieza, dulzura, aftertaste, overall (RF-065).
+3. El sistema valida los rangos SCA de cada atributo y calcula el puntaje total (RF-065).
+4. El sistema guarda la sesión asociada al lote y registra auditoría.
+5. El puntaje queda disponible para la página de trazabilidad (CU-007, RF-055).
+
+**Flujos de excepción:**
+- **3a. Puntuación fuera de rango:** el sistema marca el campo y no permite guardar.
+
+**Postcondiciones:**
+- Sesión de cupping registrada con puntaje total asociado al lote.
+
+---
+
+### CU-014 — Generar etiquetas con QR
+
+| Campo | Valor |
+|---|---|
+| **Actor primario** | Operador de producción / Administrador |
+| **Prioridad / Fase** | P1 / Fase 5 |
+| **Trazabilidad** | RF-054 · HU-016 |
+| **Relaciones** | «include» CU-012 (solo lotes empaquetados) |
+
+**Descripción:** El actor genera etiquetas con código QR apuntando a la trazabilidad pública del lote, para impresión y adhesión al empaque.
+
+**Precondiciones:**
+- Lote en estado "empaquetado" (CU-012).
+
+**Flujo principal:**
+1. El actor accede a `/admin/etiquetas` y selecciona el lote empaquetado.
+2. El sistema genera el QR con la URL `dobleyo.cafe/t/{LOT_CODE}` (RF-054).
+3. El sistema compone la etiqueta con el QR y los metadatos del lote y la registra en `generated_labels`.
+4. El actor previsualiza, ajusta cantidad de copias y descarga/imprime.
+
+**Flujos de excepción:**
+- **1a. Lote sin empaquetado registrado:** el sistema no lo lista como seleccionable.
+
+**Postcondiciones:**
+- Etiqueta registrada y disponible para impresión; el QR resuelve a CU-007.
+
+---
+
+## Módulo: Finanzas
+
+### CU-015 — Consultar dashboard financiero
+
+| Campo | Valor |
+|---|---|
+| **Actor primario** | Administrador |
+| **Prioridad / Fase** | P1 / Fase 6 |
+| **Trazabilidad** | RF-070, RF-071, RF-072, RF-073 · HU-018 |
+
+**Descripción:** El administrador consulta el estado financiero: P&L por período, flujo de caja, margen por producto y costo por kg producido, sobre una contabilidad de doble partida.
+
+**Precondiciones:**
+- Sesión con rol `admin`.
+- Plan de cuentas configurado (RF-070) y asientos registrados con débitos = créditos (RF-071).
+
+**Flujo principal:**
+1. El administrador accede a `/admin/finanzas`.
+2. Selecciona el período de análisis.
+3. El sistema calcula y muestra: P&L del período, flujo de caja y margen por producto (RF-072).
+4. El sistema muestra el costo por kg producido: materia prima + mano de obra + costos fijos + merma (RF-073).
+5. El administrador navega entre períodos o productos para comparar.
+
+**Flujos alternativos:**
+- **3a. Período sin movimientos:** el sistema muestra el dashboard con valores en cero y lo indica explícitamente.
+
+**Flujos de excepción:**
+- **3b. Asientos descuadrados detectados:** el sistema alerta la inconsistencia contable e identifica los asientos afectados (la validación de RF-071 debe impedir que ocurra en el registro).
+
+**Postcondiciones:**
+- Ninguna persistente (consulta de solo lectura).
+
+---
+
+### CU-016 — Registrar y aprobar gastos
+
+| Campo | Valor |
+|---|---|
+| **Actor primario** | Administrador |
+| **Prioridad / Fase** | P1 / Fase 6 |
+| **Trazabilidad** | RF-074 · HU-019 |
+
+**Descripción:** El administrador registra gastos operativos con categorización y flujo de aprobación, alimentando el costeo y la contabilidad.
+
+**Precondiciones:**
+- Sesión con rol `admin`.
+- Categorías de gasto y plan de cuentas configurados.
+
+**Flujo principal:**
+1. El administrador registra un gasto: fecha, categoría (materia prima, mano de obra, servicios, transporte), monto, descripción y soporte.
+2. El sistema valida los datos y guarda el gasto en estado "pendiente de aprobación" (RF-074).
+3. Un administrador (idealmente distinto del creador) revisa y aprueba el gasto.
+4. El sistema marca el gasto como aprobado, genera el asiento contable asociado (RF-071) y registra auditoría.
+
+**Flujos alternativos:**
+- **3a. Gasto rechazado:** el aprobador registra el motivo; el gasto queda en estado "rechazado" y no genera asiento.
+
+**Flujos de excepción:**
+- **1a. Monto inválido (≤ 0):** el sistema rechaza el registro.
+
+**Postcondiciones:**
+- Gasto registrado con su estado de aprobación; si fue aprobado, asiento contable generado.
+
+---
+
+## Módulo: Fincas
+
+### CU-017 — Ver landing de finca
+
+| Campo | Valor |
+|---|---|
+| **Actor primario** | Visitante / Cliente |
+| **Prioridad / Fase** | P1 / Fase 7 |
+| **Trazabilidad** | RF-081 · HU-021 |
+
+**Descripción:** El visitante consulta la página pública de una finca con su historia, caficultor, galería, mapa y cafés disponibles.
+
+**Precondiciones:**
+- La finca existe, está activa y tiene slug asignado (RF-080).
+
+**Flujo principal:**
+1. El visitante accede a `/finca/{slug}` (desde la trazabilidad, la tienda o el listado de fincas).
+2. El sistema carga la finca por slug y muestra: hero con foto, nombre, altitud y región; sección del caficultor con foto y biografía; galería; mapa con ubicación; y cafés de esa finca (RF-081).
+3. El visitante navega a un café de la finca (CU-001) o a la trazabilidad de un lote (CU-007).
+
+**Flujos de excepción:**
+- **2a. Slug inexistente:** el sistema responde 404 con enlace al listado de fincas.
+
+**Postcondiciones:**
+- Ninguna persistente (consulta pública de solo lectura).
+
+---
+
+### CU-018 — Administrar fincas
+
+| Campo | Valor |
+|---|---|
+| **Actor primario** | Administrador |
+| **Prioridad / Fase** | P1 / Fase 7 |
+| **Trazabilidad** | RF-080, RF-082 · HU-022 |
+
+**Descripción:** El administrador crea, edita y gestiona las fincas proveedoras con todos sus datos públicos y de origen.
+
+**Precondiciones:**
+- Sesión con rol `admin`.
+
+**Flujo principal:**
+1. El administrador accede al CRUD de fincas en el panel admin (RF-082).
+2. Crea o edita una finca: nombre, slug, región, departamento, altitud, coordenadas, descripción, historia, variedades, procesos, certificaciones, imágenes y datos del caficultor (RF-080).
+3. El sistema valida unicidad del slug y formato de coordenadas.
+4. El administrador previsualiza la landing (RF-082).
+5. El administrador guarda; el sistema persiste y registra auditoría.
+
+**Flujos alternativos:**
+- **5a. Desactivar finca:** la finca deja de mostrarse públicamente pero conserva su vínculo histórico con lotes ya trazados.
+
+**Flujos de excepción:**
+- **3a. Slug duplicado:** el sistema rechaza el guardado y sugiere un slug alternativo.
+
+**Postcondiciones:**
+- Finca creada/actualizada; su landing pública (CU-017) refleja los cambios.
+
+---
+
+## Módulo: Analítica y Administración
+
+### CU-019 — Analizar mapa de calor de ventas
+
+| Campo | Valor |
+|---|---|
+| **Actor primario** | Administrador |
+| **Actores secundarios** | MercadoLibre (fuente de datos) |
+| **Prioridad / Fase** | P1 / Fase 8 |
+| **Trazabilidad** | RF-090, RF-091 (y RF-093 como precondición de datos) · HU-023 |
+
+**Descripción:** El administrador analiza la concentración geográfica de ventas combinando ventas web y de MercadoLibre en un mapa de calor Leaflet.
+
+**Precondiciones:**
+- Sesión con rol `admin`.
+- Órdenes web geocodificadas (RF-093) y datos de MercadoLibre sincronizados en `sales_tracking`.
+
+**Flujo principal:**
+1. El administrador accede a `/admin/sales-map`.
+2. El sistema carga y combina las ventas web directas y de MercadoLibre, y renderiza el mapa de calor (RF-090).
+3. El administrador aplica filtros: período (7/30/90 días o custom), canal (web/ML) y producto (RF-091).
+4. El sistema actualiza el mapa según los filtros.
+5. El administrador explora zonas de concentración para decisiones de cobertura.
+
+**Flujos alternativos:**
+- **2a. Sin datos en el período:** el sistema muestra el mapa vacío indicando la ausencia de datos para los filtros activos.
+
+**Flujos de excepción:**
+- **2b. Ventas sin coordenadas:** el sistema las excluye del mapa e informa el conteo de registros no geocodificados.
+
+**Postcondiciones:**
+- Ninguna persistente (consulta de solo lectura).
+
+---
+
+### CU-020 — Consultar dashboard administrativo
+
+| Campo | Valor |
+|---|---|
+| **Actor primario** | Administrador |
+| **Prioridad / Fase** | P1 / Fase 10 |
+| **Trazabilidad** | RF-100 · HU-024 |
+
+**Descripción:** El administrador consulta los KPIs del negocio: ventas por día/semana/mes, órdenes pendientes, stock bajo y cupping promedio.
+
+**Precondiciones:**
+- Sesión con rol `admin`.
+
+**Flujo principal:**
+1. El administrador accede al dashboard del panel admin.
+2. El sistema calcula y muestra los KPIs: ventas día/semana/mes, órdenes pendientes, productos con stock bajo, cupping promedio (RF-100).
+3. El administrador navega desde cada KPI al módulo de detalle (órdenes → CU-022, inventario → CU-024, etc.).
+
+**Postcondiciones:**
+- Ninguna persistente (consulta de solo lectura).
+
+---
+
+### CU-021 — Gestionar productos
+
+| Campo | Valor |
+|---|---|
+| **Actor primario** | Administrador |
+| **Prioridad / Fase** | P1 / Fase 10 |
+| **Trazabilidad** | RF-101 · HU-025 |
+
+**Descripción:** El administrador crea, edita y activa/desactiva productos del catálogo, operando directamente sobre la base de datos (sin la versión legacy de localStorage).
+
+**Precondiciones:**
+- Sesión con rol `admin`.
+
+**Flujo principal:**
+1. El administrador accede al CRUD de productos.
+2. Crea o edita un producto: nombre, categoría, origen, proceso, tueste, precio, descripción, fotos y estado (RF-101).
+3. El sistema valida los datos (precio > 0, nombre requerido).
+4. El sistema persiste en BD y registra auditoría.
+5. El catálogo público (CU-001) refleja el cambio.
+
+**Flujos alternativos:**
+- **2a. Desactivar producto:** el producto deja de listarse en la tienda pero conserva su historial en órdenes existentes.
+
+**Flujos de excepción:**
+- **3a. Datos inválidos:** el sistema responde 422 con los errores por campo.
+
+**Postcondiciones:**
+- Catálogo actualizado en BD; acción registrada en auditoría.
+
+---
+
+### CU-022 — Gestionar órdenes
+
+| Campo | Valor |
+|---|---|
+| **Actor primario** | Administrador |
+| **Actores secundarios** | Servicio de email (notificaciones de cambio de estado) |
+| **Prioridad / Fase** | P1 / Fase 10 |
+| **Trazabilidad** | RF-102 · HU-026 |
+
+**Descripción:** El administrador consulta, filtra y actualiza el estado de las órdenes para procesar envíos y resolver incidencias.
+
+**Precondiciones:**
+- Sesión con rol `admin`.
+- Existen órdenes creadas (CU-003).
+
+**Flujo principal:**
+1. El administrador accede a la lista de órdenes y aplica filtros (estado, fecha, cliente) (RF-102).
+2. Abre el detalle de una orden: ítems, totales, dirección, pago, timeline de estados.
+3. Cambia el estado de la orden siguiendo la secuencia válida (pendiente → pagado → en proceso → enviado → entregado).
+4. El sistema persiste el cambio, lo agrega al timeline y registra auditoría.
+5. El sistema notifica al cliente el cambio de estado cuando aplica.
+
+**Flujos alternativos:**
+- **3a. Cancelación:** el administrador cancela una orden no enviada, registrando el motivo.
+
+**Flujos de excepción:**
+- **3b. Transición de estado inválida (ej. entregado → pendiente):** el sistema rechaza el cambio.
+
+**Postcondiciones:**
+- Estado de la orden actualizado con timeline y auditoría; cliente notificado si aplica.
+
+---
+
+### CU-023 — Gestionar usuarios
+
+| Campo | Valor |
+|---|---|
+| **Actor primario** | Administrador |
+| **Prioridad / Fase** | P1 / Fase 10 |
+| **Trazabilidad** | RF-103 · HU-027 |
+
+**Descripción:** El administrador consulta la lista de usuarios y gestiona roles, verificación y estado de las cuentas.
+
+**Precondiciones:**
+- Sesión con rol `admin`.
+
+**Flujo principal:**
+1. El administrador accede a `/admin/usuarios` y consulta la lista con rol y estado de verificación (RF-103).
+2. Selecciona un usuario y cambia su rol (admin, client, provider, caficultor) o activa/desactiva la cuenta.
+3. El sistema valida la operación, persiste el cambio y registra auditoría.
+4. Los cambios de rol aplican en el siguiente ciclo de autenticación del usuario afectado.
+
+**Flujos de excepción:**
+- **2a. Auto-degradación del último admin:** el sistema impide dejar el sistema sin administradores activos.
+
+**Postcondiciones:**
+- Rol/estado del usuario actualizado; acción registrada en auditoría.
+
+---
+
+### CU-024 — Gestionar inventario
+
+| Campo | Valor |
+|---|---|
+| **Actor primario** | Administrador |
+| **Prioridad / Fase** | P1 / Fase 10 |
+| **Trazabilidad** | RF-104 · HU-024 |
+
+**Descripción:** El administrador gestiona el inventario de productos conectado a la base de datos: existencias, movimientos y proveedores.
+
+**Precondiciones:**
+- Sesión con rol `admin`.
+
+**Flujo principal:**
+1. El administrador accede a `/admin/inventario` y consulta existencias por producto (RF-104).
+2. Registra un movimiento de inventario (entrada, salida, ajuste) con cantidad y motivo.
+3. El sistema valida que las salidas no dejen stock negativo, persiste el movimiento y actualiza la existencia.
+4. El sistema registra auditoría y actualiza los indicadores de stock bajo del dashboard (CU-020).
+
+**Flujos de excepción:**
+- **3a. Salida mayor al stock disponible:** el sistema rechaza el movimiento indicando el disponible.
+
+**Postcondiciones:**
+- Existencias actualizadas y movimiento trazado en auditoría.
+
+---
+
+## Módulo: Compliance Legal
+
+### CU-025 — Consultar información legal y gestionar cookies
+
+| Campo | Valor |
+|---|---|
+| **Actor primario** | Visitante |
+| **Prioridad / Fase** | P1 / Fase 3 |
+| **Trazabilidad** | RF-110, RF-111, RF-112, RF-113, RF-114 · HU-028, HU-029, HU-030 |
+
+**Descripción:** El visitante consulta las páginas legales (privacidad, términos y condiciones, datos del vendedor) y gestiona su consentimiento de cookies conforme a las Leyes 1581 de 2012 y 1480 de 2011.
+
+**Precondiciones:**
+- Ninguna (contenido público).
+
+**Flujo principal:**
+1. En la primera visita, el sistema muestra el banner de cookies con opciones aceptar / rechazar / personalizar (RF-112).
+2. El visitante elige una opción y el sistema persiste la preferencia.
+3. El visitante accede desde el footer a: política de privacidad y tratamiento de datos (RF-110), términos y condiciones con derecho de retracto de 5 días (RF-111) e información del vendedor: razón social, NIT, dirección, teléfono, email (RF-114).
+4. En registro y checkout, el sistema exige el checkbox de aceptación de términos antes de continuar (RF-113).
+
+**Flujos alternativos:**
+- **2a. Personalizar:** el visitante habilita/deshabilita categorías de cookies no esenciales; el sistema aplica solo las consentidas.
+
+**Flujos de excepción:**
+- **4a. Checkbox no marcado:** el sistema bloquea el envío del formulario indicando que la aceptación es obligatoria.
+
+**Postcondiciones:**
+- Preferencia de cookies persistida; aceptación de términos registrada junto al registro/orden.
+
+---
+
+### CU-026 — Presentar PQRS
+
+| Campo | Valor |
+|---|---|
+| **Actor primario** | Cliente / Visitante |
+| **Actores secundarios** | Servicio de email |
+| **Prioridad / Fase** | P1 / Fase 3 |
+| **Trazabilidad** | RF-115 · HU-031 |
+
+**Descripción:** El usuario presenta una Petición, Queja, Reclamo o Sugerencia para ejercer sus derechos como consumidor.
+
+**Precondiciones:**
+- Ninguna (formulario público).
+
+**Flujo principal:**
+1. El usuario accede al formulario de PQRS.
+2. Selecciona el tipo (petición, queja, reclamo, sugerencia) y diligencia: nombre, documento, email, número de orden (si aplica) y descripción (RF-115).
+3. El sistema valida el formulario, guarda la solicitud con radicado único y fecha.
+4. El sistema envía confirmación por email con el número de radicado.
+5. El administrador recibe notificación para gestionar la solicitud.
+
+**Flujos de excepción:**
+- **3a. Datos inválidos:** el sistema marca los errores y no radica la solicitud.
+- **4a. Fallo del email:** la solicitud queda radicada; el sistema muestra el radicado en pantalla e informa que el correo no pudo enviarse.
+
+**Postcondiciones:**
+- PQRS radicada con número único; usuario y administrador notificados.
+
+---
+
+## Módulo: Internacionalización
+
+### CU-027 — Navegar el sitio en inglés
+
+| Campo | Valor |
+|---|---|
+| **Actor primario** | Visitante (angloparlante) |
+| **Prioridad / Fase** | P1 / Fase 9 |
+| **Trazabilidad** | RF-120, RF-121, RF-122, RF-123, RF-124, RF-125, RF-126 · HU-009, HU-032 |
+
+**Descripción:** El visitante navega la tienda completa en inglés con precios en USD, ya sea desde el subdominio `en.dobleyo.cafe` o mediante el selector de idioma.
+
+**Precondiciones:**
+- Traducciones disponibles en los archivos de i18n (es.json, en.json) (RF-120).
+
+**Flujo principal:**
+1. El visitante accede a `en.dobleyo.cafe` o pulsa el selector de idioma del header (RF-122).
+2. El sistema sirve la página equivalente bajo `/en/` con todo el contenido traducido (RF-121).
+3. El sistema establece `<html lang="en">` (RF-123) y emite los tags `hreflang` con la alternativa en español (RF-124).
+4. Los precios se muestran en USD (RF-125).
+5. El sistema persiste la preferencia de idioma para visitas posteriores (RF-122).
+6. El visitante consulta la página de envíos internacionales con tiempos y costos por destino (RF-126).
+
+**Flujos alternativos:**
+- **1a. Cambio de idioma en página interna:** el selector lleva a la ruta equivalente traducida (`/tienda` ↔ `/en/shop`), no a la home.
+
+**Flujos de excepción:**
+- **2a. Página sin equivalente en el otro idioma:** el sistema redirige a la sección padre equivalente más cercana en lugar de responder 404.
+
+**Postcondiciones:**
+- Preferencia de idioma persistida; navegación consistente en el idioma elegido.
+
+---
+
+## Pendientes (próximas iteraciones)
+
+- Casos de uso de requisitos **P2/P3**: historial de pedidos (RF-046), perfil editable (RF-045), validación de stock en carrito (RF-014), costos de envío (RF-026), presupuestos (RF-075), facturación (RF-076), análisis de zonas (RF-092), blog (RF-105), exportaciones (RF-077, RF-094), landing de finca desde trazabilidad (RF-056), vinculación finca-producto (RF-083).
+- Diagrama de casos de uso UML (actores y relaciones «include»/«extend») como complemento visual de este documento.
