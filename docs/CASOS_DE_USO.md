@@ -874,6 +874,68 @@ flowchart LR
 
 ---
 
+### CU-033 — Gestionar presupuestos
+
+| Campo | Valor |
+|---|---|
+| **Actor primario** | Administrador |
+| **Prioridad / Fase** | P2 / Fase 6 |
+| **Trazabilidad** | RF-075 · HU-020 |
+
+**Descripción:** El administrador crea presupuestos por período con sus líneas y compara la ejecución real contra lo presupuestado.
+
+**Precondiciones:**
+- Sesión con rol `admin`.
+- Plan de cuentas y categorías de gasto configurados.
+
+**Flujo principal:**
+1. El administrador crea un presupuesto indicando período (mensual/trimestral) y líneas por categoría con montos (RF-075).
+2. El sistema valida que el período no tenga otro presupuesto activo y guarda.
+3. Durante la ejecución, el sistema calcula el comparativo presupuesto vs. gastos reales aprobados (CU-016) por línea.
+4. El administrador consulta el comparativo con desviaciones absolutas y porcentuales (RF-075).
+
+**Flujos alternativos:**
+- **4a. Ajuste de presupuesto:** el administrador modifica líneas de un presupuesto vigente; el sistema conserva el historial del valor anterior.
+
+**Flujos de excepción:**
+- **2a. Período con presupuesto existente:** el sistema rechaza la creación y ofrece editar el vigente.
+
+**Postcondiciones:**
+- Presupuesto persistido; comparativo disponible en el dashboard financiero (CU-015).
+
+---
+
+### CU-034 — Gestionar facturación
+
+| Campo | Valor |
+|---|---|
+| **Actor primario** | Administrador |
+| **Prioridad / Fase** | P2 / Fase 6 |
+| **Trazabilidad** | RF-076 · HU-018 |
+
+**Descripción:** El administrador registra facturas de venta y compra con trazabilidad a los asientos contables de doble partida.
+
+**Precondiciones:**
+- Sesión con rol `admin`.
+- Plan de cuentas configurado (RF-070).
+
+**Flujo principal:**
+1. El administrador registra una factura (venta o compra): tercero, fecha, ítems, impuestos y totales (RF-076).
+2. El sistema valida los datos y genera el asiento contable asociado con débitos = créditos (RF-071).
+3. El sistema vincula factura ↔ asiento para trazabilidad bidireccional (RF-076).
+4. Los pagos recibidos/realizados se aplican a la factura (tablas `payments` + `payment_allocations`), actualizando su saldo.
+
+**Flujos alternativos:**
+- **4a. Pago parcial o multi-factura:** el sistema distribuye el pago entre facturas según la asignación indicada.
+
+**Flujos de excepción:**
+- **2a. Asiento descuadrado:** el sistema rechaza el registro (la validación de RF-071 es bloqueante).
+
+**Postcondiciones:**
+- Factura registrada con asiento contable vinculado y saldo actualizado.
+
+---
+
 ## Módulo: Fincas
 
 ### CU-017 — Ver landing de finca
@@ -1111,6 +1173,96 @@ flowchart LR
 
 ---
 
+### CU-035 — Gestionar blog
+
+| Campo | Valor |
+|---|---|
+| **Actor primario** | Administrador |
+| **Prioridad / Fase** | P2 / Fase 10 |
+| **Trazabilidad** | RF-105 · HU-024 |
+
+**Descripción:** El administrador crea y publica entradas de blog con un editor rich-text conectado a la base de datos (reemplazando la versión legacy en localStorage).
+
+**Precondiciones:**
+- Sesión con rol `admin`.
+
+**Flujo principal:**
+1. El administrador crea o edita una entrada: título, slug, contenido rich-text, imagen destacada y estado (borrador/publicado) (RF-105).
+2. El sistema valida unicidad del slug y persiste en BD.
+3. El administrador publica la entrada; el blog público la muestra.
+
+**Flujos alternativos:**
+- **3a. Despublicar:** la entrada vuelve a borrador y deja de mostrarse públicamente conservando su contenido.
+
+**Flujos de excepción:**
+- **2a. Slug duplicado:** el sistema rechaza y sugiere una variante.
+
+**Postcondiciones:**
+- Entrada persistida en BD con su estado de publicación.
+
+---
+
+### CU-036 — Consultar logs de auditoría
+
+| Campo | Valor |
+|---|---|
+| **Actor primario** | Administrador |
+| **Prioridad / Fase** | — (sin RF asociado; ver nota) |
+| **Trazabilidad** | HU-036 |
+
+> **Nota:** HU-036 no tiene requisito funcional asociado en `REQUISITOS_FUNCIONALES.md`, aunque la funcionalidad ya existe (`/admin/auditoria`, tabla `audit_logs`). Se recomienda formalizar un RF para cerrar la brecha de trazabilidad.
+
+**Descripción:** El administrador consulta el registro de acciones del sistema (quién, qué, cuándo) para rastrear cambios y detectar actividad sospechosa.
+
+**Precondiciones:**
+- Sesión con rol `admin`.
+- Los módulos operativos registran auditoría (CU-008..CU-024).
+
+**Flujo principal:**
+1. El administrador accede a `/admin/auditoria`.
+2. El sistema lista los eventos con: usuario, acción, entidad afectada, detalle y fecha.
+3. El administrador filtra por usuario, tipo de acción, entidad o rango de fechas.
+4. El administrador abre un evento para ver el detalle completo (metadata del cambio).
+
+**Flujos alternativos:**
+- **3a. Sin resultados para los filtros:** el sistema muestra estado vacío indicando los filtros activos.
+
+**Postcondiciones:**
+- Ninguna persistente (los logs de auditoría son de solo lectura: no se editan ni eliminan desde la UI).
+
+---
+
+### CU-037 — Exportar reportes y datos
+
+| Campo | Valor |
+|---|---|
+| **Actor primario** | Administrador |
+| **Prioridad / Fase** | P3 / Fases 6 y 8 |
+| **Trazabilidad** | RF-077, RF-094 · HU-018, HU-023 |
+| **Relaciones** | «extend» CU-015, «extend» CU-019 |
+
+**Descripción:** El administrador exporta reportes financieros (CSV/PDF) y datos del mapa de calor (CSV) para análisis externo.
+
+**Precondiciones:**
+- Sesión con rol `admin`.
+- Dashboard de origen abierto con filtros aplicados (CU-015 o CU-019).
+
+**Flujo principal:**
+1. El administrador pulsa "Exportar" en el dashboard financiero (RF-077) o en el mapa de calor (RF-094).
+2. El sistema genera el archivo respetando el período y los filtros activos.
+3. El sistema entrega la descarga (CSV o PDF según el reporte) y registra la exportación en auditoría.
+
+**Flujos alternativos:**
+- **2a. Conjunto vacío:** el sistema genera el archivo con encabezados y sin filas, informándolo.
+
+**Flujos de excepción:**
+- **2b. Volumen excesivo:** el sistema limita el rango exportable e indica cómo dividir la exportación por períodos.
+
+**Postcondiciones:**
+- Archivo generado y descargado; exportación trazada en auditoría.
+
+---
+
 ## Módulo: Compliance Legal
 
 ### CU-025 — Consultar información legal y gestionar cookies
@@ -1214,14 +1366,14 @@ flowchart LR
 
 | HU | Historia | RF asociados | CU | Estado |
 |---|---|---|---|---|
-| HU-001 | Navegar catálogo | RF-001..004 (P1), RF-005, RF-006 (P2) | CU-001 | Cubierto (P1) · RF-005/006 pendientes P2 |
-| HU-002 | Agregar al carrito | RF-010..013, RF-015 (P1), RF-014 (P2) | CU-002 | Cubierto (P1) · RF-014 pendiente P2 |
-| HU-003 | Completar compra | RF-020..025, RF-027..030, RF-093 (P1), RF-026 (P2) | CU-003, CU-004 | Cubierto (P1) · RF-026 pendiente P2 |
-| HU-004 | Historial de pedidos | RF-046 (P2) | — | Pendiente P2 |
-| HU-005 | Escanear QR del empaque | RF-052..055 (P1), RF-056 (P2) | CU-007 | Cubierto (P1) · RF-056 pendiente P2 |
+| HU-001 | Navegar catálogo | RF-001..004 (P1), RF-005, RF-006 (P2) | CU-001, CU-028 | Cubierto |
+| HU-002 | Agregar al carrito | RF-010..013, RF-015 (P1), RF-014 (P2) | CU-002 | Cubierto |
+| HU-003 | Completar compra | RF-020..025, RF-027..030, RF-093 (P1), RF-026 (P2) | CU-003, CU-004 | Cubierto |
+| HU-004 | Historial de pedidos | RF-046 (P2) | CU-029 | Cubierto |
+| HU-005 | Escanear QR del empaque | RF-052..055 (P1), RF-056 (P2) | CU-007 | Cubierto |
 | HU-006 | Registro y autenticación | RF-040..044 (P1) | CU-005, CU-006 | Cubierto |
-| HU-007 | Gestionar cuenta | RF-045 (P2) | — | Pendiente P2 |
-| HU-008 | Contactar a DobleYo | — | — | Sin RF asociado |
+| HU-007 | Gestionar cuenta | RF-045 (P2) | CU-030 | Cubierto |
+| HU-008 | Contactar a DobleYo | — | CU-031 | Cubierto · sin RF asociado (formalizar) |
 | HU-009 | Tienda en inglés | RF-121, RF-125, RF-126 (P1) | CU-027 | Cubierto |
 | HU-010 | Envíos internacionales | RF-126 (P1) | CU-027 | Cubierto |
 | HU-011 | Registrar cosecha | RF-051, RF-060 (P1) | CU-008 | Cubierto |
@@ -1231,30 +1383,32 @@ flowchart LR
 | HU-015 | Empaquetar | RF-064 (P1) | CU-012 | Cubierto |
 | HU-016 | Generar etiqueta QR | RF-054 (P1) | CU-014 | Cubierto |
 | HU-017 | Cupping SCA | RF-065 (P1) | CU-013 | Cubierto |
-| HU-018 | Dashboard financiero | RF-070..073 (P1), RF-076 (P2), RF-077 (P3) | CU-015 | Cubierto (P1) · RF-076/077 pendientes |
+| HU-018 | Dashboard financiero | RF-070..073 (P1), RF-076 (P2), RF-077 (P3) | CU-015, CU-034, CU-037 | Cubierto |
 | HU-019 | Registrar gastos | RF-074 (P1) | CU-016 | Cubierto |
-| HU-020 | Presupuestos | RF-075 (P2) | — | Pendiente P2 |
+| HU-020 | Presupuestos | RF-075 (P2) | CU-033 | Cubierto |
 | HU-021 | Landing de finca | RF-080, RF-081 (P1) | CU-017, CU-018 | Cubierto |
-| HU-022 | Administrar fincas | RF-082 (P1), RF-083 (P2) | CU-018 | Cubierto (P1) · RF-083 pendiente P2 |
-| HU-023 | Mapa de calor | RF-090, RF-091, RF-093 (P1), RF-092 (P2), RF-094 (P3) | CU-019 (RF-093 también en CU-003) | Cubierto (P1) · RF-092/094 pendientes |
-| HU-024 | Dashboard admin | RF-100, RF-104 (P1), RF-066, RF-105..107 (P2) | CU-020, CU-024 | Cubierto (P1) · P2 pendientes |
+| HU-022 | Administrar fincas | RF-082 (P1), RF-083 (P2) | CU-018 | Cubierto |
+| HU-023 | Mapa de calor | RF-090, RF-091, RF-093 (P1), RF-092 (P2), RF-094 (P3) | CU-019, CU-037 (RF-093 también en CU-003) | Cubierto |
+| HU-024 | Dashboard admin | RF-100, RF-104 (P1), RF-066, RF-105 (P2), RF-106, RF-107 (P2) | CU-020, CU-024, CU-032, CU-035 | Cubierto · RF-106/107 transversales de UI |
 | HU-025 | Gestionar productos | RF-101 (P1) | CU-021 | Cubierto |
 | HU-026 | Gestionar órdenes | RF-102 (P1) | CU-022 | Cubierto |
 | HU-027 | Gestionar usuarios | RF-103 (P1) | CU-023 | Cubierto |
 | HU-028 | Política de privacidad | RF-110 (P1) | CU-025 | Cubierto |
 | HU-029 | Consentimiento de cookies | RF-112 (P1) | CU-025 | Cubierto |
 | HU-030 | Términos y condiciones | RF-111, RF-113, RF-114 (P1) | CU-025 | Cubierto |
-| HU-031 | PQRS | RF-115 (P1), RF-116 (P2) | CU-026 | Cubierto (P1) · RF-116 pendiente P2 |
+| HU-031 | PQRS | RF-115 (P1), RF-116 (P2) | CU-026 (RF-116 en CU-025) | Cubierto |
 | HU-032 | Cambiar idioma | RF-120, RF-122..124 (P1) | CU-027 | Cubierto |
 | HU-033 | SEO / Google | RF-130..136 (P1) | — | Transversal (restricción de sistema) |
 | HU-034 | Navegación móvil | — | — | Transversal (criterios en `REQUISITOS_NO_FUNCIONALES.md`) |
 | HU-035 | Seguridad de pagos y plataforma | RF-140..146 (P1) | — | Transversal (aplica a todos los CU; RF-142/143 referenciados en CU-006) |
-| HU-036 | Auditoría | — | — | Transversal (registro de auditoría referenciado en CU-008..CU-024) |
+| HU-036 | Auditoría | — | CU-036 | Cubierto · sin RF asociado (formalizar); el registro de auditoría se referencia en CU-008..CU-024 |
 
-**Verificación de cobertura P1:** todos los RF de prioridad P1 de los módulos 1–12 están cubiertos por un CU, excepto los transversales de SEO (RF-130..136) y Seguridad (RF-140..146), que por su naturaleza no se modelan como casos de uso (ver convenciones al inicio).
+**Verificación de cobertura:** todos los RF funcionales (P1, P2 y P3) de los módulos 1–12 están cubiertos por un CU, con tres excepciones justificadas: los transversales de SEO (RF-130..136) y Seguridad (RF-140..146), que no se modelan como casos de uso (ver convenciones al inicio), y RF-106/RF-107 (sidebar, breadcrumbs, responsive tablet del panel admin), que son restricciones de UI aplicables a todos los CU de administración.
 
 ---
 
-## Pendientes (próximas iteraciones)
+## Pendientes
 
-- Casos de uso de requisitos **P2/P3**: historial de pedidos (RF-046), perfil editable (RF-045), validación de stock en carrito (RF-014), costos de envío (RF-026), presupuestos (RF-075), facturación (RF-076), análisis de zonas (RF-092), blog (RF-105), exportaciones (RF-077, RF-094), landing de finca desde trazabilidad (RF-056), vinculación finca-producto (RF-083).
+- **Formalizar RFs faltantes** en `REQUISITOS_FUNCIONALES.md`: HU-008 (formulario de contacto → CU-031) y HU-036 (consulta de auditoría → CU-036) tienen caso de uso pero no requisito funcional asociado.
+- **Ampliar el diagrama** con los CU P2/P3 (CU-028..CU-037) si se requiere la vista completa para presentación; hoy muestra solo la iteración P1 por legibilidad.
+- **Casos de uso aspiracionales** (HU-100..HU-105: quiz, suscripción, guías, reviews, gift cards, lealtad): se especificarán cuando entren al roadmap con RFs asignados.
