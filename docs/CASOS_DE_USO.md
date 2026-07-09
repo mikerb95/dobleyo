@@ -72,8 +72,8 @@
 ### Relaciones entre casos de uso
 
 - CU-003 «include» CU-006 (el checkout requiere sesión activa).
-- CU-003 «extend» **Aplicar cupón de descuento** (punto de extensión: resumen del pedido).
-- CU-003 «extend» CU-007 (la confirmación enlaza a la trazabilidad del lote comprado).
+- **Aplicar cupón de descuento** «extend» CU-003 (punto de extensión: resumen del pedido).
+- CU-007 «extend» CU-003 (punto de extensión: pantalla de confirmación, que enlaza a la trazabilidad del lote comprado).
 - CU-008..CU-012 forman la **cadena de trazabilidad** (RF-050): cada uno precede al siguiente.
 - CU-014 «include» CU-012 (solo se etiquetan lotes empaquetados).
 - CU-021..CU-024 «include» CU-006 con rol `admin` (RF-044).
@@ -82,7 +82,7 @@
 
 ### Diagrama de casos de uso
 
-> Mermaid no tiene notación UML nativa de casos de uso; se aproxima con un diagrama de flujo: actores como rectángulos, casos de uso como elipses (nodos redondeados), módulos como contenedores. Las flechas punteadas indican «include»/«extend».
+> Mermaid no tiene notación UML nativa de casos de uso; se aproxima con un diagrama de flujo: actores como rectángulos, casos de uso como elipses (nodos redondeados), módulos como contenedores. Las flechas punteadas con estereotipo indican «include»/«extend» (la flecha sale del caso que incluye o extiende); las punteadas sin etiqueta representan la precedencia de la cadena de trazabilidad.
 > El diagrama muestra la vista P1 (CU-001..CU-027); los CU P2/P3 se omiten para mantenerlo legible.
 
 ```mermaid
