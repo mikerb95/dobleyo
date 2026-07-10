@@ -164,7 +164,7 @@ async function seedInventory() {
           id, sku, name, description, category, subcategory, origin, process, roast,
           price, cost, stock_quantity, stock_min, weight, weight_unit, image_url,
           is_active, is_deal, is_bestseller, is_new, is_fast
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)`,
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           product.id, product.sku, product.name, product.description, product.category,
           product.subcategory, product.origin, product.process, product.roast,
