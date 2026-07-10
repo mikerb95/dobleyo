@@ -70,13 +70,13 @@ async function seed() {
   try {
     for (const p of products) {
       // Check if product exists
-      const existing = await db.query('SELECT id FROM products WHERE id = $1', [p.id]);
+      const existing = await db.query('SELECT id FROM products WHERE id = ?', [p.id]);
 
       if (existing.rows.length === 0) {
         console.log(`Inserting ${p.name}...`);
         await db.query(
           `INSERT INTO products (id, name, category, price, stock_quantity, origin, process, roast, image_url)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [
             p.id,
             p.name,
