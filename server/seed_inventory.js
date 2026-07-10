@@ -179,7 +179,7 @@ async function seedInventory() {
       // Asociar con proveedor de café
       await query(
         `INSERT INTO product_supplier_prices (product_id, supplier_id, cost_price, is_preferred, lead_time_days)
-         VALUES ($1, $2, $3, true, 7)`,
+         VALUES (?, ?, ?, true, 7)`,
         [product.id, supplierIds[0], product.cost]
       );
     }
