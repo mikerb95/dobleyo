@@ -29,12 +29,14 @@ export async function assertFarmOwnership(farmSlug, user) {
   let rows;
   try {
     ({ rows } = await query(
-      'SELECT caficultor_id FROM farms WHERE slug = $1 LIMIT 1',
+      'SELECT caficultor_id FROM farms WHERE slug = ? LIMIT 1',
       [farmSlug]
     ));
-  } catch {
-    // Si la tabla farms no existe aún → permitir (migración pendiente)
-    return;
+  } catch (err) {
+    // Si la tabla farms no existe aún → permitir (migración pendiente).
+    // Cualquier otro error se relanza: no se debe fallar en "permitir".
+    if (/no such table/i.test(err.message)) return;
+    throw err;
   }
 
   // Finca no registrada en el sistema → permisivo (backward compat / finca nueva)

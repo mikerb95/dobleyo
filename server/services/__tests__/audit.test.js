@@ -90,19 +90,19 @@ describe('getAuditLogs()', () => {
         await getAuditLogs({ action: 'delete' });
 
         const [sql, params] = query.mock.calls[0];
-        expect(sql).toContain('al.action = $1');
+        expect(sql).toContain('al.action = ?');
         expect(params[0]).toBe('delete');
     });
 
-    it('debería incluir filtros combinados con numeración $n correcta', async () => {
+    it('debería incluir filtros combinados en el orden correcto', async () => {
         query.mockResolvedValueOnce({ rows: [] });
 
         await getAuditLogs({ action: 'create', entityType: 'product', userId: 5 });
 
         const [sql, params] = query.mock.calls[0];
-        expect(sql).toContain('al.action = $1');
-        expect(sql).toContain('al.entity_type = $2');
-        expect(sql).toContain('al.user_id = $3');
+        expect(sql).toContain('al.action = ?');
+        expect(sql).toContain('al.entity_type = ?');
+        expect(sql).toContain('al.user_id = ?');
         expect(params[0]).toBe('create');
         expect(params[1]).toBe('product');
         expect(params[2]).toBe(5);
