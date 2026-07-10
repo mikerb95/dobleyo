@@ -465,7 +465,7 @@ async function seedInventory() {
       // Asociar con proveedor de textiles
       await query(
         `INSERT INTO product_supplier_prices (product_id, supplier_id, cost_price, is_preferred, lead_time_days)
-         VALUES ($1, $2, $3, true, 20)`,
+         VALUES (?, ?, ?, true, 20)`,
         [product.id, supplierIds[2], product.cost]
       );
     }
@@ -501,7 +501,7 @@ async function seedInventory() {
 
     for (const mov of movements) {
       // Obtener stock actual
-      const current = await query('SELECT stock_quantity FROM products WHERE id = $1', [mov.product_id]);
+      const current = await query('SELECT stock_quantity FROM products WHERE id = ?', [mov.product_id]);
       const currentStock = current.rows[0]?.stock_quantity || 0;
 
       let newStock = currentStock;
