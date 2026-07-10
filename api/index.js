@@ -142,7 +142,7 @@ app.use('/api/crm', crmRouter);
 app.use('/api/dashboard', dashboardRouter);
 app.use('/api/ml', forecastRouter);
 
-// Health Check — ping real a BD para verificar PgBouncer + PostgreSQL
+// Health Check — ping real a Turso/libSQL
 app.get('/api/health', async (req, res) => {
   const db = await healthCheck();
   res.status(db.ok ? 200 : 503).json({
@@ -150,6 +150,15 @@ app.get('/api/health', async (req, res) => {
     time: new Date().toISOString(),
     db: db.ok ? 'connected' : `error: ${db.error}`,
   });
+});
+
+// MercadoPago — stub (Fase 4, pendiente)
+app.post('/api/mp/create_preference', async (req, res) => {
+  return res.status(501).json({ error: 'MercadoPago pendiente de configuración' });
+});
+
+app.post('/api/mp/webhook', express.json(), async (req, res) => {
+  res.sendStatus(200);
 });
 
 // Export for Vercel serverless
