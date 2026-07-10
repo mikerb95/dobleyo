@@ -351,7 +351,7 @@ async function seedInventory() {
       // Asociar con proveedor de equipos
       await query(
         `INSERT INTO product_supplier_prices (product_id, supplier_id, cost_price, is_preferred, lead_time_days)
-         VALUES ($1, $2, $3, true, 15)`,
+         VALUES (?, ?, ?, true, 15)`,
         [product.id, supplierIds[1], product.cost]
       );
     }
