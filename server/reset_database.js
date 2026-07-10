@@ -189,7 +189,7 @@ async function resetDatabase() {
 
       await query(
         `INSERT INTO users (email, password_hash, first_name, role, is_verified)
-         VALUES ($1, $2, $3, $4, TRUE)`,
+         VALUES (?, ?, ?, ?, TRUE)`,
         [ADMIN_EMAIL, passwordHash, 'Admin DobleYo', 'admin']
       );
 
