@@ -122,7 +122,7 @@ describe('getAuditLogs()', () => {
         await getAuditLogs({});
 
         const [sql, params] = query.mock.calls[0];
-        expect(sql).toContain('LIMIT $1 OFFSET $2');
+        expect(sql).toContain('LIMIT ? OFFSET ?');
         expect(params).toContain(100);
         expect(params).toContain(0);
     });
