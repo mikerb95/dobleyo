@@ -60,7 +60,7 @@
 | `server/routes/auth.js` | Auth completo: register, login, refresh, logout, me, verify, caficultor status |
 | `server/routes/coffee.js` | Pipeline de café: harvest → storage → roasting → retrieval → packaging → sale |
 | `server/routes/production.js` | Router padre que monta sub-routers de `production/` |
-| `server/routes/production/*.js` | ⚠️ USAN CommonJS — DEBEN MIGRARSE A ESM |
+| `server/routes/production/*.js` | Sub-routers de producción (ESM) |
 | `server/routes/inventory.js` | CRUD de productos, movimientos, proveedores |
 | `server/routes/mercadolibre.js` | Sync ML, sales, heatmap data |
 | `server/routes/labels.js` | Sistema de etiquetas/QR |
