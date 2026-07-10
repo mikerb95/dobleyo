@@ -92,15 +92,15 @@ async function seed() {
       } else {
         console.log(`Updating ${p.name}...`);
         await db.query(
-          `UPDATE products SET 
-            name = $1, 
-            price = $2, 
-            origin = $3, 
-            process = $4, 
-            roast = $5, 
-            image_url = $6,
-            updated_at = NOW()
-           WHERE id = $7`,
+          `UPDATE products SET
+            name = ?,
+            price = ?,
+            origin = ?,
+            process = ?,
+            roast = ?,
+            image_url = ?,
+            updated_at = datetime('now')
+           WHERE id = ?`,
           [
             p.name,
             p.price,
