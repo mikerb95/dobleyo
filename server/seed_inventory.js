@@ -522,7 +522,7 @@ async function seedInventory() {
         `INSERT INTO inventory_movements (
           product_id, movement_type, quantity, quantity_before, quantity_after,
           reason, reference
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+        ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
         [mov.product_id, mov.type, actualQty, currentStock, newStock, mov.reason, mov.ref]
       );
 
