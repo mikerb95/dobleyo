@@ -60,6 +60,7 @@ const steps = [
   { name: 'ML sales fields (buyer/status)',  run: () => runFn('add_ml_sales_fields.js', 'addMlSalesFields') },
   { name: 'Lot movements table',             run: () => runFn('create_lot_movements.js', 'createLotMovements') },
   { name: 'Account tables (addresses/favorites/preferences)', run: () => runFn('create_account_tables.js', 'createAccountTables') },
+  { name: 'Shipments tables (Mipaquete)',      run: () => runFn('create_shipments.js', 'createShipmentsTables') },
 ];
 
 async function runAll() {
