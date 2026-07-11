@@ -599,6 +599,7 @@ import Layout from "../layouts/Layout.astro";
           const fDept      = fDeptEl.value;
           const fCity      = fCityEl.value;
           const fPhone     = fPhoneRaw ? `${selectedCountry.code} ${fPhoneRaw}` : undefined;
+          const paymentMethod = getPaymentMethod();
 
           let hasError = false;
           if (!fName)  { setError(document.getElementById('fName'),  'Campo obligatorio'); hasError = true; }
@@ -609,12 +610,16 @@ import Layout from "../layouts/Layout.astro";
           if (!fAddr)  { setError(document.getElementById('fAddr'),  'Campo obligatorio'); hasError = true; }
           if (!fDept)  { setError(fDeptEl, 'Selecciona un departamento'); hasError = true; }
           if (!fCity)  { setError(fCityEl, 'Selecciona una ciudad'); hasError = true; }
+          if (paymentMethod === 'cod' && !fPhoneRaw) {
+            setError(document.getElementById('fPhone'), 'Requerido para contraentrega'); hasError = true;
+          }
           if (hasError) return;
 
+          const busyLabel = paymentMethod === 'cod' ? 'Confirmando…' : 'Procesando…';
           payBtn.disabled = true;
-          payBtnText.textContent = 'Procesando…';
+          payBtnText.textContent = busyLabel;
           payBtn.classList.add('co-btn-primary--loading');
-          if (coMbPayBtn) { coMbPayBtn.disabled = true; if (coMbPayText) coMbPayText.textContent = 'Procesando…'; }
+          if (coMbPayBtn) { coMbPayBtn.disabled = true; if (coMbPayText) coMbPayText.textContent = busyLabel; }
 
           try {
             const currentCart = window.Cart.getCart();
@@ -630,6 +635,7 @@ import Layout from "../layouts/Layout.astro";
                 shippingCity:       fCity,
                 shippingDepartment: fDept || undefined,
                 couponCode:         appliedCoupon ? appliedCoupon.code : undefined,
+                paymentMethod,
                 items: currentCart.map(p => ({
                   productId: p.id,
                   quantity:  p.qty,
@@ -642,9 +648,9 @@ import Layout from "../layouts/Layout.astro";
               payError.textContent = data.errors?.[0]?.msg || data.error || 'Error al crear la orden';
               payError.style.display = 'block';
               payBtn.disabled = false;
-              payBtnText.textContent = 'Confirmar y pagar';
               payBtn.classList.remove('co-btn-primary--loading');
-              if (coMbPayBtn) { coMbPayBtn.disabled = false; if (coMbPayText) coMbPayText.textContent = 'Confirmar y pagar'; }
+              if (coMbPayBtn) coMbPayBtn.disabled = false;
+              updatePayMethodUI();
               return;
             }
 
@@ -654,9 +660,17 @@ import Layout from "../layouts/Layout.astro";
 
             function resetPayBtn() {
               payBtn.disabled = false;
-              payBtnText.textContent = 'Confirmar y pagar';
               payBtn.classList.remove('co-btn-primary--loading');
-              if (coMbPayBtn) { coMbPayBtn.disabled = false; if (coMbPayText) coMbPayText.textContent = 'Confirmar y pagar'; }
+              if (coMbPayBtn) coMbPayBtn.disabled = false;
+              updatePayMethodUI();
+            }
+
+            // Contraentrega: no hay pasarela de pago, la orden ya nace confirmada.
+            if (paymentMethod === 'cod') {
+              if (window.Cart.clearCart) window.Cart.clearCart();
+              sessionStorage.removeItem('dy_coupon');
+              window.location.href = confirmUrl;
+              return;
             }
 
             // Widget embebido: abre el checkout de Wompi como modal sobre la página.
@@ -698,11 +712,14 @@ import Layout from "../layouts/Layout.astro";
             payError.textContent = 'Error de conexión. Inténtalo de nuevo.';
             payError.style.display = 'block';
             payBtn.disabled = false;
-            payBtnText.textContent = 'Confirmar y pagar';
             payBtn.classList.remove('co-btn-primary--loading');
-            if (coMbPayBtn) { coMbPayBtn.disabled = false; if (coMbPayText) coMbPayText.textContent = 'Confirmar y pagar'; }
+            if (coMbPayBtn) coMbPayBtn.disabled = false;
+            updatePayMethodUI();
           }
         });
+
+        // Estado inicial del botón/nota según el método preseleccionado
+        updatePayMethodUI();
       }));
     })();
   </script>
