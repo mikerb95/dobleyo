@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import { logger } from '../logger.js';
 import { query } from '../db.js';
 
