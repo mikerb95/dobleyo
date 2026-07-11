@@ -180,6 +180,84 @@ export const sendOrderConfirmationEmail = async (email, customerName, orderData)
   }
 };
 
+// Email de notificación de despacho (número de guía, transportadora, tracking)
+export const sendShippingNotificationEmail = async (email, customerName, shipmentData) => {
+  const { reference, guideNumber, deliveryCompanyName, trackingUrl, isCod, collectionValue } = shipmentData;
+
+  if (!resend) {
+    console.log('Mock Shipping Email sent to:', email, 'Guide:', guideNumber);
+    return { success: true, mock: true };
+  }
+
+  try {
+    const data = await resend.emails.send({
+      from: `${FROM_NAME} <${FROM_EMAIL}>`,
+      to: email,
+      subject: `🚚 Su pedido #${reference} va en camino`,
+      html: `
+        <!DOCTYPE html>
+        <html lang="es">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <style>
+            body { font-family: 'Lora', Georgia, serif; color: #1f1f1f; line-height: 1.6; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; background: #f7f3ef; }
+            .header { text-align: center; margin-bottom: 30px; }
+            .header h1 { color: #251a14; margin: 0; font-size: 28px; }
+            .content { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+            .order-info { background: #f9fafb; padding: 15px; border-left: 4px solid #c67b4e; margin: 20px 0; border-radius: 4px; }
+            .button { display: inline-block; background: #251a14; color: white; padding: 12px 30px; border-radius: 6px; text-decoration: none; margin: 20px 0; font-weight: 600; }
+            .cod-box { background: #fef3e2; border-left: 4px solid #c96800; padding: 15px; margin: 20px 0; border-radius: 4px; }
+            .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #777; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>☕ DobleYo Café</h1>
+            </div>
+            <div class="content">
+              <h2>Hola ${customerName},</h2>
+              <p>Su pedido ya fue despachado y va en camino.</p>
+
+              <div class="order-info">
+                <strong style="color: #251a14;">Número de Pedido:</strong> #${reference}<br>
+                <strong style="color: #251a14;">Transportadora:</strong> ${deliveryCompanyName || 'Por confirmar'}<br>
+                <strong style="color: #251a14;">Número de Guía:</strong> ${guideNumber || 'Pendiente'}
+              </div>
+
+              ${isCod ? `
+              <div class="cod-box">
+                <strong>Pago contraentrega:</strong> recuerde tener disponible
+                $${Number(collectionValue || 0).toLocaleString('es-CO')} al momento de recibir su pedido.
+              </div>
+              ` : ''}
+
+              <center>
+                <a href="${trackingUrl}" class="button">Ver estado de mi pedido</a>
+              </center>
+
+              <p style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e6e6e6; font-size: 13px; color: #777;">
+                Si tiene preguntas sobre su envío, contáctenos.
+              </p>
+            </div>
+            <div class="footer">
+              <p>© 2026 DobleYo Café. Todos los derechos reservados.</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `,
+    });
+
+    return { success: true, data };
+  } catch (error) {
+    logger.error('Error enviando email de notificación de envío:', error);
+    return { success: false, error };
+  }
+};
+
 // Email de contacto (al admin)
 export const sendContactFormEmail = async (contactData) => {
   if (!resend) {
