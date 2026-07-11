@@ -320,23 +320,45 @@ ordersRouter.post('/',
             let checkoutUrl = null;
             let wompi = null;
 
-            if (WOMPI_PUBLIC_KEY && WOMPI_INTEGRITY_SECRET) {
+            if (!isCod && WOMPI_PUBLIC_KEY && WOMPI_INTEGRITY_SECRET) {
                 checkoutUrl = buildWompiCheckoutUrl(reference, total, customerEmail, redirectUrl, currency);
                 wompi = buildWompiWidgetData(reference, total, customerEmail, redirectUrl, currency);
             }
 
-            // El uso del cupón se contabiliza al CONFIRMAR el pago (webhook), no aquí:
-            // incrementar en la creación permitía agotar promociones con órdenes que
-            // nunca se pagan. Ver POST /wompi/webhook.
+            // El uso del cupón se contabiliza al CONFIRMAR el pago (webhook Wompi), no aquí:
+            // incrementar en la creación permitía agotar promociones con órdenes que nunca
+            // se pagan. En COD no hay webhook de pago, así que el cupón se cuenta de una vez
+            // (la orden ya nace confirmada, sin intento de pago que pueda fallar).
+            if (isCod && appliedCode) {
+                await query(
+                    `UPDATE discount_codes SET uses_count = uses_count + 1
+                     WHERE code = ? AND (max_uses IS NULL OR uses_count < max_uses)`,
+                    [appliedCode]
+                );
+            }
 
-            await logAudit(req.user?.id || null, 'create', 'customer_orders', orderId, { reference, total, discount: discountAmount });
+            await logAudit(req.user?.id || null, 'create', 'customer_orders', orderId, { reference, total, discount: discountAmount, paymentMethod });
 
             // Geocodificación asíncrona — no bloquea la respuesta HTTP
             geocodeOrderAsync(orderId, shippingCity, shippingDepartment);
 
+            // COD no tiene webhook de confirmación de pago: enviar el email de
+            // confirmación de una vez (la orden ya nace 'processing').
+            if (isCod) {
+                sendOrderConfirmationEmail(customerEmail, customerName, {
+                    orderId: reference,
+                    date: new Date().toISOString(),
+                    items: normalizedItems.map((i) => ({ name: i.productName, quantity: i.quantity, price: i.unitPrice })),
+                    subtotal,
+                    shipping,
+                    total,
+                    shippingAddress: `${shippingAddress}, ${shippingCity}`,
+                }).catch((err) => logger.error({ err }, '[POST /api/orders] Error enviando confirmación COD'));
+            }
+
             return res.status(201).json({
                 success: true,
-                data: { orderId, reference, subtotal, discountAmount, shipping, total, currency, checkoutUrl, wompi }
+                data: { orderId, reference, subtotal, discountAmount, shipping, total, currency, paymentMethod, checkoutUrl, wompi }
             });
         } catch (err) {
             logger.error({ err }, '[POST /api/orders] Error:');

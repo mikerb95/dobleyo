@@ -129,7 +129,7 @@ import Layout from "../layouts/Layout.astro";
           </div>
 
           <div class="co-pay-methods">
-            <label class="co-pay-option co-pay-option--selected">
+            <label class="co-pay-option co-pay-option--selected" id="payOptionWompi">
               <input type="radio" name="payMethod" value="wompi" checked class="co-radio" />
               <div class="co-pay-option__body">
                 <div class="co-pay-option__top">
@@ -146,6 +146,21 @@ import Layout from "../layouts/Layout.astro";
                 </div>
               </div>
             </label>
+            <label class="co-pay-option" id="payOptionCod">
+              <input type="radio" name="payMethod" value="cod" class="co-radio" />
+              <div class="co-pay-option__body">
+                <div class="co-pay-option__top">
+                  <div class="co-pay-option__name">
+                    <span class="co-pay-badge">Contraentrega</span>
+                    <span class="co-pay-desc">Pague en efectivo o datáfono al recibir su pedido</span>
+                  </div>
+                </div>
+              </div>
+            </label>
+          </div>
+
+          <div id="codNote" class="co-legal" style="display:none;">
+            Disponible únicamente para envíos dentro de Colombia. El mensajero le cobrará el valor total del pedido al momento de la entrega.
           </div>
 
           <div id="payError" class="co-error" style="display:none;" role="alert"></div>
