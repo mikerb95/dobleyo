@@ -176,7 +176,7 @@ export async function healthCheck() {
 function normalizeKey(city, department) {
     const strip = (s) => String(s || '')
         .toLowerCase()
-        .normalize('NFD').replace(/[̀-ͯ]/g, '')
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
         .trim();
     return `${strip(city)}|${strip(department)}`;
 }
