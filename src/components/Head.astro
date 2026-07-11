@@ -85,33 +85,6 @@ const organizationSchema = {
 {canonical && <meta property="og:url" content={canonical} />}
 <meta property="og:locale" content={lang === "en" ? "en_US" : "es_CO"} />
 
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-
-{
-  !isAdmin && (
-    <>
-      <link
-        href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=Playfair+Display:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap"
-        rel="stylesheet"
-      />
-      <link
-        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap"
-        rel="stylesheet"
-      />
-    </>
-  )
-}
-
-{
-  isAdmin && (
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:wght@500;600&family=Playfair+Display:wght@700&display=swap"
-      rel="stylesheet"
-    />
-  )
-}
-
 <!-- JSON-LD: Organización (todas las páginas públicas) -->
 {
   !isAdmin && (
