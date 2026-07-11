@@ -103,6 +103,35 @@ shippingRouter.get('/orders-pending', authenticateToken, requireRole('admin'), a
     }
 });
 
+// ─── GET /api/shipping/:orderId/suggest (admin) ────────────────────────────
+// Prellena el formulario de cotización: peso calculado desde products.weight,
+// valor declarado, y resolución de ciudad→DANE (o candidatos si es ambigua).
+
+shippingRouter.get('/:orderId/suggest', authenticateToken, requireRole('admin'), async (req, res) => {
+    try {
+        const data = await getOrderWithItems(req.params.orderId);
+        if (!data) return res.status(404).json({ success: false, error: 'Orden no encontrada' });
+        const { order, items, products } = data;
+
+        const { weightKg, missingWeights, declaredValueCop } = computePackageFromOrder(items, products);
+        const dane = await resolveDaneCode(order.shipping_city, order.shipping_department);
+
+        return res.json({
+            success: true,
+            data: {
+                order,
+                weightKg: weightKg || 0.5,
+                missingWeights,
+                declaredValueCop,
+                dane,
+            },
+        });
+    } catch (err) {
+        logger.error({ err }, '[GET /api/shipping/:orderId/suggest] Error:');
+        return res.status(500).json({ success: false, error: 'Error al calcular sugerencia de envío' });
+    }
+});
+
 // ─── GET /api/shipping/locations?q= (admin) ────────────────────────────────
 
 shippingRouter.get('/locations',
