@@ -61,8 +61,8 @@
   --card: #fffcf8;
   --border: #e8dfd3;
   --muted-fg: var(--ink-muted);
-  --footer-bg: var(--espresso);
-  --footer-fg: #ece3d8;
+  --footer-bg: #f3eee7;
+  --footer-fg: #5a463a;
   --accent: var(--caramel);
   --accent-contrast: #ffffff;
   --price: var(--espresso);
