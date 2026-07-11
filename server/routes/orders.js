@@ -114,6 +114,7 @@ function verifyWompiEventSignature(event) {
 
 ordersRouter.post('/',
     checkoutLimiter,
+    codOrderLimiter,
     optionalAuth,
     [
         body('customerName').trim().notEmpty().withMessage('Nombre requerido'),
@@ -126,6 +127,7 @@ ordersRouter.post('/',
         body('items.*.productId').notEmpty(),
         body('items.*.quantity').isInt({ min: 1 }),
         body('currency').optional().isIn(['COP', 'USD']).withMessage('Moneda inválida'),
+        body('paymentMethod').optional().isIn(['wompi', 'cod']).withMessage('Método de pago inválido'),
     ],
     async (req, res) => {
         const errors = validationResult(req);
@@ -137,9 +139,24 @@ ordersRouter.post('/',
             const {
                 customerName, customerEmail, customerPhone,
                 shippingAddress, shippingCity, shippingDepartment, shippingZip,
-                items, notes, couponCode, currency = 'COP'
+                items, notes, couponCode, currency = 'COP', paymentMethod = 'wompi'
             } = req.body;
             const isUSD = currency === 'USD';
+            const isCod = paymentMethod === 'cod';
+
+            // Contraentrega solo aplica a Colombia/COP (Mipaquete no cubre envíos internacionales).
+            if (isCod && isUSD) {
+                return res.status(422).json({ success: false, error: 'El pago contraentrega solo está disponible en Colombia' });
+            }
+
+            // Celular colombiano estricto: Mipaquete requiere un número válido para contactar
+            // al destinatario, y esto también dificulta el fraude con datos inventados.
+            if (isCod) {
+                const digits = String(customerPhone || '').replace(/\D/g, '').slice(-10);
+                if (!/^3\d{9}$/.test(digits)) {
+                    return res.status(422).json({ success: false, error: 'Para contraentrega se requiere un celular colombiano válido' });
+                }
+            }
 
             const productIds = [...new Set(items.map((item) => item.productId).filter(Boolean))];
             if (!productIds.length) {
