@@ -1,5 +1,6 @@
 ---
 import Layout from "../../layouts/Layout.astro";
+import Icon from "../../components/Icon.astro";
 import { getCanonicalUrl, getHreflangPair } from "../../i18n/index.ts";
 
 const hreflang = getHreflangPair("/envios-devoluciones");
@@ -13,113 +14,493 @@ const hreflang = getHreflangPair("/envios-devoluciones");
   hreflangEs={hreflang?.es}
   hreflangEn={hreflang?.en}
 >
-  <section class="prose legal-page">
-    <h1>Shipping & Returns</h1>
-    <p class="legal-meta">Last updated: <strong>March 1, 2026</strong></p>
+  <section class="ship-page">
+    <header class="ship-hero">
+      <span class="eyebrow">Customer care</span>
+      <h1>Shipping & returns</h1>
+      <p class="ship-hero__lead">
+        Coverage, delivery times and the return process for your DobleYo
+        Café orders.
+      </p>
+    </header>
 
-    <div
-      style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-bottom: 3rem;"
-    >
-      <!-- Shipping -->
-      <div class="legal-card">
-        <h2>📦 International Shipping</h2>
+    <ul class="ship-stats">
+      <li class="ship-stats__item">
+        <Icon name="truck" size={22} />
+        <div>
+          <strong>Free shipping</strong>
+          <span>On orders over $50 USD, worldwide</span>
+        </div>
+      </li>
+      <li class="ship-stats__item">
+        <Icon name="rotate-cw" size={22} />
+        <div>
+          <strong>15 days</strong>
+          <span>To request a return on sealed bags</span>
+        </div>
+      </li>
+      <li class="ship-stats__item">
+        <Icon name="leaf" size={22} />
+        <div>
+          <strong>Freshness guarantee</strong>
+          <span>Shipped within 15 days of roasting</span>
+        </div>
+      </li>
+    </ul>
 
-        <h3>Free Shipping</h3>
+    <div class="ship-grid">
+      <article class="card">
+        <div class="card__head">
+          <span class="card__icon"><Icon name="package" /></span>
+          <h2>International shipping</h2>
+        </div>
+
+        <h3>Free shipping</h3>
         <p>Free worldwide shipping on all orders over <strong>$50 USD</strong>.</p>
 
-        <h3>Estimated Delivery Times</h3>
-        <ul>
-          <li><strong>United States & Canada:</strong> 7–12 business days</li>
-          <li><strong>Europe:</strong> 10–18 business days</li>
-          <li><strong>Rest of the world:</strong> 14–25 business days</li>
-        </ul>
+        <h3>Estimated delivery times</h3>
+        <table class="ship-table">
+          <tbody>
+            <tr>
+              <th scope="row">United States & Canada</th>
+              <td>7–12 business days</td>
+            </tr>
+            <tr>
+              <th scope="row">Europe</th>
+              <td>10–18 business days</td>
+            </tr>
+            <tr>
+              <th scope="row">Rest of the world</th>
+              <td>14–25 business days</td>
+            </tr>
+          </tbody>
+        </table>
 
-        <h3>Shipping Costs</h3>
-        <ul>
+        <h3>Shipping costs</h3>
+        <ul class="ship-list">
           <li>Orders under $50 USD: calculated at checkout based on destination</li>
           <li>Orders $50 USD and above: <strong>free</strong></li>
         </ul>
 
         <h3>Tracking</h3>
         <p>
-          All international orders include a tracking number sent to your email
-          once your package ships. You can follow its journey in real time.
+          Every international order includes a tracking number sent to your
+          email once it ships, so you can follow its journey in real time.
         </p>
 
-        <h3>Customs & Import Duties</h3>
+        <h3>Customs & import duties</h3>
         <p>
-          Import duties and taxes may apply depending on the destination country.
-          These charges are the buyer's responsibility. We declare the accurate
-          value and contents of all shipments.
+          Import duties and taxes may apply depending on the destination
+          country and are the buyer's responsibility. We declare the
+          accurate value and contents of every shipment.
         </p>
-      </div>
+      </article>
 
-      <!-- Returns -->
-      <div class="legal-card">
-        <h2>↩️ Returns & Refunds</h2>
+      <article class="card">
+        <div class="card__head">
+          <span class="card__icon"><Icon name="rotate-cw" /></span>
+          <h2>Returns & refunds</h2>
+        </div>
 
-        <h3>Freshness Guarantee</h3>
+        <h3>Freshness guarantee</h3>
         <p>
-          Every bag ships within 15 days of roasting. If you receive coffee that
-          is stale, damaged, or not as described, we will replace it or issue a
-          full refund — no questions asked.
+          Every bag ships within 15 days of roasting. If your coffee
+          arrives stale, damaged, or not as described, we will replace it
+          or issue a full refund — no questions asked.
         </p>
 
-        <h3>Return Policy</h3>
+        <h3>Return policy</h3>
         <p>
           We accept returns within <strong>15 calendar days</strong> of delivery
-          for sealed, unopened products. Once a bag has been opened, we cannot
-          accept returns due to the perishable nature of specialty coffee.
+          for sealed, unopened products. Once a bag has been opened, we
+          cannot accept returns due to the perishable nature of specialty
+          coffee.
         </p>
 
-        <h3>How to Request a Return</h3>
-        <ol>
-          <li>Email us at <a href="mailto:hello@dobleyo.cafe">hello@dobleyo.cafe</a> within 15 days of receiving your order.</li>
-          <li>Include your order number and a brief description of the issue.</li>
-          <li>We will respond within 1–2 business days with next steps.</li>
+        <h3>How to request a return</h3>
+        <ol class="ship-steps">
+          <li>
+            Email <a href="mailto:hello@dobleyo.cafe">hello@dobleyo.cafe</a> within
+            15 days of receiving your order
+          </li>
+          <li>Include your order number and a brief description of the issue</li>
+          <li>We respond within 1–2 business days with next steps</li>
         </ol>
 
-        <h3>Refund Timeline</h3>
+        <h3>Refund timeline</h3>
         <p>
-          Approved refunds are processed within 5–10 business days back to your
-          original payment method.
+          Approved refunds are processed within 5–10 business days back to
+          your original payment method.
         </p>
+      </article>
+    </div>
 
-        <h3>Damaged in Transit</h3>
+    <div class="callout callout--warning">
+      <Icon name="alert-triangle" size={22} />
+      <div>
+        <h3>Damaged in transit?</h3>
         <p>
-          If your package arrives visibly damaged, please photograph it and
-          contact us immediately at
-          <a href="mailto:hello@dobleyo.cafe">hello@dobleyo.cafe</a>. We will
-          arrange a replacement at no cost to you.
+          Photograph the damage and contact us right away at
+          <a href="mailto:hello@dobleyo.cafe">hello@dobleyo.cafe</a>. We
+          will arrange a replacement at no cost to you.
         </p>
       </div>
     </div>
 
-    <div class="legal-alert">
-      <strong>Questions?</strong> Contact us at
-      <a href="mailto:hello@dobleyo.cafe">hello@dobleyo.cafe</a> or through our
-      <a href="/contact" data-link>contact form</a>. We typically respond within
-      one business day.
+    <div class="card card--wide">
+      <div class="card__head">
+        <span class="card__icon"><Icon name="phone" /></span>
+        <h2>Need help?</h2>
+      </div>
+      <div class="contact-grid">
+        <div class="contact-item">
+          <Icon name="mail" size={18} />
+          <h3>Email</h3>
+          <a href="mailto:hello@dobleyo.cafe" class="contact-item__link"
+            >hello@dobleyo.cafe</a
+          >
+          <span class="contact-item__meta">We reply within one business day</span>
+        </div>
+        <div class="contact-item">
+          <Icon name="help-circle" size={18} />
+          <h3>Contact form</h3>
+          <a href="/en/contact" data-link class="contact-item__link"
+            >Send a message</a
+          >
+          <span class="contact-item__meta">For order or product questions</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="ship-commitment">
+      <Icon name="shield" size={28} />
+      <h2>Your satisfaction is our priority</h2>
+      <p>
+        At DobleYo Café we're committed to a safe, reliable buying
+        experience. If you have any question or concern, reach out — we're
+        here to help.
+      </p>
     </div>
   </section>
-</Layout>
 
-<style>
-  .prose { max-width: 900px; margin: 2rem auto; padding: 0 1.25rem 4rem; }
-  .legal-page h1 { font-size: clamp(1.8rem, 5vw, 2.5rem); color: var(--coffee); margin-bottom: 0.5rem; }
-  .legal-meta { font-size: 0.88rem; color: var(--muted-fg); margin-bottom: 2rem; }
-  .legal-card {
-    background: #fff; border: 1px solid var(--border); border-radius: 0.75rem; padding: 2rem;
-  }
-  .legal-card h2 { font-size: 1.3rem; color: var(--coffee); margin: 0 0 1.25rem; }
-  .legal-card h3 { font-size: 1rem; font-weight: 600; color: var(--coffee); margin: 1.25rem 0 0.4rem; }
-  .legal-card p, .legal-card li { font-size: 0.95rem; line-height: 1.75; color: var(--fg, #444); }
-  .legal-card ul, .legal-card ol { margin: 0.5rem 0; padding-left: 1.5rem; }
-  .legal-card li { margin: 0.25rem 0; }
-  .legal-card a { color: var(--accent); }
-  .legal-alert {
-    background: #fdf6ee; border: 1px solid var(--accent); border-radius: 0.5rem;
-    padding: 1.25rem 1.5rem; font-size: 0.95rem; line-height: 1.7; color: var(--coffee);
-  }
-  .legal-alert a { color: var(--accent); font-weight: 600; }
-</style>
+  <style>
+    .ship-page {
+      max-width: 1200px;
+      margin-inline: auto;
+      padding: var(--space-12) 1.25rem var(--space-16);
+    }
+
+    .ship-hero {
+      max-width: 640px;
+      margin-bottom: var(--space-10);
+    }
+
+    .ship-hero h1 {
+      font-size: var(--text-3xl);
+      margin: 0 0 var(--space-3);
+    }
+
+    .ship-hero__lead {
+      font-size: var(--text-lg);
+      color: var(--ink-muted);
+      margin: 0;
+    }
+
+    .ship-stats {
+      list-style: none;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-4);
+      margin: 0 0 var(--space-10);
+      padding: 0;
+    }
+
+    .ship-stats__item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: var(--space-5);
+      color: var(--caramel);
+    }
+
+    .ship-stats__item div {
+      display: flex;
+      flex-direction: column;
+      color: var(--fg);
+    }
+
+    .ship-stats__item strong {
+      font-size: var(--text-base);
+      font-weight: 600;
+    }
+
+    .ship-stats__item span {
+      font-size: var(--text-sm);
+      color: var(--ink-muted);
+    }
+
+    .ship-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: var(--space-6);
+      margin-bottom: var(--space-8);
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+      padding: var(--space-8);
+    }
+
+    .card--wide {
+      margin-bottom: var(--space-8);
+    }
+
+    .card__head {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      margin-bottom: var(--space-5);
+    }
+
+    .card__icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 999px;
+      background: var(--cream);
+      color: var(--caramel);
+      flex-shrink: 0;
+    }
+
+    .card h2 {
+      font-size: var(--text-xl);
+      margin: 0;
+    }
+
+    .card h3 {
+      font-size: var(--text-sm);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--ink-muted);
+      margin: var(--space-5) 0 var(--space-2);
+    }
+
+    .card h3:first-of-type {
+      margin-top: 0;
+    }
+
+    .card p {
+      margin: 0 0 var(--space-2);
+      line-height: 1.65;
+    }
+
+    .card a {
+      color: var(--caramel);
+      text-decoration: underline;
+    }
+
+    .ship-list {
+      margin: 0 0 var(--space-2);
+      padding-left: 1.25rem;
+      line-height: 1.8;
+    }
+
+    .ship-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: var(--space-2);
+    }
+
+    .ship-table th,
+    .ship-table td {
+      text-align: left;
+      padding: var(--space-2) 0;
+      border-bottom: 1px solid var(--border);
+      font-weight: 400;
+      font-size: var(--text-sm);
+    }
+
+    .ship-table th {
+      color: var(--fg);
+      font-weight: 500;
+    }
+
+    .ship-table td {
+      color: var(--ink-muted);
+      text-align: right;
+    }
+
+    .ship-table tr:last-child th,
+    .ship-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .ship-steps {
+      list-style: none;
+      margin: 0 0 var(--space-2);
+      padding: 0;
+      counter-reset: step;
+    }
+
+    .ship-steps li {
+      position: relative;
+      padding: 0 0 var(--space-4) var(--space-8);
+      line-height: 1.5;
+    }
+
+    .ship-steps li::before {
+      content: counter(step);
+      counter-increment: step;
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--cream);
+      border: 1.5px solid var(--caramel);
+      color: var(--caramel-deep);
+      font-size: 0.7rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .ship-steps li:not(:last-child)::after {
+      content: "";
+      position: absolute;
+      left: 10px;
+      top: 22px;
+      bottom: 0;
+      width: 1px;
+      background: var(--border);
+    }
+
+    .ship-steps li:last-child {
+      padding-bottom: 0;
+    }
+
+    .callout {
+      display: flex;
+      gap: var(--space-4);
+      background: var(--warning-bg);
+      border-left: 3px solid var(--warning-border);
+      border-radius: var(--radius-sm);
+      padding: var(--space-6);
+      margin-bottom: var(--space-8);
+      color: var(--coffee-700);
+    }
+
+    .callout > :global(svg) {
+      color: var(--warning-border);
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .callout h3 {
+      font-size: var(--text-base);
+      font-weight: 600;
+      margin: 0 0 var(--space-2);
+      color: var(--espresso);
+    }
+
+    .callout p {
+      margin: 0;
+    }
+
+    .callout a {
+      color: var(--caramel-deep);
+      text-decoration: underline;
+    }
+
+    .contact-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: var(--space-6);
+    }
+
+    .contact-item {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+      color: var(--caramel);
+    }
+
+    .contact-item h3 {
+      font-size: var(--text-sm);
+      color: var(--ink-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin: var(--space-1) 0 0;
+    }
+
+    .contact-item__link {
+      font-size: var(--text-base);
+      font-weight: 600;
+      color: var(--espresso);
+      text-decoration: none;
+    }
+
+    a.contact-item__link:hover {
+      color: var(--caramel);
+    }
+
+    .contact-item__meta {
+      font-size: var(--text-sm);
+      color: var(--ink-muted);
+    }
+
+    .ship-commitment {
+      background: var(--espresso);
+      color: #fff;
+      text-align: center;
+      padding: var(--space-12) var(--space-8);
+      border-radius: var(--radius-lg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .ship-commitment :global(svg) {
+      color: var(--caramel);
+      margin-bottom: var(--space-4);
+    }
+
+    .ship-commitment h2 {
+      color: #fff;
+      font-size: var(--text-2xl);
+      margin: 0 0 var(--space-3);
+    }
+
+    .ship-commitment p {
+      margin: 0;
+      max-width: 560px;
+      color: rgba(255, 255, 255, 0.85);
+      font-size: var(--text-base);
+      line-height: 1.65;
+    }
+
+    @media (max-width: 768px) {
+      .ship-stats {
+        grid-template-columns: 1fr;
+      }
+
+      .ship-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .card {
+        padding: var(--space-6);
+      }
+    }
+  </style>
+</Layout>
