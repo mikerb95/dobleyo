@@ -673,21 +673,29 @@ img {
 .btn {
   background: var(--accent);
   color: var(--accent-contrast);
-  padding: .6rem 1rem;
-  border-radius: .375rem;
+  font-family: var(--font-body);
+  padding: .75rem 1.5rem;
+  border-radius: var(--radius-sm);
   text-decoration: none;
   display: inline-flex;
   align-items: center;
-  gap: .35rem;
+  gap: .5rem;
   border: 1px solid transparent;
+  font-size: var(--text-sm);
   font-weight: 600;
   line-height: 1.2;
   cursor: pointer;
-  transition: background-color .2s ease, color .2s ease, border-color .2s ease, filter .2s ease
+  transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease), border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease)
 }
 
 .btn:hover {
-  filter: brightness(1.05)
+  background: var(--caramel-deep);
+  box-shadow: var(--shadow-sm)
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--caramel);
+  outline-offset: 2px
 }
 
 [data-press-effect] {
