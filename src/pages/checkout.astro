@@ -330,6 +330,26 @@ import Layout from "../layouts/Layout.astro";
         const payError    = document.getElementById('payError');
         const fDeptEl     = document.getElementById('fDept');
         const fCityEl     = document.getElementById('fCity');
+        const codNote     = document.getElementById('codNote');
+        const payOptionWompi = document.getElementById('payOptionWompi');
+        const payOptionCod   = document.getElementById('payOptionCod');
+
+        function getPaymentMethod() {
+          const checked = document.querySelector('input[name="payMethod"]:checked');
+          return checked ? checked.value : 'wompi';
+        }
+        function updatePayMethodUI() {
+          const method = getPaymentMethod();
+          payOptionWompi.classList.toggle('co-pay-option--selected', method === 'wompi');
+          payOptionCod.classList.toggle('co-pay-option--selected', method === 'cod');
+          if (codNote) codNote.style.display = method === 'cod' ? 'block' : 'none';
+          const label = method === 'cod' ? 'Confirmar pedido' : 'Confirmar y pagar';
+          payBtnText.textContent = label;
+          if (coMbPayText) coMbPayText.textContent = label;
+        }
+        document.querySelectorAll('input[name="payMethod"]').forEach((el) => {
+          el.addEventListener('change', updatePayMethodUI);
+        });
 
         // Cupón aplicado desde el carrito
         let appliedCoupon = (() => {
