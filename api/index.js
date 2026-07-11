@@ -20,6 +20,7 @@ import { emailRouter } from '../server/routes/emails.js';
 import { contactRouter } from '../server/routes/contact.js';
 import { productionRouter } from '../server/routes/production.js';
 import { ordersRouter } from '../server/routes/orders.js';
+import { shippingRouter } from '../server/routes/shipping.js';
 import { subscriptionsRouter } from '../server/routes/subscriptions.js';
 import { traceabilityRouter } from '../server/routes/traceability.js';
 import { financeRouter } from '../server/routes/finance.js';
