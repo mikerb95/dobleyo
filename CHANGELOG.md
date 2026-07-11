@@ -2,6 +2,24 @@
 
 ---
 
+## 📅 2026-07-11 — Logística de envíos con Mipaquete.com + contraentrega (Agente: Claude)
+
+### Contexto
+El despacho de pedidos era 100% manual y sin registro: no había guía, transportadora, tracking ni email de envío. Se integró el agregador Mipaquete.com (API v2) para que el admin cotice entre transportadoras, genere la guía y solicite recogida desde un panel nuevo, con notificación automática al cliente y actualización de estados (webhook + polling de respaldo). Se habilitó además pago contraentrega (COD) en el checkout, con mitigaciones de fraude y conciliación manual del recaudo.
+
+### Cambios
+- **`server/migrations/create_shipments.js`** (nuevo) — tablas `shipments` (guía, transportadora, tracking, recaudo COD, idempotencia vía índice único parcial por orden), `shipment_events` (histórico webhook/poll) y `dane_locations` (cache de resolución ciudad→código DANE). Registrada en `run_all_migrations.js`. `customer_orders` no se alteró: COD reutiliza `payment_method='cod'` + `status='processing'`.
+- **`server/services/mipaquete.js`** (nuevo) — cliente del API v2 de Mipaquete (quoteShipping, createSending, getSendings, getTracking, cancelSending, getLocations, registerWebhook), `resolveDaneCode` (nunca autoselecciona homónimos) y `computePackageFromOrder` (peso desde `products.weight`, reporta `missingWeights` sin fallar).
+- **`server/routes/shipping.js`** (nuevo) — endpoints admin de cotización/generación/tracking/cancelación/conciliación COD y webhook público `POST /api/shipping/webhook` (token propio + patrón "trigger, don't trust": nunca escribe estado desde el payload, siempre re-consulta la API autenticada). Montado en `/api/shipping` en **ambos** `server/index.js` y `api/index.js`.
+- **`server/routes/orders.js`** — `POST /` acepta `paymentMethod: 'cod'` (solo COP): valida celular colombiano, tope `COD_MAX_TOTAL_COP`, límite de pedidos COD abiertos y bloqueo por devoluciones previas (`codOrderLimiter` + reglas antifraude).
+- **`server/services/email.js`** — nuevo `sendShippingNotificationEmail` (guía, transportadora, aviso de recaudo si aplica).
+- **`src/pages/checkout.astro`** — opción de pago "Contraentrega" junto a Wompi (solo visible/aplicable en COP).
+- **`src/pages/admin/envios.astro`** (nuevo) + enlace en `AdminLayout.astro` — pendientes de despacho, envíos activos y recaudos COD sin conciliar.
+- **`.env.example`** — variables `MIPAQUETE_*` y `COD_MAX_TOTAL_COP`.
+
+### Pendiente antes de producción
+El código de `paymentType` de Mipaquete para contraentrega (`MIPAQUETE_PAYMENT_TYPE_COD`, default 102) debe confirmarse en sandbox — el valor 101 documentado en el ejemplo oficial corresponde a pago anticipado.
+
 ## 📅 2026-07-04 — Casos de uso extendidos (Agente: Claude)
 
 ### Contexto
