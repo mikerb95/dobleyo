@@ -126,6 +126,7 @@ app.use('/api/emails', emailRouter);
 app.use('/api/contact', contactRouter);
 app.use('/api/production', productionRouter);
 app.use('/api/orders', ordersRouter);
+app.use('/api/shipping', shippingRouter);
 app.use('/api/subscriptions', subscriptionsRouter);
 app.use('/api/traceability', traceabilityRouter);
 app.use('/api/finance', financeRouter);
