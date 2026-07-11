@@ -1,334 +1,652 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import Icon from "../components/Icon.astro";
 ---
 
-<Layout>
-  <section class="prose" style="margin-top: 2rem;">
-    <!-- Encabezado principal -->
-    <h1 style="font-size: clamp(1.8rem, 5vw, 2.5rem); margin-bottom: 1rem;">
-      Envíos y Devoluciones
-    </h1>
-    <p style="font-size: 1.1rem; color: #666; margin-bottom: 3rem;">
-      Información sobre políticas de envío, tiempos de entrega y proceso de
-      devoluciones en DobleYo Café.
-    </p>
-
-    <!-- Contenedor con dos columnas responsivo -->
-    <div
-      style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-bottom: 3rem;"
-    >
-      <!-- Tarjeta: Información de Envíos -->
-      <div
-        style="background: #fff; border: 1px solid #e6e6e6; border-radius: 0.5rem; padding: 2rem;"
-      >
-        <h2 style="font-size: 1.4rem; color: #251a14; margin-bottom: 1rem;">
-          📦 Envíos Nacionales
-        </h2>
-        <div style="line-height: 1.8;">
-          <h3 style="font-size: 1rem; font-weight: 600; margin-top: 1.5rem;">
-            Envío Gratis
-          </h3>
-          <p>
-            Envío gratis en ordenes superiores a <strong>$120.000</strong> en todo
-            el territorio nacional colombiano.
-          </p>
-
-          <h3 style="font-size: 1rem; font-weight: 600; margin-top: 1.5rem;">
-            Tiempo de Entrega
-          </h3>
-          <ul style="margin: 1rem 0; padding-left: 1.5rem;">
-            <li>
-              <strong>Bogotá y Área Metropolitana:</strong> 2-3 días hábiles
-            </li>
-            <li><strong>Principales ciudades:</strong> 3-5 días hábiles</li>
-            <li><strong>Resto del país:</strong> 4-7 días hábiles</li>
-          </ul>
-
-          <h3 style="font-size: 1rem; font-weight: 600; margin-top: 1.5rem;">
-            Método de Envío
-          </h3>
-          <p>
-            Utilizamos empresas de logística confiables y rastreables. Todos
-            nuestros envíos incluyen seguimiento en tiempo real.
-          </p>
-
-          <h3 style="font-size: 1rem; font-weight: 600; margin-top: 1.5rem;">
-            Envío Internacional
-          </h3>
-          <p>
-            Actualmente no realizamos envíos internacionales. Próximamente
-            expandiremos nuestro servicio a otros países.
-          </p>
-        </div>
-      </div>
-
-      <!-- Tarjeta: Políticas de Devoluciones -->
-      <div
-        style="background: #fff; border: 1px solid #e6e6e6; border-radius: 0.5rem; padding: 2rem;"
-      >
-        <h2 style="font-size: 1.4rem; color: #251a14; margin-bottom: 1rem;">
-          🔄 Devoluciones y Cambios
-        </h2>
-        <div style="line-height: 1.8;">
-          <h3 style="font-size: 1rem; font-weight: 600; margin-top: 1.5rem;">
-            Plazo para Devolver
-          </h3>
-          <p>
-            Tienes <strong>30 días</strong> desde la fecha de compra para solicitar
-            una devolución o cambio.
-          </p>
-
-          <h3 style="font-size: 1rem; font-weight: 600; margin-top: 1.5rem;">
-            Condiciones de Devolución
-          </h3>
-          <ul style="margin: 1rem 0; padding-left: 1.5rem;">
-            <li>Producto sin abrir o en condiciones originales</li>
-            <li>Con todos los accesorios y empaques originales</li>
-            <li>Debe incluir prueba de compra (recibo o factura)</li>
-            <li>Sin daños por uso o manipulación indebida</li>
-          </ul>
-
-          <h3 style="font-size: 1rem; font-weight: 600; margin-top: 1.5rem;">
-            Proceso de Devolución
-          </h3>
-          <ol style="margin: 1rem 0; padding-left: 1.5rem;">
-            <li>Contacta nuestro servicio al cliente con tu número de orden</li>
-            <li>Recibe instrucciones de envío y etiqueta de devolución</li>
-            <li>Empaca el producto de forma segura y envía a nuestra bodega</li>
-            <li>Inspeccionar producto (3-5 días hábiles)</li>
-            <li>Procesar reembolso o cambio (5-7 días hábiles)</li>
-          </ol>
-
-          <h3 style="font-size: 1rem; font-weight: 600; margin-top: 1.5rem;">
-            Reembolsos
-          </h3>
-          <p>
-            Los reembolsos se procesarán al método de pago original. El tiempo
-            de aparición en tu cuenta depende de tu banco (5-10 días hábiles).
-          </p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Sección: Productos No Devolvibles -->
-    <div
-      style="background: #f3eee7; border-left: 4px solid #c67b4e; padding: 1.5rem; margin-bottom: 3rem; border-radius: 0.25rem;"
-    >
-      <h3 style="font-size: 1.1rem; color: #251a14; margin-bottom: 1rem;">
-        ⚠️ Productos No Devolvibles
-      </h3>
-      <p style="margin: 0.5rem 0;">
-        Los siguientes productos no son elegibles para devolución:
+<Layout
+  title="Envíos y devoluciones — DobleYo Café"
+  description="Tiempos de entrega, cobertura nacional y proceso de devoluciones de DobleYo Café."
+>
+  <section class="ship-page">
+    <header class="ship-hero">
+      <span class="eyebrow">Atención al cliente</span>
+      <h1>Envíos y devoluciones</h1>
+      <p class="ship-hero__lead">
+        Cobertura, tiempos de entrega y proceso de devolución de sus pedidos
+        de café.
       </p>
-      <ul style="margin: 1rem 0; padding-left: 1.5rem;">
-        <li><strong>Café molido o en grano</strong> una vez abierto</li>
-        <li><strong>Productos perecederos</strong> después de abiertos</li>
-        <li>Accesorios personalizados u hecho a pedido</li>
-        <li>Productos con daño evidente por causa del cliente</li>
-        <li>Compras realizadas durante liquidaciones o remates especiales</li>
-      </ul>
+    </header>
+
+    <!-- Datos clave -->
+    <ul class="ship-stats">
+      <li class="ship-stats__item">
+        <Icon name="truck" size={22} />
+        <div>
+          <strong>Envío gratis</strong>
+          <span>Desde $120.000 en todo el país</span>
+        </div>
+      </li>
+      <li class="ship-stats__item">
+        <Icon name="rotate-cw" size={22} />
+        <div>
+          <strong>30 días</strong>
+          <span>Para solicitar cambio o devolución</span>
+        </div>
+      </li>
+      <li class="ship-stats__item">
+        <Icon name="clock" size={22} />
+        <div>
+          <strong>Seguimiento en vivo</strong>
+          <span>Desde el despacho hasta su puerta</span>
+        </div>
+      </li>
+    </ul>
+
+    <div class="ship-grid">
+      <!-- Envíos -->
+      <article class="card">
+        <div class="card__head">
+          <span class="card__icon"><Icon name="package" /></span>
+          <h2>Envíos nacionales</h2>
+        </div>
+
+        <h3>Envío gratis</h3>
+        <p>
+          Envío gratis en órdenes superiores a <strong>$120.000</strong> en todo
+          el territorio nacional colombiano.
+        </p>
+
+        <h3>Tiempo de entrega</h3>
+        <table class="ship-table">
+          <tbody>
+            <tr>
+              <th scope="row">Bogotá y área metropolitana</th>
+              <td>2–3 días hábiles</td>
+            </tr>
+            <tr>
+              <th scope="row">Principales ciudades</th>
+              <td>3–5 días hábiles</td>
+            </tr>
+            <tr>
+              <th scope="row">Resto del país</th>
+              <td>4–7 días hábiles</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>Método de envío</h3>
+        <p>
+          Trabajamos con empresas de logística confiables. Todos los envíos
+          incluyen número de guía con seguimiento en tiempo real.
+        </p>
+
+        <h3>Envío internacional</h3>
+        <p>
+          Por el momento no realizamos envíos internacionales. Estamos
+          trabajando en expandir el servicio a otros países.
+        </p>
+      </article>
+
+      <!-- Devoluciones -->
+      <article class="card">
+        <div class="card__head">
+          <span class="card__icon"><Icon name="rotate-cw" /></span>
+          <h2>Devoluciones y cambios</h2>
+        </div>
+
+        <h3>Plazo para devolver</h3>
+        <p>
+          Usted cuenta con <strong>30 días</strong> desde la fecha de compra para
+          solicitar una devolución o cambio.
+        </p>
+
+        <h3>Condiciones de devolución</h3>
+        <ul class="ship-list">
+          <li>Producto sin abrir, en condiciones originales</li>
+          <li>Con todos los accesorios y empaques originales</li>
+          <li>Con prueba de compra (recibo o factura)</li>
+          <li>Sin daños por uso o manipulación indebida</li>
+        </ul>
+
+        <h3>Proceso de devolución</h3>
+        <ol class="ship-steps">
+          <li>Contáctenos con su número de orden</li>
+          <li>Reciba las instrucciones y la etiqueta de devolución</li>
+          <li>Empaque el producto de forma segura y envíelo a nuestra bodega</li>
+          <li>Inspeccionamos el producto (3–5 días hábiles)</li>
+          <li>Procesamos el reembolso o cambio (5–7 días hábiles)</li>
+        </ol>
+
+        <h3>Reembolsos</h3>
+        <p>
+          Los reembolsos se procesan al medio de pago original. El tiempo de
+          reflejo en su cuenta depende de su banco (5–10 días hábiles).
+        </p>
+      </article>
     </div>
 
-    <!-- Sección: Contacto y Soporte -->
-    <div
-      style="background: #fff; border: 1px solid #e6e6e6; border-radius: 0.5rem; padding: 2rem; margin-bottom: 3rem;"
-    >
-      <h2 style="font-size: 1.4rem; color: #251a14; margin-bottom: 1.5rem;">
-        📞 ¿Necesitas Ayuda?
-      </h2>
-      <div
-        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;"
-      >
-        <div>
-          <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem;">
-            📧 Email
-          </h3>
-          <p>
-            <a
-              href="mailto:soporte@dobleyocafe.com"
-              style="color: #c67b4e; text-decoration: underline;"
-              >soporte@dobleyocafe.com</a
-            >
-          </p>
-          <p style="color: #666; font-size: 0.9rem;">
-            Respuesta en 24-48 horas
-          </p>
+    <!-- No devolvibles -->
+    <div class="callout callout--warning">
+      <Icon name="alert-triangle" size={22} />
+      <div>
+        <h3>Productos no devolvibles</h3>
+        <p>Los siguientes productos no son elegibles para devolución:</p>
+        <ul class="ship-list">
+          <li><strong>Café molido o en grano</strong>, una vez abierto</li>
+          <li><strong>Productos perecederos</strong>, después de abiertos</li>
+          <li>Accesorios personalizados o hechos a pedido</li>
+          <li>Productos con daño evidente causado por el cliente</li>
+          <li>Compras realizadas durante liquidaciones o remates especiales</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Contacto -->
+    <div class="card card--wide">
+      <div class="card__head">
+        <span class="card__icon"><Icon name="phone" /></span>
+        <h2>¿Necesita ayuda?</h2>
+      </div>
+      <div class="contact-grid">
+        <div class="contact-item">
+          <Icon name="mail" size={18} />
+          <h3>Correo</h3>
+          <a href="mailto:soporte@dobleyo.cafe" class="contact-item__link"
+            >soporte@dobleyo.cafe</a
+          >
+          <span class="contact-item__meta">Respuesta en 24–48 horas</span>
         </div>
-        <div>
-          <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem;">
-            💬 WhatsApp
-          </h3>
-          <p>
-            <a
-              href="https://wa.me/573001234567"
-              target="_blank"
-              rel="noopener"
-              style="color: #c67b4e; text-decoration: underline;"
-              >+57 300 123 4567</a
-            >
-          </p>
-          <p style="color: #666; font-size: 0.9rem;">Lun-Vie: 9am - 6pm</p>
+        <div class="contact-item">
+          <Icon name="whatsapp" size={18} />
+          <h3>WhatsApp</h3>
+          <a
+            href="https://wa.me/573204981580"
+            target="_blank"
+            rel="noopener"
+            class="contact-item__link">+57 320 498 1580</a
+          >
+          <span class="contact-item__meta">Lunes a viernes, 9 a.m. a 6 p.m.</span>
         </div>
-        <div>
-          <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem;">
-            📍 Ubicación
-          </h3>
-          <p>
-            Bogotá, Colombia<br />
-            <span style="color: #666; font-size: 0.9rem;">
-              Retira tu orden en nuestro punto de venta
-            </span>
-          </p>
+        <div class="contact-item">
+          <Icon name="map-pin" size={18} />
+          <h3>Ubicación</h3>
+          <span class="contact-item__link">Bogotá, Colombia</span>
+          <span class="contact-item__meta"
+            >Retire su orden en nuestro punto de venta</span
+          >
         </div>
       </div>
     </div>
 
-    <!-- Sección: FAQ -->
-    <div style="margin-bottom: 3rem;">
-      <h2
-        style="font-size: 1.4rem; color: #251a14; margin-bottom: 1.5rem; border-bottom: 2px solid #e6e6e6; padding-bottom: 0.5rem;"
-      >
-        ❓ Preguntas Frecuentes
-      </h2>
-
-      <div style="display: flex; flex-direction: column; gap: 1rem;">
-        <!-- FAQ Item 1 -->
-        <details
-          style="border: 1px solid #e6e6e6; padding: 1rem; border-radius: 0.375rem; cursor: pointer;"
-        >
-          <summary style="font-weight: 600; user-select: none;">
-            ¿Puedo cambiar mi orden antes de que sea enviada?
+    <!-- FAQ -->
+    <div class="ship-faq">
+      <h2>Preguntas frecuentes</h2>
+      <div class="accordion">
+        <details class="accordion__item">
+          <summary>
+            <span>¿Puedo cambiar mi orden antes de que sea enviada?</span>
+            <Icon name="chevron-down" size={18} class="accordion__chev" />
           </summary>
-          <p style="margin-top: 1rem; color: #666;">
-            Sí, si contactas dentro de 2 horas después de realizar la compra.
-            Envíanos un email o WhatsApp indicando los cambios deseados. Si la
-            orden ya fue despachada, aplicarán las políticas de devolución.
+          <p>
+            Sí, si nos contacta dentro de las 2 horas siguientes a la compra.
+            Escríbanos por correo o WhatsApp indicando los cambios deseados.
+            Si la orden ya fue despachada, aplican las políticas de
+            devolución.
           </p>
         </details>
 
-        <!-- FAQ Item 2 -->
-        <details
-          style="border: 1px solid #e6e6e6; padding: 1rem; border-radius: 0.375rem; cursor: pointer;"
-        >
-          <summary style="font-weight: 600; user-select: none;">
-            ¿Cómo rastreo mi pedido?
+        <details class="accordion__item">
+          <summary>
+            <span>¿Cómo rastreo mi pedido?</span>
+            <Icon name="chevron-down" size={18} class="accordion__chev" />
           </summary>
-          <p style="margin-top: 1rem; color: #666;">
-            Recibirás un email con el número de seguimiento tan pronto tu orden
-            sea despachada. Puedes usar este número en el sitio de la empresa
-            logística para ver actualizaciones en tiempo real.
+          <p>
+            Recibirá un correo con el número de guía tan pronto su orden sea
+            despachada. Úselo en el sitio de la empresa logística para ver
+            actualizaciones en tiempo real.
           </p>
         </details>
 
-        <!-- FAQ Item 3 -->
-        <details
-          style="border: 1px solid #e6e6e6; padding: 1rem; border-radius: 0.375rem; cursor: pointer;"
-        >
-          <summary style="font-weight: 600; user-select: none;">
-            ¿Qué pasa si mi paquete llega dañado?
+        <details class="accordion__item">
+          <summary>
+            <span>¿Qué pasa si mi paquete llega dañado?</span>
+            <Icon name="chevron-down" size={18} class="accordion__chev" />
           </summary>
-          <p style="margin-top: 1rem; color: #666;">
-            Contacta inmediatamente a nuestro equipo con fotos del daño. No
-            abras el paquete más de lo necesario. Documentaremos el daño con la
-            empresa logística y procederemos a reemplazar tu orden sin costo.
+          <p>
+            Contáctenos de inmediato con fotos del daño. No abra el paquete
+            más de lo necesario. Documentaremos el daño con la empresa
+            logística y reemplazaremos su orden sin costo.
           </p>
         </details>
 
-        <!-- FAQ Item 4 -->
-        <details
-          style="border: 1px solid #e6e6e6; padding: 1rem; border-radius: 0.375rem; cursor: pointer;"
-        >
-          <summary style="font-weight: 600; user-select: none;">
-            ¿Cuál es el costo de devolución?
+        <details class="accordion__item">
+          <summary>
+            <span>¿Cuál es el costo de devolución?</span>
+            <Icon name="chevron-down" size={18} class="accordion__chev" />
           </summary>
-          <p style="margin-top: 1rem; color: #666;">
-            Si la devolución es por defecto de fabricación o error nuestro, es
-            completamente gratis. Si es por cambio de opinión, el cliente corre
-            con los gastos de envío de retorno.
+          <p>
+            Si la devolución es por defecto de fabricación o error nuestro,
+            es completamente gratis. Si es por cambio de opinión, el envío de
+            retorno corre por cuenta del cliente.
           </p>
         </details>
 
-        <!-- FAQ Item 5 -->
-        <details
-          style="border: 1px solid #e6e6e6; padding: 1rem; border-radius: 0.375rem; cursor: pointer;"
-        >
-          <summary style="font-weight: 600; user-select: none;">
-            ¿Aceptan reembolsos a tarjeta de crédito?
+        <details class="accordion__item">
+          <summary>
+            <span>¿Aceptan reembolsos a tarjeta de crédito?</span>
+            <Icon name="chevron-down" size={18} class="accordion__chev" />
           </summary>
-          <p style="margin-top: 1rem; color: #666;">
-            Sí, reembolsamos al método de pago original. Los reembolsos pueden
-            tardar 5-10 días hábiles en reflejarse en tu cuenta dependiendo de
-            tu banco o medio de pago.
+          <p>
+            Sí, reembolsamos al medio de pago original. Los reembolsos pueden
+            tardar entre 5 y 10 días hábiles en reflejarse, según su banco.
           </p>
         </details>
 
-        <!-- FAQ Item 6 -->
-        <details
-          style="border: 1px solid #e6e6e6; padding: 1rem; border-radius: 0.375rem; cursor: pointer;"
-        >
-          <summary style="font-weight: 600; user-select: none;">
-            ¿Hacen reembolsos parciales?
+        <details class="accordion__item">
+          <summary>
+            <span>¿Hacen reembolsos parciales?</span>
+            <Icon name="chevron-down" size={18} class="accordion__chev" />
           </summary>
-          <p style="margin-top: 1rem; color: #666;">
+          <p>
             Sí, aceptamos devoluciones parciales de órdenes con múltiples
-            productos. Evaluaremos cada producto individualmente según nuestras
-            políticas.
+            productos. Evaluamos cada producto individualmente según
+            nuestras políticas.
           </p>
         </details>
       </div>
     </div>
 
-    <!-- Sección: Compromiso -->
-    <div
-      style="background: linear-gradient(135deg, #251a14 0%, #3d2817 100%); color: #fff; padding: 3rem 2rem; border-radius: 0.5rem; text-align: center; margin-bottom: 3rem;"
-    >
-      <h2 style="font-size: 1.4rem; margin-bottom: 1rem;">
-        Tu Satisfacción es Nuestra Prioridad
-      </h2>
-      <p
-        style="margin: 0; color: rgba(255, 255, 255, 0.9); font-size: 1.05rem; max-width: 600px; margin-left: auto; margin-right: auto;"
-      >
-        En DobleYo Café nos comprometemos a brindarte una experiencia de compra
-        segura y confiable. Si tienes cualquier pregunta o inquietud, no dudes
-        en contactarnos. Estamos aquí para ayudarte.
+    <!-- Compromiso -->
+    <div class="ship-commitment">
+      <Icon name="shield" size={28} />
+      <h2>Su satisfacción es nuestra prioridad</h2>
+      <p>
+        En DobleYo Café nos comprometemos a brindarle una experiencia de
+        compra segura y confiable. Si tiene alguna pregunta o inquietud,
+        contáctenos: estamos aquí para ayudarle.
       </p>
     </div>
   </section>
 
   <style>
-    .prose {
+    .ship-page {
       max-width: 1200px;
-      margin-left: auto;
-      margin-right: auto;
-      padding: 0 1.25rem;
+      margin-inline: auto;
+      padding: var(--space-12) 1.25rem var(--space-16);
     }
 
-    details > summary::-webkit-details-marker {
+    .ship-hero {
+      max-width: 640px;
+      margin-bottom: var(--space-10);
+    }
+
+    .ship-hero h1 {
+      font-size: var(--text-3xl);
+      margin: 0 0 var(--space-3);
+    }
+
+    .ship-hero__lead {
+      font-size: var(--text-lg);
+      color: var(--ink-muted);
+      margin: 0;
+    }
+
+    /* Datos clave */
+    .ship-stats {
+      list-style: none;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-4);
+      margin: 0 0 var(--space-10);
+      padding: 0;
+    }
+
+    .ship-stats__item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: var(--space-5);
+      color: var(--caramel);
+    }
+
+    .ship-stats__item div {
+      display: flex;
+      flex-direction: column;
+      color: var(--fg);
+    }
+
+    .ship-stats__item strong {
+      font-size: var(--text-base);
+      font-weight: 600;
+    }
+
+    .ship-stats__item span {
+      font-size: var(--text-sm);
+      color: var(--ink-muted);
+    }
+
+    /* Tarjetas */
+    .ship-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: var(--space-6);
+      margin-bottom: var(--space-8);
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+      padding: var(--space-8);
+    }
+
+    .card--wide {
+      margin-bottom: var(--space-8);
+    }
+
+    .card__head {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      margin-bottom: var(--space-5);
+    }
+
+    .card__icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 999px;
+      background: var(--cream);
+      color: var(--caramel);
+      flex-shrink: 0;
+    }
+
+    .card h2 {
+      font-size: var(--text-xl);
+      margin: 0;
+    }
+
+    .card h3 {
+      font-size: var(--text-sm);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--ink-muted);
+      margin: var(--space-5) 0 var(--space-2);
+    }
+
+    .card h3:first-of-type {
+      margin-top: 0;
+    }
+
+    .card p {
+      margin: 0 0 var(--space-2);
+      line-height: 1.65;
+    }
+
+    .ship-list {
+      margin: 0 0 var(--space-2);
+      padding-left: 1.25rem;
+      line-height: 1.8;
+    }
+
+    .ship-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: var(--space-2);
+    }
+
+    .ship-table th,
+    .ship-table td {
+      text-align: left;
+      padding: var(--space-2) 0;
+      border-bottom: 1px solid var(--border);
+      font-weight: 400;
+      font-size: var(--text-sm);
+    }
+
+    .ship-table th {
+      color: var(--fg);
+      font-weight: 500;
+    }
+
+    .ship-table td {
+      color: var(--ink-muted);
+      text-align: right;
+    }
+
+    .ship-table tr:last-child th,
+    .ship-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* Pasos de devolución — conectados por la línea de trazabilidad */
+    .ship-steps {
+      list-style: none;
+      margin: 0 0 var(--space-2);
+      padding: 0;
+      position: relative;
+    }
+
+    .ship-steps li {
+      position: relative;
+      padding: 0 0 var(--space-4) var(--space-8);
+      line-height: 1.5;
+    }
+
+    .ship-steps li::before {
+      content: counter(step);
+      counter-increment: step;
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--cream);
+      border: 1.5px solid var(--caramel);
+      color: var(--caramel-deep);
+      font-size: 0.7rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .ship-steps {
+      counter-reset: step;
+    }
+
+    .ship-steps li:not(:last-child)::after {
+      content: "";
+      position: absolute;
+      left: 10px;
+      top: 22px;
+      bottom: 0;
+      width: 1px;
+      background: var(--border);
+    }
+
+    .ship-steps li:last-child {
+      padding-bottom: 0;
+    }
+
+    /* Callout de advertencia */
+    .callout {
+      display: flex;
+      gap: var(--space-4);
+      background: var(--warning-bg);
+      border-left: 3px solid var(--warning-border);
+      border-radius: var(--radius-sm);
+      padding: var(--space-6);
+      margin-bottom: var(--space-8);
+      color: var(--coffee-700);
+    }
+
+    .callout > :global(svg) {
+      color: var(--warning-border);
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .callout h3 {
+      font-size: var(--text-base);
+      font-weight: 600;
+      margin: 0 0 var(--space-2);
+      color: var(--espresso);
+    }
+
+    .callout p {
+      margin: 0 0 var(--space-2);
+    }
+
+    /* Contacto */
+    .contact-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: var(--space-6);
+    }
+
+    .contact-item {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+      color: var(--caramel);
+    }
+
+    .contact-item h3 {
+      font-size: var(--text-sm);
+      color: var(--ink-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin: var(--space-1) 0 0;
+    }
+
+    .contact-item__link {
+      font-size: var(--text-base);
+      font-weight: 600;
+      color: var(--espresso);
+    }
+
+    a.contact-item__link:hover {
+      color: var(--caramel);
+    }
+
+    .contact-item__meta {
+      font-size: var(--text-sm);
+      color: var(--ink-muted);
+    }
+
+    /* FAQ */
+    .ship-faq {
+      margin-bottom: var(--space-10);
+    }
+
+    .ship-faq h2 {
+      font-size: var(--text-2xl);
+      margin-bottom: var(--space-5);
+    }
+
+    .accordion {
+      border-top: 1px solid var(--border);
+    }
+
+    .accordion__item {
+      border-bottom: 1px solid var(--border);
+    }
+
+    .accordion__item summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-4);
+      padding: var(--space-5) 0;
+      font-weight: 600;
+      cursor: pointer;
+      list-style: none;
+      color: var(--espresso);
+    }
+
+    .accordion__item summary::-webkit-details-marker {
       display: none;
     }
 
-    details > summary::before {
-      content: "▶ ";
-      display: inline-block;
-      margin-right: 0.5rem;
-      transition: transform 0.3s ease;
-      color: #c67b4e;
+    .accordion__chev {
+      flex-shrink: 0;
+      color: var(--caramel);
+      transition: transform var(--dur) var(--ease);
     }
 
-    details[open] > summary::before {
-      transform: rotate(90deg);
+    .accordion__item[open] .accordion__chev {
+      transform: rotate(180deg);
     }
 
-    details[open] {
-      background: #f9f9f9;
+    .accordion__item p {
+      margin: 0 0 var(--space-5);
+      color: var(--ink-muted);
+      line-height: 1.7;
+      max-width: 65ch;
+    }
+
+    /* Compromiso */
+    .ship-commitment {
+      background: var(--espresso);
+      color: #fff;
+      text-align: center;
+      padding: var(--space-12) var(--space-8);
+      border-radius: var(--radius-lg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .ship-commitment :global(svg) {
+      color: var(--caramel);
+      margin-bottom: var(--space-4);
+    }
+
+    .ship-commitment h2 {
+      color: #fff;
+      font-size: var(--text-2xl);
+      margin: 0 0 var(--space-3);
+    }
+
+    .ship-commitment p {
+      margin: 0;
+      max-width: 560px;
+      color: rgba(255, 255, 255, 0.85);
+      font-size: var(--text-base);
+      line-height: 1.65;
     }
 
     a {
-      transition: color 0.2s ease;
+      transition: color var(--dur) var(--ease);
     }
 
-    a:hover {
-      color: #a85a3a;
+    /* Responsive */
+    @media (max-width: 768px) {
+      .ship-stats {
+        grid-template-columns: 1fr;
+      }
+
+      .ship-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .card {
+        padding: var(--space-6);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .accordion__chev {
+        transition: none;
+      }
     }
   </style>
 </Layout>
