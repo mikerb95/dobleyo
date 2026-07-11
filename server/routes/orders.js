@@ -16,6 +16,20 @@ const WOMPI_PUBLIC_KEY = process.env.WOMPI_PUBLIC_KEY || '';
 const WOMPI_INTEGRITY_SECRET = process.env.WOMPI_INTEGRITY_SECRET || '';
 const WOMPI_EVENTS_SECRET = process.env.WOMPI_EVENTS_SECRET || '';
 
+// ─── Contraentrega (COD) — límites antifraude ──────────────────────────────
+const COD_MAX_TOTAL_COP = Number(process.env.COD_MAX_TOTAL_COP) || 300000;
+
+// Rate limit específico para órdenes COD por IP, además del checkoutLimiter general.
+const codOrderLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hora
+    max: 3,
+    message: { error: 'Demasiados pedidos contraentrega desde esta IP. Intente más tarde.', retryAfter: 3600 },
+    standardHeaders: true,
+    legacyHeaders: false,
+    keyGenerator: ipKeyGenerator,
+    skip: (req) => process.env.NODE_ENV === 'test' || req.body?.paymentMethod !== 'cod',
+});
+
 // ─── Utilidades Wompi ───────────────────────────────────────────────────────
 
 /**
