@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { logger } from '../logger.js';
 import crypto from 'crypto';
 import { body, validationResult } from 'express-validator';
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import { query } from '../db.js';
 import { authenticateToken, requireRole, optionalAuth } from '../auth.js';
 import { checkoutLimiter } from '../middleware/rateLimit.js';
