@@ -1,0 +1,635 @@
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+---
+
+<AdminLayout title="Envíos — DobleYo Admin" section="envios">
+    <style>
+        .page-header {
+            padding: 1.75rem 2rem 1.5rem;
+            margin-bottom: 0;
+            background: #fff;
+            border-bottom: 1px solid rgba(0,0,0,.08);
+        }
+        .page-header h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #251a14;
+            margin: 0 0 0.3rem;
+        }
+        .page-header p {
+            margin: 0;
+            color: #7a6652;
+            font-size: 0.95rem;
+        }
+        .page-body {
+            padding: 1.75rem 2rem 2rem;
+        }
+        .tabs {
+            display: flex;
+            gap: 0.25rem;
+            margin-bottom: 1.25rem;
+            border-bottom: 1px solid #ede8e2;
+        }
+        .tab-btn {
+            padding: 0.65rem 1.1rem;
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: #7a6652;
+            cursor: pointer;
+        }
+        .tab-btn.active {
+            color: #251a14;
+            border-bottom-color: #4a6741;
+        }
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+
+        .table-wrap {
+            background: #fff;
+            border-radius: 8px;
+            border: 1px solid var(--border, rgba(0,0,0,.09));
+            box-shadow: var(--card-shadow, 0 0 0 1px rgba(0,0,0,.06), 0 2px 8px rgba(0,0,0,.05));
+            overflow-x: auto;
+            margin-bottom: 1.5rem;
+        }
+        .empty {
+            text-align: center;
+            padding: 2.5rem;
+            color: #7a6652;
+            font-style: italic;
+        }
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            border: 1px solid transparent;
+            white-space: nowrap;
+        }
+        .badge-warn { background: #fef3e2; color: #c96800; border-color: #f5c87a; }
+        .badge-ok { background: #f1fdf6; color: #107e3e; border-color: #b5e8cd; }
+        .badge-err { background: #ffeaea; color: #aa0000; border-color: #f5bcbc; }
+        .badge-info { background: #e8f2ff; color: #0064d9; border-color: #91c2f5; }
+        .badge-default { background: #f0f0f0; color: #555; border-color: #ddd; }
+
+        .btn-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 0 10px;
+            height: 28px;
+            font-size: 12px;
+            font-weight: 600;
+            font-family: inherit;
+            border: 1px solid var(--border, rgba(0,0,0,.09));
+            border-radius: 4px;
+            background: var(--card-bg, #fff);
+            cursor: pointer;
+            color: var(--text-1, #32363a);
+            white-space: nowrap;
+        }
+        .btn-action:hover { background: var(--nav-hover-bg, #f5f6f7); border-color: #bbb; }
+        .btn-primary-sm {
+            padding: 0.5rem 1rem;
+            background: #4a6741;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .btn-primary-sm:hover { background: #3a5331; }
+        .btn-primary-sm:disabled { opacity: 0.5; cursor: default; }
+
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        /* Modal */
+        .modal-back {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.45);
+            z-index: 300;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        .modal-back.open { display: flex; }
+        .modal {
+            background: #fff;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 640px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 8px 32px rgba(37, 26, 20, 0.22);
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid #ede8e2;
+        }
+        .modal-header h2 { margin: 0; font-size: 1.1rem; color: #251a14; }
+        .modal-close {
+            background: none; border: none; cursor: pointer;
+            color: #7a6652; font-size: 1.4rem; line-height: 1; padding: 0.2rem;
+        }
+        .modal-body { padding: 1.5rem; }
+        .form-row { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 0.9rem; }
+        .form-field { display: flex; flex-direction: column; gap: 0.3rem; flex: 1; min-width: 120px; }
+        .form-field label { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #7a6652; }
+        .form-field input, .form-field select {
+            padding: 0.55rem 0.7rem; border: 1px solid #ddd; border-radius: 6px;
+            font-size: 0.88rem; color: #251a14; background: #faf8f5;
+        }
+        .alert-box {
+            padding: 0.7rem 0.9rem;
+            border-radius: 6px;
+            font-size: 0.82rem;
+            margin-bottom: 0.9rem;
+        }
+        .alert-warn { background: #fef3e2; color: #94590a; border: 1px solid #f5c87a; }
+        .alert-err { background: #ffeaea; color: #aa0000; border: 1px solid #f5bcbc; }
+
+        .quote-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 0.5rem; }
+        .quote-table th, .quote-table td { padding: 0.5rem 0.6rem; text-align: left; border-bottom: 1px solid #f0ece6; }
+        .quote-row { cursor: pointer; }
+        .quote-row:hover { background: #faf8f5; }
+        .quote-row.selected { background: #f1fdf6; }
+
+        .save-msg { font-size: 0.82rem; margin-top: 0.5rem; }
+    </style>
+
+    <header class="page-header">
+        <h1>Envíos</h1>
+        <p>Cotización, generación de guías y seguimiento con transportadoras (Mipaquete.com)</p>
+    </header>
+
+    <div class="page-body">
+
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="pending">Pendientes de despacho</button>
+            <button class="tab-btn" data-tab="active">Envíos activos</button>
+            <button class="tab-btn" data-tab="cod">Recaudos contraentrega</button>
+        </div>
+
+        <!-- Pendientes -->
+        <div class="tab-panel active" id="panel-pending">
+            <div class="toolbar">
+                <span id="pendingSummary" style="color:#7a6652;font-size:0.88rem;">Cargando...</span>
+            </div>
+            <div class="table-wrap">
+                <table class="erp-table">
+                    <thead>
+                        <tr>
+                            <th>Referencia</th><th>Cliente</th><th>Ciudad</th><th>Pago</th><th>Total</th><th>Fecha</th><th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="pendingBody">
+                        <tr><td colspan="7" class="empty">Cargando pedidos...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Activos -->
+        <div class="tab-panel" id="panel-active">
+            <div class="toolbar">
+                <span id="activeSummary" style="color:#7a6652;font-size:0.88rem;">Cargando...</span>
+                <button class="btn-primary-sm" id="btnRefreshAll">Actualizar todos</button>
+            </div>
+            <div class="table-wrap">
+                <table class="erp-table">
+                    <thead>
+                        <tr>
+                            <th>Referencia</th><th>Transportadora</th><th>Guía</th><th>Estado</th><th>PDF</th><th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="activeBody">
+                        <tr><td colspan="6" class="empty">Cargando envíos...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- COD -->
+        <div class="tab-panel" id="panel-cod">
+            <div class="toolbar">
+                <span id="codSummary" style="color:#7a6652;font-size:0.88rem;">Cargando...</span>
+            </div>
+            <div class="table-wrap">
+                <table class="erp-table">
+                    <thead>
+                        <tr>
+                            <th>Referencia</th><th>Cliente</th><th>Valor a recaudar</th><th>Entregado</th><th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="codBody">
+                        <tr><td colspan="5" class="empty">Cargando recaudos...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div><!-- /page-body -->
+
+    <!-- Modal cotizar / generar guía -->
+    <div class="modal-back" id="modalBack">
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+            <div class="modal-header">
+                <h2 id="modalTitle">Cotizar envío</h2>
+                <button class="modal-close" id="modalClose" aria-label="Cerrar">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="modalAlert"></div>
+
+                <div class="form-row">
+                    <div class="form-field">
+                        <label for="fWeight">Peso (kg)</label>
+                        <input type="number" id="fWeight" step="0.1" min="0.1" value="0.5" />
+                    </div>
+                    <div class="form-field">
+                        <label for="fWidth">Ancho (cm)</label>
+                        <input type="number" id="fWidth" min="1" value="20" />
+                    </div>
+                    <div class="form-field">
+                        <label for="fLength">Largo (cm)</label>
+                        <input type="number" id="fLength" min="1" value="30" />
+                    </div>
+                    <div class="form-field">
+                        <label for="fHeight">Alto (cm)</label>
+                        <input type="number" id="fHeight" min="1" value="15" />
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-field">
+                        <label for="fDane">Ciudad destino (código DANE)</label>
+                        <select id="fDane"></select>
+                    </div>
+                    <div class="form-field">
+                        <label for="fDeclaredValue">Valor declarado (COP)</label>
+                        <input type="number" id="fDeclaredValue" min="1" />
+                    </div>
+                </div>
+
+                <button class="btn-primary-sm" id="btnQuote">Cotizar</button>
+                <div id="quoteResults"></div>
+
+                <div class="form-row" style="margin-top:1rem;">
+                    <div class="form-field">
+                        <label for="fPickup">Solicitar recogida</label>
+                        <select id="fPickup">
+                            <option value="true">Sí</option>
+                            <option value="false">No (entrega en oficina)</option>
+                        </select>
+                    </div>
+                    <div class="form-field">
+                        <label for="fComments">Comentarios</label>
+                        <input type="text" id="fComments" placeholder="Opcional" />
+                    </div>
+                </div>
+
+                <button class="btn-primary-sm" id="btnCreateShipment" disabled>Generar guía</button>
+                <div class="save-msg" id="createMsg"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ── Utilidades ────────────────────────────────────────────
+        const fmtCOP = (n: number) =>
+            new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(n);
+        const fmtDate = (s: string) =>
+            s ? new Date(s).toLocaleDateString("es-CO", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "—";
+
+        const STATUS_LABELS: Record<string, string> = {
+            created: "Creado", pickup_requested: "Recogida solicitada", in_transit: "En tránsito",
+            delivered: "Entregado", returned: "Devuelto", cancelled: "Cancelado", error: "Error",
+        };
+        const STATUS_CLASS: Record<string, string> = {
+            created: "badge-info", pickup_requested: "badge-info", in_transit: "badge-info",
+            delivered: "badge-ok", returned: "badge-warn", cancelled: "badge-default", error: "badge-err",
+        };
+        const badge = (st: string) => `<span class="badge ${STATUS_CLASS[st] ?? "badge-default"}">${STATUS_LABELS[st] ?? st}</span>`;
+
+        async function api(path: string, opts: RequestInit = {}) {
+            const res = await fetch(`/api/shipping${path}`, {
+                credentials: "include",
+                headers: { "Content-Type": "application/json" },
+                ...opts,
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || "Error en la solicitud");
+            return data.data;
+        }
+
+        // ── Tabs ──────────────────────────────────────────────────
+        document.querySelectorAll(".tab-btn").forEach((btn) => {
+            btn.addEventListener("click", () => {
+                document.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
+                document.querySelectorAll(".tab-panel").forEach((p) => p.classList.remove("active"));
+                btn.classList.add("active");
+                const tab = (btn as HTMLElement).dataset.tab;
+                document.getElementById(`panel-${tab}`)?.classList.add("active");
+                if (tab === "active") loadActive();
+                if (tab === "cod") loadCod();
+            });
+        });
+
+        // ── Pendientes ────────────────────────────────────────────
+        async function loadPending() {
+            const body = document.getElementById("pendingBody")!;
+            body.innerHTML = `<tr><td colspan="7" class="empty">Cargando...</td></tr>`;
+            try {
+                const orders = await api("/orders-pending");
+                document.getElementById("pendingSummary")!.innerHTML = `<strong>${orders.length}</strong> pedidos pendientes de despacho`;
+                if (!orders.length) {
+                    body.innerHTML = `<tr><td colspan="7" class="empty">No hay pedidos pendientes de despacho.</td></tr>`;
+                    return;
+                }
+                body.innerHTML = orders.map((o: any) => `
+                    <tr>
+                        <td><strong>${o.reference}</strong></td>
+                        <td>${o.customer_name}</td>
+                        <td>${o.shipping_city ?? "—"}</td>
+                        <td>${o.payment_method === "cod" ? '<span class="badge badge-warn">Contraentrega</span>' : '<span class="badge badge-ok">Pagado</span>'}</td>
+                        <td style="font-weight:600">${fmtCOP(Number(o.total_cop) || 0)}</td>
+                        <td style="color:#7a6652;font-size:0.82rem">${fmtDate(o.created_at)}</td>
+                        <td><button class="btn-action" data-id="${o.id}" data-ref="${o.reference}">Cotizar / Generar guía</button></td>
+                    </tr>
+                `).join("");
+                body.querySelectorAll(".btn-action").forEach((btn) => {
+                    btn.addEventListener("click", () => openQuoteModal(
+                        Number((btn as HTMLElement).dataset.id),
+                        (btn as HTMLElement).dataset.ref!,
+                    ));
+                });
+            } catch (err: any) {
+                body.innerHTML = `<tr><td colspan="7" class="empty">Error al cargar: ${err.message}</td></tr>`;
+            }
+        }
+
+        // ── Activos ───────────────────────────────────────────────
+        async function loadActive() {
+            const body = document.getElementById("activeBody")!;
+            body.innerHTML = `<tr><td colspan="6" class="empty">Cargando...</td></tr>`;
+            try {
+                const shipments = await api("/");
+                document.getElementById("activeSummary")!.innerHTML = `<strong>${shipments.length}</strong> envíos`;
+                if (!shipments.length) {
+                    body.innerHTML = `<tr><td colspan="6" class="empty">No hay envíos registrados.</td></tr>`;
+                    return;
+                }
+                body.innerHTML = shipments.map((s: any) => {
+                    let pdfUrls: string[] = [];
+                    try { pdfUrls = s.pdf_guide_urls ? JSON.parse(s.pdf_guide_urls) : []; } catch {}
+                    return `
+                    <tr>
+                        <td><strong>${s.reference}</strong></td>
+                        <td>${s.delivery_company_name ?? "—"}</td>
+                        <td>${s.guide_number ?? "Pendiente"}</td>
+                        <td>${badge(s.status)}</td>
+                        <td>${pdfUrls.length ? `<a href="${pdfUrls[0]}" target="_blank" rel="noopener">Ver guía</a>` : "—"}</td>
+                        <td>
+                            <button class="btn-action" data-action="refresh" data-id="${s.id}">Refrescar</button>
+                            ${s.status !== 'cancelled' && s.status !== 'delivered' ? `<button class="btn-action" data-action="cancel" data-id="${s.id}">Cancelar</button>` : ''}
+                        </td>
+                    </tr>
+                `;
+                }).join("");
+                body.querySelectorAll('[data-action="refresh"]').forEach((btn) => {
+                    btn.addEventListener("click", async () => {
+                        const id = (btn as HTMLElement).dataset.id;
+                        (btn as HTMLButtonElement).disabled = true;
+                        try { await api(`/${id}/refresh`, { method: "POST" }); await loadActive(); }
+                        catch (err: any) { alert(err.message); }
+                    });
+                });
+                body.querySelectorAll('[data-action="cancel"]').forEach((btn) => {
+                    btn.addEventListener("click", async () => {
+                        if (!confirm("¿Cancelar este envío?")) return;
+                        const id = (btn as HTMLElement).dataset.id;
+                        try { await api(`/${id}/cancel`, { method: "PUT" }); await loadActive(); }
+                        catch (err: any) { alert(err.message); }
+                    });
+                });
+            } catch (err: any) {
+                body.innerHTML = `<tr><td colspan="6" class="empty">Error al cargar: ${err.message}</td></tr>`;
+            }
+        }
+
+        document.getElementById("btnRefreshAll")?.addEventListener("click", async (e) => {
+            const btn = e.currentTarget as HTMLButtonElement;
+            btn.disabled = true;
+            btn.textContent = "Actualizando...";
+            try { await api("/refresh-all", { method: "POST" }); await loadActive(); }
+            catch (err: any) { alert(err.message); }
+            finally { btn.disabled = false; btn.textContent = "Actualizar todos"; }
+        });
+
+        // ── COD ───────────────────────────────────────────────────
+        async function loadCod() {
+            const body = document.getElementById("codBody")!;
+            body.innerHTML = `<tr><td colspan="5" class="empty">Cargando...</td></tr>`;
+            try {
+                const shipments = await api("/?codPending=1");
+                document.getElementById("codSummary")!.innerHTML = `<strong>${shipments.length}</strong> recaudos pendientes de conciliar`;
+                if (!shipments.length) {
+                    body.innerHTML = `<tr><td colspan="5" class="empty">No hay recaudos pendientes.</td></tr>`;
+                    return;
+                }
+                body.innerHTML = shipments.map((s: any) => `
+                    <tr>
+                        <td><strong>${s.reference}</strong></td>
+                        <td>${s.customer_name}</td>
+                        <td style="font-weight:600">${fmtCOP(Number(s.collection_value_cop) || 0)}</td>
+                        <td>${fmtDate(s.tracking_updated_at)}</td>
+                        <td><button class="btn-action" data-id="${s.id}">Marcar conciliado</button></td>
+                    </tr>
+                `).join("");
+                body.querySelectorAll(".btn-action").forEach((btn) => {
+                    btn.addEventListener("click", async () => {
+                        const id = (btn as HTMLElement).dataset.id;
+                        try { await api(`/${id}/reconcile`, { method: "PATCH" }); await loadCod(); }
+                        catch (err: any) { alert(err.message); }
+                    });
+                });
+            } catch (err: any) {
+                body.innerHTML = `<tr><td colspan="5" class="empty">Error al cargar: ${err.message}</td></tr>`;
+            }
+        }
+
+        // ── Modal cotizar / crear ────────────────────────────────
+        let currentOrderId: number | null = null;
+        let selectedQuote: any = null;
+
+        async function openQuoteModal(orderId: number, ref: string) {
+            currentOrderId = orderId;
+            selectedQuote = null;
+            document.getElementById("modalTitle")!.textContent = `Cotizar envío — ${ref}`;
+            document.getElementById("modalAlert")!.innerHTML = "";
+            document.getElementById("quoteResults")!.innerHTML = "";
+            document.getElementById("createMsg")!.textContent = "";
+            (document.getElementById("btnCreateShipment") as HTMLButtonElement).disabled = true;
+
+            try {
+                const suggestion = await api(`/${orderId}/suggest`);
+                (document.getElementById("fWeight") as HTMLInputElement).value = String(suggestion.weightKg || 0.5);
+                (document.getElementById("fDeclaredValue") as HTMLInputElement).value = String(suggestion.declaredValueCop || 0);
+
+                const alertBox = document.getElementById("modalAlert")!;
+                if (suggestion.missingWeights?.length) {
+                    alertBox.innerHTML += `<div class="alert-box alert-warn">Productos sin peso registrado: ${suggestion.missingWeights.join(", ")}. Verifique el peso antes de cotizar.</div>`;
+                }
+
+                const daneSelect = document.getElementById("fDane") as HTMLSelectElement;
+                daneSelect.innerHTML = "";
+                if (suggestion.dane?.code) {
+                    daneSelect.innerHTML = `<option value="${suggestion.dane.code}">${suggestion.order.shipping_city} (${suggestion.dane.code})</option>`;
+                } else if (suggestion.dane?.candidates?.length) {
+                    daneSelect.innerHTML = suggestion.dane.candidates.map((c: any) =>
+                        `<option value="${c.location_code}">${c.location_name} - ${c.department_name} (${c.location_code})</option>`
+                    ).join("");
+                    alertBox.innerHTML += `<div class="alert-box alert-warn">Ciudad ambigua: seleccione la correcta antes de cotizar.</div>`;
+                } else {
+                    daneSelect.innerHTML = `<option value="">No se encontró código DANE — ingréselo manualmente</option>`;
+                    alertBox.innerHTML += `<div class="alert-box alert-err">No se pudo resolver la ciudad automáticamente. Contacte soporte de Mipaquete o ingrese el código DANE manualmente en el selector.</div>`;
+                }
+            } catch (err: any) {
+                document.getElementById("modalAlert")!.innerHTML = `<div class="alert-box alert-err">Error al calcular sugerencia: ${err.message}</div>`;
+            }
+
+            document.getElementById("modalBack")!.classList.add("open");
+        }
+
+        document.getElementById("btnQuote")?.addEventListener("click", async () => {
+            if (!currentOrderId) return;
+            const resultsEl = document.getElementById("quoteResults")!;
+            resultsEl.innerHTML = "Cotizando...";
+            (document.getElementById("btnCreateShipment") as HTMLButtonElement).disabled = true;
+            selectedQuote = null;
+
+            try {
+                const weightKg = Number((document.getElementById("fWeight") as HTMLInputElement).value);
+                const width = Number((document.getElementById("fWidth") as HTMLInputElement).value);
+                const length = Number((document.getElementById("fLength") as HTMLInputElement).value);
+                const height = Number((document.getElementById("fHeight") as HTMLInputElement).value);
+                const destinyDaneCode = (document.getElementById("fDane") as HTMLSelectElement).value;
+                const declaredValueCop = Number((document.getElementById("fDeclaredValue") as HTMLInputElement).value);
+
+                // paymentMode se determina en el backend según customer_orders.payment_method,
+                // pero para la cotización comparativa asumimos prepago salvo indicación explícita.
+                const paymentMode = "prepaid";
+
+                const quotes = await api("/quote", {
+                    method: "POST",
+                    body: JSON.stringify({ orderId: currentOrderId, weightKg, width, length, height, destinyDaneCode, declaredValueCop, paymentMode }),
+                });
+
+                if (!quotes.length) {
+                    resultsEl.innerHTML = `<div class="alert-box alert-warn">Sin cobertura de transportadoras para este destino.</div>`;
+                    return;
+                }
+
+                resultsEl.innerHTML = `
+                    <table class="quote-table">
+                        <thead><tr><th>Transportadora</th><th>Costo</th><th>Tiempo entrega</th><th>Score</th></tr></thead>
+                        <tbody>
+                            ${quotes.map((q: any, i: number) => `
+                                <tr class="quote-row" data-idx="${i}">
+                                    <td>${q.deliveryCompanyName}</td>
+                                    <td>${fmtCOP(q.shippingCost)}</td>
+                                    <td>${Math.round(q.shippingTime / 60)} h</td>
+                                    <td>${q.score ?? "—"}</td>
+                                </tr>
+                            `).join("")}
+                        </tbody>
+                    </table>
+                `;
+
+                resultsEl.querySelectorAll(".quote-row").forEach((row) => {
+                    row.addEventListener("click", () => {
+                        resultsEl.querySelectorAll(".quote-row").forEach((r) => r.classList.remove("selected"));
+                        row.classList.add("selected");
+                        selectedQuote = quotes[Number((row as HTMLElement).dataset.idx)];
+                        (document.getElementById("btnCreateShipment") as HTMLButtonElement).disabled = false;
+                    });
+                });
+            } catch (err: any) {
+                resultsEl.innerHTML = `<div class="alert-box alert-err">${err.message}</div>`;
+            }
+        });
+
+        document.getElementById("btnCreateShipment")?.addEventListener("click", async () => {
+            if (!currentOrderId || !selectedQuote) return;
+            const btn = document.getElementById("btnCreateShipment") as HTMLButtonElement;
+            const msg = document.getElementById("createMsg")!;
+            btn.disabled = true;
+            btn.textContent = "Generando...";
+            msg.textContent = "";
+
+            try {
+                const weightKg = Number((document.getElementById("fWeight") as HTMLInputElement).value);
+                const width = Number((document.getElementById("fWidth") as HTMLInputElement).value);
+                const length = Number((document.getElementById("fLength") as HTMLInputElement).value);
+                const height = Number((document.getElementById("fHeight") as HTMLInputElement).value);
+                const destinyDaneCode = (document.getElementById("fDane") as HTMLSelectElement).value;
+                const declaredValueCop = Number((document.getElementById("fDeclaredValue") as HTMLInputElement).value);
+                const requestPickup = (document.getElementById("fPickup") as HTMLSelectElement).value === "true";
+                const comments = (document.getElementById("fComments") as HTMLInputElement).value.trim();
+                const paymentMode = "prepaid";
+
+                const result = await api("/create", {
+                    method: "POST",
+                    body: JSON.stringify({
+                        orderId: currentOrderId, weightKg, width, length, height, destinyDaneCode,
+                        declaredValueCop, paymentMode, deliveryCompanyId: selectedQuote.deliveryCompanyId,
+                        deliveryCompanyName: selectedQuote.deliveryCompanyName,
+                        requestPickup, comments,
+                    }),
+                });
+
+                msg.style.color = "#155724";
+                msg.textContent = `✅ Envío generado (mpCode ${result.mpCode}).`;
+                setTimeout(() => {
+                    document.getElementById("modalBack")!.classList.remove("open");
+                    loadPending();
+                }, 1200);
+            } catch (err: any) {
+                msg.style.color = "#721c24";
+                msg.textContent = `❌ ${err.message}`;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "Generar guía";
+            }
+        });
+
+        document.getElementById("modalClose")?.addEventListener("click", () => {
+            document.getElementById("modalBack")!.classList.remove("open");
+        });
+        document.getElementById("modalBack")?.addEventListener("click", (e) => {
+            if (e.target === e.currentTarget) document.getElementById("modalBack")!.classList.remove("open");
+        });
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape") document.getElementById("modalBack")!.classList.remove("open");
+        });
+
+        // ── Init ──────────────────────────────────────────────────
+        loadPending();
+    </script>
+</AdminLayout>
