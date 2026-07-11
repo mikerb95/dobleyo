@@ -241,8 +241,48 @@ ordersRouter.post('/',
             const shipping = isUSD ? 0 : (discountedSubtotal >= 120000 ? 0 : 12000);
             const total = discountedSubtotal + shipping;
 
+            // Mitigaciones antifraude para contraentrega: tope de monto, límite de
+            // pedidos COD abiertos por email/teléfono, y bloqueo si hubo un envío
+            // devuelto previamente (indicio de que el destinatario no recibe/rechaza).
+            if (isCod) {
+                if (total > COD_MAX_TOTAL_COP) {
+                    return res.status(422).json({
+                        success: false,
+                        error: `El pago contraentrega solo aplica para pedidos hasta $${COD_MAX_TOTAL_COP.toLocaleString('es-CO')}`
+                    });
+                }
+
+                const digits = String(customerPhone || '').replace(/\D/g, '').slice(-10);
+                const openCod = await query(
+                    `SELECT COUNT(*) as cnt FROM customer_orders
+                     WHERE payment_method = 'cod' AND status IN ('processing','shipped')
+                       AND (customer_email = ? OR customer_phone LIKE ?)`,
+                    [customerEmail.toLowerCase(), `%${digits}`]
+                );
+                if (Number(openCod.rows[0].cnt) >= 2) {
+                    return res.status(422).json({
+                        success: false,
+                        error: 'Ya tiene pedidos contraentrega en curso. Complete la entrega antes de generar uno nuevo.'
+                    });
+                }
+
+                const returnedBefore = await query(
+                    `SELECT COUNT(*) as cnt FROM customer_orders o
+                     JOIN shipments s ON s.order_id = o.id
+                     WHERE s.status = 'returned' AND (o.customer_email = ? OR o.customer_phone LIKE ?)`,
+                    [customerEmail.toLowerCase(), `%${digits}`]
+                );
+                if (Number(returnedBefore.rows[0].cnt) > 0) {
+                    return res.status(422).json({
+                        success: false,
+                        error: 'No es posible generar un pedido contraentrega para estos datos de contacto'
+                    });
+                }
+            }
+
             // Referencia única: DY-timestamp-random4chars
             const ref = `DY-${Date.now()}-${crypto.randomBytes(2).toString('hex').toUpperCase()}`;
+            const initialStatus = isCod ? 'processing' : 'pending_payment';
 
             // Insertar orden
             const orderResult = await query(
@@ -250,14 +290,14 @@ ordersRouter.post('/',
            (reference, status, customer_name, customer_email, customer_phone,
             shipping_address, shipping_city, shipping_department, shipping_zip,
             subtotal_cop, shipping_cop, discount_amount_cop, total_cop, currency,
-            discount_code, notes, user_id)
-         VALUES (?, 'pending_payment', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            discount_code, notes, user_id, payment_method)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
          RETURNING id, reference`,
-                [ref, customerName, customerEmail, customerPhone || null,
+                [ref, initialStatus, customerName, customerEmail, customerPhone || null,
                     shippingAddress, shippingCity, shippingDepartment || null, shippingZip || null,
                     subtotal, shipping, discountAmount, total, currency,
                     appliedCode, notes || null,
-                    req.user?.id || null]
+                    req.user?.id || null, isCod ? 'cod' : null]
             );
 
             const { id: orderId, reference } = orderResult.rows[0];
