@@ -1,5 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import Icon from "../components/Icon.astro";
 import { getCanonicalUrl, getHreflangPair } from "../i18n/index.ts";
 
 export const prerender = false;
@@ -98,7 +99,7 @@ const pageDescription =
         <!-- 4. Pago -->
         <fieldset class="sub-step">
           <legend><span class="sub-step__n">4</span> Tarjeta</legend>
-          <p class="sub-secure">🔒 Procesado de forma segura por Wompi. Sus datos de tarjeta no se almacenan en nuestros servidores.</p>
+          <p class="sub-secure"><Icon name="lock" size={16} /> Procesado de forma segura por Wompi. Sus datos de tarjeta no se almacenan en nuestros servidores.</p>
           <div class="sub-grid">
             <div class="sub-field sub-field--full"><label for="ccNum">Número de tarjeta *</label><input id="ccNum" inputmode="numeric" autocomplete="cc-number" class="sub-input" placeholder="4242 4242 4242 4242" required /></div>
             <div class="sub-field"><label for="ccName">Titular *</label><input id="ccName" autocomplete="cc-name" class="sub-input" required /></div>
@@ -128,10 +129,10 @@ const pageDescription =
     <aside class="sub-benefits">
       <h2>¿Por qué suscribirse?</h2>
       <ul>
-        <li><span aria-hidden="true">🔥</span> Café siempre fresco, tostado para usted.</li>
-        <li><span aria-hidden="true">💸</span> Descuento exclusivo de suscriptor.</li>
-        <li><span aria-hidden="true">🚚</span> Envío incluido en cada entrega.</li>
-        <li><span aria-hidden="true">✋</span> Pause o cancele cuando quiera.</li>
+        <li><Icon name="flame" size={18} /> Café siempre fresco, tostado para usted.</li>
+        <li><Icon name="percent" size={18} /> Descuento exclusivo de suscriptor.</li>
+        <li><Icon name="truck" size={18} /> Envío incluido en cada entrega.</li>
+        <li><Icon name="pause" size={18} /> Pause o cancele cuando quiera.</li>
       </ul>
     </aside>
   </div>
