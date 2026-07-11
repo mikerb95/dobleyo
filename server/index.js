@@ -126,6 +126,7 @@ app.use('/api/users', usersRouter);
 app.use('/api/devtools', devtoolsRouter);
 app.use('/api/production', productionRouter);
 app.use('/api/orders', ordersRouter);
+app.use('/api/shipping', shippingRouter);
 app.use('/api/subscriptions', subscriptionsRouter);
 app.use('/api/traceability', traceabilityRouter);
 app.use('/api/finance', financeRouter);
