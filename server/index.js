@@ -21,6 +21,7 @@ import { labelsRouter } from './routes/labels.js';
 import { devtoolsRouter } from './routes/devtools.js';
 import { productionRouter } from './routes/production.js';
 import { ordersRouter } from './routes/orders.js';
+import { shippingRouter } from './routes/shipping.js';
 import { subscriptionsRouter } from './routes/subscriptions.js';
 import { traceabilityRouter } from './routes/traceability.js';
 import { financeRouter } from './routes/finance.js';
