@@ -347,6 +347,7 @@ Para exponer la plataforma en vivo existe un seed **idempotente** que puebla tod
 | DEBT-006 | 🟡 | admin.html legacy coexiste con páginas Astro admin/ | ✅ Resuelto Fase 10 |
 | DEBT-007 | 🟡 | Zero tests automatizados | ✅ Resuelto Fase 12 |
 | DEBT-008 | 🟡 | Scripts de setup/seed/migraciones usan MySQL (mysql2, ?, AUTO_INCREMENT) | ✅ Resuelto Post-Fase 12 |
+| DEBT-009 | 🟡 | `MIPAQUETE_PAYMENT_TYPE_COD` (server/services/mipaquete.js) es un valor por confirmar en sandbox antes de habilitar contraentrega en producción — el 101 documentado por Mipaquete es pago anticipado | Pendiente |
 
 ---
 
