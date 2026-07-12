@@ -606,6 +606,11 @@ import Layout from "../layouts/Layout.astro";
 </style>
 
 <script>
+function initCuenta() {
+  const rootGuard = document.getElementById("accountLoading");
+  if (!rootGuard || rootGuard.dataset.jsInit) return;
+  rootGuard.dataset.jsInit = "1";
+
   const API = "/api";
 
   // Estado local del usuario y secciones cargadas de forma perezosa.
@@ -1120,4 +1125,8 @@ import Layout from "../layouts/Layout.astro";
     if (initial !== "direcciones") loadAddresses();
     if (initial !== "suscripcion") loadSubscriptions();
   })();
+}
+
+initCuenta();
+document.addEventListener("astro:page-load", initCuenta);
 </script>
