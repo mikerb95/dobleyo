@@ -129,6 +129,7 @@ const productJsonLd = {
           alt={product.name}
           class="product-image"
           loading="eager"
+          transition:name={`product-image-${product.id}`}
         />
         {product.deal && <span class="badge deal">Oferta</span>}
         {product.new && <span class="badge new-badge">Nuevo</span>}

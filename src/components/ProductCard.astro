@@ -26,7 +26,12 @@ const lowStock   = typeof product.stock === "number" && product.stock > 0 && pro
     </svg>
   </button>
   <a href={`/producto/${product.id}`} class="card-link" tabindex="-1" aria-hidden="true">
-    <img src={product.image} alt={product.name} loading="lazy" />
+    <img
+      src={product.image}
+      alt={product.name}
+      loading="lazy"
+      transition:name={`product-image-${product.id}`}
+    />
   </a>
   <div class="p">
     <div class="muted" style="font-size:.85rem">
