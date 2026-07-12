@@ -2,10 +2,11 @@
  * Banner de consentimiento de cookies (Ley 1581/2012).
  * Externalizado (servido desde 'self') para cumplir la CSP estricta sin 'unsafe-inline'.
  */
-(function () {
+function initCookieBanner() {
   const COOKIE_KEY = "dy_cookie_consent";
   const banner = document.getElementById("cookieBanner");
-  if (!banner) return;
+  if (!banner || banner.dataset.jsInit) return;
+  banner.dataset.jsInit = "1";
 
   // Mostrar banner solo si no hay decisión guardada
   const saved = localStorage.getItem(COOKIE_KEY);
