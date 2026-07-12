@@ -25,4 +25,7 @@ function initBlog(){
   `).join('');
 
   function esc(s){ return (s||'').toString().replace(/[&<>"]/g, m=> ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); }
-})();
+}
+
+initBlog();
+document.addEventListener('astro:page-load', initBlog);
