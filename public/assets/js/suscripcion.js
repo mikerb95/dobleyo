@@ -1,12 +1,13 @@
 // Suscripción de café — DobleYo Café
 // Tokeniza la tarjeta directamente contra Wompi (la tarjeta NUNCA pasa por
 // nuestro servidor) y luego crea la suscripción vía /api/subscriptions.
-(function () {
+function initSuscripcion() {
   'use strict';
 
   const $ = (s, r = document) => r.querySelector(s);
   const form = $('#subForm');
-  if (!form) return;
+  if (!form || form.dataset.jsInit) return;
+  form.dataset.jsInit = '1';
 
   const fmt = (n) => '$' + Number(n).toLocaleString('es-CO');
 
