@@ -152,4 +152,7 @@ function initSuscripcion() {
 
   loadAcceptance();
   updateSummary();
-})();
+}
+
+initSuscripcion();
+document.addEventListener('astro:page-load', initSuscripcion);
