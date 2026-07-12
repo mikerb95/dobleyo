@@ -156,15 +156,18 @@ import Layout from "../layouts/Layout.astro";
   </div>
 
   <script>
-    (function () {
+    function initCartPage() {
+      const cartLayoutGuard = document.getElementById('cartLayout');
+      if (!cartLayoutGuard || cartLayoutGuard.dataset.jsInit) return;
+      cartLayoutGuard.dataset.jsInit = '1';
+
       const FREE_SHIP_THRESHOLD = 120000;
       const SHIP_COST = 12000;
 
       function fmt(n) { return '$' + Number(n || 0).toLocaleString('es-CO'); }
-      function ready(fn) { if (document.readyState !== 'loading') fn(); else document.addEventListener('DOMContentLoaded', fn); }
       function whenCart(fn) { if (window.Cart) fn(); else setTimeout(() => whenCart(fn), 30); }
 
-      ready(() => whenCart(function () {
+      whenCart(function () {
         const listEl     = document.getElementById('cartList');
         const emptyEl    = document.getElementById('cartEmpty');
         const layoutEl   = document.getElementById('cartLayout');
@@ -390,8 +393,11 @@ import Layout from "../layouts/Layout.astro";
         document.getElementById('checkoutBtn').addEventListener('click', () => { location.href = '/checkout'; });
         const cmbBtn = document.getElementById('cmbCheckoutBtn');
         if (cmbBtn) cmbBtn.addEventListener('click', () => { location.href = '/checkout'; });
-      }));
-    })();
+      });
+    }
+
+    initCartPage();
+    document.addEventListener('astro:page-load', initCartPage);
   </script>
 
   <style is:global>

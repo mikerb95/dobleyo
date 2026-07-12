@@ -220,7 +220,11 @@ const shopJsonLd = {
   <div id="shopData" data-products={JSON.stringify(products)} style="display:none"></div>
 
   <script>
-    (function () {
+    function initShop() {
+      const resultsElGuard = document.getElementById("shopResults");
+      if (!resultsElGuard || resultsElGuard.dataset.jsInit) return;
+      resultsElGuard.dataset.jsInit = "1";
+
       const products = JSON.parse(document.getElementById('shopData')?.dataset.products || '[]');
       const $ = (s, r = document) => r.querySelector(s);
       const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
@@ -557,6 +561,9 @@ const shopJsonLd = {
       // para que el JS tome el control del DOM.
       // En una implementacion mas avanzada usariamos islas para no borrar el HTML del servidor.
       render();
-    })();
+    }
+
+    initShop();
+    document.addEventListener("astro:page-load", initShop);
   </script>
 </Layout>
