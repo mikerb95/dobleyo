@@ -84,11 +84,17 @@
     btn.title = now ? 'Quitar de favoritos' : 'Agregar a favoritos';
   });
 
-  // Al cargar la pagina, sincronizar el estado de los corazones si hay sesion.
-  document.addEventListener('DOMContentLoaded', () => {
+  // Sincroniza los corazones de la pagina actual (si hay sesion). Idempotente:
+  // solo repinta estado, asi que puede ejecutarse en cada navegacion.
+  function syncPage() {
     if (!document.querySelector('[data-fav]')) return;
     load().then(() => syncButtons());
-  });
+  }
+
+  // Al cargar y tras cada navegacion con View Transitions (las cards son nuevas).
+  if (document.readyState !== 'loading') syncPage();
+  else document.addEventListener('DOMContentLoaded', syncPage);
+  document.addEventListener('astro:page-load', syncPage);
 
   window.Favorites = { load, isFav, add, remove, toggle, syncButtons };
 })();
