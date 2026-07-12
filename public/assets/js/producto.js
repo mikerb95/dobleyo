@@ -233,4 +233,12 @@ function initProductReviews() {
       }
     });
   }
-})();
+}
+
+function initProducto() {
+  initProductActions();
+  initProductReviews();
+}
+
+initProducto();
+document.addEventListener("astro:page-load", initProducto);
