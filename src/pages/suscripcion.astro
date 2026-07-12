@@ -34,16 +34,15 @@ const pageDescription =
   hreflangEs={_hreflang?.es}
   hreflangEn={_hreflang?.en}
 >
-  <section class="sub-hero">
-    <div class="sub-hero__inner">
-      <p class="sub-hero__eyebrow">Suscripción</p>
-      <h1 class="sub-hero__title">Café fresco, sin que se le acabe</h1>
-      <p class="sub-hero__sub">
-        Reciba su café de especialidad recién tostado cada 15 o 30 días, con
-        <strong>descuento de suscriptor</strong> y envío incluido. Cancele cuando quiera.
-      </p>
-    </div>
-  </section>
+  <PageHero
+    eyebrow="Suscripción"
+    title="Café fresco, sin que se le acabe"
+  >
+    <p class="page-hero__sub" slot="default">
+      Reciba su café de especialidad recién tostado cada 15 o 30 días, con
+      <strong>descuento de suscriptor</strong> y envío incluido. Cancele cuando quiera.
+    </p>
+  </PageHero>
 
   <div class="container sub-wrap">
     {coffees.length === 0 ? (
