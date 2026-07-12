@@ -117,4 +117,27 @@ const hreflang = getHreflangPair("/trazabilidad");
     </section>
 </Layout>
 
+<style>
+  /* Grid de dos columnas — nunca tuvo CSS propio (bug preexistente, sin
+     relación con las mejoras de esta sesión: confirmado con git blame). */
+  .trace-layout {
+    display: grid;
+    grid-template-columns: 1fr 1.4fr;
+    gap: 1.25rem;
+    align-items: start;
+    margin: 1rem 0 2rem;
+  }
+  .trace-left,
+  .trace-right {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  @media (max-width: 900px) {
+    .trace-layout {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
 <script is:inline src="/assets/js/en-traceability.js"></script>
