@@ -36,4 +36,8 @@ function initEnContact() {
     btn.disabled = false;
     btn.textContent = "Send message";
   }
-});
+  });
+}
+
+initEnContact();
+document.addEventListener("astro:page-load", initEnContact);

@@ -1,4 +1,9 @@
 /** EN traceability lookup + QR scanner. Externalized for the strict CSP (no 'unsafe-inline'). */
+function initEnTraceability() {
+  const rootEl = document.getElementById("lookupBtn") || document.getElementById("qrVideo");
+  if (!rootEl || rootEl.dataset.jsInit) return;
+  rootEl.dataset.jsInit = "1";
+
 const FIELD_LABELS = {
   farm: "Farm",
   producer: "Producer",
