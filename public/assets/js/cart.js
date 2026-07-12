@@ -43,6 +43,9 @@
   // exponer API global
   window.Cart = { getCart, saveCart, addToCart, removeFromCart, updateQty, clearCart, subtotal, countItems, updateCartCount };
 
-  // actualizar contador al cargar
-  document.addEventListener('DOMContentLoaded', updateCartCount);
+  // actualizar contador al cargar y tras cada navegacion con View Transitions.
+  // updateCartCount es idempotente, asi que ejecutarlo de mas es inofensivo.
+  if (document.readyState !== 'loading') updateCartCount();
+  else document.addEventListener('DOMContentLoaded', updateCartCount);
+  document.addEventListener('astro:page-load', updateCartCount);
 })();
