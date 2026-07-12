@@ -25,30 +25,41 @@ document.addEventListener("click", (e) => {
   }, 1500);
 });
 
-// 2) Métricas de header (CSS vars) + cierre de la barra superior de anuncio
-(function () {
-  const $ = (s, r = document) => r.querySelector(s);
+// 2) Métricas de header (CSS vars) + cierre de la barra superior de anuncio.
+//    El header/topbar se persisten con View Transitions (transition:persist),
+//    por eso el binding lleva un guard y las métricas se recalculan tras cada
+//    navegación para evitar saltos de layout.
+const TOPBAR_CLOSED_KEY = "dy-topbar-closed";
 
-  const topbar = $("#topbar");
-  const topbarClose = $("#topbarClose");
+function setHeaderMetrics() {
+  const tb = document.querySelector("#topbar");
+  const top = tb ? tb.offsetHeight : 0;
+  const headerCont = document.querySelector(".site-header .container");
+  const hh = headerCont ? headerCont.offsetHeight : 96;
+  const pageOffset = top + hh + 12;
+  const root = document.documentElement;
+  root.style.setProperty("--header-top", top + "px");
+  root.style.setProperty("--header-height", hh + "px");
+  root.style.setProperty("--page-offset-top", pageOffset + "px");
+}
 
-  const setHeaderMetrics = () => {
-    const tb = $("#topbar");
-    const top = tb ? tb.offsetHeight : 0;
-    const headerCont = document.querySelector(".site-header .container");
-    const hh = headerCont ? headerCont.offsetHeight : 96;
-    const pageOffset = top + hh + 12;
-    const root = document.documentElement;
-    root.style.setProperty("--header-top", top + "px");
-    root.style.setProperty("--header-height", hh + "px");
-    root.style.setProperty("--page-offset-top", pageOffset + "px");
-  };
+function initHeaderChrome() {
+  const topbar = document.querySelector("#topbar");
 
-  setHeaderMetrics();
-  window.addEventListener("resize", setHeaderMetrics);
+  // Si el usuario ya cerró la barra en esta sesión, retirarla sin animar.
+  if (topbar && sessionStorage.getItem(TOPBAR_CLOSED_KEY)) {
+    topbar.remove();
+    setHeaderMetrics();
+    return;
+  }
 
-  if (topbar && topbarClose) {
+  const topbarClose = document.querySelector("#topbarClose");
+  if (topbar && topbarClose && !topbarClose.dataset.jsInit) {
+    topbarClose.dataset.jsInit = "1";
     topbarClose.addEventListener("click", () => {
+      try {
+        sessionStorage.setItem(TOPBAR_CLOSED_KEY, "1");
+      } catch {}
       topbar.style.height = topbar.offsetHeight + "px";
       requestAnimationFrame(() => {
         topbar.style.transition = "height .25s ease, opacity .25s ease";
@@ -61,7 +72,17 @@ document.addEventListener("click", (e) => {
       });
     });
   }
-})();
+
+  setHeaderMetrics();
+}
+
+window.addEventListener("resize", setHeaderMetrics);
+
+if (document.readyState !== "loading") initHeaderChrome();
+else document.addEventListener("DOMContentLoaded", initHeaderChrome);
+document.addEventListener("astro:page-load", initHeaderChrome);
+// Recalcular al terminar el swap para evitar un frame con métricas viejas.
+document.addEventListener("astro:after-swap", setHeaderMetrics);
 
 // 3) Localización de enlaces internos en páginas EN servidas bajo /en
 //    (entorno local y previews de Vercel). En el subdominio en.dobleyo.cafe
@@ -69,7 +90,8 @@ document.addEventListener("click", (e) => {
 //    así que ahí la URL del navegador no lleva el prefijo /en y esto no actúa.
 //    Sin el prefijo, en local/preview los enlaces planos caían en la raíz (ES)
 //    y daban 404. Aquí se les antepone /en para que la navegación EN funcione.
-(function () {
+//    Se re-ejecuta tras cada navegación porque los enlaces son nuevos en cada swap.
+function localizeEnLinks() {
   const path = location.pathname;
   const onEn = path === "/en" || path.indexOf("/en/") === 0;
   if (!onEn) return;
@@ -87,4 +109,8 @@ document.addEventListener("click", (e) => {
 
     a.setAttribute("href", href === "/" ? "/en" : "/en" + href);
   });
-})();
+}
+
+if (document.readyState !== "loading") localizeEnLinks();
+else document.addEventListener("DOMContentLoaded", localizeEnLinks);
+document.addEventListener("astro:page-load", localizeEnLinks);
