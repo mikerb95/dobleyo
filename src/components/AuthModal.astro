@@ -279,8 +279,16 @@ const appleClientId  = import.meta.env.PUBLIC_APPLE_CLIENT_ID  || '';
 {appleClientId && <script is:inline src="https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js" async defer></script>}
 
 <script>
-(function () {
+// El modal ya no se persiste entre navegaciones (transition:persist) porque el
+// botón de Google usa un iframe: moverlo de documento en cada swap lo hacía
+// recargar fuera de contexto y renderizar roto (logo "G" sin restricciones de
+// tamaño). Al recrearse en cada página, este init debe re-ejecutarse en
+// astro:page-load para volver a capturar referencias DOM y reexponer
+// window.AuthModal.open/close sobre los nodos vigentes.
+function initAuthModal() {
   const overlay = document.getElementById('authModalOverlay');
+  if (!overlay || overlay.dataset.jsInit) return;
+  overlay.dataset.jsInit = '1';
   const googleClientId = overlay?.dataset.googleClientId ?? '';
   const appleClientId  = overlay?.dataset.appleClientId  ?? '';
 
@@ -777,8 +785,10 @@ const appleClientId  = import.meta.env.PUBLIC_APPLE_CLIENT_ID  || '';
   if (authParam === 'login' || authParam === 'register') {
     openModal(authParam);
   }
+}
 
-})();
+initAuthModal();
+document.addEventListener('astro:page-load', initAuthModal);
 </script>
 
 <style>
