@@ -47,18 +47,15 @@ const ventajas = [
   description={pageDescription}
   canonical={getCanonicalUrl("/afiliados", "es")}
 >
-  <section class="af-hero">
-    <div class="af-hero__inner">
-      <p class="af-hero__eyebrow">Programa de afiliados</p>
-      <h1 class="af-hero__title">Recomiende café, gane comisiones</h1>
-      <p class="af-hero__sub">
-        Si le apasiona el buen café y tiene una comunidad que confía en usted,
-        conviértalo en ingresos. Comparta DobleYo y reciba una comisión por cada
-        venta que genere.
-      </p>
+  <PageHero
+    eyebrow="Programa de afiliados"
+    title="Recomiende café, gane comisiones"
+    subtitle="Si le apasiona el buen café y tiene una comunidad que confía en usted, conviértalo en ingresos. Comparta DobleYo y reciba una comisión por cada venta que genere."
+  >
+    <div class="page-hero__cta">
       <a class="btn-primary" href="/contacto" data-link>Quiero afiliarme</a>
     </div>
-  </section>
+  </PageHero>
 
   <section class="af-steps">
     <div class="container">
