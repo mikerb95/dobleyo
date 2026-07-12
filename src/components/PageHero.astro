@@ -15,6 +15,7 @@ const { eyebrow, title, subtitle, align = "center", size = "md" } = Astro.props;
     {eyebrow && <p class="eyebrow page-hero__eyebrow">{eyebrow}</p>}
     <h1 class="page-hero__title">{title}</h1>
     {subtitle && <p class="page-hero__sub">{subtitle}</p>}
+    <slot name="subtitle" />
     <slot />
   </div>
 </section>
