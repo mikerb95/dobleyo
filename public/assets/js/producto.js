@@ -2,9 +2,10 @@
  *  Externalizado por CSP estricta (sin 'unsafe-inline'). */
 
 // ── Acciones del producto (variantes, cantidad, carrito) ──────────────────────
-(function () {
+function initProductActions() {
   const actions = document.getElementById("productActions");
-  if (!actions) return;
+  if (!actions || actions.dataset.jsInit) return;
+  actions.dataset.jsInit = "1";
 
   const productId = actions.dataset.productId;
   const name = actions.dataset.productName;
