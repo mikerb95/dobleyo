@@ -1,6 +1,7 @@
 ---
 // Página pública de listado de fincas — Fase 7
 import Layout from "../layouts/Layout.astro";
+import PageHero from "../components/PageHero.astro";
 
 export const prerender = false;
 
@@ -60,15 +61,10 @@ const pageDescription =
   </head>
 
   <!-- Encabezado hero -->
-  <section class="fincas-hero">
-    <div class="fincas-hero__inner">
-      <h1 class="fincas-hero__title">Nuestras Fincas</h1>
-      <p class="fincas-hero__sub">
-        Del grano a tu taza — conoce los caficultores y fincas que hacen
-        posible cada sorbo de DobleYo.
-      </p>
-    </div>
-  </section>
+  <PageHero
+    title="Nuestras Fincas"
+    subtitle="Del grano a tu taza — conoce los caficultores y fincas que hacen posible cada sorbo de DobleYo."
+  />
 
   <!-- Filtros por región -->
   {regions.length > 0 && (
@@ -176,26 +172,6 @@ const pageDescription =
 </Layout>
 
 <style>
-  /* === Hero === */
-  .fincas-hero {
-    background: var(--coffee);
-    color: var(--cream);
-    padding: 3rem 1.5rem 2.5rem;
-    text-align: center;
-  }
-  .fincas-hero__inner { max-width: 640px; margin: 0 auto; }
-  .fincas-hero__title {
-    font-size: clamp(1.8rem, 5vw, 3rem);
-    font-family: var(--font-heading, serif);
-    margin: 0 0 0.75rem;
-  }
-  .fincas-hero__sub {
-    font-size: 1.05rem;
-    opacity: 0.85;
-    line-height: 1.6;
-    margin: 0;
-  }
-
   /* === Filtros === */
   .fincas-filters {
     background: var(--cream);

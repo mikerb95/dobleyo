@@ -1,5 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import PageHero from "../components/PageHero.astro";
 import { getCanonicalUrl } from "../i18n/index.ts";
 
 export const prerender = false;
@@ -46,18 +47,15 @@ const perfiles = [
   description={pageDescription}
   canonical={getCanonicalUrl("/partners", "es")}
 >
-  <section class="pt-hero">
-    <div class="pt-hero__inner">
-      <p class="pt-hero__eyebrow">Zona de partners</p>
-      <h1 class="pt-hero__title">Crezcamos juntos con café de origen</h1>
-      <p class="pt-hero__sub">
-        Si su negocio vive del buen café, queremos ser su aliado. Le ofrecemos
-        café de especialidad colombiano con trazabilidad real, tueste a la medida
-        y el acompañamiento que su operación necesita.
-      </p>
+  <PageHero
+    eyebrow="Zona de partners"
+    title="Crezcamos juntos con café de origen"
+    subtitle="Si su negocio vive del buen café, queremos ser su aliado. Le ofrecemos café de especialidad colombiano con trazabilidad real, tueste a la medida y el acompañamiento que su operación necesita."
+  >
+    <div class="page-hero__cta">
       <a class="btn-primary" href="/contacto" data-link>Quiero ser partner</a>
     </div>
-  </section>
+  </PageHero>
 
   <section class="pt-benefits">
     <div class="container">
@@ -105,23 +103,6 @@ const perfiles = [
     margin: 0 0 1.5rem;
   }
   .pt-h2--center { text-align: center; }
-
-  .pt-hero {
-    background: var(--coffee);
-    color: var(--cream);
-    padding: 3.5rem 1.5rem 3rem;
-    text-align: center;
-  }
-  .pt-hero__inner { max-width: 720px; margin: 0 auto; }
-  .pt-hero__eyebrow {
-    text-transform: uppercase; letter-spacing: 0.12em; font-size: 0.8rem;
-    opacity: 0.75; margin: 0 0 0.75rem;
-  }
-  .pt-hero__title {
-    font-family: var(--font-heading, serif);
-    font-size: clamp(1.9rem, 5vw, 3rem); line-height: 1.15; margin: 0 0 1rem;
-  }
-  .pt-hero__sub { font-size: 1.05rem; line-height: 1.65; opacity: 0.9; margin: 0 0 1.75rem; }
 
   .pt-benefits { background: #fff; padding: 3.5rem 0; }
   .pt-grid {
