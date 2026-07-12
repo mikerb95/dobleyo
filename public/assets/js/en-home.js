@@ -45,4 +45,8 @@ function initEnHome() {
       btn.style.background = "";
     }, 3000);
   }
-});
+  });
+}
+
+initEnHome();
+document.addEventListener("astro:page-load", initEnHome);
