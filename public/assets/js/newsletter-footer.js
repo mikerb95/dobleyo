@@ -2,11 +2,12 @@
  * Suscripción al newsletter (footer global).
  * Externalizado (servido desde 'self') para cumplir la CSP estricta sin 'unsafe-inline'.
  */
-(function () {
+function initNewsletterFooter() {
   const btn = document.getElementById("newsletterBtn");
   const input = document.getElementById("newsletterEmail");
   const msg = document.getElementById("newsletterMsg");
-  if (!btn || !input || !msg) return;
+  if (!btn || !input || !msg || btn.dataset.jsInit) return;
+  btn.dataset.jsInit = "1";
 
   async function subscribe() {
     const email = input.value.trim();
