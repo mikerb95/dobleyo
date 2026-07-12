@@ -122,12 +122,13 @@ function initProductActions() {
     }
     tryAdd();
   });
-})();
+}
 
 // ── Reseñas ───────────────────────────────────────────────────────────────────
-(function () {
+function initProductReviews() {
   const section = document.getElementById("reviewsSection");
-  if (!section) return;
+  if (!section || section.dataset.jsInit) return;
+  section.dataset.jsInit = "1";
   const productId = section.dataset.productId;
 
   const avgEl = document.getElementById("reviewsAvg");
