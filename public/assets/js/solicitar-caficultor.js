@@ -1,8 +1,10 @@
 /** Solicitud de caficultor. Externalizado por CSP estricta (sin 'unsafe-inline'). */
-(function () {
+function initSolicitarCaficultor() {
   const f = document.getElementById("caficulorForm");
   const err = document.getElementById("formError");
   const btn = document.getElementById("submitBtn");
+  if (!f || f.dataset.jsInit) return;
+  f.dataset.jsInit = "1";
 
   async function checkAuth() {
     try {
