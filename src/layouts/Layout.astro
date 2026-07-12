@@ -62,24 +62,27 @@ const {
       </div>
     </div>
 
-    <Header lang={lang} transition:persist={`header-${lang}`} />
+    <!-- La persistencia entre navegaciones (transition:persist) vive en el
+         elemento raíz DENTRO de cada componente: Astro descarta la directiva
+         si se aplica al tag del componente. -->
+    <Header lang={lang} />
 
     <main class="container">
       <slot />
     </main>
 
-    <Footer lang={lang} transition:persist={`footer-${lang}`} />
+    <Footer lang={lang} />
 
     {lang === "es" && <LangSuggest />}
 
     <!-- Banner de consentimiento de cookies (Ley 1581/2012) -->
-    <CookieBanner transition:persist="cookie-banner" />
+    <CookieBanner />
 
     <!-- Modal de autenticación (login / registro) -->
-    <AuthModal transition:persist="auth-modal" />
+    <AuthModal />
 
     <!-- Drawer lateral del carrito (feedback al agregar) -->
-    <CartDrawer transition:persist={`cart-drawer-${lang}`} />
+    <CartDrawer />
 
     <!-- Botón flotante WhatsApp -->
     {!hideWhatsApp && (
