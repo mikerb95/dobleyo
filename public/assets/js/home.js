@@ -39,23 +39,36 @@ function initHomeNewsletter() {
       btn.textContent = "Suscribirse";
     }
   });
-})();
+}
 
 // Botones "+" del grid showcase → carrito
-document.querySelector(".cs-grid")?.addEventListener("click", (e) => {
-  const btn = e.target.closest(".btn-add");
-  if (!btn) return;
-  const { id, name, price, image } = btn.dataset;
-  if (id && name && price && image && window.Cart) {
-    window.Cart.addToCart({
-      id,
-      name,
-      price: parseInt(price, 10),
-      image,
-      qty: 1,
-    });
-    // feedback visual breve
-    btn.classList.add("cs-card__add--added");
-    setTimeout(() => btn.classList.remove("cs-card__add--added"), 900);
-  }
-});
+function initHomeShowcase() {
+  const grid = document.querySelector(".cs-grid");
+  if (!grid || grid.dataset.jsInit) return;
+  grid.dataset.jsInit = "1";
+  grid.addEventListener("click", (e) => {
+    const btn = e.target.closest(".btn-add");
+    if (!btn) return;
+    const { id, name, price, image } = btn.dataset;
+    if (id && name && price && image && window.Cart) {
+      window.Cart.addToCart({
+        id,
+        name,
+        price: parseInt(price, 10),
+        image,
+        qty: 1,
+      });
+      // feedback visual breve
+      btn.classList.add("cs-card__add--added");
+      setTimeout(() => btn.classList.remove("cs-card__add--added"), 900);
+    }
+  });
+}
+
+function initHome() {
+  initHomeNewsletter();
+  initHomeShowcase();
+}
+
+initHome();
+document.addEventListener("astro:page-load", initHome);
