@@ -4,10 +4,11 @@
  */
 
 // Newsletter form
-(function () {
+function initHomeEnNewsletter() {
   const form = document.getElementById("homeNewsletterForm");
   const msgEl = document.getElementById("homeNlMsg");
-  if (!form) return;
+  if (!form || form.dataset.jsInit) return;
+  form.dataset.jsInit = "1";
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     const email = document.getElementById("homeNlEmail").value.trim();
@@ -38,22 +39,35 @@
       btn.textContent = "Subscribe";
     }
   });
-})();
+}
 
 // "+" grid buttons → cart
-document.querySelector(".cs-grid")?.addEventListener("click", (e) => {
-  const btn = e.target.closest(".btn-add");
-  if (!btn) return;
-  const { id, name, price, image } = btn.dataset;
-  if (id && name && price && image && window.Cart) {
-    window.Cart.addToCart({
-      id,
-      name,
-      price: parseInt(price, 10),
-      image,
-      qty: 1,
-    });
-    btn.classList.add("cs-card__add--added");
-    setTimeout(() => btn.classList.remove("cs-card__add--added"), 900);
-  }
-});
+function initHomeEnShowcase() {
+  const grid = document.querySelector(".cs-grid");
+  if (!grid || grid.dataset.jsInit) return;
+  grid.dataset.jsInit = "1";
+  grid.addEventListener("click", (e) => {
+    const btn = e.target.closest(".btn-add");
+    if (!btn) return;
+    const { id, name, price, image } = btn.dataset;
+    if (id && name && price && image && window.Cart) {
+      window.Cart.addToCart({
+        id,
+        name,
+        price: parseInt(price, 10),
+        image,
+        qty: 1,
+      });
+      btn.classList.add("cs-card__add--added");
+      setTimeout(() => btn.classList.remove("cs-card__add--added"), 900);
+    }
+  });
+}
+
+function initHomeEn() {
+  initHomeEnNewsletter();
+  initHomeEnShowcase();
+}
+
+initHomeEn();
+document.addEventListener("astro:page-load", initHomeEn);

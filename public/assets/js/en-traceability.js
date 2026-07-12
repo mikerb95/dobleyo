@@ -124,3 +124,7 @@ function scanFrame() {
 document.getElementById("startScan")?.addEventListener("click", startScan);
 document.getElementById("stopScan")?.addEventListener("click", stopScan);
 document.getElementById("restartScan")?.addEventListener("click", startScan);
+}
+
+initEnTraceability();
+document.addEventListener("astro:page-load", initEnTraceability);
