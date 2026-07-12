@@ -49,4 +49,7 @@ function initNewsletterFooter() {
   input.addEventListener("keydown", (e) => {
     if (e.key === "Enter") subscribe();
   });
-})();
+}
+
+initNewsletterFooter();
+document.addEventListener("astro:page-load", initNewsletterFooter);
