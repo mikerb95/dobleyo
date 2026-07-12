@@ -28,4 +28,7 @@ function initCookieBanner() {
   document
     .getElementById("cookieReject")
     ?.addEventListener("click", () => dismiss("essential"));
-})();
+}
+
+initCookieBanner();
+document.addEventListener("astro:page-load", initCookieBanner);
