@@ -72,13 +72,21 @@ const enHref = buildLangHref("en", lang, hostname, pathname);
 <script>
   import { buildLangHref } from "../i18n/routes.ts";
 
-  document.querySelectorAll("[data-lang-toggle]").forEach((toggle) => {
-    const current = (toggle.getAttribute("data-current") === "en" ? "en" : "es");
-    const { hostname, pathname } = window.location;
-    toggle.querySelectorAll("[data-lang-opt]").forEach((el) => {
-      const a = el as HTMLAnchorElement;
-      const target = a.getAttribute("data-lang-opt") === "en" ? "en" : "es";
-      a.href = buildLangHref(target, current, hostname, pathname);
+  // Recalcula los href con la URL real del navegador. Debe re-ejecutarse en
+  // cada navegación (astro:page-load): el toggle vive en el header persistido,
+  // así que sin esto quedaría apuntando a la página donde inició la sesión.
+  function syncLangToggles() {
+    document.querySelectorAll("[data-lang-toggle]").forEach((toggle) => {
+      const current = (toggle.getAttribute("data-current") === "en" ? "en" : "es");
+      const { hostname, pathname } = window.location;
+      toggle.querySelectorAll("[data-lang-opt]").forEach((el) => {
+        const a = el as HTMLAnchorElement;
+        const target = a.getAttribute("data-lang-opt") === "en" ? "en" : "es";
+        a.href = buildLangHref(target, current, hostname, pathname);
+      });
     });
-  });
+  }
+
+  syncLangToggles();
+  document.addEventListener("astro:page-load", syncLangToggles);
 </script>
