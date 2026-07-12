@@ -555,58 +555,40 @@ function initAuthModal() {
   // Callback que invoca Google GSI
   window.handleGoogleCredential = (response) => handleGoogleToken(response.credential);
 
-  // Botón personalizado de Google
+  // Botón personalizado de Google (único botón: nunca se reemplaza por el
+  // oficial de GSI. Intentar re-renderizar el botón oficial de Google en
+  // cada navegación de la SPA es frágil — el SDK mantiene estado interno por
+  // sesión y volver a llamar renderButton() sobre un contenedor nuevo en cada
+  // página producía un render corrupto, sin las restricciones de tamaño del
+  // iframe. El flujo prompt() es estable y no depende de renderizar nada).
   const googleBtn = document.getElementById('googleSignInBtn');
   if (googleBtn) {
     googleBtn.addEventListener('click', () => {
       if (googleClientId && window.google?.accounts?.id) {
-        // Usar el flujo One Tap / popup de GSI
         window.google.accounts.id.prompt((notification) => {
           if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-            // Fallback: renderizar botón oficial en popup
-            window.google.accounts.id.renderButton(
-              document.getElementById('gsi-render-target'),
-              { type: 'standard', size: 'large', text: 'signin_with', shape: 'rectangular', width: 400 }
-            );
+            showAlert('loginError', 'No se pudo abrir el inicio de sesión con Google. Verifique que las cookies de terceros estén habilitadas.');
           }
         });
       } else if (!googleClientId) {
         showAlert('loginError', 'El inicio de sesión con Google no está configurado.');
       } else {
-        // SDK aún cargando, esperar
         showAlert('loginError', 'Cargando Google Sign-In, intenta en un momento.');
       }
     });
   }
 
-  // Cuando el SDK de GSI carga, reemplazamos el botón personalizado por el oficial
+  // Inicializar el SDK de GSI en cuanto esté disponible (idempotente: se
+  // reinicializa con la misma config en cada navegación, sin efecto visible).
   if (googleClientId) {
     const waitForGSI = setInterval(() => {
       if (window.google?.accounts?.id) {
         clearInterval(waitForGSI);
-        const wrap = document.getElementById('googleBtnWrap');
-        if (!wrap) return;
-        // Inicializar GSI
         window.google.accounts.id.initialize({
           client_id: googleClientId,
           callback: window.handleGoogleCredential,
           auto_prompt: false,
         });
-        // Renderizar el botón oficial reemplazando el personalizado
-        const customBtn = document.getElementById('googleSignInBtn');
-        if (customBtn) {
-          const renderTarget = document.createElement('div');
-          renderTarget.id = 'gsi-render-target';
-          customBtn.replaceWith(renderTarget);
-          window.google.accounts.id.renderButton(renderTarget, {
-            type: 'standard',
-            size: 'large',
-            text: 'signin_with',
-            shape: 'rectangular',
-            logo_alignment: 'left',
-            width: wrap.offsetWidth || 380,
-          });
-        }
       }
     }, 100);
     // Dejar de intentar después de 10s
