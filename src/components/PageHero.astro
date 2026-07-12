@@ -72,7 +72,8 @@ const { eyebrow, title, subtitle, align = "center", size = "md" } = Astro.props;
     font-size: var(--text-hero);
   }
 
-  .page-hero__sub {
+  .page-hero__sub,
+  .page-hero__inner :global(.page-hero__sub) {
     font-size: var(--text-lg);
     line-height: 1.65;
     opacity: 0.88;
