@@ -25,6 +25,16 @@ const ROUTE_PAIRS: Array<[string, string]> = [
   ['/cart', '/cart'],
   ['/checkout', '/checkout'],
   ['/confirmacion', '/confirmation'],
+  ['/nosotros', '/about'],
+  ['/afiliados', '/affiliates'],
+  ['/guias', '/guides'],
+  ['/cuenta', '/account'],
+  ['/privacidad', '/privacy'],
+  ['/terminos', '/terms'],
+  ['/envios-devoluciones', '/shipping'],
+  ['/accesibilidad', '/accessibility'],
+  ['/partners', '/partners'],
+  ['/blog', '/blog'],
 ];
 
 const ES_TO_EN = new Map(ROUTE_PAIRS);
