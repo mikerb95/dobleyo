@@ -606,4 +606,8 @@ const accountHref = lang === "en" ? "/account" : "/cuenta";
       if (preview.style.opacity === '1' || wrap.matches(':hover')) positionPreview();
     });
   })();
+  }
+
+  initHeader();
+  document.addEventListener("astro:page-load", initHeader);
 </script>
