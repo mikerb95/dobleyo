@@ -114,7 +114,7 @@ const productJsonLd = {
 >
   <section class="product-page">
     <nav class="breadcrumb" aria-label="Ruta de navegación">
-      <a href="/tienda" data-link>Tienda</a>
+      <a href="/tienda">Tienda</a>
       <span aria-hidden="true">›</span>
       <span>{product.categoryLabel}</span>
       <span aria-hidden="true">›</span>
@@ -258,7 +258,7 @@ const productJsonLd = {
           >
             {outOfStock ? "Agotado" : "Agregar al carrito"}
           </button>
-          <a class="btn outline" href="/cart" data-link>Ver carrito</a>
+          <a class="btn outline" href="/cart">Ver carrito</a>
           <button
             class="btn outline fav-toggle-btn"
             data-fav={product.id}
@@ -282,7 +282,7 @@ const productJsonLd = {
 
         <!-- Link de trazabilidad -->
         {product.category === "cafe" && (
-          <a href="/trazabilidad" class="trace-link" data-link>
+          <a href="/trazabilidad" class="trace-link">
             🔍 Rastrear el origen de este café
           </a>
         )}

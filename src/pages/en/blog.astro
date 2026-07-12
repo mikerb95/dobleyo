@@ -42,13 +42,13 @@ try {
           <p class="blog-empty__icon" aria-hidden="true">☕</p>
           <h2>Coming soon</h2>
           <p>We're writing our first posts. Check back soon.</p>
-          <a href="/shop" class="blog-btn" data-link>Browse our coffees</a>
+          <a href="/shop" class="blog-btn">Browse our coffees</a>
         </div>
       ) : (
         <ul class="blog-grid" role="list">
           {posts.map((post: any) => (
             <li>
-              <a href={`/blog/${post.slug}`} class="blog-card" data-link>
+              <a href={`/blog/${post.slug}`} class="blog-card">
                 <div class="blog-card__img-wrap">
                   <img
                     src={post.cover_image_url || "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?q=80&w=600&auto=format&fit=crop"}

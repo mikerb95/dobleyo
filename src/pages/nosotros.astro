@@ -202,7 +202,7 @@ const pageDescription =
                 )}
 
                 {c.lot_id && (
-                  <a class="caf-card__trace" href={`/trazabilidad?lote=${encodeURIComponent(c.lot_id)}`} data-link>
+                  <a class="caf-card__trace" href={`/trazabilidad?lote=${encodeURIComponent(c.lot_id)}`}>
                     🔍 Rastrear un café de esta finca
                   </a>
                 )}
@@ -220,8 +220,8 @@ const pageDescription =
       <h2>Pruebe el origen, taza por taza</h2>
       <p>Explore nuestros cafés de especialidad o rastree la historia del suyo.</p>
       <div class="nos-cta__btns">
-        <a class="btn-primary" href="/tienda" data-link>Ver la tienda</a>
-        <a class="btn-ghost" href="/trazabilidad" data-link>Rastrear mi café</a>
+        <a class="btn-primary" href="/tienda">Ver la tienda</a>
+        <a class="btn-ghost" href="/trazabilidad">Rastrear mi café</a>
       </div>
     </div>
   </section>

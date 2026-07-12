@@ -108,7 +108,7 @@ try {
       generations who cultivate in the heart of our land.<br />Discover the
       flavor of our tradition and the passion of our soil.
     </p>
-    <p><a class="btn" href="/shop" data-link>Shop now</a></p>
+    <p><a class="btn" href="/shop">Shop now</a></p>
   </section>
 
   <!-- Origin data strip -->
@@ -131,7 +131,7 @@ try {
         <p class="cs-eyebrow">Our coffees</p>
         <h2 id="csSectionTitle" class="cs-title">Traceable origin, fresh roast</h2>
       </div>
-      <a href="/shop" class="cs-all-link" data-link>Shop all products →</a>
+      <a href="/shop" class="cs-all-link">Shop all products →</a>
     </div>
 
     <div class="cs-grid container">
@@ -267,7 +267,7 @@ try {
             your lot.
           </p>
           <div class="trace-cta__actions">
-            <a href="/traceability" class="btn trace-cta__btn" data-link>Trace my coffee</a>
+            <a href="/traceability" class="btn trace-cta__btn">Trace my coffee</a>
             <span class="trace-cta__hint">No sign-up · Instant results</span>
           </div>
         </div>
@@ -389,11 +389,11 @@ try {
             <p class="kits-eyebrow">Gift sets</p>
             <h2 id="kitsTitle" class="kits-title">Kits designed to delight</h2>
           </div>
-          <a href="/shop" class="kits-link" data-link>Shop all kits →</a>
+          <a href="/shop" class="kits-link">Shop all kits →</a>
         </div>
         <div class="kits-grid">
           {featuredKits.map((kit: any) => (
-            <a href={`/product/${kit.id}`} class="kit-card" data-link>
+            <a href={`/product/${kit.id}`} class="kit-card">
               <div class="kit-card__img-wrap">
                 <img
                   src={kit.image || 'https://images.unsplash.com/photo-1559496417-e7f25cb247f3?q=80&w=600&auto=format&fit=crop'}
@@ -449,11 +449,11 @@ try {
             <p class="blog-eyebrow">Blog</p>
             <h2 id="blogTitle" class="blog-home-title">Recipes, tasting notes and guides</h2>
           </div>
-          <a href="/blog" class="blog-home-link" data-link>View all posts →</a>
+          <a href="/blog" class="blog-home-link">View all posts →</a>
         </div>
         <div class="blog-home-grid">
           {recentPosts.map((post: any) => (
-            <a href={`/blog/${post.slug}`} class="blog-home-card" data-link>
+            <a href={`/blog/${post.slug}`} class="blog-home-card">
               <div class="blog-home-card__img-wrap">
                 <img
                   src={post.cover_image_url || 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?q=80&w=600&auto=format&fit=crop'}

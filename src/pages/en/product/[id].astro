@@ -79,7 +79,7 @@ const productJsonLd = {
 >
   <section class="pp">
     <nav class="pp-crumb" aria-label="Breadcrumb">
-      <a href="/shop" data-link>Shop</a><span aria-hidden="true">›</span><span>{product.name}</span>
+      <a href="/shop">Shop</a><span aria-hidden="true">›</span><span>{product.name}</span>
     </nav>
 
     <div class="pp-layout">
@@ -138,12 +138,12 @@ const productJsonLd = {
           <button class="pp-add" id="ppAdd" disabled={outOfStock || undefined}>
             {outOfStock ? "Out of stock" : "Add to cart"}
           </button>
-          <a class="pp-viewcart" href="/cart" data-link>View cart</a>
+          <a class="pp-viewcart" href="/cart">View cart</a>
         </div>
 
         <p class="pp-ship">🌎 Worldwide shipping · prices in USD</p>
         {product.category === "cafe" && (
-          <a href="/traceability" class="pp-trace" data-link>🔍 Trace this coffee's origin</a>
+          <a href="/traceability" class="pp-trace">🔍 Trace this coffee's origin</a>
         )}
       </div>
     </div>

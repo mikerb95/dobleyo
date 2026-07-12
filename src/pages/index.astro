@@ -107,7 +107,7 @@ try {
       cultivan en el corazón de Colombia.<br />Descubre el sabor de nuestra
       tradición y la pasión de nuestra tierra.
     </p>
-    <p><a class="btn" href="/tienda" data-link>Ver tienda</a></p>
+    <p><a class="btn" href="/tienda">Ver tienda</a></p>
   </section>
 
   <!-- Banda de datos de origen -->
@@ -130,7 +130,7 @@ try {
         <p class="cs-eyebrow">Nuestros cafés</p>
         <h2 id="csSectionTitle" class="cs-title">Origen trazable, tueste fresco</h2>
       </div>
-      <a href="/tienda" class="cs-all-link" data-link>Ver todos los productos →</a>
+      <a href="/tienda" class="cs-all-link">Ver todos los productos →</a>
     </div>
 
     <div class="cs-grid container">
@@ -265,7 +265,7 @@ try {
             del grano, la fecha exacta de tueste y el control de calidad de su lote.
           </p>
           <div class="trace-cta__actions">
-            <a href="/trazabilidad" class="btn trace-cta__btn" data-link>Trazar mi café</a>
+            <a href="/trazabilidad" class="btn trace-cta__btn">Trazar mi café</a>
             <span class="trace-cta__hint">Sin registro · Resultados al instante</span>
           </div>
         </div>
@@ -388,11 +388,11 @@ try {
             <p class="kits-eyebrow">Para regalar</p>
             <h2 id="kitsTitle" class="kits-title">Kits diseñados para sorprender</h2>
           </div>
-          <a href="/regalos" class="kits-link" data-link>Ver todos los kits →</a>
+          <a href="/regalos" class="kits-link">Ver todos los kits →</a>
         </div>
         <div class="kits-grid">
           {featuredKits.map((kit: any) => (
-            <a href={`/producto/${kit.id}`} class="kit-card" data-link>
+            <a href={`/producto/${kit.id}`} class="kit-card">
               <div class="kit-card__img-wrap">
                 <img
                   src={kit.image || 'https://images.unsplash.com/photo-1559496417-e7f25cb247f3?q=80&w=600&auto=format&fit=crop'}
@@ -448,11 +448,11 @@ try {
             <p class="blog-eyebrow">Blog</p>
             <h2 id="blogTitle" class="blog-home-title">Recetas, notas de cata y guías</h2>
           </div>
-          <a href="/blog" class="blog-home-link" data-link>Ver todas las entradas →</a>
+          <a href="/blog" class="blog-home-link">Ver todas las entradas →</a>
         </div>
         <div class="blog-home-grid">
           {recentPosts.map((post: any) => (
-            <a href={`/blog/${post.slug}`} class="blog-home-card" data-link>
+            <a href={`/blog/${post.slug}`} class="blog-home-card">
               <div class="blog-home-card__img-wrap">
                 <img
                   src={post.cover_image_url || 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?q=80&w=600&auto=format&fit=crop'}

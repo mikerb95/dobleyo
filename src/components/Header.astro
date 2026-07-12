@@ -46,16 +46,16 @@ const accountHref = lang === "en" ? "/account" : "/cuenta";
 <header class="site-header" id="siteHeader" data-lang={lang} data-cart-empty={tx.cartEmpty} data-account-href={accountHref} data-menu-label={tx.menu}>
   <div class="container">
     <div class="nav-beans" aria-hidden="true"></div>
-    <a class="brand" href={homeHref} data-link>
+    <a class="brand" href={homeHref}>
       <img src="/assets/logo.png" alt="DobleYo" height="80" />
     </a>
     <nav class="nav">
-      {nav.map((item) => <a href={item.href} data-link>{item.label}</a>)}
+      {nav.map((item) => <a href={item.href}>{item.label}</a>)}
     </nav>
     <div class="actions">
       <LangToggle lang={lang} />
       <div class="cart-preview-wrap" id="cartPreviewWrap">
-        <a href={cartHref} class="icon-btn" data-link aria-label={tx.cart}>
+        <a href={cartHref} class="icon-btn" aria-label={tx.cart}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
             <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4H6zm0 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
             <path d="M3 6h18M16 10a4 4 0 01-8 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -95,26 +95,23 @@ const accountHref = lang === "en" ? "/account" : "/cuenta";
         <div class="dropdown-menu" id="userDropdownMenu">
           <!-- Opciones autenticado -->
           <div id="authenticatedMenu" style="display: none;">
-            <a href={accountHref} class="dropdown-item" data-link>{tx.profile}</a>
+            <a href={accountHref} class="dropdown-item">{tx.profile}</a>
             <a
               href="/admin"
               class="dropdown-item"
               id="appsLink"
-              data-link
               style="display: none;">{tx.apps}</a
             >
             <a
               href="/admin/productos"
               class="dropdown-item"
               id="productosLink"
-              data-link
               style="display: none;">{tx.products}</a
             >
             <a
               href="/admin/auditoria"
               class="dropdown-item"
               id="auditLink"
-              data-link
               style="display: none;">{tx.audit}</a
             >
             <button class="dropdown-item" id="logoutBtn">{tx.logout}</button>
@@ -133,13 +130,13 @@ const accountHref = lang === "en" ? "/account" : "/cuenta";
     </div>
   </div>
   <div class="mobile-menu" id="mobileMenu" hidden>
-    {nav.map((item) => <a href={item.href} data-link>{item.label}</a>)}
+    {nav.map((item) => <a href={item.href}>{item.label}</a>)}
 
     <div class="mobile-lang" style="padding:0.75rem 0;"><LangToggle lang={lang} /></div>
 
     <!-- Opciones autenticado en móvil -->
     <div id="mobileAuthenticatedMenu" style="display: none;">
-      <a href={accountHref} class="user-btn" data-link>
+      <a href={accountHref} class="user-btn">
         <svg
           width="20"
           height="20"
