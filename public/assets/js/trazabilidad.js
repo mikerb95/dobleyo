@@ -1,8 +1,11 @@
 // Trazabilidad — DobleYo Café
-(function () {
+function initTrazabilidad() {
   'use strict';
 
   const $ = (s, r = document) => r.querySelector(s);
+  const rootEl = $('#qrVideo') || $('#panelManual');
+  if (!rootEl || rootEl.dataset.jsInit) return;
+  rootEl.dataset.jsInit = '1';
 
   // ─── API ─────────────────────────────────────────────────────────────
   async function lookupCode(code) {
