@@ -1,5 +1,9 @@
 /** Formulario de contacto. Externalizado por CSP estricta (sin 'unsafe-inline'). */
-document.getElementById("contactForm")?.addEventListener("submit", async (e) => {
+function initContacto() {
+  const contactForm = document.getElementById("contactForm");
+  if (!contactForm || contactForm.dataset.jsInit) return;
+  contactForm.dataset.jsInit = "1";
+  contactForm.addEventListener("submit", async (e) => {
   e.preventDefault();
 
   const form = e.target;
