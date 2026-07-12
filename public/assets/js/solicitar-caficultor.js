@@ -80,4 +80,7 @@ function initSolicitarCaficultor() {
     err.style.color = isSuccess ? "#16a34a" : "#b91c1c";
     err.style.display = "block";
   }
-})();
+}
+
+initSolicitarCaficultor();
+document.addEventListener("astro:page-load", initSolicitarCaficultor);
