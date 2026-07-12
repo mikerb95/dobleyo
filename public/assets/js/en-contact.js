@@ -1,5 +1,9 @@
 /** EN contact form. Externalized for the strict CSP (no 'unsafe-inline'). */
-document.getElementById("contactForm")?.addEventListener("submit", async (e) => {
+function initEnContact() {
+  const contactForm = document.getElementById("contactForm");
+  if (!contactForm || contactForm.dataset.jsInit) return;
+  contactForm.dataset.jsInit = "1";
+  contactForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   const form = e.target;
   const btn = document.getElementById("submitBtn");
