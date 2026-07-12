@@ -482,5 +482,7 @@ function initTrazabilidad() {
     switchTab('manual');
     handleLookup(_q);
   }
+}
 
-})();
+initTrazabilidad();
+document.addEventListener('astro:page-load', initTrazabilidad);
