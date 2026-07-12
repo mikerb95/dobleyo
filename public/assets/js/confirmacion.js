@@ -1,5 +1,9 @@
 /** Confirmación de pedido. Externalizado por CSP estricta (sin 'unsafe-inline'). */
-(function () {
+function initConfirmacion() {
+  const root = document.getElementById("stateLoading");
+  if (!root || root.dataset.jsInit) return;
+  root.dataset.jsInit = "1";
+
   function fmt(n) {
     return "$" + Number(n || 0).toLocaleString("es-CO");
   }
