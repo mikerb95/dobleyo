@@ -22,7 +22,7 @@
 | Capa | Tecnología | Notas |
 |---|---|---|
 | **Frontend SSR** | Astro 5.16 + `@astrojs/vercel` | Genera HTML estático + SSR en rutas dinámicas |
-| **UI interactiva** | React 19 + Framer Motion | Solo para componentes que necesitan estado/interactividad |
+| **UI interactiva** | React 19 | Solo para componentes que necesitan estado/interactividad |
 | **Estilos** | CSS custom (`public/assets/css/styles.css`) | Variables CSS en `:root`, mobile-first |
 | **Backend API** | Express 4.19 | Montado en `server/index.js` (standalone) y `api/index.js` (Vercel) |
 | **Base de datos** | Turso (libSQL/SQLite) | Driver: `@libsql/client` |
