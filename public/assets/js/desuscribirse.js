@@ -47,3 +47,7 @@ form.addEventListener("submit", async (e) => {
     btn.textContent = "Darme de baja";
   }
 });
+}
+
+initDesuscribirse();
+document.addEventListener("astro:page-load", initDesuscribirse);
