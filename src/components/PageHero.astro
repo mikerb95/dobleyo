@@ -1,0 +1,97 @@
+---
+export interface Props {
+  eyebrow?: string;
+  title: string;
+  subtitle?: string;
+  align?: "center" | "start";
+  size?: "md" | "lg";
+}
+
+const { eyebrow, title, subtitle, align = "center", size = "md" } = Astro.props;
+---
+
+<section class:list={["page-hero", `page-hero--${align}`, `page-hero--${size}`]}>
+  <div class="page-hero__inner container">
+    {eyebrow && <p class="eyebrow page-hero__eyebrow">{eyebrow}</p>}
+    <h1 class="page-hero__title">{title}</h1>
+    {subtitle && <p class="page-hero__sub">{subtitle}</p>}
+    <slot />
+  </div>
+</section>
+
+<style>
+  .page-hero {
+    width: 100vw;
+    margin-inline: calc(50% - 50vw);
+    position: relative;
+    background:
+      radial-gradient(120% 90% at 85% -10%, rgba(var(--caramel-rgb), 0.18), transparent 60%),
+      linear-gradient(165deg, var(--espresso) 0%, var(--coffee-700) 100%);
+    color: var(--cream);
+    padding: var(--space-16) var(--page-gutter) calc(var(--space-16) + var(--space-8));
+    margin-bottom: var(--space-12);
+  }
+
+  .page-hero::after {
+    content: "";
+    position: absolute;
+    inset: auto 0 0 0;
+    height: var(--space-10);
+    background: linear-gradient(to bottom, transparent, var(--cream));
+    pointer-events: none;
+  }
+
+  .page-hero__inner {
+    position: relative;
+    max-width: 760px;
+  }
+
+  .page-hero--center {
+    text-align: center;
+  }
+
+  .page-hero--center .page-hero__inner {
+    margin-inline: auto;
+  }
+
+  .page-hero__eyebrow {
+    color: var(--caramel);
+  }
+
+  .page-hero__title {
+    font-family: var(--font-display);
+    font-size: var(--text-3xl);
+    line-height: 1.12;
+    letter-spacing: -0.02em;
+    color: var(--cream);
+    margin: 0 0 var(--space-4);
+  }
+
+  .page-hero--lg .page-hero__title {
+    font-size: var(--text-hero);
+  }
+
+  .page-hero__sub {
+    font-size: var(--text-lg);
+    line-height: 1.65;
+    opacity: 0.88;
+    margin: 0;
+  }
+
+  .page-hero__inner :global(.page-hero__cta) {
+    margin-top: var(--space-6);
+    display: flex;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+  }
+
+  .page-hero--center .page-hero__inner :global(.page-hero__cta) {
+    justify-content: center;
+  }
+
+  @media (max-width: 768px) {
+    .page-hero {
+      padding: var(--space-12) var(--page-gutter) var(--space-16);
+    }
+  }
+</style>
