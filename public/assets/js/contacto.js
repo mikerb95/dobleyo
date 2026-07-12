@@ -45,4 +45,8 @@ function initContacto() {
     submitBtn.disabled = false;
     submitBtn.textContent = "Enviar Mensaje";
   }
-});
+  });
+}
+
+initContacto();
+document.addEventListener("astro:page-load", initContacto);
