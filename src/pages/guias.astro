@@ -1,5 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import PageHero from "../components/PageHero.astro";
 import { getCanonicalUrl } from "../i18n/index.ts";
 
 export const prerender = false;
@@ -66,16 +67,11 @@ const consejos = [
   description={pageDescription}
   canonical={getCanonicalUrl("/guias", "es")}
 >
-  <section class="gu-hero">
-    <div class="gu-hero__inner">
-      <p class="gu-hero__eyebrow">Guías</p>
-      <h1 class="gu-hero__title">Prepare un mejor café en casa</h1>
-      <p class="gu-hero__sub">
-        Recetas paso a paso para sacarle todo el potencial a nuestros cafés de
-        especialidad, sin importar el método que prefiera.
-      </p>
-    </div>
-  </section>
+  <PageHero
+    eyebrow="Guías"
+    title="Prepare un mejor café en casa"
+    subtitle="Recetas paso a paso para sacarle todo el potencial a nuestros cafés de especialidad, sin importar el método que prefiera."
+  />
 
   <section class="gu-methods">
     <div class="container">
@@ -128,28 +124,6 @@ const consejos = [
     margin: 0 0 1.5rem;
   }
   .gu-h2--center { text-align: center; }
-
-  .gu-hero {
-    background: var(--coffee);
-    color: var(--cream);
-    padding: 3.5rem 1.5rem 3rem;
-    text-align: center;
-  }
-  .gu-hero__inner { max-width: 720px; margin: 0 auto; }
-  .gu-hero__eyebrow {
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    font-size: 0.8rem;
-    opacity: 0.75;
-    margin: 0 0 0.75rem;
-  }
-  .gu-hero__title {
-    font-family: var(--font-heading, serif);
-    font-size: clamp(1.9rem, 5vw, 3rem);
-    line-height: 1.15;
-    margin: 0 0 1rem;
-  }
-  .gu-hero__sub { font-size: 1.05rem; line-height: 1.65; opacity: 0.9; margin: 0; }
 
   .gu-methods { background: #fff; padding: 3.5rem 0; }
   .gu-grid {

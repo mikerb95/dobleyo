@@ -1,5 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import PageHero from "../components/PageHero.astro";
 import { getCanonicalUrl, getHreflangPair } from "../i18n/index.ts";
 
 export const prerender = false;
@@ -48,18 +49,15 @@ const escalas = [
   hreflangEs={_hreflang?.es}
   hreflangEn={_hreflang?.en}
 >
-  <section class="ma-hero">
-    <div class="ma-hero__inner">
-      <p class="ma-hero__eyebrow">Mayoristas</p>
-      <h1 class="ma-hero__title">Café de especialidad al por mayor</h1>
-      <p class="ma-hero__sub">
-        Abastezca su negocio con café colombiano de origen, trazabilidad real y
-        tueste a la medida. Precios por volumen y entregas programadas para que
-        nunca le falte producto fresco.
-      </p>
+  <PageHero
+    eyebrow="Mayoristas"
+    title="Café de especialidad al por mayor"
+    subtitle="Abastezca su negocio con café colombiano de origen, trazabilidad real y tueste a la medida. Precios por volumen y entregas programadas para que nunca le falte producto fresco."
+  >
+    <div class="page-hero__cta">
       <a class="btn-primary" href="/contacto" data-link>Solicitar cotización</a>
     </div>
-  </section>
+  </PageHero>
 
   <section class="ma-benefits">
     <div class="container">
@@ -112,23 +110,6 @@ const escalas = [
     margin: 0 0 1.5rem;
   }
   .ma-h2--center { text-align: center; }
-
-  .ma-hero {
-    background: var(--coffee);
-    color: var(--cream);
-    padding: 3.5rem 1.5rem 3rem;
-    text-align: center;
-  }
-  .ma-hero__inner { max-width: 720px; margin: 0 auto; }
-  .ma-hero__eyebrow {
-    text-transform: uppercase; letter-spacing: 0.12em; font-size: 0.8rem;
-    opacity: 0.75; margin: 0 0 0.75rem;
-  }
-  .ma-hero__title {
-    font-family: var(--font-heading, serif);
-    font-size: clamp(1.9rem, 5vw, 3rem); line-height: 1.15; margin: 0 0 1rem;
-  }
-  .ma-hero__sub { font-size: 1.05rem; line-height: 1.65; opacity: 0.9; margin: 0 0 1.75rem; }
 
   .ma-benefits { background: #fff; padding: 3.5rem 0; }
   .ma-grid {
