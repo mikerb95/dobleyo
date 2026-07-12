@@ -43,7 +43,7 @@ const accountHref = lang === "en" ? "/account" : "/cuenta";
 ---
 
 
-<header class="site-header" id="siteHeader" data-lang={lang} data-cart-empty={tx.cartEmpty} data-account-href={accountHref} data-menu-label={tx.menu}>
+<header class="site-header" id="siteHeader" transition:persist={`header-${lang}`} data-lang={lang} data-cart-empty={tx.cartEmpty} data-account-href={accountHref} data-menu-label={tx.menu}>
   <div class="container">
     <div class="nav-beans" aria-hidden="true"></div>
     <a class="brand" href={homeHref}>
@@ -191,7 +191,16 @@ const accountHref = lang === "en" ? "/account" : "/cuenta";
 </header>
 
 <script>
-  // Lógica del Header (Granos y Menú)
+  // Lógica del Header (granos, menú, auth, dropdown, cart preview).
+  // El <header> se persiste entre navegaciones (transition:persist), así que
+  // los bindings sobreviven. Este init es idempotente y se re-ejecuta en
+  // astro:page-load para el único caso en que el header se re-renderiza:
+  // el cambio de idioma ES↔EN (nombres de persistencia distintos).
+  function initHeader() {
+  const headerRoot = document.getElementById("siteHeader");
+  if (!headerRoot || headerRoot.dataset.jsInit) return;
+  headerRoot.dataset.jsInit = "1";
+
   (function initNavBeans() {
     const header = document.querySelector(".site-header");
     const layer = document.querySelector(".nav-beans");
