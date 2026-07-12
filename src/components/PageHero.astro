@@ -29,17 +29,8 @@ const { eyebrow, title, subtitle, align = "center", size = "md" } = Astro.props;
       radial-gradient(120% 90% at 85% -10%, rgba(var(--caramel-rgb), 0.18), transparent 60%),
       linear-gradient(165deg, var(--espresso) 0%, var(--coffee-700) 100%);
     color: var(--cream);
-    padding: var(--space-16) var(--page-gutter) calc(var(--space-16) + var(--space-8));
+    padding: var(--space-16) var(--page-gutter);
     margin-bottom: var(--space-12);
-  }
-
-  .page-hero::after {
-    content: "";
-    position: absolute;
-    inset: auto 0 0 0;
-    height: var(--space-10);
-    background: linear-gradient(to bottom, transparent, var(--cream));
-    pointer-events: none;
   }
 
   .page-hero__inner {
