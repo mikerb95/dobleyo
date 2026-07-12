@@ -1,8 +1,8 @@
 // Pagina de blog: leer posts desde localStorage (admin) o usar muestras estaticas si no hay
-(function(){
-  const $ = (s, r=document) => r.querySelector(s);
+function initBlog(){
   const grid = document.getElementById('blogGrid');
-  if (!grid) return;
+  if (!grid || grid.dataset.jsInit) return;
+  grid.dataset.jsInit = '1';
   const sample = [
     { id:'post-1', title:'Receta V60 básica', author:'Equipo DobleYo', cover:'https://images.unsplash.com/photo-1498804103079-a6351b050096?q=80&w=1200&auto=format&fit=crop', minutes:3 },
     { id:'post-2', title:'Notas de cata: Huila', author:'Equipo DobleYo', cover:'https://images.unsplash.com/photo-1517705008128-361805f42e86?q=80&w=1200&auto=format&fit=crop', minutes:4 },
