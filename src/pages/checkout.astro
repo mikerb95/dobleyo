@@ -246,11 +246,14 @@ import Layout from "../layouts/Layout.astro";
   <script>
     // @ts-nocheck — script vanilla del navegador; usa globales inyectados por
     // scripts externos (window.Cart de cart.js, window.WidgetCheckout de widget.js).
-    (function () {
+    function initCheckoutPage() {
+      const checkoutLayoutGuard = document.getElementById('checkoutLayout');
+      if (!checkoutLayoutGuard || checkoutLayoutGuard.dataset.jsInit) return;
+      checkoutLayoutGuard.dataset.jsInit = '1';
+
       const FREE_SHIP = 120000;
       const SHIP_COST = 12000;
       function fmt(n) { return '$' + Number(n || 0).toLocaleString('es-CO'); }
-      function ready(fn) { if (document.readyState !== 'loading') fn(); else document.addEventListener('DOMContentLoaded', fn); }
       function whenCart(fn) { if (window.Cart) fn(); else setTimeout(() => whenCart(fn), 40); }
 
       // ── Datos Colombia: departamentos y ciudades ──────────────────────────
@@ -310,7 +313,7 @@ import Layout from "../layouts/Layout.astro";
       ];
       let selectedCountry = COUNTRIES[0];
 
-      ready(() => whenCart(function () {
+      whenCart(function () {
         const cart    = window.Cart.getCart();
         const layout  = document.getElementById('checkoutLayout');
         const emptyMsg = document.getElementById('cartEmpty');
@@ -720,8 +723,11 @@ import Layout from "../layouts/Layout.astro";
 
         // Estado inicial del botón/nota según el método preseleccionado
         updatePayMethodUI();
-      }));
-    })();
+      });
+    }
+
+    initCheckoutPage();
+    document.addEventListener('astro:page-load', initCheckoutPage);
   </script>
 
   <style is:global>
