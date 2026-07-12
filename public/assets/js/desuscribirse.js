@@ -1,8 +1,11 @@
 /** Baja del newsletter. Externalizado por CSP estricta (sin 'unsafe-inline'). */
+function initDesuscribirse() {
 const form = document.getElementById("unsub-form");
 const feedback = document.getElementById("form-feedback");
+if (!form || form.dataset.jsInit) return;
+form.dataset.jsInit = "1";
 
-form?.addEventListener("submit", async (e) => {
+form.addEventListener("submit", async (e) => {
   e.preventDefault();
   const email = form.elements.namedItem("email").value.trim();
   const btn = form.querySelector("button");
