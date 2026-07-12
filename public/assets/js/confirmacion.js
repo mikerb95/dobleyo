@@ -112,4 +112,7 @@ function initConfirmacion() {
   const ref = params.get("ref") || params.get("reference");
   if (!ref) showState("stateNotFound");
   else loadOrder(ref);
-})();
+}
+
+initConfirmacion();
+document.addEventListener("astro:page-load", initConfirmacion);
