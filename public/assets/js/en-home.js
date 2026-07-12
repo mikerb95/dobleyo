@@ -2,7 +2,11 @@
  * EN landing — B2B export inquiry form handler.
  * Externalized (served from 'self') to comply with the strict CSP (no 'unsafe-inline').
  */
-document.getElementById("exportForm")?.addEventListener("submit", async (e) => {
+function initEnHome() {
+  const exportForm = document.getElementById("exportForm");
+  if (!exportForm || exportForm.dataset.jsInit) return;
+  exportForm.dataset.jsInit = "1";
+  exportForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   const form = e.target;
   const btn = form.querySelector("button[type='submit']");
