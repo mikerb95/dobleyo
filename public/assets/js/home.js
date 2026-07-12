@@ -4,10 +4,11 @@
  */
 
 // Newsletter (formulario de la home)
-(function () {
+function initHomeNewsletter() {
   const form = document.getElementById("homeNewsletterForm");
   const msgEl = document.getElementById("homeNlMsg");
-  if (!form) return;
+  if (!form || form.dataset.jsInit) return;
+  form.dataset.jsInit = "1";
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     const email = document.getElementById("homeNlEmail").value.trim();
