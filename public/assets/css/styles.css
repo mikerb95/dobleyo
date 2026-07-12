@@ -994,37 +994,6 @@ img {
   font-weight: 600
 }
 
-/* Capa de transicion (barrido/desvanecer) */
-.transition-overlay {
-  position: fixed;
-  inset: 0;
-  background: #fff;
-  transform: translateY(100%);
-  opacity: 0;
-  pointer-events: none;
-  z-index: 80
-}
-
-.transition-overlay.active {
-  animation: wipe .55s ease both
-}
-
-@keyframes wipe {
-  0% {
-    transform: translateY(100%);
-    opacity: 0
-  }
-
-  20% {
-    opacity: 1
-  }
-
-  100% {
-    transform: translateY(0);
-    opacity: 1
-  }
-}
-
 /* Adaptativo */
 @media (max-width: 1024px) {
   .nav {
