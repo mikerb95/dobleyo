@@ -36,7 +36,7 @@ const r = isEn
       privacy: "/privacidad", terms: "/terminos", a11y: "/accesibilidad", wholesale: "/mayoristas" };
 ---
 
-<footer class="site-footer">
+<footer class="site-footer" transition:persist={`footer-${lang}`}>
   <div class="container">
     <div class="footer-news">
       <div class="label">{tx.promo}</div>
