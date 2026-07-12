@@ -6,6 +6,7 @@
 
 import "@fontsource-variable/fraunces/wght.css";
 import "@fontsource-variable/inter/wght.css";
+import { ClientRouter } from "astro:transitions";
 
 export interface Props {
   title?: string;
@@ -123,3 +124,6 @@ const organizationSchema = {
 
 <!-- CSS Custom -->
 <link rel="stylesheet" href="/assets/css/styles.css" />
+
+{/* View Transitions — solo en el sitio público, no en el panel admin */}
+{!isAdmin && <ClientRouter />}
