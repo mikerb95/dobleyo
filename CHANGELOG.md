@@ -2,6 +2,24 @@
 
 ---
 
+## 2026-07-12 — View Transitions, heroes full-bleed y scroll-reveal (Agente: Claude)
+
+### Contexto
+Auditoría de diseño frontend: la navegación entre páginas era un recargue abrupto (existía un intento de transición de página abandonado, sin JS que lo activara), y ~9 páginas secundarias (suscripción, accesorios, nosotros, guías, mayoristas, afiliados, partners, fincas, contacto) tenían un hero de bloque espresso sólido, sin `border-radius`, confinado dentro de `.container` y con corte seco hacia el contenido — el "recuadro abrupto" señalado por el usuario. Se implementó `ClientRouter` (View Transitions) de Astro, un componente `PageHero` full-bleed compartido, morphing de imagen en tienda→producto y un sistema de scroll-reveal, además de limpieza de código muerto.
+
+### Cambios
+- **`src/components/Head.astro`** — `<ClientRouter />` de `astro:transitions`, activo solo en el sitio público (`!isAdmin`); se emite como script externo, compatible con la CSP estricta sin `unsafe-inline`.
+- **`src/layouts/Layout.astro`** — `transition:persist` (con sufijo de idioma) en topbar, `Header`, `Footer`, `CartDrawer` y el FAB de WhatsApp, y sin sufijo en `CookieBanner`/`AuthModal`, para que el chrome no parpadee entre navegaciones; se retiró el `div.transition-overlay` muerto.
+- **`public/assets/js/layout.js`** — cierre de topbar persistido con `sessionStorage` (no reaparece al navegar) y recálculo de métricas de header en `astro:page-load`/`astro:after-swap`.
+- **19 scripts en `public/assets/js/`** (`cart.js`, `favorites.js`, `home.js`, `producto.js`, `suscripcion.js`, `trazabilidad.js`, variantes `en-*`, etc.) y los `<script>` de `tienda.astro`, `cart.astro`, `checkout.astro`, `cuenta.astro` — reescritos a inits idempotentes con guard (`dataset.jsInit`) enganchados a `astro:page-load`, ya que la navegación client-side no vuelve a disparar `DOMContentLoaded` ni re-ejecuta scripts con el mismo `src`.
+- **`src/components/PageHero.astro`** (nuevo) — hero full-bleed (sangra fuera de `.container`), gradiente espresso con acento caramelo y salida degradada hacia el fondo crema; props `eyebrow`, `title`, `subtitle`, `align`, `size`; slot `subtitle` para contenido enriquecido y slot por defecto para CTAs. Reemplaza las clases `.sub-hero`, `.acc-hero`, `.nos-hero`, `.gu-hero`, `.ma-hero`, `.af-hero`, `.pt-hero`, `.fincas-hero` y `.contact-hero` (esta última tenía un gradiente con hex hardcodeado, ahora en tokens).
+- **`src/components/ProductCard.astro`** / **`src/pages/producto/[id].astro`** — `transition:name={`product-image-${id}`}` en la imagen para que se anime (morph) al navegar de la tienda al detalle de producto.
+- **`public/assets/js/reveal.js`** (nuevo) — scroll-reveal global vía `IntersectionObserver`, idempotente, con fallback inmediato si no hay soporte o si `prefers-reduced-motion` está activo. Aplicado a secciones informativas bajo el pliegue (nunca a formularios transaccionales ni al primer viewport).
+- **`public/assets/css/styles.css`** — `.reveal`/`.is-visible`, bloque global `@media (prefers-reduced-motion: reduce)` que neutraliza animaciones/transiciones, `--caramel-rgb` y `overflow-x: clip` en `html, body` (evita scroll horizontal por los heroes full-bleed).
+- Limpieza: `src/components/AnimatedButton.jsx`, `AnimatedHeader.jsx`, `AnimatedHero.jsx`, `AnimatedProductCard.jsx`, `PageTransition.jsx` y la dependencia `framer-motion` (sin uso alguno, verificado); atributo `data-link` (inerte tras retirar el overlay) eliminado de 29 archivos.
+
+---
+
 ## 📅 2026-07-11 — Logística de envíos con Mipaquete.com + contraentrega (Agente: Claude)
 
 ### Contexto
