@@ -12,6 +12,12 @@ export default defineConfig({
         globals: true,
         // Limpiar mocks entre tests automáticamente
         clearMocks: true,
+        // Variables de entorno mínimas para que las rutas que las validan al cargar
+        // el módulo (p. ej. checkout Wompi) no fallen en el entorno de test.
+        env: {
+            WOMPI_PUBLIC_KEY: 'pub_test_key',
+            WOMPI_INTEGRITY_SECRET: 'test_integrity_secret',
+        },
         // Reporte de cobertura de código
         coverage: {
             provider: 'v8',
