@@ -836,6 +836,45 @@ shippingRouter.put('/:id/cancel', authenticateToken, requireRole('admin'), async
     }
 });
 
+// ─── PATCH /api/shipping/:id/status (admin, solo envíos manuales) ──────────
+// Los envíos manuales (dispatch-manual) no tienen tracking automático: el admin
+// cierra el ciclo aquí. Los envíos Mipaquete NO se tocan por esta vía — su
+// estado lo gobierna el tracking (refresh/webhook) para no desincronizarlos.
+
+shippingRouter.patch('/:id/status',
+    authenticateToken, requireRole('admin'),
+    [body('status').isIn(['delivered', 'returned', 'cancelled']).withMessage('Estado inválido')],
+    async (req, res) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) return res.status(422).json({ success: false, errors: errors.array() });
+
+        try {
+            const result = await query(
+                `UPDATE shipments SET status = ?
+                 WHERE id = ? AND delivery_company_id = 'manual'
+                 RETURNING id, order_id, status`,
+                [req.body.status, req.params.id]
+            );
+            if (!result.rows.length) {
+                return res.status(404).json({ success: false, error: 'Envío manual no encontrado (los envíos Mipaquete se actualizan por tracking)' });
+            }
+            const shipment = result.rows[0];
+
+            if (req.body.status === 'delivered') {
+                await query(`UPDATE customer_orders SET status = 'delivered' WHERE id = ? AND status NOT IN ('cancelled','refunded')`, [shipment.order_id]);
+            } else if (req.body.status === 'cancelled') {
+                await query(`UPDATE customer_orders SET status = 'processing' WHERE id = ? AND status = 'shipped'`, [shipment.order_id]);
+            }
+
+            await logAudit(req.user.id, 'update', 'shipments', shipment.id, { status: req.body.status, manual: true });
+            return res.json({ success: true, data: shipment });
+        } catch (err) {
+            logger.error({ err }, '[PATCH /api/shipping/:id/status] Error:');
+            return res.status(500).json({ success: false, error: 'Error al actualizar el estado del envío' });
+        }
+    }
+);
+
 // ─── PATCH /api/shipping/:id/reconcile (admin) ─────────────────────────────
 
 shippingRouter.patch('/:id/reconcile', authenticateToken, requireRole('admin'), async (req, res) => {
