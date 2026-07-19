@@ -347,10 +347,12 @@ shippingRouter.post('/create',
             let pdfUrls = null;
             try {
                 const sendings = await getSendings({ mpCode });
-                const match = (sendings?.sendings || [])[0];
+                const match = matchSendingByMpCode(sendings?.sendings || [], mpCode);
                 if (match) {
                     guideNumber = match['Número de Guía'] || null;
                     pdfUrls = match.pdfGuide || null;
+                } else {
+                    logger.warn({ mpCode, shipmentId }, '[Shipping] getSendings no devolvió un match para el mpCode recién creado');
                 }
             } catch (err) {
                 logger.warn({ err, mpCode }, '[Shipping] No se pudo obtener guía inmediata, se completará por refresh');
@@ -361,10 +363,13 @@ shippingRouter.post('/create',
                 [guideNumber, pdfUrls ? JSON.stringify(pdfUrls) : null, shipmentId]
             );
 
-            await logAudit(req.user.id, 'create', 'shipments', shipmentId, { orderId, mpCode, deliveryCompanyId });
+            await logAudit(req.user.id, 'create', 'shipments', shipmentId, {
+                orderId, mpCode, deliveryCompanyId, paymentMode,
+                collectionValueCop, quotedShippingCostCop, weightKg, destinyDaneCode,
+            });
 
             if (guideNumber) {
-                await query(`UPDATE customer_orders SET status = 'shipped' WHERE id = ? AND status != 'delivered'`, [orderId]);
+                await query(`UPDATE customer_orders SET status = 'shipped' WHERE id = ? AND status NOT IN ('delivered','cancelled','refunded')`, [orderId]);
                 await query(`UPDATE shipments SET guide_notified_at = datetime('now') WHERE id = ?`, [shipmentId]);
                 sendShippingNotificationEmail(order.customer_email, order.customer_name, {
                     reference: order.reference,
