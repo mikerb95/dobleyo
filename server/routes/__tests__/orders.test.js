@@ -7,7 +7,14 @@ import request from 'supertest';
 
 // ── Mocks ─────────────────────────────────────────────────────────────────────
 
-vi.mock('../../db.js', () => ({ query: vi.fn() }));
+vi.mock('../../db.js', () => {
+    const query = vi.fn();
+    // withTransaction real usa un cliente propio; en el test se resuelve con el
+    // mismo mock de `query` para que las secuencias mockResolvedValueOnce sigan
+    // funcionando igual que antes de envolver la creación de orden en una transacción.
+    const withTransaction = vi.fn((fn) => fn({ query }));
+    return { query, withTransaction };
+});
 
 vi.mock('../../auth.js', () => ({
     authenticateToken: (req, _res, next) => { req.user = null; next(); },
