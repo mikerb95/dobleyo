@@ -38,27 +38,19 @@ const pageDescription =
   "Conoce las fincas cafeteras de donde proviene tu café de especialidad. Origen, altitud, variedades y procesos de cada cosecha.";
 ---
 
-<Layout title={pageTitle} description={pageDescription}>
-  <head slot="head">
-    <link rel="canonical" href="https://dobleyo.cafe/fincas" />
-    <meta property="og:title" content={pageTitle} />
-    <meta property="og:description" content={pageDescription} />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://dobleyo.cafe/fincas" />
-    <meta
-      property="og:image"
-      content="https://dobleyo.cafe/assets/img/og-fincas.jpg"
-    />
-    <meta name="robots" content="index, follow" />
-    <!-- Datos estructurados: Lista de colección -->
-    <script type="application/ld+json" set:html={JSON.stringify({
-      "@context": "https://schema.org",
-      "@type": "CollectionPage",
-      "name": "Fincas Cafeteras — DobleYo Café",
-      "description": pageDescription,
-      "url": "https://dobleyo.cafe/fincas",
-    })} />
-  </head>
+<Layout
+  title={pageTitle}
+  description={pageDescription}
+  canonical="https://dobleyo.cafe/fincas"
+  ogImageAlt="Fincas cafeteras de DobleYo Café"
+  jsonLd={{
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "name": "Fincas Cafeteras — DobleYo Café",
+    "description": pageDescription,
+    "url": "https://dobleyo.cafe/fincas",
+  }}
+>
 
   <!-- Encabezado hero -->
   <PageHero
