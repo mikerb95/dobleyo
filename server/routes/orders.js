@@ -6,7 +6,7 @@ import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import { query } from '../db.js';
 import { authenticateToken, requireRole, optionalAuth } from '../auth.js';
 import { checkoutLimiter } from '../middleware/rateLimit.js';
-import { logAudit } from '../services/audit.js';
+import { logAudit, logSystemAudit } from '../services/audit.js';
 import { sendOrderConfirmationEmail } from '../services/email.js';
 import { geocodeOrderAsync } from '../services/geocoding.js';
 
