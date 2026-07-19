@@ -1170,4 +1170,5 @@ export const COMMITS_POR_MES: { mes: string; commits: number }[] = [
   { mes: "abr 26", commits: 270 },
   { mes: "may 26", commits: 157 },
   { mes: "jun 26", commits: 474 },
+  { mes: "jul 26", commits: 256 },
 ];
