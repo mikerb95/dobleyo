@@ -13,6 +13,7 @@ Disallow: /cart
 Disallow: /setup-db
 Disallow: /showcase
 Disallow: /sena/
+Disallow: /tostar
 Disallow: /solicitar-caficultor
 Disallow: /verify-email
 
