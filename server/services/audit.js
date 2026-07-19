@@ -17,6 +17,26 @@ export async function logAudit(userId, action, entityType, entityId, details = {
   }
 }
 
+// Variante para eventos disparados por el sistema (webhooks, polling, jobs) sin
+// un usuario autenticado detrás. user_id queda NULL; logAudit() normal exige un
+// userId real y no debe modificarse para no alterar el comportamiento de sus
+// demás llamadores.
+export async function logSystemAudit(action, entityType, entityId, details = {}) {
+  try {
+    if (!action || !entityType || entityId == null) return null;
+
+    const result = await query(
+      `INSERT INTO audit_logs (user_id, action, entity_type, entity_id, details)
+       VALUES (NULL, ?, ?, ?, ?)`,
+      [action, entityType, String(entityId), JSON.stringify(details)]
+    );
+    return result;
+  } catch (err) {
+    logger.error({ err }, '[Audit] Error logging system action:');
+    return null;
+  }
+}
+
 export async function getAuditLogs(filters = {}) {
   try {
     const { action, entityType, userId, limit = 100, offset = 0 } = filters;
