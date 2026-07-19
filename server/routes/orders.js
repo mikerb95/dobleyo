@@ -654,9 +654,15 @@ ordersRouter.post('/wompi/webhook', async (req, res) => {
             [newStatus, payment_method_type || 'wompi', txId, JSON.stringify(tx), reference]
         );
 
-        if (!orderResult.rows.length) return;
+        if (!orderResult.rows.length) return res.sendStatus(200);
 
         const updatedOrder = orderResult.rows[0];
+
+        // El pago aprobado es el evento de negocio más importante del flujo: queda
+        // en audit_logs aunque no haya un usuario autenticado detrás (lo dispara Wompi).
+        logSystemAudit('update', 'customer_orders', updatedOrder.id, {
+            reference, from: order.status, to: newStatus, txId, source: 'wompi-webhook',
+        }).catch(() => {});
 
         // Contabilizar el uso del cupón SOLO al aprobarse el pago. El UPDATE es atómico
         // y tope-seguro: la condición evita superar max_uses ante webhooks concurrentes.
@@ -669,7 +675,11 @@ ordersRouter.post('/wompi/webhook', async (req, res) => {
             );
         }
 
-        // Enviar email de confirmación solo si el pago fue aprobado
+        // Enviar email de confirmación solo si el pago fue aprobado. Se desacopla de la
+        // respuesta HTTP del webhook: si Resend falla aquí, NO se debe devolver 500 (eso
+        // dispararía un reintento de Wompi que la idempotencia de arriba ignoraría sin
+        // reenviar el correo). El envío queda pendiente vía confirmation_email_sent_at
+        // y refresh-all lo reintenta (ver server/routes/shipping.js).
         if (newStatus === 'paid') {
             const itemsResult = await query(
                 `SELECT product_name, quantity, unit_price_cop
@@ -677,7 +687,7 @@ ordersRouter.post('/wompi/webhook', async (req, res) => {
                 [updatedOrder.id]
             );
 
-            await sendOrderConfirmationEmail(
+            sendOrderConfirmationEmail(
                 updatedOrder.customer_email,
                 updatedOrder.customer_name,
                 {
@@ -693,7 +703,8 @@ ordersRouter.post('/wompi/webhook', async (req, res) => {
                     total: updatedOrder.total_cop,
                     shippingAddress: `${updatedOrder.shipping_address}, ${updatedOrder.shipping_city}`
                 }
-            );
+            ).then(() => query(`UPDATE customer_orders SET confirmation_email_sent_at = datetime('now') WHERE id = ?`, [updatedOrder.id]))
+                .catch((err) => logger.error({ err, reference }, '[Wompi webhook] Error enviando confirmación de pago; se reintentará por refresh-all'));
         }
 
         return res.sendStatus(200);
