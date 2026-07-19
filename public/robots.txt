@@ -9,13 +9,21 @@ Disallow: /registro
 Disallow: /cuenta
 Disallow: /checkout
 Disallow: /confirmacion
+Disallow: /cart
 Disallow: /setup-db
+Disallow: /showcase
+Disallow: /sena/
 Disallow: /solicitar-caficultor
 Disallow: /verify-email
 
-# Versión inglés — privada y administrativa
+# Versión inglés — privada y administrativa (ruta con prefijo /en, dobleyo.cafe)
 Disallow: /en/account
 Disallow: /en/checkout
-Disallow: /en/confirmacion
+Disallow: /en/confirmation
+Disallow: /en/cart
+
+# Mismas rutas en el subdominio en.dobleyo.cafe (sin prefijo /en)
+Disallow: /account
+Disallow: /confirmation
 
 Sitemap: https://dobleyo.cafe/sitemap.xml
