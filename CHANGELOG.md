@@ -33,8 +33,13 @@ Auditoría completa del flujo de creación de orden → pago Wompi → despacho 
 - `logSystemAudit` se creó como función separada de `logAudit` (en vez de modificar su guard `if (!userId) return null`) para no alterar el comportamiento de sus demás llamadores existentes.
 - Test `server/routes/__tests__/orders.test.js`: se corrigió un índice de columna pre-existente (`orderInsertArgs[8]` → `[9]`, `shipping_zip` vs `subtotal_cop`) y se actualizaron los mocks de `db.js`/`audit.js` para incluir `withTransaction`/`logSystemAudit`. `vitest.config.js` gana `test.env` con `WOMPI_PUBLIC_KEY`/`WOMPI_INTEGRITY_SECRET` de prueba (la nueva validación B7 los exige al cargar el módulo).
 
+### Pasada de verificación (mismo día)
+Revisión del diff completo tras la implementación encontró y corrigió 3 defectos:
+- **`server/routes/shipping.js`** — la regex de devoluciones no capturaba "Devolución"/"En devolución" (solo "devuelto"); se agregó `devoluci`. El fallback de `trackingUrl` en `dispatch-manual` usaba la confirmación en español para órdenes USD; ahora usa `en.dobleyo.cafe/confirmation`. Los envíos manuales quedaban en `in_transit` para siempre (sin tracking automático, contaminaban `/stuck`): nuevo `PATCH /api/shipping/:id/status` (solo `delivery_company_id='manual'`) para cerrarlos como `delivered`/`returned`/`cancelled`, sincronizando el estado de la orden.
+- **`server/routes/__tests__/shipping.test.js`** (nuevo) — 13 tests unitarios de `mapTrackingStateToStatus` (con estados reales de transportadoras: "No entregado", "Entrega fallida", historial con entrega antigua + devolución posterior) y `matchSendingByMpCode` (match explícito, único resultado sin mpCode, rechazo de listas ambiguas). Ambas funciones se exportaron desde `shipping.js` para testeo.
+
 ### Impacto
-Suite completa (`npx vitest run`) en verde: 29/29 tests. Migración verificada idempotente contra la base Turso real. Servidor verificado arrancando sin errores con las rutas nuevas montadas (`server/index.js` y `api/index.js` en paridad).
+Suite completa (`npx vitest run`) en verde: 42/42 tests. Migración verificada idempotente contra la base Turso real. Ambos entrypoints verificados cargando sin errores (`server/index.js` con endpoints respondiendo, `api/index.js` como módulo serverless); paridad automática porque todos los endpoints nuevos viven dentro de routers ya montados en ambos.
 
 ---
 
