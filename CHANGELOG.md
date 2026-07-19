@@ -2,6 +2,42 @@
 
 ---
 
+## 2026-07-19 — Auditoría y remediación de logística/envíos (Agente: Claude)
+
+### Contexto
+Auditoría completa del flujo de creación de orden → pago Wompi → despacho Mipaquete → tracking → entrega/conciliación COD (ver `logistica.md`). Se encontraron bugs que rompían dinero o clientes (pago USD que nunca confirma, webhook colgado, tracking con falsos "entregado"), huecos de fallback (envíos huérfanos irrecuperables, sin expiración de órdenes abandonadas) y logging incompleto. Se implementaron las Fases A, B y D completas del plan; C1 (cron/polling programado) y C3 (control de inventario) quedan pendientes de autorización/diseño explícito por requerir decisiones de infraestructura y modelo de datos que exceden esta tarea.
+
+### Cambios — Bugs críticos (Fase A)
+- **`server/routes/orders.js`** — webhook Wompi: fix de `return` sin respuesta HTTP (dejaba la conexión colgada); validación de monto/moneda contra `expected_amount_cents` (nueva columna) en vez de asumir COP, permitiendo que órdenes en USD confirmen pago correctamente; creación de orden + ítems envuelta en `withTransaction()` para evitar órdenes sin ítems ante fallos parciales.
+- **`server/routes/shipping.js`** — `mapTrackingStateToStatus` reescrito: evalúa solo el evento de tracking más reciente (no todo el historial) y prioriza negaciones/fallos ("No entregado", "Entrega fallida") antes que "entregado", evitando que una entrega fallida se marque como exitosa. `POST /create` ahora persiste `collection_value_cop` (antes quedaba en 0) y `quoted_shipping_cost_cop`.
+
+### Cambios — Robustez del despacho (Fase B)
+- **`server/routes/shipping.js`** — `POST /create` valida que la orden esté `paid`/`processing` antes de generar guía; los `UPDATE customer_orders` a `shipped`/`delivered` excluyen `cancelled`/`refunded`; `refresh-all` ahora también recupera envíos huérfanos (`created` con `mp_code NULL` >10 min, reconciliados por referencia de orden vía `findSendingByReference` o marcados `error` tras 3 intentos), expira órdenes `pending_payment` >48h, y reintenta emails de confirmación de pago pendientes (`confirmation_email_sent_at`). Nuevo helper `matchSendingByMpCode` evita adoptar la guía de otro envío cuando `getSendings` devuelve más de un resultado.
+- **`server/routes/orders.js`** — `POST /` rechaza con 503 antes de crear la orden si Wompi no está configurado (evita órdenes impagables); email de confirmación de pago (webhook) y de COD desacoplados de la respuesta HTTP, con reintento vía `refresh-all`.
+- **`server/services/mipaquete.js`** — nuevo `findSendingByReference` para reconciliación de envíos huérfanos.
+
+### Cambios — Operación (Fase C, parcial)
+- **`server/routes/shipping.js`** — `GET /stuck` (nuevo): envíos que exceden el SLA esperado por estado (24h sin guía, 48h sin recolección, 7 días en tránsito). `GET /orders-pending` ya no filtra por `currency='COP'` (las órdenes USD quedan visibles). `POST /:orderId/dispatch-manual` (nuevo): fulfillment manual para órdenes fuera de cobertura de Mipaquete (USD/internacional), sin llamar a su API.
+- **Pendiente, requiere decisión del usuario**: C1 (polling programado de `refresh-all` vía cron de Vercel o scheduler externo — implica CRON_SECRET y posibles costos de plan) y C3 (descuento/reserva de inventario al pagar, requiere diseño del modelo de sobreventa).
+
+### Cambios — Trazabilidad y logging (Fase D)
+- **`server/services/audit.js`** — nuevo `logSystemAudit` (variante de `logAudit` sin `userId` obligatorio, para eventos disparados por webhooks/polling).
+- Auditados: cambio de estado de orden por el webhook Wompi, rechazos antifraude COD (tope de monto, pedidos abiertos, devolución previa) con `logger.warn` + `logSystemAudit`, cotizaciones de envío (`POST /quote`) y resumen de cada corrida de `refresh-all` (procesados, huérfanos recuperados, órdenes expiradas, emails reintentados, duración).
+- **`db/schema.sql`** — agregadas las tablas `shipments`, `shipment_events` y `dane_locations` (antes solo existían en la migración, no en la fuente de verdad del schema).
+
+### Archivos Creados
+- `server/migrations/add_logistics_hardening.js` — columnas `customer_orders.expected_amount_cents`, `customer_orders.confirmation_email_sent_at`, `shipments.recovery_attempts`.
+- `logistica.md` — plan de auditoría y remediación (documento de referencia, no de cambios).
+
+### Decisiones Técnicas
+- `logSystemAudit` se creó como función separada de `logAudit` (en vez de modificar su guard `if (!userId) return null`) para no alterar el comportamiento de sus demás llamadores existentes.
+- Test `server/routes/__tests__/orders.test.js`: se corrigió un índice de columna pre-existente (`orderInsertArgs[8]` → `[9]`, `shipping_zip` vs `subtotal_cop`) y se actualizaron los mocks de `db.js`/`audit.js` para incluir `withTransaction`/`logSystemAudit`. `vitest.config.js` gana `test.env` con `WOMPI_PUBLIC_KEY`/`WOMPI_INTEGRITY_SECRET` de prueba (la nueva validación B7 los exige al cargar el módulo).
+
+### Impacto
+Suite completa (`npx vitest run`) en verde: 29/29 tests. Migración verificada idempotente contra la base Turso real. Servidor verificado arrancando sin errores con las rutas nuevas montadas (`server/index.js` y `api/index.js` en paridad).
+
+---
+
 ## 2026-07-12 — View Transitions, heroes full-bleed y scroll-reveal (Agente: Claude)
 
 ### Contexto
