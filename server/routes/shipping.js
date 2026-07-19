@@ -158,11 +158,14 @@ shippingRouter.post('/:orderId/dispatch-manual',
             await query(`UPDATE customer_orders SET status = 'shipped' WHERE id = ? AND status NOT IN ('delivered','cancelled','refunded')`, [order.id]);
             await logAudit(req.user.id, 'create', 'shipments', shipmentId, { orderId: order.id, carrierName, guideNumber, manual: true, comments });
 
+            const confirmUrl = order.currency === 'USD'
+                ? `https://en.dobleyo.cafe/confirmation?ref=${order.reference}`
+                : `${SITE_URL}/confirmacion?ref=${order.reference}`;
             sendShippingNotificationEmail(order.customer_email, order.customer_name, {
                 reference: order.reference,
                 guideNumber,
                 deliveryCompanyName: carrierName,
-                trackingUrl: trackingUrl || `${SITE_URL}/confirmacion?ref=${order.reference}`,
+                trackingUrl: trackingUrl || confirmUrl,
                 isCod: false,
                 collectionValue: 0,
             }).catch((err) => logger.error({ err }, '[Shipping] Error enviando email de despacho manual'));
