@@ -270,6 +270,14 @@ shippingRouter.post('/quote',
             });
 
             const list = (Array.isArray(quotes) ? quotes : []).sort((a, b) => a.shippingCost - b.shippingCost);
+
+            // Rastro de qué se cotizó (transportadoras y precios ofrecidos) para poder
+            // auditar después contra la opción elegida en /create y detectar sobrecostos.
+            logSystemAudit('shipping_quoted', 'customer_orders', orderId, {
+                destinyDaneCode, weightKg, declaredValueCop,
+                offers: list.map((q) => ({ deliveryCompany: q.deliveryCompany || q.deliveryCompanyId, cost: q.shippingCost })),
+            }).catch(() => {});
+
             return res.json({ success: true, data: list });
         } catch (err) {
             return handleMipaqueteError(res, err, 'Error al cotizar el envío');
