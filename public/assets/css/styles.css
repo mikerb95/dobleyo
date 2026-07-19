@@ -167,6 +167,27 @@ img {
   display: block
 }
 
+/* Skip link — accesibilidad WCAG: permite saltar la navegación con teclado */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 1rem;
+  z-index: 9999;
+  background: var(--accent, #c67b4e);
+  color: #fff;
+  padding: .75rem 1.25rem;
+  border-radius: 0 0 .5rem .5rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: top .15s ease;
+}
+
+.skip-link:focus {
+  top: 0;
+  outline: 3px solid #fff;
+  outline-offset: -3px;
+}
+
 .container {
   width: min(var(--page-width), calc(100% - var(--page-gutter)));
   margin-inline: auto;
