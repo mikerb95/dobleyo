@@ -85,24 +85,95 @@ async function getOrderWithItems(orderId) {
 
 // ─── GET /api/shipping/orders-pending (admin) ──────────────────────────────
 
+// Sin filtrar por moneda: las órdenes USD (Mipaquete no las cubre) también deben
+// ser visibles para no perderse del flujo operativo — se despachan por la vía
+// manual (POST /:orderId/dispatch-manual) en vez de /create.
 shippingRouter.get('/orders-pending', authenticateToken, requireRole('admin'), async (req, res) => {
     try {
+        const { currency } = req.query;
         const result = await query(`
             SELECT o.id, o.reference, o.status, o.customer_name, o.customer_email,
                    o.shipping_city, o.shipping_department, o.total_cop, o.currency,
                    o.payment_method, o.created_at
             FROM customer_orders o
             LEFT JOIN shipments s ON s.order_id = o.id AND s.status NOT IN ('cancelled','error')
-            WHERE o.status IN ('paid','processing') AND o.currency = 'COP' AND s.id IS NULL
+            WHERE o.status IN ('paid','processing') AND s.id IS NULL
+              AND (? IS NULL OR o.currency = ?)
             ORDER BY o.created_at ASC
             LIMIT 100
-        `);
+        `, [currency || null, currency || null]);
         return res.json({ success: true, data: result.rows });
     } catch (err) {
         logger.error({ err }, '[GET /api/shipping/orders-pending] Error:');
         return res.status(500).json({ success: false, error: 'Error al listar pedidos pendientes' });
     }
 });
+
+// ─── POST /api/shipping/:orderId/dispatch-manual (admin) ──────────────────
+// Fulfillment manual para órdenes fuera de la cobertura de Mipaquete (USD /
+// internacional): registra la guía de un transportador externo sin llamar a
+// la API de Mipaquete. Igual que /create, deja el registro en `shipments` para
+// que el tracking y las notificaciones de despacho funcionen igual.
+
+shippingRouter.post('/:orderId/dispatch-manual',
+    authenticateToken, requireRole('admin'),
+    [
+        body('carrierName').trim().notEmpty().withMessage('Nombre del transportador requerido'),
+        body('guideNumber').trim().notEmpty().withMessage('Número de guía requerido'),
+        body('trackingUrl').optional().trim().isURL().withMessage('URL de tracking inválida'),
+        body('comments').optional().trim(),
+    ],
+    async (req, res) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) return res.status(422).json({ success: false, errors: errors.array() });
+
+        try {
+            const { carrierName, guideNumber, trackingUrl, comments } = req.body;
+            const data = await getOrderWithItems(req.params.orderId);
+            if (!data) return res.status(404).json({ success: false, error: 'Orden no encontrada' });
+            const { order } = data;
+
+            if (!['paid', 'processing'].includes(order.status)) {
+                return res.status(422).json({ success: false, error: `La orden está en estado '${order.status}' y no se puede despachar` });
+            }
+
+            let shipmentId;
+            try {
+                const insertResult = await query(
+                    `INSERT INTO shipments
+                        (order_id, payment_mode, delivery_company_id, delivery_company_name,
+                         guide_number, requested_pickup, created_by, status, guide_notified_at)
+                     VALUES (?, 'prepaid', 'manual', ?, ?, 0, ?, 'in_transit', datetime('now'))
+                     RETURNING id`,
+                    [order.id, carrierName, guideNumber, req.user.id]
+                );
+                shipmentId = insertResult.rows[0].id;
+            } catch (err) {
+                if (String(err.message).includes('UNIQUE')) {
+                    return res.status(409).json({ success: false, error: 'Ya existe un envío activo para esta orden' });
+                }
+                throw err;
+            }
+
+            await query(`UPDATE customer_orders SET status = 'shipped' WHERE id = ? AND status NOT IN ('delivered','cancelled','refunded')`, [order.id]);
+            await logAudit(req.user.id, 'create', 'shipments', shipmentId, { orderId: order.id, carrierName, guideNumber, manual: true, comments });
+
+            sendShippingNotificationEmail(order.customer_email, order.customer_name, {
+                reference: order.reference,
+                guideNumber,
+                deliveryCompanyName: carrierName,
+                trackingUrl: trackingUrl || `${SITE_URL}/confirmacion?ref=${order.reference}`,
+                isCod: false,
+                collectionValue: 0,
+            }).catch((err) => logger.error({ err }, '[Shipping] Error enviando email de despacho manual'));
+
+            return res.status(201).json({ success: true, data: { shipmentId, guideNumber, carrierName } });
+        } catch (err) {
+            logger.error({ err }, '[POST /api/shipping/:orderId/dispatch-manual] Error:');
+            return res.status(500).json({ success: false, error: 'Error al registrar el despacho manual' });
+        }
+    }
+);
 
 // ─── GET /api/shipping/:orderId/suggest (admin) ────────────────────────────
 // Prellena el formulario de cotización: peso calculado desde products.weight,
