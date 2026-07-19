@@ -29,6 +29,9 @@ export interface Props {
   articlePublishedTime?: string;
 }
 
+// Origen canónico del sitio, tomado de `site` en astro.config.mjs (fallback por si corre sin configurar)
+const siteOrigin = (Astro.site ?? new URL("https://dobleyo.cafe/")).origin;
+
 const {
   title = "DobleYo — Café de especialidad colombiano",
   description = "Tienda de café de especialidad colombiano. Tueste fresco, origen trazable, estilo sereno y acogedor.",
@@ -39,7 +42,7 @@ const {
   hreflangEs,
   hreflangEn,
   jsonLd,
-  ogImage = "https://dobleyo.cafe/assets/img/og-default.jpg",
+  ogImage = `${siteOrigin}/assets/img/og-default.jpg`,
   ogImageAlt = "DobleYo Café — Café de especialidad colombiano",
   ogType = "website",
   articlePublishedTime,
@@ -47,15 +50,15 @@ const {
 
 const resolvedOgImage = ogImage.startsWith("http")
   ? ogImage
-  : `https://dobleyo.cafe${ogImage.startsWith("/") ? "" : "/"}${ogImage}`;
+  : `${siteOrigin}${ogImage.startsWith("/") ? "" : "/"}${ogImage}`;
 
 // JSON-LD de Organización — presente en todas las páginas públicas
 const organizationSchema = {
   "@context": "https://schema.org",
   "@type": "Organization",
   name: "DobleYo Café",
-  url: "https://dobleyo.cafe",
-  logo: "https://dobleyo.cafe/assets/branding/logo.svg",
+  url: siteOrigin,
+  logo: `${siteOrigin}/assets/branding/logo.svg`,
   description:
     "Café de especialidad colombiano con trazabilidad completa del grano.",
   sameAs: [
