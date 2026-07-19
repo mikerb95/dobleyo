@@ -1,7 +1,8 @@
 // Sitemap dinámico generado por Astro (Fase 11 SEO)
 import type { APIRoute } from 'astro';
 
-const BASE_ES = 'https://dobleyo.cafe';
+// BASE_EN vive en un subdominio distinto al configurado en `site` (astro.config.mjs),
+// por lo que no se puede derivar de Astro.site y queda fijo.
 const BASE_EN = 'https://en.dobleyo.cafe';
 
 type Entry = {
