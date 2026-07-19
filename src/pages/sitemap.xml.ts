@@ -24,7 +24,8 @@ function fmtDate(d: unknown): string | undefined {
     }
 }
 
-export const GET: APIRoute = async () => {
+export const GET: APIRoute = async ({ site }) => {
+    const BASE_ES = (site ?? new URL('https://dobleyo.cafe/')).origin;
     const now = new Date().toISOString().split('T')[0];
 
     // ── Páginas estáticas con equivalencia ES/EN ────────────────────────────
