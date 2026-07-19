@@ -375,7 +375,8 @@ ordersRouter.post('/',
                     shipping,
                     total,
                     shippingAddress: `${shippingAddress}, ${shippingCity}`,
-                }).catch((err) => logger.error({ err }, '[POST /api/orders] Error enviando confirmación COD'));
+                }).then(() => query(`UPDATE customer_orders SET confirmation_email_sent_at = datetime('now') WHERE id = ?`, [orderId]))
+                    .catch((err) => logger.error({ err }, '[POST /api/orders] Error enviando confirmación COD'));
             }
 
             return res.status(201).json({
