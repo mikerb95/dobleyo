@@ -181,7 +181,7 @@ describe('POST /api/orders', () => {
 
         expect(res.status).toBe(201);
         const orderInsertArgs = query.mock.calls[1][1];
-        expect(orderInsertArgs[8]).toBe(84000);
+        expect(orderInsertArgs[9]).toBe(84000); // índice 9 = subtotal_cop (8 = shipping_zip)
     });
 });
 
