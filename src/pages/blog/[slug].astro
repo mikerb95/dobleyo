@@ -85,6 +85,10 @@ const breadcrumbData = {
   description={post.excerpt || `Lee "${post.title}" en el blog de DobleYo Café.`}
   canonical={canonicalUrl}
   jsonLd={[structuredData, breadcrumbData]}
+  ogImage={coverImg}
+  ogImageAlt={post.title}
+  ogType="article"
+  articlePublishedTime={post.published_at}
 >
   <article class="post">
     <nav class="post-breadcrumb" aria-label="Ruta de navegación">
