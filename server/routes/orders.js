@@ -253,6 +253,8 @@ ordersRouter.post('/',
             // devuelto previamente (indicio de que el destinatario no recibe/rechaza).
             if (isCod) {
                 if (total > COD_MAX_TOTAL_COP) {
+                    logger.warn({ customerEmail, total, limit: COD_MAX_TOTAL_COP }, '[POST /api/orders] COD rechazado: excede tope antifraude');
+                    logSystemAudit('cod_rejected', 'customer_orders', customerEmail.toLowerCase(), { reason: 'max_total_exceeded', total, limit: COD_MAX_TOTAL_COP }).catch(() => {});
                     return res.status(422).json({
                         success: false,
                         error: `El pago contraentrega solo aplica para pedidos hasta $${COD_MAX_TOTAL_COP.toLocaleString('es-CO')}`
@@ -267,6 +269,8 @@ ordersRouter.post('/',
                     [customerEmail.toLowerCase(), `%${digits}`]
                 );
                 if (Number(openCod.rows[0].cnt) >= 2) {
+                    logger.warn({ customerEmail, digits }, '[POST /api/orders] COD rechazado: pedidos abiertos en curso');
+                    logSystemAudit('cod_rejected', 'customer_orders', customerEmail.toLowerCase(), { reason: 'open_orders_limit' }).catch(() => {});
                     return res.status(422).json({
                         success: false,
                         error: 'Ya tiene pedidos contraentrega en curso. Complete la entrega antes de generar uno nuevo.'
@@ -280,6 +284,8 @@ ordersRouter.post('/',
                     [customerEmail.toLowerCase(), `%${digits}`]
                 );
                 if (Number(returnedBefore.rows[0].cnt) > 0) {
+                    logger.warn({ customerEmail, digits }, '[POST /api/orders] COD rechazado: devolución previa registrada');
+                    logSystemAudit('cod_rejected', 'customer_orders', customerEmail.toLowerCase(), { reason: 'previous_return' }).catch(() => {});
                     return res.status(422).json({
                         success: false,
                         error: 'No es posible generar un pedido contraentrega para estos datos de contacto'
