@@ -18,6 +18,10 @@ export interface Props {
   jsonLd?: Record<string, unknown> | Record<string, unknown>[];
   hideWhatsApp?: boolean;
   noindex?: boolean;
+  ogImage?: string;
+  ogImageAlt?: string;
+  ogType?: "website" | "product" | "article";
+  articlePublishedTime?: string;
 }
 
 const {
@@ -30,6 +34,10 @@ const {
   jsonLd,
   hideWhatsApp = false,
   noindex = false,
+  ogImage,
+  ogImageAlt,
+  ogType,
+  articlePublishedTime,
 } = Astro.props;
 ---
 

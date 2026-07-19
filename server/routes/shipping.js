@@ -505,7 +505,13 @@ async function refreshShipment(shipmentId, source) {
     }
 
     if (newStatus === 'delivered' && shipment.status !== 'delivered') {
-        await query(`UPDATE customer_orders SET status = 'delivered' WHERE id = ?`, [shipment.order_id]);
+        const delivered = await query(
+            `UPDATE customer_orders SET status = 'delivered' WHERE id = ? AND status NOT IN ('cancelled','refunded') RETURNING id`,
+            [shipment.order_id]
+        );
+        if (!delivered.rows.length) {
+            logger.warn({ orderId: shipment.order_id, shipmentId }, '[Shipping] Tracking marca entregado pero la orden está cancelada/reembolsada; se ignora el cambio de estado de la orden');
+        }
     }
 
     return { shipmentId, guideNumber, pickupCode, status: newStatus, pdfUrls };
