@@ -1272,5 +1272,4 @@ CREATE TRIGGER IF NOT EXISTS shipments_updated_at
     FOR EACH ROW
     BEGIN
         UPDATE shipments SET updated_at = datetime('now') WHERE id = NEW.id;
-    END
-);
+    END;
