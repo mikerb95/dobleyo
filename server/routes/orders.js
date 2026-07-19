@@ -296,35 +296,44 @@ ordersRouter.post('/',
             // Referencia única: DY-timestamp-random4chars
             const ref = `DY-${Date.now()}-${crypto.randomBytes(2).toString('hex').toUpperCase()}`;
             const initialStatus = isCod ? 'processing' : 'pending_payment';
+            // Monto exacto que se firmará hacia Wompi (en centavos, en la moneda real
+            // de la orden). El webhook valida contra este campo en vez de asumir COP,
+            // lo que permite confirmar pagos en USD correctamente.
+            const expectedAmountCents = isCod ? null : total * 100;
 
-            // Insertar orden
-            const orderResult = await query(
-                `INSERT INTO customer_orders
-           (reference, status, customer_name, customer_email, customer_phone,
-            shipping_address, shipping_city, shipping_department, shipping_zip,
-            subtotal_cop, shipping_cop, discount_amount_cop, total_cop, currency,
-            discount_code, notes, user_id, payment_method)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-         RETURNING id, reference`,
-                [ref, initialStatus, customerName, customerEmail, customerPhone || null,
-                    shippingAddress, shippingCity, shippingDepartment || null, shippingZip || null,
-                    subtotal, shipping, discountAmount, total, currency,
-                    appliedCode, notes || null,
-                    req.user?.id || null, isCod ? 'cod' : null]
-            );
-
-            const { id: orderId, reference } = orderResult.rows[0];
-
-            // Insertar ítems
-            for (const item of normalizedItems) {
-                await query(
-                    `INSERT INTO customer_order_items
-             (order_id, product_id, product_name, product_image, unit_price_cop, quantity, subtotal_cop)
-           VALUES (?, ?, ?, ?, ?, ?, ?)`,
-                    [orderId, item.productId, item.productName, item.productImage || null,
-                        item.unitPrice, item.quantity, item.subtotal]
+            // Insertar orden + ítems en una sola transacción: evita órdenes "huérfanas"
+            // sin ítems si el proceso falla a mitad de camino (rompería el cálculo de
+            // peso/valor declarado del envío más adelante).
+            const { orderId, reference } = await withTransaction(async ({ query: txq }) => {
+                const orderResult = await txq(
+                    `INSERT INTO customer_orders
+               (reference, status, customer_name, customer_email, customer_phone,
+                shipping_address, shipping_city, shipping_department, shipping_zip,
+                subtotal_cop, shipping_cop, discount_amount_cop, total_cop, currency,
+                discount_code, notes, user_id, payment_method, expected_amount_cents)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+             RETURNING id, reference`,
+                    [ref, initialStatus, customerName, customerEmail, customerPhone || null,
+                        shippingAddress, shippingCity, shippingDepartment || null, shippingZip || null,
+                        subtotal, shipping, discountAmount, total, currency,
+                        appliedCode, notes || null,
+                        req.user?.id || null, isCod ? 'cod' : null, expectedAmountCents]
                 );
-            }
+
+                const { id, reference: createdRef } = orderResult.rows[0];
+
+                for (const item of normalizedItems) {
+                    await txq(
+                        `INSERT INTO customer_order_items
+                 (order_id, product_id, product_name, product_image, unit_price_cop, quantity, subtotal_cop)
+               VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                        [id, item.productId, item.productName, item.productImage || null,
+                            item.unitPrice, item.quantity, item.subtotal]
+                    );
+                }
+
+                return { orderId: id, reference: createdRef };
+            });
 
             // Generar URL de checkout Wompi (redirección a confirmación según idioma/moneda)
             const redirectUrl = isUSD
