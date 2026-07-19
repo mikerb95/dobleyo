@@ -34,7 +34,7 @@ const pageTitle = `${farm.name} — Finca en ${farm.region} | DobleYo Café`;
 const pageDesc = farm.short_description
   ?? `Conoce la finca ${farm.name} en ${farm.region}${altText ? ` a ${altText}` : ""}. Café de especialidad colombiano con trazabilidad completa.`;
 const canonicalUrl = `https://dobleyo.cafe/finca/${slug}`;
-const coverImg = farm.cover_image_url ?? "https://dobleyo.cafe/assets/img/og-fincas.jpg";
+const coverImg = farm.cover_image_url ?? "https://dobleyo.cafe/assets/img/og-default.jpg";
 
 // Structured data: Product de tipo Place/FarmPlace adaptado
 const structuredData = {
