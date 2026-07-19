@@ -72,18 +72,14 @@ const breadcrumbData = {
 const galleryUrls: string[] = Array.isArray(farm.gallery_urls) ? farm.gallery_urls : [];
 ---
 
-<Layout title={pageTitle} description={pageDesc}>
-  <head slot="head">
-    <link rel="canonical" href={canonicalUrl} />
-    <meta property="og:title" content={pageTitle} />
-    <meta property="og:description" content={pageDesc} />
-    <meta property="og:image" content={coverImg} />
-    <meta property="og:url" content={canonicalUrl} />
-    <meta property="og:type" content="website" />
-    <meta name="robots" content="index, follow" />
-    <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
-    <script type="application/ld+json" set:html={JSON.stringify(breadcrumbData)} />
-  </head>
+<Layout
+  title={pageTitle}
+  description={pageDesc}
+  canonical={canonicalUrl}
+  ogImage={coverImg}
+  ogImageAlt={`Vista de la finca ${farm.name}`}
+  jsonLd={[structuredData, breadcrumbData]}
+>
 
   <!-- Breadcrumb accesible -->
   <nav class="breadcrumb" aria-label="Ruta de navegación">

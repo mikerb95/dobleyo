@@ -517,14 +517,119 @@ async function refreshShipment(shipmentId, source) {
     return { shipmentId, guideNumber, pickupCode, status: newStatus, pdfUrls };
 }
 
+// Envíos "created" con mp_code NULL: createSending pudo tener éxito en Mipaquete
+// pero el proceso murió antes de persistir el mpCode localmente. Se reconcilian
+// buscando por la referencia de la orden; si no aparecen tras varios intentos,
+// se liberan marcándolos 'error' (el índice único parcial los ignora en ese estado).
+async function recoverOrphanShipments(limit = 5) {
+    const orphans = await query(
+        `SELECT s.id, s.recovery_attempts, o.reference
+         FROM shipments s JOIN customer_orders o ON o.id = s.order_id
+         WHERE s.status = 'created' AND s.mp_code IS NULL
+           AND datetime(s.created_at) < datetime('now', '-10 minutes')
+         ORDER BY s.created_at ASC
+         LIMIT ?`,
+        [limit]
+    );
+
+    const results = [];
+    for (const row of orphans.rows) {
+        try {
+            const found = await findSendingByReference(row.reference);
+            if (found?.mpCode) {
+                await query(`UPDATE shipments SET mp_code = ? WHERE id = ?`, [String(found.mpCode), row.id]);
+                await logSystemAudit('recover', 'shipments', row.id, { reference: row.reference, mpCode: found.mpCode });
+                results.push({ shipmentId: row.id, ok: true, action: 'adopted' });
+            } else {
+                const attempts = (row.recovery_attempts || 0) + 1;
+                if (attempts >= 3) {
+                    await query(
+                        `UPDATE shipments SET status = 'error', recovery_attempts = ?,
+                            error_detail = 'No se pudo reconciliar con Mipaquete tras crear el envío (posible fallo a mitad de proceso)'
+                         WHERE id = ?`,
+                        [attempts, row.id]
+                    );
+                    await logSystemAudit('recover_failed', 'shipments', row.id, { reference: row.reference, attempts });
+                    results.push({ shipmentId: row.id, ok: false, action: 'marked_error' });
+                } else {
+                    await query(`UPDATE shipments SET recovery_attempts = ? WHERE id = ?`, [attempts, row.id]);
+                    results.push({ shipmentId: row.id, ok: false, action: 'retry_later' });
+                }
+            }
+        } catch (err) {
+            logger.error({ err, shipmentId: row.id }, '[Shipping] Error reconciliando envío huérfano');
+            results.push({ shipmentId: row.id, ok: false, error: err.message });
+        }
+    }
+    return results;
+}
+
+// Órdenes que nunca completaron el pago: se cancelan tras 48h para no acumular
+// pedidos fantasma que bloqueen reportes ni queden "abiertos" indefinidamente.
+async function expireAbandonedOrders(hours = 48) {
+    const result = await query(
+        `UPDATE customer_orders SET status = 'cancelled'
+         WHERE status = 'pending_payment' AND datetime(created_at) < datetime('now', ?)
+         RETURNING id, reference`,
+        [`-${hours} hours`]
+    );
+    for (const row of result.rows) {
+        logSystemAudit('expire', 'customer_orders', row.id, { reference: row.reference, reason: `pending_payment > ${hours}h` }).catch(() => {});
+    }
+    return result.rows.length;
+}
+
+// Reintenta el email de confirmación de pago para órdenes 'paid' que no lo
+// recibieron (Resend falló en el webhook). Ventana de 48h: pasado eso, se asume
+// que el cliente ya fue atendido por otro canal (soporte) y se deja de insistir.
+async function retryPendingConfirmationEmails(limit = 10) {
+    const pending = await query(
+        `SELECT id, reference, customer_name, customer_email, subtotal_cop, shipping_cop, total_cop,
+                shipping_address, shipping_city
+         FROM customer_orders
+         WHERE status = 'paid' AND confirmation_email_sent_at IS NULL
+           AND datetime(created_at) > datetime('now', '-48 hours')
+         ORDER BY created_at ASC
+         LIMIT ?`,
+        [limit]
+    );
+
+    let sent = 0;
+    for (const order of pending.rows) {
+        try {
+            const itemsResult = await query(
+                `SELECT product_name, quantity, unit_price_cop FROM customer_order_items WHERE order_id = ?`,
+                [order.id]
+            );
+            await sendOrderConfirmationEmail(order.customer_email, order.customer_name, {
+                orderId: order.reference,
+                date: new Date().toISOString(),
+                items: itemsResult.rows.map((r) => ({ name: r.product_name, quantity: r.quantity, price: r.unit_price_cop })),
+                subtotal: order.subtotal_cop,
+                shipping: order.shipping_cop,
+                total: order.total_cop,
+                shippingAddress: `${order.shipping_address}, ${order.shipping_city}`,
+            });
+            await query(`UPDATE customer_orders SET confirmation_email_sent_at = datetime('now') WHERE id = ?`, [order.id]);
+            sent++;
+        } catch (err) {
+            logger.error({ err, orderId: order.id }, '[Shipping refresh-all] Reintento de email de confirmación falló');
+        }
+    }
+    return sent;
+}
+
 // ─── POST /api/shipping/refresh-all (admin) ────────────────────────────────
 // Fallback de polling sin cron: se dispara al abrir el panel. Presupuesto de
-// tiempo acotado para respetar límites de funciones serverless.
+// tiempo acotado para respetar límites de funciones serverless. Además de
+// refrescar tracking, recupera envíos huérfanos, expira órdenes abandonadas y
+// reintenta emails de confirmación pendientes — todo bajo el mismo presupuesto.
 
 shippingRouter.post('/refresh-all', authenticateToken, requireRole('admin'), async (req, res) => {
     const startedAt = Date.now();
     const TIME_BUDGET_MS = 8000;
     const MAX_ITEMS = 20;
+    const timeLeft = () => TIME_BUDGET_MS - (Date.now() - startedAt);
 
     try {
         const pending = await query(
@@ -537,7 +642,7 @@ shippingRouter.post('/refresh-all', authenticateToken, requireRole('admin'), asy
 
         const results = [];
         for (const row of pending.rows) {
-            if (Date.now() - startedAt > TIME_BUDGET_MS) break;
+            if (timeLeft() < 500) break;
             try {
                 const r = await refreshShipment(row.id, 'poll');
                 results.push({ shipmentId: row.id, ok: true, status: r?.status });
@@ -546,10 +651,84 @@ shippingRouter.post('/refresh-all', authenticateToken, requireRole('admin'), asy
             }
         }
 
-        return res.json({ success: true, data: { processed: results.length, results } });
+        let orphanResults = [];
+        let expiredCount = 0;
+        let emailsSent = 0;
+
+        if (timeLeft() > 1000) {
+            orphanResults = await recoverOrphanShipments(5).catch((err) => {
+                logger.error({ err }, '[Shipping refresh-all] Error recuperando envíos huérfanos');
+                return [];
+            });
+        }
+        if (timeLeft() > 500) {
+            expiredCount = await expireAbandonedOrders(48).catch((err) => {
+                logger.error({ err }, '[Shipping refresh-all] Error expirando órdenes abandonadas');
+                return 0;
+            });
+        }
+        if (timeLeft() > 500) {
+            emailsSent = await retryPendingConfirmationEmails(10).catch((err) => {
+                logger.error({ err }, '[Shipping refresh-all] Error reintentando emails de confirmación');
+                return 0;
+            });
+        }
+
+        const summary = {
+            processed: results.length,
+            failed: results.filter((r) => !r.ok).length,
+            orphansRecovered: orphanResults.filter((r) => r.action === 'adopted').length,
+            orphansMarkedError: orphanResults.filter((r) => r.action === 'marked_error').length,
+            ordersExpired: expiredCount,
+            confirmationEmailsSent: emailsSent,
+            durationMs: Date.now() - startedAt,
+        };
+        logSystemAudit('poll', 'shipments', 'refresh-all', summary).catch(() => {});
+
+        return res.json({ success: true, data: { ...summary, results, orphanResults } });
     } catch (err) {
         logger.error({ err }, '[POST /api/shipping/refresh-all] Error:');
         return res.status(500).json({ success: false, error: 'Error al refrescar envíos' });
+    }
+});
+
+// ─── GET /api/shipping/stuck (admin) ───────────────────────────────────────
+// Envíos que exceden el SLA esperado por estado (red de seguridad operativa:
+// detecta guías que el 3PL dejó estancadas sin que nadie lo note).
+
+const STUCK_SLA_BY_STATUS = {
+    created: 24,            // sin guía asignada tras 1 día
+    pickup_requested: 48,   // sin recolección tras 2 días
+    in_transit: 24 * 7,     // en tránsito más de 7 días
+};
+
+shippingRouter.get('/stuck', authenticateToken, requireRole('admin'), async (req, res) => {
+    try {
+        const statuses = Object.keys(STUCK_SLA_BY_STATUS);
+        const placeholders = statuses.map(() => '?').join(', ');
+        const result = await query(
+            `SELECT s.id, s.status, s.guide_number, s.delivery_company_name, s.created_at,
+                    s.tracking_updated_at, o.reference, o.customer_name, o.shipping_city
+             FROM shipments s JOIN customer_orders o ON o.id = s.order_id
+             WHERE s.status IN (${placeholders})
+             ORDER BY COALESCE(s.tracking_updated_at, s.created_at) ASC`,
+            statuses
+        );
+
+        const now = Date.now();
+        const stuck = result.rows
+            .map((row) => {
+                const reference = new Date(row.tracking_updated_at || row.created_at);
+                const ageHours = (now - reference.getTime()) / (1000 * 60 * 60);
+                const slaHours = STUCK_SLA_BY_STATUS[row.status];
+                return { ...row, ageHours: Math.round(ageHours), slaHours };
+            })
+            .filter((row) => row.ageHours > row.slaHours);
+
+        return res.json({ success: true, data: stuck });
+    } catch (err) {
+        logger.error({ err }, '[GET /api/shipping/stuck] Error:');
+        return res.status(500).json({ success: false, error: 'Error al calcular envíos estancados' });
     }
 });
 
