@@ -401,14 +401,38 @@ shippingRouter.post('/:id/refresh', authenticateToken, requireRole('admin'), asy
     }
 });
 
-// Mapea el estado crudo de Mipaquete a nuestro enum interno.
-function mapTrackingStateToStatus(states) {
-    const joined = states.map((s) => (s.updateState || '').toLowerCase()).join(' | ');
-    if (joined.includes('entregado')) return 'delivered';
-    if (joined.includes('devuel') || joined.includes('retorno')) return 'returned';
-    if (joined.includes('cancelado')) return 'cancelled';
-    if (joined.includes('recolec') || joined.includes('transito') || joined.includes('tránsito') || joined.includes('camino')) return 'in_transit';
-    if (joined.includes('recogida') || joined.includes('pendiente por recog')) return 'pickup_requested';
+// Toma el envío cuyo mpCode explícito coincida; si la respuesta no trae el campo
+// (algunas variantes de la API lo omiten) pero solo hay un resultado, se acepta
+// -- pero nunca se toma a ciegas el primero de una lista con varios resultados.
+function matchSendingByMpCode(sendings, mpCode) {
+    if (!Array.isArray(sendings) || !sendings.length) return null;
+    const target = String(mpCode);
+    const explicit = sendings.find((s) => {
+        const val = s.mpCode ?? s.mp_code ?? s.MpCode;
+        return val != null && String(val) === target;
+    });
+    if (explicit) return explicit;
+    return sendings.length === 1 ? sendings[0] : null;
+}
+
+// Mapea el estado crudo de Mipaquete a nuestro enum interno usando SOLO el
+// evento más reciente (no todo el historial: un "entregado" viejo no debe
+// contaminar un estado posterior). Las negaciones/fallos de entrega se evalúan
+// ANTES que "entregado" con límites de palabra, para no confundir "No entregado"
+// o "Entrega fallida" con una entrega exitosa.
+function mapTrackingStateToStatus(events) {
+    if (!Array.isArray(events) || !events.length) return null;
+
+    const sorted = [...events].sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
+    const latest = sorted[sorted.length - 1];
+    const text = `${latest.updateState || ''} ${latest.description || ''}`.toLowerCase();
+
+    if (/\bno\s+entregado\b|entrega\s+fallida|intento\s+de\s+entrega|novedad/.test(text)) return 'in_transit';
+    if (/devuel|retorno/.test(text)) return 'returned';
+    if (/cancelado/.test(text)) return 'cancelled';
+    if (/\bentregado\b/.test(text)) return 'delivered';
+    if (/recolec|transito|tránsito|camino/.test(text)) return 'in_transit';
+    if (/recogida|pendiente por recog/.test(text)) return 'pickup_requested';
     return null; // sin cambio de estado reconocible
 }
 
@@ -428,7 +452,10 @@ async function refreshShipment(shipmentId, source) {
         getTracking(shipment.mp_code).catch(() => null),
     ]);
 
-    const match = sendings?.sendings?.[0];
+    const match = matchSendingByMpCode(sendings?.sendings || [], shipment.mp_code);
+    if (sendings?.sendings?.length && !match) {
+        logger.warn({ mpCode: shipment.mp_code, shipmentId }, '[Shipping] getSendings devolvió resultados pero ninguno coincide con el mpCode');
+    }
     const guideNumber = match?.['Número de Guía'] || shipment.guide_number;
     const pickupCode = match?.['Número de Recolección'] || shipment.pickup_code;
     const pdfUrls = match?.pdfGuide || (shipment.pdf_guide_urls ? JSON.parse(shipment.pdf_guide_urls) : null);
@@ -466,7 +493,7 @@ async function refreshShipment(shipmentId, source) {
     // Primera vez que aparece la guía → notificar y marcar orden 'shipped'
     if (guideNumber && !shipment.guide_notified_at) {
         await query(`UPDATE shipments SET guide_notified_at = datetime('now') WHERE id = ?`, [shipmentId]);
-        await query(`UPDATE customer_orders SET status = 'shipped' WHERE id = ? AND status != 'delivered'`, [shipment.order_id]);
+        await query(`UPDATE customer_orders SET status = 'shipped' WHERE id = ? AND status NOT IN ('delivered','cancelled','refunded')`, [shipment.order_id]);
         sendShippingNotificationEmail(shipment.customer_email, shipment.customer_name, {
             reference: shipment.reference,
             guideNumber,

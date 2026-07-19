@@ -20,6 +20,13 @@ export interface Props {
   hreflangEn?: string;
   /** Esquema JSON-LD adicional específico de la página (Product, BreadcrumbList, etc.) */
   jsonLd?: Record<string, unknown> | Record<string, unknown>[];
+  /** Imagen para Open Graph / Twitter Card. URL absoluta o ruta relativa (se resuelve contra el sitio) */
+  ogImage?: string;
+  ogImageAlt?: string;
+  /** Tipo de contenido Open Graph */
+  ogType?: "website" | "product" | "article";
+  /** Fecha de publicación — solo aplica cuando ogType="article" */
+  articlePublishedTime?: string;
 }
 
 const {
@@ -32,7 +39,15 @@ const {
   hreflangEs,
   hreflangEn,
   jsonLd,
+  ogImage = "https://dobleyo.cafe/assets/img/og-default.jpg",
+  ogImageAlt = "DobleYo Café — Café de especialidad colombiano",
+  ogType = "website",
+  articlePublishedTime,
 } = Astro.props;
+
+const resolvedOgImage = ogImage.startsWith("http")
+  ? ogImage
+  : `https://dobleyo.cafe${ogImage.startsWith("/") ? "" : "/"}${ogImage}`;
 
 // JSON-LD de Organización — presente en todas las páginas públicas
 const organizationSchema = {
@@ -84,10 +99,28 @@ const organizationSchema = {
 {/* Open Graph */}
 <meta property="og:title" content={title} />
 <meta property="og:description" content={description} />
-<meta property="og:type" content="website" />
+<meta property="og:type" content={ogType} />
 <meta property="og:site_name" content="DobleYo Café" />
 {canonical && <meta property="og:url" content={canonical} />}
 <meta property="og:locale" content={lang === "en" ? "en_US" : "es_CO"} />
+{
+  !isAdmin && (
+    <>
+      <meta property="og:image" content={resolvedOgImage} />
+      <meta property="og:image:alt" content={ogImageAlt} />
+      {ogType === "article" && articlePublishedTime && (
+        <meta property="article:published_time" content={articlePublishedTime} />
+      )}
+
+      {/* Twitter Card */}
+      <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:title" content={title} />
+      <meta name="twitter:description" content={description} />
+      <meta name="twitter:image" content={resolvedOgImage} />
+      <meta name="twitter:image:alt" content={ogImageAlt} />
+    </>
+  )
+}
 
 {
   isAdmin && (
