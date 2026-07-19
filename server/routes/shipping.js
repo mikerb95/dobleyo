@@ -222,6 +222,7 @@ shippingRouter.post('/create',
         body('deliveryCompanyId').notEmpty(),
         body('requestPickup').optional().isBoolean(),
         body('comments').optional().trim(),
+        body('quotedShippingCostCop').optional().isInt({ min: 0 }),
     ],
     async (req, res) => {
         const errors = validationResult(req);
@@ -231,6 +232,7 @@ shippingRouter.post('/create',
             const {
                 orderId, weightKg, width, length, height, destinyDaneCode,
                 declaredValueCop, paymentMode, deliveryCompanyId, requestPickup = true, comments,
+                quotedShippingCostCop = null,
             } = req.body;
 
             const data = await getOrderWithItems(orderId);
@@ -240,9 +242,17 @@ shippingRouter.post('/create',
             if (order.currency !== 'COP') {
                 return res.status(422).json({ success: false, error: 'Mipaquete solo cubre envíos en Colombia (COP)' });
             }
+            // Solo se puede despachar una orden que ya está pagada/en proceso. Evita
+            // generar guía (y cobrar flete real) para pedidos aún no pagados o cancelados.
+            if (!['paid', 'processing'].includes(order.status)) {
+                return res.status(422).json({ success: false, error: `La orden está en estado '${order.status}' y no se puede despachar` });
+            }
             if (!ORIGIN_DANE) {
                 return res.status(503).json({ success: false, error: 'MIPAQUETE_ORIGIN_DANE no configurado' });
             }
+
+            // Valor a recaudar en destino (solo aplica a contraentrega; en prepago es 0).
+            const collectionValueCop = paymentMode === 'cod' ? declaredValueCop : 0;
 
             // (1) INSERT antes de llamar a la API: el índice único parcial rechaza
             // el doble clic con un 409 amistoso, sin necesidad de locks manuales.
@@ -250,12 +260,13 @@ shippingRouter.post('/create',
             try {
                 const insertResult = await query(
                     `INSERT INTO shipments
-                        (order_id, payment_mode, declared_value_cop, package_weight_kg,
-                         package_width_cm, package_length_cm, package_height_cm,
+                        (order_id, payment_mode, declared_value_cop, collection_value_cop, quoted_shipping_cost_cop,
+                         package_weight_kg, package_width_cm, package_length_cm, package_height_cm,
                          destiny_dane_code, delivery_company_id, requested_pickup, created_by, status)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'created')
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'created')
                      RETURNING id`,
-                    [orderId, paymentMode, declaredValueCop, weightKg, width, length, height,
+                    [orderId, paymentMode, declaredValueCop, collectionValueCop, quotedShippingCostCop,
+                        weightKg, width, length, height,
                         destinyDaneCode, deliveryCompanyId, requestPickup ? 1 : 0, req.user.id]
                 );
                 shipmentId = insertResult.rows[0].id;
