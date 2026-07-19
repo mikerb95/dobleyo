@@ -61,6 +61,7 @@ const steps = [
   { name: 'Lot movements table',             run: () => runFn('create_lot_movements.js', 'createLotMovements') },
   { name: 'Account tables (addresses/favorites/preferences)', run: () => runFn('create_account_tables.js', 'createAccountTables') },
   { name: 'Shipments tables (Mipaquete)',      run: () => runFn('create_shipments.js', 'createShipmentsTables') },
+  { name: 'Logistics hardening columns',       run: () => runFn('add_logistics_hardening.js', 'addLogisticsHardening') },
 ];
 
 async function runAll() {
