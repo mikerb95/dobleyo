@@ -10,8 +10,8 @@ function escapeXml(str: string): string {
         .replace(/'/g, '&apos;');
 }
 
-export const GET: APIRoute = async ({ url }) => {
-    const baseUrl = 'https://dobleyo.cafe';
+export const GET: APIRoute = async ({ site }) => {
+    const baseUrl = (site ?? new URL('https://dobleyo.cafe/')).origin;
     let posts: any[] = [];
 
     try {
