@@ -1200,3 +1200,77 @@ CREATE TABLE IF NOT EXISTS user_preferences (
     currency       TEXT NOT NULL DEFAULT 'COP',
     updated_at     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+-- ─────────────────────────────────────────────────────────────────────────
+-- Logística de envíos (Mipaquete.com) — ver server/migrations/create_shipments.js
+-- y server/migrations/add_logistics_hardening.js (fuente ejecutable de estos DDL).
+-- ─────────────────────────────────────────────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS shipments (
+    id                        INTEGER PRIMARY KEY AUTOINCREMENT,
+    order_id                  INTEGER NOT NULL REFERENCES customer_orders(id),
+    mp_code                   TEXT,
+    guide_number              TEXT,
+    pickup_code               TEXT,
+    delivery_company_id       TEXT,
+    delivery_company_name     TEXT,
+    quoted_shipping_cost_cop  INTEGER,
+    actual_shipping_cost_cop  INTEGER,
+    collection_value_cop      INTEGER NOT NULL DEFAULT 0,
+    commission_cop            INTEGER,
+    payment_mode              TEXT NOT NULL DEFAULT 'prepaid' CHECK (payment_mode IN ('prepaid','cod')),
+    status                    TEXT NOT NULL DEFAULT 'created' CHECK (status IN
+                                ('created','pickup_requested','in_transit','delivered','returned','cancelled','error')),
+    cod_reconciled            INTEGER NOT NULL DEFAULT 0,
+    cod_reconciled_at         TEXT,
+    pdf_guide_urls            TEXT,
+    tracking_snapshot         TEXT,
+    tracking_updated_at       TEXT,
+    guide_notified_at         TEXT,
+    requested_pickup          INTEGER NOT NULL DEFAULT 1,
+    declared_value_cop        INTEGER,
+    package_weight_kg         REAL,
+    package_width_cm          INTEGER,
+    package_length_cm         INTEGER,
+    package_height_cm         INTEGER,
+    destiny_dane_code         TEXT,
+    error_detail              TEXT,
+    recovery_attempts         INTEGER NOT NULL DEFAULT 0,
+    created_by                INTEGER REFERENCES users(id),
+    created_at                TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at                TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS shipment_events (
+    id             INTEGER PRIMARY KEY AUTOINCREMENT,
+    shipment_id    INTEGER NOT NULL REFERENCES shipments(id),
+    source         TEXT NOT NULL CHECK (source IN ('webhook','poll','manual','system')),
+    update_state   TEXT,
+    description    TEXT,
+    raw_payload    TEXT,
+    event_date     TEXT,
+    created_at     TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS dane_locations (
+    location_code    TEXT PRIMARY KEY,
+    location_name    TEXT NOT NULL,
+    department_name  TEXT NOT NULL,
+    normalized_key   TEXT NOT NULL,
+    raw_json         TEXT,
+    updated_at       TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_shipments_active_order ON shipments(order_id) WHERE status NOT IN ('cancelled','error');
+CREATE UNIQUE INDEX IF NOT EXISTS idx_shipments_mp_code ON shipments(mp_code) WHERE mp_code IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_shipments_status ON shipments(status);
+CREATE INDEX IF NOT EXISTS idx_shipment_events_shipment ON shipment_events(shipment_id);
+CREATE INDEX IF NOT EXISTS idx_dane_normalized ON dane_locations(normalized_key);
+
+CREATE TRIGGER IF NOT EXISTS shipments_updated_at
+    AFTER UPDATE ON shipments
+    FOR EACH ROW
+    BEGIN
+        UPDATE shipments SET updated_at = datetime('now') WHERE id = NEW.id;
+    END
+);
