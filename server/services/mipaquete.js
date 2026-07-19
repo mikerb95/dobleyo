@@ -144,6 +144,26 @@ export async function getSendings({ page = 1, pageSize = 10, mpCode } = {}) {
     });
 }
 
+// La API no documenta un filtro por referencia propia (productReference), así
+// que para reconciliar un envío huérfano (createSending exitoso pero el mpCode
+// nunca se persistió localmente) se pagina getSendings y se busca el envío cuya
+// referencia coincida con la de la orden. Nombres de campo tolerantes porque la
+// respuesta de Mipaquete no tiene un contrato estable documentado.
+export async function findSendingByReference(reference, { maxPages = 3, pageSize = 20 } = {}) {
+    for (let page = 1; page <= maxPages; page++) {
+        const result = await getSendings({ page, pageSize });
+        const list = result?.sendings || [];
+        if (!list.length) break;
+        const match = list.find((s) =>
+            [s.productReference, s.reference, s['Referencia'], s.description]
+                .some((v) => v && String(v).includes(reference))
+        );
+        if (match) return match;
+        if (list.length < pageSize) break;
+    }
+    return null;
+}
+
 export async function getTracking(mpCode) {
     return mpFetch(`/getSendingTracking?mpCode=${encodeURIComponent(mpCode)}`);
 }
