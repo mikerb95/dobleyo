@@ -149,6 +149,13 @@ ordersRouter.post('/',
                 return res.status(422).json({ success: false, error: 'El pago contraentrega solo está disponible en Colombia' });
             }
 
+            // No crear una orden que después no se pueda pagar: si el checkout es por
+            // Wompi y faltan las llaves, se rechaza antes de tocar la base de datos.
+            if (!isCod && (!WOMPI_PUBLIC_KEY || !WOMPI_INTEGRITY_SECRET)) {
+                logger.error('[POST /api/orders] Wompi no configurado (faltan WOMPI_PUBLIC_KEY/WOMPI_INTEGRITY_SECRET)');
+                return res.status(503).json({ success: false, error: 'Pagos en línea no disponibles en este momento. Intente de nuevo más tarde.' });
+            }
+
             // Celular colombiano estricto: Mipaquete requiere un número válido para contactar
             // al destinatario, y esto también dificulta el fraude con datos inventados.
             if (isCod) {
