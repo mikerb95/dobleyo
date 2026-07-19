@@ -5,7 +5,7 @@ import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import { logger } from '../logger.js';
 import { query } from '../db.js';
 import { authenticateToken, requireRole } from '../auth.js';
-import { logAudit } from '../services/audit.js';
+import { logAudit, logSystemAudit } from '../services/audit.js';
 import { sendShippingNotificationEmail } from '../services/email.js';
 import {
     quoteShipping,
