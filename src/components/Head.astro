@@ -84,6 +84,16 @@ const organizationSchema = {
 <link rel="icon" href="/assets/logo.svg" type="image/svg+xml" />
 <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 {!isAdmin && <link rel="manifest" href="/manifest.json" />}
+{
+  !isAdmin && (
+    <link
+      rel="alternate"
+      type="application/rss+xml"
+      title="Blog DobleYo Café"
+      href="https://dobleyo.cafe/rss.xml"
+    />
+  )
+}
 <meta name="theme-color" content="#251a14" />
 
 {/* Canonical URL */}
