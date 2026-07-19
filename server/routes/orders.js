@@ -3,7 +3,7 @@ import { logger } from '../logger.js';
 import crypto from 'crypto';
 import { body, validationResult } from 'express-validator';
 import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
-import { query } from '../db.js';
+import { query, withTransaction } from '../db.js';
 import { authenticateToken, requireRole, optionalAuth } from '../auth.js';
 import { checkoutLimiter } from '../middleware/rateLimit.js';
 import { logAudit, logSystemAudit } from '../services/audit.js';
