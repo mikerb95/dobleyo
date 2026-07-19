@@ -486,7 +486,7 @@ shippingRouter.post('/:id/refresh', authenticateToken, requireRole('admin'), asy
 // Toma el envío cuyo mpCode explícito coincida; si la respuesta no trae el campo
 // (algunas variantes de la API lo omiten) pero solo hay un resultado, se acepta
 // -- pero nunca se toma a ciegas el primero de una lista con varios resultados.
-function matchSendingByMpCode(sendings, mpCode) {
+export function matchSendingByMpCode(sendings, mpCode) {
     if (!Array.isArray(sendings) || !sendings.length) return null;
     const target = String(mpCode);
     const explicit = sendings.find((s) => {
@@ -502,7 +502,7 @@ function matchSendingByMpCode(sendings, mpCode) {
 // contaminar un estado posterior). Las negaciones/fallos de entrega se evalúan
 // ANTES que "entregado" con límites de palabra, para no confundir "No entregado"
 // o "Entrega fallida" con una entrega exitosa.
-function mapTrackingStateToStatus(events) {
+export function mapTrackingStateToStatus(events) {
     if (!Array.isArray(events) || !events.length) return null;
 
     const sorted = [...events].sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
