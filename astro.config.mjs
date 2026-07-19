@@ -3,6 +3,7 @@ import react from '@astrojs/react';
 import vercel from '@astrojs/vercel';
 
 export default defineConfig({
+  site: 'https://dobleyo.cafe',
   integrations: [react()],
   adapter: vercel(),
   vite: {
