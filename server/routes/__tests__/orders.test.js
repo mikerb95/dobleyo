@@ -24,6 +24,7 @@ vi.mock('../../auth.js', () => ({
 
 vi.mock('../../services/audit.js', () => ({
     logAudit: vi.fn().mockResolvedValue(null),
+    logSystemAudit: vi.fn().mockResolvedValue(null),
 }));
 
 vi.mock('../../services/email.js', () => ({
