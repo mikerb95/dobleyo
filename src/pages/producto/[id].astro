@@ -111,6 +111,9 @@ const productJsonLd = {
       : `${product.name} — Café de especialidad colombiano DobleYo.`)}
   canonical={getCanonicalUrl(`/producto/${product.id}`, "es")}
   jsonLd={productJsonLd}
+  ogImage={product.image}
+  ogImageAlt={product.name}
+  ogType="product"
 >
   <section class="product-page">
     <nav class="breadcrumb" aria-label="Ruta de navegación">
