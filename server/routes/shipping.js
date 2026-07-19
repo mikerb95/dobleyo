@@ -507,7 +507,7 @@ function mapTrackingStateToStatus(events) {
     const text = `${latest.updateState || ''} ${latest.description || ''}`.toLowerCase();
 
     if (/\bno\s+entregado\b|entrega\s+fallida|intento\s+de\s+entrega|novedad/.test(text)) return 'in_transit';
-    if (/devuel|retorno/.test(text)) return 'returned';
+    if (/devuel|devoluci|retorno/.test(text)) return 'returned';
     if (/cancelado/.test(text)) return 'cancelled';
     if (/\bentregado\b/.test(text)) return 'delivered';
     if (/recolec|transito|tránsito|camino/.test(text)) return 'in_transit';
