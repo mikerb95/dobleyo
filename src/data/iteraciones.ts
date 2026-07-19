@@ -88,6 +88,371 @@ const pend = (texto: string): CriterioDoD => ({ texto, estado: "pend" });
 export const ITERACIONES: Iteracion[] = [
   // ───────────────────────────────────────────────────────────────────────────
   {
+    id: "jul-logistica",
+    fase: "Post-plan · Confiabilidad",
+    nombre: "Auditoría y remediación de logística de envíos",
+    rango: "19 jul 2026",
+    ghSince: "2026-07-19",
+    ghUntil: "2026-07-19",
+    commits: 76,
+    resumen:
+      "Auditoría completa del flujo orden → pago Wompi → despacho Mipaquete → tracking → entrega/conciliación COD. Se corrigieron bugs que rompían dinero o clientes, se blindó el despacho contra envíos huérfanos y se completó la trazabilidad de auditoría del pipeline logístico.",
+    historias: [
+      {
+        id: "DY-LOG-01",
+        titulo:
+          "Bug: el webhook de Wompi dejaba la conexión colgada y confirmaba pagos en USD sin validar el monto real",
+        tipo: "bug", valor: "alto", col: "aceptada", par: "MR", agente: "Claude",
+        fecha: "2026-07-19", tags: ["logistica", "pagos", "seguridad"],
+        dod: [
+          ok("Corregido el return sin respuesta HTTP en el webhook de Wompi que dejaba la conexión colgada."),
+          ok("Validación de monto/moneda contra expected_amount_cents (nueva columna) en lugar de asumir COP; las órdenes en USD confirman pago correctamente."),
+          ok("Creación de orden + ítems envuelta en withTransaction() para evitar órdenes sin ítems ante fallos parciales."),
+        ],
+      },
+      {
+        id: "DY-LOG-02",
+        titulo:
+          "Bug: una entrega fallida podía marcarse como 'entregado' porque el mapeo de tracking evaluaba todo el historial en vez del evento más reciente",
+        tipo: "bug", valor: "alto", col: "aceptada", par: "MR", agente: "Claude",
+        fecha: "2026-07-19", tags: ["logistica", "tracking"],
+        dod: [
+          ok("mapTrackingStateToStatus reescrito: evalúa solo el evento más reciente y prioriza negaciones/fallos antes que 'entregado'."),
+          ok("POST /create persiste collection_value_cop (antes quedaba en 0) y quoted_shipping_cost_cop."),
+        ],
+      },
+      {
+        id: "DY-LOG-03",
+        titulo:
+          "Como sistema, quiero que el despacho sea robusto ante envíos huérfanos, pagos abandonados y confirmaciones de email fallidas",
+        tipo: "historia", valor: "alto", col: "aceptada", par: "MR", agente: "Claude",
+        fecha: "2026-07-19", tags: ["logistica", "robustez", "mipaquete"],
+        dod: [
+          ok("POST /create valida que la orden esté paid/processing antes de generar guía; los UPDATE a shipped/delivered excluyen cancelled/refunded."),
+          ok("refresh-all recupera envíos huérfanos (created con mp_code NULL >10 min) vía findSendingByReference o los marca error tras 3 intentos."),
+          ok("refresh-all expira órdenes pending_payment >48h y reintenta emails de confirmación de pago pendientes."),
+          ok("Nuevo helper matchSendingByMpCode evita adoptar la guía de otro envío cuando getSendings devuelve más de un resultado."),
+        ],
+      },
+      {
+        id: "DY-LOG-04",
+        titulo:
+          "Como administrador, quiero visibilidad operativa de envíos atrasados y poder despachar manualmente órdenes fuera de cobertura de Mipaquete",
+        tipo: "historia", valor: "medio", col: "aceptada", par: "MR", agente: "Claude",
+        fecha: "2026-07-19", tags: ["logistica", "admin"],
+        dod: [
+          ok("Nuevo GET /stuck: envíos que exceden el SLA esperado por estado (24h sin guía, 48h sin recolección, 7 días en tránsito)."),
+          ok("GET /orders-pending ya no filtra por currency='COP'; las órdenes USD quedan visibles."),
+          ok("Nuevo POST /:orderId/dispatch-manual para fulfillment manual de órdenes internacionales sin llamar a la API de Mipaquete."),
+          pend("C1 (polling programado vía cron) y C3 (reserva de inventario al pagar) quedan pendientes de autorización explícita del usuario."),
+        ],
+      },
+      {
+        id: "DY-LOG-05",
+        titulo:
+          "Como responsable, quiero que cada evento crítico del pipeline logístico quede auditado para poder investigar incidentes",
+        tipo: "tarea", valor: "medio", col: "aceptada", par: "MR", agente: "Claude",
+        fecha: "2026-07-19", tags: ["logistica", "auditoria"],
+        dod: [
+          ok("Nuevo logSystemAudit (variante de logAudit sin userId obligatorio) para eventos disparados por webhooks/polling."),
+          ok("Auditados: cambio de estado por webhook Wompi, rechazos antifraude COD, cotizaciones de envío y resumen de cada corrida de refresh-all."),
+          ok("db/schema.sql actualizado con las tablas shipments, shipment_events y dane_locations (antes solo existían en la migración)."),
+        ],
+      },
+      {
+        id: "DY-LOG-06",
+        titulo:
+          "Bug (verificación post-implementación): devoluciones no detectadas, URL de confirmación incorrecta para USD y envíos manuales atascados en tránsito",
+        tipo: "bug", valor: "medio", col: "aceptada", par: "MR", agente: "Claude",
+        fecha: "2026-07-19", tags: ["logistica", "testing"],
+        dod: [
+          ok("Regex de devoluciones corregida para capturar 'Devolución'/'En devolución'."),
+          ok("Fallback de trackingUrl en dispatch-manual usa en.dobleyo.cafe/confirmation para órdenes USD en lugar de la confirmación en español."),
+          ok("Nuevo PATCH /api/shipping/:id/status para cerrar envíos manuales como delivered/returned/cancelled."),
+          ok("13 tests unitarios nuevos de mapTrackingStateToStatus y matchSendingByMpCode; suite completa en verde (42/42)."),
+        ],
+      },
+    ],
+  },
+  // ───────────────────────────────────────────────────────────────────────────
+  {
+    id: "jul-transiciones",
+    fase: "Post-plan · Experiencia",
+    nombre: "View Transitions, heroes full-bleed y scroll-reveal",
+    rango: "12 jul 2026",
+    ghSince: "2026-07-12",
+    ghUntil: "2026-07-12",
+    commits: 95,
+    resumen:
+      "La navegación entre páginas era un recargue abrupto y varias páginas secundarias tenían un hero de bloque sólido sin continuidad visual con el contenido. Se implementó ClientRouter (View Transitions) de Astro, un componente PageHero full-bleed compartido, morphing de imagen tienda→producto y scroll-reveal, con limpieza de código muerto.",
+    historias: [
+      {
+        id: "DY-UX-01",
+        titulo:
+          "Como visitante, quiero que la navegación entre páginas sea fluida en lugar de un recargue abrupto",
+        tipo: "historia", valor: "alto", col: "aceptada", par: "MR", agente: "Claude",
+        fecha: "2026-07-12", tags: ["ux", "astro", "view-transitions"],
+        dod: [
+          ok("ClientRouter de astro:transitions activo solo en el sitio público, compatible con la CSP estricta sin unsafe-inline."),
+          ok("transition:persist en topbar, Header, Footer, CartDrawer y FAB de WhatsApp para que el chrome no parpadee entre navegaciones."),
+          ok("transition:name en la imagen de producto para animar el morph de la tienda al detalle."),
+        ],
+      },
+      {
+        id: "DY-UX-02",
+        titulo:
+          "Bug: los scripts de página dejaban de funcionar tras navegar con View Transitions porque dependían de DOMContentLoaded",
+        tipo: "bug", valor: "alto", col: "aceptada", par: "MR", agente: "Claude",
+        fecha: "2026-07-12", tags: ["ux", "astro", "js"],
+        dod: [
+          ok("19 scripts de public/assets/js/ reescritos a inits idempotentes con guard (dataset.jsInit) enganchados a astro:page-load."),
+          ok("Cierre de topbar persistido con sessionStorage y recálculo de métricas de header en astro:page-load/astro:after-swap."),
+        ],
+      },
+      {
+        id: "DY-UX-03",
+        titulo:
+          "Como visitante, quiero que los heroes de las páginas secundarias tengan continuidad visual con el resto del contenido",
+        tipo: "historia", valor: "medio", col: "aceptada", par: "MR", agente: "Claude",
+        fecha: "2026-07-12", tags: ["ux", "diseño"],
+        dod: [
+          ok("Nuevo componente PageHero.astro full-bleed con gradiente espresso y salida degradada hacia el fondo crema."),
+          ok("Reemplaza 9 clases de hero distintas (.sub-hero, .acc-hero, .nos-hero, .gu-hero, .ma-hero, .af-hero, .pt-hero, .fincas-hero, .contact-hero)."),
+          ok("El gradiente con hex hardcodeado de .contact-hero pasa a variables CSS del sistema."),
+        ],
+      },
+      {
+        id: "DY-UX-04",
+        titulo:
+          "Como visitante, quiero que el contenido bajo el pliegue aparezca con una animación sutil que respete mis preferencias de movimiento",
+        tipo: "historia", valor: "bajo", col: "aceptada", par: "MR", agente: "Claude",
+        fecha: "2026-07-12", tags: ["ux", "accesibilidad"],
+        dod: [
+          ok("reveal.js: scroll-reveal global vía IntersectionObserver, idempotente, con fallback inmediato sin soporte o con prefers-reduced-motion activo."),
+          ok("Aplicado solo a secciones informativas bajo el pliegue, nunca a formularios transaccionales ni al primer viewport."),
+        ],
+      },
+      {
+        id: "DY-UX-05",
+        titulo:
+          "Como mantenedor, quiero eliminar componentes de animación y atributos sin uso para reducir peso y confusión en el código",
+        tipo: "tarea", valor: "bajo", col: "aceptada", par: "MR", agente: "Claude",
+        fecha: "2026-07-12", tags: ["deuda-tecnica", "limpieza"],
+        dod: [
+          ok("Eliminados AnimatedButton.jsx, AnimatedHeader.jsx, AnimatedHero.jsx, AnimatedProductCard.jsx, PageTransition.jsx y la dependencia framer-motion (sin uso verificado)."),
+          ok("Atributo data-link (inerte tras retirar el overlay de transición) eliminado de 29 archivos."),
+        ],
+      },
+    ],
+  },
+  // ───────────────────────────────────────────────────────────────────────────
+  {
+    id: "jul-mipaquete",
+    fase: "Post-plan · Logística",
+    nombre: "Envíos con Mipaquete.com, contraentrega y tipografía de marca",
+    rango: "10 – 11 jul 2026",
+    ghSince: "2026-07-10",
+    ghUntil: "2026-07-12",
+    commits: 60,
+    resumen:
+      "El despacho de pedidos era 100% manual y sin registro. Se integró el agregador Mipaquete.com para cotizar, generar guía y hacer seguimiento desde un panel nuevo, se habilitó pago contraentrega (COD) con mitigaciones de fraude, y se adoptó tipografía variable de marca (Fraunces/Inter).",
+    historias: [
+      {
+        id: "DY-SHIP-01",
+        titulo:
+          "Como administrador, quiero cotizar, generar la guía y hacer seguimiento del envío de un pedido sin salir del panel",
+        tipo: "historia", valor: "alto", col: "aceptada", par: "MR", agente: "Claude",
+        fecha: "2026-07-11", tags: ["logistica", "mipaquete"],
+        dod: [
+          ok("Tablas shipments, shipment_events y dane_locations con idempotencia vía índice único parcial por orden."),
+          ok("Cliente del API v2 de Mipaquete (quoteShipping, createSending, getSendings, getTracking, cancelSending, getLocations, registerWebhook)."),
+          ok("Webhook público con patrón 'trigger, don't trust': nunca escribe estado desde el payload, siempre re-consulta la API autenticada."),
+          ok("Nueva página /admin/envios con pendientes de despacho, envíos activos y recaudos COD sin conciliar. Paridad server/index.js ↔ api/index.js."),
+        ],
+      },
+      {
+        id: "DY-SHIP-02",
+        titulo:
+          "Como cliente, quiero poder pagar contraentrega y, como negocio, quiero mitigar el riesgo de fraude en esos pedidos",
+        tipo: "historia", valor: "alto", col: "aceptada", par: "MR", agente: "Claude",
+        fecha: "2026-07-11", tags: ["logistica", "pagos", "fraude"],
+        dod: [
+          ok("Checkout con opción 'Contraentrega' (solo COP) junto a Wompi."),
+          ok("POST /orders valida celular colombiano, tope COD_MAX_TOTAL_COP, límite de pedidos COD abiertos y bloqueo por devoluciones previas."),
+          ok("Rate limiting dedicado para pedidos COD."),
+          pend("El código de paymentType de Mipaquete para contraentrega debe confirmarse en sandbox antes de producción."),
+        ],
+      },
+      {
+        id: "DY-SHIP-03",
+        titulo:
+          "Como visitante, quiero una tipografía de marca coherente y componentes visuales pulidos en el sitio",
+        tipo: "tarea", valor: "medio", col: "aceptada", par: "MR", agente: "Claude",
+        fecha: "2026-07-11", tags: ["diseño", "tipografia"],
+        dod: [
+          ok("Fuentes variables Fraunces e Inter añadidas y referenciadas por variables CSS de tipografía."),
+          ok("Estilos de botones mejorados (padding, border-radius, focus-visible) y rediseño de envíos-y-devoluciones con componente de ícono SVG."),
+        ],
+      },
+      {
+        id: "DY-SHIP-04",
+        titulo:
+          "Bug: varios seeds y tests usaban placeholders SQL heredados de PostgreSQL en lugar de la sintaxis de SQLite",
+        tipo: "bug", valor: "medio", col: "aceptada", par: "MR", agente: "Claude",
+        fecha: "2026-07-10", tags: ["bd", "turso", "deuda-tecnica"],
+        dod: [
+          ok("Placeholders corregidos a ? en múltiples scripts de seed (seedInventory, seed) y en tests (getAuditLogs)."),
+          ok("Health check actualizado para reportar Turso/libSQL en lugar de PostgreSQL; stubs de MercadoPago añadidos."),
+        ],
+      },
+    ],
+  },
+  // ───────────────────────────────────────────────────────────────────────────
+  {
+    id: "jul-docs",
+    fase: "Post-plan · Documentación y calidad",
+    nombre: "Casos de uso extendidos, auditoría de integridad e imágenes rotas",
+    rango: "1 – 9 jul 2026",
+    ghSince: "2026-07-01",
+    ghUntil: "2026-07-10",
+    commits: 25,
+    resumen:
+      "Documentación de 37 casos de uso extendidos con matriz de trazabilidad y diagrama UML interactivo, auditoría de integridad del sistema, corrección de imágenes rotas y endurecimiento del checkout con límites de tasa.",
+    historias: [
+      {
+        id: "DY-DOC-01",
+        titulo:
+          "Bug: varias fotos de producto y de fincas apuntaban a URLs de Unsplash que ya no existen (404)",
+        tipo: "bug", valor: "medio", col: "aceptada", par: "MR", agente: "Claude",
+        fecha: "2026-07-01", tags: ["contenido", "imagenes"],
+        dod: [
+          ok("URLs rotas reemplazadas y verificadas con HTTP 200 en products.ts, seeds y BD (products, farms)."),
+          ok("26 ítems de pedido sin imagen rellenados desde products.image_url."),
+          ok("Placeholder de marca creado (PNG/WEBP) para los fallbacks de carrito, checkout y cuenta."),
+        ],
+      },
+      {
+        id: "DY-DOC-02",
+        titulo:
+          "Como negocio, quiero limitar la tasa de creación de órdenes y validar cupones correctamente para evitar abuso en el checkout",
+        tipo: "tarea", valor: "medio", col: "aceptada", par: "MR", agente: "Claude",
+        fecha: "2026-07-01", tags: ["checkout", "seguridad"],
+        dod: [
+          ok("Middleware checkoutLimiter aplicado a la creación de órdenes."),
+          ok("Uso de cupones actualizado solo al aprobarse el pago, evitando decremento prematuro del contador de usos."),
+        ],
+      },
+      {
+        id: "DY-DOC-03",
+        titulo:
+          "Como equipo, queremos casos de uso extendidos con trazabilidad completa hacia las historias y requisitos funcionales",
+        tipo: "tarea", valor: "medio", col: "aceptada", par: "MR", agente: "Claude",
+        fecha: "2026-07-04", tags: ["documentacion", "uml"],
+        dod: [
+          ok("docs/CASOS_DE_USO.md: 37 casos de uso extendidos (CU-001..CU-037) con actores, flujos y postcondiciones."),
+          ok("Matriz de trazabilidad HU ↔ RF ↔ CU con estado de cobertura; todos los RF P1 no transversales tienen CU."),
+          ok("Nueva pestaña 'Diagrama UML' en /admin/devtools que renderiza el diagrama Mermaid con carga perezosa y exportación a SVG."),
+        ],
+      },
+      {
+        id: "DY-DOC-04",
+        titulo:
+          "Bug: las relaciones extend/include del diagrama UML de casos de uso estaban invertidas o mal documentadas",
+        tipo: "bug", valor: "bajo", col: "aceptada", par: "MR", agente: "Claude",
+        fecha: "2026-07-04", tags: ["documentacion", "uml"],
+        dod: [
+          ok("Flecha extend entre CU-003 y CU-007 corregida (en UML apunta del caso que extiende hacia el caso base)."),
+          ok("Leyenda del diagrama aclara que las flechas punteadas sin estereotipo representan precedencia de trazabilidad, no include/extend."),
+        ],
+      },
+      {
+        id: "DY-DOC-05",
+        titulo:
+          "Como equipo, queremos un informe de auditoría de integridad del sistema para priorizar correcciones",
+        tipo: "spike", valor: "medio", col: "aceptada", par: "MR", agente: "Claude",
+        fecha: "2026-07-05", tags: ["auditoria", "calidad"],
+        dod: [
+          ok("Informe de auditoría de integridad del sistema publicado con hallazgos y correcciones sugeridas."),
+        ],
+      },
+    ],
+  },
+  // ───────────────────────────────────────────────────────────────────────────
+  {
+    id: "jun-cuenta-wompi",
+    fase: "Post-plan · Cuenta y checkout",
+    nombre: "Panel de cuenta, checkout embebido Wompi e i18n de fincas/blog",
+    rango: "21 – 26 jun 2026",
+    ghSince: "2026-06-21",
+    ghUntil: "2026-06-27",
+    commits: 127,
+    resumen:
+      "Reconstrucción de /cuenta como panel completo (direcciones, favoritos, preferencias, pedidos), toggle de idioma EN/ES, extensión de inventario a lotes de café, contenido de blog y fincas en inglés, y checkout embebido de Wompi con timeline de pedido en el panel de cuenta.",
+    historias: [
+      {
+        id: "DY-ACC-01",
+        titulo:
+          "Como visitante, quiero un toggle para alternar entre español e inglés y que los enlaces del footer funcionen todos",
+        tipo: "historia", valor: "medio", col: "aceptada", par: "MR", agente: "Claude",
+        fecha: "2026-06-21", tags: ["i18n", "footer"],
+        dod: [
+          ok("5 páginas públicas nuevas creadas (accesorios, guías, partners, afiliados, mayoristas) para reemplazar los href=\"#\" del footer."),
+          ok("LangToggle.astro: control segmentado ES/EN que cambia de subdominio en producción y usa prefijo /en/ en local/preview."),
+          ok("Rutas equivalentes ES↔EN registradas en src/i18n/routes.ts y añadidas al sitemap."),
+        ],
+      },
+      {
+        id: "DY-ACC-02",
+        titulo:
+          "Como administrador, quiero que 'Nuevo movimiento' de inventario también permita ajustar el peso de lotes de café verde/tostado",
+        tipo: "historia", valor: "medio", col: "aceptada", par: "MR", agente: "Claude",
+        fecha: "2026-06-21", tags: ["inventario", "produccion"],
+        dod: [
+          ok("Nueva tabla lot_movements (peso decimal en kg, tipo, motivo, referencia) distinta de inventory_movements."),
+          ok("Nuevo endpoint POST /api/inventory/lots/:id/movement que calcula el nuevo peso y actualiza lots.weight."),
+          ok("Modal de inventario con selector segmentado Producto/Lote; el feed fusiona movimientos de productos y lotes."),
+        ],
+      },
+      {
+        id: "DY-ACC-03",
+        titulo:
+          "Como cliente, quiero un panel de cuenta completo con mis direcciones, favoritos, pedidos y preferencias",
+        tipo: "historia", valor: "alto", col: "aceptada", par: "MR", agente: "Claude",
+        fecha: "2026-06-22", tags: ["cuenta", "cliente"],
+        dod: [
+          ok("Tablas user_addresses, user_favorites y user_preferences con router /api/account (direcciones, favoritos, preferencias, eliminar cuenta)."),
+          ok("cuenta.astro reescrito como panel con sidebar: Resumen, Perfil, Pedidos, Favoritos, Direcciones, Suscripción, Programa Caficultor, Preferencias y Seguridad."),
+          ok("window.Favorites global con toggle por delegación; botón de corazón en ProductCard y detalle de producto."),
+        ],
+      },
+      {
+        id: "DY-ACC-04",
+        titulo:
+          "Como visitante internacional, quiero contenido de blog y fincas también en inglés, sin enlaces rotos desde el home EN",
+        tipo: "historia", valor: "medio", col: "aceptada", par: "MR", agente: "Claude",
+        fecha: "2026-06-25", tags: ["i18n", "blog", "fincas"],
+        dod: [
+          ok("5 posts de blog nuevos con identidad cafetera colombiana (origen, preparación, procesos, cultura, cosecha)."),
+          ok("/en/farms y /en/farm/[slug] espejan la versión en español, consumiendo los mismos endpoints."),
+          ok("Enlaces internos del home EN corregidos para funcionar tanto en el subdominio de producción como en local/preview."),
+        ],
+      },
+      {
+        id: "DY-ACC-05",
+        titulo:
+          "Como cliente, quiero pagar sin salir del checkout (modal embebido de Wompi) y ver el estado de mis pedidos en una línea de tiempo",
+        tipo: "historia", valor: "medio", col: "aceptada", par: "MR", agente: "Claude",
+        fecha: "2026-06-26", tags: ["checkout", "wompi", "cuenta"],
+        dod: [
+          ok("Widget de checkout embebido de Wompi con datos generados por el backend y fallback a redirección si el widget no carga."),
+          ok("Timeline de estado del pedido y funcionalidad de 'volver a pedir' en las tarjetas de pedido del panel de cuenta."),
+          ok("Sidebar de cuenta con tarjeta de identidad y estadísticas del cliente."),
+        ],
+      },
+    ],
+  },
+  // ───────────────────────────────────────────────────────────────────────────
+  {
     id: "jun-audit-crud",
     fase: "Post-plan · Calidad",
     nombre: "Auditoría CRUD del panel admin",
