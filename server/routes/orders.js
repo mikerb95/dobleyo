@@ -590,7 +590,7 @@ ordersRouter.post('/wompi/webhook', async (req, res) => {
         if (!reference) return res.sendStatus(400);
 
         const orderLookup = await query(
-            `SELECT id, status, total_cop, payment_transaction_id, discount_code
+            `SELECT id, status, total_cop, currency, expected_amount_cents, payment_transaction_id, discount_code
        FROM customer_orders
        WHERE reference = ?`,
             [reference]
@@ -610,11 +610,17 @@ ordersRouter.post('/wompi/webhook', async (req, res) => {
             return res.sendStatus(200);
         }
 
-        // El monto y la moneda deben coincidir con la orden. Acusamos recibo (200, sin
-        // reintentos de Wompi) pero NO tocamos la orden si no cuadran.
-        const expectedAmount = Number(order.total_cop) * 100;
-        if (Number(amount_in_cents) !== expectedAmount || (currency && currency !== 'COP')) {
-            logger.warn({ reference, txId }, '[Wompi webhook] Monto/moneda inválidos; se ignora');
+        // El monto y la moneda deben coincidir con la orden, en la moneda REAL de la
+        // orden (COP o USD) — expected_amount_cents se fija al crear la orden con el
+        // mismo monto firmado hacia Wompi, así que sirve tanto para COP como para USD.
+        // Órdenes creadas antes de esta columna (expected_amount_cents NULL) caen al
+        // cálculo legado en COP para no romper transacciones en vuelo.
+        const expectedAmount = order.expected_amount_cents != null
+            ? Number(order.expected_amount_cents)
+            : Number(order.total_cop) * 100;
+        const expectedCurrency = order.currency || 'COP';
+        if (Number(amount_in_cents) !== expectedAmount || (currency && currency !== expectedCurrency)) {
+            logger.warn({ reference, txId, expectedAmount, expectedCurrency, amount_in_cents, currency }, '[Wompi webhook] Monto/moneda inválidos; se ignora');
             return res.sendStatus(200);
         }
 
