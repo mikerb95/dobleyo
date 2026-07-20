@@ -19,7 +19,9 @@ export const TRANSITIONS = {
   roasted:            ['in_storage_roasted', 'quality_check'],
   quality_check:      ['in_storage_roasted', 'rejected'],
   in_storage_roasted: ['packaged'],
-  packaged:           [],          // estado final
+  // Un mismo lote puede empacarse en varias tandas mientras le quede peso
+  // disponible (empaque parcial), por eso 'packaged' admite repetición.
+  packaged:           ['packaged'],
   rejected:           [],          // estado final
 };
 
