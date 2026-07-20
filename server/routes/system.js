@@ -1,8 +1,11 @@
+import crypto from 'crypto';
 import { Router } from 'express';
 import { logger } from '../logger.js';
 import libsqlClient, { query, healthCheck } from '../db.js';
 import { authenticateToken, requireRole, hashPassword } from '../auth.js';
 import { logAudit } from '../services/audit.js';
+
+const genTempPassword = () => crypto.randomBytes(12).toString('base64url');
 
 export const systemRouter = Router();
 
