@@ -490,8 +490,9 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     let stockProductId = null;     // producto abierto en el modal de stock
     let currentVariants = [];
 
-    /** @returns {any} */
-    const $ = (id) => document.getElementById(id);
+    // El cast evita ~100 falsos positivos de ts(2339) al acceder a .value/.checked
+    // sobre HTMLElement; el chequeo real de existencia lo hace el navegador.
+    const $ = (id) => /** @type {any} */ (document.getElementById(id));
 
     // ── Toast ───────────────────────────────────────────────────────
     function toast(message, type = "info") {
