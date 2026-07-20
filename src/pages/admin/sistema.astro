@@ -575,19 +575,19 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       if (!data.length) { tbody.innerHTML = '<tr><td colspan="5" class="loading-row">Sin usuarios</td></tr>'; return; }
 
       tbody.innerHTML = data.map(u => {
-        const name = [u.first_name, u.last_name].filter(Boolean).join(' ') || '—';
+        const name = escHtml([u.first_name, u.last_name].filter(Boolean).join(' ') || '—');
         const login = u.last_login_at ? new Date(u.last_login_at).toLocaleDateString('es-CO') : 'Nunca';
         const roleBadge = u.role === 'admin' ? 'badge-brand' : 'badge-neutral';
         return `<tr>
-          <td><span style="font-size:13px">${u.email}</span></td>
+          <td><span style="font-size:13px">${escHtml(u.email)}</span></td>
           <td>${name}</td>
           <td>
-            <span class="badge ${roleBadge}">${u.role}</span>
+            <span class="badge ${roleBadge}">${escHtml(u.role)}</span>
             <select class="role-select form-input form-input-sm hidden" data-uid="${u.id}" style="margin-top:4px">
               ${['admin','client','provider','caficultor'].map(r => `<option value="${r}" ${r===u.role?'selected':''}>${r}</option>`).join('')}
             </select>
           </td>
-          <td style="font-size:12px;color:var(--text-2)">${login}</td>
+          <td style="font-size:12px;color:var(--text-2)">${escHtml(login)}</td>
           <td>
             <div style="display:flex;gap:.375rem;flex-wrap:wrap">
               <button class="btn btn-secondary btn-sm btn-change-role" data-uid="${u.id}">Cambiar rol</button>
