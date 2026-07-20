@@ -183,6 +183,41 @@ describe('POST /api/orders', () => {
         const orderInsertArgs = query.mock.calls[1][1];
         expect(orderInsertArgs[9]).toBe(84000); // índice 9 = subtotal_cop (8 = shipping_zip)
     });
+
+    it('debería retornar 422 si no hay stock suficiente', async () => {
+        query.mockResolvedValueOnce({
+            rows: [{ id: 'cf-sierra', name: 'Sierra Nevada', price: 42000, image_url: '/img/si.webp', stock_quantity: 1 }],
+        });
+
+        const res = await request(app)
+            .post('/api/orders')
+            .send(validOrderPayload); // pide quantity: 2, solo hay 1 en stock
+
+        expect(res.status).toBe(422);
+        expect(res.body.error).toMatch(/stock/i);
+    });
+
+    it('debería descontar stock al crear una orden COD (nace processing, sin webhook de pago)', async () => {
+        query.mockResolvedValueOnce({
+            rows: [{ id: 'cf-sierra', name: 'Sierra Nevada', price: 42000, image_url: '/img/si.webp', stock_quantity: 10 }],
+        }); // SELECT products
+        query.mockResolvedValueOnce({ rows: [{ id: 5, reference: 'DY-COD-0001' }] }); // INSERT customer_orders
+        query.mockResolvedValueOnce({ rows: [] }); // INSERT customer_order_items
+        query.mockResolvedValueOnce({ rows: [{ stock_deducted_at: null }] }); // deductStockForOrder: SELECT stock_deducted_at
+        query.mockResolvedValueOnce({ rows: [{ product_id: 'cf-sierra', quantity: 2 }] }); // SELECT order items
+        query.mockResolvedValueOnce({ rows: [{ stock_quantity: 8 }] }); // UPDATE products (descuenta)
+        query.mockResolvedValueOnce({ rows: [] }); // INSERT inventory_movements
+        query.mockResolvedValueOnce({ rows: [] }); // UPDATE customer_orders SET stock_deducted_at
+
+        const res = await request(app)
+            .post('/api/orders')
+            .send({ ...validOrderPayload, paymentMethod: 'cod' });
+
+        expect(res.status).toBe(201);
+        const deductUpdateCall = query.mock.calls.find(([sql]) => sql.includes('UPDATE products SET stock_quantity = stock_quantity -'));
+        expect(deductUpdateCall).toBeDefined();
+        expect(deductUpdateCall[1]).toEqual([2, 'cf-sierra', 2]); // descuenta la cantidad pedida
+    });
 });
 
 // ── GET /api/orders/:ref ──────────────────────────────────────────────────────
