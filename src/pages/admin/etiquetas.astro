@@ -654,6 +654,75 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       );
     }
 
+    // ── Impresión ───────────────────────────────────────────────────
+    function normalizeLabel(item) {
+      return {
+        code: item.code || item.label_code || item.id || "—",
+        origin: item.origin,
+        variety: item.variety,
+        roast: item.roast,
+        process: item.process,
+        farm: item.farm,
+        notes: item.notes || item.flavor_notes || item.flavorNotes,
+        acidity: item.acidity,
+        body: item.body,
+        balance: item.balance,
+        score: item.score,
+        hasQr: item.hasQr ?? !!(item.qr_data || item.qrCode),
+      };
+    }
+
+    function printBarsHTML(value) {
+      const v = parseInt(value) || 0;
+      let html = "";
+      for (let i = 0; i < 5; i++) html += `<i class="${i < v ? "is-on" : ""}"></i>`;
+      return html;
+    }
+
+    function labelPrintHTML(raw) {
+      const d = normalizeLabel(raw);
+      const score = d.score != null && d.score !== "" ? Number(d.score).toFixed(1) : "—";
+      return `
+        <div class="lbl lbl-print-item">
+          <div class="lbl-head">
+            <div class="lbl-brand">DobleYo<span>Café</span></div>
+            <div class="lbl-origin">${esc(d.origin) || "Origen del café"}</div>
+          </div>
+          <div class="lbl-variety">${esc(d.variety) || "Variedad"}</div>
+          <div class="lbl-tags">
+            ${d.roast ? `<span class="lbl-tag">Tueste ${esc(d.roast)}</span>` : ""}
+            ${d.process ? `<span class="lbl-tag">${esc(d.process)}</span>` : ""}
+            ${d.farm ? `<span class="lbl-tag">${esc(d.farm)}</span>` : ""}
+          </div>
+          <div class="lbl-profile">
+            <div class="pv-row"><span class="pv-k">Acidez</span><div class="pv-bars">${printBarsHTML(d.acidity)}</div></div>
+            <div class="pv-row"><span class="pv-k">Cuerpo</span><div class="pv-bars">${printBarsHTML(d.body)}</div></div>
+            <div class="pv-row"><span class="pv-k">Balance</span><div class="pv-bars">${printBarsHTML(d.balance)}</div></div>
+          </div>
+          <div class="lbl-notes">${esc(d.notes) || "Notas de sabor del café…"}</div>
+          <div class="lbl-foot">
+            ${d.hasQr ? `<div class="lbl-qr" aria-hidden="true">
+              <svg viewBox="0 0 29 29" width="56" height="56">
+                <rect width="29" height="29" fill="#fff"></rect>
+                <path fill="currentColor" d="M0 0h7v7H0zM2 2v3h3V2zM22 0h7v7h-7zM24 2v3h3V2zM0 22h7v7H0zM2 24v3h3v-3zM9 0h2v2H9zM13 2h2v3h-2zM9 9h2v2h2v2h-2v2H9v-2H7v-2h2zM16 9h2v2h-2zM20 9h2v2h-2zM24 9h3v2h-2v2h-2v-2h1zM16 13h3v2h-3zM22 13h2v4h-2zM9 16h2v2h-2zM13 16h2v2h-2zM18 16h2v2h-2zM26 16h3v2h-3zM16 18h2v2h-2zM20 18h2v3h-2zM24 18h2v2h-2zM9 20h3v2h-3zM13 22h2v2h-2zM17 22h2v2h-2zM22 23h2v2h-2zM26 22h3v3h-3zM13 26h4v3h-4zM20 26h2v3h-2zM24 26h2v2h-2z"></path>
+              </svg>
+            </div>` : ""}
+            <div class="lbl-meta">
+              <div class="lbl-code">${esc(d.code)}</div>
+              <div class="lbl-score">Puntaje: <strong>${score}</strong></div>
+              <div class="lbl-tagline">Café de especialidad colombiano</div>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    function printLabels(items) {
+      if (!items || !items.length) return toast("No hay etiquetas para imprimir", "error");
+      const area = document.getElementById("printArea");
+      area.innerHTML = items.map(labelPrintHTML).join("");
+      window.print();
+    }
+
     async function deleteLabel(code) {
       if (!confirm(`¿Eliminar la etiqueta ${code}?`)) return;
       try {
