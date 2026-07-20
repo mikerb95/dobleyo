@@ -351,6 +351,146 @@ inventoryRouter.delete('/products/:id', async (req, res) => {
 });
 
 // ============================================
+// VARIANTES DE PRODUCTO (tamaño / molienda)
+// ============================================
+// La tienda resuelve precio y stock por variante cuando existen
+// (src/pages/producto/[id].astro), así que deben ser administrables.
+
+// GET - Variantes de un producto
+inventoryRouter.get('/products/:id/variants', async (req, res) => {
+  try {
+    const result = await query(
+      `SELECT * FROM product_variants
+       WHERE product_id = ?
+       ORDER BY sort_order ASC, id ASC`,
+      [req.params.id]
+    );
+    res.json({ success: true, variants: result.rows, total: result.rows.length });
+  } catch (error) {
+    logger.error('Error listing variants:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// POST - Crear variante
+inventoryRouter.post('/products/:id/variants', async (req, res) => {
+  try {
+    const { id: productId } = req.params;
+    const {
+      size_label, grind_label, price_cop, stock_quantity,
+      sku_suffix, is_active, sort_order
+    } = req.body;
+
+    const product = await query('SELECT id, name FROM products WHERE id = ?', [productId]);
+    if (product.rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'Producto no encontrado' });
+    }
+
+    if (price_cop === undefined || price_cop === null || price_cop === '') {
+      return res.status(400).json({ success: false, error: 'El precio de la variante es requerido' });
+    }
+    if (!size_label && !grind_label) {
+      return res.status(400).json({ success: false, error: 'Indique al menos tamaño o molienda' });
+    }
+
+    const result = await query(
+      `INSERT INTO product_variants (
+        product_id, size_label, grind_label, price_cop, stock_quantity,
+        sku_suffix, is_active, sort_order
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        productId, size_label || null, grind_label || null,
+        Number(price_cop), Number(stock_quantity) || 0,
+        sku_suffix || null, is_active === false ? 0 : 1, Number(sort_order) || 0
+      ]
+    );
+
+    const variantId = Number(result.lastInsertRowid);
+
+    await logAudit(req.user?.id, 'create', 'product_variant', variantId, {
+      product_id: productId, size_label, grind_label, price_cop
+    });
+
+    res.status(201).json({ success: true, variantId, message: 'Variante creada exitosamente' });
+  } catch (error) {
+    logger.error('Error creating variant:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// PUT - Actualizar variante
+inventoryRouter.put('/variants/:variantId', async (req, res) => {
+  try {
+    const { variantId } = req.params;
+
+    const existing = await query('SELECT * FROM product_variants WHERE id = ?', [variantId]);
+    if (existing.rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'Variante no encontrada' });
+    }
+
+    const allowedFields = [
+      'size_label', 'grind_label', 'price_cop', 'stock_quantity',
+      'sku_suffix', 'is_active', 'sort_order'
+    ];
+    const numericFields = new Set(['price_cop', 'stock_quantity', 'sort_order']);
+
+    const updates = [];
+    const values = [];
+
+    for (const field of allowedFields) {
+      if (req.body[field] === undefined) continue;
+      updates.push(`${field} = ?`);
+      let val = req.body[field];
+      if (field === 'is_active') val = val ? 1 : 0;
+      else if (numericFields.has(field)) val = Number(val) || 0;
+      else val = val || null;
+      values.push(val);
+    }
+
+    if (updates.length === 0) {
+      return res.status(400).json({ success: false, error: 'No hay campos para actualizar' });
+    }
+
+    values.push(variantId);
+    await query(`UPDATE product_variants SET ${updates.join(', ')} WHERE id = ?`, values);
+
+    await logAudit(req.user?.id, 'update', 'product_variant', variantId, {
+      product_id: existing.rows[0].product_id, fields: Object.keys(req.body)
+    });
+
+    res.json({ success: true, message: 'Variante actualizada exitosamente' });
+  } catch (error) {
+    logger.error('Error updating variant:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// DELETE - Eliminar variante
+inventoryRouter.delete('/variants/:variantId', async (req, res) => {
+  try {
+    const { variantId } = req.params;
+
+    const existing = await query('SELECT * FROM product_variants WHERE id = ?', [variantId]);
+    if (existing.rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'Variante no encontrada' });
+    }
+
+    await query('DELETE FROM product_variants WHERE id = ?', [variantId]);
+
+    await logAudit(req.user?.id, 'delete', 'product_variant', variantId, {
+      product_id: existing.rows[0].product_id,
+      size_label: existing.rows[0].size_label,
+      grind_label: existing.rows[0].grind_label
+    });
+
+    res.json({ success: true, message: 'Variante eliminada' });
+  } catch (error) {
+    logger.error('Error deleting variant:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// ============================================
 // MOVIMIENTOS DE INVENTARIO
 // ============================================
 
