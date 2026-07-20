@@ -62,6 +62,7 @@ const steps = [
   { name: 'Account tables (addresses/favorites/preferences)', run: () => runFn('create_account_tables.js', 'createAccountTables') },
   { name: 'Shipments tables (Mipaquete)',      run: () => runFn('create_shipments.js', 'createShipmentsTables') },
   { name: 'Logistics hardening columns',       run: () => runFn('add_logistics_hardening.js', 'addLogisticsHardening') },
+  { name: 'Labels extended fields (region/climate/roast_date)', run: () => runFn('add_labels_extended_fields.js', 'addLabelsExtendedFields') },
 ];
 
 async function runAll() {
