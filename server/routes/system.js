@@ -157,7 +157,9 @@ systemRouter.post('/admins/:id/reset-password', async (req, res) => {
     const temp = genTempPassword();
     const hash = await hashPassword(temp);
 
-    await query(`UPDATE users SET password_hash = ?, updated_at = datetime('now') WHERE id = ?`, [hash, id]);
+    const r = await query(`UPDATE users SET password_hash = ?, updated_at = datetime('now') WHERE id = ?`, [hash, id]);
+    if (r.rowsAffected === 0) return res.status(404).json({ success: false, error: 'Usuario no encontrado' });
+
     await logAudit(req.user.id, 'reset_password', 'user', id, { triggered_by: req.user.id });
 
     res.json({ success: true, data: { tempPassword: temp } });
