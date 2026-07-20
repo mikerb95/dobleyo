@@ -547,6 +547,8 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       document.getElementById("previewCount").textContent =
         `${qty || 0} ${qty === 1 ? "etiqueta" : "etiquetas"}`;
 
+      currentPreviewData = { ...data, code };
+
       updateSummary(data, qty, code);
     }
 
