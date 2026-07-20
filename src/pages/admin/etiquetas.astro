@@ -504,6 +504,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       let data = {};
       let qty = 0;
       let code = "LBL-—-0001";
+      let showQr = false;
 
       if (activeTab === "lotes" && selectedLot) {
         data = {
@@ -520,8 +521,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         };
         qty = parseInt(document.getElementById("quantityLots").value) || 0;
         code = `LBL-${selectedLot.code}-0001`;
-        document.getElementById("pvQr").style.display =
-          document.getElementById("includeQRLots").checked ? "" : "none";
+        showQr = document.getElementById("includeQRLots").checked;
       } else if (activeTab === "cero") {
         const acidity = document.getElementById("customAcidity").value;
         const body = document.getElementById("customBody").value;
@@ -542,8 +542,12 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         // El backend agrega un timestamp único al código real (LBL-TMP-ORI-VAR-<ts>-0001);
         // aquí solo se muestra un adelanto aproximado.
         code = `LBL-TMP-${o}-${v}-•••-0001`;
-        document.getElementById("pvQr").style.display = "";
+        showQr = true;
       }
+
+      const pvQr = document.getElementById("pvQr");
+      pvQr.style.display = showQr ? "" : "none";
+      pvQr.innerHTML = showQr ? qrSvg(code) : "";
 
       document.getElementById("pvOrigin").textContent = data.origin || "Origen del café";
       document.getElementById("pvVariety").textContent = data.variety || "Variedad";
