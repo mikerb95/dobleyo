@@ -391,7 +391,10 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         const badge = (st: string) => `<span class="badge ${STATUS_CLASS[st] ?? "badge-default"}">${STATUS_LABELS[st] ?? st}</span>`;
 
         async function api(path: string, opts: RequestInit = {}) {
-            const res = await fetch(`/api/shipping${path}`, {
+            // Vercel's /api/:path* rewrite 404s on a bare trailing slash, so
+            // "/" and "/?query" must be sent without the leading slash segment.
+            const normalizedPath = path === "/" || path.startsWith("/?") ? path.slice(1) : path;
+            const res = await fetch(`/api/shipping${normalizedPath}`, {
                 credentials: "include",
                 headers: { "Content-Type": "application/json" },
                 ...opts,
