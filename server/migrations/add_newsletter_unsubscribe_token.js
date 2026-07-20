@@ -1,10 +1,12 @@
 import { query } from '../db.js';
 
 export async function addNewsletterUnsubscribeToken() {
-  await query(`ALTER TABLE newsletter_subscribers ADD COLUMN unsubscribe_token TEXT UNIQUE`).catch(err => {
+  // SQLite no admite añadir una columna UNIQUE por ALTER ("Cannot add a UNIQUE
+  // column"): se agrega simple y la unicidad se garantiza con un índice único.
+  await query(`ALTER TABLE newsletter_subscribers ADD COLUMN unsubscribe_token TEXT`).catch(err => {
     if (!err.message.includes('duplicate column')) throw err;
   });
-  await query(`CREATE INDEX IF NOT EXISTS idx_newsletter_unsubscribe_token ON newsletter_subscribers(unsubscribe_token)`);
+  await query(`CREATE UNIQUE INDEX IF NOT EXISTS idx_newsletter_unsubscribe_token ON newsletter_subscribers(unsubscribe_token)`);
   console.log('[Migration] unsubscribe_token añadido a newsletter_subscribers.');
 }
 
