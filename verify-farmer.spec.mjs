@@ -69,6 +69,7 @@ console.log('caficultor:', await page.locator('.trace-farmer-name').textContent(
 console.log('href:', await page.locator('#resFarmerBody a.btn').getAttribute('href').catch(() => null));
 
 // ── Caso 4: navegar al enlace de la finca ────────────────────────────
+await page.evaluate(() => document.getElementById('langSuggest')?.remove());
 await page.locator('#resFarmerBody a.btn').click();
 await page.waitForLoadState('networkidle');
 await page.waitForTimeout(1200);
