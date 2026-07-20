@@ -529,6 +529,10 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       el('tab-resumen').dataset.loaded = 'true';
     } catch (err) {
       console.error('loadStats error', err);
+      const badge = el('dbStatusBadge');
+      badge.textContent = 'ERROR';
+      badge.className = 'badge badge-error';
+      showLoadError('rolesOverview');
     }
   }
 
