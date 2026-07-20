@@ -31,7 +31,6 @@ systemRouter.get('/stats', async (req, res) => {
       success: true,
       data: {
         db:         { ok: dbHealth.ok, latencyMs: dbHealth.latencyMs, error: dbHealth.error },
-        uptime:     Math.floor(process.uptime()),
         users:      { total: totalUsers, byRole: usersByRole.rows, admins: Number(adminCount) },
         products:   Number(products.rows[0].count),
         orders:     Number(orders.rows[0].count),
