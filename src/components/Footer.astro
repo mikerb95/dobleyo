@@ -41,11 +41,12 @@ const r = isEn
     <div class="footer-news">
       <div class="label">{tx.promo}</div>
       <div class="input" id="newsletterForm">
+        <label for="newsletterEmail" class="sr-only">{tx.emailPh}</label>
         <input
           id="newsletterEmail"
           type="email"
           placeholder={tx.emailPh}
-          aria-label={tx.emailPh}
+          autocomplete="email"
         />
         <button class="arrow" id="newsletterBtn" aria-label={tx.subscribe}>→</button>
       </div>
