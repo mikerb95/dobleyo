@@ -5,6 +5,14 @@ import { parseTastingNotes } from "../../../server/utils/tasting.js";
 
 const _hreflang = getHreflangPair("/");
 
+// WebSite — no SearchAction: the site doesn't have working site-wide search yet
+const websiteJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "DobleYo Café",
+  url: "https://en.dobleyo.cafe",
+};
+
 // Featured coffees from DB (USD prices)
 let coffeeProducts: any[] = [];
 try {
@@ -89,6 +97,7 @@ try {
   canonical={getCanonicalUrl("/", "en")}
   hreflangEs={_hreflang?.es}
   hreflangEn={_hreflang?.en}
+  jsonLd={websiteJsonLd}
 >
   <section class="hero">
     <div class="hero-media" aria-hidden="true">

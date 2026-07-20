@@ -6,6 +6,14 @@ import { parseTastingNotes } from "../../server/utils/tasting.js";
 
 const _hreflang = getHreflangPair("/");
 
+// WebSite — sin SearchAction: el sitio no tiene buscador funcional todavía
+const websiteJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "DobleYo Café",
+  url: "https://dobleyo.cafe",
+};
+
 // Productos desde BD (fallback a estáticos)
 let coffeeProducts: any[] = [];
 try {
@@ -88,6 +96,7 @@ try {
   canonical={getCanonicalUrl("/", "es")}
   hreflangEs={_hreflang?.es}
   hreflangEn={_hreflang?.en}
+  jsonLd={websiteJsonLd}
 >
   <section class="hero">
     <div class="hero-media" aria-hidden="true">

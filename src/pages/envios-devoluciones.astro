@@ -1,12 +1,69 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import Icon from "../components/Icon.astro";
+
+// FAQPage — refleja exactamente las preguntas visibles en el acordeón de esta página
+const faqJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: [
+    {
+      "@type": "Question",
+      name: "¿Puedo cambiar mi orden antes de que sea enviada?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Sí, si nos contacta dentro de las 2 horas siguientes a la compra. Escríbanos por correo o WhatsApp indicando los cambios deseados. Si la orden ya fue despachada, aplican las políticas de devolución.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "¿Cómo rastreo mi pedido?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Recibirá un correo con el número de guía tan pronto su orden sea despachada. Úselo en el sitio de la empresa logística para ver actualizaciones en tiempo real.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "¿Qué pasa si mi paquete llega dañado?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Contáctenos de inmediato con fotos del daño. No abra el paquete más de lo necesario. Documentaremos el daño con la empresa logística y reemplazaremos su orden sin costo.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "¿Cuál es el costo de devolución?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Si la devolución es por defecto de fabricación o error nuestro, es completamente gratis. Si es por cambio de opinión, el envío de retorno corre por cuenta del cliente.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "¿Aceptan reembolsos a tarjeta de crédito?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Sí, reembolsamos al medio de pago original. Los reembolsos pueden tardar entre 5 y 10 días hábiles en reflejarse, según su banco.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "¿Hacen reembolsos parciales?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Sí, aceptamos devoluciones parciales de órdenes con múltiples productos. Evaluamos cada producto individualmente según nuestras políticas.",
+      },
+    },
+  ],
+};
 ---
 
 <Layout
   title="Envíos y devoluciones — DobleYo Café"
   description="Tiempos de entrega, cobertura nacional y proceso de devoluciones de DobleYo Café."
   canonical="https://dobleyo.cafe/envios-devoluciones"
+  jsonLd={faqJsonLd}
 >
   <section class="ship-page">
     <header class="ship-hero">
