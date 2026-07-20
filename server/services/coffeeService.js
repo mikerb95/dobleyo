@@ -219,9 +219,6 @@ export async function createPackaging({ roastedStorageId, acidity, body, balance
   }
   const score = parseFloat(((acidityInt + bodyInt + balanceInt) / 3).toFixed(2));
 
-  const rciCheck = await query('SELECT * FROM roasted_coffee_inventory WHERE id = ?', [roastedStorageId]);
-  if (!rciCheck.rows.length) throw bizError(404, 'Café tostado no encontrado en inventario');
-
   const roastedResult = await query(
     `SELECT rci.*, rc.roast_level, rc.weight_kg, rb.lot_id,
             ch.region, ch.farm, ch.variety, ch.process, ch.aroma, ch.taste_notes
@@ -231,7 +228,7 @@ export async function createPackaging({ roastedStorageId, acidity, body, balance
      LEFT JOIN coffee_harvests ch ON rb.lot_id = ch.lot_id
      WHERE rci.id = ?`, [roastedStorageId]
   );
-  if (!roastedResult.rows.length) throw bizError(404, 'Café tostado no encontrado');
+  if (!roastedResult.rows.length) throw bizError(404, 'Café tostado no encontrado en inventario');
   const roastedInfo = roastedResult.rows[0];
 
   const unitCountNum = parseInt(unitCount, 10);
@@ -240,57 +237,86 @@ export async function createPackaging({ roastedStorageId, acidity, body, balance
   const availableWeightKg = parseFloat(roastedInfo.weight_kg) || 0;
   if (availableWeightKg <= 0) throw bizError(400, 'No hay peso disponible en este lote tostado');
 
+  // Peso que consume este empaque. A granel, unitCount se expresa en kilos.
+  let consumedKg;
   if (packageSize !== 'bulk') {
     const packageKg = PACKAGE_KG[packageSize];
     if (!packageKg) throw bizError(400, `Tamaño de paquete no reconocido: ${packageSize}`);
-    const requiredKg = parseFloat((unitCountNum * packageKg).toFixed(3));
-    if (requiredKg > availableWeightKg) {
-      throw bizError(400, `Peso requerido (${requiredKg} kg) supera el disponible (${availableWeightKg} kg)`, {
-        unit_count: unitCountNum, package_size: packageSize, required_kg: requiredKg,
+    consumedKg = parseFloat((unitCountNum * packageKg).toFixed(3));
+    if (consumedKg > availableWeightKg) {
+      throw bizError(400, `Peso requerido (${consumedKg} kg) supera el disponible (${availableWeightKg} kg)`, {
+        unit_count: unitCountNum, package_size: packageSize, required_kg: consumedKg,
         available_kg: availableWeightKg, max_units: Math.floor(availableWeightKg / packageKg),
       });
     }
-  } else if (unitCountNum > availableWeightKg) {
-    throw bizError(400, `Peso a granel (${unitCountNum} kg) supera el disponible (${availableWeightKg} kg)`);
+  } else {
+    consumedKg = unitCountNum;
+    if (consumedKg > availableWeightKg) {
+      throw bizError(400, `Peso a granel (${consumedKg} kg) supera el disponible (${availableWeightKg} kg)`, {
+        unit_count: unitCountNum, package_size: packageSize, required_kg: consumedKg,
+        available_kg: availableWeightKg, max_units: Math.floor(availableWeightKg),
+      });
+    }
   }
+
+  // Peso que queda tras este empaque. Si no alcanza para el paquete más
+  // pequeño, el lote se cierra; si no, sigue disponible para empaques parciales.
+  const remainingKg = parseFloat((availableWeightKg - consumedKg).toFixed(3));
+  const minPackageKg = Math.min(...Object.values(PACKAGE_KG));
+  const lotExhausted = remainingKg < minPackageKg;
 
   if (roastedInfo.lot_id) await assertCanAdvance(query, roastedInfo.lot_id, 'packaged');
 
-  const result = await query(
-    `INSERT INTO packaged_coffee (roasted_storage_id, acidity, body, balance, score, presentation, grind_size, package_size, unit_count, notes, status, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'ready_for_sale', datetime('now')) RETURNING id`,
-    [roastedStorageId, acidityInt, bodyInt, balanceInt, score, presentation, grindSize || null, packageSize, unitCountNum, notes || null]
-  );
-
-  await query('UPDATE roasted_coffee_inventory SET status = ? WHERE id = ?', ['packaged', roastedStorageId]);
-
-  let productId = null;
-  let inventoryMovementCreated = false;
-
-  if (addToInventory === true) {
-    const timestamp = Date.now().toString().slice(-6);
-    productId = `CAFE-${roastedInfo.lot_id || 'GEN'}-${packageSize.replace(/[^a-zA-Z0-9-]/g, '')}-${timestamp}`.substring(0, 50);
-    const presentationLabel = presentation === 'GRANO' ? 'Grano' : `Molido ${grindSize ?? ''}`.trim();
-    const productName = `Café ${roastedInfo.lot_id || 'Premium'} - ${packageSize} (${presentationLabel})`;
-    const roastLevel = roastedInfo.roast_level || 'medium';
-    const origin = roastedInfo.region || 'Colombia';
-    const harvestProcess = roastedInfo.process || null;
-    const weightGrams = packageSize === '1kg' ? 1000 : packageSize === 'bulk' ? null : parseInt(packageSize);
-
-    await query(
-      `INSERT INTO products (id, name, category, origin, process, roast, price, cost, is_active, stock_quantity, stock_min, weight, weight_unit, created_at)
-       VALUES (?, ?, 'cafe', ?, ?, ?, 0, 0, 1, ?, 0, ?, 'g', datetime('now'))`,
-      [productId, productName, origin, harvestProcess, roastLevel, unitCountNum, weightGrams]
+  return withTransaction(async ({ query: txq }) => {
+    const result = await txq(
+      `INSERT INTO packaged_coffee (roasted_storage_id, acidity, body, balance, score, presentation, grind_size, package_size, unit_count, notes, status, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'ready_for_sale', datetime('now')) RETURNING id`,
+      [roastedStorageId, acidityInt, bodyInt, balanceInt, score, presentation, grindSize || null, packageSize, unitCountNum, notes || null]
     );
-    await query(
-      `INSERT INTO inventory_movements (product_id, movement_type, quantity, quantity_before, quantity_after, reason, reference, created_at)
-       VALUES (?, 'entrada', ?, 0, ?, 'Café empacado para venta', ?, datetime('now'))`,
-      [productId, unitCountNum, unitCountNum, roastedInfo.lot_id || 'packaging']
-    );
-    inventoryMovementCreated = true;
-  }
 
-  return { packagedId: result.rows[0].id, productId, score, inventoryMovementCreated };
+    // Descuento del peso consumido: sin esto el remanente del lote se perdía.
+    if (roastedInfo.roasted_id) {
+      await txq('UPDATE roasted_coffee SET weight_kg = ? WHERE id = ?', [remainingKg, roastedInfo.roasted_id]);
+    }
+    if (lotExhausted) {
+      await txq('UPDATE roasted_coffee_inventory SET status = ? WHERE id = ?', ['packaged', roastedStorageId]);
+    }
+
+    let productId = null;
+    let inventoryMovementCreated = false;
+
+    if (addToInventory === true) {
+      const suffix = crypto.randomBytes(3).toString('hex');
+      productId = `CAFE-${roastedInfo.lot_id || 'GEN'}-${packageSize.replace(/[^a-zA-Z0-9-]/g, '')}-${suffix}`.substring(0, 50);
+      const presentationLabel = presentation === 'GRANO' ? 'Grano' : `Molido ${grindSize ?? ''}`.trim();
+      const productName = `Café ${roastedInfo.lot_id || 'Premium'} - ${packageSize} (${presentationLabel})`;
+      const roastLevel = roastedInfo.roast_level || 'medium';
+      const origin = roastedInfo.region || 'Colombia';
+      const harvestProcess = roastedInfo.process || null;
+      // A granel la unidad de stock es 1 kg; en bolsa, el peso nominal en gramos.
+      const weightUnit = packageSize === 'bulk' ? 'kg' : 'g';
+      const weightValue = packageSize === 'bulk' ? 1 : packageSize === '1kg' ? 1000 : parseInt(packageSize, 10);
+
+      await txq(
+        `INSERT INTO products (id, name, category, origin, process, roast, price, cost, is_active, stock_quantity, stock_min, weight, weight_unit, created_at)
+         VALUES (?, ?, 'cafe', ?, ?, ?, 0, 0, 0, ?, 0, ?, ?, datetime('now'))`,
+        [productId, productName, origin, harvestProcess, roastLevel, unitCountNum, weightValue, weightUnit]
+      );
+      await txq(
+        `INSERT INTO inventory_movements (product_id, movement_type, quantity, quantity_before, quantity_after, reason, reference, created_at)
+         VALUES (?, 'entrada', ?, 0, ?, 'Café empacado para venta', ?, datetime('now'))`,
+        [productId, unitCountNum, unitCountNum, roastedInfo.lot_id || 'packaging']
+      );
+      inventoryMovementCreated = true;
+    }
+
+    return {
+      packagedId: result.rows[0].id,
+      productId, score, inventoryMovementCreated,
+      lotId: roastedInfo.lot_id || null,
+      consumedKg, remainingKg, lotExhausted,
+    };
+  });
 }
 
 // ── Queries de lista ─────────────────────────────────────────────────────────
