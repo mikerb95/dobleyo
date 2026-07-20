@@ -409,10 +409,8 @@ describe('Conteo cíclico', () => {
         expect(Number(blocked.rows[0].is_blocked)).toBe(1);
 
         // El operario cuenta 195 kg físicos frente a los 200 del sistema.
-        await query(
-            `UPDATE inventory_count_lines SET counted_qty_kg = 195, counted_at = datetime('now') WHERE count_id = ?`,
-            [opened.countId]
-        );
+        const lineRow = await query('SELECT id FROM inventory_count_lines WHERE count_id = ?', [opened.countId]);
+        await storage.recordCountLine(opened.countId, lineRow.rows[0].id, 195, user);
 
         const posted = await storage.postInventoryCount(opened.countId, user);
         expect(posted.corrections).toHaveLength(1);
