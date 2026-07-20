@@ -47,6 +47,7 @@ const steps = [
   { name: 'Currency on customer_orders',     run: () => runFn('add_currency_to_orders.js', 'addCurrencyToOrders') },
   { name: 'Geocoding on orders',             run: () => runFn('add_geocoding_to_orders.js', 'addGeocodingToOrders') },
   { name: 'Split name fields',               run: () => runFn('split_name_fields.js', 'splitNameFields') },
+  { name: 'Product store columns (slug, i18n)', run: () => runFn('add_product_store_columns.js', 'addProductStoreColumns') },
   { name: 'Product variants table',          run: () => runFn('add_product_variants.js', 'addProductVariants') },
   { name: 'Newsletter subscribers table',    run: () => runFn('add_newsletter_subscribers.js', 'addNewsletterSubscribers') },
   { name: 'Newsletter unsubscribe token',    run: () => runFn('add_newsletter_unsubscribe_token.js', 'addNewsletterUnsubscribeToken') },
