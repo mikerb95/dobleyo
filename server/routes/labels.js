@@ -468,7 +468,53 @@ labelsRouter.get('/:labelId', async (req, res) => {
   }
 });
 
-// 7. DELETE - Eliminar etiquetas
+// 7. PATCH - Marcar/desmarcar etiqueta como impresa
+labelsRouter.patch('/:labelId/print',
+  [
+    body('printed').optional().isBoolean().toBoolean(),
+  ],
+  async (req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(422).json({ success: false, errors: errors.array() });
+    }
+
+    try {
+      const { labelId } = req.params;
+      const printed = req.body.printed !== false; // por defecto marca como impresa
+
+      const result = await query(
+        `UPDATE generated_labels
+         SET printed = ?, printed_at = ?, updated_at = datetime('now')
+         WHERE label_code = ?`,
+        [printed ? 1 : 0, printed ? new Date().toISOString() : null, labelId]
+      );
+
+      if (result.rowCount === 0) {
+        return res.status(404).json({
+          success: false,
+          error: 'Etiqueta no encontrada'
+        });
+      }
+
+      await logAudit(req.user.id, printed ? 'mark_label_printed' : 'unmark_label_printed', 'label', labelId);
+
+      res.json({
+        success: true,
+        message: printed ? 'Etiqueta marcada como impresa' : 'Etiqueta marcada como pendiente'
+      });
+    } catch (error) {
+      logger.error('Error al actualizar estado de impresión:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Error al actualizar estado de impresión'
+      });
+    }
+  }
+);
+
+// 8. DELETE - Eliminar etiquetas
 labelsRouter.delete('/:labelId', async (req, res) => {
   res.setHeader('Content-Type', 'application/json');
   try {
