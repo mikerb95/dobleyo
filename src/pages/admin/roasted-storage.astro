@@ -643,6 +643,9 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       }
       if (!Array.isArray(pending)) pending = [];
       if (!Array.isArray(stock)) stock = [];
+      // Las ubicaciones se refrescan junto con el stock: la ocupación cambia
+      // con cada movimiento y debe leerse del servidor, no cachearse.
+      await loadLocations();
       renderKpis();
       renderWorklist();
       renderBins();
