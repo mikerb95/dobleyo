@@ -234,7 +234,171 @@ Sí. La operación es la misma; lo que crece es el volumen de registros, y esa p
 
 ---
 
-## 12. Tres frases para no olvidar
+## 12. Logística: la integración con Mi Paquete
+
+> Esta sección merece su propio espacio en la reunión. La logística es, después del producto, la variable que más define si el negocio en línea es rentable o no.
+
+### 12.1 Qué es Mi Paquete y por qué lo elegimos
+
+Mi Paquete **no es una transportadora**. Es un **intermediario que agrupa varias transportadoras** (Servientrega, Coordinadora, Envía, TCC, entre otras) y las ofrece bajo un solo contrato, un solo tablero y una sola factura.
+
+La diferencia práctica es grande:
+
+| Sin intermediario | Con Mi Paquete |
+|---|---|
+| Un contrato con cada transportadora | Un solo registro, sin papeleo |
+| Tarifas de volumen que una marca pequeña no alcanza | Tarifas negociadas por el volumen agregado de miles de tiendas |
+| Cotizar a mano en cada envío | El sistema compara y muestra opciones al instante |
+| Manejar el dinero del contraentrega por su cuenta | Ellos recaudan y consignan a nuestra cuenta |
+| Un tablero distinto por transportadora | Un solo lugar para todo el seguimiento |
+
+**El argumento de fondo:** una marca de café de especialidad no tiene el volumen para negociar tarifas directas con Servientrega. A través de Mi Paquete accedemos a tarifas de gran cliente sin ser un gran cliente, y podemos elegir la transportadora **envío por envío** según cuál sea mejor para ese destino y ese precio.
+
+### 12.2 La pieza clave: el pago contraentrega
+
+Este es el punto más importante de toda la sección para un gerente de marca.
+
+**Qué es:** el cliente **no paga al comprar**. Paga en efectivo cuando el mensajero le entrega el paquete. Mi Paquete recauda ese dinero y nos lo consigna a nuestra cuenta bancaria.
+
+**Por qué importa comercialmente en Colombia:**
+- Una parte grande del país **no compra en línea con tarjeta** — por no tenerla o por desconfianza.
+- Es la forma más directa de vender a un cliente que nunca nos ha probado. El contraentrega elimina la pregunta "¿y si pago y no me llega?".
+- Abre ciudades intermedias y pueblos donde la penetración de tarjeta es baja pero el consumo de café es alto.
+
+**El riesgo, dicho con claridad:** en contraentrega el cliente puede **rechazar el paquete en la puerta**. Nosotros ya pagamos el flete de ida, y pagamos el de vuelta. Un pedido rechazado no es una venta perdida: es una venta perdida **con costo**.
+
+**Cómo lo controlamos hoy** (esto ya está implementado, conviene mostrarlo):
+- **Tope de monto:** el contraentrega solo se ofrece hasta cierto valor de pedido. Por encima de ese monto, el cliente debe pagar en línea. Hoy el tope está configurado y es ajustable sin tocar el código.
+- **Bloqueo por pedidos abiertos:** un mismo cliente no puede acumular varios pedidos contraentrega sin haber recibido los anteriores.
+- **Bloqueo por historial:** si un cliente ya rechazó un envío antes, no se le vuelve a ofrecer contraentrega.
+- Cada rechazo queda registrado, para poder revisar si estamos siendo demasiado estrictos y bloqueando clientes buenos.
+
+> **Frase para la reunión:** "El contraentrega es nuestra puerta de entrada al cliente que no compra en línea. Pero es una puerta con filtro: el sistema decide a quién se la abre."
+
+### 12.3 Qué está integrado hoy — el flujo completo
+
+Este recorrido ya funciona de punta a punta:
+
+```
+1. COTIZAR      El sistema calcula peso y volumen del pedido a partir
+                de los productos, y pide opciones a Mi Paquete
+                    ↓
+2. ELEGIR       El equipo ve las transportadoras disponibles con precio
+                y tiempo, y escoge
+                    ↓
+3. GENERAR      Se crea la guía. El sistema evita generar dos guías
+                para el mismo pedido
+                    ↓
+4. RECOGER      Se solicita la recolección
+                    ↓
+5. SEGUIR       El estado se actualiza solo, de dos maneras:
+                · Mi Paquete nos avisa cuando algo cambia
+                · Además revisamos cada 30 minutos por nuestra cuenta,
+                  como red de seguridad por si el aviso falla
+                    ↓
+6. INFORMAR     El cliente recibe correo cuando su pedido sale
+                    ↓
+7. CONCILIAR    En contraentrega, se controla qué dinero está pendiente
+                de consignación y cuál ya llegó
+```
+
+**El panel de envíos (`/admin/envios`) tiene cuatro pestañas**, que corresponden a las cuatro preguntas diarias del equipo de operación:
+
+| Pestaña | Pregunta |
+|---|---|
+| **Pendientes de despacho** | ¿Qué pedidos pagados están esperando guía? |
+| **Envíos activos** | ¿Qué está en la calle y dónde va? |
+| **Recaudos contraentrega** | ¿Qué plata nos deben y cuál ya entró? |
+| **Estancados** | ¿Qué envío lleva demasiado tiempo sin moverse? |
+
+La pestaña de **estancados** es la que evita el problema clásico: un pedido que se quedó quieto ocho días y nadie se dio cuenta hasta que el cliente reclamó. El sistema lo marca solo.
+
+**Además está resuelto:**
+- **Envío manual:** si un pedido debe salir por fuera de Mi Paquete (por ejemplo, entregas locales o pedidos a Estados Unidos), se puede registrar la guía a mano en el mismo tablero. No hay pedidos invisibles.
+- **Recuperación ante fallas:** si algo se cae a mitad del proceso de crear una guía, el sistema lo detecta y lo repara o lo libera para reintentar. No quedan pedidos bloqueados.
+- **Cancelación de guías** desde el panel.
+
+### 12.4 Costos — cómo se compone el precio de un envío
+
+> ⚠️ **Las cifras que siguen son referencias públicas de Mi Paquete y deben confirmarse contra nuestra cuenta y nuestro tarifario real antes de comprometerlas en una proyección.**
+
+Un envío contraentrega tiene **dos componentes**:
+
+| Componente | Cómo se calcula |
+|---|---|
+| **Flete** | Según peso, dimensiones, origen y destino. Varía por transportadora |
+| **Comisión de recaudo** | Un porcentaje sobre el valor recaudado, del orden del **4% a 4,3%**, con un **mínimo** por envío (referencias públicas: alrededor de $4.300 en mensajería y $5.500 en paquetes) |
+
+**Puntos importantes para el margen:**
+- La cotización que ve el equipo **ya incluye ambos componentes**. No hay sorpresas después.
+- El **valor declarado mínimo** es de $10.000 COP.
+- Las transportadoras hacen **hasta tres intentos de entrega** sin costo adicional. Esto reduce bastante los rechazos por "no había nadie".
+- Los recaudos se consignan **martes y jueves**. Eso define nuestro ciclo de caja: el dinero de una venta contraentrega **no entra el día de la venta**, entra en la consignación siguiente a la entrega.
+
+**Implicación de negocio que conviene decir en voz alta:**
+En un pedido de bajo valor, la comisión mínima de recaudo **pesa proporcionalmente mucho más**. Un pedido de $30.000 puede dejar un margen muy distinto al de uno de $120.000, aunque el flete sea el mismo. Esto sostiene dos decisiones comerciales:
+
+1. **Definir un pedido mínimo** o un umbral de envío gratis que empuje el ticket hacia arriba.
+2. **Priorizar los kits y las suscripciones** frente a la venta de una sola bolsa: mismo costo logístico, mucho mejor margen.
+
+### 12.5 Qué habilita esto en marketing
+
+Aquí es donde la logística deja de ser un tema operativo y se vuelve una herramienta de marca.
+
+**1. "Envío gratis desde $X"**
+Ahora podemos calcular el umbral con datos reales de flete, no a ojo. Es la palanca más eficaz para subir el ticket promedio.
+
+**2. "Pague cuando lo reciba"**
+Es un mensaje potente para el cliente nuevo que aún no confía en la marca. Se puede usar como gancho de primera compra, con el filtro antifraude protegiendo por detrás.
+
+**3. Prometer tiempos que sí se cumplen**
+Como cotizamos por destino, podemos mostrarle al cliente el tiempo estimado real de su ciudad en lugar de una promesa genérica. Menos reclamos, mejores reseñas.
+
+**4. Decidir dónde hacer pauta con dos capas de datos**
+Ya teníamos el mapa de calor de ventas. Ahora podemos cruzarlo con el costo y el tiempo de envío por zona. Una ciudad puede vender bien pero costar caro de atender — o al revés, ser barata de atender y estar sin explotar. **Eso cambia dónde se invierte el presupuesto de pauta.**
+
+**5. Notificaciones que construyen marca**
+El seguimiento del envío es uno de los pocos momentos en que el cliente **quiere** recibir nuestros correos. Es el mejor espacio para reforzar el relato de origen — y para recordarle que su bolsa trae un QR con la historia de su café.
+
+**6. Cerrar el círculo con la trazabilidad**
+Este es el remate: el cliente sigue su paquete, lo recibe, escanea el QR y ve de qué finca vino. Logística y trazabilidad son **el mismo momento de marca**, no dos cosas separadas.
+
+### 12.6 Riesgos y cómo están cubiertos
+
+| Riesgo | Cobertura actual |
+|---|---|
+| Rechazo en contraentrega | Tope de monto, bloqueo por pedidos abiertos y por historial de rechazo |
+| Se cae el aviso de la transportadora | Revisión automática cada 30 minutos como respaldo |
+| Un envío se queda quieto | Pestaña de estancados con alerta automática |
+| Guía duplicada para un pedido | Bloqueo a nivel de base de datos |
+| Pedido que no puede ir por Mi Paquete | Despacho manual registrado en el mismo tablero |
+| Diferencias en el dinero recaudado | Pestaña de conciliación con el valor esperado por pedido |
+| Dependencia de un solo proveedor | Al agrupar varias transportadoras, el riesgo está repartido. El despacho manual es la salida si el proveedor falla |
+
+### 12.7 Decisiones que necesitamos del gerente
+
+Estas son las preguntas concretas para llevarse de la reunión:
+
+1. **¿Cuál es el tope del contraentrega?** Hoy está configurado en un valor de arranque. Subirlo vende más pero expone más. Es una decisión comercial, no técnica.
+2. **¿Umbral de envío gratis?** Necesitamos definirlo con el margen real por producto.
+3. **¿Ofrecemos contraentrega a todo el país o solo donde el costo lo justifica?** Se puede restringir por zona.
+4. **¿Qué hacemos con los pedidos de Estados Unidos?** Mi Paquete opera en Colombia. Hoy esos pedidos se despachan manualmente; falta definir el operador de exportación.
+5. **¿Comunicamos el contraentrega como gancho principal de primera compra?** Es una decisión de mensaje de marca.
+
+### 12.8 Estado de la integración
+
+**Funcionando:** cotización, generación de guía, recolección, seguimiento automático con doble respaldo, correos al cliente, conciliación de recaudos, alertas de estancados, despacho manual y cancelación.
+
+**En afinamiento:** reportes de rentabilidad por envío (cuánto se cotizó contra cuánto se cobró realmente), y la operación de exportación para el canal en inglés.
+
+**Fuentes consultadas sobre el modelo de Mi Paquete:**
+[Mi Paquete — Soluciones ecommerce](https://www.mipaquete.com/soluciones-ecommerce) ·
+[Envíos pago contraentrega](https://www.mipaquete.com/soluciones-ecommerce/envios-pago-contraentrega) ·
+[Centro de ayuda — Primer envío](https://www.mipaquete.com/centro-de-ayuda/primer-envio)
+
+---
+
+## 13. Tres frases para no olvidar
 
 1. **Una sola operación, dos mercados.** El sitio en inglés no duplica trabajo.
 2. **La trazabilidad no es marketing, es el registro del trabajo diario.**
