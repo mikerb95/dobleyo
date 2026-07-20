@@ -618,22 +618,6 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     const today = new Date().toISOString().split('T')[0];
     $('storageDate').value = today;
 
-    // Poblar select de ubicaciones agrupado por zona
-    (() => {
-      const sel = $('location');
-      const zones = [...new Set(LOCATIONS.map((l) => l.zone))];
-      zones.forEach((z) => {
-        const og = document.createElement('optgroup');
-        og.label = z;
-        LOCATIONS.filter((l) => l.zone === z).forEach((l) => {
-          const o = document.createElement('option');
-          o.value = l.code; o.textContent = `${l.label} (${l.code})`;
-          og.appendChild(o);
-        });
-        sel.appendChild(og);
-      });
-    })();
-
     // ── Toast ───────────────────────────────────────────────────────────────────────
     let toastTimer;
     function toast(msg, type = '') {
