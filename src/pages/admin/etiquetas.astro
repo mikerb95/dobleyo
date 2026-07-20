@@ -891,9 +891,26 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       const delBtn = e.target.closest("[data-del]");
       if (delBtn) return deleteLabel(delBtn.dataset.del);
 
+      const rowPrintBtn = e.target.closest("[data-print]");
+      if (rowPrintBtn) {
+        const label = recentLabelsCache.find((l) => l.label_code === rowPrintBtn.dataset.print);
+        return printLabels(label ? [label] : []);
+      }
+
       const printBtn = e.target.closest("[data-toggle-print]");
       if (printBtn)
         return togglePrint(printBtn.dataset.togglePrint, printBtn.dataset.printed === "1");
+    });
+
+    document.getElementById("printPreviewBtn")?.addEventListener("click", () => {
+      if (!currentPreviewData || !currentPreviewData.variety) {
+        return toast("Complete los datos de la etiqueta primero", "error");
+      }
+      printLabels([currentPreviewData]);
+    });
+
+    document.getElementById("printBatchBtn")?.addEventListener("click", () => {
+      printLabels(lastGeneratedBatch);
     });
 
     document.getElementById("tabLotes")?.addEventListener("click", () => switchTab("lotes"));
