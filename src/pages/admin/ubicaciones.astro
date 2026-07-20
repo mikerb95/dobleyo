@@ -440,7 +440,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
               <div>
                 <div class="ub-zone-name">${zone.zone_name}</div>
                 <div class="ub-zone-meta">
-                  ${zone.warehouse_name} · ${items.length} ubicación${items.length === 1 ? "" : "es"} · ${kg(zoneKg)}
+                  ${zone.warehouse_name} · ${items.length} ${items.length === 1 ? "ubicación" : "ubicaciones"} · ${kg(zoneKg)}
                   ${zone.temp_controlled ? " · Temperatura controlada" : ""}
                 </div>
               </div>

@@ -524,7 +524,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
        el accent aquí haría indistinguible el umbral de advertencia. */
     .rs-bin-bar > span { display: block; height: 100%; background: var(--ok); border-radius: 999px; }
     /* Umbrales de ocupación: ámbar desde 70%, rojo desde 90%. */
-    .rs-bin.warning .rs-bin-bar > span { background: var(--warn); }
+    .rs-bin.warning .rs-bin-bar > span { background: var(--color-accent); }
     .rs-bin.danger  .rs-bin-bar > span { background: var(--danger); }
     .rs-bin.danger  { border-color: color-mix(in oklab, var(--danger) 40%, white); }
 
@@ -666,7 +666,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       $('kpiPending').textContent = pending.length;
       $('kpiPendingKg').textContent = pending.length ? kg(pendKg) + ' por ubicar' : 'Todo ubicado';
       $('kpiStock').textContent = stock.length;
-      $('kpiStockLoc').textContent = `En ${usedLocs.size} ubicación${usedLocs.size === 1 ? '' : 'es'}`;
+      $('kpiStockLoc').textContent = `En ${usedLocs.size} ${usedLocs.size === 1 ? 'ubicación' : 'ubicaciones'}`;
       $('kpiWeight').textContent = kg(stockKg);
       $('kpiLocations').textContent = usedLocs.size;
     }
