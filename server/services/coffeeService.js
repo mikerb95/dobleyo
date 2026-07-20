@@ -314,6 +314,19 @@ export async function createPackaging({ roastedStorageId, acidity, body, balance
       await txq('UPDATE roasted_coffee_inventory SET status = ? WHERE id = ?', ['packaged', roastedStorageId]);
     }
 
+    // Salida del estante por el peso realmente consumido. Un empaque parcial
+    // descuenta solo lo empacado; el remanente sigue contabilizado en bodega.
+    if (roastedInfo.location_id && consumedKg > 0) {
+      await postMovement({
+        type: 'issue', from: roastedInfo.location_id,
+        lotId: roastedInfo.lot_id || 'SIN-LOTE', stockState: 'roasted', qtyKg: consumedKg,
+        containerCount: lotExhausted ? (parseInt(roastedInfo.container_count, 10) || 0) : 0,
+        sourceTable: 'packaged_coffee', sourceId: result.rows[0].id,
+        reasonCode: 'packaging', notes: notes || null,
+        movementUid: movementUid || `pack-out:${result.rows[0].id}`, user,
+      }, { query: txq });
+    }
+
     let productId = null;
     let inventoryMovementCreated = false;
 
