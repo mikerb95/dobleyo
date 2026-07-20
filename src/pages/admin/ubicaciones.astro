@@ -147,7 +147,11 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
   <div class="ub-toast" id="toast"></div>
 
-  <style>
+  <!-- is:global — las tarjetas y el panel de detalle se generan con innerHTML
+       desde el script, así que no reciben el atributo de scope que Astro añade
+       a los elementos del template y el CSS scoped no las alcanzaría.
+       Todas las clases van prefijadas con `ub-` para evitar colisiones. -->
+  <style is:global>
     .ub-page { padding-bottom: 60px; }
 
     .ub-toolbar {
