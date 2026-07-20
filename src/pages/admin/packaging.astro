@@ -608,8 +608,8 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       const grind = document.getElementById("grindSize").value;
       const size = document.getElementById("packageSize").value;
       const units = document.getElementById("unitCount").value;
-      const qty = parseFloat(document.getElementById("packageQuantity").value) || 0;
-      const unit = document.getElementById("packageUnit").value;
+      const used = consumedKg();
+      const availableKg = availWeight(currentRoasted);
 
       document.getElementById("planPresentation").textContent =
         presentation === "GRANO" ? "Grano entero"
