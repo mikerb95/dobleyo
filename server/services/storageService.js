@@ -658,6 +658,88 @@ export async function createZone({ warehouseId, code, name, zoneType, tempContro
 
 // ── Conteo cíclico (inventario físico) ───────────────────────────────────────
 
+export async function listInventoryCounts({ status } = {}) {
+  const where = status ? 'WHERE c.status = ?' : '';
+  const { rows } = await query(
+    `SELECT c.id, c.count_number, c.status, c.scope_note, c.created_at, c.posted_at,
+            uc.email AS created_by_email, up.email AS posted_by_email,
+            (SELECT COUNT(*) FROM inventory_count_lines l WHERE l.count_id = c.id) AS line_count,
+            (SELECT COUNT(*) FROM inventory_count_lines l WHERE l.count_id = c.id AND l.counted_qty_kg IS NOT NULL) AS counted_lines
+     FROM inventory_counts c
+     LEFT JOIN users uc ON uc.id = c.created_by
+     LEFT JOIN users up ON up.id = c.posted_by
+     ${where}
+     ORDER BY c.id DESC LIMIT 100`,
+    status ? [status] : []
+  );
+  return rows;
+}
+
+export async function getInventoryCountDetail(id) {
+  const count = await query(
+    `SELECT c.*, uc.email AS created_by_email, up.email AS posted_by_email
+     FROM inventory_counts c
+     LEFT JOIN users uc ON uc.id = c.created_by
+     LEFT JOIN users up ON up.id = c.posted_by
+     WHERE c.id = ?`, [id]
+  );
+  if (!count.rows.length) throw bizError(404, 'Conteo no encontrado');
+
+  const lines = await query(
+    `SELECT cl.id, cl.location_id, cl.lot_id, cl.stock_state, cl.system_qty_kg,
+            cl.counted_qty_kg, cl.counted_at, l.code AS location_code, l.name AS location_name,
+            uc.email AS counted_by_email
+     FROM inventory_count_lines cl
+     JOIN storage_locations l ON l.id = cl.location_id
+     LEFT JOIN users uc ON uc.id = cl.counted_by
+     WHERE cl.count_id = ?
+     ORDER BY l.code, cl.lot_id`, [id]
+  );
+
+  return { ...count.rows[0], lines: lines.rows };
+}
+
+/**
+ * Registra el conteo físico de una línea. No toca `storage_quants` ni el
+ * ledger: solo guarda lo que el operario contó. La corrección real la genera
+ * postInventoryCount() al cerrar, comparando contra system_qty_kg.
+ */
+export async function recordCountLine(countId, lineId, countedQtyKg, user) {
+  const count = await query('SELECT status FROM inventory_counts WHERE id = ?', [countId]);
+  if (!count.rows.length) throw bizError(404, 'Conteo no encontrado');
+  if (count.rows[0].status === 'posted') throw bizError(409, 'Este conteo ya fue contabilizado y no admite cambios');
+
+  const value = round3(countedQtyKg);
+  if (!isFinite(value) || value < 0) throw bizError(400, 'La cantidad contada no puede ser negativa');
+
+  const result = await query(
+    `UPDATE inventory_count_lines
+     SET counted_qty_kg = ?, counted_at = datetime('now'), counted_by = ?
+     WHERE id = ? AND count_id = ?`,
+    [value, user?.id ?? null, lineId, countId]
+  );
+  if (!result.rowCount) throw bizError(404, 'Línea de conteo no encontrada');
+
+  return { lineId, countedQtyKg: value };
+}
+
+/** Cancela un conteo sin generar correcciones: desbloquea y descarta las líneas. */
+export async function cancelInventoryCount(countId, user) {
+  const count = await query('SELECT * FROM inventory_counts WHERE id = ?', [countId]);
+  if (!count.rows.length) throw bizError(404, 'Conteo no encontrado');
+  if (count.rows[0].status === 'posted') throw bizError(409, 'Un conteo ya contabilizado no puede cancelarse');
+
+  await query(
+    `UPDATE storage_locations SET is_blocked = 0, block_reason = NULL
+     WHERE block_reason = ?`, [`Conteo físico ${count.rows[0].count_number} en curso`]
+  );
+  await query(`UPDATE inventory_counts SET status = 'cancelled' WHERE id = ?`, [countId]);
+
+  await logAudit(user?.id, 'cancel', 'inventory_count', countId,
+    { count_number: count.rows[0].count_number });
+  return { countId, status: 'cancelled' };
+}
+
 /** Abre un conteo: congela el stock del sistema y bloquea las ubicaciones. */
 export async function openInventoryCount({ locationCodes, scopeNote, user }) {
   const countNumber = `CNT-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${crypto.randomBytes(2).toString('hex').toUpperCase()}`;
