@@ -43,12 +43,12 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       <div class="kpi-tile info">
         <div class="kpi-label">Valor de inventario</div>
         <div class="kpi-value" id="kpiValue">—</div>
-        <div class="kpi-sub">Precio × stock disponible</div>
+        <div class="kpi-sub" id="kpiValueSub">Costo × unidades disponibles</div>
       </div>
       <div class="kpi-tile warning">
         <div class="kpi-label">Stock bajo</div>
         <div class="kpi-value" id="kpiLow">—</div>
-        <div class="kpi-sub">En o bajo el mínimo definido</div>
+        <div class="kpi-sub">Disponible en o bajo el mínimo</div>
       </div>
       <div class="kpi-tile error">
         <div class="kpi-label">Agotados</div>
@@ -72,20 +72,20 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
           </svg>
-          <input type="search" id="searchInput" placeholder="Buscar por nombre, SKU o descripción…" />
+          <input type="search" id="searchInput" placeholder="Buscar por nombre, SKU, slug o descripción…" aria-label="Buscar productos" />
         </div>
-        <select id="categoryFilter" class="filter-select">
+        <select id="categoryFilter" class="filter-select" aria-label="Filtrar por categoría">
           <option value="">Todas las categorías</option>
           <option value="cafe">Café</option>
           <option value="accesorio">Accesorio</option>
           <option value="merchandising">Merchandising</option>
         </select>
-        <select id="activeFilter" class="filter-select">
+        <select id="activeFilter" class="filter-select" aria-label="Filtrar por estado">
           <option value="">Todos los estados</option>
           <option value="true">Activos</option>
           <option value="false">Inactivos</option>
         </select>
-        <select id="stockFilter" class="filter-select">
+        <select id="stockFilter" class="filter-select" aria-label="Filtrar por stock">
           <option value="">Todo el stock</option>
           <option value="low">Stock bajo</option>
           <option value="out">Agotados</option>
@@ -96,11 +96,11 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         <table class="erp-table products-table">
           <thead>
             <tr>
-              <th>Producto</th>
-              <th>Categoría</th>
-              <th style="text-align: right;">Precio</th>
-              <th style="text-align: right;">Margen</th>
-              <th style="text-align: center;">Stock</th>
+              <th><button type="button" class="th-sort" data-sort="name">Producto <span class="sort-ind"></span></button></th>
+              <th><button type="button" class="th-sort" data-sort="category">Categoría <span class="sort-ind"></span></button></th>
+              <th style="text-align: right;"><button type="button" class="th-sort" data-sort="price">Precio <span class="sort-ind"></span></button></th>
+              <th style="text-align: right;"><button type="button" class="th-sort" data-sort="margin">Margen <span class="sort-ind"></span></button></th>
+              <th style="text-align: center;"><button type="button" class="th-sort" data-sort="stock">Disponible <span class="sort-ind"></span></button></th>
               <th>Estado</th>
               <th style="text-align: right;">Acciones</th>
             </tr>
@@ -110,12 +110,18 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
           </tbody>
         </table>
       </div>
+
+      <div class="pager" id="pager" hidden>
+        <button type="button" class="btn btn-secondary" id="prevPageBtn">Anterior</button>
+        <span class="pager-info" id="pagerInfo">—</span>
+        <button type="button" class="btn btn-secondary" id="nextPageBtn">Siguiente</button>
+      </div>
     </section>
   </div>
 
   <!-- ── Modal Crear/Editar ──────────────────────────────────────────── -->
-  <div class="modal" id="productModal" hidden>
-    <div class="modal-content">
+  <div class="modal" id="productModal" hidden role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-content modal-content--wide">
       <div class="modal-header">
         <h2 class="modal-title" id="modalTitle">Nuevo producto</h2>
         <button type="button" class="modal-close" id="closeProductModalX" aria-label="Cerrar">
@@ -124,204 +130,345 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
           </svg>
         </button>
       </div>
+
+      <div class="tabs" role="tablist" aria-label="Secciones del producto">
+        <button type="button" class="tab is-active" role="tab" data-tab="basico" aria-selected="true">Básico</button>
+        <button type="button" class="tab" role="tab" data-tab="precios" aria-selected="false">Precios y stock</button>
+        <button type="button" class="tab" role="tab" data-tab="variantes" aria-selected="false">Variantes</button>
+        <button type="button" class="tab" role="tab" data-tab="medios" aria-selected="false">Medios</button>
+        <button type="button" class="tab" role="tab" data-tab="seo" aria-selected="false">Comercial y SEO</button>
+      </div>
+
       <div class="modal-body">
-        <form id="productForm">
-          <!-- Datos básicos -->
-          <div class="form-section"><h3>Información básica</h3></div>
-
-          <div class="form-grid">
-            <div class="form-group" id="idFieldContainer">
-              <label for="productId">ID del producto <span class="required">*</span></label>
-              <input type="text" id="productId" placeholder="ej: cafe-001" />
-              <div class="form-hint">Identificador único, no editable después.</div>
+        <form id="productForm" novalidate>
+          <!-- ── Básico ───────────────────────────────────────────── -->
+          <div class="tab-panel is-active" data-panel="basico">
+            <div class="form-grid">
+              <div class="form-group" id="idFieldContainer">
+                <label for="productId">ID del producto <span class="required">*</span></label>
+                <input type="text" id="productId" data-required placeholder="ej: cafe-001" />
+                <div class="form-hint">Identificador único, no editable después.</div>
+              </div>
+              <div class="form-group">
+                <label for="productName">Nombre <span class="required">*</span></label>
+                <input type="text" id="productName" data-required />
+              </div>
             </div>
-            <div class="form-group">
-              <label for="productName">Nombre <span class="required">*</span></label>
-              <input type="text" id="productName" required />
-            </div>
-          </div>
 
-          <div class="form-grid">
-            <div class="form-group">
-              <label for="productSku">SKU</label>
-              <input type="text" id="productSku" placeholder="Código de referencia" />
-            </div>
-            <div class="form-group">
-              <label for="productCategory">Categoría <span class="required">*</span></label>
-              <select id="productCategory" required>
-                <option value="cafe">Café</option>
-                <option value="accesorio">Accesorio</option>
-                <option value="merchandising">Merchandising</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="productSubcategory">Subcategoría</label>
-            <input type="text" id="productSubcategory" placeholder="ej: Origen, tipo de accesorio…" />
-          </div>
-
-          <div class="form-group">
-            <label for="productDescription">Descripción</label>
-            <textarea id="productDescription"></textarea>
-          </div>
-
-          <!-- Campos específicos de café -->
-          <div id="coffeeFields" hidden>
-            <div class="form-section"><h3>☕ Detalles del café</h3></div>
             <div class="form-grid">
               <div class="form-group">
-                <label for="productOrigin">Origen</label>
-                <input type="text" id="productOrigin" placeholder="ej: Huila, Nariño" />
+                <label for="productSlug">Slug (URL pública)</label>
+                <input type="text" id="productSlug" placeholder="se-genera-del-nombre" />
+                <div class="form-hint" id="slugHint">Define la dirección del producto en la tienda.</div>
               </div>
               <div class="form-group">
-                <label for="productProcess">Proceso</label>
-                <input type="text" id="productProcess" placeholder="ej: Lavado, Honey, Natural" />
+                <label for="productSku">SKU</label>
+                <input type="text" id="productSku" placeholder="Código de referencia" />
+              </div>
+            </div>
+
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="productNameEn">Nombre en inglés</label>
+                <input type="text" id="productNameEn" placeholder="Para en.dobleyo.cafe" />
+              </div>
+              <div class="form-group">
+                <label for="productCategory">Categoría <span class="required">*</span></label>
+                <select id="productCategory">
+                  <option value="cafe">Café</option>
+                  <option value="accesorio">Accesorio</option>
+                  <option value="merchandising">Merchandising</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="productSubcategory">Subcategoría</label>
+              <input type="text" id="productSubcategory" placeholder="ej: Origen, tipo de accesorio…" />
+            </div>
+
+            <div class="form-group">
+              <label for="productDescription">Descripción</label>
+              <textarea id="productDescription"></textarea>
+            </div>
+
+            <!-- Campos específicos de café -->
+            <div id="coffeeFields" hidden>
+              <div class="form-section"><h3>Detalles del café</h3></div>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="productOrigin">Origen</label>
+                  <input type="text" id="productOrigin" placeholder="ej: Huila, Nariño" />
+                </div>
+                <div class="form-group">
+                  <label for="productProcess">Proceso</label>
+                  <input type="text" id="productProcess" placeholder="ej: Lavado, Honey, Natural" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="productRoast">Tostado</label>
+                <input type="text" id="productRoast" placeholder="ej: Claro, Medio, Oscuro" />
+              </div>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="productNotesEs">Notas de cata (español)</label>
+                  <input type="text" id="productNotesEs" placeholder="Cacao, Nuez, Caramelo" />
+                  <div class="form-hint">Separadas por comas. Se muestran en la tienda.</div>
+                </div>
+                <div class="form-group">
+                  <label for="productNotesEn">Notas de cata (inglés)</label>
+                  <input type="text" id="productNotesEn" placeholder="Cocoa, Hazelnut, Caramel" />
+                </div>
+              </div>
+              <div class="info-box">
+                La finca, la variedad y la fecha de tostión no se editan aquí: provienen
+                del lote asociado al producto y se gestionan en
+                <a href="/admin/lotes">Lotes</a>.
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Precios y stock ──────────────────────────────────── -->
+          <div class="tab-panel" data-panel="precios">
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="productPrice">Precio de venta (COP) <span class="required">*</span></label>
+                <input type="number" id="productPrice" data-required min="0" />
+              </div>
+              <div class="form-group">
+                <label for="productPriceUsd">Precio (USD)</label>
+                <input type="number" id="productPriceUsd" min="0" />
+                <div class="form-hint">Catálogo B2B / sitio en inglés.</div>
+              </div>
+            </div>
+
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="productCost">Costo (COP)</label>
+                <input type="number" id="productCost" min="0" />
+                <div class="form-hint" id="marginHint">Margen: —</div>
+              </div>
+              <div class="form-group">
+                <label for="productStockMin">Stock mínimo</label>
+                <input type="number" id="productStockMin" min="0" />
+                <div class="form-hint">Umbral para la alerta de stock bajo.</div>
+              </div>
+            </div>
+
+            <div class="form-group" id="createStockGroup">
+              <label for="productStock">Stock inicial</label>
+              <input type="number" id="productStock" min="0" />
+              <div class="form-hint">Se registra como movimiento de entrada.</div>
+            </div>
+
+            <div class="readonly-box" id="editStockBox" hidden>
+              <div class="readonly-row">
+                <span>Stock actual</span><strong id="roStock">—</strong>
+              </div>
+              <div class="readonly-row">
+                <span>Reservado en pedidos</span><strong id="roReserved">—</strong>
+              </div>
+              <div class="readonly-row">
+                <span>Disponible</span><strong id="roAvailable">—</strong>
+              </div>
+              <p class="readonly-note">
+                El stock solo cambia mediante movimientos de inventario, para que quede
+                trazado. Use el botón <strong>Ajustar stock</strong> de la tabla.
+              </p>
+            </div>
+
+            <div class="form-section"><h3>Dimensiones y peso</h3></div>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="productWeight">Peso</label>
+                <input type="number" id="productWeight" step="0.01" min="0" />
+              </div>
+              <div class="form-group">
+                <label for="productWeightUnit">Unidad</label>
+                <select id="productWeightUnit">
+                  <option value="g">g</option>
+                  <option value="kg">kg</option>
+                  <option value="ml">ml</option>
+                  <option value="l">l</option>
+                  <option value="unidad">unidad</option>
+                </select>
               </div>
             </div>
             <div class="form-group">
-              <label for="productRoast">Tostado</label>
-              <input type="text" id="productRoast" placeholder="ej: Claro, Medio, Oscuro" />
+              <label for="productDimensions">Dimensiones</label>
+              <input type="text" id="productDimensions" placeholder="ej: 10x10x5 cm" />
             </div>
+          </div>
 
-            <label class="checkbox-item" style="margin-bottom: 4px;">
-              <input type="checkbox" id="productTraceable" />
-              <span>📍 Producto trazable (mostrar origen y lote en tienda)</span>
+          <!-- ── Variantes ────────────────────────────────────────── -->
+          <div class="tab-panel" data-panel="variantes">
+            <div class="info-box" id="variantsIntro">
+              Cuando un producto tiene variantes, la tienda muestra el precio y el stock
+              de la variante seleccionada, no los del producto.
+            </div>
+            <div id="variantsUnavailable" class="empty-state" hidden>
+              Guarde el producto primero para poder añadirle variantes.
+            </div>
+            <div id="variantsArea" hidden>
+              <div class="table-wrapper">
+                <table class="erp-table variants-table">
+                  <thead>
+                    <tr>
+                      <th>Tamaño</th><th>Molienda</th>
+                      <th style="text-align:right;">Precio</th>
+                      <th style="text-align:center;">Stock</th>
+                      <th>Sufijo SKU</th><th style="text-align:center;">Activa</th>
+                      <th style="text-align:right;">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody id="variantsTableBody"></tbody>
+                </table>
+              </div>
+
+              <div class="form-section"><h3>Añadir variante</h3></div>
+              <div class="variant-form">
+                <input type="text" id="newVariantSize" placeholder="Tamaño (250g)" aria-label="Tamaño" />
+                <input type="text" id="newVariantGrind" placeholder="Molienda" aria-label="Molienda" />
+                <input type="number" id="newVariantPrice" placeholder="Precio COP" min="0" aria-label="Precio" />
+                <input type="number" id="newVariantStock" placeholder="Stock" min="0" aria-label="Stock" />
+                <input type="text" id="newVariantSku" placeholder="-250-ESP" aria-label="Sufijo SKU" />
+                <button type="button" class="btn btn-secondary" id="addVariantBtn">Añadir</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Medios ───────────────────────────────────────────── -->
+          <div class="tab-panel" data-panel="medios">
+            <div class="form-group">
+              <label for="productImageUrl">URL de imagen principal</label>
+              <input type="url" id="productImageUrl" placeholder="https://…" />
+            </div>
+            <div id="imagePreviewWrap" hidden>
+              <img id="imagePreview" alt="Vista previa de la imagen principal" class="img-preview" />
+            </div>
+            <div class="form-group">
+              <label for="productImages">Imágenes adicionales (URLs separadas por comas)</label>
+              <textarea id="productImages" placeholder="https://…/img1.jpg, https://…/img2.jpg"></textarea>
+            </div>
+            <div class="form-group">
+              <label for="productRating">Calificación (0–5)</label>
+              <input type="number" id="productRating" min="0" max="5" step="0.1" value="0" />
+            </div>
+          </div>
+
+          <!-- ── Comercial y SEO ──────────────────────────────────── -->
+          <div class="tab-panel" data-panel="seo">
+            <div class="form-section"><h3>Etiquetas comerciales</h3></div>
+            <div class="flags-grid">
+              <label class="checkbox-item"><input type="checkbox" id="productDeal" /><span>Oferta</span></label>
+              <label class="checkbox-item"><input type="checkbox" id="productBestseller" /><span>Best seller</span></label>
+              <label class="checkbox-item"><input type="checkbox" id="productNew" /><span>Nuevo</span></label>
+              <label class="checkbox-item"><input type="checkbox" id="productFast" /><span>Entrega rápida</span></label>
+            </div>
+            <label class="checkbox-item" style="margin-top: 10px;">
+              <input type="checkbox" id="productActive" checked />
+              <span>Producto activo (visible en la tienda)</span>
             </label>
 
-            <div id="traceabilityFields" class="trace-box" hidden>
-              <div class="form-grid">
-                <div class="form-group">
-                  <label for="productFarm">Finca</label>
-                  <input type="text" id="productFarm" placeholder="Nombre de la finca" />
-                </div>
-                <div class="form-group">
-                  <label for="productVariety">Variedad</label>
-                  <input type="text" id="productVariety" placeholder="ej: Bourbon, Geisha" />
-                </div>
-              </div>
-              <div class="form-grid">
-                <div class="form-group">
-                  <label for="productRoastDate">Fecha de tostión</label>
-                  <input type="date" id="productRoastDate" />
-                </div>
-                <div class="form-group">
-                  <label for="productAroma">Aroma</label>
-                  <input type="text" id="productAroma" placeholder="ej: Florales, chocolate" />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Precios e inventario -->
-          <div class="form-section"><h3>💵 Precios e inventario</h3></div>
-          <div class="form-grid">
+            <div class="form-section"><h3>SEO</h3></div>
             <div class="form-group">
-              <label for="productPrice">Precio de venta (COP) <span class="required">*</span></label>
-              <input type="number" id="productPrice" required min="0" />
+              <label for="productMetaKeywords">Meta keywords</label>
+              <input type="text" id="productMetaKeywords" placeholder="café, especialidad, huila…" />
             </div>
             <div class="form-group">
-              <label for="productCost">Costo (COP)</label>
-              <input type="number" id="productCost" min="0" />
-              <div class="form-hint" id="marginHint">Margen: —</div>
+              <label for="productMetaDescription">Meta descripción</label>
+              <textarea id="productMetaDescription"></textarea>
             </div>
-          </div>
-          <div class="form-grid">
-            <div class="form-group">
-              <label for="productStock">Stock actual</label>
-              <input type="number" id="productStock" min="0" />
-            </div>
-            <div class="form-group">
-              <label for="productStockMin">Stock mínimo</label>
-              <input type="number" id="productStockMin" min="0" />
-              <div class="form-hint">Umbral para la alerta de stock bajo.</div>
-            </div>
-          </div>
-          <div class="form-grid">
-            <div class="form-group">
-              <label for="productWeight">Peso</label>
-              <input type="number" id="productWeight" step="0.01" min="0" />
-            </div>
-            <div class="form-group">
-              <label for="productWeightUnit">Unidad</label>
-              <select id="productWeightUnit">
-                <option value="g">g</option>
-                <option value="kg">kg</option>
-                <option value="ml">ml</option>
-                <option value="l">l</option>
-                <option value="unidad">unidad</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-group">
-            <label for="productDimensions">Dimensiones</label>
-            <input type="text" id="productDimensions" placeholder="ej: 10x10x5 cm" />
-          </div>
-
-          <!-- Medios -->
-          <div class="form-section"><h3>🖼️ Medios y reputación</h3></div>
-          <div class="form-group">
-            <label for="productImageUrl">URL de imagen principal</label>
-            <input type="url" id="productImageUrl" placeholder="https://…" />
-          </div>
-          <div class="form-group">
-            <label for="productImages">Imágenes adicionales (URLs separadas por comas)</label>
-            <textarea id="productImages" placeholder="https://…/img1.jpg, https://…/img2.jpg"></textarea>
-          </div>
-          <div class="form-group">
-            <label for="productRating">Calificación (0–5)</label>
-            <input type="number" id="productRating" min="0" max="5" step="0.1" value="0" />
-          </div>
-
-          <!-- Etiquetas comerciales -->
-          <div class="form-section"><h3>🏷️ Etiquetas comerciales</h3></div>
-          <div class="flags-grid">
-            <label class="checkbox-item"><input type="checkbox" id="productDeal" /><span>Oferta</span></label>
-            <label class="checkbox-item"><input type="checkbox" id="productBestseller" /><span>Best seller</span></label>
-            <label class="checkbox-item"><input type="checkbox" id="productNew" /><span>Nuevo</span></label>
-            <label class="checkbox-item"><input type="checkbox" id="productFast" /><span>Entrega rápida</span></label>
-          </div>
-          <label class="checkbox-item" style="margin-top: 8px;">
-            <input type="checkbox" id="productActive" checked />
-            <span>✅ Producto activo (visible en la tienda)</span>
-          </label>
-
-          <!-- SEO -->
-          <div class="form-section"><h3>🔍 SEO</h3></div>
-          <div class="form-group">
-            <label for="productMetaKeywords">Meta keywords</label>
-            <input type="text" id="productMetaKeywords" placeholder="café, especialidad, huila…" />
-          </div>
-          <div class="form-group">
-            <label for="productMetaDescription">Meta descripción</label>
-            <textarea id="productMetaDescription"></textarea>
           </div>
         </form>
       </div>
+
       <div class="modal-actions">
+        <div class="form-error" id="formError" role="alert" hidden></div>
         <button type="button" class="btn btn-secondary" id="closeProductModalBtn">Cancelar</button>
         <button type="submit" form="productForm" class="btn btn-save" id="saveProductBtn">Guardar producto</button>
       </div>
     </div>
   </div>
 
-  <!-- ── Modal Eliminar ──────────────────────────────────────────────── -->
-  <div class="modal" id="deleteModal" hidden>
-    <div class="modal-content" style="max-width: 420px;">
+  <!-- ── Modal Ajustar stock ─────────────────────────────────────────── -->
+  <div class="modal" id="stockModal" hidden role="dialog" aria-modal="true" aria-labelledby="stockModalTitle">
+    <div class="modal-content" style="max-width: 460px;">
       <div class="modal-header">
-        <h2 class="modal-title" style="color: var(--danger);">Eliminar producto</h2>
+        <h2 class="modal-title" id="stockModalTitle">Ajustar stock</h2>
+        <button type="button" class="modal-close" id="closeStockModalX" aria-label="Cerrar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
       </div>
       <div class="modal-body">
-        <p style="margin: 0 0 12px; color: var(--muted); font-size: 14px;">
-          Esta acción no se puede deshacer. Se eliminará permanentemente del catálogo.
+        <p class="modal-lead" id="stockProductName"></p>
+        <div class="readonly-box">
+          <div class="readonly-row"><span>Stock actual</span><strong id="stockCurrent">—</strong></div>
+          <div class="readonly-row"><span>Reservado</span><strong id="stockReservedRO">—</strong></div>
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="stockMovementType">Tipo de movimiento</label>
+            <select id="stockMovementType">
+              <option value="ajuste">Ajuste (valor absoluto)</option>
+              <option value="entrada">Entrada</option>
+              <option value="salida">Salida</option>
+              <option value="merma">Merma</option>
+              <option value="devolucion">Devolución</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="stockQuantity" id="stockQuantityLabel">Nuevo stock</label>
+            <input type="number" id="stockQuantity" min="0" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="stockReason">Motivo</label>
+          <input type="text" id="stockReason" placeholder="ej: Conteo físico de bodega" />
+        </div>
+        <div class="form-error" id="stockError" role="alert" hidden></div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" id="closeStockModalBtn">Cancelar</button>
+        <button type="button" class="btn btn-save" id="confirmStockBtn">Registrar movimiento</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Modal Desactivar / Eliminar ─────────────────────────────────── -->
+  <div class="modal" id="deleteModal" hidden role="dialog" aria-modal="true" aria-labelledby="deleteModalTitle">
+    <div class="modal-content" style="max-width: 460px;">
+      <div class="modal-header">
+        <h2 class="modal-title" id="deleteModalTitle">Desactivar producto</h2>
+        <button type="button" class="modal-close" id="closeDeleteModalX" aria-label="Cerrar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-lead">
+          El producto dejará de mostrarse en la tienda, pero se conserva en el
+          catálogo con su historial. Puede reactivarlo editándolo.
         </p>
         <div class="error-box">
           Producto: <strong id="deleteProductName"></strong>
         </div>
+        <label class="checkbox-item" style="margin-top: 14px;">
+          <input type="checkbox" id="hardDeleteCheck" />
+          <span>Eliminar definitivamente de la base de datos</span>
+        </label>
+        <div class="warn-box" id="hardDeleteWarning" hidden>
+          Se borrará el producto y todas sus variantes. Los movimientos de inventario
+          y las ventas que lo referencian quedarán sin producto asociado.
+          Esta acción no se puede deshacer.
+        </div>
       </div>
       <div class="modal-actions">
         <button type="button" class="btn btn-secondary" id="closeDeleteModalBtn">Cancelar</button>
-        <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Eliminar</button>
+        <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Desactivar</button>
       </div>
     </div>
   </div>
@@ -330,14 +477,27 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   <div class="toast-stack" id="toastStack" aria-live="polite"></div>
 
   <script>
+    const PAGE_SIZE = 25;
+
     let allProducts = [];
-    let currentEditProductId = null;
+    let filteredProducts = [];
+    let currentPage = 1;
+    let sortKey = "name";
+    let sortDir = "asc";
+
+    let editingProductId = null;   // producto abierto en el modal de edición
+    let deletingProductId = null;  // producto abierto en el modal de desactivar
+    let stockProductId = null;     // producto abierto en el modal de stock
+    let currentVariants = [];
+
+    const $ = (id) => document.getElementById(id);
 
     // ── Toast ───────────────────────────────────────────────────────
     function toast(message, type = "info") {
-      const stack = document.getElementById("toastStack");
+      const stack = $("toastStack");
       const el = document.createElement("div");
       el.className = `toast toast--${type}`;
+      el.setAttribute("role", type === "error" ? "alert" : "status");
       el.textContent = message;
       stack.appendChild(el);
       requestAnimationFrame(() => el.classList.add("is-in"));
@@ -364,21 +524,128 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       if (v >= 1_000) return "$" + Math.round(v / 1_000) + "k";
       return "$" + v;
     }
-    function isLow(p) {
-      return Number(p.stock_min) > 0 && Number(p.stock_quantity) <= Number(p.stock_min);
+    function slugify(value) {
+      return String(value || "")
+        .normalize("NFD").replace(/[̀-ͯ]/g, "")
+        .toLowerCase().trim()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+    }
+
+    // Un producto con variantes activas vende por variante: su stock y precio
+    // efectivos son los de las variantes, no los de la fila de products.
+    function hasVariants(p) {
+      return Number(p.variant_count) > 0;
+    }
+    function availableStock(p) {
+      if (hasVariants(p)) return Number(p.variant_stock) || 0;
+      return (Number(p.stock_quantity) || 0) - (Number(p.stock_reserved) || 0);
     }
     function isOut(p) {
-      return Number(p.stock_quantity) <= 0;
+      return availableStock(p) <= 0;
     }
+    function isLow(p) {
+      return Number(p.stock_min) > 0 && availableStock(p) <= Number(p.stock_min);
+    }
+    function marginOf(p) {
+      const price = Number(p.price) || 0;
+      const cost = Number(p.cost) || 0;
+      if (cost <= 0 || price <= 0) return null;
+      return Math.round(((price - cost) / price) * 100);
+    }
+
     const CATEGORY = {
       cafe: { label: "Café", cls: "badge-warning" },
       accesorio: { label: "Accesorio", cls: "badge-success" },
       merchandising: { label: "Merchandising", cls: "badge-info" },
     };
 
+    // ── Accesibilidad de modales ────────────────────────────────────
+    const FOCUSABLE =
+      'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+    let lastFocusedBeforeModal = null;
+
+    function visibleFocusables(modal) {
+      return Array.from(modal.querySelectorAll(FOCUSABLE)).filter(
+        (el) => el.offsetParent !== null || el === document.activeElement
+      );
+    }
+
+    function openModal(modal, focusTarget) {
+      lastFocusedBeforeModal = document.activeElement;
+      modal.hidden = false;
+      document.body.classList.add("modal-open");
+      const target = focusTarget || visibleFocusables(modal)[0];
+      if (target) target.focus();
+    }
+
+    function closeModal(modal) {
+      modal.hidden = true;
+      if (!document.querySelector(".modal:not([hidden])")) {
+        document.body.classList.remove("modal-open");
+      }
+      if (lastFocusedBeforeModal && document.contains(lastFocusedBeforeModal)) {
+        lastFocusedBeforeModal.focus();
+      }
+    }
+
+    function topmostModal() {
+      const open = Array.from(document.querySelectorAll(".modal:not([hidden])"));
+      return open[open.length - 1] || null;
+    }
+
+    document.addEventListener("keydown", (e) => {
+      const modal = topmostModal();
+      if (!modal) return;
+
+      if (e.key === "Escape") {
+        e.preventDefault();
+        closeModal(modal);
+        return;
+      }
+
+      if (e.key === "Tab") {
+        const items = visibleFocusables(modal);
+        if (!items.length) return;
+        const first = items[0];
+        const last = items[items.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault(); last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault(); first.focus();
+        } else if (!modal.contains(document.activeElement)) {
+          e.preventDefault(); first.focus();
+        }
+      }
+    });
+
+    // ── Pestañas del modal ──────────────────────────────────────────
+    function showTab(name) {
+      document.querySelectorAll(".tab").forEach((t) => {
+        const active = t.dataset.tab === name;
+        t.classList.toggle("is-active", active);
+        t.setAttribute("aria-selected", String(active));
+      });
+      document.querySelectorAll(".tab-panel").forEach((p) => {
+        p.classList.toggle("is-active", p.dataset.panel === name);
+      });
+    }
+
+    document.querySelectorAll(".tab").forEach((tab) => {
+      tab.addEventListener("click", () => showTab(tab.dataset.tab));
+    });
+
+    function tabOfField(fieldId) {
+      const panel = $(fieldId)?.closest(".tab-panel");
+      return panel ? panel.dataset.panel : "basico";
+    }
+
     // ── Carga ───────────────────────────────────────────────────────
-    async function loadProducts() {
-      const tbody = document.getElementById("productsTableBody");
+    async function loadProducts({ silent = false } = {}) {
+      const tbody = $("productsTableBody");
+      if (!silent) {
+        tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Cargando productos…</td></tr>';
+      }
       try {
         const response = await fetch("/api/inventory/products", { credentials: "include" });
         if (!response.ok) throw new Error("Error al cargar productos");
@@ -392,120 +659,51 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
           is_fast: !!p.is_fast,
         }));
         updateStats(allProducts);
-        filterProducts();
+        applyFilters();
+        return true;
       } catch (err) {
         console.error("Error:", err);
         tbody.innerHTML =
           '<tr><td colspan="7" class="empty-state">No se pudieron cargar los productos. Intente actualizar.</td></tr>';
         toast("Error al cargar los productos", "error");
+        return false;
       }
     }
 
     function updateStats(products) {
       const total = products.length;
       const active = products.filter((p) => p.is_active).length;
-      const value = products.reduce(
-        (s, p) => s + (Number(p.price) || 0) * (Number(p.stock_quantity) || 0), 0
+
+      // Valor de inventario a costo. Sin costo cargado, el producto no suma.
+      const atCost = products.reduce(
+        (s, p) => s + (Number(p.cost) || 0) * Math.max(0, availableStock(p)), 0
       );
+      const atRetail = products.reduce(
+        (s, p) => s + (Number(p.price) || 0) * Math.max(0, availableStock(p)), 0
+      );
+      const withoutCost = products.filter((p) => !Number(p.cost) && availableStock(p) > 0).length;
+
       const low = products.filter((p) => isLow(p) && !isOut(p)).length;
       const out = products.filter(isOut).length;
 
-      document.getElementById("kpiTotal").textContent = total;
-      document.getElementById("kpiActiveSub").textContent =
-        `${active} activos · ${total - active} inactivos`;
-      document.getElementById("kpiValue").textContent = compactCop(value);
-      document.getElementById("kpiLow").textContent = low;
-      document.getElementById("kpiOut").textContent = out;
+      $("kpiTotal").textContent = total;
+      $("kpiActiveSub").textContent = `${active} activos · ${total - active} inactivos`;
+      $("kpiValue").textContent = compactCop(atCost);
+      $("kpiValueSub").textContent =
+        `Costo × disponible · ${compactCop(atRetail)} a precio de venta` +
+        (withoutCost ? ` · ${withoutCost} sin costo` : "");
+      $("kpiLow").textContent = low;
+      $("kpiOut").textContent = out;
     }
 
-    // ── Render tabla ────────────────────────────────────────────────
-    function displayProducts(products) {
-      const tbody = document.getElementById("productsTableBody");
-      document.getElementById("resultCount").textContent =
-        `${products.length} de ${allProducts.length} producto${allProducts.length === 1 ? "" : "s"}`;
+    // ── Filtros, orden y paginación ─────────────────────────────────
+    function applyFilters({ keepPage = false } = {}) {
+      const categoryFilter = $("categoryFilter").value;
+      const activeFilter = $("activeFilter").value;
+      const stockFilter = $("stockFilter").value;
+      const searchTerm = $("searchInput").value.toLowerCase().trim();
 
-      if (!products.length) {
-        tbody.innerHTML =
-          '<tr><td colspan="7" class="empty-state">No se encontraron productos con los filtros aplicados.</td></tr>';
-        return;
-      }
-
-      tbody.innerHTML = products.map((p) => {
-        const cat = CATEGORY[p.category] || { label: p.category || "—", cls: "badge-neutral" };
-        const price = Number(p.price) || 0;
-        const cost = Number(p.cost) || 0;
-        const margin = cost > 0 && price > 0 ? Math.round(((price - cost) / price) * 100) : null;
-        const marginCell = margin == null
-          ? '<span style="color: var(--muted-2);">—</span>'
-          : `<span style="color: ${margin >= 30 ? "var(--ok)" : margin >= 10 ? "var(--color-accent)" : "var(--danger)"}; font-weight: 600;">${margin}%</span>`;
-
-        const stock = Number(p.stock_quantity) || 0;
-        let stockCell;
-        if (isOut(p)) {
-          stockCell = `<span class="badge badge-error">Agotado</span>`;
-        } else if (isLow(p)) {
-          stockCell = `<span class="stock-num">${stock}</span> <span class="badge badge-warning">Bajo</span>`;
-        } else {
-          stockCell = `<span class="stock-num">${stock}</span>`;
-        }
-
-        const statusBadge = p.is_active
-          ? '<span class="badge badge-success">Activo</span>'
-          : '<span class="badge badge-neutral">Inactivo</span>';
-
-        const thumb = p.image_url
-          ? `<img src="${esc(p.image_url)}" alt="" class="prod-thumb" loading="lazy" />`
-          : `<div class="prod-thumb prod-thumb--empty">${esc((p.name || "?").charAt(0).toUpperCase())}</div>`;
-
-        const tags = [
-          p.is_deal && "Oferta", p.is_bestseller && "Best seller",
-          p.is_new && "Nuevo", p.is_fast && "Rápida",
-        ].filter(Boolean);
-
-        return `
-        <tr>
-          <td>
-            <div class="prod-cell">
-              ${thumb}
-              <div class="prod-meta">
-                <span class="prod-name">${esc(p.name) || "—"}</span>
-                <span class="prod-sub">${esc(p.sku || p.id)}${tags.length ? " · " + tags.map(esc).join(" · ") : ""}</span>
-              </div>
-            </div>
-          </td>
-          <td><span class="badge ${cat.cls}">${esc(cat.label)}</span></td>
-          <td style="text-align: right; font-weight: 600;">${cop(price)}</td>
-          <td style="text-align: right;">${marginCell}</td>
-          <td style="text-align: center; white-space: nowrap;">${stockCell}</td>
-          <td>${statusBadge}</td>
-          <td style="text-align: right; white-space: nowrap;">
-            <button class="icon-btn editBtn" data-product-id="${esc(p.id)}" title="Editar" aria-label="Editar">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                <path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-              </svg>
-            </button>
-            <button class="icon-btn icon-btn--danger deleteBtn" data-product-id="${esc(p.id)}" data-product-name="${esc(p.name)}" title="Eliminar" aria-label="Eliminar">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="3 6 5 6 21 6"></polyline>
-                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-              </svg>
-            </button>
-          </td>
-        </tr>`;
-      }).join("");
-
-      attachButtonListeners();
-    }
-
-    // ── Filtros ─────────────────────────────────────────────────────
-    function filterProducts() {
-      const categoryFilter = document.getElementById("categoryFilter").value;
-      const activeFilter = document.getElementById("activeFilter").value;
-      const stockFilter = document.getElementById("stockFilter").value;
-      const searchTerm = document.getElementById("searchInput").value.toLowerCase();
-
-      const filtered = allProducts.filter((p) => {
+      filteredProducts = allProducts.filter((p) => {
         const matchesCategory = !categoryFilter || p.category === categoryFilter;
         const matchesActive = activeFilter === "" ? true : p.is_active === (activeFilter === "true");
         const matchesStock =
@@ -515,31 +713,197 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         const matchesSearch = !searchTerm ||
           p.name?.toLowerCase().includes(searchTerm) ||
           p.sku?.toLowerCase().includes(searchTerm) ||
+          p.slug?.toLowerCase().includes(searchTerm) ||
           p.id?.toLowerCase().includes(searchTerm) ||
           p.description?.toLowerCase().includes(searchTerm);
         return matchesCategory && matchesActive && matchesStock && matchesSearch;
       });
 
-      displayProducts(filtered);
+      sortFiltered();
+      if (!keepPage) currentPage = 1;
+      renderPage();
     }
 
-    // ── Visibilidad de campos ───────────────────────────────────────
-    function updateCoffeeFieldsVisibility(reset = true) {
-      const category = document.getElementById("productCategory").value;
-      document.getElementById("coffeeFields").hidden = category !== "cafe";
-      if (reset) {
-        document.getElementById("productTraceable").checked = false;
-        document.getElementById("traceabilityFields").hidden = true;
-      }
+    function sortFiltered() {
+      const dir = sortDir === "asc" ? 1 : -1;
+      filteredProducts.sort((a, b) => {
+        let va, vb;
+        switch (sortKey) {
+          case "price":    va = Number(a.price) || 0;   vb = Number(b.price) || 0; break;
+          case "stock":    va = availableStock(a);      vb = availableStock(b); break;
+          case "margin":   va = marginOf(a) ?? -Infinity; vb = marginOf(b) ?? -Infinity; break;
+          case "category": va = a.category || "";       vb = b.category || ""; break;
+          default:         va = (a.name || "").toLowerCase(); vb = (b.name || "").toLowerCase();
+        }
+        if (va < vb) return -1 * dir;
+        if (va > vb) return 1 * dir;
+        return 0;
+      });
+
+      document.querySelectorAll(".th-sort").forEach((btn) => {
+        const ind = btn.querySelector(".sort-ind");
+        const active = btn.dataset.sort === sortKey;
+        btn.classList.toggle("is-sorted", active);
+        ind.textContent = active ? (sortDir === "asc" ? "▲" : "▼") : "";
+      });
     }
-    function updateTraceabilityFieldsVisibility() {
-      document.getElementById("traceabilityFields").hidden =
-        !document.getElementById("productTraceable").checked;
+
+    document.querySelectorAll(".th-sort").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const key = btn.dataset.sort;
+        if (sortKey === key) {
+          sortDir = sortDir === "asc" ? "desc" : "asc";
+        } else {
+          sortKey = key;
+          sortDir = key === "name" || key === "category" ? "asc" : "desc";
+        }
+        sortFiltered();
+        currentPage = 1;
+        renderPage();
+      });
+    });
+
+    function renderPage() {
+      const totalPages = Math.max(1, Math.ceil(filteredProducts.length / PAGE_SIZE));
+      currentPage = Math.min(currentPage, totalPages);
+      const start = (currentPage - 1) * PAGE_SIZE;
+      const pageItems = filteredProducts.slice(start, start + PAGE_SIZE);
+
+      $("resultCount").textContent =
+        `${filteredProducts.length} de ${allProducts.length} producto${allProducts.length === 1 ? "" : "s"}`;
+
+      displayProducts(pageItems);
+
+      const pager = $("pager");
+      pager.hidden = filteredProducts.length <= PAGE_SIZE;
+      $("pagerInfo").textContent = `Página ${currentPage} de ${totalPages}`;
+      $("prevPageBtn").disabled = currentPage <= 1;
+      $("nextPageBtn").disabled = currentPage >= totalPages;
+    }
+
+    $("prevPageBtn").addEventListener("click", () => { currentPage--; renderPage(); });
+    $("nextPageBtn").addEventListener("click", () => { currentPage++; renderPage(); });
+
+    // ── Render tabla ────────────────────────────────────────────────
+    function displayProducts(products) {
+      const tbody = $("productsTableBody");
+
+      if (!products.length) {
+        tbody.innerHTML =
+          '<tr><td colspan="7" class="empty-state">No se encontraron productos con los filtros aplicados.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = products.map((p) => {
+        const cat = CATEGORY[p.category] || { label: p.category || "—", cls: "badge-neutral" };
+
+        const margin = marginOf(p);
+        const marginCell = margin == null
+          ? '<span class="muted-dash">—</span>'
+          : `<span class="margin-val ${margin >= 30 ? "is-good" : margin >= 10 ? "is-mid" : "is-bad"}">${margin}%</span>`;
+
+        // Con variantes, el precio de la fila products es solo referencia.
+        let priceCell;
+        if (hasVariants(p)) {
+          const min = Number(p.variant_min_price) || 0;
+          const max = Number(p.variant_max_price) || 0;
+          priceCell = min === max ? cop(min) : `${cop(min)} – ${cop(max)}`;
+        } else {
+          priceCell = cop(Number(p.price) || 0);
+        }
+
+        const avail = availableStock(p);
+        const reserved = Number(p.stock_reserved) || 0;
+        let stockCell;
+        if (isOut(p)) {
+          stockCell = '<span class="badge badge-error">Agotado</span>';
+        } else if (isLow(p)) {
+          stockCell = `<span class="stock-num">${avail}</span> <span class="badge badge-warning">Bajo</span>`;
+        } else {
+          stockCell = `<span class="stock-num">${avail}</span>`;
+        }
+        if (!hasVariants(p) && reserved > 0) {
+          stockCell += `<span class="stock-note">${reserved} reservado${reserved === 1 ? "" : "s"}</span>`;
+        }
+        if (hasVariants(p)) {
+          stockCell += `<span class="stock-note">${p.variant_count} variante${Number(p.variant_count) === 1 ? "" : "s"}</span>`;
+        }
+
+        const statusBadge = p.is_active
+          ? '<span class="badge badge-success">Activo</span>'
+          : '<span class="badge badge-neutral">Inactivo</span>';
+
+        const thumb = p.image_url
+          ? `<img src="${esc(p.image_url)}" alt="" class="prod-thumb" loading="lazy" />`
+          : `<div class="prod-thumb prod-thumb--empty" aria-hidden="true">${esc((p.name || "?").charAt(0).toUpperCase())}</div>`;
+
+        const tags = [
+          p.is_deal && "Oferta", p.is_bestseller && "Best seller",
+          p.is_new && "Nuevo", p.is_fast && "Rápida",
+        ].filter(Boolean);
+
+        const missingSlug = !p.slug
+          ? '<span class="badge badge-warning" title="Sin slug: no tiene URL propia en la tienda">Sin slug</span>'
+          : "";
+
+        return `
+        <tr>
+          <td>
+            <div class="prod-cell">
+              ${thumb}
+              <div class="prod-meta">
+                <span class="prod-name">${esc(p.name) || "—"} ${missingSlug}</span>
+                <span class="prod-sub">${esc(p.sku || p.id)}${tags.length ? " · " + tags.map(esc).join(" · ") : ""}</span>
+              </div>
+            </div>
+          </td>
+          <td><span class="badge ${cat.cls}">${esc(cat.label)}</span></td>
+          <td style="text-align: right; font-weight: 600; white-space: nowrap;">${priceCell}</td>
+          <td style="text-align: right;">${marginCell}</td>
+          <td style="text-align: center; white-space: nowrap;">${stockCell}</td>
+          <td>${statusBadge}</td>
+          <td style="text-align: right; white-space: nowrap;">
+            <button class="icon-btn stockBtn" data-product-id="${esc(p.id)}" title="Ajustar stock" aria-label="Ajustar stock de ${esc(p.name)}">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line>
+              </svg>
+            </button>
+            <button class="icon-btn editBtn" data-product-id="${esc(p.id)}" title="Editar" aria-label="Editar ${esc(p.name)}">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+              </svg>
+            </button>
+            <button class="icon-btn icon-btn--danger deleteBtn" data-product-id="${esc(p.id)}" title="Desactivar" aria-label="Desactivar ${esc(p.name)}">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+            </button>
+          </td>
+        </tr>`;
+      }).join("");
+    }
+
+    // Delegación: los botones se recrean en cada render.
+    $("productsTableBody").addEventListener("click", (e) => {
+      const btn = e.target.closest("button[data-product-id]");
+      if (!btn) return;
+      const id = btn.getAttribute("data-product-id");
+      if (btn.classList.contains("editBtn")) openEditModal(id);
+      else if (btn.classList.contains("deleteBtn")) openDeleteModal(id);
+      else if (btn.classList.contains("stockBtn")) openStockModal(id);
+    });
+
+    // ── Visibilidad de campos ───────────────────────────────────────
+    function updateCoffeeFieldsVisibility() {
+      $("coffeeFields").hidden = $("productCategory").value !== "cafe";
     }
     function updateMarginHint() {
-      const price = parseFloat(document.getElementById("productPrice").value) || 0;
-      const cost = parseFloat(document.getElementById("productCost").value) || 0;
-      const hint = document.getElementById("marginHint");
+      const price = parseFloat($("productPrice").value) || 0;
+      const cost = parseFloat($("productCost").value) || 0;
+      const hint = $("marginHint");
       if (price > 0 && cost > 0) {
         const m = Math.round(((price - cost) / price) * 100);
         hint.textContent = `Margen: ${m}% · utilidad ${cop(price - cost)}`;
@@ -547,224 +911,556 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         hint.textContent = "Margen: —";
       }
     }
+    function updateImagePreview() {
+      const url = $("productImageUrl").value.trim();
+      const wrap = $("imagePreviewWrap");
+      if (url) {
+        $("imagePreview").src = url;
+        wrap.hidden = false;
+      } else {
+        wrap.hidden = true;
+      }
+    }
 
-    // ── Modales ─────────────────────────────────────────────────────
+    // ── Modal producto ──────────────────────────────────────────────
+    function clearFormError() {
+      $("formError").hidden = true;
+      $("formError").textContent = "";
+      document.querySelectorAll(".has-error").forEach((el) => el.classList.remove("has-error"));
+    }
+
+    function showFormError(message, fieldId) {
+      const box = $("formError");
+      box.textContent = message;
+      box.hidden = false;
+      if (fieldId) {
+        showTab(tabOfField(fieldId));
+        const field = $(fieldId);
+        field.classList.add("has-error");
+        field.focus();
+      }
+    }
+
     function openCreateModal() {
-      currentEditProductId = null;
-      document.getElementById("modalTitle").textContent = "Nuevo producto";
-      document.getElementById("idFieldContainer").hidden = false;
-      document.getElementById("productId").disabled = false;
-      document.getElementById("productForm").reset();
-      document.getElementById("productActive").checked = true;
+      editingProductId = null;
+      clearFormError();
+      $("modalTitle").textContent = "Nuevo producto";
+      $("productForm").reset();
+      $("idFieldContainer").hidden = false;
+      $("productId").disabled = false;
+      $("productActive").checked = true;
+      $("createStockGroup").hidden = false;
+      $("editStockBox").hidden = true;
+      $("variantsArea").hidden = true;
+      $("variantsUnavailable").hidden = false;
       updateCoffeeFieldsVisibility();
       updateMarginHint();
-      document.getElementById("productModal").hidden = false;
+      updateImagePreview();
+      showTab("basico");
+      openModal($("productModal"), $("productId"));
     }
 
     function openEditModal(productId) {
       const product = allProducts.find((p) => p.id === productId);
       if (!product) return;
-      currentEditProductId = productId;
-      document.getElementById("modalTitle").textContent = "Editar: " + product.name;
-      document.getElementById("idFieldContainer").hidden = true;
-      document.getElementById("productId").value = product.id;
-      document.getElementById("productId").disabled = true;
 
-      const set = (id, v) => { document.getElementById(id).value = v ?? ""; };
+      editingProductId = productId;
+      clearFormError();
+      $("modalTitle").textContent = "Editar: " + product.name;
+      $("idFieldContainer").hidden = true;
+      $("productId").value = product.id;
+      $("productId").disabled = true;
+
+      const set = (id, v) => { $(id).value = v ?? ""; };
       set("productName", product.name);
+      set("productNameEn", product.name_en);
+      set("productSlug", product.slug);
       set("productSku", product.sku);
       set("productDescription", product.description);
-      document.getElementById("productCategory").value = product.category || "cafe";
+      $("productCategory").value = product.category || "cafe";
       set("productSubcategory", product.subcategory);
       set("productOrigin", product.origin);
       set("productProcess", product.process);
       set("productRoast", product.roast);
       set("productPrice", product.price);
+      set("productPriceUsd", product.price_usd);
       set("productCost", product.cost);
-      set("productStock", product.stock_quantity);
       set("productStockMin", product.stock_min);
       set("productWeight", product.weight);
-      document.getElementById("productWeightUnit").value = product.weight_unit || "g";
+      $("productWeightUnit").value = product.weight_unit || "g";
       set("productImageUrl", product.image_url);
       set("productDimensions", product.dimensions);
 
-      if (product.images) {
-        try {
-          const arr = typeof product.images === "string" ? JSON.parse(product.images) : product.images;
-          document.getElementById("productImages").value = Array.isArray(arr) ? arr.join(", ") : product.images;
-        } catch (e) {
-          document.getElementById("productImages").value = product.images;
-        }
-      } else {
-        document.getElementById("productImages").value = "";
-      }
+      // Notas de cata: JSON {es:[],en:[]} guardado como texto.
+      const notes = parseJsonField(product.tasting_notes);
+      set("productNotesEs", Array.isArray(notes?.es) ? notes.es.join(", ") : "");
+      set("productNotesEn", Array.isArray(notes?.en) ? notes.en.join(", ") : "");
 
-      set("productRating", product.rating || "0");
-      document.getElementById("productDeal").checked = !!product.is_deal;
-      document.getElementById("productBestseller").checked = !!product.is_bestseller;
-      document.getElementById("productNew").checked = !!product.is_new;
-      document.getElementById("productFast").checked = !!product.is_fast;
-      document.getElementById("productActive").checked = product.is_active !== false;
+      const images = parseJsonField(product.images);
+      set("productImages", Array.isArray(images) ? images.join(", ") : "");
+
+      set("productRating", product.rating ?? "0");
+      $("productDeal").checked = !!product.is_deal;
+      $("productBestseller").checked = !!product.is_bestseller;
+      $("productNew").checked = !!product.is_new;
+      $("productFast").checked = !!product.is_fast;
+      $("productActive").checked = product.is_active !== false;
       set("productMetaKeywords", product.meta_keywords);
       set("productMetaDescription", product.meta_description);
 
-      const isTraceable = product.farm || product.variety || product.roast_date || product.aroma;
-      document.getElementById("productTraceable").checked = !!isTraceable;
-      set("productFarm", product.farm);
-      set("productVariety", product.variety);
-      set("productRoastDate", product.roast_date);
-      set("productAroma", product.aroma);
+      // Stock: solo lectura en edición, se mueve por inventory_movements.
+      $("createStockGroup").hidden = true;
+      $("editStockBox").hidden = false;
+      $("roStock").textContent = Number(product.stock_quantity) || 0;
+      $("roReserved").textContent = Number(product.stock_reserved) || 0;
+      $("roAvailable").textContent = availableStock(product);
 
-      updateCoffeeFieldsVisibility(false);
-      updateTraceabilityFieldsVisibility();
+      $("variantsUnavailable").hidden = true;
+      $("variantsArea").hidden = false;
+      loadVariants(productId);
+
+      updateCoffeeFieldsVisibility();
       updateMarginHint();
-      document.getElementById("productModal").hidden = false;
+      updateImagePreview();
+      showTab("basico");
+      openModal($("productModal"), $("productName"));
     }
 
-    function openDeleteModal(productId, productName) {
-      currentEditProductId = productId;
-      document.getElementById("deleteProductName").textContent = productName;
-      document.getElementById("deleteModal").hidden = false;
-    }
-
-    async function confirmDelete() {
-      if (!currentEditProductId) return;
+    function parseJsonField(value) {
+      if (value == null || value === "") return null;
+      if (typeof value === "object") return value;
       try {
-        const response = await fetch(`/api/inventory/products/${currentEditProductId}`, {
-          method: "DELETE", credentials: "include",
-        });
-        if (!response.ok) {
-          const data = await response.json().catch(() => ({}));
-          toast(data.error || "No se pudo eliminar el producto", "error");
-          return;
-        }
-        toast("Producto eliminado correctamente", "success");
-        document.getElementById("deleteModal").hidden = true;
-        loadProducts();
-      } catch (err) {
-        console.error("Error:", err);
-        toast("Error al eliminar el producto", "error");
+        return JSON.parse(value);
+      } catch {
+        return null;
       }
     }
 
-    // ── Guardar ─────────────────────────────────────────────────────
-    document.getElementById("productForm").addEventListener("submit", async (e) => {
+    // ── Variantes ───────────────────────────────────────────────────
+    async function loadVariants(productId) {
+      const tbody = $("variantsTableBody");
+      tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Cargando variantes…</td></tr>';
+      try {
+        const res = await fetch(`/api/inventory/products/${encodeURIComponent(productId)}/variants`, {
+          credentials: "include",
+        });
+        if (!res.ok) throw new Error("Error");
+        const data = await res.json();
+        currentVariants = data.variants || [];
+        renderVariants();
+      } catch (err) {
+        console.error("Error:", err);
+        tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No se pudieron cargar las variantes.</td></tr>';
+      }
+    }
+
+    function renderVariants() {
+      const tbody = $("variantsTableBody");
+      if (!currentVariants.length) {
+        tbody.innerHTML =
+          '<tr><td colspan="7" class="empty-state">Sin variantes. La tienda usará el precio y stock del producto.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = currentVariants.map((v) => `
+        <tr>
+          <td>${esc(v.size_label) || "—"}</td>
+          <td>${esc(v.grind_label) || "—"}</td>
+          <td style="text-align:right;">${cop(v.price_cop)}</td>
+          <td style="text-align:center;">${Number(v.stock_quantity) || 0}</td>
+          <td>${esc(v.sku_suffix) || "—"}</td>
+          <td style="text-align:center;">
+            ${v.is_active
+              ? '<span class="badge badge-success">Sí</span>'
+              : '<span class="badge badge-neutral">No</span>'}
+          </td>
+          <td style="text-align:right; white-space:nowrap;">
+            <button type="button" class="icon-btn variantToggleBtn" data-variant-id="${v.id}"
+                    title="${v.is_active ? "Desactivar" : "Activar"}"
+                    aria-label="${v.is_active ? "Desactivar" : "Activar"} variante">
+              ${v.is_active ? "⦸" : "✓"}
+            </button>
+            <button type="button" class="icon-btn icon-btn--danger variantDeleteBtn" data-variant-id="${v.id}"
+                    title="Eliminar variante" aria-label="Eliminar variante">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path>
+              </svg>
+            </button>
+          </td>
+        </tr>`).join("");
+    }
+
+    $("variantsTableBody").addEventListener("click", async (e) => {
+      const btn = e.target.closest("button[data-variant-id]");
+      if (!btn) return;
+      const variantId = btn.getAttribute("data-variant-id");
+      const variant = currentVariants.find((v) => String(v.id) === String(variantId));
+      if (!variant) return;
+
+      if (btn.classList.contains("variantToggleBtn")) {
+        await saveVariant(variantId, { is_active: !variant.is_active });
+      } else if (btn.classList.contains("variantDeleteBtn")) {
+        await deleteVariant(variantId);
+      }
+    });
+
+    async function saveVariant(variantId, payload) {
+      try {
+        const res = await fetch(`/api/inventory/variants/${variantId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          toast(data.error || "No se pudo actualizar la variante", "error");
+          return;
+        }
+        toast("Variante actualizada", "success");
+        await loadVariants(editingProductId);
+        await loadProducts({ silent: true });
+      } catch (err) {
+        console.error("Error:", err);
+        toast("Error al actualizar la variante", "error");
+      }
+    }
+
+    async function deleteVariant(variantId) {
+      try {
+        const res = await fetch(`/api/inventory/variants/${variantId}`, {
+          method: "DELETE", credentials: "include",
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          toast(data.error || "No se pudo eliminar la variante", "error");
+          return;
+        }
+        toast("Variante eliminada", "success");
+        await loadVariants(editingProductId);
+        await loadProducts({ silent: true });
+      } catch (err) {
+        console.error("Error:", err);
+        toast("Error al eliminar la variante", "error");
+      }
+    }
+
+    $("addVariantBtn").addEventListener("click", async () => {
+      if (!editingProductId) return;
+      const size = $("newVariantSize").value.trim();
+      const grind = $("newVariantGrind").value.trim();
+      const price = $("newVariantPrice").value;
+
+      if (!size && !grind) {
+        toast("Indique al menos tamaño o molienda", "error");
+        return;
+      }
+      if (price === "") {
+        toast("El precio de la variante es requerido", "error");
+        return;
+      }
+
+      const btn = $("addVariantBtn");
+      btn.disabled = true;
+      try {
+        const res = await fetch(`/api/inventory/products/${encodeURIComponent(editingProductId)}/variants`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            size_label: size || null,
+            grind_label: grind || null,
+            price_cop: parseInt(price, 10),
+            stock_quantity: $("newVariantStock").value ? parseInt($("newVariantStock").value, 10) : 0,
+            sku_suffix: $("newVariantSku").value.trim() || null,
+            sort_order: currentVariants.length,
+          }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          toast(data.error || "No se pudo crear la variante", "error");
+          return;
+        }
+        ["newVariantSize", "newVariantGrind", "newVariantPrice", "newVariantStock", "newVariantSku"]
+          .forEach((id) => { $(id).value = ""; });
+        toast("Variante creada", "success");
+        await loadVariants(editingProductId);
+        await loadProducts({ silent: true });
+      } catch (err) {
+        console.error("Error:", err);
+        toast("Error al crear la variante", "error");
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
+    // ── Modal de stock ──────────────────────────────────────────────
+    function openStockModal(productId) {
+      const product = allProducts.find((p) => p.id === productId);
+      if (!product) return;
+
+      stockProductId = productId;
+      $("stockError").hidden = true;
+      $("stockProductName").textContent = product.name;
+      $("stockCurrent").textContent = Number(product.stock_quantity) || 0;
+      $("stockReservedRO").textContent = Number(product.stock_reserved) || 0;
+      $("stockMovementType").value = "ajuste";
+      $("stockQuantity").value = Number(product.stock_quantity) || 0;
+      $("stockReason").value = "";
+      updateStockQuantityLabel();
+      openModal($("stockModal"), $("stockQuantity"));
+    }
+
+    function updateStockQuantityLabel() {
+      const type = $("stockMovementType").value;
+      $("stockQuantityLabel").textContent =
+        type === "ajuste" ? "Nuevo stock" : "Cantidad";
+    }
+
+    $("stockMovementType").addEventListener("change", updateStockQuantityLabel);
+
+    async function confirmStockMovement() {
+      if (!stockProductId) return;
+      const quantity = $("stockQuantity").value;
+      if (quantity === "") {
+        $("stockError").textContent = "Indique la cantidad.";
+        $("stockError").hidden = false;
+        return;
+      }
+
+      const btn = $("confirmStockBtn");
+      btn.disabled = true;
+      try {
+        const res = await fetch("/api/inventory/movements", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            product_id: stockProductId,
+            movement_type: $("stockMovementType").value,
+            quantity: parseInt(quantity, 10),
+            reason: $("stockReason").value.trim() || "Ajuste desde el panel de productos",
+            reference: "ADMIN",
+          }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          $("stockError").textContent = data.error || "No se pudo registrar el movimiento.";
+          $("stockError").hidden = false;
+          return;
+        }
+        toast(`Stock actualizado: ${data.stockBefore} → ${data.stockAfter}`, "success");
+        closeModal($("stockModal"));
+        await loadProducts({ silent: true });
+      } catch (err) {
+        console.error("Error:", err);
+        $("stockError").textContent = "Error al registrar el movimiento.";
+        $("stockError").hidden = false;
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    // ── Modal desactivar / eliminar ─────────────────────────────────
+    function openDeleteModal(productId) {
+      const product = allProducts.find((p) => p.id === productId);
+      if (!product) return;
+      deletingProductId = productId;
+      $("deleteProductName").textContent = product.name;
+      $("hardDeleteCheck").checked = false;
+      updateDeleteMode();
+      openModal($("deleteModal"), $("closeDeleteModalBtn"));
+    }
+
+    function updateDeleteMode() {
+      const hard = $("hardDeleteCheck").checked;
+      $("hardDeleteWarning").hidden = !hard;
+      $("deleteModalTitle").textContent = hard ? "Eliminar producto" : "Desactivar producto";
+      $("confirmDeleteBtn").textContent = hard ? "Eliminar definitivamente" : "Desactivar";
+    }
+
+    $("hardDeleteCheck").addEventListener("change", updateDeleteMode);
+
+    async function confirmDelete() {
+      if (!deletingProductId) return;
+      const hard = $("hardDeleteCheck").checked;
+      const btn = $("confirmDeleteBtn");
+      btn.disabled = true;
+      try {
+        const url = `/api/inventory/products/${encodeURIComponent(deletingProductId)}${hard ? "?hard=true" : ""}`;
+        const response = await fetch(url, { method: "DELETE", credentials: "include" });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          toast(data.error || "No se pudo completar la acción", "error");
+          return;
+        }
+        toast(hard ? "Producto eliminado definitivamente" : "Producto desactivado", "success");
+        closeModal($("deleteModal"));
+        deletingProductId = null;
+        await loadProducts({ silent: true });
+      } catch (err) {
+        console.error("Error:", err);
+        toast("Error al procesar la solicitud", "error");
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    // ── Guardar producto ────────────────────────────────────────────
+    function commaList(value) {
+      return value.split(",").map((s) => s.trim()).filter(Boolean);
+    }
+
+    $("productForm").addEventListener("submit", async (e) => {
       e.preventDefault();
+      clearFormError();
+
+      const name = $("productName").value.trim();
+      const priceRaw = $("productPrice").value;
+
+      if (!name) return showFormError("El nombre del producto es requerido.", "productName");
+      if (priceRaw === "") return showFormError("El precio de venta es requerido.", "productPrice");
+      if (Number(priceRaw) < 0) return showFormError("El precio no puede ser negativo.", "productPrice");
+
+      const isCreate = !editingProductId;
+      const productId = isCreate ? $("productId").value.trim() : editingProductId;
+      if (isCreate && !productId) {
+        return showFormError("El ID del producto es requerido.", "productId");
+      }
+
+      // Notas de cata: solo se envían si hay alguna.
+      const notesEs = commaList($("productNotesEs").value);
+      const notesEn = commaList($("productNotesEn").value);
+      const tastingNotes = notesEs.length || notesEn.length ? { es: notesEs, en: notesEn } : null;
+
+      const images = commaList($("productImages").value);
 
       const productData = {
-        name: document.getElementById("productName").value,
-        sku: document.getElementById("productSku").value || null,
-        description: document.getElementById("productDescription").value,
-        category: document.getElementById("productCategory").value,
-        subcategory: document.getElementById("productSubcategory").value,
-        origin: document.getElementById("productOrigin").value || null,
-        process: document.getElementById("productProcess").value || null,
-        roast: document.getElementById("productRoast").value || null,
-        price: parseInt(document.getElementById("productPrice").value),
-        cost: document.getElementById("productCost").value ? parseInt(document.getElementById("productCost").value) : null,
-        stock_quantity: document.getElementById("productStock").value ? parseInt(document.getElementById("productStock").value) : 0,
-        stock_min: document.getElementById("productStockMin").value ? parseInt(document.getElementById("productStockMin").value) : 0,
-        weight: document.getElementById("productWeight").value ? parseFloat(document.getElementById("productWeight").value) : null,
-        weight_unit: document.getElementById("productWeightUnit").value,
-        image_url: document.getElementById("productImageUrl").value || null,
-        dimensions: document.getElementById("productDimensions").value || null,
-        rating: parseFloat(document.getElementById("productRating").value) || 0,
-        is_deal: document.getElementById("productDeal").checked,
-        is_bestseller: document.getElementById("productBestseller").checked,
-        is_new: document.getElementById("productNew").checked,
-        is_fast: document.getElementById("productFast").checked,
-        is_active: document.getElementById("productActive").checked,
-        meta_keywords: document.getElementById("productMetaKeywords").value || null,
-        meta_description: document.getElementById("productMetaDescription").value || null,
-        farm: document.getElementById("productFarm").value || null,
-        variety: document.getElementById("productVariety").value || null,
-        roast_date: document.getElementById("productRoastDate").value || null,
-        aroma: document.getElementById("productAroma").value || null,
+        name,
+        name_en: $("productNameEn").value.trim() || null,
+        slug: $("productSlug").value.trim() || slugify(name),
+        sku: $("productSku").value.trim() || null,
+        description: $("productDescription").value,
+        category: $("productCategory").value,
+        subcategory: $("productSubcategory").value,
+        origin: $("productOrigin").value || null,
+        process: $("productProcess").value || null,
+        roast: $("productRoast").value || null,
+        tasting_notes: tastingNotes,
+        price: parseInt(priceRaw, 10),
+        price_usd: $("productPriceUsd").value ? parseInt($("productPriceUsd").value, 10) : null,
+        cost: $("productCost").value ? parseInt($("productCost").value, 10) : null,
+        stock_min: $("productStockMin").value ? parseInt($("productStockMin").value, 10) : 0,
+        weight: $("productWeight").value ? parseFloat($("productWeight").value) : null,
+        weight_unit: $("productWeightUnit").value,
+        image_url: $("productImageUrl").value || null,
+        images: images.length ? images : null,
+        dimensions: $("productDimensions").value || null,
+        rating: parseFloat($("productRating").value) || 0,
+        is_deal: $("productDeal").checked,
+        is_bestseller: $("productBestseller").checked,
+        is_new: $("productNew").checked,
+        is_fast: $("productFast").checked,
+        is_active: $("productActive").checked,
+        meta_keywords: $("productMetaKeywords").value || null,
+        meta_description: $("productMetaDescription").value || null,
       };
 
-      const imagesInput = document.getElementById("productImages").value.trim();
-      productData.images = imagesInput
-        ? imagesInput.split(",").map((s) => s.trim()).filter(Boolean)
-        : null;
+      // El stock inicial solo aplica al crear; al editar se mueve por movimientos.
+      if (isCreate) {
+        productData.id = productId;
+        productData.stock_quantity = $("productStock").value ? parseInt($("productStock").value, 10) : 0;
+      }
 
-      const saveBtn = document.getElementById("saveProductBtn");
+      const saveBtn = $("saveProductBtn");
       const originalText = saveBtn.textContent;
       saveBtn.disabled = true;
       saveBtn.textContent = "Guardando…";
 
       try {
-        let response;
-        if (currentEditProductId) {
-          response = await fetch(`/api/inventory/products/${currentEditProductId}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
-            body: JSON.stringify(productData),
-          });
-        } else {
-          const productId = document.getElementById("productId").value;
-          if (!productId) { toast("El ID del producto es requerido", "error"); return; }
-          productData.id = productId;
-          response = await fetch("/api/inventory/products", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
-            body: JSON.stringify(productData),
-          });
-        }
+        const response = isCreate
+          ? await fetch("/api/inventory/products", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              credentials: "include",
+              body: JSON.stringify(productData),
+            })
+          : await fetch(`/api/inventory/products/${encodeURIComponent(editingProductId)}`, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              credentials: "include",
+              body: JSON.stringify(productData),
+            });
 
+        const data = await response.json().catch(() => ({}));
         if (!response.ok) {
-          const data = await response.json().catch(() => ({}));
-          toast(data.error || "No se pudo guardar el producto", "error");
+          const isSlugConflict = (data.error || "").includes("slug");
+          showFormError(data.error || "No se pudo guardar el producto.", isSlugConflict ? "productSlug" : null);
           return;
         }
-        toast(currentEditProductId ? "Producto actualizado correctamente" : "Producto creado correctamente", "success");
-        document.getElementById("productModal").hidden = true;
-        loadProducts();
+
+        toast(isCreate ? "Producto creado correctamente" : "Producto actualizado correctamente", "success");
+        closeModal($("productModal"));
+        await loadProducts({ silent: true });
       } catch (err) {
         console.error("Error:", err);
-        toast("Error al guardar el producto", "error");
+        showFormError("Error de conexión al guardar el producto.");
       } finally {
         saveBtn.disabled = false;
         saveBtn.textContent = originalText;
       }
     });
 
-    function attachButtonListeners() {
-      document.querySelectorAll(".editBtn").forEach((btn) => {
-        btn.addEventListener("click", () => openEditModal(btn.getAttribute("data-product-id")));
-      });
-      document.querySelectorAll(".deleteBtn").forEach((btn) => {
-        btn.addEventListener("click", () =>
-          openDeleteModal(btn.getAttribute("data-product-id"), btn.getAttribute("data-product-name"))
-        );
-      });
-    }
-
     // ── Eventos ─────────────────────────────────────────────────────
-    document.getElementById("productCategory").addEventListener("change", () => updateCoffeeFieldsVisibility());
-    document.getElementById("productTraceable").addEventListener("change", updateTraceabilityFieldsVisibility);
-    document.getElementById("productPrice").addEventListener("input", updateMarginHint);
-    document.getElementById("productCost").addEventListener("input", updateMarginHint);
+    $("productCategory").addEventListener("change", updateCoffeeFieldsVisibility);
+    $("productPrice").addEventListener("input", updateMarginHint);
+    $("productCost").addEventListener("input", updateMarginHint);
+    $("productImageUrl").addEventListener("change", updateImagePreview);
+    $("imagePreview").addEventListener("error", () => { $("imagePreviewWrap").hidden = true; });
 
-    document.getElementById("categoryFilter").addEventListener("change", filterProducts);
-    document.getElementById("activeFilter").addEventListener("change", filterProducts);
-    document.getElementById("stockFilter").addEventListener("change", filterProducts);
-    document.getElementById("searchInput").addEventListener("input", filterProducts);
+    // Al crear, el slug sigue al nombre mientras no se edite a mano.
+    $("productName").addEventListener("input", () => {
+      const slugField = $("productSlug");
+      if (!editingProductId && !slugField.dataset.touched) {
+        slugField.value = slugify($("productName").value);
+      }
+    });
+    $("productSlug").addEventListener("input", () => {
+      $("productSlug").dataset.touched = "1";
+    });
 
-    document.getElementById("openCreateProductBtn").addEventListener("click", openCreateModal);
-    document.getElementById("refreshBtn").addEventListener("click", () => { loadProducts(); toast("Datos actualizados", "info"); });
-    document.getElementById("closeProductModalBtn").addEventListener("click", () => { document.getElementById("productModal").hidden = true; });
-    document.getElementById("closeProductModalX").addEventListener("click", () => { document.getElementById("productModal").hidden = true; });
-    document.getElementById("confirmDeleteBtn").addEventListener("click", confirmDelete);
-    document.getElementById("closeDeleteModalBtn").addEventListener("click", () => { document.getElementById("deleteModal").hidden = true; });
+    $("categoryFilter").addEventListener("change", () => applyFilters());
+    $("activeFilter").addEventListener("change", () => applyFilters());
+    $("stockFilter").addEventListener("change", () => applyFilters());
+    $("searchInput").addEventListener("input", () => applyFilters());
+
+    $("openCreateProductBtn").addEventListener("click", () => {
+      $("productSlug").dataset.touched = "";
+      openCreateModal();
+    });
+
+    $("refreshBtn").addEventListener("click", async () => {
+      const btn = $("refreshBtn");
+      btn.disabled = true;
+      const ok = await loadProducts();
+      btn.disabled = false;
+      if (ok) toast("Datos actualizados", "info");
+    });
+
+    $("closeProductModalBtn").addEventListener("click", () => closeModal($("productModal")));
+    $("closeProductModalX").addEventListener("click", () => closeModal($("productModal")));
+    $("closeDeleteModalBtn").addEventListener("click", () => closeModal($("deleteModal")));
+    $("closeDeleteModalX").addEventListener("click", () => closeModal($("deleteModal")));
+    $("closeStockModalBtn").addEventListener("click", () => closeModal($("stockModal")));
+    $("closeStockModalX").addEventListener("click", () => closeModal($("stockModal")));
+    $("confirmDeleteBtn").addEventListener("click", confirmDelete);
+    $("confirmStockBtn").addEventListener("click", confirmStockMovement);
 
     // Cerrar al hacer clic en el backdrop
-    document.getElementById("productModal").addEventListener("click", (e) => {
-      if (e.target.id === "productModal") e.target.hidden = true;
-    });
-    document.getElementById("deleteModal").addEventListener("click", (e) => {
-      if (e.target.id === "deleteModal") e.target.hidden = true;
+    ["productModal", "stockModal", "deleteModal"].forEach((id) => {
+      $(id).addEventListener("click", (e) => {
+        if (e.target.id === id) closeModal($(id));
+      });
     });
 
     // ── Init ────────────────────────────────────────────────────────
@@ -806,8 +1502,23 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-accent) 18%, transparent);
   }
 
-  /* ── Celda de producto ─────────────────────────────────────────── */
+  /* ── Tabla ─────────────────────────────────────────────────────── */
+  .products-table { min-width: 900px; }
   .products-table tbody td { vertical-align: middle; }
+  .th-sort {
+    appearance: none; border: 0; background: transparent; cursor: pointer;
+    font: inherit; color: inherit; padding: 0;
+    display: inline-flex; align-items: center; gap: 5px;
+  }
+  .th-sort:hover { color: var(--color-primary); }
+  .th-sort.is-sorted { color: var(--color-accent); }
+  .sort-ind { font-size: 9px; }
+  .muted-dash { color: var(--muted-2); }
+  .margin-val { font-weight: 600; }
+  .margin-val.is-good { color: var(--ok); }
+  .margin-val.is-mid { color: var(--color-accent); }
+  .margin-val.is-bad { color: var(--danger); }
+
   .prod-cell { display: flex; align-items: center; gap: 12px; }
   .prod-thumb {
     width: 38px; height: 38px; flex-shrink: 0;
@@ -826,6 +1537,17 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 280px;
   }
   .stock-num { font-weight: 600; color: var(--color-primary); }
+  .stock-note {
+    display: block; font-size: 10.5px; color: var(--muted); margin-top: 2px;
+  }
+
+  /* ── Paginación ────────────────────────────────────────────────── */
+  .pager {
+    display: flex; align-items: center; justify-content: center; gap: 14px;
+    padding: 12px 18px; border-top: 1px solid var(--rule);
+  }
+  .pager[hidden] { display: none; }
+  .pager-info { font-size: 13px; color: var(--muted); }
 
   /* ── Botones de icono (acciones de fila) ───────────────────────── */
   .icon-btn {
@@ -834,33 +1556,115 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     display: inline-grid; place-items: center;
     border: 1px solid var(--rule); border-radius: var(--radius-sm);
     background: var(--paper); color: var(--muted);
-    margin-left: 4px;
+    margin-left: 4px; font-size: 13px;
     transition: background .12s, color .12s, border-color .12s;
   }
   .icon-btn:hover { background: var(--hover); color: var(--color-primary); border-color: var(--rule-2); }
+  .icon-btn:focus-visible {
+    outline: 2px solid var(--color-accent); outline-offset: 1px;
+  }
   .icon-btn--danger:hover {
     background: color-mix(in oklab, var(--danger) 8%, white);
     color: var(--danger); border-color: color-mix(in oklab, var(--danger) 30%, white);
   }
 
-  /* ── Modal extras ──────────────────────────────────────────────── */
+  /* ── Modal ─────────────────────────────────────────────────────── */
   .modal[hidden] { display: none; }
+  .modal-content--wide { max-width: 760px; }
   .modal-close {
     appearance: none; border: 0; background: transparent; cursor: pointer;
     width: 32px; height: 32px; display: grid; place-items: center;
     color: var(--muted); border-radius: 8px;
   }
   .modal-close:hover { background: var(--hover); color: var(--color-primary); }
-  .trace-box {
+  .modal-lead { margin: 0 0 12px; color: var(--muted); font-size: 14px; }
+
+  .tabs {
+    display: flex; flex-wrap: wrap; gap: 2px;
+    padding: 0 20px; border-bottom: 1px solid var(--rule);
+  }
+  .tab {
+    appearance: none; border: 0; background: transparent; cursor: pointer;
+    font: inherit; font-size: 13px; font-weight: 500;
+    padding: 10px 14px; color: var(--muted);
+    border-bottom: 2px solid transparent; margin-bottom: -1px;
+  }
+  .tab:hover { color: var(--color-primary); }
+  .tab.is-active { color: var(--color-primary); border-bottom-color: var(--color-accent); }
+  .tab:focus-visible { outline: 2px solid var(--color-accent); outline-offset: -2px; }
+
+  .tab-panel { display: none; }
+  .tab-panel.is-active { display: block; }
+
+  .readonly-box {
     border: 1px solid var(--rule); border-radius: var(--radius-sm);
     background: color-mix(in oklab, var(--color-primary) 3%, white);
-    padding: 14px; margin: 8px 0 16px;
+    padding: 14px; margin: 4px 0 16px;
   }
-  .trace-box[hidden] { display: none; }
-  #coffeeFields[hidden], #idFieldContainer[hidden] { display: none; }
+  .readonly-box[hidden] { display: none; }
+  .readonly-row {
+    display: flex; justify-content: space-between; align-items: baseline;
+    font-size: 13px; color: var(--muted); padding: 3px 0;
+  }
+  .readonly-row strong { color: var(--color-primary); font-size: 15px; }
+  .readonly-note { margin: 10px 0 0; font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+  .info-box {
+    border: 1px solid var(--rule); border-left: 3px solid var(--color-accent);
+    border-radius: var(--radius-sm);
+    background: color-mix(in oklab, var(--color-accent) 6%, white);
+    padding: 11px 14px; margin: 8px 0 16px;
+    font-size: 12.5px; color: var(--muted); line-height: 1.5;
+  }
+  .info-box a { color: var(--color-primary); }
+
+  .warn-box {
+    border: 1px solid color-mix(in oklab, var(--danger) 30%, white);
+    border-radius: var(--radius-sm);
+    background: color-mix(in oklab, var(--danger) 7%, white);
+    padding: 11px 14px; margin-top: 12px;
+    font-size: 12.5px; color: var(--danger); line-height: 1.5;
+  }
+  .warn-box[hidden] { display: none; }
+
+  .form-error {
+    flex: 1; margin: 0; font-size: 13px; color: var(--danger); text-align: left;
+  }
+  .form-error[hidden] { display: none; }
+  .has-error {
+    border-color: var(--danger) !important;
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--danger) 15%, transparent);
+  }
+
+  #coffeeFields[hidden], #idFieldContainer[hidden],
+  #createStockGroup[hidden], #variantsArea[hidden],
+  #variantsUnavailable[hidden], #imagePreviewWrap[hidden] { display: none; }
+
   .flags-grid {
     display: grid; gap: 8px;
     grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  }
+
+  .img-preview {
+    max-width: 160px; max-height: 160px; border-radius: var(--radius-sm);
+    border: 1px solid var(--rule); margin-bottom: 16px; display: block;
+  }
+
+  /* ── Variantes ─────────────────────────────────────────────────── */
+  .variants-table { min-width: 640px; font-size: 13px; }
+  .variant-form {
+    display: grid; gap: 8px;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    align-items: center;
+  }
+  .variant-form input {
+    padding: 8px 10px; font: inherit; font-size: 13px;
+    border: 1px solid var(--rule); border-radius: var(--radius-sm);
+    background: var(--paper); color: var(--color-text);
+  }
+  .variant-form input:focus {
+    outline: none; border-color: var(--color-accent);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-accent) 18%, transparent);
   }
 
   /* ── Toasts ────────────────────────────────────────────────────── */
@@ -881,4 +1685,11 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   .toast--success { background: var(--ok); }
   .toast--error { background: var(--danger); }
   .toast--info { background: var(--color-primary); }
+
+  @media (max-width: 768px) {
+    .tabs { padding: 0 10px; }
+    .tab { padding: 10px 10px; font-size: 12.5px; }
+    .modal-actions { flex-wrap: wrap; }
+    .form-error { flex-basis: 100%; margin-bottom: 8px; }
+  }
 </style>
