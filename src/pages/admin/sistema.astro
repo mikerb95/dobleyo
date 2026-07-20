@@ -474,16 +474,37 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   const ERR_LIMIT = 50;
   let errTotal = 0;
 
-  // ── Tab switching ─────────────────────────────────────────────────────────
-  document.querySelectorAll('.sys-tab').forEach((btn: HTMLElement) => {
-    btn.addEventListener('click', () => {
-      const tab = btn.dataset.tab;
-      document.querySelectorAll('.sys-tab').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
-      btn.classList.add('active');
-      const panel = el(`tab-${tab}`);
-      panel.classList.remove('hidden');
-      if (!panel.dataset.loaded) activateTab(tab, panel);
+  // ── Tab switching (con soporte ARIA y navegación por teclado) ──────────────
+  const tabButtons = Array.from(document.querySelectorAll('.sys-tab')) as HTMLElement[];
+
+  function selectTab(btn: HTMLElement, focus = false) {
+    const tab = btn.dataset.tab;
+    tabButtons.forEach(b => {
+      const active = b === btn;
+      b.classList.toggle('active', active);
+      b.setAttribute('aria-selected', String(active));
+      b.tabIndex = active ? 0 : -1;
+    });
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+    btn.classList.add('active');
+    if (focus) btn.focus();
+    const panel = el(`tab-${tab}`);
+    panel.classList.remove('hidden');
+    if (!panel.dataset.loaded) activateTab(tab, panel);
+  }
+
+  tabButtons.forEach((btn, i) => {
+    btn.addEventListener('click', () => selectTab(btn));
+    btn.addEventListener('keydown', (e: KeyboardEvent) => {
+      let target: HTMLElement | null = null;
+      if (e.key === 'ArrowRight') target = tabButtons[(i + 1) % tabButtons.length];
+      else if (e.key === 'ArrowLeft') target = tabButtons[(i - 1 + tabButtons.length) % tabButtons.length];
+      else if (e.key === 'Home') target = tabButtons[0];
+      else if (e.key === 'End') target = tabButtons[tabButtons.length - 1];
+      if (target) {
+        e.preventDefault();
+        selectTab(target, true);
+      }
     });
   });
 
