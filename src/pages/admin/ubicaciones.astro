@@ -572,6 +572,12 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       $("drawerBody").querySelectorAll("[data-act]").forEach((btn) => {
         btn.addEventListener("click", () => handleAction(btn.dataset.act, detail));
       });
+      $("drawerBody").querySelectorAll("[data-transfer]").forEach((btn) => {
+        btn.addEventListener("click", () => openTransferModal(detail, detail.quants[Number(btn.dataset.transfer)]));
+      });
+      $("drawerBody").querySelectorAll("[data-adjust]").forEach((btn) => {
+        btn.addEventListener("click", () => openAdjustModal(detail, detail.quants[Number(btn.dataset.adjust)]));
+      });
     }
 
     function closeDrawer() {
