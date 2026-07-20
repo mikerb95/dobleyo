@@ -274,11 +274,15 @@ function initTrazabilidad() {
 
     resFarmerBody.innerHTML = '';
 
+    // Los nombres en `farms.name` suelen venir con el prefijo "Finca" incluido
+    const farmName = farm.name || '';
+    const farmLabel = /^finca\b/i.test(farmName) ? farmName : ('Finca ' + farmName).trim();
+
     if (farm.cover_image_url) {
       const img = document.createElement('img');
       img.className = 'trace-farmer-photo';
       img.src = farm.cover_image_url;
-      img.alt = 'Finca ' + (farm.name || '');
+      img.alt = farmLabel;
       img.loading = 'lazy';
       resFarmerBody.appendChild(img);
     }
