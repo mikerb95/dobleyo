@@ -9,7 +9,7 @@ import {
   createHarvest, storeGreenCoffee, sendToRoasting, receiveRoasted,
   storeRoasted, getRoastedStorageDetail, createPackaging,
   getHarvests, getGreenInventory, getRoastingBatches, getRoastedCoffee,
-  getRoastedForStorage, getPackaged, getLotStage, getAllLots,
+  getRoastedForStorage, getPackaged, getPackagingStats, getLotStage, getAllLots,
   deleteHarvest, deleteRoastedStorage, deleteRoastedCoffee, deleteRoastingBatch,
   getRoastedForCupping, getCuppings, createCupping,
 } from '../services/coffeeService.js';
