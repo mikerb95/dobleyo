@@ -247,6 +247,28 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
             </div>
         </div>
 
+        <!-- Estancados -->
+        <div class="tab-panel" id="panel-stuck">
+            <div class="toolbar">
+                <span id="stuckSummary" style="color:#7a6652;font-size:0.88rem;">Cargando...</span>
+            </div>
+            <div class="alert-box alert-warn" style="margin-bottom:1rem;">
+                Envíos que exceden el SLA esperado por estado: 24h sin guía asignada, 48h sin recolección, o 7 días en tránsito. Puede indicar que el transportador dejó la guía sin novedad.
+            </div>
+            <div class="table-wrap">
+                <table class="erp-table">
+                    <thead>
+                        <tr>
+                            <th>Referencia</th><th>Cliente</th><th>Ciudad</th><th>Estado</th><th>Transportadora</th><th>Tiempo en estado</th>
+                        </tr>
+                    </thead>
+                    <tbody id="stuckBody">
+                        <tr><td colspan="6" class="empty">Cargando...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
     </div><!-- /page-body -->
 
     <!-- Modal cotizar / generar guía -->
