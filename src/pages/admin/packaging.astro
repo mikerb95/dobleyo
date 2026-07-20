@@ -870,6 +870,15 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   .plan-row span { color: var(--muted); }
   .plan-row b { color: var(--color-primary); font-weight: 600; text-align: right; }
 
+  /* ── Tabla de recientes ────────────────────────────────────────── */
+  .cell-notes {
+    max-width: 220px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--muted);
+  }
+
   /* ── Toasts ────────────────────────────────────────────────────── */
   .toast-stack {
     position: fixed; bottom: 20px; right: 20px; z-index: 60;
