@@ -198,6 +198,9 @@ function initTrazabilidad() {
       resFlavorSection.style.display = 'none';
     }
 
+    // Caficultor y finca
+    renderFarmer(data.farm);
+
     // Timeline
     if (resTimeline) {
       resTimeline.innerHTML = '';
