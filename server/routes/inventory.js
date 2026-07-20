@@ -430,9 +430,13 @@ inventoryRouter.post('/movements', async (req, res) => {
 
     // Actualizar stock del producto
     await query(
-      'UPDATE products SET stock_quantity = ? WHERE id = ?',
+      "UPDATE products SET stock_quantity = ?, updated_at = datetime('now') WHERE id = ?",
       [newStock, product_id]
     );
+
+    await logAudit(user_id, movement_type, 'product', product_id, {
+      stockBefore: currentStock, stockAfter: newStock, reason, reference
+    });
 
     res.json({
       success: true,
