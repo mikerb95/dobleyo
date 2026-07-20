@@ -328,12 +328,17 @@ inventoryRouter.delete('/products/:id', async (req, res) => {
     }
 
     if (hard === 'true') {
-      // Eliminación física
+      // Eliminación física (arrastra variantes por ON DELETE CASCADE)
       await query('DELETE FROM products WHERE id = ?', [id]);
     } else {
-      // Soft delete
-      await query('UPDATE products SET is_active = FALSE WHERE id = ?', [id]);
+      // Soft delete: el producto deja de ser visible en la tienda
+      await query("UPDATE products SET is_active = 0, updated_at = datetime('now') WHERE id = ?", [id]);
     }
+
+    await logAudit(req.user?.id, hard === 'true' ? 'delete' : 'deactivate', 'product', id, {
+      name: existing.rows[0].name,
+      hard: hard === 'true'
+    });
 
     res.json({
       success: true,
