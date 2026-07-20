@@ -425,13 +425,14 @@ try {
           <p class="newsletter-sub">Subscribe and receive your code instantly. We'll also keep you posted on new harvests and releases.</p>
         </div>
         <form class="newsletter-form" id="homeNewsletterForm" novalidate>
+          <label for="homeNlEmail" class="sr-only">Email address</label>
           <input
             type="email"
             id="homeNlEmail"
             class="newsletter-input"
             placeholder="your@email.com"
             required
-            aria-label="Email address"
+            autocomplete="email"
           />
           <button type="submit" class="newsletter-btn">Subscribe</button>
         </form>
