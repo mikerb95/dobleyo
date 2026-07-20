@@ -502,6 +502,9 @@ const hreflang = getHreflangPair("/mayoristas");
   /* Hero Section */
   .hero {
     position: relative;
+    width: 100vw;
+    margin-left: 50%;
+    transform: translateX(-50%);
     min-height: 100vh;
     display: flex;
     align-items: center;
@@ -519,7 +522,21 @@ const hreflang = getHreflangPair("/mayoristas");
     bottom: 0;
     background: url("https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=1920&q=80")
       center/cover;
-    opacity: 0.15;
+    opacity: 0.35;
+  }
+
+  .hero::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+      180deg,
+      rgba(13, 13, 13, 0.55) 0%,
+      rgba(13, 13, 13, 0.75) 100%
+    );
   }
 
   .hero-content {
