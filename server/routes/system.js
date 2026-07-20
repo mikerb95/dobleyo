@@ -173,7 +173,9 @@ systemRouter.post('/admins/:id/reset-password', async (req, res) => {
 
 systemRouter.get('/errors', async (req, res) => {
   try {
-    const { limit = 50, offset = 0, level } = req.query;
+    const limit = Number.isFinite(parseInt(req.query.limit)) ? parseInt(req.query.limit) : 50;
+    const offset = Number.isFinite(parseInt(req.query.offset)) ? parseInt(req.query.offset) : 0;
+    const { level } = req.query;
     const params = [];
     let where = '';
     if (level) { where = ' WHERE el.level = ?'; params.push(level); }
@@ -184,7 +186,7 @@ systemRouter.get('/errors', async (req, res) => {
          FROM error_logs el LEFT JOIN users u ON el.user_id = u.id
          ${where}
          ORDER BY el.created_at DESC LIMIT ? OFFSET ?`,
-        [...params, parseInt(limit), parseInt(offset)]
+        [...params, limit, offset]
       ),
       query(
         `SELECT COUNT(*) as count FROM error_logs${where ? ' el' + where : ''}`,

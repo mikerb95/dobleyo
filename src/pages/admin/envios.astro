@@ -569,6 +569,92 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
             }
         }
 
+        // ── Estancados ────────────────────────────────────────────
+        async function loadStuck() {
+            const body = document.getElementById("stuckBody")!;
+            body.innerHTML = `<tr><td colspan="6" class="empty">Cargando...</td></tr>`;
+            try {
+                const stuck = await api("/stuck");
+                document.getElementById("stuckSummary")!.innerHTML = `<strong>${stuck.length}</strong> envíos exceden su SLA`;
+                if (!stuck.length) {
+                    body.innerHTML = `<tr><td colspan="6" class="empty">No hay envíos estancados. Todo dentro del SLA esperado.</td></tr>`;
+                    return;
+                }
+                body.innerHTML = stuck.map((s: any) => `
+                    <tr>
+                        <td><strong>${s.reference}</strong></td>
+                        <td>${s.customer_name}</td>
+                        <td>${s.shipping_city ?? "—"}</td>
+                        <td>${badge(s.status)}</td>
+                        <td>${s.delivery_company_name ?? "—"}</td>
+                        <td><span class="badge badge-err">${s.ageHours}h (SLA ${s.slaHours}h)</span></td>
+                    </tr>
+                `).join("");
+            } catch (err: any) {
+                body.innerHTML = `<tr><td colspan="6" class="empty">Error al cargar: ${err.message}</td></tr>`;
+            }
+        }
+
+        // ── Modal despacho manual ─────────────────────────────────
+        let manualOrderId: number | null = null;
+
+        function openManualModal(orderId: number, ref: string) {
+            manualOrderId = orderId;
+            document.getElementById("modalManualTitle")!.textContent = `Despacho manual — ${ref}`;
+            document.getElementById("modalManualAlert")!.innerHTML = "";
+            document.getElementById("manualMsg")!.textContent = "";
+            (document.getElementById("mCarrier") as HTMLInputElement).value = "";
+            (document.getElementById("mGuide") as HTMLInputElement).value = "";
+            (document.getElementById("mTrackingUrl") as HTMLInputElement).value = "";
+            (document.getElementById("mComments") as HTMLInputElement).value = "";
+            document.getElementById("modalManualBack")!.classList.add("open");
+        }
+
+        document.getElementById("btnManualDispatch")?.addEventListener("click", async () => {
+            if (!manualOrderId) return;
+            const btn = document.getElementById("btnManualDispatch") as HTMLButtonElement;
+            const msg = document.getElementById("manualMsg")!;
+            const carrierName = (document.getElementById("mCarrier") as HTMLInputElement).value.trim();
+            const guideNumber = (document.getElementById("mGuide") as HTMLInputElement).value.trim();
+            const trackingUrl = (document.getElementById("mTrackingUrl") as HTMLInputElement).value.trim();
+            const comments = (document.getElementById("mComments") as HTMLInputElement).value.trim();
+
+            if (!carrierName || !guideNumber) {
+                msg.style.color = "#721c24";
+                msg.textContent = "Transportador y número de guía son obligatorios.";
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = "Registrando...";
+            msg.textContent = "";
+            try {
+                await api(`/${manualOrderId}/dispatch-manual`, {
+                    method: "POST",
+                    body: JSON.stringify({ carrierName, guideNumber, trackingUrl: trackingUrl || undefined, comments: comments || undefined }),
+                });
+                msg.style.color = "#155724";
+                msg.textContent = "✅ Despacho registrado.";
+                setTimeout(() => {
+                    document.getElementById("modalManualBack")!.classList.remove("open");
+                    loadPending();
+                }, 1000);
+            } catch (err: any) {
+                msg.style.color = "#721c24";
+                msg.textContent = `❌ ${err.message}`;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "Registrar despacho";
+            }
+        });
+
+        document.getElementById("modalManualClose")?.addEventListener("click", () => {
+            document.getElementById("modalManualBack")!.classList.remove("open");
+        });
+        document.getElementById("modalManualBack")?.addEventListener("click", (e) => {
+            if (e.target === e.currentTarget) document.getElementById("modalManualBack")!.classList.remove("open");
+        });
+
         // ── Modal cotizar / crear ────────────────────────────────
         let currentOrderId: number | null = null;
         let selectedQuote: any = null;
@@ -721,7 +807,10 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
             if (e.target === e.currentTarget) document.getElementById("modalBack")!.classList.remove("open");
         });
         document.addEventListener("keydown", (e) => {
-            if (e.key === "Escape") document.getElementById("modalBack")!.classList.remove("open");
+            if (e.key === "Escape") {
+                document.getElementById("modalBack")!.classList.remove("open");
+                document.getElementById("modalManualBack")!.classList.remove("open");
+            }
         });
 
         // ── Init ──────────────────────────────────────────────────
