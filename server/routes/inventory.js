@@ -184,15 +184,18 @@ inventoryRouter.post('/products', async (req, res) => {
         weight, weight_unit, dimensions,
         meta_keywords, meta_description
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      // El driver libSQL rechaza `undefined`: todo campo opcional se normaliza a null.
       [
-        id, sku || null, name, name_en || null, finalSlug, description, category, subcategory,
-        origin, process, roast, jsonOrNull(tasting_notes), price, price_usd ?? null, cost ?? null, rating ?? 0,
+        id, sku ?? null, name, name_en ?? null, finalSlug, description ?? null,
+        category, subcategory ?? null,
+        origin ?? null, process ?? null, roast ?? null, jsonOrNull(tasting_notes),
+        price, price_usd ?? null, cost ?? null, rating ?? 0,
         is_deal ? 1 : 0, is_bestseller ? 1 : 0, is_new ? 1 : 0,
         is_fast ? 1 : 0, is_active !== false ? 1 : 0,
-        image_url, jsonOrNull(images),
+        image_url ?? null, jsonOrNull(images),
         stock_quantity || 0, stock_min || 0,
-        weight, weight_unit || 'g', dimensions,
-        meta_keywords, meta_description
+        weight ?? null, weight_unit || 'g', dimensions ?? null,
+        meta_keywords ?? null, meta_description ?? null
       ]
     );
 
