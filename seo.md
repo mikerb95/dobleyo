@@ -74,16 +74,16 @@ Agregado `noindex={true}` (o `<meta name="robots" content="noindex, nofollow">` 
 
 ---
 
-## Fase 3 — Accesibilidad (WCAG) — parcial ✅
+## Fase 3 — Accesibilidad (WCAG) ✅
 
 - [x] **Skip link** "Saltar al contenido" / "Skip to content" agregado en `Layout.astro`, con `id="main"` en `<main>` y estilo `.skip-link` en `styles.css` (oculto fuera de pantalla, visible en `:focus`)
 - [x] Verificado: `AdminLayout.astro` y `AppLayout.astro` ya usan landmark `<main>` — sin cambios necesarios
-- [ ] Revisar las ~20 `<img>` detectadas: decorativas con `alt=""` explícito, informativas con alt descriptivo
-- [ ] Reemplazar iconos tipográficos (`×` del topbar, `☰` del hamburger) por SVG con `aria-hidden` + texto accesible
-- [ ] Auditar `:focus-visible` en botones custom y contraste con Lighthouse/axe
-- [ ] Formularios: labels asociados en newsletter, contacto y checkout (no solo `aria-label`)
-- [ ] `prefers-reduced-motion`: desactivar beans animation, reveal.js y autoplay del video hero
-- [ ] Pasada Lighthouse accesibilidad ≥ 95 en home, tienda, producto, blog
+- [x] **Alts de imágenes**: auditado con un script que detecta `<img>` multilínea (el grep original de la auditoría daba falsos positivos). Resultado: **0 imágenes sin `alt`** en páginas públicas — el codebase ya seguía el patrón correcto (nombre de producto/finca/post como alt, `alt=""` donde el texto adyacente ya repite la info). No se necesitaron cambios.
+- [x] **Iconos tipográficos → SVG**: `×` del topbar (`Layout.astro`) y `☰` del hamburger (`Header.astro`) reemplazados por SVG con `aria-hidden="true"`, conservando el `aria-label` del botón. Se agregó también `aria-expanded`/`aria-controls` sincronizados por JS al botón del menú móvil.
+  - Hallazgo adicional fuera de alcance: otros íconos `✕`/`×` similares en `LangSuggest.astro`, `cuenta.astro`, `en/cart.astro`, `en/account.astro` y varias páginas de `admin/` (ERP interno) — no tocados en esta ronda por no ser parte del hallazgo original y por el riesgo de tocar handlers de admin sin necesidad.
+- [x] **`prefers-reduced-motion`**: el video decorativo del hero (`autoplay loop muted`, ya `aria-hidden`) se pausa vía `layout.js` cuando el usuario prefiere movimiento reducido. La animación de granos de café en el header (bucle `requestAnimationFrame` en hover, no cubierto por la media query CSS existente) ahora se salta por completo con un guard `matchMedia` en `Header.astro`. `reveal.js` ya respetaba la preferencia de antes (sin cambios).
+- [x] **Labels en formularios**: los newsletters de home (ES/EN) y footer usaban solo `aria-label` sin `<label>` visible — se agregaron `<label class="sr-only">` asociados (clase nueva en `styles.css`), igual en el input de cupón de `cart.astro`. Verificado que `contacto.astro`, `checkout.astro`, `AuthModal.astro` y `trazabilidad.astro` ya tenían `<label for>` correctos — no necesitaron cambios.
+- [x] **`:focus-visible` y contraste**: se encontró un caso real de foco invisible (`.footer-news input` tenía `outline: none` sin ningún reemplazo — violación WCAG 2.4.7) y se corrigió con un `outline` visible. Se agregó además una regla global de respaldo `a/button/input/textarea/select/[tabindex]:focus-visible` para dar un indicador consistente donde no había regla específica (el resto del sitio no tenía `outline: none` sin reemplazo, así que no era un problema generalizado). Contraste de color: revisión rápida de las variables base (`--fg` sobre `--cream` >10:1) sin hallazgos; **una pasada completa con Lighthouse/axe en el navegador real queda pendiente** — no se puede ejecutar sin un entorno de browser automation en esta sesión.
 
 ---
 

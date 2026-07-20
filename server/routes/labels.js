@@ -406,7 +406,42 @@ labelsRouter.get('/list',
   }
 );
 
-// 5. GET - Obtener etiqueta específica
+// 5. GET - Estadísticas consolidadas (KPIs de la página de etiquetas)
+labelsRouter.get('/stats', async (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  try {
+    const [countsResult, availableResult] = await Promise.all([
+      query(
+        `SELECT
+          COUNT(*) as total,
+          SUM(CASE WHEN lot_code NOT LIKE 'TMP-%' THEN 1 ELSE 0 END) as from_lots,
+          SUM(CASE WHEN lot_code LIKE 'TMP-%' THEN 1 ELSE 0 END) as custom
+         FROM generated_labels`
+      ),
+      query(`SELECT COUNT(*) as available FROM packaged_coffee WHERE status = 'ready_for_sale'`),
+    ]);
+
+    const counts = countsResult.rows[0] || {};
+
+    res.json({
+      success: true,
+      data: {
+        total: parseInt(counts.total || 0),
+        fromLots: parseInt(counts.from_lots || 0),
+        custom: parseInt(counts.custom || 0),
+        availableLots: parseInt(availableResult.rows[0]?.available || 0),
+      },
+    });
+  } catch (error) {
+    logger.error('Error al obtener estadísticas de etiquetas:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Error al obtener estadísticas de etiquetas',
+    });
+  }
+});
+
+// 6. GET - Obtener etiqueta específica
 labelsRouter.get('/:labelId', async (req, res) => {
   res.setHeader('Content-Type', 'application/json');
   try {
