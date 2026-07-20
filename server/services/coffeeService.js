@@ -95,7 +95,7 @@ export async function storeGreenCoffee({ lotId, weight, weightUnit, location, st
 
 // ── 3. Enviar a tostión ──────────────────────────────────────────────────────
 
-export async function sendToRoasting({ lotId, quantitySent, targetTemp, notes }) {
+export async function sendToRoasting({ lotId, quantitySent, targetTemp, notes, user, movementUid }) {
   if (!lotId || !quantitySent) throw bizError(400, 'Faltan campos requeridos');
 
   await assertCanAdvance(query, lotId, 'sent_to_roasting');
@@ -103,29 +103,26 @@ export async function sendToRoasting({ lotId, quantitySent, targetTemp, notes })
   const quantitySentNum = parseFloat(quantitySent);
   if (!isFinite(quantitySentNum) || quantitySentNum <= 0) throw bizError(400, 'Cantidad inválida');
 
-  const [inventoryResult, sentResult] = await Promise.all([
-    query('SELECT COALESCE(SUM(weight_kg), 0) as total FROM green_coffee_inventory WHERE lot_id = ?', [lotId]),
-    query(`SELECT COALESCE(SUM(quantity_sent_kg), 0) as sent FROM roasting_batches WHERE lot_id = ? AND status != 'cancelled'`, [lotId]),
-  ]);
+  // La disponibilidad ya no se estima restando tablas: sale de los quants, que
+  // son la proyección del ledger. issueFromLotFIFO la valida y retira en la
+  // misma transacción, así dos envíos simultáneos no pueden sobregirar el lote.
+  return withTransaction(async (tx) => {
+    const result = await tx.query(
+      `INSERT INTO roasting_batches (lot_id, quantity_sent_kg, target_temp, notes, status, created_at)
+       VALUES (?, ?, ?, ?, 'in_roasting', datetime('now')) RETURNING id`,
+      [lotId, quantitySentNum, targetTemp ? parseInt(targetTemp) : null, notes || null]
+    );
+    const roastingId = result.rows[0].id;
 
-  const totalStored = parseFloat(inventoryResult.rows[0]?.total) || 0;
-  const alreadySent = parseFloat(sentResult.rows[0]?.sent) || 0;
-  const available   = parseFloat((totalStored - alreadySent).toFixed(3));
-
-  if (quantitySentNum > available) {
-    throw bizError(400, 'Cantidad excede el inventario disponible', {
-      total_stored_kg: totalStored, already_sent_kg: alreadySent,
-      available_kg: available, requested_kg: quantitySentNum,
+    const { issued } = await issueFromLotFIFO(tx, {
+      lotId, stockState: 'green', qtyKg: quantitySentNum,
+      sourceTable: 'roasting_batches', sourceId: roastingId,
+      reasonCode: 'sent_to_roasting', notes: notes || null,
+      uidPrefix: movementUid || `roast-out:${roastingId}`, user,
     });
-  }
 
-  const result = await query(
-    `INSERT INTO roasting_batches (lot_id, quantity_sent_kg, target_temp, notes, status, created_at)
-     VALUES (?, ?, ?, ?, 'in_roasting', datetime('now')) RETURNING id`,
-    [lotId, quantitySentNum, targetTemp ? parseInt(targetTemp) : null, notes || null]
-  );
-
-  return { roastingId: result.rows[0].id };
+    return { roastingId, issuedFrom: issued };
+  });
 }
 
 // ── 4. Recoger del tueste ────────────────────────────────────────────────────
