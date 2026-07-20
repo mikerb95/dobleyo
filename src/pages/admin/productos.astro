@@ -931,7 +931,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       document.querySelectorAll(".has-error").forEach((el) => el.classList.remove("has-error"));
     }
 
-    function showFormError(message, fieldId) {
+    function showFormError(message, fieldId = null) {
       const box = $("formError");
       box.textContent = message;
       box.hidden = false;
