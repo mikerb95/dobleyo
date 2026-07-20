@@ -944,13 +944,15 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     $("refreshBtn").addEventListener("click", loadAll);
     $("newLocationBtn").addEventListener("click", () => openForm());
     $("formCancel").addEventListener("click", closeForm);
+    $("transferCancel").addEventListener("click", closeTransferModal);
+    $("adjustCancel").addEventListener("click", closeAdjustModal);
     $("drawerClose").addEventListener("click", closeDrawer);
     $("overlay").addEventListener("click", closeDrawer);
     $("search").addEventListener("input", renderZones);
     $("filterState").addEventListener("change", renderZones);
     $("showInactive").addEventListener("change", loadAll);
     document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") { closeDrawer(); closeForm(); }
+      if (e.key === "Escape") { closeDrawer(); closeForm(); closeTransferModal(); closeAdjustModal(); }
     });
 
     loadAll();
