@@ -464,7 +464,10 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
           <td>${esc(pres)}</td>
           <td>${esc(r.grind_size) || "—"}</td>
           <td>${esc(r.package_size) || "—"}</td>
-          <td style="font-variant-numeric: tabular-nums;">${r.unit_count ?? "—"}</td>
+          <td style="font-variant-numeric: tabular-nums;">${
+            r.unit_count == null ? "—"
+              : r.package_size === "bulk" ? `${r.unit_count} kg` : r.unit_count
+          }</td>
           <td style="font-variant-numeric: tabular-nums;">${r.score != null ? r.score + "/5" : "—"}</td>
           <td class="cell-notes" title="${esc(r.notes)}">${esc(r.notes) || "—"}</td>
           <td>${esc(date)}</td>
