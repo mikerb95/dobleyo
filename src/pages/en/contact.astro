@@ -1,5 +1,7 @@
 ---
 import Layout from "../../layouts/Layout.astro";
+import PageHero from "../../components/PageHero.astro";
+import Icon from "../../components/Icon.astro";
 import { getCanonicalUrl, getHreflangPair } from "../../i18n/index.ts";
 
 const hreflang = getHreflangPair("/contacto");
@@ -14,14 +16,10 @@ const hreflang = getHreflangPair("/contacto");
     hreflangEn={hreflang?.en}
 >
     <div class="contact-page">
-        <section class="contact-hero">
-            <div class="container">
-                <h1>Contact Us</h1>
-                <p>
-                    We're here to answer your questions and hear your feedback
-                </p>
-            </div>
-        </section>
+        <PageHero
+            title="Contact Us"
+            subtitle="We're here to answer your questions and hear your feedback"
+        />
 
         <section class="contact-content">
             <div class="container">
@@ -31,7 +29,7 @@ const hreflang = getHreflangPair("/contacto");
                         <h2>Contact Information</h2>
 
                         <div class="contact-item">
-                            <div class="contact-icon">📧</div>
+                            <div class="contact-icon"><Icon name="mail" size={22} /></div>
                             <div>
                                 <h3>Email</h3>
                                 <a href="mailto:hello@dobleyo.cafe"
@@ -41,7 +39,7 @@ const hreflang = getHreflangPair("/contacto");
                         </div>
 
                         <div class="contact-item">
-                            <div class="contact-icon">📱</div>
+                            <div class="contact-icon"><Icon name="whatsapp" size={22} /></div>
                             <div>
                                 <h3>WhatsApp</h3>
                                 <a
@@ -53,7 +51,7 @@ const hreflang = getHreflangPair("/contacto");
                         </div>
 
                         <div class="contact-item">
-                            <div class="contact-icon">📍</div>
+                            <div class="contact-icon"><Icon name="map-pin" size={22} /></div>
                             <div>
                                 <h3>Location</h3>
                                 <p>Bogotá, Colombia</p>
@@ -61,7 +59,7 @@ const hreflang = getHreflangPair("/contacto");
                         </div>
 
                         <div class="contact-item">
-                            <div class="contact-icon">⏰</div>
+                            <div class="contact-icon"><Icon name="clock" size={22} /></div>
                             <div>
                                 <h3>Business Hours</h3>
                                 <p>Monday to Friday: 9:00 AM – 6:00 PM (COT)</p>
@@ -70,9 +68,9 @@ const hreflang = getHreflangPair("/contacto");
                         </div>
 
                         <div class="contact-item">
-                            <div class="contact-icon">☕</div>
+                            <div class="contact-icon"><Icon name="package" size={22} /></div>
                             <div>
-                                <h3>Wholesale & Export</h3>
+                                <h3>Wholesale &amp; Export</h3>
                                 <p>
                                     Interested in B2B sourcing or export orders?
                                     Reach us by email for sample requests and
@@ -80,8 +78,7 @@ const hreflang = getHreflangPair("/contacto");
                                 </p>
                                 <a
                                     href="mailto:export@dobleyo.cafe"
-                                    class="btn"
-                                    style="margin-top:.6rem;display:inline-block"
+                                    class="btn btn-primary contact-item__cta"
                                 >
                                     Request Samples
                                 </a>
@@ -98,8 +95,8 @@ const hreflang = getHreflangPair("/contacto");
                                     aria-label="Instagram"
                                 >
                                     <svg
-                                        width="24"
-                                        height="24"
+                                        width="20"
+                                        height="20"
                                         viewBox="0 0 24 24"
                                         fill="currentColor"
                                     >
@@ -166,14 +163,10 @@ const hreflang = getHreflangPair("/contacto");
                             </div>
                             <button
                                 type="submit"
-                                class="btn btn-primary"
+                                class="btn btn-primary contact-form__submit"
                                 id="submitBtn">Send message</button
                             >
-                            <div
-                                id="formStatus"
-                                style="margin-top:1rem;display:none;padding:.75rem 1rem;border-radius:6px;font-size:.9rem;"
-                            >
-                            </div>
+                            <div id="formStatus" class="form-status"></div>
                         </form>
                     </div>
                 </div>
@@ -183,3 +176,204 @@ const hreflang = getHreflangPair("/contacto");
 </Layout>
 
 <script is:inline src="/assets/js/en-contact.js"></script>
+
+<style>
+    .contact-page {
+        min-height: 100vh;
+    }
+
+    .contact-content {
+        padding: var(--space-16) 0;
+    }
+
+    .contact-grid {
+        display: grid;
+        grid-template-columns: 1fr 1.5fr;
+        gap: var(--space-16);
+        max-width: var(--page-width);
+        margin: 0 auto;
+    }
+
+    .contact-info h2,
+    .contact-form-container h2 {
+        font-family: var(--font-display);
+        font-size: var(--text-2xl);
+        color: var(--fg);
+        margin-bottom: var(--space-8);
+        font-weight: 700;
+    }
+
+    .contact-item {
+        display: flex;
+        gap: var(--space-4);
+        margin-bottom: var(--space-8);
+        padding-bottom: var(--space-8);
+        border-bottom: 1px solid var(--border);
+    }
+
+    .contact-item:last-of-type {
+        border-bottom: none;
+    }
+
+    .contact-icon {
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: var(--radius-md);
+        background: var(--leaf-bg);
+        color: var(--leaf);
+    }
+
+    .contact-item h3 {
+        font-size: var(--text-base);
+        font-weight: 600;
+        color: var(--fg);
+        margin: 0 0 var(--space-2);
+    }
+
+    .contact-item p,
+    .contact-item a {
+        color: var(--muted-fg);
+        text-decoration: none;
+        line-height: 1.6;
+        margin: 0;
+    }
+
+    .contact-item a:hover {
+        color: var(--accent);
+    }
+
+    .contact-item__cta {
+        margin-top: var(--space-3);
+    }
+
+    .social-links {
+        margin-top: var(--space-12);
+    }
+
+    .social-links h3 {
+        font-size: var(--text-base);
+        font-weight: 600;
+        color: var(--fg);
+        margin-bottom: var(--space-4);
+    }
+
+    .social-icons {
+        display: flex;
+        gap: var(--space-4);
+    }
+
+    .social-icons a {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 50%;
+        background: var(--card);
+        border: 1px solid var(--border);
+        color: var(--muted-fg);
+        transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease), transform var(--dur) var(--ease);
+    }
+
+    .social-icons a:hover {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: var(--accent-contrast);
+        transform: translateY(-2px);
+    }
+
+    .contact-form-container {
+        background: var(--card);
+        border: 1px solid var(--border);
+        padding: var(--space-8);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-md);
+    }
+
+    .form-group {
+        margin-bottom: var(--space-6);
+    }
+
+    .form-group label {
+        display: block;
+        font-weight: 600;
+        color: var(--fg);
+        margin-bottom: var(--space-2);
+        font-size: var(--text-sm);
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        width: 100%;
+        padding: var(--space-3);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        font-family: var(--font-body);
+        font-size: var(--text-base);
+        background: #fff;
+        color: var(--fg);
+        transition: border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+        outline: none;
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(var(--caramel-rgb), 0.15);
+    }
+
+    .form-group textarea {
+        resize: vertical;
+        font-family: inherit;
+    }
+
+    .contact-form__submit {
+        width: 100%;
+        justify-content: center;
+        padding: var(--space-4);
+        font-size: var(--text-base);
+    }
+
+    .contact-form__submit:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    .form-status {
+        margin-top: var(--space-4);
+        padding: var(--space-3) var(--space-4);
+        border-radius: var(--radius-sm);
+        text-align: center;
+        font-size: var(--text-sm);
+        display: none;
+    }
+
+    .form-status.success {
+        display: block;
+        background: var(--leaf-bg);
+        color: var(--leaf);
+    }
+
+    .form-status.error {
+        display: block;
+        background: var(--danger-bg);
+        color: var(--danger);
+    }
+
+    @media (max-width: 768px) {
+        .contact-grid {
+            grid-template-columns: 1fr;
+            gap: var(--space-12);
+        }
+
+        .contact-form-container {
+            padding: var(--space-6);
+        }
+    }
+</style>
