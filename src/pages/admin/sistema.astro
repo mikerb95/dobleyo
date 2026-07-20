@@ -553,9 +553,9 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
             const h = Math.max(Math.round((Number(m.count) / max) * 100), 4);
             const label = m.month?.slice(5) || m.month;
             return `<div class="bar-col">
-              <span class="bar-val">${m.count}</span>
+              <span class="bar-val">${escHtml(m.count)}</span>
               <div class="bar" style="height:${h}px"></div>
-              <span class="bar-label">${label}</span>
+              <span class="bar-label">${escHtml(label)}</span>
             </div>`;
           }).join('')}</div>`;
 
