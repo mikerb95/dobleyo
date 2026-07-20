@@ -183,12 +183,15 @@ function assertUsable(loc, stockState, label, { forOutbound = false } = {}) {
   if (!loc.is_active) {
     throw bizError(409, `La ubicación ${loc.code} está inactiva y no admite movimientos.`);
   }
+  // El bloqueo congela la ubicación en ambos sentidos, a propósito: es lo que
+  // hace confiable un conteo físico. Para corregir un bloqueo se desbloquea
+  // primero (ruta de admin), como hace postInventoryCount().
   if (loc.is_blocked) {
     throw bizError(409,
       `La ubicación ${loc.code} está bloqueada${loc.block_reason ? `: ${loc.block_reason}` : '.'}`);
   }
-  // El tipo de mercancía solo se restringe al ingresar. Sacar mercancía que ya
-  // está mal ubicada siempre debe ser posible, o el stock quedaría atrapado.
+  // El tipo de mercancía, en cambio, solo se restringe al ingresar: sacar un
+  // lote mal ubicado debe ser posible, o el stock quedaría atrapado.
   if (!forOutbound) {
     const allowed = String(loc.allowed_states).split(',');
     if (!allowed.includes(stockState)) {

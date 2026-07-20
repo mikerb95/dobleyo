@@ -75,15 +75,30 @@ describe('postMovement() — validaciones de ubicación', () => {
         })).rejects.toMatchObject({ status: 409 });
     });
 
-    it('permite SACAR mercancía de una ubicación bloqueada o mal tipificada', async () => {
-        // Si no, el stock quedaría atrapado sin forma de corregirlo.
+    it('el bloqueo congela la ubicación en AMBOS sentidos', async () => {
+        // Es lo que hace confiable un conteo físico: si pudiera salir mercancía
+        // mientras se cuenta, la diferencia medida sería ruido, no un hallazgo.
         await storage.postMovement({ type: 'receipt', to: 'GREEN-A-01', lotId: LOT, stockState: 'green', qtyKg: 50, user });
-        await query(`UPDATE storage_locations SET is_blocked = 1, block_reason = 'Mantenimiento' WHERE code = 'GREEN-A-01'`);
+        await query(`UPDATE storage_locations SET is_blocked = 1, block_reason = 'Conteo físico' WHERE code = 'GREEN-A-01'`);
+
+        await expect(storage.postMovement({
+            type: 'issue', from: 'GREEN-A-01', lotId: LOT, stockState: 'green', qtyKg: 50, user,
+        })).rejects.toMatchObject({ status: 409 });
+        expect(await occupancyOf('GREEN-A-01')).toBe(50);
+    });
+
+    it('permite SACAR mercancía mal tipificada de una ubicación operativa', async () => {
+        // La restricción de tipo aplica al ingresar. Si se aplicara también al
+        // salir, un lote mal ubicado quedaría atrapado sin forma de corregirlo.
+        await storage.postMovement({ type: 'receipt', to: 'GREEN-A-01', lotId: LOT, stockState: 'green', qtyKg: 50, user });
+        await query(`UPDATE storage_locations SET allowed_states = 'roasted' WHERE code = 'GREEN-A-01'`);
 
         await expect(storage.postMovement({
             type: 'issue', from: 'GREEN-A-01', lotId: LOT, stockState: 'green', qtyKg: 50, user,
         })).resolves.toMatchObject({ idempotent: false });
         expect(await occupancyOf('GREEN-A-01')).toBe(0);
+
+        await query(`UPDATE storage_locations SET allowed_states = 'green' WHERE code = 'GREEN-A-01'`);
     });
 
     it('rechaza un movimiento con el mismo origen y destino', async () => {
