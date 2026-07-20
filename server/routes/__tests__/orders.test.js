@@ -201,6 +201,8 @@ describe('POST /api/orders', () => {
         query.mockResolvedValueOnce({
             rows: [{ id: 'cf-sierra', name: 'Sierra Nevada', price: 42000, image_url: '/img/si.webp', stock_quantity: 10 }],
         }); // SELECT products
+        query.mockResolvedValueOnce({ rows: [{ cnt: 0 }] }); // COD antifraude: pedidos abiertos
+        query.mockResolvedValueOnce({ rows: [{ cnt: 0 }] }); // COD antifraude: devoluciones previas
         query.mockResolvedValueOnce({ rows: [{ id: 5, reference: 'DY-COD-0001' }] }); // INSERT customer_orders
         query.mockResolvedValueOnce({ rows: [] }); // INSERT customer_order_items
         query.mockResolvedValueOnce({ rows: [{ stock_deducted_at: null }] }); // deductStockForOrder: SELECT stock_deducted_at
