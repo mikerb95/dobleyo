@@ -348,8 +348,8 @@ Para exponer la plataforma en vivo existe un seed **idempotente** que puebla tod
 | DEBT-007 | 🟡 | Zero tests automatizados | ✅ Resuelto Fase 12 |
 | DEBT-008 | 🟡 | Scripts de setup/seed/migraciones usan MySQL (mysql2, ?, AUTO_INCREMENT) | ✅ Resuelto Post-Fase 12 |
 | DEBT-009 | 🟡 | `MIPAQUETE_PAYMENT_TYPE_COD` (server/services/mipaquete.js) es un valor por confirmar en sandbox antes de habilitar contraentrega en producción — el 101 documentado por Mipaquete es pago anticipado | Pendiente |
-| DEBT-010 | 🟠 | `POST /api/shipping/refresh-all` (tracking, recuperación de huérfanos, expiración de órdenes, reintento de emails) solo corre cuando un admin abre `/admin/envios` — sin polling programado, el fin de semana sin abrir el panel deja clientes sin actualización. Requiere decisión: cron de Vercel (`CRON_SECRET`, posible impacto de plan) o scheduler externo | Pendiente — requiere autorización explícita |
-| DEBT-011 | 🟠 | Sin control de inventario en el flujo de e-commerce: ni `POST /api/orders` ni el despacho verifican o descuentan stock — se puede vender/despachar producto inexistente. Requiere diseño del modelo (reserva vs. descuento directo, sobreventa permitida o no) antes de implementar | Pendiente — requiere diseño previo |
+| DEBT-010 | 🟠 | `POST /api/shipping/refresh-all` dependía de que un admin abriera `/admin/envios` — sin polling programado, el fin de semana sin abrir el panel dejaba clientes sin actualización | ✅ Resuelto — `POST /api/shipping/cron-refresh-all` (auth `CRON_SECRET`) + `.github/workflows/shipping-refresh.yml` cada 30 min |
+| DEBT-011 | 🟠 | Sin control de inventario en el flujo de e-commerce: ni `POST /api/orders` ni el despacho verificaban o descontaban stock | ✅ Resuelto — validación en `POST /api/orders` + descuento directo al confirmarse el pago (`deductStockForOrder`)/reposición al cancelar (`replenishStockForOrder`). Sin reserva: riesgo de sobreventa entre creación y pago aceptado para este catálogo |
 
 ---
 
