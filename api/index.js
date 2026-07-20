@@ -120,6 +120,7 @@ app.use('/api/labels', labelsRouter);
 app.use('/api/mercadolibre', mercadolibreRouter);
 app.use('/api/coffee', coffeeRouter);
 app.use('/api/inventory', inventoryRouter);
+app.use('/api/storage', storageRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/devtools', devtoolsRouter);
 app.use('/api/caficultor', caficultorRouter);
