@@ -226,6 +226,21 @@ storageRouter.post('/adjustments', onlyAdmin,
 
 // ── Conteo cíclico ───────────────────────────────────────────────────────────
 
+storageRouter.get('/counts', onlyAdmin, async (req, res) => {
+  try { res.json({ success: true, data: await listInventoryCounts({ status: req.query.status || undefined }) }); }
+  catch (err) { handleErr(res, err, 'Error en GET /storage/counts'); }
+});
+
+storageRouter.get('/counts/:id', onlyAdmin,
+  param('id').isInt({ min: 1 }),
+  async (req, res) => {
+    if (invalid(req, res)) return;
+    try {
+      res.json({ success: true, data: await getInventoryCountDetail(parseInt(req.params.id, 10)) });
+    } catch (err) { handleErr(res, err, 'Error en GET /storage/counts/:id'); }
+  }
+);
+
 storageRouter.post('/counts', onlyAdmin, async (req, res) => {
   try {
     const data = await openInventoryCount({
@@ -235,6 +250,25 @@ storageRouter.post('/counts', onlyAdmin, async (req, res) => {
   } catch (err) { handleErr(res, err, 'Error en POST /storage/counts'); }
 });
 
+// El operario registra lo contado línea por línea; la corrección se genera
+// recién al contabilizar (POST /counts/:id/post), nunca aquí.
+storageRouter.patch('/counts/:id/lines/:lineId', onlyAdmin,
+  [
+    param('id').isInt({ min: 1 }), param('lineId').isInt({ min: 1 }),
+    body('countedQtyKg').isFloat({ min: 0 }).withMessage('La cantidad contada no puede ser negativa'),
+  ],
+  async (req, res) => {
+    if (invalid(req, res)) return;
+    try {
+      const data = await recordCountLine(
+        parseInt(req.params.id, 10), parseInt(req.params.lineId, 10),
+        req.body.countedQtyKg, req.user
+      );
+      res.json({ success: true, message: 'Conteo registrado', data });
+    } catch (err) { handleErr(res, err, 'Error en PATCH /storage/counts/:id/lines/:lineId'); }
+  }
+);
+
 storageRouter.post('/counts/:id/post', onlyAdmin,
   param('id').isInt({ min: 1 }),
   async (req, res) => {
@@ -243,6 +277,17 @@ storageRouter.post('/counts/:id/post', onlyAdmin,
       const data = await postInventoryCount(parseInt(req.params.id, 10), req.user);
       res.json({ success: true, message: `Conteo contabilizado con ${data.corrections.length} corrección(es).`, data });
     } catch (err) { handleErr(res, err, 'Error en POST /storage/counts/:id/post'); }
+  }
+);
+
+storageRouter.post('/counts/:id/cancel', onlyAdmin,
+  param('id').isInt({ min: 1 }),
+  async (req, res) => {
+    if (invalid(req, res)) return;
+    try {
+      const data = await cancelInventoryCount(parseInt(req.params.id, 10), req.user);
+      res.json({ success: true, message: 'Conteo cancelado. Las ubicaciones quedaron desbloqueadas.', data });
+    } catch (err) { handleErr(res, err, 'Error en POST /storage/counts/:id/cancel'); }
   }
 );
 
