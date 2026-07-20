@@ -558,15 +558,50 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   <script>
     // ── Configuración ───────────────────────────────────────────────────────────
     const CONTAINER_SIZE = { 'BAG-1KG': 1, 'BAG-5KG': 5, 'BUCKET-25': 25, 'SACK-60': 60 };
-    const LOCATIONS = [
-      { code: 'ROASTED-A-01', zone: 'Sección A', label: 'Estante 01' },
-      { code: 'ROASTED-A-02', zone: 'Sección A', label: 'Estante 02' },
-      { code: 'ROASTED-B-01', zone: 'Sección B', label: 'Estante 01' },
-      { code: 'ROASTED-B-02', zone: 'Sección B', label: 'Estante 02' },
-      { code: 'CLIMATE-01',   zone: 'Climatizado', label: 'Bodega 01 · Premium' },
-      { code: 'CLIMATE-02',   zone: 'Climatizado', label: 'Bodega 02 · Premium' },
-    ];
-    const LOC_BY_CODE = Object.fromEntries(LOCATIONS.map((l) => [l.code, l]));
+    // Las ubicaciones vienen del maestro (/admin/ubicaciones), no de una lista
+    // fija: la ocupación y la capacidad las calcula el servidor.
+    let LOCATIONS = [];
+    let LOC_BY_CODE = {};
+
+    async function loadLocations() {
+      try {
+        const res = await fetch('/api/storage/locations?state=roasted&include_blocked=0', { credentials: 'include' });
+        const json = await res.json();
+        if (!res.ok || !json.success) throw new Error(json.error || 'Error');
+        LOCATIONS = json.data.map((l) => ({
+          code: l.code, zone: l.zone_name, label: l.name,
+          capacityKg: l.capacity_kg, occupiedKg: l.occupied_kg,
+          fillPct: l.fill_pct, lotCount: l.lot_count,
+        }));
+      } catch (e) {
+        LOCATIONS = [];
+        toast('No se pudieron cargar las ubicaciones de bodega.', 'err');
+      }
+      LOC_BY_CODE = Object.fromEntries(LOCATIONS.map((l) => [l.code, l]));
+      renderLocationSelect();
+    }
+
+    function renderLocationSelect() {
+      const sel = $('location');
+      const prev = sel.value;
+      sel.innerHTML = '<option value="">Seleccione una ubicación</option>';
+      const zones = [...new Set(LOCATIONS.map((l) => l.zone))];
+      zones.forEach((z) => {
+        const og = document.createElement('optgroup');
+        og.label = z;
+        LOCATIONS.filter((l) => l.zone === z).forEach((l) => {
+          const o = document.createElement('option');
+          o.value = l.code;
+          const libre = l.capacityKg != null
+            ? ` — ${kg(Math.max(0, l.capacityKg - l.occupiedKg))} libres`
+            : '';
+          o.textContent = `${l.label} (${l.code})${libre}`;
+          og.appendChild(o);
+        });
+        sel.appendChild(og);
+      });
+      if (prev && LOC_BY_CODE[prev]) sel.value = prev;
+    }
 
     const roastLabel = (r) => ({ LIGHT: 'Clara', MEDIUM: 'Media', DARK: 'Oscura' }[r] || r || '—');
     const roastDotClass = (r) => ({ LIGHT: 'rs-roast-light', MEDIUM: 'rs-roast-medium', DARK: 'rs-roast-dark' }[r] || 'rs-roast-medium');
