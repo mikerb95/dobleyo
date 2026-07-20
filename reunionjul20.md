@@ -398,7 +398,133 @@ Estas son las preguntas concretas para llevarse de la reunión:
 
 ---
 
-## 13. Tres frases para no olvidar
+## 13. El módulo de suscripciones
+
+> Si la logística define si el negocio es rentable, la suscripción define si es **predecible**. Es el módulo con mayor impacto sobre el valor de la marca a mediano plazo.
+
+### 13.1 Qué es, en términos de negocio
+
+El cliente elige su café, con qué frecuencia lo quiere y a dónde. **Registra su tarjeta una sola vez.** A partir de ahí, el sistema le cobra y le despacha automáticamente, sin que él tenga que volver a entrar a comprar.
+
+Es el paso de **vender bolsas** a **tener clientes**.
+
+**Por qué el café es el producto ideal para esto:** es un consumible con ritmo predecible. Una persona que toma café todos los días sabe aproximadamente cuándo se le acaba. La suscripción resuelve un problema real ("se me acabó y no alcancé a pedir"), no es solo un descuento disfrazado.
+
+### 13.2 Cómo lo ve el cliente
+
+La página de suscripción (`/suscripcion`) es un formulario de tres pasos, deliberadamente corto:
+
+| Paso | Qué elige |
+|---|---|
+| **1. Su café** | Los cafés activos del catálogo, con origen, tueste y precio |
+| **2. Frecuencia y cantidad** | Cada **15** o cada **30** días · cuántas bolsas por entrega |
+| **3. Datos y tarjeta** | Envío y registro del medio de pago |
+
+La promesa comercial es de tres partes:
+- **Descuento de suscriptor** — hoy configurado en **10%**, ajustable sin tocar el código.
+- **Envío incluido** — el cliente no paga flete en cada entrega.
+- **Cancele cuando quiera** — sin permanencia ni llamada de retención.
+
+> **Frase para la reunión:** "Le quitamos al cliente la decisión de recomprar. Lo único que le dejamos es la decisión de cancelar — y por eso el producto tiene que ser bueno todas las veces."
+
+### 13.3 Qué pasa por detrás, sin tecnicismos
+
+```
+El cliente se suscribe y autoriza su tarjeta una sola vez
+        ↓
+Queda registrada la fecha del próximo cobro
+        ↓
+Cada día a las 8:00 a. m. el sistema revisa qué suscripciones
+se vencen hoy y las cobra automáticamente
+        ↓
+Si el cobro pasa  →  se genera un pedido normal, igual a cualquier otro
+                     · entra a la cola de despacho
+                     · sale por Mi Paquete
+                     · el cliente recibe su correo
+                     · y se agenda el siguiente cobro
+        ↓
+Si el cobro falla →  se reintenta. Tras 3 intentos fallidos la
+                     suscripción se marca para gestión manual
+```
+
+**El punto que conviene destacar:** un pedido de suscripción **no es un pedido especial**. Cae en la misma bandeja que los demás, se despacha igual, se le hace seguimiento igual y aparece igual en las ventas y en el mapa de calor. El equipo de operación no tiene que aprender un proceso nuevo.
+
+**Estados de una suscripción** — es útil tenerlos claros para la conversación:
+
+| Estado | Significa |
+|---|---|
+| **Pendiente de autorización** | Se creó, falta que el banco confirme la tarjeta |
+| **Activa** | Cobrando y despachando con normalidad |
+| **Pausada** | Suspendida temporalmente |
+| **Pago fallido** | Tres intentos fallidos — requiere contactar al cliente |
+| **Cancelada** | Terminada |
+
+El estado **"pago fallido" es el que hay que vigilar**: casi siempre es una tarjeta vencida, no un cliente que se fue. Recuperarlo es una llamada o un correo, y es mucho más barato que conseguir un cliente nuevo.
+
+### 13.4 Por qué importa comercialmente
+
+**1. Ingreso predecible**
+Es la diferencia entre "vendimos bien este mes" y "sabemos cuánto vamos a facturar el mes entrante". Con cien suscriptores activos, una parte del mes ya está vendida antes de empezar.
+
+**2. Producción planeada**
+Este es el enganche con el resto del sistema. Las suscripciones activas son **demanda conocida con fecha**. No hay que pronosticarla: ya está agendada. Eso permite decidir cuánto tostar con mucha más precisión y reduce tanto el faltante como el café que se queda parado perdiendo frescura.
+
+**3. Mejor margen por cliente**
+Un suscriptor compra varias veces sin que tengamos que pagar publicidad cada vez. El costo de adquirirlo se reparte entre todas sus entregas.
+
+**4. Ticket y frecuencia estables**
+Facilita negociar con el tostador y con la logística, porque el volumen deja de ser errático.
+
+**5. Relación, no transacción**
+El suscriptor es el candidato natural para las ediciones limitadas, las microlotes y el relato de finca. Es quien más valora la trazabilidad, porque ya conoce el producto.
+
+### 13.5 Las cuentas que hay que hacer
+
+> Estas son decisiones de margen que necesitan número, no intuición.
+
+**El 10% de descuento más el envío incluido salen del margen.** Hay que verificar contra el costo real de flete que la ecuación cierre — sobre todo en suscripciones de **una sola bolsa cada 30 días**, que es el escenario más apretado: poco valor de pedido, mismo costo logístico.
+
+Tres palancas para ajustarlo:
+1. **Empujar hacia la frecuencia de 15 días o hacia dos bolsas por entrega.** Mejor margen por envío y mayor consumo.
+2. **Definir un mínimo de suscripción** por debajo del cual el envío incluido no aplique.
+3. **Revisar el descuento por frecuencia:** tiene sentido premiar más al de 15 días, que es el cliente más valioso.
+
+**El indicador que hay que mirar todos los meses no es cuántos se suscriben, sino cuántos se quedan.** Una suscripción que se cancela en la segunda entrega cuesta plata. El valor aparece a partir de la tercera o cuarta.
+
+### 13.6 Qué le pedimos al marketing
+
+- **Es el mejor destino para la pauta**, mejor que la venta suelta: el mismo peso invertido rinde varias entregas en lugar de una.
+- **El gancho no debería ser solo el descuento.** "Nunca se quede sin café" y "recién tostado, no de bodega" son argumentos más fuertes y más difíciles de copiar por la competencia.
+- **La primera entrega es el momento decisivo.** Vale la pena que traiga algo — una nota de la finca, una guía de preparación, una muestra de otro origen. Ahí se decide si hay segunda.
+- **La página de suscripción hoy es funcional pero austera.** Le falta el relato de marca que sí tienen la página de fincas y la de trazabilidad. Es una oportunidad clara de mejora.
+- **Cruce natural con la trazabilidad:** el suscriptor recibe cafés de lotes distintos con el tiempo. Poder decirle "este mes le llega de otra finca, escanee el QR" convierte la recurrencia en algo interesante en lugar de repetitivo.
+
+### 13.7 Estado del módulo — qué está listo y qué falta
+
+**Funcionando hoy:**
+- Página pública de suscripción, con el catálogo real de cafés activos.
+- Registro de tarjeta y autorización del cliente.
+- Cobro automático diario de las suscripciones vencidas.
+- Generación del pedido y entrada a la cola normal de despacho.
+- Reintentos ante fallo de pago, con corte a los tres intentos.
+- El cliente puede ver y cancelar su suscripción desde su cuenta.
+
+**Vacío que conviene reconocer antes de que lo pregunten:**
+- **No hay todavía una pantalla de suscripciones en el panel de administración.** Hoy no existe una vista para saber de un vistazo cuántos suscriptores activos hay, cuáles tienen el pago fallido o cuánto ingreso recurrente representan. Es el siguiente paso natural del módulo y, siendo un módulo de ingreso recurrente, **es la brecha más importante de todo el sistema**.
+- Falta la opción de **pausar** desde la cuenta del cliente (hoy solo cancelar). Poder pausar retiene clientes que de otro modo cancelan por un viaje o unas vacaciones.
+- Faltan los **avisos previos al cobro** ("su café sale en dos días"), que reducen sorpresas y disputas con el banco.
+
+### 13.8 Decisiones que necesitamos del gerente
+
+1. **¿Se mantiene el 10% de descuento?** ¿O se diferencia entre la frecuencia de 15 y la de 30 días?
+2. **¿El envío incluido aplica a todo el país o solo donde el flete lo permite?**
+3. **¿Hay mínimo de suscripción** (por ejemplo, dos bolsas, o un valor mínimo por entrega)?
+4. **¿Qué se hace cuando un pago falla?** ¿Llamada, correo, o se deja morir? Define si se necesita un protocolo del equipo comercial.
+5. **¿Se prioriza construir la vista de administración de suscripciones?** Sin ella, el módulo funciona pero se gestiona a ciegas.
+
+---
+
+## 14. Tres frases para no olvidar
 
 1. **Una sola operación, dos mercados.** El sitio en inglés no duplica trabajo.
 2. **La trazabilidad no es marketing, es el registro del trabajo diario.**
