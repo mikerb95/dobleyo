@@ -1569,6 +1569,8 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   }
 
   /* ── Modal ─────────────────────────────────────────────────────── */
+  /* Bloquea el scroll del fondo mientras hay un modal abierto. */
+  :global(body.modal-open) { overflow: hidden; }
   .modal[hidden] { display: none; }
   .modal-content--wide { max-width: 760px; }
   .modal-close {
