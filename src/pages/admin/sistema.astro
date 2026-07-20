@@ -582,6 +582,8 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       el('rolesChart').innerHTML = renderRolesBars(data.roleDistribution, total);
     } catch (err) {
       console.error('loadUserStats error', err);
+      showLoadError('regChart');
+      showLoadError('rolesChart');
     }
   }
 
