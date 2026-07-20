@@ -12,6 +12,7 @@ import { lotsRouter } from '../server/routes/lots.js';
 import { mercadolibreRouter } from '../server/routes/mercadolibre.js';
 import { coffeeRouter } from '../server/routes/coffee.js';
 import { inventoryRouter } from '../server/routes/inventory.js';
+import { storageRouter } from '../server/routes/storage.js';
 import { usersRouter } from '../server/routes/users.js';
 import { labelsRouter } from '../server/routes/labels.js';
 import { devtoolsRouter } from '../server/routes/devtools.js';
