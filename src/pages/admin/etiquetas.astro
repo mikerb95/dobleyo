@@ -1171,4 +1171,23 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   .toast--success { background: var(--ok); }
   .toast--error { background: var(--danger); }
   .toast--info { background: var(--color-primary); }
+
+  /* ── Impresión ─────────────────────────────────────────────────── */
+  @media print {
+    body * { visibility: hidden; }
+    #printArea, #printArea * { visibility: visible; }
+    #printArea {
+      display: block;
+      position: absolute;
+      inset: 0;
+      margin: 0;
+      padding: 0;
+    }
+    #printArea .lbl-print-item {
+      page-break-inside: avoid;
+      break-inside: avoid;
+      margin: 0 0 10mm;
+      box-shadow: none;
+    }
+  }
 </style>
