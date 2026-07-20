@@ -362,6 +362,13 @@ function initTrazabilidad() {
     return '';
   }
 
+  // Los nombres de finca suelen venir ya con el prefijo "Finca" incluido
+  function farmLabel(name) {
+    const n = (name || '').trim();
+    if (!n) return '';
+    return /^finca\b/i.test(n) ? n : 'Finca ' + n;
+  }
+
   function buildLotName(h) {
     return [regionLabel(h.region), h.variety, h.date && new Date(h.date).getFullYear()]
       .filter(Boolean).join(' — ');
