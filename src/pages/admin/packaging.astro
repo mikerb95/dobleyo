@@ -209,6 +209,15 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
               <div class="form-hint" id="unitHint">Se calcula automáticamente.</div>
             </div>
 
+            <div class="form-group">
+              <label for="notes">Notas del empaque</label>
+              <textarea
+                id="notes" name="notes" rows="3" maxlength="500"
+                placeholder="Observaciones del proceso, destino del lote, responsable…"
+              ></textarea>
+              <div class="form-hint">Opcional. Queda registrado junto al lote empacado.</div>
+            </div>
+
             <label class="checkbox-item" style="margin-top: 8px;">
               <input type="checkbox" id="addToInventory" name="addToInventory" checked />
               <span>📦 Sumar unidades al inventario disponible</span>
