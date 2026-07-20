@@ -25,9 +25,13 @@ console.log('   guardado en', g.location, 'id', g.storageId);
 await show('Ocupación');
 
 console.log('\n=== 2. Validaciones de negocio ===');
-await expectFail('Ubicación inexistente', () => storeGreenCoffee({ lotId: 'COL-CAU-1750-CAS-NAT-EF56', weight: 10, location: 'NO-EXISTE', storageDate: '2026-07-20', user }));
-await expectFail('Tipo incompatible (verde en estante de tostado)', () => storeGreenCoffee({ lotId: 'COL-CAU-1750-CAS-NAT-EF56', weight: 10, location: 'ROASTED-A-01', storageDate: '2026-07-20', user }));
-await expectFail('Capacidad excedida (GREEN-A-01 cabe 1500)', () => storeGreenCoffee({ lotId: 'COL-CAU-1750-CAS-NAT-EF56', weight: 2000, location: 'GREEN-A-01', storageDate: '2026-07-20', user }));
+const L = 'COL-CAU-1750-CAS-NAT-EF56';
+await expectFail('Ubicación inexistente', () => postMovement({ type: 'receipt', to: 'NO-EXISTE', lotId: L, stockState: 'green', qtyKg: 10, user }));
+await expectFail('Tipo incompatible (verde en estante de tostado)', () => postMovement({ type: 'receipt', to: 'ROASTED-A-01', lotId: L, stockState: 'green', qtyKg: 10, user }));
+await expectFail('Capacidad excedida (GREEN-A-01 cabe 1500)', () => postMovement({ type: 'receipt', to: 'GREEN-A-01', lotId: L, stockState: 'green', qtyKg: 2000, user }));
+await query(`UPDATE storage_locations SET is_blocked = 1, block_reason = 'Conteo en curso' WHERE code = 'GREEN-B-01'`);
+await expectFail('Ubicación bloqueada', () => postMovement({ type: 'receipt', to: 'GREEN-B-01', lotId: L, stockState: 'green', qtyKg: 10, user }));
+await query(`UPDATE storage_locations SET is_blocked = 0, block_reason = NULL WHERE code = 'GREEN-B-01'`);
 await expectFail('Traslado sin existencia suficiente', () => transferStock({ fromCode: 'GREEN-A-01', toCode: 'GREEN-B-01', lotId: 'COL-CAU-1750-CAS-NAT-EF56', stockState: 'green', qtyKg: 9999, user }));
 await expectFail('Origen igual a destino', () => transferStock({ fromCode: 'GREEN-A-01', toCode: 'GREEN-A-01', lotId: 'COL-CAU-1750-CAS-NAT-EF56', stockState: 'green', qtyKg: 1, user }));
 

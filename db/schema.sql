@@ -103,7 +103,9 @@ CREATE TABLE IF NOT EXISTS products (
     origin VARCHAR(120), -- Para cafés
     process VARCHAR(80), -- Para cafés: lavado, honey, natural
     roast VARCHAR(80), -- Para cafés: claro, medio, oscuro
+    tasting_notes TEXT, -- JSON {"es":[...],"en":[...]}
     price INTEGER NOT NULL,
+    price_usd INTEGER, -- Precio para el catálogo B2B/USA
     cost INTEGER, -- Costo de adquisición/producción
     rating DECIMAL(3,1) DEFAULT 0,
     is_deal BOOLEAN DEFAULT FALSE,
