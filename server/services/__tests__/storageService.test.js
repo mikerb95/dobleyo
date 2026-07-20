@@ -429,4 +429,50 @@ describe('Conteo cíclico', () => {
         await storage.postInventoryCount(opened.countId, user);
         await expect(storage.postInventoryCount(opened.countId, user)).rejects.toMatchObject({ status: 409 });
     });
+
+    it('recordCountLine() rechaza un conteo negativo y uno ya contabilizado', async () => {
+        await storage.postMovement({ type: 'receipt', to: 'GREEN-A-01', lotId: LOT, stockState: 'green', qtyKg: 50, user });
+        const opened = await storage.openInventoryCount({ locationCodes: ['GREEN-A-01'], user });
+        const line = await query('SELECT id FROM inventory_count_lines WHERE count_id = ?', [opened.countId]);
+
+        await expect(storage.recordCountLine(opened.countId, line.rows[0].id, -1, user))
+            .rejects.toMatchObject({ status: 400 });
+
+        await storage.recordCountLine(opened.countId, line.rows[0].id, 50, user);
+        await storage.postInventoryCount(opened.countId, user);
+
+        await expect(storage.recordCountLine(opened.countId, line.rows[0].id, 40, user))
+            .rejects.toMatchObject({ status: 409 });
+    });
+
+    it('cancelInventoryCount() desbloquea sin generar correcciones', async () => {
+        await storage.postMovement({ type: 'receipt', to: 'GREEN-A-01', lotId: LOT, stockState: 'green', qtyKg: 80, user });
+        const opened = await storage.openInventoryCount({ locationCodes: ['GREEN-A-01'], user });
+        const line = await query('SELECT id FROM inventory_count_lines WHERE count_id = ?', [opened.countId]);
+        await storage.recordCountLine(opened.countId, line.rows[0].id, 999, user);
+
+        await storage.cancelInventoryCount(opened.countId, user);
+
+        // Ni el conteo (falso) de 999 ni ningún movimiento debe haber tocado el stock.
+        expect(await occupancyOf('GREEN-A-01')).toBe(80);
+        const blocked = await query(`SELECT is_blocked FROM storage_locations WHERE code = 'GREEN-A-01'`);
+        expect(Number(blocked.rows[0].is_blocked)).toBe(0);
+
+        const state = await query('SELECT status FROM inventory_counts WHERE id = ?', [opened.countId]);
+        expect(state.rows[0].status).toBe('cancelled');
+    });
+
+    it('listInventoryCounts() y getInventoryCountDetail() reflejan las líneas y su avance', async () => {
+        await storage.postMovement({ type: 'receipt', to: 'GREEN-A-01', lotId: LOT, stockState: 'green', qtyKg: 20, user });
+        const opened = await storage.openInventoryCount({ locationCodes: ['GREEN-A-01'], scopeNote: 'Prueba', user });
+
+        const list = await storage.listInventoryCounts({ status: 'counting' });
+        expect(list.some((c) => c.id === opened.countId)).toBe(true);
+        expect(list.find((c) => c.id === opened.countId).counted_lines).toBe(0);
+
+        const detail = await storage.getInventoryCountDetail(opened.countId);
+        expect(detail.lines).toHaveLength(1);
+        expect(Number(detail.lines[0].system_qty_kg)).toBe(20);
+        expect(detail.lines[0].counted_qty_kg).toBeNull();
+    });
 });
