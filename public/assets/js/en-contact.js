@@ -10,7 +10,7 @@ function initEnContact() {
   const status = document.getElementById("formStatus");
   btn.disabled = true;
   btn.textContent = "Sending...";
-  status.style.display = "none";
+  status.className = "form-status";
 
   try {
     const body = Object.fromEntries(new FormData(form).entries());
@@ -21,18 +21,13 @@ function initEnContact() {
     });
     const json = await res.json();
     if (!res.ok) throw new Error(json.error ?? "Error");
-    status.style.background = "#f0fdf4";
-    status.style.border = "1px solid #bbf7d0";
-    status.style.color = "#166534";
-    status.textContent = "✓ Message sent! We'll reply within 24 hours.";
+    status.textContent = "Message sent! We'll reply within 24 hours.";
+    status.className = "form-status success";
     form.reset();
   } catch {
-    status.style.background = "#fef2f2";
-    status.style.border = "1px solid #fecaca";
-    status.style.color = "#991b1b";
-    status.textContent = "✕ Error sending message. Please try again.";
+    status.textContent = "Error sending message. Please try again.";
+    status.className = "form-status error";
   } finally {
-    status.style.display = "block";
     btn.disabled = false;
     btn.textContent = "Send message";
   }
