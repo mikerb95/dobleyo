@@ -11,19 +11,19 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         <div class="page-subtitle">Estado, usuarios, registros y operaciones de mantenimiento.</div>
       </div>
     </div>
-    <div class="sys-tabs" role="tablist">
-      <button class="sys-tab active" data-tab="resumen">Resumen</button>
-      <button class="sys-tab" data-tab="usuarios">Usuarios</button>
-      <button class="sys-tab" data-tab="logs">Logs</button>
-      <button class="sys-tab" data-tab="changelog">Changelog</button>
-      <button class="sys-tab danger-tab" data-tab="danger">Danger Zone</button>
+    <div class="sys-tabs" role="tablist" aria-label="Secciones de gestión del sistema">
+      <button class="sys-tab active" id="tabbtn-resumen" data-tab="resumen" role="tab" aria-selected="true" aria-controls="tab-resumen" tabindex="0">Resumen</button>
+      <button class="sys-tab" id="tabbtn-usuarios" data-tab="usuarios" role="tab" aria-selected="false" aria-controls="tab-usuarios" tabindex="-1">Usuarios</button>
+      <button class="sys-tab" id="tabbtn-logs" data-tab="logs" role="tab" aria-selected="false" aria-controls="tab-logs" tabindex="-1">Logs</button>
+      <button class="sys-tab" id="tabbtn-changelog" data-tab="changelog" role="tab" aria-selected="false" aria-controls="tab-changelog" tabindex="-1">Changelog</button>
+      <button class="sys-tab danger-tab" id="tabbtn-danger" data-tab="danger" role="tab" aria-selected="false" aria-controls="tab-danger" tabindex="-1">Danger Zone</button>
     </div>
   </div>
 
   <div class="erp-body">
 
     <!-- ── TAB: Resumen ─────────────────────────────────────────────────────── -->
-    <div id="tab-resumen" class="tab-panel">
+    <div id="tab-resumen" class="tab-panel" role="tabpanel" aria-labelledby="tabbtn-resumen" tabindex="0">
 
       <div class="card" style="margin-bottom:1.25rem">
         <div class="card-header">
