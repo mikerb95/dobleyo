@@ -2,6 +2,22 @@
 
 ---
 
+## 2026-07-20 — Sección "Conoce al caficultor" en /trazabilidad (Agente: Claude)
+
+### Contexto
+Una de las misiones de DobleYo es visibilizar el campo colombiano. La consulta de lote en `/trazabilidad` solo mostraba el nombre de la finca como chip de texto, sin aprovechar la infraestructura de Fase 7 (tabla `farms` con historia, foto de portada y caficultor asociado, más las páginas públicas `/finca/[slug]`). Ver `farmer.md`.
+
+### Cambios
+- **`server/routes/traceability.js`** — `lookupByLabelCode` y `lookupByLotId` hacen `LEFT JOIN` de `farms`/`users` por nombre de finca (mismo patrón de match por texto ya usado en `server/routes/farms.js`, sin FK nueva ni cambios de schema). `formatRow()` agrega un bloque `farm` (slug, nombre, municipio, descripción corta, historia, foto, nombre y ciudad del caficultor) que es `null` si no hay finca publicada que coincida.
+- **`src/pages/trazabilidad.astro`** — nueva tarjeta `#resFarmerCard` (oculta por defecto) entre el hero y el timeline de producción.
+- **`public/assets/js/trazabilidad.js`** — nueva `renderFarmer(data.farm)` invocada desde `renderResult()`; construye la tarjeta con `createElement`/`textContent` (la historia la escribe el caficultor, no se interpola en `innerHTML`) y enlace a `/finca/{slug}`. Se oculta en `renderIdle()` y cuando no hay finca coincidente.
+- **`public/assets/css/styles.css`** — clases `trace-farmer-*` (foto + texto, foto a la izquierda en desktop, apilada en mobile ≤480px).
+
+### Impacto
+Comportamiento degradado sin errores cuando el lote no tiene finca publicada asociada. Sin cambios de paridad `server/index.js` ↔ `api/index.js` (router ya montado en ambos).
+
+---
+
 ## 2026-07-19 (2) — Logística Fase C1/C3: polling programado + control de inventario (Agente: Claude)
 
 ### Contexto
