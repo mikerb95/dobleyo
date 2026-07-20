@@ -27,10 +27,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
       <div class="card" style="margin-bottom:1.25rem">
         <div class="card-header">
-          <div>
-            <div class="card-title">Estado del Sistema</div>
-            <div class="card-subtitle" id="sysUptime">Cargando...</div>
-          </div>
+          <div class="card-title">Estado del Sistema</div>
           <span class="badge" id="dbStatusBadge">—</span>
         </div>
         <div class="health-grid">
@@ -514,10 +511,6 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         badge.className = 'badge badge-error';
         el('dbLatency').textContent = data.db.error || 'Error';
       }
-
-      const h = Math.floor(data.uptime / 3600);
-      const m = Math.floor((data.uptime % 3600) / 60);
-      el('sysUptime').textContent = `Proceso activo hace ${h}h ${m}m`;
 
       const rolesEl = el('rolesOverview');
       rolesEl.innerHTML = renderRolesBars(data.users.byRole, data.users.total);
