@@ -173,7 +173,7 @@ export async function receiveRoasted({ roastingId, roastLevel, roastedWeight, ac
 
 // ── 5. Almacenar tostado ─────────────────────────────────────────────────────
 
-export async function storeRoasted({ roastedId, location, container, containerCount, conditions, notes }) {
+export async function storeRoasted({ roastedId, location, container, containerCount, conditions, notes, user, movementUid }) {
   if (!roastedId || !location || !container || !containerCount) throw bizError(400, 'Faltan campos requeridos');
 
   const roastedResult = await query(
@@ -182,19 +182,37 @@ export async function storeRoasted({ roastedId, location, container, containerCo
   );
   if (!roastedResult.rows.length) throw bizError(404, 'Café tostado no encontrado');
 
-  const { lot_id: storageLotId } = roastedResult.rows[0];
+  const { lot_id: storageLotId, weight_kg: roastedWeightKg } = roastedResult.rows[0];
   if (storageLotId) await assertCanAdvance(query, storageLotId, 'in_storage_roasted');
 
+  // Valida contra el maestro: activa, no bloqueada y apta para café tostado.
+  const loc = await resolveLocationForIntake(location, 'roasted');
+
   const conditionsStr = (Array.isArray(conditions) && conditions.length) ? conditions.join(',') : null;
-  const result = await query(
-    `INSERT INTO roasted_coffee_inventory (roasted_id, location, container_type, container_count, storage_conditions, notes, status, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, 'ready_for_packaging', datetime('now')) RETURNING id`,
-    [roastedId, location, container, containerCount, conditionsStr, notes || null]
-  );
+  const containers = parseInt(containerCount, 10) || 0;
 
-  await query('UPDATE roasted_coffee SET status = ? WHERE id = ?', ['stored', roastedId]);
+  return withTransaction(async (tx) => {
+    const result = await tx.query(
+      `INSERT INTO roasted_coffee_inventory (roasted_id, location, location_id, container_type, container_count, storage_conditions, notes, status, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, 'ready_for_packaging', datetime('now')) RETURNING id`,
+      [roastedId, loc.code, loc.id, container, containers, conditionsStr, notes || null]
+    );
+    const storageId = result.rows[0].id;
 
-  return { storageId: result.rows[0].id };
+    await tx.query('UPDATE roasted_coffee SET status = ? WHERE id = ?', ['stored', roastedId]);
+
+    // La validación de capacidad de la ubicación ocurre aquí dentro: si el
+    // estante no da, el registro de almacenamiento tampoco se guarda.
+    await postMovement({
+      type: 'receipt', to: loc.id, lotId: storageLotId || 'SIN-LOTE', stockState: 'roasted',
+      qtyKg: roastedWeightKg, containerType: container, containerCount: containers,
+      sourceTable: 'roasted_coffee_inventory', sourceId: storageId,
+      reasonCode: 'roast_intake', notes: notes || null,
+      movementUid: movementUid || `roasted-in:${storageId}`, user,
+    }, tx);
+
+    return { storageId, location: loc.code };
+  });
 }
 
 // ── 5.1 Detalle de almacenamiento tostado ────────────────────────────────────
