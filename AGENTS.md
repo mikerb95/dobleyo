@@ -162,6 +162,21 @@ SELECT * FROM orders WHERE user_id = ? AND status = '${status}';
 - **Paginación**: `?limit=20&offset=0` → respuesta incluye `{ data, total, limit, offset }`.
 - **Validación**: `express-validator` en toda ruta que acepte input del usuario.
 
+### 3.6 Inventario de bodega — reglas no negociables
+
+El stock físico se gobierna con un libro de movimientos append-only. Al tocar cualquier cosa relacionada con ubicaciones o existencias:
+
+- **Nunca escribir `storage_quants` directamente.** Es una proyección. La única puerta de escritura es `postMovement()` en `server/services/storageService.js`, que asienta el movimiento y actualiza la proyección en la misma transacción. Si alguna vez divergen, el ledger es la verdad: `rebuildQuants()` la regenera.
+- **Nunca hacer `UPDATE` ni `DELETE` sobre `storage_movements`.** Para corregir, se asienta un movimiento inverso (`adjustment` o `count_correction`) con motivo. El historial no se reescribe.
+- **Nunca hardcodear una lista de ubicaciones en el front.** Se leen de `GET /api/storage/locations?state=green|roasted|packaged`. La ocupación la calcula el servidor; no sumar filas en el navegador (las tablas vienen paginadas).
+- **Nunca borrar un maestro** (`warehouses`, `storage_zones`, `storage_locations`). Se desactivan (`is_active = 0`), y solo si no tienen existencias. El historial los referencia.
+- **El `code` de una ubicación es inmutable.** Cambiarlo reescribiría el significado de los movimientos ya asentados. Si hay que renombrar, se desactiva y se crea otra.
+- **Toda mutación de stock acepta `movement_uid`** como clave de idempotencia (la cola offline del móvil reintenta). Un reintento devuelve el movimiento original, no duplica.
+- **`logAudit()` va fuera de `withTransaction()`.** Usa el cliente no transaccional; llamarlo dentro auto-bloquea la escritura (`SQLITE_BUSY`) y el registro se pierde en silencio, porque `logAudit` traga sus propios errores.
+- **Los deltas negativos no van por UPSERT.** SQLite evalúa el `CHECK (qty_kg >= 0)` sobre la fila candidata del INSERT antes de resolver el conflicto, así que todo decremento falla. Leer, calcular y escribir el valor absoluto.
+
+Salud del inventario: `node server/jobs/reconcileQuants.js [--fix]`.
+
 ---
 
 ## 4. SEO — Reglas Obligatorias
