@@ -214,6 +214,40 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       .cn-table, .cn-table tbody, .cn-table tr, .cn-table td { display: block; width: 100%; }
       .cn-table tr { padding: 10px 0; }
     }
+
+    /* Elementos compartidos con /admin/ubicaciones (nombre `ub-` conservado
+       para no duplicar convenciones): esta página es independiente y no
+       carga el CSS de esa otra, así que se repiten aquí. */
+    .ub-section-title {
+      font-size: 11.5px; text-transform: uppercase; letter-spacing: .06em;
+      color: var(--muted); font-weight: 600; margin: 22px 0 10px;
+    }
+    .ub-section-title:first-child { margin-top: 0; }
+    .ub-check {
+      display: flex; align-items: center; gap: 7px;
+      font-size: 13.5px; color: var(--muted); cursor: pointer;
+    }
+    .ub-mini-btn {
+      font-size: 11.5px; padding: 5px 9px; border-radius: 6px;
+      border: 1px solid var(--rule); background: var(--paper); color: var(--color-primary);
+      cursor: pointer; white-space: nowrap;
+    }
+    .ub-mini-btn:hover { border-color: var(--color-accent); }
+    .ub-form-error {
+      display: none; margin-top: 14px; padding: 11px 13px; border-radius: 8px;
+      background: color-mix(in oklab, var(--danger) 12%, transparent);
+      color: var(--danger); font-size: 13px;
+    }
+    .ub-form-error.show { display: block; }
+    .ub-toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translate(-50%, 20px);
+      background: var(--color-primary); color: #fff;
+      padding: 12px 20px; border-radius: 999px; font-size: 13.5px; font-weight: 500;
+      opacity: 0; visibility: hidden; transition: all .25s ease; z-index: 100;
+    }
+    .ub-toast.show { opacity: 1; visibility: visible; transform: translate(-50%, 0); }
+    .ub-toast.ok { background: var(--ok); }
+    .ub-toast.err { background: var(--danger); }
   </style>
 
   <script>
