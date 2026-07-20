@@ -94,7 +94,9 @@ CREATE TABLE IF NOT EXISTS audit_logs (
 CREATE TABLE IF NOT EXISTS products (
     id VARCHAR(50) PRIMARY KEY,
     sku VARCHAR(100) UNIQUE,
+    slug TEXT UNIQUE, -- URL pública del producto (/producto/:slug)
     name VARCHAR(160) NOT NULL,
+    name_en TEXT, -- Nombre para el sitio en inglés (en.dobleyo.cafe)
     description TEXT,
     category TEXT NOT NULL DEFAULT 'cafe' CHECK (category IN ('cafe', 'accesorio', 'merchandising')),
     subcategory VARCHAR(80), -- Para cafés: origen. Para accesorios: tipo (prensa, chemex, filtros, etc)
