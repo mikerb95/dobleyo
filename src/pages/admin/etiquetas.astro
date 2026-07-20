@@ -575,23 +575,18 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     // ── Estadísticas (KPIs) + recientes ─────────────────────────────
     async function loadStats() {
       try {
-        const [allRes, lotsRes, customRes] = await Promise.all([
+        const [statsRes, recentRes] = await Promise.all([
+          fetch("/api/labels/stats"),
           fetch("/api/labels/list?limit=8"),
-          fetch("/api/labels/list?type=lots&limit=1"),
-          fetch("/api/labels/list?type=custom&limit=1"),
         ]);
-        const all = await allRes.json();
-        const lots = await lotsRes.json();
-        const custom = await customRes.json();
+        const stats = await statsRes.json();
+        const recent = await recentRes.json();
 
-        document.getElementById("kpiTotal").textContent =
-          all.pagination?.total ?? 0;
-        document.getElementById("kpiFromLots").textContent =
-          lots.pagination?.total ?? 0;
-        document.getElementById("kpiCustom").textContent =
-          custom.pagination?.total ?? 0;
+        document.getElementById("kpiTotal").textContent = stats.data?.total ?? 0;
+        document.getElementById("kpiFromLots").textContent = stats.data?.fromLots ?? 0;
+        document.getElementById("kpiCustom").textContent = stats.data?.custom ?? 0;
 
-        renderRecent(all.data || []);
+        renderRecent(recent.data || []);
       } catch (error) {
         console.error("Error cargando estadísticas:", error);
         renderRecent([]);
