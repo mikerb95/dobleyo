@@ -826,6 +826,8 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     text-align: center; color: var(--muted);
     padding: 28px 12px; display: grid; gap: 10px; justify-items: center;
   }
+  /* display explícito gana sobre el [hidden] del navegador: hay que anularlo */
+  .plan-empty[hidden], .plan-row[hidden] { display: none; }
   .plan-empty p { margin: 0; font-size: 13px; line-height: 1.5; }
   .plan-empty b { color: var(--color-primary); }
 
