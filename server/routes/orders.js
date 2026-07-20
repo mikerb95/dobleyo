@@ -762,6 +762,14 @@ ordersRouter.post('/wompi/webhook', async (req, res) => {
             );
         }
 
+        // Inventario: descuento al aprobarse, reposición si un VOID/contracargo
+        // revierte un pago que ya había sido aprobado (mismo txId, ver guard arriba).
+        if (newStatus === 'paid') {
+            await deductStockForOrder(updatedOrder.id, reference).catch((err) => logger.error({ err, orderId: updatedOrder.id }, '[Wompi webhook] Error descontando stock'));
+        } else if (order.status === 'paid') {
+            await replenishStockForOrder(updatedOrder.id, reference, 'Pago revertido (Wompi)').catch((err) => logger.error({ err, orderId: updatedOrder.id }, '[Wompi webhook] Error reponiendo stock'));
+        }
+
         // Enviar email de confirmación solo si el pago fue aprobado. Se desacopla de la
         // respuesta HTTP del webhook: si Resend falla aquí, NO se debe devolver 500 (eso
         // dispararía un reintento de Wompi que la idempotencia de arriba ignoraría sin
