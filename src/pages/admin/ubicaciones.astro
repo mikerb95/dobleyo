@@ -808,6 +808,138 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       }
     });
 
+    // ── Traslado entre ubicaciones ──────────────────────────────────────────
+    let transferCtx = null;
+
+    function openTransferModal(loc, quant) {
+      transferCtx = { fromCode: loc.code, lotId: quant.lot_id, stockState: quant.stock_state, availableKg: Number(quant.qty_kg) };
+
+      $("trLot").textContent = quant.lot_id;
+      $("trFromCode").textContent = loc.code;
+      $("trAvailable").textContent = kg(quant.qty_kg);
+
+      // Solo ubicaciones activas, no bloqueadas, distintas del origen y que
+      // admitan el mismo estado de stock: son las únicas que aceptaría el servidor.
+      const options = locations.filter((l) =>
+        l.is_active && !l.is_blocked && l.code !== loc.code && l.allowed_states.includes(quant.stock_state)
+      );
+      $("trTo").innerHTML = options.length
+        ? options.map((l) => `<option value="${l.code}">${l.code} — ${l.name} (${l.zone_name})</option>`).join("")
+        : '<option value="">No hay ubicaciones compatibles</option>';
+
+      $("trQty").value = "";
+      $("trQty").max = quant.qty_kg;
+      $("trNotes").value = "";
+      $("transferError").classList.remove("show");
+      $("transferModal").classList.add("show");
+    }
+
+    function closeTransferModal() {
+      $("transferModal").classList.remove("show");
+      transferCtx = null;
+    }
+
+    $("transferForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const err = $("transferError");
+      err.classList.remove("show");
+
+      const toCode = $("trTo").value;
+      const qtyKg = Number($("trQty").value);
+      if (!toCode) { err.textContent = "Seleccione una ubicación de destino."; err.classList.add("show"); return; }
+      if (!qtyKg || qtyKg <= 0) { err.textContent = "Ingrese una cantidad mayor a cero."; err.classList.add("show"); return; }
+      if (qtyKg > transferCtx.availableKg + 0.0001) {
+        err.textContent = `Solo hay ${kg(transferCtx.availableKg)} disponibles en ${transferCtx.fromCode}.`;
+        err.classList.add("show");
+        return;
+      }
+
+      const btn = $("transferSubmit");
+      btn.disabled = true;
+      try {
+        await api("/transfers", {
+          method: "POST",
+          body: JSON.stringify({
+            fromCode: transferCtx.fromCode, toCode, lotId: transferCtx.lotId,
+            stockState: transferCtx.stockState, qtyKg, notes: $("trNotes").value.trim() || undefined,
+          }),
+        });
+        toast(`Traslado registrado: ${kg(qtyKg)} de ${transferCtx.fromCode} a ${toCode}.`, "ok");
+        closeTransferModal();
+        closeDrawer();
+        await loadAll();
+      } catch (e2) {
+        err.textContent = e2.message;
+        err.classList.add("show");
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
+    // ── Ajuste de inventario ─────────────────────────────────────────────────
+    let adjustCtx = null;
+
+    function openAdjustModal(loc, quant) {
+      adjustCtx = { locationCode: loc.code, lotId: quant.lot_id, stockState: quant.stock_state, currentKg: Number(quant.qty_kg) };
+
+      $("adjLot").textContent = `${quant.lot_id} · ${loc.code}`;
+      $("adjCurrent").textContent = kg(quant.qty_kg);
+      $("adjTarget").value = quant.qty_kg;
+      $("adjReason").value = "";
+      $("adjustError").classList.remove("show");
+      $("adjustModal").classList.add("show");
+    }
+
+    function closeAdjustModal() {
+      $("adjustModal").classList.remove("show");
+      adjustCtx = null;
+    }
+
+    $("adjustForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const err = $("adjustError");
+      err.classList.remove("show");
+
+      const targetQtyKg = $("adjTarget").value;
+      const reason = $("adjReason").value.trim();
+      if (targetQtyKg === "" || Number(targetQtyKg) < 0) {
+        err.textContent = "Ingrese la cantidad real contada (no puede ser negativa).";
+        err.classList.add("show");
+        return;
+      }
+      if (reason.length < 5) {
+        err.textContent = "Indique el motivo del ajuste (mínimo 5 caracteres).";
+        err.classList.add("show");
+        return;
+      }
+
+      const btn = $("adjustSubmit");
+      btn.disabled = true;
+      try {
+        const data = await api("/adjustments", {
+          method: "POST",
+          body: JSON.stringify({
+            locationCode: adjustCtx.locationCode, lotId: adjustCtx.lotId,
+            stockState: adjustCtx.stockState, targetQtyKg, reason,
+          }),
+        });
+        toast(
+          data.movementId
+            ? `Ajuste registrado: ${data.delta > 0 ? "+" : ""}${kg(data.delta)}.`
+            : "Sin diferencia: no se registró ningún movimiento.",
+          "ok"
+        );
+        closeAdjustModal();
+        closeDrawer();
+        await loadAll();
+      } catch (e2) {
+        err.textContent = e2.message;
+        err.classList.add("show");
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
     // ── Eventos ──────────────────────────────────────────────────────────────
     $("refreshBtn").addEventListener("click", loadAll);
     $("newLocationBtn").addEventListener("click", () => openForm());
