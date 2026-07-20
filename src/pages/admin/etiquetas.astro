@@ -611,6 +611,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     }
 
     function renderRecent(labels) {
+      recentLabelsCache = labels;
       const body = document.getElementById("recentBody");
       if (!labels.length) {
         body.innerHTML =
