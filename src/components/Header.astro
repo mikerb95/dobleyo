@@ -49,7 +49,7 @@ const accountHref = lang === "en" ? "/account" : "/cuenta";
   <div class="container">
     <div class="nav-beans" aria-hidden="true"></div>
     <a class="brand" href={homeHref}>
-      <img src="/assets/logo.png" alt="DobleYo" height="80" />
+      <Image src={logo} alt="DobleYo" height={80} width={80} loading="eager" />
     </a>
     <nav class="nav">
       {nav.map((item) => <a href={item.href}>{item.label}</a>)}
