@@ -1,0 +1,543 @@
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+---
+
+<AdminLayout title="Conteo Cíclico — DobleYo">
+  <div class="page-header">
+    <div class="page-header-top">
+      <div>
+        <div class="page-breadcrumb">Administración · Inventario físico</div>
+        <h1 class="page-title">Conteo Cíclico</h1>
+        <p class="page-subtitle">
+          Verifique el inventario físico contra el sistema. Abrir un conteo
+          bloquea las ubicaciones incluidas hasta que se contabilice o cancele.
+        </p>
+      </div>
+      <div class="page-header-actions">
+        <button type="button" class="btn btn-secondary" id="refreshBtn">
+          Actualizar
+        </button>
+        <button type="button" class="btn btn-primary" id="newCountBtn">
+          Nuevo conteo
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="erp-body cn-page">
+    <div class="cn-toolbar">
+      <select id="filterStatus" class="cn-filter">
+        <option value="">Todos los estados</option>
+        <option value="counting">En curso</option>
+        <option value="posted">Contabilizados</option>
+        <option value="cancelled">Cancelados</option>
+      </select>
+    </div>
+
+    <div class="card">
+      <table class="cn-table">
+        <thead>
+          <tr>
+            <th>Número</th>
+            <th>Estado</th>
+            <th>Alcance</th>
+            <th>Avance</th>
+            <th>Creado por</th>
+            <th>Fecha</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="countsBody">
+          <tr><td colspan="7" class="empty-state">Cargando conteos…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Panel de detalle / captura de conteo -->
+  <aside class="cn-drawer" id="drawer" aria-hidden="true">
+    <div class="cn-drawer-head">
+      <div>
+        <div class="cn-drawer-code" id="drawerNumber">—</div>
+        <div class="cn-drawer-sub" id="drawerStatus">—</div>
+      </div>
+      <button type="button" class="cn-close" id="drawerClose" aria-label="Cerrar">×</button>
+    </div>
+    <div class="cn-drawer-body" id="drawerBody"></div>
+  </aside>
+  <div class="cn-overlay" id="overlay"></div>
+
+  <!-- Nuevo conteo -->
+  <div class="cn-modal" id="newModal" aria-hidden="true">
+    <div class="cn-modal-card">
+      <h2 class="cn-modal-title">Nuevo conteo físico</h2>
+      <form id="newCountForm">
+        <div class="form-group">
+          <label for="scopeNote">Nota / alcance</label>
+          <input type="text" id="scopeNote" placeholder="Ej.: Conteo trimestral bodega principal" />
+        </div>
+
+        <div class="form-group">
+          <label>Ubicaciones a incluir</label>
+          <div class="cn-scope-all">
+            <label class="ub-check">
+              <input type="checkbox" id="scopeAll" checked /> Todas las ubicaciones activas con existencias
+            </label>
+          </div>
+          <div class="cn-loc-picker" id="locPicker" hidden></div>
+          <div class="form-hint">
+            Las ubicaciones incluidas quedan <b>bloqueadas</b> (sin entradas ni
+            salidas) hasta que el conteo se contabilice o se cancele.
+          </div>
+        </div>
+
+        <div class="ub-form-error" id="newCountError"></div>
+
+        <div class="cn-modal-actions">
+          <button type="button" class="btn btn-secondary" id="newCountCancel">Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="newCountSubmit">Abrir conteo</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="ub-toast" id="toast"></div>
+
+  <!-- is:global — las filas de la tabla y el panel de detalle se generan con
+       innerHTML desde el script, así que no reciben el atributo de scope que
+       Astro añade a los elementos del template; el CSS scoped no las alcanza.
+       Todas las clases van prefijadas con `cn-` para evitar colisiones. -->
+  <style is:global>
+    .cn-page { padding-bottom: 60px; }
+
+    .cn-toolbar { display: flex; gap: 12px; margin-bottom: 16px; }
+    .cn-filter {
+      padding: 9px 13px; border: 1px solid var(--rule); border-radius: 8px;
+      font-size: 14px; background: var(--paper); color: inherit;
+    }
+
+    .cn-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+    .cn-table th {
+      text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .05em;
+      color: var(--muted); padding: 12px 16px; border-bottom: 1px solid var(--rule);
+    }
+    .cn-table td { padding: 13px 16px; border-bottom: 1px solid var(--rule); vertical-align: middle; }
+    .cn-table tbody tr:last-child td { border-bottom: none; }
+    .cn-table tbody tr:hover { background: var(--hover); cursor: pointer; }
+    .cn-num { font-family: ui-monospace, Menlo, monospace; font-weight: 600; }
+    .cn-scope { color: var(--muted); font-size: 12.5px; }
+    .cn-progress-cell { display: flex; align-items: center; gap: 8px; }
+    .cn-progress-bar { width: 70px; height: 5px; border-radius: 999px; background: var(--rule); overflow: hidden; }
+    .cn-progress-bar > span { display: block; height: 100%; background: var(--color-accent); border-radius: 999px; }
+    .cn-progress-text { font-size: 11.5px; color: var(--muted); white-space: nowrap; }
+
+    /* Panel lateral */
+    .cn-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,.35);
+      opacity: 0; visibility: hidden; transition: all .22s ease; z-index: 70;
+    }
+    .cn-overlay.show { opacity: 1; visibility: visible; }
+    .cn-drawer {
+      position: fixed; top: 0; right: 0; bottom: 0; width: min(560px, 100%);
+      background: var(--paper); border-left: 1px solid var(--rule);
+      transform: translateX(100%); transition: transform .25s ease;
+      z-index: 80; display: flex; flex-direction: column;
+    }
+    .cn-drawer.show { transform: translateX(0); }
+    .cn-drawer-head {
+      padding: 20px; border-bottom: 1px solid var(--rule);
+      display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+    }
+    .cn-drawer-code { font-family: ui-monospace, Menlo, monospace; font-size: 16px; font-weight: 700; }
+    .cn-drawer-sub { font-size: 13px; color: var(--muted); margin-top: 3px; }
+    .cn-close {
+      background: none; border: none; font-size: 26px; line-height: 1;
+      cursor: pointer; color: var(--muted); padding: 0 4px;
+    }
+    .cn-drawer-body { padding: 20px; overflow-y: auto; flex: 1; }
+
+    .cn-line {
+      display: flex; align-items: center; gap: 12px; padding: 10px 0;
+      border-bottom: 1px solid var(--rule);
+    }
+    .cn-line-info { flex: 1; min-width: 0; }
+    .cn-line-loc { font-family: ui-monospace, Menlo, monospace; font-weight: 600; font-size: 13px; }
+    .cn-line-lot { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .cn-line-system { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+    .cn-line-input {
+      width: 110px; padding: 7px 9px; border: 1px solid var(--rule); border-radius: 7px;
+      font-size: 13.5px; text-align: right; background: var(--paper); color: inherit;
+    }
+    .cn-line-input.dirty { border-color: var(--color-accent); }
+    .cn-line-input.diff-pos { border-color: var(--ok); }
+    .cn-line-input.diff-neg { border-color: var(--danger); }
+    .cn-line-delta { font-size: 11px; width: 64px; text-align: right; flex-shrink: 0; }
+    .cn-line-delta.pos { color: var(--ok); }
+    .cn-line-delta.neg { color: var(--danger); }
+
+    .cn-drawer-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
+    .cn-summary {
+      display: flex; gap: 18px; padding: 12px 14px; border-radius: 8px; margin-bottom: 16px;
+      background: color-mix(in oklab, var(--color-primary) 4%, white);
+      font-size: 12.5px;
+    }
+    .cn-summary b { display: block; font-size: 15px; }
+
+    /* Modal nuevo conteo */
+    .cn-modal {
+      position: fixed; inset: 0; background: rgba(0,0,0,.45);
+      display: flex; align-items: center; justify-content: center; padding: 20px;
+      opacity: 0; visibility: hidden; transition: all .2s ease; z-index: 90;
+    }
+    .cn-modal.show { opacity: 1; visibility: visible; }
+    .cn-modal-card {
+      background: var(--paper); border-radius: 14px; padding: 26px;
+      width: min(520px, 100%); max-height: 90vh; overflow-y: auto;
+    }
+    .cn-modal-title { font-size: 18px; font-weight: 600; margin: 0 0 20px; }
+    .cn-modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 22px; }
+
+    .cn-scope-all { margin: 6px 0 10px; }
+    .cn-loc-picker {
+      max-height: 220px; overflow-y: auto; border: 1px solid var(--rule);
+      border-radius: 8px; padding: 4px 10px;
+    }
+    .cn-loc-picker label {
+      display: flex; align-items: center; gap: 8px; padding: 7px 0;
+      font-size: 13px; cursor: pointer; border-bottom: 1px solid var(--rule);
+    }
+    .cn-loc-picker label:last-child { border-bottom: none; }
+    .cn-loc-picker .cn-loc-kg { margin-left: auto; color: var(--muted); font-size: 12px; }
+
+    @media (max-width: 768px) {
+      .cn-table thead { display: none; }
+      .cn-table, .cn-table tbody, .cn-table tr, .cn-table td { display: block; width: 100%; }
+      .cn-table tr { padding: 10px 0; }
+    }
+  </style>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const API = "/api/storage";
+
+    const STATE_LABEL = { green: "Verde", roasted: "Tostado", packaged: "Empacado" };
+    const STATUS_LABEL = { open: "Abierto", counting: "En curso", posted: "Contabilizado", cancelled: "Cancelado" };
+    const STATUS_BADGE = { open: "badge-info", counting: "badge-warning", posted: "badge-success", cancelled: "badge-neutral" };
+
+    const fmt = new Intl.NumberFormat("es-CO", { maximumFractionDigits: 1 });
+    const kg = (n) => fmt.format(Number(n) || 0) + " kg";
+
+    let counts = [];
+    let locations = [];
+
+    let toastTimer;
+    function toast(msg, type = "") {
+      const t = $("toast");
+      t.textContent = msg;
+      t.className = "ub-toast show " + type;
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => { t.className = "ub-toast " + type; }, 3600);
+    }
+
+    async function api(path, options = {}) {
+      const res = await fetch(API + path, {
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        ...options,
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || json.success === false) {
+        const detail = json.errors?.[0]?.msg || json.error || "Error inesperado";
+        throw new Error(detail);
+      }
+      return json.data;
+    }
+
+    // ── Carga ────────────────────────────────────────────────────────────────
+    async function loadAll() {
+      try {
+        const status = $("filterStatus").value;
+        counts = await api(`/counts${status ? `?status=${status}` : ""}`);
+      } catch (err) {
+        $("countsBody").innerHTML =
+          `<tr><td colspan="7" class="empty-state">No se pudieron cargar los conteos: ${err.message}</td></tr>`;
+        return;
+      }
+      renderTable();
+    }
+
+    async function loadLocationsForPicker() {
+      try {
+        locations = await api("/locations?include_blocked=0");
+      } catch {
+        locations = [];
+      }
+    }
+
+    function renderTable() {
+      const body = $("countsBody");
+      if (!counts.length) {
+        body.innerHTML = '<tr><td colspan="7" class="empty-state">No hay conteos registrados.</td></tr>';
+        return;
+      }
+      body.innerHTML = counts.map((c) => {
+        const pct = c.line_count ? Math.round((c.counted_lines / c.line_count) * 100) : 0;
+        return `
+          <tr data-count="${c.id}">
+            <td class="cn-num">${c.count_number}</td>
+            <td><span class="badge ${STATUS_BADGE[c.status] || "badge-neutral"}">${STATUS_LABEL[c.status] || c.status}</span></td>
+            <td class="cn-scope">${c.scope_note || "Sin nota"}</td>
+            <td>
+              <div class="cn-progress-cell">
+                <div class="cn-progress-bar"><span style="width:${pct}%"></span></div>
+                <span class="cn-progress-text">${c.counted_lines}/${c.line_count}</span>
+              </div>
+            </td>
+            <td>${c.created_by_email || "—"}</td>
+            <td>${new Date(c.created_at).toLocaleDateString("es-CO")}</td>
+            <td style="text-align:right;">
+              <button type="button" class="ub-mini-btn" data-open="${c.id}">Ver</button>
+            </td>
+          </tr>`;
+      }).join("");
+
+      body.querySelectorAll("tr[data-count]").forEach((row) => {
+        row.addEventListener("click", () => openDrawer(Number(row.dataset.count)));
+      });
+    }
+
+    // ── Panel de detalle / captura ────────────────────────────────────────────
+    let currentCountId = null;
+
+    async function openDrawer(id) {
+      currentCountId = id;
+      $("drawerBody").innerHTML = '<div class="empty-state">Cargando…</div>';
+      $("drawer").classList.add("show");
+      $("overlay").classList.add("show");
+      await refreshDrawer();
+    }
+
+    async function refreshDrawer() {
+      let detail;
+      try {
+        detail = await api(`/counts/${currentCountId}`);
+      } catch (err) {
+        $("drawerBody").innerHTML = `<div class="empty-state">${err.message}</div>`;
+        return;
+      }
+
+      $("drawerNumber").textContent = detail.count_number;
+      $("drawerStatus").textContent =
+        `${STATUS_LABEL[detail.status] || detail.status}${detail.scope_note ? " · " + detail.scope_note : ""}`;
+
+      const countedLines = detail.lines.filter((l) => l.counted_qty_kg != null).length;
+      const isEditable = detail.status === "counting" || detail.status === "open";
+
+      const linesHtml = detail.lines.length
+        ? detail.lines.map((l) => {
+            const counted = l.counted_qty_kg;
+            const hasDelta = counted != null;
+            const delta = hasDelta ? Number(counted) - Number(l.system_qty_kg) : 0;
+            const deltaClass = delta > 0.0009 ? "pos" : delta < -0.0009 ? "neg" : "";
+            return `
+              <div class="cn-line" data-line="${l.id}">
+                <div class="cn-line-info">
+                  <div class="cn-line-loc">${l.location_code}</div>
+                  <div class="cn-line-lot">${l.lot_id} · ${STATE_LABEL[l.stock_state] || l.stock_state}</div>
+                  <div class="cn-line-system">Sistema: ${kg(l.system_qty_kg)}</div>
+                </div>
+                <span class="cn-line-delta ${deltaClass}">${hasDelta ? (delta >= 0 ? "+" : "") + fmt.format(delta) + " kg" : ""}</span>
+                <input type="number" class="cn-line-input" min="0" step="0.001"
+                  value="${counted != null ? counted : ""}" placeholder="Contado"
+                  ${isEditable ? "" : "disabled"} data-line-input="${l.id}" data-system="${l.system_qty_kg}" />
+              </div>`;
+          }).join("")
+        : '<div class="empty-state" style="padding:14px 0;">Este conteo no incluye ubicaciones con existencias.</div>';
+
+      $("drawerBody").innerHTML = `
+        <div class="cn-summary">
+          <div><b>${detail.lines.length}</b>líneas</div>
+          <div><b>${countedLines}</b>contadas</div>
+          <div><b>${detail.lines.length - countedLines}</b>pendientes</div>
+        </div>
+
+        <div class="ub-section-title">Líneas del conteo</div>
+        ${linesHtml}
+
+        <div class="cn-drawer-actions">
+          ${isEditable ? `
+            <button type="button" class="btn btn-primary" id="postCountBtn">Contabilizar</button>
+            <button type="button" class="btn btn-secondary" id="cancelCountBtn">Cancelar conteo</button>
+          ` : ""}
+        </div>`;
+
+      if (isEditable) {
+        $("drawerBody").querySelectorAll("[data-line-input]").forEach((input) => {
+          input.addEventListener("change", () => saveCountLine(input));
+          input.addEventListener("input", () => {
+            input.classList.add("dirty");
+            input.classList.remove("diff-pos", "diff-neg");
+          });
+        });
+        $("postCountBtn").addEventListener("click", postCurrentCount);
+        $("cancelCountBtn").addEventListener("click", cancelCurrentCount);
+      }
+    }
+
+    async function saveCountLine(input) {
+      const lineId = Number(input.dataset.lineInput);
+      const value = input.value;
+      if (value === "") return;
+      const countedQtyKg = Number(value);
+      if (!isFinite(countedQtyKg) || countedQtyKg < 0) {
+        toast("La cantidad contada no puede ser negativa.", "err");
+        return;
+      }
+
+      input.disabled = true;
+      try {
+        await api(`/counts/${currentCountId}/lines/${lineId}`, {
+          method: "PATCH",
+          body: JSON.stringify({ countedQtyKg }),
+        });
+        const system = Number(input.dataset.system);
+        const delta = countedQtyKg - system;
+        input.classList.remove("dirty");
+        input.classList.toggle("diff-pos", delta > 0.0009);
+        input.classList.toggle("diff-neg", delta < -0.0009);
+
+        const row = input.closest(".cn-line");
+        const deltaSpan = row.querySelector(".cn-line-delta");
+        deltaSpan.textContent = (delta >= 0 ? "+" : "") + fmt.format(delta) + " kg";
+        deltaSpan.className = "cn-line-delta " + (delta > 0.0009 ? "pos" : delta < -0.0009 ? "neg" : "");
+
+        // Refresca el resumen (contadas/pendientes) sin recargar toda la fila,
+        // así el operario no pierde el foco mientras sigue capturando.
+        const total = $("drawerBody").querySelectorAll("[data-line-input]").length;
+        const done = $("drawerBody").querySelectorAll("[data-line-input]:not([value=''])").length;
+      } catch (err) {
+        toast(err.message, "err");
+      } finally {
+        input.disabled = false;
+      }
+    }
+
+    async function postCurrentCount() {
+      const pending = $("drawerBody").querySelectorAll('[data-line-input]:placeholder-shown').length;
+      if (pending > 0) {
+        const proceed = confirm(
+          `Hay ${pending} línea(s) sin contar. Contabilizar ahora dejará esas cantidades sin verificar. ¿Continuar de todas formas?`
+        );
+        if (!proceed) return;
+      }
+
+      try {
+        const data = await api(`/counts/${currentCountId}/post`, { method: "POST" });
+        toast(
+          data.corrections.length
+            ? `Conteo contabilizado: ${data.corrections.length} corrección(es) aplicadas.`
+            : "Conteo contabilizado sin diferencias.",
+          "ok"
+        );
+        await refreshDrawer();
+        await loadAll();
+      } catch (err) {
+        toast(err.message, "err");
+      }
+    }
+
+    async function cancelCurrentCount() {
+      if (!confirm("¿Cancelar este conteo? Se descartará lo contado y las ubicaciones quedarán desbloqueadas.")) return;
+      try {
+        await api(`/counts/${currentCountId}/cancel`, { method: "POST" });
+        toast("Conteo cancelado.", "ok");
+        await refreshDrawer();
+        await loadAll();
+      } catch (err) {
+        toast(err.message, "err");
+      }
+    }
+
+    function closeDrawer() {
+      $("drawer").classList.remove("show");
+      $("overlay").classList.remove("show");
+      currentCountId = null;
+    }
+
+    // ── Nuevo conteo ─────────────────────────────────────────────────────────
+    async function openNewCountModal() {
+      $("scopeNote").value = "";
+      $("scopeAll").checked = true;
+      $("locPicker").hidden = true;
+      $("newCountError").classList.remove("show");
+
+      await loadLocationsForPicker();
+      const withStock = locations.filter((l) => l.occupied_kg > 0);
+      $("locPicker").innerHTML = withStock.length
+        ? withStock.map((l) => `
+            <label>
+              <input type="checkbox" value="${l.code}" />
+              ${l.code} — ${l.name}
+              <span class="cn-loc-kg">${kg(l.occupied_kg)}</span>
+            </label>`).join("")
+        : '<div class="empty-state" style="padding:10px 0;">No hay ubicaciones con existencias.</div>';
+
+      $("newModal").classList.add("show");
+    }
+
+    function closeNewCountModal() {
+      $("newModal").classList.remove("show");
+    }
+
+    $("scopeAll").addEventListener("change", () => {
+      $("locPicker").hidden = $("scopeAll").checked;
+    });
+
+    $("newCountForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const err = $("newCountError");
+      err.classList.remove("show");
+
+      let locationCodes;
+      if (!$("scopeAll").checked) {
+        locationCodes = [...$("locPicker").querySelectorAll("input:checked")].map((c) => c.value);
+        if (!locationCodes.length) {
+          err.textContent = "Seleccione al menos una ubicación, o marque \"Todas las ubicaciones activas\".";
+          err.classList.add("show");
+          return;
+        }
+      }
+
+      const btn = $("newCountSubmit");
+      btn.disabled = true;
+      try {
+        const data = await api("/counts", {
+          method: "POST",
+          body: JSON.stringify({ scopeNote: $("scopeNote").value.trim() || undefined, locationCodes }),
+        });
+        toast(`Conteo ${data.countNumber} abierto con ${data.lines} línea(s).`, "ok");
+        closeNewCountModal();
+        await loadAll();
+        openDrawer(data.countId);
+      } catch (e2) {
+        err.textContent = e2.message;
+        err.classList.add("show");
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
+    // ── Eventos ──────────────────────────────────────────────────────────────
+    $("refreshBtn").addEventListener("click", loadAll);
+    $("newCountBtn").addEventListener("click", openNewCountModal);
+    $("newCountCancel").addEventListener("click", closeNewCountModal);
+    $("drawerClose").addEventListener("click", closeDrawer);
+    $("overlay").addEventListener("click", closeDrawer);
+    $("filterStatus").addEventListener("change", loadAll);
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") { closeDrawer(); closeNewCountModal(); }
+    });
+
+    loadAll();
+  </script>
+</AdminLayout>
