@@ -150,10 +150,20 @@ Antes de tocar código se auditaron con un script todas las `<img>` públicas pa
 
 Todo probado localmente con `astro dev` y `npm run build` contra la base de datos real antes de darlo por cerrado (sitemap, RSS, meta tags OG/Twitter, robots por página, assets estáticos, skip link, labels, hamburger, status 404 real).
 
+### Archivos adicionales tocados en la tercera ronda (Fase 4 + 5 + íconos restantes)
+
+- `src/components/LangSuggest.astro`, `src/pages/en/cart.astro`, `src/pages/cuenta.astro`, `src/pages/en/account.astro` — `✕`/`×` restantes a SVG con `aria-hidden`, `aria-label` agregado donde solo había `title`
+- `src/pages/index.astro`, `src/pages/en/index.astro` — JSON-LD `WebSite`, `poster` en el video hero
+- `src/pages/envios-devoluciones.astro` — JSON-LD `FAQPage`
+- `src/assets/logo.png` (nuevo) + `src/components/Header.astro`, `Footer.astro`, `AuthModal.astro` — migrados a `<Image>` de `astro:assets`
+- `public/assets/img/hero-poster.jpg` (nuevo) — frame extraído del video hero con `ffmpeg`
+
+Verificado con `npm run build` (compresión de imágenes confirmada en el log de build) y con revisión visual real en Chrome (home, sección de kits, footer, página de producto) — sin regresiones.
+
 ## Pendiente para una próxima ronda
 
-1. Fase 4 completa — Core Web Vitals / `astro:assets` (el mayor impacto restante, no iniciada)
-2. Fase 3 — pasada de Lighthouse/axe en navegador real para contraste de color exhaustivo (no ejecutable en esta sesión)
-3. Fase 5 — JSON-LD adicionales (WebSite/SearchAction, FAQPage) y calendario editorial
-4. Fase 2.5 — Search Console / Bing Webmaster (acción manual de Mike)
-5. Íconos `✕`/`×` restantes en páginas públicas secundarias (`LangSuggest`, `cuenta`, `en/cart`, `en/account`) y en el panel admin — hallazgo nuevo, bajo impacto SEO (admin es `noindex`)
+1. **Decidir sobre el bug de `/en/shop`** (ver nota en Fase 4) — requiere tu decisión antes de tocarlo, no es parte del SEO plan original
+2. Fase 3 — pasada de Lighthouse/axe en navegador real para contraste de color exhaustivo (no ejecutable en esta sesión, falta el CLI)
+3. Fase 5 — `LocalBusiness` (si aplica) y calendario editorial del blog
+4. Fase 2.5 — Search Console / Bing Webmaster (acción manual de Mike, requiere su cuenta)
+5. Íconos `✕`/`×` restantes solo en el panel admin (ERP interno, `noindex`, bajo impacto SEO) — no tocados
