@@ -109,6 +109,70 @@ function verifyWompiEventSignature(event) {
     return a.length === b.length && crypto.timingSafeEqual(a, b);
 }
 
+// ─── Inventario: descuento directo al confirmarse el pago ─────────────────
+// Se descuenta SOLO cuando la orden queda 'paid' (webhook Wompi) o nace COD
+// ('processing' de inmediato) — nunca en 'pending_payment'. No hay reserva de
+// stock: el riesgo de sobreventa entre creación y pago se acepta para este
+// catálogo de bajo volumen. Idempotente vía `stock_deducted_at`.
+async function deductStockForOrder(orderId, reference) {
+    const order = await query(`SELECT stock_deducted_at FROM customer_orders WHERE id = ?`, [orderId]);
+    if (!order.rows.length || order.rows[0].stock_deducted_at) return;
+
+    const items = await query(`SELECT product_id, quantity FROM customer_order_items WHERE order_id = ?`, [orderId]);
+
+    for (const item of items.rows) {
+        const result = await query(
+            `UPDATE products SET stock_quantity = stock_quantity - ?
+             WHERE id = ? AND stock_quantity >= ?
+             RETURNING stock_quantity`,
+            [item.quantity, item.product_id, item.quantity]
+        );
+        if (result.rows.length) {
+            const after = result.rows[0].stock_quantity;
+            await query(
+                `INSERT INTO inventory_movements
+                    (product_id, movement_type, quantity, quantity_before, quantity_after, reason, reference)
+                 VALUES (?, 'salida', ?, ?, ?, 'Venta e-commerce', ?)`,
+                [item.product_id, item.quantity, after + item.quantity, after, reference]
+            );
+        } else {
+            // Sobreventa: no se pudo descontar (stock insuficiente en el momento del
+            // pago). La orden ya está pagada/confirmada, así que se deja seguir — se
+            // registra para que el admin gestione backorder/reposición.
+            logger.warn({ orderId, productId: item.product_id, quantity: item.quantity }, '[Inventory] Sobreventa detectada al descontar stock');
+            logSystemAudit('oversold', 'products', item.product_id, { orderId, reference, quantity: item.quantity }).catch(() => {});
+        }
+    }
+
+    await query(`UPDATE customer_orders SET stock_deducted_at = datetime('now') WHERE id = ?`, [orderId]);
+}
+
+// Repone stock cuando una orden que YA había descontado inventario se cancela
+// o reembolsa. Si nunca se descontó (p. ej. seguía en pending_payment), no hay
+// nada que reponer.
+async function replenishStockForOrder(orderId, reference, reasonLabel) {
+    const order = await query(`SELECT stock_deducted_at FROM customer_orders WHERE id = ?`, [orderId]);
+    if (!order.rows.length || !order.rows[0].stock_deducted_at) return;
+
+    const items = await query(`SELECT product_id, quantity FROM customer_order_items WHERE order_id = ?`, [orderId]);
+    for (const item of items.rows) {
+        const result = await query(
+            `UPDATE products SET stock_quantity = stock_quantity + ? WHERE id = ? RETURNING stock_quantity`,
+            [item.quantity, item.product_id]
+        );
+        if (result.rows.length) {
+            const after = result.rows[0].stock_quantity;
+            await query(
+                `INSERT INTO inventory_movements
+                    (product_id, movement_type, quantity, quantity_before, quantity_after, reason, reference)
+                 VALUES (?, 'devolucion', ?, ?, ?, ?, ?)`,
+                [item.product_id, item.quantity, after - item.quantity, after, reasonLabel, reference]
+            );
+        }
+    }
+    await query(`UPDATE customer_orders SET stock_deducted_at = NULL WHERE id = ?`, [orderId]);
+}
+
 // ─── POST /api/orders ─────────────────────────────────────────────────────
 // Crea una orden en estado pending_payment y devuelve la URL de pago Wompi
 

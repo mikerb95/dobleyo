@@ -76,6 +76,18 @@
   box-sizing: border-box
 }
 
+/* Foco visible por defecto — respaldo global para accesibilidad WCAG 2.4.7.
+   Reglas más específicas (.btn:focus-visible, etc.) tienen prioridad por cascada. */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--accent, #c67b4e);
+  outline-offset: 2px;
+}
+
 html,
 body {
   overflow-x: clip;
