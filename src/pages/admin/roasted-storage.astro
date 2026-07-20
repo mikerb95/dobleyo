@@ -784,18 +784,20 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
     // ── Mapa de bins ────────────────────────────────────────────────────────────────
     function renderBins() {
-      const byLoc = {};
-      stock.forEach((r) => {
-        const k = r.location || '—';
-        if (!byLoc[k]) byLoc[k] = { kg: 0, lots: 0 };
-        byLoc[k].kg += Number(r.weight_kg) || 0;
-        byLoc[k].lots += 1;
-      });
-      const maxKg = Math.max(1, ...LOCATIONS.map((l) => (byLoc[l.code]?.kg) || 0));
+      if (!LOCATIONS.length) {
+        $('binsGrid').innerHTML = '<div class="empty-state">No hay ubicaciones configuradas. Configúrelas en Administración → Ubicaciones.</div>';
+        return;
+      }
+      // La ocupación y el porcentaje de llenado vienen del servidor (quants),
+      // no de sumar las filas visibles: la tabla está paginada y limitada.
       $('binsGrid').innerHTML = LOCATIONS.map((l) => {
-        const d = byLoc[l.code] || { kg: 0, lots: 0 };
-        const filled = d.lots > 0;
-        const pct = Math.round((d.kg / maxKg) * 100);
+        const d = { kg: l.occupiedKg || 0, lots: l.lotCount || 0 };
+        const filled = d.kg > 0;
+        // Si hay capacidad definida el porcentaje es real; si no, es relativo
+        // a la ubicación más cargada, solo como referencia visual.
+        const maxKg = Math.max(1, ...LOCATIONS.map((x) => x.occupiedKg || 0));
+        const pct = l.fillPct != null ? l.fillPct : Math.round((d.kg / maxKg) * 100);
+        const level = pct >= 90 ? 'danger' : pct >= 70 ? 'warning' : '';
         return `
           <div class="rs-bin ${filled ? 'filled' : ''}">
             <div class="rs-bin-top">
