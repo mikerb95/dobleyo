@@ -500,13 +500,50 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     });
 
     // ── Cálculo de unidades ─────────────────────────────────────────
+    // Peso realmente consumido: el backend lo deriva de unitCount, no de
+    // "Cantidad para empacar" (esta última solo sirve para autocalcular).
+    function consumedKg() {
+      const size = document.getElementById("packageSize").value;
+      const units = parseInt(document.getElementById("unitCount").value) || 0;
+      if (!size || units <= 0) return 0;
+      // A granel, cada unidad equivale a 1 kg.
+      const sizeInKg = size === "bulk" ? 1 : packageSizeWeights[size];
+      return Math.round(units * sizeInKg * 1000) / 1000;
+    }
+
+    // El atributo max debe expresarse en la unidad seleccionada (kg o g),
+    // de lo contrario la validación nativa bloquea valores válidos en gramos.
+    function syncQuantityMax() {
+      const maxKg = availWeight(currentRoasted);
+      const unit = document.getElementById("packageUnit").value;
+      const input = document.getElementById("packageQuantity");
+      if (!currentRoasted) {
+        input.removeAttribute("max");
+        document.getElementById("quantityHint").textContent = "Máximo disponible: —";
+        return;
+      }
+      const max = unit === "g" ? maxKg * 1000 : maxKg;
+      input.max = max;
+      document.getElementById("quantityHint").textContent = `Máximo disponible: ${max} ${unit}`;
+    }
+
     function updateUnitCount() {
       const packageSize = document.getElementById("packageSize").value;
       const packageQuantity = parseFloat(document.getElementById("packageQuantity").value) || 0;
       const packageUnit = document.getElementById("packageUnit").value;
+      const unitCountEl = document.getElementById("unitCount");
+      const isBulk = packageSize === "bulk";
+
+      document.getElementById("unitCountLabel").textContent = isBulk
+        ? "Kilos a empacar a granel"
+        : "Cantidad de unidades a empacar";
+      unitCountEl.placeholder = isBulk ? "Ej: 12 kg" : "Ej: 60 unidades de 250g";
+
+      syncQuantityMax();
 
       if (!packageSize || packageQuantity <= 0) {
-        document.getElementById("unitCount").value = "";
+        unitCountEl.value = "";
+        document.getElementById("unitHint").textContent = "Se calcula automáticamente.";
         updatePlan();
         return;
       }
@@ -515,19 +552,18 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       const maxKg = availWeight(currentRoasted);
       if (currentRoasted && quantityInKg > maxKg) {
         toast(`La cantidad no puede exceder ${maxKg} kg disponibles`, "error");
-        document.getElementById("packageQuantity").value = maxKg;
+        document.getElementById("packageQuantity").value =
+          packageUnit === "g" ? maxKg * 1000 : maxKg;
         quantityInKg = maxKg;
       }
 
-      if (packageSize === "bulk") {
-        document.getElementById("unitCount").placeholder = "Especifique la cantidad de unidades";
-        document.getElementById("unitHint").textContent = "Presentación a granel.";
-      } else {
-        const sizeInKg = packageSizeWeights[packageSize];
-        const units = Math.floor(quantityInKg / sizeInKg);
-        document.getElementById("unitCount").value = units;
-        document.getElementById("unitHint").textContent = `${units} unidades de ${packageSize}`;
-      }
+      // A granel el backend interpreta unitCount como kilos enteros.
+      const sizeInKg = isBulk ? 1 : packageSizeWeights[packageSize];
+      const units = Math.floor(quantityInKg / sizeInKg);
+      unitCountEl.value = units;
+      document.getElementById("unitHint").textContent = isBulk
+        ? `${units} kg a granel (solo kilos enteros)`
+        : `${units} unidades de ${packageSize} · ${consumedKg()} kg`;
       updatePlan();
     }
     ["packageQuantity", "packageUnit", "packageSize"].forEach((id) => {
