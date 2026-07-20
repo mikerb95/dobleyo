@@ -481,8 +481,16 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
                         <td>${badge(s.status)}</td>
                         <td>${pdfUrls.length ? `<a href="${pdfUrls[0]}" target="_blank" rel="noopener">Ver guía</a>` : "—"}</td>
                         <td>
-                            <button class="btn-action" data-action="refresh" data-id="${s.id}">Refrescar</button>
-                            ${s.status !== 'cancelled' && s.status !== 'delivered' ? `<button class="btn-action" data-action="cancel" data-id="${s.id}">Cancelar</button>` : ''}
+                            ${s.delivery_company_id === 'manual'
+                                ? (s.status !== 'delivered' && s.status !== 'returned' && s.status !== 'cancelled' ? `
+                                    <button class="btn-action" data-action="mark" data-status="delivered" data-id="${s.id}">Marcar entregado</button>
+                                    <button class="btn-action" data-action="mark" data-status="returned" data-id="${s.id}">Devuelto</button>
+                                    <button class="btn-action" data-action="mark" data-status="cancelled" data-id="${s.id}">Cancelar</button>
+                                ` : '')
+                                : `
+                                    <button class="btn-action" data-action="refresh" data-id="${s.id}">Refrescar</button>
+                                    ${s.status !== 'cancelled' && s.status !== 'delivered' ? `<button class="btn-action" data-action="cancel" data-id="${s.id}">Cancelar</button>` : ''}
+                                `}
                         </td>
                     </tr>
                 `;
@@ -501,6 +509,18 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
                         const id = (btn as HTMLElement).dataset.id;
                         try { await api(`/${id}/cancel`, { method: "PUT" }); await loadActive(); }
                         catch (err: any) { alert(err.message); }
+                    });
+                });
+                body.querySelectorAll('[data-action="mark"]').forEach((btn) => {
+                    btn.addEventListener("click", async () => {
+                        const id = (btn as HTMLElement).dataset.id;
+                        const status = (btn as HTMLElement).dataset.status!;
+                        const labels: Record<string, string> = { delivered: "marcar como entregado", returned: "marcar como devuelto", cancelled: "cancelar" };
+                        if (!confirm(`¿Confirma ${labels[status]} este envío manual?`)) return;
+                        try {
+                            await api(`/${id}/status`, { method: "PATCH", body: JSON.stringify({ status }) });
+                            await loadActive();
+                        } catch (err: any) { alert(err.message); }
                     });
                 });
             } catch (err: any) {
