@@ -902,6 +902,11 @@ img {
   outline: none
 }
 
+.footer-news input:focus-visible {
+  outline: 2px solid var(--accent, #c67b4e);
+  outline-offset: 3px;
+}
+
 .footer-news input::placeholder {
   color: #8a776d
 }
