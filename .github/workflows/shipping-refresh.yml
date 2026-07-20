@@ -1,0 +1,29 @@
+# Red de seguridad de tracking de envíos (independiente del webhook de Mipaquete).
+# Scheduler externo gratuito (NO usa Vercel Cron): GitHub Actions invoca cada
+# 30 minutos el endpoint protegido /api/shipping/cron-refresh-all, que:
+#   - refresca tracking de envíos activos (fallback si el webhook falló)
+#   - recupera envíos huérfanos (createSending exitoso pero mp_code no persistido)
+#   - expira órdenes pending_payment abandonadas (>48h)
+#   - reintenta emails de confirmación de pago pendientes
+#
+# Requiere dos secretos en el repo (Settings → Secrets and variables → Actions):
+#   - SITE_BASE_URL   p.ej. https://dobleyo.cafe
+#   - CRON_SECRET     el mismo valor configurado en Vercel (server/routes/shipping.js)
+name: Mantenimiento de envíos
+
+on:
+  schedule:
+    - cron: "*/30 8-23 * * *"   # cada 30 min, 08:00–23:00 Colombia (13:00–04:00 UTC)
+  workflow_dispatch: {}           # permite ejecutarlo manualmente
+
+jobs:
+  refresh-shipments:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Disparar mantenimiento de envíos
+        run: |
+          code=$(curl -sS -o /tmp/out.json -w "%{http_code}" \
+            -X POST "${{ secrets.SITE_BASE_URL }}/api/shipping/cron-refresh-all" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}")
+          echo "HTTP $code"; cat /tmp/out.json
+          test "$code" = "200"
