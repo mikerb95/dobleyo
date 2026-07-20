@@ -1,4 +1,7 @@
 ---
+import { Image } from "astro:assets";
+import logo from "../assets/logo.png";
+
 const googleClientId = import.meta.env.PUBLIC_GOOGLE_CLIENT_ID || '';
 const appleClientId  = import.meta.env.PUBLIC_APPLE_CLIENT_ID  || '';
 ---
@@ -25,7 +28,7 @@ const appleClientId  = import.meta.env.PUBLIC_APPLE_CLIENT_ID  || '';
 
     <!-- Logo / branding -->
     <div class="auth-brand">
-      <img src="/assets/logo.png" alt="DobleYo" height="44" />
+      <Image src={logo} alt="DobleYo" height={44} width={44} loading="eager" />
     </div>
 
     <!-- Tabs -->

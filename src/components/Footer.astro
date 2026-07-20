@@ -1,5 +1,7 @@
 ---
+import { Image } from "astro:assets";
 import type { Lang } from "../i18n/index.ts";
+import logo from "../assets/logo.png";
 
 interface Props { lang?: Lang; }
 const { lang = "es" } = Astro.props;
@@ -54,7 +56,7 @@ const r = isEn
     </div>
     <div class="footer-main">
       <div class="footer-social">
-        <img src="/assets/logo.png" alt="DobleYo Café" />
+        <Image src={logo} alt="DobleYo Café" loading="lazy" />
         <a href="#" aria-label="Instagram">Instagram</a>
         <a href="#" aria-label="Facebook">Facebook</a>
       </div>
