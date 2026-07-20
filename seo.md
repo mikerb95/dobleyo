@@ -105,9 +105,9 @@ Antes de tocar código se auditaron con un script todas las `<img>` públicas pa
 ## Fase 5 — Contenido y datos estructurados adicionales — parcial ✅
 
 - [x] RSS del blog: implementado como ruta API propia `src/pages/rss.xml.ts` (XML manual, sin agregar la dependencia `@astrojs/rss` — mismo patrón que `sitemap.xml.ts`, consulta `blog_posts` directo a BD). `<link rel="alternate" type="application/rss+xml">` agregado en Head. Probado en local: 8 items generados desde BD real.
-- [ ] JSON-LD `WebSite` + `SearchAction` en home (sitelinks searchbox)
-- [ ] JSON-LD `FAQPage` en `/guias` y `/envios-devoluciones`
-- [ ] JSON-LD `LocalBusiness` si hay punto de venta físico
+- [x] **JSON-LD `WebSite`**: agregado en `index.astro` y `en/index.astro`. **Sin `SearchAction`**: el sitio no tiene buscador funcional (se verificó — `tienda.astro`/`en/shop.astro` no tienen parámetro de búsqueda ni input de búsqueda alguno), y declarar una `SearchAction` que apunte a una URL que no funciona es structured data engañosa que Google puede penalizar. Si se agrega un buscador real en el futuro, completar el schema con `potentialAction`.
+- [x] **JSON-LD `FAQPage`**: agregado en `envios-devoluciones.astro`, extraído literalmente de las 6 preguntas ya visibles en su acordeón `<details>` (requisito de schema.org: el contenido debe coincidir con lo visible en la página). **`/guias` no recibió FAQPage** — su contenido es de tipo "métodos de preparación"/consejos, no preguntas y respuestas; forzar el schema ahí también sería structured data no representativa. Candidato a `HowTo` en una futura ronda si se desea.
+- [ ] JSON-LD `LocalBusiness` si hay punto de venta físico (no confirmado)
 - [ ] Calendario editorial del blog con keywords long-tail (trabajo de contenido, no de código)
 
 ---
