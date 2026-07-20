@@ -264,6 +264,58 @@ function initTrazabilidad() {
     }
   }
 
+  // ─── Caficultor y finca ────────────────────────────────────────────────
+  function renderFarmer(farm) {
+    if (!resFarmerCard || !resFarmerBody) return;
+    if (!farm || !farm.slug) {
+      resFarmerCard.style.display = 'none';
+      return;
+    }
+
+    resFarmerBody.innerHTML = '';
+
+    if (farm.cover_image_url) {
+      const img = document.createElement('img');
+      img.className = 'trace-farmer-photo';
+      img.src = farm.cover_image_url;
+      img.alt = 'Finca ' + (farm.name || '');
+      img.loading = 'lazy';
+      resFarmerBody.appendChild(img);
+    }
+
+    const info = document.createElement('div');
+    info.className = 'trace-farmer-info';
+
+    if (farm.caficultor_name) {
+      const name = document.createElement('div');
+      name.className = 'trace-farmer-name';
+      name.textContent = farm.caficultor_name;
+      info.appendChild(name);
+    }
+
+    const place = document.createElement('div');
+    place.className = 'trace-farmer-place muted';
+    place.textContent = 'Finca ' + (farm.name || '') + (farm.municipality ? ' · ' + farm.municipality : (farm.caficultor_city ? ' · ' + farm.caficultor_city : ''));
+    info.appendChild(place);
+
+    const introText = farm.short_description || (farm.story ? farm.story.slice(0, 220).trim() + (farm.story.length > 220 ? '…' : '') : '');
+    if (introText) {
+      const intro = document.createElement('p');
+      intro.className = 'trace-farmer-intro';
+      intro.textContent = introText;
+      info.appendChild(intro);
+    }
+
+    const link = document.createElement('a');
+    link.className = 'btn';
+    link.href = '/finca/' + encodeURIComponent(farm.slug);
+    link.textContent = 'Conocer la finca';
+    info.appendChild(link);
+
+    resFarmerBody.appendChild(info);
+    resFarmerCard.style.display = '';
+  }
+
   // ─── Stages del timeline ──────────────────────────────────────────────
   function buildStages(data, h) {
     const d = (v) => v ? fmtDate(v) : null;

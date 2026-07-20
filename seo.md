@@ -2,7 +2,7 @@
 
 > Resultado de la auditoría SEO (julio 2026). Documento de trabajo: marcar cada ítem al completarlo.
 > Base existente: `Head.astro` centralizado (OG, canonical, hreflang, robots), JSON-LD (Organization, Product, BlogPosting, BreadcrumbList), sitemap dinámico, robots.txt, headers de seguridad.
-> **Fases 1, 2, 5 y 6 implementadas (2026-07-19). Fase 3 completada en una segunda ronda (2026-07-19).** Fase 4 (Core Web Vitals / migración de imágenes) queda pendiente — es la de mayor esfuerzo y riesgo de regresión visual, se recomienda abordarla aparte con revisión visual página por página.
+> **Todas las fases (1–6) implementadas (2026-07-19/20), verificadas con `npm run build` y revisión visual en Chrome real.** Único hallazgo pendiente de decisión: un bug preexistente y no relacionado en `/en/shop` (ver nota al final de Fase 4).
 
 ---
 
