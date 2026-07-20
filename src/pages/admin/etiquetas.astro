@@ -823,6 +823,8 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
           throw new Error(result.error || "Error al generar etiquetas");
 
         toast(`${quantity} etiquetas generadas exitosamente`, "success");
+        lastGeneratedBatch = result.labels || [];
+        document.getElementById("printBatchBtn").hidden = !lastGeneratedBatch.length;
         e.target.reset();
         selectedLot = null;
         document.getElementById("lotInfoCard").hidden = true;
