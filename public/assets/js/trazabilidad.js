@@ -74,6 +74,7 @@ function initTrazabilidad() {
   function renderIdle() {
     if (resEmpty) resEmpty.style.display = 'none';
     if (resWrap)  { resWrap.style.display = ''; resWrap.classList.add('trace-result--idle'); }
+    if (resFarmerCard) resFarmerCard.style.display = 'none';
 
     if (resName) resName.textContent = 'Origen · Variedad · Cosecha';
     if (resLot)  resLot.textContent  = 'COL-XXX-0000 · Colombia';
