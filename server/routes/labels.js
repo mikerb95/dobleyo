@@ -300,9 +300,10 @@ labelsRouter.post('/generate-from-scratch',
 
           await client.query(
             `INSERT INTO generated_labels (label_code, lot_code, origin, variety, roast, process,
-                                           farm, altitude, acidity, body, balance, score, flavor_notes,
+                                           farm, altitude, region, climate, roast_date,
+                                           acidity, body, balance, score, flavor_notes,
                                            qr_data, sequence, user_id, created_at)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))`,
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))`,
             [
               labelId,
               lotCode,
@@ -312,6 +313,9 @@ labelsRouter.post('/generate-from-scratch',
               process || null,
               farm || null,
               altitude || null,
+              region || null,
+              climate || null,
+              roastDate || null,
               acidity,
               coffeeBody,
               balance,
