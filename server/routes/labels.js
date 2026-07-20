@@ -219,7 +219,7 @@ labelsRouter.post('/generate-from-scratch',
     body('altitude').optional().trim(),
     body('region').optional().trim(),
     body('climate').optional().trim(),
-    body('roastDate').optional().trim(),
+    body('roastDate').optional({ values: 'falsy' }).trim().isDate().withMessage('roastDate debe ser una fecha válida (YYYY-MM-DD)'),
     body('flavorNotes').optional().trim(),
   ],
   async (req, res) => {
