@@ -206,6 +206,7 @@ const accountHref = lang === "en" ? "/account" : "/cuenta";
   headerRoot.dataset.jsInit = "1";
 
   (function initNavBeans() {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const header = document.querySelector(".site-header");
     const layer = document.querySelector(".nav-beans");
     if (!header || !layer) return;
