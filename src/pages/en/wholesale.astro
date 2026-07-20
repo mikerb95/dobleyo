@@ -949,6 +949,11 @@ const hreflang = getHreflangPair("/mayoristas");
     align-items: start;
   }
 
+  .contact-info {
+    padding-right: 2rem;
+    border-right: 1px solid var(--border);
+  }
+
   .contact-info h2 {
     font-size: 2rem;
     font-weight: 700;
@@ -1034,8 +1039,9 @@ const hreflang = getHreflangPair("/mayoristas");
   .contact-form {
     background: white;
     padding: 2.5rem;
-    border-radius: 8px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
   }
 
   .form-row {
@@ -1056,17 +1062,46 @@ const hreflang = getHreflangPair("/mayoristas");
     margin-bottom: 0.5rem;
   }
 
+  .required {
+    color: var(--secondary);
+  }
+
   .form-group input,
   .form-group select,
   .form-group textarea {
     width: 100%;
     padding: 0.875rem 1rem;
     font-size: 1rem;
-    border: 1px solid var(--border);
-    border-radius: 4px;
+    border: 1.5px solid var(--border);
+    border-radius: 6px;
     background: var(--bg-light);
-    transition: all 0.3s ease;
+    transition:
+      border-color 0.2s ease,
+      box-shadow 0.2s ease,
+      background 0.2s ease;
     font-family: inherit;
+    color: var(--text);
+  }
+
+  .form-group select {
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238b6f47' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 1rem;
+    padding-right: 2.75rem;
+  }
+
+  .form-group input::placeholder,
+  .form-group textarea::placeholder {
+    color: var(--text-muted);
+  }
+
+  .form-group input:hover,
+  .form-group select:hover,
+  .form-group textarea:hover {
+    border-color: #c9b79c;
   }
 
   .form-group input:focus,
@@ -1075,11 +1110,16 @@ const hreflang = getHreflangPair("/mayoristas");
     outline: none;
     border-color: var(--secondary);
     background: white;
+    box-shadow: 0 0 0 3px rgba(139, 111, 71, 0.15);
   }
 
   .form-group textarea {
     resize: vertical;
-    min-height: 100px;
+    min-height: 120px;
+  }
+
+  .contact-form .btn-full {
+    margin-top: 0.5rem;
   }
 
   .form-note {
@@ -1150,6 +1190,13 @@ const hreflang = getHreflangPair("/mayoristas");
 
     .contact-grid {
       grid-template-columns: 1fr;
+    }
+
+    .contact-info {
+      padding-right: 0;
+      padding-bottom: 2rem;
+      border-right: none;
+      border-bottom: 1px solid var(--border);
     }
 
     .form-row {
