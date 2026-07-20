@@ -541,10 +541,10 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       }
       box.hidden = false;
       document.getElementById("summaryBody").innerHTML = `
-        <div>☕ Café: <strong>${data.origin || "—"} · ${data.variety}</strong></div>
-        <div>🔥 Tueste: <strong>${data.roast || "—"}</strong></div>
+        <div>☕ Café: <strong>${esc(data.origin) || "—"} · ${esc(data.variety)}</strong></div>
+        <div>🔥 Tueste: <strong>${esc(data.roast) || "—"}</strong></div>
         <div>🏷️ Cantidad: <strong>${qty}</strong></div>
-        <div>🔖 Primer código: <strong>${code}</strong></div>`;
+        <div>🔖 Primer código: <strong>${esc(code)}</strong></div>`;
     }
 
     // ── Cargar lotes preparados ─────────────────────────────────────
