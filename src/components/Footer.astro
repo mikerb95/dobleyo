@@ -138,4 +138,66 @@ const r = isEn
   </div>
 </footer>
 
+<style>
+  .gh-badge-wrap {
+    margin-top: var(--space-2);
+  }
+
+  .gh-badge {
+    display: inline-flex;
+    align-items: stretch;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    font-family: var(--font-body);
+    font-size: var(--text-xs);
+    line-height: 1;
+    text-decoration: none;
+    border: 1px solid rgba(var(--cream-rgb, 246, 241, 234), 0.18);
+    transition:
+      transform 0.15s ease,
+      opacity 0.15s ease;
+  }
+
+  .gh-badge:hover,
+  .gh-badge:focus-visible {
+    transform: translateY(-1px);
+    opacity: 0.92;
+  }
+
+  .gh-badge-left,
+  .gh-badge-right {
+    display: inline-flex;
+    align-items: center;
+    padding: var(--space-2) var(--space-3);
+  }
+
+  .gh-badge-left {
+    gap: var(--space-2);
+    background: var(--espresso);
+    color: var(--cream);
+    font-weight: 600;
+  }
+
+  .gh-badge-right {
+    background: var(--caramel);
+    color: var(--cream);
+    font-weight: 600;
+    letter-spacing: 0.01em;
+  }
+
+  .gh-badge-icon {
+    flex-shrink: 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .gh-badge {
+      transition: none;
+    }
+    .gh-badge:hover,
+    .gh-badge:focus-visible {
+      transform: none;
+    }
+  }
+</style>
+
 <script is:inline src="/assets/js/newsletter-footer.js"></script>
