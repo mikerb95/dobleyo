@@ -530,3 +530,4 @@ Tres palancas para ajustarlo:
 2. **La trazabilidad no es marketing, es el registro del trabajo diario.**
 3. **Los datos de venta cierran el círculo:** deciden cuánto se cosecha y se tuesta después.
 4. **El contraentrega es la puerta de entrada al cliente que no compra en línea** — con filtro automático para que esa puerta no nos cueste plata.
+5. **La suscripción convierte venta en ingreso predecible** — y esa demanda agendada es la que le dice a la finca cuánto tostar.
