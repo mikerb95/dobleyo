@@ -396,18 +396,38 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       } catch (error) {
         console.error("[Packaging] Error cargando cafés:", error);
         toast("Error al cargar cafés tostados", "error");
-        document.getElementById("kpiRoasted").textContent = "0";
       }
     }
 
-    // ── KPIs de empacados + recientes ───────────────────────────────
+    // ── KPIs ────────────────────────────────────────────────────────
+    // Totales agregados en SQL: las listas están topadas a 100 filas y no
+    // sirven para calcular acumulados.
+    async function loadStats() {
+      const setAll = (v) =>
+        ["kpiRoasted", "kpiWeight", "kpiPackaged", "kpiUnits"].forEach(
+          (id) => (document.getElementById(id).textContent = v)
+        );
+      try {
+        const res = await fetch("/api/coffee/packaging-stats", { credentials: "include" });
+        if (!res.ok) throw new Error("stats");
+        const { data } = await res.json();
+        document.getElementById("kpiRoasted").textContent = data.roastedLots;
+        document.getElementById("kpiWeight").textContent = `${data.roastedKg.toFixed(1)} kg`;
+        document.getElementById("kpiPackaged").textContent = data.packagedBatches;
+        document.getElementById("kpiUnits").textContent = data.packagedBulkKg > 0
+          ? `${data.packagedUnits} + ${data.packagedBulkKg} kg`
+          : data.packagedUnits;
+      } catch (error) {
+        console.error("[Packaging] Error cargando estadísticas:", error);
+        setAll("—");
+      }
+    }
+
+    // ── Empaques recientes ──────────────────────────────────────────
     async function loadPackaged() {
       try {
         const res = await fetch("/api/coffee/packaged", { credentials: "include" });
         const rows = res.ok ? await res.json() : [];
-        document.getElementById("kpiPackaged").textContent = rows.length;
-        const units = rows.reduce((s, r) => s + (Number(r.unit_count) || 0), 0);
-        document.getElementById("kpiUnits").textContent = units;
         renderRecent(rows.slice(0, 8));
       } catch (error) {
         console.error("[Packaging] Error cargando empacados:", error);
