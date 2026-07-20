@@ -598,12 +598,13 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       const body = document.getElementById("recentBody");
       if (!labels.length) {
         body.innerHTML =
-          '<tr><td colspan="7" class="empty-state">Aún no hay etiquetas generadas.</td></tr>';
+          '<tr><td colspan="8" class="empty-state">Aún no hay etiquetas generadas.</td></tr>';
         return;
       }
       body.innerHTML = labels
-        .map(
-          (l) => `
+        .map((l) => {
+          const isPrinted = !!l.printed;
+          return `
         <tr>
           <td style="font-family: ui-monospace, monospace; font-size: 12px;">${esc(l.label_code)}</td>
           <td>${esc(l.lot_code) || "—"}</td>
@@ -611,11 +612,21 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
           <td>${esc(l.variety) || "—"}</td>
           <td>${esc(l.roast) || "—"}</td>
           <td style="font-variant-numeric: tabular-nums;">${l.score ?? "—"}</td>
-          <td style="text-align: right;">
+          <td>
+            <span class="badge ${isPrinted ? "badge-success" : "badge-neutral"}">
+              ${isPrinted ? "Impresa" : "Pendiente"}
+            </span>
+          </td>
+          <td style="text-align: right; white-space: nowrap;">
+            <button
+              class="btn btn-secondary btn-sm"
+              data-toggle-print="${esc(l.label_code)}"
+              data-printed="${isPrinted ? "1" : "0"}"
+            >${isPrinted ? "Marcar pendiente" : "Marcar impresa"}</button>
             <button class="btn btn-danger btn-sm" data-del="${esc(l.label_code)}">Eliminar</button>
           </td>
-        </tr>`
-        )
+        </tr>`;
+        })
         .join("");
     }
 
