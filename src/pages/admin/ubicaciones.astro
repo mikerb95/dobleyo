@@ -145,6 +145,87 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     </div>
   </div>
 
+  <!-- Traslado entre ubicaciones -->
+  <div class="ub-modal" id="transferModal" aria-hidden="true">
+    <div class="ub-modal-card">
+      <h2 class="ub-modal-title">Trasladar existencia</h2>
+      <form id="transferForm">
+        <div class="ub-transfer-summary">
+          <div>
+            <span class="ub-transfer-label">Lote</span>
+            <span id="trLot" class="ub-transfer-value">—</span>
+          </div>
+          <div>
+            <span class="ub-transfer-label">Disponible en <span id="trFromCode">—</span></span>
+            <span id="trAvailable" class="ub-transfer-value">—</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="trTo">Ubicación de destino <span class="required">*</span></label>
+          <select id="trTo" required></select>
+        </div>
+
+        <div class="form-group">
+          <label for="trQty">Cantidad a trasladar (kg) <span class="required">*</span></label>
+          <input type="number" id="trQty" min="0.001" step="0.001" required />
+        </div>
+
+        <div class="form-group">
+          <label for="trNotes">Nota (opcional)</label>
+          <input type="text" id="trNotes" placeholder="Motivo del traslado" />
+        </div>
+
+        <div class="ub-form-error" id="transferError"></div>
+
+        <div class="ub-modal-actions">
+          <button type="button" class="btn btn-secondary" id="transferCancel">Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="transferSubmit">Trasladar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Ajuste de inventario -->
+  <div class="ub-modal" id="adjustModal" aria-hidden="true">
+    <div class="ub-modal-card">
+      <h2 class="ub-modal-title">Ajustar existencia</h2>
+      <form id="adjustForm">
+        <div class="ub-transfer-summary">
+          <div>
+            <span class="ub-transfer-label">Lote</span>
+            <span id="adjLot" class="ub-transfer-value">—</span>
+          </div>
+          <div>
+            <span class="ub-transfer-label">Cantidad en sistema</span>
+            <span id="adjCurrent" class="ub-transfer-value">—</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="adjTarget">Cantidad real contada (kg) <span class="required">*</span></label>
+          <input type="number" id="adjTarget" min="0" step="0.001" required />
+          <div class="form-hint">
+            El sistema asienta la diferencia como un movimiento de ajuste; no
+            edita la existencia directamente.
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="adjReason">Motivo <span class="required">*</span></label>
+          <input type="text" id="adjReason" required minlength="5" placeholder="Ej.: merma detectada en inspección" />
+        </div>
+
+        <div class="ub-form-error" id="adjustError"></div>
+
+        <div class="ub-modal-actions">
+          <button type="button" class="btn btn-secondary" id="adjustCancel">Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="adjustSubmit">Registrar ajuste</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <div class="ub-toast" id="toast"></div>
 
   <!-- is:global — las tarjetas y el panel de detalle se generan con innerHTML
