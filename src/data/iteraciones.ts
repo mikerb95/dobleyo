@@ -94,7 +94,7 @@ export const ITERACIONES: Iteracion[] = [
     rango: "19 jul 2026",
     ghSince: "2026-07-19",
     ghUntil: "2026-07-19",
-    commits: 76,
+    commits: 92,
     resumen:
       "Auditoría completa del flujo orden → pago Wompi → despacho Mipaquete → tracking → entrega/conciliación COD. Se corrigieron bugs que rompían dinero o clientes, se blindó el despacho contra envíos huérfanos y se completó la trazabilidad de auditoría del pipeline logístico.",
     historias: [
