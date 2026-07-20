@@ -291,6 +291,62 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       maximumFractionDigits: 1,
     });
 
+    // Ubicaciones del maestro de bodega (Administración → Ubicaciones).
+    // Se filtran por estado 'green' y se excluyen las bloqueadas: una ubicación
+    // en conteo o mantenimiento no debe poder seleccionarse.
+    async function loadLocations() {
+      const sel = document.getElementById("location");
+      const hint = document.getElementById("locationHint");
+      try {
+        const res = await fetch(
+          "/api/storage/locations?state=green&include_blocked=0",
+          { credentials: "include" }
+        );
+        const json = await res.json();
+        if (!res.ok || !json.success) throw new Error(json.error || "Error");
+
+        if (!json.data.length) {
+          sel.innerHTML = '<option value="">No hay ubicaciones disponibles</option>';
+          hint.textContent =
+            "No hay ubicaciones para café verde. Configúrelas en Administración → Ubicaciones.";
+          return;
+        }
+
+        sel.innerHTML = '<option value="">Seleccione una ubicación</option>';
+        const zones = [...new Set(json.data.map((l) => l.zone_name))];
+        zones.forEach((zoneName) => {
+          const group = document.createElement("optgroup");
+          group.label = zoneName;
+          json.data
+            .filter((l) => l.zone_name === zoneName)
+            .forEach((l) => {
+              const opt = document.createElement("option");
+              opt.value = l.code;
+              const free =
+                l.capacity_kg != null
+                  ? ` — ${numberFmt.format(Math.max(0, l.capacity_kg - l.occupied_kg))} kg libres`
+                  : "";
+              opt.textContent = `${l.name} (${l.code})${free}`;
+              // Sin espacio libre no se puede almacenar: se muestra, pero
+              // deshabilitada, para que el operario entienda por qué.
+              if (l.capacity_kg != null && l.occupied_kg >= l.capacity_kg) {
+                opt.disabled = true;
+                opt.textContent = `${l.name} (${l.code}) — llena`;
+              }
+              group.appendChild(opt);
+            });
+          sel.appendChild(group);
+        });
+        hint.textContent = "Elija la ubicación física de almacenamiento";
+      } catch (err) {
+        sel.innerHTML = '<option value="">Error al cargar ubicaciones</option>';
+        hint.textContent =
+          "No se pudieron cargar las ubicaciones. Actualice la página e intente de nuevo.";
+      }
+    }
+
+    loadLocations();
+
     // Actualizar la tira de métricas con el inventario verde actual
     function updateInventoryStats(inventory) {
       const totalWeight = inventory.reduce(
