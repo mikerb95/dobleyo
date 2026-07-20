@@ -81,7 +81,14 @@ async function lookupByLabelCode(code) {
       pc.package_size,
       pc.unit_count,
       gl.flavor_notes,
-      gl.created_at             AS label_date
+      gl.created_at             AS label_date,
+      fm.slug                   AS farm_slug,
+      fm.municipality,
+      fm.short_description      AS farm_short_description,
+      fm.story                  AS farm_story,
+      fm.cover_image_url        AS farm_cover,
+      u.name                    AS caficultor_name,
+      u.city                    AS caficultor_city
     FROM generated_labels gl
     LEFT JOIN coffee_harvests           ch  ON gl.lot_code = ch.lot_id
     LEFT JOIN green_coffee_inventory    gci ON gci.lot_id  = ch.lot_id
@@ -89,6 +96,8 @@ async function lookupByLabelCode(code) {
     LEFT JOIN roasted_coffee            rc  ON rc.roasting_id = rb.id
     LEFT JOIN roasted_coffee_inventory  rci ON rci.roasted_id = rc.id
     LEFT JOIN packaged_coffee           pc  ON pc.roasted_storage_id = rci.id
+    LEFT JOIN farms                     fm  ON fm.name = ch.farm AND fm.is_published = 1
+    LEFT JOIN users                     u   ON u.id = fm.caficultor_id
     WHERE gl.label_code = ?
     ORDER BY rb.created_at DESC
     LIMIT 1
@@ -137,13 +146,22 @@ async function lookupByLotId(lotId) {
       pc.package_size,
       pc.unit_count,
       NULL                      AS flavor_notes,
-      NULL                      AS label_date
+      NULL                      AS label_date,
+      fm.slug                   AS farm_slug,
+      fm.municipality,
+      fm.short_description      AS farm_short_description,
+      fm.story                  AS farm_story,
+      fm.cover_image_url        AS farm_cover,
+      u.name                    AS caficultor_name,
+      u.city                    AS caficultor_city
     FROM coffee_harvests           ch
     LEFT JOIN green_coffee_inventory    gci ON gci.lot_id  = ch.lot_id
     LEFT JOIN roasting_batches          rb  ON rb.lot_id   = ch.lot_id
     LEFT JOIN roasted_coffee            rc  ON rc.roasting_id = rb.id
     LEFT JOIN roasted_coffee_inventory  rci ON rci.roasted_id = rc.id
     LEFT JOIN packaged_coffee           pc  ON pc.roasted_storage_id = rci.id
+    LEFT JOIN farms                     fm  ON fm.name = ch.farm AND fm.is_published = 1
+    LEFT JOIN users                     u   ON u.id = fm.caficultor_id
     WHERE ch.lot_id = ?
     ORDER BY rb.created_at DESC
     LIMIT 1
@@ -209,6 +227,18 @@ function formatRow(row) {
             grind_size: row.grind_size,
             package_size: row.package_size,
             unit_count: row.unit_count,
+        } : null,
+
+        // Finca y caficultor (solo si hay finca publicada que coincide)
+        farm: row.farm_slug ? {
+            slug: row.farm_slug,
+            name: row.farm,
+            municipality: row.municipality,
+            short_description: row.farm_short_description,
+            story: row.farm_story,
+            cover_image_url: row.farm_cover,
+            caficultor_name: row.caficultor_name,
+            caficultor_city: row.caficultor_city,
         } : null,
 
         // Etiqueta (solo si viene de generated_labels)
