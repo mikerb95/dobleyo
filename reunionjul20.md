@@ -226,8 +226,8 @@ Sí. La operación es la misma; lo que crece es el volumen de registros, y esa p
 | 4–6 | Sitio en inglés | "Mismo café, otro argumento, otro mercado" |
 | 6–9 | Panel: bloque Operación en orden | "Esta es la fábrica: cosecha, tostión, empaque" |
 | 9–11 | Etiquetas → escanear un QR real | **El momento fuerte.** "Esto es lo que ve el cliente" |
-| 11–13 | Ventas y mapa de calor | "Aquí se decide dónde invertir" |
-| 13–15 | Pronóstico de demanda | "Y aquí, cuánto producir el próximo ciclo" |
+| 11–13 | Panel de envíos: las cuatro pestañas | "Así sale el pedido y así se cobra el contraentrega" |
+| 13–15 | Ventas, mapa de calor y pronóstico | "Aquí se decide dónde invertir y cuánto producir" |
 
 **Cierre sugerido:**
 > "No construimos una tienda con un panel al lado. Construimos un solo circuito: lo que el caficultor registra en la finca es exactamente lo que el cliente lee en su bolsa, y lo que el cliente compra es lo que le dice a la finca cuánto producir el próximo ciclo."
@@ -403,3 +403,4 @@ Estas son las preguntas concretas para llevarse de la reunión:
 1. **Una sola operación, dos mercados.** El sitio en inglés no duplica trabajo.
 2. **La trazabilidad no es marketing, es el registro del trabajo diario.**
 3. **Los datos de venta cierran el círculo:** deciden cuánto se cosecha y se tuesta después.
+4. **El contraentrega es la puerta de entrada al cliente que no compra en línea** — con filtro automático para que esa puerta no nos cueste plata.
