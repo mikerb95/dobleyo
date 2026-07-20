@@ -323,6 +323,14 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
             <span class="badge badge-neutral" id="previewCount">0 etiquetas</span>
           </div>
           <div class="card-pad">
+            <div class="preview-actions">
+              <button type="button" class="btn btn-secondary btn-sm" id="printPreviewBtn">
+                🖨️ Imprimir prueba
+              </button>
+              <button type="button" class="btn btn-save btn-sm" id="printBatchBtn" hidden>
+                🖨️ Imprimir lote generado
+              </button>
+            </div>
             <!-- Etiqueta -->
             <div class="lbl" id="labelPreview">
               <div class="lbl-head">
