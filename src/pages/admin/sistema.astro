@@ -638,6 +638,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       });
     } catch (err) {
       console.error('loadAdmins error', err);
+      showLoadError('adminsTableBody', 5);
     }
   }
 
