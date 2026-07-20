@@ -510,7 +510,9 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         qty = parseInt(document.getElementById("quantityCero").value) || 0;
         const o = (data.origin || "XXX").substring(0, 3).toUpperCase();
         const v = (data.variety || "XXX").substring(0, 3).toUpperCase();
-        code = `LBL-TMP-${o}-${v}-0001`;
+        // El backend agrega un timestamp único al código real (LBL-TMP-ORI-VAR-<ts>-0001);
+        // aquí solo se muestra un adelanto aproximado.
+        code = `LBL-TMP-${o}-${v}-•••-0001`;
         document.getElementById("pvQr").style.display = "";
       }
 
