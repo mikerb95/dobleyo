@@ -109,8 +109,7 @@ coffeeRouter.post('/packaging', async (req, res) => {
     await logAudit(req.user.id, 'create', 'packaged_coffee', data.packagedId, {
       roasted_storage_id: roastedStorageId, lot_id: data.lotId,
       presentation, grind_size: grindSize || null, package_size: packageSize,
-      unit_count: data.consumedKg !== undefined ? unitCount : unitCount,
-      consumed_kg: data.consumedKg, remaining_kg: data.remainingKg,
+      unit_count: unitCount, consumed_kg: data.consumedKg, remaining_kg: data.remainingKg,
       lot_exhausted: data.lotExhausted, product_id: data.productId,
     });
 
