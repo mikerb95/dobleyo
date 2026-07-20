@@ -54,7 +54,9 @@ import { getCanonicalUrl } from "../../i18n/index.ts";
               <button data-act="inc" aria-label="Increase">+</button>
             </div>
             <span class="cart-item__line">${fmt((p.price||0)*(p.qty||1))}</span>
-            <button class="cart-item__rm" data-act="rm" aria-label="Remove">✕</button>
+            <button class="cart-item__rm" data-act="rm" aria-label="Remove">
+              <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true"><path d="M3 3l9 9M12 3l-9 9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+            </button>
           </div>`).join("");
         document.getElementById("cartSubtotal").textContent = fmt(window.Cart.subtotal());
       }

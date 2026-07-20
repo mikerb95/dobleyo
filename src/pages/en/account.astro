@@ -610,7 +610,9 @@ import { getCanonicalUrl } from "../../i18n/index.ts";
             <div class="fav-price">${fmtUSD(f.price_usd || f.price / 4000)}</div>
             <div class="fav-actions">
               <button class="btn fav-add" ${soldOut ? "disabled" : ""} data-name="${esc(f.name_en || f.name)}" data-price="${f.price_usd || ""}" data-img="${esc(f.image_url || "")}">${soldOut ? "Sold out" : "Add to cart"}</button>
-              <button class="btn outline fav-remove" title="Remove from favourites">✕</button>
+              <button class="btn outline fav-remove" aria-label="Remove ${esc(f.name_en || f.name)} from favourites" title="Remove from favourites">
+                <svg width="14" height="14" viewBox="0 0 15 15" fill="none" aria-hidden="true"><path d="M3 3l9 9M12 3l-9 9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+              </button>
             </div>
           </div>
         </div>`;

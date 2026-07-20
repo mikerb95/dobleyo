@@ -863,7 +863,9 @@ function initCuenta() {
             <div class="fav-price">${fmtCOP(f.price)}</div>
             <div class="fav-actions">
               <button class="btn fav-add" ${soldOut ? "disabled" : ""} data-name="${esc(f.name)}" data-price="${f.price}" data-img="${esc(f.image_url || "")}">${soldOut ? "Agotado" : "Agregar"}</button>
-              <button class="btn outline fav-remove" title="Quitar de favoritos">✕</button>
+              <button class="btn outline fav-remove" aria-label="Quitar ${esc(f.name)} de favoritos" title="Quitar de favoritos">
+                <svg width="14" height="14" viewBox="0 0 15 15" fill="none" aria-hidden="true"><path d="M3 3l9 9M12 3l-9 9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+              </button>
             </div>
           </div>
         </div>`;
