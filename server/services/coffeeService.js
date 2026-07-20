@@ -3,7 +3,7 @@
  * Todas las funciones son puras (sin req/res) — lanzan errores con { status, message } en fallas de negocio.
  */
 import crypto from 'crypto';
-import { query } from '../db.js';
+import { query, withTransaction } from '../db.js';
 import { assertCanAdvance, getCurrentStage, STAGE_LABELS } from './lotStateMachine.js';
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
