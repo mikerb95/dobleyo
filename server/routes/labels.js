@@ -486,9 +486,9 @@ labelsRouter.patch('/:labelId/print',
 
       const result = await query(
         `UPDATE generated_labels
-         SET printed = ?, printed_at = ?, updated_at = datetime('now')
+         SET printed = ?, printed_at = ${printed ? "datetime('now')" : 'NULL'}, updated_at = datetime('now')
          WHERE label_code = ?`,
-        [printed ? 1 : 0, printed ? new Date().toISOString() : null, labelId]
+        [printed ? 1 : 0, labelId]
       );
 
       if (result.rowCount === 0) {
