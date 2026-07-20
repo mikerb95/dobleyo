@@ -799,10 +799,14 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       }
     });
 
-    // Delegación: eliminar etiqueta reciente
+    // Delegación: eliminar / marcar impresa etiqueta reciente
     document.getElementById("recentBody")?.addEventListener("click", (e) => {
-      const btn = e.target.closest("[data-del]");
-      if (btn) deleteLabel(btn.dataset.del);
+      const delBtn = e.target.closest("[data-del]");
+      if (delBtn) return deleteLabel(delBtn.dataset.del);
+
+      const printBtn = e.target.closest("[data-toggle-print]");
+      if (printBtn)
+        return togglePrint(printBtn.dataset.togglePrint, printBtn.dataset.printed === "1");
     });
 
     document.getElementById("tabLotes")?.addEventListener("click", () => switchTab("lotes"));
