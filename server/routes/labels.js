@@ -570,6 +570,8 @@ function generateQRData(lot, labelId) {
     variety: lot.variety,
     roast: lot.roast_level || lot.roast,
     process: lot.process,
+    altitude: lot.altitude,
+    climate: lot.climate,
     presentation: lot.presentation,
     grind: lot.grind_size || lot.grind,
     profile: {
