@@ -1,6 +1,8 @@
 ---
+import { Image } from "astro:assets";
 import type { Lang } from "../i18n/index.ts";
 import LangToggle from "./LangToggle.astro";
+import logo from "../assets/logo.png";
 
 interface Props { lang?: Lang; }
 const { lang = "es" } = Astro.props;
