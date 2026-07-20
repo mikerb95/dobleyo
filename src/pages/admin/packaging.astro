@@ -678,7 +678,13 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         const data = await response.json();
         const extra = data.inventoryUpdated || data.inventoryMovementCreated
           ? " · stock sumado al inventario" : "";
-        toast(`Café preparado: ${unitCount} unidades de ${packageSize} · puntaje ${data.score}/5${extra}`, "success");
+        const cantidad = packageSize === "bulk"
+          ? `${unitCount} kg a granel`
+          : `${unitCount} unidades de ${packageSize}`;
+        const restante = data.lotExhausted
+          ? " · lote agotado"
+          : data.remainingKg != null ? ` · quedan ${data.remainingKg} kg del lote` : "";
+        toast(`Café preparado: ${cantidad} · puntaje ${data.score}/5${extra}${restante}`, "success");
 
         form.reset();
         currentRoasted = null;
