@@ -874,6 +874,8 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
           throw new Error(result.error || "Error al generar etiquetas");
 
         toast(`${formData.quantity} etiquetas generadas exitosamente`, "success");
+        lastGeneratedBatch = result.labels || [];
+        document.getElementById("printBatchBtn").hidden = !lastGeneratedBatch.length;
         e.target.reset();
         ["customAcidityValue", "customBodyValue", "customBalanceValue"].forEach(
           (id) => (document.getElementById(id).textContent = "3/5")
