@@ -38,7 +38,8 @@ import Layout from "../layouts/Layout.astro";
 
         <!-- Cupón (UI preparada) -->
         <div class="coupon-row">
-          <input type="text" id="couponInput" class="coupon-input" placeholder="Código de descuento" aria-label="Código de descuento" />
+          <label for="couponInput" class="sr-only">Código de descuento</label>
+          <input type="text" id="couponInput" class="coupon-input" placeholder="Código de descuento" />
           <button type="button" id="couponBtn" class="coupon-btn">Aplicar</button>
         </div>
         <div id="couponMsg" style="font-size:0.82rem;margin-top:0.4rem;min-height:1.1em;padding:0 2px;"></div>
