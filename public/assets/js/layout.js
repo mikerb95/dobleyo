@@ -115,9 +115,8 @@ if (document.readyState !== "loading") localizeEnLinks();
 else document.addEventListener("DOMContentLoaded", localizeEnLinks);
 document.addEventListener("astro:page-load", localizeEnLinks);
 
-// 4) prefers-reduced-motion: pausar el video decorativo del hero (autoplay/loop)
-//    y desactivar el efecto de repulsión de los granos de café en el header,
-//    que corre en un bucle requestAnimationFrame ajeno a la media query CSS.
+// 4) prefers-reduced-motion: pausar el video decorativo del hero (autoplay/loop).
+//    El efecto de granos del header se maneja en Header.astro (ahí vive su script).
 function applyReducedMotion() {
   const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   if (!reduced) return;
@@ -125,10 +124,6 @@ function applyReducedMotion() {
   document.querySelectorAll(".hero-media video").forEach((video) => {
     video.pause();
     video.removeAttribute("autoplay");
-  });
-
-  document.querySelectorAll(".site-header").forEach((header) => {
-    header.classList.add("reduced-motion");
   });
 }
 

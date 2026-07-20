@@ -13,7 +13,7 @@ name: Mantenimiento de envíos
 
 on:
   schedule:
-    - cron: "*/30 8-23 * * *"   # cada 30 min, 08:00–23:00 Colombia (13:00–04:00 UTC)
+    - cron: "*/30 13-23,0-4 * * *"   # cada 30 min, 08:00–23:00 Colombia (UTC-5 → 13:00–04:00 UTC)
   workflow_dispatch: {}           # permite ejecutarlo manualmente
 
 jobs:
