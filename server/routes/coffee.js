@@ -133,6 +133,7 @@ coffeeRouter.get('/roasting-batches',  async (_req, res) => { try { res.json(awa
 coffeeRouter.get('/roasted-coffee',    async (_req, res) => { try { res.json(await getRoastedCoffee()); }     catch (err) { handleErr(res, err, 'Error en GET roasted-coffee'); } });
 coffeeRouter.get('/roasted-for-storage', async (_req, res) => { try { res.json(await getRoastedForStorage()); } catch (err) { handleErr(res, err, 'Error en GET roasted-for-storage'); } });
 coffeeRouter.get('/packaged',          async (_req, res) => { try { res.json(await getPackaged()); }          catch (err) { handleErr(res, err, 'Error en GET packaged'); } });
+coffeeRouter.get('/packaging-stats',   async (_req, res) => { try { res.json({ success: true, data: await getPackagingStats() }); } catch (err) { handleErr(res, err, 'Error en GET packaging-stats'); } });
 coffeeRouter.get('/roasted-for-cupping', async (_req, res) => { try { res.json(await getRoastedForCupping()); } catch (err) { handleErr(res, err, 'Error en GET roasted-for-cupping'); } });
 coffeeRouter.get('/cupping',           async (_req, res) => { try { res.json(await getCuppings()); }          catch (err) { handleErr(res, err, 'Error en GET cupping'); } });
 
