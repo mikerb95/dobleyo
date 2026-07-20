@@ -743,6 +743,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       el('btnErrNext').disabled = errOffset + ERR_LIMIT >= errTotal;
     } catch (err) {
       console.error('loadErrors error', err);
+      showLoadError('errorsTableBody', 5);
     }
   }
 
