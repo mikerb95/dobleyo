@@ -53,7 +53,7 @@ export async function createHarvest({ farm, region, altitude, variety, climate, 
 
 // ── 2. Almacenamiento verde ──────────────────────────────────────────────────
 
-export async function storeGreenCoffee({ lotId, weight, weightUnit, location, storageDate, notes }) {
+export async function storeGreenCoffee({ lotId, weight, weightUnit, location, storageDate, notes, user, movementUid }) {
   if (!lotId || !weight || !location || !storageDate) {
     throw bizError(400, 'Faltan campos requeridos');
   }
@@ -68,13 +68,29 @@ export async function storeGreenCoffee({ lotId, weight, weightUnit, location, st
   if (!isFinite(weightNum) || weightNum <= 0) throw bizError(400, 'Peso inválido');
   const weightKg = weightUnit === 'lb' ? parseFloat((weightNum * 0.453592).toFixed(3)) : weightNum;
 
-  const result = await query(
-    `INSERT INTO green_coffee_inventory (harvest_id, lot_id, weight_kg, location, storage_date, notes, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, datetime('now')) RETURNING id`,
-    [harvestId, lotId, weightKg, location, storageDate, notes || null]
-  );
+  // La ubicación deja de ser texto libre: se valida contra el maestro (activa,
+  // no bloqueada y apta para café verde) antes de escribir nada.
+  const loc = await resolveLocationForIntake(location, 'green');
 
-  return { storageId: result.rows[0].id };
+  // El registro de inventario y el asiento en el ledger son una sola operación:
+  // no puede existir uno sin el otro.
+  return withTransaction(async (tx) => {
+    const result = await tx.query(
+      `INSERT INTO green_coffee_inventory (harvest_id, lot_id, weight_kg, location, location_id, storage_date, notes, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now')) RETURNING id`,
+      [harvestId, lotId, weightKg, loc.code, loc.id, storageDate, notes || null]
+    );
+    const storageId = result.rows[0].id;
+
+    await postMovement({
+      type: 'receipt', to: loc.id, lotId, stockState: 'green', qtyKg: weightKg,
+      sourceTable: 'green_coffee_inventory', sourceId: storageId,
+      reasonCode: 'harvest_intake', notes: notes || null,
+      movementUid: movementUid || `green-in:${storageId}`, user,
+    }, tx);
+
+    return { storageId, location: loc.code };
+  });
 }
 
 // ── 3. Enviar a tostión ──────────────────────────────────────────────────────
