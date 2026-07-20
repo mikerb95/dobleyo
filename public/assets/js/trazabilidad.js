@@ -41,6 +41,8 @@ function initTrazabilidad() {
   const resSCACard   = $('#resSCACard');
   const resSCAMain   = $('#resSCAMain');
   const resSCABars   = $('#resSCABars');
+  const resFarmerCard = $('#resFarmerCard');
+  const resFarmerBody = $('#resFarmerBody');
   const shareBtn     = $('#shareBtn');
   const shareBtnLabel = $('#shareBtnLabel');
 
