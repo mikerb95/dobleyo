@@ -210,6 +210,22 @@ ordersRouter.post('/',
                 };
             });
 
+            // Validar stock disponible (suma de líneas por producto, por si el carrito
+            // trae el mismo producto en más de una línea). Solo informativo al crear la
+            // orden — el descuento real ocurre al confirmarse el pago (ver deductStockForOrder);
+            // entre estos dos momentos puede haber una venta concurrente que agote el
+            // stock (riesgo aceptado para este catálogo de bajo volumen).
+            const quantityByProduct = new Map();
+            for (const item of normalizedItems) {
+                quantityByProduct.set(item.productId, (quantityByProduct.get(item.productId) || 0) + item.quantity);
+            }
+            for (const [productId, qty] of quantityByProduct) {
+                const product = productMap.get(productId);
+                if (Number(product.stock_quantity) < qty) {
+                    return res.status(422).json({ success: false, error: `"${product.name}" no tiene suficiente stock disponible` });
+                }
+            }
+
             // Aplicar cupón si viene en el request
             let discountAmount = 0;
             let appliedCode = null;
