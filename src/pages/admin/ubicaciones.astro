@@ -161,19 +161,19 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     .ub-search {
       flex: 1 1 260px; min-width: 0;
       padding: 9px 13px; border: 1px solid var(--rule); border-radius: 8px;
-      font-size: 14px; background: var(--surface); color: inherit;
+      font-size: 14px; background: var(--paper); color: inherit;
     }
     .ub-filter {
       padding: 9px 13px; border: 1px solid var(--rule); border-radius: 8px;
-      font-size: 14px; background: var(--surface); color: inherit;
+      font-size: 14px; background: var(--paper); color: inherit;
     }
     .ub-check {
       display: flex; align-items: center; gap: 7px;
-      font-size: 13.5px; color: var(--text-muted); cursor: pointer;
+      font-size: 13.5px; color: var(--muted); cursor: pointer;
     }
 
     .ub-zone {
-      background: var(--surface); border: 1px solid var(--rule);
+      background: var(--paper); border: 1px solid var(--rule);
       border-radius: 12px; margin-bottom: 18px; overflow: hidden;
     }
     .ub-zone-head {
@@ -181,7 +181,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       display: flex; align-items: center; justify-content: space-between; gap: 14px;
     }
     .ub-zone-name { font-size: 15px; font-weight: 600; }
-    .ub-zone-meta { font-size: 12.5px; color: var(--text-muted); margin-top: 3px; }
+    .ub-zone-meta { font-size: 12.5px; color: var(--muted); margin-top: 3px; }
     .ub-zone-tag {
       font-size: 11px; text-transform: uppercase; letter-spacing: .05em;
       padding: 4px 9px; border-radius: 999px;
@@ -195,12 +195,12 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
     .ub-card {
       border: 1px solid var(--rule); border-radius: 10px; padding: 15px;
-      background: var(--surface); transition: border-color .18s ease, transform .18s ease;
+      background: var(--paper); transition: border-color .18s ease, transform .18s ease;
       cursor: pointer;
     }
     .ub-card:hover { border-color: var(--color-accent); transform: translateY(-1px); }
     .ub-card.inactive { opacity: .55; }
-    .ub-card.blocked { border-color: color-mix(in oklab, var(--warning) 50%, white); }
+    .ub-card.blocked { border-color: color-mix(in oklab, var(--warn) 50%, white); }
 
     .ub-card-top {
       display: flex; align-items: flex-start; justify-content: space-between; gap: 10px;
@@ -210,27 +210,27 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       font-family: ui-monospace, Menlo, monospace;
       font-size: 13.5px; font-weight: 700; letter-spacing: -.01em;
     }
-    .ub-card-name { font-size: 12.5px; color: var(--text-muted); margin-top: 2px; }
+    .ub-card-name { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
 
     .ub-card-kg { font-size: 22px; font-weight: 700; line-height: 1.1; }
-    .ub-card-kg small { font-size: 12px; font-weight: 500; color: var(--text-muted); margin-left: 3px; }
-    .ub-card-cap { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+    .ub-card-kg small { font-size: 12px; font-weight: 500; color: var(--muted); margin-left: 3px; }
+    .ub-card-cap { font-size: 12px; color: var(--muted); margin-top: 3px; }
 
     .ub-bar { height: 5px; border-radius: 999px; background: var(--rule); overflow: hidden; margin: 11px 0 9px; }
     .ub-bar > span { display: block; height: 100%; background: var(--color-accent); border-radius: 999px; transition: width .3s ease; }
-    .ub-bar.warning > span { background: var(--warning); }
+    .ub-bar.warning > span { background: var(--warn); }
     .ub-bar.danger  > span { background: var(--danger); }
 
     .ub-card-foot {
       display: flex; align-items: center; justify-content: space-between; gap: 8px;
-      font-size: 11.5px; color: var(--text-muted);
+      font-size: 11.5px; color: var(--muted);
     }
     .ub-chip {
       font-size: 10.5px; text-transform: uppercase; letter-spacing: .04em;
       padding: 3px 7px; border-radius: 5px; font-weight: 600;
-      background: var(--rule); color: var(--text-muted);
+      background: var(--rule); color: var(--muted);
     }
-    .ub-chip.warn { background: color-mix(in oklab, var(--warning) 18%, transparent); color: var(--warning); }
+    .ub-chip.warn { background: color-mix(in oklab, var(--warn) 18%, transparent); color: var(--warn); }
     .ub-chip.off  { background: color-mix(in oklab, var(--danger) 15%, transparent); color: var(--danger); }
 
     /* Panel lateral */
@@ -241,7 +241,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     .ub-overlay.show { opacity: 1; visibility: visible; }
     .ub-drawer {
       position: fixed; top: 0; right: 0; bottom: 0; width: min(440px, 100%);
-      background: var(--surface); border-left: 1px solid var(--rule);
+      background: var(--paper); border-left: 1px solid var(--rule);
       transform: translateX(100%); transition: transform .25s ease;
       z-index: 80; display: flex; flex-direction: column;
     }
@@ -251,27 +251,27 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
     }
     .ub-drawer-code { font-family: ui-monospace, Menlo, monospace; font-size: 16px; font-weight: 700; }
-    .ub-drawer-zone { font-size: 13px; color: var(--text-muted); margin-top: 3px; }
+    .ub-drawer-zone { font-size: 13px; color: var(--muted); margin-top: 3px; }
     .ub-close {
       background: none; border: none; font-size: 26px; line-height: 1;
-      cursor: pointer; color: var(--text-muted); padding: 0 4px;
+      cursor: pointer; color: var(--muted); padding: 0 4px;
     }
     .ub-drawer-body { padding: 20px; overflow-y: auto; flex: 1; }
 
     .ub-section-title {
       font-size: 11.5px; text-transform: uppercase; letter-spacing: .06em;
-      color: var(--text-muted); font-weight: 600; margin: 22px 0 10px;
+      color: var(--muted); font-weight: 600; margin: 22px 0 10px;
     }
     .ub-section-title:first-child { margin-top: 0; }
 
     .ub-kv { display: flex; justify-content: space-between; gap: 12px; padding: 7px 0; font-size: 13.5px; }
     .ub-kv + .ub-kv { border-top: 1px solid var(--rule); }
-    .ub-kv dt { color: var(--text-muted); }
+    .ub-kv dt { color: var(--muted); }
     .ub-kv dd { font-weight: 500; text-align: right; margin: 0; }
 
     .ub-mv { padding: 9px 0; font-size: 12.5px; border-bottom: 1px solid var(--rule); }
     .ub-mv-top { display: flex; justify-content: space-between; gap: 10px; font-weight: 500; }
-    .ub-mv-sub { color: var(--text-muted); margin-top: 3px; font-size: 11.5px; }
+    .ub-mv-sub { color: var(--muted); margin-top: 3px; font-size: 11.5px; }
     .ub-mv-in  { color: var(--ok); }
     .ub-mv-out { color: var(--danger); }
 
@@ -285,7 +285,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     }
     .ub-modal.show { opacity: 1; visibility: visible; }
     .ub-modal-card {
-      background: var(--surface); border-radius: 14px; padding: 26px;
+      background: var(--paper); border-radius: 14px; padding: 26px;
       width: min(520px, 100%); max-height: 90vh; overflow-y: auto;
     }
     .ub-modal-title { font-size: 18px; font-weight: 600; margin: 0 0 20px; }
