@@ -463,8 +463,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
       const weight = availWeight(currentRoasted);
       document.getElementById("coffeeAvailableWeight").textContent = `${weight} kg`;
-      document.getElementById("packageQuantity").max = weight;
-      document.getElementById("quantityHint").textContent = `Máximo disponible: ${weight} kg`;
+      syncQuantityMax();
 
       const farm = (currentRoasted.farm_name || currentRoasted.farm || "").trim();
       const region = (currentRoasted.region || "").trim();
