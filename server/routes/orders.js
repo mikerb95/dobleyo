@@ -625,6 +625,12 @@ ordersRouter.patch('/:ref/status',
             const { ref } = req.params;
             const { status, notes } = req.body;
 
+            const before = await query(`SELECT id, status FROM customer_orders WHERE reference = ?`, [ref]);
+            if (!before.rows.length) {
+                return res.status(404).json({ success: false, error: 'Orden no encontrada' });
+            }
+            const previousStatus = before.rows[0].status;
+
             const result = await query(
                 `UPDATE customer_orders
          SET status = ?, notes = COALESCE(?, notes)
@@ -637,7 +643,15 @@ ordersRouter.patch('/:ref/status',
                 return res.status(404).json({ success: false, error: 'Orden no encontrada' });
             }
 
-            await logAudit(req.user.id, 'update', 'customer_orders', result.rows[0].id, { status });
+            // Inventario: cambios manuales de estado también mueven stock, igual que
+            // el webhook Wompi y la creación COD (idempotente vía stock_deducted_at).
+            if (['cancelled', 'refunded'].includes(status) && !['cancelled', 'refunded'].includes(previousStatus)) {
+                await replenishStockForOrder(result.rows[0].id, ref, 'Cancelación manual (admin)').catch((err) => logger.error({ err }, '[PATCH /api/orders/:ref/status] Error reponiendo stock'));
+            } else if (['paid', 'processing'].includes(status) && !['paid', 'processing', 'shipped', 'delivered'].includes(previousStatus)) {
+                await deductStockForOrder(result.rows[0].id, ref).catch((err) => logger.error({ err }, '[PATCH /api/orders/:ref/status] Error descontando stock'));
+            }
+
+            await logAudit(req.user.id, 'update', 'customer_orders', result.rows[0].id, { status, previousStatus });
 
             return res.json({ success: true, data: result.rows[0] });
         } catch (err) {
