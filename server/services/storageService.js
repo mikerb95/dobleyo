@@ -209,17 +209,39 @@ async function readQuant(client, locationId, lotId, stockState) {
     : { qty: 0, containers: 0 };
 }
 
+/**
+ * Aplica un delta al quant leyendo y escribiendo el valor absoluto.
+ *
+ * No se usa UPSERT con el delta: SQLite evalúa el CHECK (qty_kg >= 0) sobre la
+ * fila candidata del INSERT antes de resolver el conflicto, así que un
+ * decremento haría fallar la restricción aunque el resultado final fuera
+ * positivo. Leer-calcular-escribir mantiene el CHECK como red de seguridad real
+ * sobre el valor final, y la transacción de escritura de libSQL serializa el
+ * acceso, así que no hay ventana de carrera entre la lectura y la escritura.
+ */
 async function applyQuantDelta(client, locationId, lotId, stockState, deltaKg, deltaContainers, movementId) {
-  await client.query(
-    `INSERT INTO storage_quants (location_id, lot_id, stock_state, qty_kg, container_count, last_movement_id, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, datetime('now'))
-     ON CONFLICT (location_id, lot_id, stock_state) DO UPDATE SET
-       qty_kg = ROUND(storage_quants.qty_kg + excluded.qty_kg, 3),
-       container_count = MAX(0, storage_quants.container_count + excluded.container_count),
-       last_movement_id = excluded.last_movement_id,
-       updated_at = datetime('now')`,
-    [locationId, lotId, stockState, round3(deltaKg), deltaContainers || 0, movementId]
+  const current = await readQuant(client, locationId, lotId, stockState);
+  const nextQty = round3(current.qty + deltaKg);
+  const nextContainers = Math.max(0, current.containers + (deltaContainers || 0));
+
+  if (nextQty < -EPS) {
+    // Defensa en profundidad: las validaciones previas ya lo impiden.
+    throw bizError(409, `Movimiento rechazado: dejaría la ubicación en ${nextQty} kg (negativo).`);
+  }
+  const safeQty = nextQty < 0 ? 0 : nextQty;
+
+  const updated = await client.query(
+    `UPDATE storage_quants SET qty_kg = ?, container_count = ?, last_movement_id = ?, updated_at = datetime('now')
+     WHERE location_id = ? AND lot_id = ? AND stock_state = ?`,
+    [safeQty, nextContainers, movementId, locationId, lotId, stockState]
   );
+  if (!updated.rowCount) {
+    await client.query(
+      `INSERT INTO storage_quants (location_id, lot_id, stock_state, qty_kg, container_count, last_movement_id, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, datetime('now'))`,
+      [locationId, lotId, stockState, safeQty, nextContainers, movementId]
+    );
+  }
 }
 
 /**
