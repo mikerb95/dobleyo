@@ -333,6 +333,46 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         </div>
     </div>
 
+    <!-- Modal despacho manual (órdenes fuera de cobertura Mipaquete, p.ej. USD) -->
+    <div class="modal-back" id="modalManualBack">
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalManualTitle">
+            <div class="modal-header">
+                <h2 id="modalManualTitle">Despacho manual</h2>
+                <button class="modal-close" id="modalManualClose" aria-label="Cerrar">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="alert-box alert-warn">
+                    Esta orden no está cubierta por Mipaquete (moneda distinta a COP). Registre la guía del transportador usado manualmente — no se hace ninguna llamada a Mipaquete.
+                </div>
+                <div id="modalManualAlert"></div>
+
+                <div class="form-row">
+                    <div class="form-field">
+                        <label for="mCarrier">Transportador</label>
+                        <input type="text" id="mCarrier" placeholder="p.ej. FedEx, DHL, USPS" />
+                    </div>
+                    <div class="form-field">
+                        <label for="mGuide">Número de guía</label>
+                        <input type="text" id="mGuide" placeholder="Tracking number" />
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-field">
+                        <label for="mTrackingUrl">URL de tracking (opcional)</label>
+                        <input type="text" id="mTrackingUrl" placeholder="https://..." />
+                    </div>
+                    <div class="form-field">
+                        <label for="mComments">Comentarios (opcional)</label>
+                        <input type="text" id="mComments" />
+                    </div>
+                </div>
+
+                <button class="btn-primary-sm" id="btnManualDispatch">Registrar despacho</button>
+                <div class="save-msg" id="manualMsg"></div>
+            </div>
+        </div>
+    </div>
+
     <script>
         // ── Utilidades ────────────────────────────────────────────
         const fmtCOP = (n: number) =>
