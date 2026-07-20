@@ -141,46 +141,55 @@ inventoryRouter.get('/products/:id', async (req, res) => {
 inventoryRouter.post('/products', async (req, res) => {
   try {
     const {
-      id, sku, name, description, category, subcategory,
-      origin, process, roast, price, cost,
+      id, sku, name, name_en, slug, description, category, subcategory,
+      origin, process, roast, tasting_notes, price, price_usd, cost, rating,
       is_deal, is_bestseller, is_new, is_fast, is_active,
       image_url, images, stock_quantity, stock_min,
       weight, weight_unit, dimensions,
       meta_keywords, meta_description
     } = req.body;
 
-    // Validaciones básicas
-    if (!id || !name || !category || !price) {
-      return res.status(400).json({ 
-        success: false, 
-        error: 'Campos requeridos: id, name, category, price' 
+    // Validaciones básicas. price === 0 es válido (muestras, obsequios).
+    if (!id || !name || !category || price === undefined || price === null || price === '') {
+      return res.status(400).json({
+        success: false,
+        error: 'Campos requeridos: id, name, category, price'
       });
     }
 
     // Verificar que el ID no exista
     const existing = await query('SELECT id FROM products WHERE id = ?', [id]);
     if (existing.rows.length > 0) {
-      return res.status(409).json({ 
-        success: false, 
-        error: 'Ya existe un producto con ese ID' 
+      return res.status(409).json({
+        success: false,
+        error: 'Ya existe un producto con ese ID'
       });
     }
 
-    const result = await query(
+    // Slug: si no viene, se deriva del nombre. Debe ser único (la tienda resuelve por slug).
+    const finalSlug = normalizeSlug(slug) || normalizeSlug(name);
+    if (await slugTaken(finalSlug)) {
+      return res.status(409).json({
+        success: false,
+        error: `El slug "${finalSlug}" ya está en uso por otro producto`
+      });
+    }
+
+    await query(
       `INSERT INTO products (
-        id, sku, name, description, category, subcategory,
-        origin, process, roast, price, cost,
+        id, sku, name, name_en, slug, description, category, subcategory,
+        origin, process, roast, tasting_notes, price, price_usd, cost, rating,
         is_deal, is_bestseller, is_new, is_fast, is_active,
         image_url, images, stock_quantity, stock_min,
         weight, weight_unit, dimensions,
         meta_keywords, meta_description
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
-        id, sku, name, description, category, subcategory,
-        origin, process, roast, price, cost,
+        id, sku || null, name, name_en || null, finalSlug, description, category, subcategory,
+        origin, process, roast, jsonOrNull(tasting_notes), price, price_usd ?? null, cost ?? null, rating ?? 0,
         is_deal ? 1 : 0, is_bestseller ? 1 : 0, is_new ? 1 : 0,
         is_fast ? 1 : 0, is_active !== false ? 1 : 0,
-        image_url, images ? JSON.stringify(images) : null,
+        image_url, jsonOrNull(images),
         stock_quantity || 0, stock_min || 0,
         weight, weight_unit || 'g', dimensions,
         meta_keywords, meta_description
@@ -192,15 +201,20 @@ inventoryRouter.post('/products', async (req, res) => {
       await query(
         `INSERT INTO inventory_movements (
           product_id, movement_type, quantity, quantity_before, quantity_after,
-          reason, reference
-        ) VALUES (?, 'entrada', ?, 0, ?, 'Stock inicial', 'INIT')`,
-        [id, stock_quantity, stock_quantity]
+          reason, reference, user_id
+        ) VALUES (?, 'entrada', ?, 0, ?, 'Stock inicial', 'INIT', ?)`,
+        [id, stock_quantity, stock_quantity, req.user?.id ?? null]
       );
     }
+
+    await logAudit(req.user?.id, 'create', 'product', id, {
+      name, category, price, slug: finalSlug, stock_quantity: stock_quantity || 0
+    });
 
     res.status(201).json({
       success: true,
       productId: id,
+      slug: finalSlug,
       message: 'Producto creado exitosamente'
     });
   } catch (error) {
