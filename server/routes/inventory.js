@@ -363,9 +363,11 @@ inventoryRouter.post('/movements', async (req, res) => {
       quantity,
       reason,
       reference,
-      notes,
-      user_id
+      notes
     } = req.body;
+
+    // El autor del movimiento es siempre el usuario autenticado, nunca el body.
+    const user_id = req.user?.id ?? null;
 
     if (!product_id || !movement_type || !quantity) {
       return res.status(400).json({

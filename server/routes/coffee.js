@@ -51,7 +51,7 @@ coffeeRouter.post('/harvest', async (req, res) => {
 coffeeRouter.post('/inventory-storage', async (req, res) => {
   try {
     const { lotId, weight, weightUnit, location, storageDate, notes } = req.body;
-    const data = await storeGreenCoffee({ lotId, weight, weightUnit, location, storageDate, notes });
+    const data = await storeGreenCoffee({ lotId, weight, weightUnit, location, storageDate, notes, user: req.user });
     res.status(201).json({ success: true, message: 'Café verde almacenado correctamente', ...data });
   } catch (err) {
     handleErr(res, err, 'Error en inventory-storage');
@@ -62,7 +62,7 @@ coffeeRouter.post('/inventory-storage', async (req, res) => {
 coffeeRouter.post('/send-roasting', async (req, res) => {
   try {
     const { lotId, quantitySent, targetTemp, notes } = req.body;
-    const data = await sendToRoasting({ lotId, quantitySent, targetTemp, notes });
+    const data = await sendToRoasting({ lotId, quantitySent, targetTemp, notes, user: req.user });
     res.status(201).json({ success: true, message: 'Lote enviado a tostión correctamente', ...data });
   } catch (err) {
     handleErr(res, err, 'Error en send-roasting');
@@ -84,7 +84,7 @@ coffeeRouter.post('/roast-retrieval', async (req, res) => {
 coffeeRouter.post('/roasted-storage', async (req, res) => {
   try {
     const { roastedId, location, container, containerCount, conditions, notes } = req.body;
-    const data = await storeRoasted({ roastedId, location, container, containerCount, conditions, notes });
+    const data = await storeRoasted({ roastedId, location, container, containerCount, conditions, notes, user: req.user });
     res.status(201).json({ success: true, message: 'Café tostado almacenado correctamente', ...data });
   } catch (err) {
     handleErr(res, err, 'Error en roasted-storage');
@@ -105,7 +105,7 @@ coffeeRouter.get('/roasted-storage/:id', async (req, res) => {
 coffeeRouter.post('/packaging', async (req, res) => {
   try {
     const { roastedStorageId, acidity, body, balance, presentation, grindSize, packageSize, unitCount, notes, addToInventory } = req.body;
-    const data = await createPackaging({ roastedStorageId, acidity, body, balance, presentation, grindSize, packageSize, unitCount, notes, addToInventory });
+    const data = await createPackaging({ roastedStorageId, acidity, body, balance, presentation, grindSize, packageSize, unitCount, notes, addToInventory, user: req.user });
 
     await logAudit(req.user.id, 'create', 'packaged_coffee', data.packagedId, {
       roasted_storage_id: roastedStorageId, lot_id: data.lotId,
