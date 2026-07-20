@@ -618,8 +618,12 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       grindRow.hidden = presentation !== "MOLIDO";
       document.getElementById("planGrind").textContent = grind || "Por especificar";
       document.getElementById("planSize").textContent = size || "—";
-      document.getElementById("planUnits").textContent = units ? `${units} unidades` : "—";
-      document.getElementById("planUsed").textContent = qty > 0 ? `${qty} ${unit}` : "—";
+      document.getElementById("planUnits").textContent = units
+        ? `${units} ${size === "bulk" ? "kg" : "unidades"}`
+        : "—";
+      document.getElementById("planUsed").textContent = used > 0 ? `${used} kg` : "—";
+      document.getElementById("planRemaining").textContent =
+        used > 0 ? `${Math.round((availableKg - used) * 1000) / 1000} kg` : `${availableKg} kg`;
       document.getElementById("planInventory").textContent =
         document.getElementById("addToInventory").checked ? "Sí, sumar stock" : "No";
     }
