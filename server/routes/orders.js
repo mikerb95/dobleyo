@@ -441,6 +441,12 @@ ordersRouter.post('/',
 
             await logAudit(req.user?.id || null, 'create', 'customer_orders', orderId, { reference, total, discount: discountAmount, paymentMethod });
 
+            // COD nace confirmada ('processing'): el descuento de stock ocurre aquí. Las
+            // órdenes Wompi lo hacen al aprobarse el pago (ver POST /wompi/webhook).
+            if (isCod) {
+                deductStockForOrder(orderId, reference).catch((err) => logger.error({ err, orderId }, '[POST /api/orders] Error descontando stock COD'));
+            }
+
             // Geocodificación asíncrona — no bloquea la respuesta HTTP
             geocodeOrderAsync(orderId, shippingCity, shippingDepartment);
 
