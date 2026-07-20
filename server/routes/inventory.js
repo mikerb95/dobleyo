@@ -563,11 +563,12 @@ inventoryRouter.post('/movements', async (req, res) => {
         product_id, movement_type, quantity, quantity_before, quantity_after,
         reason, reference, notes, user_id
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      // libSQL rechaza `undefined`: los campos opcionales van como null.
       [
         product_id, movement_type,
         movement_type === 'ajuste' ? newStock - currentStock : quantity,
         currentStock, newStock,
-        reason, reference, notes, user_id
+        reason ?? null, reference ?? null, notes ?? null, user_id
       ]
     );
 
