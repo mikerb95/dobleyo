@@ -758,7 +758,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       const typeBadge = { feature: 'badge-success', fix: 'badge-info', breaking: 'badge-error', security: 'badge-warning', performance: 'badge-neutral' };
       timelineEl.innerHTML = data.map(e => {
         const date = e.published_at
-          ? new Date(e.published_at).toLocaleDateString('es-CO')
+          ? formatDateLocal(e.published_at)
           : new Date(e.created_at).toLocaleDateString('es-CO');
         const author = escHtml(e.author_email || 'Sistema');
         const tClass = typeBadge[e.change_type] || 'badge-neutral';
