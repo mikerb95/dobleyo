@@ -2,6 +2,28 @@
 
 ---
 
+## 2026-07-19 (2) — Logística Fase C1/C3: polling programado + control de inventario (Agente: Claude)
+
+### Contexto
+Continuación de la auditoría de logística (`logistica.md`): las Fases C1 (polling programado) y C3 (control de inventario) habían quedado pendientes de autorización explícita del usuario por implicar decisiones de infraestructura/modelo de datos. Usuario decidió: C1 → scheduler externo (GitHub Actions, no Vercel Cron); C3 → descuento directo de stock al confirmarse el pago (sin reserva).
+
+### Cambios — C1: polling programado
+- **`server/routes/shipping.js`** — lógica de `refresh-all` extraída a `runShippingMaintenance()`, compartida por dos endpoints: `POST /refresh-all` (botón admin, sin cambios de comportamiento) y el nuevo `POST /cron-refresh-all` (autenticado con `CRON_SECRET` vía `Authorization: Bearer`, comparación en tiempo constante — mismo patrón que el webhook de Mipaquete).
+- **`.github/workflows/shipping-refresh.yml`** (nuevo) — dispara `cron-refresh-all` cada 30 min en horario 08:00–23:00 Colombia, siguiendo el mismo patrón que `subscriptions-billing.yml`. Requiere secretos de repo `SITE_BASE_URL` y `CRON_SECRET` (ya usado por `/api/mercadolibre/cron-sync`, mismo valor).
+
+### Cambios — C3: control de inventario
+- **`server/migrations/add_logistics_hardening.js`** — nueva columna `customer_orders.stock_deducted_at` (idempotencia de descuento/reposición).
+- **`server/routes/orders.js`** — `POST /api/orders` valida stock disponible (`products.stock_quantity`, agregado por producto ante líneas duplicadas) y rechaza con 422 si no alcanza; nuevas `deductStockForOrder`/`replenishStockForOrder` (usan `inventory_movements` existente, tipos `salida`/`devolucion`). Se descuenta al crear una orden COD (nace `processing`) y al aprobarse el pago en el webhook Wompi; se repone si un VOID revierte un pago ya aprobado o si un admin cancela/reembolsa manualmente (`PATCH /:ref/status`). Sin reserva de stock en `pending_payment`: riesgo de sobreventa entre creación y pago aceptado (catálogo de bajo volumen); si ocurre sobreventa al descontar, se registra (`logger.warn` + `logSystemAudit('oversold', ...)`) sin bloquear la orden ya pagada.
+
+### Archivos Creados
+- `.github/workflows/shipping-refresh.yml`
+- `server/routes/__tests__/shipping.test.js` — 13 tests de `mapTrackingStateToStatus`/`matchSendingByMpCode` (agregados en la verificación de la Fase A/B/D).
+
+### Impacto
+Suite completa en verde: 44/44 tests (11 nuevos: 13 de shipping.test.js + 2 de inventario en orders.test.js). Verificado end-to-end contra la base Turso real: `cron-refresh-all` responde 401 sin token/con token incorrecto y 200 con `CRON_SECRET` correcto, ejecutando `runShippingMaintenance()` (en esa corrida real expiró 16 órdenes `pending_payment` abandonadas — comportamiento esperado de B6, no un efecto de esta fase). Ambos entrypoints (`server/index.js`, `api/index.js`) cargan sin errores.
+
+---
+
 ## 2026-07-19 — Auditoría y remediación de logística/envíos (Agente: Claude)
 
 ### Contexto
