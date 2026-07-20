@@ -651,8 +651,14 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         ? `${units} ${size === "bulk" ? "kg" : "unidades"}`
         : "—";
       document.getElementById("planUsed").textContent = used > 0 ? `${used} kg` : "—";
-      document.getElementById("planRemaining").textContent =
-        used > 0 ? `${Math.round((availableKg - used) * 1000) / 1000} kg` : `${availableKg} kg`;
+      const remaining = Math.round((availableKg - used) * 1000) / 1000;
+      const remainingEl = document.getElementById("planRemaining");
+      // Un restante negativo significa que la cantidad excede el lote: se avisa
+      // en vez de mostrar un número imposible.
+      remainingEl.textContent = remaining < 0
+        ? `Excede por ${Math.abs(remaining)} kg`
+        : `${used > 0 ? remaining : availableKg} kg`;
+      remainingEl.classList.toggle("is-over", remaining < 0);
       document.getElementById("planInventory").textContent =
         document.getElementById("addToInventory").checked ? "Sí, sumar stock" : "No";
     }
