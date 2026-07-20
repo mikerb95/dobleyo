@@ -2,6 +2,48 @@
 
 ---
 
+## 2026-07-20 (3) — Auditoría y reconstrucción de `/admin/productos` (Agente: Claude)
+
+### Contexto
+La página tenía formulario para campos que ninguna capa persistía y ocultaba campos que la tienda sí consume. Auditoría completa de diseño, funcionalidad, lógica y flujo de datos; el usuario pidió corregir todos los hallazgos.
+
+### Defectos corregidos (la UI mentía al usuario)
+- **Sección "Producto trazable" muerta** — el formulario capturaba `farm`, `variety`, `roast_date` y `aroma`, los enviaba, y ni el POST ni el PUT los recibían; además esas columnas no existen en `products` (viven en `lots`). El usuario veía "actualizado correctamente" tras perder los datos. Sección eliminada y sustituida por una nota que remite a `/admin/lotes`, que es de donde `producto/[id].astro` ya las lee.
+- **`stock_quantity` ignorado al editar** — no estaba en `allowedFields` del PUT (correcto: el stock debe moverse por `inventory_movements`), pero se presentaba como campo editable normal. Ahora en edición es solo lectura con desglose actual/reservado/disponible, y el ajuste se hace con un modal dedicado que asienta el movimiento vía `POST /movements`.
+- **Corrupción de `images`** — `typeof null === 'object'` hacía que limpiar el campo guardara la cadena literal `"null"`; al releer, `JSON.parse("null")` daba `null`, el textarea mostraba `null` y al reguardar quedaba `["null"]`. Nuevo helper `jsonOrNull()` aplicado a `images` y `tasting_notes`.
+- **`rating` perdido al crear** — el POST no lo destructuraba. Añadido.
+- **Modal de borrado engañoso** — decía "se eliminará permanentemente" y "no se puede deshacer" mientras el DELETE hacía soft delete. Ahora dice "Desactivar", explica que se conserva el historial, y ofrece una casilla explícita de eliminación definitiva con advertencia sobre las referencias huérfanas.
+- **`price = 0` rechazado** por `if (!price)`, impidiendo muestras y obsequios. Ahora solo se rechaza ausente.
+- **`undefined` a libSQL** — el driver rechaza `undefined`, así que crear un producto sin todos los campos opcionales devolvía `Unsupported type of value`. Mismo defecto en `POST /movements` por el campo `notes`, que rompía también los movimientos lanzados desde `InventarioApp.jsx`. Todos los opcionales se normalizan a `null`.
+
+### Cobertura del modelo de datos
+- **Campos que la tienda consume y no eran administrables**: `slug` (URL pública), `name_en`, `price_usd` y `tasting_notes`. Añadidos al formulario, al POST y al PUT. El slug se deriva del nombre, se normaliza sin acentos y se valida único (409 en conflicto); un producto creado antes quedaba con `slug = NULL` y sin URL propia — la tabla ahora marca esos casos con una insignia "Sin slug".
+- **`product_variants` sin administración** — la tienda resuelve precio y stock por variante, así que la página mostraba cifras que el cliente nunca ve. Nuevo CRUD `GET/POST /products/:id/variants` y `PUT/DELETE /variants/:variantId`, con pestaña de gestión en el modal. La tabla muestra rango de precios y stock agregado de variantes cuando existen.
+- **`stock_reserved` ignorado** — KPIs y columna de stock usaban el bruto, sobreestimando disponibilidad. Ahora todo se calcula sobre disponible (`stock_quantity - stock_reserved`, o la suma de variantes activas).
+- **Valor de inventario a precio de venta** — se calculaba con `price`, que es valor de catálogo, no valor contable. Ahora es a costo, con el valor a precio de venta y el número de productos sin costo como subtexto.
+
+### Trazabilidad
+`logAudit` estaba importado en `inventory.js` y solo se usaba en movimientos de lote. Ahora crear, actualizar, desactivar y eliminar productos y variantes quedan en `audit_logs`; la actualización registra solo los campos que cambiaron de valor, con `from`/`to`. El autor de un movimiento se toma de `req.user`, no del body (antes era suplantable y siempre llegaba `undefined`).
+
+### Diseño y accesibilidad
+- Modales con `role="dialog"`, `aria-modal`, cierre con `Escape`, trampa de foco, restauración del foco al cerrar y bloqueo del scroll de fondo.
+- Formulario de ~30 campos reorganizado en pestañas (Básico · Precios y stock · Variantes · Medios · Comercial y SEO) sobre un modal de 760px con cabecera y acciones fijas. La validación es en JS (no `required` nativo, que no puede enfocar campos en paneles ocultos) y salta a la pestaña del campo con error.
+- Emojis de encabezado (☕ 💵 🖼️ 🏷️ 🔍) eliminados: la página usa iconografía SVG.
+- Ordenamiento por columna, paginación de 25, `min-width` en la tabla para que el scroll horizontal se active antes de romper la celda de producto, vista previa de la imagen principal y toasts de error con `role="alert"`.
+- El toast "Datos actualizados" se disparaba antes de que la petición terminara; ahora espera el resultado y no aparece si la carga falla.
+
+### Migración
+`server/migrations/add_product_store_columns.js` (nueva, registrada en el runner) — añade `slug`, `name_en`, `price_usd` y `tasting_notes` de forma idempotente, crea índice único sobre `slug` y rellena los faltantes con el `id`. Estas columnas se habían añadido en `20260411_seed_products_store.js`, que nunca se registró en `run_all_migrations.js`. `db/schema.sql` actualizado como fuente de verdad.
+
+### Verificación
+Migración ejecutada contra la BD real (idempotente). Ciclo completo probado por HTTP contra el servidor local: creación con todos los campos nuevos y `price = 0`, persistencia confirmada, limpieza de `images` guardando NULL real, `stock_quantity` correctamente ignorado en el PUT, conflicto de slug devolviendo 409, CRUD de variantes con sus validaciones, ajuste absoluto y salida de stock con control de saldo negativo, seis entradas de auditoría correctas y borrado físico arrastrando las variantes por CASCADE. `astro build` limpio.
+
+### Pendiente
+- Los filtros siguen siendo en cliente sobre el catálogo completo; el backend ya soporta `category`, `active`, `search`, `sortBy` y `order`. Conviene migrarlos cuando el catálogo crezca.
+- El stock de las variantes se edita como número directo, sin pasar por `inventory_movements`: no queda trazado como el del producto.
+
+---
+
 ## 2026-07-20 (2) — Maestro de ubicaciones de bodega + libro de movimientos (Agente: Claude)
 
 ### Contexto
