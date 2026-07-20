@@ -16,26 +16,61 @@ inventoryRouter.use(requireRole('admin'));
 // PRODUCTOS - CRUD
 // ============================================
 
+// Campos que se persisten como JSON en columnas TEXT. `null` debe guardarse como
+// NULL y no como la cadena "null" (que corrompe el valor en lecturas posteriores).
+function jsonOrNull(value) {
+  if (value === null || value === undefined) return null;
+  if (typeof value === 'string') return value.trim() ? value : null;
+  if (Array.isArray(value) && value.length === 0) return null;
+  return JSON.stringify(value);
+}
+
+// Normaliza un slug a minúsculas sin acentos ni caracteres especiales.
+function normalizeSlug(value) {
+  if (!value) return null;
+  const slug = String(value)
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .toLowerCase().trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+  return slug || null;
+}
+
+// Verifica que el slug no esté tomado por otro producto.
+async function slugTaken(slug, excludeId = null) {
+  if (!slug) return false;
+  const result = excludeId
+    ? await query('SELECT id FROM products WHERE slug = ? AND id != ?', [slug, excludeId])
+    : await query('SELECT id FROM products WHERE slug = ?', [slug]);
+  return result.rows.length > 0;
+}
+
 // GET - Listar todos los productos (con filtros)
 inventoryRouter.get('/products', async (req, res) => {
   try {
     const { category, active, search, sortBy = 'name', order = 'ASC' } = req.query;
-    
-    let sql = 'SELECT * FROM products WHERE 1=1';
+
+    let sql = `
+      SELECT p.*,
+             (SELECT COUNT(*)            FROM product_variants v WHERE v.product_id = p.id AND v.is_active = 1) AS variant_count,
+             (SELECT SUM(v.stock_quantity) FROM product_variants v WHERE v.product_id = p.id AND v.is_active = 1) AS variant_stock,
+             (SELECT MIN(v.price_cop)    FROM product_variants v WHERE v.product_id = p.id AND v.is_active = 1) AS variant_min_price,
+             (SELECT MAX(v.price_cop)    FROM product_variants v WHERE v.product_id = p.id AND v.is_active = 1) AS variant_max_price
+      FROM products p WHERE 1=1`;
     const params = [];
 
     if (category) {
-      sql += ' AND category = ?';
+      sql += ' AND p.category = ?';
       params.push(category);
     }
 
     if (active === 'true' || active === 'false') {
-      sql += ' AND is_active = ?';
+      sql += ' AND p.is_active = ?';
       params.push(active === 'true' ? 1 : 0);
     }
 
     if (search) {
-      sql += ' AND (name LIKE ? OR sku LIKE ? OR description LIKE ?)';
+      sql += ' AND (p.name LIKE ? OR p.sku LIKE ? OR p.description LIKE ?)';
       const searchPattern = `%${search}%`;
       params.push(searchPattern, searchPattern, searchPattern);
     }
@@ -44,11 +79,11 @@ inventoryRouter.get('/products', async (req, res) => {
     const allowedSortFields = ['name', 'category', 'price', 'stock_quantity', 'created_at'];
     const sortField = allowedSortFields.includes(sortBy) ? sortBy : 'name';
     const sortOrder = order.toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
-    
-    sql += ` ORDER BY ${sortField} ${sortOrder}`;
+
+    sql += ` ORDER BY p.${sortField} ${sortOrder}`;
 
     const result = await query(sql, params);
-    
+
     res.json({
       success: true,
       products: result.rows,
