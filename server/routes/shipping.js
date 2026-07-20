@@ -701,75 +701,109 @@ async function retryPendingConfirmationEmails(limit = 10) {
     return sent;
 }
 
-// ─── POST /api/shipping/refresh-all (admin) ────────────────────────────────
-// Fallback de polling sin cron: se dispara al abrir el panel. Presupuesto de
-// tiempo acotado para respetar límites de funciones serverless. Además de
-// refrescar tracking, recupera envíos huérfanos, expira órdenes abandonadas y
-// reintenta emails de confirmación pendientes — todo bajo el mismo presupuesto.
-
-shippingRouter.post('/refresh-all', authenticateToken, requireRole('admin'), async (req, res) => {
+// Lógica compartida entre el botón admin (POST /refresh-all) y el disparador
+// externo programado (POST /cron-refresh-all). Presupuesto de tiempo acotado
+// para respetar límites de funciones serverless. Además de refrescar tracking,
+// recupera envíos huérfanos, expira órdenes abandonadas y reintenta emails de
+// confirmación pendientes — todo bajo el mismo presupuesto.
+async function runShippingMaintenance() {
     const startedAt = Date.now();
     const TIME_BUDGET_MS = 8000;
     const MAX_ITEMS = 20;
     const timeLeft = () => TIME_BUDGET_MS - (Date.now() - startedAt);
 
+    const pending = await query(
+        `SELECT id FROM shipments
+         WHERE status IN ('created','pickup_requested','in_transit') AND mp_code IS NOT NULL
+         ORDER BY COALESCE(tracking_updated_at, created_at) ASC
+         LIMIT ?`,
+        [MAX_ITEMS]
+    );
+
+    const results = [];
+    for (const row of pending.rows) {
+        if (timeLeft() < 500) break;
+        try {
+            const r = await refreshShipment(row.id, 'poll');
+            results.push({ shipmentId: row.id, ok: true, status: r?.status });
+        } catch (err) {
+            results.push({ shipmentId: row.id, ok: false, error: err.message });
+        }
+    }
+
+    let orphanResults = [];
+    let expiredCount = 0;
+    let emailsSent = 0;
+
+    if (timeLeft() > 1000) {
+        orphanResults = await recoverOrphanShipments(5).catch((err) => {
+            logger.error({ err }, '[Shipping maintenance] Error recuperando envíos huérfanos');
+            return [];
+        });
+    }
+    if (timeLeft() > 500) {
+        expiredCount = await expireAbandonedOrders(48).catch((err) => {
+            logger.error({ err }, '[Shipping maintenance] Error expirando órdenes abandonadas');
+            return 0;
+        });
+    }
+    if (timeLeft() > 500) {
+        emailsSent = await retryPendingConfirmationEmails(10).catch((err) => {
+            logger.error({ err }, '[Shipping maintenance] Error reintentando emails de confirmación');
+            return 0;
+        });
+    }
+
+    const summary = {
+        processed: results.length,
+        failed: results.filter((r) => !r.ok).length,
+        orphansRecovered: orphanResults.filter((r) => r.action === 'adopted').length,
+        orphansMarkedError: orphanResults.filter((r) => r.action === 'marked_error').length,
+        ordersExpired: expiredCount,
+        confirmationEmailsSent: emailsSent,
+        durationMs: Date.now() - startedAt,
+    };
+    logSystemAudit('poll', 'shipments', 'refresh-all', summary).catch(() => {});
+
+    return { ...summary, results, orphanResults };
+}
+
+// ─── POST /api/shipping/refresh-all (admin) ────────────────────────────────
+// Botón manual del panel /admin/envios.
+
+shippingRouter.post('/refresh-all', authenticateToken, requireRole('admin'), async (req, res) => {
     try {
-        const pending = await query(
-            `SELECT id FROM shipments
-             WHERE status IN ('created','pickup_requested','in_transit') AND mp_code IS NOT NULL
-             ORDER BY COALESCE(tracking_updated_at, created_at) ASC
-             LIMIT ?`,
-            [MAX_ITEMS]
-        );
-
-        const results = [];
-        for (const row of pending.rows) {
-            if (timeLeft() < 500) break;
-            try {
-                const r = await refreshShipment(row.id, 'poll');
-                results.push({ shipmentId: row.id, ok: true, status: r?.status });
-            } catch (err) {
-                results.push({ shipmentId: row.id, ok: false, error: err.message });
-            }
-        }
-
-        let orphanResults = [];
-        let expiredCount = 0;
-        let emailsSent = 0;
-
-        if (timeLeft() > 1000) {
-            orphanResults = await recoverOrphanShipments(5).catch((err) => {
-                logger.error({ err }, '[Shipping refresh-all] Error recuperando envíos huérfanos');
-                return [];
-            });
-        }
-        if (timeLeft() > 500) {
-            expiredCount = await expireAbandonedOrders(48).catch((err) => {
-                logger.error({ err }, '[Shipping refresh-all] Error expirando órdenes abandonadas');
-                return 0;
-            });
-        }
-        if (timeLeft() > 500) {
-            emailsSent = await retryPendingConfirmationEmails(10).catch((err) => {
-                logger.error({ err }, '[Shipping refresh-all] Error reintentando emails de confirmación');
-                return 0;
-            });
-        }
-
-        const summary = {
-            processed: results.length,
-            failed: results.filter((r) => !r.ok).length,
-            orphansRecovered: orphanResults.filter((r) => r.action === 'adopted').length,
-            orphansMarkedError: orphanResults.filter((r) => r.action === 'marked_error').length,
-            ordersExpired: expiredCount,
-            confirmationEmailsSent: emailsSent,
-            durationMs: Date.now() - startedAt,
-        };
-        logSystemAudit('poll', 'shipments', 'refresh-all', summary).catch(() => {});
-
-        return res.json({ success: true, data: { ...summary, results, orphanResults } });
+        const data = await runShippingMaintenance();
+        return res.json({ success: true, data });
     } catch (err) {
         logger.error({ err }, '[POST /api/shipping/refresh-all] Error:');
+        return res.status(500).json({ success: false, error: 'Error al refrescar envíos' });
+    }
+});
+
+// ─── POST /api/shipping/cron-refresh-all (sistema) ─────────────────────────
+// Disparador externo programado (scheduler fuera de Vercel: GitHub Actions,
+// cron-job.org, etc.). Protegido con CRON_SECRET server-to-server, NO con
+// sesión de admin — mismo patrón que /api/mercadolibre/cron-sync. Reutiliza
+// exactamente la misma lógica que el botón del panel.
+
+shippingRouter.post('/cron-refresh-all', async (req, res) => {
+    const secret = process.env.CRON_SECRET;
+    if (!secret) {
+        return res.status(503).json({ success: false, error: 'CRON_SECRET no configurado' });
+    }
+    const provided = String((req.get('authorization') || '').replace(/^Bearer\s+/i, ''));
+    const expected = Buffer.from(secret);
+    const given = Buffer.from(provided);
+    if (given.length !== expected.length || !crypto.timingSafeEqual(given, expected)) {
+        return res.sendStatus(401);
+    }
+
+    try {
+        const data = await runShippingMaintenance();
+        return res.json({ success: true, data });
+    } catch (err) {
+        logger.error({ err }, '[POST /api/shipping/cron-refresh-all] Error:');
         return res.status(500).json({ success: false, error: 'Error al refrescar envíos' });
     }
 });
