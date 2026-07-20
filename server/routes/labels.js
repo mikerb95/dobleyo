@@ -410,16 +410,13 @@ labelsRouter.get('/list',
 labelsRouter.get('/stats', async (req, res) => {
   res.setHeader('Content-Type', 'application/json');
   try {
-    const [countsResult, availableResult] = await Promise.all([
-      query(
-        `SELECT
-          COUNT(*) as total,
-          SUM(CASE WHEN lot_code NOT LIKE 'TMP-%' THEN 1 ELSE 0 END) as from_lots,
-          SUM(CASE WHEN lot_code LIKE 'TMP-%' THEN 1 ELSE 0 END) as custom
-         FROM generated_labels`
-      ),
-      query(`SELECT COUNT(*) as available FROM packaged_coffee WHERE status = 'ready_for_sale'`),
-    ]);
+    const countsResult = await query(
+      `SELECT
+        COUNT(*) as total,
+        SUM(CASE WHEN lot_code NOT LIKE 'TMP-%' THEN 1 ELSE 0 END) as from_lots,
+        SUM(CASE WHEN lot_code LIKE 'TMP-%' THEN 1 ELSE 0 END) as custom
+       FROM generated_labels`
+    );
 
     const counts = countsResult.rows[0] || {};
 
@@ -429,7 +426,6 @@ labelsRouter.get('/stats', async (req, res) => {
         total: parseInt(counts.total || 0),
         fromLots: parseInt(counts.from_lots || 0),
         custom: parseInt(counts.custom || 0),
-        availableLots: parseInt(availableResult.rows[0]?.available || 0),
       },
     });
   } catch (error) {
