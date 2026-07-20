@@ -12,6 +12,7 @@ Una de las misiones de DobleYo es visibilizar el campo colombiano. La consulta d
 - **`src/pages/trazabilidad.astro`** — nueva tarjeta `#resFarmerCard` (oculta por defecto) entre el hero y el timeline de producción.
 - **`public/assets/js/trazabilidad.js`** — nueva `renderFarmer(data.farm)` invocada desde `renderResult()`; construye la tarjeta con `createElement`/`textContent` (la historia la escribe el caficultor, no se interpola en `innerHTML`) y enlace a `/finca/{slug}`. Se oculta en `renderIdle()` y cuando no hay finca coincidente.
 - **`public/assets/css/styles.css`** — clases `trace-farmer-*` (foto + texto, foto a la izquierda en desktop, apilada en mobile ≤480px).
+- **`public/assets/js/trazabilidad.js`** — nuevo helper `farmLabel(name)`: los valores de `farms.name`/`coffee_harvests.farm` ya vienen con el prefijo "Finca" incluido, así que solo se antepone cuando falta. Corrige la duplicación "Finca Finca El Paraíso" tanto en la nueva tarjeta como en el chip del hero (este último, defecto preexistente detectado durante la verificación).
 
 ### Impacto
 Comportamiento degradado sin errores cuando el lote no tiene finca publicada asociada. Sin cambios de paridad `server/index.js` ↔ `api/index.js` (router ya montado en ambos).
