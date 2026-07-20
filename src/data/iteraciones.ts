@@ -144,7 +144,21 @@ export const ITERACIONES: Iteracion[] = [
           ok("Nuevo GET /stuck: envíos que exceden el SLA esperado por estado (24h sin guía, 48h sin recolección, 7 días en tránsito)."),
           ok("GET /orders-pending ya no filtra por currency='COP'; las órdenes USD quedan visibles."),
           ok("Nuevo POST /:orderId/dispatch-manual para fulfillment manual de órdenes internacionales sin llamar a la API de Mipaquete."),
-          pend("C1 (polling programado vía cron) y C3 (reserva de inventario al pagar) quedan pendientes de autorización explícita del usuario."),
+          ok("C1 y C3 resueltos el mismo día tras decisión del usuario (ver DY-LOG-07)."),
+        ],
+      },
+      {
+        id: "DY-LOG-07",
+        titulo:
+          "Como sistema, quiero que el estado de los envíos se refresque solo (sin depender de que un admin lo dispare) y que el stock se descuente al confirmarse el pago",
+        tipo: "historia", valor: "alto", col: "aceptada", par: "MR", agente: "Claude",
+        fecha: "2026-07-19", tags: ["logistica", "cron", "inventario"],
+        dod: [
+          ok("Lógica de refresh-all extraída a runShippingMaintenance(), compartida por POST /refresh-all (botón admin) y el nuevo POST /cron-refresh-all (autenticado con CRON_SECRET, comparación en tiempo constante)."),
+          ok("Nuevo .github/workflows/shipping-refresh.yml: dispara cron-refresh-all cada 30 min en horario 08:00–23:00 Colombia (GitHub Actions, no Vercel Cron, por decisión del usuario)."),
+          ok("Nueva columna customer_orders.stock_deducted_at; POST /api/orders valida stock disponible (products.stock_quantity) y rechaza con 422 si no alcanza."),
+          ok("Stock se descuenta al crear una orden COD y al aprobarse el pago Wompi; se repone ante VOID o cancelación/reembolso manual. Sin reserva en pending_payment (riesgo de sobreventa aceptado y auditado con logSystemAudit('oversold', ...))."),
+          ok("Suite completa en verde: 44/44 tests. Verificado end-to-end: cron-refresh-all responde 401 sin token correcto y 200 con CRON_SECRET válido."),
         ],
       },
       {
