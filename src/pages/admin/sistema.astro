@@ -448,6 +448,17 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     }[c] as string));
   }
 
+  // ── Mensaje de error visible cuando un loader falla ────────────────────────
+  const LOAD_ERROR_MSG = 'No se pudo cargar la información. Intente actualizar la página.';
+  function showLoadError(id: string, colspan?: number) {
+    const node = el(id);
+    if (!node) return;
+    const msg = `<span style="color:var(--c-error)">${escHtml(LOAD_ERROR_MSG)}</span>`;
+    node.innerHTML = colspan
+      ? `<tr><td colspan="${colspan}" class="loading-row">${msg}</td></tr>`
+      : `<div class="loading-row">${msg}</div>`;
+  }
+
   // ── Formatea fechas 'YYYY-MM-DD' (sin hora) como fecha local, evitando
   //    que se interprete como medianoche UTC y se corra un día atrás ────────
   function formatDateLocal(value: string): string {
