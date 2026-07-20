@@ -799,7 +799,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         const pct = l.fillPct != null ? l.fillPct : Math.round((d.kg / maxKg) * 100);
         const level = pct >= 90 ? 'danger' : pct >= 70 ? 'warning' : '';
         return `
-          <div class="rs-bin ${filled ? 'filled' : ''}">
+          <div class="rs-bin ${filled ? 'filled' : ''} ${level}">
             <div class="rs-bin-top">
               <div>
                 <div class="rs-bin-zone">${l.zone}</div>

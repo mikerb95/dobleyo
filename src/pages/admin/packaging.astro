@@ -316,7 +316,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
             </tr>
           </thead>
           <tbody id="recentBody">
-            <tr><td colspan="6" class="empty-state">Cargando…</td></tr>
+            <tr><td colspan="7" class="empty-state">Cargando…</td></tr>
           </tbody>
         </table>
       </div>
@@ -449,7 +449,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       const body = document.getElementById("recentBody");
       if (!rows.length) {
         body.innerHTML =
-          '<tr><td colspan="6" class="empty-state">Aún no hay empaques preparados.</td></tr>';
+          '<tr><td colspan="7" class="empty-state">Aún no hay empaques preparados.</td></tr>';
         return;
       }
       body.innerHTML = rows
