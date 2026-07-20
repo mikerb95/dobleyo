@@ -713,6 +713,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         ["acidityValue", "bodyValue", "balanceValue"].forEach(
           (id) => (document.getElementById(id).textContent = "3/5")
         );
+        updateUnitCount();
         updatePlan();
       }, 0);
     });
