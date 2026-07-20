@@ -813,8 +813,10 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
               <span class="rs-bin-kg">${(d.kg).toLocaleString('es-CO', { maximumFractionDigits: 1 })}</span>
               <span class="rs-bin-unit">kg</span>
             </div>
-            <div class="rs-bin-bar"><span style="width:${filled ? pct : 0}%"></span></div>
-            <div class="rs-bin-lots">${d.lots} lote${d.lots === 1 ? '' : 's'} almacenado${d.lots === 1 ? '' : 's'}</div>
+            <div class="rs-bin-bar"><span style="width:${filled ? Math.min(100, pct) : 0}%"></span></div>
+            <div class="rs-bin-lots">
+              ${d.lots} lote${d.lots === 1 ? '' : 's'} almacenado${d.lots === 1 ? '' : 's'}${l.capacityKg != null ? ` · ${pct}% de ${kg(l.capacityKg)}` : ''}
+            </div>
           </div>`;
       }).join('');
     }
