@@ -750,18 +750,18 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         const date = e.published_at
           ? new Date(e.published_at).toLocaleDateString('es-CO')
           : new Date(e.created_at).toLocaleDateString('es-CO');
-        const author = e.author_email || 'Sistema';
+        const author = escHtml(e.author_email || 'Sistema');
         const tClass = typeBadge[e.change_type] || 'badge-neutral';
         return `<div class="cl-entry">
           <div class="cl-dot"></div>
           <div class="cl-content">
             <div class="cl-header">
-              <span class="cl-version">${e.version}</span>
-              <span class="badge ${tClass}">${e.change_type}</span>
-              <span class="cl-date">${date}</span>
+              <span class="cl-version">${escHtml(e.version)}</span>
+              <span class="badge ${tClass}">${escHtml(e.change_type)}</span>
+              <span class="cl-date">${escHtml(date)}</span>
             </div>
-            <div class="cl-title">${e.title}</div>
-            ${e.description ? `<div class="cl-desc">${e.description}</div>` : ''}
+            <div class="cl-title">${escHtml(e.title)}</div>
+            ${e.description ? `<div class="cl-desc">${escHtml(e.description)}</div>` : ''}
             <div class="cl-author">por ${author}</div>
           </div>
         </div>`;
