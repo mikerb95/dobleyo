@@ -2,7 +2,7 @@
 
 > Resultado de la auditoría SEO (julio 2026). Documento de trabajo: marcar cada ítem al completarlo.
 > Base existente: `Head.astro` centralizado (OG, canonical, hreflang, robots), JSON-LD (Organization, Product, BlogPosting, BreadcrumbList), sitemap dinámico, robots.txt, headers de seguridad.
-> **Fases 1, 2, 3, 5 y 6 implementadas (2026-07-19).** Fase 4 (Core Web Vitals / migración de imágenes) queda pendiente — es la de mayor esfuerzo y riesgo de regresión visual, se recomienda abordarla aparte con revisión visual página por página.
+> **Fases 1, 2, 5 y 6 implementadas (2026-07-19). Fase 3 completada en una segunda ronda (2026-07-19).** Fase 4 (Core Web Vitals / migración de imágenes) queda pendiente — es la de mayor esfuerzo y riesgo de regresión visual, se recomienda abordarla aparte con revisión visual página por página.
 
 ---
 
