@@ -1,16 +1,6 @@
 {
   "rewrites": [
     {
-      "source": "/:path*",
-      "has": [
-        {
-          "type": "host",
-          "value": "en.dobleyo.cafe"
-        }
-      ],
-      "destination": "/en/:path*"
-    },
-    {
       "source": "/api/ml/recompute",
       "destination": "/api/ml/recompute"
     },
