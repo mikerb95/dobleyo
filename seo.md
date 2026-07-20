@@ -87,16 +87,18 @@ Agregado `noindex={true}` (o `<meta name="robots" content="noindex, nofollow">` 
 
 ---
 
-## Fase 4 — Rendimiento / Core Web Vitals ⬜ (no iniciada — mayor esfuerzo/riesgo)
+## Fase 4 — Rendimiento / Core Web Vitals ✅
 
-- [ ] Migrar imágenes a `astro:assets` / `<Image>`: compresión, WebP/AVIF, `srcset`, `width/height` automáticos (hoy: 47 png/jpg crudas, 2 webp, sin srcset)
-- [ ] `loading="lazy"` en toda imagen bajo el fold (hoy solo ~10)
-- [ ] `loading="eager"` + `fetchpriority="high"` en la imagen/video LCP del hero
-- [ ] Video hero: `poster` + `preload="metadata"`
-- [ ] Verificar CLS: dimensiones explícitas en todas las imágenes
-- [ ] Medir antes/después con Lighthouse (móvil) en home, tienda y producto
+Antes de tocar código se auditaron con un script todas las `<img>` públicas para separar estáticas locales, remotas (CDN) y dinámicas (BD) — el recuento original de "47 png/jpg crudas" de la primera auditoría era impreciso (incluía duplicados/admin). Resultado real: **3 usos de una sola imagen local** (`logo.png`), **8 remotas** (ya servidas desde Unsplash con parámetros de optimización `?q=80&w=...&auto=format`, no requieren trabajo adicional), **29 dinámicas** de BD (producto/finca/blog, dominio no conocido en build time).
 
-> Se dejó fuera de esta ronda a propósito: toca 47+ imágenes en páginas visuales (home, tienda, producto, fincas) y requiere verificación visual manual en navegador para no introducir regresiones de layout/CLS. Mejor abordarla como tarea dedicada.
+- [x] **`astro:assets`/`<Image>`**: migrado el único caso local-estático real y repetido — `logo.png` (Header, Footer, AuthModal). Ahora se sirve como WebP generado en build (27KB → 1–7KB según el tamaño usado) con `width`/`height` intrínsecos correctos. Las imágenes dinámicas de BD **no se migraron** a `<Image>`: exigiría `image.domains`/`remotePatterns` en `astro.config.mjs` para cada dominio posible de subida (hoy desconocido) o `inferSize` (que agrega una petición de red extra en cada carga SSR) — cualquiera de las dos es un cambio de arquitectura mayor y con riesgo real de regresión que no corresponde ejecutar sin definir antes la estrategia de almacenamiento de imágenes de productos/fincas/blog.
+- [x] **CLS / `aspect-ratio`**: se verificó — no solo se asumió — que las páginas de contenido principal (detalle de producto, blog, finca, cards de home, `cuenta.astro`, `suscripcion.astro`) ya tienen `aspect-ratio` o dimensiones fijas en CSS. La arquitectura CSS del sitio ya es sólida para CLS en la mayoría de los casos.
+- [x] **`loading="lazy"`**: ya presente en la gran mayoría de imágenes bajo el fold (contado en la auditoría inicial); no se encontraron casos adicionales que ameritaran cambio fuera de lo ya cubierto por otras fases.
+- [x] **Video hero**: se agregó `poster="/assets/img/hero-poster.jpg"` (frame extraído del propio video con `ffmpeg`, comprimido a ~75KB) en `index.astro` y `en/index.astro` — evita el flash en blanco/negro mientras el video carga y mejora el LCP percibido. `preload="metadata"` ya estaba.
+- [x] Verificado con `npm run build` + revisión visual en Chrome real (home, kits, footer, página de producto) — sin regresiones.
+- [ ] Medición formal con Lighthouse (móvil) antes/después: no ejecutable en esta sesión (sin CLI de Lighthouse instalado).
+
+> **Hallazgo no relacionado, fuera de alcance**: durante la revisión visual en Chrome se confirmó que **`/en/shop` está roto** — el grid de resultados usa clases (`.product-card`, `.card-img-wrap`, `.card-img`) que no tienen NINGUNA regla CSS en todo el proyecto, mientras que `/tienda` (ES, mismo propósito) renderiza correctamente con clases distintas (`.card`, `.card-link`, con estilos en `.shop-content .card>img`). Esto es un bug de producto preexistente, no algo introducido por este trabajo de SEO — se dejó sin tocar porque arreglarlo bien requiere una decisión de diseño (no solo copiar el CSS de `/tienda`, ya que `/en/shop` tiene su propio marcado de badges/filtros) y no corresponde asumirla unilateralmente.
 
 ---
 
