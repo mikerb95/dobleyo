@@ -687,6 +687,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
             grindSize: presentation === "MOLIDO" ? document.getElementById("grindSize").value : null,
             packageSize,
             unitCount,
+            notes: document.getElementById("notes").value.trim() || null,
             addToInventory: document.getElementById("addToInventory").checked,
           }),
         });
