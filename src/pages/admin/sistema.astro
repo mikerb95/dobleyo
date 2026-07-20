@@ -790,6 +790,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       }).join('');
     } catch (err) {
       console.error('loadChangelog error', err);
+      showLoadError('changelogTimeline');
     }
   }
 
