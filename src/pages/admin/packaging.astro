@@ -711,6 +711,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         updatePlan();
         loadRoastedLots();
         loadPackaged();
+        loadStats();
       } catch (error) {
         console.error("Error:", error);
         toast(error.message || "Error desconocido", "error");
@@ -736,12 +737,14 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     document.getElementById("refreshBtn").addEventListener("click", () => {
       loadRoastedLots();
       loadPackaged();
+      loadStats();
       toast("Datos actualizados", "info");
     });
 
     // ── Init ────────────────────────────────────────────────────────
     loadRoastedLots();
     loadPackaged();
+    loadStats();
     updatePlan();
   </script>
 </AdminLayout>
