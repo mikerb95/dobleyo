@@ -70,10 +70,21 @@ systemRouter.get('/users/stats', async (req, res) => {
       query(`SELECT COUNT(*) AS count FROM caficultor_applications WHERE status = 'pending'`),
     ]);
 
+    // Completa los meses sin registros con count=0 para que la serie sea continua
+    const countByMonth = new Map(regTrend.rows.map(r => [r.month, Number(r.count)]));
+    const registrationsByMonth = [];
+    const cursor = new Date();
+    cursor.setDate(1);
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(cursor.getFullYear(), cursor.getMonth() - i, 1);
+      const month = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      registrationsByMonth.push({ month, count: countByMonth.get(month) ?? 0 });
+    }
+
     res.json({
       success: true,
       data: {
-        registrationsByMonth:  regTrend.rows,
+        registrationsByMonth,
         activeUsersLast30Days: Number(activeLast30.rows[0].count),
         roleDistribution:      rolesDist.rows,
         verification: {
