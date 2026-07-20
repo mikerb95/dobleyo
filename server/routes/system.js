@@ -114,7 +114,7 @@ systemRouter.post('/admins', async (req, res) => {
     const existing = await query(`SELECT id FROM users WHERE email = ?`, [email]);
     if (existing.rows.length) return res.status(409).json({ success: false, error: 'Email ya registrado' });
 
-    const temp = Math.random().toString(36).slice(2, 9) + Math.random().toString(36).slice(2, 9);
+    const temp = genTempPassword();
     const hash = await hashPassword(temp);
 
     const r = await query(
@@ -154,7 +154,7 @@ systemRouter.put('/admins/:id/role', async (req, res) => {
 systemRouter.post('/admins/:id/reset-password', async (req, res) => {
   try {
     const { id } = req.params;
-    const temp = Math.random().toString(36).slice(2, 9) + Math.random().toString(36).slice(2, 9);
+    const temp = genTempPassword();
     const hash = await hashPassword(temp);
 
     await query(`UPDATE users SET password_hash = ?, updated_at = datetime('now') WHERE id = ?`, [hash, id]);
