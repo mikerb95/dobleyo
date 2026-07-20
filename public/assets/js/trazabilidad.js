@@ -173,7 +173,7 @@ function initTrazabilidad() {
     // Chips de proceso/variedad/finca
     if (resChips) {
       resChips.innerHTML = '';
-      [h.process, h.variety, h.farm ? 'Finca ' + h.farm : null]
+      [h.process, h.variety, h.farm ? farmLabel(h.farm) : null]
         .filter(Boolean)
         .forEach(text => {
           const span = document.createElement('span');
