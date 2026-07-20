@@ -415,6 +415,35 @@ export async function getRoastedForStorage() {
   return rows;
 }
 
+/**
+ * Totales agregados para los KPIs de la página de empaque.
+ * Se calculan en SQL para que no queden topados por el LIMIT 100 de las listas.
+ */
+export async function getPackagingStats() {
+  const [roasted, packaged] = await Promise.all([
+    query(
+      `SELECT COUNT(*) as lots, COALESCE(SUM(rc.weight_kg), 0) as kg
+       FROM roasted_coffee_inventory rci
+       INNER JOIN roasted_coffee rc ON rci.roasted_id = rc.id
+       WHERE rci.status = ?`, ['ready_for_packaging']
+    ),
+    query(
+      `SELECT COUNT(*) as batches,
+              COALESCE(SUM(CASE WHEN package_size = 'bulk' THEN 0 ELSE unit_count END), 0) as units,
+              COALESCE(SUM(CASE WHEN package_size = 'bulk' THEN unit_count ELSE 0 END), 0) as bulk_kg
+       FROM packaged_coffee WHERE status = ?`, ['ready_for_sale']
+    ),
+  ]);
+
+  return {
+    roastedLots:     Number(roasted.rows[0]?.lots) || 0,
+    roastedKg:       parseFloat(roasted.rows[0]?.kg) || 0,
+    packagedBatches: Number(packaged.rows[0]?.batches) || 0,
+    packagedUnits:   Number(packaged.rows[0]?.units) || 0,
+    packagedBulkKg:  parseFloat(packaged.rows[0]?.bulk_kg) || 0,
+  };
+}
+
 export async function getPackaged() {
   const { rows } = await query(
     `SELECT * FROM packaged_coffee WHERE status = ? ORDER BY created_at DESC LIMIT 100`, ['ready_for_sale']
