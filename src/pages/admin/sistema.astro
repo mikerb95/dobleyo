@@ -705,11 +705,11 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
           const date = new Date(e.created_at).toLocaleString('es-CO');
           const msg = e.message.length > 80 ? e.message.slice(0, 80) + '…' : e.message;
           return `<tr>
-            <td><span class="badge ${levelClass}">${e.level}</span></td>
-            <td style="font-size:12px;max-width:300px" title="${e.message.replace(/"/g,'\\"')}">${msg}</td>
-            <td style="font-size:12px;color:var(--text-2)">${e.source || '—'}</td>
-            <td style="font-size:12px;color:var(--text-2)">${e.request_path || '—'}</td>
-            <td style="font-size:12px;color:var(--text-2)">${date}</td>
+            <td><span class="badge ${levelClass}">${escHtml(e.level)}</span></td>
+            <td style="font-size:12px;max-width:300px" title="${escHtml(e.message)}">${escHtml(msg)}</td>
+            <td style="font-size:12px;color:var(--text-2)">${escHtml(e.source || '—')}</td>
+            <td style="font-size:12px;color:var(--text-2)">${escHtml(e.request_path || '—')}</td>
+            <td style="font-size:12px;color:var(--text-2)">${escHtml(date)}</td>
           </tr>`;
         }).join('');
       }
