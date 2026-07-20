@@ -102,19 +102,9 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
           >Ubicación en bodega <span class="required">*</span></label
         >
         <select id="location" name="location" required>
-          <option value="">Seleccione una ubicación</option>
-          <option value="A-01">Sección A · Estante 01</option>
-          <option value="A-02">Sección A · Estante 02</option>
-          <option value="B-01">Sección B · Estante 01</option>
-          <option value="B-02">Sección B · Estante 02</option>
-          <option value="C-01"
-            >Sección C · Estante 01 (temperatura controlada)</option
-          >
-          <option value="C-02"
-            >Sección C · Estante 02 (temperatura controlada)</option
-          >
+          <option value="">Cargando ubicaciones…</option>
         </select>
-        <div class="form-hint">
+        <div class="form-hint" id="locationHint">
           Elija la ubicación física de almacenamiento
         </div>
       </div>

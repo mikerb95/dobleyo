@@ -245,6 +245,8 @@ export async function createPackaging({ roastedStorageId, acidity, body, balance
     throw bizError(400, 'Debe especificar tipo de molienda');
   }
 
+  const notesClean = typeof notes === 'string' ? notes.trim().slice(0, 500) : null;
+
   const [acidityInt, bodyInt, balanceInt] = [parseInt(acidity, 10), parseInt(body, 10), parseInt(balance, 10)];
   if ([acidityInt, bodyInt, balanceInt].some(v => !Number.isInteger(v) || v < 1 || v > 5)) {
     throw bizError(400, 'Los atributos sensoriales deben ser enteros entre 1 y 5');
