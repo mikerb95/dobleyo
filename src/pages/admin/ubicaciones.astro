@@ -1,0 +1,698 @@
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+---
+
+<AdminLayout title="Ubicaciones de Bodega — DobleYo">
+  <div class="page-header">
+    <div class="page-header-top">
+      <div>
+        <div class="page-breadcrumb">Administración · Datos maestros</div>
+        <h1 class="page-title">Ubicaciones de Bodega</h1>
+        <p class="page-subtitle">
+          Bodegas, zonas y estantes. Define dónde puede almacenarse cada tipo de
+          café y con qué capacidad.
+        </p>
+      </div>
+      <div class="page-header-actions">
+        <button type="button" class="btn btn-secondary" id="refreshBtn">
+          Actualizar
+        </button>
+        <button type="button" class="btn btn-primary" id="newLocationBtn">
+          Nueva ubicación
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="erp-body ub-page">
+    <div class="kpi-grid" style="margin-bottom: 22px;">
+      <div class="kpi-tile brand">
+        <div class="kpi-label">Ubicaciones activas</div>
+        <div class="kpi-value" id="kpiActive">—</div>
+        <div class="kpi-sub" id="kpiZones">—</div>
+      </div>
+      <div class="kpi-tile">
+        <div class="kpi-label">Existencias en bodega</div>
+        <div class="kpi-value" id="kpiStock">—</div>
+        <div class="kpi-sub">Suma de todas las ubicaciones</div>
+      </div>
+      <div class="kpi-tile">
+        <div class="kpi-label">Ocupación promedio</div>
+        <div class="kpi-value" id="kpiFill">—</div>
+        <div class="kpi-sub" id="kpiNearFull">—</div>
+      </div>
+      <div class="kpi-tile warning">
+        <div class="kpi-label">Bloqueadas</div>
+        <div class="kpi-value" id="kpiBlocked">—</div>
+        <div class="kpi-sub">Mantenimiento o conteo</div>
+      </div>
+    </div>
+
+    <div class="ub-toolbar">
+      <input
+        type="search"
+        id="search"
+        class="ub-search"
+        placeholder="Buscar por código, nombre o zona…"
+      />
+      <select id="filterState" class="ub-filter">
+        <option value="">Todos los tipos</option>
+        <option value="green">Café verde</option>
+        <option value="roasted">Café tostado</option>
+        <option value="packaged">Producto empacado</option>
+      </select>
+      <label class="ub-check">
+        <input type="checkbox" id="showInactive" /> Mostrar inactivas
+      </label>
+    </div>
+
+    <div id="zonesContainer" class="ub-zones">
+      <div class="empty-state">Cargando ubicaciones…</div>
+    </div>
+  </div>
+
+  <!-- Panel lateral de detalle -->
+  <aside class="ub-drawer" id="drawer" aria-hidden="true">
+    <div class="ub-drawer-head">
+      <div>
+        <div class="ub-drawer-code" id="drawerCode">—</div>
+        <div class="ub-drawer-zone" id="drawerZone">—</div>
+      </div>
+      <button type="button" class="ub-close" id="drawerClose" aria-label="Cerrar">×</button>
+    </div>
+    <div class="ub-drawer-body" id="drawerBody"></div>
+  </aside>
+  <div class="ub-overlay" id="overlay"></div>
+
+  <!-- Formulario de ubicación -->
+  <div class="ub-modal" id="formModal" aria-hidden="true">
+    <div class="ub-modal-card">
+      <h2 class="ub-modal-title" id="formTitle">Nueva ubicación</h2>
+      <form id="locationForm">
+        <input type="hidden" id="fId" />
+        <input type="hidden" id="fVersion" />
+
+        <div class="form-group">
+          <label for="fZone">Zona <span class="required">*</span></label>
+          <select id="fZone" required></select>
+        </div>
+
+        <div class="form-group">
+          <label for="fCode">Código <span class="required">*</span></label>
+          <input type="text" id="fCode" required placeholder="ROASTED-C-01" />
+          <div class="form-hint" id="fCodeHint">
+            Mayúsculas, números y guiones. No podrá cambiarse después: el
+            historial de movimientos queda referenciado a este código.
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="fName">Nombre <span class="required">*</span></label>
+          <input type="text" id="fName" required placeholder="Estante 01" />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="fCapacity">Capacidad (kg)</label>
+            <input type="number" id="fCapacity" min="1" step="0.1" placeholder="Sin límite" />
+            <div class="form-hint">Vacío = sin límite</div>
+          </div>
+          <div class="form-group">
+            <label for="fSort">Orden</label>
+            <input type="number" id="fSort" value="0" step="10" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Tipos de café admitidos <span class="required">*</span></label>
+          <div class="ub-states">
+            <label><input type="checkbox" value="green" /> Verde</label>
+            <label><input type="checkbox" value="roasted" /> Tostado</label>
+            <label><input type="checkbox" value="packaged" /> Empacado</label>
+          </div>
+          <div class="form-hint">
+            El sistema rechazará cualquier ingreso de un tipo no admitido.
+          </div>
+        </div>
+
+        <div class="ub-form-error" id="formError"></div>
+
+        <div class="ub-modal-actions">
+          <button type="button" class="btn btn-secondary" id="formCancel">Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="formSubmit">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="ub-toast" id="toast"></div>
+
+  <style>
+    .ub-page { padding-bottom: 60px; }
+
+    .ub-toolbar {
+      display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
+      margin-bottom: 18px;
+    }
+    .ub-search {
+      flex: 1 1 260px; min-width: 0;
+      padding: 9px 13px; border: 1px solid var(--rule); border-radius: 8px;
+      font-size: 14px; background: var(--surface); color: inherit;
+    }
+    .ub-filter {
+      padding: 9px 13px; border: 1px solid var(--rule); border-radius: 8px;
+      font-size: 14px; background: var(--surface); color: inherit;
+    }
+    .ub-check {
+      display: flex; align-items: center; gap: 7px;
+      font-size: 13.5px; color: var(--text-muted); cursor: pointer;
+    }
+
+    .ub-zone {
+      background: var(--surface); border: 1px solid var(--rule);
+      border-radius: 12px; margin-bottom: 18px; overflow: hidden;
+    }
+    .ub-zone-head {
+      padding: 16px 20px; border-bottom: 1px solid var(--rule);
+      display: flex; align-items: center; justify-content: space-between; gap: 14px;
+    }
+    .ub-zone-name { font-size: 15px; font-weight: 600; }
+    .ub-zone-meta { font-size: 12.5px; color: var(--text-muted); margin-top: 3px; }
+    .ub-zone-tag {
+      font-size: 11px; text-transform: uppercase; letter-spacing: .05em;
+      padding: 4px 9px; border-radius: 999px;
+      background: var(--active-bg); color: var(--color-accent); font-weight: 600;
+    }
+
+    .ub-grid {
+      display: grid; gap: 14px; padding: 18px 20px;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    }
+
+    .ub-card {
+      border: 1px solid var(--rule); border-radius: 10px; padding: 15px;
+      background: var(--surface); transition: border-color .18s ease, transform .18s ease;
+      cursor: pointer;
+    }
+    .ub-card:hover { border-color: var(--color-accent); transform: translateY(-1px); }
+    .ub-card.inactive { opacity: .55; }
+    .ub-card.blocked { border-color: color-mix(in oklab, var(--warning) 50%, white); }
+
+    .ub-card-top {
+      display: flex; align-items: flex-start; justify-content: space-between; gap: 10px;
+      margin-bottom: 12px;
+    }
+    .ub-card-code {
+      font-family: ui-monospace, Menlo, monospace;
+      font-size: 13.5px; font-weight: 700; letter-spacing: -.01em;
+    }
+    .ub-card-name { font-size: 12.5px; color: var(--text-muted); margin-top: 2px; }
+
+    .ub-card-kg { font-size: 22px; font-weight: 700; line-height: 1.1; }
+    .ub-card-kg small { font-size: 12px; font-weight: 500; color: var(--text-muted); margin-left: 3px; }
+    .ub-card-cap { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+
+    .ub-bar { height: 5px; border-radius: 999px; background: var(--rule); overflow: hidden; margin: 11px 0 9px; }
+    .ub-bar > span { display: block; height: 100%; background: var(--color-accent); border-radius: 999px; transition: width .3s ease; }
+    .ub-bar.warning > span { background: var(--warning); }
+    .ub-bar.danger  > span { background: var(--danger); }
+
+    .ub-card-foot {
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
+      font-size: 11.5px; color: var(--text-muted);
+    }
+    .ub-chip {
+      font-size: 10.5px; text-transform: uppercase; letter-spacing: .04em;
+      padding: 3px 7px; border-radius: 5px; font-weight: 600;
+      background: var(--rule); color: var(--text-muted);
+    }
+    .ub-chip.warn { background: color-mix(in oklab, var(--warning) 18%, transparent); color: var(--warning); }
+    .ub-chip.off  { background: color-mix(in oklab, var(--danger) 15%, transparent); color: var(--danger); }
+
+    /* Panel lateral */
+    .ub-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,.35);
+      opacity: 0; visibility: hidden; transition: all .22s ease; z-index: 70;
+    }
+    .ub-overlay.show { opacity: 1; visibility: visible; }
+    .ub-drawer {
+      position: fixed; top: 0; right: 0; bottom: 0; width: min(440px, 100%);
+      background: var(--surface); border-left: 1px solid var(--rule);
+      transform: translateX(100%); transition: transform .25s ease;
+      z-index: 80; display: flex; flex-direction: column;
+    }
+    .ub-drawer.show { transform: translateX(0); }
+    .ub-drawer-head {
+      padding: 20px; border-bottom: 1px solid var(--rule);
+      display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+    }
+    .ub-drawer-code { font-family: ui-monospace, Menlo, monospace; font-size: 16px; font-weight: 700; }
+    .ub-drawer-zone { font-size: 13px; color: var(--text-muted); margin-top: 3px; }
+    .ub-close {
+      background: none; border: none; font-size: 26px; line-height: 1;
+      cursor: pointer; color: var(--text-muted); padding: 0 4px;
+    }
+    .ub-drawer-body { padding: 20px; overflow-y: auto; flex: 1; }
+
+    .ub-section-title {
+      font-size: 11.5px; text-transform: uppercase; letter-spacing: .06em;
+      color: var(--text-muted); font-weight: 600; margin: 22px 0 10px;
+    }
+    .ub-section-title:first-child { margin-top: 0; }
+
+    .ub-kv { display: flex; justify-content: space-between; gap: 12px; padding: 7px 0; font-size: 13.5px; }
+    .ub-kv + .ub-kv { border-top: 1px solid var(--rule); }
+    .ub-kv dt { color: var(--text-muted); }
+    .ub-kv dd { font-weight: 500; text-align: right; margin: 0; }
+
+    .ub-mv { padding: 9px 0; font-size: 12.5px; border-bottom: 1px solid var(--rule); }
+    .ub-mv-top { display: flex; justify-content: space-between; gap: 10px; font-weight: 500; }
+    .ub-mv-sub { color: var(--text-muted); margin-top: 3px; font-size: 11.5px; }
+    .ub-mv-in  { color: var(--ok); }
+    .ub-mv-out { color: var(--danger); }
+
+    .ub-drawer-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
+
+    /* Modal */
+    .ub-modal {
+      position: fixed; inset: 0; background: rgba(0,0,0,.45);
+      display: flex; align-items: center; justify-content: center; padding: 20px;
+      opacity: 0; visibility: hidden; transition: all .2s ease; z-index: 90;
+    }
+    .ub-modal.show { opacity: 1; visibility: visible; }
+    .ub-modal-card {
+      background: var(--surface); border-radius: 14px; padding: 26px;
+      width: min(520px, 100%); max-height: 90vh; overflow-y: auto;
+    }
+    .ub-modal-title { font-size: 18px; font-weight: 600; margin: 0 0 20px; }
+    .ub-modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 22px; }
+    .ub-states { display: flex; flex-wrap: wrap; gap: 16px; }
+    .ub-states label { display: flex; align-items: center; gap: 6px; font-size: 13.5px; cursor: pointer; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .ub-form-error {
+      display: none; margin-top: 14px; padding: 11px 13px; border-radius: 8px;
+      background: color-mix(in oklab, var(--danger) 12%, transparent);
+      color: var(--danger); font-size: 13px;
+    }
+    .ub-form-error.show { display: block; }
+
+    .ub-toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translate(-50%, 20px);
+      background: var(--color-primary); color: #fff;
+      padding: 12px 20px; border-radius: 999px; font-size: 13.5px; font-weight: 500;
+      opacity: 0; visibility: hidden; transition: all .25s ease; z-index: 100;
+    }
+    .ub-toast.show { opacity: 1; visibility: visible; transform: translate(-50%, 0); }
+    .ub-toast.ok { background: var(--ok); }
+    .ub-toast.err { background: var(--danger); }
+
+    @media (max-width: 768px) {
+      .form-row { grid-template-columns: 1fr; }
+      .ub-grid { grid-template-columns: 1fr; padding: 14px; }
+    }
+  </style>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const API = "/api/storage";
+
+    const STATE_LABEL = { green: "Verde", roasted: "Tostado", packaged: "Empacado" };
+    const ZONE_LABEL = {
+      green: "Café verde", roasted: "Café tostado", packaged: "Empacado",
+      quarantine: "Cuarentena", transit: "Tránsito", scrap: "Desecho",
+    };
+    const MOVEMENT_LABEL = {
+      receipt: "Entrada", transfer: "Traslado", issue: "Salida",
+      adjustment: "Ajuste", count_correction: "Corrección por conteo",
+    };
+
+    const fmt = new Intl.NumberFormat("es-CO", { maximumFractionDigits: 1 });
+    const kg = (n) => fmt.format(Number(n) || 0) + " kg";
+
+    let locations = [];
+    let zones = [];
+
+    let toastTimer;
+    function toast(msg, type = "") {
+      const t = $("toast");
+      t.textContent = msg;
+      t.className = "ub-toast show " + type;
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => { t.className = "ub-toast " + type; }, 3600);
+    }
+
+    async function api(path, options = {}) {
+      const res = await fetch(API + path, {
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        ...options,
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || json.success === false) {
+        // El servidor manda mensajes accionables (capacidad, existencia,
+        // bloqueo); se muestran tal cual en lugar de un genérico.
+        const detail = json.errors?.[0]?.msg || json.error || "Error inesperado";
+        throw new Error(detail);
+      }
+      return json.data;
+    }
+
+    // ── Carga ────────────────────────────────────────────────────────────────
+    async function loadAll() {
+      try {
+        const includeInactive = $("showInactive").checked ? "1" : "0";
+        [locations, zones] = await Promise.all([
+          api(`/locations?include_inactive=${includeInactive}`),
+          api("/zones"),
+        ]);
+      } catch (err) {
+        $("zonesContainer").innerHTML =
+          `<div class="empty-state">No se pudieron cargar las ubicaciones: ${err.message}</div>`;
+        return;
+      }
+      renderKpis();
+      renderZones();
+      renderZoneOptions();
+    }
+
+    function renderKpis() {
+      const active = locations.filter((l) => l.is_active);
+      const totalKg = locations.reduce((a, l) => a + (Number(l.occupied_kg) || 0), 0);
+      const withCap = active.filter((l) => l.fill_pct != null);
+      const avgFill = withCap.length
+        ? Math.round(withCap.reduce((a, l) => a + l.fill_pct, 0) / withCap.length)
+        : 0;
+      const nearFull = withCap.filter((l) => l.fill_pct >= 90).length;
+
+      $("kpiActive").textContent = active.length;
+      $("kpiZones").textContent = `En ${zones.length} zona${zones.length === 1 ? "" : "s"}`;
+      $("kpiStock").textContent = kg(totalKg);
+      $("kpiFill").textContent = withCap.length ? avgFill + "%" : "—";
+      $("kpiNearFull").textContent = nearFull
+        ? `${nearFull} al 90% o más`
+        : "Ninguna cerca del límite";
+      $("kpiBlocked").textContent = locations.filter((l) => l.is_blocked).length;
+    }
+
+    function visibleLocations() {
+      const q = ($("search").value || "").toLowerCase().trim();
+      const state = $("filterState").value;
+      return locations.filter((l) => {
+        if (state && !l.allowed_states.includes(state)) return false;
+        if (!q) return true;
+        return (
+          l.code.toLowerCase().includes(q) ||
+          l.name.toLowerCase().includes(q) ||
+          (l.zone_name || "").toLowerCase().includes(q)
+        );
+      });
+    }
+
+    function renderZones() {
+      const list = visibleLocations();
+      const container = $("zonesContainer");
+
+      if (!list.length) {
+        container.innerHTML =
+          '<div class="empty-state">No hay ubicaciones que coincidan con el filtro.</div>';
+        return;
+      }
+
+      const byZone = new Map();
+      for (const l of list) {
+        if (!byZone.has(l.zone_id)) byZone.set(l.zone_id, { zone: l, items: [] });
+        byZone.get(l.zone_id).items.push(l);
+      }
+
+      container.innerHTML = [...byZone.values()]
+        .map(({ zone, items }) => {
+          const zoneKg = items.reduce((a, l) => a + (Number(l.occupied_kg) || 0), 0);
+          return `
+          <section class="ub-zone">
+            <header class="ub-zone-head">
+              <div>
+                <div class="ub-zone-name">${zone.zone_name}</div>
+                <div class="ub-zone-meta">
+                  ${zone.warehouse_name} · ${items.length} ubicación${items.length === 1 ? "" : "es"} · ${kg(zoneKg)}
+                  ${zone.temp_controlled ? " · Temperatura controlada" : ""}
+                </div>
+              </div>
+              <span class="ub-zone-tag">${ZONE_LABEL[zone.zone_type] || zone.zone_type}</span>
+            </header>
+            <div class="ub-grid">
+              ${items.map(renderCard).join("")}
+            </div>
+          </section>`;
+        })
+        .join("");
+
+      container.querySelectorAll("[data-loc]").forEach((el) => {
+        el.addEventListener("click", () => openDrawer(Number(el.dataset.loc)));
+      });
+    }
+
+    function renderCard(l) {
+      const pct = l.fill_pct;
+      const level = pct == null ? "" : pct >= 90 ? "danger" : pct >= 70 ? "warning" : "";
+      const classes = [
+        "ub-card",
+        !l.is_active ? "inactive" : "",
+        l.is_blocked ? "blocked" : "",
+      ].filter(Boolean).join(" ");
+
+      return `
+        <article class="${classes}" data-loc="${l.id}">
+          <div class="ub-card-top">
+            <div>
+              <div class="ub-card-code">${l.code}</div>
+              <div class="ub-card-name">${l.name}</div>
+            </div>
+            ${!l.is_active ? '<span class="ub-chip off">Inactiva</span>'
+              : l.is_blocked ? '<span class="ub-chip warn">Bloqueada</span>' : ""}
+          </div>
+          <div class="ub-card-kg">${fmt.format(l.occupied_kg)}<small>kg</small></div>
+          <div class="ub-card-cap">
+            ${l.capacity_kg != null ? `de ${fmt.format(l.capacity_kg)} kg` : "Sin límite de capacidad"}
+          </div>
+          <div class="ub-bar ${level}"><span style="width:${Math.min(100, pct || 0)}%"></span></div>
+          <div class="ub-card-foot">
+            <span>${l.lot_count} lote${l.lot_count === 1 ? "" : "s"}</span>
+            <span>${l.allowed_states.map((s) => STATE_LABEL[s] || s).join(" · ")}</span>
+          </div>
+        </article>`;
+    }
+
+    // ── Panel de detalle ─────────────────────────────────────────────────────
+    async function openDrawer(id) {
+      const loc = locations.find((l) => l.id === id);
+      $("drawerCode").textContent = loc.code;
+      $("drawerZone").textContent = `${loc.zone_name} · ${loc.warehouse_name}`;
+      $("drawerBody").innerHTML = '<div class="empty-state">Cargando…</div>';
+      $("drawer").classList.add("show");
+      $("overlay").classList.add("show");
+
+      let detail;
+      try {
+        detail = await api(`/locations/${id}`);
+      } catch (err) {
+        $("drawerBody").innerHTML = `<div class="empty-state">${err.message}</div>`;
+        return;
+      }
+
+      const quants = detail.quants.length
+        ? detail.quants.map((q) => `
+            <dl class="ub-kv">
+              <dt>${q.lot_id}<br><small style="opacity:.7">${STATE_LABEL[q.stock_state] || q.stock_state}</small></dt>
+              <dd>${kg(q.qty_kg)}</dd>
+            </dl>`).join("")
+        : '<div class="empty-state" style="padding:14px 0;">Sin existencias.</div>';
+
+      const movements = detail.movements.length
+        ? detail.movements.map((m) => {
+            const isIn = m.to_code === loc.code;
+            return `
+              <div class="ub-mv">
+                <div class="ub-mv-top">
+                  <span>${MOVEMENT_LABEL[m.movement_type] || m.movement_type}</span>
+                  <span class="${isIn ? "ub-mv-in" : "ub-mv-out"}">${isIn ? "+" : "−"}${kg(m.qty_kg)}</span>
+                </div>
+                <div class="ub-mv-sub">
+                  ${m.lot_id} · ${new Date(m.performed_at).toLocaleString("es-CO")}
+                  ${m.from_code && m.to_code ? `<br>${m.from_code} → ${m.to_code}` : ""}
+                  ${m.performed_by_email ? `<br>${m.performed_by_email}` : ""}
+                </div>
+              </div>`;
+          }).join("")
+        : '<div class="empty-state" style="padding:14px 0;">Sin movimientos registrados.</div>';
+
+      $("drawerBody").innerHTML = `
+        <div class="ub-section-title">Configuración</div>
+        <dl class="ub-kv"><dt>Nombre</dt><dd>${detail.name}</dd></dl>
+        <dl class="ub-kv"><dt>Capacidad</dt><dd>${detail.capacity_kg != null ? kg(detail.capacity_kg) : "Sin límite"}</dd></dl>
+        <dl class="ub-kv"><dt>Admite</dt><dd>${String(detail.allowed_states).split(",").map((s) => STATE_LABEL[s] || s).join(", ")}</dd></dl>
+        <dl class="ub-kv"><dt>Estado</dt><dd>${!detail.is_active ? "Inactiva" : detail.is_blocked ? "Bloqueada" : "Operativa"}</dd></dl>
+        ${detail.block_reason ? `<dl class="ub-kv"><dt>Motivo del bloqueo</dt><dd>${detail.block_reason}</dd></dl>` : ""}
+
+        <div class="ub-section-title">Existencias actuales</div>
+        ${quants}
+
+        <div class="ub-section-title">Últimos movimientos</div>
+        ${movements}
+
+        <div class="ub-drawer-actions">
+          <button type="button" class="btn btn-secondary" data-act="edit">Editar</button>
+          ${detail.is_blocked
+            ? '<button type="button" class="btn btn-secondary" data-act="unblock">Desbloquear</button>'
+            : '<button type="button" class="btn btn-secondary" data-act="block">Bloquear</button>'}
+          ${detail.is_active
+            ? '<button type="button" class="btn btn-secondary" data-act="deactivate">Desactivar</button>'
+            : '<button type="button" class="btn btn-secondary" data-act="reactivate">Reactivar</button>'}
+        </div>`;
+
+      $("drawerBody").querySelectorAll("[data-act]").forEach((btn) => {
+        btn.addEventListener("click", () => handleAction(btn.dataset.act, detail));
+      });
+    }
+
+    function closeDrawer() {
+      $("drawer").classList.remove("show");
+      $("overlay").classList.remove("show");
+    }
+
+    async function handleAction(action, loc) {
+      try {
+        if (action === "edit") { openForm(loc); return; }
+
+        if (action === "block") {
+          const reason = prompt("Indique el motivo del bloqueo:");
+          if (!reason || !reason.trim()) return;
+          await api(`/locations/${loc.id}/block`, {
+            method: "POST", body: JSON.stringify({ reason: reason.trim() }),
+          });
+          toast("Ubicación bloqueada.", "ok");
+        } else if (action === "unblock") {
+          await api(`/locations/${loc.id}/unblock`, { method: "POST" });
+          toast("Ubicación desbloqueada.", "ok");
+        } else if (action === "deactivate") {
+          await api(`/locations/${loc.id}`, { method: "DELETE" });
+          toast("Ubicación desactivada.", "ok");
+        } else if (action === "reactivate") {
+          await api(`/locations/${loc.id}/reactivate`, { method: "POST" });
+          toast("Ubicación reactivada.", "ok");
+        }
+        closeDrawer();
+        await loadAll();
+      } catch (err) {
+        toast(err.message, "err");
+      }
+    }
+
+    // ── Formulario ───────────────────────────────────────────────────────────
+    function renderZoneOptions() {
+      $("fZone").innerHTML = zones
+        .map((z) => `<option value="${z.id}">${z.name} (${ZONE_LABEL[z.zone_type] || z.zone_type})</option>`)
+        .join("");
+    }
+
+    function openForm(loc = null) {
+      const editing = !!loc;
+      $("formTitle").textContent = editing ? `Editar ${loc.code}` : "Nueva ubicación";
+      $("fId").value = editing ? loc.id : "";
+      $("fVersion").value = editing ? loc.version : "";
+      $("fZone").value = editing ? loc.zone_id : $("fZone").value;
+      $("fZone").disabled = editing;
+      $("fCode").value = editing ? loc.code : "";
+      // El código es inmutable: cambiarlo reescribiría el significado del
+      // historial ya asentado en el libro de movimientos.
+      $("fCode").disabled = editing;
+      $("fCodeHint").textContent = editing
+        ? "El código no puede modificarse: el historial de movimientos lo referencia."
+        : "Mayúsculas, números y guiones. No podrá cambiarse después.";
+      $("fName").value = editing ? loc.name : "";
+      $("fCapacity").value = editing && loc.capacity_kg != null ? loc.capacity_kg : "";
+      $("fSort").value = editing ? loc.sort_order : 0;
+
+      const allowed = editing
+        ? (Array.isArray(loc.allowed_states) ? loc.allowed_states : String(loc.allowed_states).split(","))
+        : [];
+      document.querySelectorAll(".ub-states input").forEach((cb) => {
+        cb.checked = allowed.includes(cb.value);
+      });
+
+      $("formError").classList.remove("show");
+      $("formModal").classList.add("show");
+    }
+
+    function closeForm() {
+      $("formModal").classList.remove("show");
+      $("fZone").disabled = false;
+      $("fCode").disabled = false;
+    }
+
+    $("locationForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const err = $("formError");
+      err.classList.remove("show");
+
+      const states = [...document.querySelectorAll(".ub-states input:checked")].map((c) => c.value);
+      if (!states.length) {
+        err.textContent = "Seleccione al menos un tipo de café admitido.";
+        err.classList.add("show");
+        return;
+      }
+
+      const id = $("fId").value;
+      const payload = {
+        name: $("fName").value.trim(),
+        capacityKg: $("fCapacity").value === "" ? null : $("fCapacity").value,
+        allowedStates: states,
+        sortOrder: $("fSort").value,
+      };
+
+      const btn = $("formSubmit");
+      btn.disabled = true;
+      try {
+        if (id) {
+          await api(`/locations/${id}`, {
+            method: "PATCH",
+            body: JSON.stringify({ ...payload, version: Number($("fVersion").value) }),
+          });
+          toast("Ubicación actualizada correctamente.", "ok");
+        } else {
+          await api("/locations", {
+            method: "POST",
+            body: JSON.stringify({
+              ...payload,
+              code: $("fCode").value.trim().toUpperCase(),
+              zoneId: Number($("fZone").value),
+            }),
+          });
+          toast("Ubicación creada correctamente.", "ok");
+        }
+        closeForm();
+        closeDrawer();
+        await loadAll();
+      } catch (e2) {
+        err.textContent = e2.message;
+        err.classList.add("show");
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
+    // ── Eventos ──────────────────────────────────────────────────────────────
+    $("refreshBtn").addEventListener("click", loadAll);
+    $("newLocationBtn").addEventListener("click", () => openForm());
+    $("formCancel").addEventListener("click", closeForm);
+    $("drawerClose").addEventListener("click", closeDrawer);
+    $("overlay").addEventListener("click", closeDrawer);
+    $("search").addEventListener("input", renderZones);
+    $("filterState").addEventListener("change", renderZones);
+    $("showInactive").addEventListener("change", loadAll);
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") { closeDrawer(); closeForm(); }
+    });
+
+    loadAll();
+  </script>
+</AdminLayout>
