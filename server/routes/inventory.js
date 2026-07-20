@@ -235,10 +235,12 @@ inventoryRouter.put('/products/:id', async (req, res) => {
       return res.status(404).json({ success: false, error: 'Producto no encontrado' });
     }
 
-    // Construir query dinámicamente
+    // Construir query dinámicamente.
+    // stock_quantity se omite a propósito: el stock solo cambia vía POST /movements
+    // para que quede trazado en inventory_movements.
     const allowedFields = [
-      'sku', 'name', 'description', 'category', 'subcategory',
-      'origin', 'process', 'roast', 'price', 'cost',
+      'sku', 'name', 'name_en', 'slug', 'description', 'category', 'subcategory',
+      'origin', 'process', 'roast', 'tasting_notes', 'price', 'price_usd', 'cost',
       'is_deal', 'is_bestseller', 'is_new', 'is_fast', 'is_active',
       'image_url', 'images', 'stock_min', 'rating',
       'weight', 'weight_unit', 'dimensions',
@@ -249,6 +251,19 @@ inventoryRouter.put('/products/:id', async (req, res) => {
     const values = [];
 
     const boolFields = new Set(['is_deal', 'is_bestseller', 'is_new', 'is_fast', 'is_active']);
+    const jsonFields = new Set(['images', 'tasting_notes']);
+
+    // El slug alimenta la URL pública del producto: normalizar y validar unicidad.
+    if (updateData.slug !== undefined) {
+      const nextSlug = normalizeSlug(updateData.slug) || normalizeSlug(updateData.name ?? existing.rows[0].name);
+      if (await slugTaken(nextSlug, id)) {
+        return res.status(409).json({
+          success: false,
+          error: `El slug "${nextSlug}" ya está en uso por otro producto`
+        });
+      }
+      updateData.slug = nextSlug;
+    }
 
     for (const field of allowedFields) {
       if (updateData[field] !== undefined) {
@@ -256,8 +271,8 @@ inventoryRouter.put('/products/:id', async (req, res) => {
         let val = updateData[field];
         if (boolFields.has(field)) {
           val = val ? 1 : 0;
-        } else if (field === 'images' && typeof val === 'object') {
-          val = JSON.stringify(val);
+        } else if (jsonFields.has(field)) {
+          val = jsonOrNull(val);
         }
         values.push(val);
       }
@@ -270,12 +285,29 @@ inventoryRouter.put('/products/:id', async (req, res) => {
     values.push(id);
 
     await query(
-      `UPDATE products SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+      `UPDATE products SET ${updates.join(', ')}, updated_at = datetime('now') WHERE id = ?`,
       values
     );
 
+    // Solo se auditan los campos que realmente cambiaron de valor.
+    const before = existing.rows[0];
+    const changed = {};
+    for (const field of allowedFields) {
+      if (updateData[field] === undefined) continue;
+      const next = boolFields.has(field) ? (updateData[field] ? 1 : 0)
+        : jsonFields.has(field) ? jsonOrNull(updateData[field])
+        : updateData[field];
+      if (String(before[field] ?? '') !== String(next ?? '')) {
+        changed[field] = { from: before[field] ?? null, to: next ?? null };
+      }
+    }
+    if (Object.keys(changed).length > 0) {
+      await logAudit(req.user?.id, 'update', 'product', id, { name: before.name, changed });
+    }
+
     res.json({
       success: true,
+      slug: updateData.slug,
       message: 'Producto actualizado exitosamente'
     });
   } catch (error) {
