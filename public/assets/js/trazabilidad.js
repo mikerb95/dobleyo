@@ -299,7 +299,7 @@ function initTrazabilidad() {
 
     const place = document.createElement('div');
     place.className = 'trace-farmer-place muted';
-    place.textContent = 'Finca ' + (farm.name || '') + (farm.municipality ? ' · ' + farm.municipality : (farm.caficultor_city ? ' · ' + farm.caficultor_city : ''));
+    place.textContent = farmLabel + (farm.municipality ? ' · ' + farm.municipality : (farm.caficultor_city ? ' · ' + farm.caficultor_city : ''));
     info.appendChild(place);
 
     const introText = farm.short_description || (farm.story ? farm.story.slice(0, 220).trim() + (farm.story.length > 220 ? '…' : '') : '');
