@@ -5,6 +5,8 @@
 //   confirmación de pago (permite reintento sin reenviar duplicados).
 // - shipments.recovery_attempts: contador de intentos de reconciliación de
 //   envíos huérfanos (mp_code NULL) antes de marcarlos 'error'.
+// - customer_orders.stock_deducted_at: marca si ya se descontó inventario para
+//   esta orden (idempotencia de descuento/reposición de stock_quantity).
 import { query } from '../db.js';
 
 async function addColumnIfMissing(table, column, ddl) {
