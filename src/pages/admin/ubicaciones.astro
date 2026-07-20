@@ -293,6 +293,13 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     }
     .ub-modal-title { font-size: 18px; font-weight: 600; margin: 0 0 20px; }
     .ub-modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 22px; }
+    /* Zona y código quedan deshabilitados al editar; deben leerse como
+       inmutables y no como campos vacíos que el usuario deba llenar. */
+    .ub-modal-card input:disabled,
+    .ub-modal-card select:disabled {
+      background: color-mix(in oklab, var(--color-primary) 5%, white);
+      color: var(--muted); cursor: not-allowed;
+    }
     .ub-states { display: flex; flex-wrap: wrap; gap: 16px; }
     .ub-states label { display: flex; align-items: center; gap: 6px; font-size: 13.5px; cursor: pointer; }
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
