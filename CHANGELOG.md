@@ -2,6 +2,43 @@
 
 ---
 
+## 2026-07-20 (2) — Maestro de ubicaciones de bodega + libro de movimientos (Agente: Claude)
+
+### Contexto
+Las ubicaciones de bodega estaban codificadas a mano en dos páginas distintas y con códigos incompatibles entre sí: `roasted-storage.astro` traía un array `LOCATIONS` con `ROASTED-A-01`…`CLIMATE-02`, mientras `inventory-storage.astro` tenía un `<select>` estático con `A-01`…`C-02`. La columna `location` de `green_coffee_inventory` y `roasted_coffee_inventory` era TEXT libre sin FK ni validación de servidor, la ocupación se calculaba en el navegador sumando las filas visibles (paginadas, `LIMIT 100`), y no existía capacidad, bloqueo ni historial de movimientos entre ubicaciones. No había forma de responder "qué hay hoy en CLIMATE-01" sin recorrer toda la tabla.
+
+Decisión del usuario: unificar los códigos y construir el modelo completo con ledger.
+
+### Diseño
+El stock no se edita: se deriva de `storage_movements`, un libro **append-only** donde cada asiento tiene origen y destino (uno puede ser NULL = entrada/salida contra el exterior). `storage_quants` es una proyección reconstruible en cualquier momento desde el ledger. Si ambos divergen, gana el ledger. Jerarquía de maestros `warehouses → storage_zones → storage_locations`, equivalente a Warehouse → Storage Type → Bin de un WMS.
+
+### Cambios
+- **`server/migrations/create_storage_locations.js`** (nuevo) — crea `warehouses`, `storage_zones`, `storage_locations`, `storage_movements`, `storage_quants`, `inventory_counts` e `inventory_count_lines`; siembra 1 bodega, 8 zonas y 13 ubicaciones; agrega `location_id` a `green_coffee_inventory` y `roasted_coffee_inventory` conservando `location` como campo denormalizado de solo lectura durante una release. **Backfill del ledger** desde el pipeline existente: entradas de verde, salidas FIFO hacia tostión por cada `roasting_batch`, entradas de tostado y su reverso si ya estaba empacado. Idempotente vía `movement_uid` determinista + `INSERT OR IGNORE`; termina verificando que ledger y quants cuadren o aborta.
+- **Códigos unificados** — el café verde pasa de `A-01`…`C-02` a `GREEN-A-01`…`GREEN-C-02`; el tostado conserva `ROASTED-*`/`CLIMATE-*`. Todos los códigos son globalmente únicos, aptos para imprimirse en un QR sin ambigüedad. Cualquier string histórico sin maestro se preserva como ubicación `LEGACY-*` inactiva en cuarentena: ningún registro se descarta en silencio.
+- **`server/services/storageService.js`** (nuevo) — única puerta de escritura de `storage_quants`. `postMovement()` valida en una sola transacción: idempotencia por `movement_uid`, ubicación activa/no bloqueada/tipo compatible, existencia en origen y capacidad en destino; asienta el movimiento y proyecta los quants. Además `issueFromLotFIFO()` (consumo multiubicación), `transferStock()`, `adjustStock()` (asienta la diferencia, nunca edita el quant), CRUD de maestros con bloqueo optimista, conteo cíclico y `rebuildQuants()`/`reconcileReport()`.
+- **`server/routes/storage.js`** (nuevo) — `/api/storage/*` con `apiLimiter` + `authenticateToken` + `idempotency`. Consulta y traslados para admin y caficultor; maestros, ajustes, conteos y reconciliación solo admin. Montado en `server/index.js` **y** `api/index.js` (paridad).
+- **`server/services/coffeeService.js`** — `storeGreenCoffee()`, `sendToRoasting()`, `storeRoasted()` y `createPackaging()` resuelven la ubicación contra el maestro y asientan su movimiento en la misma transacción que el registro de inventario. La disponibilidad para tostión ya no se estima restando tablas: sale de los quants, validada dentro de la transacción, así dos envíos simultáneos no pueden sobregirar un lote.
+- **`src/pages/admin/ubicaciones.astro`** (nuevo) — gestión del maestro agrupada por zona, con ocupación y umbrales (ámbar ≥70%, rojo ≥90%), panel lateral con existencias y últimos 50 movimientos, y acciones de editar/bloquear/desactivar. El código de una ubicación es inmutable en la UI y en el servicio: cambiarlo reescribiría el significado del historial ya asentado.
+- **`src/pages/admin/roasted-storage.astro`** — eliminado el array `LOCATIONS`; el `<select>` y la grilla "Ocupación de ubicaciones" leen de `/api/storage/locations`, con la ocupación calculada por el servidor.
+- **`src/pages/admin/inventory-storage.astro`** — eliminado el `<select>` estático; carga las ubicaciones de tipo `green`, oculta las bloqueadas, muestra los kg libres y deshabilita las llenas.
+- **`src/layouts/AdminLayout.astro`** — entrada "Ubicaciones" en el menú de administración.
+- **`server/jobs/reconcileQuants.js`** (nuevo) — reporta discrepancias entre ledger y proyección; con `--fix` reconstruye. Ejecución manual, sin cron de Vercel.
+- **`server/services/__tests__/storageService.test.js`** (nuevo) — 33 tests contra un SQLite real (no mock): capacidad, existencia insuficiente, bloqueo, tipo incompatible, idempotencia, atomicidad, FIFO, bloqueo optimista, conteo cíclico y reparación de una proyección corrupta.
+
+### Defectos corregidos durante la implementación
+- **UPSERT con delta negativo**: SQLite evalúa el `CHECK (qty_kg >= 0)` sobre la fila candidata del INSERT **antes** de resolver el conflicto, así que todo decremento fallaba aunque el resultado final fuera positivo. `applyQuantDelta()` pasó a leer-calcular-escribir el valor absoluto, dejando el CHECK como red de seguridad real sobre el valor final.
+- **Auditoría perdida en los ajustes**: `adjustStock()` llamaba a `logAudit()` dentro de `withTransaction()`, y como `logAudit` usa el cliente no transaccional se auto-bloqueaba (`SQLITE_BUSY`); el error queda tragado dentro de `logAudit`, así que el registro se perdía en silencio. La auditoría se movió fuera de la transacción.
+- **Contenedores fantasma en el backfill**: el reverso de un tostado ya empacado no devolvía los contenedores, dejando ubicaciones con 0 kg pero ocupadas por bultos inexistentes.
+
+### Impacto
+Migración idempotente y verificada: `npm run migrate` la ejecuta al final, después de las tablas del pipeline de café. La columna `location` (TEXT) sigue poblada, así que las consultas y la app móvil existentes no se rompen. 77/77 tests del proyecto en verde; `astro build` limpio.
+
+### Pendiente
+- Eliminar la columna `location` (TEXT) de ambas tablas una vez validado en producción.
+- Los errores de `lotStateMachine.js` no traen `err.status`, así que `handleErr` los devuelve como 500 en lugar de 4xx. Es preexistente y quedó fuera de alcance.
+
+---
+
 ## 2026-07-20 — Sección "Conoce al caficultor" en /trazabilidad (Agente: Claude)
 
 ### Contexto
