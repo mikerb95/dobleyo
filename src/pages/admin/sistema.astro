@@ -444,6 +444,13 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   type DomEl = HTMLElement & { value: string; disabled: boolean };
   const el = (id: string) => document.getElementById(id) as unknown as DomEl;
 
+  // ── Escape de HTML para contenido dinámico insertado con innerHTML ────────
+  function escHtml(v: unknown): string {
+    return String(v ?? '').replace(/[&<>"']/g, (c) => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+    }[c] as string));
+  }
+
   // ── Estado de paginación de errores ───────────────────────────────────────
   let errOffset = 0;
   const ERR_LIMIT = 50;
