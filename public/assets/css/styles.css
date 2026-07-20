@@ -2241,6 +2241,44 @@ body.menu-open {
   margin: .25rem 0 0
 }
 
+/* Caficultor y finca */
+.trace-farmer {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start
+}
+
+.trace-farmer-photo {
+  width: 96px;
+  height: 96px;
+  border-radius: .6rem;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid var(--border)
+}
+
+.trace-farmer-info {
+  display: flex;
+  flex-direction: column;
+  gap: .3rem;
+  min-width: 0
+}
+
+.trace-farmer-name {
+  font-weight: 600;
+  font-size: 1rem
+}
+
+.trace-farmer-place {
+  font-size: .85rem
+}
+
+.trace-farmer-intro {
+  font-size: .9rem;
+  line-height: 1.5;
+  margin: .2rem 0 .4rem
+}
+
 @media (max-width: 1024px) {
   .trace-page {
     grid-template-columns: 1fr
@@ -2248,6 +2286,17 @@ body.menu-open {
 
   .scan-frame {
     aspect-ratio: 1/1
+  }
+}
+
+@media (max-width: 480px) {
+  .trace-farmer {
+    flex-direction: column
+  }
+
+  .trace-farmer-photo {
+    width: 100%;
+    height: 160px
   }
 }
 
