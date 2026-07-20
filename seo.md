@@ -110,13 +110,13 @@ Agregado `noindex={true}` (o `<meta name="robots" content="noindex, nofollow">` 
 
 ---
 
-## Fase 6 — Infraestructura menor — parcial ✅
+## Fase 6 — Infraestructura menor ✅
 
 - [x] `site: 'https://dobleyo.cafe'` agregado a `astro.config.mjs`
-- [ ] Refactorizar los ~6 sitios con URL hardcodeada (`Head.astro`, `sitemap.xml.ts`, `i18n/index.ts`, JSON-LD) para usar `Astro.site` — se agregó la config pero no se tocaron los usos existentes por alcance/riesgo de esta ronda
+- [x] **Refactor a `Astro.site`**: `Head.astro` ahora deriva `og:image` por defecto, `og:url`/JSON-LD Organization y el link RSS de `Astro.site.origin` (con fallback). `sitemap.xml.ts` y `rss.xml.ts` usan `context.site` en vez del string hardcodeado para la base ES. `i18n/index.ts` **queda con URL hardcodeada a propósito**: es un módulo `.ts` plano sin acceso al global `Astro.site`, y de todas formas necesita `BASE_EN` (subdominio distinto, no derivable de `site`) — refactorizarlo exigiría pasar el origen como parámetro a través de cada llamador, cambio más invasivo que el beneficio. Mismo criterio para `BASE_EN` en `sitemap.xml.ts`.
 - [x] `apple-touch-icon.png` (180×180, generado desde `logo.png` con ImageMagick) + `manifest.json` con iconos 192/512 (mismo origen, mismo método)
 - [x] Verificado en local: `/apple-touch-icon.png` y `/manifest.json` responden 200
-- [ ] Verificar que `404.astro` devuelve status 404 y ofrece navegación útil (no revisado en esta ronda)
+- [x] **`404.astro`**: ya usaba Layout con navegación útil (inicio/tienda/contacto) e ilustración SVG. Le faltaba `title`/`description` propios (heredaba el default de Head) y `noindex` explícito — agregado. Confirmado en local: la ruta responde con status HTTP **404** real (comportamiento automático de Astro para `src/pages/404.astro`, sin configuración adicional).
 
 ---
 
@@ -136,12 +136,22 @@ Agregado `noindex={true}` (o `<meta name="robots" content="noindex, nofollow">` 
 - noindex agregado en: `setup-db.astro`, `showcase.astro`, `sena/python.astro`, `checkout.astro`, `cart.astro`, `confirmacion.astro`, `verify-email.astro`, `desuscribirse.astro`, `solicitar-caficultor.astro`, `tostar.astro`, `en/checkout.astro`, `en/cart.astro`, `en/confirmation.astro`
 - canonical agregado en: `terminos.astro`, `privacidad.astro`, `accesibilidad.astro`, `envios-devoluciones.astro`
 
-Todo probado localmente con `astro dev` contra la base de datos real antes de darlo por cerrado (sitemap, RSS, meta tags OG/Twitter, robots por página, assets estáticos).
+### Archivos adicionales tocados en la segunda ronda (Fase 3 + 6)
+
+- `src/layouts/Layout.astro` — `×` del topbar a SVG
+- `src/components/Header.astro` — `☰` a SVG, `aria-expanded`/`aria-controls`, guard `prefers-reduced-motion` en la animación de granos
+- `public/assets/js/layout.js` — pausa el video del hero con `prefers-reduced-motion`
+- `public/assets/css/styles.css` — clase `.sr-only`, foco visible global (`:focus-visible`), fix de foco invisible en `.footer-news input`
+- `src/pages/index.astro`, `src/pages/en/index.astro`, `src/components/Footer.astro`, `src/pages/cart.astro` — labels asociados en newsletters/cupón
+- `src/components/Head.astro`, `src/pages/sitemap.xml.ts`, `src/pages/rss.xml.ts` — refactor a `Astro.site`/`context.site`
+- `src/pages/404.astro` — title/description propios + `noindex`
+
+Todo probado localmente con `astro dev` y `npm run build` contra la base de datos real antes de darlo por cerrado (sitemap, RSS, meta tags OG/Twitter, robots por página, assets estáticos, skip link, labels, hamburger, status 404 real).
 
 ## Pendiente para una próxima ronda
 
-1. Fase 3 accesibilidad — el resto del checklist (alts, iconos SVG, focus, reduced-motion, labels)
-2. Fase 4 completa — Core Web Vitals / `astro:assets` (la de mayor impacto restante)
+1. Fase 4 completa — Core Web Vitals / `astro:assets` (el mayor impacto restante, no iniciada)
+2. Fase 3 — pasada de Lighthouse/axe en navegador real para contraste de color exhaustivo (no ejecutable en esta sesión)
 3. Fase 5 — JSON-LD adicionales (WebSite/SearchAction, FAQPage) y calendario editorial
-4. Fase 6 — `Astro.site` refactor, revisión de `404.astro`
-5. Fase 2.5 — Search Console / Bing Webmaster (acción manual de Mike)
+4. Fase 2.5 — Search Console / Bing Webmaster (acción manual de Mike)
+5. Íconos `✕`/`×` restantes en páginas públicas secundarias (`LangSuggest`, `cuenta`, `en/cart`, `en/account`) y en el panel admin — hallazgo nuevo, bajo impacto SEO (admin es `noindex`)

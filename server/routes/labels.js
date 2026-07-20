@@ -472,7 +472,7 @@ labelsRouter.get('/:labelId', async (req, res) => {
   }
 });
 
-// 6. DELETE - Eliminar etiquetas
+// 7. DELETE - Eliminar etiquetas
 labelsRouter.delete('/:labelId', async (req, res) => {
   res.setHeader('Content-Type', 'application/json');
   try {
