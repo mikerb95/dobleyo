@@ -651,6 +651,26 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       }
     }
 
+    async function togglePrint(code, currentlyPrinted) {
+      try {
+        const res = await fetch(`/api/labels/${encodeURIComponent(code)}/print`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ printed: !currentlyPrinted }),
+        });
+        const result = await res.json();
+        if (!res.ok || result.success === false)
+          throw new Error(result.error || "No se pudo actualizar el estado");
+        toast(
+          currentlyPrinted ? "Etiqueta marcada como pendiente" : "Etiqueta marcada como impresa",
+          "success"
+        );
+        loadStats();
+      } catch (error) {
+        toast(error.message, "error");
+      }
+    }
+
     // ── Listeners ───────────────────────────────────────────────────
     document.getElementById("preparedLotSelect")?.addEventListener("change", (e) => {
       if (!e.target.value) {
