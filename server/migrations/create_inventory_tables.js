@@ -70,7 +70,7 @@ export async function migrateInventoryTables() {
     console.log('📊 Creando tabla inventory_movements...');
     await query(`
       CREATE TABLE IF NOT EXISTS inventory_movements (
-        id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
         product_id VARCHAR(50) NOT NULL,
         movement_type TEXT NOT NULL CHECK(movement_type IN ('entrada', 'salida', 'ajuste', 'merma', 'devolucion')),
         quantity INTEGER NOT NULL,
@@ -101,7 +101,7 @@ export async function migrateInventoryTables() {
     console.log('🏭 Creando tabla product_suppliers...');
     await query(`
       CREATE TABLE IF NOT EXISTS product_suppliers (
-        id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
         name VARCHAR(160) NOT NULL,
         contact_name VARCHAR(120),
         email VARCHAR(255),
@@ -121,7 +121,7 @@ export async function migrateInventoryTables() {
     console.log('💰 Creando tabla product_supplier_prices...');
     await query(`
       CREATE TABLE IF NOT EXISTS product_supplier_prices (
-        id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
         product_id VARCHAR(50) NOT NULL,
         supplier_id BIGINT NOT NULL,
         cost_price INTEGER NOT NULL,

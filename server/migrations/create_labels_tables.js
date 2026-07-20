@@ -13,7 +13,7 @@ async function runMigration() {
     console.log('📋 Creando tabla product_labels...');
     await query(`
       CREATE TABLE IF NOT EXISTS product_labels (
-          id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
           lot_id BIGINT,
           label_code VARCHAR(100) NOT NULL UNIQUE,
           sequence INT,
@@ -50,7 +50,7 @@ async function runMigration() {
     console.log('📋 Creando tabla generated_labels...');
     await query(`
       CREATE TABLE IF NOT EXISTS generated_labels (
-          id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
           label_code VARCHAR(100) NOT NULL UNIQUE,
           lot_code VARCHAR(100),
           origin VARCHAR(160),
