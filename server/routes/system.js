@@ -41,7 +41,7 @@ systemRouter.get('/stats', async (req, res) => {
     });
   } catch (err) {
     logger.error({ err }, '[GET /api/system/stats]');
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });
 
@@ -86,7 +86,7 @@ systemRouter.get('/users/stats', async (req, res) => {
     });
   } catch (err) {
     logger.error({ err }, '[GET /api/system/users/stats]');
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });
 
@@ -102,7 +102,7 @@ systemRouter.get('/admins', async (req, res) => {
     res.json({ success: true, data: result.rows });
   } catch (err) {
     logger.error({ err }, '[GET /api/system/admins]');
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });
 
@@ -128,7 +128,7 @@ systemRouter.post('/admins', async (req, res) => {
     res.status(201).json({ success: true, data: { id: Number(r.lastInsertRowid), tempPassword: temp } });
   } catch (err) {
     logger.error({ err }, '[POST /api/system/admins]');
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });
 
@@ -147,7 +147,7 @@ systemRouter.put('/admins/:id/role', async (req, res) => {
     res.json({ success: true });
   } catch (err) {
     logger.error({ err }, '[PUT /api/system/admins/:id/role]');
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });
 
@@ -165,7 +165,7 @@ systemRouter.post('/admins/:id/reset-password', async (req, res) => {
     res.json({ success: true, data: { tempPassword: temp } });
   } catch (err) {
     logger.error({ err }, '[POST /api/system/admins/:id/reset-password]');
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });
 
@@ -195,7 +195,7 @@ systemRouter.get('/errors', async (req, res) => {
     res.json({ success: true, data: rows.rows, total: Number(total.rows[0].count) });
   } catch (err) {
     logger.error({ err }, '[GET /api/system/errors]');
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });
 
@@ -214,7 +214,7 @@ systemRouter.post('/errors', async (req, res) => {
     res.status(201).json({ success: true });
   } catch (err) {
     logger.error({ err }, '[POST /api/system/errors]');
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });
 
@@ -225,7 +225,7 @@ systemRouter.delete('/errors', async (req, res) => {
     res.json({ success: true, data: { deleted: r.rowCount } });
   } catch (err) {
     logger.error({ err }, '[DELETE /api/system/errors]');
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });
 
@@ -242,7 +242,7 @@ systemRouter.get('/changelog', async (req, res) => {
     res.json({ success: true, data: result.rows });
   } catch (err) {
     logger.error({ err }, '[GET /api/system/changelog]');
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });
 
@@ -261,7 +261,7 @@ systemRouter.post('/changelog', async (req, res) => {
     res.status(201).json({ success: true, data: { id: Number(r.lastInsertRowid) } });
   } catch (err) {
     logger.error({ err }, '[POST /api/system/changelog]');
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });
 
@@ -317,7 +317,7 @@ systemRouter.post('/backup', async (req, res) => {
     res.send(lines.join('\n') + '\n');
   } catch (err) {
     logger.error({ err }, '[POST /api/system/backup]');
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });
 
@@ -374,6 +374,6 @@ systemRouter.delete('/logs/old', async (req, res) => {
     res.json({ success: true, data: { deleted: r.rowCount, olderThanDays: days } });
   } catch (err) {
     logger.error({ err }, '[DELETE /api/system/logs/old]');
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });
