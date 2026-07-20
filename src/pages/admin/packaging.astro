@@ -378,11 +378,6 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         }
         const roastedLots = await response.json();
 
-        document.getElementById("kpiRoasted").textContent = roastedLots.length;
-        const totalKg = roastedLots.reduce((s, i) => s + availWeight(i), 0);
-        document.getElementById("kpiWeight").textContent =
-          `${totalKg.toFixed(1)} kg`;
-
         roastedSelect.innerHTML = '<option value="">Seleccione un café…</option>';
         if (roastedLots.length === 0) {
           const opt = document.createElement("option");
