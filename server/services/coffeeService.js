@@ -305,7 +305,7 @@ export async function createPackaging({ roastedStorageId, acidity, body, balance
     const result = await txq(
       `INSERT INTO packaged_coffee (roasted_storage_id, acidity, body, balance, score, presentation, grind_size, package_size, unit_count, notes, status, created_at)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'ready_for_sale', datetime('now')) RETURNING id`,
-      [roastedStorageId, acidityInt, bodyInt, balanceInt, score, presentation, grindSize || null, packageSize, unitCountNum, notes || null]
+      [roastedStorageId, acidityInt, bodyInt, balanceInt, score, presentation, grindSize || null, packageSize, unitCountNum, notesClean || null]
     );
 
     // Descuento del peso consumido: sin esto el remanente del lote se perdía.
