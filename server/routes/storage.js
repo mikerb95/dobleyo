@@ -10,6 +10,7 @@ import {
   listLocations, getLocationDetail, listZones, listWarehouses, listMovements,
   createLocation, updateLocation, setLocationBlocked, deactivateLocation, reactivateLocation,
   createZone, transferStock, adjustStock,
+  listInventoryCounts, getInventoryCountDetail, recordCountLine, cancelInventoryCount,
   openInventoryCount, postInventoryCount, rebuildQuants, reconcileReport,
   STOCK_STATES,
 } from '../services/storageService.js';

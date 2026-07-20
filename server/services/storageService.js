@@ -777,7 +777,15 @@ export async function openInventoryCount({ locationCodes, scopeNote, user }) {
       [`Conteo físico ${countNumber} en curso`, ...(codes || [])]
     );
 
-    return { countId, countNumber, lines: rows.length };
+    return { countId, countNumber, lines: rows.length, locationScope: codes };
+  }).then(async (result) => {
+    // Fuera de la transacción: logAudit usa el cliente no transaccional y
+    // llamarlo adentro auto-bloquearía la propia escritura (SQLITE_BUSY).
+    await logAudit(user?.id, 'open', 'inventory_count', result.countId, {
+      count_number: result.countNumber, lines: result.lines,
+      scope: result.locationScope || 'todas las ubicaciones activas',
+    });
+    return result;
   });
 }
 
