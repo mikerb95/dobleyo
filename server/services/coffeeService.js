@@ -213,12 +213,6 @@ export async function createPackaging({ roastedStorageId, acidity, body, balance
     throw bizError(400, 'Debe especificar tipo de molienda');
   }
 
-  const dup = await query(
-    `SELECT 1 FROM packaged_coffee WHERE roasted_storage_id = ? AND status = 'ready_for_sale' LIMIT 1`,
-    [roastedStorageId]
-  );
-  if (dup.rows.length) throw bizError(409, 'Este lote tostado ya fue empacado');
-
   const [acidityInt, bodyInt, balanceInt] = [parseInt(acidity, 10), parseInt(body, 10), parseInt(balance, 10)];
   if ([acidityInt, bodyInt, balanceInt].some(v => !Number.isInteger(v) || v < 1 || v > 5)) {
     throw bizError(400, 'Los atributos sensoriales deben ser enteros entre 1 y 5');
