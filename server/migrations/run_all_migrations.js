@@ -31,8 +31,14 @@ async function runFn(file, fnName) {
 }
 
 const steps = [
+  // Primero el esquema base: todo lo demás son ALTER incrementales sobre él.
+  { name: 'Esquema base (db/schema.sql)',    run: () => runFn('apply_base_schema.js', 'applyBaseSchema') },
+
+  // Tablas del pipeline de café (versión SQLite; run_coffee_migration.js es el
+  // equivalente legacy en sintaxis PostgreSQL y no se usa).
+  { name: 'Coffee pipeline tables',          run: () => runFn('create_coffee_tables.js', 'createCoffeeTables') },
+
   // Self-executing (tienen process.exit internamente → subproceso)
-  { name: 'Coffee pipeline tables',          run: () => runFile('run_coffee_migration.js') },
   { name: 'Roast fields on lots',            run: () => runFile('add_roast_fields.js') },
   { name: 'Labels tables',                   run: () => runFile('create_labels_tables.js') },
   { name: 'Google auth column',              run: () => runFile('add_google_auth.js') },
