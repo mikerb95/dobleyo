@@ -297,10 +297,12 @@ const accountHref = lang === "en" ? "/account" : "/cuenta";
       if (hidden) {
         mobileMenu.removeAttribute("hidden");
         menuBtn.classList.add("active");
+        menuBtn.setAttribute("aria-expanded", "true");
         document.body.classList.add("menu-open");
       } else {
         mobileMenu.setAttribute("hidden", "");
         menuBtn.classList.remove("active");
+        menuBtn.setAttribute("aria-expanded", "false");
         document.body.classList.remove("menu-open");
       }
     });
@@ -310,6 +312,7 @@ const accountHref = lang === "en" ? "/account" : "/cuenta";
       link.addEventListener("click", () => {
         mobileMenu.setAttribute("hidden", "");
         menuBtn.classList.remove("active");
+        menuBtn.setAttribute("aria-expanded", "false");
         document.body.classList.remove("menu-open");
       });
     });
@@ -321,6 +324,7 @@ const accountHref = lang === "en" ? "/account" : "/cuenta";
         if (!hidden) {
           mobileMenu.setAttribute("hidden", "");
           menuBtn.classList.remove("active");
+          menuBtn.setAttribute("aria-expanded", "false");
           document.body.classList.remove("menu-open");
         }
       }
