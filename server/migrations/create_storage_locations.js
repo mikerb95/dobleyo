@@ -393,6 +393,9 @@ async function backfillLedger() {
       await postBackfillMovement({
         uid: `backfill:roasted-out:${r.id}`, type: 'issue', from: locId,
         lotId, state: 'roasted', qty,
+        // Se reversan también los contenedores: si no, la ubicación quedaría
+        // con 0 kg pero ocupada por bultos que ya no están.
+        containerType: r.container_type, containerCount: r.container_count,
         sourceTable: 'packaged_coffee', sourceId: r.id, at: r.created_at,
       });
     }
