@@ -88,6 +88,137 @@ const pend = (texto: string): CriterioDoD => ({ texto, estado: "pend" });
 export const ITERACIONES: Iteracion[] = [
   // ───────────────────────────────────────────────────────────────────────────
   {
+    id: "jul-admin-ops",
+    fase: "Post-plan · Operación",
+    nombre: "Despacho manual, etiquetas con estado y saneamiento del panel de sistema",
+    rango: "19 jul 2026",
+    ghSince: "2026-07-19",
+    ghUntil: "2026-07-19",
+    commits: 35,
+    resumen:
+      "Panel operativo para el equipo: pestaña de envíos estancados con despacho manual, control de impresión y KPIs de etiquetas, y una pasada de seguridad sobre /admin/sistema que escapa HTML en todo el contenido dinámico para prevenir XSS.",
+    historias: [
+      {
+        id: "DY-OPS-01",
+        titulo:
+          "Como administrador, quiero ver los envíos estancados y despachar manualmente las órdenes fuera de cobertura de Mipaquete desde el panel",
+        tipo: "historia", valor: "alto", col: "aceptada", par: "MR", agente: "Claude",
+        fecha: "2026-07-19", tags: ["admin", "logistica"],
+        dod: [
+          ok("Nueva pestaña 'Estancados' en /admin/envios que carga los envíos de GET /stuck."),
+          ok("Modal de despacho manual para órdenes fuera de cobertura de Mipaquete, con formato de moneda y botones de acción en la tabla de órdenes."),
+          ok("Botones de estado de entrega manual (delivered/returned/cancelled) con confirmación, consumiendo el nuevo PATCH /:id/status."),
+        ],
+      },
+      {
+        id: "DY-OPS-02",
+        titulo:
+          "Como administrador, quiero marcar etiquetas como impresas y ver KPIs consolidados de la cola de impresión",
+        tipo: "historia", valor: "medio", col: "aceptada", par: "MR", agente: "Claude",
+        fecha: "2026-07-19", tags: ["admin", "etiquetas"],
+        dod: [
+          ok("Columna 'Estado' (impresa/pendiente) en la tabla de /admin/etiquetas con acción para alternar el estado."),
+          ok("Nuevo PATCH para marcar/desmarcar impresión y nuevo endpoint de estadísticas consolidadas de KPIs de etiquetas."),
+          ok("Esquema de generated_labels extendido con región, clima y fecha de tueste; la generación de etiquetas los incluye en la consulta."),
+        ],
+      },
+      {
+        id: "DY-OPS-03",
+        titulo:
+          "Bug (seguridad): el panel /admin/sistema insertaba datos dinámicos (usuarios, logs, changelog) directamente en el DOM sin escapar HTML",
+        tipo: "bug", valor: "alto", col: "aceptada", par: "MR", agente: "Claude",
+        fecha: "2026-07-19", tags: ["admin", "seguridad", "xss"],
+        dod: [
+          ok("Nueva función de escape de HTML aplicada a datos de usuario, entradas del changelog, campos de log y valores de gráficas de barras."),
+          ok("Respuesta de creación de admin y conteos por rol también escapados antes de insertarse en el DOM."),
+        ],
+      },
+      {
+        id: "DY-OPS-04",
+        titulo:
+          "Tarea: consistencia de fechas, endpoints de respaldo parametrizados y utilidad de contraseña temporal para acciones de administrador",
+        tipo: "tarea", valor: "bajo", col: "aceptada", par: "MR", agente: "Claude",
+        fecha: "2026-07-19", tags: ["admin", "deuda-tecnica"],
+        dod: [
+          ok("Nueva formatDateLocal reemplaza el formateo directo de fechas que se interpretaba como UTC en varias vistas de admin."),
+          ok("Consulta SQL de la ruta de respaldo parametrizada (antes interpolada) para evitar inyección."),
+          ok("Nueva utilidad de generación de contraseña temporal reutilizada en las acciones de administrador que la requieren."),
+        ],
+      },
+    ],
+  },
+  // ───────────────────────────────────────────────────────────────────────────
+  {
+    id: "jul-seo-pwa",
+    fase: "Post-plan · SEO y accesibilidad",
+    nombre: "SEO técnico, PWA y accesibilidad del sitio público",
+    rango: "19 jul 2026",
+    ghSince: "2026-07-19",
+    ghUntil: "2026-07-19",
+    commits: 35,
+    resumen:
+      "Cierre del plan de auditoría SEO: datos estructurados y Open Graph en producto/blog/fincas, sitemap dinámico bilingüe, feed RSS del blog, manifest PWA, y una pasada de accesibilidad (skip links, aria-expanded, focus-visible, prefers-reduced-motion) más optimización de imágenes con el componente Image de Astro.",
+    historias: [
+      {
+        id: "DY-SEO-01",
+        titulo:
+          "Como visitante, quiero que los enlaces compartidos de productos, blog y fincas se vean bien en redes sociales y en buscadores",
+        tipo: "historia", valor: "medio", col: "aceptada", par: "MR", agente: "Claude",
+        fecha: "2026-07-19", tags: ["seo", "og"],
+        dod: [
+          ok("Meta tags Open Graph añadidos a páginas de producto, blog y fincas; datos estructurados (JSON-LD) para sitio web y FAQ."),
+          ok("Fincas con imagen de portada por defecto y datos estructurados/Open Graph propios."),
+          ok("Sitemap dinámico bilingüe mejorado con mejor manejo de errores; RSS del blog implementado y enlazado desde Head."),
+        ],
+      },
+      {
+        id: "DY-SEO-02",
+        titulo:
+          "Como visitante, quiero poder instalar el sitio como app y que las páginas transaccionales/administrativas no se indexen",
+        tipo: "tarea", valor: "bajo", col: "aceptada", par: "MR", agente: "Claude",
+        fecha: "2026-07-19", tags: ["seo", "pwa"],
+        dod: [
+          ok("manifest.json y apple-touch-icon añadidos para soporte PWA básico."),
+          ok("noindex aplicado a carrito, checkout, confirmación, verificación de email, desuscripción, setup de BD y showcase; robots.txt actualizado con las rutas correspondientes."),
+          ok("URLs canónicas añadidas a las páginas legales (privacidad, términos, accesibilidad, envíos y devoluciones)."),
+        ],
+      },
+      {
+        id: "DY-SEO-03",
+        titulo:
+          "Como usuario de teclado o lector de pantalla, quiero poder saltar al contenido principal y entender el estado de los menús desplegables",
+        tipo: "historia", valor: "medio", col: "aceptada", par: "MR", agente: "Claude",
+        fecha: "2026-07-19", tags: ["accesibilidad"],
+        dod: [
+          ok("Skip link al contenido principal (id en <main>) y estilos visibles solo al enfocar por teclado."),
+          ok("aria-expanded en el menú móvil; estilos focus-visible en inputs de newsletter y cupón; etiquetas sr-only en campos sin label visible."),
+        ],
+      },
+      {
+        id: "DY-SEO-04",
+        titulo:
+          "Como visitante con preferencia de movimiento reducido, quiero que el video del hero y las animaciones del header respeten esa preferencia",
+        tipo: "historia", valor: "bajo", col: "aceptada", par: "MR", agente: "Claude",
+        fecha: "2026-07-19", tags: ["accesibilidad", "performance"],
+        dod: [
+          ok("Soporte de prefers-reduced-motion para el video del hero y las animaciones del header; la animación de granos de café del nav no se inicializa si está activo."),
+          ok("Botones de Header y Layout migrados a íconos SVG para consistencia visual y accesibilidad."),
+        ],
+      },
+      {
+        id: "DY-SEO-05",
+        titulo:
+          "Como mantenedor, quiero que el logo y otras imágenes clave usen el componente Image de Astro para optimización automática",
+        tipo: "tarea", valor: "bajo", col: "aceptada", par: "MR", agente: "Claude",
+        fecha: "2026-07-19", tags: ["performance", "imagenes"],
+        dod: [
+          ok("Logo en Header y las imágenes de AuthModal/Footer migradas de <img> al componente Image optimizado."),
+        ],
+      },
+    ],
+  },
+  // ───────────────────────────────────────────────────────────────────────────
+  {
     id: "jul-logistica",
     fase: "Post-plan · Confiabilidad",
     nombre: "Auditoría y remediación de logística de envíos",
