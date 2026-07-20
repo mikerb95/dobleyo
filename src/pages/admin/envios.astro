@@ -426,19 +426,30 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
                     body.innerHTML = `<tr><td colspan="7" class="empty">No hay pedidos pendientes de despacho.</td></tr>`;
                     return;
                 }
-                body.innerHTML = orders.map((o: any) => `
+                body.innerHTML = orders.map((o: any) => {
+                    const isCop = o.currency === "COP" || !o.currency;
+                    return `
                     <tr>
                         <td><strong>${o.reference}</strong></td>
                         <td>${o.customer_name}</td>
                         <td>${o.shipping_city ?? "—"}</td>
                         <td>${o.payment_method === "cod" ? '<span class="badge badge-warn">Contraentrega</span>' : '<span class="badge badge-ok">Pagado</span>'}</td>
-                        <td style="font-weight:600">${fmtCOP(Number(o.total_cop) || 0)}</td>
+                        <td style="font-weight:600">${isCop ? fmtCOP(Number(o.total_cop) || 0) : `$${Number(o.total_cop || 0).toLocaleString("en-US")} ${o.currency}`}</td>
                         <td style="color:#7a6652;font-size:0.82rem">${fmtDate(o.created_at)}</td>
-                        <td><button class="btn-action" data-id="${o.id}" data-ref="${o.reference}">Cotizar / Generar guía</button></td>
+                        <td>${isCop
+                            ? `<button class="btn-action" data-action="quote" data-id="${o.id}" data-ref="${o.reference}">Cotizar / Generar guía</button>`
+                            : `<button class="btn-action" data-action="manual" data-id="${o.id}" data-ref="${o.reference}">Despacho manual</button>`}</td>
                     </tr>
-                `).join("");
-                body.querySelectorAll(".btn-action").forEach((btn) => {
+                `;
+                }).join("");
+                body.querySelectorAll('[data-action="quote"]').forEach((btn) => {
                     btn.addEventListener("click", () => openQuoteModal(
+                        Number((btn as HTMLElement).dataset.id),
+                        (btn as HTMLElement).dataset.ref!,
+                    ));
+                });
+                body.querySelectorAll('[data-action="manual"]').forEach((btn) => {
+                    btn.addEventListener("click", () => openManualModal(
                         Number((btn as HTMLElement).dataset.id),
                         (btn as HTMLElement).dataset.ref!,
                     ));
