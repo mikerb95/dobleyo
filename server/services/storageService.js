@@ -335,6 +335,56 @@ async function postMovementTx(tx, p) {
   };
 }
 
+/**
+ * Retira `qtyKg` de un lote repartido en varias ubicaciones, consumiendo FIFO
+ * (la ubicación con el quant más antiguo primero). Genera un movimiento de
+ * salida por cada ubicación tocada, de modo que el historial refleje de qué
+ * estante salió cada kilo.
+ *
+ * Se ejecuta dentro de la transacción del llamador para que la validación de
+ * disponibilidad y las salidas sean atómicas entre sí.
+ */
+export async function issueFromLotFIFO(tx, { lotId, stockState, qtyKg, sourceTable, sourceId, reasonCode, notes, uidPrefix, user }) {
+  const needed = round3(qtyKg);
+  if (!isFinite(needed) || needed <= 0) throw bizError(400, 'La cantidad debe ser mayor a cero');
+
+  const { rows } = await tx.query(
+    `SELECT q.id, q.location_id, q.qty_kg, l.code
+     FROM storage_quants q JOIN storage_locations l ON l.id = q.location_id
+     WHERE q.lot_id = ? AND q.stock_state = ? AND q.qty_kg > 0
+     ORDER BY q.id ASC`,
+    [lotId, stockState]
+  );
+
+  const available = round3(rows.reduce((s, r) => s + (parseFloat(r.qty_kg) || 0), 0));
+  if (needed > available + EPS) {
+    throw bizError(409,
+      `Existencia insuficiente del lote ${lotId}: disponible ${available} kg en bodega, solicitado ${needed} kg.`,
+      { lot_id: lotId, available_kg: available, requested_kg: needed,
+        locations: rows.map((r) => ({ code: r.code, qty_kg: round3(r.qty_kg) })) });
+  }
+
+  let remaining = needed;
+  const issued = [];
+  let seq = 0;
+  for (const r of rows) {
+    if (remaining <= EPS) break;
+    const take = round3(Math.min(parseFloat(r.qty_kg), remaining));
+    if (take <= EPS) continue;
+    seq += 1;
+
+    const result = await postMovementTx(tx, {
+      type: 'issue', from: r.location_id, lotId, stockState, qtyKg: take,
+      sourceTable, sourceId, reasonCode, notes,
+      movementUid: `${uidPrefix}:${seq}`, user,
+    });
+    issued.push({ location: r.code, qty_kg: take, movement_id: result.movementId });
+    remaining = round3(remaining - take);
+  }
+
+  return { issued, totalKg: needed };
+}
+
 /** Traslado entre ubicaciones. Es un postMovement con validación de ambos extremos. */
 export async function transferStock({ fromCode, toCode, lotId, stockState, qtyKg, containerCount, notes, movementUid, user }) {
   if (!fromCode || !toCode) throw bizError(400, 'Origen y destino son requeridos');
