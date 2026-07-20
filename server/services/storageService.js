@@ -429,7 +429,7 @@ export async function adjustStock({ locationCode, lotId, stockState, targetQtyKg
   const target = round3(targetQtyKg);
   if (!isFinite(target) || target < 0) throw bizError(400, 'La cantidad objetivo no puede ser negativa');
 
-  return withTransaction(async (tx) => {
+  const outcome = await withTransaction(async (tx) => {
     const loc = await loadLocation(tx, locationCode, 'ajuste');
     const current = await readQuant(tx, loc.id, lotId, stockState);
     const delta = round3(target - current.qty);
@@ -444,10 +444,19 @@ export async function adjustStock({ locationCode, lotId, stockState, targetQtyKg
       lotId, stockState, qtyKg: Math.abs(delta),
       reasonCode: 'adjustment_manual', notes: reason, movementUid, user,
     });
-    await logAudit(user?.id, 'adjust', 'storage_movement', result.movementId,
-      { location: loc.code, lot_id: lotId, from_kg: current.qty, to_kg: target, reason });
-    return { ...result, delta };
+    return { ...result, delta, locationCode: loc.code, fromKg: current.qty };
   });
+
+  // La auditoría va FUERA de la transacción: logAudit usa el cliente no
+  // transaccional y llamarlo adentro bloquea la propia escritura (SQLITE_BUSY),
+  // perdiendo el registro en silencio.
+  if (outcome.movementId) {
+    await logAudit(user?.id, 'adjust', 'storage_movement', outcome.movementId, {
+      location: outcome.locationCode, lot_id: lotId,
+      from_kg: outcome.fromKg, to_kg: target, reason,
+    });
+  }
+  return outcome;
 }
 
 // ── CRUD del maestro ─────────────────────────────────────────────────────────
