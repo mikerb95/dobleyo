@@ -451,6 +451,16 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     }[c] as string));
   }
 
+  // ── Formatea fechas 'YYYY-MM-DD' (sin hora) como fecha local, evitando
+  //    que se interprete como medianoche UTC y se corra un día atrás ────────
+  function formatDateLocal(value: string): string {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      const [y, m, d] = value.split('-').map(Number);
+      return new Date(y, m - 1, d).toLocaleDateString('es-CO');
+    }
+    return new Date(value).toLocaleDateString('es-CO');
+  }
+
   // ── Estado de paginación de errores ───────────────────────────────────────
   let errOffset = 0;
   const ERR_LIMIT = 50;
