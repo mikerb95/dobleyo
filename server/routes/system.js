@@ -286,9 +286,10 @@ systemRouter.post('/backup', async (req, res) => {
     );
 
     for (const { name } of tables) {
-      const { rows: ddl } = await libsqlClient.execute(
-        `SELECT sql FROM sqlite_master WHERE type='table' AND name='${name}'`
-      );
+      const { rows: ddl } = await libsqlClient.execute({
+        sql: `SELECT sql FROM sqlite_master WHERE type='table' AND name=?`,
+        args: [name],
+      });
       if (ddl[0]?.sql) {
         lines.push(`-- ── Tabla: ${name}`);
         lines.push(`DROP TABLE IF EXISTS "${name}";`);
