@@ -432,6 +432,20 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
   <!-- Scripts -->
   <script>
+    import qrcode from "qrcode-generator";
+
+    // ── QR real de trazabilidad ────────────────────────────────────
+    function traceabilityUrl(code) {
+      return `${location.origin}/trazabilidad?lote=${encodeURIComponent(code)}`;
+    }
+
+    function qrSvg(code) {
+      const qr = qrcode(0, "M");
+      qr.addData(traceabilityUrl(code));
+      qr.make();
+      return qr.createSvgTag({ cellSize: 3, margin: 2 });
+    }
+
     // ── Estado ──────────────────────────────────────────────────────
     let activeTab = "lotes";
     let selectedLot = null;
