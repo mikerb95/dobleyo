@@ -674,13 +674,13 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     resultEl.classList.remove('hidden');
 
     if (json.success) {
-      resultEl.innerHTML = `<div style="color:green">Admin creado. Contraseña temporal: <strong>${json.data.tempPassword}</strong> — guárdala.</div>`;
+      resultEl.innerHTML = `<div style="color:green">Admin creado. Contraseña temporal: <strong>${escHtml(json.data.tempPassword)}</strong> — guárdala.</div>`;
       el('naEmail').value = '';
       el('naFirstName').value = '';
       el('naLastName').value = '';
       await loadAdmins();
     } else {
-      resultEl.innerHTML = `<div style="color:var(--c-error)">${json.error}</div>`;
+      resultEl.innerHTML = `<div style="color:var(--c-error)">${escHtml(json.error)}</div>`;
     }
   });
 
