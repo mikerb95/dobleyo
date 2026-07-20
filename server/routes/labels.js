@@ -96,7 +96,7 @@ labelsRouter.post('/generate-from-lot',
       // Obtener información del café empacado
       const coffeeResults = await query(
         `SELECT pc.*, rc.roast_level, rc.weight_kg, rb.lot_id,
-                ch.lot_id as lot_code, ch.region, ch.farm,
+                ch.lot_id as lot_code, ch.region, ch.farm, ch.altitude, ch.climate,
                 ch.variety, ch.process, ch.taste_notes as flavor_notes
          FROM packaged_coffee pc
          LEFT JOIN roasted_coffee_inventory rci ON pc.roasted_storage_id = rci.id
@@ -118,17 +118,18 @@ labelsRouter.post('/generate-from-lot',
       const lotCode = coffee.lot_code || `PKG-${lotId}`;
       const baseCode = `LBL-${lotCode}`;
 
-      // Continuar la secuencia existente para este lote en vez de reiniciar en 1,
-      // ya que label_code es UNIQUE y una segunda tanda del mismo lote chocaría.
-      const maxSeqResult = await query(
-        `SELECT COALESCE(MAX(sequence), 0) as max_sequence FROM generated_labels WHERE lot_code = ?`,
-        [lotCode]
-      );
-      const startSequence = (maxSeqResult.rows[0]?.max_sequence || 0) + 1;
-
       const labels = [];
 
       await withTransaction(async (client) => {
+        // Continuar la secuencia existente para este lote en vez de reiniciar en 1,
+        // ya que label_code es UNIQUE y una segunda tanda del mismo lote chocaría.
+        // La lectura va dentro de la transacción write para serializar generaciones concurrentes.
+        const maxSeqResult = await client.query(
+          `SELECT COALESCE(MAX(sequence), 0) as max_sequence FROM generated_labels WHERE lot_code = ?`,
+          [lotCode]
+        );
+        const startSequence = Number(maxSeqResult.rows[0]?.max_sequence || 0) + 1;
+
         for (let offset = 0; offset < quantity; offset++) {
           const seq = startSequence + offset;
           const labelId = `${baseCode}-${String(seq).padStart(4, '0')}`;
@@ -157,9 +158,10 @@ labelsRouter.post('/generate-from-lot',
 
           await client.query(
             `INSERT INTO generated_labels (label_code, lot_code, origin, variety, roast, process,
-                                           farm, altitude, acidity, body, balance, score, flavor_notes,
+                                           farm, altitude, region, climate,
+                                           acidity, body, balance, score, flavor_notes,
                                            qr_data, sequence, user_id, created_at)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))`,
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))`,
             [
               labelId,
               lotCode,
@@ -168,7 +170,9 @@ labelsRouter.post('/generate-from-lot',
               coffee.roast_level,
               coffee.process,
               coffee.farm,
-              null,
+              coffee.altitude != null ? String(coffee.altitude) : null,
+              coffee.region,
+              coffee.climate,
               coffee.acidity,
               coffee.body,
               coffee.balance,
