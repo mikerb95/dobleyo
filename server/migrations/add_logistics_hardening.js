@@ -26,6 +26,7 @@ export async function addLogisticsHardening() {
   await addColumnIfMissing('customer_orders', 'expected_amount_cents', 'expected_amount_cents INTEGER');
   await addColumnIfMissing('customer_orders', 'confirmation_email_sent_at', 'confirmation_email_sent_at TEXT');
   await addColumnIfMissing('shipments', 'recovery_attempts', 'recovery_attempts INTEGER NOT NULL DEFAULT 0');
+  await addColumnIfMissing('customer_orders', 'stock_deducted_at', 'stock_deducted_at TEXT');
 }
 
 if (process.argv[1] === new URL(import.meta.url).pathname) {
