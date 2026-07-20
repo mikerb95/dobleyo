@@ -436,6 +436,9 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     let activeTab = "lotes";
     let selectedLot = null;
     let availableCount = 0;
+    let currentPreviewData = null;
+    let lastGeneratedBatch = null;
+    let recentLabelsCache = [];
 
     // ── Toast ───────────────────────────────────────────────────────
     function toast(message, type = "info") {
