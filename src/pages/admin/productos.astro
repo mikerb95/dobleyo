@@ -1572,7 +1572,16 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   /* Bloquea el scroll del fondo mientras hay un modal abierto. */
   :global(body.modal-open) { overflow: hidden; }
   .modal[hidden] { display: none; }
-  .modal-content--wide { max-width: 760px; }
+  /* Header, pestañas y acciones fijos; solo el cuerpo desplaza. */
+  .modal-content--wide {
+    max-width: 760px;
+    display: flex; flex-direction: column;
+    max-height: 90vh; overflow: hidden;
+  }
+  .modal-content--wide .modal-body { overflow-y: auto; flex: 1; }
+  .modal-content--wide .modal-header,
+  .modal-content--wide .tabs,
+  .modal-content--wide .modal-actions { flex-shrink: 0; }
   .modal-close {
     appearance: none; border: 0; background: transparent; cursor: pointer;
     width: 32px; height: 32px; display: grid; place-items: center;
