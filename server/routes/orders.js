@@ -172,7 +172,7 @@ ordersRouter.post('/',
 
             const placeholders = productIds.map(() => '?').join(', ');
             const productsResult = await query(
-                `SELECT id, name, price, price_usd, image_url
+                `SELECT id, name, price, price_usd, image_url, stock_quantity
          FROM products
          WHERE id IN (${placeholders}) AND is_active = 1`,
                 productIds
