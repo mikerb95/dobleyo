@@ -514,11 +514,17 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       }
 
       const quants = detail.quants.length
-        ? detail.quants.map((q) => `
-            <dl class="ub-kv">
-              <dt>${q.lot_id}<br><small style="opacity:.7">${STATE_LABEL[q.stock_state] || q.stock_state}</small></dt>
-              <dd>${kg(q.qty_kg)}</dd>
-            </dl>`).join("")
+        ? detail.quants.map((q, i) => `
+            <div class="ub-quant-row">
+              <dl class="ub-kv" style="flex:1;">
+                <dt>${q.lot_id}<br><small style="opacity:.7">${STATE_LABEL[q.stock_state] || q.stock_state}</small></dt>
+                <dd>${kg(q.qty_kg)}</dd>
+              </dl>
+              <div class="ub-quant-actions">
+                <button type="button" class="ub-mini-btn" data-transfer="${i}" title="Trasladar a otra ubicación">Trasladar</button>
+                <button type="button" class="ub-mini-btn" data-adjust="${i}" title="Corregir la cantidad">Ajustar</button>
+              </div>
+            </div>`).join("")
         : '<div class="empty-state" style="padding:14px 0;">Sin existencias.</div>';
 
       const movements = detail.movements.length
