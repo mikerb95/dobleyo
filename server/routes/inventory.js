@@ -422,6 +422,9 @@ inventoryRouter.post('/products/:id/variants', async (req, res) => {
 });
 
 // PUT - Actualizar variante
+// stock_quantity se trata aparte: en vez de sobrescribirlo, se asienta como un
+// movimiento en inventory_movements (variant_id != NULL), igual que el stock
+// del producto, para que quede trazado quién cambió cuánto y por qué.
 inventoryRouter.put('/variants/:variantId', async (req, res) => {
   try {
     const { variantId } = req.params;
@@ -430,12 +433,13 @@ inventoryRouter.put('/variants/:variantId', async (req, res) => {
     if (existing.rows.length === 0) {
       return res.status(404).json({ success: false, error: 'Variante no encontrada' });
     }
+    const variant = existing.rows[0];
 
     const allowedFields = [
-      'size_label', 'grind_label', 'price_cop', 'stock_quantity',
+      'size_label', 'grind_label', 'price_cop',
       'sku_suffix', 'is_active', 'sort_order'
     ];
-    const numericFields = new Set(['price_cop', 'stock_quantity', 'sort_order']);
+    const numericFields = new Set(['price_cop', 'sort_order']);
 
     const updates = [];
     const values = [];
@@ -450,19 +454,53 @@ inventoryRouter.put('/variants/:variantId', async (req, res) => {
       values.push(val);
     }
 
-    if (updates.length === 0) {
+    const hasStockUpdate = req.body.stock_quantity !== undefined;
+    if (updates.length === 0 && !hasStockUpdate) {
       return res.status(400).json({ success: false, error: 'No hay campos para actualizar' });
     }
 
-    values.push(variantId);
-    await query(`UPDATE product_variants SET ${updates.join(', ')} WHERE id = ?`, values);
+    let stockBefore = variant.stock_quantity;
+    let stockAfter = variant.stock_quantity;
+
+    await withTransaction(async (tx) => {
+      if (updates.length > 0) {
+        await tx.query(
+          `UPDATE product_variants SET ${updates.join(', ')} WHERE id = ?`,
+          [...values, variantId]
+        );
+      }
+
+      if (hasStockUpdate) {
+        stockAfter = Number(req.body.stock_quantity) || 0;
+        if (stockAfter < 0) throw Object.assign(new Error('El stock no puede ser negativo'), { status: 400 });
+
+        if (stockAfter !== stockBefore) {
+          await tx.query(
+            `INSERT INTO inventory_movements (
+              product_id, variant_id, movement_type, quantity, quantity_before, quantity_after,
+              reason, reference, user_id
+            ) VALUES (?, ?, 'ajuste', ?, ?, ?, ?, 'ADMIN-VARIANT', ?)`,
+            [
+              variant.product_id, variantId, stockAfter - stockBefore, stockBefore, stockAfter,
+              req.body.stock_reason || 'Ajuste de stock de variante', req.user?.id ?? null
+            ]
+          );
+          await tx.query('UPDATE product_variants SET stock_quantity = ? WHERE id = ?', [stockAfter, variantId]);
+        }
+      }
+    });
 
     await logAudit(req.user?.id, 'update', 'product_variant', variantId, {
-      product_id: existing.rows[0].product_id, fields: Object.keys(req.body)
+      product_id: variant.product_id,
+      fields: Object.keys(req.body),
+      ...(hasStockUpdate && stockAfter !== stockBefore ? { stockBefore, stockAfter } : {})
     });
 
     res.json({ success: true, message: 'Variante actualizada exitosamente' });
   } catch (error) {
+    if (error.status === 400) {
+      return res.status(400).json({ success: false, error: error.message });
+    }
     logger.error('Error updating variant:', error);
     res.status(500).json({ success: false, error: error.message });
   }
