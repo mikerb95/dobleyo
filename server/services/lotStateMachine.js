@@ -98,11 +98,17 @@ export async function assertCanAdvance(queryFn, lotId, targetStage) {
 
   if (!canTransitionTo(currentStage, targetStage)) {
     const allowed = TRANSITIONS[currentStage] ?? [];
-    throw new Error(
+    const err = new Error(
       `Transición inválida para lote ${lotId}: ` +
       `el lote está en '${currentStage}' y no puede ir a '${targetStage}'. ` +
       `Próximos stages permitidos: ${allowed.join(', ') || 'ninguno (estado final)'}`
     );
+    // 409 Conflict: la operación es válida en sí misma pero choca con el
+    // estado actual del lote. Sin esto, handleErr() en las rutas de coffee.js
+    // solo mira err.status y cae al branch de 500 para un error de negocio.
+    err.status = 409;
+    err.detail = { lot_id: lotId, current_stage: currentStage, target_stage: targetStage, allowed_next_stages: allowed };
+    throw err;
   }
 }
 
