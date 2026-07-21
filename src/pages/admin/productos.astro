@@ -1446,10 +1446,13 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       $("productSlug").dataset.touched = "1";
     });
 
-    $("categoryFilter").addEventListener("change", () => applyFilters());
-    $("activeFilter").addEventListener("change", () => applyFilters());
-    $("stockFilter").addEventListener("change", () => applyFilters());
-    $("searchInput").addEventListener("input", () => applyFilters());
+    $("categoryFilter").addEventListener("change", () => loadProducts({ resetPage: true }));
+    $("activeFilter").addEventListener("change", () => loadProducts({ resetPage: true }));
+    $("stockFilter").addEventListener("change", () => loadProducts({ resetPage: true }));
+    $("searchInput").addEventListener("input", () => {
+      clearTimeout(searchDebounceTimer);
+      searchDebounceTimer = setTimeout(() => loadProducts({ resetPage: true }), 350);
+    });
 
     $("openCreateProductBtn").addEventListener("click", () => {
       $("productSlug").dataset.touched = "";
