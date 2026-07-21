@@ -40,7 +40,7 @@ export async function migrateInventoryTables() {
         `);
         console.log(`  ✓ Columna ${col.name} agregada`);
       } catch (err) {
-        if (err.code === '42701' || err.message?.includes('already exists')) {
+        if (err.code === '42701' || err.message?.includes('already exists') || err.message?.includes('duplicate column')) {
           console.log(`  ⚠ Columna ${col.name} ya existe, saltando...`);
         } else {
           throw err;
