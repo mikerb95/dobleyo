@@ -1039,6 +1039,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     // ── Variantes ───────────────────────────────────────────────────
     async function loadVariants(productId) {
       const tbody = $("variantsTableBody");
+      editingVariantStockId = null;
       tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Cargando variantes…</td></tr>';
       try {
         const res = await fetch(`/api/inventory/products/${encodeURIComponent(productId)}/variants`, {
