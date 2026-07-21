@@ -1054,6 +1054,8 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       }
     }
 
+    let editingVariantStockId = null; // variante cuya celda de stock está en modo edición
+
     function renderVariants() {
       const tbody = $("variantsTableBody");
       if (!currentVariants.length) {
@@ -1061,33 +1063,55 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
           '<tr><td colspan="7" class="empty-state">Sin variantes. La tienda usará el precio y stock del producto.</td></tr>';
         return;
       }
-      tbody.innerHTML = currentVariants.map((v) => `
+      tbody.innerHTML = currentVariants.map((v) => {
+        const stock = Number(v.stock_quantity) || 0;
+        const isEditingStock = String(editingVariantStockId) === String(v.id);
+
+        // El stock de variante se registra como movimiento (ajuste), igual que
+        // el del producto: pide motivo y queda trazado en inventory_movements.
+        const stockCell = isEditingStock
+          ? `<div class="variant-stock-edit">
+               <input type="number" min="0" class="variantStockInput" value="${stock}" data-variant-id="${v.id}" aria-label="Nuevo stock" />
+               <input type="text" class="variantStockReason" placeholder="Motivo del ajuste" data-variant-id="${v.id}" aria-label="Motivo" />
+             </div>`
+          : `<span class="variant-stock-view">${stock}</span>`;
+
+        const actions = isEditingStock
+          ? `<button type="button" class="icon-btn variantStockSaveBtn" data-variant-id="${v.id}" title="Guardar stock" aria-label="Guardar stock">✓</button>
+             <button type="button" class="icon-btn variantStockCancelBtn" data-variant-id="${v.id}" title="Cancelar" aria-label="Cancelar">✕</button>`
+          : `<button type="button" class="icon-btn variantStockEditBtn" data-variant-id="${v.id}" title="Ajustar stock" aria-label="Ajustar stock de esta variante">
+               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                 <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+               </svg>
+             </button>
+             <button type="button" class="icon-btn variantToggleBtn" data-variant-id="${v.id}"
+                     title="${v.is_active ? "Desactivar" : "Activar"}"
+                     aria-label="${v.is_active ? "Desactivar" : "Activar"} variante">
+               ${v.is_active ? "⦸" : "✓"}
+             </button>
+             <button type="button" class="icon-btn icon-btn--danger variantDeleteBtn" data-variant-id="${v.id}"
+                     title="Eliminar variante" aria-label="Eliminar variante">
+               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                 <polyline points="3 6 5 6 21 6"></polyline>
+                 <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path>
+               </svg>
+             </button>`;
+
+        return `
         <tr>
           <td>${esc(v.size_label) || "—"}</td>
           <td>${esc(v.grind_label) || "—"}</td>
           <td style="text-align:right;">${cop(v.price_cop)}</td>
-          <td style="text-align:center;">${Number(v.stock_quantity) || 0}</td>
+          <td style="text-align:center;">${stockCell}</td>
           <td>${esc(v.sku_suffix) || "—"}</td>
           <td style="text-align:center;">
             ${v.is_active
               ? '<span class="badge badge-success">Sí</span>'
               : '<span class="badge badge-neutral">No</span>'}
           </td>
-          <td style="text-align:right; white-space:nowrap;">
-            <button type="button" class="icon-btn variantToggleBtn" data-variant-id="${v.id}"
-                    title="${v.is_active ? "Desactivar" : "Activar"}"
-                    aria-label="${v.is_active ? "Desactivar" : "Activar"} variante">
-              ${v.is_active ? "⦸" : "✓"}
-            </button>
-            <button type="button" class="icon-btn icon-btn--danger variantDeleteBtn" data-variant-id="${v.id}"
-                    title="Eliminar variante" aria-label="Eliminar variante">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="3 6 5 6 21 6"></polyline>
-                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path>
-              </svg>
-            </button>
-          </td>
-        </tr>`).join("");
+          <td style="text-align:right; white-space:nowrap;">${actions}</td>
+        </tr>`;
+      }).join("");
     }
 
     $("variantsTableBody").addEventListener("click", async (e) => {
@@ -1101,6 +1125,25 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         await saveVariant(variantId, { is_active: !variant.is_active });
       } else if (btn.classList.contains("variantDeleteBtn")) {
         await deleteVariant(variantId);
+      } else if (btn.classList.contains("variantStockEditBtn")) {
+        editingVariantStockId = variantId;
+        renderVariants();
+      } else if (btn.classList.contains("variantStockCancelBtn")) {
+        editingVariantStockId = null;
+        renderVariants();
+      } else if (btn.classList.contains("variantStockSaveBtn")) {
+        const input = $("variantsTableBody").querySelector(`.variantStockInput[data-variant-id="${variantId}"]`);
+        const reasonInput = $("variantsTableBody").querySelector(`.variantStockReason[data-variant-id="${variantId}"]`);
+        const nextStock = input.value;
+        if (nextStock === "" || Number(nextStock) < 0) {
+          toast("Indique un stock válido.", "error");
+          return;
+        }
+        editingVariantStockId = null;
+        await saveVariant(variantId, {
+          stock_quantity: parseInt(nextStock, 10),
+          stock_reason: reasonInput.value.trim() || null,
+        });
       }
     });
 
