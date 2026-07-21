@@ -391,8 +391,8 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       $("drawerBody").innerHTML = `
         <div class="cn-summary">
           <div><b>${detail.lines.length}</b>líneas</div>
-          <div><b>${countedLines}</b>contadas</div>
-          <div><b>${detail.lines.length - countedLines}</b>pendientes</div>
+          <div><b id="summaryCounted">${countedLines}</b>contadas</div>
+          <div><b id="summaryPending">${detail.lines.length - countedLines}</b>pendientes</div>
         </div>
 
         <div class="ub-section-title">Líneas del conteo</div>

@@ -1,6 +1,6 @@
 import express from 'express';
 import { logger } from '../logger.js';
-import { query } from '../db.js';
+import { query, withTransaction } from '../db.js';
 import { authenticateToken, requireRole } from '../auth.js';
 import { apiLimiter } from '../middleware/rateLimit.js';
 import { logAudit } from '../services/audit.js';
