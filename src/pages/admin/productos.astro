@@ -1721,6 +1721,19 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     outline: none; border-color: var(--color-accent);
     box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-accent) 18%, transparent);
   }
+  .variant-stock-view { font-weight: 600; color: var(--color-primary); }
+  .variant-stock-edit {
+    display: flex; flex-direction: column; gap: 4px; align-items: stretch;
+  }
+  .variant-stock-edit input {
+    padding: 5px 7px; font: inherit; font-size: 12px; text-align: center;
+    border: 1px solid var(--rule); border-radius: var(--radius-sm);
+    background: var(--paper); color: var(--color-text);
+  }
+  .variant-stock-edit input:focus {
+    outline: none; border-color: var(--color-accent);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-accent) 18%, transparent);
+  }
 
   /* ── Toasts ────────────────────────────────────────────────────── */
   .toast-stack {
