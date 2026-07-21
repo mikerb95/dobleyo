@@ -479,11 +479,12 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   <script>
     const PAGE_SIZE = 25;
 
-    let allProducts = [];
-    let filteredProducts = [];
+    let allProducts = [];  // productos de la página actual (el filtrado y la paginación son del servidor)
+    let totalProducts = 0;
     let currentPage = 1;
     let sortKey = "name";
     let sortDir = "asc";
+    let searchDebounceTimer = null;
 
     let editingProductId = null;   // producto abierto en el modal de edición
     let deletingProductId = null;  // producto abierto en el modal de desactivar
