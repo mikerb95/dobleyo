@@ -642,13 +642,34 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     }
 
     // ── Carga ───────────────────────────────────────────────────────
-    async function loadProducts({ silent = false } = {}) {
+    // El filtrado, el orden y la paginación son del servidor
+    // (GET /api/inventory/products acepta category/active/search/stock/
+    // sortBy/order/page/pageSize); el cliente solo arma la query string.
+    function buildProductsQuery() {
+      const params = new URLSearchParams();
+      const category = $("categoryFilter").value;
+      const active = $("activeFilter").value;
+      const stock = $("stockFilter").value;
+      const search = $("searchInput").value.trim();
+      if (category) params.set("category", category);
+      if (active) params.set("active", active);
+      if (stock) params.set("stock", stock);
+      if (search) params.set("search", search);
+      params.set("sortBy", sortKey);
+      params.set("order", sortDir);
+      params.set("page", String(currentPage));
+      params.set("pageSize", String(PAGE_SIZE));
+      return params.toString();
+    }
+
+    async function loadProducts({ silent = false, resetPage = false } = {}) {
+      if (resetPage) currentPage = 1;
       const tbody = $("productsTableBody");
       if (!silent) {
         tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Cargando productos…</td></tr>';
       }
       try {
-        const response = await fetch("/api/inventory/products", { credentials: "include" });
+        const response = await fetch(`/api/inventory/products?${buildProductsQuery()}`, { credentials: "include" });
         if (!response.ok) throw new Error("Error al cargar productos");
         const data = await response.json();
         allProducts = (data.products || []).map((p) => ({
@@ -659,8 +680,12 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
           is_new: !!p.is_new,
           is_fast: !!p.is_fast,
         }));
-        updateStats(allProducts);
-        applyFilters();
+        totalProducts = Number(data.total) || 0;
+        currentPage = Number(data.page) || currentPage;
+        // Los KPIs reflejan siempre el catálogo completo: el servidor los calcula
+        // sin aplicar los filtros de la tabla.
+        updateStats(data.stats || {});
+        renderPage();
         return true;
       } catch (err) {
         console.error("Error:", err);
@@ -671,21 +696,14 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       }
     }
 
-    function updateStats(products) {
-      const total = products.length;
-      const active = products.filter((p) => p.is_active).length;
-
-      // Valor de inventario a costo. Sin costo cargado, el producto no suma.
-      const atCost = products.reduce(
-        (s, p) => s + (Number(p.cost) || 0) * Math.max(0, availableStock(p)), 0
-      );
-      const atRetail = products.reduce(
-        (s, p) => s + (Number(p.price) || 0) * Math.max(0, availableStock(p)), 0
-      );
-      const withoutCost = products.filter((p) => !Number(p.cost) && availableStock(p) > 0).length;
-
-      const low = products.filter((p) => isLow(p) && !isOut(p)).length;
-      const out = products.filter(isOut).length;
+    function updateStats(stats) {
+      const total = Number(stats.total) || 0;
+      const active = Number(stats.active) || 0;
+      const atCost = Number(stats.value_cost) || 0;
+      const atRetail = Number(stats.value_retail) || 0;
+      const withoutCost = Number(stats.without_cost) || 0;
+      const low = Number(stats.low) || 0;
+      const out = Number(stats.out) || 0;
 
       $("kpiTotal").textContent = total;
       $("kpiActiveSub").textContent = `${active} activos · ${total - active} inactivos`;
@@ -697,50 +715,8 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       $("kpiOut").textContent = out;
     }
 
-    // ── Filtros, orden y paginación ─────────────────────────────────
-    function applyFilters({ keepPage = false } = {}) {
-      const categoryFilter = $("categoryFilter").value;
-      const activeFilter = $("activeFilter").value;
-      const stockFilter = $("stockFilter").value;
-      const searchTerm = $("searchInput").value.toLowerCase().trim();
-
-      filteredProducts = allProducts.filter((p) => {
-        const matchesCategory = !categoryFilter || p.category === categoryFilter;
-        const matchesActive = activeFilter === "" ? true : p.is_active === (activeFilter === "true");
-        const matchesStock =
-          stockFilter === "low" ? (isLow(p) && !isOut(p))
-          : stockFilter === "out" ? isOut(p)
-          : true;
-        const matchesSearch = !searchTerm ||
-          p.name?.toLowerCase().includes(searchTerm) ||
-          p.sku?.toLowerCase().includes(searchTerm) ||
-          p.slug?.toLowerCase().includes(searchTerm) ||
-          p.id?.toLowerCase().includes(searchTerm) ||
-          p.description?.toLowerCase().includes(searchTerm);
-        return matchesCategory && matchesActive && matchesStock && matchesSearch;
-      });
-
-      sortFiltered();
-      if (!keepPage) currentPage = 1;
-      renderPage();
-    }
-
-    function sortFiltered() {
-      const dir = sortDir === "asc" ? 1 : -1;
-      filteredProducts.sort((a, b) => {
-        let va, vb;
-        switch (sortKey) {
-          case "price":    va = Number(a.price) || 0;   vb = Number(b.price) || 0; break;
-          case "stock":    va = availableStock(a);      vb = availableStock(b); break;
-          case "margin":   va = marginOf(a) ?? -Infinity; vb = marginOf(b) ?? -Infinity; break;
-          case "category": va = a.category || "";       vb = b.category || ""; break;
-          default:         va = (a.name || "").toLowerCase(); vb = (b.name || "").toLowerCase();
-        }
-        if (va < vb) return -1 * dir;
-        if (va > vb) return 1 * dir;
-        return 0;
-      });
-
+    // ── Orden y paginación (disparan una recarga al servidor) ────────
+    function updateSortIndicators() {
       document.querySelectorAll(".th-sort").forEach((btn) => {
         const ind = btn.querySelector(".sort-ind");
         const active = btn.dataset.sort === sortKey;
@@ -748,6 +724,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         ind.textContent = active ? (sortDir === "asc" ? "▲" : "▼") : "";
       });
     }
+    updateSortIndicators();
 
     document.querySelectorAll(".th-sort").forEach((btn) => {
       btn.addEventListener("click", () => {
@@ -758,32 +735,27 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
           sortKey = key;
           sortDir = key === "name" || key === "category" ? "asc" : "desc";
         }
-        sortFiltered();
-        currentPage = 1;
-        renderPage();
+        updateSortIndicators();
+        loadProducts({ resetPage: true });
       });
     });
 
     function renderPage() {
-      const totalPages = Math.max(1, Math.ceil(filteredProducts.length / PAGE_SIZE));
-      currentPage = Math.min(currentPage, totalPages);
-      const start = (currentPage - 1) * PAGE_SIZE;
-      const pageItems = filteredProducts.slice(start, start + PAGE_SIZE);
+      const totalPages = Math.max(1, Math.ceil(totalProducts / PAGE_SIZE));
 
-      $("resultCount").textContent =
-        `${filteredProducts.length} de ${allProducts.length} producto${allProducts.length === 1 ? "" : "s"}`;
+      $("resultCount").textContent = `${totalProducts} producto${totalProducts === 1 ? "" : "s"}`;
 
-      displayProducts(pageItems);
+      displayProducts(allProducts);
 
       const pager = $("pager");
-      pager.hidden = filteredProducts.length <= PAGE_SIZE;
+      pager.hidden = totalProducts <= PAGE_SIZE;
       $("pagerInfo").textContent = `Página ${currentPage} de ${totalPages}`;
       $("prevPageBtn").disabled = currentPage <= 1;
       $("nextPageBtn").disabled = currentPage >= totalPages;
     }
 
-    $("prevPageBtn").addEventListener("click", () => { currentPage--; renderPage(); });
-    $("nextPageBtn").addEventListener("click", () => { currentPage++; renderPage(); });
+    $("prevPageBtn").addEventListener("click", () => { currentPage--; loadProducts({ silent: true }); });
+    $("nextPageBtn").addEventListener("click", () => { currentPage++; loadProducts({ silent: true }); });
 
     // ── Render tabla ────────────────────────────────────────────────
     function displayProducts(products) {
