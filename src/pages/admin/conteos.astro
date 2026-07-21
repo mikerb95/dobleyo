@@ -382,7 +382,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
                 </div>
                 <span class="cn-line-delta ${deltaClass}">${hasDelta ? (delta >= 0 ? "+" : "") + fmt.format(delta) + " kg" : ""}</span>
                 <input type="number" class="cn-line-input" min="0" step="0.001"
-                  value="${counted != null ? counted : ""}" placeholder="Contado"
+                  value="${counted != null ? counted : ""}" placeholder="Sin contar"
                   ${isEditable ? "" : "disabled"} data-line-input="${l.id}" data-system="${l.system_qty_kg}" />
               </div>`;
           }).join("")
