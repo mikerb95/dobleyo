@@ -151,6 +151,7 @@ CREATE INDEX idx_pv_active  ON product_variants(is_active);
 CREATE TABLE IF NOT EXISTS inventory_movements (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     product_id VARCHAR(50) NOT NULL,
+    variant_id INTEGER, -- NULL = movimiento del producto; con valor = movimiento de esa variante
     movement_type TEXT NOT NULL CHECK (movement_type IN ('entrada', 'salida', 'ajuste', 'merma', 'devolucion')),
     quantity INTEGER NOT NULL,
     quantity_before INTEGER NOT NULL,
@@ -161,6 +162,7 @@ CREATE TABLE IF NOT EXISTS inventory_movements (
     user_id BIGINT,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+    FOREIGN KEY (variant_id) REFERENCES product_variants(id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 );
 CREATE INDEX idx_inv_movements_product ON inventory_movements(product_id);
