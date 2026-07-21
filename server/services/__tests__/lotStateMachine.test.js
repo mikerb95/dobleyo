@@ -100,13 +100,9 @@ describe('assertCanAdvance()', () => {
     await expect(assertCanAdvance(q, 'LOT-1', 'in_storage_green')).resolves.toBeUndefined();
   });
 
-  it('un stage final (rejected) rechaza cualquier avance con 409', async () => {
-    const q = async (sql) => ({
-      rows: sql.includes('production_quality_checks') || sql.includes('coffee_harvests') ? [{ 1: 1 }] : [],
-    });
-    // getCurrentStage no conoce 'rejected' (no tiene tabla propia en STAGE_TABLE
-    // ni en los checks), así que se simula indirectamente vía canTransitionTo.
-    expect(canTransitionTo('rejected', 'in_storage_roasted')).toBe(false);
+  it('rechaza saltarse etapas (cosecha directo a empacado) con 409', async () => {
+    const q = fakeQuery(['coffee_harvests']);
+    await expect(assertCanAdvance(q, 'LOT-1', 'packaged')).rejects.toMatchObject({ status: 409 });
   });
 });
 
