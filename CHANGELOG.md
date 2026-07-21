@@ -38,9 +38,26 @@ La página tenía formulario para campos que ninguna capa persistía y ocultaba 
 ### Verificación
 Migración ejecutada contra la BD real (idempotente). Ciclo completo probado por HTTP contra el servidor local: creación con todos los campos nuevos y `price = 0`, persistencia confirmada, limpieza de `images` guardando NULL real, `stock_quantity` correctamente ignorado en el PUT, conflicto de slug devolviendo 409, CRUD de variantes con sus validaciones, ajuste absoluto y salida de stock con control de saldo negativo, seis entradas de auditoría correctas y borrado físico arrastrando las variantes por CASCADE. `astro build` limpio.
 
-### Pendiente
-- Los filtros siguen siendo en cliente sobre el catálogo completo; el backend ya soporta `category`, `active`, `search`, `sortBy` y `order`. Conviene migrarlos cuando el catálogo crezca.
-- El stock de las variantes se edita como número directo, sin pasar por `inventory_movements`: no queda trazado como el del producto.
+---
+
+## 2026-07-21 — Cierre de pendientes de `/admin/productos`: filtros server-side y ledger de variantes (Agente: Claude)
+
+### Contexto
+Quedaban dos puntos abiertos de la auditoría anterior: el filtrado/orden/paginación seguía siendo 100% cliente sobre el catálogo completo, y el stock de una variante se sobrescribía directo sin dejar rastro en `inventory_movements` como sí ocurre con el stock del producto.
+
+### Filtros, orden y paginación al servidor
+`GET /api/inventory/products` pasó a resolver todo en SQL: una CTE (`agg` → `calc`) agrega variantes activas por producto y deriva `available_stock` (`variant_stock` si hay variantes, si no `stock_quantity - stock_reserved`) y `margin_pct` por fila; sobre esa proyección se aplican `WHERE` (categoría, activo, búsqueda por nombre/SKU/slug/id/descripción, y ahora también `stock=low|out`), `ORDER BY` (incluye ordenar por disponible y por margen, algo que antes solo existía en el cliente) con `NULLS LAST`, y `LIMIT/OFFSET`. La respuesta añade `page`, `pageSize` y `stats`: los KPIs se calculan con la misma CTE pero **sin los filtros de la tabla**, para que sigan describiendo el catálogo completo como antes.
+
+`productos.astro` quedó sin lógica de filtrado/orden/paginado: `allProducts` ahora es solo la página visible, `applyFilters()`/`sortFiltered()` desaparecieron y toda interacción (cambiar un select, escribir en el buscador, cambiar de página, hacer clic en un encabezado) dispara `loadProducts()` con los parámetros correspondientes. La búsqueda tiene debounce de 350ms para no disparar una petición por tecla.
+
+### Stock de variantes por movimiento
+`inventory_movements` gana una columna `variant_id` (nullable; `NULL` = movimiento del producto, como hasta ahora). `PUT /variants/:variantId` separa `stock_quantity` del resto de campos: si viene, calcula el delta, lo inserta como movimiento `ajuste` con `variant_id` y `user_id` reales, y solo entonces actualiza `product_variants.stock_quantity` — todo dentro de una única transacción (`withTransaction`) junto con el resto de campos que se hayan enviado, y rechaza valores negativos. En la UI, la celda de stock de cada variante pasó de número fijo a un editor inline (stock + motivo) con acciones de guardar/cancelar, igual en espíritu al modal de ajuste que ya existía para el producto.
+
+### Migración
+`server/migrations/add_variant_id_to_movements.js` (nueva, registrada en el runner) — añade la columna de forma idempotente y su índice.
+
+### Verificación
+Probado por HTTP contra el servidor local: filtro `stock=low`/`stock=out`, orden por precio/disponible/margen en ambas direcciones, búsqueda por slug, paginación con `page`/`pageSize`, y que `stats` no cambia con los filtros. Ajuste de stock de variante con motivo (10→7) asentando el movimiento correcto (`quantity: -3`, `variant_id` correcto, `user_id` del token), rechazo de stock negativo, y verificación de que otro campo (`sku_suffix`) se actualiza en la misma llamada sin afectar el ledger. `astro build` limpio (95/95 tests del proyecto en verde tras el rebuild).
 
 ---
 
