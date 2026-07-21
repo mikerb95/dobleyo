@@ -55,6 +55,7 @@ const steps = [
   { name: 'Split name fields',               run: () => runFn('split_name_fields.js', 'splitNameFields') },
   { name: 'Product store columns (slug, i18n)', run: () => runFn('add_product_store_columns.js', 'addProductStoreColumns') },
   { name: 'Product variants table',          run: () => runFn('add_product_variants.js', 'addProductVariants') },
+  { name: 'Variant id on inventory_movements', run: () => runFn('add_variant_id_to_movements.js', 'addVariantIdToMovements') },
   { name: 'Newsletter subscribers table',    run: () => runFn('add_newsletter_subscribers.js', 'addNewsletterSubscribers') },
   { name: 'Newsletter unsubscribe token',    run: () => runFn('add_newsletter_unsubscribe_token.js', 'addNewsletterUnsubscribeToken') },
   { name: 'Blog posts table + seed',         run: () => runFn('add_blog_posts.js', 'addBlogPosts') },
