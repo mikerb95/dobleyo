@@ -447,8 +447,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
         // Refresca el resumen (contadas/pendientes) sin recargar toda la fila,
         // así el operario no pierde el foco mientras sigue capturando.
-        const total = $("drawerBody").querySelectorAll("[data-line-input]").length;
-        const done = $("drawerBody").querySelectorAll("[data-line-input]:not([value=''])").length;
+        updateSummaryCounts();
       } catch (err) {
         toast(err.message, "err");
       } finally {
