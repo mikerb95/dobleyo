@@ -24,8 +24,8 @@ CREATE TABLE IF NOT EXISTS users (
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NULL
 );
-CREATE INDEX idx_users_role ON users(role);
-CREATE INDEX idx_users_caficultor_status ON users(caficultor_status);
+CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
+CREATE INDEX IF NOT EXISTS idx_users_caficultor_status ON users(caficultor_status);
 CREATE INDEX IF NOT EXISTS idx_users_google_id ON users(google_id);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_users_apple_id ON users(apple_id);
 
@@ -49,8 +49,8 @@ CREATE TABLE IF NOT EXISTS caficultor_applications (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (reviewed_by) REFERENCES users(id) ON DELETE SET NULL
 );
-CREATE INDEX idx_caficultor_apps_user ON caficultor_applications(user_id);
-CREATE INDEX idx_caficultor_apps_status ON caficultor_applications(status);
+CREATE INDEX IF NOT EXISTS idx_caficultor_apps_user ON caficultor_applications(user_id);
+CREATE INDEX IF NOT EXISTS idx_caficultor_apps_status ON caficultor_applications(status);
 
 -- Providers Profile
 CREATE TABLE IF NOT EXISTS providers (
@@ -76,7 +76,7 @@ CREATE TABLE IF NOT EXISTS refresh_tokens (
     replaced_by_token VARCHAR(255),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
-CREATE INDEX idx_refresh_tokens_user ON refresh_tokens(user_id);
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user ON refresh_tokens(user_id);
 
 -- Audit Logs
 CREATE TABLE IF NOT EXISTS audit_logs (
@@ -126,9 +126,9 @@ CREATE TABLE IF NOT EXISTS products (
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NULL
 );
-CREATE INDEX idx_products_category ON products(category);
-CREATE INDEX idx_products_active ON products(is_active);
-CREATE INDEX idx_products_sku ON products(sku);
+CREATE INDEX IF NOT EXISTS idx_products_category ON products(category);
+CREATE INDEX IF NOT EXISTS idx_products_active ON products(is_active);
+CREATE INDEX IF NOT EXISTS idx_products_sku ON products(sku);
 
 -- Product Variants (Variantes de producto: tamaño y molienda)
 CREATE TABLE IF NOT EXISTS product_variants (
@@ -144,8 +144,8 @@ CREATE TABLE IF NOT EXISTS product_variants (
     created_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
 );
-CREATE INDEX idx_pv_product ON product_variants(product_id);
-CREATE INDEX idx_pv_active  ON product_variants(is_active);
+CREATE INDEX IF NOT EXISTS idx_pv_product ON product_variants(product_id);
+CREATE INDEX IF NOT EXISTS idx_pv_active  ON product_variants(is_active);
 
 -- Inventory Movements (Trazabilidad de movimientos de stock)
 CREATE TABLE IF NOT EXISTS inventory_movements (
@@ -165,9 +165,9 @@ CREATE TABLE IF NOT EXISTS inventory_movements (
     FOREIGN KEY (variant_id) REFERENCES product_variants(id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 );
-CREATE INDEX idx_inv_movements_product ON inventory_movements(product_id);
-CREATE INDEX idx_inv_movements_type ON inventory_movements(movement_type);
-CREATE INDEX idx_inv_movements_date ON inventory_movements(created_at);
+CREATE INDEX IF NOT EXISTS idx_inv_movements_product ON inventory_movements(product_id);
+CREATE INDEX IF NOT EXISTS idx_inv_movements_type ON inventory_movements(movement_type);
+CREATE INDEX IF NOT EXISTS idx_inv_movements_date ON inventory_movements(created_at);
 
 -- Product Suppliers (Proveedores de productos)
 CREATE TABLE IF NOT EXISTS product_suppliers (
@@ -201,8 +201,8 @@ CREATE TABLE IF NOT EXISTS product_supplier_prices (
     FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
     FOREIGN KEY (supplier_id) REFERENCES product_suppliers(id) ON DELETE CASCADE
 );
-CREATE INDEX idx_prod_supplier_product ON product_supplier_prices(product_id);
-CREATE INDEX idx_prod_supplier_supplier ON product_supplier_prices(supplier_id);
+CREATE INDEX IF NOT EXISTS idx_prod_supplier_product ON product_supplier_prices(product_id);
+CREATE INDEX IF NOT EXISTS idx_prod_supplier_supplier ON product_supplier_prices(supplier_id);
 
 -- Lots
 CREATE TABLE IF NOT EXISTS lots (
@@ -241,10 +241,10 @@ CREATE TABLE IF NOT EXISTS lots (
     FOREIGN KEY (product_id) REFERENCES products(id),
     FOREIGN KEY (parent_lot_id) REFERENCES lots(id) ON DELETE SET NULL
 );
-CREATE INDEX idx_lots_code ON lots(code);
-CREATE INDEX idx_lots_product ON lots(product_id);
-CREATE INDEX idx_lots_estado ON lots(estado);
-CREATE INDEX idx_lots_parent ON lots(parent_lot_id);
+CREATE INDEX IF NOT EXISTS idx_lots_code ON lots(code);
+CREATE INDEX IF NOT EXISTS idx_lots_product ON lots(product_id);
+CREATE INDEX IF NOT EXISTS idx_lots_estado ON lots(estado);
+CREATE INDEX IF NOT EXISTS idx_lots_parent ON lots(parent_lot_id);
 
 -- Lot Movements (ajustes de peso de lotes de café: entrada/salida/ajuste/merma)
 CREATE TABLE IF NOT EXISTS lot_movements (
@@ -262,8 +262,8 @@ CREATE TABLE IF NOT EXISTS lot_movements (
     FOREIGN KEY (lot_id) REFERENCES lots(id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 );
-CREATE INDEX idx_lot_movements_lot ON lot_movements(lot_id);
-CREATE INDEX idx_lot_movements_date ON lot_movements(created_at);
+CREATE INDEX IF NOT EXISTS idx_lot_movements_lot ON lot_movements(lot_id);
+CREATE INDEX IF NOT EXISTS idx_lot_movements_date ON lot_movements(created_at);
 
 -- Sales Tracking (MercadoLibre)
 CREATE TABLE IF NOT EXISTS sales_tracking (
@@ -284,10 +284,10 @@ CREATE TABLE IF NOT EXISTS sales_tracking (
     updated_at TIMESTAMP NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
-CREATE INDEX idx_sales_ml_order_id ON sales_tracking(ml_order_id);
-CREATE INDEX idx_sales_purchase_date ON sales_tracking(purchase_date);
-CREATE INDEX idx_sales_city ON sales_tracking(recipient_city);
-CREATE INDEX idx_sales_state ON sales_tracking(recipient_state);
+CREATE INDEX IF NOT EXISTS idx_sales_ml_order_id ON sales_tracking(ml_order_id);
+CREATE INDEX IF NOT EXISTS idx_sales_purchase_date ON sales_tracking(purchase_date);
+CREATE INDEX IF NOT EXISTS idx_sales_city ON sales_tracking(recipient_city);
+CREATE INDEX IF NOT EXISTS idx_sales_state ON sales_tracking(recipient_state);
 
 -- Demand Forecasts (Pronóstico de demanda — analítica con Python)
 -- Escrita por api/ml/recompute.py a partir de sales_tracking. El backend Node solo lee.
@@ -307,9 +307,9 @@ CREATE TABLE IF NOT EXISTS demand_forecasts (
     history_weeks  INTEGER,
     generated_at   TEXT    NOT NULL DEFAULT (datetime('now'))
 );
-CREATE INDEX idx_demand_forecasts_key       ON demand_forecasts(product_key);
-CREATE INDEX idx_demand_forecasts_metric    ON demand_forecasts(metric);
-CREATE INDEX idx_demand_forecasts_generated ON demand_forecasts(generated_at);
+CREATE INDEX IF NOT EXISTS idx_demand_forecasts_key       ON demand_forecasts(product_key);
+CREATE INDEX IF NOT EXISTS idx_demand_forecasts_metric    ON demand_forecasts(metric);
+CREATE INDEX IF NOT EXISTS idx_demand_forecasts_generated ON demand_forecasts(generated_at);
 
 -- Product Labels (Etiquetas para productos)
 CREATE TABLE IF NOT EXISTS product_labels (
@@ -324,9 +324,9 @@ CREATE TABLE IF NOT EXISTS product_labels (
     updated_at TIMESTAMP NULL,
     FOREIGN KEY (lot_id) REFERENCES lots(id) ON DELETE CASCADE
 );
-CREATE INDEX idx_product_labels_lot ON product_labels(lot_id);
-CREATE INDEX idx_product_labels_code ON product_labels(label_code);
-CREATE INDEX idx_product_labels_printed ON product_labels(printed);
+CREATE INDEX IF NOT EXISTS idx_product_labels_lot ON product_labels(lot_id);
+CREATE INDEX IF NOT EXISTS idx_product_labels_code ON product_labels(label_code);
+CREATE INDEX IF NOT EXISTS idx_product_labels_printed ON product_labels(printed);
 
 -- Generated Labels (Etiquetas generadas - desde lotes o de cero)
 CREATE TABLE IF NOT EXISTS generated_labels (
@@ -356,11 +356,11 @@ CREATE TABLE IF NOT EXISTS generated_labels (
     updated_at TIMESTAMP NULL,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 );
-CREATE INDEX idx_generated_labels_code ON generated_labels(label_code);
-CREATE INDEX idx_generated_labels_lot_code ON generated_labels(lot_code);
-CREATE INDEX idx_generated_labels_user ON generated_labels(user_id);
-CREATE INDEX idx_generated_labels_printed ON generated_labels(printed);
-CREATE INDEX idx_generated_labels_created ON generated_labels(created_at);
+CREATE INDEX IF NOT EXISTS idx_generated_labels_code ON generated_labels(label_code);
+CREATE INDEX IF NOT EXISTS idx_generated_labels_lot_code ON generated_labels(lot_code);
+CREATE INDEX IF NOT EXISTS idx_generated_labels_user ON generated_labels(user_id);
+CREATE INDEX IF NOT EXISTS idx_generated_labels_printed ON generated_labels(printed);
+CREATE INDEX IF NOT EXISTS idx_generated_labels_created ON generated_labels(created_at);
 
 -- ==========================================
 -- MÓDULO FINANCIERO / ACCOUNTING
@@ -386,9 +386,9 @@ CREATE TABLE IF NOT EXISTS accounting_accounts (
     updated_at TIMESTAMP NULL,
     FOREIGN KEY (parent_account_id) REFERENCES accounting_accounts(id) ON DELETE SET NULL
 );
-CREATE INDEX idx_acc_accounts_code ON accounting_accounts(code);
-CREATE INDEX idx_acc_accounts_type ON accounting_accounts(account_type);
-CREATE INDEX idx_acc_accounts_parent ON accounting_accounts(parent_account_id);
+CREATE INDEX IF NOT EXISTS idx_acc_accounts_code ON accounting_accounts(code);
+CREATE INDEX IF NOT EXISTS idx_acc_accounts_type ON accounting_accounts(account_type);
+CREATE INDEX IF NOT EXISTS idx_acc_accounts_parent ON accounting_accounts(parent_account_id);
 
 -- Diarios Contables (Journals)
 CREATE TABLE IF NOT EXISTS accounting_journals (
@@ -402,7 +402,7 @@ CREATE TABLE IF NOT EXISTS accounting_journals (
     updated_at TIMESTAMP NULL,
     FOREIGN KEY (default_account_id) REFERENCES accounting_accounts(id) ON DELETE SET NULL
 );
-CREATE INDEX idx_acc_journals_type ON accounting_journals(journal_type);
+CREATE INDEX IF NOT EXISTS idx_acc_journals_type ON accounting_journals(journal_type);
 
 -- Asientos Contables (Journal Entries)
 CREATE TABLE IF NOT EXISTS accounting_entries (
@@ -422,10 +422,10 @@ CREATE TABLE IF NOT EXISTS accounting_entries (
     FOREIGN KEY (journal_id) REFERENCES accounting_journals(id) ON DELETE RESTRICT,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 );
-CREATE INDEX idx_acc_entries_journal ON accounting_entries(journal_id);
-CREATE INDEX idx_acc_entries_date ON accounting_entries(entry_date);
-CREATE INDEX idx_acc_entries_state ON accounting_entries(state);
-CREATE INDEX idx_acc_entries_reference ON accounting_entries(reference);
+CREATE INDEX IF NOT EXISTS idx_acc_entries_journal ON accounting_entries(journal_id);
+CREATE INDEX IF NOT EXISTS idx_acc_entries_date ON accounting_entries(entry_date);
+CREATE INDEX IF NOT EXISTS idx_acc_entries_state ON accounting_entries(state);
+CREATE INDEX IF NOT EXISTS idx_acc_entries_reference ON accounting_entries(reference);
 
 -- Líneas de Asientos Contables (Journal Entry Lines - Partida Doble)
 CREATE TABLE IF NOT EXISTS accounting_entry_lines (
@@ -443,10 +443,10 @@ CREATE TABLE IF NOT EXISTS accounting_entry_lines (
     FOREIGN KEY (account_id) REFERENCES accounting_accounts(id) ON DELETE RESTRICT,
     FOREIGN KEY (partner_id) REFERENCES users(id) ON DELETE SET NULL
 );
-CREATE INDEX idx_acc_entry_lines_entry ON accounting_entry_lines(entry_id);
-CREATE INDEX idx_acc_entry_lines_account ON accounting_entry_lines(account_id);
-CREATE INDEX idx_acc_entry_lines_partner ON accounting_entry_lines(partner_id);
-CREATE INDEX idx_acc_entry_lines_reconciled ON accounting_entry_lines(reconciled);
+CREATE INDEX IF NOT EXISTS idx_acc_entry_lines_entry ON accounting_entry_lines(entry_id);
+CREATE INDEX IF NOT EXISTS idx_acc_entry_lines_account ON accounting_entry_lines(account_id);
+CREATE INDEX IF NOT EXISTS idx_acc_entry_lines_partner ON accounting_entry_lines(partner_id);
+CREATE INDEX IF NOT EXISTS idx_acc_entry_lines_reconciled ON accounting_entry_lines(reconciled);
 
 -- Cuentas Bancarias
 CREATE TABLE IF NOT EXISTS bank_accounts (
@@ -463,7 +463,7 @@ CREATE TABLE IF NOT EXISTS bank_accounts (
     updated_at TIMESTAMP NULL,
     FOREIGN KEY (accounting_account_id) REFERENCES accounting_accounts(id) ON DELETE SET NULL
 );
-CREATE INDEX idx_bank_accounts_active ON bank_accounts(is_active);
+CREATE INDEX IF NOT EXISTS idx_bank_accounts_active ON bank_accounts(is_active);
 
 -- Movimientos Bancarios
 CREATE TABLE IF NOT EXISTS bank_movements (
@@ -481,9 +481,9 @@ CREATE TABLE IF NOT EXISTS bank_movements (
     FOREIGN KEY (bank_account_id) REFERENCES bank_accounts(id) ON DELETE CASCADE,
     FOREIGN KEY (accounting_entry_id) REFERENCES accounting_entries(id) ON DELETE SET NULL
 );
-CREATE INDEX idx_bank_movements_account ON bank_movements(bank_account_id);
-CREATE INDEX idx_bank_movements_date ON bank_movements(movement_date);
-CREATE INDEX idx_bank_movements_reconciled ON bank_movements(reconciled);
+CREATE INDEX IF NOT EXISTS idx_bank_movements_account ON bank_movements(bank_account_id);
+CREATE INDEX IF NOT EXISTS idx_bank_movements_date ON bank_movements(movement_date);
+CREATE INDEX IF NOT EXISTS idx_bank_movements_reconciled ON bank_movements(reconciled);
 
 -- Métodos de Pago
 CREATE TABLE IF NOT EXISTS payment_methods (
@@ -520,10 +520,10 @@ CREATE TABLE IF NOT EXISTS purchase_orders (
     FOREIGN KEY (caficultor_id) REFERENCES users(id) ON DELETE SET NULL,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 );
-CREATE INDEX idx_purchase_orders_supplier ON purchase_orders(supplier_id);
-CREATE INDEX idx_purchase_orders_caficultor ON purchase_orders(caficultor_id);
-CREATE INDEX idx_purchase_orders_state ON purchase_orders(state);
-CREATE INDEX idx_purchase_orders_date ON purchase_orders(order_date);
+CREATE INDEX IF NOT EXISTS idx_purchase_orders_supplier ON purchase_orders(supplier_id);
+CREATE INDEX IF NOT EXISTS idx_purchase_orders_caficultor ON purchase_orders(caficultor_id);
+CREATE INDEX IF NOT EXISTS idx_purchase_orders_state ON purchase_orders(state);
+CREATE INDEX IF NOT EXISTS idx_purchase_orders_date ON purchase_orders(order_date);
 
 -- Líneas de Órdenes de Compra
 CREATE TABLE IF NOT EXISTS purchase_order_lines (
@@ -542,7 +542,7 @@ CREATE TABLE IF NOT EXISTS purchase_order_lines (
     FOREIGN KEY (purchase_order_id) REFERENCES purchase_orders(id) ON DELETE CASCADE,
     FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE SET NULL
 );
-CREATE INDEX idx_purchase_order_lines_order ON purchase_order_lines(purchase_order_id);
+CREATE INDEX IF NOT EXISTS idx_purchase_order_lines_order ON purchase_order_lines(purchase_order_id);
 
 -- Facturas de Compra (Vendor Bills)
 CREATE TABLE IF NOT EXISTS purchase_invoices (
@@ -572,11 +572,11 @@ CREATE TABLE IF NOT EXISTS purchase_invoices (
     FOREIGN KEY (accounting_entry_id) REFERENCES accounting_entries(id) ON DELETE SET NULL,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 );
-CREATE INDEX idx_purchase_invoices_supplier ON purchase_invoices(supplier_id);
-CREATE INDEX idx_purchase_invoices_caficultor ON purchase_invoices(caficultor_id);
-CREATE INDEX idx_purchase_invoices_state ON purchase_invoices(state);
-CREATE INDEX idx_purchase_invoices_date ON purchase_invoices(invoice_date);
-CREATE INDEX idx_purchase_invoices_due_date ON purchase_invoices(due_date);
+CREATE INDEX IF NOT EXISTS idx_purchase_invoices_supplier ON purchase_invoices(supplier_id);
+CREATE INDEX IF NOT EXISTS idx_purchase_invoices_caficultor ON purchase_invoices(caficultor_id);
+CREATE INDEX IF NOT EXISTS idx_purchase_invoices_state ON purchase_invoices(state);
+CREATE INDEX IF NOT EXISTS idx_purchase_invoices_date ON purchase_invoices(invoice_date);
+CREATE INDEX IF NOT EXISTS idx_purchase_invoices_due_date ON purchase_invoices(due_date);
 
 -- Líneas de Facturas de Compra
 CREATE TABLE IF NOT EXISTS purchase_invoice_lines (
@@ -595,7 +595,7 @@ CREATE TABLE IF NOT EXISTS purchase_invoice_lines (
     FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE SET NULL,
     FOREIGN KEY (accounting_account_id) REFERENCES accounting_accounts(id) ON DELETE SET NULL
 );
-CREATE INDEX idx_purchase_invoice_lines_invoice ON purchase_invoice_lines(purchase_invoice_id);
+CREATE INDEX IF NOT EXISTS idx_purchase_invoice_lines_invoice ON purchase_invoice_lines(purchase_invoice_id);
 
 -- Facturas de Venta (Customer Invoices)
 CREATE TABLE IF NOT EXISTS sales_invoices (
@@ -624,11 +624,11 @@ CREATE TABLE IF NOT EXISTS sales_invoices (
     FOREIGN KEY (accounting_entry_id) REFERENCES accounting_entries(id) ON DELETE SET NULL,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 );
-CREATE INDEX idx_sales_invoices_customer ON sales_invoices(customer_id);
-CREATE INDEX idx_sales_invoices_state ON sales_invoices(state);
-CREATE INDEX idx_sales_invoices_date ON sales_invoices(invoice_date);
-CREATE INDEX idx_sales_invoices_due_date ON sales_invoices(due_date);
-CREATE INDEX idx_sales_invoices_ml_order ON sales_invoices(ml_order_id);
+CREATE INDEX IF NOT EXISTS idx_sales_invoices_customer ON sales_invoices(customer_id);
+CREATE INDEX IF NOT EXISTS idx_sales_invoices_state ON sales_invoices(state);
+CREATE INDEX IF NOT EXISTS idx_sales_invoices_date ON sales_invoices(invoice_date);
+CREATE INDEX IF NOT EXISTS idx_sales_invoices_due_date ON sales_invoices(due_date);
+CREATE INDEX IF NOT EXISTS idx_sales_invoices_ml_order ON sales_invoices(ml_order_id);
 
 -- Líneas de Facturas de Venta
 CREATE TABLE IF NOT EXISTS sales_invoice_lines (
@@ -648,7 +648,7 @@ CREATE TABLE IF NOT EXISTS sales_invoice_lines (
     FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE SET NULL,
     FOREIGN KEY (accounting_account_id) REFERENCES accounting_accounts(id) ON DELETE SET NULL
 );
-CREATE INDEX idx_sales_invoice_lines_invoice ON sales_invoice_lines(sales_invoice_id);
+CREATE INDEX IF NOT EXISTS idx_sales_invoice_lines_invoice ON sales_invoice_lines(sales_invoice_id);
 
 -- Pagos (Payments - tanto recibidos como realizados)
 CREATE TABLE IF NOT EXISTS payments (
@@ -674,10 +674,10 @@ CREATE TABLE IF NOT EXISTS payments (
     FOREIGN KEY (accounting_entry_id) REFERENCES accounting_entries(id) ON DELETE SET NULL,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 );
-CREATE INDEX idx_payments_type ON payments(payment_type);
-CREATE INDEX idx_payments_partner ON payments(partner_id);
-CREATE INDEX idx_payments_date ON payments(payment_date);
-CREATE INDEX idx_payments_state ON payments(state);
+CREATE INDEX IF NOT EXISTS idx_payments_type ON payments(payment_type);
+CREATE INDEX IF NOT EXISTS idx_payments_partner ON payments(partner_id);
+CREATE INDEX IF NOT EXISTS idx_payments_date ON payments(payment_date);
+CREATE INDEX IF NOT EXISTS idx_payments_state ON payments(state);
 
 -- Asignación de Pagos a Facturas (Payment Allocations)
 CREATE TABLE IF NOT EXISTS payment_allocations (
@@ -691,8 +691,8 @@ CREATE TABLE IF NOT EXISTS payment_allocations (
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (payment_id) REFERENCES payments(id) ON DELETE CASCADE
 );
-CREATE INDEX idx_payment_allocations_payment ON payment_allocations(payment_id);
-CREATE INDEX idx_payment_allocations_invoice ON payment_allocations(invoice_id, invoice_type);
+CREATE INDEX IF NOT EXISTS idx_payment_allocations_payment ON payment_allocations(payment_id);
+CREATE INDEX IF NOT EXISTS idx_payment_allocations_invoice ON payment_allocations(invoice_id, invoice_type);
 
 -- Centro de Costos
 CREATE TABLE IF NOT EXISTS cost_centers (
@@ -706,7 +706,7 @@ CREATE TABLE IF NOT EXISTS cost_centers (
     updated_at TIMESTAMP NULL,
     FOREIGN KEY (parent_cost_center_id) REFERENCES cost_centers(id) ON DELETE SET NULL
 );
-CREATE INDEX idx_cost_centers_parent ON cost_centers(parent_cost_center_id);
+CREATE INDEX IF NOT EXISTS idx_cost_centers_parent ON cost_centers(parent_cost_center_id);
 
 -- Presupuestos
 CREATE TABLE IF NOT EXISTS budgets (
@@ -724,8 +724,8 @@ CREATE TABLE IF NOT EXISTS budgets (
     updated_at TIMESTAMP NULL,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 );
-CREATE INDEX idx_budgets_year ON budgets(budget_year);
-CREATE INDEX idx_budgets_state ON budgets(state);
+CREATE INDEX IF NOT EXISTS idx_budgets_year ON budgets(budget_year);
+CREATE INDEX IF NOT EXISTS idx_budgets_state ON budgets(state);
 
 -- Líneas de Presupuesto
 CREATE TABLE IF NOT EXISTS budget_lines (
@@ -743,9 +743,9 @@ CREATE TABLE IF NOT EXISTS budget_lines (
     FOREIGN KEY (account_id) REFERENCES accounting_accounts(id) ON DELETE RESTRICT,
     FOREIGN KEY (cost_center_id) REFERENCES cost_centers(id) ON DELETE SET NULL
 );
-CREATE INDEX idx_budget_lines_budget ON budget_lines(budget_id);
-CREATE INDEX idx_budget_lines_account ON budget_lines(account_id);
-CREATE INDEX idx_budget_lines_cost_center ON budget_lines(cost_center_id);
+CREATE INDEX IF NOT EXISTS idx_budget_lines_budget ON budget_lines(budget_id);
+CREATE INDEX IF NOT EXISTS idx_budget_lines_account ON budget_lines(account_id);
+CREATE INDEX IF NOT EXISTS idx_budget_lines_cost_center ON budget_lines(cost_center_id);
 
 -- Notas Crédito/Débito
 CREATE TABLE IF NOT EXISTS credit_debit_notes (
@@ -768,11 +768,11 @@ CREATE TABLE IF NOT EXISTS credit_debit_notes (
     FOREIGN KEY (accounting_entry_id) REFERENCES accounting_entries(id) ON DELETE SET NULL,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 );
-CREATE INDEX idx_credit_debit_notes_type ON credit_debit_notes(note_type);
-CREATE INDEX idx_credit_debit_notes_document_type ON credit_debit_notes(document_type);
-CREATE INDEX idx_credit_debit_notes_invoice ON credit_debit_notes(invoice_id);
-CREATE INDEX idx_credit_debit_notes_partner ON credit_debit_notes(partner_id);
-CREATE INDEX idx_credit_debit_notes_state ON credit_debit_notes(state);
+CREATE INDEX IF NOT EXISTS idx_credit_debit_notes_type ON credit_debit_notes(note_type);
+CREATE INDEX IF NOT EXISTS idx_credit_debit_notes_document_type ON credit_debit_notes(document_type);
+CREATE INDEX IF NOT EXISTS idx_credit_debit_notes_invoice ON credit_debit_notes(invoice_id);
+CREATE INDEX IF NOT EXISTS idx_credit_debit_notes_partner ON credit_debit_notes(partner_id);
+CREATE INDEX IF NOT EXISTS idx_credit_debit_notes_state ON credit_debit_notes(state);
 
 -- Gastos / Expenses
 CREATE TABLE IF NOT EXISTS expenses (
@@ -807,11 +807,11 @@ CREATE TABLE IF NOT EXISTS expenses (
     FOREIGN KEY (accounting_entry_id) REFERENCES accounting_entries(id) ON DELETE SET NULL,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 );
-CREATE INDEX idx_expenses_date ON expenses(expense_date);
-CREATE INDEX idx_expenses_category ON expenses(category);
-CREATE INDEX idx_expenses_supplier ON expenses(supplier_id);
-CREATE INDEX idx_expenses_state ON expenses(state);
-CREATE INDEX idx_expenses_cost_center ON expenses(cost_center_id);
+CREATE INDEX IF NOT EXISTS idx_expenses_date ON expenses(expense_date);
+CREATE INDEX IF NOT EXISTS idx_expenses_category ON expenses(category);
+CREATE INDEX IF NOT EXISTS idx_expenses_supplier ON expenses(supplier_id);
+CREATE INDEX IF NOT EXISTS idx_expenses_state ON expenses(state);
+CREATE INDEX IF NOT EXISTS idx_expenses_cost_center ON expenses(cost_center_id);
 
 -- Configuración de Impuestos
 CREATE TABLE IF NOT EXISTS tax_rates (
@@ -826,7 +826,7 @@ CREATE TABLE IF NOT EXISTS tax_rates (
     updated_at TIMESTAMP NULL,
     FOREIGN KEY (accounting_account_id) REFERENCES accounting_accounts(id) ON DELETE SET NULL
 );
-CREATE INDEX idx_tax_rates_type ON tax_rates(tax_type);
+CREATE INDEX IF NOT EXISTS idx_tax_rates_type ON tax_rates(tax_type);
 
 -- ==========================================
 -- MÓDULO DE MANUFACTURA/PRODUCCIÓN
@@ -847,8 +847,8 @@ CREATE TABLE IF NOT EXISTS work_centers (
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NULL
 );
-CREATE INDEX idx_work_centers_type ON work_centers(work_center_type);
-CREATE INDEX idx_work_centers_active ON work_centers(is_active);
+CREATE INDEX IF NOT EXISTS idx_work_centers_type ON work_centers(work_center_type);
+CREATE INDEX IF NOT EXISTS idx_work_centers_active ON work_centers(is_active);
 
 -- Equipos de Tostado (Roasting Equipment)
 CREATE TABLE IF NOT EXISTS roasting_equipment (
@@ -872,8 +872,8 @@ CREATE TABLE IF NOT EXISTS roasting_equipment (
     updated_at TIMESTAMP NULL,
     FOREIGN KEY (work_center_id) REFERENCES work_centers(id) ON DELETE RESTRICT
 );
-CREATE INDEX idx_roasting_equipment_work_center ON roasting_equipment(work_center_id);
-CREATE INDEX idx_roasting_equipment_operational ON roasting_equipment(is_operational);
+CREATE INDEX IF NOT EXISTS idx_roasting_equipment_work_center ON roasting_equipment(work_center_id);
+CREATE INDEX IF NOT EXISTS idx_roasting_equipment_operational ON roasting_equipment(is_operational);
 
 -- Lista de Materiales (Bill of Materials - BOM)
 CREATE TABLE IF NOT EXISTS bill_of_materials (
@@ -893,9 +893,9 @@ CREATE TABLE IF NOT EXISTS bill_of_materials (
     FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE RESTRICT,
     FOREIGN KEY (work_center_id) REFERENCES work_centers(id) ON DELETE SET NULL
 );
-CREATE INDEX idx_bom_product ON bill_of_materials(product_id);
-CREATE INDEX idx_bom_type ON bill_of_materials(bom_type);
-CREATE INDEX idx_bom_active ON bill_of_materials(is_active);
+CREATE INDEX IF NOT EXISTS idx_bom_product ON bill_of_materials(product_id);
+CREATE INDEX IF NOT EXISTS idx_bom_type ON bill_of_materials(bom_type);
+CREATE INDEX IF NOT EXISTS idx_bom_active ON bill_of_materials(is_active);
 
 -- Componentes de la Lista de Materiales (BOM Components)
 CREATE TABLE IF NOT EXISTS bom_components (
@@ -911,8 +911,8 @@ CREATE TABLE IF NOT EXISTS bom_components (
     FOREIGN KEY (bom_id) REFERENCES bill_of_materials(id) ON DELETE CASCADE,
     FOREIGN KEY (component_product_id) REFERENCES products(id) ON DELETE RESTRICT
 );
-CREATE INDEX idx_bom_components_bom ON bom_components(bom_id);
-CREATE INDEX idx_bom_components_product ON bom_components(component_product_id);
+CREATE INDEX IF NOT EXISTS idx_bom_components_bom ON bom_components(bom_id);
+CREATE INDEX IF NOT EXISTS idx_bom_components_product ON bom_components(component_product_id);
 
 -- Órdenes de Producción (Manufacturing Orders)
 CREATE TABLE IF NOT EXISTS production_orders (
@@ -947,12 +947,12 @@ CREATE TABLE IF NOT EXISTS production_orders (
     FOREIGN KEY (responsible_user_id) REFERENCES users(id) ON DELETE SET NULL,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 );
-CREATE INDEX idx_production_orders_bom ON production_orders(bom_id);
-CREATE INDEX idx_production_orders_product ON production_orders(product_id);
-CREATE INDEX idx_production_orders_lot ON production_orders(lot_id);
-CREATE INDEX idx_production_orders_state ON production_orders(state);
-CREATE INDEX idx_production_orders_scheduled_date ON production_orders(scheduled_date);
-CREATE INDEX idx_production_orders_work_center ON production_orders(work_center_id);
+CREATE INDEX IF NOT EXISTS idx_production_orders_bom ON production_orders(bom_id);
+CREATE INDEX IF NOT EXISTS idx_production_orders_product ON production_orders(product_id);
+CREATE INDEX IF NOT EXISTS idx_production_orders_lot ON production_orders(lot_id);
+CREATE INDEX IF NOT EXISTS idx_production_orders_state ON production_orders(state);
+CREATE INDEX IF NOT EXISTS idx_production_orders_scheduled_date ON production_orders(scheduled_date);
+CREATE INDEX IF NOT EXISTS idx_production_orders_work_center ON production_orders(work_center_id);
 
 -- Consumos de Materiales en Producción (Material Consumption)
 CREATE TABLE IF NOT EXISTS production_material_consumption (
@@ -972,9 +972,9 @@ CREATE TABLE IF NOT EXISTS production_material_consumption (
     FOREIGN KEY (lot_id) REFERENCES lots(id) ON DELETE SET NULL,
     FOREIGN KEY (inventory_movement_id) REFERENCES inventory_movements(id) ON DELETE SET NULL
 );
-CREATE INDEX idx_prod_material_consumption_order ON production_material_consumption(production_order_id);
-CREATE INDEX idx_prod_material_consumption_product ON production_material_consumption(product_id);
-CREATE INDEX idx_prod_material_consumption_date ON production_material_consumption(consumption_date);
+CREATE INDEX IF NOT EXISTS idx_prod_material_consumption_order ON production_material_consumption(production_order_id);
+CREATE INDEX IF NOT EXISTS idx_prod_material_consumption_product ON production_material_consumption(product_id);
+CREATE INDEX IF NOT EXISTS idx_prod_material_consumption_date ON production_material_consumption(consumption_date);
 
 -- Perfiles de Tostado (Roast Profiles)
 CREATE TABLE IF NOT EXISTS roast_profiles (
@@ -1000,8 +1000,8 @@ CREATE TABLE IF NOT EXISTS roast_profiles (
     FOREIGN KEY (roasting_equipment_id) REFERENCES roasting_equipment(id) ON DELETE SET NULL,
     FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
 );
-CREATE INDEX idx_roast_profiles_level ON roast_profiles(roast_level);
-CREATE INDEX idx_roast_profiles_active ON roast_profiles(is_active);
+CREATE INDEX IF NOT EXISTS idx_roast_profiles_level ON roast_profiles(roast_level);
+CREATE INDEX IF NOT EXISTS idx_roast_profiles_active ON roast_profiles(is_active);
 
 -- Registros de Tostado (Roast Batches / Roast Logs)
 CREATE TABLE IF NOT EXISTS roast_batches (
@@ -1046,13 +1046,13 @@ CREATE TABLE IF NOT EXISTS roast_batches (
     FOREIGN KEY (operator_id) REFERENCES users(id) ON DELETE RESTRICT,
     FOREIGN KEY (approved_by) REFERENCES users(id) ON DELETE SET NULL
 );
-CREATE INDEX idx_roast_batches_production_order ON roast_batches(production_order_id);
-CREATE INDEX idx_roast_batches_profile ON roast_batches(roast_profile_id);
-CREATE INDEX idx_roast_batches_equipment ON roast_batches(roasting_equipment_id);
-CREATE INDEX idx_roast_batches_green_lot ON roast_batches(green_coffee_lot_id);
-CREATE INDEX idx_roast_batches_date ON roast_batches(roast_date);
-CREATE INDEX idx_roast_batches_operator ON roast_batches(operator_id);
-CREATE INDEX idx_roast_batches_approved ON roast_batches(is_approved);
+CREATE INDEX IF NOT EXISTS idx_roast_batches_production_order ON roast_batches(production_order_id);
+CREATE INDEX IF NOT EXISTS idx_roast_batches_profile ON roast_batches(roast_profile_id);
+CREATE INDEX IF NOT EXISTS idx_roast_batches_equipment ON roast_batches(roasting_equipment_id);
+CREATE INDEX IF NOT EXISTS idx_roast_batches_green_lot ON roast_batches(green_coffee_lot_id);
+CREATE INDEX IF NOT EXISTS idx_roast_batches_date ON roast_batches(roast_date);
+CREATE INDEX IF NOT EXISTS idx_roast_batches_operator ON roast_batches(operator_id);
+CREATE INDEX IF NOT EXISTS idx_roast_batches_approved ON roast_batches(is_approved);
 
 -- Control de Calidad en Producción
 CREATE TABLE IF NOT EXISTS production_quality_checks (
@@ -1094,12 +1094,12 @@ CREATE TABLE IF NOT EXISTS production_quality_checks (
     FOREIGN KEY (inspector_id) REFERENCES users(id) ON DELETE RESTRICT,
     FOREIGN KEY (approved_by) REFERENCES users(id) ON DELETE SET NULL
 );
-CREATE INDEX idx_quality_checks_production_order ON production_quality_checks(production_order_id);
-CREATE INDEX idx_quality_checks_roast_batch ON production_quality_checks(roast_batch_id);
-CREATE INDEX idx_quality_checks_type ON production_quality_checks(check_type);
-CREATE INDEX idx_quality_checks_date ON production_quality_checks(check_date);
-CREATE INDEX idx_quality_checks_inspector ON production_quality_checks(inspector_id);
-CREATE INDEX idx_quality_checks_passed ON production_quality_checks(passed);
+CREATE INDEX IF NOT EXISTS idx_quality_checks_production_order ON production_quality_checks(production_order_id);
+CREATE INDEX IF NOT EXISTS idx_quality_checks_roast_batch ON production_quality_checks(roast_batch_id);
+CREATE INDEX IF NOT EXISTS idx_quality_checks_type ON production_quality_checks(check_type);
+CREATE INDEX IF NOT EXISTS idx_quality_checks_date ON production_quality_checks(check_date);
+CREATE INDEX IF NOT EXISTS idx_quality_checks_inspector ON production_quality_checks(inspector_id);
+CREATE INDEX IF NOT EXISTS idx_quality_checks_passed ON production_quality_checks(passed);
 
 -- Mermas y Subproductos
 CREATE TABLE IF NOT EXISTS production_waste_byproducts (
@@ -1120,10 +1120,10 @@ CREATE TABLE IF NOT EXISTS production_waste_byproducts (
     FOREIGN KEY (roast_batch_id) REFERENCES roast_batches(id) ON DELETE SET NULL,
     FOREIGN KEY (recorded_by) REFERENCES users(id) ON DELETE SET NULL
 );
-CREATE INDEX idx_waste_byproducts_production_order ON production_waste_byproducts(production_order_id);
-CREATE INDEX idx_waste_byproducts_roast_batch ON production_waste_byproducts(roast_batch_id);
-CREATE INDEX idx_waste_byproducts_type ON production_waste_byproducts(waste_type);
-CREATE INDEX idx_waste_byproducts_date ON production_waste_byproducts(waste_date);
+CREATE INDEX IF NOT EXISTS idx_waste_byproducts_production_order ON production_waste_byproducts(production_order_id);
+CREATE INDEX IF NOT EXISTS idx_waste_byproducts_roast_batch ON production_waste_byproducts(roast_batch_id);
+CREATE INDEX IF NOT EXISTS idx_waste_byproducts_type ON production_waste_byproducts(waste_type);
+CREATE INDEX IF NOT EXISTS idx_waste_byproducts_date ON production_waste_byproducts(waste_date);
 
 -- Mantenimiento de Equipos
 CREATE TABLE IF NOT EXISTS equipment_maintenance (
@@ -1148,10 +1148,10 @@ CREATE TABLE IF NOT EXISTS equipment_maintenance (
     FOREIGN KEY (roasting_equipment_id) REFERENCES roasting_equipment(id) ON DELETE CASCADE,
     FOREIGN KEY (technician_user_id) REFERENCES users(id) ON DELETE SET NULL
 );
-CREATE INDEX idx_equipment_maintenance_equipment ON equipment_maintenance(roasting_equipment_id);
-CREATE INDEX idx_equipment_maintenance_type ON equipment_maintenance(maintenance_type);
-CREATE INDEX idx_equipment_maintenance_state ON equipment_maintenance(state);
-CREATE INDEX idx_equipment_maintenance_scheduled_date ON equipment_maintenance(scheduled_date);
+CREATE INDEX IF NOT EXISTS idx_equipment_maintenance_equipment ON equipment_maintenance(roasting_equipment_id);
+CREATE INDEX IF NOT EXISTS idx_equipment_maintenance_type ON equipment_maintenance(maintenance_type);
+CREATE INDEX IF NOT EXISTS idx_equipment_maintenance_state ON equipment_maintenance(state);
+CREATE INDEX IF NOT EXISTS idx_equipment_maintenance_scheduled_date ON equipment_maintenance(scheduled_date);
 
 -- Idempotencia de mutaciones móviles (cola offline de la app)
 -- Un reintento con el mismo client_op_id devuelve la respuesta guardada
@@ -1168,7 +1168,7 @@ CREATE TABLE IF NOT EXISTS client_operations (
     -- Sin FK a users: debe aceptar al usuario dev sintético (id 0) y la
     -- limpieza por retención (30 días) hace innecesario el ON DELETE.
 );
-CREATE INDEX idx_client_operations_created ON client_operations(created_at);
+CREATE INDEX IF NOT EXISTS idx_client_operations_created ON client_operations(created_at);
 
 -- ============================================================================
 -- CUENTA DE USUARIO (rol client): direcciones, favoritos, preferencias
