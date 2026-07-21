@@ -30,17 +30,17 @@ async function runMigration() {
     // Crear índices para product_labels
     console.log('🔍 Creando índices para product_labels...');
     try {
-      await query(`CREATE INDEX idx_product_labels_lot ON product_labels(lot_id);`);
+      await query(`CREATE INDEX IF NOT EXISTS idx_product_labels_lot ON product_labels(lot_id);`);
     } catch (e) {
       if (!e.message.includes('42710')) throw e;
     }
     try {
-      await query(`CREATE INDEX idx_product_labels_code ON product_labels(label_code);`);
+      await query(`CREATE INDEX IF NOT EXISTS idx_product_labels_code ON product_labels(label_code);`);
     } catch (e) {
       if (!e.message.includes('42710')) throw e;
     }
     try {
-      await query(`CREATE INDEX idx_product_labels_printed ON product_labels(printed);`);
+      await query(`CREATE INDEX IF NOT EXISTS idx_product_labels_printed ON product_labels(printed);`);
     } catch (e) {
       if (!e.message.includes('42710')) throw e;
     }
@@ -79,27 +79,27 @@ async function runMigration() {
     // Crear índices para generated_labels
     console.log('🔍 Creando índices para generated_labels...');
     try {
-      await query(`CREATE INDEX idx_generated_labels_code ON generated_labels(label_code);`);
+      await query(`CREATE INDEX IF NOT EXISTS idx_generated_labels_code ON generated_labels(label_code);`);
     } catch (e) {
       if (!e.message.includes('42710')) throw e;
     }
     try {
-      await query(`CREATE INDEX idx_generated_labels_lot_code ON generated_labels(lot_code);`);
+      await query(`CREATE INDEX IF NOT EXISTS idx_generated_labels_lot_code ON generated_labels(lot_code);`);
     } catch (e) {
       if (!e.message.includes('42710')) throw e;
     }
     try {
-      await query(`CREATE INDEX idx_generated_labels_user ON generated_labels(user_id);`);
+      await query(`CREATE INDEX IF NOT EXISTS idx_generated_labels_user ON generated_labels(user_id);`);
     } catch (e) {
       if (!e.message.includes('42710')) throw e;
     }
     try {
-      await query(`CREATE INDEX idx_generated_labels_printed ON generated_labels(printed);`);
+      await query(`CREATE INDEX IF NOT EXISTS idx_generated_labels_printed ON generated_labels(printed);`);
     } catch (e) {
       if (!e.message.includes('42710')) throw e;
     }
     try {
-      await query(`CREATE INDEX idx_generated_labels_created ON generated_labels(created_at);`);
+      await query(`CREATE INDEX IF NOT EXISTS idx_generated_labels_created ON generated_labels(created_at);`);
     } catch (e) {
       if (!e.message.includes('42710')) throw e;
     }

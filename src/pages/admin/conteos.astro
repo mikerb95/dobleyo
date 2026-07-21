@@ -418,6 +418,14 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       }
     }
 
+    function updateSummaryCounts() {
+      const inputs = [...$("drawerBody").querySelectorAll("[data-line-input]")];
+      const done = inputs.filter((i) => i.value !== "").length;
+      const total = inputs.length;
+      if ($("summaryCounted")) $("summaryCounted").textContent = String(done);
+      if ($("summaryPending")) $("summaryPending").textContent = String(total - done);
+    }
+
     async function saveCountLine(input) {
       const lineId = Number(input.dataset.lineInput);
       const value = input.value;
