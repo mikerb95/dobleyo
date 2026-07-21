@@ -45,49 +45,106 @@ async function slugTaken(slug, excludeId = null) {
   return result.rows.length > 0;
 }
 
-// GET - Listar todos los productos (con filtros)
+// CTE compartida: agrega variantes y deriva stock disponible / margen por fila.
+// Un producto con variantes activas vende por variante, así que su stock y
+// precio efectivos son los de las variantes, no los de la fila de products.
+const PRODUCTS_CALC_CTE = `
+  WITH agg AS (
+    SELECT p.*,
+           (SELECT COUNT(*)              FROM product_variants v WHERE v.product_id = p.id AND v.is_active = 1) AS variant_count,
+           (SELECT SUM(v.stock_quantity) FROM product_variants v WHERE v.product_id = p.id AND v.is_active = 1) AS variant_stock,
+           (SELECT MIN(v.price_cop)      FROM product_variants v WHERE v.product_id = p.id AND v.is_active = 1) AS variant_min_price,
+           (SELECT MAX(v.price_cop)      FROM product_variants v WHERE v.product_id = p.id AND v.is_active = 1) AS variant_max_price
+    FROM products p
+  ),
+  calc AS (
+    SELECT *,
+           CASE WHEN variant_count > 0 THEN COALESCE(variant_stock, 0)
+                ELSE stock_quantity - stock_reserved END AS available_stock,
+           CASE WHEN cost > 0 AND price > 0
+                THEN CAST(ROUND((price - cost) * 100.0 / price) AS INTEGER)
+                ELSE NULL END AS margin_pct
+    FROM agg
+  )
+`;
+
+// GET - Listar productos con filtros, orden y paginación server-side.
+// Los KPIs (stats) siempre reflejan el catálogo completo, sin importar los
+// filtros aplicados a la tabla — igual que antes, cuando se calculaban en el
+// cliente sobre allProducts antes de filtrar.
 inventoryRouter.get('/products', async (req, res) => {
   try {
-    const { category, active, search, sortBy = 'name', order = 'ASC' } = req.query;
+    const {
+      category, active, search, stock,
+      sortBy = 'name', order = 'ASC',
+      page = '1', pageSize = '25',
+    } = req.query;
 
-    let sql = `
-      SELECT p.*,
-             (SELECT COUNT(*)            FROM product_variants v WHERE v.product_id = p.id AND v.is_active = 1) AS variant_count,
-             (SELECT SUM(v.stock_quantity) FROM product_variants v WHERE v.product_id = p.id AND v.is_active = 1) AS variant_stock,
-             (SELECT MIN(v.price_cop)    FROM product_variants v WHERE v.product_id = p.id AND v.is_active = 1) AS variant_min_price,
-             (SELECT MAX(v.price_cop)    FROM product_variants v WHERE v.product_id = p.id AND v.is_active = 1) AS variant_max_price
-      FROM products p WHERE 1=1`;
+    const where = [];
     const params = [];
 
     if (category) {
-      sql += ' AND p.category = ?';
+      where.push('category = ?');
       params.push(category);
     }
-
     if (active === 'true' || active === 'false') {
-      sql += ' AND p.is_active = ?';
+      where.push('is_active = ?');
       params.push(active === 'true' ? 1 : 0);
     }
-
     if (search) {
-      sql += ' AND (p.name LIKE ? OR p.sku LIKE ? OR p.description LIKE ?)';
-      const searchPattern = `%${search}%`;
-      params.push(searchPattern, searchPattern, searchPattern);
+      where.push('(name LIKE ? OR sku LIKE ? OR slug LIKE ? OR id LIKE ? OR description LIKE ?)');
+      const p = `%${search}%`;
+      params.push(p, p, p, p, p);
     }
+    if (stock === 'low') {
+      where.push('(stock_min > 0 AND available_stock <= stock_min AND available_stock > 0)');
+    } else if (stock === 'out') {
+      where.push('available_stock <= 0');
+    }
+    const whereSql = where.length ? `WHERE ${where.join(' AND ')}` : '';
 
-    // Validar sortBy para evitar SQL injection
-    const allowedSortFields = ['name', 'category', 'price', 'stock_quantity', 'created_at'];
-    const sortField = allowedSortFields.includes(sortBy) ? sortBy : 'name';
+    const sortColumns = {
+      name: 'name', category: 'category', price: 'price',
+      stock: 'available_stock', margin: 'margin_pct', created_at: 'created_at',
+    };
+    const sortField = sortColumns[sortBy] || 'name';
     const sortOrder = order.toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
 
-    sql += ` ORDER BY p.${sortField} ${sortOrder}`;
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
+    const size = Math.min(100, Math.max(1, parseInt(pageSize, 10) || 25));
+    const offset = (pageNum - 1) * size;
 
-    const result = await query(sql, params);
+    const listSql = `${PRODUCTS_CALC_CTE}
+      SELECT * FROM calc ${whereSql}
+      ORDER BY ${sortField} ${sortOrder} NULLS LAST
+      LIMIT ? OFFSET ?`;
+    const countSql = `${PRODUCTS_CALC_CTE} SELECT COUNT(*) AS total FROM calc ${whereSql}`;
+
+    // Catálogo completo, sin filtros: los KPIs no dependen de lo que se esté buscando.
+    const statsSql = `${PRODUCTS_CALC_CTE}
+      SELECT
+        COUNT(*) AS total,
+        SUM(is_active) AS active,
+        SUM(CASE WHEN cost > 0 THEN cost * MAX(available_stock, 0) ELSE 0 END) AS value_cost,
+        SUM(price * MAX(available_stock, 0)) AS value_retail,
+        SUM(CASE WHEN (cost IS NULL OR cost <= 0) AND available_stock > 0 THEN 1 ELSE 0 END) AS without_cost,
+        SUM(CASE WHEN stock_min > 0 AND available_stock <= stock_min AND available_stock > 0 THEN 1 ELSE 0 END) AS low,
+        SUM(CASE WHEN available_stock <= 0 THEN 1 ELSE 0 END) AS out
+      FROM calc`;
+
+    const [listResult, countResult, statsResult] = await Promise.all([
+      query(listSql, [...params, size, offset]),
+      query(countSql, params),
+      query(statsSql, []),
+    ]);
 
     res.json({
       success: true,
-      products: result.rows,
-      total: result.rows.length
+      products: listResult.rows,
+      total: countResult.rows[0]?.total || 0,
+      page: pageNum,
+      pageSize: size,
+      stats: statsResult.rows[0] || {},
     });
   } catch (error) {
     logger.error('Error listing products:', error);
