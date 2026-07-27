@@ -6,6 +6,7 @@ import crypto from 'crypto';
 import { query, withTransaction } from '../db.js';
 import { assertCanAdvance, getCurrentStage, STAGE_LABELS } from './lotStateMachine.js';
 import { postMovement, issueFromLotFIFO, resolveLocationForIntake } from './storageService.js';
+import { resolveRecordedAt, recordedDay } from '../utils/recordDate.js';
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
