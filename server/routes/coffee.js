@@ -40,7 +40,7 @@ coffeeRouter.post('/harvest', async (req, res) => {
     } catch (authErr) {
       return res.status(authErr.status ?? 403).json({ success: false, error: authErr.message });
     }
-    const data = await createHarvest({ farm, region, altitude, variety, climate, process, aroma, tasteNotes });
+    const data = await createHarvest({ farm, region, altitude, variety, climate, process, aroma, tasteNotes, recordedAt });
     res.status(201).json({ success: true, message: 'Lote registrado correctamente', ...data });
   } catch (err) {
     handleErr(res, err, 'Error en harvest');
