@@ -229,8 +229,25 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     const summaryBox = document.getElementById("summaryBox");
     const roastingInfoCard = document.getElementById("roastingInfoCard");
     const weightLossBox = document.getElementById("weightLossBox");
+    const mermaAlertModal = document.getElementById("mermaAlertModal");
+    const mermaAlertCloseBtn = document.getElementById("mermaAlertCloseBtn");
+
+    const MERMA_ALARM_THRESHOLD = 20; // % de merma a partir del cual se considera anormal
 
     let currentRoastingRecord = null;
+    let mermaAlertShownFor = null; // evita reabrir el modal en cada tecla mientras se supera el umbral
+
+    function showMermaAlert(lossPercentNumber, lossKg) {
+      document.getElementById("mermaAlertPercent").textContent =
+        `${lossPercentNumber.toFixed(1)}%`;
+      document.getElementById("mermaAlertAmount").textContent =
+        lossKg.toFixed(2);
+      mermaAlertModal.style.display = "grid";
+    }
+
+    mermaAlertCloseBtn.addEventListener("click", () => {
+      mermaAlertModal.style.display = "none";
+    });
 
     // Cargar lotes en tostión desde API
     async function loadRoastingLots() {
