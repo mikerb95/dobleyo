@@ -36,6 +36,7 @@ import { couponsRouter } from './routes/coupons.js';
 import { externalSalesRouter } from './routes/external-sales.js';
 import { crmRouter } from './routes/crm.js';
 import { dashboardRouter } from './routes/dashboard.js';
+import { notificationsRouter } from './routes/notifications.js';
 import { forecastRouter } from './routes/forecast.js';
 import { accountRouter } from './routes/account.js';
 import auditRouter from './routes/audit.js';
@@ -142,6 +143,7 @@ app.use('/api/external-sales', externalSalesRouter);
 app.use('/api/system', systemRouter);
 app.use('/api/crm', crmRouter);
 app.use('/api/dashboard', dashboardRouter);
+app.use('/api/notifications', notificationsRouter);
 app.use('/api/ml', forecastRouter);
 app.use('/api/audit', auditRouter);
 // Webhook Wompi delegado al router de órdenes

@@ -35,6 +35,7 @@ import { couponsRouter } from '../server/routes/coupons.js';
 import { externalSalesRouter } from '../server/routes/external-sales.js';
 import { crmRouter } from '../server/routes/crm.js';
 import { dashboardRouter } from '../server/routes/dashboard.js';
+import { notificationsRouter } from '../server/routes/notifications.js';
 import { forecastRouter } from '../server/routes/forecast.js';
 import { accountRouter } from '../server/routes/account.js';
 import { globalLimiter } from '../server/middleware/rateLimit.js';
@@ -144,6 +145,7 @@ app.use('/api/external-sales', externalSalesRouter);
 app.use('/api/system', systemRouter);
 app.use('/api/crm', crmRouter);
 app.use('/api/dashboard', dashboardRouter);
+app.use('/api/notifications', notificationsRouter);
 app.use('/api/ml', forecastRouter);
 
 // Health Check — ping real a Turso/libSQL
