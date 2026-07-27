@@ -29,7 +29,8 @@ describe('resolveRecordedAt', () => {
     const today = new Date().toISOString().slice(0, 10);
     const result = resolveRecordedAt(today);
     expect(result.startsWith(`${today} `)).toBe(true);
-    expect(result).not.toBe(`${today} 12:00:00`);
+    // La hora es la del momento del registro, no el mediodía fijo de las fechas pasadas.
+    expect(result.slice(11, 13)).toBe(new Date().toISOString().slice(11, 13));
   });
 
   it('acepta un ISO completo (cola offline del móvil)', () => {
