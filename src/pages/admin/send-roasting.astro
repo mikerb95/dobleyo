@@ -359,7 +359,9 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       document.getElementById("sumQuantity").textContent = `${capped} kg`;
       document.getElementById("sumRemaining").textContent = `${remaining.toFixed(1)} kg`;
       document.getElementById("sumTemp").textContent = temp ? `${temp} °C` : "No especificada";
-      document.getElementById("sumDate").textContent = fmtDate(roastingDate.value);
+      document.getElementById("sumDate").textContent = roastingDate.value
+        ? fmtDate(`${roastingDate.value}T12:00:00`)
+        : "—";
       document.getElementById("sumState").textContent =
         remaining === 0 ? "Se marca como procesado" : "Permanece parcial en bodega";
     }
