@@ -748,6 +748,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         toast(`Café preparado: ${cantidad} · puntaje ${data.score}/5${extra}${restante}`, "success");
 
         form.reset();
+        resetRecordedAt();
         currentRoasted = null;
         coffeeInfoCard.hidden = true;
         grindingGroup.hidden = true;
