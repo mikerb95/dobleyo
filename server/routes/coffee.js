@@ -54,7 +54,7 @@ coffeeRouter.post('/harvest', async (req, res) => {
       message:  `Lote ${data.lotId} (${farm} · ${variety}) fue registrado en cosecha y está pendiente de ingreso al inventario de café verde.`,
       priority: 3,
       tags:     ['seedling'],
-      click:    `${process.env.SITE_BASE_URL || 'https://dobleyo.cafe'}/admin/inventory-storage`,
+      click:    `${SITE_URL}/admin/inventory-storage`,
     });
 
     res.status(201).json({ success: true, message: 'Lote registrado correctamente', ...data });
