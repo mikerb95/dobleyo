@@ -84,8 +84,8 @@ coffeeRouter.post('/roast-retrieval', async (req, res) => {
 // 5. Almacenar tostado
 coffeeRouter.post('/roasted-storage', async (req, res) => {
   try {
-    const { roastedId, location, container, containerCount, conditions, notes } = req.body;
-    const data = await storeRoasted({ roastedId, location, container, containerCount, conditions, notes, user: req.user });
+    const { roastedId, location, container, containerCount, conditions, notes, recordedAt } = req.body;
+    const data = await storeRoasted({ roastedId, location, container, containerCount, conditions, notes, recordedAt, user: req.user });
     res.status(201).json({ success: true, message: 'Café tostado almacenado correctamente', ...data });
   } catch (err) {
     handleErr(res, err, 'Error en roasted-storage');
