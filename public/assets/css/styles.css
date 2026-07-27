@@ -1996,63 +1996,6 @@ body.menu-open {
   font-size: .8rem
 }
 
-/* Notas de sabor */
-.trace-flavor-section {
-  display: flex;
-  flex-direction: column;
-  gap: .4rem;
-  padding-top: .25rem;
-  border-top: 1px solid var(--border)
-}
-
-.trace-flavor-label {
-  font-size: .75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: .06em;
-  color: var(--muted-fg)
-}
-
-.trace-flavor-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: .4rem
-}
-
-.trace-flavor-chip {
-  border-radius: 999px;
-  padding: .22rem .65rem;
-  font-size: .8rem;
-  font-weight: 500;
-  background: var(--card);
-  border: 1px solid var(--border);
-  color: var(--fg)
-}
-
-.trace-flavor-chip.flavor-sweet {
-  background: rgba(180,120,40,.12);
-  border-color: rgba(180,120,40,.35);
-  color: var(--coffee)
-}
-
-.trace-flavor-chip.flavor-fruity {
-  background: rgba(190,50,80,.1);
-  border-color: rgba(190,50,80,.3);
-  color: #a8274a
-}
-
-.trace-flavor-chip.flavor-chocolate {
-  background: rgba(90,50,20,.1);
-  border-color: rgba(90,50,20,.25);
-  color: #5a3214
-}
-
-.trace-flavor-chip.flavor-floral {
-  background: rgba(120,60,160,.1);
-  border-color: rgba(120,60,160,.25);
-  color: #6b3a96
-}
-
 /* Timeline */
 .trace-section-title {
   margin: 0 0 1rem;
