@@ -86,14 +86,6 @@ function initTrazabilidad() {
       });
     }
 
-    if (resFlavorSection && resFlavorChips) {
-      resFlavorSection.style.display = '';
-      resFlavorChips.innerHTML = '';
-      [['Panela', 'flavor-sweet'], ['Frutos rojos', 'flavor-fruity'], ['Chocolate', 'flavor-chocolate']].forEach(([t, c]) => {
-        const s = document.createElement('span'); s.className = 'trace-flavor-chip ' + c; s.textContent = t; resFlavorChips.appendChild(s);
-      });
-    }
-
     if (resTimeline) {
       resTimeline.innerHTML = '';
       [
