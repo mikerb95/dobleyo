@@ -210,8 +210,8 @@ export async function storeRoasted({ roastedId, location, container, containerCo
   return withTransaction(async (tx) => {
     const result = await tx.query(
       `INSERT INTO roasted_coffee_inventory (roasted_id, location, location_id, container_type, container_count, storage_conditions, notes, status, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, 'ready_for_packaging', datetime('now')) RETURNING id`,
-      [roastedId, loc.code, loc.id, container, containers, conditionsStr, notes || null]
+       VALUES (?, ?, ?, ?, ?, ?, ?, 'ready_for_packaging', COALESCE(?, datetime('now'))) RETURNING id`,
+      [roastedId, loc.code, loc.id, container, containers, conditionsStr, notes || null, createdAt]
     );
     const storageId = result.rows[0].id;
 
