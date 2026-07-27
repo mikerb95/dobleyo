@@ -168,23 +168,6 @@ const pageDesc = traceData && h
                   {traceData.packaged.presentation && <><dt>Presentación</dt><dd>{traceData.packaged.presentation}</dd></>}
                   {traceData.packaged.package_size && <><dt>Empaque</dt><dd>{traceData.packaged.package_size}</dd></>}
                 </dl>
-                {traceData.label?.flavor_notes && (
-                  <div class="trace-flavor">
-                    <p class="trace-flavor-label">Notas de sabor</p>
-                    <p class="trace-flavor-notes">{traceData.label.flavor_notes}</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          <!-- Notas de sabor (sin cupping completo) -->
-          {traceData.label?.flavor_notes && !(traceData.packaged?.score) && (
-            <div class="trace-step trace-step--pack">
-              <div class="trace-step-icon" aria-hidden="true">☕</div>
-              <div class="trace-step-body">
-                <h2>Notas de sabor</h2>
-                <p class="trace-flavor-notes">{traceData.label.flavor_notes}</p>
               </div>
             </div>
           )}
