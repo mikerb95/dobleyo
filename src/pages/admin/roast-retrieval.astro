@@ -7,6 +7,17 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   description="Registra los cafés tostados con su nivel de tueste y nuevo peso"
 >
   <form id="roastRetrievalForm">
+    <!-- Fecha del Registro -->
+    <div class="form-group">
+      <label for="recordedAt"
+        >Fecha de recogida del tueste <span class="required">*</span></label
+      >
+      <input type="date" id="recordedAt" name="recordedAt" required />
+      <div class="form-hint">
+        Por defecto es hoy. Cámbiela si el tueste se recogió en días anteriores.
+      </div>
+    </div>
+
     <!-- Selección de Lote en Tostión -->
     <div class="form-group">
       <label for="roastingLotSelect"
