@@ -154,9 +154,6 @@ try {
                 {p.process && <span>{p.process}</span>}
               </p>
               <h3 class="cs-card__name">{p.name}</h3>
-              {p.notes && (
-                <p class="cs-card__notes">{p.notes.join(" · ")}</p>
-              )}
               <div class="cs-card__footer">
                 <span class="cs-card__price">${p.price.toLocaleString("es-CO")}</span>
                 <button
@@ -663,12 +660,6 @@ try {
       color: var(--coffee);
       margin: 0;
       line-height: 1.2;
-    }
-    .cs-card__notes {
-      font-size: .8rem;
-      color: var(--muted-fg);
-      margin: 0;
-      line-height: 1.5;
     }
     .cs-card__footer {
       display: flex;
