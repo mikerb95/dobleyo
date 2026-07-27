@@ -86,8 +86,8 @@ export async function storeGreenCoffee({ lotId, weight, weightUnit, location, st
   return withTransaction(async (tx) => {
     const result = await tx.query(
       `INSERT INTO green_coffee_inventory (harvest_id, lot_id, weight_kg, location, location_id, storage_date, notes, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now')) RETURNING id`,
-      [harvestId, lotId, weightKg, loc.code, loc.id, storageDate, notes || null]
+       VALUES (?, ?, ?, ?, ?, ?, ?, COALESCE(?, datetime('now'))) RETURNING id`,
+      [harvestId, lotId, weightKg, loc.code, loc.id, storageDay, notes || null, createdAt]
     );
     const storageId = result.rows[0].id;
 
@@ -95,7 +95,7 @@ export async function storeGreenCoffee({ lotId, weight, weightUnit, location, st
       type: 'receipt', to: loc.id, lotId, stockState: 'green', qtyKg: weightKg,
       sourceTable: 'green_coffee_inventory', sourceId: storageId,
       reasonCode: 'harvest_intake', notes: notes || null,
-      movementUid: movementUid || `green-in:${storageId}`, user,
+      movementUid: movementUid || `green-in:${storageId}`, user, performedAt: createdAt,
     }, tx);
 
     return { storageId, location: loc.code };
