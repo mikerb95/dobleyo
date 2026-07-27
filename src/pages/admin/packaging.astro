@@ -770,6 +770,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
     form.addEventListener("reset", () => {
       setTimeout(() => {
+        resetRecordedAt();
         currentRoasted = null;
         coffeeInfoCard.hidden = true;
         grindingGroup.hidden = true;
