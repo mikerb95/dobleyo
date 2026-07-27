@@ -120,8 +120,8 @@ export async function sendToRoasting({ lotId, quantitySent, targetTemp, notes, u
   return withTransaction(async (tx) => {
     const result = await tx.query(
       `INSERT INTO roasting_batches (lot_id, quantity_sent_kg, target_temp, notes, status, created_at)
-       VALUES (?, ?, ?, ?, 'in_roasting', datetime('now')) RETURNING id`,
-      [lotId, quantitySentNum, targetTemp ? parseInt(targetTemp) : null, notes || null]
+       VALUES (?, ?, ?, ?, 'in_roasting', COALESCE(?, datetime('now'))) RETURNING id`,
+      [lotId, quantitySentNum, targetTemp ? parseInt(targetTemp) : null, notes || null, createdAt]
     );
     const roastingId = result.rows[0].id;
 
@@ -129,7 +129,7 @@ export async function sendToRoasting({ lotId, quantitySent, targetTemp, notes, u
       lotId, stockState: 'green', qtyKg: quantitySentNum,
       sourceTable: 'roasting_batches', sourceId: roastingId,
       reasonCode: 'sent_to_roasting', notes: notes || null,
-      uidPrefix: movementUid || `roast-out:${roastingId}`, user,
+      uidPrefix: movementUid || `roast-out:${roastingId}`, user, performedAt: createdAt,
     });
 
     return { roastingId, issuedFrom: issued };
