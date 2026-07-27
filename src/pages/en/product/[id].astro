@@ -68,9 +68,7 @@ const productJsonLd = {
   lang="en"
   title={`${product.name} — DobleYo Café`}
   description={product.description ||
-    (Array.isArray(product.notes)
-      ? `${product.name}: ${product.notes.join(", ")}. Colombian specialty coffee.`
-      : `${product.name} — Colombian specialty coffee by DobleYo.`)}
+    `${product.name} — Colombian specialty coffee by DobleYo.`}
   canonical={getCanonicalUrl(`/product/${product.id}`, "en")}
   jsonLd={productJsonLd}
   ogImage={product.image}
@@ -110,13 +108,6 @@ const productJsonLd = {
             {product.category === "cafe" && product.sca_score && (
               <div class="pp-attr pp-attr--sca"><span>SCA Score</span><strong>{product.sca_score} pts</strong></div>
             )}
-          </div>
-        )}
-
-        {Array.isArray(product.notes) && product.notes.length > 0 && (
-          <div class="pp-notes">
-            <p class="pp-notes-title">Tasting notes</p>
-            <div class="pp-notes-list">{product.notes.map((n: string) => <span class="pp-note">{n}</span>)}</div>
           </div>
         )}
 
