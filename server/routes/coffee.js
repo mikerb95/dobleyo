@@ -50,8 +50,8 @@ coffeeRouter.post('/harvest', async (req, res) => {
 // 2. Almacenamiento verde
 coffeeRouter.post('/inventory-storage', async (req, res) => {
   try {
-    const { lotId, weight, weightUnit, location, storageDate, notes } = req.body;
-    const data = await storeGreenCoffee({ lotId, weight, weightUnit, location, storageDate, notes, user: req.user });
+    const { lotId, weight, weightUnit, location, storageDate, notes, recordedAt } = req.body;
+    const data = await storeGreenCoffee({ lotId, weight, weightUnit, location, storageDate, notes, recordedAt, user: req.user });
     res.status(201).json({ success: true, message: 'Café verde almacenado correctamente', ...data });
   } catch (err) {
     handleErr(res, err, 'Error en inventory-storage');
