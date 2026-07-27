@@ -13,14 +13,26 @@
 
 ---
 
-## 2026-07-27 — Alerta de ingresos de café pendientes en inventario tras la cosecha (Agente: Claude)
+## 2026-07-27 — Alertas ntfy de ingresos de café pendientes en inventario tras la cosecha (Agente: Claude)
+
+### Contexto
+Un lote queda "pendiente de ingreso" desde que se registra la cosecha hasta que se almacena como café verde. El criterio es el mismo que ya usa `/admin/inventory-storage` para poblar su selector de lotes disponibles: cosecha en `coffee_harvests` cuyo `lot_id` aún no tiene fila en `green_coffee_inventory`.
 
 ### Cambios
-- **`server/routes/dashboard.js`** — `GET /api/dashboard/alerts` ahora agrega, además de las alertas de stock bajo, una alerta por cada cosecha registrada en `coffee_harvests` cuyo `lot_id` aún no tiene fila en `green_coffee_inventory` (máx. 5, la más antigua primero). Severidad por antigüedad: `info` (<3 días), `warning` (3–6 días), `critical` (≥7 días). Acción: "Registrar ingreso" → `/admin/inventory-storage`.
-- Las dos consultas del endpoint pasan por `Promise.allSettled`, de modo que un fallo en una no deja el panel de alertas sin la otra.
+- **`server/services/ntfy.js`** (nuevo) — servicio de notificaciones push vía ntfy. `sendNtfy()` (await) y `sendNtfyAsync()` (fire-and-forget). Nunca lanza: un fallo de notificación no tumba la operación de negocio. Títulos con tildes/emoji se codifican en RFC 2047 porque los headers HTTP solo admiten latin-1. Inactivo si no hay `NTFY_TOPIC`.
+- **`server/routes/coffee.js`** — `POST /api/coffee/harvest` dispara el aviso inmediato al crear la cosecha: "Lote X pendiente de ingreso al inventario de café verde", con `Click` a `/admin/inventory-storage`. Se agregó la constante de módulo `SITE_URL` porque varias rutas destructuran `process` de `req.body` (el proceso del café) y sombrean el global de Node.
+- **`server/routes/notifications.js`** (nuevo) — barrido para recordatorios:
+  - `GET /api/notifications/pending-intake` (admin) — lista los lotes pendientes sin notificar.
+  - `POST /api/notifications/pending-intake` — publica en ntfy un resumen de los pendientes. Autentica con JWT de admin **o** con el header `x-cron-secret` (`NTFY_CRON_SECRET`, comparación en tiempo constante) para un cron externo. `?minDays=N` (por defecto 1) evita repetir el aviso inmediato del día del registro. Prioridad 4 y tag `warning` cuando algún lote lleva ≥7 días.
+- **`server/index.js`** y **`api/index.js`** — `notificationsRouter` montado en `/api/notifications` en ambos (paridad).
+- **`server/routes/dashboard.js`** — en paralelo, `GET /api/dashboard/alerts` ahora suma los mismos lotes pendientes al `AlertsBanner` del dashboard (máx. 5, la más antigua primero; severidad `info`/`warning`/`critical` por antigüedad). Las dos consultas del endpoint pasan por `Promise.allSettled` para que un fallo en una no deje el panel sin la otra.
+- **`.env.example`** — `NTFY_URL`, `NTFY_TOPIC`, `NTFY_TOKEN`, `NTFY_CRON_SECRET`.
+
+### Verificación
+Envío real contra `ntfy.sh` confirmado (mensaje recuperado del caché del topic, título con tildes y emoji correcto). `npx vitest run`: 95/95. `node --check` limpio en los archivos tocados.
 
 ### Nota
-El criterio de "pendiente" es el mismo que ya usa `/admin/inventory-storage` para poblar su selector de lotes disponibles. La alerta se renderiza en el `AlertsBanner` del dashboard admin sin cambios de frontend (la severidad `info` ya tenía estilos).
+No se agregó cron de Vercel (feature de pago): el barrido queda expuesto como endpoint para dispararlo desde un cron externo.
 
 ## 2026-07-27 — Retiro de "clima" y "notas de sabor" de las propiedades del lote en trazabilidad (Agente: Claude)
 
