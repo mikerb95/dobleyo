@@ -42,6 +42,17 @@ coffeeRouter.post('/harvest', async (req, res) => {
       return res.status(authErr.status ?? 403).json({ success: false, error: authErr.message });
     }
     const data = await createHarvest({ farm, region, altitude, variety, climate, process, aroma, tasteNotes, recordedAt });
+
+    // Recogida la cosecha, el lote queda pendiente de ingreso al inventario de
+    // café verde: se avisa por ntfy sin bloquear la respuesta.
+    sendNtfyAsync({
+      title:    'Ingreso pendiente en inventario',
+      message:  `Lote ${data.lotId} (${farm} · ${variety}) fue registrado en cosecha y está pendiente de ingreso al inventario de café verde.`,
+      priority: 3,
+      tags:     ['seedling'],
+      click:    `${process.env.SITE_BASE_URL || 'https://dobleyo.cafe'}/admin/inventory-storage`,
+    });
+
     res.status(201).json({ success: true, message: 'Lote registrado correctamente', ...data });
   } catch (err) {
     handleErr(res, err, 'Error en harvest');
@@ -105,8 +116,8 @@ coffeeRouter.get('/roasted-storage/:id', async (req, res) => {
 // 6. Empaque
 coffeeRouter.post('/packaging', async (req, res) => {
   try {
-    const { roastedStorageId, acidity, body, balance, presentation, grindSize, packageSize, unitCount, notes, addToInventory } = req.body;
-    const data = await createPackaging({ roastedStorageId, acidity, body, balance, presentation, grindSize, packageSize, unitCount, notes, addToInventory, user: req.user });
+    const { roastedStorageId, acidity, body, balance, presentation, grindSize, packageSize, unitCount, notes, addToInventory, recordedAt } = req.body;
+    const data = await createPackaging({ roastedStorageId, acidity, body, balance, presentation, grindSize, packageSize, unitCount, notes, addToInventory, recordedAt, user: req.user });
 
     await logAudit(req.user.id, 'create', 'packaged_coffee', data.packagedId, {
       roasted_storage_id: roastedStorageId, lot_id: data.lotId,
