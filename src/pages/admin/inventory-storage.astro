@@ -467,6 +467,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     document
       .getElementById("location")
       .addEventListener("change", updateSummary);
+    storageDate.addEventListener("change", updateSummary);
 
     // Enviar formulario a la API
     form.addEventListener("submit", async (e) => {
