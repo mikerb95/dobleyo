@@ -377,6 +377,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       notesWrap.hidden = !notes;
     }
 
+    recordedAt.addEventListener("change", updatePreview);
     farmSelect.addEventListener("change", updatePreview);
     variety.addEventListener("change", updatePreview);
     document.getElementById("aroma").addEventListener("input", updatePreview);
