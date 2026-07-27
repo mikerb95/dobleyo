@@ -534,6 +534,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       ?.addEventListener("click", () => {
         document.getElementById("successModal").style.display = "none";
         document.getElementById("inventoryForm").reset();
+        resetStorageDate();
         document.getElementById("lotInfoCard").style.display = "none";
         document.getElementById("summaryBox").style.display = "none";
         loadAvailableLots();
