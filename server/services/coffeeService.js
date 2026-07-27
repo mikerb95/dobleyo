@@ -104,8 +104,10 @@ export async function storeGreenCoffee({ lotId, weight, weightUnit, location, st
 
 // ── 3. Enviar a tostión ──────────────────────────────────────────────────────
 
-export async function sendToRoasting({ lotId, quantitySent, targetTemp, notes, user, movementUid }) {
+export async function sendToRoasting({ lotId, quantitySent, targetTemp, notes, user, movementUid, recordedAt }) {
   if (!lotId || !quantitySent) throw bizError(400, 'Faltan campos requeridos');
+
+  const createdAt = resolveRecordedAt(recordedAt);
 
   await assertCanAdvance(query, lotId, 'sent_to_roasting');
 
