@@ -34,7 +34,7 @@ function handleErr(res, err, context) {
 coffeeRouter.post('/harvest', async (req, res) => {
   res.setHeader('Content-Type', 'application/json');
   try {
-    const { farm, region, altitude, variety, climate, process, aroma, tasteNotes } = req.body;
+    const { farm, region, altitude, variety, climate, process, aroma, tasteNotes, recordedAt } = req.body;
     try {
       await assertFarmOwnership(farm, req.user);
     } catch (authErr) {
