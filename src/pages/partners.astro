@@ -1,6 +1,7 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import PageHero from "../components/PageHero.astro";
+import Icon from "../components/Icon.astro";
 import { getCanonicalUrl } from "../i18n/index.ts";
 
 export const prerender = false;
@@ -109,7 +110,7 @@ const perfiles = [
     list-style: none; margin: 0; padding: 0;
     display: grid; grid-template-columns: 1fr; gap: 1.5rem;
   }
-  @media (min-width: 640px) { .pt-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 768px) { .pt-grid { grid-template-columns: repeat(2, 1fr); } }
   @media (min-width: 1024px) { .pt-grid { grid-template-columns: repeat(4, 1fr); } }
   .pt-card {
     background: var(--cream); border-radius: 14px; padding: 1.5rem 1.25rem;

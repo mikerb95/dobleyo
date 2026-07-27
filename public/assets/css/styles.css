@@ -590,7 +590,7 @@ img {
 }
 
 /* Hero responsivo en móvil — banner con video, altura fija no pantalla completa */
-@media (max-width: 767px) {
+@media (max-width: 768px) {
   .hero {
     padding: 2rem 1rem;
     min-height: clamp(220px, 56vw, 360px);

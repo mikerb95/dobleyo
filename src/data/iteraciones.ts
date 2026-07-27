@@ -361,8 +361,8 @@ export const ITERACIONES: Iteracion[] = [
         tipo: "historia", valor: "medio", col: "aceptada", par: "MR", agente: "Claude",
         fecha: "2026-07-12", tags: ["ux", "diseño"],
         dod: [
-          ok("Nuevo componente PageHero.astro full-bleed con gradiente espresso y salida degradada hacia el fondo crema."),
-          ok("Reemplaza 9 clases de hero distintas (.sub-hero, .acc-hero, .nos-hero, .gu-hero, .ma-hero, .af-hero, .pt-hero, .fincas-hero, .contact-hero)."),
+          ok("Nuevo componente PageHero.astro full-bleed, con tipografía Fraunces y texto sobre el fondo crema del sitio (se retiró el bloque de gradiente espresso inicial por quedar visualmente más pesado que el resto del sitio)."),
+          ok("Reemplaza 10 clases de hero distintas (.sub-hero, .acc-hero, .nos-hero, .gu-hero, .ma-hero, .af-hero, .pt-hero, .fincas-hero, .contact-hero, .ship-hero)."),
           ok("El gradiente con hex hardcodeado de .contact-hero pasa a variables CSS del sistema."),
         ],
       },

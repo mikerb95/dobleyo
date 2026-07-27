@@ -2,6 +2,24 @@
 
 ---
 
+## 2026-07-24 — Cierre de la iteración de heroes: página faltante y fondo del `PageHero` (Agente: Claude)
+
+### Contexto
+Continuación de la iteración del 2026-07-12 (View Transitions, `PageHero`, scroll-reveal). El fondo con gradiente espresso del `PageHero` se había simplificado en un commit posterior (texto sobre el fondo crema del sitio, sin bloque oscuro) porque el gradiente quedaba visualmente más pesado que el resto del sitio; esa entrada del changelog seguía describiendo la versión con gradiente. Además faltaba convertir `envios-devoluciones.astro`, la única página pública restante con hero propio (`.ship-hero`).
+
+### Cambios
+- **`src/pages/envios-devoluciones.astro`** — hero propio (`.ship-hero`, sin problema visual real: ya era texto plano sobre crema) migrado a `<PageHero>` por consistencia con el resto de páginas secundarias; CSS de `.ship-hero` retirado.
+- **`src/data/iteraciones.ts`** (DY-UX-03) y **`CHANGELOG.md`** (entrada 2026-07-12) — descripción del `PageHero` corregida para reflejar el diseño final (sin gradiente) y el conteo actualizado a 10 heroes reemplazados.
+- Revisadas y descartadas para esta conversión: `showcase.astro` y `desarrollo-ia.astro` — son documentos internos (`noindex`) con estructura propia (TOC, metadatos de sustentación), no páginas de marketing público; se dejan con su encabezado propio.
+
+### Verificación
+`npm run build` limpio.
+
+### Unificación de breakpoints (mismo cierre de iteración)
+11 archivos con puntos de corte fuera del estándar del proyecto (480/768/1024/1400) se mapearon al valor estándar más cercano: `afiliados.astro`, `guias.astro`, `mayoristas.astro`, `partners.astro`, `suscripcion.astro` (640→768, grids de 2/3 columnas), `404.astro`, `cuenta.astro` (640→768, ajustes móviles), `styles.css` (767→768, hero de video en móvil), `tostar.astro` (900→1024, colapso de grid a una columna) e `index.astro` (10 casos: 540/640/760/900 → 480/768/1024 según si el breakpoint colapsaba un grid o solo ajustaba un detalle móvil). `npm run build` limpio tras el cambio.
+
+---
+
 ## 2026-07-20 (3) — Auditoría y reconstrucción de `/admin/productos` (Agente: Claude)
 
 ### Contexto
@@ -188,7 +206,7 @@ Auditoría de diseño frontend: la navegación entre páginas era un recargue ab
 - **`src/layouts/Layout.astro`** — `transition:persist` (con sufijo de idioma) en topbar, `Header`, `Footer`, `CartDrawer` y el FAB de WhatsApp, y sin sufijo en `CookieBanner`/`AuthModal`, para que el chrome no parpadee entre navegaciones; se retiró el `div.transition-overlay` muerto.
 - **`public/assets/js/layout.js`** — cierre de topbar persistido con `sessionStorage` (no reaparece al navegar) y recálculo de métricas de header en `astro:page-load`/`astro:after-swap`.
 - **19 scripts en `public/assets/js/`** (`cart.js`, `favorites.js`, `home.js`, `producto.js`, `suscripcion.js`, `trazabilidad.js`, variantes `en-*`, etc.) y los `<script>` de `tienda.astro`, `cart.astro`, `checkout.astro`, `cuenta.astro` — reescritos a inits idempotentes con guard (`dataset.jsInit`) enganchados a `astro:page-load`, ya que la navegación client-side no vuelve a disparar `DOMContentLoaded` ni re-ejecuta scripts con el mismo `src`.
-- **`src/components/PageHero.astro`** (nuevo) — hero full-bleed (sangra fuera de `.container`), gradiente espresso con acento caramelo y salida degradada hacia el fondo crema; props `eyebrow`, `title`, `subtitle`, `align`, `size`; slot `subtitle` para contenido enriquecido y slot por defecto para CTAs. Reemplaza las clases `.sub-hero`, `.acc-hero`, `.nos-hero`, `.gu-hero`, `.ma-hero`, `.af-hero`, `.pt-hero`, `.fincas-hero` y `.contact-hero` (esta última tenía un gradiente con hex hardcodeado, ahora en tokens).
+- **`src/components/PageHero.astro`** (nuevo) — hero full-bleed (sangra fuera de `.container`); props `eyebrow`, `title`, `subtitle`, `align`, `size`; slot `subtitle` para contenido enriquecido y slot por defecto para CTAs. Reemplaza las clases `.sub-hero`, `.acc-hero`, `.nos-hero`, `.gu-hero`, `.ma-hero`, `.af-hero`, `.pt-hero`, `.fincas-hero` y `.contact-hero` (esta última tenía un gradiente con hex hardcodeado, ahora en tokens). *(Ver entrada del 2026-07-24: el diseño final del fondo se simplificó.)*
 - **`src/components/ProductCard.astro`** / **`src/pages/producto/[id].astro`** — `transition:name={`product-image-${id}`}` en la imagen para que se anime (morph) al navegar de la tienda al detalle de producto.
 - **`public/assets/js/reveal.js`** (nuevo) — scroll-reveal global vía `IntersectionObserver`, idempotente, con fallback inmediato si no hay soporte o si `prefers-reduced-motion` está activo. Aplicado a secciones informativas bajo el pliegue (nunca a formularios transaccionales ni al primer viewport).
 - **`public/assets/css/styles.css`** — `.reveal`/`.is-visible`, bloque global `@media (prefers-reduced-motion: reduce)` que neutraliza animaciones/transiciones, `--caramel-rgb` y `overflow-x: clip` en `html, body` (evita scroll horizontal por los heroes full-bleed).

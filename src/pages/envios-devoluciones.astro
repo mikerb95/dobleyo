@@ -1,5 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import PageHero from "../components/PageHero.astro";
 import Icon from "../components/Icon.astro";
 
 // FAQPage — refleja exactamente las preguntas visibles en el acordeón de esta página
@@ -65,16 +66,14 @@ const faqJsonLd = {
   canonical="https://dobleyo.cafe/envios-devoluciones"
   jsonLd={faqJsonLd}
 >
-  <section class="ship-page">
-    <header class="ship-hero">
-      <span class="eyebrow">Atención al cliente</span>
-      <h1>Envíos y devoluciones</h1>
-      <p class="ship-hero__lead">
-        Cobertura, tiempos de entrega y proceso de devolución de sus pedidos
-        de café.
-      </p>
-    </header>
+  <PageHero eyebrow="Atención al cliente" title="Envíos y devoluciones">
+    <p class="page-hero__sub" slot="subtitle">
+      Cobertura, tiempos de entrega y proceso de devolución de sus pedidos
+      de café.
+    </p>
+  </PageHero>
 
+  <section class="ship-page">
     <!-- Datos clave -->
     <ul class="ship-stats">
       <li class="ship-stats__item">
@@ -331,22 +330,6 @@ const faqJsonLd = {
       max-width: 1200px;
       margin-inline: auto;
       padding: var(--space-12) 1.25rem var(--space-16);
-    }
-
-    .ship-hero {
-      max-width: 640px;
-      margin-bottom: var(--space-10);
-    }
-
-    .ship-hero h1 {
-      font-size: var(--text-3xl);
-      margin: 0 0 var(--space-3);
-    }
-
-    .ship-hero__lead {
-      font-size: var(--text-lg);
-      color: var(--ink-muted);
-      margin: 0;
     }
 
     /* Datos clave */

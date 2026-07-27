@@ -1,6 +1,7 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import PageHero from "../components/PageHero.astro";
+import Icon from "../components/Icon.astro";
 import { getCanonicalUrl, getHreflangPair } from "../i18n/index.ts";
 
 export const prerender = false;
@@ -95,28 +96,28 @@ const pageDescription =
         <h2 class="nos-h2">En qué creemos</h2>
         <ul class="nos-values">
           <li>
-            <span class="nos-values__icon" aria-hidden="true">🔍</span>
+            <span class="nos-values__icon"><Icon name="search" size={24} /></span>
             <div>
               <h3>Trazabilidad real</h3>
               <p>Un QR por lote: finca, cosecha, tueste y control de calidad.</p>
             </div>
           </li>
           <li>
-            <span class="nos-values__icon" aria-hidden="true">🤝</span>
+            <span class="nos-values__icon"><Icon name="users" size={24} /></span>
             <div>
               <h3>Comercio directo</h3>
               <p>Compramos a los caficultores sin intermediarios, con precio justo.</p>
             </div>
           </li>
           <li>
-            <span class="nos-values__icon" aria-hidden="true">🔥</span>
+            <span class="nos-values__icon"><Icon name="flame" size={24} /></span>
             <div>
               <h3>Tueste fresco</h3>
               <p>Tostamos dentro de los 15 días previos a la entrega.</p>
             </div>
           </li>
           <li>
-            <span class="nos-values__icon" aria-hidden="true">🌱</span>
+            <span class="nos-values__icon"><Icon name="leaf" size={24} /></span>
             <div>
               <h3>Origen con identidad</h3>
               <p>Cafés de altura, con su variedad, proceso y región a la vista.</p>
@@ -203,7 +204,7 @@ const pageDescription =
 
                 {c.lot_id && (
                   <a class="caf-card__trace" href={`/trazabilidad?lote=${encodeURIComponent(c.lot_id)}`}>
-                    🔍 Rastrear un café de esta finca
+                    <Icon name="search" size={16} /> Rastrear un café de esta finca
                   </a>
                 )}
               </div>
@@ -247,7 +248,7 @@ const pageDescription =
   .nos-story__col p { line-height: 1.7; color: var(--ink, #444); margin: 0 0 1rem; }
   .nos-values { list-style: none; margin: 0; padding: 0; display: grid; gap: 1.1rem; }
   .nos-values li { display: flex; gap: 0.85rem; align-items: flex-start; }
-  .nos-values__icon { font-size: 1.5rem; line-height: 1.2; }
+  .nos-values__icon { display: flex; flex-shrink: 0; color: var(--accent); }
   .nos-values h3 { margin: 0 0 0.2rem; font-size: 1rem; color: var(--coffee); }
   .nos-values p { margin: 0; font-size: 0.92rem; color: var(--ink, #555); line-height: 1.5; }
 
@@ -330,6 +331,9 @@ const pageDescription =
   .chip-cert { background: rgba(74, 103, 65, 0.12); color: #4a6741; border: 1px solid rgba(74, 103, 65, 0.25); }
 
   .caf-card__trace {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
     margin-top: auto;
     padding-top: 0.85rem;
     font-size: 0.88rem;
