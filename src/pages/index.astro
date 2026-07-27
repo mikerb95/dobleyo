@@ -18,7 +18,7 @@ let coffeeProducts: any[] = [];
 try {
   const { query } = await import("../../server/db.js");
   const result = await query(
-    `SELECT id, name, origin, process, roast, tasting_notes, price, rating,
+    `SELECT id, name, origin, process, roast, price, rating,
             is_bestseller AS bestseller, is_new AS new, image_url AS image,
             stock_quantity AS stock
      FROM products
@@ -27,18 +27,14 @@ try {
      LIMIT 3`
   );
   if (result.rows.length > 0) {
-    coffeeProducts = result.rows.map((p: any) => ({
-      ...p,
-      notes: parseTastingNotes(p.tasting_notes)?.es ?? null,
-    }));
+    coffeeProducts = result.rows;
   }
 } catch (_) {}
 
 if (!coffeeProducts.length) {
   coffeeProducts = staticProducts
     .filter((p) => p.category === "Cafés")
-    .slice(0, 3)
-    .map((p) => ({ ...p, notes: p.notes }));
+    .slice(0, 3);
 }
 
 // Fincas destacadas
