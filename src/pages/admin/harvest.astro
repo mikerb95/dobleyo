@@ -64,6 +64,15 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         </div>
         <div class="card-pad">
           <form id="harvestForm">
+            <!-- Fecha de recolección -->
+            <div class="form-group">
+              <label for="recordedAt">Fecha de recolección <span class="required">*</span></label>
+              <input type="date" id="recordedAt" name="recordedAt" required />
+              <div class="form-hint">
+                Por defecto es hoy. Cámbiela si está registrando una cosecha de días anteriores.
+              </div>
+            </div>
+
             <!-- Selección de Finca -->
             <div class="form-group">
               <label for="farmSelect">Finca <span class="required">*</span></label>
