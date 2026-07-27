@@ -14,10 +14,6 @@ function dateError(message) {
   return err;
 }
 
-function pad(n) {
-  return String(n).padStart(2, '0');
-}
-
 /**
  * Normaliza la fecha de un registro de producción.
  *
