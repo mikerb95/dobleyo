@@ -184,26 +184,64 @@ dashboardRouter.get('/summary', async (req, res) => {
 });
 
 // ──────────────────────────────────────────────────────────────────────────
-// GET /api/dashboard/alerts — Alertas operativas (stock bajo / agotado).
+// GET /api/dashboard/alerts — Alertas operativas (stock bajo / agotado,
+// cosechas pendientes de ingreso al inventario de café verde).
 // ──────────────────────────────────────────────────────────────────────────
+
+// Una cosecha queda "pendiente de ingreso" mientras su lot_id no tenga fila en
+// green_coffee_inventory (mismo criterio que /admin/inventory-storage).
+const PENDING_GREEN_INTAKE_SQL = `
+  SELECT h.lot_id, h.farm, h.variety, h.created_at,
+         CAST(julianday('now') - julianday(h.created_at) AS INTEGER) AS days_pending
+    FROM coffee_harvests h
+    LEFT JOIN green_coffee_inventory g ON g.lot_id = h.lot_id
+   WHERE g.id IS NULL
+   ORDER BY h.created_at ASC
+   LIMIT 5`;
+
 dashboardRouter.get('/alerts', async (req, res) => {
   try {
     const alerts = [];
-    const lowStockRes = await query(
-      `SELECT id, name, stock_quantity, stock_min FROM products
-        WHERE is_active = 1 AND stock_min IS NOT NULL AND stock_min > 0
-          AND stock_quantity <= stock_min
-        ORDER BY stock_quantity ASC LIMIT 5`
-    );
-    for (const p of lowStockRes.rows) {
-      alerts.push({
-        id:          `low_stock_${p.id ?? p.name}`,
-        severity:    p.stock_quantity <= 0 ? 'critical' : 'warning',
-        title:       `Stock bajo: ${p.name}`,
-        description: `${p.stock_quantity} unidades disponibles (mínimo: ${p.stock_min})`,
-        action:      { label: 'Ver inventario', href: '/admin/inventario' },
-      });
+    const [lowStockRes, pendingRes] = await Promise.allSettled([
+      query(
+        `SELECT id, name, stock_quantity, stock_min FROM products
+          WHERE is_active = 1 AND stock_min IS NOT NULL AND stock_min > 0
+            AND stock_quantity <= stock_min
+          ORDER BY stock_quantity ASC LIMIT 5`
+      ),
+      query(PENDING_GREEN_INTAKE_SQL),
+    ]);
+
+    if (lowStockRes.status === 'fulfilled') {
+      for (const p of lowStockRes.value.rows) {
+        alerts.push({
+          id:          `low_stock_${p.id ?? p.name}`,
+          severity:    p.stock_quantity <= 0 ? 'critical' : 'warning',
+          title:       `Stock bajo: ${p.name}`,
+          description: `${p.stock_quantity} unidades disponibles (mínimo: ${p.stock_min})`,
+          action:      { label: 'Ver inventario', href: '/admin/inventario' },
+        });
+      }
+    } else {
+      logger.error('[GET /api/dashboard/alerts] stock bajo', lowStockRes.reason);
     }
+
+    if (pendingRes.status === 'fulfilled') {
+      for (const h of pendingRes.value.rows) {
+        const days = num(h.days_pending);
+        const espera = days <= 0 ? 'hoy' : days === 1 ? 'hace 1 día' : `hace ${days} días`;
+        alerts.push({
+          id:          `pending_green_intake_${h.lot_id}`,
+          severity:    days >= 7 ? 'critical' : days >= 3 ? 'warning' : 'info',
+          title:       `Ingreso pendiente: lote ${h.lot_id}`,
+          description: `Cosecha de ${h.farm} (${h.variety}) recogida ${espera} y aún sin registrar en el inventario de café verde.`,
+          action:      { label: 'Registrar ingreso', href: '/admin/inventory-storage' },
+        });
+      }
+    } else {
+      logger.error('[GET /api/dashboard/alerts] cosechas pendientes', pendingRes.reason);
+    }
+
     ok(res, alerts);
   } catch (e) {
     fail(res, e, '[GET /api/dashboard/alerts]');
