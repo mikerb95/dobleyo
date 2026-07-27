@@ -2,6 +2,19 @@
 
 ---
 
+## 2026-07-27 — Retiro de "clima" y "notas de sabor" de las propiedades del lote en trazabilidad (Agente: Claude)
+
+### Cambios
+- **`src/pages/t/[code].astro`** — quitado `Clima` del bloque de propiedades de la etapa "Cosecha en finca" y los dos bloques de "Notas de sabor" (con y sin cupping completo); CSS `.trace-flavor*` retirado.
+- **`src/pages/trazabilidad.astro`** + **`public/assets/js/trazabilidad.js`** — quitada la sección "Notas de sabor" (chips) del resultado de búsqueda/escaneo, incluyendo el helper `flavorCategory` y su placeholder en el estado idle.
+- **`public/assets/css/styles.css`** — reglas `.trace-flavor-section/-label/-chips/-chip*` retiradas por quedar sin uso.
+- **`src/pages/finca/[slug].astro`** y **`src/pages/en/farm/[slug].astro`** — quitadas las notas de sabor por lote en "Cosechas recientes"; CSS `.lot-item__notes` retirado.
+
+### Nota
+No se tocó `tasting_notes` de `products` (tienda/producto/`en/shop`, `en/product`) — es un campo distinto, propio del catálogo de venta, no de la trazabilidad del lote.
+
+---
+
 ## 2026-07-24 — Cierre de la iteración de heroes: página faltante y fondo del `PageHero` (Agente: Claude)
 
 ### Contexto
