@@ -364,13 +364,13 @@ export async function createPackaging({ roastedStorageId, acidity, body, balance
 
       await txq(
         `INSERT INTO products (id, name, category, origin, process, roast, price, cost, is_active, stock_quantity, stock_min, weight, weight_unit, created_at)
-         VALUES (?, ?, 'cafe', ?, ?, ?, 0, 0, 0, ?, 0, ?, ?, datetime('now'))`,
-        [productId, productName, origin, harvestProcess, roastLevel, unitCountNum, weightValue, weightUnit]
+         VALUES (?, ?, 'cafe', ?, ?, ?, 0, 0, 0, ?, 0, ?, ?, COALESCE(?, datetime('now')))`,
+        [productId, productName, origin, harvestProcess, roastLevel, unitCountNum, weightValue, weightUnit, createdAt]
       );
       await txq(
         `INSERT INTO inventory_movements (product_id, movement_type, quantity, quantity_before, quantity_after, reason, reference, created_at)
-         VALUES (?, 'entrada', ?, 0, ?, 'Café empacado para venta', ?, datetime('now'))`,
-        [productId, unitCountNum, unitCountNum, roastedInfo.lot_id || 'packaging']
+         VALUES (?, 'entrada', ?, 0, ?, 'Café empacado para venta', ?, COALESCE(?, datetime('now')))`,
+        [productId, unitCountNum, unitCountNum, roastedInfo.lot_id || 'packaging', createdAt]
       );
       inventoryMovementCreated = true;
     }
