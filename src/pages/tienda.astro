@@ -3,7 +3,6 @@ import Layout from "../layouts/Layout.astro";
 import ProductCard from "../components/ProductCard.astro";
 import { products as staticProducts } from "../data/products";
 import { getCanonicalUrl, getHreflangPair } from "../i18n/index.ts";
-import { parseTastingNotes } from "../../server/utils/tasting.js";
 
 const _hreflang = getHreflangPair("/tienda");
 
@@ -14,7 +13,7 @@ try {
   const result = await query(
     `SELECT
        p.id, p.slug, p.name, p.category, p.origin, p.process, p.roast,
-       p.tasting_notes, p.price, p.rating,
+       p.price, p.rating,
        p.is_deal       AS deal,
        p.is_bestseller AS bestseller,
        p.is_new        AS new,
@@ -31,7 +30,6 @@ try {
     products = result.rows.map((p: any) => ({
       ...p,
       category: LABEL[p.category] ?? p.category,
-      notes: parseTastingNotes(p.tasting_notes)?.es ?? null,
     }));
   }
 } catch (_) { /* BD no disponible */ }
@@ -69,7 +67,7 @@ const shopJsonLd = {
       "@type": "Product",
       name: p.name,
       image: p.image,
-      description: Array.isArray(p.notes) ? p.notes.join(", ") : (p.notes ?? ""),
+      description: p.category ?? "",
       offers: {
         "@type": "Offer",
         priceCurrency: "COP",

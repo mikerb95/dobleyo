@@ -3,7 +3,6 @@ export const prerender = false;
 
 import Layout from "../../layouts/Layout.astro";
 import { getCanonicalUrl } from "../../i18n/index.ts";
-import { parseTastingNotes } from "../../../server/utils/tasting.js";
 
 const { id } = Astro.params;
 
@@ -22,7 +21,7 @@ try {
   const { rows } = await query(
     `SELECT
        p.id, p.slug, p.name, p.name_en, p.category, p.origin, p.process, p.roast,
-       p.tasting_notes, p.price, p.price_usd, p.rating,
+       p.price, p.price_usd, p.rating,
        p.is_deal AS deal, p.is_bestseller AS bestseller,
        p.is_new AS new, p.is_fast AS fast,
        p.image_url AS image, p.images,
@@ -36,12 +35,9 @@ try {
   );
   if (rows.length) {
     const p = rows[0];
-    const tn = parseTastingNotes(p.tasting_notes);
     product = {
       ...p,
       categoryLabel: LABEL[p.category] ?? p.category,
-      notes: tn?.es ?? null,
-      notesEn: tn?.en ?? null,
     };
     const vRows = await query(
       `SELECT id, size_label, grind_label, price_cop, stock_quantity, sort_order
@@ -78,9 +74,7 @@ const productJsonLd = {
   "@type": "Product",
   name: product.name,
   image: product.image,
-  description:
-    product.description ||
-    (Array.isArray(product.notes) ? product.notes.join(", ") : ""),
+  description: product.description || "",
   brand: { "@type": "Brand", name: "DobleYo Café" },
   offers: {
     "@type": "Offer",
@@ -106,9 +100,7 @@ const productJsonLd = {
 <Layout
   title={`${product.name} — DobleYo Café`}
   description={product.description ||
-    (Array.isArray(product.notes)
-      ? `${product.name}: ${product.notes.join(", ")}. Café de especialidad colombiano.`
-      : `${product.name} — Café de especialidad colombiano DobleYo.`)}
+    `${product.name} — Café de especialidad colombiano DobleYo.`}
   canonical={getCanonicalUrl(`/producto/${product.id}`, "es")}
   jsonLd={productJsonLd}
   ogImage={product.image}
@@ -202,18 +194,6 @@ const productJsonLd = {
                 <span class="attr-val">{product.sca_score} pts</span>
               </div>
             )}
-          </div>
-        )}
-
-        <!-- Notas de cata -->
-        {Array.isArray(product.notes) && product.notes.length > 0 && (
-          <div class="tasting-notes">
-            <p class="tasting-title">Notas de cata</p>
-            <div class="notes-list">
-              {product.notes.map((note: string) => (
-                <span class="note-chip">{note}</span>
-              ))}
-            </div>
           </div>
         )}
 
@@ -520,27 +500,6 @@ const productJsonLd = {
       border-color: var(--accent);
       background: var(--accent);
       color: #fff;
-    }
-
-    .tasting-notes { margin: 1rem 0; }
-
-    .tasting-title {
-      font-size: .8rem;
-      text-transform: uppercase;
-      letter-spacing: .06em;
-      color: var(--muted-fg, #888);
-      margin-bottom: .4rem;
-    }
-
-    .notes-list { display: flex; flex-wrap: wrap; gap: .4rem; }
-
-    .note-chip {
-      background: var(--accent-light, #f0e8df);
-      color: var(--accent);
-      font-size: .82rem;
-      font-weight: 600;
-      padding: .2rem .65rem;
-      border-radius: 99px;
     }
 
     .product-description {
