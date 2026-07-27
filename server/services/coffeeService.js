@@ -224,7 +224,7 @@ export async function storeRoasted({ roastedId, location, container, containerCo
       qtyKg: roastedWeightKg, containerType: container, containerCount: containers,
       sourceTable: 'roasted_coffee_inventory', sourceId: storageId,
       reasonCode: 'roast_intake', notes: notes || null,
-      movementUid: movementUid || `roasted-in:${storageId}`, user,
+      movementUid: movementUid || `roasted-in:${storageId}`, user, performedAt: createdAt,
     }, tx);
 
     return { storageId, location: loc.code };
