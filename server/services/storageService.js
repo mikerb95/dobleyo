@@ -258,6 +258,7 @@ async function applyQuantDelta(client, locationId, lotId, stockState, deltaKg, d
  * @param {'green'|'roasted'|'packaged'} p.stockState
  * @param {number} p.qtyKg  siempre positivo
  * @param {string} [p.movementUid]  clave de idempotencia (p. ej. client_op_id de la app móvil)
+ * @param {string|null} [p.performedAt]  fecha del movimiento (`YYYY-MM-DD HH:MM:SS` UTC); null = ahora
  * @param {object} [client]  cliente de transacción existente, para componer con otras escrituras
  */
 export async function postMovement(p, client = null) {
@@ -270,7 +271,7 @@ async function postMovementTx(tx, p) {
     type, from = null, to = null, lotId, stockState, qtyKg,
     containerType = null, containerCount = 0,
     sourceTable = null, sourceId = null, reasonCode = null, notes = null,
-    movementUid, user = null,
+    movementUid, user = null, performedAt = null,
   } = p;
 
   if (!MOVEMENT_TYPES.includes(type)) throw bizError(400, `Tipo de movimiento inválido: ${type}`);

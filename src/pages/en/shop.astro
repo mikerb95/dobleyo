@@ -16,7 +16,7 @@ let rows: any[] = [];
 try {
     const { query } = await import("../../../server/db.js");
     const res = await query(
-        `SELECT id, name, name_en, category, origin, process, roast, tasting_notes,
+        `SELECT id, name, name_en, category, origin, process, roast,
                 price, price_usd, rating,
                 is_deal AS deal, is_bestseller AS bestseller, is_new AS new, is_fast AS fast,
                 image_url AS image
@@ -35,7 +35,6 @@ const mapped = rows.length
         origin: p.origin ?? null,
         process: p.process ? (PROC_EN[p.process] ?? p.process) : null,
         roast: p.roast ? (ROAST_EN[p.roast] ?? p.roast) : null,
-        notes: parseTastingNotes(p.tasting_notes)?.en ?? parseTastingNotes(p.tasting_notes)?.es ?? [],
         price: p.price_usd ?? Math.round(Number(p.price) / 4000),
         rating: Number(p.rating) || 0,
         deal: !!p.deal, bestseller: !!p.bestseller, new: !!p.new, fast: !!p.fast,
