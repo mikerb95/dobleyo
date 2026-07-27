@@ -926,6 +926,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
           body: JSON.stringify({
             roastedId: current.id, location, container,
             containerCount: count, conditions, notes: $('notes').value || '',
+            recordedAt: $('storageDate').value || undefined,
           }),
         });
         const data = await res.json().catch(() => ({}));
