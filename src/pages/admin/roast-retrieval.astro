@@ -469,6 +469,10 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       }
     });
 
+    form.addEventListener("reset", () => {
+      setTimeout(resetRecordedAt, 0);
+    });
+
     // Cargar lotes al iniciar
     loadRoastingLots();
   </script>
