@@ -72,8 +72,8 @@ coffeeRouter.post('/send-roasting', async (req, res) => {
 // 4. Recoger del tueste
 coffeeRouter.post('/roast-retrieval', async (req, res) => {
   try {
-    const { roastingId, roastLevel, roastedWeight, actualTemp, roastTime, observations } = req.body;
-    const data = await receiveRoasted({ roastingId, roastLevel, roastedWeight, actualTemp, roastTime, observations });
+    const { roastingId, roastLevel, roastedWeight, actualTemp, roastTime, observations, recordedAt } = req.body;
+    const data = await receiveRoasted({ roastingId, roastLevel, roastedWeight, actualTemp, roastTime, observations, recordedAt });
     res.status(201).json({ success: true, message: 'Café tostado registrado correctamente', ...data });
   } catch (err) {
     handleErr(res, err, 'Error en roast-retrieval');
