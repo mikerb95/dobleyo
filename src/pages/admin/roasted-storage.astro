@@ -895,7 +895,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       form.hidden = true;
       $('putawayFlag').hidden = true;
       $('putawayEmpty').hidden = false;
-      $('storageDate').value = today;
+      resetStorageDate();
       $('capacityBox').hidden = true;
       renderWorklist();
     }
