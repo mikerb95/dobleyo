@@ -138,8 +138,10 @@ export async function sendToRoasting({ lotId, quantitySent, targetTemp, notes, u
 
 // ── 4. Recoger del tueste ────────────────────────────────────────────────────
 
-export async function receiveRoasted({ roastingId, roastLevel, roastedWeight, actualTemp, roastTime, observations }) {
+export async function receiveRoasted({ roastingId, roastLevel, roastedWeight, actualTemp, roastTime, observations, recordedAt }) {
   if (!roastingId || !roastLevel || !roastedWeight) throw bizError(400, 'Faltan campos requeridos');
+
+  const createdAt = resolveRecordedAt(recordedAt);
 
   const roastingResult = await query(
     'SELECT quantity_sent_kg, lot_id FROM roasting_batches WHERE id = ?', [roastingId]
