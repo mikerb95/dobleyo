@@ -366,6 +366,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
     quantityInput.addEventListener("input", updateSummary);
     targetTemp.addEventListener("input", updateSummary);
+    roastingDate.addEventListener("change", updateSummary);
 
     // ── Envío ───────────────────────────────────────────────────────
     form.addEventListener("submit", async (e) => {
@@ -394,6 +395,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
             quantitySent: quantity,
             targetTemp: targetTemp.value || null,
             notes: document.getElementById("notes").value,
+            recordedAt: roastingDate.value || undefined,
           }),
         });
 
@@ -408,7 +410,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         toast(`Lote ${item.lot_id} enviado a tostión · ${quantity} kg en proceso`, "success");
 
         form.reset();
-        roastingDate.value = today;
+        resetRoastingDate();
         lotInfoCard.hidden = true;
         document.getElementById("sumEmpty").hidden = false;
         document.getElementById("sumBody").hidden = true;
@@ -425,7 +427,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
     form.addEventListener("reset", () => {
       setTimeout(() => {
-        roastingDate.value = today;
+        resetRoastingDate();
         lotInfoCard.hidden = true;
         document.getElementById("sumEmpty").hidden = false;
         document.getElementById("sumBody").hidden = true;
