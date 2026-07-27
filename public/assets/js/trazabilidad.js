@@ -328,15 +328,6 @@ function initTrazabilidad() {
   }
 
   // ─── Helpers ─────────────────────────────────────────────────────────
-  function flavorCategory(note) {
-    const n = note.toLowerCase();
-    if (/panela|miel|caramelo|dulce|azúcar|vainilla/.test(n))           return 'flavor-sweet';
-    if (/rojo|fresa|mora|cereza|baya|cítric|naranja|limón|maracuyá|fruta/.test(n)) return 'flavor-fruity';
-    if (/chocolate|cacao|nuez|almendra|avellana/.test(n))               return 'flavor-chocolate';
-    if (/floral|jazmín|rosa|lavanda/.test(n))                           return 'flavor-floral';
-    return '';
-  }
-
   // Los nombres de finca suelen venir ya con el prefijo "Finca" incluido
   function farmLabel(name) {
     const n = (name || '').trim();
