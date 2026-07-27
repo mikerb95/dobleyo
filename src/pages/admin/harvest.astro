@@ -475,6 +475,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         toast(`Lote ${data.lotId} creado correctamente`, "success");
 
         form.reset();
+        resetRecordedAt();
         document.getElementById("lotEmpty").hidden = false;
         document.getElementById("lotBody").hidden = true;
         loadHarvests();
