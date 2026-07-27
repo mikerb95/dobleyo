@@ -302,18 +302,29 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     roastedWeightInput.addEventListener("input", () => {
       if (!currentRoastingRecord || !roastedWeightInput.value) {
         weightLossBox.style.display = "none";
+        mermaAlertShownFor = null;
         return;
       }
 
       const original = currentRoastingRecord.quantity_sent_kg;
       const roasted = parseFloat(roastedWeightInput.value);
       const loss = original - roasted;
-      const lossPercent = ((loss / original) * 100).toFixed(1);
+      const lossPercentNumber = (loss / original) * 100;
+      const lossPercent = lossPercentNumber.toFixed(1);
 
       document.getElementById("weightLossAmount").textContent = loss.toFixed(2);
       document.getElementById("weightLossPercent").textContent =
         `${lossPercent}%`;
       weightLossBox.style.display = "block";
+
+      if (lossPercentNumber > MERMA_ALARM_THRESHOLD) {
+        if (mermaAlertShownFor !== roastedWeightInput.value) {
+          mermaAlertShownFor = roastedWeightInput.value;
+          showMermaAlert(lossPercentNumber, loss);
+        }
+      } else {
+        mermaAlertShownFor = null;
+      }
 
       updateSummary();
     });
