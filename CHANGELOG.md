@@ -2,6 +2,17 @@
 
 ---
 
+## 2026-07-27 (2) — Retiro de `tasting_notes` de la tienda (Agente: Claude)
+
+### Cambios
+- **`src/pages/tienda.astro`**, **`src/pages/index.astro`**, **`src/pages/producto/[id].astro`**, **`src/pages/en/shop.astro`**, **`src/pages/en/product/[id].astro`**, **`src/pages/en/index.astro`** — quitado `p.tasting_notes` de las consultas SQL, el mapeo `notes`/`notesEn` vía `parseTastingNotes`, los bloques "Notas de cata"/"Tasting notes" en listados y ficha de producto, y su uso como fallback de `description` en JSON-LD y meta. CSS `.tasting-notes/-title`, `.notes-list`, `.note-chip`, `.pp-notes*`, `.cs-card__notes` retirado.
+- No se tocó `server/utils/tasting.js` (`parseTastingNotes`) ni la columna `tasting_notes` de `products` — siguen en uso en `/admin/productos` y el backend (`server/routes/products.js`, `inventory.js`) para gestionar el dato; solo se dejó de mostrar en el storefront.
+
+### Verificación
+`npm run build` limpio.
+
+---
+
 ## 2026-07-27 — Alerta de ingresos de café pendientes en inventario tras la cosecha (Agente: Claude)
 
 ### Cambios
