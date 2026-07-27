@@ -47,7 +47,6 @@ const mapped = rows.length
         origin: p.origin ?? null,
         process: (p.processEn || p.process) ?? null,
         roast: (p.roastEn || p.roast) ?? null,
-        notes: p.notesEn || p.notes || [],
         price: p.priceUsd ?? Math.round(p.price / 4000),
         rating: p.rating,
         deal: p.deal ?? false, bestseller: p.bestseller ?? false,
@@ -283,10 +282,6 @@ const productsJson = JSON.stringify(mapped).replace(/</g, "\\u003c");
         const stars =
             "★".repeat(Math.round(p.rating)) +
             "☆".repeat(5 - Math.round(p.rating));
-        const notes =
-            p.notes
-                ?.map((n) => `<span class="note-chip">${n}</span>`)
-                .join("") ?? "";
         return `
       <article class="product-card" role="listitem" tabindex="0">
         <a href="/product/${p.id}" class="card-img-link">
@@ -303,7 +298,6 @@ const productsJson = JSON.stringify(mapped).replace(/</g, "\\u003c");
             <span class="rating">${stars} <small>${p.rating}</small></span>
             ${p.roast ? `<span class="roast-chip">${p.roast}</span>` : ""}
           </div>
-          ${notes ? `<div class="note-chips">${notes}</div>` : ""}
           <div class="card-footer">
             <span class="price">${fmt(p.price)}</span>
             <button class="btn btn-sm add-to-cart"
