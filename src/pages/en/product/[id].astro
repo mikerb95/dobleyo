@@ -52,7 +52,7 @@ const productJsonLd = {
   "@type": "Product",
   name: product.name,
   image: product.image,
-  description: product.description || (Array.isArray(product.notes) ? product.notes.join(", ") : ""),
+  description: product.description || "",
   brand: { "@type": "Brand", name: "DobleYo Café" },
   offers: {
     "@type": "Offer",
