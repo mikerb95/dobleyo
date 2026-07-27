@@ -48,8 +48,8 @@ export async function createHarvest({ farm, region, altitude, variety, climate, 
 
   const result = await query(
     `INSERT INTO coffee_harvests (lot_id, farm, region, altitude, variety, climate, process, aroma, taste_notes, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now')) RETURNING id`,
-    [lotId, farm, farmRegion, farmAltitude, variety, climate, process, aroma, tasteNotes]
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, COALESCE(?, datetime('now'))) RETURNING id`,
+    [lotId, farm, farmRegion, farmAltitude, variety, climate, process, aroma, tasteNotes, createdAt]
   );
 
   return { lotId, harvestId: result.rows[0].id };
