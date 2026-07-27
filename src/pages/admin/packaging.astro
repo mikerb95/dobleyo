@@ -724,6 +724,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
             unitCount,
             notes: document.getElementById("notes").value.trim() || null,
             addToInventory: document.getElementById("addToInventory").checked,
+            recordedAt: recordedAt.value || undefined,
           }),
         });
 
