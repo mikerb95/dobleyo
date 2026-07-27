@@ -343,7 +343,7 @@ export async function createPackaging({ roastedStorageId, acidity, body, balance
         containerCount: lotExhausted ? (parseInt(roastedInfo.container_count, 10) || 0) : 0,
         sourceTable: 'packaged_coffee', sourceId: result.rows[0].id,
         reasonCode: 'packaging', notes: notes || null,
-        movementUid: movementUid || `pack-out:${result.rows[0].id}`, user,
+        movementUid: movementUid || `pack-out:${result.rows[0].id}`, user, performedAt: createdAt,
       }, { query: txq });
     }
 
