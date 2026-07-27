@@ -253,10 +253,12 @@ export async function getRoastedStorageDetail(id) {
 
 // ── 6. Empaque ───────────────────────────────────────────────────────────────
 
-export async function createPackaging({ roastedStorageId, acidity, body, balance, presentation, grindSize, packageSize, unitCount, notes, addToInventory, user, movementUid }) {
+export async function createPackaging({ roastedStorageId, acidity, body, balance, presentation, grindSize, packageSize, unitCount, notes, addToInventory, user, movementUid, recordedAt }) {
   if (!roastedStorageId || !acidity || !body || !balance || !presentation || !packageSize || !unitCount) {
     throw bizError(400, 'Faltan campos requeridos');
   }
+
+  const createdAt = resolveRecordedAt(recordedAt);
   if (presentation === 'MOLIDO' && !grindSize) {
     throw bizError(400, 'Debe especificar tipo de molienda');
   }
