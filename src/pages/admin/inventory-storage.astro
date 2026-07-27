@@ -451,9 +451,9 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         document.getElementById("summaryWeight").textContent =
           `${weight} ${unit}`;
         document.getElementById("summaryLocation").textContent = location;
-        document.getElementById("summaryDate").textContent = new Date(
+        document.getElementById("summaryDate").textContent = fmtDay(
           storageDate.value
-        ).toLocaleDateString("es-CO");
+        );
         summaryBox.style.display = "block";
       } else {
         summaryBox.style.display = "none";
