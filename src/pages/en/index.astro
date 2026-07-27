@@ -158,9 +158,6 @@ try {
                 {p.process && <span>{p.process}</span>}
               </p>
               <h3 class="cs-card__name">{p.name}</h3>
-              {p.notes && p.notes.length > 0 && (
-                <p class="cs-card__notes">{p.notes.join(" · ")}</p>
-              )}
               <div class="cs-card__footer">
                 <span class="cs-card__price">{formatPrice(Number(p.price_usd), "en")}</span>
                 <button
