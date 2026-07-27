@@ -187,8 +187,10 @@ export async function receiveRoasted({ roastingId, roastLevel, roastedWeight, ac
 
 // ── 5. Almacenar tostado ─────────────────────────────────────────────────────
 
-export async function storeRoasted({ roastedId, location, container, containerCount, conditions, notes, user, movementUid }) {
+export async function storeRoasted({ roastedId, location, container, containerCount, conditions, notes, user, movementUid, recordedAt }) {
   if (!roastedId || !location || !container || !containerCount) throw bizError(400, 'Faltan campos requeridos');
+
+  const createdAt = resolveRecordedAt(recordedAt);
 
   const roastedResult = await query(
     `SELECT rc.weight_kg, rb.lot_id FROM roasted_coffee rc
