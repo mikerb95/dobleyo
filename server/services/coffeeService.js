@@ -27,10 +27,13 @@ const PACKAGE_KG = { '100g': 0.1, '250g': 0.25, '500g': 0.5, '1kg': 1.0 };
 
 // ── 1. Cosecha ───────────────────────────────────────────────────────────────
 
-export async function createHarvest({ farm, region, altitude, variety, climate, process, aroma, tasteNotes }) {
+export async function createHarvest({ farm, region, altitude, variety, climate, process, aroma, tasteNotes, recordedAt }) {
   if (!farm || !variety || !climate || !process || !aroma || !tasteNotes) {
     throw bizError(400, 'Faltan campos requeridos');
   }
+
+  // Fecha real de la cosecha: permite digitar el registro días después.
+  const createdAt = resolveRecordedAt(recordedAt);
 
   let farmRegion = region;
   let farmAltitude = altitude;
