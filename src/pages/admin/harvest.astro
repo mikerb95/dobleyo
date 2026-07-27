@@ -262,6 +262,20 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     const form = document.getElementById("harvestForm");
     const farmSelect = document.getElementById("farmSelect");
     const variety = document.getElementById("variety");
+    const recordedAt = document.getElementById("recordedAt");
+
+    // ── Fecha del registro ──────────────────────────────────────────
+    // El operario suele digitar la cosecha días después de recogerla:
+    // el campo arranca en hoy pero admite fechas anteriores.
+    function todayISO() {
+      const d = new Date();
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    }
+    function resetRecordedAt() {
+      recordedAt.max = todayISO();
+      recordedAt.value = todayISO();
+    }
+    resetRecordedAt();
 
     // ── Toast ───────────────────────────────────────────────────────
     function toast(message, type = "info") {
