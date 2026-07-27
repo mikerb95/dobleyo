@@ -111,10 +111,13 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
       <!-- Fecha de Almacenamiento -->
       <div class="form-group">
-        <label for="storageDate">Fecha de almacenamiento</label>
-        <input type="date" id="storageDate" name="storageDate" disabled />
+        <label for="storageDate"
+          >Fecha de almacenamiento <span class="required">*</span></label
+        >
+        <input type="date" id="storageDate" name="storageDate" required />
         <div class="form-hint">
-          Se registra automáticamente con la fecha actual
+          Por defecto es hoy. Cámbiela si está registrando un almacenamiento de
+          días anteriores.
         </div>
       </div>
 
