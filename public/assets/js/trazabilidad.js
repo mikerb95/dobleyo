@@ -35,8 +35,6 @@ function initTrazabilidad() {
   const resChips     = $('#resChips');
   const resRegionBadge   = $('#resRegionBadge');
   const resAltitudeBadge = $('#resAltitudeBadge');
-  const resFlavorSection = $('#resFlavorSection');
-  const resFlavorChips   = $('#resFlavorChips');
   const resTimeline  = $('#resTimeline');
   const resSCACard   = $('#resSCACard');
   const resSCAMain   = $('#resSCAMain');
