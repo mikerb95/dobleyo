@@ -186,6 +186,42 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     </div>
   </form>
 
+  <!-- Modal de Alarma: Merma Anormal -->
+  <div class="modal" id="mermaAlertModal" style="display: none;">
+    <div class="modal-content modal-alarm">
+      <div class="modal-header">
+        <h2 class="modal-title">⚠️ Merma inusualmente alta</h2>
+      </div>
+      <div class="modal-body">
+        <p>
+          La pérdida de peso registrada es de
+          <strong id="mermaAlertPercent">—</strong>
+          (<span id="mermaAlertAmount">—</span> kg evaporados).
+        </p>
+        <p class="modal-alarm-sub">
+          Lo normal en tostión de especialidad es 12–20%. Verifique el
+          indicador de alarma de la tostadora y confirme que el peso
+          registrado sea correcto antes de continuar.
+        </p>
+      </div>
+      <div class="modal-actions">
+        <button type="button" id="mermaAlertCloseBtn" class="btn btn-primary">
+          Entendido
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .modal-alarm {
+      max-width: 460px;
+    }
+    .modal-alarm-sub {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+  </style>
+
   <script>
     const roastingLotSelect = document.getElementById("roastingLotSelect");
     const roastedWeightInput = document.getElementById("roastedWeight");
