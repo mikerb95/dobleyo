@@ -1,7 +1,6 @@
 ---
 import Layout from "../../../layouts/Layout.astro";
 import { getCanonicalUrl, formatPrice } from "../../../i18n/index.ts";
-import { parseTastingNotes } from "../../../../server/utils/tasting.js";
 
 // Prerender estático: el subdominio en. sirve archivos estáticos vía rewrite.
 // SSR (prerender=false) da 404 bajo ese rewrite, por eso enumeramos rutas en build.
