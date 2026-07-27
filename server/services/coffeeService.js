@@ -174,9 +174,10 @@ export async function receiveRoasted({ roastingId, roastLevel, roastedWeight, ac
 
   const result = await query(
     `INSERT INTO roasted_coffee (roasting_id, roast_level, weight_kg, weight_loss_percent, actual_temp, roast_time_minutes, observations, status, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, 'ready_for_storage', datetime('now')) RETURNING id`,
+     VALUES (?, ?, ?, ?, ?, ?, ?, 'ready_for_storage', COALESCE(?, datetime('now'))) RETURNING id`,
     [roastingId, roastLevel, roastedWeightNum, weightLossPercent,
-     actualTemp ? parseInt(actualTemp) : null, roastTime ? parseInt(roastTime) : null, observations || null]
+     actualTemp ? parseInt(actualTemp) : null, roastTime ? parseInt(roastTime) : null, observations || null,
+     createdAt]
   );
 
   await query('UPDATE roasting_batches SET status = ? WHERE id = ?', ['completed', roastingId]);
