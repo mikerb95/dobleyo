@@ -511,9 +511,9 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
           `${document.getElementById("weight").value} ${document.getElementById("weightUnit").value}`;
         document.getElementById("detailLocation").textContent =
           document.getElementById("location").value;
-        document.getElementById("detailDate").textContent = new Date(
+        document.getElementById("detailDate").textContent = fmtDay(
           storageDate.value
-        ).toLocaleDateString("es-CO");
+        );
 
         // Mostrar modal de éxito
         document.getElementById("successModal").style.display = "grid";
