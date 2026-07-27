@@ -345,6 +345,19 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     const form = document.getElementById("packagingForm");
     const coffeeInfoCard = document.getElementById("coffeeInfoCard");
     const originInfo = document.getElementById("originInfo");
+    const recordedAt = document.getElementById("recordedAt");
+
+    // Fecha del registro: arranca en hoy pero es editable, porque el empaque
+    // suele digitarse días después de haberse hecho.
+    function todayISO() {
+      const d = new Date();
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    }
+    function resetRecordedAt() {
+      recordedAt.max = todayISO();
+      recordedAt.value = todayISO();
+    }
+    resetRecordedAt();
 
     const packageSizeWeights = { "250g": 0.25, "500g": 0.5, "1kg": 1, "100g": 0.1 };
     let currentRoasted = null;
