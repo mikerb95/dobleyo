@@ -112,6 +112,8 @@ export interface StockItem {
 // ---- Payloads de escritura (línea de producción) ----
 
 export interface HarvestInput {
+  /** Fecha del registro (`YYYY-MM-DD`). Permite digitar el paso días después. */
+  recordedAt?: string;
   farm: string;
   region: string;
   altitude?: number | string;
@@ -123,6 +125,7 @@ export interface HarvestInput {
 }
 
 export interface GreenStorageInput {
+  recordedAt?: string;
   lotId: number | string;
   weight: number;
   weightUnit?: string;
@@ -132,6 +135,7 @@ export interface GreenStorageInput {
 }
 
 export interface SendRoastingInput {
+  recordedAt?: string;
   lotId: number | string;
   quantitySent: number;
   targetTemp?: number;
@@ -139,6 +143,7 @@ export interface SendRoastingInput {
 }
 
 export interface RoastRetrievalInput {
+  recordedAt?: string;
   lotId: number | string;
   roastedWeight: number;
   roastLevel?: string;
@@ -147,6 +152,7 @@ export interface RoastRetrievalInput {
 }
 
 export interface RoastedStorageInput {
+  recordedAt?: string;
   lotId: number | string;
   weight: number;
   location?: string;
@@ -154,6 +160,7 @@ export interface RoastedStorageInput {
 }
 
 export interface PackagingInput {
+  recordedAt?: string;
   lotId: number | string;
   packageWeight: number;
   packageType: string;
