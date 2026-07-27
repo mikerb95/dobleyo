@@ -129,9 +129,9 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
                 </select>
               </div>
               <div class="form-group" style="margin-bottom:0;">
-                <label for="storageDate">Fecha de entrada</label>
-                <input type="date" id="storageDate" name="storageDate" disabled />
-                <div class="form-hint">Se registra con la fecha actual.</div>
+                <label for="storageDate">Fecha de entrada <span class="required">*</span></label>
+                <input type="date" id="storageDate" name="storageDate" required />
+                <div class="form-hint">Por defecto es hoy. Cámbiela si la entrada fue en días anteriores.</div>
               </div>
             </div>
           </div>
@@ -621,8 +621,17 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     // ── Elementos ──────────────────────────────────────────────────────────────────
     const $ = (id) => document.getElementById(id);
     const form = $('roastedStorageForm');
-    const today = new Date().toISOString().split('T')[0];
-    $('storageDate').value = today;
+    // Fecha del registro: arranca en hoy pero es editable, porque la entrada a
+    // bodega suele digitarse días después de haber ocurrido.
+    const todayISO = () => {
+      const d = new Date();
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    };
+    function resetStorageDate() {
+      $('storageDate').max = todayISO();
+      $('storageDate').value = todayISO();
+    }
+    resetStorageDate();
 
     // ── Toast ───────────────────────────────────────────────────────────────────────
     let toastTimer;
