@@ -2,6 +2,15 @@
 
 ---
 
+## 2026-07-27 — Alerta de ingresos de café pendientes en inventario tras la cosecha (Agente: Claude)
+
+### Cambios
+- **`server/routes/dashboard.js`** — `GET /api/dashboard/alerts` ahora agrega, además de las alertas de stock bajo, una alerta por cada cosecha registrada en `coffee_harvests` cuyo `lot_id` aún no tiene fila en `green_coffee_inventory` (máx. 5, la más antigua primero). Severidad por antigüedad: `info` (<3 días), `warning` (3–6 días), `critical` (≥7 días). Acción: "Registrar ingreso" → `/admin/inventory-storage`.
+- Las dos consultas del endpoint pasan por `Promise.allSettled`, de modo que un fallo en una no deja el panel de alertas sin la otra.
+
+### Nota
+El criterio de "pendiente" es el mismo que ya usa `/admin/inventory-storage` para poblar su selector de lotes disponibles. La alerta se renderiza en el `AlertsBanner` del dashboard admin sin cambios de frontend (la severidad `info` ya tenía estilos).
+
 ## 2026-07-27 — Retiro de "clima" y "notas de sabor" de las propiedades del lote en trazabilidad (Agente: Claude)
 
 ### Cambios

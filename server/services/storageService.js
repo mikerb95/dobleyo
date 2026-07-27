@@ -344,10 +344,11 @@ async function postMovementTx(tx, p) {
        (movement_uid, movement_type, from_location_id, to_location_id, lot_id, stock_state,
         qty_kg, container_type, container_count, source_table, source_id, reason_code, notes,
         performed_by, performed_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now')) RETURNING id`,
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, COALESCE(?, datetime('now'))) RETURNING id`,
     [uid, type, fromLoc?.id ?? null, toLoc?.id ?? null, lotId, stockState, qty,
      containerType, containerCount || null, sourceTable,
-     sourceId != null ? String(sourceId) : null, reasonCode, notes, user?.id ?? null]
+     sourceId != null ? String(sourceId) : null, reasonCode, notes, user?.id ?? null,
+     performedAt || null]
   );
   const movementId = inserted.rows[0].id;
 
@@ -370,7 +371,7 @@ async function postMovementTx(tx, p) {
  * Se ejecuta dentro de la transacción del llamador para que la validación de
  * disponibilidad y las salidas sean atómicas entre sí.
  */
-export async function issueFromLotFIFO(tx, { lotId, stockState, qtyKg, sourceTable, sourceId, reasonCode, notes, uidPrefix, user }) {
+export async function issueFromLotFIFO(tx, { lotId, stockState, qtyKg, sourceTable, sourceId, reasonCode, notes, uidPrefix, user, performedAt = null }) {
   const needed = round3(qtyKg);
   if (!isFinite(needed) || needed <= 0) throw bizError(400, 'La cantidad debe ser mayor a cero');
 
@@ -402,7 +403,7 @@ export async function issueFromLotFIFO(tx, { lotId, stockState, qtyKg, sourceTab
     const result = await postMovementTx(tx, {
       type: 'issue', from: r.location_id, lotId, stockState, qtyKg: take,
       sourceTable, sourceId, reasonCode, notes,
-      movementUid: `${uidPrefix}:${seq}`, user,
+      movementUid: `${uidPrefix}:${seq}`, user, performedAt,
     });
     issued.push({ location: r.code, qty_kg: take, movement_id: result.movementId });
     remaining = round3(remaining - take);
