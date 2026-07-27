@@ -57,10 +57,15 @@ export async function createHarvest({ farm, region, altitude, variety, climate, 
 
 // ── 2. Almacenamiento verde ──────────────────────────────────────────────────
 
-export async function storeGreenCoffee({ lotId, weight, weightUnit, location, storageDate, notes, user, movementUid }) {
+export async function storeGreenCoffee({ lotId, weight, weightUnit, location, storageDate, notes, user, movementUid, recordedAt }) {
   if (!lotId || !weight || !location || !storageDate) {
     throw bizError(400, 'Faltan campos requeridos');
   }
+
+  // La fecha de almacenamiento manda: el registro puede digitarse días después
+  // y tanto el inventario como el asiento en el ledger quedan con esa fecha.
+  const createdAt = resolveRecordedAt(recordedAt || storageDate);
+  const storageDay = recordedDay(createdAt) || storageDate;
 
   await assertCanAdvance(query, lotId, 'in_storage_green');
 

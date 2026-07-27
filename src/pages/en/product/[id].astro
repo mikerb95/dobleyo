@@ -32,12 +32,10 @@ try {
   );
   if (rows.length) {
     const p = rows[0];
-    const tn = parseTastingNotes(p.tasting_notes);
     product = {
       ...p,
       name: p.name_en || p.name,
       categoryLabel: LABEL[p.category] ?? p.category,
-      notes: tn?.en ?? tn?.es ?? null,
       priceUsd: p.price_usd ?? null,
       description: p.description || null,
     };
