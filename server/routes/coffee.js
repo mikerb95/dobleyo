@@ -61,8 +61,8 @@ coffeeRouter.post('/inventory-storage', async (req, res) => {
 // 3. Enviar a tostión
 coffeeRouter.post('/send-roasting', async (req, res) => {
   try {
-    const { lotId, quantitySent, targetTemp, notes } = req.body;
-    const data = await sendToRoasting({ lotId, quantitySent, targetTemp, notes, user: req.user });
+    const { lotId, quantitySent, targetTemp, notes, recordedAt } = req.body;
+    const data = await sendToRoasting({ lotId, quantitySent, targetTemp, notes, recordedAt, user: req.user });
     res.status(201).json({ success: true, message: 'Lote enviado a tostión correctamente', ...data });
   } catch (err) {
     handleErr(res, err, 'Error en send-roasting');
