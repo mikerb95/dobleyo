@@ -362,6 +362,9 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         : `COL-${farm.region}-${altitude}-···`;
       document.getElementById("lotId").textContent = lotId;
 
+      document.getElementById("pvDate").textContent = recordedAt.value
+        ? fmtDate(`${recordedAt.value}T12:00:00`)
+        : "Por especificar";
       document.getElementById("pvFarm").textContent = farm.displayName;
       document.getElementById("pvAltitude").textContent = farm.altitude;
       document.getElementById("pvVariety").textContent = v ? varietyMap[v] || v : "Por seleccionar";
