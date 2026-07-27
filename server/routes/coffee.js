@@ -5,6 +5,7 @@ import { apiLimiter } from '../middleware/rateLimit.js';
 import { idempotency } from '../middleware/idempotency.js';
 import { assertFarmOwnership } from '../middleware/farmAuth.js';
 import { logAudit } from '../services/audit.js';
+import { sendNtfyAsync } from '../services/ntfy.js';
 import {
   createHarvest, storeGreenCoffee, sendToRoasting, receiveRoasted,
   storeRoasted, getRoastedStorageDetail, createPackaging,
