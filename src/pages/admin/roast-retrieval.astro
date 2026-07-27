@@ -432,6 +432,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         roastingInfoCard.style.display = "none";
         summaryBox.style.display = "none";
         weightLossBox.style.display = "none";
+        mermaAlertShownFor = null;
         loadRoastingLots();
       } catch (error) {
         console.error("Error:", error);
