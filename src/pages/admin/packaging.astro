@@ -63,6 +63,17 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         </div>
         <div class="card-pad">
           <form id="packagingForm">
+            <!-- Fecha del Registro -->
+            <div class="form-group">
+              <label for="recordedAt">
+                Fecha de empaque <span class="required">*</span>
+              </label>
+              <input type="date" id="recordedAt" name="recordedAt" required />
+              <div class="form-hint">
+                Por defecto es hoy. Cámbiela si el empaque se hizo en días anteriores.
+              </div>
+            </div>
+
             <!-- Selección de Café Tostado -->
             <div class="form-group">
               <label for="roastedSelect">
