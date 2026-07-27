@@ -276,6 +276,8 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
     // Actualizar información del lote
     roastingLotSelect.addEventListener("change", () => {
+      mermaAlertShownFor = null;
+
       if (!roastingLotSelect.value) {
         roastingInfoCard.style.display = "none";
         summaryBox.style.display = "none";
