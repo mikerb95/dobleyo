@@ -76,12 +76,3 @@ export function resolveRecordedAt(value) {
 export function recordedDay(recordedAt) {
   return recordedAt ? recordedAt.slice(0, 10) : null;
 }
-
-/**
- * Convierte a `YYYY-MM-DD HH:MM:SS` sin validar rango. Uso interno para
- * timestamps ya calculados.
- */
-export function toSqlDatetime(date) {
-  const iso = new Date(date).toISOString();
-  return `${iso.slice(0, 10)} ${pad(new Date(iso).getUTCHours())}:${pad(new Date(iso).getUTCMinutes())}:${pad(new Date(iso).getUTCSeconds())}`;
-}
