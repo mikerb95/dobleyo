@@ -17,7 +17,7 @@ let coffeeProducts: any[] = [];
 try {
   const { query } = await import("../../../server/db.js");
   const result = await query(
-    `SELECT id, name, name_en, origin, process, roast, tasting_notes, price_usd,
+    `SELECT id, name, name_en, origin, process, roast, price_usd,
             is_bestseller AS bestseller, is_new AS new, image_url AS image,
             stock_quantity AS stock
      FROM products
@@ -29,7 +29,6 @@ try {
     coffeeProducts = result.rows.map((p: any) => ({
       ...p,
       name: p.name_en || p.name,
-      notes: parseTastingNotes(p.tasting_notes)?.en ?? parseTastingNotes(p.tasting_notes)?.es ?? [],
     }));
   }
 } catch (_) {}
