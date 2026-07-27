@@ -402,9 +402,23 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       }
     }
 
-    // Establecer fecha actual
-    const today = new Date().toISOString().split("T")[0];
-    storageDate.value = today;
+    // Fecha del registro: arranca en hoy pero es editable, porque el
+    // almacenamiento suele digitarse días después de haber ocurrido.
+    function todayISO() {
+      const d = new Date();
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    }
+    function fmtDay(value) {
+      // Se fija el mediodía para que la fecha no se corra un día por zona horaria.
+      return value
+        ? new Date(`${value}T12:00:00`).toLocaleDateString("es-CO")
+        : "—";
+    }
+    function resetStorageDate() {
+      storageDate.max = todayISO();
+      storageDate.value = todayISO();
+    }
+    resetStorageDate();
 
     // Actualizar información del lote seleccionado
     lotSelect.addEventListener("change", () => {
