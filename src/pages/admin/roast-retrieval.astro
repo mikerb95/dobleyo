@@ -242,6 +242,19 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     const weightLossBox = document.getElementById("weightLossBox");
     const mermaAlertModal = document.getElementById("mermaAlertModal");
     const mermaAlertCloseBtn = document.getElementById("mermaAlertCloseBtn");
+    const recordedAt = document.getElementById("recordedAt");
+
+    // Fecha del registro: arranca en hoy pero es editable, porque el tueste
+    // suele digitarse días después de haberse recogido.
+    function todayISO() {
+      const d = new Date();
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    }
+    function resetRecordedAt() {
+      recordedAt.max = todayISO();
+      recordedAt.value = todayISO();
+    }
+    resetRecordedAt();
 
     const MERMA_ALARM_THRESHOLD = 20; // % de merma a partir del cual se considera anormal
 
