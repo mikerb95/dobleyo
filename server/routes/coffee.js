@@ -17,6 +17,10 @@ import {
 
 export const coffeeRouter = express.Router();
 
+// Ojo: varias rutas destructuran `process` de req.body (el proceso del café),
+// lo que sombrea el global de Node. La base del sitio se resuelve aquí arriba.
+const SITE_URL = process.env.SITE_BASE_URL || 'https://dobleyo.cafe';
+
 coffeeRouter.use(apiLimiter);
 coffeeRouter.use(authenticateToken);
 coffeeRouter.use(requireRole(['admin', 'caficultor']));
