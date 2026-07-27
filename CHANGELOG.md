@@ -2,6 +2,25 @@
 
 ---
 
+## 2026-07-27 (3) — Fecha editable en los registros de producción (Agente: Claude)
+
+### Contexto
+Los pasos del pipeline se digitaban con `datetime('now')`, así que un registro hecho días después de la operación real quedaba fechado el día de la digitación. Ahora cada paso acepta la fecha en que ocurrió.
+
+### Cambios
+- **`server/utils/recordDate.js`** (nuevo) — `resolveRecordedAt()` normaliza la fecha digitada (`YYYY-MM-DD` del formulario o ISO completo de la cola offline móvil) al formato de SQLite en UTC. Devuelve `null` si no se envía nada, para que la consulta caiga en `datetime('now')`. A las fechas sin hora se les fija el mediodía UTC para que no se corran un día al renderizarlas en zona horaria colombiana; si la fecha es hoy conserva la hora real. Rechaza (400) fechas futuras y anteriores a `MAX_BACKDATE_DAYS` (730). `recordedDay()` extrae el día para columnas DATE.
+- **`server/services/coffeeService.js`** — `createHarvest`, `storeGreenCoffee`, `sendToRoasting`, `receiveRoasted`, `storeRoasted` y `createPackaging` aceptan `recordedAt` y lo aplican con `COALESCE(?, datetime('now'))` sobre `created_at`. En empaque la fecha también viaja al `products`/`inventory_movements` que se crean al sumar stock. En almacenamiento verde manda la `storageDate` del formulario.
+- **`server/services/storageService.js`** — `postMovement()` e `issueFromLotFIFO()` aceptan `performedAt`, de modo que el asiento en el ledger de bodega quede con la misma fecha que el registro de producción y no con la de digitación.
+- **`server/routes/coffee.js`** — los seis POST del pipeline pasan `recordedAt` del body al servicio.
+- **Formularios** (`src/pages/admin/`): `harvest.astro`, `roast-retrieval.astro` y `packaging.astro` estrenan campo de fecha; `inventory-storage.astro`, `send-roasting.astro` y `roasted-storage.astro` tenían el campo `disabled` — ahora es editable y requerido. Todos arrancan en hoy (fecha **local**, no UTC: antes `toISOString()` adelantaba el día después de las 19:00 en Colombia), con `max` en hoy, y vuelven a hoy al limpiar o tras un registro exitoso. Los resúmenes en vivo reflejan la fecha elegida.
+- **`packages/shared/src/types.ts`** — `recordedAt?: string` en los `*Input` del pipeline para la app móvil.
+- **`server/utils/__tests__/recordDate.test.js`** (nuevo) — 8 tests del normalizador.
+
+### Verificación
+`npx vitest run`: 103/103. `npm run build` limpio.
+
+---
+
 ## 2026-07-27 (2) — Retiro de `tasting_notes` de la tienda (Agente: Claude)
 
 ### Cambios
