@@ -173,21 +173,6 @@ function initTrazabilidad() {
         });
     }
 
-    // Notas de sabor
-    const flavorRaw = data.label?.flavor_notes || h.taste_notes || h.aroma || '';
-    if (flavorRaw && resFlavorSection && resFlavorChips) {
-      resFlavorSection.style.display = '';
-      resFlavorChips.innerHTML = '';
-      flavorRaw.split(/[,;·]+/).map(s => s.trim()).filter(Boolean).forEach(note => {
-        const span = document.createElement('span');
-        span.className   = 'trace-flavor-chip ' + flavorCategory(note);
-        span.textContent = note;
-        resFlavorChips.appendChild(span);
-      });
-    } else if (resFlavorSection) {
-      resFlavorSection.style.display = 'none';
-    }
-
     // Caficultor y finca
     renderFarmer(data.farm);
 
