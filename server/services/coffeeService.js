@@ -73,40 +73,33 @@ export async function createHarvest({ farm, region, altitude, variety, climate, 
   const suffix = crypto.randomBytes(2).toString('hex').toUpperCase();
   const lotId = `COL-${farmRegion}-${farmAltitude}-${variety}-${process}-${suffix}`;
 
-  // Compra al caficultor: kg recibidos y total pagado. Son las mismas columnas
-  // que usa el comparativo de precio FNC — una sola fuente de verdad.
-  const purchaseKg = purchaseWeightKg != null && purchaseWeightKg !== ''
-    ? parseFloat(purchaseWeightKg) : null;
-  if (purchaseKg != null && (!isFinite(purchaseKg) || purchaseKg <= 0)) {
-    throw bizError(400, 'Peso de compra inválido');
+  // Kg recibidos del caficultor. Es el peso de origen, no el que llega a bodega:
+  // la diferencia entre ambos es la merma de secado y selección.
+  const harvestKg = harvestWeightKg != null && harvestWeightKg !== ''
+    ? parseFloat(harvestWeightKg) : null;
+  if (harvestKg != null && (!isFinite(harvestKg) || harvestKg <= 0)) {
+    throw bizError(400, 'Peso de cosecha inválido');
   }
-  const purchaseCop = purchaseTotalCop != null && purchaseTotalCop !== ''
-    ? Math.round(parseFloat(purchaseTotalCop)) : null;
-  if (purchaseCop != null && (!isFinite(purchaseCop) || purchaseCop <= 0)) {
-    throw bizError(400, 'Valor pagado al caficultor inválido');
-  }
-  const purchaseDay = recordedDay(createdAt) || new Date().toISOString().slice(0, 10);
 
   const result = await query(
     `INSERT INTO coffee_harvests
        (lot_id, farm, region, altitude, variety, climate, process, aroma, taste_notes,
-        purchase_weight_kg, purchase_total_cop, purchase_date, yield_factor, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, COALESCE(?, datetime('now'))) RETURNING id`,
+        harvest_weight_kg, yield_factor, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, COALESCE(?, datetime('now'))) RETURNING id`,
     [lotId, farm, farmRegion, farmAltitude, variety, climate, process, aroma, tasteNotes,
-     purchaseKg, purchaseCop, purchaseCop != null ? purchaseDay : null,
-     yieldFactor ? parseInt(yieldFactor, 10) : null, createdAt]
+     harvestKg, yieldFactor ? parseInt(yieldFactor, 10) : null, createdAt]
   );
   const harvestId = result.rows[0].id;
 
-  // Lo pagado al caficultor entra al libro de costos. El monto queda fijo: el
-  // costo por kg se calcula después contra los kilos que ingresen a bodega.
+  // Lo pagado al caficultor entra al libro de costos — de ahí lo lee también el
+  // comparativo de precio FNC. El monto queda fijo: el costo por kg se calcula
+  // después contra los kilos que efectivamente ingresen a bodega.
   const tracked = await trackCost({
-    cost: { ...cost, amount: purchaseCop },
-    lotId, costType: 'farmer_payment', qtyKg: purchaseKg,
+    cost, lotId, costType: 'farmer_payment', qtyKg: harvestKg,
     sourceTable: 'coffee_harvests', sourceId: harvestId, recordedAt: createdAt, user,
   });
 
-  return { lotId, harvestId, purchaseWeightKg: purchaseKg, purchaseTotalCop: purchaseCop, cost: tracked };
+  return { lotId, harvestId, harvestWeightKg: harvestKg, cost: tracked };
 }
 
 // ── 2. Almacenamiento verde ──────────────────────────────────────────────────
