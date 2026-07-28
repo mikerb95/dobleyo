@@ -7,6 +7,8 @@ import { query, withTransaction } from '../db.js';
 import { assertCanAdvance, getCurrentStage, STAGE_LABELS } from './lotStateMachine.js';
 import { postMovement, issueFromLotFIFO, resolveLocationForIntake } from './storageService.js';
 import { resolveRecordedAt, recordedDay } from '../utils/recordDate.js';
+import { recordCost, consumeSupply } from './costService.js';
+import { logger } from '../logger.js';
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
