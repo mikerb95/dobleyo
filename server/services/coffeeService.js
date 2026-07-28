@@ -168,7 +168,7 @@ export async function sendToRoasting({ lotId, quantitySent, targetTemp, notes, u
   // La disponibilidad ya no se estima restando tablas: sale de los quants, que
   // son la proyección del ledger. issueFromLotFIFO la valida y retira en la
   // misma transacción, así dos envíos simultáneos no pueden sobregirar el lote.
-  return withTransaction(async (tx) => {
+  const sent = await withTransaction(async (tx) => {
     const result = await tx.query(
       `INSERT INTO roasting_batches (lot_id, quantity_sent_kg, target_temp, notes, status, created_at)
        VALUES (?, ?, ?, ?, 'in_roasting', COALESCE(?, datetime('now'))) RETURNING id`,
