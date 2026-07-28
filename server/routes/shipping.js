@@ -7,6 +7,7 @@ import { query } from '../db.js';
 import { authenticateToken, requireRole } from '../auth.js';
 import { logAudit, logSystemAudit } from '../services/audit.js';
 import { sendShippingNotificationEmail, sendOrderConfirmationEmail } from '../services/email.js';
+import { notifyShippingIssue } from '../services/alerts.js';
 import {
     quoteShipping,
     createSending,
