@@ -50,7 +50,7 @@ export function parseFncBulletin(text, sourceUrl = null) {
   const dateMatch = text.match(/([A-Za-zÁÉÍÓÚáéíóú]+)\s+(\d{1,2})\s*\/\s*(\d{4})/);
   if (!dateMatch) throw new Error('No se encontró la fecha en el boletín FNC');
 
-  const monthName = dateMatch[1].toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  const monthName = dateMatch[1].toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
   const month = MONTHS[monthName];
   if (!month) throw new Error(`Mes no reconocido en el boletín FNC: ${dateMatch[1]}`);
 

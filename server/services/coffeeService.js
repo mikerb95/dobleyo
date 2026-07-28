@@ -241,7 +241,17 @@ export async function receiveRoasted({ roastingId, roastLevel, roastedWeight, ac
 
   await query('UPDATE roasting_batches SET status = ? WHERE id = ?', ['completed', roastingId]);
 
-  return { roastedId: result.rows[0].id, weightLossPercent };
+  const roastedId = result.rows[0].id;
+
+  // Maquila del tueste. Se imputa sobre los kg que salieron del tostador, no
+  // sobre los enviados: el café evaporado no se puede vender, así que su parte
+  // del costo la absorbe el café bueno.
+  const tracked = await trackCost({
+    cost, lotId: roastLotId, costType: 'roasting_service', qtyKg: roastedWeightNum,
+    sourceTable: 'roasted_coffee', sourceId: roastedId, recordedAt: createdAt, user,
+  });
+
+  return { roastedId, weightLossPercent, cost: tracked };
 }
 
 // ── 5. Almacenar tostado ─────────────────────────────────────────────────────
