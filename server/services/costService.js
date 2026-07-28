@@ -391,7 +391,7 @@ export async function getLotCostSummary(lotId) {
  */
 export async function getCostOverview({ limit = 100, offset = 0 } = {}) {
   const { rows: lots } = await query(
-    `SELECT ch.lot_id, ch.farm, ch.variety, ch.process, ch.harvest_weight_kg, ch.created_at
+    `SELECT ch.lot_id, ch.farm, ch.variety, ch.process, ch.purchase_weight_kg, ch.created_at
        FROM coffee_harvests ch
       ORDER BY ch.created_at DESC
       LIMIT ? OFFSET ?`,
