@@ -12,6 +12,7 @@ import {
   getTransaction,
   wompiConfig,
 } from '../services/wompi.js';
+import { notifySubscriptionChargeFailed } from '../services/alerts.js';
 
 export const subscriptionsRouter = Router();
 
