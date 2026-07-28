@@ -569,6 +569,19 @@ async function refreshShipment(shipmentId, source) {
                  VALUES (?, ?, ?, ?, ?)`,
                 [shipmentId, source, ev.updateState || null, ev.description || null, ev.date || null]
             );
+
+            // Solo se alerta por eventos NUEVOS: cada refresh re-consulta todo el
+            // historial de tracking, así que notificar fuera de este guard mandaría
+            // la misma novedad una y otra vez.
+            if (isShippingIssueEvent(ev)) {
+                notifyShippingIssue({
+                    reference:    shipment.reference,
+                    customerName: shipment.customer_name,
+                    guideNumber,
+                    state:        ev.updateState,
+                    description:  ev.description,
+                });
+            }
         }
     }
 
