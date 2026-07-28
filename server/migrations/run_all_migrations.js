@@ -75,6 +75,8 @@ const steps = [
   { name: 'Storage: maestro de ubicaciones + ledger', run: () => runFn('create_storage_locations.js', 'createStorageLocations') },
   // Después de finance tables (usa accounting_accounts/journals) y del pipeline de café.
   { name: 'Costeo: lot_costs + insumos de empaque', run: () => runFn('create_cost_tracking.js', 'createCostTracking') },
+  // Precio FNC: histórico del boletín + datos de compra al caficultor en coffee_harvests.
+  { name: 'Precio FNC + compra al caficultor', run: () => runFn('create_fnc_price_tables.js', 'createFncPriceTables') },
 ];
 
 async function runAll() {
