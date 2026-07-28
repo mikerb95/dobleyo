@@ -73,6 +73,8 @@ const steps = [
   { name: 'Labels extended fields (region/climate/roast_date)', run: () => runFn('add_labels_extended_fields.js', 'addLabelsExtendedFields') },
   // Debe ir después de las tablas del pipeline de café: hace backfill del ledger a partir de ellas.
   { name: 'Storage: maestro de ubicaciones + ledger', run: () => runFn('create_storage_locations.js', 'createStorageLocations') },
+  // Después de finance tables (usa accounting_accounts/journals) y del pipeline de café.
+  { name: 'Costeo: lot_costs + insumos de empaque', run: () => runFn('create_cost_tracking.js', 'createCostTracking') },
 ];
 
 async function runAll() {
