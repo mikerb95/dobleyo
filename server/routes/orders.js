@@ -114,11 +114,19 @@ function verifyWompiEventSignature(event) {
 // ('processing' de inmediato) — nunca en 'pending_payment'. No hay reserva de
 // stock: el riesgo de sobreventa entre creación y pago se acepta para este
 // catálogo de bajo volumen. Idempotente vía `stock_deducted_at`.
+// Devuelve true solo cuando efectivamente descontó (primera vez para la orden).
+// Los llamadores lo usan para notificar la venta exactamente una vez.
 async function deductStockForOrder(orderId, reference) {
     const order = await query(`SELECT stock_deducted_at FROM customer_orders WHERE id = ?`, [orderId]);
-    if (!order.rows.length || order.rows[0].stock_deducted_at) return;
+    if (!order.rows.length || order.rows[0].stock_deducted_at) return false;
 
-    const items = await query(`SELECT product_id, quantity FROM customer_order_items WHERE order_id = ?`, [orderId]);
+    const items = await query(
+        `SELECT i.product_id, i.quantity, p.name AS product_name, p.stock_min
+           FROM customer_order_items i
+      LEFT JOIN products p ON p.id = i.product_id
+          WHERE i.order_id = ?`,
+        [orderId]
+    );
 
     for (const item of items.rows) {
         const result = await query(
@@ -135,16 +143,61 @@ async function deductStockForOrder(orderId, reference) {
                  VALUES (?, 'salida', ?, ?, ?, 'Venta e-commerce', ?)`,
                 [item.product_id, item.quantity, after + item.quantity, after, reference]
             );
+
+            // Alertas de inventario: agotado manda sobre "bajo el mínimo" para no
+            // mandar dos notificaciones del mismo producto en la misma venta.
+            const nombre = item.product_name || `Producto #${item.product_id}`;
+            const minimo = Number(item.stock_min ?? 0);
+            if (after <= 0) {
+                notifyStockDepleted({ productName: nombre, reference });
+            } else if (minimo > 0 && after <= minimo) {
+                notifyStockBelowMinimum({ productName: nombre, remaining: after, minimum: minimo });
+            }
         } else {
             // Sobreventa: no se pudo descontar (stock insuficiente en el momento del
             // pago). La orden ya está pagada/confirmada, así que se deja seguir — se
             // registra para que el admin gestione backorder/reposición.
             logger.warn({ orderId, productId: item.product_id, quantity: item.quantity }, '[Inventory] Sobreventa detectada al descontar stock');
             logSystemAudit('oversold', 'products', item.product_id, { orderId, reference, quantity: item.quantity }).catch(() => {});
+            notifyOversold({
+                productName: item.product_name || `Producto #${item.product_id}`,
+                quantity: item.quantity,
+                reference,
+            });
         }
     }
 
     await query(`UPDATE customer_orders SET stock_deducted_at = datetime('now') WHERE id = ?`, [orderId]);
+    return true;
+}
+
+// Publica la alerta de venta confirmada. Se llama solo cuando deductStockForOrder
+// devolvió true, así que no se duplica ante webhooks reintentados.
+async function notifyConfirmedSale(orderId) {
+    try {
+        const orderRes = await query(
+            `SELECT reference, customer_name, shipping_city, total_cop, currency, payment_method
+               FROM customer_orders WHERE id = ?`,
+            [orderId]
+        );
+        if (!orderRes.rows.length) return;
+        const o = orderRes.rows[0];
+        const itemsRes = await query(
+            `SELECT product_name, quantity FROM customer_order_items WHERE order_id = ?`,
+            [orderId]
+        );
+        notifySaleConfirmed({
+            reference:     o.reference,
+            customerName:  o.customer_name,
+            city:          o.shipping_city,
+            total:         o.total_cop,
+            currency:      o.currency,
+            paymentMethod: o.payment_method,
+            items:         itemsRes.rows.map((r) => ({ name: r.product_name, quantity: r.quantity })),
+        });
+    } catch (err) {
+        logger.error({ err, orderId }, '[Alerts] Error preparando la alerta de venta');
+    }
 }
 
 // Repone stock cuando una orden que YA había descontado inventario se cancela
