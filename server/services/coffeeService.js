@@ -73,13 +73,29 @@ export async function createHarvest({ farm, region, altitude, variety, climate, 
   const suffix = crypto.randomBytes(2).toString('hex').toUpperCase();
   const lotId = `COL-${farmRegion}-${farmAltitude}-${variety}-${process}-${suffix}`;
 
-  const result = await query(
-    `INSERT INTO coffee_harvests (lot_id, farm, region, altitude, variety, climate, process, aroma, taste_notes, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, COALESCE(?, datetime('now'))) RETURNING id`,
-    [lotId, farm, farmRegion, farmAltitude, variety, climate, process, aroma, tasteNotes, createdAt]
-  );
+  // Kg recogidos en finca. Es el peso de origen, no el que llega a bodega: la
+  // diferencia entre ambos es la merma de secado y selección.
+  const harvestKg = harvestWeightKg != null && harvestWeightKg !== ''
+    ? parseFloat(harvestWeightKg) : null;
+  if (harvestKg != null && (!isFinite(harvestKg) || harvestKg <= 0)) {
+    throw bizError(400, 'Peso de cosecha inválido');
+  }
 
-  return { lotId, harvestId: result.rows[0].id };
+  const result = await query(
+    `INSERT INTO coffee_harvests (lot_id, farm, region, altitude, variety, climate, process, aroma, taste_notes, harvest_weight_kg, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, COALESCE(?, datetime('now'))) RETURNING id`,
+    [lotId, farm, farmRegion, farmAltitude, variety, climate, process, aroma, tasteNotes, harvestKg, createdAt]
+  );
+  const harvestId = result.rows[0].id;
+
+  // Lo pagado al caficultor. Queda fijo: el costo por kg se calcula después
+  // contra los kilos que realmente ingresen a bodega.
+  const tracked = await trackCost({
+    cost, lotId, costType: 'farmer_payment', qtyKg: harvestKg,
+    sourceTable: 'coffee_harvests', sourceId: harvestId, recordedAt: createdAt, user,
+  });
+
+  return { lotId, harvestId, harvestWeightKg: harvestKg, cost: tracked };
 }
 
 // ── 2. Almacenamiento verde ──────────────────────────────────────────────────
