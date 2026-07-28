@@ -145,13 +145,17 @@ coffeeRouter.get('/roasted-storage/:id', async (req, res) => {
 coffeeRouter.post('/packaging', async (req, res) => {
   try {
     const { roastedStorageId, acidity, body, balance, presentation, grindSize, packageSize, unitCount, notes, addToInventory, recordedAt } = req.body;
-    const data = await createPackaging({ roastedStorageId, acidity, body, balance, presentation, grindSize, packageSize, unitCount, notes, addToInventory, recordedAt, user: req.user });
+    const data = await createPackaging({
+      roastedStorageId, acidity, body, balance, presentation, grindSize, packageSize,
+      unitCount, notes, addToInventory, recordedAt, ...suppliesFrom(req), user: req.user,
+    });
 
     await logAudit(req.user.id, 'create', 'packaged_coffee', data.packagedId, {
       roasted_storage_id: roastedStorageId, lot_id: data.lotId,
       presentation, grind_size: grindSize || null, package_size: packageSize,
       unit_count: unitCount, consumed_kg: data.consumedKg, remaining_kg: data.remainingKg,
       lot_exhausted: data.lotExhausted, product_id: data.productId,
+      packaging_cost_cop: data.packagingCostCop,
     });
 
     res.status(201).json({
