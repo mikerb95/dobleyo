@@ -276,7 +276,7 @@ export async function storeRoasted({ roastedId, location, container, containerCo
   const conditionsStr = (Array.isArray(conditions) && conditions.length) ? conditions.join(',') : null;
   const containers = parseInt(containerCount, 10) || 0;
 
-  return withTransaction(async (tx) => {
+  const stored = await withTransaction(async (tx) => {
     const result = await tx.query(
       `INSERT INTO roasted_coffee_inventory (roasted_id, location, location_id, container_type, container_count, storage_conditions, notes, status, created_at)
        VALUES (?, ?, ?, ?, ?, ?, ?, 'ready_for_packaging', COALESCE(?, datetime('now'))) RETURNING id`,
