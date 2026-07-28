@@ -28,6 +28,27 @@ coffeeRouter.use(requireRole(['admin', 'caficultor']));
 // no se re-ejecutan al reintentarse (devuelven la respuesta guardada).
 coffeeRouter.use(idempotency);
 
+/**
+ * Costo del paso, solo si quien registra es admin.
+ *
+ * El caficultor usa los mismos formularios (y la app móvil) pero no ve ni digita
+ * montos: si envía un costo, se descarta en silencio en vez de rechazar el
+ * registro completo — el paso de producción es lo que importa.
+ */
+function costFrom(req) {
+  if (req.user?.role !== 'admin') return undefined;
+  const { cost } = req.body;
+  if (!cost || typeof cost !== 'object') return undefined;
+  return cost;
+}
+
+/** Insumos de empaque: mismo criterio de rol que los costos. */
+function suppliesFrom(req) {
+  if (req.user?.role !== 'admin') return {};
+  const { bagSupplyId, labelSupplyId } = req.body;
+  return { bagSupplyId: bagSupplyId || null, labelSupplyId: labelSupplyId || null };
+}
+
 // Helper: envía la respuesta de error de negocio o 500
 function handleErr(res, err, context) {
   if (err.status) return res.status(err.status).json({ success: false, error: err.message, ...(err.detail && { detail: err.detail }) });
