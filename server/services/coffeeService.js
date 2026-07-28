@@ -452,13 +452,51 @@ export async function createPackaging({ roastedStorageId, acidity, body, balance
       inventoryMovementCreated = true;
     }
 
+    // Consumo de insumos de empaque. Va dentro de la transacción porque
+    // descuenta stock: si el empaque no se guarda, las bolsas no se gastaron.
+    // A granel no hay bolsa ni etiqueta que consumir.
+    const supplies = [];
+    if (packageSize !== 'bulk') {
+      for (const [supplyId, kind] of [[bagSupplyId, 'bag'], [labelSupplyId, 'label']]) {
+        if (!supplyId) continue;
+        supplies.push({
+          kind,
+          ...(await consumeSupply({
+            supplyId, units: unitCountNum, lotId: roastedInfo.lot_id,
+            sourceTable: 'packaged_coffee', sourceId: result.rows[0].id, user,
+          }, { query: txq })),
+        });
+      }
+    }
+
     return {
       packagedId: result.rows[0].id,
       productId, score, inventoryMovementCreated,
       lotId: roastedInfo.lot_id || null,
-      consumedKg, remainingKg, lotExhausted,
+      consumedKg, remainingKg, lotExhausted, supplies,
     };
   });
+
+  // Costo del empaque: bolsa y etiqueta se registran por separado para poder
+  // leer el desglose, aunque el operario los vea sumados en el formulario.
+  const costs = [];
+  for (const supply of packed.supplies) {
+    const tracked = await trackCost({
+      cost: { amount: supply.totalCost, paymentMethod: 'caja' },
+      lotId: packed.lotId,
+      costType: supply.kind === 'bag' ? 'packaging_material' : 'labeling_material',
+      qtyUnits: supply.units, supplyId: supply.supplyId,
+      sourceTable: 'packaged_coffee', sourceId: packed.packagedId,
+      recordedAt: createdAt, user,
+    });
+    if (tracked) costs.push({ ...tracked, name: supply.name, totalCost: supply.totalCost });
+  }
+
+  return {
+    ...packed,
+    packagingCostCop: packed.supplies.reduce((sum, s) => sum + s.totalCost, 0),
+    costs,
+  };
 }
 
 // ── Queries de lista ─────────────────────────────────────────────────────────
