@@ -91,7 +91,7 @@ coffeeRouter.post('/harvest', async (req, res) => {
 coffeeRouter.post('/inventory-storage', async (req, res) => {
   try {
     const { lotId, weight, weightUnit, location, storageDate, notes, recordedAt } = req.body;
-    const data = await storeGreenCoffee({ lotId, weight, weightUnit, location, storageDate, notes, recordedAt, user: req.user });
+    const data = await storeGreenCoffee({ lotId, weight, weightUnit, location, storageDate, notes, recordedAt, cost: costFrom(req), user: req.user });
     res.status(201).json({ success: true, message: 'Café verde almacenado correctamente', ...data });
   } catch (err) {
     handleErr(res, err, 'Error en inventory-storage');
@@ -102,7 +102,7 @@ coffeeRouter.post('/inventory-storage', async (req, res) => {
 coffeeRouter.post('/send-roasting', async (req, res) => {
   try {
     const { lotId, quantitySent, targetTemp, notes, recordedAt } = req.body;
-    const data = await sendToRoasting({ lotId, quantitySent, targetTemp, notes, recordedAt, user: req.user });
+    const data = await sendToRoasting({ lotId, quantitySent, targetTemp, notes, recordedAt, cost: costFrom(req), user: req.user });
     res.status(201).json({ success: true, message: 'Lote enviado a tostión correctamente', ...data });
   } catch (err) {
     handleErr(res, err, 'Error en send-roasting');
@@ -113,7 +113,7 @@ coffeeRouter.post('/send-roasting', async (req, res) => {
 coffeeRouter.post('/roast-retrieval', async (req, res) => {
   try {
     const { roastingId, roastLevel, roastedWeight, actualTemp, roastTime, observations, recordedAt } = req.body;
-    const data = await receiveRoasted({ roastingId, roastLevel, roastedWeight, actualTemp, roastTime, observations, recordedAt });
+    const data = await receiveRoasted({ roastingId, roastLevel, roastedWeight, actualTemp, roastTime, observations, recordedAt, cost: costFrom(req), user: req.user });
     res.status(201).json({ success: true, message: 'Café tostado registrado correctamente', ...data });
   } catch (err) {
     handleErr(res, err, 'Error en roast-retrieval');
@@ -124,7 +124,7 @@ coffeeRouter.post('/roast-retrieval', async (req, res) => {
 coffeeRouter.post('/roasted-storage', async (req, res) => {
   try {
     const { roastedId, location, container, containerCount, conditions, notes, recordedAt } = req.body;
-    const data = await storeRoasted({ roastedId, location, container, containerCount, conditions, notes, recordedAt, user: req.user });
+    const data = await storeRoasted({ roastedId, location, container, containerCount, conditions, notes, recordedAt, cost: costFrom(req), user: req.user });
     res.status(201).json({ success: true, message: 'Café tostado almacenado correctamente', ...data });
   } catch (err) {
     handleErr(res, err, 'Error en roasted-storage');
