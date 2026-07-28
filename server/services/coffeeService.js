@@ -100,7 +100,7 @@ export async function createHarvest({ farm, region, altitude, variety, climate, 
 
 // ── 2. Almacenamiento verde ──────────────────────────────────────────────────
 
-export async function storeGreenCoffee({ lotId, weight, weightUnit, location, storageDate, notes, user, movementUid, recordedAt }) {
+export async function storeGreenCoffee({ lotId, weight, weightUnit, location, storageDate, notes, user, movementUid, recordedAt, cost }) {
   if (!lotId || !weight || !location || !storageDate) {
     throw bizError(400, 'Faltan campos requeridos');
   }
