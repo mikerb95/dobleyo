@@ -61,7 +61,7 @@ coffeeRouter.post('/harvest', async (req, res) => {
   res.setHeader('Content-Type', 'application/json');
   try {
     const { farm, region, altitude, variety, climate, process, aroma, tasteNotes, recordedAt,
-            purchaseWeightKg, purchaseTotalCop, yieldFactor } = req.body;
+            harvestWeightKg, yieldFactor } = req.body;
     try {
       await assertFarmOwnership(farm, req.user);
     } catch (authErr) {
