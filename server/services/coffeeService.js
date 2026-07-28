@@ -27,6 +27,31 @@ const FARM_MAP = {
 
 const PACKAGE_KG = { '100g': 0.1, '250g': 0.25, '500g': 0.5, '1kg': 1.0 };
 
+/**
+ * Registra el costo de un paso del pipeline sin poder tumbarlo.
+ *
+ * Se llama siempre después de que el paso quedó guardado: el costo es un dato
+ * administrativo y un error contable no puede dejar al operario sin registrar
+ * la cosecha o el empaque. El costo es opcional — sin monto no hace nada.
+ *
+ * @returns {Promise<{costId: number, accounted: boolean}|null>}
+ */
+async function trackCost({ cost, lotId, costType, qtyKg, qtyUnits, supplyId, sourceTable, sourceId, recordedAt, user }) {
+  const amount = cost?.amount;
+  if (amount == null || amount === '' || !lotId) return null;
+
+  try {
+    return await recordCost({
+      lotId, costType, amount, qtyKg, qtyUnits, supplyId,
+      paymentMethod: cost.paymentMethod, partnerId: cost.partnerId, notes: cost.notes,
+      sourceTable, sourceId, recordedAt, user,
+    });
+  } catch (err) {
+    logger.error({ err, lotId, costType }, 'No se pudo registrar el costo del paso de producción');
+    return null;
+  }
+}
+
 // ── 1. Cosecha ───────────────────────────────────────────────────────────────
 
 export async function createHarvest({ farm, region, altitude, variety, climate, process, aroma, tasteNotes, recordedAt }) {
