@@ -137,20 +137,12 @@ export async function createCostTracking() {
                WHERE source_table IS NOT NULL`);
   console.log('✅ lot_costs');
 
-  // ── Peso y pago de la cosecha ──────────────────────────────────────────────
-  // Viven en `coffee_harvests.purchase_weight_kg` / `purchase_total_cop`, que
-  // crea la migración del módulo FNC: son los mismos datos que compara contra el
-  // precio de la Federación. `lot_costs` no los duplica — registra el pago como
-  // costo de etapa para el asiento contable y el costo acumulado del lote.
-  //
-  // Limpieza: una versión previa de esta migración creó `harvest_weight_kg`,
-  // que quedó redundante con `purchase_weight_kg`. Nunca almacenó datos.
-  try {
-    await query('ALTER TABLE coffee_harvests DROP COLUMN harvest_weight_kg');
-    console.log('  ✅ Eliminada columna redundante coffee_harvests.harvest_weight_kg');
-  } catch {
-    // No existe (instalación limpia) o el motor no soporta DROP COLUMN: inocuo.
-  }
+  // ── Peso cosechado ─────────────────────────────────────────────────────────
+  // La cosecha no guardaba peso: sin él no hay costo por kg en el origen. Lo
+  // pagado al caficultor no se duplica aquí — vive en `lot_costs` con
+  // cost_type = 'farmer_payment', que es de donde también lo lee el
+  // comparativo de precio FNC.
+  await addColumn('coffee_harvests', 'harvest_weight_kg', 'REAL');
 
   // ── Cuentas contables del proceso ──────────────────────────────────────────
   // El plan base ya trae 1410/1420/1430, 2110/2120, 1110/1210. Solo falta la
