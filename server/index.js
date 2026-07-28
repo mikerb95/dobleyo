@@ -26,6 +26,7 @@ import { shippingRouter } from './routes/shipping.js';
 import { subscriptionsRouter } from './routes/subscriptions.js';
 import { traceabilityRouter } from './routes/traceability.js';
 import { financeRouter } from './routes/finance.js';
+import { costsRouter } from './routes/costs.js';
 import { farmsRouter } from './routes/farms.js';
 import { heatmapRouter } from './routes/heatmap.js';
 import { productsRouter } from './routes/products.js';
