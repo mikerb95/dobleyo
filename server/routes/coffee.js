@@ -70,7 +70,7 @@ coffeeRouter.post('/harvest', async (req, res) => {
     const data = await createHarvest({
       farm, region, altitude, variety, climate, process, aroma, tasteNotes, recordedAt,
       // Datos de compra: solo admin. El caficultor registra la cosecha sin montos.
-      ...(req.user?.role === 'admin' ? { purchaseWeightKg, purchaseTotalCop, yieldFactor } : {}),
+      ...(req.user?.role === 'admin' ? { harvestWeightKg, yieldFactor } : {}),
       cost: costFrom(req), user: req.user,
     });
 
