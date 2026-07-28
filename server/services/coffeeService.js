@@ -54,7 +54,7 @@ async function trackCost({ cost, lotId, costType, qtyKg, qtyUnits, supplyId, sou
 
 // ── 1. Cosecha ───────────────────────────────────────────────────────────────
 
-export async function createHarvest({ farm, region, altitude, variety, climate, process, aroma, tasteNotes, recordedAt, purchaseWeightKg, purchaseTotalCop, yieldFactor, cost, user }) {
+export async function createHarvest({ farm, region, altitude, variety, climate, process, aroma, tasteNotes, recordedAt, harvestWeightKg, yieldFactor, cost, user }) {
   if (!farm || !variety || !climate || !process || !aroma || !tasteNotes) {
     throw bizError(400, 'Faltan campos requeridos');
   }
