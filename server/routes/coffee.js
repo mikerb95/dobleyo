@@ -60,7 +60,8 @@ function handleErr(res, err, context) {
 coffeeRouter.post('/harvest', async (req, res) => {
   res.setHeader('Content-Type', 'application/json');
   try {
-    const { farm, region, altitude, variety, climate, process, aroma, tasteNotes, recordedAt, harvestWeightKg } = req.body;
+    const { farm, region, altitude, variety, climate, process, aroma, tasteNotes, recordedAt,
+            purchaseWeightKg, purchaseTotalCop, yieldFactor } = req.body;
     try {
       await assertFarmOwnership(farm, req.user);
     } catch (authErr) {
@@ -68,7 +69,9 @@ coffeeRouter.post('/harvest', async (req, res) => {
     }
     const data = await createHarvest({
       farm, region, altitude, variety, climate, process, aroma, tasteNotes, recordedAt,
-      harvestWeightKg, cost: costFrom(req), user: req.user,
+      // Datos de compra: solo admin. El caficultor registra la cosecha sin montos.
+      ...(req.user?.role === 'admin' ? { purchaseWeightKg, purchaseTotalCop, yieldFactor } : {}),
+      cost: costFrom(req), user: req.user,
     });
 
     // Recogida la cosecha, el lote queda pendiente de ingreso al inventario de
