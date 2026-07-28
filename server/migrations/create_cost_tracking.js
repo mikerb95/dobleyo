@@ -137,50 +137,6 @@ export async function createCostTracking() {
                WHERE source_table IS NOT NULL`);
   console.log('✅ lot_costs');
 
-  // ── Maestro de insumos de empaque ──────────────────────────────────────────
-  await query(`
-    CREATE TABLE IF NOT EXISTS packaging_supplies (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      sku TEXT UNIQUE,
-      name TEXT NOT NULL,
-      type TEXT NOT NULL CHECK (type IN ('bolsa', 'etiqueta', 'valvula', 'otro')),
-      -- Tamaño de café al que corresponde la bolsa ('250g'...). NULL en etiquetas.
-      size_label TEXT,
-      unit_cost_cop REAL NOT NULL DEFAULT 0,
-      stock_units INTEGER NOT NULL DEFAULT 0,
-      stock_min INTEGER NOT NULL DEFAULT 0,
-      supplier TEXT,
-      is_active BOOLEAN NOT NULL DEFAULT 1,
-      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP NULL
-    )
-  `);
-  await query('CREATE INDEX IF NOT EXISTS idx_pack_supplies_type ON packaging_supplies(type)');
-  await query('CREATE INDEX IF NOT EXISTS idx_pack_supplies_active ON packaging_supplies(is_active)');
-  console.log('✅ packaging_supplies');
-
-  // Movimientos de insumos: el stock de bolsas y etiquetas también es trazable.
-  await query(`
-    CREATE TABLE IF NOT EXISTS packaging_supply_movements (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      supply_id INTEGER NOT NULL REFERENCES packaging_supplies(id),
-      movement_type TEXT NOT NULL CHECK (movement_type IN ('entrada', 'salida', 'ajuste')),
-      quantity INTEGER NOT NULL,
-      quantity_before INTEGER NOT NULL,
-      quantity_after INTEGER NOT NULL,
-      unit_cost_cop REAL,
-      reason TEXT,
-      lot_id TEXT,
-      source_table TEXT,
-      source_id INTEGER,
-      user_id INTEGER REFERENCES users(id),
-      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
-  await query('CREATE INDEX IF NOT EXISTS idx_supply_mov_supply ON packaging_supply_movements(supply_id)');
-  await query('CREATE INDEX IF NOT EXISTS idx_supply_mov_lot ON packaging_supply_movements(lot_id)');
-  console.log('✅ packaging_supply_movements');
-
   // ── Peso cosechado ─────────────────────────────────────────────────────────
   // La cosecha no guardaba peso: sin él no hay costo por kg en el origen.
   await addColumn('coffee_harvests', 'harvest_weight_kg', 'REAL');
