@@ -126,7 +126,7 @@ export async function storeGreenCoffee({ lotId, weight, weightUnit, location, st
 
   // El registro de inventario y el asiento en el ledger son una sola operación:
   // no puede existir uno sin el otro.
-  return withTransaction(async (tx) => {
+  const stored = await withTransaction(async (tx) => {
     const result = await tx.query(
       `INSERT INTO green_coffee_inventory (harvest_id, lot_id, weight_kg, location, location_id, storage_date, notes, created_at)
        VALUES (?, ?, ?, ?, ?, ?, ?, COALESCE(?, datetime('now'))) RETURNING id`,
