@@ -251,7 +251,9 @@ export async function getLotCosts(lotId) {
  */
 async function getLotWeights(lotId) {
   const [harvest, green, sent, roasted, packaged] = await Promise.all([
-    query('SELECT COALESCE(SUM(harvest_weight_kg), 0) AS kg FROM coffee_harvests WHERE lot_id = ?', [lotId]),
+    // El peso de origen es el de la compra al caficultor, el mismo dato que usa
+    // el comparativo de precio FNC. No se duplica en otra columna.
+    query('SELECT COALESCE(SUM(purchase_weight_kg), 0) AS kg FROM coffee_harvests WHERE lot_id = ?', [lotId]),
     query('SELECT COALESCE(SUM(weight_kg), 0) AS kg FROM green_coffee_inventory WHERE lot_id = ?', [lotId]),
     query('SELECT COALESCE(SUM(quantity_sent_kg), 0) AS kg FROM roasting_batches WHERE lot_id = ?', [lotId]),
     query(
