@@ -185,6 +185,14 @@ export async function sendToRoasting({ lotId, quantitySent, targetTemp, notes, u
 
     return { roastingId, issuedFrom: issued };
   });
+
+  // Transporte de la bodega hacia la empresa tostadora.
+  const tracked = await trackCost({
+    cost, lotId, costType: 'transport_to_roaster', qtyKg: quantitySentNum,
+    sourceTable: 'roasting_batches', sourceId: sent.roastingId, recordedAt: createdAt, user,
+  });
+
+  return { ...sent, cost: tracked };
 }
 
 // ── 4. Recoger del tueste ────────────────────────────────────────────────────
