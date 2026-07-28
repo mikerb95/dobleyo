@@ -518,6 +518,14 @@ export function mapTrackingStateToStatus(events) {
     return null; // sin cambio de estado reconocible
 }
 
+// Novedades que exigen gestión manual: entrega fallida, devolución o cancelación.
+// Deliberadamente NO incluye tránsito ni entrega exitosa (esos no son problema).
+export function isShippingIssueEvent(ev) {
+    const text = `${ev?.updateState || ''} ${ev?.description || ''}`.toLowerCase();
+    if (!text.trim()) return false;
+    return /\bno\s+entregado\b|entrega\s+fallida|intento\s+de\s+entrega|novedad|devuel|devoluci|retorno|cancelado/.test(text);
+}
+
 async function refreshShipment(shipmentId, source) {
     const shipmentResult = await query(
         `SELECT s.*, o.reference, o.customer_name, o.customer_email
