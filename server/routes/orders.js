@@ -183,7 +183,7 @@ async function notifyConfirmedSale(orderId) {
                FROM customer_orders WHERE id = ?`,
             [orderId]
         );
-        if (!orderRes.rows.length) return;
+        if (!orderRes?.rows?.length) return;
         const o = orderRes.rows[0];
         const itemsRes = await query(
             `SELECT product_name, quantity FROM customer_order_items WHERE order_id = ?`,
