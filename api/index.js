@@ -136,6 +136,7 @@ app.use('/api/shipping', shippingRouter);
 app.use('/api/subscriptions', subscriptionsRouter);
 app.use('/api/traceability', traceabilityRouter);
 app.use('/api/finance', financeRouter);
+app.use('/api/costs', costsRouter);
 app.use('/api/farms', farmsRouter);
 app.use('/api/heatmap', heatmapRouter);
 app.use('/api/blog', blogRouter);
