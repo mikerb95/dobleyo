@@ -196,7 +196,7 @@ async function notifyConfirmedSale(orderId) {
             total:         o.total_cop,
             currency:      o.currency,
             paymentMethod: o.payment_method,
-            items:         itemsRes.rows.map((r) => ({ name: r.product_name, quantity: r.quantity })),
+            items:         (itemsRes?.rows ?? []).map((r) => ({ name: r.product_name, quantity: r.quantity })),
         });
     } catch (err) {
         logger.error({ err, orderId }, '[Alerts] Error preparando la alerta de venta');
