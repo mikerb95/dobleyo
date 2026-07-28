@@ -7,6 +7,7 @@ import { sendVerificationEmail } from '../services/email.js';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import { loginLimiter, registerLimiter, refreshLimiter } from '../middleware/rateLimit.js';
+import { notifyCaficultorApplication } from '../services/alerts.js';
 
 // google-auth-library se carga perezosamente dentro del handler /google para
 // evitar ERR_INTERNAL_ASSERTION de Node.js al mezclar ESM/CJS en cold start serverless.
@@ -510,6 +511,8 @@ authRouter.post('/request-caficultor',
         'INSERT INTO audit_logs (user_id, action, entity_type, entity_id, details) VALUES (?, ?, ?, ?, ?)',
         [userId, 'REQUEST_CAFICULTOR', 'caficultor_applications', String(appId), JSON.stringify({ farm_name })]
       );
+
+      notifyCaficultorApplication({ farmName: farm_name, region, userName: req.user.name || req.user.email });
 
       res.status(201).json({
         message: 'Solicitud enviada. El administrador revisará tu perfil pronto.',

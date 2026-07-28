@@ -1,4 +1,5 @@
-import { Router } from 'express';
+import {
+import { notifySubscriptionChargeFailed } from '../services/alerts.js'; Router } from 'express';
 import crypto from 'crypto';
 import { body, validationResult } from 'express-validator';
 import { logger } from '../logger.js';
@@ -111,6 +112,15 @@ async function markChargeFailed(sub, charge, status) {
     `UPDATE subscriptions SET failed_attempts=?, status=?, updated_at=datetime('now') WHERE id=?`,
     [failed, newStatus, sub.id]
   );
+
+  notifySubscriptionChargeFailed({
+    subscriptionRef: sub.reference,
+    customerEmail:  sub.customer_email,
+    amount:         sub.amount_cop,
+    status,
+    failedAttempts: failed,
+    suspended:      newStatus === 'payment_failed',
+  });
 }
 
 // Ejecuta un cobro contra la fuente de pago y procesa el resultado.
