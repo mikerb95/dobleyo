@@ -330,7 +330,7 @@ export async function getRoastedStorageDetail(id) {
 
 // ── 6. Empaque ───────────────────────────────────────────────────────────────
 
-export async function createPackaging({ roastedStorageId, acidity, body, balance, presentation, grindSize, packageSize, unitCount, notes, addToInventory, user, movementUid, recordedAt }) {
+export async function createPackaging({ roastedStorageId, acidity, body, balance, presentation, grindSize, packageSize, unitCount, notes, addToInventory, user, movementUid, recordedAt, bagSupplyId, labelSupplyId }) {
   if (!roastedStorageId || !acidity || !body || !balance || !presentation || !packageSize || !unitCount) {
     throw bizError(400, 'Faltan campos requeridos');
   }
