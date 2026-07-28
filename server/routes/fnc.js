@@ -1,11 +1,15 @@
 // Módulo de precio de referencia FNC
-// Compara lo que DobleYo paga a los caficultores contra el precio interno de
-// referencia de la Federación Nacional de Cafeteros.
+// Compara lo que DobleYo le paga al caficultor contra el precio interno de
+// referencia de la Federación Nacional de Cafeteros, y lo cruza con el costo
+// acumulado de producción del lote.
+//
+// Lo pagado sale de `lot_costs` (cost_type = 'farmer_payment'), que ya alimenta
+// el flujo de cosecha. Este módulo no captura costos: solo lee y compara.
 //
 // DobleYo recibe el café ya trillado (verde), mientras que la FNC cotiza
 // pergamino seco por carga de 125 kg. La conversión usa la columna "Valor
-// Excelso $/Carga" del propio boletín dividida por "Kg Excelso en Carga", así
-// que el factor de conversión sale de la FNC y no de una constante inventada.
+// Excelso $/Carga" del boletín dividida por "Kg Excelso en Carga", así que el
+// factor de conversión lo publica la propia FNC y no es una constante inventada.
 import { Router } from 'express';
 import { body, param, query as queryValidator, validationResult } from 'express-validator';
 import { query } from '../db.js';
@@ -31,6 +35,7 @@ function handleValidation(req, res) {
 }
 
 const round2 = (n) => (n === null || n === undefined ? null : Math.round(n * 100) / 100);
+const num = (v) => (v === null || v === undefined ? 0 : parseFloat(v) || 0);
 
 // ===================================================
 // PRECIO VIGENTE E HISTÓRICO
@@ -63,7 +68,7 @@ fncRouter.get('/price',
   }
 );
 
-// GET /api/fnc/history?days=90 — histórico de precios ya guardados (sin red).
+// GET /api/fnc/history?days=90 — histórico ya guardado (no toca la red).
 fncRouter.get('/history',
   authenticateToken,
   requireRole('admin'),
@@ -99,18 +104,15 @@ fncRouter.get('/history',
 );
 
 // ===================================================
-// REGISTRO DE LA COMPRA AL CAFICULTOR
+// FACTOR DE RENDIMIENTO DEL LOTE
 // ===================================================
 
-// PUT /api/fnc/purchase/:lotId — datos de compra de un lote ya cosechado.
-fncRouter.put('/purchase/:lotId',
+// PUT /api/fnc/lot/:lotId/yield-factor — dato opcional del análisis de trilla.
+fncRouter.put('/lot/:lotId/yield-factor',
   authenticateToken,
   requireRole('admin'),
   [
     param('lotId').trim().notEmpty().withMessage('Lote requerido'),
-    body('purchaseWeightKg').isFloat({ gt: 0 }).withMessage('El peso debe ser mayor que cero'),
-    body('purchaseTotalCop').isInt({ min: 1 }).withMessage('El valor pagado debe ser positivo'),
-    body('purchaseDate').isISO8601().withMessage('Fecha de compra inválida'),
     body('yieldFactor').optional({ nullable: true }).isInt({ min: 60, max: 140 })
       .withMessage('El factor de rendimiento debe estar entre 60 y 140'),
   ],
@@ -119,26 +121,21 @@ fncRouter.put('/purchase/:lotId',
 
     try {
       const { lotId } = req.params;
-      const { purchaseWeightKg, purchaseTotalCop, purchaseDate, yieldFactor = null } = req.body;
+      const yieldFactor = req.body.yieldFactor ?? null;
 
       const { rowCount } = await query(
-        `UPDATE coffee_harvests
-            SET purchase_weight_kg = ?, purchase_total_cop = ?, purchase_date = ?, yield_factor = ?
-          WHERE lot_id = ?`,
-        [purchaseWeightKg, purchaseTotalCop, purchaseDate.slice(0, 10), yieldFactor, lotId]
+        'UPDATE coffee_harvests SET yield_factor = ? WHERE lot_id = ?',
+        [yieldFactor, lotId]
       );
 
       if (!rowCount) {
         return res.status(404).json({ success: false, error: 'Lote no encontrado' });
       }
 
-      await logAudit(req.user.id, 'update', 'coffee_harvest_purchase', lotId, {
-        purchaseWeightKg, purchaseTotalCop, purchaseDate, yieldFactor,
-      });
-
-      res.json({ success: true, data: { lotId } });
+      await logAudit(req.user.id, 'update', 'coffee_harvest', lotId, { yieldFactor });
+      res.json({ success: true, data: { lotId, yieldFactor } });
     } catch (err) {
-      logger.error({ err }, '[PUT /api/fnc/purchase] Error');
+      logger.error({ err }, '[PUT /api/fnc/lot/:lotId/yield-factor] Error');
       res.status(500).json({ success: false, error: 'Error interno del servidor' });
     }
   }
@@ -148,7 +145,7 @@ fncRouter.put('/purchase/:lotId',
 // COMPARATIVO
 // ===================================================
 
-// GET /api/fnc/comparison — pagado vs. referencia FNC, por lote y consolidado.
+// GET /api/fnc/comparison — pagado al caficultor vs. referencia FNC, por lote.
 fncRouter.get('/comparison',
   authenticateToken,
   requireRole('admin'),
@@ -160,72 +157,84 @@ fncRouter.get('/comparison',
     if (handleValidation(req, res)) return;
 
     try {
-      const conditions = ['h.purchase_total_cop IS NOT NULL', 'h.purchase_weight_kg > 0'];
+      const conditions = ['farmer_payment_cop > 0'];
       const params = [];
 
       if (req.query.from) {
         params.push(String(req.query.from).slice(0, 10));
-        conditions.push('h.purchase_date >= ?');
+        conditions.push('purchase_date >= ?');
       }
       if (req.query.to) {
         params.push(String(req.query.to).slice(0, 10));
-        conditions.push('h.purchase_date <= ?');
+        conditions.push('purchase_date <= ?');
       }
 
-      // Cada lote se compara contra el boletín vigente el día de su compra.
+      // Los kilos de café verde mandan sobre los cosechados: la merma de secado
+      // y selección ya la absorbió el café que efectivamente llegó a bodega, y
+      // es ese el que se compara contra el excelso que cotiza la FNC.
       const { rows: lots } = await query(
-        `SELECT h.lot_id, h.farm, h.variety, h.region,
-                h.purchase_weight_kg, h.purchase_total_cop, h.purchase_date, h.yield_factor,
-                (SELECT p.id FROM fnc_price_history p
-                  WHERE p.price_date <= COALESCE(h.purchase_date, date('now'))
-                  ORDER BY p.price_date DESC LIMIT 1) AS price_id
-           FROM coffee_harvests h
-          WHERE ${conditions.join(' AND ')}
-          ORDER BY h.purchase_date DESC, h.lot_id DESC`,
+        `SELECT * FROM (
+           SELECT h.lot_id, h.farm, h.variety, h.region, h.yield_factor,
+                  h.harvest_weight_kg,
+                  (SELECT COALESCE(SUM(g.weight_kg), 0) FROM green_coffee_inventory g
+                    WHERE g.lot_id = h.lot_id) AS green_kg,
+                  (SELECT COALESCE(SUM(c.amount_cop), 0) FROM lot_costs c
+                    WHERE c.lot_id = h.lot_id AND c.cost_type = 'farmer_payment') AS farmer_payment_cop,
+                  (SELECT COALESCE(SUM(c.amount_cop), 0) FROM lot_costs c
+                    WHERE c.lot_id = h.lot_id) AS total_cost_cop,
+                  (SELECT MIN(date(c.recorded_at)) FROM lot_costs c
+                    WHERE c.lot_id = h.lot_id AND c.cost_type = 'farmer_payment') AS purchase_date
+             FROM coffee_harvests h
+         )
+         WHERE ${conditions.join(' AND ')}
+         ORDER BY purchase_date DESC, lot_id DESC`,
         params
       );
 
-      // El boletín más antiguo sirve de referencia aproximada para compras
+      // Cada lote se compara contra el boletín vigente el día de su compra.
+      const dates = [...new Set(lots.map((l) => l.purchase_date).filter(Boolean))];
+      const priceByDate = new Map();
+
+      for (const date of dates) {
+        const { rows } = await query(
+          'SELECT * FROM fnc_price_history WHERE price_date <= ? ORDER BY price_date DESC LIMIT 1',
+          [date]
+        );
+        if (rows[0]) priceByDate.set(date, mapPriceRow(rows[0]));
+      }
+
+      // El boletín más antiguo sirve de referencia aproximada para las compras
       // anteriores al inicio del histórico.
       const { rows: oldestRows } = await query(
         'SELECT * FROM fnc_price_history ORDER BY price_date ASC LIMIT 1'
       );
       const oldest = mapPriceRow(oldestRows[0]);
 
-      const neededIds = [...new Set(lots.map((l) => l.price_id).filter(Boolean))];
-      const priceById = new Map();
-
-      if (neededIds.length) {
-        const placeholders = neededIds.map(() => '?').join(',');
-        const { rows: priceRows } = await query(
-          `SELECT * FROM fnc_price_history WHERE id IN (${placeholders})`,
-          neededIds
-        );
-        for (const row of priceRows) priceById.set(Number(row.id), mapPriceRow(row));
-      }
-
       let totalPaid = 0;
       let totalReference = 0;
-      let comparableWeight = 0;
+      let comparableKg = 0;
 
       const items = lots.map((lot) => {
-        const weight = Number(lot.purchase_weight_kg);
-        const paid = Number(lot.purchase_total_cop);
-        const paidPerKg = paid / weight;
+        // Sin kilos no hay costo por kg y el lote no es comparable.
+        const weight = num(lot.green_kg) || num(lot.harvest_weight_kg);
+        const paid = num(lot.farmer_payment_cop);
 
-        const price = priceById.get(Number(lot.price_id)) ?? oldest;
-        const approximate = !lot.price_id && Boolean(oldest);
+        const exact = lot.purchase_date ? priceByDate.get(lot.purchase_date) : null;
+        const price = exact ?? oldest;
         const factor = lot.yield_factor ?? price?.baseYieldFactor ?? null;
         const referencePerKg = excelsoRefForFactor(price, factor);
 
-        const referenceTotal = referencePerKg === null ? null : referencePerKg * weight;
+        const paidPerKg = weight > 0 ? paid / weight : null;
+        const referenceTotal = referencePerKg !== null && weight > 0 ? referencePerKg * weight : null;
         const differenceTotal = referenceTotal === null ? null : paid - referenceTotal;
 
         if (referenceTotal !== null) {
           totalPaid += paid;
           totalReference += referenceTotal;
-          comparableWeight += weight;
+          comparableKg += weight;
         }
+
+        const totalCost = num(lot.total_cost_cop);
 
         return {
           lotId: lot.lot_id,
@@ -234,7 +243,9 @@ fncRouter.get('/comparison',
           region: lot.region,
           purchaseDate: lot.purchase_date,
           weightKg: round2(weight),
-          paidTotalCop: paid,
+          // De dónde salieron los kilos, para que el número sea auditable.
+          weightSource: num(lot.green_kg) > 0 ? 'green_inventory' : 'harvest',
+          paidTotalCop: round2(paid),
           paidCopKg: round2(paidPerKg),
           yieldFactor: factor,
           yieldFactorIsAssumed: lot.yield_factor === null || lot.yield_factor === undefined,
@@ -243,8 +254,11 @@ fncRouter.get('/comparison',
           referenceTotalCop: round2(referenceTotal),
           differenceCop: round2(differenceTotal),
           differencePct: referenceTotal ? round2((differenceTotal / referenceTotal) * 100) : null,
+          // Costo acumulado del lote en todo el pipeline, no solo la compra.
+          totalCostCop: round2(totalCost),
+          totalCostCopKg: weight > 0 ? round2(totalCost / weight) : null,
           // El histórico no cubre esta fecha: se usó el boletín más antiguo.
-          referenceIsApproximate: approximate,
+          referenceIsApproximate: !exact && Boolean(oldest),
         };
       });
 
@@ -255,52 +269,21 @@ fncRouter.get('/comparison',
           summary: {
             lots: items.length,
             comparableLots: items.filter((i) => i.referenceCopKg !== null).length,
-            totalWeightKg: round2(comparableWeight),
+            totalWeightKg: round2(comparableKg),
             totalPaidCop: round2(totalPaid),
             totalReferenceCop: round2(totalReference),
             differenceCop: round2(totalPaid - totalReference),
             differencePct: totalReference
               ? round2(((totalPaid - totalReference) / totalReference) * 100)
               : null,
-            avgPaidCopKg: comparableWeight ? round2(totalPaid / comparableWeight) : null,
-            avgReferenceCopKg: comparableWeight ? round2(totalReference / comparableWeight) : null,
+            avgPaidCopKg: comparableKg ? round2(totalPaid / comparableKg) : null,
+            avgReferenceCopKg: comparableKg ? round2(totalReference / comparableKg) : null,
           },
           currentPrice: await getLatestStoredPrice(),
         },
       });
     } catch (err) {
       logger.error({ err }, '[GET /api/fnc/comparison] Error');
-      res.status(500).json({ success: false, error: 'Error interno del servidor' });
-    }
-  }
-);
-
-// GET /api/fnc/pending — lotes cosechados sin datos de compra registrados.
-fncRouter.get('/pending',
-  authenticateToken,
-  requireRole('admin'),
-  async (req, res) => {
-    try {
-      const { rows } = await query(
-        `SELECT lot_id, farm, variety, region, created_at
-           FROM coffee_harvests
-          WHERE purchase_total_cop IS NULL OR purchase_weight_kg IS NULL
-          ORDER BY created_at DESC
-          LIMIT 100`
-      );
-
-      res.json({
-        success: true,
-        data: rows.map((r) => ({
-          lotId: r.lot_id,
-          farm: r.farm,
-          variety: r.variety,
-          region: r.region,
-          createdAt: r.created_at,
-        })),
-      });
-    } catch (err) {
-      logger.error({ err }, '[GET /api/fnc/pending] Error');
       res.status(500).json({ success: false, error: 'Error interno del servidor' });
     }
   }
