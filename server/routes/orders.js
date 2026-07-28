@@ -9,6 +9,9 @@ import { checkoutLimiter } from '../middleware/rateLimit.js';
 import { logAudit, logSystemAudit } from '../services/audit.js';
 import { sendOrderConfirmationEmail } from '../services/email.js';
 import { geocodeOrderAsync } from '../services/geocoding.js';
+import {
+    notifySaleConfirmed, notifyStockDepleted, notifyStockBelowMinimum, notifyOversold,
+} from '../services/alerts.js';
 
 export const ordersRouter = Router();
 
@@ -498,7 +501,8 @@ ordersRouter.post('/',
             // órdenes Wompi lo hacen al aprobarse el pago (ver POST /wompi/webhook). Se
             // espera (no fire-and-forget) para que la respuesta refleje stock consistente.
             if (isCod) {
-                await deductStockForOrder(orderId, reference).catch((err) => logger.error({ err, orderId }, '[POST /api/orders] Error descontando stock COD'));
+                const codDeducted = await deductStockForOrder(orderId, reference).catch((err) => { logger.error({ err, orderId }, '[POST /api/orders] Error descontando stock COD'); return false; });
+                if (codDeducted) notifyConfirmedSale(orderId);
             }
 
             // Geocodificación asíncrona — no bloquea la respuesta HTTP
@@ -701,7 +705,8 @@ ordersRouter.patch('/:ref/status',
             if (['cancelled', 'refunded'].includes(status) && !['cancelled', 'refunded'].includes(previousStatus)) {
                 await replenishStockForOrder(result.rows[0].id, ref, 'Cancelación manual (admin)').catch((err) => logger.error({ err }, '[PATCH /api/orders/:ref/status] Error reponiendo stock'));
             } else if (['paid', 'processing'].includes(status) && !['paid', 'processing', 'shipped', 'delivered'].includes(previousStatus)) {
-                await deductStockForOrder(result.rows[0].id, ref).catch((err) => logger.error({ err }, '[PATCH /api/orders/:ref/status] Error descontando stock'));
+                const statusDeducted = await deductStockForOrder(result.rows[0].id, ref).catch((err) => { logger.error({ err }, '[PATCH /api/orders/:ref/status] Error descontando stock'); return false; });
+                if (statusDeducted) notifyConfirmedSale(result.rows[0].id);
             }
 
             await logAudit(req.user.id, 'update', 'customer_orders', result.rows[0].id, { status, previousStatus });
@@ -832,7 +837,8 @@ ordersRouter.post('/wompi/webhook', async (req, res) => {
         // Inventario: descuento al aprobarse, reposición si un VOID/contracargo
         // revierte un pago que ya había sido aprobado (mismo txId, ver guard arriba).
         if (newStatus === 'paid') {
-            await deductStockForOrder(updatedOrder.id, reference).catch((err) => logger.error({ err, orderId: updatedOrder.id }, '[Wompi webhook] Error descontando stock'));
+            const paidDeducted = await deductStockForOrder(updatedOrder.id, reference).catch((err) => { logger.error({ err, orderId: updatedOrder.id }, '[Wompi webhook] Error descontando stock'); return false; });
+            if (paidDeducted) notifyConfirmedSale(updatedOrder.id);
         } else if (order.status === 'paid') {
             await replenishStockForOrder(updatedOrder.id, reference, 'Pago revertido (Wompi)').catch((err) => logger.error({ err, orderId: updatedOrder.id }, '[Wompi webhook] Error reponiendo stock'));
         }
