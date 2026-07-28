@@ -143,6 +143,14 @@ export async function storeGreenCoffee({ lotId, weight, weightUnit, location, st
 
     return { storageId, location: loc.code };
   });
+
+  // Transporte de la carga desde la finca hasta la bodega.
+  const tracked = await trackCost({
+    cost, lotId, costType: 'transport_to_storage', qtyKg: weightKg,
+    sourceTable: 'green_coffee_inventory', sourceId: stored.storageId, recordedAt: createdAt, user,
+  });
+
+  return { ...stored, cost: tracked };
 }
 
 // ── 3. Enviar a tostión ──────────────────────────────────────────────────────
