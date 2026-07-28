@@ -2,6 +2,27 @@
 
 ---
 
+## 2026-07-28 — Catálogo de alertas ntfy: ventas, inventario, envíos y suscripciones (Agente: Claude)
+
+### Contexto
+Continuación de la alerta de ingresos pendientes (2026-07-27). Se amplía a los eventos de negocio que hoy solo quedaban en logs o correos. Todo va a un único topic (`NTFY_TOPIC`); la urgencia se distingue por prioridad y tags de ntfy.
+
+### Cambios
+- **`server/services/alerts.js`** (nuevo) — catálogo central de alertas: textos, prioridades y tags en un solo lugar, para que el copy no quede regado por las rutas. Todas fire-and-forget sobre `sendNtfyAsync`.
+- **`server/routes/orders.js`** — `deductStockForOrder()` ahora devuelve `true` solo cuando descontó de verdad (primera vez para la orden); los 3 puntos que lo llaman (COD, `PATCH /:ref/status`, webhook Wompi) usan ese valor para publicar **venta confirmada** exactamente una vez, sin duplicar ante webhooks reintentados. Dentro del descuento se emiten **producto agotado** (prio 5), **stock bajo el mínimo** (prio 3, solo si no quedó agotado) y **sobreventa** (prio 5) — esta última antes solo llegaba a `audit_logs`.
+- **`server/routes/inventory.js`** — `POST /entrada` notifica la reposición de mercancía (prio 2).
+- **`server/routes/shipping.js`** — nuevo `isShippingIssueEvent()` (entrega fallida, novedad, devolución, cancelación; excluye tránsito y entrega exitosa). Se notifica dentro del guard de eventos nuevos de `refreshShipment()`: cada refresh re-consulta todo el historial de tracking, así que notificar fuera del guard repetiría la misma novedad en cada barrido.
+- **`server/routes/subscriptions.js`** — `markChargeFailed()` notifica el cobro fallido; sube a prio 5 y cambia el título cuando se agotan los intentos y la suscripción queda en `payment_failed`.
+- **`server/routes/auth.js`** — nueva solicitud de caficultor (prio 3).
+- **`server/routes/contact.js`** — mensaje del formulario de contacto, con vista previa de 180 caracteres (prio 2).
+
+### Decisiones
+- **Venta**: se notifica al confirmarse el pago (Wompi aprobado, COD creada o admin marcando pagado), no al crear la orden — evita el ruido de checkouts que nunca se pagan. Atarlo al descuento de inventario da la idempotencia gratis.
+- **Pago rechazado**: descartado por decisión del usuario.
+
+### Verificación
+Las 9 alertas enviadas de verdad a `ntfy.sh` y leídas de vuelta del topic: tildes, emojis, saltos de línea y formato de moneda (`$128.000`) correctos. `npx vitest run`: 103/103. `node --check` limpio en los 7 archivos tocados.
+
 ## 2026-07-27 (3) — Fecha editable en los registros de producción (Agente: Claude)
 
 ### Contexto
