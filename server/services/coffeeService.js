@@ -298,6 +298,14 @@ export async function storeRoasted({ roastedId, location, container, containerCo
 
     return { storageId, location: loc.code };
   });
+
+  // Transporte desde la tostadora de regreso a la bodega de almacenamiento.
+  const tracked = await trackCost({
+    cost, lotId: storageLotId, costType: 'transport_to_warehouse', qtyKg: roastedWeightKg,
+    sourceTable: 'roasted_coffee_inventory', sourceId: stored.storageId, recordedAt: createdAt, user,
+  });
+
+  return { ...stored, cost: tracked };
 }
 
 // ── 5.1 Detalle de almacenamiento tostado ────────────────────────────────────
