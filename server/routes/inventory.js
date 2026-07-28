@@ -4,6 +4,7 @@ import { query, withTransaction } from '../db.js';
 import { authenticateToken, requireRole } from '../auth.js';
 import { apiLimiter } from '../middleware/rateLimit.js';
 import { logAudit } from '../services/audit.js';
+import { notifyInventoryEntry } from '../services/alerts.js';
 
 export const inventoryRouter = express.Router();
 
@@ -924,6 +925,13 @@ inventoryRouter.post('/entrada', async (req, res) => {
       'UPDATE products SET stock_quantity = ?, cost = COALESCE(?, cost), updated_at = CURRENT_TIMESTAMP WHERE id = ?',
       [newStock, cost_unit || null, product_id]
     );
+
+    notifyInventoryEntry({
+      productName: product.name,
+      quantity: parseInt(quantity),
+      newStock,
+      reason,
+    });
 
     res.status(201).json({
       success: true,

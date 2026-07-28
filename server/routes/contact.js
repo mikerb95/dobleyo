@@ -4,6 +4,7 @@ import { body, validationResult } from 'express-validator';
 import { apiLimiter } from '../middleware/rateLimit.js';
 import { sendContactFormEmail } from '../services/email.js';
 import { query } from '../db.js';
+import { notifyContactMessage } from '../services/alerts.js';
 
 export const contactRouter = express.Router();
 
@@ -42,6 +43,7 @@ contactRouter.post('/',
 
       // Enviar email al admin vía Resend (BUG-008 — antes solo console.log)
       await sendContactFormEmail({ name, email, phone, subject, message });
+      notifyContactMessage({ name, email, subject, message });
 
       res.json({ success: true, message: 'Mensaje recibido correctamente' });
     } catch (error) {
