@@ -223,8 +223,9 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     border-radius: 8px;
     font-size: 12.5px;
     margin-bottom: 1rem;
-    background: var(--c-warning-bg, #fffbeb);
-    color: var(--c-warning-text, #92400e);
+    background: var(--c-warning-bg);
+    color: var(--brand-dark);
+    border: 1px solid var(--c-warning-border);
   }
 
   .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
@@ -242,7 +243,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   }
 
   /* Fila del factor base del boletín: tinte de marca en vez de borde lateral. */
-  .yield-base { background: var(--brand-soft, rgba(140, 90, 40, 0.06)); }
+  .yield-base { background: color-mix(in oklab, var(--brand) 10%, transparent); }
   .yield-base td { font-weight: 600; }
 
   .source-note {
@@ -323,8 +324,9 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     const box = el("alertBox");
     box.textContent = message;
     box.style.display = "";
-    box.style.background = kind === "error" ? "var(--c-error-bg, #fef2f2)" : "var(--c-warning-bg, #fffbeb)";
-    box.style.color = kind === "error" ? "var(--c-error, #991b1b)" : "var(--c-warning-text, #92400e)";
+    box.style.background = kind === "error" ? "var(--c-error-bg)" : "var(--c-warning-bg)";
+    box.style.color = kind === "error" ? "var(--c-error)" : "var(--brand-dark)";
+    box.style.borderColor = kind === "error" ? "var(--c-error-border)" : "var(--c-warning-border)";
   }
 
   function renderPrice(price: Price | null) {
