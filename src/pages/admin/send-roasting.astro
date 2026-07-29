@@ -406,6 +406,7 @@ import CostField from "../../components/CostField.astro";
             targetTemp: targetTemp.value || null,
             notes: document.getElementById("notes").value,
             recordedAt: roastingDate.value || undefined,
+            cost: window.CostInput?.read("roastTransportCost"),
           }),
         });
 
