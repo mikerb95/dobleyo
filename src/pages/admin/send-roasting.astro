@@ -421,6 +421,7 @@ import CostField from "../../components/CostField.astro";
         toast(`Lote ${item.lot_id} enviado a tostión · ${quantity} kg en proceso`, "success");
 
         form.reset();
+        window.CostInput?.reset("roastTransportCost");
         resetRoastingDate();
         lotInfoCard.hidden = true;
         document.getElementById("sumEmpty").hidden = false;
