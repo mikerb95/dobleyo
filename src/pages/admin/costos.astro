@@ -300,7 +300,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     document.getElementById("drawerBody")
       .querySelectorAll("[data-edit]")
       .forEach((el) => {
-        const btn = /** @type {HTMLElement} */ (el);
+        const btn = el as HTMLElement;
         btn.addEventListener("click", () =>
           editCost(btn.dataset.edit, Number(btn.dataset.amount), d.lot_id)
         );
@@ -381,7 +381,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       document.getElementById("suppliesBody")
         .querySelectorAll("[data-supply]")
         .forEach((el) => {
-          const btn = /** @type {HTMLElement} */ (el);
+          const btn = el as HTMLElement;
           btn.addEventListener("click", () =>
             editSupply(btn.dataset.supply, Number(btn.dataset.cost), Number(btn.dataset.stock))
           );
