@@ -1,0 +1,595 @@
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+---
+
+<AdminLayout title="Costeo de Producción — DobleYo Admin" section="costos">
+  <div class="page-header">
+    <div class="page-header-top">
+      <div>
+        <div class="page-breadcrumb">Finanzas · Costeo</div>
+        <h1 class="page-title">Costeo de Producción</h1>
+        <p class="page-subtitle">
+          Qué costó cada lote en cada paso de la línea, desde la compra al
+          caficultor hasta el empaque.
+        </p>
+      </div>
+      <div class="page-header-actions">
+        <button class="btn btn-secondary" id="btnSupplies">Insumos de empaque</button>
+        <button class="btn btn-secondary" id="btnRefresh">Actualizar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="erp-body">
+    <!-- KPIs -->
+    <div class="kpi-row">
+      <div class="kpi-tile brand">
+        <div class="kpi-label">Costo total registrado</div>
+        <div class="kpi-value" id="kpiTotal">—</div>
+        <div class="kpi-sub">Suma de todos los lotes</div>
+      </div>
+      <div class="kpi-tile info">
+        <div class="kpi-label">Costo medio por kg tostado</div>
+        <div class="kpi-value" id="kpiPerKg">—</div>
+        <div class="kpi-sub">Lotes que llegaron a tostión</div>
+      </div>
+      <div class="kpi-tile success">
+        <div class="kpi-label">Margen medio</div>
+        <div class="kpi-value" id="kpiMargin">—</div>
+        <div class="kpi-sub">Precio de venta contra costo unitario</div>
+      </div>
+      <div class="kpi-tile warning">
+        <div class="kpi-label">Costeo incompleto</div>
+        <div class="kpi-value" id="kpiIncomplete">—</div>
+        <div class="kpi-sub">Lotes con etapas sin costo</div>
+      </div>
+    </div>
+
+    <!-- Tabla de lotes -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Costo por lote</div>
+          <div class="card-subtitle">Haga clic en un lote para ver el desglose por etapa</div>
+        </div>
+        <div class="card-header-actions">
+          <label class="ck-filter">
+            <input type="checkbox" id="onlyIncomplete" />
+            <span>Solo costeo incompleto</span>
+          </label>
+        </div>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="erp-table" id="costTable">
+          <thead>
+            <tr>
+              <th>Lote</th>
+              <th>Finca</th>
+              <th style="text-align:right">Costo total</th>
+              <th style="text-align:right">$/kg verde</th>
+              <th style="text-align:right">$/kg tostado</th>
+              <th style="text-align:right">Costo unitario</th>
+              <th style="text-align:right">Margen</th>
+              <th style="text-align:center">Estado</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+            <tr><td colspan="8" class="ck-empty">Cargando…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel de desglose -->
+  <div class="ck-drawer" id="drawer" hidden>
+    <div class="ck-drawer-backdrop" id="drawerBackdrop"></div>
+    <aside class="ck-drawer-panel" role="dialog" aria-labelledby="drawerTitle">
+      <header class="ck-drawer-head">
+        <div>
+          <div class="ck-drawer-eyebrow">Desglose de costos</div>
+          <h2 id="drawerTitle">—</h2>
+        </div>
+        <button class="ck-close" id="drawerClose" aria-label="Cerrar">×</button>
+      </header>
+      <div class="ck-drawer-body" id="drawerBody"></div>
+    </aside>
+  </div>
+
+  <!-- Panel de insumos -->
+  <div class="ck-drawer" id="suppliesDrawer" hidden>
+    <div class="ck-drawer-backdrop" id="suppliesBackdrop"></div>
+    <aside class="ck-drawer-panel" role="dialog" aria-labelledby="suppliesTitle">
+      <header class="ck-drawer-head">
+        <div>
+          <div class="ck-drawer-eyebrow">Maestro</div>
+          <h2 id="suppliesTitle">Insumos de empaque</h2>
+        </div>
+        <button class="ck-close" id="suppliesClose" aria-label="Cerrar">×</button>
+      </header>
+      <div class="ck-drawer-body" id="suppliesBody"></div>
+    </aside>
+  </div>
+</AdminLayout>
+
+<script>
+  const fmtCop = (n) =>
+    n == null
+      ? "—"
+      : new Intl.NumberFormat("es-CO", {
+          style: "currency", currency: "COP", maximumFractionDigits: 0,
+        }).format(n);
+
+  const fmtKg = (n) =>
+    n == null ? "—" : `${new Intl.NumberFormat("es-CO", { maximumFractionDigits: 2 }).format(n)} kg`;
+
+  let lots = [];
+
+  function toast(msg, kind = "info") {
+    const el = document.createElement("div");
+    el.className = `ck-toast ck-toast--${kind}`;
+    el.textContent = msg;
+    document.body.appendChild(el);
+    requestAnimationFrame(() => el.classList.add("is-in"));
+    setTimeout(() => {
+      el.classList.remove("is-in");
+      setTimeout(() => el.remove(), 250);
+    }, 3200);
+  }
+
+  // ── Carga ────────────────────────────────────────────────────────────
+  async function load() {
+    const body = document.getElementById("tableBody");
+    body.innerHTML = `<tr><td colspan="8" class="ck-empty">Cargando…</td></tr>`;
+    try {
+      const res = await fetch("/api/costs?limit=200", { credentials: "include" });
+      if (!res.ok) throw new Error("No se pudo cargar el costeo");
+      const { data } = await res.json();
+      lots = data.lots || [];
+      renderKpis();
+      renderTable();
+    } catch (err) {
+      body.innerHTML = `<tr><td colspan="8" class="ck-empty">${err.message}</td></tr>`;
+    }
+  }
+
+  function renderKpis() {
+    const total = lots.reduce((sum, l) => sum + (l.totals?.total_cop || 0), 0);
+    document.getElementById("kpiTotal").textContent = fmtCop(total);
+
+    // Solo promedian los lotes que efectivamente llegaron a la etapa.
+    const roasted = lots.map((l) => l.cost_per_kg?.roasted).filter((v) => v != null);
+    document.getElementById("kpiPerKg").textContent = roasted.length
+      ? fmtCop(Math.round(roasted.reduce((a, b) => a + b, 0) / roasted.length))
+      : "—";
+
+    const margins = lots.map((l) => l.margin_pct).filter((v) => v != null);
+    document.getElementById("kpiMargin").textContent = margins.length
+      ? `${(margins.reduce((a, b) => a + b, 0) / margins.length).toFixed(1)}%`
+      : "—";
+
+    document.getElementById("kpiIncomplete").textContent =
+      String(lots.filter((l) => !l.complete).length);
+  }
+
+  function renderTable() {
+    const onlyIncomplete = document.getElementById("onlyIncomplete").checked;
+    const rows = onlyIncomplete ? lots.filter((l) => !l.complete) : lots;
+    const body = document.getElementById("tableBody");
+
+    if (!rows.length) {
+      body.innerHTML = `<tr><td colspan="8" class="ck-empty">No hay lotes que mostrar.</td></tr>`;
+      return;
+    }
+
+    body.innerHTML = rows
+      .map((l) => {
+        const marginClass =
+          l.margin_pct == null ? "" : l.margin_pct < 20 ? "ck-neg" : "ck-pos";
+        const badge = l.complete
+          ? `<span class="ck-badge ck-badge--ok">Completo</span>`
+          : `<span class="ck-badge ck-badge--warn">${l.missing_stages.length} sin costo</span>`;
+        return `
+          <tr class="ck-row" data-lot="${l.lot_id}">
+            <td><code class="ck-lot">${l.lot_id}</code></td>
+            <td>${l.farm || "—"}</td>
+            <td style="text-align:right"><b>${fmtCop(l.totals?.total_cop)}</b></td>
+            <td style="text-align:right">${fmtCop(l.cost_per_kg?.green)}</td>
+            <td style="text-align:right">${fmtCop(l.cost_per_kg?.roasted)}</td>
+            <td style="text-align:right">${fmtCop(l.unit_cost_cop)}</td>
+            <td style="text-align:right" class="${marginClass}">${
+              l.margin_pct == null ? "—" : `${l.margin_pct}%`
+            }</td>
+            <td style="text-align:center">${badge}</td>
+          </tr>`;
+      })
+      .join("");
+
+    body.querySelectorAll(".ck-row").forEach((tr) =>
+      tr.addEventListener("click", () => openDrawer(tr.dataset.lot))
+    );
+  }
+
+  // ── Desglose por lote ────────────────────────────────────────────────
+  async function openDrawer(lotId) {
+    const drawer = document.getElementById("drawer");
+    document.getElementById("drawerTitle").textContent = lotId;
+    document.getElementById("drawerBody").innerHTML = `<p class="ck-empty">Cargando…</p>`;
+    drawer.hidden = false;
+
+    try {
+      const res = await fetch(`/api/costs/lot/${encodeURIComponent(lotId)}`, {
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("No se pudo cargar el desglose");
+      const { data } = await res.json();
+      renderDrawer(data);
+    } catch (err) {
+      document.getElementById("drawerBody").innerHTML =
+        `<p class="ck-empty">${err.message}</p>`;
+    }
+  }
+
+  function renderDrawer(d) {
+    const w = d.weights || {};
+    const stages = (d.by_stage || [])
+      .map((s) => {
+        const items = s.items.length
+          ? s.items
+              .map(
+                (i) => `
+                <li class="ck-item" data-cost="${i.id}">
+                  <span class="ck-item-label">${i.label}${
+                    i.supply_name ? ` · ${i.supply_name}` : ""
+                  }</span>
+                  <span class="ck-item-amount">${fmtCop(i.amount_cop)}</span>
+                  <button class="ck-edit" data-edit="${i.id}" data-amount="${
+                    i.amount_cop
+                  }" title="Corregir">Corregir</button>
+                </li>`
+              )
+              .join("")
+          : `<li class="ck-item ck-item--empty">Sin costo registrado</li>`;
+        return `
+          <section class="ck-stage">
+            <header class="ck-stage-head">
+              <span class="ck-stage-dot"></span>
+              <h3>${s.label}</h3>
+              <b>${fmtCop(s.amount_cop)}</b>
+            </header>
+            <ul class="ck-items">${items}</ul>
+          </section>`;
+      })
+      .join("");
+
+    document.getElementById("drawerBody").innerHTML = `
+      <div class="ck-metrics">
+        <div><span>Peso recibido</span><b>${fmtKg(w.harvested_kg)}</b></div>
+        <div><span>Ingresó a bodega</span><b>${fmtKg(w.green_kg)}</b></div>
+        <div><span>Salió del tostador</span><b>${fmtKg(w.roasted_kg)}</b></div>
+        <div><span>Empacado</span><b>${fmtKg(w.packaged_kg)}</b></div>
+        <div><span>Merma de secado</span><b>${
+          d.shrinkage?.drying_pct == null ? "—" : `${d.shrinkage.drying_pct}%`
+        }</b></div>
+        <div><span>Merma de tostión</span><b>${
+          d.shrinkage?.roasting_pct == null ? "—" : `${d.shrinkage.roasting_pct}%`
+        }</b></div>
+      </div>
+
+      <div class="ck-totals">
+        <div><span>$/kg verde</span><b>${fmtCop(d.cost_per_kg?.green)}</b></div>
+        <div><span>$/kg tostado</span><b>${fmtCop(d.cost_per_kg?.roasted)}</b></div>
+        <div><span>Costo unitario</span><b>${fmtCop(d.unit_cost_cop)}</b></div>
+        <div class="ck-totals-main"><span>Costo total</span><b>${fmtCop(
+          d.totals?.total_cop
+        )}</b></div>
+      </div>
+
+      ${
+        d.pending_accounting > 0
+          ? `<p class="ck-warn">${d.pending_accounting} costo(s) sin asiento contable. Revise el diario PROD en finanzas.</p>`
+          : ""
+      }
+
+      ${stages}
+    `;
+
+    document.getElementById("drawerBody")
+      .querySelectorAll("[data-edit]")
+      .forEach((btn) =>
+        btn.addEventListener("click", () =>
+          editCost(btn.dataset.edit, Number(btn.dataset.amount), d.lot_id)
+        )
+      );
+  }
+
+  async function editCost(costId, currentAmount, lotId) {
+    const raw = window.prompt(
+      "Nuevo valor en pesos. Se reversa el asiento anterior y se genera uno nuevo en borrador.",
+      String(currentAmount)
+    );
+    if (raw == null) return;
+
+    const amount = Number(String(raw).replace(/[^\d]/g, ""));
+    if (!amount || amount <= 0) return toast("El valor debe ser positivo", "error");
+
+    try {
+      const res = await fetch(`/api/costs/${costId}`, {
+        method: "PATCH",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "No se pudo corregir el costo");
+      toast(data.message || "Costo corregido", "success");
+      openDrawer(lotId);
+      load();
+    } catch (err) {
+      toast(err.message, "error");
+    }
+  }
+
+  // ── Maestro de insumos ───────────────────────────────────────────────
+  async function openSupplies() {
+    const drawer = document.getElementById("suppliesDrawer");
+    document.getElementById("suppliesBody").innerHTML = `<p class="ck-empty">Cargando…</p>`;
+    drawer.hidden = false;
+
+    try {
+      const res = await fetch("/api/costs/supplies/list?all=1", { credentials: "include" });
+      if (!res.ok) throw new Error("No se pudo cargar el maestro de insumos");
+      const { data } = await res.json();
+
+      document.getElementById("suppliesBody").innerHTML = `
+        <table class="erp-table ck-supplies">
+          <thead>
+            <tr>
+              <th>Insumo</th>
+              <th style="text-align:right">Costo unit.</th>
+              <th style="text-align:right">Stock</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            ${data
+              .map(
+                (s) => `
+              <tr class="${s.stock_units <= s.stock_min ? "ck-low" : ""}">
+                <td>
+                  <b>${s.name}</b>
+                  <div class="ck-supply-meta">${s.type}${
+                    s.size_label ? ` · ${s.size_label}` : ""
+                  }</div>
+                </td>
+                <td style="text-align:right">${fmtCop(s.unit_cost_cop)}</td>
+                <td style="text-align:right">${s.stock_units}</td>
+                <td style="text-align:right">
+                  <button class="ck-edit" data-supply="${s.id}"
+                          data-cost="${s.unit_cost_cop}" data-stock="${s.stock_units}">Editar</button>
+                </td>
+              </tr>`
+              )
+              .join("")}
+          </tbody>
+        </table>`;
+
+      document.getElementById("suppliesBody")
+        .querySelectorAll("[data-supply]")
+        .forEach((btn) =>
+          btn.addEventListener("click", () =>
+            editSupply(btn.dataset.supply, Number(btn.dataset.cost), Number(btn.dataset.stock))
+          )
+        );
+    } catch (err) {
+      document.getElementById("suppliesBody").innerHTML =
+        `<p class="ck-empty">${err.message}</p>`;
+    }
+  }
+
+  async function editSupply(id, cost, stock) {
+    const rawCost = window.prompt("Costo unitario en pesos:", String(cost));
+    if (rawCost == null) return;
+    const rawStock = window.prompt("Unidades en stock:", String(stock));
+    if (rawStock == null) return;
+
+    try {
+      const res = await fetch(`/api/costs/supplies/${id}`, {
+        method: "PATCH",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          unitCost: Number(String(rawCost).replace(/[^\d]/g, "")),
+          stockUnits: parseInt(rawStock, 10),
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "No se pudo actualizar el insumo");
+      toast("Insumo actualizado", "success");
+      openSupplies();
+    } catch (err) {
+      toast(err.message, "error");
+    }
+  }
+
+  // ── Eventos ──────────────────────────────────────────────────────────
+  const closeDrawer = (id) => (document.getElementById(id).hidden = true);
+
+  document.getElementById("btnRefresh").addEventListener("click", load);
+  document.getElementById("onlyIncomplete").addEventListener("change", renderTable);
+  document.getElementById("btnSupplies").addEventListener("click", openSupplies);
+  document.getElementById("drawerClose").addEventListener("click", () => closeDrawer("drawer"));
+  document.getElementById("drawerBackdrop").addEventListener("click", () => closeDrawer("drawer"));
+  document.getElementById("suppliesClose")
+    .addEventListener("click", () => closeDrawer("suppliesDrawer"));
+  document.getElementById("suppliesBackdrop")
+    .addEventListener("click", () => closeDrawer("suppliesDrawer"));
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape") return;
+    closeDrawer("drawer");
+    closeDrawer("suppliesDrawer");
+  });
+
+  load();
+</script>
+
+<style>
+  .kpi-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  @media (max-width: 1024px) { .kpi-row { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 480px)  { .kpi-row { grid-template-columns: 1fr; } }
+
+  .ck-filter {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 12px; color: var(--text-2); cursor: pointer;
+  }
+
+  .ck-empty {
+    padding: 32px 16px; text-align: center;
+    color: var(--text-3); font-size: 13px;
+  }
+
+  .ck-row { cursor: pointer; }
+  .ck-row:hover { background: var(--hover); }
+
+  .ck-lot {
+    font-size: 11px; font-family: ui-monospace, monospace;
+    color: var(--text-2);
+  }
+
+  .ck-pos { color: var(--ok); font-weight: 600; }
+  .ck-neg { color: var(--danger); font-weight: 600; }
+
+  .ck-badge {
+    display: inline-block; padding: 2px 8px; border-radius: 99px;
+    font-size: 11px; font-weight: 600;
+  }
+  .ck-badge--ok {
+    background: var(--c-success-bg); color: var(--c-success);
+    border: 1px solid var(--c-success-border);
+  }
+  .ck-badge--warn {
+    background: var(--c-warning-bg); color: var(--c-warning);
+    border: 1px solid var(--c-warning-border);
+  }
+
+  /* ── Panel lateral ─────────────────────────────────────────────── */
+  .ck-drawer { position: fixed; inset: 0; z-index: 60; }
+  .ck-drawer-backdrop {
+    position: absolute; inset: 0;
+    background: color-mix(in oklab, var(--color-primary) 40%, transparent);
+  }
+  .ck-drawer-panel {
+    position: absolute; top: 0; right: 0; bottom: 0;
+    width: min(560px, 100%);
+    background: var(--paper);
+    box-shadow: -12px 0 40px -20px color-mix(in oklab, var(--color-primary) 60%, transparent);
+    display: flex; flex-direction: column;
+  }
+  .ck-drawer-head {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: 12px; padding: 20px; border-bottom: 1px solid var(--rule);
+  }
+  .ck-drawer-eyebrow {
+    font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--text-3); margin-bottom: 4px;
+  }
+  .ck-drawer-head h2 {
+    margin: 0; font-size: 15px; font-family: ui-monospace, monospace;
+    color: var(--text-1); word-break: break-all;
+  }
+  .ck-close {
+    border: 0; background: transparent; font-size: 24px; line-height: 1;
+    color: var(--text-3); cursor: pointer; padding: 0 4px;
+  }
+  .ck-close:hover { color: var(--text-1); }
+  .ck-drawer-body { padding: 20px; overflow-y: auto; flex: 1; }
+
+  .ck-metrics {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px;
+    margin-bottom: 20px;
+  }
+  .ck-metrics div { display: flex; justify-content: space-between; font-size: 13px; }
+  .ck-metrics span { color: var(--text-2); }
+  .ck-metrics b { color: var(--text-1); font-variant-numeric: tabular-nums; }
+
+  .ck-totals {
+    padding: 14px; margin-bottom: 20px;
+    border: 1px solid var(--rule-2); border-radius: 10px;
+    background: color-mix(in oklab, var(--color-accent) 4%, transparent);
+    display: grid; gap: 8px;
+  }
+  .ck-totals div { display: flex; justify-content: space-between; font-size: 13px; }
+  .ck-totals span { color: var(--text-2); }
+  .ck-totals b { color: var(--text-1); font-variant-numeric: tabular-nums; }
+  .ck-totals-main {
+    padding-top: 8px; border-top: 1px solid var(--rule-2);
+  }
+  .ck-totals-main b { font-size: 17px; }
+
+  .ck-warn {
+    margin: 0 0 20px; padding: 10px 12px; border-radius: 8px;
+    font-size: 12px; line-height: 1.5;
+    background: var(--c-warning-bg); color: var(--c-warning);
+    border: 1px solid var(--c-warning-border);
+  }
+
+  .ck-stage { margin-bottom: 18px; }
+  .ck-stage-head {
+    display: flex; align-items: center; gap: 8px;
+    padding-bottom: 6px; border-bottom: 1px solid var(--rule);
+  }
+  /* Punto de color junto al título de la etapa. */
+  .ck-stage-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--color-accent); flex: none;
+  }
+  .ck-stage-head h3 {
+    margin: 0; font-size: 13px; font-weight: 600; color: var(--text-1);
+  }
+  .ck-stage-head b {
+    margin-left: auto; font-size: 13px; font-variant-numeric: tabular-nums;
+  }
+
+  .ck-items { list-style: none; margin: 0; padding: 0; }
+  .ck-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 0; font-size: 13px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .ck-item:last-child { border-bottom: 0; }
+  .ck-item--empty { color: var(--text-3); font-style: italic; }
+  .ck-item-label { color: var(--text-2); }
+  .ck-item-amount {
+    margin-left: auto; font-variant-numeric: tabular-nums; color: var(--text-1);
+  }
+
+  .ck-edit {
+    border: 1px solid var(--rule-2); background: var(--paper);
+    border-radius: 6px; padding: 3px 8px;
+    font-size: 11px; color: var(--text-2); cursor: pointer;
+  }
+  .ck-edit:hover { border-color: var(--color-accent); color: var(--color-accent); }
+
+  .ck-supplies .ck-low { background: var(--c-warning-bg); }
+  .ck-supply-meta { font-size: 11px; color: var(--text-3); text-transform: capitalize; }
+
+  .ck-toast {
+    position: fixed; bottom: 20px; right: 20px; z-index: 90;
+    padding: 12px 18px; border-radius: 10px; color: #fff; font-size: 13px;
+    background: var(--color-primary); max-width: 340px;
+    opacity: 0; transform: translateY(8px);
+    transition: opacity 0.25s, transform 0.25s;
+  }
+  .ck-toast.is-in { opacity: 1; transform: translateY(0); }
+  .ck-toast--success { background: var(--ok); }
+  .ck-toast--error { background: var(--danger); }
+
+  @media (max-width: 480px) {
+    .ck-metrics { grid-template-columns: 1fr; }
+  }
+</style>
