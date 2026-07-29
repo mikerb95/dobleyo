@@ -299,11 +299,12 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
     document.getElementById("drawerBody")
       .querySelectorAll("[data-edit]")
-      .forEach((btn) =>
+      .forEach((el) => {
+        const btn = /** @type {HTMLElement} */ (el);
         btn.addEventListener("click", () =>
           editCost(btn.dataset.edit, Number(btn.dataset.amount), d.lot_id)
-        )
-      );
+        );
+      });
   }
 
   async function editCost(costId, currentAmount, lotId) {
