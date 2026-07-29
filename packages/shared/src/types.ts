@@ -109,6 +109,27 @@ export interface StockItem {
   available?: number;
 }
 
+// ---- Costeo de producción ----
+
+/** Cómo se pagó un costo. Determina la cuenta acreditada del asiento. */
+export type CostPaymentMethod = 'caja' | 'banco' | 'credito';
+
+/**
+ * Costo de un paso de la línea de producción.
+ *
+ * Es opcional en todos los pasos: sin él, el registro se guarda igual y el lote
+ * queda marcado como costeo incompleto. El backend lo descarta si quien lo
+ * envía no es admin.
+ */
+export interface StageCostInput {
+  /** Monto total en COP. */
+  amount: number;
+  paymentMethod?: CostPaymentMethod;
+  /** Caficultor o proveedor, para el crédito a cuentas por pagar. */
+  partnerId?: number;
+  notes?: string;
+}
+
 // ---- Payloads de escritura (línea de producción) ----
 
 export interface HarvestInput {
@@ -122,6 +143,12 @@ export interface HarvestInput {
   process?: string;
   aroma?: string;
   tasteNotes?: string;
+  /** Kilos recibidos del caficultor. Denominador del costo de origen. */
+  harvestWeightKg?: number | string;
+  /** Factor de rendimiento de trilla, si el proveedor entrega el análisis. */
+  yieldFactor?: number;
+  /** Pago al caficultor. */
+  cost?: StageCostInput;
 }
 
 export interface GreenStorageInput {
