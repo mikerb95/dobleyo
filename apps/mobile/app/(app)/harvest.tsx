@@ -248,6 +248,61 @@ const styles = StyleSheet.create({
     color: colors.danger,
     fontSize: 14,
   },
+  costBlock: {
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    padding: spacing.md,
+    gap: spacing.md,
+  },
+  costHead: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  // Punto de color junto al título, no franja lateral.
+  costDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: colors.accent,
+  },
+  costTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.text,
+  },
+  costOptional: {
+    marginLeft: 'auto',
+    fontSize: 11,
+    textTransform: 'uppercase',
+    color: colors.muted,
+  },
+  methodRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  methodChip: {
+    flex: 1,
+    minHeight: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.sm,
+  },
+  methodChipActive: {
+    borderColor: colors.accent,
+    backgroundColor: colors.accent,
+  },
+  methodText: {
+    fontSize: 13,
+    color: colors.muted,
+  },
+  methodTextActive: {
+    color: colors.accentContrast,
+    fontWeight: '600',
+  },
   button: {
     minHeight: 48,
     borderRadius: radius.md,
