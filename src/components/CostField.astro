@@ -1,0 +1,214 @@
+---
+/**
+ * Bloque de costo de un paso de la línea de producción.
+ *
+ * Se oculta para el caficultor mediante el `data-roles` que ya filtra
+ * AdminLayout, y el backend descarta cualquier costo que no venga de un admin.
+ *
+ * El costo es opcional: si el operario no lo digita, el paso se guarda igual y
+ * el lote queda marcado como "costeo incompleto" en /admin/costos.
+ *
+ * El valor se lee con `window.CostInput.read(id)`, que devuelve
+ * `{ amount, paymentMethod }` o `undefined` si no se digitó monto.
+ */
+export interface Props {
+  /** Prefijo de los ids del bloque. Debe ser único en la página. */
+  id: string;
+  /** Título del bloque. Ej: "Pago al caficultor". */
+  label: string;
+  /** Explicación de qué costo se está capturando. */
+  hint?: string;
+  /** Texto del placeholder del monto. */
+  placeholder?: string;
+}
+
+const { id, label, hint, placeholder = "Ej: 850.000" } = Astro.props;
+---
+
+<div class="cost-block" data-roles="admin" data-cost-block={id}>
+  <div class="cost-head">
+    <span class="cost-dot" aria-hidden="true"></span>
+    <h4>{label}</h4>
+    <span class="cost-optional">Opcional</span>
+  </div>
+
+  {hint && <p class="cost-hint">{hint}</p>}
+
+  <div class="cost-row">
+    <div class="cost-field">
+      <label for={`${id}Amount`}>Valor (COP)</label>
+      <div class="cost-input-wrap">
+        <span class="cost-prefix">$</span>
+        <input
+          type="text" inputmode="numeric" autocomplete="off"
+          id={`${id}Amount`} data-cost-amount placeholder={placeholder}
+        />
+      </div>
+    </div>
+
+    <div class="cost-field">
+      <label for={`${id}Payment`}>Forma de pago</label>
+      <select id={`${id}Payment`} data-cost-payment>
+        <option value="caja">Efectivo / Caja</option>
+        <option value="banco">Transferencia / Banco</option>
+        <option value="credito">A crédito (por pagar)</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<style>
+  .cost-block {
+    margin: 20px 0;
+    padding: 16px;
+    border: 1px solid var(--rule-2, #e6ddd2);
+    border-radius: 10px;
+    background: color-mix(in oklab, var(--color-accent, #c9893d) 4%, transparent);
+  }
+
+  .cost-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+
+  /* Punto de color junto al título en vez de una franja lateral. */
+  .cost-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--color-accent, #c9893d);
+    flex: none;
+  }
+
+  .cost-head h4 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-1, #3a2618);
+  }
+
+  .cost-optional {
+    margin-left: auto;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-3, #9a8d80);
+  }
+
+  .cost-hint {
+    margin: 0 0 12px;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--text-2, #7a6e63);
+  }
+
+  .cost-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .cost-field label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-2, #7a6e63);
+  }
+
+  .cost-input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .cost-prefix {
+    position: absolute;
+    left: 12px;
+    font-size: 14px;
+    color: var(--text-3, #9a8d80);
+    pointer-events: none;
+  }
+
+  .cost-input-wrap input {
+    width: 100%;
+    padding: 10px 12px 10px 26px;
+    font-size: 14px;
+    font-variant-numeric: tabular-nums;
+    border: 1px solid var(--rule-2, #e6ddd2);
+    border-radius: 8px;
+    background: var(--paper, #fff);
+    color: var(--text-1, #3a2618);
+  }
+
+  .cost-field select {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 14px;
+    border: 1px solid var(--rule-2, #e6ddd2);
+    border-radius: 8px;
+    background: var(--paper, #fff);
+    color: var(--text-1, #3a2618);
+  }
+
+  .cost-input-wrap input:focus,
+  .cost-field select:focus {
+    outline: none;
+    border-color: var(--color-accent, #c9893d);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-accent, #c9893d) 18%, transparent);
+  }
+
+  @media (min-width: 480px) {
+    .cost-row {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+</style>
+
+<script is:inline>
+  // Se define una sola vez aunque la página use varios bloques de costo.
+  if (!window.CostInput) {
+    window.CostInput = {
+      /**
+       * Lee el bloque de costo con ese id.
+       * @returns {{amount:number,paymentMethod:string}|undefined} undefined si
+       * no se digitó monto o si el usuario no es admin.
+       */
+      read(id) {
+        if (window.__userRole && window.__userRole !== "admin") return undefined;
+        const block = document.querySelector(`[data-cost-block="${id}"]`);
+        if (!block) return undefined;
+
+        const raw = block.querySelector("[data-cost-amount]")?.value ?? "";
+        const amount = Number(String(raw).replace(/[^\d]/g, ""));
+        if (!amount || amount <= 0) return undefined;
+
+        return {
+          amount,
+          paymentMethod: block.querySelector("[data-cost-payment]")?.value || "caja",
+        };
+      },
+
+      /** Limpia el bloque tras un registro exitoso. */
+      reset(id) {
+        const block = document.querySelector(`[data-cost-block="${id}"]`);
+        if (!block) return;
+        const amountEl = block.querySelector("[data-cost-amount]");
+        if (amountEl) amountEl.value = "";
+        const payEl = block.querySelector("[data-cost-payment]");
+        if (payEl) payEl.value = "caja";
+      },
+    };
+
+    // Separador de miles mientras se digita: los montos en pesos son largos y
+    // sin agrupar se leen mal.
+    document.addEventListener("input", (ev) => {
+      const el = ev.target;
+      if (!el || !el.matches?.("[data-cost-amount]")) return;
+      const digits = el.value.replace(/[^\d]/g, "");
+      el.value = digits ? Number(digits).toLocaleString("es-CO") : "";
+    });
+  }
+</script>
