@@ -295,6 +295,26 @@ describe('getLotCostSummary — costo por kg', () => {
         expect(summary.missing_stages).not.toContain('roast_retrieval');
     });
 
+    it('no encoge el denominador cuando el lote ya se empacó', async () => {
+        // Regresión: `roasted_coffee.weight_kg` es el saldo vivo y el empaque lo
+        // decrementa. Si se usa como denominador, empacar todo el lote lo deja en
+        // cero y el costo por kilo tostado se dispara. El denominador correcto es
+        // lo que salió del tostador, derivado de la merma registrada.
+        await seedLot({ harvestKg: 100, greenKg: 80, sentKg: 80, roastedKg: 64 });
+        await costs.recordCost({ lotId: LOT, costType: 'farmer_payment', amount: 1_280_000, user });
+
+        const before = await costs.getLotCostSummary(LOT);
+
+        // El empaque consume todo el saldo tostado.
+        await query('UPDATE roasted_coffee SET weight_kg = 0');
+
+        const after = await costs.getLotCostSummary(LOT);
+
+        expect(after.weights.roasted_kg).toBe(64);
+        expect(after.weights.roasted_remaining_kg).toBe(0);
+        expect(after.cost_per_kg.roasted).toBe(before.cost_per_kg.roasted);
+    });
+
     it('no divide por cero cuando el lote aún no tiene pesos', async () => {
         await seedLot({ harvestKg: null });
         const summary = await costs.getLotCostSummary(LOT);
