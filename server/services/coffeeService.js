@@ -81,13 +81,16 @@ export async function createHarvest({ farm, region, altitude, variety, climate, 
     throw bizError(400, 'Peso de cosecha inválido');
   }
 
+  // `yield_factor` no se escribe aquí: es columna del módulo de precio FNC, que
+  // la crea en su propia migración y la captura con PUT /api/fnc/lot/:lotId/yield-factor.
+  // Escribirla desde acá ataría el pipeline al orden de otra migración.
   const result = await query(
     `INSERT INTO coffee_harvests
        (lot_id, farm, region, altitude, variety, climate, process, aroma, taste_notes,
-        harvest_weight_kg, yield_factor, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, COALESCE(?, datetime('now'))) RETURNING id`,
+        harvest_weight_kg, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, COALESCE(?, datetime('now'))) RETURNING id`,
     [lotId, farm, farmRegion, farmAltitude, variety, climate, process, aroma, tasteNotes,
-     harvestKg, yieldFactor ? parseInt(yieldFactor, 10) : null, createdAt]
+     harvestKg, createdAt]
   );
   const harvestId = result.rows[0].id;
 
