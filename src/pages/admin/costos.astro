@@ -380,11 +380,12 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
       document.getElementById("suppliesBody")
         .querySelectorAll("[data-supply]")
-        .forEach((btn) =>
+        .forEach((el) => {
+          const btn = /** @type {HTMLElement} */ (el);
           btn.addEventListener("click", () =>
             editSupply(btn.dataset.supply, Number(btn.dataset.cost), Number(btn.dataset.stock))
-          )
-        );
+          );
+        });
     } catch (err) {
       document.getElementById("suppliesBody").innerHTML =
         `<p class="ck-empty">${err.message}</p>`;
