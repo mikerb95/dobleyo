@@ -2,6 +2,38 @@
 
 ---
 
+## 2026-07-29 — Trazabilidad de costos de la línea de producción (Agente: Claude)
+
+### Contexto
+El pipeline trazaba el café (finca → bodega → tostión → empaque) pero no lo que costaba recorrerlo. No se podía responder cuánto cuesta un kilo tostado ni cuál es el margen real de una bolsa de 250 g. Ahora cada paso captura su costo y el sistema lo acumula por lote.
+
+### Cambios
+- **`server/migrations/create_cost_tracking.js`** (nuevo) — tabla `lot_costs` (un registro por evento de costo, con etapa, tipo, monto, kg, forma de pago, paso origen y asiento contable), maestro `packaging_supplies` + `packaging_supply_movements`, columna `harvest_weight_kg` en `coffee_harvests`, cuentas 1440/5110/5120/5130 y diario `PROD`. Registrada en `run_all_migrations.js`.
+- **`server/services/accountingService.js`** (nuevo) — asientos de partida doble en estado borrador: debita la cuenta de inventario de la etapa (1410 verde, 1440 en proceso, 1420 tostado) y acredita según la forma de pago (1110 caja, 1210 banco, 2120/2110 cuentas por pagar). `reverseCostEntry()` cancela el borrador o emite el asiento espejo si ya estaba publicado.
+- **`server/services/costService.js`** (nuevo) — registro, corrección y borrado de costos; resumen por lote con costo acumulado, costo/kg y costo unitario; `consumeSupply()` para descontar insumos de empaque.
+- **`server/services/coffeeService.js`** — las 6 etapas aceptan su costo: cosecha (pago al caficultor + kg recibidos), ingreso a bodega (transporte), envío a tostión (transporte), retiro de tostión (maquila), almacén tostado (transporte de retorno) y empaque (bolsa + etiqueta desde el maestro).
+- **`server/routes/coffee.js`** — `costFrom(req)` y `suppliesFrom(req)` descartan costos que no vengan de un admin.
+- **`server/routes/costs.js`** (nuevo) — `GET /`, `GET /lot/:lotId`, `PATCH /:id`, `DELETE /:id` y CRUD del maestro de insumos. Montado en `server/index.js` y `api/index.js`.
+- **`src/components/CostField.astro`** (nuevo) — bloque de costo reutilizable (monto + forma de pago), oculto para el caficultor vía el `data-roles` que ya filtra `AdminLayout`.
+- **`src/pages/admin/{harvest,inventory-storage,send-roasting,roast-retrieval,roasted-storage}.astro`** — bloque de costo en cada paso. **`packaging.astro`** — selector de bolsa y etiqueta con total en vivo y aviso de faltante de stock.
+- **`src/pages/admin/costos.astro`** (nuevo) — KPIs, tabla de lotes con costo total, $/kg verde, $/kg tostado, costo unitario y margen; panel de desglose por etapa con corrección en línea y panel del maestro de insumos.
+- **`packages/shared/src/types.ts`** — `StageCostInput`, `CostPaymentMethod` y campos de costo en los inputs del pipeline.
+- **`apps/mobile/app/(app)/harvest.tsx`** — kilos recibidos, valor pagado y forma de pago, visibles solo para admin.
+- **`server/services/__tests__/costService.test.js`** (nuevo) — 18 tests sobre SQLite real.
+
+### Decisiones
+- **Libro de costos, no columnas por tabla.** Un lote se envía a tostión en varios envíos y se empaca en varios empaques, así que el costo se ata al evento y no a la etapa. Permite además corregir con historial.
+- **El costo por kg se recalcula en cada transformación.** El pago al caficultor queda fijo y se divide entre los kilos que **ingresaron a bodega**, no entre los cosechados; tras el tueste se divide entre los kilos que **salieron** del tostador. Así la merma de secado y de tostión la absorbe el café vendible, que es lo correcto contablemente.
+- **Contabilizar nunca bloquea la operación.** El asiento se emite después de que el paso quedó guardado y su fallo solo deja el costo con `accounting_entry_id` en NULL. Un error contable no puede dejar a un operario en finca sin registrar la cosecha.
+- **Los insumos van en tabla propia, no en `products`.** `products.category` tiene un CHECK que SQLite no permite alterar sin reconstruir la tabla, y está referenciada por variantes, movimientos y líneas de factura. `packaging_supplies` da el mismo resultado sin tocar esa FK.
+- **El stock de insumos puede quedar negativo.** El empaque físico ya ocurrió; bloquearlo por un maestro desactualizado frenaría la operación. El faltante se marca en el formulario y en el maestro.
+- **Costos opcionales.** Un paso sin costo se guarda igual y el lote aparece como «costeo incompleto», para no romper los lotes ya en curso.
+
+### Verificación
+`npx vitest run`: 134/134 (18 nuevos). `npx astro check`: 0 errores en los archivos nuevos; el total del proyecto bajó de 965 a 958. `npm run build`: completo. Migración aplicada contra Turso (solo creación aditiva).
+
+---
+
 ## 2026-07-28 (2) — Módulo de precio de referencia FNC (Agente: Claude)
 
 ### Contexto
