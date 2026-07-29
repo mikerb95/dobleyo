@@ -128,6 +128,13 @@ import CostField from "../../components/CostField.astro";
                 placeholder="Ej: tueste medio, desarrollo lento, buscar notas de chocolate…"></textarea>
             </div>
 
+            <CostField
+              id="roastTransportCost"
+              label="Transporte hacia la tostadora"
+              hint="Flete de la bodega hasta la empresa tostadora, por este envío."
+              placeholder="Ej: 120.000"
+            />
+
             <div class="form-actions">
               <button type="reset" class="btn btn-secondary">Limpiar</button>
               <button type="submit" class="btn btn-save" id="submitBtn">Enviar a tostión</button>

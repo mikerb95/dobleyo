@@ -547,6 +547,7 @@ import CostField from "../../components/CostField.astro";
       ?.addEventListener("click", () => {
         document.getElementById("successModal").style.display = "none";
         document.getElementById("inventoryForm").reset();
+        window.CostInput?.reset("storageCost");
         resetStorageDate();
         document.getElementById("lotInfoCard").style.display = "none";
         document.getElementById("summaryBox").style.display = "none";
