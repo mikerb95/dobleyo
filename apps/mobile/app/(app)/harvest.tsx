@@ -13,8 +13,16 @@ import { Stack, useRouter } from 'expo-router';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import type { Harvest, HarvestInput, WithClientOpId } from '@dobleyo/shared';
 import { api } from '../../src/lib/api';
+import { useAuth } from '../../src/auth/AuthContext';
 import { mutationKeys, queryKeys, withOpId } from '../../src/lib/mutations';
 import { colors, radius, spacing } from '../../src/theme';
+
+/** Formas de pago del costo. Deciden la cuenta acreditada del asiento. */
+const PAYMENT_METHODS = [
+  { value: 'caja' as const, label: 'Efectivo' },
+  { value: 'banco' as const, label: 'Banco' },
+  { value: 'credito' as const, label: 'A crédito' },
+];
 
 const EMPTY: HarvestInput = {
   farm: '',
@@ -39,8 +47,16 @@ const FIELDS: Array<{ key: keyof HarvestInput; label: string; required?: boolean
 
 export default function HarvestScreen() {
   const router = useRouter();
+  const { user } = useAuth();
   const [form, setForm] = useState<HarvestInput>(EMPTY);
   const [error, setError] = useState<string | null>(null);
+
+  // Solo el admin digita y ve montos; el caficultor registra la cosecha sin
+  // costos. El backend descarta cualquier costo que no venga de un admin.
+  const canEnterCost = user?.role === 'admin';
+  const [weightKg, setWeightKg] = useState('');
+  const [amount, setAmount] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState<'caja' | 'banco' | 'credito'>('caja');
 
   const harvests = useQuery({
     queryKey: queryKeys.harvests,

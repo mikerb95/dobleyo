@@ -201,6 +201,12 @@ export interface PackagingInput {
   packageType: string;
   quantity: number;
   notes?: string;
+  /**
+   * Insumos consumidos, del maestro `packaging_supplies`. El costo sale del
+   * maestro — no se digita — y descuenta stock. A granel no aplican.
+   */
+  bagSupplyId?: number | null;
+  labelSupplyId?: number | null;
 }
 
 export interface CuppingInput {
