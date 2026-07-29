@@ -68,6 +68,9 @@
 | `server/services/email.js` | Servicio de email con Resend y templates HTML |
 | `server/services/mercadolibre.js` | Servicio ML: fetch orders, geocoding, DB persistence |
 | `server/services/audit.js` | Logging de auditoría a tabla `audit_logs` |
+| `server/services/costService.js` | Costeo del pipeline: registro de costos, costo/kg por etapa, insumos de empaque |
+| `server/services/accountingService.js` | Asientos de partida doble (borrador) de los costos de producción |
+| `server/routes/costs.js` | API de costeo e insumos (`/api/costs`). Solo admin |
 
 ### Frontend — Páginas Públicas
 | Archivo | Propósito |
