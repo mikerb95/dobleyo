@@ -900,6 +900,7 @@ import CostField from "../../components/CostField.astro";
     function resetPanel() {
       current = null;
       form.reset();
+      window.CostInput?.reset('returnTransportCost');
       form.hidden = true;
       $('putawayFlag').hidden = true;
       $('putawayEmpty').hidden = false;
