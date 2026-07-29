@@ -967,4 +967,60 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   .toast--success { background: var(--ok); }
   .toast--error { background: var(--danger); }
   .toast--info { background: var(--color-primary); }
+
+  /* ── Costeo de empaque ─────────────────────────────────────────────── */
+  .pk-supplies {
+    margin: 20px 0;
+    padding: 16px;
+    border: 1px solid var(--rule-2);
+    border-radius: 10px;
+    background: color-mix(in oklab, var(--color-accent) 4%, transparent);
+  }
+  .pk-supplies-head {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 4px;
+  }
+  /* Punto de color junto al título, no franja lateral. */
+  .pk-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--color-accent); flex: none;
+  }
+  .pk-supplies-head h4 {
+    margin: 0; font-size: 14px; font-weight: 600; color: var(--text-1);
+  }
+  .pk-optional {
+    margin-left: auto; font-size: 11px; letter-spacing: 0.04em;
+    text-transform: uppercase; color: var(--text-3);
+  }
+  .pk-supplies-hint {
+    margin: 0 0 12px; font-size: 12px; line-height: 1.5; color: var(--text-2);
+  }
+  .pk-supplies-row { display: grid; grid-template-columns: 1fr; gap: 12px; }
+  .pk-supply-field label {
+    display: block; margin-bottom: 6px;
+    font-size: 12px; font-weight: 600; color: var(--text-2);
+  }
+  .pk-supply-field select {
+    width: 100%; padding: 10px 12px; font-size: 14px;
+    border: 1px solid var(--rule-2); border-radius: 8px;
+    background: var(--paper); color: var(--text-1);
+  }
+  .pk-supply-field select:focus {
+    outline: none; border-color: var(--color-accent);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-accent) 18%, transparent);
+  }
+  .pk-supplies-total {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-top: 12px; padding-top: 12px;
+    border-top: 1px solid var(--rule-2);
+    font-size: 13px; color: var(--text-2);
+  }
+  .pk-supplies-total b {
+    font-size: 16px; font-variant-numeric: tabular-nums; color: var(--text-1);
+  }
+  .pk-supplies-warn {
+    margin: 10px 0 0; font-size: 12px; line-height: 1.5; color: var(--danger);
+  }
+  @media (min-width: 480px) {
+    .pk-supplies-row { grid-template-columns: 1fr 1fr; }
+  }
 </style>
