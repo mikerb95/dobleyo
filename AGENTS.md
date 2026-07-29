@@ -177,6 +177,18 @@ El stock físico se gobierna con un libro de movimientos append-only. Al tocar c
 
 Salud del inventario: `node server/jobs/reconcileQuants.js [--fix]`.
 
+### 3.7 Costeo de producción — reglas no negociables
+
+El costo de un lote vive en `lot_costs`, un registro por evento (etapa + tipo + paso origen). Al tocar costos:
+
+- **Nunca agregar columnas de costo a las tablas de etapa.** Un lote se envía a tostión en varios envíos y se empaca en varios empaques; el costo se ata al evento, no a la etapa. La única puerta de escritura es `recordCost()` en `server/services/costService.js`.
+- **El costo por kg se recalcula en cada transformación.** El pago al caficultor se divide entre los kilos que **ingresaron a bodega** (no los cosechados) y, tras el tueste, entre los kilos que **salieron** del tostador. La merma la absorbe el café vendible. No usar el peso de la etapa anterior como denominador.
+- **Contabilizar nunca bloquea el paso de producción.** `trackCost()` se llama después de que el registro quedó guardado y traga sus errores. Un fallo deja el costo con `accounting_entry_id` en NULL, nunca sin cosecha registrada.
+- **Los asientos nacen en `borrador`.** Un admin los publica desde finanzas. Para corregir un costo se usa `updateCost()`, que reversa el asiento anterior; nunca editar `accounting_entry_lines` a mano.
+- **Los costos son opcionales y solo de admin.** Las rutas los descartan si `req.user.role !== 'admin'`; el front los oculta con `data-roles="admin"`. Un paso sin costo se guarda igual.
+- **Lo pagado al caficultor no se duplica.** Vive solo en `lot_costs` con `cost_type = 'farmer_payment'`; el comparativo de precio FNC lee de ahí. El peso de origen es `coffee_harvests.harvest_weight_kg`.
+- **Los insumos de empaque van en `packaging_supplies`, no en `products`.** `products.category` tiene un CHECK que SQLite no permite alterar sin reconstruir la tabla. Su stock puede quedar negativo: el empaque físico ya ocurrió y se señala el faltante en vez de bloquear.
+
 ---
 
 ## 4. SEO — Reglas Obligatorias
