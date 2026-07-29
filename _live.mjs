@@ -1,0 +1,10 @@
+const { getFncPrice } = await import('./server/services/fncPrice.js');
+const r = await getFncPrice();
+console.log('refreshed:', r.refreshed, '| stale:', r.stale, r.error ?? '');
+const p = r.price;
+console.log('fecha boletín :', p.priceDate);
+console.log('carga 125kg   :', p.cargaCop.toLocaleString('es-CO'));
+console.log('excelso $/kg  :', p.excelsoCopKg);
+console.log('NY ¢/lb       :', p.nyCloseUscentLb);
+console.log('factores      :', p.yieldTable.length, '| sucursales:', p.branches.length);
+console.log('fuente        :', p.sourceUrl);
