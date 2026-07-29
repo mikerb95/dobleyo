@@ -843,6 +843,9 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
             notes: document.getElementById("notes").value.trim() || null,
             addToInventory: document.getElementById("addToInventory").checked,
             recordedAt: recordedAt.value || undefined,
+            // A granel no se consumen insumos.
+            bagSupplyId: packageSize === "bulk" ? null : bagSel.value || null,
+            labelSupplyId: packageSize === "bulk" ? null : labelSel.value || null,
           }),
         });
 
@@ -867,6 +870,9 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
         form.reset();
         resetRecordedAt();
+        // El maestro cambió de stock: se recarga para reflejar el consumo.
+        loadSupplies();
+        updateSuppliesTotal();
         currentRoasted = null;
         coffeeInfoCard.hidden = true;
         grindingGroup.hidden = true;
