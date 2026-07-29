@@ -935,6 +935,7 @@ import CostField from "../../components/CostField.astro";
             roastedId: current.id, location, container,
             containerCount: count, conditions, notes: $('notes').value || '',
             recordedAt: $('storageDate').value || undefined,
+            cost: window.CostInput?.read('returnTransportCost'),
           }),
         });
         const data = await res.json().catch(() => ({}));
