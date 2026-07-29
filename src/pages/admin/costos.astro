@@ -173,7 +173,9 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   }
 
   function renderTable() {
-    const onlyIncomplete = document.getElementById("onlyIncomplete").checked;
+    const onlyIncomplete = /** @type {HTMLInputElement} */ (
+      document.getElementById("onlyIncomplete")
+    ).checked;
     const rows = onlyIncomplete ? lots.filter((l) => !l.complete) : lots;
     const body = document.getElementById("tableBody");
 
