@@ -2,6 +2,29 @@
 
 ---
 
+## 2026-07-28 (2) — Módulo de precio de referencia FNC (Agente: Claude)
+
+### Contexto
+No había forma de saber si lo que DobleYo le paga al caficultor está por encima o por debajo del precio oficial. La Federación Nacional de Cafeteros no expone API, pero publica un boletín diario en PDF sobre una URL que se sobrescribe: `federaciondecafeteros.org/wp-content/uploads/2026/03/precio_cafe.pdf`.
+
+### Cambios
+- **`server/services/fncPrice.js`** (nuevo) — descarga el boletín, lo parsea y lo cachea. `parseFncBulletin()` es puro (sin I/O) y extrae fecha, precio por carga de 125 kg, pasilla, cierre del contrato C de Nueva York, la tabla completa de factores de rendimiento (88–100) y las 16 sucursales de Almacafé. `getFncPrice()` solo toca la red si el último registro guardado no es de hoy; si la descarga falla y hay histórico, devuelve el último conocido marcado como `stale` en vez de fallar.
+- **`server/routes/fnc.js`** (nuevo) — `GET /price` (con `?refresh=1`), `GET /history`, `GET /comparison` y `PUT /lot/:lotId/yield-factor`. Todo bajo `authenticateToken` + `requireRole('admin')`.
+- **`server/migrations/create_fnc_price_tables.js`** (nuevo) — tabla `fnc_price_history` y columna opcional `yield_factor` en `coffee_harvests`. Registrada en `run_all_migrations.js`.
+- **`src/pages/admin/precio-fnc.astro`** (nuevo) — KPIs del boletín, comparativo por lote, tabla de factores y precios por sucursal. Entrada nueva en el menú de Analítica del `AdminLayout`.
+- **`server/services/__tests__/fncPrice.test.js`** (nuevo) — 13 tests contra un fixture del boletín real del 27 de julio de 2026.
+- **`package.json`** — nueva dependencia `pdf-parse` (v2, API `new PDFParse({ data }).getText()`).
+
+### Decisiones
+- **La conversión la publica la FNC, no el módulo.** La Federación cotiza pergamino seco por carga de 125 kg; DobleYo compra café verde ya trillado. En vez de asumir una merma, se usan las columnas «Valor Excelso $/Carga» y «Kg Excelso en Carga» del propio boletín: a factor 94 dan $22.864/kg de café verde. Ese es el número que se compara.
+- **No se duplicó la captura de costos.** Lo pagado al caficultor ya vive en `lot_costs` con `cost_type = 'farmer_payment'` y lo alimenta `createHarvest()`. El módulo solo lee de ahí, de `green_coffee_inventory` (kilos verdes) y de `coffee_harvests.harvest_weight_kg` como respaldo. La primera versión agregaba columnas `purchase_*` a `coffee_harvests` y se descartó por duplicar la fuente de verdad.
+- **Kilos verdes sobre kilos cosechados.** El denominador es lo que entró a bodega, porque la merma de secado y selección ya la absorbió el café que efectivamente llegó; es también el estado que cotiza la FNC. Cuando un lote solo tiene peso en finca, la fila lo advierte.
+- **Ingesta bajo demanda, no cron.** Evita depender de los crons de Vercel, que son de pago.
+- **Factor de rendimiento opcional.** Si el lote no lo tiene se usa el factor base del boletín y la fila queda marcada como «factor asumido», para no presentar como exacta una cifra aproximada.
+
+### Verificación
+Parser corrido contra el PDF real: fecha 2026-07-27, carga $2.210.000, NY 324,55 ¢/lb, 13 filas de factor y 16 sucursales, todo correcto. Migración y SQL del comparativo probados contra una base SQLite local desechable (idempotencia incluida): un lote de 120 kg verdes con $2.700.000 pagados da $22.500/kg contra $22.864/kg de referencia, −1,59 %. `npx vitest run`: 116/116. `npx astro check`: sin errores en los archivos nuevos.
+
 ## 2026-07-28 — Catálogo de alertas ntfy: ventas, inventario, envíos y suscripciones (Agente: Claude)
 
 ### Contexto

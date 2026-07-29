@@ -1,5 +1,6 @@
 ---
 import AdminLayout from "../../layouts/AdminLayout.astro";
+import CostField from "../../components/CostField.astro";
 ---
 
 <AdminLayout
@@ -141,6 +142,13 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
           <div><dt>📅 Fecha</dt><dd id="summaryDate">—</dd></div>
         </dl>
       </div>
+
+      <CostField
+        id="storageCost"
+        label="Transporte hasta la bodega"
+        hint="Flete de la carga desde la finca hasta la bodega. Se suma al valor del café verde de este lote."
+        placeholder="Ej: 180.000"
+      />
 
       <!-- Botones de Acción -->
       <div class="form-actions">
@@ -497,6 +505,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
             location: document.getElementById("location").value,
             storageDate: storageDate.value,
             notes: document.getElementById("notes").value,
+            cost: window.CostInput?.read("storageCost"),
           }),
         });
 
