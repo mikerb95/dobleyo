@@ -254,8 +254,13 @@ async function getLotWeights(lotId) {
     query('SELECT COALESCE(SUM(harvest_weight_kg), 0) AS kg FROM coffee_harvests WHERE lot_id = ?', [lotId]),
     query('SELECT COALESCE(SUM(weight_kg), 0) AS kg FROM green_coffee_inventory WHERE lot_id = ?', [lotId]),
     query('SELECT COALESCE(SUM(quantity_sent_kg), 0) AS kg FROM roasting_batches WHERE lot_id = ?', [lotId]),
+    // Kilos que salieron del tostador, derivados de la merma registrada al
+    // retirar. NO se puede usar `rc.weight_kg`: esa columna es el saldo vivo
+    // del lote y el empaque la decrementa, así que al empacar todo quedaría en
+    // cero y el costo por kilo tostado se dispararía.
     query(
-      `SELECT COALESCE(SUM(rc.weight_kg), 0) AS kg
+      `SELECT COALESCE(SUM(rb.quantity_sent_kg * (1 - rc.weight_loss_percent / 100.0)), 0) AS kg,
+              COALESCE(SUM(rc.weight_kg), 0) AS remaining_kg
          FROM roasted_coffee rc JOIN roasting_batches rb ON rb.id = rc.roasting_id
         WHERE rb.lot_id = ?`, [lotId]
     ),
@@ -280,6 +285,8 @@ async function getLotWeights(lotId) {
     green_kg:     parseFloat(green.rows[0].kg) || 0,
     sent_kg:      parseFloat(sent.rows[0].kg) || 0,
     roasted_kg:   parseFloat(roasted.rows[0].kg) || 0,
+    // Saldo tostado sin empacar. Informativo: no es denominador de costo.
+    roasted_remaining_kg: parseFloat(roasted.rows[0].remaining_kg) || 0,
     packaged_kg:  parseFloat(packaged.rows[0].kg) || 0,
     packaged_units: parseInt(packaged.rows[0].units, 10) || 0,
   };
