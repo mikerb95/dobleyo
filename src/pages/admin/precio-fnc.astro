@@ -1,0 +1,497 @@
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+---
+
+<AdminLayout title="Precio FNC — DobleYo Admin" section="precio-fnc">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="page-header-top">
+      <div>
+        <div class="page-breadcrumb">
+          <a href="/admin/finanzas">← Finanzas</a>
+        </div>
+        <div class="page-title">Precio de referencia FNC</div>
+      </div>
+      <div class="page-header-actions">
+        <button class="btn btn-secondary" id="btnRefresh" title="Descargar el boletín de hoy">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="23 4 23 10 17 10"/>
+            <polyline points="1 20 1 14 7 14"/>
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+          </svg>
+          Actualizar boletín
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Body -->
+  <div class="erp-body">
+
+    <div class="fnc-alert" id="alertBox" style="display:none"></div>
+
+    <!-- KPIs del boletín vigente -->
+    <div class="kpi-row">
+      <div class="kpi-tile brand">
+        <div class="kpi-label">Carga de 125 kg de pergamino</div>
+        <div class="kpi-value" id="kpiCarga">—</div>
+        <div class="kpi-sub" id="kpiCargaSub">Precio interno de referencia</div>
+      </div>
+      <div class="kpi-tile info">
+        <div class="kpi-label">Referencia por kg de café verde</div>
+        <div class="kpi-value" id="kpiExcelso">—</div>
+        <div class="kpi-sub" id="kpiExcelsoSub">Equivalente en excelso</div>
+      </div>
+      <div class="kpi-tile">
+        <div class="kpi-label">Cierre Nueva York</div>
+        <div class="kpi-value" id="kpiNy">—</div>
+        <div class="kpi-sub">Contrato C, centavos de dólar por libra</div>
+      </div>
+      <div class="kpi-tile" id="kpiDiffTile">
+        <div class="kpi-label">Lo que pagamos vs. la FNC</div>
+        <div class="kpi-value" id="kpiDiff">—</div>
+        <div class="kpi-sub" id="kpiDiffSub">Consolidado de los lotes comparables</div>
+      </div>
+    </div>
+
+    <!-- Explicación de la conversión -->
+    <div class="card note-card">
+      <div class="note-head">
+        <span class="note-dot"></span>
+        <strong>Cómo se compara</strong>
+      </div>
+      <p class="note-body">
+        La FNC cotiza <em>pergamino seco</em> por carga de 125 kg. DobleYo compra café
+        <em>verde ya trillado</em>, así que la referencia se convierte con las columnas
+        «Valor Excelso $/Carga» y «Kg Excelso en Carga» del mismo boletín: el factor de
+        conversión lo publica la Federación, no lo asume este módulo. Cuando un lote no
+        tiene factor de rendimiento propio se usa el factor base del boletín, y la fila
+        queda marcada como <span class="badge badge-warning">factor asumido</span>.
+      </p>
+    </div>
+
+    <!-- Comparativo por lote -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Comparativo por lote</div>
+          <div class="card-subtitle" id="compSubtitle">Pagado al caficultor frente al precio de referencia del día de la compra</div>
+        </div>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="erp-table" id="compTable">
+          <thead>
+            <tr>
+              <th>Lote</th>
+              <th>Finca</th>
+              <th style="text-align:right">Kg</th>
+              <th style="text-align:right">Pagado</th>
+              <th style="text-align:right">Pagado $/kg</th>
+              <th style="text-align:right">FNC $/kg</th>
+              <th style="text-align:right">Diferencia</th>
+              <th style="text-align:right">Costo total $/kg</th>
+            </tr>
+          </thead>
+          <tbody id="compBody">
+            <tr><td colspan="8"><div class="empty-state">Cargando…</div></td></tr>
+          </tbody>
+          <tfoot id="compFoot" style="display:none">
+            <tr>
+              <th colspan="2">Consolidado</th>
+              <th style="text-align:right" id="footKg">—</th>
+              <th style="text-align:right" id="footPaid">—</th>
+              <th style="text-align:right" id="footPaidKg">—</th>
+              <th style="text-align:right" id="footRefKg">—</th>
+              <th style="text-align:right" id="footDiff">—</th>
+              <th></th>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <!-- Tabla de factores de rendimiento -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Precio según factor de rendimiento</div>
+            <div class="card-subtitle">Cuanto menor el factor, mejor rinde el café en trilla</div>
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="erp-table">
+            <thead>
+              <tr>
+                <th>Factor</th>
+                <th style="text-align:right">Kg excelso</th>
+                <th style="text-align:right">Pergamino $/carga</th>
+                <th style="text-align:right">Excelso $/kg</th>
+              </tr>
+            </thead>
+            <tbody id="yieldBody">
+              <tr><td colspan="4"><div class="empty-state">Cargando…</div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Sucursales Almacafé -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Precio por sucursal de Almacafé</div>
+            <div class="card-subtitle">Entrega de pergamino al factor base</div>
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="erp-table">
+            <thead>
+              <tr>
+                <th>Sucursal</th>
+                <th style="text-align:right">Carga</th>
+                <th style="text-align:right">Kilo</th>
+                <th style="text-align:right">Arroba</th>
+              </tr>
+            </thead>
+            <tbody id="branchBody">
+              <tr><td colspan="4"><div class="empty-state">Cargando…</div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <p class="source-note" id="sourceNote"></p>
+
+  </div>
+</AdminLayout>
+
+<style>
+  .kpi-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  @media (max-width: 1024px) {
+    .kpi-row { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 768px) {
+    .two-col { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 480px) {
+    .kpi-row { grid-template-columns: 1fr; }
+  }
+
+  /* Nota explicativa: punto de marca junto al título en vez de franja lateral. */
+  .note-card { margin-bottom: 1.5rem; padding: 1rem 1.15rem; }
+
+  .note-head {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 13px;
+    margin-bottom: 0.4rem;
+  }
+
+  .note-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--brand);
+    flex-shrink: 0;
+  }
+
+  .note-body {
+    margin: 0;
+    font-size: 12.5px;
+    line-height: 1.6;
+    color: var(--text-2);
+    max-width: 78ch;
+  }
+
+  .fnc-alert {
+    padding: 0.7rem 0.95rem;
+    border-radius: 8px;
+    font-size: 12.5px;
+    margin-bottom: 1rem;
+    background: var(--c-warning-bg, #fffbeb);
+    color: var(--c-warning-text, #92400e);
+  }
+
+  .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+  .delta-up   { color: var(--c-error); font-weight: 600; }
+  .delta-down { color: var(--c-success); font-weight: 600; }
+
+  .lot-id { font-weight: 600; font-size: 12.5px; }
+
+  .row-note {
+    font-size: 10.5px;
+    color: var(--text-3);
+    display: block;
+    margin-top: 2px;
+  }
+
+  /* Fila del factor base del boletín: tinte de marca en vez de borde lateral. */
+  .yield-base { background: var(--brand-soft, rgba(140, 90, 40, 0.06)); }
+  .yield-base td { font-weight: 600; }
+
+  .source-note {
+    font-size: 11px;
+    color: var(--text-3);
+    margin-top: 1.25rem;
+  }
+</style>
+
+<script>
+  type YieldRow = {
+    factor: number;
+    kgExcelsoEnCarga: number;
+    precioTotalPergaminoCargaCop: number;
+    excelsoCopKg: number | null;
+  };
+
+  type Branch = {
+    sucursal: string;
+    cargaCop: number;
+    kiloCop: number;
+    arrobaCop: number;
+  };
+
+  type Price = {
+    priceDate: string;
+    cargaCop: number;
+    excelsoCopKg: number | null;
+    nyCloseUscentLb: number | null;
+    baseYieldFactor: number;
+    yieldTable: YieldRow[];
+    branches: Branch[];
+    sourceUrl: string | null;
+  };
+
+  type Item = {
+    lotId: string;
+    farm: string | null;
+    variety: string | null;
+    purchaseDate: string | null;
+    weightKg: number | null;
+    weightSource: string;
+    paidTotalCop: number | null;
+    paidCopKg: number | null;
+    yieldFactor: number | null;
+    yieldFactorIsAssumed: boolean;
+    referenceDate: string | null;
+    referenceCopKg: number | null;
+    differenceCop: number | null;
+    differencePct: number | null;
+    totalCostCopKg: number | null;
+    referenceIsApproximate: boolean;
+  };
+
+  const COP = new Intl.NumberFormat("es-CO", {
+    style: "currency",
+    currency: "COP",
+    minimumFractionDigits: 0,
+  });
+
+  const formatCOP = (n: number | null | undefined) =>
+    n === null || n === undefined ? "—" : COP.format(Math.round(n));
+
+  const formatKg = (n: number | null | undefined) =>
+    n === null || n === undefined
+      ? "—"
+      : `${n.toLocaleString("es-CO", { maximumFractionDigits: 1 })} kg`;
+
+  const formatDate = (iso: string | null) => {
+    if (!iso) return "—";
+    const [y, m, d] = iso.slice(0, 10).split("-");
+    return `${d}/${m}/${y}`;
+  };
+
+  const el = (id: string) => document.getElementById(id) as HTMLElement;
+
+  function showAlert(message: string, kind: "warning" | "error" = "warning") {
+    const box = el("alertBox");
+    box.textContent = message;
+    box.style.display = "";
+    box.style.background = kind === "error" ? "var(--c-error-bg, #fef2f2)" : "var(--c-warning-bg, #fffbeb)";
+    box.style.color = kind === "error" ? "var(--c-error, #991b1b)" : "var(--c-warning-text, #92400e)";
+  }
+
+  function renderPrice(price: Price | null) {
+    if (!price) {
+      el("kpiCarga").textContent = "Sin datos";
+      el("kpiCargaSub").textContent = "Pulse «Actualizar boletín»";
+      return;
+    }
+
+    el("kpiCarga").textContent = formatCOP(price.cargaCop);
+    el("kpiCargaSub").textContent = `Boletín del ${formatDate(price.priceDate)} · factor ${price.baseYieldFactor}`;
+    el("kpiExcelso").textContent = formatCOP(price.excelsoCopKg);
+    el("kpiExcelsoSub").textContent = `Convertido desde el valor excelso, factor ${price.baseYieldFactor}`;
+    el("kpiNy").textContent =
+      price.nyCloseUscentLb === null ? "—" : `${price.nyCloseUscentLb.toFixed(2)} ¢/lb`;
+
+    el("yieldBody").innerHTML = (price.yieldTable ?? [])
+      .map(
+        (r) => `
+        <tr class="${r.factor === price.baseYieldFactor ? "yield-base" : ""}">
+          <td>${r.factor}${r.factor === price.baseYieldFactor ? " <span class=\"badge badge-info\">base</span>" : ""}</td>
+          <td class="num">${r.kgExcelsoEnCarga.toFixed(2)}</td>
+          <td class="num">${formatCOP(r.precioTotalPergaminoCargaCop)}</td>
+          <td class="num">${formatCOP(r.excelsoCopKg)}</td>
+        </tr>`
+      )
+      .join("") || `<tr><td colspan="4"><div class="empty-state">Sin datos</div></td></tr>`;
+
+    el("branchBody").innerHTML = (price.branches ?? [])
+      .map(
+        (b) => `
+        <tr>
+          <td>${b.sucursal}</td>
+          <td class="num">${formatCOP(b.cargaCop)}</td>
+          <td class="num">${formatCOP(b.kiloCop)}</td>
+          <td class="num">${formatCOP(b.arrobaCop)}</td>
+        </tr>`
+      )
+      .join("") || `<tr><td colspan="4"><div class="empty-state">Sin datos</div></td></tr>`;
+
+    el("sourceNote").innerHTML = price.sourceUrl
+      ? `Fuente: boletín diario de la Federación Nacional de Cafeteros — <a href="${price.sourceUrl}" target="_blank" rel="noopener noreferrer">precio_cafe.pdf</a>`
+      : "Fuente: boletín diario de la Federación Nacional de Cafeteros";
+  }
+
+  function deltaCell(value: number | null, pct: number | null) {
+    if (value === null) return `<td class="num">—</td>`;
+    const cls = value > 0 ? "delta-up" : value < 0 ? "delta-down" : "";
+    const sign = value > 0 ? "+" : "";
+    const pctText = pct === null ? "" : `<span class="row-note">${sign}${pct.toFixed(2)}%</span>`;
+    return `<td class="num ${cls}">${sign}${formatCOP(value)}${pctText}</td>`;
+  }
+
+  function renderComparison(items: Item[], summary: any) {
+    const body = el("compBody");
+
+    if (!items.length) {
+      body.innerHTML = `
+        <tr><td colspan="8"><div class="empty-state">
+          Todavía no hay lotes con pago al caficultor registrado.
+          Los pagos se capturan al registrar la cosecha en
+          <a href="/admin/harvest">Cosecha</a>.
+        </div></td></tr>`;
+      el("compFoot").style.display = "none";
+      return;
+    }
+
+    body.innerHTML = items
+      .map((it) => {
+        const notes: string[] = [];
+        if (it.yieldFactorIsAssumed) notes.push(`factor ${it.yieldFactor} asumido`);
+        if (it.referenceIsApproximate) notes.push("referencia aproximada");
+
+        return `
+        <tr>
+          <td>
+            <span class="lot-id">${it.lotId}</span>
+            <span class="row-note">${formatDate(it.purchaseDate)}</span>
+          </td>
+          <td>
+            ${it.farm ?? "—"}
+            ${it.variety ? `<span class="row-note">${it.variety}</span>` : ""}
+          </td>
+          <td class="num">
+            ${formatKg(it.weightKg)}
+            ${it.weightSource === "harvest" ? '<span class="row-note">peso en finca</span>' : ""}
+          </td>
+          <td class="num">${formatCOP(it.paidTotalCop)}</td>
+          <td class="num">${formatCOP(it.paidCopKg)}</td>
+          <td class="num">
+            ${formatCOP(it.referenceCopKg)}
+            ${notes.length ? `<span class="row-note">${notes.join(" · ")}</span>` : ""}
+          </td>
+          ${deltaCell(it.differenceCop, it.differencePct)}
+          <td class="num">${formatCOP(it.totalCostCopKg)}</td>
+        </tr>`;
+      })
+      .join("");
+
+    el("footKg").textContent = formatKg(summary.totalWeightKg);
+    el("footPaid").textContent = formatCOP(summary.totalPaidCop);
+    el("footPaidKg").textContent = formatCOP(summary.avgPaidCopKg);
+    el("footRefKg").textContent = formatCOP(summary.avgReferenceCopKg);
+
+    const diff = summary.differenceCop;
+    const foot = el("footDiff");
+    foot.textContent = diff === null ? "—" : `${diff > 0 ? "+" : ""}${formatCOP(diff)}`;
+    foot.className = `num ${diff > 0 ? "delta-up" : diff < 0 ? "delta-down" : ""}`;
+    el("compFoot").style.display = "";
+
+    // KPI consolidado.
+    const pct = summary.differencePct;
+    const kpi = el("kpiDiff");
+    if (pct === null) {
+      kpi.textContent = "—";
+      el("kpiDiffSub").textContent = "Sin lotes comparables todavía";
+    } else {
+      kpi.textContent = `${pct > 0 ? "+" : ""}${pct.toFixed(2)}%`;
+      kpi.className = `kpi-value ${pct > 0 ? "delta-up" : pct < 0 ? "delta-down" : ""}`;
+      el("kpiDiffSub").textContent =
+        pct > 0
+          ? `Pagamos ${formatCOP(Math.abs(summary.differenceCop))} por encima de la referencia`
+          : pct < 0
+            ? `Pagamos ${formatCOP(Math.abs(summary.differenceCop))} por debajo de la referencia`
+            : "Igual a la referencia";
+    }
+
+    el("compSubtitle").textContent =
+      `${summary.comparableLots} de ${summary.lots} lotes comparables · ${formatKg(summary.totalWeightKg)} de café verde`;
+  }
+
+  async function loadData(forceRefresh = false) {
+    const btn = el("btnRefresh") as HTMLButtonElement;
+    btn.disabled = true;
+    el("alertBox").style.display = "none";
+
+    try {
+      const priceRes = await fetch(`/api/fnc/price${forceRefresh ? "?refresh=1" : ""}`, {
+        credentials: "include",
+      });
+      const priceJson = await priceRes.json();
+
+      if (priceJson.success) {
+        renderPrice(priceJson.data);
+        if (priceJson.stale) {
+          showAlert(
+            "No se pudo contactar a la Federación Nacional de Cafeteros. Se muestra el último boletín guardado."
+          );
+        }
+      } else {
+        renderPrice(null);
+        showAlert(priceJson.error ?? "No se pudo obtener el precio de referencia", "error");
+      }
+
+      const compRes = await fetch("/api/fnc/comparison", { credentials: "include" });
+      const compJson = await compRes.json();
+      if (!compJson.success) throw new Error(compJson.error ?? "Error al cargar el comparativo");
+
+      renderComparison(compJson.data.items, compJson.data.summary);
+    } catch (err: any) {
+      el("compBody").innerHTML =
+        `<tr><td colspan="8"><div class="empty-state" style="color:var(--c-error)">${err.message}</div></td></tr>`;
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  el("btnRefresh")?.addEventListener("click", () => loadData(true));
+  loadData();
+</script>
