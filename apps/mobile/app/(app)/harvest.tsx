@@ -79,8 +79,22 @@ export default function HarvestScreen() {
     // mutate() sin await: si no hay conexión la mutación queda encolada
     // (persistida) y se sincroniza al reconectar, con client_op_id para
     // que el reintento no duplique la cosecha.
-    createHarvest.mutate(withOpId({ ...form }));
+    // El costo es opcional: sin monto, la cosecha se registra igual y queda
+    // pendiente de costear desde el panel web.
+    const costAmount = Number(amount.replace(/[^\d]/g, ''));
+    const payload: HarvestInput = {
+      ...form,
+      ...(canEnterCost && weightKg ? { harvestWeightKg: weightKg } : {}),
+      ...(canEnterCost && costAmount > 0
+        ? { cost: { amount: costAmount, paymentMethod } }
+        : {}),
+    };
+
+    createHarvest.mutate(withOpId(payload));
     setForm(EMPTY);
+    setWeightKg('');
+    setAmount('');
+    setPaymentMethod('caja');
     router.back();
   };
 
@@ -109,6 +123,65 @@ export default function HarvestScreen() {
                 />
               </View>
             ))}
+
+            {canEnterCost ? (
+              <View style={styles.costBlock}>
+                <View style={styles.costHead}>
+                  <View style={styles.costDot} />
+                  <Text style={styles.costTitle}>Compra al caficultor</Text>
+                  <Text style={styles.costOptional}>Opcional</Text>
+                </View>
+
+                <View style={styles.field}>
+                  <Text style={styles.label}>Kilos recibidos</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Ej: 125"
+                    placeholderTextColor={colors.muted}
+                    keyboardType="numeric"
+                    value={weightKg}
+                    onChangeText={setWeightKg}
+                  />
+                </View>
+
+                <View style={styles.field}>
+                  <Text style={styles.label}>Valor pagado (COP)</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Ej: 1800000"
+                    placeholderTextColor={colors.muted}
+                    keyboardType="numeric"
+                    value={amount}
+                    onChangeText={setAmount}
+                  />
+                </View>
+
+                <View style={styles.field}>
+                  <Text style={styles.label}>Forma de pago</Text>
+                  <View style={styles.methodRow}>
+                    {PAYMENT_METHODS.map((method) => (
+                      <Pressable
+                        key={method.value}
+                        style={[
+                          styles.methodChip,
+                          paymentMethod === method.value && styles.methodChipActive,
+                        ]}
+                        onPress={() => setPaymentMethod(method.value)}
+                      >
+                        <Text
+                          style={[
+                            styles.methodText,
+                            paymentMethod === method.value && styles.methodTextActive,
+                          ]}
+                        >
+                          {method.label}
+                        </Text>
+                      </Pressable>
+                    ))}
+                  </View>
+                </View>
+              </View>
+            ) : null}
 
             {error ? <Text style={styles.error}>{error}</Text> : null}
 
