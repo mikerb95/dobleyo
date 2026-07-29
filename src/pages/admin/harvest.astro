@@ -505,6 +505,7 @@ import CostField from "../../components/CostField.astro";
         toast(`Lote ${data.lotId} creado correctamente`, "success");
 
         form.reset();
+        window.CostInput?.reset("harvestCost");
         resetRecordedAt();
         document.getElementById("lotEmpty").hidden = false;
         document.getElementById("lotBody").hidden = true;
