@@ -488,6 +488,8 @@ import CostField from "../../components/CostField.astro";
             aroma: document.getElementById("aroma").value,
             tasteNotes: document.getElementById("tasteNotes").value,
             recordedAt: recordedAt.value || undefined,
+            harvestWeightKg: document.getElementById("harvestWeightKg").value || undefined,
+            cost: window.CostInput?.read("harvestCost"),
           }),
         });
 
