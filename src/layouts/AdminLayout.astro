@@ -1224,6 +1224,11 @@ const { title = "Admin — DobleYo Café", section = "" } = Astro.props;
             alert('Acceso denegado.'); window.location.href = '/'; return;
           }
 
+          // Rol disponible para los scripts de página: los bloques de costo solo
+          // los digita el admin, y el formulario no debe enviarlos si no lo es.
+          (window as any).__userRole = user.role;
+          document.dispatchEvent(new CustomEvent('dy:user', { detail: user }));
+
           // Filtrar nav items según rol (data-roles="admin,caficultor")
           document.querySelectorAll('[data-roles]').forEach((el) => {
             const roles = (el as HTMLElement).getAttribute('data-roles')!.split(',').map(s => s.trim());
