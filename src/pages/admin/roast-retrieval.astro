@@ -463,6 +463,7 @@ import CostField from "../../components/CostField.astro";
         );
 
         form.reset();
+        window.CostInput?.reset("roastingServiceCost");
         resetRecordedAt();
         roastingInfoCard.style.display = "none";
         summaryBox.style.display = "none";
