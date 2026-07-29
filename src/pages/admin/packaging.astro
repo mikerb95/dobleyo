@@ -661,6 +661,90 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     document.getElementById("grindSize").addEventListener("change", updatePlan);
     document.getElementById("addToInventory").addEventListener("change", updatePlan);
 
+    // ── Insumos de empaque (bolsa + etiqueta) ───────────────────────
+    // El costo unitario sale del maestro; aquí solo se multiplica por las
+    // unidades para que el operario vea en qué va el empaque antes de guardar.
+    let supplies = [];
+    const bagSel = document.getElementById("bagSupplyId");
+    const labelSel = document.getElementById("labelSupplyId");
+    const suppliesBlock = document.getElementById("suppliesBlock");
+
+    const fmtCop = (n) =>
+      new Intl.NumberFormat("es-CO", {
+        style: "currency", currency: "COP", maximumFractionDigits: 0,
+      }).format(n);
+
+    async function loadSupplies() {
+      try {
+        const res = await fetch("/api/costs/supplies/list", { credentials: "include" });
+        // 403 = el usuario es caficultor: el bloque ya está oculto por data-roles.
+        if (!res.ok) return;
+        const { data } = await res.json();
+        supplies = data || [];
+
+        const fill = (sel, type) => {
+          const opts = supplies
+            .filter((s) => s.type === type)
+            .map(
+              (s) =>
+                `<option value="${s.id}" data-cost="${s.unit_cost_cop}" data-size="${s.size_label || ""}">` +
+                `${s.name} · ${fmtCop(s.unit_cost_cop)}</option>`
+            )
+            .join("");
+          sel.innerHTML = `<option value="">Sin registrar</option>${opts}`;
+        };
+        fill(bagSel, "bolsa");
+        fill(labelSel, "etiqueta");
+        preselectBag();
+      } catch {
+        // Sin maestro de insumos el empaque igual se registra, solo sin costo.
+      }
+    }
+
+    /** Preselecciona la bolsa cuyo tamaño coincide con el empaque elegido. */
+    function preselectBag() {
+      const size = document.getElementById("packageSize").value;
+      if (!size || size === "bulk") return;
+      const match = supplies.find((s) => s.type === "bolsa" && s.size_label === size);
+      if (match) bagSel.value = String(match.id);
+      updateSuppliesTotal();
+    }
+
+    function selectedUnitCost(sel) {
+      const opt = sel.selectedOptions?.[0];
+      return opt ? Number(opt.dataset.cost || 0) : 0;
+    }
+
+    function updateSuppliesTotal() {
+      const isBulk = document.getElementById("packageSize").value === "bulk";
+      const units = parseInt(document.getElementById("unitCount").value) || 0;
+
+      // A granel no hay bolsa ni etiqueta que consumir.
+      suppliesBlock.hidden = isBulk;
+      if (isBulk) return;
+
+      const total = (selectedUnitCost(bagSel) + selectedUnitCost(labelSel)) * units;
+      const totalBox = document.getElementById("suppliesTotal");
+      totalBox.hidden = total <= 0;
+      document.getElementById("suppliesTotalValue").textContent = fmtCop(total);
+
+      // Aviso de faltante: no bloquea, el empaque físico ya ocurrió.
+      const short = [bagSel, labelSel]
+        .map((sel) => supplies.find((s) => String(s.id) === sel.value))
+        .filter((s) => s && units > 0 && s.stock_units < units)
+        .map((s) => `${s.name} (quedan ${s.stock_units})`);
+      const warnEl = document.getElementById("suppliesWarn");
+      warnEl.hidden = short.length === 0;
+      warnEl.textContent = short.length
+        ? `Stock insuficiente en: ${short.join(", ")}. El registro se guardará y el faltante quedará visible en el maestro de insumos.`
+        : "";
+    }
+
+    [bagSel, labelSel].forEach((sel) => sel.addEventListener("change", updateSuppliesTotal));
+    document.getElementById("unitCount").addEventListener("input", updateSuppliesTotal);
+    document.getElementById("packageSize").addEventListener("change", preselectBag);
+    loadSupplies();
+
     // ── Plan de empaque en vivo ─────────────────────────────────────
     function updatePlan() {
       const empty = document.getElementById("planEmpty");
