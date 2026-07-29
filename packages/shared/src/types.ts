@@ -159,6 +159,8 @@ export interface GreenStorageInput {
   location?: string;
   storageDate?: string;
   notes?: string;
+  /** Transporte de la carga desde la finca hasta la bodega. */
+  cost?: StageCostInput;
 }
 
 export interface SendRoastingInput {
@@ -167,6 +169,8 @@ export interface SendRoastingInput {
   quantitySent: number;
   targetTemp?: number;
   notes?: string;
+  /** Transporte de la bodega hacia la tostadora. */
+  cost?: StageCostInput;
 }
 
 export interface RoastRetrievalInput {
@@ -176,6 +180,8 @@ export interface RoastRetrievalInput {
   roastLevel?: string;
   roastDate?: string;
   notes?: string;
+  /** Maquila del proceso de tostión. */
+  cost?: StageCostInput;
 }
 
 export interface RoastedStorageInput {
@@ -184,6 +190,8 @@ export interface RoastedStorageInput {
   weight: number;
   location?: string;
   notes?: string;
+  /** Transporte de retorno desde la tostadora hasta la bodega. */
+  cost?: StageCostInput;
 }
 
 export interface PackagingInput {
