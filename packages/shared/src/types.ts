@@ -145,8 +145,6 @@ export interface HarvestInput {
   tasteNotes?: string;
   /** Kilos recibidos del caficultor. Denominador del costo de origen. */
   harvestWeightKg?: number | string;
-  /** Factor de rendimiento de trilla, si el proveedor entrega el análisis. */
-  yieldFactor?: number;
   /** Pago al caficultor. */
   cost?: StageCostInput;
 }
