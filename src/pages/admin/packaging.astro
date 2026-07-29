@@ -237,6 +237,40 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
               Crea un producto y registra el stock inmediatamente en inventario.
             </div>
 
+            <!-- Costeo de empaque: solo admin. A granel no hay insumos que consumir. -->
+            <div class="pk-supplies" data-roles="admin" id="suppliesBlock">
+              <div class="pk-supplies-head">
+                <span class="pk-dot" aria-hidden="true"></span>
+                <h4>Costo del empaque</h4>
+                <span class="pk-optional">Opcional</span>
+              </div>
+              <p class="pk-supplies-hint">
+                Bolsa y etiqueta se toman del maestro de insumos. Al registrar el
+                empaque se descuenta su stock y el costo se suma al lote.
+              </p>
+
+              <div class="pk-supplies-row">
+                <div class="pk-supply-field">
+                  <label for="bagSupplyId">Bolsa</label>
+                  <select id="bagSupplyId">
+                    <option value="">Sin registrar</option>
+                  </select>
+                </div>
+                <div class="pk-supply-field">
+                  <label for="labelSupplyId">Etiqueta</label>
+                  <select id="labelSupplyId">
+                    <option value="">Sin registrar</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="pk-supplies-total" id="suppliesTotal" hidden>
+                <span>Costo de empaque de este lote</span>
+                <b id="suppliesTotalValue">—</b>
+              </div>
+              <p class="pk-supplies-warn" id="suppliesWarn" hidden></p>
+            </div>
+
             <div class="form-actions">
               <button type="reset" class="btn btn-secondary">Limpiar</button>
               <button type="submit" class="btn btn-save" id="submitBtn">
