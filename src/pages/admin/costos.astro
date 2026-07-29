@@ -123,7 +123,9 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   const fmtKg = (n) =>
     n == null ? "—" : `${new Intl.NumberFormat("es-CO", { maximumFractionDigits: 2 }).format(n)} kg`;
 
-  let lots = [];
+  // El resumen viene de /api/costs; se tipa laxo porque la forma la define el
+  // servicio y aquí solo se pinta.
+  let lots: any[] = [];
 
   function toast(msg, kind = "info") {
     const el = document.createElement("div");
