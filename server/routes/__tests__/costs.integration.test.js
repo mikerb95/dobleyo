@@ -81,6 +81,10 @@ beforeAll(async () => {
 
     const { createCoffeeTables } = await import('../../migrations/create_coffee_tables.js');
     await createCoffeeTables();
+
+    // `assertFarmOwnership` la consulta; sin filas, cualquier finca pasa.
+    await query(`CREATE TABLE IF NOT EXISTS farms (
+        id INTEGER PRIMARY KEY AUTOINCREMENT, slug TEXT UNIQUE, caficultor_id INTEGER)`);
     const { createStorageLocations } = await import('../../migrations/create_storage_locations.js');
     await createStorageLocations();
     const { createCostTracking } = await import('../../migrations/create_cost_tracking.js');
