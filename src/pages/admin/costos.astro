@@ -207,9 +207,10 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       })
       .join("");
 
-    body.querySelectorAll(".ck-row").forEach((tr) =>
-      tr.addEventListener("click", () => openDrawer(tr.dataset.lot))
-    );
+    body.querySelectorAll(".ck-row").forEach((el) => {
+      const tr = /** @type {HTMLElement} */ (el);
+      tr.addEventListener("click", () => openDrawer(tr.dataset.lot));
+    });
   }
 
   // ── Desglose por lote ────────────────────────────────────────────────
