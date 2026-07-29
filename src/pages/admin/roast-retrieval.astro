@@ -447,6 +447,7 @@ import CostField from "../../components/CostField.astro";
             roastTime: document.getElementById("roastTime").value || null,
             observations: document.getElementById("observations").value,
             recordedAt: recordedAt.value || undefined,
+            cost: window.CostInput?.read("roastingServiceCost"),
           }),
         });
 
