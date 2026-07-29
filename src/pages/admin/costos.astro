@@ -208,7 +208,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       .join("");
 
     body.querySelectorAll(".ck-row").forEach((el) => {
-      const tr = /** @type {HTMLElement} */ (el);
+      const tr = el as HTMLElement;
       tr.addEventListener("click", () => openDrawer(tr.dataset.lot));
     });
   }
