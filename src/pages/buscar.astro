@@ -1,0 +1,24 @@
+---
+import Layout from "../layouts/Layout.astro";
+import SearchResults from "../components/SearchResults.astro";
+import { getCanonicalUrl } from "../i18n/index.ts";
+import { searchProducts } from "../lib/products.server.ts";
+
+export const prerender = false;
+
+const q = (Astro.url.searchParams.get("q") ?? "").trim().slice(0, 80);
+const results = await searchProducts(q);
+
+// La página se marca noindex: los resultados generan URLs infinitas y contenido
+// duplicado del catálogo. La que debe posicionar es /tienda.
+---
+
+<Layout
+  lang="es"
+  title={q ? `Resultados para «${q}» | DobleYo Café` : "Buscar | DobleYo Café"}
+  description="Busque cafés de especialidad colombianos por origen, proceso, nivel de tueste o nota de cata."
+  canonical={getCanonicalUrl("/buscar", "es")}
+  noindex
+>
+  <SearchResults query={q} results={results} lang="es" />
+</Layout>
