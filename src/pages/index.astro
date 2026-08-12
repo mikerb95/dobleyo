@@ -158,12 +158,21 @@ try {
 
     <div class="cs-grid container">
       {
-        coffeeProducts.map((p) => (
+        coffeeProducts.map((p) => {
+          const rating = getRating(p);
+          const notes = getNotes(p, "es");
+          const weight = formatWeight(p, "es");
+          const stockLevel = getStockLevel(p);
+          const stock = stockLabel(p, "es");
+          return (
           <article class="cs-card">
             <div class="cs-card__img-wrap">
               <img src={p.image} alt={p.name} class="cs-card__img" loading="lazy" width="400" height="480" />
               {p.bestseller && <span class="cs-card__flag">Más vendido</span>}
               {p.new && !p.bestseller && <span class="cs-card__flag cs-card__flag--new">Nuevo</span>}
+              {stock && (
+                <span class={`cs-card__stock cs-card__stock--${stockLevel}`}>{stock}</span>
+              )}
             </div>
             <div class="cs-card__body">
               <p class="cs-card__meta">
@@ -172,8 +181,26 @@ try {
                 {p.process && <span>{p.process}</span>}
               </p>
               <h3 class="cs-card__name">{p.name}</h3>
+              {rating && (
+                <Stars
+                  value={rating.value}
+                  count={rating.count}
+                  fromReviews={rating.fromReviews}
+                  lang="es"
+                />
+              )}
+              {notes.length > 0 && (
+                <ul class="cs-card__notes" aria-label="Notas de cata">
+                  {notes.map((n) => (
+                    <li class="cs-card__note">{n}</li>
+                  ))}
+                </ul>
+              )}
               <div class="cs-card__footer">
-                <span class="cs-card__price">${p.price.toLocaleString("es-CO")}</span>
+                <span class="cs-card__pricing">
+                  <span class="cs-card__price">${p.price.toLocaleString("es-CO")}</span>
+                  {weight && <span class="cs-card__weight">{weight}</span>}
+                </span>
                 <button
                   class="cs-card__add btn-add"
                   aria-label={`Agregar ${p.name} al carrito`}
@@ -181,6 +208,7 @@ try {
                   data-name={p.name}
                   data-price={p.price}
                   data-image={p.image}
+                  disabled={stockLevel === "out" || undefined}
                 >
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
                     <path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
@@ -189,7 +217,8 @@ try {
               </div>
             </div>
           </article>
-        ))
+          );
+        })
       }
     </div>
   </section>
@@ -653,7 +682,31 @@ try {
       padding: .25rem .6rem;
       border-radius: .25rem;
     }
-    .cs-card__flag--new { background: #16a34a; }
+    .cs-card__flag--new { background: var(--leaf); }
+
+    /* Señal de disponibilidad: abajo a la izquierda para no chocar con el flag */
+    .cs-card__stock {
+      position: absolute;
+      bottom: .875rem;
+      left: .875rem;
+      font-family: var(--font-body);
+      font-size: .68rem;
+      font-weight: 700;
+      letter-spacing: .04em;
+      padding: .25rem .55rem;
+      border-radius: 99px;
+      backdrop-filter: blur(4px);
+    }
+    .cs-card__stock--low {
+      background: var(--warning-bg);
+      color: var(--caramel-deep);
+      border: 1px solid var(--warning-border);
+    }
+    .cs-card__stock--out {
+      background: var(--danger-bg);
+      color: var(--danger);
+      border: 1px solid var(--danger);
+    }
 
     .cs-card__body {
       padding: 1.25rem;
@@ -679,6 +732,26 @@ try {
       margin: 0;
       line-height: 1.2;
     }
+    /* Notas de cata: la señal que distingue un café de especialidad de un genérico */
+    .cs-card__notes {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .35rem;
+      list-style: none;
+      margin: .15rem 0 0;
+      padding: 0;
+    }
+    .cs-card__note {
+      font-family: var(--font-body);
+      font-size: .7rem;
+      font-weight: 600;
+      letter-spacing: .02em;
+      color: var(--leaf);
+      background: var(--leaf-bg);
+      padding: .2rem .5rem;
+      border-radius: 99px;
+    }
+
     .cs-card__footer {
       display: flex;
       justify-content: space-between;
@@ -687,11 +760,21 @@ try {
       padding-top: .875rem;
       border-top: 1px solid var(--border);
     }
+    .cs-card__pricing {
+      display: flex;
+      align-items: baseline;
+      gap: .4rem;
+    }
     .cs-card__price {
       font-family: 'Inter', sans-serif;
       font-size: 1.05rem;
       font-weight: 700;
       color: var(--coffee);
+    }
+    .cs-card__weight {
+      font-family: var(--font-body);
+      font-size: .78rem;
+      color: var(--muted-fg);
     }
     .cs-card__add {
       width: 38px;
@@ -708,8 +791,13 @@ try {
       flex-shrink: 0;
     }
     .cs-card__add:hover { background: var(--accent); }
+    .cs-card__add:disabled {
+      background: var(--border);
+      color: var(--muted-fg);
+      cursor: not-allowed;
+    }
     .cs-card__add--added {
-      background: #16a34a;
+      background: var(--leaf);
       transform: scale(.92);
     }
 
