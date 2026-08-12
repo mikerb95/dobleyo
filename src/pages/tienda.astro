@@ -451,9 +451,9 @@ const shopJsonLd = {
         const max = parseInt(state.price.max || "0", 10);
         if (state.price.min) out = out.filter((p) => p.price >= min);
         if (state.price.max) out = out.filter((p) => p.price <= max);
-        // calificacion
+        // calificacion (la efectiva: reseñas aprobadas antes que rating editorial)
         if (state.ratingMin)
-          out = out.filter((p) => (p.rating || 0) >= Number(state.ratingMin));
+          out = out.filter((p) => ratingValue(p) >= Number(state.ratingMin));
         return out;
       }
       function sortList(list) {
@@ -461,7 +461,7 @@ const shopJsonLd = {
         if (s === "price-asc") return list.sort((a, b) => a.price - b.price);
         if (s === "price-desc") return list.sort((a, b) => b.price - a.price);
         if (s === "rating-desc")
-          return list.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+          return list.sort((a, b) => ratingValue(b) - ratingValue(a));
         // relevancia: prioriza banderas/nuevo/mas vendidos y luego calificacion
         return list.sort(
           (a, b) =>
