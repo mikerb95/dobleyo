@@ -4,6 +4,7 @@ import { body, validationResult } from 'express-validator';
 import { query } from '../db.js';
 import { authenticateToken, requireRole } from '../auth.js';
 import { parseTastingNotes } from '../utils/tasting.js';
+import { reviewAggregateSql } from '../utils/reviews.js';
 
 export const productsRouter = Router();
 
