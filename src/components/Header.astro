@@ -162,6 +162,51 @@ const searchHref = lang === "en" ? "/search" : "/buscar";
       </button>
     </div>
   </div>
+  <!--
+    Buscador. El formulario apunta a /buscar (o /search) con method GET, así que
+    funciona sin JavaScript; el panel de sugerencias es una mejora progresiva.
+  -->
+  <div class="search-panel" id="searchPanel" hidden>
+    <form class="search-form" id="searchForm" action={searchHref} method="get" role="search">
+      <label class="sr-only" for="searchInput">{tx.searchOpen}</label>
+      <svg class="search-form__icon" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.6" />
+        <path d="M16.5 16.5L21 21" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+      </svg>
+      <input
+        type="search"
+        id="searchInput"
+        name="q"
+        class="search-form__input"
+        placeholder={tx.searchPlaceholder}
+        autocomplete="off"
+        role="combobox"
+        aria-expanded="false"
+        aria-controls="searchResults"
+        aria-autocomplete="list"
+      />
+      <button type="submit" class="search-form__submit">{tx.search}</button>
+      <button type="button" class="search-form__close" id="searchClose" aria-label={tx.searchClose}>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+        </svg>
+      </button>
+    </form>
+    <div
+      class="search-results"
+      id="searchResults"
+      role="listbox"
+      aria-label={tx.searchOpen}
+      data-href={searchHref}
+      data-lang={lang}
+      data-all={tx.searchAll}
+      data-empty={tx.searchEmpty}
+      data-hint={tx.searchHint}
+      data-error={tx.searchError}
+      hidden
+    ></div>
+  </div>
+
   <div class="mobile-menu" id="mobileMenu" hidden>
     {nav.map((item) => <a href={item.href}>{item.label}</a>)}
 
