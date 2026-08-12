@@ -1,16 +1,32 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import Stars from "../components/Stars.astro";
 import { products as staticProducts } from "../data/products.ts";
 import { getCanonicalUrl, getHreflangPair } from "../i18n/index.ts";
+import {
+  reviewAggregateSql,
+  getRating,
+  getNotes,
+  formatWeight,
+  stockLabel,
+  getStockLevel,
+} from "../lib/products.ts";
 
 const _hreflang = getHreflangPair("/");
 
-// WebSite — sin SearchAction: el sitio no tiene buscador funcional todavía
 const websiteJsonLd = {
   "@context": "https://schema.org",
   "@type": "WebSite",
   name: "DobleYo Café",
   url: "https://dobleyo.cafe",
+  potentialAction: {
+    "@type": "SearchAction",
+    target: {
+      "@type": "EntryPoint",
+      urlTemplate: "https://dobleyo.cafe/buscar?q={search_term_string}",
+    },
+    "query-input": "required name=search_term_string",
+  },
 };
 
 // Productos desde BD (fallback a estáticos)
@@ -18,12 +34,14 @@ let coffeeProducts: any[] = [];
 try {
   const { query } = await import("../../server/db.js");
   const result = await query(
-    `SELECT id, name, origin, process, roast, price, rating,
-            is_bestseller AS bestseller, is_new AS new, image_url AS image,
-            stock_quantity AS stock
-     FROM products
-     WHERE is_active = 1 AND category = 'cafe'
-     ORDER BY is_bestseller DESC, is_new DESC, rating DESC
+    `SELECT p.id, p.slug, p.name, p.origin, p.process, p.roast, p.price, p.rating,
+            p.tasting_notes, p.weight, p.weight_unit,
+            p.is_bestseller AS bestseller, p.is_new AS new, p.image_url AS image,
+            p.stock_quantity AS stock,
+            ${reviewAggregateSql("p")}
+     FROM products p
+     WHERE p.is_active = 1 AND p.category = 'cafe'
+     ORDER BY p.is_bestseller DESC, p.is_new DESC, p.rating DESC
      LIMIT 3`
   );
   if (result.rows.length > 0) {
