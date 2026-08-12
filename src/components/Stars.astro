@@ -1,0 +1,109 @@
+---
+/**
+ * Calificación con estrellas. Soporta valores fraccionarios recortando una
+ * capa de estrellas llenas sobre la capa vacía, así 4.3 se ve como 4.3 y no
+ * como un redondeo.
+ *
+ * El conteo de reseñas es parte del componente a propósito: una calificación
+ * sin número de opiniones detrás no es prueba social.
+ */
+import type { Lang } from "../i18n/index.ts";
+
+interface Props {
+  value: number;
+  count?: number;
+  lang?: Lang;
+  size?: "sm" | "md";
+  /** false cuando el promedio no viene de reseñas de clientes. */
+  fromReviews?: boolean;
+  class?: string;
+}
+
+const {
+  value,
+  count = 0,
+  lang = "es",
+  size = "sm",
+  fromReviews = true,
+  class: className = "",
+} = Astro.props;
+
+const clamped = Math.max(0, Math.min(5, Number(value) || 0));
+const pct = (clamped / 5) * 100;
+const shown = clamped.toFixed(1).replace(".0", "");
+
+const L =
+  lang === "en"
+    ? {
+        aria: `${shown} out of 5`,
+        reviews: count === 1 ? "1 review" : `${count} reviews`,
+        noReviews: "No reviews yet",
+      }
+    : {
+        aria: `${shown} de 5`,
+        reviews: count === 1 ? "1 reseña" : `${count} reseñas`,
+        noReviews: "Sin reseñas aún",
+      };
+---
+
+<span class:list={["stars-rating", `stars-rating--${size}`, className]}>
+  <span class="stars-rating__glyphs" role="img" aria-label={L.aria}>
+    <span class="stars-rating__bg" aria-hidden="true">★★★★★</span>
+    <span class="stars-rating__fg" style={`width:${pct}%`} aria-hidden="true">★★★★★</span>
+  </span>
+  <span class="stars-rating__value">{shown}</span>
+  {fromReviews && count > 0 && <span class="stars-rating__count">({L.reviews})</span>}
+</span>
+
+<style>
+  .stars-rating {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-family: var(--font-body);
+    line-height: 1;
+  }
+
+  .stars-rating__glyphs {
+    position: relative;
+    display: inline-block;
+    white-space: nowrap;
+    letter-spacing: 0.08em;
+  }
+
+  .stars-rating__bg {
+    color: var(--border);
+  }
+
+  .stars-rating__fg {
+    position: absolute;
+    inset: 0 auto 0 0;
+    overflow: hidden;
+    color: var(--warning-border);
+  }
+
+  .stars-rating__value {
+    font-weight: 700;
+    color: var(--coffee);
+  }
+
+  .stars-rating__count {
+    color: var(--muted-fg);
+  }
+
+  .stars-rating--sm {
+    font-size: 0.78rem;
+  }
+
+  .stars-rating--sm .stars-rating__glyphs {
+    font-size: 0.85rem;
+  }
+
+  .stars-rating--md {
+    font-size: 0.9rem;
+  }
+
+  .stars-rating--md .stars-rating__glyphs {
+    font-size: 1.05rem;
+  }
+</style>
