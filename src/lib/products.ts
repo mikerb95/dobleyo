@@ -10,20 +10,10 @@
 import { parseTastingNotes } from '../../server/utils/tasting.js';
 import type { Lang } from '../i18n/index.ts';
 
-/**
- * Subconsulta reutilizable con los agregados de reseñas aprobadas.
- * Se interpola sobre un alias de `products` (por defecto `p`), nunca sobre
- * datos de usuario: no hay riesgo de inyección.
- */
-export function reviewAggregateSql(alias = 'p'): string {
-  return `
-       (SELECT COUNT(*)
-          FROM product_reviews r
-         WHERE r.product_id = ${alias}.id AND r.is_approved = 1) AS review_count,
-       (SELECT AVG(CAST(r.rating AS REAL))
-          FROM product_reviews r
-         WHERE r.product_id = ${alias}.id AND r.is_approved = 1) AS review_avg`;
-}
+// La subconsulta de agregados vive en server/utils para que Express también
+// pueda usarla; se reexporta aquí para que las páginas Astro la importen junto
+// al resto de helpers de presentación.
+export { reviewAggregateSql } from '../../server/utils/reviews.js';
 
 export interface ProductRatingInfo {
   /** Promedio a mostrar (reseñas reales si existen, si no el rating editorial). */
