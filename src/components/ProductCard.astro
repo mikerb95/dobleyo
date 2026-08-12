@@ -185,37 +185,7 @@ const weight = formatWeight(product, "es");
     color: var(--caramel-deep);
   }
 
-  .card-rating {
-    margin-top: .3rem;
-  }
-
-  /* Notas de cata: el argumento de compra de un café de especialidad */
-  .card-notes {
-    display: flex;
-    flex-wrap: wrap;
-    gap: .3rem;
-    list-style: none;
-    margin: .4rem 0 0;
-    padding: 0;
-  }
-
-  .card-note {
-    font-size: .7rem;
-    font-weight: 600;
-    color: var(--leaf);
-    background: var(--leaf-bg);
-    padding: .18rem .45rem;
-    border-radius: 99px;
-  }
-
-  .price-row {
-    display: flex;
-    align-items: baseline;
-    gap: .4rem;
-  }
-
-  .card-weight {
-    font-size: .78rem;
-    color: var(--muted-fg);
-  }
+  /* .card-rating, .card-notes, .card-note, .price-row y .card-weight viven en
+     public/assets/css/styles.css: la tienda repinta estas cards desde JS al
+     filtrar y el CSS con scope de Astro no alcanzaría ese HTML. */
 </style>
