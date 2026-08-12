@@ -72,6 +72,73 @@ productsRouter.get('/', async (req, res) => {
   }
 });
 
+// ─── GET /api/products/search ────────────────────────────────────────────────
+// Búsqueda pública del catálogo. Alimenta el buscador del header y las páginas
+// /buscar y /search.
+//
+// IMPORTANTE: debe declararse ANTES de GET /:id, o Express resolvería 'search'
+// como el id de un producto.
+productsRouter.get('/search', async (req, res) => {
+  try {
+    const q = String(req.query.q ?? '').trim();
+    const limit = Math.min(24, Math.max(1, parseInt(req.query.limit) || 8));
+
+    // Con menos de dos caracteres cualquier término trae medio catálogo:
+    // no es una búsqueda útil y no compensa el costo de la consulta.
+    if (q.length < 2) {
+      return res.json({ success: true, data: [], total: 0, query: q });
+    }
+
+    const contains = `%${q}%`;
+    const startsWith = `${q}%`;
+
+    const { rows } = await query(
+      `SELECT
+         p.id, p.slug, p.name, p.name_en, p.category, p.subcategory,
+         p.origin, p.process, p.roast, p.tasting_notes,
+         p.price, p.price_usd, p.rating,
+         p.weight, p.weight_unit,
+         p.image_url      AS image,
+         p.stock_quantity AS stock,
+         ${reviewAggregateSql('p')}
+       FROM products p
+       WHERE p.is_active = 1
+         AND (p.name LIKE ? OR p.name_en LIKE ? OR p.origin LIKE ?
+              OR p.process LIKE ? OR p.roast LIKE ? OR p.subcategory LIKE ?
+              OR p.tasting_notes LIKE ? OR p.description LIKE ?)
+       ORDER BY
+         CASE
+           WHEN p.name LIKE ? OR p.name_en LIKE ? THEN 0
+           WHEN p.origin LIKE ? THEN 1
+           ELSE 2
+         END,
+         p.is_bestseller DESC, p.rating DESC
+       LIMIT ?`,
+      [
+        contains, contains, contains, contains,
+        contains, contains, contains, contains,
+        startsWith, startsWith, startsWith,
+        limit,
+      ]
+    );
+
+    const data = rows.map((p) => {
+      const tn = parseTastingNotes(p.tasting_notes);
+      return {
+        ...p,
+        categoryLabel: CATEGORY_LABEL[p.category] ?? p.category,
+        notes: tn?.es ?? null,
+        notesEn: tn?.en ?? null,
+      };
+    });
+
+    res.json({ success: true, data, total: data.length, query: q });
+  } catch (err) {
+    logger.error({ err }, '[GET /api/products/search] Error:');
+    res.status(500).json({ success: false, error: 'Error al buscar productos' });
+  }
+});
+
 // ─── GET /api/products/:id ───────────────────────────────────────────────────
 // Detalle de un producto por id o slug. Público.
 productsRouter.get('/:id', async (req, res) => {
