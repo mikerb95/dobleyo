@@ -31,17 +31,32 @@ const L = {
   es: { cart: "Carrito de compras", cartEmpty: "Tu carrito está vacío", profile: "Perfil",
         apps: "Panel de apps", products: "Productos", audit: "📋 Auditoría",
         logout: "Cerrar sesión", login: "Iniciar sesión", register: "Registrarse",
-        account: "Mi Cuenta", menu: "Menú de usuario" },
+        account: "Mi Cuenta", menu: "Menú de usuario",
+        search: "Buscar", searchOpen: "Buscar en el catálogo",
+        searchPlaceholder: "Busque por café, origen, proceso o nota de cata",
+        searchClose: "Cerrar búsqueda",
+        searchAll: "Ver todos los resultados",
+        searchEmpty: "No encontramos productos para esa búsqueda",
+        searchHint: "Escriba al menos dos caracteres",
+        searchError: "No fue posible completar la búsqueda. Intente de nuevo." },
   en: { cart: "Shopping cart", cartEmpty: "Your cart is empty", profile: "Profile",
         apps: "Apps panel", products: "Products", audit: "📋 Audit",
         logout: "Sign out", login: "Sign in", register: "Sign up",
-        account: "My Account", menu: "User menu" },
+        account: "My Account", menu: "User menu",
+        search: "Search", searchOpen: "Search the catalog",
+        searchPlaceholder: "Search by coffee, origin, process or tasting note",
+        searchClose: "Close search",
+        searchAll: "See all results",
+        searchEmpty: "No products matched that search",
+        searchHint: "Type at least two characters",
+        searchError: "The search could not be completed. Please try again." },
 };
 const nav = NAV[lang] ?? NAV.es;
 const tx = L[lang] ?? L.es;
 const homeHref = "/";
 const cartHref = "/cart";
 const accountHref = lang === "en" ? "/account" : "/cuenta";
+const searchHref = lang === "en" ? "/search" : "/buscar";
 ---
 
 
