@@ -279,6 +279,177 @@ const searchHref = lang === "en" ? "/search" : "/buscar";
   if (!headerRoot || headerRoot.dataset.jsInit) return;
   headerRoot.dataset.jsInit = "1";
 
+  // ── Buscador ───────────────────────────────────────────────────────────────
+  // Sugerencias en vivo sobre /api/products/search. El formulario ya funciona
+  // sin JS: esto solo evita que el usuario tenga que cargar la página de
+  // resultados para saber si el catálogo tiene lo que busca.
+  (function initSearch() {
+    const btn     = document.getElementById("searchBtn");
+    const panel   = document.getElementById("searchPanel");
+    const form    = document.getElementById("searchForm");
+    const input   = document.getElementById("searchInput");
+    const closeBtn = document.getElementById("searchClose");
+    const results = document.getElementById("searchResults");
+    if (!btn || !panel || !form || !input || !results) return;
+
+    const searchHref = results.dataset.href || "/buscar";
+    const lang       = results.dataset.lang === "en" ? "en" : "es";
+    const MIN_CHARS  = 2;
+
+    let controller = null;
+    let debounceId = 0;
+    let activeIndex = -1;
+
+    const money = (p) =>
+      lang === "en"
+        ? `US$${Number(p.price_usd ?? 0).toLocaleString("en-US")}`
+        : `$${Number(p.price ?? 0).toLocaleString("es-CO")}`;
+
+    const escapeHtml = (s) =>
+      String(s ?? "").replace(/[&<>"']/g, (c) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+      })[c]);
+
+    function positionPanel() {
+      const rect = headerRoot.getBoundingClientRect();
+      panel.style.top = `${rect.bottom}px`;
+    }
+
+    function setMessage(text) {
+      results.innerHTML = `<p class="search-results__msg">${escapeHtml(text)}</p>`;
+      showResults(true);
+    }
+
+    function showResults(visible) {
+      results.hidden = !visible;
+      input.setAttribute("aria-expanded", visible ? "true" : "false");
+    }
+
+    function openPanel() {
+      positionPanel();
+      panel.hidden = false;
+      btn.setAttribute("aria-expanded", "true");
+      btn.classList.add("active");
+      input.focus();
+      input.select();
+    }
+
+    function closePanel() {
+      panel.hidden = true;
+      btn.setAttribute("aria-expanded", "false");
+      btn.classList.remove("active");
+      showResults(false);
+      activeIndex = -1;
+      if (controller) controller.abort();
+    }
+
+    function render(items) {
+      if (!items.length) {
+        setMessage(results.dataset.empty || "");
+        return;
+      }
+      const q = encodeURIComponent(input.value.trim());
+      const rows = items
+        .map((p, i) => {
+          const meta = [p.origin, p.process].filter(Boolean).join(" · ");
+          const href = `/producto/${p.slug || p.id}`;
+          return `
+            <a class="search-hit" role="option" id="searchHit${i}" aria-selected="false" href="${href}">
+              <img class="search-hit__img" src="${escapeHtml(p.image || "/assets/logo.png")}" alt="" width="40" height="40" loading="lazy">
+              <span class="search-hit__text">
+                <span class="search-hit__name">${escapeHtml(p.name)}</span>
+                ${meta ? `<span class="search-hit__meta">${escapeHtml(meta)}</span>` : ""}
+              </span>
+              <span class="search-hit__price">${money(p)}</span>
+            </a>`;
+        })
+        .join("");
+      results.innerHTML =
+        rows +
+        `<a class="search-results__all" href="${searchHref}?q=${q}">${escapeHtml(results.dataset.all || "")}</a>`;
+      activeIndex = -1;
+      showResults(true);
+    }
+
+    async function runSearch(q) {
+      if (controller) controller.abort();
+      controller = new AbortController();
+      try {
+        const res = await fetch(
+          `/api/products/search?q=${encodeURIComponent(q)}&limit=6`,
+          { signal: controller.signal, headers: { Accept: "application/json" } }
+        );
+        const json = await res.json();
+        if (!res.ok || !json.success) throw new Error(json.error || "search failed");
+        render(json.data || []);
+      } catch (err) {
+        if (err.name === "AbortError") return;
+        setMessage(results.dataset.error || "");
+      }
+    }
+
+    function moveActive(delta) {
+      const hits = Array.from(results.querySelectorAll(".search-hit"));
+      if (!hits.length) return;
+      if (activeIndex >= 0) {
+        hits[activeIndex].classList.remove("is-active");
+        hits[activeIndex].setAttribute("aria-selected", "false");
+      }
+      activeIndex = (activeIndex + delta + hits.length) % hits.length;
+      hits[activeIndex].classList.add("is-active");
+      hits[activeIndex].setAttribute("aria-selected", "true");
+      input.setAttribute("aria-activedescendant", hits[activeIndex].id);
+      hits[activeIndex].scrollIntoView({ block: "nearest" });
+    }
+
+    btn.addEventListener("click", () => {
+      if (panel.hidden) openPanel();
+      else closePanel();
+    });
+
+    if (closeBtn) closeBtn.addEventListener("click", closePanel);
+
+    input.addEventListener("input", () => {
+      const q = input.value.trim();
+      window.clearTimeout(debounceId);
+      if (q.length < MIN_CHARS) {
+        if (q.length === 0) showResults(false);
+        else setMessage(results.dataset.hint || "");
+        return;
+      }
+      debounceId = window.setTimeout(() => runSearch(q), 220);
+    });
+
+    input.addEventListener("keydown", (ev) => {
+      if (ev.key === "ArrowDown") { ev.preventDefault(); moveActive(1); }
+      else if (ev.key === "ArrowUp") { ev.preventDefault(); moveActive(-1); }
+      else if (ev.key === "Enter" && activeIndex >= 0) {
+        const hit = results.querySelectorAll(".search-hit")[activeIndex];
+        if (hit) { ev.preventDefault(); window.location.href = hit.getAttribute("href"); }
+      }
+    });
+
+    form.addEventListener("submit", (ev) => {
+      if (input.value.trim().length < MIN_CHARS) {
+        ev.preventDefault();
+        setMessage(results.dataset.hint || "");
+      }
+    });
+
+    document.addEventListener("keydown", (ev) => {
+      if (ev.key === "Escape" && !panel.hidden) { closePanel(); btn.focus(); }
+    });
+
+    document.addEventListener("click", (ev) => {
+      if (panel.hidden) return;
+      if (panel.contains(ev.target) || btn.contains(ev.target)) return;
+      closePanel();
+    });
+
+    window.addEventListener("resize", () => { if (!panel.hidden) positionPanel(); });
+    window.addEventListener("scroll", () => { if (!panel.hidden) positionPanel(); }, { passive: true });
+  })();
+
   (function initNavBeans() {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const header = document.querySelector(".site-header");
