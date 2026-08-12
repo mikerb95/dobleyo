@@ -1,0 +1,289 @@
+---
+/**
+ * Cuerpo de las páginas de resultados de búsqueda (/buscar y /search).
+ * Recibe los productos ya consultados para que cada página controle su Layout,
+ * su SEO y su idioma.
+ */
+import Stars from "./Stars.astro";
+import type { Lang } from "../i18n/index.ts";
+import {
+  getRating,
+  getNotes,
+  formatWeight,
+  stockLabel,
+  getStockLevel,
+  SEARCH_MIN_CHARS,
+} from "../lib/products.ts";
+
+interface Props {
+  query: string;
+  results: any[];
+  lang?: Lang;
+}
+
+const { query, results, lang = "es" } = Astro.props;
+const q = query.trim();
+const tooShort = q.length > 0 && q.length < SEARCH_MIN_CHARS;
+
+const L =
+  lang === "en"
+    ? {
+        heading: q ? `Results for “${q}”` : "Search the catalog",
+        count: (n: number) =>
+          n === 1 ? "1 product found" : `${n} products found`,
+        placeholder: "Search by coffee, origin, process or tasting note",
+        submit: "Search",
+        emptyTitle: "No products matched that search",
+        emptyBody:
+          "Try a broader term: an origin (Huila), a process (washed) or a tasting note (cocoa).",
+        idleTitle: "What coffee are you looking for?",
+        idleBody:
+          "Search by name, origin, process, roast level or tasting note.",
+        shortTitle: `Type at least ${SEARCH_MIN_CHARS} characters`,
+        shortBody: "A shorter term would return almost the whole catalog.",
+        browse: "Browse the full catalog",
+        shopHref: "/shop",
+      }
+    : {
+        heading: q ? `Resultados para «${q}»` : "Buscar en el catálogo",
+        count: (n: number) =>
+          n === 1 ? "1 producto encontrado" : `${n} productos encontrados`,
+        placeholder: "Busque por café, origen, proceso o nota de cata",
+        submit: "Buscar",
+        emptyTitle: "No encontramos productos para esa búsqueda",
+        emptyBody:
+          "Intente con un término más amplio: un origen (Huila), un proceso (lavado) o una nota de cata (cacao).",
+        idleTitle: "¿Qué café está buscando?",
+        idleBody:
+          "Busque por nombre, origen, proceso, nivel de tueste o nota de cata.",
+        shortTitle: `Escriba al menos ${SEARCH_MIN_CHARS} caracteres`,
+        shortBody: "Un término más corto devolvería casi todo el catálogo.",
+        browse: "Ver el catálogo completo",
+        shopHref: "/tienda",
+      };
+
+const action = lang === "en" ? "/search" : "/buscar";
+const money = (p: any) =>
+  lang === "en"
+    ? `US$${Number(p.price_usd ?? 0).toLocaleString("en-US")}`
+    : `$${Number(p.price ?? 0).toLocaleString("es-CO")}`;
+---
+
+<section class="search-page">
+  <div class="container">
+    <h1 class="search-page__title">{L.heading}</h1>
+
+    <form class="search-page__form" action={action} method="get" role="search">
+      <label class="sr-only" for="pageSearchInput">{L.placeholder}</label>
+      <input
+        type="search"
+        id="pageSearchInput"
+        name="q"
+        value={q}
+        class="search-form__input"
+        placeholder={L.placeholder}
+        autocomplete="off"
+      />
+      <button type="submit" class="search-form__submit">{L.submit}</button>
+    </form>
+
+    {q && !tooShort && (
+      <p class="search-page__count">{L.count(results.length)}</p>
+    )}
+
+    {!q && (
+      <div class="search-page__state">
+        <h2 class="search-page__state-title">{L.idleTitle}</h2>
+        <p class="search-page__state-body">{L.idleBody}</p>
+        <a class="btn" href={L.shopHref}>{L.browse}</a>
+      </div>
+    )}
+
+    {tooShort && (
+      <div class="search-page__state">
+        <h2 class="search-page__state-title">{L.shortTitle}</h2>
+        <p class="search-page__state-body">{L.shortBody}</p>
+      </div>
+    )}
+
+    {q && !tooShort && results.length === 0 && (
+      <div class="search-page__state">
+        <h2 class="search-page__state-title">{L.emptyTitle}</h2>
+        <p class="search-page__state-body">{L.emptyBody}</p>
+        <a class="btn" href={L.shopHref}>{L.browse}</a>
+      </div>
+    )}
+
+    {results.length > 0 && (
+      <ul class="search-page__grid" role="list">
+        {results.map((p: any) => {
+          const rating = getRating(p);
+          const notes = getNotes(p, lang);
+          const weight = formatWeight(p, lang);
+          const level = getStockLevel(p);
+          const stock = stockLabel(p, lang);
+          const name = lang === "en" ? p.name_en || p.name : p.name;
+          const meta = [p.origin, p.process].filter(Boolean).join(" · ");
+          return (
+            <li class="search-page__item">
+              <a class="search-page__card" href={`/producto/${p.slug || p.id}`}>
+                <img
+                  class="search-page__img"
+                  src={p.image || "/assets/logo.png"}
+                  alt={name}
+                  loading="lazy"
+                  width="160"
+                  height="160"
+                />
+                <div class="search-page__body">
+                  {meta && <p class="search-page__meta">{meta}</p>}
+                  <h2 class="search-page__name">{name}</h2>
+                  {rating && (
+                    <Stars
+                      value={rating.value}
+                      count={rating.count}
+                      fromReviews={rating.fromReviews}
+                      lang={lang}
+                    />
+                  )}
+                  {notes.length > 0 && (
+                    <ul class="card-notes" aria-label="Notas de cata">
+                      {notes.map((n) => <li class="card-note">{n}</li>)}
+                    </ul>
+                  )}
+                  <div class="price-row">
+                    <span class="price">{money(p)}</span>
+                    {weight && <span class="card-weight">{weight}</span>}
+                  </div>
+                  {stock && (
+                    <span class={`stock-badge ${level === "out" ? "out" : "low"}`}>
+                      {stock}
+                    </span>
+                  )}
+                </div>
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+    )}
+  </div>
+</section>
+
+<style>
+  .search-page {
+    padding: 2.5rem 0 4rem;
+  }
+
+  .search-page__title {
+    font-size: var(--text-2xl);
+    color: var(--coffee);
+    margin: 0 0 1.25rem;
+  }
+
+  .search-page__form {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    max-width: 44rem;
+  }
+
+  .search-page__count {
+    font-size: var(--text-sm);
+    color: var(--muted-fg);
+    margin: 0 0 1.5rem;
+  }
+
+  .search-page__state {
+    padding: 3rem 1rem;
+    text-align: center;
+    border: 1px dashed var(--border);
+    border-radius: var(--radius-lg);
+  }
+
+  .search-page__state-title {
+    font-size: var(--text-xl);
+    color: var(--coffee);
+    margin: 0 0 0.5rem;
+  }
+
+  .search-page__state-body {
+    font-size: var(--text-sm);
+    color: var(--muted-fg);
+    margin: 0 0 1.25rem;
+  }
+
+  .search-page__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .search-page__card {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: 1rem;
+    height: 100%;
+    padding: 0.75rem;
+    color: inherit;
+    text-decoration: none;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    transition: box-shadow var(--dur) var(--ease), transform var(--dur) var(--ease);
+  }
+
+  .search-page__card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
+
+  .search-page__img {
+    width: 120px;
+    height: 100%;
+    min-height: 120px;
+    object-fit: cover;
+    border-radius: var(--radius-md);
+    background: var(--bg);
+  }
+
+  .search-page__body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    min-width: 0;
+  }
+
+  .search-page__meta {
+    font-size: var(--text-xs);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0;
+  }
+
+  .search-page__name {
+    font-size: var(--text-lg);
+    font-weight: 700;
+    color: var(--coffee);
+    margin: 0;
+    line-height: 1.2;
+  }
+
+  @media (max-width: 480px) {
+    .search-page__form {
+      flex-direction: column;
+    }
+    .search-page__card {
+      grid-template-columns: 88px 1fr;
+    }
+    .search-page__img {
+      width: 88px;
+      min-height: 88px;
+    }
+  }
+</style>
