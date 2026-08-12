@@ -130,6 +130,25 @@ CREATE INDEX IF NOT EXISTS idx_products_category ON products(category);
 CREATE INDEX IF NOT EXISTS idx_products_active ON products(is_active);
 CREATE INDEX IF NOT EXISTS idx_products_sku ON products(sku);
 
+-- Product Reviews (Reseñas de clientes, moderadas antes de publicarse)
+-- Creada originalmente por server/migrations/add_product_reviews.js. Se declara
+-- aquí porque la tienda pública calcula el rating agregado desde esta tabla y
+-- un entorno sin la migración aplicada dejaría el catálogo sin calificaciones.
+CREATE TABLE IF NOT EXISTS product_reviews (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    product_id    VARCHAR(50) NOT NULL,
+    user_id       BIGINT NULL,
+    reviewer_name VARCHAR(100) NOT NULL,
+    rating        INTEGER NOT NULL CHECK (rating BETWEEN 1 AND 5),
+    comment       TEXT,
+    is_approved   INTEGER NOT NULL DEFAULT 0,
+    created_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id)    REFERENCES users(id)    ON DELETE SET NULL
+);
+CREATE INDEX IF NOT EXISTS idx_reviews_product  ON product_reviews(product_id);
+CREATE INDEX IF NOT EXISTS idx_reviews_approved ON product_reviews(is_approved);
+
 -- Product Variants (Variantes de producto: tamaño y molienda)
 CREATE TABLE IF NOT EXISTS product_variants (
     id            INTEGER PRIMARY KEY AUTOINCREMENT,
