@@ -231,6 +231,34 @@ const shopJsonLd = {
   <div id="shopData" data-products={JSON.stringify(products)} style="display:none"></div>
 
   <script>
+    // Se reutilizan los mismos helpers del render SSR para que las cards
+    // repintadas por filtros muestren idénticas señales de confianza.
+    import { getRating, getNotes, formatWeight } from "../lib/products.ts";
+
+    const ratingOf = (p) => getRating(p);
+    const notesOf  = (p) => getNotes(p, "es");
+    const weightOf = (p) => formatWeight(p, "es");
+
+    /** Marca del componente Stars.astro replicada para el render en cliente. */
+    function starsHtml(rating) {
+      const pct = (Math.max(0, Math.min(5, rating.value)) / 5) * 100;
+      const shown = rating.value.toFixed(1).replace(".0", "");
+      const count =
+        rating.fromReviews && rating.count > 0
+          ? `<span class="stars-rating__count">(${
+              rating.count === 1 ? "1 reseña" : `${rating.count} reseñas`
+            })</span>`
+          : "";
+      return `<span class="stars-rating stars-rating--sm">
+        <span class="stars-rating__glyphs" role="img" aria-label="${shown} de 5">
+          <span class="stars-rating__bg" aria-hidden="true">★★★★★</span>
+          <span class="stars-rating__fg" style="width:${pct}%" aria-hidden="true">★★★★★</span>
+        </span>
+        <span class="stars-rating__value">${shown}</span>
+        ${count}
+      </span>`;
+    }
+
     function initShop() {
       const resultsElGuard = document.getElementById("shopResults");
       if (!resultsElGuard || resultsElGuard.dataset.jsInit) return;
