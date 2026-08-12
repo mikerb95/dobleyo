@@ -38,18 +38,20 @@ productsRouter.get('/', async (req, res) => {
       query(`SELECT COUNT(*) as total FROM products ${where}`, params),
       query(
         `SELECT
-           id, slug, name, name_en, category, origin, process, roast,
-           tasting_notes, price, price_usd, rating,
-           is_deal       AS deal,
-           is_bestseller AS bestseller,
-           is_new        AS new,
-           is_fast       AS fast,
-           image_url     AS image,
-           stock_quantity AS stock,
-           description, meta_description
-         FROM products
+           p.id, p.slug, p.name, p.name_en, p.category, p.origin, p.process, p.roast,
+           p.tasting_notes, p.price, p.price_usd, p.rating,
+           p.weight, p.weight_unit,
+           p.is_deal       AS deal,
+           p.is_bestseller AS bestseller,
+           p.is_new        AS new,
+           p.is_fast       AS fast,
+           p.image_url     AS image,
+           p.stock_quantity AS stock,
+           p.description, p.meta_description,
+           ${reviewAggregateSql('p')}
+         FROM products p
          ${where}
-         ORDER BY is_bestseller DESC, is_new DESC, is_deal DESC, rating DESC
+         ORDER BY p.is_bestseller DESC, p.is_new DESC, p.is_deal DESC, p.rating DESC
          LIMIT ? OFFSET ?`,
         [...params, pageSize, offset]
       ),
