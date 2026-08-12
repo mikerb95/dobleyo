@@ -17,6 +17,11 @@ Disallow: /tostar
 Disallow: /solicitar-caficultor
 Disallow: /verify-email
 
+# Resultados de búsqueda: URLs infinitas y contenido duplicado del catálogo
+Disallow: /buscar
+Disallow: /search
+Disallow: /en/search
+
 # Versión inglés — privada y administrativa (ruta con prefijo /en, dobleyo.cafe)
 Disallow: /en/account
 Disallow: /en/checkout
