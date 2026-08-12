@@ -238,6 +238,8 @@ const shopJsonLd = {
     const ratingOf = (p) => getRating(p);
     const notesOf  = (p) => getNotes(p, "es");
     const weightOf = (p) => formatWeight(p, "es");
+    /** Valor numérico para filtrar y ordenar; 0 si el producto no tiene calificación. */
+    const ratingValue = (p) => ratingOf(p)?.value ?? 0;
 
     /** Marca del componente Stars.astro replicada para el render en cliente. */
     function starsHtml(rating) {
