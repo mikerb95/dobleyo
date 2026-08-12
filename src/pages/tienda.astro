@@ -468,11 +468,11 @@ const shopJsonLd = {
             (b.bestseller ? 1 : 0) +
             (b.new ? 1 : 0) +
             (b.deal ? 1 : 0) +
-            (b.rating || 0) / 5 -
+            ratingValue(b) / 5 -
             ((a.bestseller ? 1 : 0) +
               (a.new ? 1 : 0) +
               (a.deal ? 1 : 0) +
-              (a.rating || 0) / 5),
+              ratingValue(a) / 5),
         );
       }
       function paginate(list) {
