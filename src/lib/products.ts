@@ -56,9 +56,13 @@ export function getRating(p: any): ProductRatingInfo | null {
  * Devuelve como máximo `limit` notas para no romper el layout de las cards.
  */
 export function getNotes(p: any, lang: Lang = 'es', limit = 3): string[] {
-  const tn = parseTastingNotes(p?.tasting_notes) as
-    | { es?: string[]; en?: string[] }
-    | null;
+  // El catálogo estático de respaldo (src/data/products.ts) ya trae las notas
+  // como arrays sueltos; la BD las guarda como JSON en tasting_notes.
+  const tn =
+    (parseTastingNotes(p?.tasting_notes) as { es?: string[]; en?: string[] } | null) ??
+    (Array.isArray(p?.notes) || Array.isArray(p?.notesEn)
+      ? { es: p?.notes, en: p?.notesEn }
+      : null);
   if (!tn) return [];
   const primary = lang === 'en' ? tn.en : tn.es;
   const fallback = lang === 'en' ? tn.es : tn.en;
