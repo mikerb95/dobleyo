@@ -3,7 +3,7 @@ import Layout from "../layouts/Layout.astro";
 import ProductCard from "../components/ProductCard.astro";
 import { products as staticProducts } from "../data/products";
 import { getCanonicalUrl, getHreflangPair } from "../i18n/index.ts";
-import { reviewAggregateSql, getRating, getNotes } from "../lib/products.ts";
+import { reviewAggregateSql } from "../lib/products.server.ts";
 
 const _hreflang = getHreflangPair("/tienda");
 
