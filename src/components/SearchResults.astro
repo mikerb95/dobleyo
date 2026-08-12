@@ -87,7 +87,8 @@ const money = (p: any) =>
       <button type="submit" class="search-form__submit">{L.submit}</button>
     </form>
 
-    {q && !tooShort && (
+    {/* Sin resultados el conteo sobra: el estado vacío ya lo dice mejor. */}
+    {q && !tooShort && results.length > 0 && (
       <p class="search-page__count">{L.count(results.length)}</p>
     )}
 
