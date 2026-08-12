@@ -3,8 +3,8 @@ import Layout from "../layouts/Layout.astro";
 import Stars from "../components/Stars.astro";
 import { products as staticProducts } from "../data/products.ts";
 import { getCanonicalUrl, getHreflangPair } from "../i18n/index.ts";
+import { reviewAggregateSql } from "../lib/products.server.ts";
 import {
-  reviewAggregateSql,
   getRating,
   getNotes,
   formatWeight,
