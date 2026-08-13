@@ -2,6 +2,44 @@
 
 ---
 
+## 2026-08-12 — Señales de confianza en las cards y buscador del catálogo (Agente: Claude)
+
+### Contexto
+Auditoría de credibilidad de la home. Dos huecos de los detectados se cerraron en esta entrega: las cards de producto no mostraban calificación, notas de cata, gramaje ni disponibilidad pese a tener esos datos en la BD, y el sitio no tenía buscador (el propio JSON-LD lo declaraba: `WebSite` sin `SearchAction`). Un catálogo sin estrellas y sin búsqueda no se lee como marketplace.
+
+### Cambios
+
+**Señales de confianza en las cards**
+- **`src/lib/products.ts`** (nuevo) — helpers puros de presentación: `getRating()` (prioriza reseñas aprobadas sobre `products.rating`), `getNotes()`, `formatWeight()`, `getStockLevel()`, `stockLabel()`. Sin acceso a BD, porque la tienda también los importa desde el navegador.
+- **`src/lib/products.server.ts`** (nuevo) — acceso a datos: `searchProducts()` y reexport de `reviewAggregateSql`.
+- **`server/utils/reviews.js`** (nuevo) — `reviewAggregateSql(alias)`, la subconsulta de conteo y promedio de reseñas aprobadas, compartida por Express y el SSR de Astro.
+- **`src/components/Stars.astro`** (nuevo) — calificación con relleno fraccionario real (4.3 se ve como 4.3), conteo de reseñas y `aria-label`.
+- **`src/pages/index.astro`** — las cards de café muestran estrellas, notas de cata, gramaje y badge de stock; el botón de agregar se deshabilita si está agotado. `SearchAction` añadido al JSON-LD.
+- **`src/components/ProductCard.astro`** y **`src/pages/tienda.astro`** — mismas señales en el catálogo, tanto en el render SSR como en el repintado por filtros. Los filtros y el orden por calificación usan ahora la calificación efectiva.
+- **`db/schema.sql`** — se declara `product_reviews`, que solo existía en la migración.
+
+**Buscador**
+- **`server/routes/products.js`** — `GET /api/products/search` (declarado antes de `/:id`), busca por nombre, origen, proceso, tueste, subcategoría, notas de cata y descripción, y prioriza coincidencias por prefijo. El listado y el detalle devuelven también los agregados de reseñas.
+- **`src/components/Header.astro`** — botón de búsqueda que despliega un panel con sugerencias en vivo, navegación con flechas, cierre con Escape y clic fuera.
+- **`src/components/SearchResults.astro`** (nuevo) más **`src/pages/buscar.astro`** y **`src/pages/en/search.astro`** — página de resultados con estados de inicio, término corto y sin resultados.
+- **`public/robots.txt`** — se excluyen las rutas de búsqueda.
+
+**Corrección de paso**
+- **`public/assets/css/styles.css`** — `.shop-content .card>img` no alcanzaba la imagen porque va envuelta en `.card-link`, y cada card del catálogo quedaba de una altura distinta. Se añade el selector que faltaba.
+
+### Decisiones
+- **Solo se declara `aggregateRating` en JSON-LD cuando hay reseñas aprobadas reales.** La tienda emitía `ratingCount: 1` fijo con el rating editorial. Publicar un conteo inventado es motivo de acción manual en Google y, sobre todo, es una señal de confianza falsa.
+- **El promedio de reseñas manda sobre `products.rating`.** El campo `rating` es editorial; cuando hay opiniones de clientes se muestran esas, con su conteo. Sin reseñas se muestra el editorial pero sin número al lado, para no insinuar una prueba social que no existe.
+- **Los estilos de estrellas, notas y precio van en `styles.css`, no con scope de Astro.** La tienda repinta las cards desde JS al filtrar y el CSS con scope no alcanzaría ese HTML.
+- **Presentación y acceso a datos en módulos separados.** `products.ts` viaja al navegador; meter ahí el `import` del cliente de Turso habría arrastrado el driver al bundle del cliente.
+- **Las páginas de resultados van `noindex` y bloqueadas en robots.** Generan URLs infinitas y duplican el catálogo; la que debe posicionar es `/tienda`.
+- **El buscador funciona sin JavaScript.** El formulario es un GET a `/buscar`; el panel de sugerencias es mejora progresiva.
+
+### Pendiente de verificar
+Las lecturas de la BD de Turso están bloqueadas por plan, así que el render con datos reales no se pudo probar. Las cinco consultas nuevas sí se validaron contra `db/schema.sql` en SQLite, incluida la exclusión de reseñas sin aprobar.
+
+---
+
 ## 2026-07-29 — Trazabilidad de costos de la línea de producción (Agente: Claude)
 
 ### Contexto
