@@ -120,63 +120,32 @@ const r = isEn
 </footer>
 
 <style>
-  .gh-badge-wrap {
+  /* Crédito de autoría: discreto, al nivel del aviso de copyright. */
+  .footer-credit {
     margin-top: var(--space-2);
-  }
-
-  .gh-badge {
-    display: inline-flex;
-    align-items: stretch;
-    border-radius: var(--radius-sm);
-    overflow: hidden;
     font-family: var(--font-body);
     font-size: var(--text-xs);
-    line-height: 1;
+    color: var(--footer-fg);
+    opacity: 0.75;
+  }
+
+  .footer-credit__link {
+    color: inherit;
+    font-weight: 600;
     text-decoration: none;
-    border: 1px solid rgba(var(--cream-rgb, 246, 241, 234), 0.18);
-    transition:
-      transform 0.15s ease,
-      opacity 0.15s ease;
+    border-bottom: 1px solid currentColor;
+    padding-bottom: 1px;
+    transition: opacity 0.15s ease;
   }
 
-  .gh-badge:hover,
-  .gh-badge:focus-visible {
-    transform: translateY(-1px);
-    opacity: 0.92;
-  }
-
-  .gh-badge-left,
-  .gh-badge-right {
-    display: inline-flex;
-    align-items: center;
-    padding: var(--space-2) var(--space-3);
-  }
-
-  .gh-badge-left {
-    gap: var(--space-2);
-    background: #24292e;
-    color: #ffffff;
-    font-weight: 600;
-  }
-
-  .gh-badge-right {
-    background: #586069;
-    color: #ffffff;
-    font-weight: 600;
-    letter-spacing: 0.01em;
-  }
-
-  .gh-badge-icon {
-    flex-shrink: 0;
+  .footer-credit__link:hover,
+  .footer-credit__link:focus-visible {
+    opacity: 0.7;
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .gh-badge {
+    .footer-credit__link {
       transition: none;
-    }
-    .gh-badge:hover,
-    .gh-badge:focus-visible {
-      transform: none;
     }
   }
 </style>
