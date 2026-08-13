@@ -2675,7 +2675,10 @@ body.menu-open {
   min-height: 420px
 }
 
-.shop-content .card>img {
+/* La imagen va envuelta en .card-link, así que el selector de hijo directo
+   sobre .card no la alcanzaba y cada card quedaba de una altura distinta. */
+.shop-content .card>img,
+.shop-content .card>.card-link>img {
   width: 100%;
   aspect-ratio: 1 / 1;
   object-fit: cover
