@@ -23,13 +23,6 @@ export async function searchProducts(q: string, limit = 24): Promise<any[]> {
   const term = String(q ?? '').trim();
   if (term.length < SEARCH_MIN_CHARS) return [];
 
-  if (process.env.SEARCH_FIXTURE === '1') {
-    return [
-      { id: 'cf-huila', slug: 'cf-huila', name: 'Huila', name_en: 'Huila', origin: 'Huila', process: 'Honey', price: 45000, price_usd: 12, rating: 4.7, review_count: 2, review_avg: 4.5, tasting_notes: '{"es":["Cítricos","Miel","Floral"],"en":["Citrus","Honey","Floral"]}', weight: 250, weight_unit: 'g', stock: 3, image: 'https://images.unsplash.com/photo-1509043759401-136742328bb3?q=80&w=800&auto=format&fit=crop' },
-      { id: 'cf-narino', slug: 'cf-narino', name: 'Nariño', origin: 'Nariño', process: 'Natural', price: 48000, price_usd: 13, rating: 4.5, review_count: 0, review_avg: null, tasting_notes: '{"es":["Frutas Rojas","Chocolate"]}', weight: 1, weight_unit: 'kg', stock: 0, image: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?q=80&w=800&auto=format&fit=crop' },
-    ];
-  }
-
   const contains = `%${term}%`;
   const startsWith = `${term}%`;
 
