@@ -189,6 +189,21 @@ El costo de un lote vive en `lot_costs`, un registro por evento (etapa + tipo + 
 - **Lo pagado al caficultor no se duplica.** Vive solo en `lot_costs` con `cost_type = 'farmer_payment'`; el comparativo de precio FNC lee de ahí. El peso de origen es `coffee_harvests.harvest_weight_kg`.
 - **Los insumos de empaque van en `packaging_supplies`, no en `products`.** `products.category` tiene un CHECK que SQLite no permite alterar sin reconstruir la tabla. Su stock puede quedar negativo: el empaque físico ya ocurrió y se señala el faltante en vez de bloquear.
 
+### 3.8 Cards de producto y buscador — reglas no negociables
+
+Las cards de la home, el catálogo y los resultados de búsqueda deben mostrar exactamente las mismas señales. Al tocarlas:
+
+- **Los helpers de presentación viven en `src/lib/products.ts` y son puros.** `getRating()`, `getNotes()`, `formatWeight()`, `getStockLevel()` y `stockLabel()`. Ese módulo lo importa también el navegador (la tienda repinta las cards al filtrar), así que **no puede importar nada que toque la BD**. Todo lo que consulte Turso va en `src/lib/products.server.ts`.
+- **La calificación efectiva la decide `getRating()`, no `products.rating`.** El campo `rating` es editorial. Cuando hay reseñas aprobadas se muestra su promedio con el conteo al lado; sin reseñas se muestra el editorial **sin** número, para no insinuar prueba social inexistente. Filtros y ordenamientos usan el valor efectivo.
+- **`aggregateRating` en JSON-LD solo con reseñas aprobadas reales.** Nunca emitir un `ratingCount` fijo ni un `ratingValue` de 0. Es motivo de acción manual en Google.
+- **Los agregados de reseñas se piden con `reviewAggregateSql(alias)`** (`server/utils/reviews.js`), compartido por Express y el SSR. No duplicar la subconsulta.
+- **Los estilos de cards que el cliente repinta van en `public/assets/css/styles.css`, no con scope de Astro.** Aplica a `.stars-rating*`, `.card-notes`, `.card-note`, `.price-row`, `.card-weight`, `.stock-badge` y `.sca-pill`. Un estilo con scope no alcanza el HTML generado por JS.
+- **El buscador debe funcionar sin JavaScript.** El formulario es un GET a `/buscar` (`/search` en EN); las sugerencias en vivo de `GET /api/products/search` son mejora progresiva.
+- **`GET /api/products/search` va declarado antes de `GET /:id`.** Si no, Express resuelve `search` como el id de un producto.
+- **Las páginas de resultados van `noindex` y bloqueadas en `robots.txt`.** Generan URLs infinitas y duplican el catálogo; la que posiciona es `/tienda`.
+
+---
+
 ---
 
 ## 4. SEO — Reglas Obligatorias
