@@ -71,6 +71,8 @@
 | `server/services/costService.js` | Costeo del pipeline: registro de costos, costo/kg por etapa, insumos de empaque |
 | `server/services/accountingService.js` | Asientos de partida doble (borrador) de los costos de producción |
 | `server/routes/costs.js` | API de costeo e insumos (`/api/costs`). Solo admin |
+| `server/routes/products.js` | Catálogo público: listado, detalle, `GET /search` y reseñas. `/search` va antes que `/:id` |
+| `server/utils/reviews.js` | `reviewAggregateSql(alias)`: agregados de reseñas aprobadas, compartido Express + SSR |
 
 ### Frontend — Páginas Públicas
 | Archivo | Propósito |
@@ -80,6 +82,7 @@
 | `src/pages/cart.astro` | Carrito (localStorage via `cart.js`) |
 | `src/pages/checkout.astro` | Checkout con Wompi (pago como usuario registrado o invitado) |
 | `src/pages/trazabilidad.astro` | Scanner QR + búsqueda manual de lotes |
+| `src/pages/buscar.astro` | Resultados de búsqueda del catálogo (`noindex`). Versión EN en `src/pages/en/search.astro` |
 | `src/pages/en/index.astro` | Landing B2B en inglés (1127 líneas, página autónoma) |
 | `src/pages/contacto.astro` | Formulario de contacto |
 | `src/pages/blog.astro` | Blog (localStorage — migrar a BD) |
@@ -117,6 +120,8 @@
 | `src/components/Header.astro` | Astro | Navegación principal + coffee beans animation |
 | `src/components/Footer.astro` | Astro | Footer con newsletter, links, social |
 | `src/components/ProductCard.astro` | Astro | Card de producto para grid de tienda |
+| `src/components/Stars.astro` | Astro | Calificación con estrellas fraccionarias + conteo de reseñas |
+| `src/components/SearchResults.astro` | Astro | Cuerpo de `/buscar` y `/en/search`, con sus estados vacíos |
 | `src/components/SalesHeatmap.jsx` | React | Mapa de calor Leaflet + heatmap plugin |
 | `src/components/SalesTable.jsx` | React | Tabla de ventas ordenable |
 | `src/components/RoastForm.jsx` | React | Formulario de tostión |
@@ -133,6 +138,8 @@
 | Archivo | Propósito |
 |---|---|
 | `src/data/products.ts` | 5 productos (3 cafés, 2 accesorios). FUENTE ÚNICA de productos front (migrar a BD) |
+| `src/lib/products.ts` | Helpers **puros** de presentación de producto (rating, notas, gramaje, stock). Se importa desde el navegador: sin acceso a BD |
+| `src/lib/products.server.ts` | Acceso a datos de producto: `searchProducts()` y `reviewAggregateSql` |
 
 ### Scripts del Cliente (Vanilla JS)
 | Archivo | Propósito |
