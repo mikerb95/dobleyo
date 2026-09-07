@@ -5,9 +5,9 @@ import StageChip from "./StageChip.jsx";
 import { SEGMENTS, formatCOP, timeAgo } from "./constants.js";
 import { useApi } from "../../../lib/api.js";
 
-export default function ClientList({ filters, onFiltersChange, onOpen, onNew }) {
+export default function ClientList({ filters, onFiltersChange, onOpen, onNew, reloadKey = 0 }) {
   const apiQuery = useMemo(() => buildQuery(filters), [filters]);
-  const { data, loading, error, refetch } = useApi(`/crm/accounts${apiQuery}`, { deps: [apiQuery] });
+  const { data, loading, error, refetch } = useApi(`/crm/accounts${apiQuery}`, { deps: [apiQuery, reloadKey] });
 
   const items = useMemo(() => {
     let rows = data?.items ?? [];

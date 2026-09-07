@@ -2,6 +2,37 @@
 
 ---
 
+## 2026-09-06 — Creación de cuentas B2B desde el panel CRM (Agente: Claude)
+
+### Contexto
+La auditoría CRUD del 22 de junio dejó el CRM como uno de los dos módulos con problema crítico: el botón «+ Nueva cuenta» abría un `alert("TODO")`. El panel solo podía mostrar cuentas creadas por la sincronización de MercadoLibre, así que un prospecto de feria, un hotel o un importador contactado por correo no tenían forma de entrar al pipeline. Cierra DY-AUDIT-02.
+
+### Cambios
+
+**Backend**
+- **`server/routes/crm.js`** — `POST /accounts` reescrito. Antes existía pero aceptaba el payload casi sin validar y no permitía fijar la etapa inicial. Ahora normaliza los textos con un helper `str()` (trim + descarte de valores no-string), exige razón social y segmento válido, valida el país como código ISO de dos letras, acepta `pipeline_stage` opcional contra la lista de etapas, exige que `pipeline_value` sea un entero de centavos no negativo y valida el correo del contacto. La cuenta y su contacto principal siguen creándose en una sola transacción, y la creación queda en `audit_logs` vía `logAudit`.
+
+**Frontend**
+- **`src/components/crm/components/NewAccountModal.jsx`** (nuevo) — modal de creación: identificación (razón social, nombre comercial, NIT), clasificación (segmento, etapa, país, ciudad, departamento), valor de pipeline y origen, contacto principal opcional y notas. `role="dialog"` con `aria-modal`, cierre con Escape, clic fuera y botón, foco inicial en el primer campo y restaurado al cerrar, bloqueo del scroll del fondo y botones deshabilitados mientras se envía. Los errores de la API se traducen a mensajes en español (sesión expirada, sin conexión, o el mensaje del servidor).
+- **`src/components/crm/App.jsx`** — el `alert("TODO")` se reemplaza por el modal. Al crear, cierra, incrementa `reloadKey` y navega a la ficha de la cuenta nueva.
+- **`src/components/crm/components/ClientList.jsx`** — acepta `reloadKey` y lo pasa a las dependencias de `useApi`, que es lo que dispara la recarga del listado.
+- **`src/components/crm/CRM.module.css`** — estilos de modal, campos de formulario y rejilla de dos columnas, con las mismas variables del resto del módulo. La rejilla colapsa a una columna bajo 480 px.
+
+**Tests**
+- **`server/routes/__tests__/crm.integration.test.js`** (nuevo) — 16 tests por HTTP contra SQLite real: creación completa verificada contra la vista `crm_account_overview`, aparición en el listado que recarga el panel, contacto principal, normalización de espacios y país en minúsculas, registro en auditoría, nueve casos de validación rechazada, ausencia de cuentas huérfanas tras un payload inválido y rechazo de roles distintos de admin.
+
+### Decisiones
+- **El valor del pipeline se captura en pesos y se envía en centavos.** La columna `pipeline_value` guarda centavos porque `formatCOP()` divide por 100, pero pedirle centavos a quien registra la cuenta invita al error de dos órdenes de magnitud. El formulario multiplica por 100 al enviar.
+- **El nombre comercial es opcional y cae en la razón social.** Son iguales en la mayoría de cuentas colombianas y obligar a repetirlo solo agrega fricción. La columna sigue siendo `NOT NULL`.
+- **El país se valida como patrón ISO, no contra una lista blanca.** El selector ofrece Colombia y Estados Unidos, que son los mercados actuales, pero la API no debe romperse el día que se agregue un tercero.
+- **Tras crear se abre la ficha de la cuenta.** Lo que sigue naturalmente a registrar un prospecto es anotar la primera interacción, y la ficha es donde se hace.
+- **Auditoría en la creación, no en el listado.** Crear una cuenta B2B es un hecho comercial que conviene poder rastrear; consultarla no.
+
+### Verificación
+`npx vitest run`: 163/163 (16 nuevos). `npx eslint` sobre los archivos tocados: sin hallazgos. `npm run build`: completo. La creación se probó de punta a punta contra SQLite real por HTTP; no se ejecutó contra Turso en producción.
+
+---
+
 ## 2026-08-12 — Señales de confianza en las cards y buscador del catálogo (Agente: Claude)
 
 ### Contexto

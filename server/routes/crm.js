@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { logger } from '../logger.js';
 import { query, withTransaction } from '../db.js';
 import { authenticateToken, requireRole } from '../auth.js';
+import { logAudit } from '../services/audit.js';
 
 const STAGES   = ['prospect','contacted','sample_sent','negotiation','active','lost'];
 const SEGMENTS = ['importer_us','distributor_co','hotel','cafeteria','retail','other'];
@@ -11,6 +12,7 @@ export const crmRouter = Router();
 
 const ok  = (res, data)              => res.json({ success: true, data });
 const err = (res, status, code, msg) => res.status(status).json({ success: false, error: { code, message: msg } });
+const str = (v) => (typeof v === 'string' ? v.trim() : '');
 
 // Todas las rutas requieren admin
 crmRouter.use(authenticateToken, requireRole('admin'));
@@ -92,39 +94,61 @@ crmRouter.get('/accounts/:id(\\d+)', async (req, res) => {
 
 // POST /api/crm/accounts
 crmRouter.post('/accounts', async (req, res) => {
-  const {
-    legal_name, display_name, segment,
-    country = 'CO', city, region, tax_id,
-    pipeline_value = 0, source, notes, contact,
-  } = req.body ?? {};
+  const b = req.body ?? {};
 
-  if (!legal_name || !display_name || !SEGMENTS.includes(segment)) {
-    return err(res, 400, 'bad_payload', 'legal_name, display_name y segment válido son requeridos');
+  const legalName   = str(b.legal_name);
+  const displayName = str(b.display_name);
+  const country     = (str(b.country) || 'CO').toUpperCase();
+  const stage       = str(b.pipeline_stage) || 'prospect';
+  const pipelineValue = Number(b.pipeline_value ?? 0);
+
+  if (!legalName)   return err(res, 400, 'bad_payload', 'La razón social es requerida');
+  if (!displayName) return err(res, 400, 'bad_payload', 'El nombre comercial es requerido');
+  if (!SEGMENTS.includes(b.segment)) return err(res, 400, 'bad_segment', 'Seleccione un segmento válido');
+  if (!/^[A-Z]{2}$/.test(country))   return err(res, 400, 'bad_country', 'El país debe ser un código ISO de 2 letras');
+  if (!STAGES.includes(stage))       return err(res, 400, 'bad_stage', `stage inválido: ${stage}`);
+  if (!Number.isInteger(pipelineValue) || pipelineValue < 0) {
+    return err(res, 400, 'bad_payload', 'El valor del pipeline debe ser un entero no negativo');
   }
+
+  const contactName = str(b.contact?.full_name);
+  const contactMail = str(b.contact?.email);
+  if (contactMail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactMail)) {
+    return err(res, 400, 'bad_email', 'El correo del contacto no es válido');
+  }
+  if (contactMail && !contactName) {
+    return err(res, 400, 'bad_payload', 'Indique el nombre del contacto');
+  }
+
   const ownerId = req.user?.id ?? null;
 
   try {
-    const result = await withTransaction(async ({ query: txq }) => {
+    const accountId = await withTransaction(async ({ query: txq }) => {
       const acctRes = await txq(
         `INSERT INTO crm_accounts
-           (legal_name, display_name, segment, country, city, region, tax_id, pipeline_value, source, notes, owner_user_id)
-         VALUES (?,?,?,?,?,?,?,?,?,?,?)`,
-        [legal_name, display_name, segment, country, city ?? null, region ?? null, tax_id ?? null,
-         pipeline_value, source ?? null, notes ?? null, ownerId]
+           (legal_name, display_name, segment, country, city, region, tax_id,
+            pipeline_stage, pipeline_value, source, notes, owner_user_id)
+         VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`,
+        [legalName, displayName, b.segment, country, str(b.city) || null, str(b.region) || null,
+         str(b.tax_id) || null, stage, pipelineValue, str(b.source) || null, str(b.notes) || null, ownerId]
       );
-      const accountId = Number(acctRes.lastInsertRowid);
+      const id = Number(acctRes.lastInsertRowid);
 
-      if (contact?.full_name) {
+      if (contactName) {
         await txq(
           `INSERT INTO crm_contacts(account_id, full_name, role, email, phone, is_primary)
            VALUES (?,?,?,?,?,1)`,
-          [accountId, contact.full_name, contact.role ?? null, contact.email ?? null, contact.phone ?? null]
+          [id, contactName, str(b.contact?.role) || null, contactMail || null, str(b.contact?.phone) || null]
         );
       }
-      return accountId;
+      return id;
     });
 
-    const fullRes = await query('SELECT * FROM crm_account_overview WHERE id = ?', [result]);
+    await logAudit(ownerId, 'create', 'crm_account', accountId, {
+      display_name: displayName, segment: b.segment, country, pipeline_stage: stage,
+    });
+
+    const fullRes = await query('SELECT * FROM crm_account_overview WHERE id = ?', [accountId]);
     ok(res, fullRes.rows[0]);
   } catch (e) {
     logger.error('[POST /api/crm/accounts]', e);

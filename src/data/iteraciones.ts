@@ -624,12 +624,13 @@ export const ITERACIONES: Iteracion[] = [
         id: "DY-AUDIT-02",
         titulo:
           "Como administrador, quiero poder crear nuevas cuentas de CRM desde el panel sin depender solo de la sincronización de MercadoLibre",
-        tipo: "bug", valor: "alto", col: "cola", par: "MR", agente: "Claude",
-        fecha: "2026-06-22", tags: ["crm", "admin", "crud"],
+        tipo: "bug", valor: "alto", col: "aceptada", par: "MR", agente: "Claude",
+        fecha: "2026-09-06", tags: ["crm", "admin", "crud"],
         dod: [
-          pend("El botón 'Nueva cuenta' en crm.astro abre un modal funcional de creación (no un alert TODO)."),
-          pend("POST /api/crm/accounts acepta datos del formulario y crea la cuenta en la BD."),
-          pend("La lista de cuentas se recarga automáticamente tras crear."),
+          ok("El botón 'Nueva cuenta' abre NewAccountModal: formulario accesible (role=dialog, Escape, foco inicial y restaurado) con datos de la cuenta y contacto principal opcional."),
+          ok("POST /api/crm/accounts valida el payload, crea cuenta y contacto en una transacción y registra la creación en auditoría."),
+          ok("La lista se recarga automáticamente tras crear y el panel abre la ficha de la cuenta nueva."),
+          ok("16 tests de integración sobre SQLite real cubren creación, listado, contacto principal, auditoría, validación y permisos."),
         ],
       },
       {

@@ -3,10 +3,14 @@ import styles from "./CRM.module.css";
 import ClientList from "./components/ClientList.jsx";
 import ClientCard from "./components/ClientCard.jsx";
 import Pipeline   from "./components/Pipeline.jsx";
+import NewAccountModal from "./components/NewAccountModal.jsx";
 
 export default function CrmApp() {
   const [route,   setRoute]   = useState({ name: "list" });
   const [filters, setFilters] = useState({ stages: [], segments: [], country: null, q: "" });
+  const [newOpen,   setNewOpen]   = useState(false);
+  // Se incrementa al crear una cuenta para que ClientList vuelva a consultar la API.
+  const [reloadKey, setReloadKey] = useState(0);
 
   return (
     <div className={styles.shell}>
@@ -33,14 +37,25 @@ export default function CrmApp() {
         <ClientList
           filters={filters}
           onFiltersChange={setFilters}
+          reloadKey={reloadKey}
           onOpen={(id) => setRoute({ name: "detail", id })}
-          onNew={() => alert("TODO: abrir modal Nueva cuenta")}
+          onNew={() => setNewOpen(true)}
         />
       )}
 
       {route.name === "pipeline" && (
         <Pipeline onOpen={(id) => setRoute({ name: "detail", id })} />
       )}
+
+      <NewAccountModal
+        open={newOpen}
+        onClose={() => setNewOpen(false)}
+        onCreated={(account) => {
+          setNewOpen(false);
+          setReloadKey((k) => k + 1);
+          if (account?.id) setRoute({ name: "detail", id: account.id });
+        }}
+      />
 
       {route.name === "detail" && (
         <ClientCard
