@@ -42,6 +42,7 @@ import { accountRouter } from '../server/routes/account.js';
 import { fncRouter } from '../server/routes/fnc.js';
 import { globalLimiter } from '../server/middleware/rateLimit.js';
 import { healthCheck } from '../server/db.js';
+import { medidorDesdeEnv } from '../server/medidor.mjs';
 
 const app = express();
 
@@ -49,6 +50,12 @@ const app = express();
 // la IP real del cliente (X-Forwarded-For). Sin esto, el rate limiting agrupa a
 // todos los usuarios bajo la IP del proxy y se vuelve inútil o bloquea a todos.
 app.set('trust proxy', 1);
+
+// Medidor de cómputo (server/medidor.mjs, generado en el portafolio de
+// codebymike): mide lo que la API gasta de la cuota de Vercel y lo reporta al
+// panel. Primero de todos para medir la petición entera. Sin COMPUTO_PROYECTO
+// y COMPUTO_SECRETO no hace nada.
+app.use(medidorDesdeEnv().express());
 
 app.use(pinoHttp({ logger }));
 
