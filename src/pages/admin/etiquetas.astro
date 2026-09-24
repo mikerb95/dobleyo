@@ -27,6 +27,20 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   </div>
 
   <div class="erp-body">
+    <!-- Llegada desde el flujo de empaque (/admin/produccion): etiquetas del lote listas para imprimir -->
+    <section class="card flow-print" id="flowPrint" hidden aria-live="polite">
+      <div class="card-pad flow-print-body">
+        <div>
+          <h3 class="card-title" id="flowPrintTitle">Etiquetas listas para imprimir</h3>
+          <p class="card-subtitle" id="flowPrintText"></p>
+        </div>
+        <div class="flow-print-actions">
+          <button type="button" class="btn btn-secondary" id="flowPrintAgain">Imprimir de nuevo</button>
+          <button type="button" class="btn btn-save" id="flowPrintDone">Marcar como impresas</button>
+        </div>
+      </div>
+    </section>
+
     <!-- ── KPIs ──────────────────────────────────────────────────────── -->
     <div class="kpi-grid" style="margin-bottom: 22px;">
       <div class="kpi-tile brand">
@@ -933,11 +947,68 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       toast("Datos actualizados", "info");
     });
 
+    // ── Impresión desde el flujo de empaque ─────────────────────────
+    // /admin/etiquetas?imprimir=<lote> abre el diálogo de impresión con las
+    // etiquetas pendientes de ese lote y deja marcarlas como impresas.
+    let flowLabels = [];
+
+    async function printFromFlow() {
+      const lot = new URLSearchParams(window.location.search).get("imprimir");
+      if (!lot) return;
+      try {
+        const res = await fetch(
+          `/api/labels/list?lot=${encodeURIComponent(lot)}&printed=0&limit=500`,
+          { credentials: "include" }
+        );
+        const json = await res.json();
+        if (!res.ok || !json.success) throw new Error(json.error || "No se pudieron cargar las etiquetas");
+        flowLabels = json.data || [];
+      } catch (error) {
+        return toast(error.message, "error");
+      }
+
+      const box = document.getElementById("flowPrint");
+      if (!flowLabels.length) {
+        return toast("Este lote no tiene etiquetas pendientes de imprimir", "info");
+      }
+      const n = flowLabels.length;
+      document.getElementById("flowPrintText").textContent =
+        `${n} ${n === 1 ? "etiqueta" : "etiquetas"} del lote ${lot}. ` +
+        "Cuando salgan de la impresora, márquelas como impresas.";
+      box.hidden = false;
+      printLabels(flowLabels);
+    }
+
+    document.getElementById("flowPrintAgain")?.addEventListener("click", () => printLabels(flowLabels));
+    document.getElementById("flowPrintDone")?.addEventListener("click", async (e) => {
+      const btn = e.currentTarget;
+      btn.disabled = true;
+      const results = await Promise.allSettled(
+        flowLabels.map((l) =>
+          fetch(`/api/labels/${encodeURIComponent(l.label_code)}/print`, {
+            method: "PATCH",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ printed: true }),
+          }).then((r) => { if (!r.ok) throw new Error(); })
+        )
+      );
+      const failed = results.filter((r) => r.status === "rejected").length;
+      if (failed) {
+        btn.disabled = false;
+        return toast(`No se pudieron marcar ${failed} etiquetas. Intente de nuevo.`, "error");
+      }
+      document.getElementById("flowPrint").hidden = true;
+      toast(`${flowLabels.length} etiquetas marcadas como impresas`, "success");
+      loadStats();
+    });
+
     // ── Init ────────────────────────────────────────────────────────
     document.addEventListener("DOMContentLoaded", () => {
       loadPreparedLots();
       loadStats();
       updatePreview();
+      printFromFlow();
     });
   </script>
 </AdminLayout>
@@ -1001,6 +1072,14 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
   /* ── Área de impresión ─────────────────────────────────────────── */
   #printArea { display: none; }
+
+  .flow-print { margin-bottom: 22px; background: var(--active-bg); }
+  .flow-print[hidden] { display: none; }
+  .flow-print-body {
+    display: flex; flex-wrap: wrap; gap: 14px;
+    align-items: center; justify-content: space-between;
+  }
+  .flow-print-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 
   /* ── Sliders ───────────────────────────────────────────────────── */
   .slider-field { margin-bottom: 18px; }

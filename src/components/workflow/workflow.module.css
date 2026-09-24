@@ -1,0 +1,1044 @@
+/* ==========================================================================
+   Qué sigue: flujo guiado de producción
+   Todo se deriva de los tokens del admin (AdminLayout :root). La personalidad
+   está en dos cosas: la tipografía Fraunces para las frases de objetivo y
+   "la ruta del grano" (hilo de estaciones + barra de masa). Lo demás, sobrio.
+   ========================================================================== */
+
+.hub {
+  /* Estados del café en la barra de masa, del verde al empacado. */
+  --wf-green: color-mix(in oklab, var(--ok) 42%, var(--paper));
+  --wf-maquila: color-mix(in oklab, var(--color-accent) 48%, var(--paper));
+  --wf-roasted: color-mix(in oklab, var(--color-primary) 88%, var(--color-accent));
+  --wf-packed: color-mix(in oklab, var(--color-primary) 40%, var(--color-accent));
+  --wf-loss: var(--rule-2);
+
+  --wf-late: var(--danger);
+  --wf-now: var(--color-accent);
+  --wf-waiting: var(--info);
+  --wf-anytime: var(--muted-2);
+
+  --wf-serif: "Fraunces Variable", Georgia, "Times New Roman", serif;
+  --wf-ink: var(--color-text);
+
+  padding: 20px 16px 72px;
+  max-width: 1320px;
+  margin: 0 auto;
+  color: var(--wf-ink);
+  font-family: var(--font-ui);
+}
+
+@media (min-width: 768px) {
+  .hub { padding: 28px 28px 80px; }
+}
+
+/* ── Botones ───────────────────────────────────────────────────────────── */
+
+.btnPrimary,
+.btnGhost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 0 18px;
+  border-radius: 999px;
+  font: 600 14px/1 var(--font-ui);
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.btnPrimary {
+  background: var(--color-primary);
+  color: var(--paper);
+  border: 1px solid var(--color-primary);
+}
+.btnPrimary:hover:not(:disabled) {
+  background: color-mix(in oklab, var(--color-primary) 86%, var(--color-accent));
+}
+.btnPrimary:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.btnGhost {
+  background: transparent;
+  color: var(--color-primary);
+  border: 1px solid var(--rule-2);
+}
+.btnGhost:hover { background: var(--hover); border-color: var(--color-primary); }
+
+.btnPrimary:focus-visible,
+.btnGhost:focus-visible,
+.linkBtn:focus-visible,
+.inlineBtn:focus-visible,
+.back:focus-visible,
+.close:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.linkBtn {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--color-primary);
+  font: 500 14px/1.45 var(--font-ui);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in oklab, var(--color-accent) 60%, transparent);
+  text-underline-offset: 3px;
+  cursor: pointer;
+  text-align: left;
+}
+.linkBtn:hover { text-decoration-color: var(--color-accent); }
+
+.inlineBtn {
+  border: 0;
+  background: var(--active-bg);
+  color: var(--color-primary);
+  font: 600 12px/1 var(--font-ui);
+  padding: 7px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+  margin-right: 6px;
+}
+
+/* ── Encabezado de la bandeja ──────────────────────────────────────────── */
+
+.hubHead {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+@media (min-width: 768px) {
+  .hubHead {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 32px;
+  }
+}
+
+.hubHeadText { max-width: 62ch; }
+
+.hub .hello {
+  font-family: var(--wf-serif);
+  font-weight: 500;
+  font-size: clamp(28px, 4vw, 40px);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--color-primary);
+  margin: 0 0 10px;
+  font-variation-settings: "opsz" 72;
+}
+
+.summary {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.55;
+  color: color-mix(in oklab, var(--wf-ink) 78%, transparent);
+}
+
+/* ── Rejilla ───────────────────────────────────────────────────────────── */
+
+.hubGrid {
+  display: grid;
+  gap: 28px;
+}
+
+@media (min-width: 1024px) {
+  .hubGrid {
+    grid-template-columns: minmax(0, 1fr) 300px;
+    align-items: start;
+    gap: 36px;
+  }
+}
+
+@media (min-width: 1400px) {
+  .hubGrid { grid-template-columns: minmax(0, 1fr) 340px; }
+}
+
+/* ── Grupos de urgencia ────────────────────────────────────────────────── */
+
+.board { display: grid; gap: 28px; }
+
+.group { display: grid; gap: 10px; }
+
+.groupHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+}
+
+.hub .groupHead h2 {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 15px;
+  font-weight: 650;
+  color: var(--color-primary);
+}
+
+/* Punto de color de la urgencia, junto al título del grupo. */
+.hub .groupHead h2::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--wf-dot, var(--muted-2));
+}
+.group[data-urgency="late"] { --wf-dot: var(--wf-late); }
+.group[data-urgency="now"] { --wf-dot: var(--wf-now); }
+.group[data-urgency="waiting"] { --wf-dot: var(--wf-waiting); }
+.group[data-urgency="anytime"] { --wf-dot: var(--wf-anytime); }
+
+.groupHead p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.count {
+  font-weight: 500;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Tareas ────────────────────────────────────────────────────────────── */
+
+.tasks {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.task {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  padding: 16px;
+}
+.task + .task { border-top: 1px solid var(--rule); }
+
+@media (min-width: 768px) {
+  .task {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 20px;
+    padding: 18px 20px;
+  }
+}
+
+.task[data-urgency="late"] { background: color-mix(in oklab, var(--danger) 4%, var(--paper)); }
+
+.taskMain {
+  display: grid;
+  gap: 4px;
+  text-align: left;
+  background: none;
+  border: 0;
+  padding: 0;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  border-radius: 8px;
+}
+.taskMain:disabled { cursor: default; }
+.taskMain:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 4px; }
+.taskMain:hover:not(:disabled) .taskTitle { text-decoration: underline; text-decoration-color: var(--rule-2); text-underline-offset: 4px; }
+
+.taskMain > .thread { margin-bottom: 6px; }
+
+.taskTitle {
+  font-family: var(--wf-serif);
+  font-size: 19px;
+  font-weight: 500;
+  line-height: 1.3;
+  color: var(--color-primary);
+  font-variation-settings: "opsz" 24;
+}
+
+.taskDetail {
+  font-size: 14px;
+  line-height: 1.5;
+  color: color-mix(in oklab, var(--wf-ink) 72%, transparent);
+}
+
+.taskLot {
+  font-size: 12.5px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.task .btnPrimary,
+.task .btnGhost { justify-self: start; }
+
+@media (min-width: 768px) {
+  .task .btnPrimary,
+  .task .btnGhost { justify-self: end; }
+}
+
+/* ── Hilo de estaciones ────────────────────────────────────────────────── */
+
+.thread {
+  --bead: 9px;
+  display: flex;
+  align-items: center;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.bead {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* El hilo que une cada cuenta con la anterior. */
+.bead + .bead { margin-left: 14px; }
+.bead + .bead::before {
+  content: "";
+  position: absolute;
+  top: calc(var(--bead) / 2 - 0.5px);
+  right: calc(100% + 2px);
+  width: 10px;
+  height: 1px;
+  background: var(--rule-2);
+}
+.bead[data-state="done"] + .bead::before,
+.bead[data-state="active"] + .bead::before { background: color-mix(in oklab, var(--color-primary) 45%, var(--paper)); }
+
+.beadDot {
+  width: var(--bead);
+  height: var(--bead);
+  border-radius: 50%;
+  border: 1.5px solid var(--rule-2);
+  background: var(--paper);
+  box-sizing: border-box;
+}
+.bead[data-state="done"] .beadDot { background: var(--color-primary); border-color: var(--color-primary); }
+.bead[data-state="active"] .beadDot { background: var(--color-accent); border-color: var(--color-accent); }
+.bead[data-state="next"] .beadDot { border-color: var(--color-accent); border-style: dashed; }
+
+/* Estación donde se trabaja la tarea: anillo alrededor de la cuenta. */
+.bead[data-focus] .beadDot {
+  box-shadow: 0 0 0 3px var(--paper), 0 0 0 4.5px var(--color-accent);
+}
+
+.threadLg {
+  --bead: 12px;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  margin-top: 22px;
+}
+.threadLg .bead + .bead { margin-left: 0; }
+.threadLg .bead + .bead::before {
+  top: calc(var(--bead) / 2 - 0.5px);
+  right: calc(50% + var(--bead) / 2 + 4px);
+  width: calc(100% - var(--bead) - 8px);
+}
+.beadLabel {
+  margin-top: 8px;
+  font-size: 11.5px;
+  line-height: 1.25;
+  text-align: center;
+  color: var(--muted);
+}
+.bead[data-state="active"] .beadLabel,
+.bead[data-state="next"] .beadLabel { color: var(--color-primary); font-weight: 600; }
+
+/* ── Barra de masa ─────────────────────────────────────────────────────── */
+
+.flow { display: grid; gap: 14px; }
+
+.flowBar {
+  display: flex;
+  gap: 2px;
+  height: 14px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--rule);
+}
+.flowCompact .flowBar { height: 6px; margin-top: 8px; }
+
+.flowBar > span { min-width: 4px; flex-basis: 0; }
+
+.flow_green { background: var(--wf-green); }
+.flow_maquila { background: var(--wf-maquila); }
+.flow_roasted { background: var(--wf-roasted); }
+.flow_packed { background: var(--wf-packed); }
+/* La merma ya no es café: rayada en vez de sólida. */
+.flow_loss {
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--wf-loss) 0 3px,
+    transparent 3px 6px
+  );
+}
+
+.flowLegend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.flowLegend li {
+  display: grid;
+  grid-template-columns: 12px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+}
+.flowSwatch { width: 12px; height: 12px; border-radius: 3px; }
+.flowName { color: color-mix(in oklab, var(--wf-ink) 75%, transparent); }
+.flowKg { font-variant-numeric: tabular-nums; font-weight: 600; color: var(--color-primary); }
+.flowEmpty { margin: 0; font-size: 14px; color: var(--muted); }
+
+/* ── Columna de lotes ──────────────────────────────────────────────────── */
+
+.aside { display: grid; gap: 16px; }
+
+@media (min-width: 1024px) {
+  .aside { position: sticky; top: calc(var(--shell-h, 56px) + 20px); }
+}
+
+.hub .asideTitle,
+.hub .sectionTitle {
+  margin: 0 0 12px;
+  font-size: 15px;
+  font-weight: 650;
+  color: var(--color-primary);
+}
+
+.asideNote { margin: 0; font-size: 13.5px; line-height: 1.5; color: var(--muted); }
+
+.inflight ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+
+.lotLink {
+  width: 100%;
+  display: grid;
+  gap: 2px;
+  text-align: left;
+  padding: 12px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.lotLink:hover { background: var(--hover); }
+.lotLink[data-on] { background: var(--active-bg); }
+.lotLink:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 1px; }
+
+.lotLinkName { font-family: var(--wf-serif); font-size: 16px; font-weight: 500; color: var(--color-primary); }
+.lotLinkMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.pill {
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--c-warning-bg);
+  color: var(--color-primary);
+}
+
+/* ── Estados vacíos, errores y carga ───────────────────────────────────── */
+
+.empty {
+  display: grid;
+  justify-items: start;
+  gap: 10px;
+  padding: 28px;
+  border: 1px dashed var(--rule-2);
+  border-radius: 14px;
+  background: var(--paper);
+  max-width: 60ch;
+}
+.empty p { margin: 0; line-height: 1.55; color: color-mix(in oklab, var(--wf-ink) 75%, transparent); }
+.emptyTitle { font-family: var(--wf-serif); font-size: 22px; color: var(--color-primary) !important; }
+
+.alert {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: var(--c-error-bg);
+  border: 1px solid var(--c-error-border);
+  color: var(--c-error);
+}
+.alert p { margin: 0; }
+
+.skeleton,
+.skeletonRow {
+  height: 14px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, var(--rule) 0%, var(--hover) 50%, var(--rule) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+.skeletonRow { height: 76px; border-radius: 14px; }
+.skeleton + .skeleton { margin-top: 10px; }
+
+@keyframes shimmer {
+  from { background-position: 100% 0; }
+  to { background-position: -100% 0; }
+}
+
+.note {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: var(--c-warning-bg);
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: color-mix(in oklab, var(--wf-ink) 85%, transparent);
+}
+
+/* ── Ficha del lote ────────────────────────────────────────────────────── */
+
+.lotView { display: grid; gap: 28px; }
+
+.back {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px 6px 4px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--muted);
+  font: 500 14px/1 var(--font-ui);
+  cursor: pointer;
+}
+.back:hover { color: var(--color-primary); background: var(--hover); }
+
+.lotHead { max-width: 820px; }
+
+.lotCode {
+  margin: 0 0 6px;
+  font-size: 13px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.hub .lotName {
+  margin: 0 0 12px;
+  font-family: var(--wf-serif);
+  font-weight: 500;
+  font-size: clamp(28px, 4.2vw, 44px);
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+  color: var(--color-primary);
+  font-variation-settings: "opsz" 96;
+}
+
+.lotFacts {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  font-size: 14px;
+  color: color-mix(in oklab, var(--wf-ink) 70%, transparent);
+}
+
+.lotGrid { display: grid; gap: 28px; }
+
+@media (min-width: 1024px) {
+  .lotGrid {
+    grid-template-columns: minmax(0, 1fr) 320px;
+    align-items: start;
+    gap: 40px;
+  }
+}
+
+.lotSection + .lotSection { margin-top: 32px; }
+
+.lotAside {
+  display: grid;
+  gap: 24px;
+  padding: 20px;
+  border-radius: 14px;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+}
+.lotAside .lotSection + .lotSection { margin-top: 0; }
+
+/* Historia: fecha a la izquierda, lo que pasó a la derecha. */
+.story {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+}
+
+.storyItem {
+  position: relative;
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 16px;
+  padding: 0 0 20px;
+}
+.storyItem::before {
+  content: "";
+  position: absolute;
+  left: 83px;
+  top: 7px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--color-primary);
+}
+.storyItem:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  left: 86px;
+  top: 18px;
+  bottom: 2px;
+  width: 1px;
+  background: var(--rule-2);
+}
+.storyItem > div { padding-left: 22px; }
+
+.storyDate {
+  font-size: 13px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  padding-top: 1px;
+  white-space: nowrap;
+}
+.storyTitle { margin: 0; font-weight: 600; font-size: 15px; color: var(--color-primary); }
+.storyDetail { margin: 2px 0 0; font-size: 14px; line-height: 1.5; color: color-mix(in oklab, var(--wf-ink) 72%, transparent); }
+
+/* ── Hoja lateral ──────────────────────────────────────────────────────── */
+
+.sheet {
+  --wf-serif: "Fraunces Variable", Georgia, "Times New Roman", serif;
+  --wf-ink: var(--color-text);
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  max-width: 100%;
+  height: 100dvh;
+  max-height: 100dvh;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: var(--paper);
+  color: var(--wf-ink);
+  font-family: var(--font-ui);
+}
+
+@media (min-width: 768px) {
+  .sheet {
+    inset: 0 0 0 auto;
+    width: min(600px, 92vw);
+    box-shadow: -24px 0 60px color-mix(in oklab, var(--color-primary) 18%, transparent);
+  }
+}
+
+.sheet::backdrop {
+  background: color-mix(in oklab, var(--color-primary) 32%, transparent);
+}
+
+.sheet[open] { animation: sheetIn 0.22s cubic-bezier(0.2, 0.8, 0.2, 1); }
+
+@keyframes sheetIn {
+  from { transform: translateX(28px); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sheet[open] { animation: none; }
+  .skeleton, .skeletonRow { animation: none; }
+}
+
+.sheetForm {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  height: 100%;
+}
+
+.sheetHead { padding: 18px 20px 16px; border-bottom: 1px solid var(--rule); }
+@media (min-width: 768px) { .sheetHead { padding: 22px 28px 18px; } }
+
+.sheetHeadRow { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 32px; }
+
+.sheetLot {
+  font-size: 12.5px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.close {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.close:hover { background: var(--hover); color: var(--color-primary); }
+
+.sheet .sheetTitle {
+  margin: 6px 0 0;
+  font-family: var(--wf-serif);
+  font-weight: 500;
+  font-size: clamp(24px, 3vw, 28px);
+  line-height: 1.15;
+  color: var(--color-primary);
+  font-variation-settings: "opsz" 48;
+}
+
+.sheetIntro {
+  margin: 8px 0 0;
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: color-mix(in oklab, var(--wf-ink) 72%, transparent);
+  max-width: 56ch;
+}
+
+.sheetBody {
+  overflow-y: auto;
+  padding: 20px;
+  display: grid;
+  align-content: start;
+  gap: 24px;
+  overscroll-behavior: contain;
+}
+@media (min-width: 768px) { .sheetBody { padding: 24px 28px; } }
+
+.sheetFoot {
+  padding: 14px 20px calc(14px + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--rule);
+  background: color-mix(in oklab, var(--color-primary) 3%, var(--paper));
+  display: grid;
+  gap: 12px;
+}
+@media (min-width: 768px) { .sheetFoot { padding: 16px 28px; } }
+
+.consequence { margin: 0; font-size: 14.5px; line-height: 1.5; color: var(--wf-ink); }
+.consequence strong { color: var(--color-primary); }
+
+.sheetError {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--c-error-bg);
+  color: var(--c-error);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.sheetActions { display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap; }
+@media (max-width: 479px) {
+  .sheetActions > * { flex: 1 1 auto; }
+}
+
+/* ── Campos del formulario ─────────────────────────────────────────────── */
+
+.formSection { display: grid; gap: 18px; }
+.formSectionHead { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 12px; }
+.sheet .formSectionHead h3 { margin: 0; font-size: 15px; font-weight: 650; color: var(--color-primary); }
+.sectionAside { font-size: 13px; color: var(--muted); }
+
+.field { display: grid; gap: 8px; margin: 0; padding: 0; border: 0; min-width: 0; }
+.fieldLabel { display: flex; align-items: baseline; gap: 8px; padding: 0; font-size: 14px; font-weight: 600; color: var(--wf-ink); }
+.optional { font-size: 12px; font-weight: 400; color: var(--muted); }
+.fieldHint { margin: 0; font-size: 13px; line-height: 1.45; color: var(--muted); }
+.fieldError { margin: 0; font-size: 13px; color: var(--c-error); }
+
+.sheetBody input[type="text"],
+.sheetBody input[type="date"],
+.sheetBody input:not([type]),
+.sheetBody select,
+.sheetBody textarea,
+.input {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid var(--rule-2);
+  border-radius: 10px;
+  background: var(--paper);
+  color: var(--wf-ink);
+  font: 15px/1.4 var(--font-ui);
+  box-sizing: border-box;
+}
+.sheetBody textarea { resize: vertical; min-height: 84px; }
+
+.sheetBody input:focus-visible,
+.sheetBody select:focus-visible,
+.sheetBody textarea:focus-visible {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-accent) 25%, transparent);
+}
+
+/* Número con unidad: el valor se lee grande, como en una báscula. */
+.amount {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 52px;
+  padding: 0 6px 0 14px;
+  border: 1px solid var(--rule-2);
+  border-radius: 12px;
+  background: var(--paper);
+}
+.amount:focus-within {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-accent) 25%, transparent);
+}
+.amount input {
+  flex: 1;
+  min-width: 0;
+  border: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  min-height: 48px !important;
+  background: transparent !important;
+  font: 600 20px/1 var(--font-ui) !important;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-primary);
+  outline: none;
+}
+.amountUnit { font-size: 14px; color: var(--muted); padding-right: 8px; }
+
+.pair { display: grid; gap: 14px; }
+.stack { display: grid; gap: 14px; }
+
+/* Sin flechas de incremento: el valor se escribe, como en una báscula. */
+.amount input::-webkit-outer-spin-button,
+.amount input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.amount input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
+@media (min-width: 480px) { .pair { grid-template-columns: 1fr 1fr; } }
+
+/* Fichas: opciones grandes y táctiles en lugar de selects. */
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chipsWide { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); }
+
+.chip {
+  position: relative;
+  display: grid;
+  gap: 2px;
+  min-height: 42px;
+  padding: 9px 14px;
+  border: 1px solid var(--rule-2);
+  border-radius: 12px;
+  background: var(--paper);
+  cursor: pointer;
+  align-content: center;
+  transition: background-color 0.12s ease, border-color 0.12s ease;
+}
+.chip:hover { border-color: color-mix(in oklab, var(--color-primary) 45%, var(--paper)); }
+.chip input { position: absolute; opacity: 0; pointer-events: none; }
+.chip:has(input:focus-visible) { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+.chip[data-on] {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--paper);
+}
+.chipText { font-size: 14.5px; font-weight: 550; }
+.chipHint { font-size: 12px; opacity: 0.72; }
+
+/* Ubicaciones de bodega con su ocupación. */
+.places { display: grid; gap: 8px; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
+
+.place {
+  position: relative;
+  display: grid;
+  gap: 4px;
+  padding: 12px 14px;
+  border: 1px solid var(--rule-2);
+  border-radius: 12px;
+  cursor: pointer;
+  background: var(--paper);
+}
+.place input { position: absolute; opacity: 0; pointer-events: none; }
+.place:has(input:focus-visible) { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+.place:hover { border-color: color-mix(in oklab, var(--color-primary) 45%, var(--paper)); }
+.place[data-on] { background: var(--active-bg); border-color: var(--color-accent); }
+.place[data-off] { opacity: 0.5; cursor: not-allowed; }
+.placeName { font-weight: 600; font-size: 14.5px; color: var(--color-primary); }
+.placeCode { font-size: 12.5px; color: var(--muted); }
+.placeFill { display: block; height: 4px; margin-top: 6px; border-radius: 999px; background: var(--rule); overflow: hidden; }
+.placeFill > span { display: block; height: 100%; background: var(--wf-roasted, var(--color-primary)); }
+.placeFree { font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+/* Plegables para lo opcional. */
+.more { border-top: 1px solid var(--rule); padding-top: 14px; }
+.more summary {
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-primary);
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.more summary::-webkit-details-marker { display: none; }
+.more summary::before {
+  content: "+";
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1px solid var(--rule-2);
+  font-weight: 500;
+  line-height: 1;
+}
+.more[open] summary::before { content: "−"; }
+.moreBody { display: grid; gap: 16px; padding-top: 16px; }
+
+.check { display: flex; align-items: flex-start; gap: 10px; font-size: 14.5px; line-height: 1.4; cursor: pointer; }
+.check input { width: 18px; height: 18px; margin: 1px 0 0; accent-color: var(--color-primary); flex-shrink: 0; }
+
+/* Costo del paso (solo admin). */
+.cost {
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+  border-radius: 12px;
+  background: color-mix(in oklab, var(--color-accent) 6%, var(--paper));
+  border: 1px solid color-mix(in oklab, var(--color-accent) 22%, var(--paper));
+}
+.costHead { display: flex; align-items: center; gap: 8px; }
+.costDot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-accent); }
+.costTitle { font-size: 14px; font-weight: 600; }
+.costRow { display: grid; gap: 10px; }
+@media (min-width: 480px) { .costRow { grid-template-columns: minmax(0, 1fr) 150px; } }
+.costRow .amount { min-height: 46px; }
+.costRow .amount input { font-size: 17px !important; min-height: 42px !important; }
+
+/* Perfil 1 a 5 con puntos. */
+.profile { display: grid; gap: 16px; }
+@media (min-width: 480px) { .profile { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
+.dotScale { margin: 0; padding: 0; border: 0; display: grid; gap: 8px; }
+.dotScale legend { padding: 0; font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+.dots { display: flex; gap: 6px; }
+.dot { position: relative; cursor: pointer; padding: 3px; }
+.dot input { position: absolute; opacity: 0; pointer-events: none; }
+.dot > span[aria-hidden] {
+  display: block;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1.5px solid var(--rule-2);
+  background: var(--paper);
+  transition: background-color 0.1s ease;
+}
+.dot[data-on] > span[aria-hidden] { background: var(--color-primary); border-color: var(--color-primary); }
+.dot:has(input:focus-visible) > span[aria-hidden] { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+.dotEnds { display: flex; justify-content: space-between; max-width: 150px; font-size: 11.5px; color: var(--muted); }
+
+.srOnly {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  overflow: hidden; clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Merma de tueste: regla con la franja habitual. */
+.gauge { display: grid; gap: 6px; margin-top: -4px; }
+.gaugeTrack { position: relative; height: 8px; border-radius: 999px; background: var(--rule); }
+.gaugeBand {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--ok) 35%, var(--paper));
+}
+.gaugeMark {
+  position: absolute;
+  top: -4px;
+  width: 4px;
+  height: 16px;
+  margin-left: -2px;
+  border-radius: 2px;
+  background: var(--color-primary);
+  transition: left 0.15s ease;
+}
+.gauge[data-tone="warn"] .gaugeMark { background: var(--color-accent); }
+.gauge[data-tone="bad"] .gaugeMark { background: var(--danger); }
+.gaugeScale { position: relative; height: 14px; font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.gaugeScale span { position: absolute; transform: translateX(-50%); }
+.gaugeScale span:first-child { left: 0; transform: none; }
+.gaugeScale span:last-child { right: 0; transform: none; }
+
+/* ── Cierre del paso ───────────────────────────────────────────────────── */
+
+.done {
+  display: grid;
+  justify-items: start;
+  gap: 14px;
+  padding-bottom: 8px;
+}
+
+.doneMark circle { fill: color-mix(in oklab, var(--ok) 14%, var(--paper)); stroke: var(--ok); stroke-width: 1.5; }
+.doneMark path {
+  fill: none;
+  stroke: var(--ok);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 30;
+  stroke-dashoffset: 30;
+  animation: tick 0.35s 0.1s ease-out forwards;
+}
+@keyframes tick { to { stroke-dashoffset: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .doneMark path { animation: none; stroke-dashoffset: 0; }
+}
+
+.doneText { margin: 0; font-size: 16px; line-height: 1.55; max-width: 52ch; }
+
+.sheet .nextHead { margin: 8px 0 0; font-size: 15px; font-weight: 650; color: var(--color-primary); }
+
+.nextCard {
+  display: grid;
+  justify-items: start;
+  gap: 6px;
+  padding: 18px;
+  border-radius: 14px;
+  background: var(--active-bg);
+}
+.nextTitle { margin: 0; font-family: var(--wf-serif); font-size: 20px; line-height: 1.25; color: var(--color-primary); }
+.nextDetail { margin: 0 0 8px; font-size: 14px; line-height: 1.5; color: color-mix(in oklab, var(--wf-ink) 75%, transparent); }
+.nextNone { margin: 0; font-size: 14.5px; line-height: 1.5; color: color-mix(in oklab, var(--wf-ink) 75%, transparent); }
+.nextMore { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+
+.nextWaiting { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: 13.5px; color: var(--muted); }

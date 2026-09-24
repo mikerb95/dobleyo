@@ -4,8 +4,8 @@ export default defineConfig({
     test: {
         // Entorno Node.js — correcto para tests de Express/servicios del servidor
         environment: 'node',
-        // Incluir tests unitarios del servidor
-        include: ['server/**/*.test.js', 'server/**/__tests__/**/*.test.js'],
+        // Tests unitarios del servidor y de la lógica pura del front (src/lib)
+        include: ['server/**/*.test.js', 'server/**/__tests__/**/*.test.js', 'src/lib/**/__tests__/**/*.test.ts'],
         // Excluir tests E2E (se ejecutan con Playwright)
         exclude: ['tests/e2e/**', 'node_modules/**', 'dist/**'],
         // Globals para no importar describe/it/expect en cada archivo

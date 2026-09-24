@@ -14,6 +14,7 @@ import {
   deleteHarvest, deleteRoastedStorage, deleteRoastedCoffee, deleteRoastingBatch,
   getRoastedForCupping, getCuppings, createCupping,
 } from '../services/coffeeService.js';
+import { getWorkQueue, getLotJourney } from '../services/workflowService.js';
 
 export const coffeeRouter = express.Router();
 
@@ -81,7 +82,7 @@ coffeeRouter.post('/harvest', async (req, res) => {
       message:  `Lote ${data.lotId} (${farm} · ${variety}) fue registrado en cosecha y está pendiente de ingreso al inventario de café verde.`,
       priority: 3,
       tags:     ['seedling'],
-      click:    `${SITE_URL}/admin/inventory-storage`,
+      click:    `${SITE_URL}/admin/produccion?lote=${encodeURIComponent(data.lotId)}`,
     });
 
     res.status(201).json({ success: true, message: 'Lote registrado correctamente', ...data });
@@ -183,6 +184,26 @@ coffeeRouter.get('/packaged',          async (_req, res) => { try { res.json(awa
 coffeeRouter.get('/packaging-stats',   async (_req, res) => { try { res.json({ success: true, data: await getPackagingStats() }); } catch (err) { handleErr(res, err, 'Error en GET packaging-stats'); } });
 coffeeRouter.get('/roasted-for-cupping', async (_req, res) => { try { res.json(await getRoastedForCupping()); } catch (err) { handleErr(res, err, 'Error en GET roasted-for-cupping'); } });
 coffeeRouter.get('/cupping',           async (_req, res) => { try { res.json(await getCuppings()); }          catch (err) { handleErr(res, err, 'Error en GET cupping'); } });
+
+// Flujo guiado: bandeja de "qué sigue" y ficha del lote.
+// Solo lectura; los pasos se siguen registrando en los POST de arriba.
+coffeeRouter.get('/workflow/queue', async (req, res) => {
+  try {
+    res.json({ success: true, data: await getWorkQueue(req.user) });
+  } catch (err) {
+    handleErr(res, err, '[GET /workflow/queue] Error');
+  }
+});
+
+coffeeRouter.get('/workflow/lots/:lotId', async (req, res) => {
+  try {
+    const data = await getLotJourney(req.params.lotId, req.user);
+    if (!data) return res.status(404).json({ success: false, error: 'Lote no encontrado' });
+    res.json({ success: true, data });
+  } catch (err) {
+    handleErr(res, err, '[GET /workflow/lots/:lotId] Error');
+  }
+});
 
 // Stage del lote
 coffeeRouter.get('/lots/:lotId/stage', async (req, res) => {

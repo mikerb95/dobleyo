@@ -2,23 +2,25 @@ import type { ApiClient } from './client';
 import type {
   ApiEnvelope,
   AuthUser,
-  Cupping,
   CuppingInput,
+  FarmOption,
+  GenerateLabelsInput,
   GreenStorageInput,
   Harvest,
   HarvestInput,
   InventoryProduct,
   LoginResponse,
-  Lot,
-  PackagedItem,
   PackagingInput,
-  RoastBatch,
+  PackagingSupply,
   RoastRetrievalInput,
   RoastedStorageInput,
   SendRoastingInput,
+  StepResult,
   StockItem,
+  StorageLocation,
   WithClientOpId,
 } from '../types';
+import type { LotJourney, WorkflowQueue } from '../workflow';
 
 /**
  * Construye la API de dominio sobre un ApiClient.
@@ -45,35 +47,54 @@ export function createApi(client: ApiClient) {
         }),
     },
 
-    // Línea de producción — /api/coffee/*
+    // Línea de producción: /api/coffee/*
+    // Los GET de lista devuelven el arreglo sin sobre; los POST devuelven
+    // { success, ...datos } sin `data`. Por eso no pasan por unwrap().
     production: {
-      getHarvests: () => unwrap(request<ApiEnvelope<Harvest[]>>('/api/coffee/harvests')),
-      getGreenInventory: () => unwrap(request<ApiEnvelope<Lot[]>>('/api/coffee/green-inventory')),
-      getRoastingBatches: () => unwrap(request<ApiEnvelope<RoastBatch[]>>('/api/coffee/roasting-batches')),
-      getRoastedCoffee: () => unwrap(request<ApiEnvelope<RoastBatch[]>>('/api/coffee/roasted-coffee')),
-      getRoastedForStorage: () => unwrap(request<ApiEnvelope<RoastBatch[]>>('/api/coffee/roasted-for-storage')),
-      getPackaged: () => unwrap(request<ApiEnvelope<PackagedItem[]>>('/api/coffee/packaged')),
-      getLots: () => unwrap(request<ApiEnvelope<Lot[]>>('/api/coffee/lots')),
-      getLotStage: (lotId: string | number) =>
-        unwrap(request<ApiEnvelope<{ stage: string }>>(`/api/coffee/lots/${lotId}/stage`)),
+      getHarvests: () => request<Harvest[]>('/api/coffee/harvests'),
+      getLotStage: (lotId: string) =>
+        request<{ success: boolean; stage: string; label: string }>(`/api/coffee/lots/${encodeURIComponent(lotId)}/stage`),
 
       createHarvest: (input: HarvestInput & WithClientOpId) =>
-        request<{ success: boolean; lotId?: string | number }>('/api/coffee/harvest', { method: 'POST', body: input }),
+        request<StepResult>('/api/coffee/harvest', { method: 'POST', body: input }),
       storeGreen: (input: GreenStorageInput & WithClientOpId) =>
-        request<{ success: boolean }>('/api/coffee/inventory-storage', { method: 'POST', body: input }),
+        request<StepResult>('/api/coffee/inventory-storage', { method: 'POST', body: input }),
       sendRoasting: (input: SendRoastingInput & WithClientOpId) =>
-        request<{ success: boolean }>('/api/coffee/send-roasting', { method: 'POST', body: input }),
+        request<StepResult>('/api/coffee/send-roasting', { method: 'POST', body: input }),
       receiveRoasted: (input: RoastRetrievalInput & WithClientOpId) =>
-        request<{ success: boolean }>('/api/coffee/roast-retrieval', { method: 'POST', body: input }),
+        request<StepResult>('/api/coffee/roast-retrieval', { method: 'POST', body: input }),
       storeRoasted: (input: RoastedStorageInput & WithClientOpId) =>
-        request<{ success: boolean }>('/api/coffee/roasted-storage', { method: 'POST', body: input }),
+        request<StepResult>('/api/coffee/roasted-storage', { method: 'POST', body: input }),
       packaging: (input: PackagingInput & WithClientOpId) =>
-        request<{ success: boolean }>('/api/coffee/packaging', { method: 'POST', body: input }),
-
-      getCuppings: () => unwrap(request<ApiEnvelope<Cupping[]>>('/api/coffee/cupping')),
-      getRoastedForCupping: () => unwrap(request<ApiEnvelope<RoastBatch[]>>('/api/coffee/roasted-for-cupping')),
+        request<StepResult>('/api/coffee/packaging', { method: 'POST', body: input }),
       createCupping: (input: CuppingInput & WithClientOpId) =>
-        request<{ success: boolean }>('/api/coffee/cupping', { method: 'POST', body: input }),
+        request<StepResult>('/api/coffee/cupping', { method: 'POST', body: input }),
+    },
+
+    // Flujo guiado: bandeja "Qué sigue" y ficha del lote.
+    workflow: {
+      getQueue: () => unwrap(request<ApiEnvelope<WorkflowQueue>>('/api/coffee/workflow/queue')),
+      getLot: (lotId: string) =>
+        unwrap(request<ApiEnvelope<LotJourney>>(`/api/coffee/workflow/lots/${encodeURIComponent(lotId)}`)),
+    },
+
+    // Datos de apoyo de los formularios.
+    catalog: {
+      /** Fincas del caficultor en sesión. */
+      getMyFarms: () => unwrap(request<ApiEnvelope<FarmOption[]>>('/api/farms/my?list=true')),
+      /** Todas las fincas (solo admin). */
+      getAllFarms: () => unwrap(request<ApiEnvelope<FarmOption[]>>('/api/farms/admin/all')),
+      getLocations: (state: 'green' | 'roasted') =>
+        unwrap(request<ApiEnvelope<StorageLocation[]>>(`/api/storage/locations?state=${state}&include_blocked=0`)),
+      getSupplies: () => unwrap(request<ApiEnvelope<PackagingSupply[]>>('/api/costs/supplies/list')),
+    },
+
+    labels: {
+      generateFromPackaging: (input: GenerateLabelsInput) =>
+        request<{ success: boolean; message?: string; labels: unknown[] }>('/api/labels/generate-from-lot', {
+          method: 'POST',
+          body: input,
+        }),
     },
 
     // Inventario — /api/inventory, /api/stock

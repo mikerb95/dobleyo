@@ -39,10 +39,12 @@ async function request(path, { method = "GET", body, signal } = {}) {
   try { json = await res.json(); } catch { /* no-json */ }
 
   if (!res.ok) {
+    // La mayoría de rutas responden { success: false, error: "texto" }.
+    const message = typeof json?.error === "string" ? json.error : json?.error?.message;
     throw new ApiError(
       res.status,
       json?.error?.code ?? null,
-      json?.error?.message ?? res.statusText,
+      message ?? res.statusText,
       json
     );
   }

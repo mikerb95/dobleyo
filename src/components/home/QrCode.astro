@@ -1,0 +1,39 @@
+---
+/**
+ * QR real en SVG, módulo por módulo (para poder animar el descifrado).
+ * Los patrones de posición van en su propio grupo: se animan primero.
+ */
+import { qrMatrix } from "../../lib/qr.ts";
+
+interface Props {
+  text: string;
+  class?: string;
+  label?: string;
+}
+
+const { text, class: className, label } = Astro.props;
+const { size, cells } = qrMatrix(text);
+const quiet = 2;
+const view = size + quiet * 2;
+---
+
+<svg
+  class:list={["qr", className]}
+  viewBox={`${-quiet} ${-quiet} ${view} ${view}`}
+  shape-rendering="crispEdges"
+  role={label ? "img" : undefined}
+  aria-label={label}
+  aria-hidden={label ? undefined : "true"}
+>
+  <g class="qr__finders">
+    {cells.filter((c) => c.finder).map((c) => <rect x={c.x} y={c.y} width="1" height="1" />)}
+  </g>
+  <g class="qr__data">
+    {cells.filter((c) => !c.finder).map((c) => <rect x={c.x} y={c.y} width="1" height="1" />)}
+  </g>
+</svg>
+
+<style>
+  .qr { display: block; width: 100%; height: auto; }
+  .qr rect { fill: currentColor; }
+</style>

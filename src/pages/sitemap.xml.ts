@@ -50,6 +50,7 @@ export const GET: APIRoute = async ({ site }) => {
     // ── Páginas estáticas solo en español ───────────────────────────────────
     const staticEsOnly: { url: string; priority: string; changefreq: string }[] = [
         { url: '/accesorios', priority: '0.7', changefreq: 'weekly' },
+        { url: '/cacao', priority: '0.7', changefreq: 'weekly' },
         { url: '/regalos', priority: '0.6', changefreq: 'weekly' },
         { url: '/suscripcion', priority: '0.5', changefreq: 'monthly' },
     ];

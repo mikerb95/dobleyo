@@ -1,0 +1,95 @@
+---
+/**
+ * Manifiesto: "somos el puente entre quien lo cultiva y quien lo disfruta".
+ * El puente se dibuja: un arco une la montaña (isolíneas) con la taza y un
+ * grano lo recorre a medida que se hace scroll. Las palabras de la cita se
+ * encienden al mismo ritmo.
+ */
+import type { Lang } from "../../i18n/index.ts";
+import { t } from "../../i18n/index.ts";
+import { contourRings } from "../../lib/motion/contours.ts";
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const k = (key: string) => t(`home.manifesto.${key}`, lang);
+const mountain = contourRings({ seed: 7, rings: 4, width: 64, height: 64, wobble: 0.14 });
+const ARC = "M70 60 C 230 -18, 530 -18, 690 60";
+---
+
+<section class="mf" data-manifesto aria-label={k("label")}>
+  <blockquote class="mf__quote">{k("quote")}</blockquote>
+
+  <div class="mf__bridge" aria-hidden="true">
+    <svg viewBox="0 0 760 110" class="mf__svg">
+      <path class="mf__arc-base" d={ARC} />
+      <path class="mf__arc" d={ARC} />
+      <g class="mf__end mf__end--grower" transform="translate(38 28)">
+        {mountain.map((r) => <path d={r.d} style={`--lvl:${r.level}`} />)}
+      </g>
+      <g class="mf__end mf__end--drinker" transform="translate(658 36)">
+        <path class="mf__cup" d="M6 10 h38 v14 a19 19 0 0 1 -38 0 z M44 14 h6 a7 7 0 0 1 0 14 h-7" />
+        <path class="mf__steam" d="M18 4 c-4 -6 4 -8 0 -14 M30 4 c-4 -6 4 -8 0 -14" />
+      </g>
+      <ellipse class="mf__bean" cx="70" cy="60" rx="7" ry="9.5" />
+    </svg>
+    <div class="mf__labels">
+      <span>{k("grower")}</span>
+      <span>{k("drinker")}</span>
+    </div>
+  </div>
+
+  <p class="mf__attr">{k("attr")}</p>
+</section>
+
+<style>
+  .mf {
+    padding: 5.5rem 0 5rem;
+    border-top: 1px solid var(--border);
+    text-align: center;
+  }
+  .mf__quote {
+    font-family: var(--font-display);
+    font-size: clamp(1.4rem, 1rem + 2.2vw, 2.35rem);
+    font-weight: 500;
+    font-style: italic;
+    line-height: 1.45;
+    color: var(--coffee);
+    max-width: 30ch;
+    margin: 0 auto 2.5rem;
+    text-wrap: balance;
+    quotes: none;
+  }
+  .mf__bridge { max-width: 760px; margin: 0 auto 1.75rem; }
+  .mf__svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .mf__arc-base { fill: none; stroke: var(--border); stroke-width: 2; stroke-dasharray: 2 7; stroke-linecap: round; }
+  .mf__arc { fill: none; stroke: var(--accent); stroke-width: 2.5; stroke-linecap: round; }
+  .mf__end--grower path { fill: none; stroke: var(--leaf); stroke-width: 1.6; opacity: calc(.45 + var(--lvl) * .55); }
+  .mf__cup { fill: none; stroke: var(--coffee); stroke-width: 2.4; stroke-linejoin: round; }
+  .mf__steam { fill: none; stroke: var(--accent); stroke-width: 2; stroke-linecap: round; opacity: .8; }
+  .mf__bean { fill: var(--coffee); opacity: 0; }
+  .mf__labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: .4rem;
+    font-size: .7rem;
+    font-weight: 600;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--muted-fg);
+  }
+  .mf__attr {
+    font-size: .75rem;
+    font-weight: 600;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--muted-fg);
+    margin: 0;
+  }
+  @media (max-width: 480px) {
+    .mf { padding: 3.75rem 0 3.5rem; }
+    .mf__labels { font-size: .6rem; letter-spacing: .08em; }
+  }
+</style>

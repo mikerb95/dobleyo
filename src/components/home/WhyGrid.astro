@@ -1,0 +1,192 @@
+---
+/**
+ * "Por qué elegirnos": cada tarjeta trae una microdemostración de lo que
+ * afirma en lugar de un ícono.
+ *   QR por lote       el QR real del lote destacado se escanea y da su código
+ *   Tueste en 15 días una ventana de 15 días que se llena desde el tueste
+ *   Compra directa    el intermediario desaparece y la línea une finca y cliente
+ *   Envío gratis      el carrito sube hasta el umbral y se activa el envío
+ * Sin JS se ve el estado final de cada una.
+ */
+import type { Lang } from "../../i18n/index.ts";
+import { t } from "../../i18n/index.ts";
+import type { LotView } from "../../lib/lot.ts";
+import QrCode from "./QrCode.astro";
+
+interface Props {
+  lang: Lang;
+  lot: LotView;
+}
+
+const { lang, lot } = Astro.props;
+const k = (key: string) => t(`home.why.${key}`, lang);
+// Umbral real de envío gratis de cada tienda (el mismo que dice el texto).
+const threshold = lang === "en" ? 50 : 120000;
+const money = (n: number) =>
+  new Intl.NumberFormat(lang === "en" ? "en-US" : "es-CO", {
+    style: "currency",
+    currency: lang === "en" ? "USD" : "COP",
+    maximumFractionDigits: 0,
+  }).format(n);
+---
+
+<section class="why" data-why aria-labelledby="whyTitle">
+  <header class="why__head">
+    <p class="why__eyebrow">{k("eyebrow")}</p>
+    <h2 id="whyTitle" class="why__title">{k("title")}</h2>
+  </header>
+
+  <div class="why__grid">
+    <article class="why-card">
+      <div class="why-demo why-demo--qr" aria-hidden="true" data-demo="qr">
+        <div class="why-demo__qr">
+          <QrCode text={lot.qrUrl} />
+          <span class="why-demo__scan"></span>
+        </div>
+        <span class="why-demo__code" data-final={lot.code}>{lot.code}</span>
+      </div>
+      <h3 class="why-card__title">{k("qr_title")}</h3>
+      <p class="why-card__desc">{k("qr_desc")}</p>
+    </article>
+
+    <article class="why-card">
+      <div class="why-demo why-demo--days" aria-hidden="true" data-demo="days">
+        <ol class="why-days">
+          {Array.from({ length: 15 }, (_, i) => <li class:list={{ "is-limit": i === 14 }}></li>)}
+        </ol>
+        <span class="why-demo__label"><span data-day-label>{k("fresh_day")} 15</span></span>
+      </div>
+      <h3 class="why-card__title">{k("fresh_title")}</h3>
+      <p class="why-card__desc">{k("fresh_desc")}</p>
+    </article>
+
+    <article class="why-card">
+      <div class="why-demo why-demo--direct" aria-hidden="true" data-demo="direct">
+        <svg viewBox="0 0 220 60" class="why-direct">
+          <path class="why-direct__detour" d="M30 34 C 70 34, 80 8, 110 8 C 140 8, 150 34, 190 34" />
+          <circle class="why-direct__middle" cx="110" cy="8" r="6" />
+          <path class="why-direct__line" d="M30 34 H190" />
+          <circle class="why-direct__node" cx="30" cy="34" r="8" />
+          <circle class="why-direct__node" cx="190" cy="34" r="8" />
+          <text x="30" y="56" text-anchor="middle">{k("direct_farm")}</text>
+          <text x="190" y="56" text-anchor="middle">{k("direct_you")}</text>
+        </svg>
+      </div>
+      <h3 class="why-card__title">{k("direct_title")}</h3>
+      <p class="why-card__desc">{k("direct_desc")}</p>
+    </article>
+
+    <article class="why-card">
+      <div class="why-demo why-demo--ship" aria-hidden="true" data-demo="ship" data-threshold={threshold} data-lang={lang}>
+        <div class="why-ship__row">
+          <span class="why-ship__amount" data-amount>{money(threshold)}</span>
+          <span class="why-ship__pill">{k("shipping_free")}</span>
+        </div>
+        <span class="why-ship__bar"><span class="why-ship__fill"></span></span>
+      </div>
+      <h3 class="why-card__title">{k("shipping_title")}</h3>
+      <p class="why-card__desc">{k("shipping_desc")}</p>
+    </article>
+  </div>
+</section>
+
+<style>
+  .why { padding: 5rem 0; border-top: 1px solid var(--border); }
+  .why__head { text-align: center; margin-bottom: 3rem; }
+  .why__eyebrow {
+    font-size: .7rem;
+    font-weight: 600;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 .5rem;
+  }
+  .why__title { font-size: clamp(1.4rem, 3vw, 2rem); color: var(--coffee); margin: 0; }
+  .why__grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.25rem; }
+  @media (max-width: 1024px) { .why__grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 480px) { .why__grid { grid-template-columns: 1fr; } }
+
+  .why-card {
+    display: flex;
+    flex-direction: column;
+    gap: .7rem;
+    padding: 1rem 1rem 1.35rem;
+    border-radius: var(--radius-lg);
+    background: var(--card);
+    border: 1px solid var(--border);
+  }
+  .why-card__title { font-size: 1rem; font-weight: 700; color: var(--coffee); margin: .35rem 0 0; }
+  .why-card__desc { font-size: .875rem; color: var(--muted-fg); margin: 0; line-height: 1.6; }
+
+  .why-demo {
+    height: 104px;
+    border-radius: var(--radius-md);
+    background: rgba(var(--caramel-rgb), .08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding: .9rem;
+    overflow: hidden;
+  }
+
+  .why-demo__qr {
+    position: relative;
+    width: 72px;
+    padding: 5px;
+    background: var(--card);
+    color: var(--espresso);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+  }
+  .why-demo__scan {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 2px;
+    background: var(--accent);
+    box-shadow: 0 0 10px 2px rgba(var(--caramel-rgb), .55);
+    opacity: 0;
+  }
+  .why-demo__code { font-size: .72rem; font-weight: 700; letter-spacing: .06em; color: var(--coffee); white-space: nowrap; }
+
+  .why-demo--days { flex-direction: column; gap: .6rem; }
+  .why-days {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(15, 1fr);
+    gap: 3px;
+    width: 100%;
+  }
+  .why-days li { height: 26px; border-radius: 4px; background: var(--accent); }
+  .why-days li.is-limit { background: var(--coffee); }
+  .why-demo__label { font-size: .7rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--coffee); }
+
+  .why-direct { width: 100%; max-width: 220px; overflow: visible; }
+  .why-direct__detour { fill: none; stroke: var(--border); stroke-width: 2; stroke-dasharray: 3 5; opacity: 0; }
+  .why-direct__middle { fill: var(--muted-fg); opacity: 0; }
+  .why-direct__line { fill: none; stroke: var(--accent); stroke-width: 2.5; stroke-linecap: round; }
+  .why-direct__node { fill: var(--card); stroke: var(--coffee); stroke-width: 2.5; }
+  .why-direct text { fill: var(--coffee); font: 600 11px/1 var(--font-body); letter-spacing: .06em; }
+
+  .why-demo--ship { flex-direction: column; align-items: stretch; gap: .75rem; }
+  .why-ship__row { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
+  .why-ship__amount { font-size: 1.05rem; font-weight: 700; color: var(--coffee); font-variant-numeric: tabular-nums; }
+  .why-ship__pill {
+    font-size: .66rem;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--leaf);
+    background: var(--leaf-bg);
+    border-radius: 99px;
+    padding: .2rem .55rem;
+    white-space: nowrap;
+  }
+  .why-ship__bar { display: block; height: 8px; border-radius: 8px; background: var(--border); overflow: hidden; }
+  .why-ship__fill { display: block; height: 100%; background: var(--leaf); transform-origin: left center; }
+</style>

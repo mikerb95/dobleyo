@@ -7,6 +7,7 @@
   --coffee-rgb: 43, 29, 21;
   --coffee-700: #4a3426;
   --cream: #f6f1ea;
+  --cream-rgb: 246, 241, 234;
   --dark: #2b1d15;
   --caramel: #b4642f;
   --caramel-rgb: 180, 100, 47;
@@ -19,6 +20,12 @@
   --warning-border: #c9972f;
   --danger: #a33d2a;
   --danger-bg: #fbeae5;
+  /* Materia del grano (ilustraciones de la portada: cereza, mucílago, bolsa) */
+  --cherry: #9f3327;
+  --mucilage: #e6c48c;
+  --bean-green: #b7ae78;
+  --kraft: #c29d71;
+  --kraft-deep: #a27d52;
 
   /* Tipografía */
   --font-display: 'Fraunces Variable', Georgia, 'Times New Roman', Times, serif;

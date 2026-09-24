@@ -357,6 +357,9 @@ labelsRouter.get('/list',
     queryValidator('type').optional().isIn(['all', 'lots', 'custom']),
     queryValidator('limit').optional().isInt({ min: 1, max: 500 }).toInt(),
     queryValidator('offset').optional().isInt({ min: 0 }).toInt(),
+    // Filtros del flujo de empaque: imprimir las etiquetas pendientes de un lote.
+    queryValidator('lot').optional().isString().trim().isLength({ min: 1, max: 80 }),
+    queryValidator('printed').optional().isIn(['0', '1']),
   ],
   async (req, res) => {
     res.setHeader('Content-Type', 'application/json');
@@ -366,32 +369,31 @@ labelsRouter.get('/list',
     }
 
     try {
-      const { type = 'all', limit = 100, offset = 0 } = req.query;
+      const { type = 'all', limit = 100, offset = 0, lot, printed } = req.query;
 
-      let sql = `SELECT * FROM generated_labels WHERE 1=1`;
-      const params = [];
+      let where = ` WHERE 1=1`;
+      const filterParams = [];
 
       if (type === 'lots') {
-        sql += ` AND lot_code NOT LIKE 'TMP-%'`;
+        where += ` AND lot_code NOT LIKE 'TMP-%'`;
       } else if (type === 'custom') {
-        sql += ` AND lot_code LIKE 'TMP-%'`;
+        where += ` AND lot_code LIKE 'TMP-%'`;
+      }
+      if (lot) {
+        where += ` AND lot_code = ?`;
+        filterParams.push(lot);
+      }
+      if (printed != null) {
+        where += printed === '1' ? ` AND printed = 1` : ` AND COALESCE(printed, 0) = 0`;
       }
 
-      sql += ` ORDER BY created_at DESC LIMIT ? OFFSET ?`;
-      params.push(limit, offset);
-
-      const labelsResult = await query(sql, params);
+      const labelsResult = await query(
+        `SELECT * FROM generated_labels${where} ORDER BY created_at DESC LIMIT ? OFFSET ?`,
+        [...filterParams, limit, offset]
+      );
       const labels = labelsResult.rows;
 
-      // Contar total
-      let countSql = `SELECT COUNT(*) as total FROM generated_labels WHERE 1=1`;
-      if (type === 'lots') {
-        countSql += ` AND lot_code NOT LIKE 'TMP-%'`;
-      } else if (type === 'custom') {
-        countSql += ` AND lot_code LIKE 'TMP-%'`;
-      }
-
-      const countResult = await query(countSql);
+      const countResult = await query(`SELECT COUNT(*) as total FROM generated_labels${where}`, filterParams);
       const total = parseInt(countResult.rows[0]?.total || 0);
 
       res.json({

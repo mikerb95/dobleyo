@@ -827,6 +827,12 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
           opt.dataset.region     = lot.region      || '—';
           sel.appendChild(opt);
         });
+        // Llegada desde "Qué sigue" (/admin/produccion): lote ya elegido.
+        const preset = new URLSearchParams(window.location.search).get('tostado');
+        if (preset && sel.querySelector(`option[value="${CSS.escape(preset)}"]`)) {
+          sel.value = preset;
+          sel.dispatchEvent(new Event('change'));
+        }
       } catch (e) {
         console.error('Error cargando lotes:', e);
       }

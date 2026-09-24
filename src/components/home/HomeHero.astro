@@ -1,0 +1,189 @@
+---
+/**
+ * Hero de la portada: el viaje del grano en video (cereza, secado, tambor de
+ * tueste, taza) y, al lado, la etiqueta viva del lote destacado, que enciende
+ * la etapa que se ve en pantalla.
+ *
+ * Video: loop de 16 s (4 tomas de 4 s) recortado del original de 61 MB.
+ * 2,5 MB en escritorio y 0,9 MB en móvil, y solo se descarga si el visitante
+ * no pidió ahorro de datos ni movimiento reducido (lo decide el script).
+ */
+import type { Lang } from "../../i18n/index.ts";
+import { t } from "../../i18n/index.ts";
+import type { LotView } from "../../lib/lot.ts";
+import { contourRings, hashSeed } from "../../lib/motion/contours.ts";
+import LotTicket from "./LotTicket.astro";
+
+interface Props {
+  lang: Lang;
+  lot: LotView;
+}
+
+const { lang, lot } = Astro.props;
+const k = (key: string) => t(`home.hero.${key}`, lang);
+const shopHref = lang === "en" ? "/en/shop" : "/tienda";
+// Isolíneas decorativas detrás del texto: la montaña del lote destacado.
+const rings = contourRings({ seed: hashSeed(lot.code), rings: 9, width: 800, height: 600, cx: 0.32, cy: 0.62, wobble: 0.22 });
+---
+
+<section class="hh" data-home-hero aria-labelledby="hhTitle">
+  <div class="hh__media" aria-hidden="true">
+    <video
+      class="hh__video"
+      muted
+      loop
+      playsinline
+      disablepictureinpicture
+      preload="none"
+      poster="/assets/img/hero-viaje.webp"
+      data-hero-video
+    >
+      <source src="/assets/vids/hero-viaje-sm.mp4" type="video/mp4" media="(max-width: 767px)" />
+      <source src="/assets/vids/hero-viaje.mp4" type="video/mp4" />
+    </video>
+    <svg class="hh__contours" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice">
+      {rings.map((r) => <path d={r.d} style={`--lvl:${r.level}`} />)}
+    </svg>
+  </div>
+
+  <div class="hh__inner">
+    <div class="hh__copy">
+      <h1 id="hhTitle" class="hh__title">{k("title")}</h1>
+      <p class="hh__lead">{k("lead")}</p>
+      <div class="hh__actions">
+        <a class="btn hh__cta" href={shopHref} data-magnetic>
+          <span data-magnetic-inner>{k("cta")}</span>
+        </a>
+        <a class="hh__ghost" href="#viaje">
+          {k("cta_secondary")}
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M8 2v11M3.5 8.5 8 13l4.5-4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </a>
+      </div>
+    </div>
+    <div class="hh__ticket">
+      <LotTicket lot={lot} lang={lang} />
+    </div>
+  </div>
+</section>
+
+<style>
+  /* Sangrado completo desde dentro de <main class="container"> */
+  .hh {
+    position: relative;
+    isolation: isolate;
+    width: 100vw;
+    margin-left: calc(50% - 50vw);
+    color: var(--cream);
+    background: var(--espresso) url("/assets/img/hero-viaje-sm.webp") center / cover no-repeat;
+    overflow: hidden;
+  }
+  @media (min-width: 768px) {
+    .hh { background-image: url("/assets/img/hero-viaje.webp"); }
+  }
+  .hh__media { position: absolute; inset: 0; z-index: -1; }
+  .hh__video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  /* Velo: más oscuro a la izquierda (texto) y abajo (unión con la página) */
+  .hh__media::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(90deg, rgba(var(--espresso-rgb), .9) 0%, rgba(var(--espresso-rgb), .62) 48%, rgba(var(--espresso-rgb), .35) 100%),
+      linear-gradient(0deg, rgba(var(--espresso-rgb), .75) 0%, rgba(var(--espresso-rgb), 0) 35%);
+  }
+  .hh__contours {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    pointer-events: none;
+  }
+  .hh__contours path {
+    fill: none;
+    stroke: var(--caramel);
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+    opacity: calc(.1 + var(--lvl) * .22);
+  }
+
+  .hh__inner {
+    position: relative;
+    max-width: var(--page-width);
+    margin: 0 auto;
+    padding: 3rem 1.25rem 3.25rem;
+    display: grid;
+    gap: 2.25rem;
+  }
+  .hh__title {
+    font-family: var(--font-display);
+    font-size: clamp(2.1rem, 1.4rem + 3.6vw, 4.4rem);
+    line-height: 1.02;
+    letter-spacing: -.015em;
+    font-weight: 600;
+    color: var(--cream);
+    margin: 0 0 1.1rem;
+    max-width: 14ch;
+    text-wrap: balance;
+  }
+  .hh__lead {
+    font-size: clamp(.98rem, .9rem + .35vw, 1.12rem);
+    line-height: 1.65;
+    color: rgba(var(--cream-rgb), .82);
+    max-width: 46ch;
+    margin: 0 0 1.75rem;
+  }
+  .hh__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem 1.5rem; }
+  .hh__cta { padding: .9rem 1.8rem; font-weight: 700; box-shadow: 0 14px 30px -12px rgba(var(--caramel-rgb), .8); }
+  .hh__cta span { display: inline-block; }
+  .hh__ghost {
+    display: inline-flex;
+    align-items: center;
+    gap: .45rem;
+    font-size: .9rem;
+    font-weight: 600;
+    color: var(--cream) !important;
+    padding: .4rem 0;
+    border-bottom: 1px solid rgba(var(--cream-rgb), .35);
+    transition: border-color var(--dur) var(--ease);
+  }
+  .hh__ghost:hover { border-bottom-color: var(--accent); }
+  .hh__ticket { display: flex; justify-content: center; }
+
+  @media (min-width: 1024px) {
+    .hh__inner {
+      grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr);
+      align-items: center;
+      min-height: min(calc(92vh - var(--page-offset-top, 136px)), 760px);
+      padding: 4rem 2.5rem 4.5rem;
+    }
+    .hh__ticket { justify-content: flex-end; }
+    .hh__ticket :global(.lot) { transform: rotate(-2deg); }
+  }
+
+  /* Red de seguridad sin JS: la entrada es CSS y termina visible. Cuando el
+     script toma el control (html.motion-on) la reemplaza por la suya. */
+  @media (prefers-reduced-motion: no-preference) {
+    .hh__title, .hh__lead, .hh__actions, .hh__ticket {
+      animation: hh-in .9s cubic-bezier(.2, .7, .2, 1) both;
+    }
+    .hh__lead { animation-delay: .12s; }
+    .hh__actions { animation-delay: .22s; }
+    .hh__ticket { animation-delay: .3s; }
+    :global(html.motion-on) .hh__title,
+    :global(html.motion-on) .hh__lead,
+    :global(html.motion-on) .hh__actions,
+    :global(html.motion-on) .hh__ticket { animation: none; }
+  }
+  @keyframes hh-in {
+    from { opacity: 0; transform: translateY(18px); }
+    to { opacity: 1; transform: none; }
+  }
+</style>

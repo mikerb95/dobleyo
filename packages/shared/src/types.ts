@@ -135,12 +135,14 @@ export interface StageCostInput {
 export interface HarvestInput {
   /** Fecha del registro (`YYYY-MM-DD`). Permite digitar el paso días después. */
   recordedAt?: string;
+  /** Slug de la finca (farms.slug). */
   farm: string;
-  region: string;
+  region?: string;
   altitude?: number | string;
-  variety?: string;
-  climate?: string;
-  process?: string;
+  variety: string;
+  climate: string;
+  process: string;
+  /** Opcional: el perfil sensorial se describe mejor en la catación. */
   aroma?: string;
   tasteNotes?: string;
   /** Kilos recibidos del caficultor. Denominador del costo de origen. */
@@ -151,11 +153,12 @@ export interface HarvestInput {
 
 export interface GreenStorageInput {
   recordedAt?: string;
-  lotId: number | string;
+  lotId: string;
   weight: number;
-  weightUnit?: string;
-  location?: string;
-  storageDate?: string;
+  weightUnit?: 'kg' | 'lb';
+  /** Código de ubicación del maestro de bodega (apta para café verde). */
+  location: string;
+  storageDate: string;
   notes?: string;
   /** Transporte de la carga desde la finca hasta la bodega. */
   cost?: StageCostInput;
@@ -163,7 +166,7 @@ export interface GreenStorageInput {
 
 export interface SendRoastingInput {
   recordedAt?: string;
-  lotId: number | string;
+  lotId: string;
   quantitySent: number;
   targetTemp?: number;
   notes?: string;
@@ -173,20 +176,26 @@ export interface SendRoastingInput {
 
 export interface RoastRetrievalInput {
   recordedAt?: string;
-  lotId: number | string;
+  /** Envío a maquila que regresa (roasting_batches.id). */
+  roastingId: number;
+  roastLevel: 'LIGHT' | 'MEDIUM' | 'DARK';
   roastedWeight: number;
-  roastLevel?: string;
-  roastDate?: string;
-  notes?: string;
+  actualTemp?: number;
+  roastTime?: number;
+  observations?: string;
   /** Maquila del proceso de tostión. */
   cost?: StageCostInput;
 }
 
 export interface RoastedStorageInput {
   recordedAt?: string;
-  lotId: number | string;
-  weight: number;
-  location?: string;
+  /** Café tostado recibido (roasted_coffee.id). */
+  roastedId: number;
+  /** Código de ubicación apta para café tostado. */
+  location: string;
+  container: string;
+  containerCount: number;
+  conditions?: string[];
   notes?: string;
   /** Transporte de retorno desde la tostadora hasta la bodega. */
   cost?: StageCostInput;
@@ -194,27 +203,95 @@ export interface RoastedStorageInput {
 
 export interface PackagingInput {
   recordedAt?: string;
-  lotId: number | string;
-  packageWeight: number;
-  packageType: string;
-  quantity: number;
+  /** Tostado en bodega (roasted_coffee_inventory.id). */
+  roastedStorageId: number;
+  /** Perfil 1–5 que va en la etiqueta. */
+  acidity: number;
+  body: number;
+  balance: number;
+  presentation: 'GRANO' | 'MOLIDO';
+  grindSize?: string | null;
+  packageSize: '100g' | '250g' | '500g' | '1kg' | 'bulk';
+  /** Bolsas; a granel, kilos. */
+  unitCount: number;
   notes?: string;
+  addToInventory?: boolean;
   /**
    * Insumos consumidos, del maestro `packaging_supplies`. El costo sale del
-   * maestro — no se digita — y descuenta stock. A granel no aplican.
+   * maestro (no se digita) y descuenta stock. A granel no aplican.
    */
   bagSupplyId?: number | null;
   labelSupplyId?: number | null;
 }
 
 export interface CuppingInput {
-  lotId: number | string;
-  score: number;
+  roastedId: number;
+  checkDate: string;
+  checkType?: 'post_tostado' | 'catacion' | 'final';
   aromaScore?: number;
   flavorScore?: number;
+  aftertasteScore?: number;
   acidityScore?: number;
   bodyScore?: number;
-  notes?: string;
+  balanceScore?: number;
+  uniformityScore?: number;
+  cleanCupScore?: number;
+  sweetnessScore?: number;
+  defectsCount?: number;
+  observations?: string;
+  passed?: boolean;
+}
+
+export interface GenerateLabelsInput {
+  /** Registro de empaque (packaged_coffee.id). */
+  lotId: number;
+  quantity: number;
+  includeQR?: boolean;
+}
+
+export interface StorageLocation {
+  id: number;
+  code: string;
+  name: string;
+  zone_name: string;
+  capacity_kg: number | null;
+  occupied_kg: number;
+  is_blocked: number | boolean;
+  fill_pct: number | null;
+}
+
+export interface FarmOption {
+  id: number;
+  slug: string | null;
+  name: string;
+  region: string | null;
+  municipality: string | null;
+  altitude_min: number | null;
+}
+
+export interface PackagingSupply {
+  id: number;
+  name: string;
+  type: 'bolsa' | 'etiqueta' | string;
+  /** Tamaño al que corresponde la bolsa ('250g', '500g'...). */
+  size_label: string | null;
+  unit_cost_cop: number;
+  stock_units: number;
+}
+
+/** Respuesta de los POST de /api/coffee/*: el dato viene al lado de success. */
+export interface StepResult {
+  success: boolean;
+  message?: string;
+  error?: string;
+  lotId?: string;
+  roastingId?: number;
+  roastedId?: number;
+  storageId?: number;
+  packagedId?: number;
+  weightLossPercent?: number;
+  remainingKg?: number;
+  lotExhausted?: boolean;
 }
 
 /**

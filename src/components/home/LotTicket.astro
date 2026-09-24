@@ -1,0 +1,280 @@
+---
+/**
+ * Etiqueta viva: la ficha del lote destacado, como la etiqueta física de la
+ * bolsa. En el hero se sincroniza con el video: cada tramo (cereza, secado,
+ * tambor, taza) enciende la etapa y los datos que le corresponden.
+ *
+ * Sin JS o con movimiento reducido se ve completa y quieta: todas las filas
+ * visibles y ninguna etapa resaltada.
+ */
+import type { Lang } from "../../i18n/index.ts";
+import { t } from "../../i18n/index.ts";
+import type { LotView } from "../../lib/lot.ts";
+import { roastCurve } from "../../lib/lot.ts";
+import QrCode from "./QrCode.astro";
+
+interface Props {
+  lot: LotView;
+  lang: Lang;
+}
+
+const { lot, lang } = Astro.props;
+const k = (key: string) => t(`home.hero.${key}`, lang);
+const curve =
+  lot.roastTemp && lot.roastMinutes
+    ? roastCurve(lot.roastTemp, lot.roastMinutes, { width: 120, height: 36, tempMin: 70, tempMax: 230 })
+    : null;
+const scoreLabel = lot.score != null ? lot.score.toLocaleString(lang === "en" ? "en-US" : "es-CO") : null;
+const stages = ["harvest", "process", "roast", "cup"] as const;
+---
+
+<article class="lot" data-lot-ticket aria-label={`${k("ticket_label")} ${lot.code}`}>
+  <header class="lot__head">
+    <div>
+      <p class="lot__eyebrow">
+        {k("ticket_eyebrow")}
+        {lot.illustrative && <span class="lot__illustrative">{k("illustrative")}</span>}
+      </p>
+      <p class="lot__code" data-scramble>{lot.code}</p>
+    </div>
+    <div class="lot__qr" aria-hidden="true">
+      <QrCode text={lot.qrUrl} />
+      <span class="lot__scan"></span>
+    </div>
+  </header>
+
+  <ol class="lot__stages" aria-hidden="true">
+    {stages.map((s, i) => (
+      <li class="lot__stage" data-stage={i}>
+        <span class="lot__stage-bar"><span class="lot__stage-fill"></span></span>
+        <span class="lot__stage-name">{k(`stage_${s}`)}</span>
+      </li>
+    ))}
+  </ol>
+
+  <dl class="lot__rows">
+    {lot.farm && (
+      <div class="lot__row" data-for-stage="0">
+        <dt>{k("field_farm")}</dt>
+        <dd data-scramble>{lot.farm}</dd>
+      </div>
+    )}
+    {lot.altitudeLabel && (
+      <div class="lot__row" data-for-stage="0">
+        <dt>{k("field_altitude")}</dt>
+        <dd><span data-scramble>{lot.altitudeLabel}</span>{lot.region && <span class="lot__muted"> · {lot.region}</span>}</dd>
+      </div>
+    )}
+    {(lot.process || lot.variety) && (
+      <div class="lot__row" data-for-stage="1">
+        <dt>{k("field_process")}</dt>
+        <dd data-scramble>{[lot.process, lot.variety].filter(Boolean).join(" · ")}</dd>
+      </div>
+    )}
+    {(lot.roastLevel || lot.roastTemp) && (
+      <div class="lot__row lot__row--roast" data-for-stage="2">
+        <dt>{k("field_roast")}</dt>
+        <dd>
+          <span data-scramble>
+            {[lot.roastLevel, lot.roastTemp && `${lot.roastTemp} °C`, lot.roastMinutes && `${lot.roastMinutes} min`]
+              .filter(Boolean)
+              .join(" · ")}
+          </span>
+          {curve && (
+            <svg class="lot__curve" viewBox="-2 -4 124 44" aria-hidden="true">
+              <path class="lot__curve-line" d={curve.d} />
+              <circle class="lot__curve-end" cx={curve.end.x} cy={curve.end.y} r="2.6" />
+            </svg>
+          )}
+        </dd>
+      </div>
+    )}
+    {lot.notes.length > 0 && (
+      <div class="lot__row" data-for-stage="3">
+        <dt>{k("field_notes")}</dt>
+        <dd>
+          <ul class="lot__notes">
+            {lot.notes.map((n) => <li>{n}</li>)}
+          </ul>
+        </dd>
+      </div>
+    )}
+    {scoreLabel && (
+      <div class="lot__row" data-for-stage="3">
+        <dt>{k("field_score")}</dt>
+        <dd class="lot__score" data-odometer={scoreLabel}>{scoreLabel}</dd>
+      </div>
+    )}
+  </dl>
+
+  <p class="lot__foot">{k("scan")}</p>
+</article>
+
+<style>
+  .lot {
+    --lot-ink: var(--espresso);
+    position: relative;
+    width: 100%;
+    max-width: 380px;
+    background: var(--card);
+    color: var(--lot-ink);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem 1.25rem 1rem;
+    box-shadow: 0 30px 60px -24px rgba(var(--espresso-rgb), .65), 0 0 0 1px rgba(var(--espresso-rgb), .06);
+    text-align: left;
+    font-family: var(--font-body);
+  }
+  /* Perforación de etiqueta: dos muescas laterales a la altura de las etapas */
+  .lot::before,
+  .lot::after {
+    content: "";
+    position: absolute;
+    top: 6.1rem;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--espresso);
+    opacity: .9;
+  }
+  .lot::before { left: -7px; }
+  .lot::after { right: -7px; }
+
+  .lot__head { display: flex; justify-content: space-between; gap: 1rem; align-items: flex-start; }
+  .lot__eyebrow {
+    margin: 0 0 .3rem;
+    font-size: .64rem;
+    font-weight: 700;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem;
+    align-items: center;
+  }
+  .lot__illustrative {
+    color: var(--muted-fg);
+    border: 1px solid var(--border);
+    border-radius: 99px;
+    padding: .05rem .45rem;
+    letter-spacing: .06em;
+  }
+  .lot__code {
+    margin: 0;
+    font-size: .95rem;
+    font-weight: 700;
+    letter-spacing: .04em;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .lot__qr {
+    position: relative;
+    flex: 0 0 auto;
+    width: 58px;
+    padding: 4px;
+    border-radius: 8px;
+    background: var(--cream);
+    color: var(--espresso);
+    overflow: hidden;
+  }
+  .lot__scan {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 2px;
+    background: var(--accent);
+    box-shadow: 0 0 10px 2px rgba(var(--caramel-rgb), .55);
+    opacity: 0;
+  }
+
+  .lot__stages {
+    list-style: none;
+    margin: 1.1rem 0 .9rem;
+    padding: .85rem 0 0;
+    border-top: 1px dashed var(--border);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: .4rem;
+  }
+  .lot__stage { display: flex; flex-direction: column; gap: .35rem; }
+  .lot__stage-bar {
+    display: block;
+    height: 3px;
+    border-radius: 3px;
+    background: var(--border);
+    overflow: hidden;
+  }
+  .lot__stage-fill {
+    display: block;
+    height: 100%;
+    width: 100%;
+    background: var(--accent);
+    transform-origin: left center;
+  }
+  .lot__stage-name {
+    font-size: .62rem;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--muted-fg);
+    transition: color var(--dur) var(--ease);
+  }
+  .lot__stage.is-active .lot__stage-name { color: var(--lot-ink); }
+
+  .lot__rows { margin: 0; display: grid; gap: .1rem; }
+  .lot__row {
+    display: grid;
+    grid-template-columns: 5.2rem 1fr;
+    gap: .75rem;
+    align-items: baseline;
+    padding: .38rem .5rem;
+    margin: 0 -.5rem;
+    border-radius: 8px;
+    transition: background-color .35s var(--ease), opacity .35s var(--ease);
+  }
+  .lot__row dt {
+    font-size: .64rem;
+    font-weight: 600;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--muted-fg);
+  }
+  .lot__row dd {
+    margin: 0;
+    font-size: .86rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.35;
+  }
+  .lot__muted { color: var(--muted-fg); font-weight: 500; }
+
+  /* Etapa activa (la pone el script): la fila se tiñe con el color de marca */
+  .lot.is-syncing .lot__row { opacity: .45; }
+  .lot.is-syncing .lot__row.is-lit { opacity: 1; background: rgba(var(--caramel-rgb), .1); }
+
+  .lot__row--roast dd { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; }
+  .lot__curve { width: 92px; height: 34px; overflow: visible; }
+  .lot__curve-line { fill: none; stroke: var(--accent); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .lot__curve-end { fill: var(--accent); }
+
+  .lot__notes { display: flex; flex-wrap: wrap; gap: .3rem; list-style: none; margin: 0; padding: 0; }
+  .lot__notes li {
+    font-size: .7rem;
+    font-weight: 600;
+    color: var(--leaf);
+    background: var(--leaf-bg);
+    padding: .15rem .5rem;
+    border-radius: 99px;
+  }
+  .lot__score { font-size: 1.05rem !important; }
+
+  .lot__foot {
+    margin: .8rem 0 0;
+    padding-top: .7rem;
+    border-top: 1px dashed var(--border);
+    font-size: .68rem;
+    color: var(--muted-fg);
+    letter-spacing: .02em;
+  }
+</style>

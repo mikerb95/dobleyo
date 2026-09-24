@@ -3,6 +3,13 @@ function initContacto() {
   const contactForm = document.getElementById("contactForm");
   if (!contactForm || contactForm.dataset.jsInit) return;
   contactForm.dataset.jsInit = "1";
+
+  // Preselecciona el asunto cuando se llega desde un enlace (?asunto=maquila).
+  const asunto = new URLSearchParams(window.location.search).get("asunto");
+  const subjectSel = contactForm.querySelector("#subject");
+  if (asunto && subjectSel?.querySelector(`option[value="${CSS.escape(asunto)}"]`)) {
+    subjectSel.value = asunto;
+  }
   contactForm.addEventListener("submit", async (e) => {
   e.preventDefault();
 

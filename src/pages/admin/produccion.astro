@@ -1,8 +1,13 @@
 ---
 import AdminLayout from "../../layouts/AdminLayout.astro";
-import ProductionPipeline from "../../components/production/ProductionPipeline.jsx";
+import WorkflowHub from "../../components/workflow/WorkflowHub.jsx";
 ---
 
-<AdminLayout title="Producción — DobleYo ERP" section="produccion">
-  <ProductionPipeline client:only="react" />
+<!--
+  "Qué sigue": entrada a la línea de producción. Muestra el trabajo pendiente
+  como objetivos y abre cada paso con el lote ya elegido.
+  ?lote=<código> abre la ficha de un lote; ?nueva=cosecha abre el registro de cosecha.
+-->
+<AdminLayout title="Qué sigue | DobleYo Producción" section="produccion">
+  <WorkflowHub client:only="react" />
 </AdminLayout>

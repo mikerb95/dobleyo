@@ -118,7 +118,8 @@ farmsRouter.get('/my', authenticateToken, async (req, res) => {
 farmsRouter.get('/admin/all', authenticateToken, requireRole('admin'), async (req, res) => {
     try {
         const { rows } = await query(`
-      SELECT f.id, f.slug, f.name, f.region, f.is_published, f.created_at,
+      SELECT f.id, f.slug, f.name, f.region, f.municipality, f.altitude_min,
+             f.is_published, f.created_at,
              u.name AS caficultor_name, u.email AS caficultor_email
       FROM farms f
       JOIN users u ON u.id = f.caficultor_id

@@ -165,5 +165,93 @@
         "currency": "COP",
         "locale": "es-CO",
         "date_locale": "es-CO"
+    },
+    "home": {
+        "hero": {
+            "title": "Más que café, una herencia en cada taza.",
+            "lead": "Somos el reflejo de la riqueza cultural y el esfuerzo de generaciones que cultivan en el corazón de Colombia. Descubre el sabor de nuestra tradición y la pasión de nuestra tierra.",
+            "cta": "Ver tienda",
+            "cta_secondary": "Seguir un lote",
+            "ticket_eyebrow": "Lote destacado",
+            "illustrative": "Ejemplo ilustrativo",
+            "ticket_label": "Ficha del lote",
+            "stage_harvest": "Cosecha",
+            "stage_process": "Proceso",
+            "stage_roast": "Tueste",
+            "stage_cup": "Tu taza",
+            "field_farm": "Finca",
+            "field_altitude": "Altitud",
+            "field_variety": "Variedad",
+            "field_process": "Proceso",
+            "field_roast": "Tueste",
+            "field_notes": "Notas",
+            "field_score": "Puntaje SCA",
+            "scan": "Escanee para ver el lote completo"
+        },
+        "strip": {
+            "origin": "Colombia · Origen único",
+            "altitude_prefix": "",
+            "altitude_unit": "msnm",
+            "processes": "Lavado · Honey · Natural",
+            "fresh_prefix": "Tueste fresco en menos de",
+            "fresh_unit": "días"
+        },
+        "journey": {
+            "eyebrow": "Trazabilidad completa",
+            "title": "Del grano a tu taza",
+            "sub": "Cada bolsa lleva un código QR que documenta este recorrido completo",
+            "real_data": "Datos reales del lote",
+            "step_1_title": "Cosecha",
+            "step_1_desc": "Finca, caficultor, municipio y altitud registrados en cada lote",
+            "step_2_title": "Procesado",
+            "step_2_desc": "Método documentado: lavado, honey o natural según el perfil del lote",
+            "step_3_title": "Tueste",
+            "step_3_desc": "Curva de tueste, temperatura y fecha exacta. Máximo 15 días antes de tu pedido",
+            "step_4_title": "Tu bolsa",
+            "step_4_desc": "QR en el empaque con todo el historial del lote, de la finca a tus manos",
+            "curve_caption": "Curva de referencia. El punto final es el dato real del lote.",
+            "curve_charge": "Carga",
+            "curve_turning": "Retorno",
+            "curve_drop": "Salida",
+            "minutes": "min",
+            "process_washed": "Despulpado y fermentado, lavado con agua limpia y secado al sol",
+            "process_honey": "Despulpado, secado con parte del mucílago que le da dulzor",
+            "process_natural": "Secado con la cereza entera, que aporta notas frutales",
+            "process_other": "Método de beneficio registrado en la ficha del lote",
+            "cta_eyebrow": "Trazabilidad QR · Origen verificado",
+            "cta_title_1": "Cada taza guarda una historia.",
+            "cta_title_2": "Descúbrala antes de tomarla.",
+            "cta_sub": "Escanee el código de su bolsa o ingrese el número de lote y recorra el viaje completo de su café: la finca que lo cultivó, el caficultor detrás del grano, la fecha exacta de tueste y el control de calidad de su lote.",
+            "cta_button": "Trazar mi café",
+            "cta_hint": "Sin registro · Resultados al instante",
+            "cta_try": "Pruebe con este lote:"
+        },
+        "manifesto": {
+            "label": "Nuestra filosofía",
+            "quote": "En Colombia, el café es historia acumulada en cada grano. Nosotros somos el puente entre quien lo cultiva con cuidado y quien lo disfruta con intención.",
+            "grower": "Quien lo cultiva",
+            "drinker": "Quien lo disfruta",
+            "attr": "DobleYo Café · Bogotá, Colombia"
+        },
+        "why": {
+            "eyebrow": "Por qué elegirnos",
+            "title": "Café con propósito, de la finca a tu taza",
+            "qr_title": "Trazabilidad QR por lote",
+            "qr_desc": "Cada bolsa incluye un código QR que documenta la finca, el caficultor, la altitud y la curva de tueste del lote exacto.",
+            "fresh_title": "Tueste fresco en 15 días",
+            "fresh_desc": "Tostamos en pequeños lotes y despachamos en menos de 15 días desde el tueste. Nunca café de bodega.",
+            "fresh_day": "Día",
+            "direct_title": "Compra directa al caficultor",
+            "direct_desc": "Trabajamos directamente con fincas colombianas. Sin intermediarios: mejor precio para el productor, mejor calidad para ti.",
+            "direct_farm": "Finca",
+            "direct_you": "Tú",
+            "shipping_title": "Envío gratis desde $120.000",
+            "shipping_desc": "Despachos a todo el territorio nacional. Gratis en pedidos superiores a $120.000 COP.",
+            "shipping_free": "Envío gratis"
+        },
+        "farms": {
+            "title": "Nuestras Fincas",
+            "link": "Ver todas las fincas →"
+        }
     }
 }

@@ -1,0 +1,67 @@
+---
+/**
+ * Banda de datos de origen, justo debajo del hero. Las cifras ruedan como un
+ * odómetro al entrar (el script); sin JS se leen tal cual.
+ */
+import type { Lang } from "../../i18n/index.ts";
+import { t } from "../../i18n/index.ts";
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const k = (key: string) => t(`home.strip.${key}`, lang);
+const fmt = (n: number) => n.toLocaleString(lang === "en" ? "en-US" : "es-CO");
+---
+
+<div class="ostrip" data-origin-strip>
+  <ul class="ostrip__inner">
+    <li>{k("origin")}</li>
+    <li>
+      <span data-odometer={fmt(1400)}>{fmt(1400)}</span>-<span data-odometer={fmt(1900)}>{fmt(1900)}</span>
+      {k("altitude_unit")}
+    </li>
+    <li>{k("processes")}</li>
+    <li>{k("fresh_prefix")} <span data-odometer="15">15</span> {k("fresh_unit")}</li>
+  </ul>
+</div>
+
+<style>
+  .ostrip {
+    width: 100vw;
+    margin-left: calc(50% - 50vw);
+    background: var(--espresso);
+    color: rgba(var(--cream-rgb), .72);
+    font-size: .72rem;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    border-top: 1px solid rgba(var(--cream-rgb), .08);
+  }
+  .ostrip__inner {
+    list-style: none;
+    margin: 0 auto;
+    max-width: var(--page-width);
+    padding: .9rem 1.25rem;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: .5rem 2.25rem;
+  }
+  .ostrip li { display: inline-flex; align-items: baseline; gap: .35em; white-space: nowrap; }
+  .ostrip li + li::before {
+    content: "";
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--accent);
+    margin-right: 1.9rem;
+    align-self: center;
+  }
+  .ostrip [data-odometer] { color: var(--cream); font-weight: 600; }
+  @media (max-width: 767px) {
+    .ostrip__inner { gap: .45rem 1.25rem; }
+    .ostrip li + li::before { display: none; }
+  }
+</style>

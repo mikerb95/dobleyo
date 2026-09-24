@@ -1,0 +1,580 @@
+---
+/**
+ * "Del grano a tu taza": el recorrido del lote destacado en cuatro escenas que
+ * muestran cada afirmación con los datos reales del lote.
+ *
+ *   01 Cosecha   mapa de isolíneas de la finca y regla de altitud
+ *   02 Proceso   corte de la cereza: el método pela (o no) cada capa
+ *   03 Tueste    curva de referencia que termina en el dato real (°C, min)
+ *   04 Tu bolsa  la etiqueta con el QR real que lleva a este lote
+ *
+ * Maqueta por defecto (sin JS, móvil, movimiento reducido): cada paso con su
+ * escena al lado o debajo, todo visible. En escritorio el script activa
+ * `.tj--pinned`: la sección se fija y el scroll recorre las escenas.
+ */
+import type { Lang } from "../../i18n/index.ts";
+import { t } from "../../i18n/index.ts";
+import type { LotView } from "../../lib/lot.ts";
+import { roastCurve, processKind } from "../../lib/lot.ts";
+import { contourRings, hashSeed, ringsForAltitude } from "../../lib/motion/contours.ts";
+import QrCode from "./QrCode.astro";
+
+interface Props {
+  lang: Lang;
+  lot: LotView;
+}
+
+const { lang, lot } = Astro.props;
+const k = (key: string) => t(`home.journey.${key}`, lang);
+const kh = (key: string) => t(`home.hero.${key}`, lang);
+const nf = (n: number) => n.toLocaleString(lang === "en" ? "en-US" : "es-CO");
+
+// 01 Cosecha: mapa de la finca (semilla = slug) y regla de altitud 0-2.500 m.
+const W = 480;
+const H = 320;
+const rings = contourRings({
+  seed: hashSeed(lot.farmSlug ?? lot.code),
+  rings: ringsForAltitude(lot.altitude),
+  width: 372,
+  height: H,
+  cx: 0.46,
+  cy: 0.52,
+});
+const RULER = { x: 404, top: 40, bottom: 280, max: 2500 };
+const altY = (m: number) => RULER.bottom - (m / RULER.max) * (RULER.bottom - RULER.top);
+const rulerTicks = [0, 500, 1000, 1500, 2000, 2500];
+const summit = { x: 0.46 * 372, y: 0.52 * H };
+
+// 02 Proceso
+const kind = processKind(lot.process);
+const processes = [
+  { key: "washed", label: lang === "en" ? "Washed" : "Lavado" },
+  { key: "honey", label: "Honey" },
+  { key: "natural", label: "Natural" },
+];
+const processText = k(`process_${kind}`);
+
+// 03 Tueste: área de trazado 400 x 220 desplazada a (52, 30).
+const PLOT = { x: 52, y: 30, w: 396, h: 220, tMin: 60, tMax: 240 };
+const curve =
+  lot.roastTemp && lot.roastMinutes
+    ? roastCurve(lot.roastTemp, lot.roastMinutes, { width: PLOT.w, height: PLOT.h, tempMin: PLOT.tMin, tempMax: PLOT.tMax })
+    : null;
+const tempTicks = [100, 150, 200];
+const minuteTicks = curve && lot.roastMinutes ? Array.from({ length: Math.floor(lot.roastMinutes / 2) + 1 }, (_, i) => i * 2) : [];
+
+const traceHref = lang === "en" ? "/en/traceability" : `/trazabilidad?lote=${encodeURIComponent(lot.code)}`;
+const facts = [
+  [lot.farm, lot.region, lot.altitudeLabel].filter(Boolean).join(" · "),
+  [lot.process, lot.variety].filter(Boolean).join(" · "),
+  [lot.roastLevel, lot.roastTemp && `${lot.roastTemp} °C`, lot.roastMinutes && `${lot.roastMinutes} min`, lot.roastDate]
+    .filter(Boolean)
+    .join(" · "),
+  lot.code,
+];
+---
+
+<section class="tj" id="viaje" data-journey aria-labelledby="tjTitle">
+  <header class="tj__head">
+    <p class="tj__eyebrow">{k("eyebrow")}</p>
+    <h2 id="tjTitle" class="tj__title">{k("title")}</h2>
+    <p class="tj__sub">{k("sub")}</p>
+    <p class="tj__lot">
+      <span class="tj__dot" aria-hidden="true"></span>
+      {lot.illustrative ? kh("illustrative") : k("real_data")} · <strong>{lot.code}</strong>
+    </p>
+  </header>
+
+  <div class="tj__body" data-journey-body>
+    <div class="tj__rail" aria-hidden="true"><span class="tj__rail-fill"></span></div>
+    <ol class="tj__steps">
+      {[1, 2, 3, 4].map((n, i) => (
+        <li class="tj__step" data-step={i}>
+          <div class="tj__text">
+            <span class="tj__num" aria-hidden="true">{String(n).padStart(2, "0")}</span>
+            <h3 class="tj__step-title">{k(`step_${n}_title`)}</h3>
+            <p class="tj__desc">{k(`step_${n}_desc`)}</p>
+            {facts[i] && <p class="tj__fact">{facts[i]}</p>}
+          </div>
+
+          <div class={`tj__scene tj__scene--${i}`} data-scene={i} aria-hidden="true">
+            {i === 0 && (
+              <svg class="sc-harvest" viewBox={`0 0 ${W} ${H}`}>
+                <g class="sc-harvest__rings">
+                  {rings.map((r) => <path d={r.d} style={`--lvl:${r.level}`} />)}
+                </g>
+                <g class="sc-harvest__pin" transform={`translate(${summit.x} ${summit.y})`}>
+                  <circle class="sc-harvest__pulse" r="16" />
+                  <circle class="sc-harvest__dot" r="5" />
+                  <text x="12" y="-12" class="sc-label sc-label--strong">{lot.farm}</text>
+                </g>
+                <g class="sc-harvest__ruler">
+                  <line x1={RULER.x} x2={RULER.x} y1={RULER.top} y2={RULER.bottom} />
+                  {rulerTicks.map((m) => (
+                    <g transform={`translate(${RULER.x} ${altY(m)})`}>
+                      <line x1="-5" x2="0" />
+                      <text x="-9" y="3" text-anchor="end" class="sc-tick">{nf(m)}</text>
+                    </g>
+                  ))}
+                  {lot.altitude && (
+                    <g class="sc-harvest__marker" transform={`translate(${RULER.x} ${altY(lot.altitude)})`}>
+                      <path d="M2 0 L10 -6 L10 6 Z" />
+                      <text x="14" y="4" class="sc-label sc-label--strong">{lot.altitudeLabel.split(" ")[0]}</text>
+                    </g>
+                  )}
+                </g>
+              </svg>
+            )}
+
+            {i === 1 && (
+              <div class={`sc-process sc-process--${kind}`} data-process={kind}>
+                <svg class="sc-process__cherry" viewBox="0 0 240 240">
+                  <circle class="sc-process__skin" cx="120" cy="120" r="104" />
+                  <circle class="sc-process__mucilage" cx="120" cy="120" r="86" />
+                  <circle class="sc-process__parchment" cx="120" cy="120" r="66" />
+                  <g class="sc-process__bean">
+                    <ellipse cx="96" cy="120" rx="30" ry="46" />
+                    <ellipse cx="144" cy="120" rx="30" ry="46" />
+                    <path d="M96 80 C88 104 104 136 96 160 M144 80 C136 104 152 136 144 160" />
+                  </g>
+                </svg>
+                <ul class="sc-process__chips">
+                  {processes.map((p) => <li class:list={{ "is-lot": p.key === kind }}>{p.label}</li>)}
+                </ul>
+                <p class="sc-process__text">{processText}</p>
+              </div>
+            )}
+
+            {i === 2 && (
+              <svg class="sc-roast" viewBox={`0 0 ${W} ${H}`}>
+                <g transform={`translate(${PLOT.x} ${PLOT.y})`}>
+                  {curve && tempTicks.map((c) => (
+                    <g class="sc-grid">
+                      <line x1="0" x2={PLOT.w} y1={curve.y(c)} y2={curve.y(c)} />
+                      <text x="-8" y={curve.y(c) + 3} text-anchor="end" class="sc-tick">{c}°</text>
+                    </g>
+                  ))}
+                  {curve && minuteTicks.map((m) => (
+                    <text x={curve.x(m)} y={PLOT.h + 18} text-anchor="middle" class="sc-tick">{m}</text>
+                  ))}
+                  {curve && (
+                    <>
+                      <text x={PLOT.w} y={PLOT.h + 34} text-anchor="end" class="sc-tick">{k("minutes")}</text>
+                      <path class="sc-roast__line" d={curve.d} />
+                      <g class="sc-roast__turning" transform={`translate(${curve.turning.x} ${curve.turning.y})`}>
+                        <circle r="3.5" />
+                        <text x="8" y="16" class="sc-label">{k("curve_turning")}</text>
+                      </g>
+                      <g class="sc-roast__charge" transform={`translate(${curve.points[0][0]} ${curve.points[0][1]})`}>
+                        <text x="8" y="-8" class="sc-label">{k("curve_charge")}</text>
+                      </g>
+                      <circle class="sc-roast__head" cx={curve.end.x} cy={curve.end.y} r="5" />
+                      <g class="sc-roast__drop" transform={`translate(${curve.end.x} ${curve.end.y})`}>
+                        <circle r="9" />
+                        <text x="-12" y="-16" text-anchor="end" class="sc-label sc-label--strong">
+                          {k("curve_drop")} · {lot.roastTemp} °C · {lot.roastMinutes} min
+                        </text>
+                      </g>
+                    </>
+                  )}
+                </g>
+                <text x={PLOT.x + PLOT.w} y={PLOT.y + PLOT.h - 14} text-anchor="end" class="sc-readout" data-readout>{lot.roastTemp ?? ""}°C</text>
+                <text x={PLOT.x + PLOT.w} y={H - 4} text-anchor="end" class="sc-caption">{k("curve_caption")}</text>
+              </svg>
+            )}
+
+            {i === 3 && (
+              <div class="sc-bag">
+                <div class="sc-bag__bag">
+                  <span class="sc-bag__fold"></span>
+                  <span class="sc-bag__valve"></span>
+                  <div class="sc-bag__label">
+                    <span class="sc-bag__brand">DobleYo</span>
+                    <span class="sc-bag__meta">{[lot.region.split(", ").pop(), lot.process].filter(Boolean).join(" · ")}</span>
+                    <div class="sc-bag__qr">
+                      <QrCode text={lot.qrUrl} />
+                      <span class="sc-bag__scan"></span>
+                    </div>
+                    <span class="sc-bag__code">{lot.code}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </li>
+      ))}
+    </ol>
+  </div>
+
+  <div class="tcta" data-trace-cta>
+    <div class="tcta__glow" aria-hidden="true"></div>
+    <a class="tcta__qr" href={traceHref} aria-label={`${k("cta_button")}: ${lot.code}`}>
+      <QrCode text={lot.qrUrl} />
+      <span class="tcta__scan" aria-hidden="true"></span>
+    </a>
+    <div class="tcta__copy">
+      <p class="tcta__eyebrow">{k("cta_eyebrow")}</p>
+      <h3 class="tcta__title">{k("cta_title_1")}<br />{k("cta_title_2")}</h3>
+      <p class="tcta__sub">{k("cta_sub")}</p>
+      <div class="tcta__actions">
+        <a href={traceHref} class="btn tcta__btn" data-magnetic><span data-magnetic-inner>{k("cta_button")}</span></a>
+        <span class="tcta__hint">{k("cta_hint")}</span>
+      </div>
+      <p class="tcta__try">{k("cta_try")} <code>{lot.code}</code></p>
+    </div>
+  </div>
+</section>
+
+<style>
+  .tj {
+    padding: 5rem 0 4.5rem;
+    border-top: 1px solid var(--border);
+  }
+  .tj__head { text-align: center; max-width: 720px; margin: 0 auto 3rem; }
+  .tj__eyebrow {
+    font-size: .7rem;
+    font-weight: 600;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 .75rem;
+  }
+  .tj__title {
+    font-size: clamp(1.9rem, 1.2rem + 3vw, 3.2rem);
+    color: var(--coffee);
+    margin: 0 0 .9rem;
+    line-height: 1.05;
+  }
+  .tj__sub { color: var(--muted-fg); margin: 0 auto 1.1rem; max-width: 50ch; line-height: 1.6; }
+  .tj__lot {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    margin: 0;
+    font-size: .78rem;
+    color: var(--muted-fg);
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 99px;
+    padding: .35rem .85rem;
+  }
+  .tj__lot strong { color: var(--coffee); letter-spacing: .04em; }
+  .tj__dot { width: 7px; height: 7px; border-radius: 50%; background: var(--leaf); box-shadow: 0 0 0 4px var(--leaf-bg); }
+
+  /* ── Maqueta por defecto: paso + escena ─────────────────────────────── */
+  .tj__body { position: relative; }
+  .tj__rail { display: none; }
+  .tj__steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 3rem; }
+  .tj__step { display: grid; gap: 1.25rem; align-items: center; }
+  .tj__num {
+    display: inline-block;
+    font-size: .7rem;
+    font-weight: 700;
+    letter-spacing: .12em;
+    color: var(--accent);
+    margin-bottom: .5rem;
+  }
+  .tj__step-title { font-size: clamp(1.25rem, 1rem + 1vw, 1.6rem); color: var(--coffee); margin: 0 0 .5rem; }
+  .tj__desc { color: var(--muted-fg); margin: 0 0 .75rem; line-height: 1.6; max-width: 42ch; }
+  .tj__fact {
+    display: inline-block;
+    margin: 0;
+    font-size: .78rem;
+    font-weight: 600;
+    letter-spacing: .02em;
+    color: var(--coffee);
+    background: rgba(var(--caramel-rgb), .1);
+    border-radius: 6px;
+    padding: .3rem .6rem;
+    font-variant-numeric: tabular-nums;
+  }
+  @media (min-width: 768px) {
+    .tj__step { grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: 2.5rem; }
+  }
+
+  .tj__scene {
+    position: relative;
+    aspect-ratio: 3 / 2;
+    border-radius: var(--radius-lg);
+    background: var(--espresso);
+    color: var(--cream);
+    overflow: hidden;
+    box-shadow: 0 24px 50px -28px rgba(var(--espresso-rgb), .7);
+  }
+  .tj__scene > svg { display: block; width: 100%; height: 100%; }
+
+  /* ── Modo fijado (escritorio, lo activa el script) ──────────────────── */
+  :global(.tj--pinned) .tj__body {
+    display: grid;
+    grid-template-columns: 2.25rem minmax(0, .78fr) minmax(0, 1.22fr);
+    gap: 0 2.5rem;
+    align-items: center;
+    min-height: min(640px, calc(100vh - var(--pin-top, 120px) - 2rem));
+  }
+  :global(.tj--pinned) .tj__rail {
+    display: block;
+    grid-column: 1;
+    align-self: stretch;
+    justify-self: center;
+    width: 2px;
+    margin: 1.5rem 0;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  :global(.tj--pinned) .tj__rail-fill {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: var(--accent);
+    transform-origin: top center;
+    transform: scaleY(0);
+  }
+  :global(.tj--pinned) .tj__steps { grid-column: 2; gap: 1.6rem; }
+  :global(.tj--pinned) .tj__step { display: block; }
+  :global(.tj--pinned) .tj__text { opacity: .38; transition: opacity .4s var(--ease); }
+  :global(.tj--pinned) .tj__fact,
+  :global(.tj--pinned) .tj__desc { display: none; }
+  :global(.tj--pinned) .tj__step.is-active .tj__text { opacity: 1; }
+  :global(.tj--pinned) .tj__step.is-active .tj__desc,
+  :global(.tj--pinned) .tj__step.is-active .tj__fact { display: block; }
+  :global(.tj--pinned) .tj__step.is-active .tj__fact { display: inline-block; }
+  :global(.tj--pinned) .tj__scene {
+    position: absolute;
+    top: 50%;
+    right: 0;
+    width: calc((100% - 2.25rem - 5rem) * 1.22 / 2);
+    transform: translateY(-50%);
+    opacity: 0;
+    visibility: hidden;
+    /* Solo opacidad: el transform lo usa el centrado vertical */
+    transition: opacity .5s var(--ease), visibility .5s;
+  }
+  :global(.tj--pinned) .tj__step.is-active .tj__scene { opacity: 1; visibility: visible; }
+
+  /* ── Escenas ─────────────────────────────────────────────────────────── */
+  .sc-label { fill: var(--cream); font: 600 11px/1 var(--font-body); letter-spacing: .04em; }
+  .sc-label--strong { font-size: 13px; }
+  .sc-tick { fill: rgba(var(--cream-rgb), .5); font: 500 10px/1 var(--font-body); font-variant-numeric: tabular-nums; }
+  .sc-caption { fill: rgba(var(--cream-rgb), .55); font: 500 10.5px/1 var(--font-body); }
+
+  .sc-harvest__rings path {
+    fill: none;
+    stroke: var(--caramel);
+    stroke-width: 1.2;
+    opacity: calc(.25 + var(--lvl) * .75);
+  }
+  .sc-harvest__dot { fill: var(--cream); }
+  .sc-harvest__pulse { fill: none; stroke: var(--cream); stroke-width: 1; opacity: .5; }
+  .sc-harvest__ruler line { stroke: rgba(var(--cream-rgb), .35); stroke-width: 1; }
+  .sc-harvest__marker path { fill: var(--accent); }
+
+  .sc-process {
+    height: 100%;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: 1fr auto;
+    align-items: center;
+    gap: .75rem 1.25rem;
+    padding: 1.5rem;
+  }
+  .sc-process__cherry { grid-row: 1 / 3; width: 100%; max-height: 100%; overflow: visible; }
+  .sc-process__skin { fill: var(--cherry); }
+  .sc-process__mucilage { fill: var(--mucilage); opacity: .85; }
+  .sc-process__parchment { fill: none; stroke: var(--cream); stroke-width: 3; opacity: .7; }
+  .sc-process__bean ellipse { fill: var(--bean-green); }
+  .sc-process__bean path { fill: none; stroke: var(--espresso); stroke-width: 2.5; stroke-linecap: round; opacity: .55; }
+  .sc-process__chips { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: .4rem; align-self: end; }
+  .sc-process__chips li {
+    font-size: .72rem;
+    font-weight: 600;
+    padding: .3rem .7rem;
+    border-radius: 99px;
+    border: 1px solid rgba(var(--cream-rgb), .25);
+    color: rgba(var(--cream-rgb), .6);
+  }
+  .sc-process__chips li.is-lot { background: var(--accent); border-color: var(--accent); color: var(--accent-contrast); }
+  .sc-process__text { margin: 0; font-size: .85rem; line-height: 1.55; color: rgba(var(--cream-rgb), .82); align-self: start; }
+  /* Estado final de cada método (lo que se ve sin JS): */
+  .sc-process--washed .sc-process__skin,
+  .sc-process--washed .sc-process__mucilage { opacity: 0; }
+  .sc-process--honey .sc-process__skin { opacity: 0; }
+  .sc-process--honey .sc-process__mucilage { opacity: .55; }
+  .sc-process--natural .sc-process__skin { opacity: .92; }
+
+  .sc-grid line { stroke: rgba(var(--cream-rgb), .12); stroke-dasharray: 3 5; }
+  .sc-roast__line { fill: none; stroke: var(--accent); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+  .sc-roast__turning circle { fill: var(--cream); }
+  .sc-roast__head { fill: var(--cream); }
+  .sc-roast__drop circle { fill: none; stroke: var(--accent); stroke-width: 2; }
+  .sc-readout { fill: var(--cream); font: 600 30px/1 var(--font-display); font-variant-numeric: tabular-nums; }
+
+  .sc-bag {
+    height: 100%;
+    display: grid;
+    place-items: center;
+    background:
+      radial-gradient(60% 70% at 50% 60%, rgba(var(--caramel-rgb), .28), transparent 70%);
+  }
+  .sc-bag__bag {
+    position: relative;
+    width: min(46%, 230px);
+    aspect-ratio: 3 / 4.1;
+    border-radius: 10px 10px 16px 16px;
+    background: linear-gradient(160deg, var(--kraft) 0%, var(--kraft-deep) 100%);
+    box-shadow: 0 30px 40px -20px rgba(0, 0, 0, .6), inset 0 -16px 30px -18px rgba(var(--espresso-rgb), .5);
+    display: grid;
+    place-items: end center;
+    padding-bottom: 9%;
+  }
+  .sc-bag__fold {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 12%;
+    border-radius: 10px 10px 0 0;
+    background: rgba(var(--espresso-rgb), .18);
+    border-bottom: 2px dashed rgba(var(--espresso-rgb), .25);
+  }
+  .sc-bag__valve {
+    position: absolute;
+    top: 15.5%;
+    left: 50%;
+    width: 16px;
+    height: 16px;
+    margin-left: -8px;
+    border-radius: 50%;
+    background: rgba(var(--espresso-rgb), .35);
+    box-shadow: inset 0 0 0 4px rgba(var(--espresso-rgb), .25);
+  }
+  .sc-bag__label {
+    width: 74%;
+    background: var(--cream);
+    color: var(--espresso);
+    border-radius: 6px;
+    padding: .6rem .6rem .5rem;
+    display: grid;
+    justify-items: center;
+    gap: .2rem;
+    text-align: center;
+  }
+  .sc-bag__brand { font-family: var(--font-display); font-weight: 700; font-size: .95rem; line-height: 1; }
+  .sc-bag__meta { font-size: .55rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted-fg); }
+  .sc-bag__qr { position: relative; width: 58%; margin-top: .15rem; overflow: hidden; }
+  .sc-bag__scan {
+    position: absolute;
+    left: -10%;
+    right: -10%;
+    top: 0;
+    height: 2px;
+    background: var(--accent);
+    box-shadow: 0 0 10px 2px rgba(var(--caramel-rgb), .6);
+    opacity: 0;
+  }
+  .sc-bag__code { font-size: .52rem; font-weight: 700; letter-spacing: .08em; }
+
+  /* ── CTA de trazabilidad ─────────────────────────────────────────────── */
+  .tcta {
+    position: relative;
+    margin-top: 4rem;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: 2.75rem;
+    background: var(--coffee);
+    border-radius: 1.25rem;
+    padding: 2.75rem 3rem;
+    overflow: hidden;
+    box-shadow: 0 24px 60px -20px rgba(var(--espresso-rgb), .5);
+  }
+  .tcta__glow {
+    position: absolute;
+    top: -40%;
+    right: -10%;
+    width: 460px;
+    height: 460px;
+    background: radial-gradient(circle, rgba(var(--caramel-rgb), .32) 0%, rgba(var(--caramel-rgb), 0) 70%);
+    pointer-events: none;
+  }
+  .tcta__qr {
+    position: relative;
+    z-index: 1;
+    display: block;
+    width: 172px;
+    padding: 12px;
+    background: var(--cream);
+    color: var(--espresso) !important;
+    border-radius: 1rem;
+    overflow: hidden;
+    transition: transform var(--dur) var(--ease);
+  }
+  .tcta__qr:hover { transform: scale(1.03); }
+  .tcta__scan {
+    position: absolute;
+    left: 6%;
+    right: 6%;
+    top: 8%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    box-shadow: 0 0 12px 2px rgba(var(--caramel-rgb), .6);
+    opacity: 0;
+  }
+  .tcta__copy { position: relative; z-index: 1; }
+  .tcta__eyebrow {
+    font-size: .68rem;
+    font-weight: 700;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 .75rem;
+  }
+  .tcta__title {
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 3vw, 2.1rem);
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--cream);
+    margin: 0 0 .9rem;
+  }
+  .tcta__sub { font-size: .95rem; line-height: 1.65; color: rgba(var(--cream-rgb), .7); margin: 0 0 1.6rem; max-width: 56ch; }
+  .tcta__actions { display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap; }
+  .tcta__btn { background: var(--accent); color: var(--accent-contrast); box-shadow: 0 10px 24px -8px rgba(var(--caramel-rgb), .7); }
+  .tcta__btn span { display: inline-block; }
+  .tcta__hint { font-size: .78rem; letter-spacing: .04em; color: rgba(var(--cream-rgb), .5); }
+  .tcta__try { margin: 1.1rem 0 0; font-size: .8rem; color: rgba(var(--cream-rgb), .6); }
+  .tcta__try code {
+    font-family: var(--font-body);
+    font-weight: 700;
+    letter-spacing: .06em;
+    color: var(--cream);
+    background: rgba(var(--cream-rgb), .08);
+    border-radius: 4px;
+    padding: .1rem .4rem;
+    white-space: nowrap;
+  }
+  @media (max-width: 767px) {
+    /* El SVG se reduce a ~45 %: el texto sube en unidades del viewBox para
+       seguir legible (~9-10 px reales). */
+    .sc-label { font-size: 20px; }
+    .sc-label--strong { font-size: 22px; }
+    .sc-tick { font-size: 17px; }
+    .sc-caption { font-size: 16px; }
+    .sc-readout { font-size: 46px; }
+    .sc-roast__drop text { display: none; }
+    .tj { padding: 3.5rem 0 3rem; }
+    .tj__steps { gap: 2.5rem; }
+    .sc-process { padding: 1rem; gap: .5rem .9rem; }
+    .sc-process__text { font-size: .75rem; }
+    .tcta {
+      grid-template-columns: 1fr;
+      text-align: center;
+      padding: 2.25rem 1.5rem;
+      gap: 1.75rem;
+      margin-top: 3rem;
+    }
+    .tcta__qr { justify-self: center; width: 148px; }
+    .tcta__sub { margin-left: auto; margin-right: auto; }
+    .tcta__actions { justify-content: center; }
+  }
+</style>

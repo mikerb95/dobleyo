@@ -1,0 +1,95 @@
+---
+/**
+ * Fincas destacadas. Cada tarjeta lleva el mapa de isolíneas de su finca:
+ * semilla = slug (siempre el mismo mapa) y una curva de nivel cada 250 m de
+ * altitud, así que una finca más alta se ve más alta. Las curvas se dibujan
+ * de la base a la cima al entrar en pantalla.
+ */
+import type { Lang } from "../../i18n/index.ts";
+import { t } from "../../i18n/index.ts";
+import { contourRings, hashSeed, ringsForAltitude } from "../../lib/motion/contours.ts";
+
+interface Props {
+  lang: Lang;
+  farms: any[];
+}
+
+const { lang, farms } = Astro.props;
+const k = (key: string) => t(`home.farms.${key}`, lang);
+const base = lang === "en" ? "/farm" : "/finca";
+const allHref = lang === "en" ? "/farms" : "/fincas";
+const unit = lang === "en" ? "masl" : "msnm";
+const nf = (n: number) => Number(n).toLocaleString(lang === "en" ? "en-US" : "es-CO");
+---
+
+{farms.length > 0 && (
+  <section class="home-farms" data-farms aria-labelledby="homeFarmsTitle">
+    <div class="container">
+      <div class="home-farms__header">
+        <h2 id="homeFarmsTitle" class="home-farms__title">{k("title")}</h2>
+        <a href={allHref} class="home-farms__link">{k("link")}</a>
+      </div>
+      <ul class="home-farms__grid" role="list">
+        {farms.map((farm: any) => {
+          const alt = farm.altitude_max ?? farm.altitude_min;
+          const rings = contourRings({
+            seed: hashSeed(farm.slug ?? farm.name),
+            rings: ringsForAltitude(alt),
+            width: 96,
+            height: 64,
+            wobble: 0.2,
+          });
+          return (
+            <li class="home-farm-card">
+              <a href={`${base}/${farm.slug}`} class="home-farm-card__link">
+                {farm.cover_image_url ? (
+                  <img
+                    src={farm.cover_image_url}
+                    alt={`${farm.name}, ${farm.region}`}
+                    loading="lazy"
+                    class="home-farm-card__img"
+                    width="400"
+                    height="240"
+                  />
+                ) : (
+                  <div class="home-farm-card__img home-farm-card__img--ph" aria-hidden="true" />
+                )}
+                <div class="home-farm-card__info hf-info">
+                  <div class="hf-text">
+                    <span class="home-farm-card__region">{farm.region}</span>
+                    <strong class="home-farm-card__name">{farm.name}</strong>
+                    {farm.altitude_min && (
+                      <span class="home-farm-card__alt">
+                        {nf(farm.altitude_min)}
+                        {farm.altitude_max ? `-${nf(farm.altitude_max)}` : ""}{" "}{unit}
+                      </span>
+                    )}
+                  </div>
+                  <svg class="hf-map" viewBox="0 0 96 64" aria-hidden="true">
+                    {rings.map((r) => <path d={r.d} style={`--lvl:${r.level}`} />)}
+                  </svg>
+                </div>
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  </section>
+)}
+
+<style>
+  .hf-info { flex-direction: row !important; align-items: center; justify-content: space-between; gap: 1rem; }
+  .hf-text { display: flex; flex-direction: column; gap: .2rem; min-width: 0; }
+  .hf-map { flex: 0 0 auto; width: 84px; height: 56px; overflow: visible; }
+  .hf-map path {
+    fill: none;
+    stroke: var(--leaf);
+    stroke-width: 1.1;
+    opacity: calc(.3 + var(--lvl) * .7);
+    transform-origin: 48px 32px;
+    transition: transform .5s var(--ease);
+  }
+  /* Al apuntar, el relieve "respira": cada curva se abre un poco más que la anterior */
+  .home-farm-card__link:hover .hf-map path { transform: scale(calc(1 + (1 - var(--lvl)) * .08)); }
+</style>

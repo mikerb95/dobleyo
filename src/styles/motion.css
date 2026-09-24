@@ -1,0 +1,63 @@
+/*
+ * Estilos globales del motion compartido: los elementos que crea el script
+ * (odómetro, halo del cursor) no llevan el atributo de alcance de Astro, así
+ * que sus reglas viven aquí y no en los componentes.
+ */
+
+/* Odómetro: columnas de dígitos que ruedan hasta su valor */
+.odo {
+  display: inline-flex;
+  align-items: baseline;
+  font-variant-numeric: tabular-nums;
+}
+.odo__col {
+  display: inline-block;
+  height: 1.15em;
+  line-height: 1.15em;
+  overflow: hidden;
+  vertical-align: bottom;
+}
+.odo__strip {
+  display: block;
+  width: 1ch;
+  word-break: break-all;
+  white-space: normal;
+  line-height: 1.15em;
+}
+.odo__sep {
+  display: inline-block;
+  line-height: 1.15em;
+}
+
+/* Luz que sigue al cursor: halo en el borde y tinte interior tenue.
+   El script escribe --fx/--fy en cada tarjeta. */
+.has-cursor-light > * {
+  position: relative;
+  isolation: isolate;
+}
+.has-cursor-light > *::before,
+.has-cursor-light > *::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .35s var(--ease);
+}
+.has-cursor-light > *::before {
+  z-index: 3;
+  padding: 1px;
+  background: radial-gradient(260px circle at var(--fx, 50%) var(--fy, 50%), rgba(var(--caramel-rgb), .75), transparent 60%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+}
+.has-cursor-light > *::after {
+  z-index: 2;
+  background: radial-gradient(420px circle at var(--fx, 50%) var(--fy, 50%), rgba(var(--caramel-rgb), .07), transparent 55%);
+}
+.has-cursor-light:hover > *::before,
+.has-cursor-light:hover > *::after {
+  opacity: 1;
+}

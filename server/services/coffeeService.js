@@ -9,6 +9,7 @@ import { postMovement, issueFromLotFIFO, resolveLocationForIntake } from './stor
 import { resolveRecordedAt, recordedDay } from '../utils/recordDate.js';
 import { recordCost, consumeSupply } from './costService.js';
 import { logger } from '../logger.js';
+import { lotFromCheckNumber } from './workflowService.js';
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -55,7 +56,10 @@ async function trackCost({ cost, lotId, costType, qtyKg, qtyUnits, supplyId, sou
 // ── 1. Cosecha ───────────────────────────────────────────────────────────────
 
 export async function createHarvest({ farm, region, altitude, variety, climate, process, aroma, tasteNotes, recordedAt, harvestWeightKg, cost, user }) {
-  if (!farm || !variety || !climate || !process || !aroma || !tasteNotes) {
+  // El perfil sensorial (aroma, notas) es opcional en finca: la catación es
+  // el momento natural para describirlo. Las columnas son NOT NULL, por eso
+  // se guarda vacío en vez de null.
+  if (!farm || !variety || !climate || !process) {
     throw bizError(400, 'Faltan campos requeridos');
   }
 
@@ -89,8 +93,8 @@ export async function createHarvest({ farm, region, altitude, variety, climate, 
        (lot_id, farm, region, altitude, variety, climate, process, aroma, taste_notes,
         harvest_weight_kg, created_at)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, COALESCE(?, datetime('now'))) RETURNING id`,
-    [lotId, farm, farmRegion, farmAltitude, variety, climate, process, aroma, tasteNotes,
-     harvestKg, createdAt]
+    [lotId, farm, farmRegion, farmAltitude, variety, climate, process,
+     (aroma || '').trim(), (tasteNotes || '').trim(), harvestKg, createdAt]
   );
   const harvestId = result.rows[0].id;
 
@@ -694,9 +698,6 @@ export async function getRoastedForCupping() {
 export async function getCuppings() {
   const { rows } = await query(
     `SELECT id, check_number,
-            CASE WHEN check_number LIKE 'CUP-%' THEN
-              SUBSTRING(check_number FROM 5 FOR LENGTH(check_number) - 9)
-            ELSE NULL END AS lot_id,
             check_type, check_date, passed, overall_score,
             aroma_score, flavor_score, aftertaste_score, acidity_score,
             body_score, balance_score, uniformity_score, clean_cup_score, sweetness_score,
@@ -706,7 +707,9 @@ export async function getCuppings() {
      WHERE check_type IN ('post_tostado', 'catacion', 'final')
      ORDER BY check_date DESC LIMIT 50`
   );
-  return rows;
+  // El lote va dentro de check_number (CUP-<lote>-XXXX). Se extrae en JS: la
+  // versión anterior usaba SUBSTRING ... FROM ... FOR, que SQLite no entiende.
+  return rows.map((r) => ({ ...r, lot_id: lotFromCheckNumber(r.check_number) }));
 }
 
 export async function createCupping({

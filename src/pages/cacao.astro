@@ -1,0 +1,207 @@
+---
+import Layout from "../layouts/Layout.astro";
+import PageHero from "../components/PageHero.astro";
+import ProductCard from "../components/ProductCard.astro";
+import { products as staticProducts } from "../data/products";
+import { getCanonicalUrl } from "../i18n/index.ts";
+import { reviewAggregateSql } from "../lib/products.server.ts";
+
+export const prerender = false;
+
+// Línea de cacao desde la BD; si aún no corre la migración add_cacao_line.js
+// (o la BD no responde) se usa el catálogo estático para no dejar la página vacía.
+let cacao: any[] = [];
+try {
+  const { query } = await import("../../server/db.js");
+  const result = await query(
+    `SELECT
+       p.id, p.slug, p.name, p.category, p.price, p.rating,
+       p.tasting_notes, p.weight, p.weight_unit,
+       p.is_new AS new,
+       p.image_url AS image,
+       p.stock_quantity AS stock,
+       ${reviewAggregateSql("p")}
+     FROM products p
+     WHERE p.is_active = 1 AND p.category = 'cacao'
+     ORDER BY p.is_bestseller DESC, p.price ASC`
+  );
+  cacao = result.rows.map((p: any) => ({ ...p, category: "Cacao" }));
+} catch (_) { /* BD no disponible */ }
+
+if (!cacao.length) {
+  cacao = staticProducts
+    .filter((p) => p.category === "Cacao")
+    .map((p) => ({ ...p, stock: 99 }));
+}
+
+const pageTitle = "Cacao colombiano: chocolate de mesa, polvo y manteca | DobleYo Café";
+const pageDescription =
+  "Línea de cacao colombiano: chocolate de mesa 70%, barras 100% cacao, cacao en polvo, cacao en forma de café y manteca de cacao de extracción en frío. Maquila desde 4 kg.";
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  name: "Línea de cacao DobleYo",
+  url: "https://dobleyo.cafe/cacao",
+  itemListElement: cacao.map((p: any, i: number) => ({
+    "@type": "ListItem",
+    position: i + 1,
+    item: {
+      "@type": "Product",
+      name: p.name,
+      image: p.image?.startsWith("http") ? p.image : `https://dobleyo.cafe${p.image}`,
+      category: "Cacao",
+      offers: {
+        "@type": "Offer",
+        priceCurrency: "COP",
+        price: p.price,
+        availability: p.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+        url: `https://dobleyo.cafe/producto/${p.id}`,
+      },
+    },
+  })),
+};
+---
+
+<Layout
+  lang="es"
+  title={pageTitle}
+  description={pageDescription}
+  canonical={getCanonicalUrl("/cacao", "es")}
+  jsonLd={jsonLd}
+>
+  <PageHero
+    eyebrow="Línea de cacao"
+    title="Cacao colombiano, del grano a su mesa"
+    subtitle="Chocolate de mesa, barras, cacao en polvo y manteca elaborados con cacao ecológico. El compañero natural de una buena taza de café."
+  />
+
+  <section class="cacao-list" aria-labelledby="cacao-productos">
+    <div class="container">
+      <h2 id="cacao-productos" class="visually-hidden">Productos de cacao</h2>
+      <div class="cacao-grid">
+        {cacao.map((p) => <ProductCard product={p} />)}
+      </div>
+    </div>
+  </section>
+
+  <section class="maquila" aria-labelledby="maquila-title">
+    <div class="container maquila__inner">
+      <img
+        class="maquila__photo"
+        src="/assets/img/cacao/servicio-maquila.webp"
+        alt="Chocolatero trabajando el cacao en la planta de producción"
+        width="480"
+        height="480"
+        loading="lazy"
+      />
+      <div class="maquila__copy">
+        <p class="eyebrow">Servicio personalizado</p>
+        <h2 id="maquila-title" class="maquila__title">Maquila de cacao a su medida</h2>
+        <p class="maquila__text">
+          Elaboramos su producto de cacao de acuerdo con su receta: porcentaje, formato y
+          presentación. Ideal para marcas propias, pastelerías y tiendas especializadas.
+        </p>
+        <ul class="maquila__facts">
+          <li><strong>Pedido mínimo</strong> 4 kilos</li>
+          <li><strong>Formatos</strong> pastillas, barras, polvo, manteca o moldes especiales</li>
+        </ul>
+        <a class="btn" href="/contacto?asunto=maquila">Solicitar cotización</a>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .container { max-width: 1200px; margin: 0 auto; padding: 0 var(--space-5); }
+
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .cacao-list { padding: var(--space-4) 0 var(--space-16); }
+
+  .cacao-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-6);
+  }
+  @media (min-width: 480px) { .cacao-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 768px) { .cacao-grid { grid-template-columns: repeat(3, 1fr); } }
+
+  .maquila {
+    background: var(--card);
+    border-top: 1px solid var(--border);
+    padding: var(--space-12) 0 var(--space-16);
+  }
+
+  .maquila__inner {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-8);
+    align-items: center;
+  }
+
+  .maquila__photo {
+    width: min(260px, 70vw);
+    height: auto;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border-radius: 50%;
+    justify-self: center;
+    box-shadow: var(--shadow-md);
+  }
+
+  .maquila__title {
+    font-family: var(--font-display);
+    font-size: var(--text-xl);
+    color: var(--espresso);
+    margin: 0 0 var(--space-3);
+  }
+
+  .maquila__text {
+    color: var(--ink-muted);
+    line-height: 1.6;
+    margin: 0 0 var(--space-5);
+    max-width: 52ch;
+  }
+
+  .maquila__facts {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 var(--space-6);
+    display: grid;
+    gap: var(--space-2);
+  }
+
+  .maquila__facts li {
+    position: relative;
+    padding-left: var(--space-5);
+    color: var(--espresso);
+    line-height: 1.5;
+  }
+
+  .maquila__facts li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.6em;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--caramel);
+  }
+
+  .maquila__facts strong { font-weight: 600; margin-right: var(--space-1); }
+
+  @media (min-width: 768px) {
+    .maquila__inner { grid-template-columns: auto 1fr; gap: var(--space-12); }
+    .maquila__photo { width: 300px; }
+    .maquila__title { font-size: 2rem; }
+  }
+</style>

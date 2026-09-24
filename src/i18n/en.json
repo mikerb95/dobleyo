@@ -165,5 +165,93 @@
         "currency": "USD",
         "locale": "en-US",
         "date_locale": "en-US"
+    },
+    "home": {
+        "hero": {
+            "title": "More than coffee, a heritage in every cup.",
+            "lead": "We are the reflection of Colombia's cultural richness and the effort of generations who cultivate in the heart of our land. Discover the flavor of our tradition and the passion of our soil.",
+            "cta": "Shop now",
+            "cta_secondary": "Follow a lot",
+            "ticket_eyebrow": "Featured lot",
+            "illustrative": "Illustrative example",
+            "ticket_label": "Lot record",
+            "stage_harvest": "Harvest",
+            "stage_process": "Process",
+            "stage_roast": "Roast",
+            "stage_cup": "Your cup",
+            "field_farm": "Farm",
+            "field_altitude": "Altitude",
+            "field_variety": "Variety",
+            "field_process": "Process",
+            "field_roast": "Roast",
+            "field_notes": "Notes",
+            "field_score": "SCA score",
+            "scan": "Scan to see the full lot"
+        },
+        "strip": {
+            "origin": "Colombia · Single origin",
+            "altitude_prefix": "",
+            "altitude_unit": "masl",
+            "processes": "Washed · Honey · Natural",
+            "fresh_prefix": "Freshly roasted within",
+            "fresh_unit": "days"
+        },
+        "journey": {
+            "eyebrow": "Full traceability",
+            "title": "From bean to cup",
+            "sub": "Every bag carries a QR code that documents this complete journey",
+            "real_data": "Real lot data",
+            "step_1_title": "Harvest",
+            "step_1_desc": "Farm, farmer, municipality and altitude recorded for each lot",
+            "step_2_title": "Processing",
+            "step_2_desc": "Method documented: washed, honey or natural according to the lot profile",
+            "step_3_title": "Roast",
+            "step_3_desc": "Roast curve, temperature and exact date. Within 15 days before your order",
+            "step_4_title": "Your bag",
+            "step_4_desc": "QR on the package with the lot's full history, from the farm to your hands",
+            "curve_caption": "Reference curve. The end point is the lot's real data.",
+            "curve_charge": "Charge",
+            "curve_turning": "Turning point",
+            "curve_drop": "Drop",
+            "minutes": "min",
+            "process_washed": "Pulped and fermented, washed with clean water and sun-dried",
+            "process_honey": "Pulped and dried with part of the mucilage, which adds sweetness",
+            "process_natural": "Dried inside the whole cherry, which adds fruity notes",
+            "process_other": "Processing method recorded in the lot record",
+            "cta_eyebrow": "QR Traceability · Verified origin",
+            "cta_title_1": "Every cup holds a story.",
+            "cta_title_2": "Discover it before you brew.",
+            "cta_sub": "Scan the code on your bag or enter the lot number and trace the complete journey of your coffee: the farm that grew it, the farmer behind the bean, the exact roast date and the quality control of your lot.",
+            "cta_button": "Trace my coffee",
+            "cta_hint": "No sign-up · Instant results",
+            "cta_try": "Try this lot:"
+        },
+        "manifesto": {
+            "label": "Our philosophy",
+            "quote": "In Colombia, coffee is history accumulated in every bean. We are the bridge between those who grow it with care and those who enjoy it with intention.",
+            "grower": "Those who grow it",
+            "drinker": "Those who enjoy it",
+            "attr": "DobleYo Café · Bogotá, Colombia"
+        },
+        "why": {
+            "eyebrow": "Why choose us",
+            "title": "Coffee with purpose, from farm to cup",
+            "qr_title": "QR traceability per lot",
+            "qr_desc": "Every bag includes a QR code documenting the farm, farmer, altitude and roast curve of the exact lot.",
+            "fresh_title": "Fresh roast within 15 days",
+            "fresh_desc": "We roast in small batches and ship within 15 days of roasting. Never warehouse coffee.",
+            "fresh_day": "Day",
+            "direct_title": "Direct trade with farmers",
+            "direct_desc": "We work directly with Colombian farms. No middlemen: better price for the producer, better quality for you.",
+            "direct_farm": "Farm",
+            "direct_you": "You",
+            "shipping_title": "Free shipping over $50",
+            "shipping_desc": "Worldwide shipping available. Free on orders over $50 USD.",
+            "shipping_free": "Free shipping"
+        },
+        "farms": {
+            "title": "Our Farms",
+            "link": "View all farms →"
+        }
     }
 }

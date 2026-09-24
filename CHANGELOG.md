@@ -2,6 +2,41 @@
 
 ---
 
+## 2026-09-24: Línea de cacao en la tienda (Agente: Claude)
+
+### Contexto
+Se incorpora la línea de productos de cacao (chocolate de mesa, barras, cacao en polvo, cacao en forma de café y manteca) más el servicio de maquila, a partir de la pieza gráfica del proveedor. Se presenta como línea propia de DobleYo.
+
+### Cambios
+
+**Base de datos**
+- **`server/migrations/add_cacao_line.js`** (nuevo): amplía el CHECK de `products.category` con `'cacao'`. Como SQLite no permite alterar un CHECK, reconstruye la tabla a partir de su DDL vivo (conserva orden de columnas e índices) dentro de `client.migrate()`, que corre en una transacción con las foreign keys desactivadas para no romper las 14 tablas que referencian `products`. Luego siembra los 5 productos (`cac-mesa`, `cac-barra`, `cac-polvo`, `cac-grano`, `cac-manteca`) con `ON CONFLICT DO NOTHING`. Idempotente. Probada contra una copia local del esquema real: datos, índices, FKs y CHECK intactos.
+- **`server/migrations/run_all_migrations.js`**: registra el paso nuevo.
+- **`db/schema.sql`**, **`server/routes/setup.js`**: CHECK de categoría con `'cacao'`.
+
+**Backend**
+- **`server/routes/products.js`**: etiqueta `cacao` → `Cacao`.
+- **`server/routes/inventory.js`**: `cacao` entra en `PACK_CATEGORIES` (stock por unidad en la vista operativa de inventario).
+
+**Frontend**
+- **`src/pages/cacao.astro`** (nuevo): página de la línea con los productos (BD, con respaldo en el catálogo estático), JSON-LD `ItemList` y sección de maquila (mínimo 4 kg) que enlaza a `/contacto?asunto=maquila`.
+- **`public/assets/img/cacao/*.webp`** (nuevo): fotos de producto recortadas de la pieza gráfica.
+- **`src/data/products.ts`**: los 5 productos en el catálogo de respaldo; la interfaz admite `weight` y `weight_unit`.
+- **`src/pages/contacto.astro`**, **`public/assets/js/contacto.js`**: asunto «Maquila de cacao» y preselección del asunto desde `?asunto=`.
+- **`src/components/Header.astro`**, **`src/components/Footer.astro`**, **`src/pages/sitemap.xml.ts`**: enlace a `/cacao`.
+- Etiqueta de categoría en `tienda.astro`, `producto/[id].astro`, `en/shop.astro`, `en/product/[id].astro`, `admin/productos.astro` (filtro, formulario y badge) y `admin/inventario-valor.astro`.
+
+### Decisiones
+- **Categoría propia en lugar de reusar `accesorio`.** Así el cacao tiene su filtro en la tienda y no se mezcla con molinillos en inventario y reportes.
+- **Precios, gramajes y stock (20 u.) son de referencia.** La pieza no traía precios; se ajustan en `/admin/productos`. El seed no sobrescribe cambios hechos en el admin.
+- **La maquila no es un producto del carrito.** Depende de receta y volumen, así que se canaliza como solicitud de cotización por el formulario de contacto.
+
+### Pendiente
+- Fotos en alta resolución: las actuales salen de la pieza gráfica (unos 190 px de origen) y se ven suaves en pantallas grandes. Algunas muestran el empaque con la marca ZOE.
+- Sin versión en inglés de `/cacao`; los productos sí aparecen en `/shop` con su `name_en`.
+
+---
+
 ## 2026-09-06 — Creación de cuentas B2B desde el panel CRM (Agente: Claude)
 
 ### Contexto
