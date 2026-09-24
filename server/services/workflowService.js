@@ -88,7 +88,7 @@ export function lotFromCheckNumber(checkNumber) {
 }
 
 /**
- * Pasa un puntaje SCA (6–10) a la escala 1–5 de la etiqueta.
+ * Pasa un puntaje SCA (6 a 10) a la escala 1 a 5 de la etiqueta.
  * 6 → 1, 7 → 2, 8 → 3, 9 → 4, 10 → 5.
  */
 export function scaToFive(score) {

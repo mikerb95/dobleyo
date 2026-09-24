@@ -205,7 +205,7 @@ export interface PackagingInput {
   recordedAt?: string;
   /** Tostado en bodega (roasted_coffee_inventory.id). */
   roastedStorageId: number;
-  /** Perfil 1–5 que va en la etiqueta. */
+  /** Perfil de 1 a 5 que va en la etiqueta. */
   acidity: number;
   body: number;
   balance: number;
