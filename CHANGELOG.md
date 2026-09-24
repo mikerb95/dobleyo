@@ -2,6 +2,53 @@
 
 ---
 
+## 2026-09-24: Portada con motion, "el viaje de un lote" (Agente: Claude)
+
+### Contexto
+La portada (ES y EN) era una pila de cuadrículas de 3 tarjetas con un solo movimiento (la línea de escaneo del QR) y un video de 61 MB en autoplay, también en móvil. Se rehace con una idea central: cada sección muestra lo que afirma usando los datos reales del lote destacado, con un lenguaje visual común (isolíneas topográficas, línea caramelo, fichas de lote).
+
+### Cambios
+
+**Datos y lógica pura (con tests)**
+- **`src/lib/lot.ts`** (nuevo): `toLotView()` convierte la fila de trazabilidad en la ficha del lote (altitud, proceso, notas, tueste, SCA solo en escala >= 60, URL del QR), traducciones EN de los términos conocidos, `processKind()` y `roastCurve()` (curva de referencia que termina en el dato real de °C y minutos).
+- **`src/lib/lot.server.ts`** (nuevo): `getFeaturedLot()` elige el lote real con cadena completa (cosecha, tostión, finca publicada) de mejor SCA. Sin BD devuelve un ejemplo marcado "Ejemplo ilustrativo".
+- **`src/lib/motion/contours.ts`** (nuevo): isolíneas deterministas (semilla por slug, una curva cada 250 m de altitud).
+- **`src/lib/qr.ts`** (nuevo): matriz del QR real con `qrcode-generator` para pintarlo módulo a módulo.
+- **`src/lib/__tests__/lot.test.ts`, `contours.test.ts`** (nuevos, 23 tests). `vitest.config.js` incluye `src/lib/**/__tests__`.
+
+**Componentes compartidos ES/EN (`src/components/home/`)**
+- `HomeHero`: video del viaje (cereza, secado, tambor, taza) y etiqueta viva del lote que enciende la etapa que se ve en pantalla.
+- `LotTicket`, `QrCode`, `OriginStrip` (odómetro), `TraceJourney` (escena fijada en escritorio con 4 escenas: mapa de la finca, corte de la cereza según el proceso, curva de tueste, bolsa con QR; CTA con QR real), `Manifesto` (puente que se dibuja), `HomeFarms` (mapa de isolíneas por finca), `WhyGrid` (microdemostraciones).
+- Textos en `home.*` de `src/i18n/es.json` y `en.json`, con paridad.
+
+**Motion (`src/scripts/`)**
+- `motion/core.ts`: registro de GSAP 3.15 y plugins, montaje en `astro:page-load` y limpieza en `astro:before-swap` (ClientRouter), pausa fuera de pantalla, botón magnético, luz que sigue al cursor, odómetro, entrada de rejillas.
+- `home/*.ts`: una pieza por sección. `src/styles/motion.css`: estilos de lo que crea el script.
+
+**Medios**
+- `public/assets/vids/hero-viaje.mp4` (2,5 MB) y `hero-viaje-sm.mp4` (0,9 MB, móvil): loop de 16 s recortado de `hero.mp4` (61 MB). Pósters `hero-viaje.webp` y `hero-viaje-sm.webp`.
+
+**Páginas y estilos**
+- `src/pages/index.astro` y `src/pages/en/index.astro` usan los componentes; se retiró el marcado y el CSS del hero, banda, pipeline, manifiesto y "por qué" anteriores, y los hex fijos restantes pasaron a tokens.
+- `public/assets/css/styles.css`: tokens `--cream-rgb`, `--cherry`, `--mucilage`, `--bean-green`, `--kraft`, `--kraft-deep`.
+
+### Decisiones
+- **Fail-open.** El HTML del servidor es el estado final. Sin JS o con `prefers-reduced-motion` todo se ve completo y quieto, nada se fija y el video no se descarga.
+- **El video solo se descarga si el visitante no pidió ahorro de datos** y aparece al emitir `playing`: en navegadores sin H.264 se ve el póster en lugar de un cuadro gris.
+- **La curva de tueste es de referencia.** La BD solo guarda temperatura final y duración; la UI lo dice en el pie del gráfico.
+- **Fijado solo en escritorio (>= 1024 px).** En móvil cada escena se reproduce una vez al entrar.
+- **GSAP por npm, empaquetado por Astro**: sale como archivo externo en `/_astro/`, compatible con la CSP sin `unsafe-inline`. Peso: 57,4 KB gzip.
+
+### Verificación
+- Capturas con Playwright (Chromium y Brave para el video) en 1440x900 y 390x844, ES y EN, secuencias de cada animación y movimiento reducido. `scrollWidth` igual al viewport en todos los casos.
+- `vitest`: 199 tests en verde. `npm run build` en verde. `astro check` no reporta errores nuevos más allá del `ts(5097)` que ya tiene todo el repo (sin `tsconfig.json`).
+
+### Pendiente
+- `/en/traceability` no acepta `?lote=`; el CTA en inglés enlaza a la página sin cargar el lote.
+- Inconsistencias de contenido señaladas al dueño del sitio, sin corregir (banda de 1.400-1.900 msnm frente a fincas de 1.000-1.200 y 2.000-2.200; tres redacciones de la promesa de 15 días; tú y usted mezclados; fotos de stock sin relación con cada finca o café).
+
+---
+
 ## 2026-09-24: Línea de cacao en la tienda (Agente: Claude)
 
 ### Contexto

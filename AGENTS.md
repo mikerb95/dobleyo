@@ -204,6 +204,18 @@ Las cards de la home, el catálogo y los resultados de búsqueda deben mostrar e
 
 ---
 
+### 3.9 Motion de la portada — reglas no negociables
+
+La portada ES y EN comparten componentes (`src/components/home/`) y un solo módulo de motion (`src/scripts/home/index.ts` sobre `src/scripts/motion/core.ts`). Al tocarlos:
+
+- **El HTML del servidor es el estado final.** Las timelines parten de un estado inicial y terminan en lo que ya pinta el servidor. Sin JS o con `prefers-reduced-motion` no se monta nada y todo queda visible.
+- **Una pieza por sección, registrada con `registerPiece()`.** Todo lo que no revierte `gsap.context` (observers, listeners, `gsap.ticker`) se limpia con `addCleanup`; el núcleo desmonta en `astro:before-swap` por el ClientRouter.
+- **Nada de `gsap.from` sobre elementos con `transition` de CSS en la misma propiedad** sin `clearProps`: el valor final queda mal. Los estados (etapa activa, fila encendida) se manejan con clases y CSS.
+- **Los datos de la ficha salen de `getFeaturedLot()`** (`src/lib/lot.server.ts`). Nunca inventar cifras: sin BD se muestra el ejemplo con la etiqueta "Ejemplo ilustrativo".
+- **Lógica pura en `src/lib` con tests** (`lot.ts`, `motion/contours.ts`, `qr.ts`). Textos de la portada en `home.*` de los diccionarios, con paridad ES/EN.
+- **Estilos de elementos creados por JS** (odómetro, halo del cursor) en `src/styles/motion.css`, no con scope de Astro.
+- **Video del hero:** `hero-viaje.mp4` (4 tomas de 4 s; la etiqueta asume ese corte). Si se cambia el video, ajustar `SEGMENT` en `src/scripts/home/hero.ts`.
+
 ---
 
 ## 4. SEO — Reglas Obligatorias
