@@ -2,6 +2,53 @@
 
 ---
 
+## 2026-09-24: Línea de producción guiada, "Qué sigue" (Agente: Claude)
+
+### Contexto
+La operación se registraba en 7 páginas, una por tabla (cosecha, bodega verde, envío, recepción, bodega tostado, empaque, etiquetas), todas con el mismo esquema de KPIs + formulario + tabla. El operario tenía que saber qué paso seguía, buscarlo en el menú y volver a elegir el lote. Nada avisaba de un lote olvidado en la maquila. Casi siempre registra una sola persona, la tostión es por maquila externa (días fuera) y las etiquetas se imprimen al empacar. Se rediseña en web y móvil alrededor del lote y de lo que falta por hacer, sin cambiar el modelo de datos ni los endpoints de escritura.
+
+### Cambios
+
+**Backend**
+- **`server/services/workflowService.js`** (nuevo): reconstruye cada lote desde las tablas operativas (balance de kilos, estaciones, historia) y deduce las tareas pendientes con urgencia `late`/`now`/`waiting`/`anytime`. Umbrales como constantes (maquila 5/10 días, reposo del tostado 2 días, frescura 14/28 días). Lógica pura con 13 tests en `__tests__/workflowService.test.js`.
+- **`server/routes/coffee.js`**: `GET /api/coffee/workflow/queue` y `GET /api/coffee/workflow/lots/:lotId` (solo lectura, mismo router en standalone y Vercel). La notificación ntfy de cosecha ahora abre la ficha del lote.
+- **`server/services/coffeeService.js`**: aroma y notas de sabor opcionales en la cosecha (se guardan vacíos; la catación es el momento natural para describirlos). `getCuppings()` usaba `SUBSTRING ... FROM ... FOR` de Postgres y fallaba en SQLite: el lote se extrae en JS.
+- **`server/routes/labels.js`**: `GET /list` acepta `lot` y `printed` (aditivo).
+- **`server/routes/farms.js`**: `/admin/all` devuelve `municipality` y `altitude_min` para armar el código del lote.
+
+**Paquete compartido (`packages/shared`)**
+- **`src/workflow.ts`** (nuevo): tipos de la bandeja y la ficha, vocabulario (variedades, procesos, contenedores, regiones) y los textos es-CO de tareas y eventos (`describeTask`, `describeEvent`, `describeQueue`), usados igual por web y móvil.
+- **`src/types.ts`, `src/api/endpoints.ts`**: los payloads del móvil no coincidían con el servidor (p. ej. recepción mandaba `lotId` en vez de `roastingId`; empaque, campos inexistentes) y `getHarvests` desempaquetaba un `.data` que no existe, así que las listas llegaban vacías. Se alinean con los contratos reales y se agregan `workflow`, `catalog` y `labels`.
+
+**Web**
+- **`src/pages/admin/produccion.astro`** + **`src/components/workflow/*`** (nuevo, reemplaza `ProductionPipeline.jsx`): bandeja agrupada por urgencia con cada tarea redactada como objetivo, columna de lotes en curso, ficha del lote (nombre narrativo, hilo de 6 estaciones, "dónde está cada kilo", historia) y hoja lateral para cada paso con el lote ya elegido. Cada formulario muestra en vivo la consecuencia (merma de secado, merma de tueste contra el rango normal, bolsas y kilos que quedan) y al guardar propone el siguiente paso del mismo lote.
+- Pasos fusionados en la interfaz: recibir de la maquila + ubicar en bodega; empacar + generar etiquetas + imprimir.
+- **`src/pages/admin/etiquetas.astro`**: `?imprimir=<lote>` abre la impresión de las etiquetas pendientes del lote y permite marcarlas como impresas.
+- **`src/pages/admin/cupping.astro`**: `?tostado=<id>` llega con el lote elegido.
+- **`src/layouts/AdminLayout.astro`**: "Qué sigue" encabeza Operación (admin y caficultor); las 6 páginas por etapa pasan a "Registros por etapa".
+- **`src/lib/api.js`**: muestra el texto de error cuando la ruta responde `{ error: "texto" }`.
+
+**Móvil (`apps/mobile`)**
+- Inicio = bandeja "Qué sigue"; nuevas pantallas `lote/[id]` y `paso/[kind]` con los mismos pasos que la web, en componentes táctiles (`src/ui/`, `src/steps/`). Reemplaza la pantalla de cosecha de texto libre.
+- Sin señal: los pasos quedan en la cola persistida con `client_op_id`; los encadenados encolan el primer registro y el segundo se completa desde la bandeja. Se precargan las fichas de los lotes con tareas para abrirlas sin cobertura.
+
+### Decisiones
+- **Las tareas se derivan, no se almacenan.** Evita una tabla más que desincronizar y respeta el alcance acordado (sin cambios de modelo).
+- **Recibir y ubicar, empacar y etiquetar son un solo momento en la UI** pero siguen siendo dos registros: si el segundo falla, el primero no se revierte y la bandeja muestra lo que falta.
+- **Perfil de la etiqueta tomado de la catación**: el puntaje SCA (6 a 10) se pasa a la escala 1 a 5 y se precarga en el empaque.
+- **Las páginas por etapa no se borran**: quedan como historial y para eliminar registros.
+
+### Verificación
+- 199 tests pasan; `astro build` compila; `tsc` sin errores en `packages/shared` y `apps/mobile`.
+- Flujos recorridos en navegador (Playwright) contra una base SQLite local con datos sembrados: recepción de maquila con ubicación, empaque con generación de 40 etiquetas, impresión desde `/admin/etiquetas?imprimir=` y marcado como impresas. Escritorio (1440 px) y celular (390 px).
+
+### Pendiente
+- **DEBT-012**: la máquina de estados admite un solo envío a maquila por lote; el remanente verde queda sin tarea (se advierte en el formulario y en la ficha).
+- **DEBT-013**: `npx expo export` falla por el hoisting de `babel-preset-expo` frente a `expo-router`; es previo a este cambio. La app móvil no se probó en dispositivo.
+- La catación sigue en su página (formulario SCA completo); en el móvil se abre en el navegador.
+
+---
+
 ## 2026-09-24: Portada con motion, "el viaje de un lote" (Agente: Claude)
 
 ### Contexto

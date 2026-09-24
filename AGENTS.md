@@ -216,6 +216,19 @@ La portada ES y EN comparten componentes (`src/components/home/`) y un solo mód
 - **Estilos de elementos creados por JS** (odómetro, halo del cursor) en `src/styles/motion.css`, no con scope de Astro.
 - **Video del hero:** `hero-viaje.mp4` (4 tomas de 4 s; la etiqueta asume ese corte). Si se cambia el video, ajustar `SEGMENT` en `src/scripts/home/hero.ts`.
 
+### 3.10 Flujo guiado de producción ("Qué sigue") — reglas no negociables
+
+La operación de la línea (cosecha → bodega verde → maquila → bodega tostado → empaque → etiqueta) se registra desde `/admin/produccion` en la web y desde la app móvil. Las 6 páginas por etapa siguen existiendo como historial ("Registros por etapa"). Al tocar el flujo:
+
+- **La bandeja se deriva, no se guarda.** `server/services/workflowService.js` reconstruye el estado de cada lote desde las tablas operativas y deduce las tareas (`GET /api/coffee/workflow/queue` y `/workflow/lots/:lotId`). Es solo lectura: no agregar tablas de "tareas" ni escribir desde ahí. Los pasos se registran en los `POST /api/coffee/*` de siempre.
+- **La lógica de urgencia es pura y tiene tests.** `buildLots`, `tasksForLot`, `buildQueue` y `buildJourney` no tocan la BD; `loadSnapshot` es la única consulta. Los umbrales (días de maquila, reposo del tostado, frescura) son constantes exportadas al inicio del servicio.
+- **El servidor devuelve datos; el texto vive en `packages/shared/src/workflow.ts`.** `describeTask`, `describeEvent` y `describeQueue` redactan en es-CO lo que ven la web y el móvil. Una frase nueva se agrega ahí, no en cada cliente. Las tareas se nombran por su objetivo ("Recoger de la maquila el café de La Sierra"), no por la tabla.
+- **Un paso = un momento del operario, aunque sean dos registros.** Recibir de la maquila hace `roast-retrieval` y luego `roasted-storage`; empacar hace `packaging` y luego `labels/generate-from-lot`. Si el segundo falla, el primero ya quedó y la bandeja muestra la tarea pendiente ("Ubicar en bodega", "Etiquetar"): nunca revertir el primero.
+- **Al cerrar un paso se ofrece el siguiente del mismo lote.** Casi siempre registra una sola persona; no devolverla a la lista si puede seguir.
+- **El caficultor solo ve lotes de sus fincas** (o sin dueño en `farms`, mismo criterio permisivo de `assertFarmOwnership`) y solo las tareas `store_green` y `send_roasting`.
+- **Móvil sin señal:** los pasos simples quedan en la cola persistida con `client_op_id`. Los encadenados solo encolan el primer registro; el segundo se completa desde la bandeja cuando llega al servidor. Generar etiquetas requiere señal. La app precarga la ficha de los lotes con tareas para poder abrirlos sin cobertura.
+- **Estilos del hub en `src/components/workflow/workflow.module.css`**, derivados de los tokens del admin con `color-mix`. Los títulos llevan `.hub`/`.sheet` delante porque `.erp-content h1/h2/h3` del layout les gana en especificidad.
+
 ---
 
 ## 4. SEO — Reglas Obligatorias
@@ -403,6 +416,8 @@ Para exponer la plataforma en vivo existe un seed **idempotente** que puebla tod
 | DEBT-008 | 🟡 | Scripts de setup/seed/migraciones usan MySQL (mysql2, ?, AUTO_INCREMENT) | ✅ Resuelto Post-Fase 12 |
 | DEBT-009 | 🟡 | `MIPAQUETE_PAYMENT_TYPE_COD` (server/services/mipaquete.js) es un valor por confirmar en sandbox antes de habilitar contraentrega en producción — el 101 documentado por Mipaquete es pago anticipado | Pendiente |
 | DEBT-010 | 🟠 | `POST /api/shipping/refresh-all` dependía de que un admin abriera `/admin/envios` — sin polling programado, el fin de semana sin abrir el panel dejaba clientes sin actualización | ✅ Resuelto — `POST /api/shipping/cron-refresh-all` (auth `CRON_SECRET`) + `.github/workflows/shipping-refresh.yml` cada 30 min |
+| DEBT-012 | 🟠 | La máquina de estados (`lotStateMachine.js`) trata el lote como un todo: tras un envío a maquila, el café verde que quede en bodega ya no se puede enviar (409). El flujo guiado lo advierte al enviar menos que el total y lo muestra en la ficha del lote | Pendiente |
+| DEBT-013 | 🟡 | `npx expo export` falla en `apps/mobile`: `expo-router` está en `apps/mobile/node_modules` y `babel-preset-expo` en la raíz, así que el preset no activa el plugin que reemplaza `EXPO_ROUTER_APP_ROOT`. Revisar el hoisting de dependencias del workspace | Pendiente |
 | DEBT-011 | 🟠 | Sin control de inventario en el flujo de e-commerce: ni `POST /api/orders` ni el despacho verificaban o descontaban stock | ✅ Resuelto — validación en `POST /api/orders` + descuento directo al confirmarse el pago (`deductStockForOrder`)/reposición al cancelar (`replenishStockForOrder`). Sin reserva: riesgo de sobreventa entre creación y pago aceptado para este catálogo |
 
 ---

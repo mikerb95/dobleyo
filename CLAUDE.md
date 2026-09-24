@@ -101,7 +101,9 @@
 
 | Archivo | Propósito |
 |---|---|
-| `src/pages/admin/harvest.astro` | Registro de cosechas |
+| `src/pages/admin/produccion.astro` | **"Qué sigue"**: bandeja de tareas, ficha del lote y pasos guiados (`src/components/workflow/`). Entrada principal de la operación |
+| `server/services/workflowService.js` | Deriva tareas y la historia de cada lote (solo lectura). Textos en `packages/shared/src/workflow.ts` |
+| `src/pages/admin/harvest.astro` | Registro de cosechas (historial por etapa) |
 | `src/pages/admin/inventory-storage.astro` | Almacenamiento de inventario verde |
 | `src/pages/admin/send-roasting.astro` | Enviar a tostión |
 | `src/pages/admin/roast-retrieval.astro` | Recibir café tostado |
