@@ -28,7 +28,7 @@ try {
      ORDER BY p.is_bestseller DESC, p.is_new DESC, p.is_deal DESC, p.rating DESC`
   );
   if (result.rows.length > 0) {
-    const LABEL: Record<string, string> = { cafe: 'Cafés', accesorio: 'Accesorios', merchandising: 'Merchandising' };
+    const LABEL: Record<string, string> = { cafe: 'Cafés', accesorio: 'Accesorios', merchandising: 'Merchandising', cacao: 'Cacao' };
     products = result.rows.map((p: any) => ({
       ...p,
       category: LABEL[p.category] ?? p.category,

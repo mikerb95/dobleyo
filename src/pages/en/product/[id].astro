@@ -19,7 +19,7 @@ const { id } = Astro.params;
 let product: any = null;
 try {
   const { query } = await import("../../../../server/db.js");
-  const LABEL: Record<string, string> = { cafe: "Coffee", accesorio: "Accessories", merchandising: "Merch" };
+  const LABEL: Record<string, string> = { cafe: "Coffee", accesorio: "Accessories", merchandising: "Merch", cacao: "Cacao" };
   const { rows } = await query(
     `SELECT p.id, p.slug, p.name, p.name_en, p.category, p.origin, p.process, p.roast,
             p.price, p.price_usd, p.rating, p.image_url AS image,

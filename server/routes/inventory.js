@@ -988,7 +988,7 @@ inventoryRouter.get('/alerts/low-stock', async (req, res) => {
 // Bodega única por ahora: el modelo de datos no segmenta almacenes.
 const DEFAULT_WAREHOUSE = 'Principal';
 // Categorías de products que se gestionan como insumos/empaque con stock por unidad.
-const PACK_CATEGORIES = ['accesorio', 'merchandising'];
+const PACK_CATEGORIES = ['accesorio', 'merchandising', 'cacao'];
 
 // Parsea humedad almacenada como texto ("11.5%", "11,5") a número.
 function parseHumidity(raw) {

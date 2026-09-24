@@ -9,7 +9,7 @@ import { reviewAggregateSql } from '../utils/reviews.js';
 export const productsRouter = Router();
 
 // Mapa de categoría BD → etiqueta visual
-const CATEGORY_LABEL = { cafe: 'Cafés', accesorio: 'Accesorios', merchandising: 'Merchandising' };
+const CATEGORY_LABEL = { cafe: 'Cafés', accesorio: 'Accesorios', merchandising: 'Merchandising', cacao: 'Cacao' };
 
 // ─── GET /api/products ───────────────────────────────────────────────────────
 // Listado público de productos activos con filtros y paginación opcionales.

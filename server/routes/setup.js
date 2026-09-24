@@ -82,7 +82,7 @@ CREATE TABLE IF NOT EXISTS products (
     sku VARCHAR(100) UNIQUE,
     name VARCHAR(160) NOT NULL,
     description TEXT,
-    category TEXT NOT NULL DEFAULT 'cafe' CHECK (category IN ('cafe', 'accesorio', 'merchandising')),
+    category TEXT NOT NULL DEFAULT 'cafe' CHECK (category IN ('cafe', 'accesorio', 'merchandising', 'cacao')),
     subcategory VARCHAR(80),
     origin VARCHAR(120),
     process VARCHAR(80),

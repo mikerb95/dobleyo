@@ -98,7 +98,7 @@ CREATE TABLE IF NOT EXISTS products (
     name VARCHAR(160) NOT NULL,
     name_en TEXT, -- Nombre para el sitio en inglés (en.dobleyo.cafe)
     description TEXT,
-    category TEXT NOT NULL DEFAULT 'cafe' CHECK (category IN ('cafe', 'accesorio', 'merchandising')),
+    category TEXT NOT NULL DEFAULT 'cafe' CHECK (category IN ('cafe', 'accesorio', 'merchandising', 'cacao')),
     subcategory VARCHAR(80), -- Para cafés: origen. Para accesorios: tipo (prensa, chemex, filtros, etc)
     origin VARCHAR(120), -- Para cafés
     process VARCHAR(80), -- Para cafés: lavado, honey, natural
