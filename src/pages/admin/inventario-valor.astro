@@ -110,6 +110,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   .cat-cafe       { background: #fff8f1; color: #92400e; border: 1px solid #fed7aa; }
   .cat-accesorio  { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
   .cat-merchandising { background: #fdf4ff; color: #6b21a8; border: 1px solid #e9d5ff; }
+  .cat-cacao      { background: var(--cream); color: var(--espresso); border: 1px solid var(--border); }
 
   .value-bar-wrap {
     display: flex;
@@ -176,6 +177,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
           : "badge-success";
         const catClass = p.category === "cafe" ? "cat-cafe"
           : p.category === "accesorio" ? "cat-accesorio"
+          : p.category === "cacao" ? "cat-cacao"
           : "cat-merchandising";
         const barPct = Math.round((p.valor / maxValor) * 100);
 

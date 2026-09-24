@@ -62,7 +62,7 @@ const steps = [
   { name: 'Blog posts (lote 2: 5 posts)',     run: () => runFn('add_blog_posts_batch2.js', 'addBlogPostsBatch2') },
   { name: 'Product reviews table',           run: () => runFn('add_product_reviews.js', 'addProductReviews') },
   { name: 'Gift sets column + seed',         run: () => runFn('add_gift_sets.js', 'addGiftSets') },
-  // Reconstruye products para ampliar el CHECK de category: va después de toda migración que añada columnas a products.
+  // Reconstruye products desde su DDL vivo para ampliar el CHECK de category (conserva columnas añadidas antes o después).
   { name: 'Línea de cacao (categoría + seed)', run: () => runFn('add_cacao_line.js', 'addCacaoLine') },
   { name: 'System tables (error_logs + system_changelog)', run: () => runFn('add_system_tables.js', 'addSystemTables') },
   { name: 'Demand forecasts table',          run: () => runFn('create_demand_forecasts.js', 'createDemandForecasts') },
