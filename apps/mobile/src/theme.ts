@@ -32,6 +32,7 @@ export const colors = {
   costBg: '#fbf4ec',
   costBorder: '#f0dfcb',
   errorBg: '#fdecec',
+  successBg: '#e7f3ea',
 } as const;
 
 export const spacing = {
