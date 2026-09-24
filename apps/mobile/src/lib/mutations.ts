@@ -20,6 +20,13 @@ export const queryKeys = {
   roastedCoffee: ['production', 'roasted-coffee'] as const,
   packaged: ['production', 'packaged'] as const,
   lots: ['production', 'lots'] as const,
+  // Flujo guiado: bandeja y ficha de cada lote.
+  queue: ['workflow', 'queue'] as const,
+  lot: (lotId: string) => ['workflow', 'lot', lotId] as const,
+  workflow: ['workflow'] as const,
+  locations: (state: 'green' | 'roasted') => ['catalog', 'locations', state] as const,
+  farms: (role: string) => ['catalog', 'farms', role] as const,
+  supplies: ['catalog', 'supplies'] as const,
 };
 
 // Claves de mutaciones. Las mutaciones pausadas offline se persisten en
@@ -45,7 +52,10 @@ export function withOpId<T>(input: T): T & WithClientOpId {
 }
 
 function invalidate(...keys: ReadonlyArray<readonly string[]>) {
-  return Promise.all(keys.map((queryKey) => queryClient.invalidateQueries({ queryKey })));
+  // Cualquier paso cambia lo que sigue: la bandeja y las fichas se refrescan siempre.
+  return Promise.all(
+    [...keys, queryKeys.workflow].map((queryKey) => queryClient.invalidateQueries({ queryKey }))
+  );
 }
 
 queryClient.setMutationDefaults(mutationKeys.harvest, {
