@@ -2,6 +2,19 @@
 
 ---
 
+## 2026-10-12: Portada, escena "Cosecha" con foto real y ficha de origen (Agente: Claude)
+
+### Contexto
+La escena 01 de "Del grano a tu taza" era un mapa abstracto de isolíneas con una regla de altitud. No se entendía y restaba seriedad al sitio.
+
+### Cambios
+- **`home/TraceJourney.astro`**: la escena muestra una foto de cerezas maduras en la rama con una "Ficha de origen" encima (finca, origen, altitud, variedad, fecha de cosecha y código del lote, todo del lote real). En móvil la ficha va debajo de la foto.
+- **`public/assets/img/origen-cosecha.webp`** y **`-sm.webp`** (nuevos): fotograma de `hero.mp4` (1200 y 720 px).
+- **`scripts/home/journey.ts`**: la animación de la escena pasa a un zoom suave de la foto y la entrada de la ficha fila por fila.
+- **i18n** (`es.json`, `en.json`): claves `home.journey.origin_*`.
+
+---
+
 ## 2026-10-12: Ocultar notas de cata y puntaje SCA al público (Agente: Claude)
 
 ### Contexto
