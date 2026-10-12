@@ -11,6 +11,7 @@ import type { Lang } from "../../i18n/index.ts";
 import { t } from "../../i18n/index.ts";
 import type { LotView } from "../../lib/lot.ts";
 import { roastCurve } from "../../lib/lot.ts";
+import { SHOW_CUPPING } from "../../lib/flags.ts";
 import QrCode from "./QrCode.astro";
 
 interface Props {
@@ -24,7 +25,8 @@ const curve =
   lot.roastTemp && lot.roastMinutes
     ? roastCurve(lot.roastTemp, lot.roastMinutes, { width: 120, height: 36, tempMin: 70, tempMax: 230 })
     : null;
-const scoreLabel = lot.score != null ? lot.score.toLocaleString(lang === "en" ? "en-US" : "es-CO") : null;
+const notes = SHOW_CUPPING ? lot.notes : [];
+const scoreLabel = SHOW_CUPPING && lot.score != null ? lot.score.toLocaleString(lang === "en" ? "en-US" : "es-CO") : null;
 const stages = ["harvest", "process", "roast", "cup"] as const;
 ---
 
@@ -89,12 +91,12 @@ const stages = ["harvest", "process", "roast", "cup"] as const;
         </dd>
       </div>
     )}
-    {lot.notes.length > 0 && (
+    {notes.length > 0 && (
       <div class="lot__row" data-for-stage="3">
         <dt>{k("field_notes")}</dt>
         <dd>
           <ul class="lot__notes">
-            {lot.notes.map((n) => <li>{n}</li>)}
+            {notes.map((n) => <li>{n}</li>)}
           </ul>
         </dd>
       </div>

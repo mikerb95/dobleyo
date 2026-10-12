@@ -3,6 +3,7 @@ export const prerender = false;
 
 import Layout from "../../layouts/Layout.astro";
 import { getCanonicalUrl } from "../../i18n/index.ts";
+import { SHOW_CUPPING } from "../../lib/flags.ts";
 
 const { id } = Astro.params;
 
@@ -163,7 +164,7 @@ const productJsonLd = {
         )}
 
         <!-- Atributos del café -->
-        {(product.process || product.roast || product.variety || (product.category === "cafe" && product.sca_score)) && (
+        {(product.process || product.roast || product.variety || (SHOW_CUPPING && product.category === "cafe" && product.sca_score)) && (
           <div class="product-attrs">
             {product.process && (
               <div class="attr">
@@ -189,7 +190,7 @@ const productJsonLd = {
                 <span class="attr-val">{product.origin}</span>
               </div>
             )}
-            {product.category === "cafe" && product.sca_score && (
+            {SHOW_CUPPING && product.category === "cafe" && product.sca_score && (
               <div class="attr attr-sca" title="Puntuación SCA (Specialty Coffee Association)">
                 <span class="attr-label">Puntaje SCA</span>
                 <span class="attr-val">{product.sca_score} pts</span>

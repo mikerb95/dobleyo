@@ -1,5 +1,6 @@
 ---
 import AdminLayout from "../../layouts/AdminLayout.astro";
+import { SHOW_CUPPING } from "../../lib/flags.ts";
 ---
 
 <AdminLayout title="Generación de Etiquetas — DobleYo">
@@ -360,7 +361,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
                 <span class="lbl-tag" id="pvFarm" hidden></span>
               </div>
 
-              <div class="lbl-profile">
+              <div class="lbl-profile" hidden={!SHOW_CUPPING}>
                 <div class="pv-row">
                   <span class="pv-k">Acidez</span>
                   <div class="pv-bars" data-bar="acidity">
@@ -381,13 +382,13 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
                 </div>
               </div>
 
-              <div class="lbl-notes" id="pvNotes">Notas de sabor del café…</div>
+              <div class="lbl-notes" id="pvNotes" hidden={!SHOW_CUPPING}>Notas de sabor del café…</div>
 
               <div class="lbl-foot">
                 <div class="lbl-qr" id="pvQr" aria-hidden="true"></div>
                 <div class="lbl-meta">
                   <div class="lbl-code" id="pvCode">LBL-—-0001</div>
-                  <div class="lbl-score">Puntaje: <strong id="pvScore">—</strong></div>
+                  <div class="lbl-score" hidden={!SHOW_CUPPING}>Puntaje: <strong id="pvScore">—</strong></div>
                   <div class="lbl-tagline">Café de especialidad colombiano</div>
                 </div>
               </div>
@@ -442,6 +443,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   <!-- Scripts -->
   <script>
     import qrcode from "qrcode-generator";
+    import { SHOW_CUPPING } from "../../lib/flags.ts";
 
     // ── QR real de trazabilidad ────────────────────────────────────
     function traceabilityUrl(code) {
@@ -722,17 +724,18 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
             ${d.process ? `<span class="lbl-tag">${esc(d.process)}</span>` : ""}
             ${d.farm ? `<span class="lbl-tag">${esc(d.farm)}</span>` : ""}
           </div>
+          ${SHOW_CUPPING ? `
           <div class="lbl-profile">
             <div class="pv-row"><span class="pv-k">Acidez</span><div class="pv-bars">${printBarsHTML(d.acidity)}</div></div>
             <div class="pv-row"><span class="pv-k">Cuerpo</span><div class="pv-bars">${printBarsHTML(d.body)}</div></div>
             <div class="pv-row"><span class="pv-k">Balance</span><div class="pv-bars">${printBarsHTML(d.balance)}</div></div>
           </div>
-          <div class="lbl-notes">${esc(d.notes) || "Notas de sabor del café…"}</div>
+          <div class="lbl-notes">${esc(d.notes) || "Notas de sabor del café…"}</div>` : ""}
           <div class="lbl-foot">
             ${d.hasQr ? `<div class="lbl-qr" aria-hidden="true">${qrSvg(d.code)}</div>` : ""}
             <div class="lbl-meta">
               <div class="lbl-code">${esc(d.code)}</div>
-              <div class="lbl-score">Puntaje: <strong>${score}</strong></div>
+              ${SHOW_CUPPING ? `<div class="lbl-score">Puntaje: <strong>${score}</strong></div>` : ""}
               <div class="lbl-tagline">Café de especialidad colombiano</div>
             </div>
           </div>
@@ -1165,7 +1168,10 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     border: 1px solid color-mix(in oklab, var(--color-accent) 45%, transparent);
     color: #fbeee0;
   }
-  .lbl-tag[hidden] { display: none; }
+  .lbl-tag[hidden],
+  .lbl-profile[hidden],
+  .lbl-notes[hidden],
+  .lbl-score[hidden] { display: none; }
 
   .lbl-profile {
     margin: 16px 0;

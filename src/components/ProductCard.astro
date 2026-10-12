@@ -2,6 +2,7 @@
 import type { Product } from "../data/products";
 import Stars from "./Stars.astro";
 import { getRating, getNotes, formatWeight } from "../lib/products.ts";
+import { SHOW_CUPPING } from "../lib/flags.ts";
 
 interface Props {
   product: Product & {
@@ -21,7 +22,7 @@ const outOfStock = typeof product.stock === "number" && product.stock === 0;
 const lowStock   = typeof product.stock === "number" && product.stock > 0 && product.stock <= 5;
 
 const rating = getRating(product);
-const notes  = getNotes(product, "es");
+const notes  = SHOW_CUPPING ? getNotes(product, "es") : [];
 const weight = formatWeight(product, "es");
 ---
 
@@ -76,7 +77,7 @@ const weight = formatWeight(product, "es");
       <span class="price">${product.price.toLocaleString("es-CO")}</span>
       {weight && <span class="card-weight">{weight}</span>}
     </div>
-    {product.sca_score && <span class="sca-pill">{product.sca_score} pts SCA</span>}
+    {SHOW_CUPPING && product.sca_score && <span class="sca-pill">{product.sca_score} pts SCA</span>}
     {outOfStock && <span class="stock-badge out">Agotado</span>}
     {lowStock && <span class="stock-badge low">Últimas {product.stock}</span>}
   </div>

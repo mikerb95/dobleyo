@@ -1,5 +1,6 @@
 ---
 import Layout from "../../layouts/Layout.astro";
+import { SHOW_CUPPING } from "../../lib/flags.ts";
 
 export const prerender = false;
 
@@ -152,19 +153,21 @@ const pageDesc = traceData && h
           )}
 
           <!-- Etapa 4: Empaque / Cupping -->
-          {traceData.packaged && traceData.packaged.score && (
+          {traceData.packaged && (SHOW_CUPPING ? traceData.packaged.score : traceData.packaged.presentation || traceData.packaged.package_size) && (
             <div class="trace-step trace-step--pack">
               <div class="trace-step-icon" aria-hidden="true">📦</div>
               <div class="trace-step-body">
-                <h2>Control de calidad y empaque</h2>
-                <div class="trace-score">
-                  <span class="trace-score-num">{traceData.packaged.score}</span>
-                  <span class="trace-score-label">puntos SCA</span>
-                </div>
+                <h2>{SHOW_CUPPING ? "Control de calidad y empaque" : "Empaque"}</h2>
+                {SHOW_CUPPING && (
+                  <div class="trace-score">
+                    <span class="trace-score-num">{traceData.packaged.score}</span>
+                    <span class="trace-score-label">puntos SCA</span>
+                  </div>
+                )}
                 <dl class="trace-dl">
-                  {traceData.packaged.acidity    && <><dt>Acidez</dt><dd>{scoreLabel(traceData.packaged.acidity)}</dd></>}
-                  {traceData.packaged.body       && <><dt>Cuerpo</dt><dd>{scoreLabel(traceData.packaged.body)}</dd></>}
-                  {traceData.packaged.balance    && <><dt>Balance</dt><dd>{scoreLabel(traceData.packaged.balance)}</dd></>}
+                  {SHOW_CUPPING && traceData.packaged.acidity && <><dt>Acidez</dt><dd>{scoreLabel(traceData.packaged.acidity)}</dd></>}
+                  {SHOW_CUPPING && traceData.packaged.body    && <><dt>Cuerpo</dt><dd>{scoreLabel(traceData.packaged.body)}</dd></>}
+                  {SHOW_CUPPING && traceData.packaged.balance && <><dt>Balance</dt><dd>{scoreLabel(traceData.packaged.balance)}</dd></>}
                   {traceData.packaged.presentation && <><dt>Presentación</dt><dd>{traceData.packaged.presentation}</dd></>}
                   {traceData.packaged.package_size && <><dt>Empaque</dt><dd>{traceData.packaged.package_size}</dd></>}
                 </dl>
@@ -175,7 +178,7 @@ const pageDesc = traceData && h
         </section>
 
         <!-- Aromas / notas descriptivas -->
-        {h.aroma && (
+        {SHOW_CUPPING && h.aroma && (
           <section class="trace-aromas card p">
             <h2>Perfil aromático</h2>
             <p>{h.aroma}</p>

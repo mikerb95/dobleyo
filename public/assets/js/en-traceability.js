@@ -4,6 +4,10 @@ function initEnTraceability() {
   if (!rootEl || rootEl.dataset.jsInit) return;
   rootEl.dataset.jsInit = "1";
 
+// SCA score and tasting notes are hidden for now. Mirrors SHOW_CUPPING in
+// src/lib/flags.ts (this file is not bundled).
+const SHOW_CUPPING = false;
+
 const FIELD_LABELS = {
   farm: "Farm",
   producer: "Producer",
@@ -53,8 +57,7 @@ async function lookupLot(code) {
       "harvest_date",
       "roast_date",
       "roast_profile",
-      "cupping_score",
-      "notes",
+      ...(SHOW_CUPPING ? ["cupping_score", "notes"] : []),
     ];
     dl.innerHTML = fields
       .filter((k) => data[k])

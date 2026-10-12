@@ -2,6 +2,22 @@
 
 ---
 
+## 2026-10-12: Ocultar notas de cata y puntaje SCA al público (Agente: Claude)
+
+### Contexto
+Por ahora no se muestran notas de sabor ni puntaje SCA. Los datos se siguen registrando en catación y empaque; solo cambia lo que ve el cliente.
+
+### Cambios
+- **`src/lib/flags.ts`** (nuevo): `SHOW_CUPPING = false`. Volver a mostrarlos es cambiarlo a `true` aquí y en el espejo de los dos JS públicos.
+- **Cards** (`ProductCard.astro`, `tienda.astro`, `index.astro`, `SearchResults.astro`): sin notas de cata ni píldora SCA.
+- **Fichas de producto** (`producto/[id].astro`, `en/product/[id].astro`): sin el atributo "Puntaje SCA".
+- **Portada** (`home/LotTicket.astro`): el ticket del lote ya no muestra notas ni puntaje.
+- **Trazabilidad** (`t/[code].astro`, `public/assets/js/trazabilidad.js`, `public/assets/js/en-traceability.js`): sin tarjeta SCA, sin perfil de taza ni perfil aromático. La etapa de empaque se muestra con presentación y tamaño aunque no haya puntaje.
+- **`/en/wholesale`**: sin "SCA Score Average", puntajes por lote ni "Cupping Notes".
+- **Etiquetas impresas** (`admin/etiquetas.astro`): la vista previa y la impresión omiten perfil, notas y puntaje. El formulario los sigue pidiendo.
+
+---
+
 ## 2026-09-24: Línea de producción guiada, "Qué sigue" (Agente: Claude)
 
 ### Contexto

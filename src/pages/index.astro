@@ -18,6 +18,7 @@ import {
   stockLabel,
   getStockLevel,
 } from "../lib/products.ts";
+import { SHOW_CUPPING } from "../lib/flags.ts";
 
 const _hreflang = getHreflangPair("/");
 
@@ -139,7 +140,7 @@ try {
       {
         coffeeProducts.map((p) => {
           const rating = getRating(p);
-          const notes = getNotes(p, "es");
+          const notes = SHOW_CUPPING ? getNotes(p, "es") : [];
           const weight = formatWeight(p, "es");
           const stockLevel = getStockLevel(p);
           const stock = stockLabel(p, "es");

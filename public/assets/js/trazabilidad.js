@@ -7,6 +7,10 @@ function initTrazabilidad() {
   if (!rootEl || rootEl.dataset.jsInit) return;
   rootEl.dataset.jsInit = '1';
 
+  // Puntaje SCA y perfil de taza ocultos por ahora. Espejo de SHOW_CUPPING
+  // en src/lib/flags.ts (este archivo no pasa por el bundler).
+  const SHOW_CUPPING = false;
+
   // ─── API ─────────────────────────────────────────────────────────────
   async function lookupCode(code) {
     const trimmed = (code || '').trim();
@@ -92,7 +96,7 @@ function initTrazabilidad() {
         { label: 'Cosecha',            icon: '🌱', detail: 'Finca · Región · Altitud' },
         { label: 'Almacén verde',      icon: '🏭', detail: 'Ubicación de almacenamiento' },
         { label: 'Tueste',             icon: '🔥', detail: 'Nivel · Temperatura · Tiempo' },
-        { label: 'Control de calidad', icon: '🧪', detail: 'Puntaje SCA' },
+        { label: 'Control de calidad', icon: '🧪', detail: SHOW_CUPPING ? 'Puntaje SCA' : null },
         { label: 'Empaque',            icon: '📦', detail: 'Presentación' },
         { label: 'En tienda',          icon: '🛍️', detail: null },
       ].forEach(stage => {
@@ -111,8 +115,8 @@ function initTrazabilidad() {
       });
     }
 
-    if (resSCACard) resSCACard.style.display = '';
-    if (resSCAMain) {
+    if (resSCACard) resSCACard.style.display = SHOW_CUPPING ? '' : 'none';
+    if (SHOW_CUPPING && resSCAMain) {
       resSCAMain.innerHTML = `
         <div class="trace-sca-score-display">
           <span class="trace-sca-number">—</span>
@@ -121,7 +125,7 @@ function initTrazabilidad() {
         <div class="trace-sca-label">Puntaje de calidad SCA</div>
         <div class="trace-sca-bar-wrap"><div class="trace-sca-bar-fill" style="width:0%"></div></div>`;
     }
-    if (resSCABars) {
+    if (SHOW_CUPPING && resSCABars) {
       resSCABars.innerHTML = '';
       ['Acidez', 'Cuerpo', 'Balance'].forEach(label => {
         const el = document.createElement('div');
@@ -197,7 +201,7 @@ function initTrazabilidad() {
     }
 
     // SCA
-    if (data.packaged?.score) {
+    if (SHOW_CUPPING && data.packaged?.score) {
       if (resSCACard) resSCACard.style.display = '';
       const score = Number(data.packaged.score);
       if (resSCAMain) {
@@ -318,7 +322,7 @@ function initTrazabilidad() {
           }
         : { label: 'Tueste', icon: '🔥', done: false, date: null, detail: null },
       data.packaged
-        ? { label: 'Control de calidad', icon: '🧪', done: true,  date: null, detail: data.packaged.score ? 'SCA ' + data.packaged.score + '/100' : null }
+        ? { label: 'Control de calidad', icon: '🧪', done: true,  date: null, detail: SHOW_CUPPING && data.packaged.score ? 'SCA ' + data.packaged.score + '/100' : null }
         : { label: 'Control de calidad', icon: '🧪', done: false, date: null, detail: null },
       data.packaged
         ? { label: 'Empaque', icon: '📦', done: true,  date: null, detail: data.packaged.package_size || null }

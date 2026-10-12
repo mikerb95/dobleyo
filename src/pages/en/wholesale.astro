@@ -1,6 +1,7 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import { getCanonicalUrl, getHreflangPair } from "../../i18n/index.ts";
+import { SHOW_CUPPING } from "../../lib/flags.ts";
 
 const hreflang = getHreflangPair("/mayoristas");
 ---
@@ -30,10 +31,12 @@ const hreflang = getHreflangPair("/mayoristas");
           <a href="#specifications" class="btn btn-outline">View Offerings</a>
         </div>
         <div class="hero-stats">
-          <div class="stat">
-            <span class="stat-value">85+</span>
-            <span class="stat-label">SCA Score Average</span>
-          </div>
+          {SHOW_CUPPING && (
+            <div class="stat">
+              <span class="stat-value">85+</span>
+              <span class="stat-label">SCA Score Average</span>
+            </div>
+          )}
           <div class="stat">
             <span class="stat-value">1,600+</span>
             <span class="stat-label">MASL Altitude</span>
@@ -79,7 +82,7 @@ const hreflang = getHreflangPair("/mayoristas");
             <h3>Full Traceability</h3>
             <p>
               Every lot comes with complete documentation: farm data, processing
-              method, cupping notes, and harvest date.
+              method{SHOW_CUPPING ? ", cupping notes," : ""} and harvest date.
             </p>
           </div>
           <div class="why-card">
@@ -124,7 +127,7 @@ const hreflang = getHreflangPair("/mayoristas");
           <article class="spec-card">
             <div class="spec-header">
               <span class="spec-region">Huila</span>
-              <span class="spec-score">87 pts</span>
+              {SHOW_CUPPING && <span class="spec-score">87 pts</span>}
             </div>
             <h3>La Esperanza - Washed</h3>
             <p class="spec-farm">Finca La Esperanza, Pitalito</p>
@@ -156,12 +159,14 @@ const hreflang = getHreflangPair("/mayoristas");
               </div>
             </div>
 
+            {SHOW_CUPPING && (
             <div class="spec-notes">
               <h4>Cupping Notes</h4>
               <p>
                 Red apple, caramel, milk chocolate. Bright acidity, medium body.
               </p>
             </div>
+            )}
 
             <a href="#contact" class="btn btn-secondary">Request Sample</a>
           </article>
@@ -170,7 +175,7 @@ const hreflang = getHreflangPair("/mayoristas");
           <article class="spec-card">
             <div class="spec-header">
               <span class="spec-region">Nariño</span>
-              <span class="spec-score">89 pts</span>
+              {SHOW_CUPPING && <span class="spec-score">89 pts</span>}
             </div>
             <h3>El Paraíso - Natural</h3>
             <p class="spec-farm">Finca El Paraíso, La Unión</p>
@@ -202,12 +207,14 @@ const hreflang = getHreflangPair("/mayoristas");
               </div>
             </div>
 
+            {SHOW_CUPPING && (
             <div class="spec-notes">
               <h4>Cupping Notes</h4>
               <p>
                 Tropical fruit, jasmine, honey. Complex acidity, silky body.
               </p>
             </div>
+            )}
 
             <a href="#contact" class="btn btn-secondary">Request Sample</a>
           </article>
@@ -216,7 +223,7 @@ const hreflang = getHreflangPair("/mayoristas");
           <article class="spec-card">
             <div class="spec-header">
               <span class="spec-region">Tolima</span>
-              <span class="spec-score">85 pts</span>
+              {SHOW_CUPPING && <span class="spec-score">85 pts</span>}
             </div>
             <h3>Los Naranjos - Honey</h3>
             <p class="spec-farm">Finca Los Naranjos, Planadas</p>
@@ -248,10 +255,12 @@ const hreflang = getHreflangPair("/mayoristas");
               </div>
             </div>
 
+            {SHOW_CUPPING && (
             <div class="spec-notes">
               <h4>Cupping Notes</h4>
               <p>Brown sugar, orange, almond. Balanced acidity, full body.</p>
             </div>
+            )}
 
             <a href="#contact" class="btn btn-secondary">Request Sample</a>
           </article>
@@ -451,7 +460,7 @@ const hreflang = getHreflangPair("/mayoristas");
               <select id="interest" name="interest">
                 <option value="">Select interest</option>
                 <option value="single-origin">Single Origin Lots</option>
-                <option value="micro-lots">Micro Lots (86+ SCA)</option>
+                <option value="micro-lots">{SHOW_CUPPING ? "Micro Lots (86+ SCA)" : "Micro Lots"}</option>
                 <option value="blends">Blend Components</option>
                 <option value="certified">Certified Coffees</option>
                 <option value="custom">Custom Sourcing</option>

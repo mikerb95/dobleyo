@@ -1,6 +1,7 @@
 ---
 import Layout from "../../../layouts/Layout.astro";
 import { getCanonicalUrl, formatPrice } from "../../../i18n/index.ts";
+import { SHOW_CUPPING } from "../../../lib/flags.ts";
 
 // Prerender estático: el subdominio en. sirve archivos estáticos vía rewrite.
 // SSR (prerender=false) da 404 bajo ese rewrite, por eso enumeramos rutas en build.
@@ -99,13 +100,13 @@ const productJsonLd = {
         {priceLabel && <div class="pp-price">{priceLabel}</div>}
         {outOfStock && <p class="pp-stock">Temporarily out of stock</p>}
 
-        {(product.process || product.variety || product.roast || (product.category === "cafe" && product.sca_score)) && (
+        {(product.process || product.variety || product.roast || (SHOW_CUPPING && product.category === "cafe" && product.sca_score)) && (
           <div class="pp-attrs">
             {product.process && <div class="pp-attr"><span>Process</span><strong>{product.process}</strong></div>}
             {product.variety && <div class="pp-attr"><span>Variety</span><strong>{product.variety}</strong></div>}
             {product.roast && <div class="pp-attr"><span>Roast</span><strong>{product.roast}</strong></div>}
             {product.origin && <div class="pp-attr"><span>Origin</span><strong>{product.origin}</strong></div>}
-            {product.category === "cafe" && product.sca_score && (
+            {SHOW_CUPPING && product.category === "cafe" && product.sca_score && (
               <div class="pp-attr pp-attr--sca"><span>SCA Score</span><strong>{product.sca_score} pts</strong></div>
             )}
           </div>
