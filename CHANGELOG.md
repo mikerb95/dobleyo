@@ -2,6 +2,30 @@
 
 ---
 
+## 2026-10-12: Integración directa con Interrapidísimo (Agente: Claude)
+
+### Contexto
+Además de Mipaquete, los envíos nacionales pueden salir con la cuenta corporativa propia de Interrapidísimo (API B2B), sin intermediario. Inter no tiene portal público: la integración sigue el documento "API B2B Release 3.0" (abril 2022) y debe validarse en su ambiente de pruebas antes de pasar a producción.
+
+### Cambios
+- **`server/services/interrapidisimo.js`** (nuevo): token con cache, `quoteInter`, `createInterAdmission` (pre-envío con número de guía inmediato), `getInterGuidePdf` (base64 a PDF), `getInterStatuses` (lotes de 15 guías), `requestInterPickup`, `interHealthCheck` y el mapeo de estados (`mapInterStatus`, `interStatesToEvents`).
+- **`server/routes/shipping.js`**:
+  - `POST /quote` cotiza Mipaquete e Inter en paralelo. Si uno falla se usan las ofertas del otro.
+  - `POST /create` crea la guía en Inter cuando `deliveryCompanyId` empieza por `inter:`. Exige `receiverDocumentType` y `receiverDocumentNumber`, porque Inter pide el documento del destinatario.
+  - Nuevo `GET /:id/guide.pdf`. El tracking de Inter entra en refresh y en el cron.
+  - Inter no tiene API de anulación, así que la cancelación es local y le avisa al admin.
+  - La reconciliación de huérfanos queda limitada a Mipaquete.
+  - `GET /health` reporta ambos proveedores.
+- **`server/migrations/add_shipping_provider.js`** (nuevo): columna `shipments.provider` (`mipaquete` | `interrapidisimo` | `manual`) con backfill de los manuales. También en `db/schema.sql`.
+- **`src/pages/admin/envios.astro`**:
+  - Cada oferta muestra si viene de "API directa" o de "Mipaquete".
+  - Pide el documento del destinatario al elegir Inter.
+  - Muestra el número de guía al crearla y el aviso de anulación manual al cancelar.
+- **`.env.example`**: variables `INTER_*`.
+- **Tests**: `server/services/__tests__/interrapidisimo.test.js`.
+
+---
+
 ## 2026-10-12: Portada, escena "Cosecha" con foto real y ficha de origen (Agente: Claude)
 
 ### Contexto

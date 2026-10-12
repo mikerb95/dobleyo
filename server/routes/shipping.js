@@ -25,11 +25,26 @@ import {
     MipaqueteError,
     MipaqueteConfigError,
 } from '../services/mipaquete.js';
+import {
+    isInterConfigured,
+    quoteInter,
+    createInterAdmission,
+    getInterGuidePdf,
+    getInterStatuses,
+    requestInterPickup,
+    interStatesToEvents,
+    mapInterStatus,
+    interHealthCheck,
+    INTER_TRACKING_URL,
+    InterError,
+    InterConfigError,
+} from '../services/interrapidisimo.js';
 
 export const shippingRouter = Router();
 
 const SITE_URL = process.env.SITE_BASE_URL || 'https://dobleyo.cafe';
 const ORIGIN_DANE = process.env.MIPAQUETE_ORIGIN_DANE;
+const INTER_ORIGIN_DANE = process.env.INTER_ORIGIN_DANE || ORIGIN_DANE;
 const WEBHOOK_TOKEN = process.env.MIPAQUETE_WEBHOOK_TOKEN;
 
 // Rate limit propio para el webhook público (evita abuso ya que no requiere JWT)
@@ -42,12 +57,12 @@ const webhookLimiter = rateLimit({
 });
 
 function handleMipaqueteError(res, err, fallbackMsg) {
-    if (err instanceof MipaqueteConfigError) {
-        logger.error({ err }, '[Shipping] Mipaquete no configurado');
+    if (err instanceof MipaqueteConfigError || err instanceof InterConfigError) {
+        logger.error({ err }, '[Shipping] Proveedor de envíos no configurado');
         return res.status(503).json({ success: false, error: 'Servicio de envíos no configurado' });
     }
-    if (err instanceof MipaqueteError) {
-        logger.error({ status: err.status, body: err.body }, '[Shipping] Error Mipaquete');
+    if (err instanceof MipaqueteError || err instanceof InterError) {
+        logger.error({ status: err.status, body: err.body }, `[Shipping] Error ${err.name}`);
         return res.status(err.retriable ? 502 : 422).json({ success: false, error: err.message });
     }
     logger.error({ err }, `[Shipping] ${fallbackMsg}`);
@@ -142,9 +157,9 @@ shippingRouter.post('/:orderId/dispatch-manual',
             try {
                 const insertResult = await query(
                     `INSERT INTO shipments
-                        (order_id, payment_mode, delivery_company_id, delivery_company_name,
+                        (order_id, provider, payment_mode, delivery_company_id, delivery_company_name,
                          guide_number, requested_pickup, created_by, status, guide_notified_at)
-                     VALUES (?, 'prepaid', 'manual', ?, ?, 0, ?, 'in_transit', datetime('now'))
+                     VALUES (?, 'manual', 'prepaid', 'manual', ?, ?, 0, ?, 'in_transit', datetime('now'))
                      RETURNING id`,
                     [order.id, carrierName, guideNumber, req.user.id]
                 );
@@ -260,26 +275,45 @@ shippingRouter.post('/quote',
                 return res.status(422).json({ success: false, error: 'Mipaquete solo cubre envíos en Colombia (COP)' });
             }
 
-            if (!ORIGIN_DANE) {
-                return res.status(503).json({ success: false, error: 'MIPAQUETE_ORIGIN_DANE no configurado' });
+            const useMipaquete = Boolean(process.env.MIPAQUETE_API_KEY && ORIGIN_DANE);
+            const useInter = isInterConfigured() && Boolean(INTER_ORIGIN_DANE);
+            if (!useMipaquete && !useInter) {
+                return res.status(503).json({ success: false, error: 'Ningún proveedor de envíos configurado (Mipaquete o Interrapidísimo)' });
             }
 
-            const quotes = await quoteShipping({
-                originDaneCode: ORIGIN_DANE,
-                destinyDaneCode,
-                quantity: 1,
-                width, length, height,
-                weight: weightKg,
-                declaredValue: declaredValueCop,
-            });
+            // Se cotiza en paralelo: si un proveedor falla, las ofertas del otro siguen sirviendo.
+            const [mpResult, interResult] = await Promise.allSettled([
+                useMipaquete
+                    ? quoteShipping({
+                        originDaneCode: ORIGIN_DANE,
+                        destinyDaneCode,
+                        quantity: 1,
+                        width, length, height,
+                        weight: weightKg,
+                        declaredValue: declaredValueCop,
+                    }).then((q) => (Array.isArray(q) ? q : []).map((o) => ({ provider: 'mipaquete', ...o })))
+                    : [],
+                useInter
+                    ? quoteInter({ originDaneCode: INTER_ORIGIN_DANE, destinyDaneCode, weightKg, declaredValue: declaredValueCop })
+                    : [],
+            ]);
+            if (mpResult.status === 'rejected' && interResult.status === 'rejected') {
+                throw mpResult.reason;
+            }
+            for (const r of [mpResult, interResult]) {
+                if (r.status === 'rejected') logger.warn({ err: r.reason }, '[Shipping] Un proveedor falló al cotizar; se usan las ofertas del otro');
+            }
 
-            const list = (Array.isArray(quotes) ? quotes : []).sort((a, b) => a.shippingCost - b.shippingCost);
+            const list = [
+                ...(mpResult.status === 'fulfilled' ? mpResult.value : []),
+                ...(interResult.status === 'fulfilled' ? interResult.value : []),
+            ].sort((a, b) => a.shippingCost - b.shippingCost);
 
             // Rastro de qué se cotizó (transportadoras y precios ofrecidos) para poder
             // auditar después contra la opción elegida en /create y detectar sobrecostos.
             logSystemAudit('shipping_quoted', 'customer_orders', orderId, {
                 destinyDaneCode, weightKg, declaredValueCop,
-                offers: list.map((q) => ({ deliveryCompany: q.deliveryCompany || q.deliveryCompanyId, cost: q.shippingCost })),
+                offers: list.map((q) => ({ provider: q.provider, deliveryCompany: q.deliveryCompany || q.deliveryCompanyId, cost: q.shippingCost })),
             }).catch(() => {});
 
             return res.json({ success: true, data: list });
@@ -306,6 +340,9 @@ shippingRouter.post('/create',
         body('requestPickup').optional().isBoolean(),
         body('comments').optional().trim(),
         body('quotedShippingCostCop').optional().isInt({ min: 0 }),
+        // Interrapidísimo exige documento del destinatario; customer_orders no lo guarda.
+        body('receiverDocumentType').optional().isIn(['CC', 'CE', 'NI', 'TI']).withMessage('Tipo de documento inválido'),
+        body('receiverDocumentNumber').optional().trim().matches(/^[0-9A-Za-z-]{4,25}$/).withMessage('Número de documento inválido'),
     ],
     async (req, res) => {
         const errors = validationResult(req);
@@ -317,20 +354,24 @@ shippingRouter.post('/create',
                 declaredValueCop, paymentMode, deliveryCompanyId, requestPickup = true, comments,
                 quotedShippingCostCop = null,
             } = req.body;
+            const isInter = String(deliveryCompanyId).startsWith('inter:');
 
             const data = await getOrderWithItems(orderId);
             if (!data) return res.status(404).json({ success: false, error: 'Orden no encontrada' });
             const { order } = data;
 
             if (order.currency !== 'COP') {
-                return res.status(422).json({ success: false, error: 'Mipaquete solo cubre envíos en Colombia (COP)' });
+                return res.status(422).json({ success: false, error: 'Solo se generan guías nacionales para órdenes en COP' });
             }
             // Solo se puede despachar una orden que ya está pagada/en proceso. Evita
             // generar guía (y cobrar flete real) para pedidos aún no pagados o cancelados.
             if (!['paid', 'processing'].includes(order.status)) {
                 return res.status(422).json({ success: false, error: `La orden está en estado '${order.status}' y no se puede despachar` });
             }
-            if (!ORIGIN_DANE) {
+            if (isInter && (!req.body.receiverDocumentType || !req.body.receiverDocumentNumber)) {
+                return res.status(422).json({ success: false, error: 'Interrapidísimo exige tipo y número de documento del destinatario' });
+            }
+            if (!isInter && !ORIGIN_DANE) {
                 return res.status(503).json({ success: false, error: 'MIPAQUETE_ORIGIN_DANE no configurado' });
             }
 
@@ -343,12 +384,12 @@ shippingRouter.post('/create',
             try {
                 const insertResult = await query(
                     `INSERT INTO shipments
-                        (order_id, payment_mode, declared_value_cop, collection_value_cop, quoted_shipping_cost_cop,
+                        (order_id, provider, payment_mode, declared_value_cop, collection_value_cop, quoted_shipping_cost_cop,
                          package_weight_kg, package_width_cm, package_length_cm, package_height_cm,
                          destiny_dane_code, delivery_company_id, requested_pickup, created_by, status)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'created')
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'created')
                      RETURNING id`,
-                    [orderId, paymentMode, declaredValueCop, collectionValueCop, quotedShippingCostCop,
+                    [orderId, isInter ? 'interrapidisimo' : 'mipaquete', paymentMode, declaredValueCop, collectionValueCop, quotedShippingCostCop,
                         weightKg, width, length, height,
                         destinyDaneCode, deliveryCompanyId, requestPickup ? 1 : 0, req.user.id]
                 );
@@ -358,6 +399,10 @@ shippingRouter.post('/create',
                     return res.status(409).json({ success: false, error: 'Ya existe un envío activo para esta orden' });
                 }
                 throw err;
+            }
+
+            if (isInter) {
+                return createInterShipment(req, res, { order, shipmentId, collectionValueCop });
             }
 
             // (2) Construir payload y llamar createSending
@@ -472,6 +517,113 @@ shippingRouter.post('/create',
     }
 );
 
+// Rama Interrapidísimo de POST /create. A diferencia de Mipaquete, la admisión
+// devuelve el número de guía en la misma respuesta, así que no hay envíos
+// huérfanos que reconciliar: si la llamada falla, el envío queda en 'error'.
+async function createInterShipment(req, res, { order, shipmentId, collectionValueCop }) {
+    const {
+        orderId, weightKg, width, length, height, destinyDaneCode, declaredValueCop, paymentMode,
+        deliveryCompanyId, requestPickup = true, comments, quotedShippingCostCop = null,
+        receiverDocumentType, receiverDocumentNumber,
+    } = req.body;
+    const serviceId = Number(String(deliveryCompanyId).split(':')[1]);
+    const [name, firstSurname, ...rest] = String(order.customer_name || '').trim().split(/\s+/);
+
+    let admission;
+    try {
+        admission = await createInterAdmission({
+            serviceId,
+            weightKg, width, length, height,
+            declaredValue: declaredValueCop,
+            contents: 'Café',
+            applyCod: paymentMode === 'cod',
+            notes: comments || `Pedido ${order.reference}`,
+            receiver: {
+                documentType: receiverDocumentType,
+                documentNumber: receiverDocumentNumber,
+                name: name || order.customer_name,
+                firstSurname: firstSurname || name,
+                secondSurname: rest.join(' '),
+                phone: (order.customer_phone || '').replace(/\D/g, '').slice(-10),
+                address: order.shipping_address,
+                daneCode: destinyDaneCode,
+                email: order.customer_email,
+            },
+        });
+        if (!admission?.numeroPreenvio) {
+            throw new InterError('Interrapidísimo no devolvió número de guía', { body: admission });
+        }
+    } catch (err) {
+        await query(`UPDATE shipments SET status = 'error', error_detail = ? WHERE id = ?`,
+            [String(err.message).slice(0, 500), shipmentId]);
+        return handleMipaqueteError(res, err, 'Error al crear la guía en Interrapidísimo');
+    }
+
+    const guideNumber = String(admission.numeroPreenvio);
+    const actualCost = Math.round(Number(admission.valorFlete || 0) + Number(admission.valorSobreFlete || 0)) || null;
+    const deliveryCompanyName = req.body.deliveryCompanyName || 'Interrapidísimo';
+
+    // La recogida es opcional y no debe tumbar la guía ya creada.
+    let pickupCode = null;
+    let status = 'created';
+    if (requestPickup) {
+        try {
+            const pickup = await requestInterPickup([guideNumber]);
+            pickupCode = pickup?.IdRecogida ? String(pickup.IdRecogida) : null;
+            if (pickupCode) status = 'pickup_requested';
+        } catch (err) {
+            logger.warn({ err, guideNumber }, '[Shipping] Inter: guía creada pero la recogida falló; programarla desde el portal de Inter');
+        }
+    }
+
+    await query(
+        `UPDATE shipments SET guide_number = ?, pickup_code = ?, delivery_company_name = ?, actual_shipping_cost_cop = ?,
+            pdf_guide_urls = ?, status = ?, guide_notified_at = datetime('now'), tracking_updated_at = datetime('now')
+         WHERE id = ?`,
+        [guideNumber, pickupCode, deliveryCompanyName, actualCost,
+            JSON.stringify([`/api/shipping/${shipmentId}/guide.pdf`]), status, shipmentId]
+    );
+    await query(`UPDATE customer_orders SET status = 'shipped' WHERE id = ? AND status NOT IN ('delivered','cancelled','refunded')`, [orderId]);
+
+    await logAudit(req.user.id, 'create', 'shipments', shipmentId, {
+        orderId, provider: 'interrapidisimo', guideNumber, serviceId, paymentMode,
+        collectionValueCop, quotedShippingCostCop, actualCost, weightKg, destinyDaneCode, pickupCode,
+    });
+
+    sendShippingNotificationEmail(order.customer_email, order.customer_name, {
+        reference: order.reference,
+        guideNumber,
+        deliveryCompanyName: 'Interrapidísimo',
+        trackingUrl: `${INTER_TRACKING_URL}${guideNumber}`,
+        isCod: paymentMode === 'cod',
+        collectionValue: collectionValueCop,
+    }).catch((err) => logger.error({ err }, '[Shipping] Error enviando email de despacho (Inter)'));
+
+    return res.status(201).json({
+        success: true,
+        data: { shipmentId, guideNumber, pickupCode, pickupRequested: Boolean(pickupCode), pdfUrls: [`/api/shipping/${shipmentId}/guide.pdf`] },
+    });
+}
+
+// ─── GET /api/shipping/:id/guide.pdf (admin) ───────────────────────────────
+// Inter entrega la guía en base64 (no como URL), así que se sirve desde aquí.
+
+shippingRouter.get('/:id/guide.pdf', authenticateToken, requireRole('admin'), async (req, res) => {
+    try {
+        const result = await query(`SELECT provider, guide_number FROM shipments WHERE id = ?`, [req.params.id]);
+        const shipment = result.rows[0];
+        if (!shipment || shipment.provider !== 'interrapidisimo' || !shipment.guide_number) {
+            return res.status(404).json({ success: false, error: 'Guía no disponible' });
+        }
+        const pdf = await getInterGuidePdf(shipment.guide_number, { small: req.query.format === 'small' });
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `inline; filename="guia-${shipment.guide_number}.pdf"`);
+        return res.send(pdf);
+    } catch (err) {
+        return handleMipaqueteError(res, err, 'Error al obtener la guía');
+    }
+});
+
 // ─── POST /api/shipping/:id/refresh (admin) ────────────────────────────────
 
 shippingRouter.post('/:id/refresh', authenticateToken, requireRole('admin'), async (req, res) => {
@@ -536,6 +688,7 @@ async function refreshShipment(shipmentId, source) {
     );
     if (!shipmentResult.rows.length) return null;
     const shipment = shipmentResult.rows[0];
+    if (shipment.provider === 'interrapidisimo') return refreshInterShipment(shipment, source);
     if (!shipment.mp_code) return { shipment, updated: false };
 
     const [sendings, tracking] = await Promise.all([
@@ -621,6 +774,53 @@ async function refreshShipment(shipmentId, source) {
     return { shipmentId, guideNumber, pickupCode, status: newStatus, pdfUrls };
 }
 
+async function refreshInterShipment(shipment, source) {
+    if (!shipment.guide_number) return { shipment, updated: false };
+
+    const statuses = await getInterStatuses([shipment.guide_number]);
+    const estados = statuses.get(String(shipment.guide_number)) || [];
+    const events = interStatesToEvents(estados);
+    const newStatus = mapInterStatus(estados) || shipment.status;
+
+    await query(
+        `UPDATE shipments SET tracking_snapshot = ?, tracking_updated_at = datetime('now'),
+            status = CASE WHEN status IN ('cancelled') THEN status ELSE ? END
+         WHERE id = ?`,
+        [JSON.stringify(events), newStatus, shipment.id]
+    );
+
+    for (const ev of events) {
+        const exists = await query(
+            `SELECT 1 FROM shipment_events WHERE shipment_id = ? AND update_state = ? AND event_date = ? LIMIT 1`,
+            [shipment.id, ev.updateState || null, ev.date || null]
+        );
+        if (exists.rows.length) continue;
+        await query(
+            `INSERT INTO shipment_events (shipment_id, source, update_state, description, event_date)
+             VALUES (?, ?, ?, ?, ?)`,
+            [shipment.id, source, ev.updateState || null, ev.description || null, ev.date || null]
+        );
+        if (isShippingIssueEvent(ev)) {
+            notifyShippingIssue({
+                reference:    shipment.reference,
+                customerName: shipment.customer_name,
+                guideNumber:  shipment.guide_number,
+                state:        ev.updateState,
+                description:  ev.description,
+            });
+        }
+    }
+
+    if (newStatus === 'delivered' && shipment.status !== 'delivered') {
+        await query(
+            `UPDATE customer_orders SET status = 'delivered' WHERE id = ? AND status NOT IN ('cancelled','refunded')`,
+            [shipment.order_id]
+        );
+    }
+
+    return { shipmentId: shipment.id, guideNumber: shipment.guide_number, pickupCode: shipment.pickup_code, status: newStatus };
+}
+
 // Envíos "created" con mp_code NULL: createSending pudo tener éxito en Mipaquete
 // pero el proceso murió antes de persistir el mpCode localmente. Se reconcilian
 // buscando por la referencia de la orden; si no aparecen tras varios intentos,
@@ -629,7 +829,7 @@ async function recoverOrphanShipments(limit = 5) {
     const orphans = await query(
         `SELECT s.id, s.recovery_attempts, o.reference
          FROM shipments s JOIN customer_orders o ON o.id = s.order_id
-         WHERE s.status = 'created' AND s.mp_code IS NULL
+         WHERE s.status = 'created' AND s.mp_code IS NULL AND s.provider = 'mipaquete'
            AND datetime(s.created_at) < datetime('now', '-10 minutes')
          ORDER BY s.created_at ASC
          LIMIT ?`,
@@ -736,7 +936,8 @@ async function runShippingMaintenance() {
 
     const pending = await query(
         `SELECT id FROM shipments
-         WHERE status IN ('created','pickup_requested','in_transit') AND mp_code IS NOT NULL
+         WHERE status IN ('created','pickup_requested','in_transit')
+           AND (mp_code IS NOT NULL OR (provider = 'interrapidisimo' AND guide_number IS NOT NULL))
          ORDER BY COALESCE(tracking_updated_at, created_at) ASC
          LIMIT ?`,
         [MAX_ITEMS]
@@ -884,9 +1085,14 @@ shippingRouter.put('/:id/cancel', authenticateToken, requireRole('admin'), async
 
         await query(`UPDATE shipments SET status = 'cancelled' WHERE id = ?`, [shipment.id]);
         await query(`UPDATE customer_orders SET status = 'processing' WHERE id = ? AND status = 'shipped'`, [shipment.order_id]);
-        await logAudit(req.user.id, 'cancel', 'shipments', shipment.id, { mpCode: shipment.mp_code });
+        await logAudit(req.user.id, 'cancel', 'shipments', shipment.id, { mpCode: shipment.mp_code, provider: shipment.provider });
 
-        return res.json({ success: true, data: { id: shipment.id, status: 'cancelled' } });
+        // La API de Inter no documenta anulación: se cancela localmente y el admin
+        // debe anular la pre-guía en el portal de Inter (o dejarla vencer).
+        const warning = shipment.provider === 'interrapidisimo'
+            ? `Anule la guía ${shipment.guide_number} en el portal de Interrapidísimo; la API no permite anularla.`
+            : null;
+        return res.json({ success: true, data: { id: shipment.id, status: 'cancelled', warning } });
     } catch (err) {
         return handleMipaqueteError(res, err, 'Error al cancelar el envío');
     }
@@ -977,8 +1183,9 @@ shippingRouter.get('/', authenticateToken, requireRole('admin'), async (req, res
 // ─── GET /api/shipping/health (admin) ──────────────────────────────────────
 
 shippingRouter.get('/health', authenticateToken, requireRole('admin'), async (req, res) => {
-    const result = await mipaqueteHealthCheck();
-    return res.status(result.ok ? 200 : 503).json({ success: result.ok, data: result });
+    const [mipaquete, interrapidisimo] = await Promise.all([mipaqueteHealthCheck(), interHealthCheck()]);
+    const ok = mipaquete.ok || interrapidisimo.ok;
+    return res.status(ok ? 200 : 503).json({ success: ok, data: { ok, mipaquete, interrapidisimo } });
 });
 
 // ─── POST /api/shipping/setup-webhook (admin, one-shot) ────────────────────

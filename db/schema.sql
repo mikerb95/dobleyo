@@ -1264,6 +1264,7 @@ CREATE TABLE IF NOT EXISTS shipments (
     destiny_dane_code         TEXT,
     error_detail              TEXT,
     recovery_attempts         INTEGER NOT NULL DEFAULT 0,
+    provider                  TEXT NOT NULL DEFAULT 'mipaquete', -- mipaquete | interrapidisimo | manual
     created_by                INTEGER REFERENCES users(id),
     created_at                TEXT NOT NULL DEFAULT (datetime('now')),
     updated_at                TEXT NOT NULL DEFAULT (datetime('now'))

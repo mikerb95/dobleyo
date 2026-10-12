@@ -313,6 +313,22 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
                 <button class="btn-primary-sm" id="btnQuote">Cotizar</button>
                 <div id="quoteResults"></div>
 
+                <div class="form-row" id="interDocRow" style="margin-top:1rem;display:none;">
+                    <div class="form-field">
+                        <label for="fDocType">Tipo de documento del destinatario</label>
+                        <select id="fDocType">
+                            <option value="CC">Cédula de ciudadanía</option>
+                            <option value="CE">Cédula de extranjería</option>
+                            <option value="NI">NIT</option>
+                            <option value="TI">Tarjeta de identidad</option>
+                        </select>
+                    </div>
+                    <div class="form-field">
+                        <label for="fDocNumber">Número de documento</label>
+                        <input type="text" id="fDocNumber" inputmode="numeric" placeholder="Requerido por Interrapidísimo" />
+                    </div>
+                </div>
+
                 <div class="form-row" style="margin-top:1rem;">
                     <div class="form-field">
                         <label for="fPickup">Solicitar recogida</label>
@@ -510,7 +526,11 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
                     btn.addEventListener("click", async () => {
                         if (!confirm("¿Cancelar este envío?")) return;
                         const id = (btn as HTMLElement).dataset.id;
-                        try { await api(`/${id}/cancel`, { method: "PUT" }); await loadActive(); }
+                        try {
+                            const result = await api(`/${id}/cancel`, { method: "PUT" });
+                            if (result?.warning) alert(result.warning);
+                            await loadActive();
+                        }
                         catch (err: any) { alert(err.message); }
                     });
                 });
@@ -670,6 +690,8 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
             document.getElementById("quoteResults")!.innerHTML = "";
             document.getElementById("createMsg")!.textContent = "";
             (document.getElementById("btnCreateShipment") as HTMLButtonElement).disabled = true;
+            document.getElementById("interDocRow")!.style.display = "none";
+            (document.getElementById("fDocNumber") as HTMLInputElement).value = "";
 
             try {
                 const suggestion = await api(`/${orderId}/suggest`);
@@ -706,6 +728,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
             const resultsEl = document.getElementById("quoteResults")!;
             resultsEl.innerHTML = "Cotizando...";
             (document.getElementById("btnCreateShipment") as HTMLButtonElement).disabled = true;
+            document.getElementById("interDocRow")!.style.display = "none";
             selectedQuote = null;
 
             try {
@@ -736,7 +759,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
                         <tbody>
                             ${quotes.map((q: any, i: number) => `
                                 <tr class="quote-row" data-idx="${i}">
-                                    <td>${q.deliveryCompanyName}</td>
+                                    <td>${q.deliveryCompanyName} <span class="badge ${q.provider === "interrapidisimo" ? "badge-warn" : "badge-default"}">${q.provider === "interrapidisimo" ? "API directa" : "Mipaquete"}</span></td>
                                     <td>${fmtCOP(q.shippingCost)}</td>
                                     <td>${Math.round(q.shippingTime / 60)} h</td>
                                     <td>${q.score ?? "—"}</td>
@@ -751,6 +774,8 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
                         resultsEl.querySelectorAll(".quote-row").forEach((r) => r.classList.remove("selected"));
                         row.classList.add("selected");
                         selectedQuote = quotes[Number((row as HTMLElement).dataset.idx)];
+                        document.getElementById("interDocRow")!.style.display =
+                            selectedQuote.provider === "interrapidisimo" ? "" : "none";
                         (document.getElementById("btnCreateShipment") as HTMLButtonElement).disabled = false;
                     });
                 });
@@ -777,6 +802,14 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
                 const requestPickup = (document.getElementById("fPickup") as HTMLSelectElement).value === "true";
                 const comments = (document.getElementById("fComments") as HTMLInputElement).value.trim();
                 const paymentMode = "prepaid";
+                const isInter = selectedQuote.provider === "interrapidisimo";
+                const receiverDocumentType = (document.getElementById("fDocType") as HTMLSelectElement).value;
+                const receiverDocumentNumber = (document.getElementById("fDocNumber") as HTMLInputElement).value.trim();
+                if (isInter && !receiverDocumentNumber) {
+                    msg.style.color = "#721c24";
+                    msg.textContent = "Ingrese el número de documento del destinatario.";
+                    return;
+                }
 
                 const result = await api("/create", {
                     method: "POST",
@@ -785,11 +818,14 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
                         declaredValueCop, paymentMode, deliveryCompanyId: selectedQuote.deliveryCompanyId,
                         deliveryCompanyName: selectedQuote.deliveryCompanyName,
                         requestPickup, comments,
+                        ...(isInter ? { receiverDocumentType, receiverDocumentNumber } : {}),
                     }),
                 });
 
                 msg.style.color = "#155724";
-                msg.textContent = `✅ Envío generado (mpCode ${result.mpCode}).`;
+                msg.textContent = result.mpCode
+                    ? `✅ Envío generado (mpCode ${result.mpCode}).`
+                    : `✅ Guía ${result.guideNumber} generada${requestPickup && !result.pickupRequested ? ". La recogida no se pudo programar: solicítela en el portal de Interrapidísimo" : ""}.`;
                 setTimeout(() => {
                     document.getElementById("modalBack")!.classList.remove("open");
                     loadPending();

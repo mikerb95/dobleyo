@@ -420,6 +420,7 @@ Para exponer la plataforma en vivo existe un seed **idempotente** que puebla tod
 | DEBT-012 | 🟠 | La máquina de estados (`lotStateMachine.js`) trata el lote como un todo: tras un envío a maquila, el café verde que quede en bodega ya no se puede enviar (409). El flujo guiado lo advierte al enviar menos que el total y lo muestra en la ficha del lote | Pendiente |
 | DEBT-013 | 🟡 | `npx expo export` falla en `apps/mobile`: `expo-router` está en `apps/mobile/node_modules` y `babel-preset-expo` en la raíz, así que el preset no activa el plugin que reemplaza `EXPO_ROUTER_APP_ROOT`. Revisar el hoisting de dependencias del workspace | Pendiente |
 | DEBT-011 | 🟠 | Sin control de inventario en el flujo de e-commerce: ni `POST /api/orders` ni el despacho verificaban o descontaban stock | ✅ Resuelto — validación en `POST /api/orders` + descuento directo al confirmarse el pago (`deductStockForOrder`)/reposición al cancelar (`replenishStockForOrder`). Sin reserva: riesgo de sobreventa entre creación y pago aceptado para este catálogo |
+| DEBT-014 | 🟡 | Integración Interrapidísimo (`server/services/interrapidisimo.js`) escrita sobre el documento B2B de 2022: validar en pruebas (stgwww3) el método del token, rutas, nombres de campos, ids de estado y cómo se fija el valor a recaudar en contraentrega antes de usar en producción | Pendiente |
 
 ---
 
