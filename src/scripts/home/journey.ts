@@ -25,40 +25,9 @@ type SceneBuilder = (scene: HTMLElement) => gsap.core.Timeline;
 
 const harvest: SceneBuilder = (scene) => {
   const tl = gsap.timeline();
-  const rings = scene.querySelectorAll('.sc-harvest__rings path');
-  const pin = scene.querySelector('.sc-harvest__pin');
-  const ruler = scene.querySelector('.sc-harvest__ruler > line');
-  const ticks = scene.querySelectorAll('.sc-harvest__ruler > g:not(.sc-harvest__marker)');
-  const marker = scene.querySelector<SVGGElement>('.sc-harvest__marker');
-  const label = marker?.querySelector('text');
-
-  tl.fromTo(rings, { drawSVG: '0%' }, { drawSVG: '100%', duration: 1.1, stagger: 0.1, ease: 'power2.inOut' }, 0);
-  if (ruler) tl.fromTo(ruler, { drawSVG: '100% 100%' }, { drawSVG: '0% 100%', duration: 0.6, ease: 'power2.out' }, 0.1);
-  tl.from(ticks, { opacity: 0, duration: 0.3, stagger: 0.05 }, 0.3);
-
-  if (marker && label) {
-    // El marcador sube por la regla desde 0 m hasta la altitud del lote y la
-    // cifra cuenta a la par.
-    const [, y] = (marker.getAttribute('transform') ?? '').match(/translate\([^ ]+ ([^)]+)\)/) ?? [];
-    const ruleBottom = 280;
-    const finalText = label.textContent ?? '';
-    const target = Number(finalText.replace(/[^\d]/g, ''));
-    const fmt = new Intl.NumberFormat(document.documentElement.lang === 'en' ? 'en-US' : 'es-CO');
-    const counter = { v: 0 };
-    tl.from(marker, { y: ruleBottom - Number(y ?? ruleBottom), duration: 1.1, ease: 'power3.out' }, 0.5).fromTo(
-      counter,
-      { v: 0 },
-      {
-        v: target,
-        duration: 1.1,
-        ease: 'power3.out',
-        onUpdate: () => (label.textContent = fmt.format(Math.round(counter.v))),
-        onComplete: () => (label.textContent = finalText),
-      },
-      0.5
-    );
-  }
-  if (pin) tl.from(pin, { scale: 0, transformOrigin: '50% 50%', duration: 0.5, ease: 'back.out(2)' }, 1.2);
+  tl.fromTo(scene.querySelector('.sc-origin__photo'), { scale: 1.12 }, { scale: 1, duration: 1.6, ease: 'power2.out' }, 0)
+    .from(scene.querySelector('.sc-origin__card'), { y: 24, opacity: 0, duration: 0.5, ease: 'power3.out' }, 0.1)
+    .from(scene.querySelectorAll('.sc-origin__row, .sc-origin__code'), { opacity: 0, x: -8, duration: 0.3, stagger: 0.06 }, 0.3);
   return tl;
 };
 
