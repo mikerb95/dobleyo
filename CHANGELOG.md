@@ -2,6 +2,13 @@
 
 ---
 
+## 2026-10-12: Toggle de idioma con banderas (Agente: Claude)
+
+### Cambios
+- **`src/components/LangToggle.astro`**: rediseño inspirado en el de codebymike.net. Cápsula segmentada con bandera SVG + letras (Colombia "ES", EE. UU. "EN"). El idioma activo queda elevado (fondo de tarjeta + sombra); el inactivo muestra la bandera desaturada y se colorea en hover/focus con tinte caramelo. Los `clipPath` usan id único por instancia porque el toggle se pinta en el header y en el menú móvil. Ancho `max-content` para que no se estire en el menú móvil.
+
+---
+
 ## 2026-10-12: Trazabilidad pública apagada (Agente: Claude)
 
 ### Contexto

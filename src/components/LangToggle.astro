@@ -11,6 +11,9 @@ const hostname = Astro.url.hostname;
 const pathname = Astro.url.pathname;
 const esHref = buildLangHref("es", lang, hostname, pathname);
 const enHref = buildLangHref("en", lang, hostname, pathname);
+// El toggle se pinta dos veces (header y menú móvil): los clipPath necesitan
+// ids únicos o el segundo SVG recorta con la máscara del primero.
+const uid = Math.random().toString(36).slice(2, 8);
 ---
 
 <div class="lang-toggle" data-lang-toggle data-current={lang} role="group" aria-label="Idioma / Language">
@@ -20,52 +23,135 @@ const enHref = buildLangHref("en", lang, hostname, pathname);
     href={esHref}
     hreflang="es"
     lang="es"
+    title="Ver en español"
     aria-label="Cambiar a español"
     aria-current={lang === "es" ? "true" : undefined}
-  >ES</a>
-  <span class="lang-sep" aria-hidden="true">/</span>
+  >
+    <svg class="lang-flag" viewBox="0 0 20 14" width="18" height="12" aria-hidden="true" focusable="false">
+      <clipPath id={`flag-co-${uid}`}><rect width="20" height="14" rx="2.2" /></clipPath>
+      <g clip-path={`url(#flag-co-${uid})`}>
+        <rect width="20" height="7" fill="#FCD116" />
+        <rect y="7" width="20" height="3.5" fill="#003893" />
+        <rect y="10.5" width="20" height="3.5" fill="#CE1126" />
+      </g>
+      <rect class="lang-flag-edge" width="20" height="14" rx="2.2" />
+    </svg>
+    <span>ES</span>
+  </a>
   <a
     class="lang-opt"
     data-lang-opt="en"
     href={enHref}
     hreflang="en"
     lang="en"
+    title="View in English"
     aria-label="Switch to English"
     aria-current={lang === "en" ? "true" : undefined}
-  >EN</a>
+  >
+    <svg class="lang-flag" viewBox="0 0 20 14" width="18" height="12" aria-hidden="true" focusable="false">
+      <clipPath id={`flag-us-${uid}`}><rect width="20" height="14" rx="2.2" /></clipPath>
+      <g clip-path={`url(#flag-us-${uid})`}>
+        <rect width="20" height="14" fill="#FFFFFF" />
+        <g fill="#B31942">
+          <rect width="20" height="1.077" y="0" />
+          <rect width="20" height="1.077" y="2.154" />
+          <rect width="20" height="1.077" y="4.308" />
+          <rect width="20" height="1.077" y="6.462" />
+          <rect width="20" height="1.077" y="8.615" />
+          <rect width="20" height="1.077" y="10.769" />
+          <rect width="20" height="1.077" y="12.923" />
+        </g>
+        <rect width="8.6" height="7.54" fill="#0A3161" />
+        <g fill="#FFFFFF">
+          <circle cx="1.6" cy="1.4" r=".52" /><circle cx="4.3" cy="1.4" r=".52" /><circle cx="7" cy="1.4" r=".52" />
+          <circle cx="2.95" cy="2.75" r=".52" /><circle cx="5.65" cy="2.75" r=".52" />
+          <circle cx="1.6" cy="4.1" r=".52" /><circle cx="4.3" cy="4.1" r=".52" /><circle cx="7" cy="4.1" r=".52" />
+          <circle cx="2.95" cy="5.45" r=".52" /><circle cx="5.65" cy="5.45" r=".52" />
+          <circle cx="1.6" cy="6.6" r=".52" /><circle cx="4.3" cy="6.6" r=".52" /><circle cx="7" cy="6.6" r=".52" />
+        </g>
+      </g>
+      <rect class="lang-flag-edge" width="20" height="14" rx="2.2" />
+    </svg>
+    <span>EN</span>
+  </a>
 </div>
 
 <style>
+  /* Cápsula segmentada: el idioma activo queda "elevado" (fondo de tarjeta +
+     sombra) y el inactivo muestra la bandera desaturada hasta el hover. */
   .lang-toggle {
     display: inline-flex;
     align-items: center;
-    gap: 0.15rem;
-    padding: 0.2rem 0.4rem;
-    border: 1px solid var(--border, rgba(0, 0, 0, 0.15));
+    gap: 2px;
+    padding: 3px;
+    border: 1px solid var(--border);
     border-radius: 999px;
-    font-size: 0.8rem;
-    font-weight: 600;
+    background: rgba(var(--coffee-rgb), 0.04);
+    width: max-content;
     line-height: 1;
-    background: transparent;
   }
   .lang-opt {
-    color: var(--muted-fg, #888);
-    text-decoration: none;
-    padding: 0.25rem 0.4rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.3rem 0.6rem;
     border-radius: 999px;
-    min-width: 1.75rem;
-    text-align: center;
-    transition: color 0.15s ease, background-color 0.15s ease;
+    color: var(--muted-fg);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-decoration: none;
+    font-variant-numeric: tabular-nums;
+    transition: color var(--dur) var(--ease), background-color var(--dur) var(--ease);
   }
-  .lang-opt:hover { color: var(--coffee); }
+  .lang-flag {
+    display: block;
+    flex-shrink: 0;
+    border-radius: 2px;
+    filter: saturate(0.25);
+    opacity: 0.7;
+    transition: filter var(--dur) var(--ease), opacity var(--dur) var(--ease);
+  }
+  .lang-flag-edge {
+    fill: none;
+    stroke: rgba(var(--coffee-rgb), 0.18);
+    stroke-width: 1;
+  }
+  .lang-opt:hover {
+    color: var(--caramel-deep);
+    background: rgba(var(--caramel-rgb), 0.08);
+  }
+  .lang-opt:hover .lang-flag,
+  .lang-opt:focus-visible .lang-flag {
+    filter: none;
+    opacity: 1;
+  }
+  .lang-opt:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
   .lang-opt[aria-current="true"] {
-    color: #fff;
-    background: var(--accent);
+    color: var(--fg);
+    background: var(--card);
+    box-shadow: 0 1px 2px rgba(var(--coffee-rgb), 0.18), 0 0 0 1px rgba(var(--coffee-rgb), 0.06);
+    cursor: default;
   }
-  .lang-sep { color: var(--border, #ccc); }
+  .lang-opt[aria-current="true"] .lang-flag {
+    filter: none;
+    opacity: 1;
+  }
 
   @media (max-width: 768px) {
-    .lang-toggle { font-size: 0.85rem; }
+    .lang-opt {
+      font-size: 0.75rem;
+      padding: 0.4rem 0.7rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .lang-opt,
+    .lang-flag { transition: none; }
   }
 </style>
 
