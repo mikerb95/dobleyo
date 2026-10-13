@@ -424,7 +424,7 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
           <tbody>
             {harvests.slice(0, 8).map((h: any) => (
               <tr>
-                <td style="font-family:monospace; font-size:0.8rem;">{h.lot_id}</td>
+                <td style="font-family: var(--font-mono, ui-monospace, monospace); font-size:0.8rem;">{h.lot_id}</td>
                 <td>{VARIETY_LABEL[h.variety] ?? h.variety ?? "—"}</td>
                 <td>{h.process ?? "—"}</td>
                 <td>{h.climate ?? "—"}</td>

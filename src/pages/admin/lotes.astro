@@ -274,7 +274,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
       tbody.innerHTML = filtered.map((l) => `
         <tr>
-          <td style="font-family: ui-monospace, Menlo, monospace; font-size: 12px; font-weight: 600; color: var(--color-primary);">${esc(l.lot_id) || "—"}</td>
+          <td style="font-family: var(--font-mono, ui-monospace, monospace); font-size: 12px; font-weight: 600; color: var(--color-primary);">${esc(l.lot_id) || "—"}</td>
           <td>${esc(l.farm_name) || "—"}</td>
           <td style="color: var(--muted);">${esc(l.region) || "—"}</td>
           <td style="color: var(--muted);">${esc(l.variety) || "—"}</td>

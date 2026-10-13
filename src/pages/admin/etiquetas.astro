@@ -652,7 +652,7 @@ import { SHOW_CUPPING } from "../../lib/flags.ts";
           const isPrinted = !!l.printed;
           return `
         <tr>
-          <td style="font-family: ui-monospace, monospace; font-size: 12px;">${esc(l.label_code)}</td>
+          <td style="font-family: var(--font-mono, ui-monospace, monospace); font-size: 12px;">${esc(l.label_code)}</td>
           <td>${esc(l.lot_code) || "—"}</td>
           <td>${esc(l.origin) || "—"}</td>
           <td>${esc(l.variety) || "—"}</td>
@@ -1222,7 +1222,7 @@ import { SHOW_CUPPING } from "../../lib/flags.ts";
   .lbl-qr svg { display: block; width: 56px; height: 56px; }
   .lbl-meta { font-size: 12px; min-width: 0; }
   .lbl-code {
-    font-family: ui-monospace, Menlo, monospace;
+    font-family: var(--font-mono, ui-monospace, monospace);
     font-size: 11px;
     color: color-mix(in oklab, #f3e9dd 70%, transparent);
     word-break: break-all;

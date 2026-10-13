@@ -122,7 +122,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
             <div class="form-group wide">
               <label for="f_content">Contenido (Markdown)</label>
-              <textarea id="f_content" rows="14" style="font-family: ui-monospace, Menlo, monospace; font-size: 13px;"
+              <textarea id="f_content" rows="14" style="font-family: var(--font-mono, ui-monospace, monospace); font-size: 13px;"
                 placeholder="# Título&#10;&#10;Escriba el contenido en Markdown…"></textarea>
             </div>
 
@@ -236,7 +236,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         return `
           <tr>
             <td style="font-weight:600; color: var(--color-primary);">${escapeHtml(p.title)}</td>
-            <td style="font-family: ui-monospace, Menlo, monospace; font-size:12px; color: var(--muted);">${escapeHtml(p.slug)}</td>
+            <td style="font-family: var(--font-mono, ui-monospace, monospace); font-size:12px; color: var(--muted);">${escapeHtml(p.slug)}</td>
             <td>${badge}</td>
             <td>${p.reading_time_min ?? 3} min</td>
             <td style="color: var(--muted);">${fmtDate(p.published_at || p.created_at)}</td>
