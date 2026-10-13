@@ -3,7 +3,7 @@ export const prerender = false;
 
 import Layout from "../../layouts/Layout.astro";
 import { getCanonicalUrl } from "../../i18n/index.ts";
-import { SHOW_CUPPING } from "../../lib/flags.ts";
+import { SHOW_CUPPING, SHOW_TRACEABILITY } from "../../lib/flags.ts";
 
 const { id } = Astro.params;
 
@@ -266,7 +266,7 @@ const productJsonLd = {
         </p>
 
         <!-- Link de trazabilidad -->
-        {product.category === "cafe" && (
+        {SHOW_TRACEABILITY && product.category === "cafe" && (
           <a href="/trazabilidad" class="trace-link">
             🔍 Rastrear el origen de este café
           </a>

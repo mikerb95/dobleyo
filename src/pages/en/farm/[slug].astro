@@ -2,6 +2,7 @@
 // Dynamic farm landing page (EN) — mirror of /finca/[slug]
 // Route: /farm/[slug]
 import Layout from "../../../layouts/Layout.astro";
+import { SHOW_TRACEABILITY } from "../../../lib/flags.ts";
 import { getCanonicalUrl } from "../../../i18n/index.ts";
 
 export const prerender = false;
@@ -33,7 +34,7 @@ const altText = [farm.altitude_min, farm.altitude_max]
   .join("–") + (farm.altitude_min ? " masl" : "");
 const pageTitle = `${farm.name} — Farm in ${farm.region} | DobleYo Café`;
 const pageDesc = farm.short_description
-  ?? `Discover ${farm.name} in ${farm.region}${altText ? ` at ${altText}` : ""}. Colombian specialty coffee with full traceability.`;
+  ?? `Discover ${farm.name} in ${farm.region}${altText ? ` at ${altText}` : ""}. Single-origin Colombian specialty coffee.`;
 const canonicalUrl = getCanonicalUrl(`/farm/${slug}`, "en");
 
 const structuredData = {
@@ -141,7 +142,7 @@ const galleryUrls: string[] = Array.isArray(farm.gallery_urls) ? farm.gallery_ur
               <li class="lot-item">
                 <div class="lot-item__header">
                   <span class="lot-item__code">{lot.lot_id}</span>
-                  {lot.label_code && (
+                  {SHOW_TRACEABILITY && lot.label_code && (
                     <a href="/traceability" class="lot-item__trace-link" aria-label={`Trace lot ${lot.lot_id}`}>
                       View traceability →
                     </a>
@@ -257,9 +258,9 @@ const galleryUrls: string[] = Array.isArray(farm.gallery_urls) ? farm.gallery_ur
       <!-- CTA: Shop -->
       <div class="sidebar-card sidebar-card--cta">
         <h2 class="sidebar-card__title">Interested in this coffee?</h2>
-        <p>Every lot is traceable from the farm to your cup.</p>
+        <p>Single-farm coffee, roasted in small batches.</p>
         <a href="/shop" class="btn btn--primary">Shop now</a>
-        <a href="/traceability" class="btn btn--outline">Trace a lot</a>
+        {SHOW_TRACEABILITY && <a href="/traceability" class="btn btn--outline">Trace a lot</a>}
       </div>
 
     </aside>

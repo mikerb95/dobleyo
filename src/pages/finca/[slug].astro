@@ -2,6 +2,7 @@
 // Landing page dinámica de finca — Fase 7
 // Ruta: /finca/[slug]
 import Layout from "../../layouts/Layout.astro";
+import { SHOW_TRACEABILITY } from "../../lib/flags.ts";
 
 export const prerender = false;
 
@@ -32,7 +33,7 @@ const altText = [farm.altitude_min, farm.altitude_max]
   .join("–") + (farm.altitude_min ? " msnm" : "");
 const pageTitle = `${farm.name} — Finca en ${farm.region} | DobleYo Café`;
 const pageDesc = farm.short_description
-  ?? `Conoce la finca ${farm.name} en ${farm.region}${altText ? ` a ${altText}` : ""}. Café de especialidad colombiano con trazabilidad completa.`;
+  ?? `Conoce la finca ${farm.name} en ${farm.region}${altText ? ` a ${altText}` : ""}. Café de especialidad colombiano de origen único.`;
 const canonicalUrl = `https://dobleyo.cafe/finca/${slug}`;
 const coverImg = farm.cover_image_url ?? "https://dobleyo.cafe/assets/img/og-default.jpg";
 
@@ -145,7 +146,7 @@ const galleryUrls: string[] = Array.isArray(farm.gallery_urls) ? farm.gallery_ur
               <li class="lot-item">
                 <div class="lot-item__header">
                   <span class="lot-item__code">{lot.lot_id}</span>
-                  {lot.label_code && (
+                  {SHOW_TRACEABILITY && lot.label_code && (
                     <a href={`/t/${lot.label_code}`} class="lot-item__trace-link" aria-label={`Ver trazabilidad del lote ${lot.lot_id}`}>
                       Ver trazabilidad →
                     </a>
@@ -261,9 +262,9 @@ const galleryUrls: string[] = Array.isArray(farm.gallery_urls) ? farm.gallery_ur
       <!-- CTA: Comprar -->
       <div class="sidebar-card sidebar-card--cta">
         <h2 class="sidebar-card__title">¿Te interesa este café?</h2>
-        <p>Cada lote es trazable desde la finca hasta tu taza.</p>
+        <p>Café de una sola finca, tostado en pequeños lotes.</p>
         <a href="/tienda" class="btn btn--primary">Ver en tienda</a>
-        <a href="/trazabilidad" class="btn btn--outline">Trazar un lote</a>
+        {SHOW_TRACEABILITY && <a href="/trazabilidad" class="btn btn--outline">Trazar un lote</a>}
       </div>
 
     </aside>

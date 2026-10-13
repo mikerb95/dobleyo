@@ -1,5 +1,6 @@
 ---
 import Layout from "../../layouts/Layout.astro";
+import { SHOW_TRACEABILITY } from "../../lib/flags.ts";
 import { getCanonicalUrl, getHreflangPair } from "../../i18n/index.ts";
 
 export const prerender = false;
@@ -51,7 +52,7 @@ const farmImage = (state?: string) =>
 <Layout
   lang="en"
   title="About Us — DobleYo Café"
-  description="DobleYo Café connects Colombian specialty coffee farmers directly with people who love great coffee. Full traceability, direct trade, freshly roasted."
+  description="DobleYo Café connects Colombian specialty coffee farmers directly with people who love great coffee. Single-origin lots, direct trade, freshly roasted."
   canonical={getCanonicalUrl("/about", "en")}
   hreflangEs={hreflang?.es}
   hreflangEn={hreflang?.en}
@@ -84,18 +85,18 @@ const farmImage = (state?: string) =>
         <p>
           We work with coffee-farming families from regions like Huila, Nariño
           and the Sierra Nevada, buying directly and paying fair prices. Every
-          lot is freshly roasted and packed with a QR code that lets you trace
-          its full story, from bean to cup.
+          lot is freshly roasted in small batches and keeps the name of the
+          farm that grew it.
         </p>
       </div>
       <div class="nos-story__col">
         <h2 class="nos-h2">What we believe in</h2>
         <ul class="nos-values">
           <li>
-            <span class="nos-values__icon" aria-hidden="true">🔍</span>
+            <span class="nos-values__icon" aria-hidden="true">📍</span>
             <div>
-              <h3>Real traceability</h3>
-              <p>One QR per lot: farm, harvest, roast and quality control.</p>
+              <h3>Origin with a name</h3>
+              <p>Every lot comes from a specific farm and harvest, never an anonymous blend.</p>
             </div>
           </li>
           <li>
@@ -203,7 +204,7 @@ const farmImage = (state?: string) =>
                       ))}
                     </div>
                   )}
-                  {c.lot_id && (
+                  {SHOW_TRACEABILITY && c.lot_id && (
                     <a
                       href={`/traceability?lot=${c.lot_id}`}
                       class="nos-farm-card__trace"
@@ -227,7 +228,7 @@ const farmImage = (state?: string) =>
       <p>Every bag tells the story of the farm that grew it.</p>
       <div class="nos-cta__btns">
         <a class="nos-btn-primary" href="/shop">Shop our coffees</a>
-        <a class="nos-btn-ghost" href="/traceability">Trace a lot</a>
+        {SHOW_TRACEABILITY && <a class="nos-btn-ghost" href="/traceability">Trace a lot</a>}
       </div>
     </div>
   </section>

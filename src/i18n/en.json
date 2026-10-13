@@ -1,7 +1,7 @@
 {
     "seo": {
         "default_title": "DobleYo — Premium Colombian Specialty Coffee",
-        "default_description": "Colombian specialty coffee, farm-to-cup. Fresh roasted, fully traceable single-origin lots.",
+        "default_description": "Colombian specialty coffee, farm-to-cup. Fresh roasted, single-origin lots.",
         "site_name": "DobleYo Café"
     },
     "nav": {
@@ -197,9 +197,9 @@
             "fresh_unit": "days"
         },
         "journey": {
-            "eyebrow": "Full traceability",
+            "eyebrow": "The journey of a lot",
             "title": "From bean to cup",
-            "sub": "Every bag carries a QR code that documents this complete journey",
+            "sub": "How a real lot reaches your cup, from the farm to the bag",
             "real_data": "Real lot data",
             "step_1_title": "Harvest",
             "step_1_desc": "Farm, farmer, municipality and altitude recorded for each lot",
@@ -208,7 +208,7 @@
             "step_3_title": "Roast",
             "step_3_desc": "Roast curve, temperature and exact date. Within 15 days before your order",
             "step_4_title": "Your bag",
-            "step_4_desc": "QR on the package with the lot's full history, from the farm to your hands",
+            "step_4_desc": "Packed with its lot code and details, from the farm to your hands",
             "curve_caption": "Reference curve. The end point is the lot's real data.",
             "curve_charge": "Charge",
             "curve_turning": "Turning point",

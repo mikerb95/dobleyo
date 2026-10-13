@@ -1,5 +1,6 @@
 ---
 import Layout from "../../layouts/Layout.astro";
+import { SHOW_TRACEABILITY } from "../../lib/flags.ts";
 import { getCanonicalUrl } from "../../i18n/index.ts";
 ---
 
@@ -76,7 +77,7 @@ import { getCanonicalUrl } from "../../i18n/index.ts";
 
           <div class="quick-links">
             <a class="quick-link" href="/shop"><span>Browse the shop</span></a>
-            <a class="quick-link" href="/traceability"><span>Trace a lot</span></a>
+            {SHOW_TRACEABILITY && <a class="quick-link" href="/traceability"><span>Trace a lot</span></a>}
             <a class="quick-link" href="/contact"><span>Support / Contact</span></a>
           </div>
         </section>

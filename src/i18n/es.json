@@ -1,7 +1,7 @@
 {
     "seo": {
         "default_title": "DobleYo — Café de especialidad colombiano",
-        "default_description": "Tienda de café de especialidad colombiano. Tueste fresco, origen trazable, estilo sereno y acogedor.",
+        "default_description": "Tienda de café de especialidad colombiano. Tueste fresco, origen único, estilo sereno y acogedor.",
         "site_name": "DobleYo Café"
     },
     "nav": {
@@ -197,9 +197,9 @@
             "fresh_unit": "días"
         },
         "journey": {
-            "eyebrow": "Trazabilidad completa",
+            "eyebrow": "El viaje de un lote",
             "title": "Del grano a tu taza",
-            "sub": "Cada bolsa lleva un código QR que documenta este recorrido completo",
+            "sub": "Así llega a tu taza un lote real, de la finca al empaque",
             "real_data": "Datos reales del lote",
             "step_1_title": "Cosecha",
             "step_1_desc": "Finca, caficultor, municipio y altitud registrados en cada lote",
@@ -208,7 +208,7 @@
             "step_3_title": "Tueste",
             "step_3_desc": "Curva de tueste, temperatura y fecha exacta. Máximo 15 días antes de tu pedido",
             "step_4_title": "Tu bolsa",
-            "step_4_desc": "QR en el empaque con todo el historial del lote, de la finca a tus manos",
+            "step_4_desc": "Empacado con el código y los datos de su lote, de la finca a tus manos",
             "curve_caption": "Curva de referencia. El punto final es el dato real del lote.",
             "curve_charge": "Carga",
             "curve_turning": "Retorno",

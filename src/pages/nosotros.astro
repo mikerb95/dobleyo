@@ -1,5 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import { SHOW_TRACEABILITY } from "../lib/flags.ts";
 import PageHero from "../components/PageHero.astro";
 import Icon from "../components/Icon.astro";
 import { getCanonicalUrl, getHreflangPair } from "../i18n/index.ts";
@@ -56,7 +57,7 @@ const farmImage = (state?: string) =>
 
 const pageTitle = "Sobre nosotros — DobleYo Café";
 const pageDescription =
-  "DobleYo Café nace para llevar el café de especialidad colombiano de la finca a su taza, con trazabilidad real y comercio directo con los caficultores. Conozca a las familias detrás de cada cosecha.";
+  "DobleYo Café nace para llevar el café de especialidad colombiano de la finca a su taza, con comercio directo con los caficultores. Conozca a las familias detrás de cada cosecha.";
 ---
 
 <Layout
@@ -88,18 +89,18 @@ const pageDescription =
         <p>
           Trabajamos con familias cafeteras de regiones como Huila, Nariño y la
           Sierra Nevada, comprando de forma directa y pagando un precio justo.
-          Cada lote se tuesta fresco y se empaca con un código que le permite
-          rastrear toda su historia, del grano a la taza.
+          Cada lote se tuesta fresco, en pequeñas cantidades, y conserva el
+          nombre de la finca que lo cultivó.
         </p>
       </div>
       <div class="nos-story__col">
         <h2 class="nos-h2">En qué creemos</h2>
         <ul class="nos-values">
           <li>
-            <span class="nos-values__icon"><Icon name="search" size={24} /></span>
+            <span class="nos-values__icon"><Icon name="map-pin" size={24} /></span>
             <div>
-              <h3>Trazabilidad real</h3>
-              <p>Un QR por lote: finca, cosecha, tueste y control de calidad.</p>
+              <h3>Origen con nombre propio</h3>
+              <p>Cada lote viene de una finca y una cosecha concretas, nunca de mezclas anónimas.</p>
             </div>
           </li>
           <li>
@@ -202,7 +203,7 @@ const pageDescription =
                   </div>
                 )}
 
-                {c.lot_id && (
+                {SHOW_TRACEABILITY && c.lot_id && (
                   <a class="caf-card__trace" href={`/trazabilidad?lote=${encodeURIComponent(c.lot_id)}`}>
                     <Icon name="search" size={16} /> Rastrear un café de esta finca
                   </a>
@@ -219,10 +220,10 @@ const pageDescription =
   <section class="nos-cta">
     <div class="nos-cta__inner">
       <h2>Pruebe el origen, taza por taza</h2>
-      <p>Explore nuestros cafés de especialidad o rastree la historia del suyo.</p>
+      <p>Explore nuestros cafés de especialidad, cada uno con la finca y la familia que lo cultivó.</p>
       <div class="nos-cta__btns">
         <a class="btn-primary" href="/tienda">Ver la tienda</a>
-        <a class="btn-ghost" href="/trazabilidad">Rastrear mi café</a>
+        {SHOW_TRACEABILITY && <a class="btn-ghost" href="/trazabilidad">Rastrear mi café</a>}
       </div>
     </div>
   </section>

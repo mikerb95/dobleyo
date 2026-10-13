@@ -46,7 +46,7 @@ export const GET: APIRoute = async ({ site }) => {
   <channel>
     <title>Blog DobleYo Café</title>
     <link>${baseUrl}/blog</link>
-    <description>Café de especialidad colombiano: guías, trazabilidad y novedades de DobleYo Café.</description>
+    <description>Café de especialidad colombiano: guías, origen y novedades de DobleYo Café.</description>
     <language>es-CO</language>
     <atom:link xmlns:atom="http://www.w3.org/2005/Atom" href="${baseUrl}/rss.xml" rel="self" type="application/rss+xml" />${items}
   </channel>

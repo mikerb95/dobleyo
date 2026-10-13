@@ -1,7 +1,7 @@
 ---
 import Layout from "../../../layouts/Layout.astro";
 import { getCanonicalUrl, formatPrice } from "../../../i18n/index.ts";
-import { SHOW_CUPPING } from "../../../lib/flags.ts";
+import { SHOW_CUPPING, SHOW_TRACEABILITY } from "../../../lib/flags.ts";
 
 // Prerender estático: el subdominio en. sirve archivos estáticos vía rewrite.
 // SSR (prerender=false) da 404 bajo ese rewrite, por eso enumeramos rutas en build.
@@ -134,7 +134,7 @@ const productJsonLd = {
         </div>
 
         <p class="pp-ship">🌎 Worldwide shipping · prices in USD</p>
-        {product.category === "cafe" && (
+        {SHOW_TRACEABILITY && product.category === "cafe" && (
           <a href="/traceability" class="pp-trace">🔍 Trace this coffee's origin</a>
         )}
       </div>
