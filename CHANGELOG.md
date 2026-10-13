@@ -2,6 +2,21 @@
 
 ---
 
+## 2026-10-12: Trazabilidad pública apagada (Agente: Claude)
+
+### Contexto
+Por ahora no se va a usar la consulta pública de lotes. Se apaga con un interruptor (no se borra) y el copy de marketing deja de prometer trazabilidad o QR en la bolsa. La operación (admin, flujo "Qué sigue", etiquetas) sigue igual.
+
+### Cambios
+- **`src/lib/flags.ts`**: nuevo `SHOW_TRACEABILITY = false`.
+- **Rutas**: `/trazabilidad`, `/t/[code]` (302 a `/tienda`) y `/en/traceability` (302 a `/shop`). Las dos primeras pasan a `prerender = false` para que el 302 sea real. Salen del sitemap.
+- **Enlaces ocultos con el flag**: menú ES/EN, accesos rápidos y botón "Rastrear el café" de pedidos en `/cuenta` y `/en/account`, nosotros/about (tarjetas de caficultor y CTA), fichas de producto ES/EN, fincas ES/EN y la nota del escáner QR en `/en/accessibility`.
+- **Portada ES/EN**: sin QR en la etiqueta del hero (ni "Escanee para ver el lote completo"), la bolsa de la escena 04 sin QR, sin el bloque CTA "Trazar mi café" y "Por qué elegirnos" con tres tarjetas (sin la de QR). `hero.ts` y `journey.ts` solo animan el QR si existe.
+- **Copy reescrito sin "trazabilidad"/"traceable"**: metas de `Head.astro` e i18n, textos del viaje del lote, tienda, portada, nosotros/about, partners ES/EN, mayoristas, `/en/wholesale`, regalos, fincas, `/cuenta` y la descripción del RSS. "Trazabilidad real" pasa a "Origen con nombre propio".
+- **Pendiente en BD**: el producto "Kit Trazabilidad Completa" (`kit-trazabilidad-completa`) y una reseña demo que menciona la trazabilidad siguen visibles en tienda y portada.
+
+---
+
 ## 2026-10-12: Integración directa con Interrapidísimo (Agente: Claude)
 
 ### Contexto

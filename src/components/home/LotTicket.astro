@@ -111,7 +111,7 @@ const stages = ["harvest", "process", "roast", "cup"] as const;
     )}
   </dl>
 
-  <p class="lot__foot">{k("scan")}</p>
+  {SHOW_TRACEABILITY && <p class="lot__foot">{k("scan")}</p>}
 </article>
 
 <style>
