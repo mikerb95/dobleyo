@@ -26,23 +26,41 @@ const { title = "Admin — DobleYo Café", section = "" } = Astro.props;
         --color-text:    #1a1410;
 
         /* Derivados */
-        --bg:       color-mix(in oklab, var(--color-primary) 4%,  #fbf8f3);
+        --bg:       color-mix(in oklab, var(--color-primary) 4%,  #f4f3f0);
         --paper:    #ffffff;
         --rule:     color-mix(in oklab, var(--color-primary) 12%, #ffffff);
         --rule-2:   color-mix(in oklab, var(--color-primary) 20%, #ffffff);
-        --muted:    color-mix(in oklab, var(--color-text)    50%, transparent);
-        --muted-2:  color-mix(in oklab, var(--color-text)    35%, transparent);
+        /* Texto secundario sólido: >= 4.5:1 sobre --paper y --bg */
+        --muted:    color-mix(in oklab, var(--color-text)    68%, white);
+        --muted-2:  color-mix(in oklab, var(--color-text)    58%, white);
         --hover:    color-mix(in oklab, var(--color-primary)  4%, white);
-        --active-bg: color-mix(in oklab, var(--color-accent) 14%, white);
+        --active-bg: color-mix(in oklab, var(--color-accent) 16%, white);
+        --subtle:   color-mix(in oklab, var(--color-primary)  3%, white);
+        /* Acento legible como texto (el acento puro no llega a 4.5:1) */
+        --accent-ink: color-mix(in oklab, var(--color-accent) 62%, black);
+
+        /* Barra superior oscura */
+        --shell-dark:      color-mix(in oklab, var(--color-primary) 72%, black);
+        --shell-dark-2:    color-mix(in oklab, var(--color-primary) 82%, black);
+        --shell-dark-rule: color-mix(in oklab, var(--color-primary) 70%, white);
+        --shell-dark-text: color-mix(in oklab, var(--color-primary) 10%, white);
+        --shell-dark-muted: color-mix(in oklab, var(--color-primary) 35%, white);
+
+        /* Estados de pedido (punto + texto, nunca píldora sólida) */
+        --st-paid:      var(--ok);
+        --st-confirmed: #3f6597;
+        --st-pending:   var(--color-accent);
+        --st-cancelled: var(--danger);
+        --st-neutral:   color-mix(in oklab, var(--color-text) 40%, white);
 
         /* Semánticos (mantengo para badges/alerts) */
-        --danger:   #c0392b;
+        --danger:   #a3352b;
         --warn:     var(--color-accent);
-        --ok:       #2e7d5b;
+        --ok:       #2f6b4f;
         --info:     color-mix(in oklab, var(--color-primary) 50%, white);
 
         /* === Compatibilidad con páginas Fiori existentes === */
-        --shell-h: 56px;
+        --shell-h: 48px;
         --nav-w: 232px;
         --nav-w-sm: 56px;
 
@@ -62,8 +80,7 @@ const { title = "Admin — DobleYo Café", section = "" } = Astro.props;
 
         --erp-bg: var(--bg);
         --card-bg: var(--paper);
-        --card-shadow: 0 1px 0 color-mix(in oklab, var(--color-primary) 6%, transparent),
-                       0 8px 24px -16px color-mix(in oklab, var(--color-primary) 30%, transparent);
+        --card-shadow: 0 1px 0 color-mix(in oklab, var(--color-primary) 5%, transparent);
         --border: var(--rule);
 
         --text-1: var(--color-primary);
@@ -85,13 +102,15 @@ const { title = "Admin — DobleYo Café", section = "" } = Astro.props;
         --brand: var(--color-accent);
         --brand-dark: var(--color-primary);
 
-        --radius:    10px;
-        --radius-sm: 8px;
+        --radius:    8px;
+        --radius-sm: 6px;
 
-        /* Tipografía de marca (ya cargadas vía Head.astro) */
-        --font-ui:      "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
-        --font-display: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
-        --font-serif:   "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+        /* Tipografía del ERP (cargada vía Head.astro con isAdmin).
+           Plex Sans para la interfaz, Plex Mono para cifras, IDs y horas. */
+        --font-ui:      "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+        --font-display: var(--font-ui);
+        --font-serif:   var(--font-ui);
+        --font-mono:    "IBM Plex Mono", ui-monospace, Menlo, monospace;
       }
 
       * { box-sizing: border-box; }
@@ -99,9 +118,11 @@ const { title = "Admin — DobleYo Café", section = "" } = Astro.props;
       html, body {
         margin: 0; padding: 0;
         font-family: var(--font-ui);
+        font-size: 13px;
         color: var(--color-text);
         background: var(--bg);
         min-height: 100vh;
+        -webkit-font-smoothing: antialiased;
       }
 
       body { visibility: hidden; }
@@ -109,79 +130,98 @@ const { title = "Admin — DobleYo Café", section = "" } = Astro.props;
       a { color: inherit; }
       button { font: inherit; }
 
+      /* Cifras, IDs, fechas y horas: monoespaciada tabular */
+      .mono, .num, code, kbd, samp {
+        font-family: var(--font-mono);
+        font-variant-numeric: tabular-nums;
+      }
+      .num { text-align: right; }
+
       /* =========================================================
-         SHELL — topbar + sidebar + main
+         SHELL: barra superior oscura + menú lateral + contenido
          ========================================================= */
       .erp-shell {
         position: fixed; top: 0; left: 0; right: 0;
         height: var(--shell-h);
-        background: var(--paper);
-        border-bottom: 1px solid var(--rule);
-        display: flex; align-items: center;
-        padding: 0 18px;
+        background: var(--shell-dark);
+        color: var(--shell-dark-text);
+        display: flex; align-items: center; gap: 12px;
+        padding: 0 12px;
         z-index: 30;
       }
 
       .shell-nav-toggle {
         appearance: none; border: 0; background: transparent;
-        width: 36px; height: 36px;
+        width: 32px; height: 32px;
         display: grid; place-items: center;
-        cursor: pointer; color: var(--muted);
-        border-radius: 8px;
+        cursor: pointer; color: var(--shell-dark-muted);
+        border-radius: 6px;
       }
-      .shell-nav-toggle:hover { background: var(--hover); color: var(--color-primary); }
+      .shell-nav-toggle:hover { background: var(--shell-dark-2); color: var(--shell-dark-text); }
 
       .shell-product {
-        display: flex; align-items: center; gap: 10px;
-        text-decoration: none; margin-left: 8px;
+        display: flex; align-items: center; gap: 9px;
+        text-decoration: none;
       }
       .shell-product-logo {
-        width: 30px; height: 30px;
-        background: var(--color-primary);
-        border-radius: 8px;
+        width: 26px; height: 26px;
+        background: var(--color-accent);
+        color: var(--shell-dark);
+        border-radius: 6px;
         display: grid; place-items: center;
       }
       .shell-product-name {
-        font-weight: 600; font-size: 14px;
-        color: var(--color-primary); line-height: 1;
-        letter-spacing: -0.01em;
+        font-weight: 600; font-size: 13px;
+        color: var(--shell-dark-text); line-height: 1;
       }
       .shell-product-sub {
-        font-size: 10px; color: var(--muted);
-        text-transform: uppercase; letter-spacing: 0.08em;
-        margin-top: 2px;
+        font-family: var(--font-mono);
+        font-size: 11px; color: var(--shell-dark-muted);
+      }
+      .shell-sep {
+        width: 1px; height: 20px;
+        background: var(--shell-dark-2);
+      }
+      .shell-context {
+        font-size: 12px; color: var(--shell-dark-muted);
+        white-space: nowrap;
+      }
+      @media (max-width: 767px) {
+        .shell-sep, .shell-context { display: none; }
       }
 
       .shell-spacer { flex: 1; }
 
-      .shell-actions { display: flex; align-items: center; gap: 6px; }
+      .shell-actions { display: flex; align-items: center; gap: 4px; }
 
       .shell-btn {
         appearance: none; border: 0; background: transparent;
-        width: 36px; height: 36px;
+        width: 32px; height: 32px;
         display: grid; place-items: center;
-        color: var(--muted); cursor: pointer;
-        border-radius: 8px;
+        color: var(--shell-dark-muted); cursor: pointer;
+        border-radius: 6px;
         text-decoration: none;
       }
-      .shell-btn:hover { background: var(--hover); color: var(--color-primary); }
+      .shell-btn:hover { background: var(--shell-dark-2); color: var(--shell-dark-text); }
 
       .shell-user-btn {
         display: flex; align-items: center; gap: 8px;
-        background: transparent; border: 1px solid transparent;
-        padding: 4px 10px 4px 4px; border-radius: 999px;
+        background: transparent; border: 0;
+        color: var(--shell-dark-text);
+        padding: 3px 8px 3px 3px; border-radius: 6px;
         cursor: pointer;
       }
-      .shell-user-btn:hover { border-color: var(--rule); background: var(--hover); }
+      .shell-user-btn:hover { background: var(--shell-dark-2); }
 
       .shell-avatar {
-        width: 28px; height: 28px; border-radius: 999px;
-        background: var(--color-primary); color: white;
+        width: 26px; height: 26px; border-radius: 999px;
+        background: color-mix(in oklab, var(--color-primary) 70%, white);
+        color: white;
         display: grid; place-items: center;
-        font-size: 12px; font-weight: 600;
+        font-size: 11px; font-weight: 600;
       }
       .shell-user-name {
-        font-size: 13px; font-weight: 500; color: var(--color-primary);
+        font-size: 12px; font-weight: 500; color: var(--shell-dark-text);
         max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
       }
 
