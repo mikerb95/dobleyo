@@ -3,6 +3,9 @@ import Layout from "../../layouts/Layout.astro";
 import { getCanonicalUrl, getHreflangPair } from "../../i18n/index.ts";
 import { SHOW_TRACEABILITY } from "../../lib/flags.ts";
 
+// Sin prerender para que, apagada, la redirección sea un 302 real.
+export const prerender = false;
+
 // Consulta pública de lotes apagada (ver src/lib/flags.ts).
 if (!SHOW_TRACEABILITY) return Astro.redirect("/shop", 302);
 
