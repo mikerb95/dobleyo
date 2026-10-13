@@ -1,6 +1,10 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import { getCanonicalUrl, getHreflangPair } from "../../i18n/index.ts";
+import { SHOW_TRACEABILITY } from "../../lib/flags.ts";
+
+// Consulta pública de lotes apagada (ver src/lib/flags.ts).
+if (!SHOW_TRACEABILITY) return Astro.redirect("/shop", 302);
 
 const hreflang = getHreflangPair("/trazabilidad");
 ---

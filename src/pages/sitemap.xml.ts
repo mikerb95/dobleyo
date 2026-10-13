@@ -1,5 +1,6 @@
 // Sitemap dinámico generado por Astro (Fase 11 SEO)
 import type { APIRoute } from 'astro';
+import { SHOW_TRACEABILITY } from '../lib/flags.ts';
 
 // BASE_EN vive en un subdominio distinto al configurado en `site` (astro.config.mjs),
 // por lo que no se puede derivar de Astro.site y queda fijo.
@@ -33,7 +34,7 @@ export const GET: APIRoute = async ({ site }) => {
         { es: '/', en: '/', priority: '1.0', changefreq: 'weekly' },
         { es: '/tienda', en: '/shop', priority: '0.9', changefreq: 'weekly' },
         { es: '/mayoristas', en: '/wholesale', priority: '0.7', changefreq: 'monthly' },
-        { es: '/trazabilidad', en: '/traceability', priority: '0.8', changefreq: 'monthly' },
+        ...(SHOW_TRACEABILITY ? [{ es: '/trazabilidad', en: '/traceability', priority: '0.8', changefreq: 'monthly' }] : []),
         { es: '/blog', en: '/blog', priority: '0.7', changefreq: 'weekly' },
         { es: '/guias', en: '/guides', priority: '0.6', changefreq: 'monthly' },
         { es: '/fincas', en: '/farms', priority: '0.7', changefreq: 'monthly' },

@@ -1,8 +1,11 @@
 ---
 import Layout from "../../layouts/Layout.astro";
-import { SHOW_CUPPING } from "../../lib/flags.ts";
+import { SHOW_CUPPING, SHOW_TRACEABILITY } from "../../lib/flags.ts";
 
 export const prerender = false;
+
+// Consulta pública de lotes apagada (ver src/lib/flags.ts).
+if (!SHOW_TRACEABILITY) return Astro.redirect("/tienda", 302);
 
 const { code } = Astro.params;
 

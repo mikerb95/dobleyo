@@ -27,11 +27,14 @@ export const hero: Piece = (addCleanup) => {
   tl.from('.hh__lead', { y: 16, opacity: 0, duration: 0.8 }, 0.35)
     .from('.hh__actions', { y: 16, opacity: 0, duration: 0.8 }, 0.45);
   if (ticket) {
-    tl.from('.hh__ticket', { y: 60, rotate: -6, opacity: 0, duration: 1.1, ease: 'expo.out' }, 0.3)
-      .from(ticket.querySelectorAll('.qr__finders rect'), { scale: 0, transformOrigin: '50% 50%', duration: 0.4, stagger: { each: 0.004, from: 'random' } }, 0.7)
-      .from(ticket.querySelectorAll('.qr__data rect'), { opacity: 0, duration: 0.2, stagger: { each: 0.0015, from: 'random' } }, 0.8)
-      // clearProps: después manda el CSS de la etapa activa (filas tenues o encendidas).
-      .from(ticket.querySelectorAll('.lot__row'), { x: -10, opacity: 0, duration: 0.5, stagger: 0.06, clearProps: 'opacity,transform' }, 0.8);
+    tl.from('.hh__ticket', { y: 60, rotate: -6, opacity: 0, duration: 1.1, ease: 'expo.out' }, 0.3);
+    // El QR solo está cuando la trazabilidad pública está encendida (lib/flags.ts).
+    if (ticket.querySelector('.qr')) {
+      tl.from(ticket.querySelectorAll('.qr__finders rect'), { scale: 0, transformOrigin: '50% 50%', duration: 0.4, stagger: { each: 0.004, from: 'random' } }, 0.7)
+        .from(ticket.querySelectorAll('.qr__data rect'), { opacity: 0, duration: 0.2, stagger: { each: 0.0015, from: 'random' } }, 0.8);
+    }
+    // clearProps: después manda el CSS de la etapa activa (filas tenues o encendidas).
+    tl.from(ticket.querySelectorAll('.lot__row'), { x: -10, opacity: 0, duration: 0.5, stagger: 0.06, clearProps: 'opacity,transform' }, 0.8);
     const code = ticket.querySelector<HTMLElement>('.lot__code');
     if (code) tl.to(code, { duration: 1, scrambleText: { text: code.textContent ?? '', chars: '0123456789ABCDEFHKLMNPRSTUVXYZ-', speed: 0.6 } }, 0.7);
   }

@@ -3,6 +3,7 @@ import { Image } from "astro:assets";
 import type { Lang } from "../i18n/index.ts";
 import LangToggle from "./LangToggle.astro";
 import logo from "../assets/logo.png";
+import { SHOW_TRACEABILITY } from "../lib/flags.ts";
 
 interface Props { lang?: Lang; }
 const { lang = "es" } = Astro.props;
@@ -17,14 +18,14 @@ const NAV = {
     { href: "/suscripcion", label: "Suscripción" },
     { href: "/regalos", label: "Regalos" },
     { href: "/blog", label: "Blog" },
-    { href: "/trazabilidad", label: "Trazabilidad" },
+    ...(SHOW_TRACEABILITY ? [{ href: "/trazabilidad", label: "Trazabilidad" }] : []),
     { href: "/envios-devoluciones", label: "Envíos" },
   ],
   en: [
     { href: "/", label: "Home" },
     { href: "/shop", label: "Shop" },
     { href: "/wholesale", label: "Wholesale" },
-    { href: "/traceability", label: "Traceability" },
+    ...(SHOW_TRACEABILITY ? [{ href: "/traceability", label: "Traceability" }] : []),
     { href: "/contact", label: "Contact" },
   ],
 };

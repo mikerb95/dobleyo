@@ -3,6 +3,7 @@
  * "Por qué elegirnos": cada tarjeta trae una microdemostración de lo que
  * afirma en lugar de un ícono.
  *   QR por lote       el QR real del lote destacado se escanea y da su código
+ *                     (solo con SHOW_TRACEABILITY; sin ella quedan tres tarjetas)
  *   Tueste en 15 días una ventana de 15 días que se llena desde el tueste
  *   Compra directa    el intermediario desaparece y la línea une finca y cliente
  *   Envío gratis      el carrito sube hasta el umbral y se activa el envío
@@ -12,6 +13,7 @@ import type { Lang } from "../../i18n/index.ts";
 import { t } from "../../i18n/index.ts";
 import type { LotView } from "../../lib/lot.ts";
 import QrCode from "./QrCode.astro";
+import { SHOW_TRACEABILITY } from "../../lib/flags.ts";
 
 interface Props {
   lang: Lang;
@@ -36,18 +38,20 @@ const money = (n: number) =>
     <h2 id="whyTitle" class="why__title">{k("title")}</h2>
   </header>
 
-  <div class="why__grid">
-    <article class="why-card">
-      <div class="why-demo why-demo--qr" aria-hidden="true" data-demo="qr">
-        <div class="why-demo__qr">
-          <QrCode text={lot.qrUrl} />
-          <span class="why-demo__scan"></span>
+  <div class:list={["why__grid", { "why__grid--3": !SHOW_TRACEABILITY }]}>
+    {SHOW_TRACEABILITY && (
+      <article class="why-card">
+        <div class="why-demo why-demo--qr" aria-hidden="true" data-demo="qr">
+          <div class="why-demo__qr">
+            <QrCode text={lot.qrUrl} />
+            <span class="why-demo__scan"></span>
+          </div>
+          <span class="why-demo__code" data-final={lot.code}>{lot.code}</span>
         </div>
-        <span class="why-demo__code" data-final={lot.code}>{lot.code}</span>
-      </div>
-      <h3 class="why-card__title">{k("qr_title")}</h3>
-      <p class="why-card__desc">{k("qr_desc")}</p>
-    </article>
+        <h3 class="why-card__title">{k("qr_title")}</h3>
+        <p class="why-card__desc">{k("qr_desc")}</p>
+      </article>
+    )}
 
     <article class="why-card">
       <div class="why-demo why-demo--days" aria-hidden="true" data-demo="days">
@@ -105,6 +109,9 @@ const money = (n: number) =>
   .why__grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.25rem; }
   @media (max-width: 1024px) { .why__grid { grid-template-columns: repeat(2, 1fr); } }
   @media (max-width: 480px) { .why__grid { grid-template-columns: 1fr; } }
+  /* Tres tarjetas: en fila desde 768 y apiladas por debajo, sin una huérfana. */
+  .why__grid.why__grid--3 { grid-template-columns: repeat(3, 1fr); }
+  @media (max-width: 767px) { .why__grid.why__grid--3 { grid-template-columns: 1fr; } }
 
   .why-card {
     display: flex;

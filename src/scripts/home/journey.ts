@@ -109,11 +109,14 @@ const roast: SceneBuilder = (scene) => {
 const bag: SceneBuilder = (scene) => {
   const tl = gsap.timeline();
   tl.from(scene.querySelector('.sc-bag__bag'), { y: 60, opacity: 0, rotate: -4, duration: 0.8, ease: 'power3.out' }, 0)
-    .from(scene.querySelector('.sc-bag__label'), { scale: 1.25, opacity: 0, duration: 0.45, ease: 'back.out(2)' }, 0.55)
-    .from(scene.querySelectorAll('.qr__finders rect'), { scale: 0, transformOrigin: '50% 50%', duration: 0.3, stagger: { each: 0.004, from: 'random' } }, 0.8)
-    .from(scene.querySelectorAll('.qr__data rect'), { opacity: 0, duration: 0.15, stagger: { each: 0.0012, from: 'random' } }, 0.9)
-    .fromTo(scene.querySelector('.sc-bag__scan'), { top: '0%', opacity: 1 }, { top: '100%', opacity: 0, duration: 0.8, ease: 'sine.inOut' }, 1.7)
-    .from(scene.querySelector('.sc-bag__code'), { opacity: 0, duration: 0.3 }, 1.9);
+    .from(scene.querySelector('.sc-bag__label'), { scale: 1.25, opacity: 0, duration: 0.45, ease: 'back.out(2)' }, 0.55);
+  // El QR solo está cuando la trazabilidad pública está encendida (lib/flags.ts).
+  if (scene.querySelector('.qr')) {
+    tl.from(scene.querySelectorAll('.qr__finders rect'), { scale: 0, transformOrigin: '50% 50%', duration: 0.3, stagger: { each: 0.004, from: 'random' } }, 0.8)
+      .from(scene.querySelectorAll('.qr__data rect'), { opacity: 0, duration: 0.15, stagger: { each: 0.0012, from: 'random' } }, 0.9)
+      .fromTo(scene.querySelector('.sc-bag__scan'), { top: '0%', opacity: 1 }, { top: '100%', opacity: 0, duration: 0.8, ease: 'sine.inOut' }, 1.7);
+  }
+  tl.from(scene.querySelector('.sc-bag__code'), { opacity: 0, duration: 0.3 }, 1.9);
   return tl;
 };
 
@@ -216,7 +219,7 @@ export const journey: Piece = (addCleanup) => {
 
   addCleanup(() => mm.revert());
 
-  // ── CTA de trazabilidad ──────────────────────────────────────────────────
+  // ── CTA de trazabilidad (solo con SHOW_TRACEABILITY) ─────────────────────
   const cta = section.querySelector<HTMLElement>('[data-trace-cta]');
   if (cta) {
     const qr = cta.querySelector('.tcta__qr');

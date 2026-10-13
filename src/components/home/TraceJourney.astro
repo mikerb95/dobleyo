@@ -6,7 +6,7 @@
  *   01 Cosecha   foto de la cereza en la rama con la ficha de origen del lote
  *   02 Proceso   corte de la cereza: el método pela (o no) cada capa
  *   03 Tueste    curva de referencia que termina en el dato real (°C, min)
- *   04 Tu bolsa  la etiqueta con el QR real que lleva a este lote
+ *   04 Tu bolsa  la etiqueta del lote (con el QR real si SHOW_TRACEABILITY)
  *
  * Maqueta por defecto (sin JS, móvil, movimiento reducido): cada paso con su
  * escena al lado o debajo, todo visible. En escritorio el script activa
@@ -17,6 +17,7 @@ import { t } from "../../i18n/index.ts";
 import type { LotView } from "../../lib/lot.ts";
 import { roastCurve, processKind } from "../../lib/lot.ts";
 import QrCode from "./QrCode.astro";
+import { SHOW_TRACEABILITY } from "../../lib/flags.ts";
 
 interface Props {
   lang: Lang;
@@ -185,10 +186,12 @@ const facts = [
                   <div class="sc-bag__label">
                     <span class="sc-bag__brand">DobleYo</span>
                     <span class="sc-bag__meta">{[lot.region.split(", ").pop(), lot.process].filter(Boolean).join(" · ")}</span>
-                    <div class="sc-bag__qr">
-                      <QrCode text={lot.qrUrl} />
-                      <span class="sc-bag__scan"></span>
-                    </div>
+                    {SHOW_TRACEABILITY && (
+                      <div class="sc-bag__qr">
+                        <QrCode text={lot.qrUrl} />
+                        <span class="sc-bag__scan"></span>
+                      </div>
+                    )}
                     <span class="sc-bag__code">{lot.code}</span>
                   </div>
                 </div>
@@ -200,23 +203,25 @@ const facts = [
     </ol>
   </div>
 
-  <div class="tcta" data-trace-cta>
-    <div class="tcta__glow" aria-hidden="true"></div>
-    <a class="tcta__qr" href={traceHref} aria-label={`${k("cta_button")}: ${lot.code}`}>
-      <QrCode text={lot.qrUrl} />
-      <span class="tcta__scan" aria-hidden="true"></span>
-    </a>
-    <div class="tcta__copy">
-      <p class="tcta__eyebrow">{k("cta_eyebrow")}</p>
-      <h3 class="tcta__title">{k("cta_title_1")}<br />{k("cta_title_2")}</h3>
-      <p class="tcta__sub">{k("cta_sub")}</p>
-      <div class="tcta__actions">
-        <a href={traceHref} class="btn tcta__btn" data-magnetic><span data-magnetic-inner>{k("cta_button")}</span></a>
-        <span class="tcta__hint">{k("cta_hint")}</span>
+  {SHOW_TRACEABILITY && (
+    <div class="tcta" data-trace-cta>
+      <div class="tcta__glow" aria-hidden="true"></div>
+      <a class="tcta__qr" href={traceHref} aria-label={`${k("cta_button")}: ${lot.code}`}>
+        <QrCode text={lot.qrUrl} />
+        <span class="tcta__scan" aria-hidden="true"></span>
+      </a>
+      <div class="tcta__copy">
+        <p class="tcta__eyebrow">{k("cta_eyebrow")}</p>
+        <h3 class="tcta__title">{k("cta_title_1")}<br />{k("cta_title_2")}</h3>
+        <p class="tcta__sub">{k("cta_sub")}</p>
+        <div class="tcta__actions">
+          <a href={traceHref} class="btn tcta__btn" data-magnetic><span data-magnetic-inner>{k("cta_button")}</span></a>
+          <span class="tcta__hint">{k("cta_hint")}</span>
+        </div>
+        <p class="tcta__try">{k("cta_try")} <code>{lot.code}</code></p>
       </div>
-      <p class="tcta__try">{k("cta_try")} <code>{lot.code}</code></p>
     </div>
-  </div>
+  )}
 </section>
 
 <style>

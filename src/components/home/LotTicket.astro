@@ -11,7 +11,7 @@ import type { Lang } from "../../i18n/index.ts";
 import { t } from "../../i18n/index.ts";
 import type { LotView } from "../../lib/lot.ts";
 import { roastCurve } from "../../lib/lot.ts";
-import { SHOW_CUPPING } from "../../lib/flags.ts";
+import { SHOW_CUPPING, SHOW_TRACEABILITY } from "../../lib/flags.ts";
 import QrCode from "./QrCode.astro";
 
 interface Props {
@@ -39,10 +39,12 @@ const stages = ["harvest", "process", "roast", "cup"] as const;
       </p>
       <p class="lot__code" data-scramble>{lot.code}</p>
     </div>
-    <div class="lot__qr" aria-hidden="true">
-      <QrCode text={lot.qrUrl} />
-      <span class="lot__scan"></span>
-    </div>
+    {SHOW_TRACEABILITY && (
+      <div class="lot__qr" aria-hidden="true">
+        <QrCode text={lot.qrUrl} />
+        <span class="lot__scan"></span>
+      </div>
+    )}
   </header>
 
   <ol class="lot__stages" aria-hidden="true">
