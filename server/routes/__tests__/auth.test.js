@@ -10,10 +10,10 @@ import request from 'supertest';
 const mocks = vi.hoisted(() => ({
     query: vi.fn(),
     comparePassword: vi.fn(),
-    sendVerificationEmail: vi.fn(),
-    sendWelcomeEmail: vi.fn(),
-    sendPasswordResetEmail: vi.fn(),
-    sendPasswordChangedEmail: vi.fn(),
+    sendVerificationEmail: vi.fn(() => Promise.resolve({ success: true })),
+    sendWelcomeEmail: vi.fn(() => Promise.resolve({ success: true })),
+    sendPasswordResetEmail: vi.fn(() => Promise.resolve({ success: true })),
+    sendPasswordChangedEmail: vi.fn(() => Promise.resolve({ success: true })),
 }));
 
 vi.mock('../../db.js', () => ({ query: mocks.query }));
@@ -185,5 +185,114 @@ describe('POST /api/auth/login', () => {
         expect(res.body.user.role).toBe('admin');
         expect(res.body.user.id).toBe(5);
         expect(res.headers['set-cookie']).toBeDefined();
+    });
+});
+
+// ── POST /api/auth/forgot-password ────────────────────────────────────────────
+describe('POST /api/auth/forgot-password', () => {
+    let app;
+
+    beforeEach(() => {
+        app = buildApp();
+        vi.clearAllMocks();
+        mocks.query.mockReset();
+    });
+
+    it('responde igual si el correo no existe (no revela cuentas) y no envía nada', async () => {
+        mocks.query.mockResolvedValueOnce({ rows: [] }); // SELECT user
+
+        const res = await request(app).post('/api/auth/forgot-password').send({ email: 'nadie@test.com' });
+
+        expect(res.status).toBe(200);
+        expect(res.body.success).toBe(true);
+        expect(mocks.sendPasswordResetEmail).not.toHaveBeenCalled();
+    });
+
+    it('guarda solo el hash del token y envía el enlace con el token en claro', async () => {
+        mocks.query.mockResolvedValueOnce({ rows: [{ id: 7, email: 'ana@test.com', first_name: 'Ana' }] }); // SELECT
+        mocks.query.mockResolvedValue({ rows: [] }); // invalidar previos, INSERT token, audit
+
+        const res = await request(app).post('/api/auth/forgot-password').send({ email: 'Ana@Test.com' });
+
+        expect(res.status).toBe(200);
+        expect(mocks.sendPasswordResetEmail).toHaveBeenCalledTimes(1);
+        const [to, name, token] = mocks.sendPasswordResetEmail.mock.calls[0];
+        expect(to).toBe('ana@test.com');
+        expect(name).toBe('Ana');
+
+        const insert = mocks.query.mock.calls.find(([sql]) => sql.includes('INSERT INTO password_reset_tokens'));
+        expect(insert).toBeDefined();
+        const storedHash = insert[1][1];
+        expect(storedHash).not.toBe(token);
+        expect(storedHash).toMatch(/^[a-f0-9]{64}$/);
+    });
+
+    it('retorna 422 si el correo es inválido', async () => {
+        const res = await request(app).post('/api/auth/forgot-password').send({ email: 'no-es-correo' });
+        expect(res.status).toBe(422);
+    });
+});
+
+// ── POST /api/auth/reset-password ─────────────────────────────────────────────
+describe('POST /api/auth/reset-password', () => {
+    let app;
+    const token = 'a'.repeat(43);
+
+    beforeEach(() => {
+        app = buildApp();
+        vi.clearAllMocks();
+        mocks.query.mockReset();
+    });
+
+    it('retorna 400 si el token no existe, venció o ya se usó', async () => {
+        mocks.query.mockResolvedValueOnce({ rows: [] }); // UPDATE ... RETURNING sin filas
+
+        const res = await request(app).post('/api/auth/reset-password').send({ token, password: 'nuevaClave123' });
+
+        expect(res.status).toBe(400);
+        expect(res.body.success).toBe(false);
+    });
+
+    it('actualiza la contraseña, revoca sesiones y avisa por correo', async () => {
+        mocks.query.mockResolvedValueOnce({ rows: [{ user_id: 7 }] });                                  // consumir token
+        mocks.query.mockResolvedValueOnce({ rows: [{ email: 'ana@test.com', first_name: 'Ana' }] });  // UPDATE users
+        mocks.query.mockResolvedValue({ rows: [] });                                                    // revocar + audit
+
+        const res = await request(app).post('/api/auth/reset-password').send({ token, password: 'nuevaClave123' });
+
+        expect(res.status).toBe(200);
+        expect(res.body.success).toBe(true);
+        expect(mocks.query.mock.calls.some(([sql]) => sql.includes('UPDATE refresh_tokens SET revoked = 1 WHERE user_id = ?'))).toBe(true);
+        expect(mocks.sendPasswordChangedEmail).toHaveBeenCalledWith('ana@test.com', 'Ana', { sessionsRevoked: true });
+    });
+
+    it('retorna 422 si la contraseña es muy corta', async () => {
+        const res = await request(app).post('/api/auth/reset-password').send({ token, password: '123' });
+        expect(res.status).toBe(422);
+    });
+});
+
+// ── GET /api/auth/verify ──────────────────────────────────────────────────────
+describe('GET /api/auth/verify', () => {
+    let app;
+
+    beforeEach(async () => {
+        app = buildApp();
+        vi.clearAllMocks();
+        mocks.query.mockReset();
+        const authMod = await import('../../auth.js');
+        authMod.verifyToken.mockReturnValue({ id: 9, type: 'verification' });
+    });
+
+    it('envía la bienvenida solo en la primera verificación', async () => {
+        mocks.query.mockResolvedValueOnce({ rows: [{ email: 'leo@test.com', first_name: 'Leo' }] });
+        const first = await request(app).get('/api/auth/verify?token=x');
+        expect(first.status).toBe(200);
+        expect(mocks.sendWelcomeEmail).toHaveBeenCalledTimes(1);
+
+        mocks.query.mockResolvedValueOnce({ rows: [] }); // ya estaba verificada
+        const second = await request(app).get('/api/auth/verify?token=x');
+        expect(second.status).toBe(200);
+        expect(mocks.sendWelcomeEmail).toHaveBeenCalledTimes(1);
     });
 });
