@@ -226,6 +226,8 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   </style>
 
   <script>
+    import { verbOf, entityOf, parseDbDate as parseDate, USER_ROLES as ROLES } from '../../lib/auditLabels.js';
+
     type AuditLog = {
       id: number;
       user_id: number | null;
@@ -243,55 +245,6 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
     const PAGE_SIZE = 50;
     const TZ = 'America/Bogota';
-
-    // Verbo legible por acción y clase de estado del punto de color.
-    const ACTIONS: Record<string, [string, string]> = {
-      create: ['Creó', 'ok'],
-      update: ['Actualizó', 'info'],
-      delete: ['Eliminó', 'error'],
-      cancel: ['Canceló', 'error'],
-      adjust: ['Ajustó', 'info'],
-      transfer: ['Trasladó', 'info'],
-      open: ['Abrió', 'info'],
-      post: ['Contabilizó', 'ok'],
-      reconcile: ['Concilió', ''],
-      recompute: ['Recalculó', ''],
-      poll: ['Consultó', ''],
-      recover: ['Recuperó', ''],
-      recover_failed: ['Reintentó', ''],
-      run_migrations: ['Migró', ''],
-      backup_db: ['Respaldó', ''],
-      purge_old_logs: ['Depuró registros', ''],
-      clear_error_logs: ['Limpió errores', ''],
-      reset_password: ['Restableció clave', 'warn'],
-      change_role: ['Cambió rol', 'warn'],
-      create_admin: ['Creó administrador', 'warn'],
-      deactivate: ['Desactivó', 'warn'],
-      reactivate: ['Reactivó', 'info'],
-      expire: ['Venció', ''],
-      oversold: ['Sobreventa', 'error'],
-      generate_labels: ['Generó etiquetas', 'ok'],
-      generate_labels_custom: ['Generó etiquetas', 'ok'],
-      delete_label: ['Eliminó etiqueta', 'error'],
-      shipping_quoted: ['Cotizó envío', ''],
-      cod_rejected: ['Rechazó contraentrega', 'warn'],
-    };
-
-    const ENTITIES: Record<string, string> = {
-      shipments: 'Envío', product: 'Producto', products: 'Producto', product_variant: 'Variante',
-      user: 'Usuario', user_address: 'Dirección', farm: 'Finca', coffee_harvest: 'Cosecha',
-      lot_cost: 'Costo de lote', expense: 'Gasto', customer_orders: 'Pedido',
-      purchase_invoice: 'Factura de compra', sales_invoice: 'Factura de venta', payment: 'Pago',
-      storage_location: 'Ubicación', storage_zone: 'Zona', storage_movement: 'Movimiento',
-      inventory_count: 'Conteo', packaged_coffee: 'Café empacado', packaging_supply: 'Insumo',
-      external_sale: 'Venta externa', sales_tracking: 'Venta', subscription: 'Suscripción',
-      crm_account: 'Cuenta B2B', accounting_account: 'Cuenta contable', demand_forecast: 'Pronóstico',
-      label: 'Etiqueta', custom_profile: 'Perfil de etiqueta', system: 'Sistema',
-    };
-
-    const ROLES: Record<string, string> = {
-      admin: 'Administrador', caficultor: 'Caficultor', client: 'Cliente', provider: 'Proveedor',
-    };
 
     const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
     const els = {
@@ -326,10 +279,6 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       return node;
     }
 
-    // SQLite guarda CURRENT_TIMESTAMP en UTC sin zona: se marca explícitamente.
-    function parseDate(s: string): Date {
-      return new Date(/[zZ]|[+-]\d\d:?\d\d$/.test(s) ? s : s.replace(' ', 'T') + 'Z');
-    }
     const fmtNum = (n: number) => new Intl.NumberFormat('es-CO').format(n);
     const dayKey = (d: Date) => d.toLocaleDateString('en-CA', { timeZone: TZ });
     const timeOf = (d: Date, seconds = false) => d.toLocaleTimeString('es-CO', {
@@ -353,9 +302,6 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     function initials(name: string): string {
       return name.split(/\s+/).slice(0, 2).map((w) => w[0] ?? '').join('').toUpperCase() || '?';
     }
-    const verbOf = (a: string) => ACTIONS[a] ?? [a.replace(/_/g, ' '), ''];
-    const entityOf = (t: string | null) => (t ? ENTITIES[t] ?? t.replace(/_/g, ' ') : 'Sin entidad');
-
     function parseDetails(raw: string | null): unknown {
       if (!raw) return null;
       try { return JSON.parse(raw); } catch { return raw; }
@@ -524,7 +470,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       const details = parseDetails(l.details);
       const diff = extractDiff(details);
       const when = `${dayKey(date)} ${timeOf(date, true)} COT`;
-      const role = l.user_id == null ? 'Proceso automático' : ROLES[l.user_role ?? ''] ?? (l.user_role || 'Sin rol');
+      const role = l.user_id == null ? 'Proceso automático' : ROLES[(l.user_role ?? '') as keyof typeof ROLES] ?? (l.user_role || 'Sin rol');
 
       const head = el('div', { class: 'au-detail-head' },
         el('div', {},

@@ -65,10 +65,10 @@ dashboardRouter.get('/kpis', async (req, res) => {
       new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(n);
 
     ok(res, [
-      { id: 'sales',  label: 'Ventas 30 días',   value: fmtCOP(curRev), delta: pct(curRev, prevRev), icon: '$',  tone: 'primary', spark },
-      { id: 'orders', label: 'Pedidos 30 días',  value: curOrd,         delta: pct(curOrd, prevOrd), icon: '🧾', tone: 'accent',  spark: null },
-      { id: 'aov',    label: 'Ticket promedio',  value: fmtCOP(curAov), delta: pct(curAov, prevAov), icon: '📈', tone: 'neutral', spark: null },
-      { id: 'lowstock', label: 'Stock bajo',     value: lowStock ?? '—', delta: null, icon: '⚠', tone: lowStock > 0 ? 'warn' : 'neutral', spark: null },
+      { id: 'sales',    label: 'Ingresos 30 días', value: fmtCOP(curRev), delta: pct(curRev, prevRev), spark },
+      { id: 'orders',   label: 'Pedidos 30 días',  value: curOrd,         delta: pct(curOrd, prevOrd), spark: null },
+      { id: 'aov',      label: 'Ticket promedio',  value: fmtCOP(curAov), delta: pct(curAov, prevAov), spark: null },
+      { id: 'lowstock', label: 'Stock bajo',       value: lowStock ?? 0,  delta: null, spark: null },
     ]);
   } catch (e) {
     fail(res, e, '[GET /api/dashboard/kpis]');
