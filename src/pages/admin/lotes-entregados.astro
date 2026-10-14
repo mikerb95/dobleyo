@@ -2,166 +2,81 @@
 import AdminLayout from "../../layouts/AdminLayout.astro";
 ---
 
-<AdminLayout>
-  <section style="max-width: 1200px; margin: 0 auto; padding: 2rem 1.25rem;">
-    <div style="margin-bottom: 2rem;">
-      <a
-        href="/admin"
-        style="color: #8b6f47; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;"
-      >
-        ← Volver al Inicio
-      </a>
-      <h1
-        style="font-size: 2rem; font-weight: bold; margin-bottom: 0.5rem; color: #251a14;"
-      >
-        📋 Lotes Entregados
-      </h1>
-      <p style="color: #666; font-size: 1.05rem;">
-        Historial de todos los lotes que has entregado a DobleYo
-      </p>
+<AdminLayout title="Lotes entregados · DobleYo Admin" section="lotes-entregados">
+  <div class="page-header">
+    <div class="page-header-top">
+      <div>
+        <div class="page-breadcrumb">Mi finca · Entregas</div>
+        <h1 class="page-title">Lotes entregados</h1>
+        <p class="page-subtitle">Historial de los lotes que usted ha entregado a DobleYo.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="erp-body le">
+    <div class="filter-bar" role="search" aria-label="Filtrar lotes entregados">
+      <label class="ff">
+        <span>Desde</span>
+        <input type="date" id="fechaDesde" class="le-input" />
+      </label>
+      <label class="ff">
+        <span>Hasta</span>
+        <input type="date" id="fechaHasta" class="le-input" />
+      </label>
+      <label class="ff">
+        <span>Estado</span>
+        <select id="estadoFilter" class="le-input">
+          <option value="">Todos</option>
+          <option value="recibido">Recibido</option>
+          <option value="almacenado">Almacenado</option>
+          <option value="tostado">Tostado</option>
+          <option value="vendido">Vendido</option>
+        </select>
+      </label>
     </div>
 
-    <!-- Filtros -->
-    <div
-      style="background: white; border: 1px solid #e5e7eb; border-radius: 0.75rem; padding: 1.5rem; margin-bottom: 2rem;"
-    >
-      <div
-        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;"
-      >
-        <div>
-          <label
-            style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #374151;"
-            >Fecha Desde</label
-          >
-          <input
-            type="date"
-            id="fechaDesde"
-            style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.5rem;"
-          />
-        </div>
-        <div>
-          <label
-            style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #374151;"
-            >Fecha Hasta</label
-          >
-          <input
-            type="date"
-            id="fechaHasta"
-            style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.5rem;"
-          />
-        </div>
-        <div>
-          <label
-            style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #374151;"
-            >Estado</label
-          >
-          <select
-            id="estadoFilter"
-            style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.5rem;"
-          >
-            <option value="">Todos</option>
-            <option value="recibido">Recibido</option>
-            <option value="almacenado">Almacenado</option>
-            <option value="tostado">Tostado</option>
-            <option value="vendido">Vendido</option>
-          </select>
-        </div>
+    <div class="kpi-grid">
+      <div class="kpi-tile">
+        <div class="kpi-label">Lotes</div>
+        <div class="kpi-value" id="totalLotes">0</div>
+        <div class="kpi-sub">Entregados en el periodo</div>
+      </div>
+      <div class="kpi-tile">
+        <div class="kpi-label">Peso entregado</div>
+        <div class="kpi-value" id="totalKg">0</div>
+        <div class="kpi-sub">Kilogramos de café verde</div>
+      </div>
+      <div class="kpi-tile">
+        <div class="kpi-label">Valor</div>
+        <div class="kpi-value" id="totalValor">$0</div>
+        <div class="kpi-sub">Peso por precio pactado</div>
       </div>
     </div>
 
-    <!-- Resumen -->
-    <div
-      style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;"
-    >
-      <div
-        style="background: linear-gradient(135deg, #8b6f47 0%, #6b5637 100%); color: white; padding: 1.5rem; border-radius: 0.75rem;"
-      >
-        <div style="font-size: 0.875rem; opacity: 0.9; margin-bottom: 0.5rem;">
-          Total Lotes
-        </div>
-        <div style="font-size: 2rem; font-weight: bold;" id="totalLotes">0</div>
+    <section class="panel" aria-labelledby="leTitle">
+      <div class="panel-header">
+        <h2 id="leTitle" class="panel-title">Lotes</h2>
       </div>
-      <div
-        style="background: white; border: 1px solid #e5e7eb; padding: 1.5rem; border-radius: 0.75rem;"
-      >
-        <div style="font-size: 0.875rem; color: #666; margin-bottom: 0.5rem;">
-          Kg Totales
-        </div>
-        <div
-          style="font-size: 2rem; font-weight: bold; color: #8b6f47;"
-          id="totalKg"
-        >
-          0
-        </div>
-      </div>
-      <div
-        style="background: white; border: 1px solid #e5e7eb; padding: 1.5rem; border-radius: 0.75rem;"
-      >
-        <div style="font-size: 0.875rem; color: #666; margin-bottom: 0.5rem;">
-          Valor Total
-        </div>
-        <div
-          style="font-size: 2rem; font-weight: bold; color: #2d6a4f;"
-          id="totalValor"
-        >
-          $0
-        </div>
-      </div>
-    </div>
-
-    <!-- Tabla de Lotes -->
-    <div
-      style="background: white; border: 1px solid #e5e7eb; border-radius: 0.75rem; overflow: hidden;"
-    >
-      <div style="overflow-x: auto;">
-        <table style="width: 100%; border-collapse: collapse;">
+      <div class="table-wrapper">
+        <table class="erp-table">
           <thead>
-            <tr style="background: #f9fafb; border-bottom: 1px solid #e5e7eb;">
-              <th
-                style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;"
-                >Código</th
-              >
-              <th
-                style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;"
-                >Fecha</th
-              >
-              <th
-                style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;"
-                >Variedad</th
-              >
-              <th
-                style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;"
-                >Peso (kg)</th
-              >
-              <th
-                style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;"
-                >Precio/kg</th
-              >
-              <th
-                style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;"
-                >Total</th
-              >
-              <th
-                style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;"
-                >Estado</th
-              >
+            <tr>
+              <th>Código</th>
+              <th>Fecha</th>
+              <th>Variedad</th>
+              <th class="num">Peso (kg)</th>
+              <th class="num">Precio/kg</th>
+              <th class="num">Total</th>
+              <th>Estado</th>
             </tr>
           </thead>
           <tbody id="lotesTableBody">
-            <!-- Datos cargados dinámicamente -->
-            <tr>
-              <td
-                colspan="7"
-                style="padding: 3rem; text-align: center; color: #9ca3af;"
-              >
-                Cargando lotes...
-              </td>
-            </tr>
+            <tr><td colspan="7" class="le-msg">Cargando lotes...</td></tr>
           </tbody>
         </table>
       </div>
-    </div>
-  </section>
+    </section>
+  </div>
 </AdminLayout>
 
 <script>
@@ -193,55 +108,45 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     },
   ];
 
+  const ESTADOS = {
+    recibido: ["Recibido", "status--confirmed"],
+    almacenado: ["Almacenado", "status--pending"],
+    tostado: ["Tostado", "status--confirmed"],
+    vendido: ["Vendido", "status--paid"],
+  };
+  const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const cop = (n) => new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(n);
+
   function renderLotes(lotes) {
     const tbody = document.getElementById("lotesTableBody");
 
     if (lotes.length === 0) {
-      tbody.innerHTML =
-        '<tr><td colspan="7" style="padding: 3rem; text-align: center; color: #9ca3af;">No hay lotes para mostrar</td></tr>';
-      return;
+      tbody.innerHTML = '<tr><td colspan="7" class="le-msg">No hay lotes con estos filtros.</td></tr>';
+    } else {
+      tbody.innerHTML = lotes
+        .map((lote) => {
+          const [label, cls] = ESTADOS[lote.estado] ?? [lote.estado, ""];
+          return `
+        <tr>
+          <td class="mono">${esc(lote.codigo)}</td>
+          <td class="mono">${new Date(lote.fecha + "T12:00:00").toLocaleDateString("es-CO", { day: "numeric", month: "short", year: "numeric" })}</td>
+          <td>${esc(lote.variedad)}</td>
+          <td class="num mono">${lote.peso.toLocaleString("es-CO")}</td>
+          <td class="num mono">${cop(lote.precioKg)}</td>
+          <td class="num mono">${cop(lote.peso * lote.precioKg)}</td>
+          <td><span class="status ${cls}">${esc(label)}</span></td>
+        </tr>`;
+        })
+        .join("");
     }
 
-    tbody.innerHTML = lotes
-      .map(
-        (lote) => `
-      <tr style="border-bottom: 1px solid #f3f4f6;">
-        <td style="padding: 1rem; font-weight: 500;">${lote.codigo}</td>
-        <td style="padding: 1rem; color: #666;">${new Date(lote.fecha).toLocaleDateString("es-CO")}</td>
-        <td style="padding: 1rem;">${lote.variedad}</td>
-        <td style="padding: 1rem;">${lote.peso} kg</td>
-        <td style="padding: 1rem;">$${lote.precioKg.toLocaleString("es-CO")}</td>
-        <td style="padding: 1rem; font-weight: 600; color: #2d6a4f;">$${(lote.peso * lote.precioKg).toLocaleString("es-CO")}</td>
-        <td style="padding: 1rem;">
-          <span style="padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.875rem; font-weight: 500; ${getEstadoStyle(lote.estado)}">
-            ${lote.estado.charAt(0).toUpperCase() + lote.estado.slice(1)}
-          </span>
-        </td>
-      </tr>
-    `
-      )
-      .join("");
-
-    // Actualizar resumen
-    document.getElementById("totalLotes").textContent = lotes.length;
+    document.getElementById("totalLotes").textContent = String(lotes.length);
     document.getElementById("totalKg").textContent = lotes
       .reduce((sum, l) => sum + l.peso, 0)
       .toLocaleString("es-CO");
-    document.getElementById("totalValor").textContent =
-      "$" +
-      lotes
-        .reduce((sum, l) => sum + l.peso * l.precioKg, 0)
-        .toLocaleString("es-CO");
-  }
-
-  function getEstadoStyle(estado) {
-    const styles = {
-      recibido: "background: #dbeafe; color: #1e40af;",
-      almacenado: "background: #fef3c7; color: #92400e;",
-      tostado: "background: #fed7aa; color: #9a3412;",
-      vendido: "background: #d1fae5; color: #065f46;",
-    };
-    return styles[estado] || "background: #f3f4f6; color: #6b7280;";
+    document.getElementById("totalValor").textContent = cop(
+      lotes.reduce((sum, l) => sum + l.peso * l.precioKg, 0)
+    );
   }
 
   // Cargar datos al iniciar
@@ -256,3 +161,8 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     renderLotes(filtered);
   });
 </script>
+
+<style is:global>
+  .pg-lotes-entregados .le { display: flex; flex-direction: column; gap: 16px; }
+  .pg-lotes-entregados .le-msg { padding: 32px 16px; text-align: center; color: var(--muted); }
+</style>
