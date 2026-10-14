@@ -632,11 +632,11 @@ const searchHref = lang === "en" ? "/search" : "/buscar";
       document.documentElement.classList.add("search-open");
       btn.setAttribute("aria-expanded", "true");
       btn.classList.add("active");
-      clearBtn && (clearBtn.hidden = !input.value);
+      if (clearBtn) clearBtn.hidden = !input.value;
       if (input.value.trim().length >= MIN_CHARS) runSearch(input.value.trim());
       else showIdle();
       loadFacets().then(() => {
-        if (!panel.hidden && !results.hidden === false) renderIdle();
+        if (!panel.hidden && results.hidden) renderIdle();
       });
       input.focus();
       input.select();

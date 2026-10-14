@@ -31,6 +31,11 @@ const shipMax = Math.max(FREE_SHIPPING_COP, ...kits.map((k: any) => Number(k.pri
 const shipPct = (n: number) => (n / shipMax) * 100;
 const freeKits = kits.filter((k: any) => hasFreeShipping(k.price)).map((k: any) => k.name);
 const price = (n: number) => `$${Number(n).toLocaleString("es-CO")}`;
+// Fuera del marcado: Astro lee "<" dentro de una expresión como inicio de etiqueta
+const stockOf = (k: any) => {
+  const n = Number(k.stock);
+  return { out: n === 0, low: n > 0 && n <= 5 };
+};
 const freeKitsText =
   freeKits.length === 0 ? "" :
   freeKits.length === 1 ? `${freeKits[0]} ya incluye envío gratis.` :
@@ -76,8 +81,7 @@ const freeKitsText =
       {kits.length > 0 ? (
         <div class="gk__grid">
           {kits.map((k: any) => {
-            const out = Number(k.stock) === 0;
-            const low = Number(k.stock) > 0 && Number(k.stock) <= 5;
+            const { out, low } = stockOf(k);
             return (
               <article class="kit">
                 <a href={`/producto/${k.id}`} class="kit__media" tabindex="-1" aria-hidden="true">
