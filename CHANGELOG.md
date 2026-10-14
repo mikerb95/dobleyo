@@ -2,6 +2,27 @@
 
 ---
 
+## 2026-10-13: Gestión de Interrapidísimo en el panel y seguimiento para el cliente (Agente: Claude)
+
+### Contexto
+Con la integración directa de Inter, varias tareas del día a día solo se podían hacer en el portal de Inter o en la base de datos. Faltaban la recogida agrupada, la planilla, el detalle de cada envío y el documento del cliente. El cliente tampoco veía el estado de su envío en el sitio.
+
+### Cambios
+- **`/admin/envios`**:
+  - Indicador de conexión de Mipaquete e Interrapidísimo (usa `GET /api/shipping/health`).
+  - Selección de guías de Inter para pedir una sola recogida o generar la planilla de despacho en PDF.
+  - Guía en media carta o en formato etiqueta.
+  - Botón "Detalle" con estado, proveedor, recogida, flete cobrado, costo cotizado contra real, paquete, destinatario, motivo del error e historial de estados.
+  - El modal de guía trae prellenado el documento capturado en el checkout.
+- **`server/routes/shipping.js`**: nuevos `GET /:id/detail`, `POST /inter/pickup` (hasta 150 guías en estado `created`) y `POST /inter/manifest` (devuelve PDF; las guías rechazadas van en el header `X-Rejected-Guides`).
+- **`server/services/interrapidisimo.js`**: `generateInterManifest` y `trackingUrlForGuide`.
+- **Checkout** (`checkout.astro`): tipo y número de documento obligatorios, con la explicación de que lo pide la transportadora. `POST /api/orders` los acepta como opcionales (`customerDocumentType`, `customerDocumentNumber`) para no romper el checkout en inglés.
+- **`server/migrations/add_customer_document.js`** (nuevo): columnas `customer_orders.customer_document_type` y `customer_document_number`.
+- **`/confirmacion`**: `GET /api/orders/:ref` devuelve `shipment` (transportadora, guía, estado, enlace de rastreo de Inter e historial). La página muestra la tarjeta de seguimiento y cambia el título según el estado del envío.
+- **Tests**: `server/routes/__tests__/shipping.inter.test.js` (nuevo) y casos nuevos en `orders.test.js`.
+
+---
+
 ## 2026-10-13: Toggle de idioma igual al de codebymike.net + deploys desbloqueados (Agente: Claude)
 
 ### Contexto
