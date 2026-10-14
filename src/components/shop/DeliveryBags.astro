@@ -1,0 +1,85 @@
+---
+/**
+ * Ilustración del encabezado de /suscripcion: tres bolsas en fila, cada una con
+ * la fecha en que llegaría con la frecuencia por defecto (cada 30 días). Las
+ * fechas son reales (desde hoy); las afina el navegador con su reloj.
+ *
+ * Decorativa para lectores de pantalla: la misma información está en el
+ * calendario del paso 2. El motion (las bolsas "llegan" una tras otra) vive en
+ * src/scripts/shop/subscription.ts.
+ */
+import { orderDays, addDays } from "../../lib/subscription.ts";
+
+const days = orderDays(30, 60);
+const label = (d: number) =>
+  d === 0 ? "Hoy" : addDays(new Date(), d).toLocaleDateString("es-CO", { day: "numeric", month: "short" }).replace(".", "");
+---
+
+<div class="dbags" data-dbags aria-hidden="true">
+  {days.map((d, i) => (
+    <div class="dbag" data-day={d} style={`--i:${i}`}>
+      <svg class="dbag__svg" viewBox="0 0 120 190">
+        <path class="dbag__shape" d="M14 22 L106 22 L112 182 Q112 188 106 188 L14 188 Q8 188 8 182 Z" />
+        <path class="dbag__fold" d="M14 8 L106 8 L106 26 L14 26 Z" />
+        <path class="dbag__crimp" d="M20 12 V22 M28 12 V22 M36 12 V22 M44 12 V22 M52 12 V22 M60 12 V22 M68 12 V22 M76 12 V22 M84 12 V22 M92 12 V22 M100 12 V22" />
+        <circle class="dbag__valve" cx="60" cy="44" r="5" />
+        <rect class="dbag__label" x="22" y="62" width="76" height="70" rx="3" />
+        <text class="dbag__brand" x="60" y="84" text-anchor="middle">DOBLEYO</text>
+        <rect class="dbag__band" x="22" y="94" width="76" height="16" />
+        <text class="dbag__cafe" x="60" y="106" text-anchor="middle">Café</text>
+      </svg>
+      <span class="dbag__date" data-dbag-date>{label(d)}</span>
+    </div>
+  ))}
+</div>
+
+<script>
+  import { addDays } from "../../lib/subscription.ts";
+  // Fechas con el reloj del visitante (el servidor puede estar en otro huso)
+  function initBags() {
+    document.querySelectorAll<HTMLElement>("[data-dbags] [data-day]").forEach((bag) => {
+      const d = Number(bag.dataset.day);
+      const el = bag.querySelector("[data-dbag-date]");
+      if (el && d > 0) {
+        el.textContent = addDays(new Date(), d).toLocaleDateString("es-CO", { day: "numeric", month: "short" }).replace(".", "");
+      }
+    });
+  }
+  initBags();
+  document.addEventListener("astro:page-load", initBags);
+</script>
+
+<style>
+  .dbags {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(.75rem, 3vw, 1.75rem);
+    align-items: end;
+    max-width: 440px;
+    margin: 0 auto;
+  }
+  .dbag { display: grid; justify-items: center; gap: var(--space-3); }
+  /* La primera es la de hoy, en primer plano; las siguientes se ven más lejos */
+  .dbag:nth-child(2) { opacity: .82; transform: translateY(-6px) scale(.94); }
+  .dbag:nth-child(3) { opacity: .64; transform: translateY(-12px) scale(.88); }
+  .dbag__svg { width: 100%; height: auto; overflow: visible; filter: drop-shadow(0 18px 18px rgba(0, 0, 0, .35)); }
+  .dbag__shape { fill: var(--kraft); }
+  .dbag__fold { fill: var(--kraft-deep); }
+  .dbag__crimp { stroke: rgba(var(--espresso-rgb), .25); stroke-width: 1.2; }
+  .dbag__valve { fill: rgba(var(--espresso-rgb), .25); }
+  .dbag__label { fill: var(--cream); }
+  .dbag__brand { font-family: var(--font-body); font-size: 8px; font-weight: 700; letter-spacing: .14em; fill: var(--caramel-deep); }
+  .dbag__band { fill: var(--espresso); }
+  .dbag__cafe { font-family: var(--font-display); font-size: 10px; font-style: italic; fill: var(--mucilage); }
+  .dbag__date {
+    padding: .3rem .75rem;
+    border-radius: 999px;
+    border: 1px solid rgba(var(--cream-rgb), .25);
+    font-size: var(--text-xs);
+    font-weight: 700;
+    color: var(--cream);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .dbag:first-child .dbag__date { background: var(--mucilage); border-color: var(--mucilage); color: var(--espresso); }
+</style>

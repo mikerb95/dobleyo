@@ -1,6 +1,7 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import DarkHero from "../components/shop/DarkHero.astro";
+import DeliveryBags from "../components/shop/DeliveryBags.astro";
 import Icon from "../components/Icon.astro";
 import DeliveryCalendar from "../components/shop/DeliveryCalendar.astro";
 import { getCanonicalUrl, getHreflangPair } from "../i18n/index.ts";
@@ -50,7 +51,9 @@ const pageDescription =
       { icon: "truck", text: "Envío incluido en cada entrega" },
       { icon: "pause", text: "Pause o cancele cuando quiera" },
     ]}
-  />
+  >
+    <DeliveryBags />
+  </DarkHero>
 
   {coffees.length === 0 ? (
     <p class="sub-empty">La suscripción no está disponible por el momento. Intente más tarde.</p>
@@ -88,7 +91,7 @@ const pageDescription =
             <div class="sub-field">
               <label class="sub-label" for="subQty">Bolsas por entrega</label>
               <div class="sub-qty">
-                <button type="button" class="sub-qty__btn" data-qty="-1" aria-label="Una bolsa menos">-</button>
+                <button type="button" class="sub-qty__btn" data-qty="-1" aria-label="Una bolsa menos">−</button>
                 <input id="subQty" name="quantity" type="number" min="1" max="10" value="1" class="sub-qty__input" inputmode="numeric" />
                 <button type="button" class="sub-qty__btn" data-qty="1" aria-label="Una bolsa más">+</button>
               </div>
