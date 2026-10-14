@@ -643,6 +643,7 @@ const searchHref = lang === "en" ? "/search" : "/buscar";
     }
 
     function closePanel() {
+      console.log("CLOSEPANEL", new Error().stack);
       panel.hidden = true;
       document.documentElement.classList.remove("search-open");
       btn.setAttribute("aria-expanded", "false");
