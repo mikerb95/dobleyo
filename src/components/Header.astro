@@ -31,7 +31,7 @@ const NAV = {
 };
 const L = {
   es: { cart: "Carrito de compras", cartEmpty: "Tu carrito está vacío", profile: "Perfil",
-        apps: "Panel de apps", products: "Productos", audit: "📋 Auditoría",
+        apps: "Panel de apps", products: "Productos", audit: "Auditoría",
         logout: "Cerrar sesión", login: "Iniciar sesión", register: "Registrarse",
         account: "Mi Cuenta", menu: "Menú de usuario",
         search: "Buscar", searchOpen: "Buscar en el catálogo",
@@ -42,7 +42,7 @@ const L = {
         searchHint: "Escriba al menos dos caracteres",
         searchError: "No fue posible completar la búsqueda. Intente de nuevo." },
   en: { cart: "Shopping cart", cartEmpty: "Your cart is empty", profile: "Profile",
-        apps: "Apps panel", products: "Products", audit: "📋 Audit",
+        apps: "Apps panel", products: "Products", audit: "Audit",
         logout: "Sign out", login: "Sign in", register: "Sign up",
         account: "My Account", menu: "User menu",
         search: "Search", searchOpen: "Search the catalog",
@@ -216,6 +216,21 @@ const searchHref = lang === "en" ? "/search" : "/buscar";
         <span id="userNameMobileDisplay" style="display: none;"></span>
         <span id="userMobileLabel">{tx.account}</span>
       </a>
+      <a href="/admin" class="user-btn" id="mobileAppsLink" style="display: none;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <rect x="4" y="4" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.6"/>
+          <rect x="13" y="4" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.6"/>
+          <rect x="4" y="13" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.6"/>
+          <rect x="13" y="13" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.6"/>
+        </svg>
+        <span>{tx.apps}</span>
+      </a>
+      <button type="button" class="user-btn user-btn--logout" id="mobileLogoutBtn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M14 4h4a2 2 0 012 2v12a2 2 0 01-2 2h-4M10 16l-4-4 4-4M6 12h10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span>{tx.logout}</span>
+      </button>
     </div>
 
     <!-- Opciones no autenticado en móvil -->
@@ -558,7 +573,6 @@ const searchHref = lang === "en" ? "/search" : "/buscar";
     const appsLink = document.getElementById("appsLink");
     const productosLink = document.getElementById("productosLink");
     const auditLink = document.getElementById("auditLink");
-    const logoutBtn = document.getElementById("logoutBtn");
 
     // Elementos del dropdown y menú móvil
     const authenticatedMenu = document.getElementById("authenticatedMenu");
@@ -603,6 +617,10 @@ const searchHref = lang === "en" ? "/search" : "/buscar";
           mobileUnauthenticatedMenu.style.display = "none";
 
         // Mostrar opciones admin
+        const mobileAppsLink = document.getElementById("mobileAppsLink");
+        if (mobileAppsLink && user.role === "admin") {
+          mobileAppsLink.style.display = "flex";
+        }
         if (appsLink && user.role === "admin") {
           appsLink.style.display = "block";
         }
@@ -642,26 +660,26 @@ const searchHref = lang === "en" ? "/search" : "/buscar";
       if (mobileAuthenticatedMenu) mobileAuthenticatedMenu.style.display = "none";
       if (mobileUnauthenticatedMenu) mobileUnauthenticatedMenu.style.display = "flex";
     }
-
-    // Logout
-    if (logoutBtn) {
-      logoutBtn.addEventListener("click", async (e) => {
-        e.preventDefault();
-        try {
-          const response = await fetch("/api/auth/logout", {
-            method: "POST",
-            credentials: "include",
-          });
-
-          if (response.ok) {
-            window.location.href = "/login";
-          }
-        } catch (err) {
-          console.error("Error al cerrar sesión:", err);
-        }
-      });
-    }
   })();
+
+  // Logout (dropdown de escritorio y menú móvil). Un único listener por botón:
+  // antes había dos en #logoutBtn y cada clic llamaba dos veces a /logout.
+  async function logout(e) {
+    e.preventDefault();
+    try {
+      const response = await fetch("/api/auth/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+      if (response.ok) {
+        window.location.href = "/login";
+      }
+    } catch (err) {
+      console.error("Error al cerrar sesión:", err);
+    }
+  }
+  document.getElementById("logoutBtn")?.addEventListener("click", logout);
+  document.getElementById("mobileLogoutBtn")?.addEventListener("click", logout);
 
   // Botones de auth modal (desktop dropdown)
   document.getElementById('openLoginModal')?.addEventListener('click', () => {
@@ -678,7 +696,7 @@ const searchHref = lang === "en" ? "/search" : "/buscar";
     const mobileMenu = document.getElementById('mobileMenu');
     const menuBtn = document.getElementById('menuBtn');
     if (mobileMenu) mobileMenu.setAttribute('hidden', '');
-    if (menuBtn) { menuBtn.classList.remove('active'); }
+    if (menuBtn) { menuBtn.classList.remove('active'); menuBtn.setAttribute('aria-expanded', 'false'); }
     document.body.classList.remove('menu-open');
     window.AuthModal?.open('login');
   });
@@ -686,7 +704,7 @@ const searchHref = lang === "en" ? "/search" : "/buscar";
     const mobileMenu = document.getElementById('mobileMenu');
     const menuBtn = document.getElementById('menuBtn');
     if (mobileMenu) mobileMenu.setAttribute('hidden', '');
-    if (menuBtn) { menuBtn.classList.remove('active'); }
+    if (menuBtn) { menuBtn.classList.remove('active'); menuBtn.setAttribute('aria-expanded', 'false'); }
     document.body.classList.remove('menu-open');
     window.AuthModal?.open('register');
   });
@@ -696,7 +714,6 @@ const searchHref = lang === "en" ? "/search" : "/buscar";
     const userDropdown = document.getElementById("userDropdown");
     const userBtn = document.getElementById("userNavBtn");
     const dropdownMenu = document.getElementById("userDropdownMenu");
-    const logoutBtn = document.getElementById("logoutBtn");
 
     if (!userBtn || !userDropdown || !dropdownMenu) return;
 
@@ -733,25 +750,6 @@ const searchHref = lang === "en" ? "/search" : "/buscar";
         userBtn.setAttribute("aria-expanded", "false");
       });
     });
-
-    // Logout
-    if (logoutBtn) {
-      logoutBtn.addEventListener("click", async (e) => {
-        e.preventDefault();
-        try {
-          const response = await fetch("/api/auth/logout", {
-            method: "POST",
-            credentials: "include",
-          });
-
-          if (response.ok) {
-            window.location.href = "/login";
-          }
-        } catch (err) {
-          console.error("Error al cerrar sesión:", err);
-        }
-      });
-    }
 
     // Cerrar dropdown al hacer clic fuera
     document.addEventListener("click", (e) => {

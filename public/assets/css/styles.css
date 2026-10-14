@@ -695,6 +695,16 @@ img {
   outline-offset: -2px
 }
 
+.mobile-menu .user-btn.user-btn--logout,
+.mobile-menu .user-btn.user-btn--logout svg {
+  color: var(--danger)
+}
+
+.mobile-menu .user-btn.user-btn--logout:hover {
+  background: var(--danger-bg);
+  color: var(--danger)
+}
+
 .mobile-menu .user-btn svg {
   width: 22px;
   height: 22px;
@@ -1230,6 +1240,16 @@ img {
 
   .site-header .actions {
     gap: .25rem
+  }
+
+  /* El nombre ya aparece en el menú; aquí solo el ícono */
+  .site-header .user-name {
+    display: none !important
+  }
+
+  .site-header .actions .user-btn[data-auth="true"] {
+    width: 2.5rem;
+    padding: 0
   }
 }
 

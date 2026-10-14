@@ -54,6 +54,17 @@ const bags = coffees.filter((c) => c.origin).slice(0, 4);
 
   {bags.length > 0 && (
     <div class="shop-hero__counter">
+      <svg width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute">
+        <defs>
+          <linearGradient id="bagSheen" x1="0" x2="1" y1="0" y2="0">
+            <stop offset="0" stop-color="white" stop-opacity=".0" />
+            <stop offset=".18" stop-color="white" stop-opacity=".16" />
+            <stop offset=".32" stop-color="white" stop-opacity="0" />
+            <stop offset=".85" stop-color="black" stop-opacity="0" />
+            <stop offset="1" stop-color="black" stop-opacity=".18" />
+          </linearGradient>
+        </defs>
+      </svg>
       <ul class="bags" aria-label={k("bags_label")}>
         {bags.map((c) => (
           <li class="bags__item">
@@ -70,6 +81,8 @@ const bags = coffees.filter((c) => c.origin).slice(0, 4);
                 <path class="bag__fold" d="M14 8 L106 8 L106 26 L14 26 Z" />
                 <path class="bag__crimp" d="M18 12 V22 M24 12 V22 M30 12 V22 M36 12 V22 M42 12 V22 M48 12 V22 M54 12 V22 M60 12 V22 M66 12 V22 M72 12 V22 M78 12 V22 M84 12 V22 M90 12 V22 M96 12 V22 M102 12 V22" />
                 <circle class="bag__valve" cx="60" cy="42" r="5" />
+                <path class="bag__gusset" d="M10 172 Q60 164 110 172" />
+                <path class="bag__sheen" d="M14 22 L106 22 L112 182 Q112 188 106 188 L14 188 Q8 188 8 182 Z" />
               </svg>
               <span class="bag__label" aria-hidden="true">
                 <span class="bag__brand">DobleYo</span>
@@ -210,6 +223,8 @@ const bags = coffees.filter((c) => c.origin).slice(0, 4);
   .bag__fold { fill: currentColor; filter: brightness(.82); }
   .bag__crimp { stroke: var(--bag-shade); stroke-width: 1.2; }
   .bag__valve { fill: var(--bag-shade); }
+  .bag__sheen { fill: url(#bagSheen); }
+  .bag__gusset { stroke: var(--bag-shade); stroke-width: 1; fill: none; }
   .bag::after {
     /* sombra en el piso: se encoge cuando la bolsa se levanta */
     content: "";
@@ -228,8 +243,7 @@ const bags = coffees.filter((c) => c.origin).slice(0, 4);
     position: absolute;
     left: 12%;
     right: 12%;
-    top: 31%;
-    bottom: 9%;
+    top: 30%;
     display: flex;
     flex-direction: column;
     gap: .15em;
@@ -263,7 +277,7 @@ const bags = coffees.filter((c) => c.origin).slice(0, 4);
     text-overflow: ellipsis;
   }
   .bag__price {
-    margin-top: auto;
+    margin-top: .5em;
     font-weight: 700;
     color: var(--caramel-deep);
   }
