@@ -57,6 +57,17 @@ const webhookLimiter = rateLimit({
     keyGenerator: ipKeyGenerator,
 });
 
+// Correo de "pedido entregado" al cliente. Fire-and-forget: el tracking no debe
+// fallar por un correo. La idempotencia de Resend evita duplicados si el webhook y
+// el sondeo detectan la entrega casi al mismo tiempo.
+function notifyDelivered(shipment) {
+    if (!shipment?.customer_email) return;
+    sendOrderStatusEmail(shipment.customer_email, shipment.customer_name, {
+        reference: shipment.reference,
+        status: 'delivered',
+    }).catch((err) => logger.error({ err, reference: shipment.reference }, '[Shipping] Error enviando correo de entrega'));
+}
+
 function handleMipaqueteError(res, err, fallbackMsg) {
     if (err instanceof MipaqueteConfigError || err instanceof InterConfigError) {
         logger.error({ err }, '[Shipping] Proveedor de envíos no configurado');
@@ -1268,7 +1279,12 @@ shippingRouter.patch('/:id/status',
             const shipment = result.rows[0];
 
             if (req.body.status === 'delivered') {
-                await query(`UPDATE customer_orders SET status = 'delivered' WHERE id = ? AND status NOT IN ('cancelled','refunded')`, [shipment.order_id]);
+                const delivered = await query(
+                    `UPDATE customer_orders SET status = 'delivered' WHERE id = ? AND status NOT IN ('cancelled','refunded','delivered')
+                     RETURNING reference, customer_name, customer_email`,
+                    [shipment.order_id]
+                );
+                if (delivered.rows.length) notifyDelivered(delivered.rows[0]);
             } else if (req.body.status === 'cancelled') {
                 await query(`UPDATE customer_orders SET status = 'processing' WHERE id = ? AND status = 'shipped'`, [shipment.order_id]);
             }
