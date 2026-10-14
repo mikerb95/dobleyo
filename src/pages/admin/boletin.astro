@@ -1,0 +1,347 @@
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+---
+
+<AdminLayout title="Boletín | DobleYo Admin" section="boletin">
+  <div class="page-header">
+    <div class="page-header-top">
+      <div>
+        <div class="page-title">Boletín</div>
+        <div class="page-subtitle">Redacte, pruebe y envíe campañas a los suscriptores por Resend.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="erp-body">
+    <div class="kpi-row">
+      <div class="kpi-tile brand">
+        <div class="kpi-label">Suscriptores</div>
+        <div class="kpi-value" id="kpiSubs">-</div>
+        <div class="kpi-sub">Recibirán la campaña</div>
+      </div>
+      <div class="kpi-tile info">
+        <div class="kpi-label">Campañas enviadas</div>
+        <div class="kpi-value" id="kpiCampaigns">-</div>
+        <div class="kpi-sub">Últimas 20</div>
+      </div>
+      <div class="kpi-tile">
+        <div class="kpi-label">Correos bloqueados</div>
+        <div class="kpi-value" id="kpiSuppressed">-</div>
+        <div class="kpi-sub">Rebotes o quejas de spam</div>
+      </div>
+    </div>
+
+    <div class="alert alert--info" id="mockNotice" hidden>
+      RESEND_API_KEY no está configurada en este entorno: los envíos se simulan y solo quedan en el log.
+    </div>
+
+    <div class="newsletter-grid">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Nueva campaña</div>
+            <div class="card-subtitle">El contenido es texto: separe los párrafos con una línea en blanco.</div>
+          </div>
+        </div>
+        <form id="campaignForm" class="newsletter-form" novalidate>
+          <div class="form-group">
+            <label for="fSubject">Asunto</label>
+            <input type="text" id="fSubject" name="subject" maxlength="150" required placeholder="Llegó la cosecha de mitaca" />
+          </div>
+          <div class="form-group">
+            <label for="fPreheader">Texto de vista previa</label>
+            <input type="text" id="fPreheader" name="preheader" maxlength="200" placeholder="Lo que se ve junto al asunto en la bandeja" />
+            <span class="form-hint">Opcional. Gmail y Outlook lo muestran después del asunto.</span>
+          </div>
+          <div class="form-group">
+            <label for="fHeading">Título del correo</label>
+            <input type="text" id="fHeading" name="heading" maxlength="150" required />
+          </div>
+          <div class="form-group">
+            <label for="fBody">Contenido</label>
+            <textarea id="fBody" name="body" rows="10" required></textarea>
+          </div>
+          <div class="newsletter-form__row">
+            <div class="form-group">
+              <label for="fCtaLabel">Texto del botón</label>
+              <input type="text" id="fCtaLabel" name="ctaLabel" maxlength="60" placeholder="Ver los cafés" />
+            </div>
+            <div class="form-group">
+              <label for="fCtaUrl">Enlace del botón</label>
+              <input type="url" id="fCtaUrl" name="ctaUrl" placeholder="https://dobleyo.cafe/tienda" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="fTest">Correo de prueba</label>
+            <input type="email" id="fTest" name="testEmail" placeholder="usted@dobleyo.cafe" />
+          </div>
+
+          <div class="alert" id="formStatus" role="status" aria-live="polite" hidden></div>
+
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" id="btnPreview">Vista previa</button>
+            <button type="button" class="btn btn-secondary" id="btnTest">Enviar prueba</button>
+            <button type="button" class="btn btn-primary" id="btnSend">Enviar a todos</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="card newsletter-preview">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Vista previa</div>
+            <div class="card-subtitle">Así llega a la bandeja de entrada.</div>
+          </div>
+        </div>
+        <iframe id="previewFrame" title="Vista previa del correo" sandbox=""></iframe>
+        <div class="empty-state" id="previewEmpty">Complete el formulario y pulse "Vista previa".</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Historial</div>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="erp-table">
+          <thead>
+            <tr>
+              <th>Asunto</th>
+              <th>Estado</th>
+              <th style="text-align:right">Destinatarios</th>
+              <th style="text-align:right">Enviados</th>
+              <th style="text-align:right">Fallidos</th>
+              <th>Fecha</th>
+            </tr>
+          </thead>
+          <tbody id="historyBody">
+            <tr><td colspan="6"><div class="empty-state">Cargando...</div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Correos bloqueados</div>
+          <div class="card-subtitle">Resend los reporta por webhook. A estas direcciones no se les envía nada para proteger la reputación del dominio.</div>
+        </div>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="erp-table">
+          <thead>
+            <tr><th>Correo</th><th>Motivo</th><th>Detalle</th><th>Fecha</th><th></th></tr>
+          </thead>
+          <tbody id="suppressionsBody">
+            <tr><td colspan="5"><div class="empty-state">Cargando...</div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</AdminLayout>
+
+<style>
+  .newsletter-grid {
+    display: grid;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .newsletter-form { padding: 16px; }
+  .newsletter-form__row { display: grid; gap: 0 12px; }
+  .newsletter-form .form-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+  .newsletter-preview { display: flex; flex-direction: column; }
+  .newsletter-preview iframe {
+    display: none;
+    width: 100%;
+    min-height: 640px;
+    flex: 1;
+    border: 0;
+    border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  }
+  .newsletter-preview.has-preview iframe { display: block; }
+  .newsletter-preview.has-preview .empty-state { display: none; }
+
+  @media (min-width: 768px) {
+    .newsletter-form__row { grid-template-columns: 1fr 1fr; }
+  }
+  @media (min-width: 1024px) {
+    .newsletter-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: stretch; }
+  }
+</style>
+
+<script>
+  const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
+  const form = $<HTMLFormElement>("campaignForm");
+  const status = $<HTMLDivElement>("formStatus");
+  const preview = document.querySelector(".newsletter-preview") as HTMLElement;
+  const frame = $<HTMLIFrameElement>("previewFrame");
+  let subscriberCount = 0;
+
+  const STATUS_LABEL: Record<string, [string, string]> = {
+    sent: ["Enviada", "badge-success"],
+    partial: ["Parcial", "badge-warning"],
+    failed: ["Fallida", "badge-error"],
+    sending: ["Enviando", "badge-info"],
+  };
+  const REASON_LABEL: Record<string, string> = { bounced: "Rebote", complained: "Queja de spam", manual: "Manual" };
+
+  const escapeHtml = (v: unknown) =>
+    String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
+  const fmtDate = (v: string | null) =>
+    v ? new Date(v.replace(" ", "T") + "Z").toLocaleString("es-CO", { dateStyle: "medium", timeStyle: "short" }) : "-";
+
+  function showStatus(message: string, tone: "success" | "error" | "info") {
+    status.textContent = message;
+    status.className = `alert alert--${tone}`;
+    status.hidden = false;
+  }
+
+  function payload(withTest = false) {
+    const data = Object.fromEntries(new FormData(form)) as Record<string, string>;
+    if (!withTest) delete data.testEmail;
+    return data;
+  }
+
+  async function post(url: string, body: object) {
+    const res = await fetch(url, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.success) {
+      throw new Error(data.errors?.[0]?.msg || data.error || "Error al procesar la solicitud");
+    }
+    return data.data;
+  }
+
+  async function withButton(btn: HTMLButtonElement, label: string, fn: () => Promise<void>) {
+    const original = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = label;
+    try {
+      await fn();
+    } catch (err) {
+      showStatus((err as Error).message, "error");
+    } finally {
+      btn.disabled = false;
+      btn.textContent = original;
+    }
+  }
+
+  async function renderPreview() {
+    const { html } = await post("/api/emails/newsletter/preview", payload());
+    frame.srcdoc = html;
+    preview.classList.add("has-preview");
+  }
+
+  $<HTMLButtonElement>("btnPreview").addEventListener("click", (e) =>
+    withButton(e.currentTarget as HTMLButtonElement, "Generando...", async () => {
+      status.hidden = true;
+      await renderPreview();
+    })
+  );
+
+  $<HTMLButtonElement>("btnTest").addEventListener("click", (e) =>
+    withButton(e.currentTarget as HTMLButtonElement, "Enviando...", async () => {
+      const data = payload(true);
+      if (!data.testEmail) throw new Error("Escriba el correo de prueba.");
+      await renderPreview();
+      const r = await post("/api/emails/newsletter/campaign", data);
+      showStatus(r.mock ? `Prueba simulada (sin Resend) para ${data.testEmail}.` : `Prueba enviada a ${data.testEmail}.`, "success");
+    })
+  );
+
+  $<HTMLButtonElement>("btnSend").addEventListener("click", (e) =>
+    withButton(e.currentTarget as HTMLButtonElement, "Enviando...", async () => {
+      await renderPreview();
+      const ok = window.confirm(
+        `Se enviará "${payload().subject}" a ${subscriberCount} suscriptor(es). Esta acción no se puede deshacer. ¿Continuar?`
+      );
+      if (!ok) return;
+      const r = await post("/api/emails/newsletter/campaign", payload());
+      const tone = r.failed ? "error" : "success";
+      showStatus(
+        `Campaña ${STATUS_LABEL[r.status]?.[0].toLowerCase() ?? r.status}: ${r.sent} enviados, ${r.failed} fallidos, ${r.skipped} omitidos por bloqueo.`,
+        tone
+      );
+      form.reset();
+      loadStats();
+    })
+  );
+
+  async function loadStats() {
+    try {
+      const res = await fetch("/api/emails/newsletter/stats", { credentials: "include" });
+      const { data } = await res.json();
+      subscriberCount = data.subscribers;
+      $("kpiSubs").textContent = data.subscribers.toLocaleString("es-CO");
+      $("kpiCampaigns").textContent = data.campaigns.length;
+      $("kpiSuppressed").textContent = data.suppressed.toLocaleString("es-CO");
+      $("mockNotice").hidden = data.resendConfigured;
+
+      const body = $("historyBody");
+      body.innerHTML = data.campaigns.length
+        ? data.campaigns
+            .map((c: any) => {
+              const [label, badge] = STATUS_LABEL[c.status] ?? [c.status, "badge-neutral"];
+              return `<tr>
+                <td>${escapeHtml(c.subject)}</td>
+                <td><span class="badge ${badge}">${label}</span></td>
+                <td style="text-align:right">${c.recipients}</td>
+                <td style="text-align:right">${c.sent_count}</td>
+                <td style="text-align:right">${c.failed_count}</td>
+                <td>${fmtDate(c.sent_at || c.created_at)}</td>
+              </tr>`;
+            })
+            .join("")
+        : `<tr><td colspan="6"><div class="empty-state">Aún no se ha enviado ninguna campaña.</div></td></tr>`;
+    } catch {
+      $("historyBody").innerHTML = `<tr><td colspan="6"><div class="empty-state">No se pudo cargar el historial.</div></td></tr>`;
+    }
+  }
+
+  async function loadSuppressions() {
+    const body = $("suppressionsBody");
+    try {
+      const res = await fetch("/api/emails/suppressions", { credentials: "include" });
+      const { data } = await res.json();
+      body.innerHTML = data.length
+        ? data
+            .map(
+              (s: any) => `<tr>
+                <td>${escapeHtml(s.email)}</td>
+                <td>${REASON_LABEL[s.reason] ?? escapeHtml(s.reason)}</td>
+                <td>${escapeHtml(s.detail || "-")}</td>
+                <td>${fmtDate(s.updated_at)}</td>
+                <td style="text-align:right"><button class="btn btn-sm btn-secondary" data-unblock="${escapeHtml(s.email)}">Desbloquear</button></td>
+              </tr>`
+            )
+            .join("")
+        : `<tr><td colspan="5"><div class="empty-state">Ningún correo bloqueado.</div></td></tr>`;
+    } catch {
+      body.innerHTML = `<tr><td colspan="5"><div class="empty-state">No se pudo cargar la lista.</div></td></tr>`;
+    }
+  }
+
+  $("suppressionsBody").addEventListener("click", async (e) => {
+    const btn = (e.target as HTMLElement).closest<HTMLButtonElement>("[data-unblock]");
+    if (!btn) return;
+    const email = btn.dataset.unblock!;
+    if (!window.confirm(`¿Volver a permitir envíos a ${email}? Hágalo solo si el destinatario corrigió su buzón.`)) return;
+    btn.disabled = true;
+    const res = await fetch(`/api/emails/suppressions/${encodeURIComponent(email)}`, { method: "DELETE", credentials: "include" });
+    if (res.ok) {
+      loadSuppressions();
+      loadStats();
+    } else {
+      btn.disabled = false;
+    }
+  });
+
+  loadStats();
+  loadSuppressions();
+</script>

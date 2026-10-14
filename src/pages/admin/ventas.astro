@@ -2,394 +2,305 @@
 import AdminLayout from "../../layouts/AdminLayout.astro";
 ---
 
-<AdminLayout title="Ventas — DobleYo ERP" section="ventas">
+<AdminLayout title="Ventas · DobleYo ERP" section="ventas">
 
-<!-- ── Page Header ───────────────────────────────────────────── -->
 <div class="page-header">
   <div class="page-header-top">
     <div>
-      <div class="page-breadcrumb"><a href="/admin">Admin</a> / Ventas</div>
-      <h1 class="page-title">Panel de Ventas</h1>
+      <div class="page-breadcrumb"><a href="/admin">Resumen</a> / Ventas</div>
+      <h1 class="page-title">Ventas</h1>
+      <div class="page-meta" id="periodMeta">Cargando periodo…</div>
     </div>
     <div class="page-header-actions">
-      <a href="/admin/sales-map" class="btn btn-secondary">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
-        Mapa de calor
+      <a href="/admin/sales-map" class="btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M1 6l7-3 8 3 7-3v15l-7 3-8-3-7 3zM8 3v15M16 6v15"/></svg>
+        Mapa de ventas
       </a>
-      <a href="/admin/mercadolibre" class="btn btn-secondary">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+      <a href="/admin/mercadolibre" class="btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M23 4v6h-6M1 20v-6h6M3.5 9a9 9 0 0 1 14.9-3.4L23 10M1 14l4.6 4.4A9 9 0 0 0 20.5 15"/></svg>
         Sincronizar ML
       </a>
-      <button class="btn btn-primary" id="btnExport">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      <button type="button" class="btn btn-primary" id="btnExport">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
         Exportar CSV
       </button>
     </div>
   </div>
 </div>
 
-<div class="erp-body">
+<div class="erp-body sales">
 
-  <!-- ── Filter bar ─────────────────────────────────────────── -->
-  <div class="filter-bar" id="filterBar">
-    <div class="filter-presets">
-      <button class="preset-btn" data-preset="today">Hoy</button>
-      <button class="preset-btn" data-preset="7d">7 días</button>
-      <button class="preset-btn active" data-preset="30d">30 días</button>
-      <button class="preset-btn" data-preset="90d">90 días</button>
-      <button class="preset-btn" data-preset="12m">12 meses</button>
-      <button class="preset-btn" data-preset="all">Todo</button>
-      <button class="preset-btn" data-preset="custom">Personalizado</button>
+  <!-- Filtros -->
+  <div class="sales-filters" id="filterBar">
+    <div class="seg" role="group" aria-label="Periodo" id="presetGroup">
+      <button type="button" class="preset-btn" data-preset="today">Hoy</button>
+      <button type="button" class="preset-btn" data-preset="7d">7 d</button>
+      <button type="button" class="preset-btn active" data-preset="30d">30 d</button>
+      <button type="button" class="preset-btn" data-preset="90d">90 d</button>
+      <button type="button" class="preset-btn" data-preset="12m">12 m</button>
+      <button type="button" class="preset-btn" data-preset="all">Todo</button>
+      <button type="button" class="preset-btn" data-preset="custom">Rango</button>
     </div>
-    <div class="filter-controls">
-      <div class="custom-range" id="customRange" style="display:none">
-        <input type="date" id="filterFrom" class="ml-input" title="Desde">
-        <span style="color:var(--muted);font-size:12px">→</span>
-        <input type="date" id="filterTo" class="ml-input" title="Hasta">
-      </div>
-      <select id="filterCity" class="ml-input" style="min-width:130px">
-        <option value="">Todas las ciudades</option>
-      </select>
-      <select id="filterState" class="ml-input" style="min-width:130px">
-        <option value="">Todos los dptos.</option>
-      </select>
-      <select id="filterStatus" class="ml-input">
-        <option value="">Todos los estados</option>
+    <div class="sales-range" id="customRange" hidden>
+      <label><span class="sr-only">Desde</span><input type="date" id="filterFrom" class="sales-input"></label>
+      <span class="sales-muted" aria-hidden="true">a</span>
+      <label><span class="sr-only">Hasta</span><input type="date" id="filterTo" class="sales-input"></label>
+    </div>
+    <span class="sales-sep" aria-hidden="true"></span>
+    <label class="sales-field">
+      <span>Ciudad</span>
+      <select id="filterCity" class="sales-input"><option value="">Todas</option></select>
+    </label>
+    <label class="sales-field">
+      <span>Departamento</span>
+      <select id="filterState" class="sales-input"><option value="">Todos</option></select>
+    </label>
+    <label class="sales-field">
+      <span>Estado</span>
+      <select id="filterStatus" class="sales-input">
+        <option value="">Todos</option>
         <option value="paid">Pagado</option>
         <option value="confirmed">Confirmado</option>
         <option value="pending">Pendiente</option>
         <option value="payment_required">Pago requerido</option>
         <option value="cancelled">Cancelado</option>
       </select>
-      <div class="filter-granularity">
-        <span class="filter-label">Granularidad</span>
-        <div class="toggle-group" id="granularityToggle">
-          <button class="toggle-btn active" data-g="day">Día</button>
-          <button class="toggle-btn" data-g="week">Semana</button>
-          <button class="toggle-btn" data-g="month">Mes</button>
-        </div>
-      </div>
-    </div>
+    </label>
   </div>
 
-  <!-- ── Período activo ─────────────────────────────────────── -->
-  <div class="period-badge" id="periodBadge">
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-    <span id="periodLabel">Cargando…</span>
-    <span class="period-vs" id="periodVs"></span>
-  </div>
-
-  <!-- ── KPI Row ─────────────────────────────────────────────── -->
-  <div class="kpi-grid kpi-6" id="kpiGrid">
-    <div class="kpi-tile brand">
-      <div class="kpi-label">Ingresos totales</div>
-      <div class="kpi-value" id="kpiRevenue"><span class="skeleton" style="width:90px"></span></div>
-      <div class="kpi-footer"><span class="kpi-delta" id="deltaRevenue"></span><span class="kpi-sub">vs período anterior</span></div>
-    </div>
-    <div class="kpi-tile success">
-      <div class="kpi-label">Órdenes</div>
-      <div class="kpi-value" id="kpiOrders"><span class="skeleton" style="width:50px"></span></div>
-      <div class="kpi-footer"><span class="kpi-delta" id="deltaOrders"></span><span class="kpi-sub">vs período anterior</span></div>
-    </div>
-    <div class="kpi-tile info">
-      <div class="kpi-label">Valor promedio (AOV)</div>
-      <div class="kpi-value" id="kpiAov"><span class="skeleton" style="width:80px"></span></div>
-      <div class="kpi-footer"><span class="kpi-delta" id="deltaAov"></span><span class="kpi-sub">por orden</span></div>
-    </div>
-    <div class="kpi-tile warning">
-      <div class="kpi-label">Ticket máximo</div>
-      <div class="kpi-value" id="kpiMax"><span class="skeleton" style="width:80px"></span></div>
-      <div class="kpi-footer"><span class="kpi-sub" id="kpiMaxSub">—</span></div>
+  <!-- Indicadores -->
+  <section class="kpi-grid" aria-label="Indicadores del periodo">
+    <div class="kpi-tile">
+      <div class="kpi-label">Ingresos</div>
+      <div class="kpi-value" id="kpiRevenue"><span class="skeleton" style="width:60%"></span></div>
+      <div class="kpi-sub"><span id="deltaRevenue"></span> <span id="prevRevenue"></span></div>
     </div>
     <div class="kpi-tile">
-      <div class="kpi-label">Ciudades alcanzadas</div>
-      <div class="kpi-value" id="kpiCities"><span class="skeleton" style="width:40px"></span></div>
-      <div class="kpi-footer"><span class="kpi-sub" id="kpiCitiesSub">—</span></div>
+      <div class="kpi-label">Órdenes</div>
+      <div class="kpi-value" id="kpiOrders"><span class="skeleton" style="width:40%"></span></div>
+      <div class="kpi-sub"><span id="deltaOrders"></span> <span id="prevOrders"></span></div>
     </div>
-    <div class="kpi-tile danger">
-      <div class="kpi-label">Canceladas</div>
-      <div class="kpi-value" id="kpiCancelled"><span class="skeleton" style="width:40px"></span></div>
-      <div class="kpi-footer"><span class="kpi-delta" id="deltaCancelled"></span><span class="kpi-sub">del total</span></div>
+    <div class="kpi-tile">
+      <div class="kpi-label">Ticket promedio</div>
+      <div class="kpi-value" id="kpiAov"><span class="skeleton" style="width:50%"></span></div>
+      <div class="kpi-sub"><span id="deltaAov"></span> por orden</div>
     </div>
+    <div class="kpi-tile">
+      <div class="kpi-label">Tasa de cancelación</div>
+      <div class="kpi-value" id="kpiCancelRate"><span class="skeleton" style="width:40%"></span></div>
+      <div class="kpi-sub"><span id="deltaCancel"></span> <span id="kpiCancelled"></span></div>
+    </div>
+  </section>
+
+  <!-- Gráfica + estados -->
+  <div class="sales-cols-21">
+    <section class="panel" aria-labelledby="tTimeline">
+      <div class="panel-header">
+        <div>
+          <h2 class="panel-title" id="tTimeline">Evolución del periodo</h2>
+          <div class="sales-legend">
+            <span><i class="sales-sw sales-sw--cur" aria-hidden="true"></i>Periodo actual</span>
+            <span id="legendPrev"><i class="sales-sw sales-sw--prev" aria-hidden="true"></i>Periodo anterior</span>
+          </div>
+        </div>
+        <div class="sales-toolbar">
+          <div class="seg" role="group" aria-label="Métrica" id="metricToggle">
+            <button type="button" class="toggle-btn active" data-metric="revenue">Ingresos</button>
+            <button type="button" class="toggle-btn" data-metric="orders">Órdenes</button>
+          </div>
+          <div class="seg" role="group" aria-label="Agrupar por" id="granularityToggle">
+            <button type="button" class="toggle-btn active" data-g="day">Día</button>
+            <button type="button" class="toggle-btn" data-g="week">Semana</button>
+            <button type="button" class="toggle-btn" data-g="month">Mes</button>
+          </div>
+        </div>
+      </div>
+      <div class="sales-chart" id="chartTimeline"><span class="skeleton" style="width:100%;height:220px"></span></div>
+    </section>
+
+    <section class="panel" aria-labelledby="tStatus">
+      <div class="panel-header">
+        <h2 class="panel-title" id="tStatus">Estado de las órdenes</h2>
+        <span class="mono card-subtitle" id="statusSubtitle"></span>
+      </div>
+      <div id="chartStatus"><div class="sales-pad"><span class="skeleton" style="width:100%"></span></div></div>
+    </section>
   </div>
 
-  <!-- ── Fila principal: Timeline + Status ──────────────────── -->
-  <div class="charts-row-main">
-    <!-- Timeline -->
-    <div class="card chart-card chart-wide">
-      <div class="card-header">
-        <div>
-          <div class="card-title">Evolución de ingresos</div>
-          <div class="card-subtitle" id="timelineSubtitle">—</div>
-        </div>
-        <div class="chart-metric-toggle" id="metricToggle">
-          <button class="toggle-btn active" data-metric="revenue">Ingresos</button>
-          <button class="toggle-btn" data-metric="orders">Órdenes</button>
-        </div>
+  <!-- Rankings -->
+  <div class="sales-cols-11">
+    <section class="panel" aria-labelledby="tProducts">
+      <div class="panel-header">
+        <h2 class="panel-title" id="tProducts">Productos</h2>
+        <span class="card-subtitle">por ingresos</span>
       </div>
-      <div class="chart-area" id="chartTimeline">
-        <div class="chart-skeleton"></div>
+      <div class="table-wrapper" id="chartProducts"><div class="sales-pad"><span class="skeleton" style="width:80%"></span></div></div>
+    </section>
+    <section class="panel" aria-labelledby="tCities">
+      <div class="panel-header">
+        <h2 class="panel-title" id="tCities">Ciudades</h2>
+        <span class="card-subtitle" id="citiesSubtitle">por órdenes</span>
       </div>
-    </div>
-    <!-- Donut de estados -->
-    <div class="card chart-card chart-narrow">
-      <div class="card-header">
-        <div class="card-title">Estado de órdenes</div>
-        <div class="card-subtitle" id="statusSubtitle">—</div>
-      </div>
-      <div class="chart-area donut-area" id="chartStatus">
-        <div class="chart-skeleton"></div>
-      </div>
-    </div>
+      <div class="table-wrapper" id="chartCities"><div class="sales-pad"><span class="skeleton" style="width:80%"></span></div></div>
+    </section>
   </div>
 
-  <!-- ── Fila secundaria: Top Productos + Top Ciudades ─────── -->
-  <div class="charts-row-secondary">
-    <div class="card chart-card">
-      <div class="card-header">
-        <div>
-          <div class="card-title">Top productos</div>
-          <div class="card-subtitle">Por ingresos generados</div>
-        </div>
-        <div class="chart-metric-toggle" id="prodMetricToggle">
-          <button class="toggle-btn active" data-pmetric="revenue">Ingresos</button>
-          <button class="toggle-btn" data-pmetric="units">Unidades</button>
-        </div>
+  <!-- Órdenes -->
+  <section class="panel" aria-labelledby="tOrders">
+    <div class="panel-header">
+      <div class="sales-title-row">
+        <h2 class="panel-title" id="tOrders">Órdenes</h2>
+        <span class="count" id="tableSubtitle">·</span>
       </div>
-      <div class="chart-area bars-area" id="chartProducts">
-        <div class="chart-skeleton"></div>
-      </div>
+      <label class="sales-search">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 21l-4.3-4.3M19 11a8 8 0 1 1-16 0 8 8 0 0 1 16 0z"/></svg>
+        <span class="sr-only">Buscar órdenes</span>
+        <input type="search" id="tableSearch" placeholder="Orden, ciudad o producto" autocomplete="off">
+      </label>
     </div>
-    <div class="card chart-card">
-      <div class="card-header">
-        <div>
-          <div class="card-title">Top ciudades</div>
-          <div class="card-subtitle">Por volumen de órdenes</div>
-        </div>
-        <div class="chart-metric-toggle" id="cityMetricToggle">
-          <button class="toggle-btn active" data-cmetric="orders">Órdenes</button>
-          <button class="toggle-btn" data-cmetric="revenue">Ingresos</button>
-        </div>
-      </div>
-      <div class="chart-area bars-area" id="chartCities">
-        <div class="chart-skeleton"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── Tabla de órdenes ───────────────────────────────────── -->
-  <div class="card" style="margin-top:1.5rem">
-    <div class="card-header">
-      <div>
-        <div class="card-title">Detalle de órdenes</div>
-        <div class="card-subtitle" id="tableSubtitle">Cargando…</div>
-      </div>
-      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-        <div class="search-box">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input type="text" id="tableSearch" class="ml-input" placeholder="Buscar por ID, ciudad…" style="width:200px;padding-left:28px">
-        </div>
-      </div>
-    </div>
-    <div style="overflow-x:auto">
-      <table class="erp-table sortable-table">
+    <div class="table-wrapper">
+      <table class="erp-table sales-orders">
         <thead>
           <tr>
-            <th class="sort-col" data-col="ml_order_id">ID Orden <span class="sort-icon">↕</span></th>
-            <th class="sort-col" data-col="purchase_date">Fecha <span class="sort-icon">↕</span></th>
+            <th><button type="button" class="sort-col" data-col="ml_order_id">Orden</button></th>
+            <th><button type="button" class="sort-col" data-col="purchase_date">Fecha</button></th>
             <th>Productos</th>
-            <th class="sort-col" data-col="recipient_city">Ciudad <span class="sort-icon">↕</span></th>
+            <th><button type="button" class="sort-col" data-col="recipient_city">Ciudad</button></th>
             <th>Departamento</th>
-            <th class="sort-col" data-col="total_amount">Total <span class="sort-icon">↕</span></th>
-            <th class="sort-col" data-col="order_status">Estado <span class="sort-icon">↕</span></th>
-            <th>Método envío</th>
+            <th><button type="button" class="sort-col" data-col="order_status">Estado</button></th>
+            <th>Envío</th>
+            <th class="num"><button type="button" class="sort-col" data-col="total_amount">Total</button></th>
           </tr>
         </thead>
         <tbody id="ordersBody">
           <tr><td colspan="8" class="empty-state">Cargando órdenes…</td></tr>
         </tbody>
+        <tfoot id="ordersFoot" hidden>
+          <tr>
+            <td colspan="7">Subtotal de la página <span class="sales-muted">(sin canceladas)</span></td>
+            <td class="num mono" id="ordersSubtotal"></td>
+          </tr>
+        </tfoot>
       </table>
     </div>
-    <div class="pagination-bar" id="paginationBar"></div>
-  </div>
+    <div class="sales-pager" id="paginationBar"></div>
+  </section>
 
-</div><!-- /erp-body -->
+</div>
 
-<!-- Tooltip flotante para gráficas -->
-<div id="chartTooltip" class="chart-tooltip-global"></div>
+<div id="chartTooltip" class="sales-tooltip" role="status"></div>
 
-<style>
-/* ── Filter bar ──────────────────────────────────────────────── */
-.filter-bar {
+<style is:global>
+/* Estilos globales pero acotados a .sales: el contenido de gráficas y tablas
+   se arma en el navegador y los estilos scoped de Astro no le llegarían. */
+.sales { display: flex; flex-direction: column; gap: 16px; }
+.sales .sr-only {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap;
+}
+.sales-muted { color: var(--muted); }
+.sales-pad { padding: 16px; }
+
+.sales-filters {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px;
+  padding: 10px 12px;
   background: var(--paper);
   border: 1px solid var(--rule);
-  border-radius: 10px;
-  padding: 12px 16px;
-  margin-bottom: 1rem;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  align-items: center;
-  position: sticky;
-  top: calc(var(--shell-h, 56px) + 8px);
-  z-index: 10;
-  box-shadow: 0 2px 8px rgba(0,0,0,.06);
+  border-radius: var(--radius);
 }
-.filter-presets { display: flex; gap: 4px; flex-wrap: wrap; }
-.preset-btn {
-  padding: 5px 11px;
-  border: 1px solid var(--rule-2);
-  border-radius: 6px;
-  background: transparent;
-  font-size: 12px;
-  color: var(--color-text);
-  cursor: pointer;
-  transition: all .15s;
-  white-space: nowrap;
-}
-.preset-btn:hover { background: var(--hover); border-color: var(--color-accent); }
-.preset-btn.active { background: var(--color-accent); border-color: var(--color-accent); color: #fff; font-weight: 600; }
-.filter-controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-left: auto; }
-.custom-range { display: flex; gap: 6px; align-items: center; }
-.filter-granularity { display: flex; align-items: center; gap: 8px; border-left: 1px solid var(--rule); padding-left: 12px; }
-.filter-label { font-size: 11px; color: var(--muted); white-space: nowrap; }
-.toggle-group { display: flex; border: 1px solid var(--rule-2); border-radius: 6px; overflow: hidden; }
-.toggle-btn {
-  padding: 4px 10px;
-  font-size: 11px;
-  border: none;
-  background: transparent;
-  color: var(--muted);
-  cursor: pointer;
-  transition: all .15s;
-  border-right: 1px solid var(--rule-2);
-}
-.toggle-btn:last-child { border-right: none; }
-.toggle-btn.active { background: var(--color-accent); color: #fff; font-weight: 600; }
-.toggle-btn:not(.active):hover { background: var(--hover); color: var(--color-text); }
-
-/* ── Period badge ────────────────────────────────────────────── */
-.period-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  color: var(--muted);
-  margin-bottom: 1rem;
-  padding: 5px 10px;
-  background: var(--paper);
-  border: 1px solid var(--rule);
-  border-radius: 6px;
-}
-.period-vs { color: var(--color-accent); font-size: 11px; }
-
-/* ── KPI grid 6 tiles ────────────────────────────────────────── */
-.kpi-6 { grid-template-columns: repeat(6, 1fr); }
-.kpi-tile.danger { border-top-color: var(--danger); }
-.kpi-footer { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
-.kpi-delta { display: inline-flex; align-items: center; gap: 2px; font-size: 11px; font-weight: 600; padding: 1px 5px; border-radius: 4px; }
-.kpi-delta.up   { color: var(--ok);     background: color-mix(in oklab, var(--ok) 12%, transparent); }
-.kpi-delta.down { color: var(--danger); background: color-mix(in oklab, var(--danger) 12%, transparent); }
-.kpi-delta.neu  { color: var(--muted);  background: var(--hover); }
-
-/* ── Chart layout ────────────────────────────────────────────── */
-.charts-row-main {
-  display: grid;
-  grid-template-columns: 1fr 360px;
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-.charts-row-secondary {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-.chart-card { display: flex; flex-direction: column; }
-.chart-area { flex: 1; min-height: 200px; position: relative; padding: 8px 0; }
-.donut-area { display: flex; align-items: center; justify-content: center; padding: 16px; }
-.bars-area { padding: 8px 16px; }
-.chart-skeleton {
-  height: 180px;
-  background: linear-gradient(90deg, var(--rule) 25%, var(--hover) 50%, var(--rule) 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.4s infinite;
-  border-radius: 6px;
-}
-@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
-.chart-metric-toggle { display: flex; border: 1px solid var(--rule-2); border-radius: 6px; overflow: hidden; }
-
-/* ── Bar chart rows ──────────────────────────────────────────── */
-.bar-row { display: grid; grid-template-columns: 200px 1fr 110px; align-items: center; gap: 8px; padding: 5px 0; border-bottom: 1px solid var(--rule); }
-.bar-row:last-child { border-bottom: none; }
-.bar-label { font-size: 12px; color: var(--color-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.bar-rank { color: var(--muted); font-size: 11px; margin-right: 4px; }
-.bar-track { height: 8px; background: var(--rule); border-radius: 4px; overflow: hidden; }
-.bar-fill { height: 100%; border-radius: 4px; transition: width .4s cubic-bezier(.25,.46,.45,.94); }
-.bar-value { font-size: 12px; font-weight: 600; color: var(--color-text); text-align: right; }
-.bar-sub { font-size: 10px; color: var(--muted); text-align: right; }
-
-/* ── Chart tooltip global ────────────────────────────────────── */
-.chart-tooltip-global {
-  position: fixed;
-  z-index: 1000;
-  background: var(--color-primary);
-  color: #fff;
-  padding: 7px 11px;
-  border-radius: 7px;
-  font-size: 12px;
-  line-height: 1.5;
-  pointer-events: none;
-  display: none;
-  white-space: nowrap;
-  box-shadow: 0 4px 12px rgba(0,0,0,.2);
+.sales-sep { width: 1px; height: 22px; background: var(--rule); }
+.sales-range { display: inline-flex; align-items: center; gap: 6px; }
+.sales-range[hidden] { display: none; }
+.sales-field { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+.sales-input {
+  height: 32px; padding: 0 8px; max-width: 180px;
+  border: 1px solid var(--rule-2); border-radius: var(--radius-sm);
+  background: var(--paper); color: var(--color-text);
+  font: inherit; font-size: 13px;
 }
 
-/* ── Table enhancements ──────────────────────────────────────── */
-.search-box { position: relative; }
-.search-box svg { position: absolute; left: 8px; top: 50%; transform: translateY(-50%); color: var(--muted); }
-.sort-col { cursor: pointer; user-select: none; }
-.sort-col:hover { color: var(--color-accent); }
-.sort-col.asc .sort-icon::after   { content: ' ↑'; }
-.sort-col.desc .sort-icon::after  { content: ' ↓'; }
-.sort-icon { font-size: 10px; color: var(--muted); }
-.sortable-table th { white-space: nowrap; }
-.status-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 2px 8px;
-  border-radius: 20px;
-  font-size: 11px;
-  font-weight: 500;
+.sales-cols-21, .sales-cols-11 {
+  display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; align-items: start;
 }
-.badge-paid, .badge-confirmed { background: color-mix(in oklab, var(--ok) 15%, transparent); color: var(--ok); }
-.badge-pending, .badge-payment_required { background: color-mix(in oklab, var(--warn) 15%, transparent); color: var(--warn); }
-.badge-cancelled { background: color-mix(in oklab, var(--danger) 12%, transparent); color: var(--danger); }
-.badge-default { background: var(--hover); color: var(--muted); }
-.chart-empty { color: var(--muted); font-size: 13px; text-align: center; padding: 40px 0; }
+@media (min-width: 1024px) {
+  .sales-cols-21 { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
+  .sales-cols-11 { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+}
+.sales-title-row { display: flex; align-items: center; gap: 10px; }
+.sales-toolbar { display: flex; flex-wrap: wrap; gap: 8px; }
 
-/* ── Responsive ──────────────────────────────────────────────── */
-@media (max-width: 1100px) {
-  .charts-row-main { grid-template-columns: 1fr; }
-  .kpi-6 { grid-template-columns: repeat(3, 1fr); }
+/* Gráfica */
+.sales-legend { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 6px; font-size: 12px; color: var(--muted); }
+.sales-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.sales-sw { display: inline-block; width: 16px; height: 0; border-top: 2px solid; }
+.sales-sw--cur  { border-color: var(--color-accent); }
+.sales-sw--prev { border-color: var(--st-neutral); border-top-style: dashed; }
+.sales-chart { padding: 16px 16px 12px; }
+.sales-chart-grid { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 8px; }
+.sales-y {
+  display: flex; flex-direction: column; justify-content: space-between; align-items: flex-end;
+  height: 220px; margin: -6px 0 6px; font-size: 11px; color: var(--muted);
 }
-@media (max-width: 768px) {
-  .charts-row-secondary { grid-template-columns: 1fr; }
-  .kpi-6 { grid-template-columns: repeat(2, 1fr); }
-  .bar-row { grid-template-columns: 140px 1fr 90px; }
-  .filter-controls { margin-left: 0; }
+.sales-plot { position: relative; height: 220px; }
+.sales-plot svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.sales-gridline { position: absolute; left: 0; right: 0; border-top: 1px solid var(--rule); }
+.sales-area { fill: var(--color-accent); fill-opacity: .1; }
+.sales-line { fill: none; stroke: var(--color-accent); stroke-width: 2; }
+.sales-line--prev { fill: none; stroke: var(--st-neutral); stroke-width: 1.5; stroke-dasharray: 4 4; }
+.sales-cursor { stroke: var(--color-text); stroke-opacity: .35; stroke-width: 1; }
+.sales-x { display: flex; justify-content: space-between; margin-top: 8px; font-size: 11px; color: var(--muted); }
+.sales-tooltip {
+  position: fixed; z-index: 1000; display: none; pointer-events: none;
+  padding: 7px 10px; border-radius: var(--radius-sm);
+  background: var(--shell-dark); color: var(--shell-dark-text);
+  font-size: 12px; line-height: 1.5; white-space: nowrap;
 }
-@media (max-width: 480px) {
-  .kpi-6 { grid-template-columns: 1fr 1fr; }
+.sales-tooltip b { font-weight: 600; }
+.sales-tooltip .mono { margin-left: 8px; }
+
+/* Estados */
+.sales-stack { display: flex; gap: 2px; height: 10px; margin: 14px 16px 8px; border-radius: 3px; overflow: hidden; }
+.sales-stack span { height: 100%; min-width: 2px; }
+
+/* Barras de participación dentro de tablas */
+.sales-share { display: flex; align-items: center; gap: 8px; min-width: 120px; }
+.sales-share-track { flex: 1; height: 6px; background: var(--hover); border-radius: 3px; overflow: hidden; }
+.sales-share-fill { height: 100%; background: var(--color-primary); border-radius: 3px; }
+.sales-share .mono { width: 44px; text-align: right; font-size: 12px; color: var(--muted); }
+.sales-ellipsis { max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Órdenes */
+.sales-search {
+  display: flex; align-items: center; gap: 6px;
+  height: 30px; padding: 0 10px;
+  border: 1px solid var(--rule-2); border-radius: var(--radius-sm); color: var(--muted);
 }
+.sales-search:focus-within { border-color: var(--accent-ink); }
+.sales-search input { border: 0; outline: 0; background: transparent; font: inherit; font-size: 12px; width: 200px; color: var(--color-text); }
+.sales-orders td { white-space: nowrap; }
+.sales-orders .sort-col {
+  appearance: none; border: 0; background: transparent; padding: 0;
+  font: inherit; color: inherit; cursor: pointer;
+}
+.sales-orders .sort-col:hover { color: var(--color-text); }
+.sales-orders .sort-col[aria-sort="ascending"]::after  { content: " ↑"; }
+.sales-orders .sort-col[aria-sort="descending"]::after { content: " ↓"; }
+.sales-orders .is-cancelled { color: var(--muted); text-decoration: line-through; }
+.sales-pager {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 10px 16px; border-top: 1px solid var(--rule);
+  font-size: 12px; color: var(--muted);
+}
+.sales-pager:empty { display: none; }
+.sales-pager-btns { display: flex; gap: 6px; }
+.sales-empty { color: var(--muted); text-align: center; padding: 40px 16px; }
 </style>
 
 <script>
 // ══════════════════════════════════════════════════════════════
-// Estado global
+// Estado
 // ══════════════════════════════════════════════════════════════
-const S = {
+const S: any = {
   preset: '30d',
   dateFrom: '',
   dateTo: '',
@@ -397,698 +308,567 @@ const S = {
   state: '',
   status: '',
   granularity: 'day',
-  metric: 'revenue',        // timeline metric
-  prodMetric: 'revenue',    // products bar metric
-  cityMetric: 'orders',     // cities bar metric
-  data: null,               // analytics response
+  metric: 'revenue',
+  data: null,
   tableOffset: 0,
   tableLimit: 25,
   tableSort: 'purchase_date',
   tableSortDir: 'desc',
   tableSearch: '',
-  allCities: [],
-  allStates: [],
+  allCities: [] as string[],
+  allStates: [] as string[],
 };
 
+const $ = (id: string) => document.getElementById(id) as HTMLElement;
+
 // ══════════════════════════════════════════════════════════════
-// Formatters
+// Formato
 // ══════════════════════════════════════════════════════════════
 const COP = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 });
 const NUM = new Intl.NumberFormat('es-CO', { maximumFractionDigits: 0 });
+const PCT = new Intl.NumberFormat('es-CO', { maximumFractionDigits: 1 });
 
-function fmtCOP(v) { return COP.format(Number(v) || 0); }
-function fmtNum(v) { return NUM.format(Number(v) || 0); }
-function fmtK(v) {
-  if (v >= 1_000_000) return `${(v/1_000_000).toFixed(1)}M`;
-  if (v >= 1_000) return `${(v/1_000).toFixed(0)}K`;
-  return fmtNum(v);
-}
-function fmtKCOP(v) {
-  if (v >= 1_000_000) return `$${(v/1_000_000).toFixed(1)}M`;
-  if (v >= 1_000) return `$${(v/1_000).toFixed(0)}K`;
+const fmtCOP = (v: unknown) => COP.format(Number(v) || 0);
+const fmtNum = (v: unknown) => NUM.format(Number(v) || 0);
+function fmtShortCOP(v: number) {
+  const f = (x: number) => x.toLocaleString('es-CO', { maximumFractionDigits: 1 });
+  if (v >= 1e6) return `$${f(v / 1e6)} M`;
+  if (v >= 1e3) return `$${f(v / 1e3)} mil`;
   return `$${fmtNum(v)}`;
 }
-function fmtPeriodLabel(s) {
-  // '2026-05-01' → '1 may.'
-  if (!s) return s;
-  if (s.includes('W')) return s; // week format
+function esc(v: unknown) {
+  return String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
+}
+function fmtPeriodLabel(s: string) {
+  if (!s) return '';
+  if (s.includes('W')) return `Sem. ${Number(s.split('W')[1])}`;
   if (s.length === 7) {
     const [y, m] = s.split('-');
     return new Date(+y, +m - 1, 1).toLocaleDateString('es-CO', { month: 'short', year: '2-digit' });
   }
-  const d = new Date(s + 'T12:00:00');
-  return d.toLocaleDateString('es-CO', { day: 'numeric', month: 'short' });
+  return new Date(s + 'T12:00:00').toLocaleDateString('es-CO', { day: 'numeric', month: 'short' });
 }
-function fmtDate(s) {
-  if (!s) return '—';
-  const d = new Date(s);
-  return d.toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' });
-}
-function fmtDateTime(s) {
-  if (!s) return '—';
-  const d = new Date(s);
-  return d.toLocaleString('es-CO', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+const fmtDate = (s: string) => new Date(s + 'T12:00:00').toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' });
+function fmtDateTime(s: string) {
+  if (!s) return '';
+  return new Date(s).toLocaleString('es-CO', { timeZone: 'America/Bogota', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', hour12: false });
 }
 
 // ══════════════════════════════════════════════════════════════
-// Cálculo de rangos de fecha por preset
+// Rangos
 // ══════════════════════════════════════════════════════════════
-function isoDate(d) { return d.toISOString().slice(0, 10); }
-function getPresetRange(preset) {
+const isoDate = (d: Date) => d.toISOString().slice(0, 10);
+function getPresetRange(preset: string) {
   const now = new Date();
   const today = isoDate(now);
+  const back = (days: number) => { const f = new Date(now); f.setDate(now.getDate() - days); return isoDate(f); };
   switch (preset) {
     case 'today': return { from: today, to: today };
-    case '7d': {
-      const f = new Date(now); f.setDate(now.getDate() - 6);
-      return { from: isoDate(f), to: today };
-    }
-    case '30d': {
-      const f = new Date(now); f.setDate(now.getDate() - 29);
-      return { from: isoDate(f), to: today };
-    }
-    case '90d': {
-      const f = new Date(now); f.setDate(now.getDate() - 89);
-      return { from: isoDate(f), to: today };
-    }
-    case '12m': {
-      const f = new Date(now); f.setFullYear(now.getFullYear() - 1);
-      return { from: isoDate(f), to: today };
-    }
+    case '7d': return { from: back(6), to: today };
+    case '30d': return { from: back(29), to: today };
+    case '90d': return { from: back(89), to: today };
+    case '12m': { const f = new Date(now); f.setFullYear(now.getFullYear() - 1); return { from: isoDate(f), to: today }; }
     case 'all': return { from: '', to: '' };
-    default: return null; // custom
+    default: return null;
   }
+}
+// Mismo cálculo que el servidor para el periodo anterior.
+function prevRange(from: string, to: string) {
+  const dFrom = new Date(from), dTo = new Date(to);
+  const diff = dTo.getTime() - dFrom.getTime() + 86400000;
+  const pTo = new Date(dFrom.getTime() - 1);
+  const pFrom = new Date(pTo.getTime() - diff + 86400000);
+  return { from: isoDate(pFrom), to: isoDate(pTo) };
+}
+function eachDay(from: string, to: string) {
+  const out: string[] = [];
+  for (let d = new Date(from + 'T00:00:00Z'); isoDate(d) <= to; d.setUTCDate(d.getUTCDate() + 1)) out.push(isoDate(d));
+  return out;
 }
 
 // ══════════════════════════════════════════════════════════════
-// Fetch analytics
+// Datos
 // ══════════════════════════════════════════════════════════════
+function baseParams() {
+  const p = new URLSearchParams();
+  if (S.dateFrom) p.set('dateFrom', S.dateFrom);
+  if (S.dateTo)   p.set('dateTo', S.dateTo);
+  if (S.city)     p.set('city', S.city);
+  if (S.state)    p.set('state', S.state);
+  if (S.status)   p.set('status', S.status);
+  return p;
+}
 async function fetchAnalytics() {
-  const params = new URLSearchParams();
-  if (S.dateFrom) params.set('dateFrom', S.dateFrom);
-  if (S.dateTo)   params.set('dateTo',   S.dateTo);
-  if (S.city)     params.set('city',     S.city);
-  if (S.state)    params.set('state',    S.state);
-  if (S.status)   params.set('status',   S.status);
-  params.set('granularity', S.granularity);
-
-  const res = await fetch(`/api/mercadolibre/analytics?${params}`);
+  const p = baseParams();
+  p.set('granularity', S.granularity);
+  const res = await fetch(`/api/mercadolibre/analytics?${p}`);
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return res.json();
 }
-
 async function fetchOrders() {
-  const params = new URLSearchParams();
-  if (S.dateFrom)   params.set('dateFrom', S.dateFrom);
-  if (S.dateTo)     params.set('dateTo',   S.dateTo);
-  if (S.city)       params.set('city',     S.city);
-  if (S.state)      params.set('state',    S.state);
-  if (S.status)     params.set('status',   S.status);
-  if (S.tableSearch) params.set('search',  S.tableSearch);
-  params.set('limit',  S.tableLimit);
-  params.set('offset', S.tableOffset);
-  params.set('sort',   S.tableSort);
-  params.set('sortDir', S.tableSortDir);
-
-  const res = await fetch(`/api/mercadolibre/sales?${params}`);
+  const p = baseParams();
+  if (S.tableSearch) p.set('search', S.tableSearch);
+  p.set('limit', String(S.tableLimit));
+  p.set('offset', String(S.tableOffset));
+  p.set('sort', S.tableSort);
+  p.set('sortDir', S.tableSortDir);
+  const res = await fetch(`/api/mercadolibre/sales?${p}`);
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return res.json();
 }
 
 // ══════════════════════════════════════════════════════════════
-// Render KPIs
+// Indicadores
 // ══════════════════════════════════════════════════════════════
-function renderDelta(elId, current, prev, invertBad = false) {
-  const el = document.getElementById(elId);
-  if (!el || prev === null || prev === undefined || Number(prev) === 0) {
-    el && (el.textContent = '');
-    return;
-  }
-  const c = Number(current) || 0;
-  const p = Number(prev) || 0;
-  const pct = ((c - p) / p) * 100;
-  const isPos = pct > 0;
-  const isGood = invertBad ? !isPos : isPos;
-  const cls = Math.abs(pct) < 0.5 ? 'neu' : isGood ? 'up' : 'down';
-  const arrow = pct > 0.5 ? '↑' : pct < -0.5 ? '↓' : '→';
-  el.className = `kpi-delta ${cls}`;
-  el.textContent = `${arrow} ${Math.abs(pct).toFixed(1)}%`;
+// good: 'up' si subir es bueno, 'down' si bajar es bueno (cancelaciones).
+function setDelta(id: string, cur: number, prev: number | null | undefined, good: 'up' | 'down' = 'up', unit: '%' | 'pp' = '%') {
+  const el = $(id);
+  if (prev == null || (unit === '%' && Number(prev) === 0)) { el.textContent = ''; el.className = ''; return; }
+  const diff = unit === '%' ? ((cur - prev) / prev) * 100 : cur - prev;
+  const flat = Math.abs(diff) < 0.05;
+  const better = good === 'up' ? diff > 0 : diff < 0;
+  el.className = `mono ${flat ? 'sales-muted' : better ? 'sales-up' : 'sales-down'}`;
+  el.style.color = flat ? '' : better ? 'var(--ok)' : 'var(--danger)';
+  el.textContent = `${diff > 0 ? '▲ +' : diff < 0 ? '▼ -' : '= '}${PCT.format(Math.abs(diff))}${unit === '%' ? '%' : ' pp'}`;
 }
 
-function renderKPIs(kpis, prevKpis) {
-  document.getElementById('kpiRevenue').textContent  = fmtCOP(kpis.revenue);
-  document.getElementById('kpiOrders').textContent   = fmtNum(kpis.orders);
-  document.getElementById('kpiAov').textContent      = fmtCOP(kpis.aov);
-  document.getElementById('kpiMax').textContent      = fmtCOP(kpis.max_ticket);
-  document.getElementById('kpiMaxSub').textContent   = kpis.min_ticket > 0 ? `Mín: ${fmtCOP(kpis.min_ticket)}` : '—';
-  document.getElementById('kpiCities').textContent   = fmtNum(kpis.cities);
-  document.getElementById('kpiCitiesSub').textContent = kpis.cities > 0 ? 'ciudades con ventas' : 'sin datos';
-  document.getElementById('kpiCancelled').textContent = fmtNum(kpis.cancelled);
+function renderKPIs(k: any, prev: any) {
+  const orders = Number(k.orders) || 0;
+  const cancelled = Number(k.cancelled) || 0;
+  const rate = orders ? (cancelled / orders) * 100 : 0;
+  $('kpiRevenue').textContent = fmtCOP(k.revenue);
+  $('kpiOrders').textContent = fmtNum(orders);
+  $('kpiAov').textContent = fmtCOP(k.aov);
+  $('kpiCancelRate').textContent = `${PCT.format(rate)}%`;
+  $('kpiCancelled').textContent = `${fmtNum(cancelled)} ${cancelled === 1 ? 'orden' : 'órdenes'}`;
 
-  if (prevKpis) {
-    renderDelta('deltaRevenue',  kpis.revenue,   prevKpis.revenue);
-    renderDelta('deltaOrders',   kpis.orders,    prevKpis.orders);
-    renderDelta('deltaAov',      kpis.aov,       prevKpis.aov);
-    renderDelta('deltaCancelled', kpis.cancelled, prevKpis.cancelled ? prevKpis.cancelled : null, true);
+  if (prev) {
+    const pOrders = Number(prev.orders) || 0;
+    setDelta('deltaRevenue', Number(k.revenue) || 0, Number(prev.revenue));
+    setDelta('deltaOrders', orders, pOrders);
+    setDelta('deltaAov', Number(k.aov) || 0, Number(prev.aov));
+    setDelta('deltaCancel', rate, pOrders ? ((Number(prev.cancelled) || 0) / pOrders) * 100 : null, 'down', 'pp');
+    $('prevRevenue').textContent = `vs. ${fmtCOP(prev.revenue)}`;
+    $('prevOrders').textContent = `vs. ${fmtNum(pOrders)}`;
+  } else {
+    ['deltaRevenue', 'deltaOrders', 'deltaAov', 'deltaCancel'].forEach((id) => { $(id).textContent = ''; });
+    $('prevRevenue').textContent = 'sin comparación';
+    $('prevOrders').textContent = 'sin comparación';
   }
 }
 
 // ══════════════════════════════════════════════════════════════
-// SVG Line Chart
+// Gráfica: periodo actual vs. anterior
 // ══════════════════════════════════════════════════════════════
-const TOOLTIP_EL = () => document.getElementById('chartTooltip');
+function niceMax(v: number) {
+  if (v <= 0) return 1;
+  const pow = 10 ** Math.floor(Math.log10(v));
+  const n = v / pow;
+  return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 2.5 ? 2.5 : n <= 5 ? 5 : 10) * pow;
+}
 
-function drawLineChart(containerId, data, { xKey = 'period', yKey = 'revenue', color = '#c9893d', yFmt = fmtCOP } = {}) {
-  const el = document.getElementById(containerId);
-  if (!el) return;
-  if (!data || !data.length) {
-    el.innerHTML = '<div class="chart-empty">Sin datos para el período seleccionado</div>';
+// Arma las dos series alineadas. En días se rellenan los días sin ventas
+// para que ambas tengan la misma longitud; en semana y mes se alinean por posición.
+function buildSeries(d: any) {
+  const key = S.metric;
+  const cur = (d.timeline || []) as any[];
+  const prev = (d.prev_timeline || []) as any[];
+  if (S.granularity === 'day' && S.dateFrom && S.dateTo) {
+    const map = new Map(cur.map((r) => [r.period, Number(r[key]) || 0]));
+    const days = eachDay(S.dateFrom, S.dateTo);
+    const pr = prevRange(S.dateFrom, S.dateTo);
+    const pmap = new Map(prev.map((r) => [r.period, Number(r[key]) || 0]));
+    const pdays = eachDay(pr.from, pr.to);
+    return {
+      labels: days,
+      cur: days.map((x) => map.get(x) ?? 0),
+      prev: prev.length ? pdays.map((x) => pmap.get(x) ?? 0) : null,
+      prevLabels: pdays,
+    };
+  }
+  return {
+    labels: cur.map((r) => r.period),
+    cur: cur.map((r) => Number(r[key]) || 0),
+    prev: prev.length ? cur.map((_, i) => Number(prev[i]?.[key]) || 0) : null,
+    prevLabels: cur.map((_, i) => prev[i]?.period ?? ''),
+  };
+}
+
+function drawTimeline(d: any) {
+  const el = $('chartTimeline');
+  const s = buildSeries(d);
+  $('legendPrev').hidden = !s.prev;
+  if (s.cur.length < 2) {
+    el.innerHTML = '<p class="sales-empty">No hay suficientes datos en el periodo para graficar.</p>';
     return;
   }
-
-  const W = 560, H = 210;
-  const pad = { top: 20, right: 16, bottom: 38, left: 68 };
-  const iW = W - pad.left - pad.right;
-  const iH = H - pad.top - pad.bottom;
-  const N = data.length;
-
-  const vals = data.map(d => Number(d[yKey]) || 0);
-  const maxV = Math.max(...vals, 1);
-
-  const xOf = i => pad.left + (N > 1 ? (i / (N - 1)) * iW : iW / 2);
-  const yOf = v => pad.top + iH - (v / maxV) * iH;
-
-  // Grid horizontal
-  const yTicks = 4;
-  let gridLines = '';
-  for (let k = 0; k <= yTicks; k++) {
-    const v = (maxV * k) / yTicks;
-    const y = yOf(v).toFixed(1);
-    gridLines += `<line x1="${pad.left}" y1="${y}" x2="${pad.left + iW}" y2="${y}" stroke="var(--rule)" stroke-width="1"/>`;
-    gridLines += `<text x="${(pad.left - 6).toFixed(0)}" y="${(+y + 4).toFixed(0)}" text-anchor="end" font-size="10" fill="var(--muted)">${fmtKCOP(v).replace('$','')}</text>`;
-  }
-
-  // X labels (máx 7 etiquetas)
-  const step = Math.max(1, Math.ceil(N / 7));
-  let xLabels = '';
-  for (let i = 0; i < N; i += step) {
-    const x = xOf(i).toFixed(1);
-    xLabels += `<text x="${x}" y="${(pad.top + iH + 16).toFixed(0)}" text-anchor="middle" font-size="10" fill="var(--muted)">${fmtPeriodLabel(data[i][xKey])}</text>`;
-  }
-
-  // Path
-  const pts = data.map((d, i) => `${xOf(i).toFixed(1)},${yOf(Number(d[yKey]) || 0).toFixed(1)}`);
-  const linePath = `M ${pts.join(' L ')}`;
-  const areaPath = `M ${pad.left},${(pad.top + iH).toFixed(1)} L ${pts.join(' L ')} L ${(pad.left + iW).toFixed(1)},${(pad.top + iH).toFixed(1)} Z`;
-
-  // Segmentos hover (barras invisibles para tooltip)
-  const segW = N > 1 ? iW / N : iW;
-  let hoverSegs = '';
-  for (let i = 0; i < N; i++) {
-    const cx = xOf(i);
-    hoverSegs += `<rect class="hover-seg" x="${(cx - segW / 2).toFixed(1)}" y="${pad.top}" width="${segW.toFixed(1)}" height="${iH}" fill="transparent" data-i="${i}" data-v="${vals[i]}" data-l="${data[i][xKey]}"/>`;
-  }
-
-  // Línea vertical de cursor
-  const cursorLine = `<line id="${containerId}_cursor" x1="0" y1="${pad.top}" x2="0" y2="${pad.top + iH}" stroke="var(--color-accent)" stroke-width="1.5" stroke-dasharray="3 2" opacity="0" style="pointer-events:none"/>`;
+  const W = 600, H = 220, N = s.cur.length;
+  const fmt = S.metric === 'revenue' ? fmtShortCOP : fmtNum;
+  const max = niceMax(Math.max(...s.cur, ...(s.prev ?? []), 1));
+  const x = (i: number) => (i / (N - 1)) * W;
+  const y = (v: number) => H - (v / max) * H;
+  const path = (vals: number[]) => 'M' + vals.map((v, i) => `${x(i).toFixed(1)} ${y(v).toFixed(1)}`).join(' L');
+  const cur = path(s.cur);
+  const ticks = [1, .75, .5, .25, 0];
+  const xi = [...new Set([0, Math.round((N - 1) / 4), Math.round((N - 1) / 2), Math.round(3 * (N - 1) / 4), N - 1])];
 
   el.innerHTML = `
-    <svg viewBox="0 0 ${W} ${H}" width="100%" style="display:block;overflow:visible">
-      <defs>
-        <linearGradient id="lg_${containerId}" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="${color}" stop-opacity="0.22"/>
-          <stop offset="100%" stop-color="${color}" stop-opacity="0.01"/>
-        </linearGradient>
-      </defs>
-      ${gridLines}${xLabels}
-      <path d="${areaPath}" fill="url(#lg_${containerId})"/>
-      <path d="${linePath}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
-      ${data.map((d, i) => `<circle cx="${xOf(i).toFixed(1)}" cy="${yOf(Number(d[yKey]) || 0).toFixed(1)}" r="${N < 20 ? 3 : 0}" fill="${color}" opacity=".85"/>`).join('')}
-      ${cursorLine}
-      ${hoverSegs}
-    </svg>`;
-
-  // Hover tooltip
-  const cursor = el.querySelector(`#${containerId}_cursor`);
-  el.querySelectorAll('.hover-seg').forEach(seg => {
-    seg.addEventListener('mousemove', e => {
-      const i   = +seg.dataset.i;
-      const val = +seg.dataset.v;
-      const lbl = seg.dataset.l;
-      const svgEl  = el.querySelector('svg');
-      const bnd  = svgEl.getBoundingClientRect();
-      const scaleX = W / bnd.width;
-      const cx = xOf(i);
-
-      if (cursor) { cursor.setAttribute('x1', cx); cursor.setAttribute('x2', cx); cursor.setAttribute('opacity', '1'); }
-
-      const tip = TOOLTIP_EL();
-      tip.innerHTML = `<strong>${fmtPeriodLabel(lbl)}</strong>&nbsp;&nbsp;${yFmt(val)}`;
-      tip.style.display = 'block';
-      tip.style.left = `${e.clientX + 12}px`;
-      tip.style.top  = `${e.clientY - 36}px`;
-    });
-    seg.addEventListener('mouseleave', () => {
-      if (cursor) cursor.setAttribute('opacity', '0');
-      TOOLTIP_EL().style.display = 'none';
-    });
-  });
-}
-
-// ══════════════════════════════════════════════════════════════
-// SVG Donut Chart
-// ══════════════════════════════════════════════════════════════
-const STATUS_LABELS = {
-  paid: 'Pagado', confirmed: 'Confirmado', pending: 'Pendiente',
-  payment_required: 'Pago requerido', cancelled: 'Cancelado',
-};
-const STATUS_COLORS = {
-  paid: '#2e7d5b', confirmed: '#2e7d5b', pending: '#c9893d',
-  payment_required: '#8b6f47', cancelled: '#c0392b',
-};
-
-function drawDonut(containerId, data) {
-  const el = document.getElementById(containerId);
-  if (!el) return;
-  if (!data || !data.length) {
-    el.innerHTML = '<div class="chart-empty">Sin datos</div>';
-    return;
-  }
-
-  const total = data.reduce((s, d) => s + (Number(d.count) || 0), 0) || 1;
-  const R = 58, CX = 80, CY = 80;
-  const C = 2 * Math.PI * R;
-
-  let offset = 0;
-  const segments = data.map(d => {
-    const n     = Number(d.count) || 0;
-    const pct   = n / total;
-    const dash  = pct * C;
-    const gap   = C - dash;
-    const color = STATUS_COLORS[d.status] || '#999';
-    // SVG stroke-dashoffset starts from top (rotate -90deg via transform)
-    const seg = `<circle cx="${CX}" cy="${CY}" r="${R}" fill="none" stroke="${color}" stroke-width="20"
-      stroke-dasharray="${dash.toFixed(2)} ${gap.toFixed(2)}"
-      stroke-dashoffset="${(-offset).toFixed(2)}"
-      transform="rotate(-90 ${CX} ${CY})"
-      style="transition:stroke-dashoffset .4s ease"/>`;
-    offset += dash;
-    return { seg, label: STATUS_LABELS[d.status] || d.status, color, n, pct, rev: d.revenue };
-  });
-
-  const legendItems = segments.map(s => `
-    <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--rule)">
-      <span style="width:10px;height:10px;border-radius:50%;background:${s.color};flex-shrink:0"></span>
-      <span style="font-size:12px;color:var(--color-text);min-width:0;flex:1">${s.label}</span>
-      <span style="font-size:12px;font-weight:600;color:var(--color-text)">${s.n}</span>
-      <span style="font-size:10px;color:var(--muted);min-width:38px;text-align:right">${(s.pct*100).toFixed(1)}%</span>
-    </div>`).join('');
-
-  el.innerHTML = `
-    <div style="display:flex;gap:20px;align-items:center;width:100%">
-      <svg width="160" height="160" viewBox="0 0 160 160" style="flex-shrink:0">
-        ${segments.map(s => s.seg).join('')}
-        <text x="${CX}" y="${CY - 6}" text-anchor="middle" font-size="20" font-weight="700" fill="var(--color-text)">${total}</text>
-        <text x="${CX}" y="${CY + 12}" text-anchor="middle" font-size="10" fill="var(--muted)">órdenes</text>
-      </svg>
-      <div style="flex:1;min-width:0">${legendItems}</div>
+    <div class="sales-chart-grid">
+      <div class="sales-y mono" aria-hidden="true">${ticks.map((t) => `<span>${esc(fmt(max * t))}</span>`).join('')}</div>
+      <div>
+        <div class="sales-plot">
+          ${ticks.map((t) => `<div class="sales-gridline" style="top:${(1 - t) * 100}%"></div>`).join('')}
+          <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img"
+               aria-label="${S.metric === 'revenue' ? 'Ingresos' : 'Órdenes'} por periodo${s.prev ? ' frente al periodo anterior' : ''}">
+            <path d="${cur} L${W} ${H} L0 ${H} Z" class="sales-area"/>
+            ${s.prev ? `<path d="${path(s.prev)}" class="sales-line--prev" vector-effect="non-scaling-stroke"/>` : ''}
+            <path d="${cur}" class="sales-line" vector-effect="non-scaling-stroke"/>
+            <line class="sales-cursor" x1="0" x2="0" y1="0" y2="${H}" vector-effect="non-scaling-stroke" visibility="hidden"/>
+            <rect class="sales-hit" x="0" y="0" width="${W}" height="${H}" fill="transparent"/>
+          </svg>
+        </div>
+        <div class="sales-x mono" aria-hidden="true">${xi.map((i) => `<span>${esc(fmtPeriodLabel(s.labels[i]))}</span>`).join('')}</div>
+      </div>
     </div>`;
+
+  // Tooltip: punto más cercano al cursor.
+  const svg = el.querySelector('svg')!;
+  const cursor = el.querySelector('.sales-cursor')!;
+  const tip = $('chartTooltip');
+  const valFmt = S.metric === 'revenue' ? fmtCOP : fmtNum;
+  svg.addEventListener('mousemove', (e: MouseEvent) => {
+    const b = svg.getBoundingClientRect();
+    const i = Math.max(0, Math.min(N - 1, Math.round(((e.clientX - b.left) / b.width) * (N - 1))));
+    cursor.setAttribute('x1', String(x(i)));
+    cursor.setAttribute('x2', String(x(i)));
+    cursor.setAttribute('visibility', 'visible');
+    tip.innerHTML = `<b>${esc(fmtPeriodLabel(s.labels[i]))}</b><span class="mono">${esc(valFmt(s.cur[i]))}</span>` +
+      (s.prev ? `<br><span>${esc(fmtPeriodLabel(s.prevLabels[i]))}</span><span class="mono">${esc(valFmt(s.prev[i]))}</span>` : '');
+    tip.style.display = 'block';
+    tip.style.left = `${e.clientX + 14}px`;
+    tip.style.top = `${e.clientY - 44}px`;
+  });
+  svg.addEventListener('mouseleave', () => {
+    cursor.setAttribute('visibility', 'hidden');
+    tip.style.display = 'none';
+  });
 }
 
 // ══════════════════════════════════════════════════════════════
-// Bar Chart horizontal
+// Estados, productos y ciudades
 // ══════════════════════════════════════════════════════════════
-function drawBars(containerId, data, { labelKey = 'title', valueKey = 'revenue', subKey = null, color = '#c9893d', formatter = fmtCOP, subFormatter = fmtNum, maxItems = 10 } = {}) {
-  const el = document.getElementById(containerId);
-  if (!el) return;
-  const items = (data || []).slice(0, maxItems);
-  if (!items.length) {
-    el.innerHTML = '<div class="chart-empty">Sin datos para el período seleccionado</div>';
-    return;
-  }
-  const maxVal = Math.max(...items.map(d => Number(d[valueKey]) || 0), 1);
+const STATUS: Record<string, [string, string]> = {
+  paid: ['Pagado', 'paid'],
+  confirmed: ['Confirmado', 'confirmed'],
+  pending: ['Pendiente', 'pending'],
+  payment_required: ['Pago requerido', 'pending'],
+  cancelled: ['Cancelado', 'cancelled'],
+};
+const statusInfo = (s: string) => STATUS[s] ?? [s || 'Sin estado', ''];
+const statusVar = (cls: string) => (cls ? `var(--st-${cls})` : 'var(--st-neutral)');
+const statusHtml = (s: string) => {
+  const [label, cls] = statusInfo(s);
+  return `<span class="status${cls ? ` status--${cls}` : ''}">${esc(label)}</span>`;
+};
 
-  el.innerHTML = items.map((d, i) => {
-    const val = Number(d[valueKey]) || 0;
-    const pct = (val / maxVal) * 100;
-    const sub = subKey ? `<div class="bar-sub">${subFormatter(d[subKey])} uds.</div>` : '';
-    return `
-      <div class="bar-row">
-        <div class="bar-label"><span class="bar-rank">${i + 1}.</span>${d[labelKey] || '—'}</div>
-        <div class="bar-track"><div class="bar-fill" style="width:${pct.toFixed(1)}%;background:${color}"></div></div>
-        <div><div class="bar-value">${formatter(val)}</div>${sub}</div>
-      </div>`;
-  }).join('');
+function drawStatus(data: any[]) {
+  const el = $('chartStatus');
+  const list = data || [];
+  const total = list.reduce((a, d) => a + (Number(d.count) || 0), 0);
+  $('statusSubtitle').textContent = `${fmtNum(total)} órdenes`;
+  if (!total) { el.innerHTML = '<p class="sales-empty">Sin órdenes en el periodo.</p>'; return; }
+  el.innerHTML = `
+    <div class="sales-stack" role="img" aria-label="${esc(list.map((d) => `${statusInfo(d.status)[0]}: ${d.count}`).join(', '))}">
+      ${list.map((d) => `<span style="width:${(Number(d.count) / total) * 100}%;background:${statusVar(statusInfo(d.status)[1])}"></span>`).join('')}
+    </div>
+    <table class="erp-table"><tbody>
+      ${list.map((d) => `<tr>
+        <td>${statusHtml(d.status)}</td>
+        <td class="num mono">${fmtNum(d.count)}</td>
+        <td class="num mono sales-muted">${PCT.format((Number(d.count) / total) * 100)}%</td>
+        <td class="num mono">${fmtCOP(d.revenue)}</td>
+      </tr>`).join('')}
+    </tbody></table>`;
+}
+
+function shareCell(value: number, max: number, total: number) {
+  return `<div class="sales-share">
+    <div class="sales-share-track"><div class="sales-share-fill" style="width:${max ? (value / max) * 100 : 0}%"></div></div>
+    <span class="mono">${PCT.format(total ? (value / total) * 100 : 0)}%</span>
+  </div>`;
+}
+
+function drawProducts(items: any[]) {
+  const el = $('chartProducts');
+  const list = (items || []).slice(0, 8);
+  if (!list.length) { el.innerHTML = '<p class="sales-empty">Sin ventas en el periodo.</p>'; return; }
+  const total = (items || []).reduce((a, p) => a + (Number(p.revenue) || 0), 0);
+  const max = Math.max(...list.map((p) => Number(p.revenue) || 0), 1);
+  el.innerHTML = `<table class="erp-table">
+    <thead><tr><th>Producto</th><th class="num">Unid.</th><th class="num">Ingresos</th><th>Participación</th></tr></thead>
+    <tbody>${list.map((p) => `<tr>
+      <td class="sales-ellipsis" title="${esc(p.title)}">${esc(p.title)}</td>
+      <td class="num mono">${fmtNum(p.units)}</td>
+      <td class="num mono">${fmtCOP(p.revenue)}</td>
+      <td>${shareCell(Number(p.revenue) || 0, max, total)}</td>
+    </tr>`).join('')}</tbody></table>`;
+}
+
+function drawCities(items: any[]) {
+  const el = $('chartCities');
+  const list = (items || []).filter((c) => c.city && c.city !== 'Unknown').slice(0, 8);
+  $('citiesSubtitle').textContent = `${fmtNum(S.data?.kpis?.cities)} ciudades con ventas`;
+  if (!list.length) { el.innerHTML = '<p class="sales-empty">Sin envíos en el periodo.</p>'; return; }
+  const total = (items || []).reduce((a, c) => a + (Number(c.orders) || 0), 0);
+  const max = Math.max(...list.map((c) => Number(c.orders) || 0), 1);
+  el.innerHTML = `<table class="erp-table">
+    <thead><tr><th>Ciudad</th><th class="num">Órdenes</th><th class="num">Ingresos</th><th>Participación</th></tr></thead>
+    <tbody>${list.map((c) => `<tr>
+      <td class="sales-ellipsis">${esc(c.city)}${c.state ? ` <span class="sales-muted">${esc(c.state)}</span>` : ''}</td>
+      <td class="num mono">${fmtNum(c.orders)}</td>
+      <td class="num mono">${fmtCOP(c.revenue)}</td>
+      <td>${shareCell(Number(c.orders) || 0, max, total)}</td>
+    </tr>`).join('')}</tbody></table>`;
 }
 
 // ══════════════════════════════════════════════════════════════
 // Tabla de órdenes
 // ══════════════════════════════════════════════════════════════
-function statusBadge(s) {
-  const lbl = STATUS_LABELS[s] || s || '—';
-  const cls = `badge-${s || 'default'}`;
-  return `<span class="status-badge ${cls}">${lbl}</span>`;
-}
+function renderOrders(result: any) {
+  const tbody = $('ordersBody');
+  const foot = $('ordersFoot');
+  const pag = $('paginationBar');
+  const rows = result?.data || [];
 
-function renderOrders(result) {
-  const tbody = document.getElementById('ordersBody');
-  const sub   = document.getElementById('tableSubtitle');
-  const pag   = document.getElementById('paginationBar');
-
-  if (!result || !result.data || !result.data.length) {
-    tbody.innerHTML = `<tr><td colspan="8" class="empty-state">No se encontraron órdenes para los filtros aplicados</td></tr>`;
-    sub.textContent = '0 órdenes';
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="8" class="empty-state">No hay órdenes con estos filtros.</td></tr>';
+    $('tableSubtitle').textContent = '0';
+    foot.hidden = true;
     pag.innerHTML = '';
     return;
   }
 
-  const { data, pagination } = result;
-  sub.textContent = `${fmtNum(pagination.total)} ${pagination.total === 1 ? 'orden' : 'órdenes'}`;
+  const total = Number(result.pagination?.total) || rows.length;
+  $('tableSubtitle').textContent = fmtNum(total);
 
-  tbody.innerHTML = data.map(o => {
+  let subtotal = 0;
+  tbody.innerHTML = rows.map((o: any) => {
     let products = '';
     try {
       const prods = Array.isArray(o.products) ? o.products : JSON.parse(o.products || '[]');
-      products = prods.map(p => `${p.title || '—'} ×${p.quantity}`).join(', ');
-      if (products.length > 60) products = products.slice(0, 57) + '…';
-    } catch { products = '—'; }
+      products = prods.map((p: any) => `${p.title || 'Producto'} x${p.quantity}`).join(', ');
+    } catch { products = ''; }
+    const cancelled = o.order_status === 'cancelled';
+    if (!cancelled) subtotal += Number(o.total_amount) || 0;
     return `<tr>
-      <td><code style="font-size:11px">${o.ml_order_id || '—'}</code></td>
-      <td style="white-space:nowrap">${fmtDateTime(o.purchase_date)}</td>
-      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${products}">${products || '—'}</td>
-      <td>${o.recipient_city || '—'}</td>
-      <td>${o.recipient_state || '—'}</td>
-      <td style="white-space:nowrap;font-weight:600">${fmtCOP(o.total_amount)}</td>
-      <td>${statusBadge(o.order_status)}</td>
-      <td style="font-size:11px;color:var(--muted)">${o.shipping_method || '—'}</td>
+      <td class="mono">${esc(o.ml_order_id || '')}</td>
+      <td class="mono sales-muted">${esc(fmtDateTime(o.purchase_date))}</td>
+      <td class="sales-ellipsis" title="${esc(products)}">${esc(products) || '<span class="sales-muted">Sin detalle</span>'}</td>
+      <td>${esc(o.recipient_city || '')}</td>
+      <td class="sales-muted">${esc(o.recipient_state || '')}</td>
+      <td>${statusHtml(o.order_status)}</td>
+      <td class="sales-muted">${esc(o.shipping_method || '')}</td>
+      <td class="num mono${cancelled ? ' is-cancelled' : ''}">${fmtCOP(o.total_amount)}</td>
     </tr>`;
   }).join('');
+  $('ordersSubtotal').textContent = fmtCOP(subtotal);
+  foot.hidden = false;
 
-  // Paginación
-  const total = pagination.total;
-  const pages = Math.ceil(total / S.tableLimit);
-  const page  = Math.floor(S.tableOffset / S.tableLimit);
-  if (pages <= 1) { pag.innerHTML = ''; return; }
-
-  let btns = `<button class="page-btn" ${page === 0 ? 'disabled' : ''} data-page="${page - 1}">‹</button>`;
-  const start = Math.max(0, page - 2), end = Math.min(pages - 1, page + 2);
-  if (start > 0) btns += `<button class="page-btn" data-page="0">1</button>${start > 1 ? '<span class="page-ellipsis">…</span>' : ''}`;
-  for (let i = start; i <= end; i++) btns += `<button class="page-btn ${i === page ? 'active' : ''}" data-page="${i}">${i + 1}</button>`;
-  if (end < pages - 1) btns += `${end < pages - 2 ? '<span class="page-ellipsis">…</span>' : ''}<button class="page-btn" data-page="${pages - 1}">${pages}</button>`;
-  btns += `<button class="page-btn" ${page >= pages - 1 ? 'disabled' : ''} data-page="${page + 1}">›</button>`;
-  btns += `<span class="page-info">${fmtNum(S.tableOffset + 1)}–${fmtNum(Math.min(S.tableOffset + S.tableLimit, total))} de ${fmtNum(total)}</span>`;
-  pag.innerHTML = btns;
-
-  pag.querySelectorAll('.page-btn:not([disabled])').forEach(btn => {
-    btn.addEventListener('click', () => {
-      S.tableOffset = +btn.dataset.page * S.tableLimit;
-      loadOrders();
-    });
-  });
+  const from = S.tableOffset + 1;
+  const to = Math.min(S.tableOffset + S.tableLimit, total);
+  pag.innerHTML = `
+    <span class="mono">${fmtNum(from)}-${fmtNum(to)} de ${fmtNum(total)}</span>
+    <div class="sales-pager-btns">
+      <button type="button" class="btn btn-sm" data-step="-1" ${S.tableOffset === 0 ? 'disabled' : ''}>Anterior</button>
+      <button type="button" class="btn btn-sm" data-step="1" ${to >= total ? 'disabled' : ''}>Siguiente</button>
+    </div>`;
 }
 
 // ══════════════════════════════════════════════════════════════
-// Actualizar período activo
+// Periodo y render general
 // ══════════════════════════════════════════════════════════════
-function updatePeriodBadge() {
-  const lbl = document.getElementById('periodLabel');
-  const vs  = document.getElementById('periodVs');
-  if (!S.dateFrom && !S.dateTo) {
-    lbl.textContent = 'Todo el histórico';
-    vs.textContent = '';
+function updatePeriodMeta() {
+  const el = $('periodMeta');
+  if (!S.dateFrom || !S.dateTo) {
+    el.textContent = 'Todo el histórico · Hora de Colombia';
     return;
   }
-  const from = S.dateFrom ? fmtDate(S.dateFrom) : '—';
-  const to   = S.dateTo   ? fmtDate(S.dateTo)   : '—';
-  lbl.textContent = `${from} → ${to}`;
-  if (S.dateFrom && S.dateTo) {
-    const dFrom = new Date(S.dateFrom), dTo = new Date(S.dateTo);
-    const days = Math.round((dTo - dFrom) / 86400000) + 1;
-    vs.textContent = `vs. ${days} días anteriores`;
-  } else vs.textContent = '';
+  const pr = prevRange(S.dateFrom, S.dateTo);
+  el.textContent = `${fmtDate(S.dateFrom)} a ${fmtDate(S.dateTo)} · comparado con ${fmtDate(pr.from)} a ${fmtDate(pr.to)}`;
 }
 
-// ══════════════════════════════════════════════════════════════
-// Render charts desde S.data
-// ══════════════════════════════════════════════════════════════
-function renderCharts() {
+function renderAll() {
   const d = S.data;
   if (!d) return;
-
-  // Timeline
-  const timelineSub = document.getElementById('timelineSubtitle');
-  if (timelineSub) timelineSub.textContent = `${d.timeline?.length || 0} puntos de datos`;
-  drawLineChart('chartTimeline', d.timeline, {
-    xKey: 'period',
-    yKey: S.metric,
-    color: S.metric === 'revenue' ? '#c9893d' : '#2e7d5b',
-    yFmt: S.metric === 'revenue' ? fmtCOP : fmtNum,
-  });
-
-  // Status donut
-  const statusSub = document.getElementById('statusSubtitle');
-  if (statusSub) statusSub.textContent = `${(d.by_status || []).length} estados`;
-  drawDonut('chartStatus', d.by_status);
-
-  // Top products
-  drawBars('chartProducts', d.top_products, {
-    labelKey: 'title',
-    valueKey: S.prodMetric,
-    subKey: S.prodMetric === 'revenue' ? 'units' : null,
-    color: '#c9893d',
-    formatter: S.prodMetric === 'revenue' ? fmtCOP : fmtNum,
-  });
-
-  // Top cities
-  drawBars('chartCities', d.top_cities, {
-    labelKey: 'city',
-    valueKey: S.cityMetric,
-    subKey: S.cityMetric === 'orders' ? null : null,
-    color: '#3a7ca5',
-    formatter: S.cityMetric === 'revenue' ? fmtCOP : fmtNum,
-  });
-
   renderKPIs(d.kpis || {}, d.prev_kpis);
+  drawTimeline(d);
+  drawStatus(d.by_status);
+  drawProducts(d.top_products);
+  drawCities(d.top_cities);
 
-  // Filtros disponibles (ciudades/dptos)
   if (d.filter_options?.cities?.length) {
-    const cities = [...new Set(d.filter_options.cities.map(c => c.city).filter(Boolean))].sort();
-    const states = [...new Set(d.filter_options.cities.map(c => c.state).filter(Boolean))].sort();
-    const selCity  = document.getElementById('filterCity');
-    const selState = document.getElementById('filterState');
-    const prevCity  = selCity.value;
-    const prevState = selState.value;
-
-    if (cities.length !== S.allCities.length) {
-      S.allCities = cities;
-      selCity.innerHTML = '<option value="">Todas las ciudades</option>' +
-        cities.map(c => `<option value="${c}" ${c === prevCity ? 'selected' : ''}>${c}</option>`).join('');
-    }
-    if (states.length !== S.allStates.length) {
-      S.allStates = states;
-      selState.innerHTML = '<option value="">Todos los dptos.</option>' +
-        states.map(s => `<option value="${s}" ${s === prevState ? 'selected' : ''}>${s}</option>`).join('');
-    }
+    const opts = d.filter_options.cities as any[];
+    const cities = [...new Set(opts.map((c) => c.city).filter(Boolean))].sort() as string[];
+    const states = [...new Set(opts.map((c) => c.state).filter(Boolean))].sort() as string[];
+    const fill = (sel: HTMLSelectElement, values: string[], first: string, current: string) => {
+      sel.replaceChildren(new Option(first, ''), ...values.map((v) => new Option(v, v, false, v === current)));
+    };
+    if (cities.length !== S.allCities.length) { S.allCities = cities; fill($('filterCity') as HTMLSelectElement, cities, 'Todas', S.city); }
+    if (states.length !== S.allStates.length) { S.allStates = states; fill($('filterState') as HTMLSelectElement, states, 'Todos', S.state); }
   }
 }
 
-// ══════════════════════════════════════════════════════════════
-// Loaders
-// ══════════════════════════════════════════════════════════════
 async function loadAnalytics() {
   try {
     const json = await fetchAnalytics();
-    if (json.success) {
-      S.data = json;
-      renderCharts();
-    }
+    if (json.success) { S.data = json; renderAll(); }
   } catch (e) {
     console.error('[ventas] analytics error:', e);
+    $('chartTimeline').innerHTML = '<p class="sales-empty">No se pudo cargar la analítica de ventas. Intente de nuevo.</p>';
   }
 }
 
 async function loadOrders() {
-  document.getElementById('ordersBody').innerHTML =
-    '<tr><td colspan="8" class="empty-state">Cargando…</td></tr>';
+  $('ordersBody').innerHTML = '<tr><td colspan="8" class="empty-state">Cargando órdenes…</td></tr>';
   try {
-    const json = await fetchOrders();
-    renderOrders(json);
-  } catch (e) {
-    document.getElementById('ordersBody').innerHTML =
-      `<tr><td colspan="8" class="empty-state" style="color:var(--danger)">Error al cargar órdenes: ${e.message}</td></tr>`;
+    renderOrders(await fetchOrders());
+  } catch {
+    $('ordersBody').innerHTML = '<tr><td colspan="8" class="empty-state">No se pudieron cargar las órdenes. Intente de nuevo.</td></tr>';
   }
 }
 
-async function loadAll() {
-  updatePeriodBadge();
-  await Promise.all([loadAnalytics(), loadOrders()]);
+function loadAll() {
+  updatePeriodMeta();
+  return Promise.all([loadAnalytics(), loadOrders()]);
 }
 
 // ══════════════════════════════════════════════════════════════
 // Exportar CSV
 // ══════════════════════════════════════════════════════════════
 async function exportCSV() {
-  const params = new URLSearchParams();
-  if (S.dateFrom) params.set('dateFrom', S.dateFrom);
-  if (S.dateTo)   params.set('dateTo',   S.dateTo);
-  if (S.city)     params.set('city',     S.city);
-  if (S.state)    params.set('state',    S.state);
-  if (S.status)   params.set('status',   S.status);
-  params.set('limit', '5000');
-  params.set('offset', '0');
-
-  const res  = await fetch(`/api/mercadolibre/sales?${params}`);
+  const p = baseParams();
+  p.set('limit', '5000');
+  p.set('offset', '0');
+  const res = await fetch(`/api/mercadolibre/sales?${p}`);
   const json = await res.json();
   if (!json.data?.length) return;
 
   const headers = ['ID Orden', 'Fecha', 'Ciudad', 'Departamento', 'País', 'Total COP', 'Estado', 'Método envío', 'Productos'];
-  const rows = json.data.map(o => {
+  const rows = json.data.map((o: any) => {
     let products = '';
     try {
       const prods = Array.isArray(o.products) ? o.products : JSON.parse(o.products || '[]');
-      products = prods.map(p => `${p.title} x${p.quantity}`).join(' | ');
+      products = prods.map((x: any) => `${x.title} x${x.quantity}`).join(' | ');
     } catch {}
-    return [
-      o.ml_order_id, o.purchase_date, o.recipient_city, o.recipient_state,
-      o.recipient_country, o.total_amount, o.order_status, o.shipping_method, products,
-    ].map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',');
+    return [o.ml_order_id, o.purchase_date, o.recipient_city, o.recipient_state, o.recipient_country,
+      o.total_amount, o.order_status, o.shipping_method, products]
+      .map((v) => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',');
   });
 
-  const csv  = [headers.join(','), ...rows].join('\n');
-  const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  a.href = url; a.download = `dobleyo-ventas-${new Date().toISOString().slice(0,10)}.csv`;
+  const blob = new Blob(['﻿' + [headers.join(','), ...rows].join('\n')], { type: 'text/csv;charset=utf-8;' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `dobleyo-ventas-${isoDate(new Date())}.csv`;
   a.click();
-  URL.revokeObjectURL(url);
+  URL.revokeObjectURL(a.href);
 }
 
 // ══════════════════════════════════════════════════════════════
-// Inicialización y eventos
+// Eventos
 // ══════════════════════════════════════════════════════════════
+function activate(group: string, btn: HTMLElement) {
+  document.querySelectorAll<HTMLElement>(`${group} button`).forEach((b) => {
+    const on = b === btn;
+    b.classList.toggle('active', on);
+    b.setAttribute('aria-pressed', String(on));
+  });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
-
-  // Preset inicial
-  const range = getPresetRange('30d');
+  const range = getPresetRange('30d')!;
   S.dateFrom = range.from;
-  S.dateTo   = range.to;
-  document.getElementById('filterFrom').value = S.dateFrom;
-  document.getElementById('filterTo').value   = S.dateTo;
+  S.dateTo = range.to;
+  const fromEl = $('filterFrom') as HTMLInputElement;
+  const toEl = $('filterTo') as HTMLInputElement;
+  fromEl.value = S.dateFrom;
+  toEl.value = S.dateTo;
+  ['#presetGroup', '#metricToggle', '#granularityToggle'].forEach((g) => {
+    const on = document.querySelector<HTMLElement>(`${g} button.active`);
+    if (on) activate(g, on);
+  });
 
-  // Presets
-  document.querySelectorAll('.preset-btn').forEach(btn => {
+  document.querySelectorAll<HTMLElement>('#presetGroup button').forEach((btn) => {
     btn.addEventListener('click', () => {
-      document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
+      activate('#presetGroup', btn);
       S.preset = btn.dataset.preset;
       const r = getPresetRange(S.preset);
-      if (r) {
-        S.dateFrom = r.from;
-        S.dateTo   = r.to;
-        document.getElementById('filterFrom').value = S.dateFrom;
-        document.getElementById('filterTo').value   = S.dateTo;
-        document.getElementById('customRange').style.display = 'none';
-      } else {
-        document.getElementById('customRange').style.display = 'flex';
-      }
+      $('customRange').hidden = !!r;
+      if (!r) return;
+      S.dateFrom = r.from;
+      S.dateTo = r.to;
+      fromEl.value = S.dateFrom;
+      toEl.value = S.dateTo;
       S.tableOffset = 0;
       loadAll();
     });
   });
 
-  // Custom dates
-  document.getElementById('filterFrom').addEventListener('change', e => {
-    S.dateFrom = e.target.value; S.tableOffset = 0; loadAll();
-  });
-  document.getElementById('filterTo').addEventListener('change', e => {
-    S.dateTo = e.target.value; S.tableOffset = 0; loadAll();
+  fromEl.addEventListener('change', () => { S.dateFrom = fromEl.value; S.tableOffset = 0; loadAll(); });
+  toEl.addEventListener('change', () => { S.dateTo = toEl.value; S.tableOffset = 0; loadAll(); });
+
+  ([['filterCity', 'city'], ['filterState', 'state'], ['filterStatus', 'status']] as const).forEach(([id, key]) => {
+    const sel = $(id) as HTMLSelectElement;
+    sel.addEventListener('change', () => { S[key] = sel.value; S.tableOffset = 0; loadAll(); });
   });
 
-  // Filtros ciudad/dpto/estado
-  ['filterCity', 'filterState', 'filterStatus'].forEach(id => {
-    document.getElementById(id).addEventListener('change', e => {
-      if (id === 'filterCity')   S.city   = e.target.value;
-      if (id === 'filterState')  S.state  = e.target.value;
-      if (id === 'filterStatus') S.status = e.target.value;
-      S.tableOffset = 0;
-      loadAll();
-    });
-  });
-
-  // Granularidad
-  document.querySelectorAll('#granularityToggle .toggle-btn').forEach(btn => {
+  document.querySelectorAll<HTMLElement>('#granularityToggle button').forEach((btn) => {
     btn.addEventListener('click', () => {
-      document.querySelectorAll('#granularityToggle .toggle-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
+      activate('#granularityToggle', btn);
       S.granularity = btn.dataset.g;
       loadAnalytics();
     });
   });
 
-  // Métrica timeline
-  document.querySelectorAll('#metricToggle .toggle-btn').forEach(btn => {
+  document.querySelectorAll<HTMLElement>('#metricToggle button').forEach((btn) => {
     btn.addEventListener('click', () => {
-      document.querySelectorAll('#metricToggle .toggle-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
+      activate('#metricToggle', btn);
       S.metric = btn.dataset.metric;
-      if (S.data) renderCharts();
+      if (S.data) drawTimeline(S.data);
     });
   });
 
-  // Métrica productos
-  document.querySelectorAll('#prodMetricToggle .toggle-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('#prodMetricToggle .toggle-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      S.prodMetric = btn.dataset.pmetric;
-      if (S.data) renderCharts();
-    });
+  const sortButtons = document.querySelectorAll<HTMLElement>('.sort-col');
+  const markSort = () => sortButtons.forEach((b) => {
+    if (b.dataset.col === S.tableSort) b.setAttribute('aria-sort', S.tableSortDir === 'asc' ? 'ascending' : 'descending');
+    else b.removeAttribute('aria-sort');
   });
-
-  // Métrica ciudades
-  document.querySelectorAll('#cityMetricToggle .toggle-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('#cityMetricToggle .toggle-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      S.cityMetric = btn.dataset.cmetric;
-      if (S.data) renderCharts();
-    });
-  });
-
-  // Sort tabla
-  document.querySelectorAll('.sort-col').forEach(th => {
-    th.addEventListener('click', () => {
-      const col = th.dataset.col;
-      if (S.tableSort === col) {
-        S.tableSortDir = S.tableSortDir === 'asc' ? 'desc' : 'asc';
-      } else {
-        S.tableSort = col;
-        S.tableSortDir = 'desc';
-      }
-      document.querySelectorAll('.sort-col').forEach(t => t.classList.remove('asc', 'desc'));
-      th.classList.add(S.tableSortDir);
+  sortButtons.forEach((b) => {
+    b.addEventListener('click', () => {
+      if (S.tableSort === b.dataset.col) S.tableSortDir = S.tableSortDir === 'asc' ? 'desc' : 'asc';
+      else { S.tableSort = b.dataset.col; S.tableSortDir = 'desc'; }
+      markSort();
       S.tableOffset = 0;
       loadOrders();
     });
   });
-  // Marcador inicial
-  document.querySelector(`.sort-col[data-col="${S.tableSort}"]`)?.classList.add(S.tableSortDir);
+  markSort();
 
-  // Búsqueda tabla
-  let searchTimer;
-  document.getElementById('tableSearch').addEventListener('input', e => {
+  $('paginationBar').addEventListener('click', (e) => {
+    const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('button[data-step]');
+    if (!btn || btn.disabled) return;
+    S.tableOffset = Math.max(0, S.tableOffset + Number(btn.dataset.step) * S.tableLimit);
+    loadOrders();
+  });
+
+  let searchTimer: ReturnType<typeof setTimeout> | undefined;
+  const search = $('tableSearch') as HTMLInputElement;
+  search.addEventListener('input', () => {
     clearTimeout(searchTimer);
-    searchTimer = setTimeout(() => {
-      S.tableSearch = e.target.value.trim();
-      S.tableOffset = 0;
-      loadOrders();
-    }, 350);
+    searchTimer = setTimeout(() => { S.tableSearch = search.value.trim(); S.tableOffset = 0; loadOrders(); }, 350);
   });
 
-  // Exportar
-  document.getElementById('btnExport').addEventListener('click', exportCSV);
+  $('btnExport').addEventListener('click', exportCSV);
 
-  // Carga inicial
   loadAll();
 });
 </script>
