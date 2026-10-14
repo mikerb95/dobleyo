@@ -1,6 +1,7 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import GiftBox from "../components/shop/GiftBox.astro";
+import DarkHero from "../components/shop/DarkHero.astro";
 import Icon from "../components/Icon.astro";
 import { getCanonicalUrl } from "../i18n/index.ts";
 import { contentsOf, hasFreeShipping, FREE_SHIPPING_COP } from "../lib/gifts.ts";
@@ -49,27 +50,19 @@ const freeKitsText =
 >
   <div class="gifts-page">
     <!-- Encabezado oscuro con la caja que se abre -->
-    <section class="gh" aria-labelledby="ghTitle">
-      <div class="gh__inner">
-        <div class="gh__copy">
-          <nav class="gh__crumbs" aria-label="Ruta de navegación">
-            <a href="/">Inicio</a>
-            <span aria-hidden="true">/</span>
-            <span>Regalos</span>
-          </nav>
-          <h1 id="ghTitle" class="gh__title" data-split>Regale café <em>de origen colombiano.</em></h1>
-          <p class="gh__lead">Kits curados con nuestros cafés de especialidad, en caja de regalo lista para entregar.</p>
-          <ul class="gh__facts">
-            <li><Icon name="gift" size={18} /> Caja de regalo incluida</li>
-            <li><Icon name="truck" size={18} /> Envío gratis desde $120.000</li>
-          </ul>
-          {kits.length > 0 && (
-            <a href="#kits" class="gh__cta">Ver los kits <Icon name="arrow-right" size={18} /></a>
-          )}
-        </div>
-        <GiftBox kits={kits.map((k: any) => ({ id: k.id, name: k.name, price: Number(k.price) }))} />
-      </div>
-    </section>
+    <DarkHero
+      crumb="Regalos"
+      title="Regale café"
+      titleEm="de origen colombiano."
+      lead="Kits curados con nuestros cafés de especialidad, en caja de regalo lista para entregar."
+      facts={[
+        { icon: "gift", text: "Caja de regalo incluida" },
+        { icon: "truck", text: "Envío gratis desde $120.000" },
+      ]}
+      cta={kits.length > 0 ? { href: "#kits", label: "Ver los kits" } : undefined}
+    >
+      <GiftBox kits={kits.map((k: any) => ({ id: k.id, name: k.name, price: Number(k.price) }))} />
+    </DarkHero>
 
     <!-- Kits -->
     <section id="kits" class="gk" aria-labelledby="gkTitle">
@@ -121,7 +114,7 @@ const freeKitsText =
       ) : (
         <div class="gk__empty">
           <p>Próximamente: estamos preparando nuevos kits de regalo.</p>
-          <a href="/tienda" class="gh__cta gh__cta--light">Ver la tienda <Icon name="arrow-right" size={18} /></a>
+          <a href="/tienda" class="gk__empty-cta">Ver la tienda <Icon name="arrow-right" size={18} /></a>
         </div>
       )}
     </section>
@@ -167,57 +160,11 @@ const freeKitsText =
   <style>
     .gifts-page { --gw: 1200px; }
 
-    /* ── Encabezado ─────────────────────────────────────────────────────── */
-    .gh {
-      background:
-        radial-gradient(70% 90% at 80% 40%, rgba(var(--caramel-rgb), .22), transparent 70%),
-        var(--espresso);
-      color: var(--cream);
-      overflow: hidden;
+    .gk__empty-cta {
+      display: inline-flex; align-items: center; gap: .5rem; margin-top: var(--space-4);
+      padding: .8rem 1.4rem; border-radius: 999px; background: var(--espresso); color: var(--cream);
+      font-weight: 700; text-decoration: none;
     }
-    .gh__inner {
-      max-width: var(--gw);
-      margin: 0 auto;
-      padding: var(--space-10) 1.25rem var(--space-12);
-      display: grid;
-      grid-template-columns: minmax(0, 1fr);
-      gap: var(--space-10);
-      align-items: center;
-    }
-    @media (min-width: 1024px) {
-      .gh__inner { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); padding-block: var(--space-16); }
-    }
-    .gh__crumbs { display: flex; gap: .5rem; font-size: var(--text-xs); color: rgba(var(--cream-rgb), .6); margin-bottom: var(--space-6); }
-    .gh__crumbs a { color: rgba(var(--cream-rgb), .85); text-decoration: none; }
-    .gh__crumbs a:hover { color: var(--mucilage); }
-    .gh__title {
-      font-family: var(--font-display);
-      font-size: var(--text-hero);
-      line-height: 1.02;
-      letter-spacing: -.01em;
-      margin: 0;
-      color: var(--cream);
-      text-wrap: balance;
-    }
-    .gh__title em { font-style: italic; color: var(--mucilage); }
-    .gh__lead { margin: var(--space-5) 0 0; max-width: 42ch; color: rgba(var(--cream-rgb), .78); font-size: var(--text-lg); line-height: 1.55; }
-    .gh__facts { list-style: none; margin: var(--space-6) 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-5); }
-    .gh__facts li { display: inline-flex; align-items: center; gap: .45rem; font-size: var(--text-sm); color: rgba(var(--cream-rgb), .85); }
-    .gh__facts :global(svg) { color: var(--mucilage); }
-    .gh__cta {
-      display: inline-flex; align-items: center; gap: .5rem;
-      margin-top: var(--space-8);
-      padding: .8rem 1.4rem;
-      border-radius: 999px;
-      background: var(--cream);
-      color: var(--espresso);
-      font-weight: 700;
-      text-decoration: none;
-      transition: background var(--dur) var(--ease), transform var(--dur) var(--ease);
-    }
-    .gh__cta:hover { background: var(--mucilage); }
-    .gh__cta:focus-visible { outline: 2px solid var(--mucilage); outline-offset: 3px; }
-    .gh__cta--light { background: var(--espresso); color: var(--cream); }
 
     /* ── Kits ───────────────────────────────────────────────────────────── */
     .gk { max-width: var(--gw); margin: 0 auto; padding: var(--space-16) 1.25rem var(--space-12); scroll-margin-top: 120px; }

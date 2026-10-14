@@ -24,7 +24,7 @@ export const gifts: Piece = (addCleanup) => {
     const split = SplitText.create(title, { type: 'words', mask: 'words' });
     // El <em> del titular conserva su color: SplitText envuelve dentro de él
     gsap.from(split.words, { yPercent: 110, duration: 1, ease: 'power3.out', stagger: 0.06 });
-    gsap.from(page.querySelectorAll('.gh__crumbs, .gh__lead, .gh__facts, .gh__cta'), {
+    gsap.from(page.querySelectorAll('.dh__crumbs, .dh__lead, .dh__facts, .dh__cta'), {
       y: 16, opacity: 0, duration: 0.7, stagger: 0.08, delay: 0.3, clearProps: 'transform,opacity',
     });
   }

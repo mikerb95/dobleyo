@@ -1,0 +1,108 @@
+---
+/**
+ * Encabezado oscuro de las páginas de compra (regalos, suscripción), en el
+ * mismo lenguaje del footer: espresso, titular en Fraunces con la segunda parte
+ * en cursiva color mucílago y datos clave con íconos. El slot por defecto va a
+ * la derecha (la caja de regalo, por ejemplo).
+ *
+ * El titular lleva data-split: las piezas de motion lo parten en palabras.
+ */
+import Icon from "../Icon.astro";
+
+interface Props {
+  crumb: string;
+  title: string;
+  titleEm: string;
+  lead: string;
+  /** icon: nombre de un ícono de Icon.astro */
+  facts?: { icon: string; text: string }[];
+  cta?: { href: string; label: string };
+}
+
+const { crumb, title, titleEm, lead, facts = [], cta } = Astro.props;
+const hasAside = Astro.slots.has("default");
+---
+
+<section class:list={["dh", { "dh--solo": !hasAside }]} aria-labelledby="dhTitle">
+  <div class="dh__inner">
+    <div class="dh__copy">
+      <nav class="dh__crumbs" aria-label="Ruta de navegación">
+        <a href="/">Inicio</a>
+        <span aria-hidden="true">/</span>
+        <span>{crumb}</span>
+      </nav>
+      <h1 id="dhTitle" class="dh__title" data-split>{title} <em>{titleEm}</em></h1>
+      <p class="dh__lead">{lead}</p>
+      {facts.length > 0 && (
+        <ul class="dh__facts">
+          {facts.map((f) => (
+            <li><Icon name={f.icon as any} size={18} /> {f.text}</li>
+          ))}
+        </ul>
+      )}
+      {cta && (
+        <a href={cta.href} class="dh__cta">{cta.label} <Icon name="arrow-right" size={18} /></a>
+      )}
+    </div>
+    {hasAside && <div class="dh__aside"><slot /></div>}
+  </div>
+</section>
+
+<style>
+  .dh {
+    background:
+      radial-gradient(70% 90% at 82% 40%, rgba(var(--caramel-rgb), .22), transparent 70%),
+      var(--espresso);
+    color: var(--cream);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    margin-top: var(--space-4);
+  }
+  .dh__inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: var(--space-10) clamp(1.25rem, 4vw, 3rem) var(--space-12);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-10);
+    align-items: center;
+  }
+  @media (min-width: 1024px) {
+    .dh__inner { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); padding-block: var(--space-16); }
+    .dh--solo .dh__inner { grid-template-columns: minmax(0, 1fr); }
+  }
+  .dh__crumbs { display: flex; gap: .5rem; font-size: var(--text-xs); color: rgba(var(--cream-rgb), .6); margin-bottom: var(--space-6); }
+  .dh__crumbs a { color: rgba(var(--cream-rgb), .85); text-decoration: none; }
+  .dh__crumbs a:hover { color: var(--mucilage); }
+  .dh__title {
+    font-family: var(--font-display);
+    font-size: var(--text-hero);
+    line-height: 1.02;
+    letter-spacing: -.01em;
+    margin: 0;
+    color: var(--cream);
+    text-wrap: balance;
+    max-width: 16ch;
+  }
+  .dh__title em { font-style: italic; color: var(--mucilage); }
+  .dh__lead { margin: var(--space-5) 0 0; max-width: 46ch; color: rgba(var(--cream-rgb), .78); font-size: var(--text-lg); line-height: 1.55; }
+  .dh__facts { list-style: none; margin: var(--space-6) 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-5); }
+  .dh__facts li { display: inline-flex; align-items: center; gap: .45rem; font-size: var(--text-sm); color: rgba(var(--cream-rgb), .88); }
+  .dh__facts :global(svg) { color: var(--mucilage); }
+  .dh__cta {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    margin-top: var(--space-8);
+    padding: .8rem 1.4rem;
+    border-radius: 999px;
+    background: var(--cream);
+    color: var(--espresso);
+    font-weight: 700;
+    text-decoration: none;
+    transition: background var(--dur) var(--ease);
+  }
+  .dh__cta:hover { background: var(--mucilage); }
+  .dh__cta:focus-visible { outline: 2px solid var(--mucilage); outline-offset: 3px; }
+  .dh__aside { min-width: 0; }
+</style>
