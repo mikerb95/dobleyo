@@ -459,7 +459,7 @@ const balancePositive = dashboard.month_balance >= 0;
   .adm-tabs {
     display: flex;
     gap: 0.35rem;
-    border-bottom: 1px solid var(--rule, #e7e2da);
+    border-bottom: 1px solid var(--rule);
     overflow-x: auto;
     scrollbar-width: none;
   }
@@ -471,17 +471,17 @@ const balancePositive = dashboard.month_balance >= 0;
     cursor: pointer;
     font-size: 0.875rem;
     font-weight: 500;
-    color: var(--muted, #7a6652);
+    color: var(--muted);
     white-space: nowrap;
     border-bottom: 2px solid transparent;
     margin-bottom: -1px;
     border-radius: 0;
     transition: color .15s, background .15s, border-color .15s;
   }
-  .adm-tab:hover { color: var(--color-primary, #3a2618); background: var(--hover, #f7f3ed); }
+  .adm-tab:hover { color: var(--color-primary); background: var(--hover); }
   .adm-tab--active {
-    color: var(--color-primary, #3a2618);
-    border-bottom-color: var(--color-accent, #c9893d);
+    color: var(--color-primary);
+    border-bottom-color: var(--color-accent);
     font-weight: 600;
   }
 
@@ -517,15 +517,13 @@ const balancePositive = dashboard.month_balance >= 0;
     color: var(--color-text);
     margin: 0;
     padding: 12px 16px;
-    border-bottom: 1px solid var(--rule, #e7e2da);
+    border-bottom: 1px solid var(--rule);
   }
   .adm-table-wrap { width: 100%; overflow-x: auto; }
 
-  .mono { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.78rem; color: var(--muted, #7a6652); }
-  .num mono { font-weight: 600; color: var(--color-primary, #3a2618); font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
 
   .adm-empty {
-    color: var(--muted, #9ca3af);
+    color: var(--muted);
     font-size: 0.875rem;
     text-align: center;
     padding: 2.75rem 1.25rem;
@@ -541,11 +539,11 @@ const balancePositive = dashboard.month_balance >= 0;
     text-decoration: none;
     text-align: right;
   }
-  .adm-link:hover { color: var(--color-primary, #3a2618); }
+  .adm-link:hover { color: var(--color-primary); }
   .adm-loading {
     text-align: center;
     padding: 2.75rem 1.25rem;
-    color: var(--muted, #9ca3af);
+    color: var(--muted);
     font-size: 0.875rem;
   }
 
@@ -572,7 +570,7 @@ const balancePositive = dashboard.month_balance >= 0;
   }
   .adm-field { display: flex; flex-direction: column; gap: 0.375rem; }
   .adm-field--full { grid-column: 1 / -1; }
-  .adm-field span { font-size: 0.8rem; font-weight: 500; color: #374151; }
+  .adm-field span { font-size: 12px; font-weight: 500; color: var(--muted); }
   .adm-field input, .adm-field select, .adm-field textarea {
     padding: 0.5rem 0.75rem;
     border: 1px solid var(--rule-2);
@@ -944,7 +942,7 @@ document.getElementById('formExpense').addEventListener('submit', async (e) => {
   e.preventDefault();
   const msgEl = document.getElementById('expenseMsg');
   const data = Object.fromEntries(new FormData(e.target));
-  msgEl.style.color = '#374151'; msgEl.textContent = 'Guardando…';
+  msgEl.style.color = 'var(--muted)'; msgEl.textContent = 'Guardando…';
   try {
     const r = await fetch('/api/finance/expenses', {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
@@ -952,15 +950,15 @@ document.getElementById('formExpense').addEventListener('submit', async (e) => {
     });
     const json = await r.json();
     if (json.success) {
-      msgEl.style.color = '#065f46';
+      msgEl.style.color = 'var(--ok)';
       msgEl.textContent = `Gasto ${json.data.expense_number} registrado`;
       e.target.reset();
       setTimeout(() => { closeModal('modalExpense'); msgEl.textContent = ''; loadedTabs.delete('expenses'); }, 1800);
     } else {
-      msgEl.style.color = '#991b1b';
+      msgEl.style.color = 'var(--danger)';
       msgEl.textContent = 'Error: ' + (json.errors?.[0]?.msg ?? json.error);
     }
-  } catch { msgEl.style.color = '#991b1b'; msgEl.textContent = 'Error de conexión'; }
+  } catch { msgEl.style.color = 'var(--danger)'; msgEl.textContent = 'Error de conexión'; }
 });
 
 // ================================================================
@@ -1000,7 +998,7 @@ document.getElementById('formPurchaseInvoice').addEventListener('submit', async 
   rawData.lines = Object.values(linesMap).filter(l => l.description && l.quantity > 0);
   if (rawData.caficultor_id) rawData.caficultor_id = parseInt(rawData.caficultor_id, 10);
 
-  msgEl.style.color = '#374151'; msgEl.textContent = 'Creando factura…';
+  msgEl.style.color = 'var(--muted)'; msgEl.textContent = 'Creando factura…';
   try {
     const r = await fetch('/api/finance/purchase-invoices', {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
@@ -1008,17 +1006,17 @@ document.getElementById('formPurchaseInvoice').addEventListener('submit', async 
     });
     const json = await r.json();
     if (json.success) {
-      msgEl.style.color = '#065f46';
+      msgEl.style.color = 'var(--ok)';
       msgEl.textContent = `Factura ${json.data.invoice_number} creada`;
       e.target.reset();
       document.getElementById('purchaseLines').innerHTML = purchaseLineTemplate(0);
       purchaseLineCount = 1;
       setTimeout(() => { closeModal('modalPurchaseInvoice'); msgEl.textContent = ''; loadedTabs.delete('purchase-invoices'); }, 1800);
     } else {
-      msgEl.style.color = '#991b1b';
+      msgEl.style.color = 'var(--danger)';
       msgEl.textContent = 'Error: ' + (json.errors?.[0]?.msg ?? json.error);
     }
-  } catch { msgEl.style.color = '#991b1b'; msgEl.textContent = 'Error de conexión'; }
+  } catch { msgEl.style.color = 'var(--danger)'; msgEl.textContent = 'Error de conexión'; }
 });
 
 function purchaseLineTemplate(n) {
@@ -1103,7 +1101,7 @@ document.getElementById('formSalesInvoice').addEventListener('submit', async (e)
   rawData.customer_id = parseInt(rawData.customer_id, 10);
   rawData.shipping_cost = parseFloat(rawData.shipping_cost) || 0;
 
-  msgEl.style.color = '#374151'; msgEl.textContent = 'Creando factura…';
+  msgEl.style.color = 'var(--muted)'; msgEl.textContent = 'Creando factura…';
   try {
     const r = await fetch('/api/finance/sales-invoices', {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
@@ -1111,7 +1109,7 @@ document.getElementById('formSalesInvoice').addEventListener('submit', async (e)
     });
     const json = await r.json();
     if (json.success) {
-      msgEl.style.color = '#065f46';
+      msgEl.style.color = 'var(--ok)';
       msgEl.textContent = `Factura ${json.data.invoice_number} creada. Total: ${fmtCOP(json.data.total_amount)}`;
       e.target.reset();
       document.getElementById('salesLines').innerHTML = saleLineTemplate(0);
@@ -1119,10 +1117,10 @@ document.getElementById('formSalesInvoice').addEventListener('submit', async (e)
       recalcSaleTotal();
       setTimeout(() => { closeModal('modalSalesInvoice'); msgEl.textContent = ''; loadedTabs.delete('sales-invoices'); }, 2200);
     } else {
-      msgEl.style.color = '#991b1b';
+      msgEl.style.color = 'var(--danger)';
       msgEl.textContent = 'Error: ' + (json.errors?.[0]?.msg ?? json.error);
     }
-  } catch { msgEl.style.color = '#991b1b'; msgEl.textContent = 'Error de conexión'; }
+  } catch { msgEl.style.color = 'var(--danger)'; msgEl.textContent = 'Error de conexión'; }
 });
 
 function saleLineTemplate(n) {
@@ -1148,7 +1146,7 @@ document.getElementById('formPayment').addEventListener('submit', async (e) => {
   rawData.payment_method_id = parseInt(rawData.payment_method_id, 10);
   rawData.amount = parseFloat(rawData.amount);
 
-  msgEl.style.color = '#374151'; msgEl.textContent = 'Registrando pago…';
+  msgEl.style.color = 'var(--muted)'; msgEl.textContent = 'Registrando pago…';
   try {
     const r = await fetch('/api/finance/payments', {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
@@ -1157,15 +1155,15 @@ document.getElementById('formPayment').addEventListener('submit', async (e) => {
     const json = await r.json();
     if (json.success) {
       const tipo = rawData.payment_type === 'recibido' ? 'cobro' : 'pago';
-      msgEl.style.color = '#065f46';
+      msgEl.style.color = 'var(--ok)';
       msgEl.textContent = `${tipo.charAt(0).toUpperCase() + tipo.slice(1)} ${json.data.payment_number} registrado por ${fmtCOP(json.data.amount)}`;
       e.target.reset();
       setTimeout(() => { closeModal('modalPayment'); msgEl.textContent = ''; loadedTabs.delete('payments'); }, 2000);
     } else {
-      msgEl.style.color = '#991b1b';
+      msgEl.style.color = 'var(--danger)';
       msgEl.textContent = 'Error: ' + (json.errors?.[0]?.msg ?? json.error);
     }
-  } catch { msgEl.style.color = '#991b1b'; msgEl.textContent = 'Error de conexión'; }
+  } catch { msgEl.style.color = 'var(--danger)'; msgEl.textContent = 'Error de conexión'; }
 });
 
 // ── Event delegation - reemplaza todos los onclick= inline ─────────────────
