@@ -1,6 +1,8 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import { getCanonicalUrl } from "../i18n/index.ts";
+import DarkHero from "../components/shop/DarkHero.astro";
+import PostCard from "../components/shop/PostCard.astro";
+import { getCanonicalUrl, getHreflangPair } from "../i18n/index.ts";
 
 const STATIC_POSTS = [
   { slug: 'dia-de-cosecha', title: 'Un día de cosecha: lo que cuesta cada grano que te tomas', excerpt: 'Detrás de esa taza de la mañana hay madrugadas en la montaña, canastos al hombro y manos que escogen grano por grano. Vale la pena conocer ese trabajo.', cover_image_url: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?q=80&w=800&auto=format&fit=crop', reading_time_min: 5 },
@@ -25,94 +27,57 @@ try {
 
 if (!posts.length) posts = STATIC_POSTS;
 
-function fmtDate(d: any) {
-  if (!d) return '';
-  try { return new Date(d).toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' }); }
-  catch { return ''; }
-}
+const hreflang = getHreflangPair("/blog");
+// El más reciente va de portada en el encabezado; el resto, en la rejilla
+const [featured, ...rest] = posts;
+// Rejilla de 3 sin huecos al final: con 3k+2 artículos el primero va ancho;
+// con 3k+1, el primero y el cuarto (cada uno ocupa dos columnas)
+const wide = new Set<number>(rest.length % 3 === 2 ? [0] : rest.length % 3 === 1 && rest.length >= 4 ? [0, 3] : []);
 ---
 
 <Layout
-  title="Blog — DobleYo Café"
+  title="Blog · DobleYo Café"
   description="Recetas, notas de cata y guías de preparación para amantes del café de especialidad."
   canonical={getCanonicalUrl('/blog', 'es')}
+  hreflangEs={hreflang?.es}
+  hreflangEn={hreflang?.en}
 >
-  <section class="blog-page">
-    <header class="blog-header">
-      <h1 class="blog-title">Blog</h1>
-      <p class="blog-subtitle">Recetas, notas de origen y guías de preparación.</p>
-    </header>
+  <DarkHero
+    crumb="Blog"
+    title="Historias del café"
+    titleEm="colombiano."
+    lead="Recetas, notas de origen y guías de preparación, contadas desde la finca hasta su taza."
+    facts={[
+      { icon: "file-text", text: `${posts.length} artículos` },
+      { icon: "dripper", text: "Recetas y métodos" },
+    ]}
+  >
+    {featured && <PostCard post={featured} feature label="Lo más reciente" />}
+  </DarkHero>
 
-    <div class="blog-grid">
-      {posts.map((post: any) => (
-        <article class="blog-card">
-          <a href={`/blog/${post.slug}`} class="blog-card__img-wrap">
-            <img
-              src={post.cover_image_url || 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?q=80&w=800&auto=format&fit=crop'}
-              alt={post.title}
-              loading="lazy"
-              class="blog-card__img"
-            />
-          </a>
-          <div class="blog-card__body">
-            {post.published_at && <time class="blog-card__date">{fmtDate(post.published_at)}</time>}
-            <h2 class="blog-card__title">
-              <a href={`/blog/${post.slug}`}>{post.title}</a>
-            </h2>
-            {post.excerpt && <p class="blog-card__excerpt">{post.excerpt}</p>}
-            <div class="blog-card__meta">
-              <span>{post.reading_time_min ?? 3} min de lectura</span>
-              <a href={`/blog/${post.slug}`} class="blog-card__read">Leer más →</a>
-            </div>
-          </div>
-        </article>
-      ))}
-    </div>
-  </section>
+  {rest.length > 0 && (
+    <section class="blog">
+      <h2 class="blog__title">Más artículos</h2>
+      <ul class="blog__grid" data-blog-grid>
+        {rest.map((post: any, i: number) => (
+          <li class:list={{ "blog__wide": wide.has(i) }}><PostCard post={post} wide={wide.has(i)} /></li>
+        ))}
+      </ul>
+    </section>
+  )}
 
-  <style>
-    .blog-page {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 2rem 1.25rem 5rem;
-    }
-    .blog-header { margin-bottom: 2.5rem; }
-    .blog-title { font-size: clamp(1.8rem, 4vw, 2.8rem); margin: 0 0 .5rem; }
-    .blog-subtitle { color: var(--muted-fg, #888); margin: 0; }
-
-    .blog-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 2rem;
-    }
-
-    .blog-card {
-      border-radius: .75rem;
-      overflow: hidden;
-      background: var(--card, #fff);
-      border: 1px solid var(--border, #e6e6e6);
-      display: flex;
-      flex-direction: column;
-      transition: box-shadow .2s;
-    }
-    .blog-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,.09); }
-
-    .blog-card__img-wrap { display: block; aspect-ratio: 16/9; overflow: hidden; }
-    .blog-card__img { width: 100%; height: 100%; object-fit: cover; transition: transform .3s; }
-    .blog-card:hover .blog-card__img { transform: scale(1.03); }
-
-    .blog-card__body { padding: 1.25rem; display: flex; flex-direction: column; gap: .5rem; flex: 1; }
-    .blog-card__date { font-size: .75rem; color: var(--muted-fg, #888); text-transform: uppercase; letter-spacing: .06em; }
-    .blog-card__title { font-size: 1.1rem; margin: 0; line-height: 1.3; }
-    .blog-card__title a { color: inherit; text-decoration: none; }
-    .blog-card__title a:hover { color: var(--accent); }
-    .blog-card__excerpt { font-size: .9rem; color: var(--muted-fg, #888); margin: 0; flex: 1; }
-    .blog-card__meta { display: flex; justify-content: space-between; align-items: center; font-size: .82rem; margin-top: auto; padding-top: .75rem; border-top: 1px solid var(--border, #e6e6e6); color: var(--muted-fg, #888); }
-    .blog-card__read { color: var(--accent); text-decoration: none; font-weight: 600; }
-    .blog-card__read:hover { text-decoration: underline; }
-
-    @media (max-width: 480px) {
-      .blog-grid { grid-template-columns: 1fr; }
-    }
-  </style>
+  <script>
+    import "../scripts/shop/index.ts";
+  </script>
 </Layout>
+
+<style>
+  .blog { max-width: 1200px; margin: 0 auto; padding: var(--space-16) 1.25rem var(--space-16); }
+  .blog__title { margin: 0 0 var(--space-8); font-family: var(--font-display); font-size: var(--text-3xl); color: var(--espresso); }
+  .blog__grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-6); }
+  @media (min-width: 640px) { .blog__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (min-width: 1024px) {
+    .blog__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .blog__wide { grid-column: span 2; }
+  }
+</style>

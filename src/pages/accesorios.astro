@@ -1,15 +1,37 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import PageHero from "../components/PageHero.astro";
+import DarkHero from "../components/shop/DarkHero.astro";
+import ProductStack from "../components/shop/ProductStack.astro";
 import ProductCard from "../components/ProductCard.astro";
+import CtaBand from "../components/shop/CtaBand.astro";
 import { products } from "../data/products";
 import { getCanonicalUrl } from "../i18n/index.ts";
+import { reviewAggregateSql } from "../lib/products.server.ts";
 
 export const prerender = false;
 
-const accesorios = products.filter((p) => p.category === "Accesorios");
+// Accesorios desde la BD (como /tienda), sin los kits de regalo: en la BD
+// también son categoría 'accesorio', pero tienen su página en /regalos.
+// El catálogo estático queda de respaldo.
+let accesorios: any[] = [];
+try {
+  const { query } = await import("../../server/db.js");
+  const result = await query(
+    `SELECT p.id, p.slug, p.name, p.category, p.origin, p.process, p.roast,
+            p.price, p.rating, p.weight, p.weight_unit,
+            p.image_url AS image, p.stock_quantity AS stock,
+            ${reviewAggregateSql("p")}
+     FROM products p
+     WHERE p.is_active = 1 AND p.category = 'accesorio' AND COALESCE(p.is_gift_set, 0) = 0
+     ORDER BY p.is_bestseller DESC, p.rating DESC`
+  );
+  accesorios = result.rows.map((p: any) => ({ ...p, category: "Accesorios" }));
+} catch (_) { /* BD no disponible */ }
+if (!accesorios.length) {
+  accesorios = products.filter((p) => p.category === "Accesorios").map((p) => ({ ...p, stock: 99 }));
+}
 
-const pageTitle = "Accesorios — DobleYo Café";
+const pageTitle = "Accesorios · DobleYo Café";
 const pageDescription =
   "Molinillos, métodos de preparación y accesorios para disfrutar el café de especialidad colombiano en casa. Calidad seleccionada por DobleYo Café.";
 ---
@@ -20,43 +42,50 @@ const pageDescription =
   description={pageDescription}
   canonical={getCanonicalUrl("/accesorios", "es")}
 >
-  <PageHero
-    eyebrow="Accesorios"
-    title="Todo para una taza perfecta"
-    subtitle="Molinillos, prensas y métodos de preparación seleccionados para sacarle el máximo a cada lote de café de especialidad."
+  <DarkHero
+    crumb="Accesorios"
+    title="Todo para una taza"
+    titleEm="perfecta."
+    lead="Molinillos y métodos de preparación seleccionados para sacarle el máximo a cada café de especialidad."
+    facts={[
+      { icon: "truck", text: "Envío gratis desde $120.000" },
+    ]}
+    cta={accesorios.length > 0 ? { href: "#accesorios", label: "Ver accesorios" } : undefined}
+  >
+    <ProductStack items={accesorios.map((p) => ({ id: p.id, name: p.name, price: Number(p.price), image: p.image }))} />
+  </DarkHero>
+
+  <section id="accesorios" class="acc">
+    <p class="acc__eyebrow">Catálogo</p>
+    <h2 class="acc__title">Accesorios</h2>
+    {accesorios.length === 0 ? (
+      <p class="acc__empty">
+        Pronto encontrará aquí nuestra selección de accesorios. Mientras tanto, explore <a href="/tienda">nuestros cafés</a>.
+      </p>
+    ) : (
+      <div class="acc-grid">
+        {accesorios.map((p) => <ProductCard product={p} />)}
+      </div>
+    )}
+  </section>
+
+  <CtaBand
+    title="¿Cómo se usan?"
+    text="Proporciones, molienda, tiempos y temperatura para cada método, paso a paso."
+    primary={{ href: "/guias", label: "Ver las guías" }}
+    secondary={{ href: "/tienda", label: "Ver cafés" }}
   />
 
-  <section class="acc-list reveal">
-    <div class="container">
-      {accesorios.length === 0 ? (
-        <p class="acc-empty">
-          Pronto encontrará aquí nuestra selección de accesorios. Mientras tanto,
-          explore <a href="/tienda">nuestros cafés</a>.
-        </p>
-      ) : (
-        <div class="acc-grid">
-          {accesorios.map((p) => (
-            <ProductCard product={p} />
-          ))}
-        </div>
-      )}
-    </div>
-  </section>
+  <script>
+    import "../scripts/shop/index.ts";
+  </script>
 </Layout>
 
 <style>
-  .container { max-width: 1200px; margin: 0 auto; padding: 0 1.25rem; }
-
-  .acc-list { background: #fff; padding: 3rem 0 4rem; }
-  .acc-empty { text-align: center; color: var(--ink, #666); padding: 2rem 0; }
-  .acc-empty a { color: var(--accent); }
-
-  .acc-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-  }
-  @media (min-width: 480px) { .acc-grid { grid-template-columns: repeat(2, 1fr); } }
-  @media (min-width: 768px) { .acc-grid { grid-template-columns: repeat(3, 1fr); } }
-  @media (min-width: 1024px) { .acc-grid { grid-template-columns: repeat(4, 1fr); } }
+  .acc { max-width: 1200px; margin: 0 auto; padding: var(--space-16) 1.25rem var(--space-8); scroll-margin-top: 120px; }
+  .acc__eyebrow { margin: 0 0 var(--space-2); font-size: var(--text-xs); font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--caramel); }
+  .acc__title { margin: 0 0 var(--space-8); font-family: var(--font-display); font-size: var(--text-3xl); color: var(--espresso); }
+  .acc__empty { color: var(--ink-muted); }
+  .acc__empty a { color: var(--caramel-deep); }
+  .acc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: var(--space-6); }
 </style>

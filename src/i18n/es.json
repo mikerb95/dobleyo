@@ -268,5 +268,19 @@
             "title": "Nuestras Fincas",
             "link": "Ver todas las fincas →"
         }
+    },
+    "guides": {
+        "panel": {
+            "panel_label": "Recetas por método",
+            "ratio": "Proporción",
+            "coffee": "Café",
+            "water": "Agua",
+            "grind": "Molienda",
+            "time": "Tiempo",
+            "temp": "Temperatura",
+            "fine": "Fina",
+            "coarse": "Gruesa",
+            "no_weigh": "Sin pesar"
+        }
     }
 }

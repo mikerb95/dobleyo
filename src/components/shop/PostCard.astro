@@ -1,0 +1,77 @@
+---
+/**
+ * Tarjeta de artículo del blog. `feature` la vuelve la portada grande del
+ * encabezado (imagen de fondo con el titular encima).
+ */
+interface Props {
+  post: { slug: string; title: string; excerpt?: string | null; cover_image_url?: string | null; reading_time_min?: number | null; published_at?: string | null };
+  feature?: boolean;
+  /** Ocupa dos columnas: imagen a la izquierda en escritorio */
+  wide?: boolean;
+  label?: string;
+}
+const { post, feature = false, wide = false, label } = Astro.props;
+const FALLBACK = "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?q=80&w=800&auto=format&fit=crop";
+const date = (() => {
+  if (!post.published_at) return "";
+  try { return new Date(post.published_at).toLocaleDateString("es-CO", { year: "numeric", month: "long", day: "numeric" }); }
+  catch { return ""; }
+})();
+---
+
+<article class:list={["post", { "post--feature": feature, "post--wide": wide }]}>
+  <a href={`/blog/${post.slug}`} class="post__link">
+    <span class="post__media">
+      <img src={post.cover_image_url || FALLBACK} alt="" loading={feature ? "eager" : "lazy"} />
+    </span>
+    <span class="post__body">
+      {label && <span class="post__label">{label}</span>}
+      {date && <time class="post__date" datetime={post.published_at ?? undefined}>{date}</time>}
+      <span class="post__title">{post.title}</span>
+      {!feature && post.excerpt && <span class="post__excerpt">{post.excerpt}</span>}
+      <span class="post__meta">{post.reading_time_min ?? 3} min de lectura</span>
+    </span>
+  </a>
+</article>
+
+<style>
+  .post { height: 100%; }
+  .post__link {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    text-decoration: none;
+    color: inherit;
+    transition: box-shadow var(--dur) var(--ease);
+  }
+  .post__link:hover { box-shadow: 0 18px 40px -26px rgba(var(--espresso-rgb), .5); }
+  .post__link:focus-visible { outline: 2px solid var(--caramel); outline-offset: 3px; }
+  .post__media { display: block; aspect-ratio: 16 / 10; overflow: hidden; background: var(--sand); }
+  .post__media img { width: 100%; height: 100%; object-fit: cover; transition: transform .7s var(--ease); }
+  .post__link:hover .post__media img { transform: scale(1.05); }
+  .post__body { display: flex; flex-direction: column; gap: var(--space-2); flex: 1; padding: var(--space-5); }
+  .post__label { font-size: .68rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--mucilage); }
+  .post__date { font-size: var(--text-xs); color: var(--ink-muted); text-transform: capitalize; }
+  .post__title { font-family: var(--font-display); font-size: var(--text-xl); line-height: 1.2; color: var(--espresso); text-wrap: balance; }
+  .post__excerpt { font-size: var(--text-sm); line-height: 1.55; color: var(--ink-muted); }
+  .post__meta { margin-top: auto; padding-top: var(--space-3); font-size: var(--text-xs); font-weight: 600; color: var(--caramel-deep); }
+
+  /* Portada grande en el encabezado oscuro */
+  .post--feature .post__link { position: relative; border: 0; background: var(--espresso); min-height: 360px; }
+  .post--feature .post__media { position: absolute; inset: 0; aspect-ratio: auto; }
+  .post--feature .post__media::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(var(--espresso-rgb), .1) 0%, rgba(var(--espresso-rgb), .35) 35%, rgba(var(--espresso-rgb), .94) 100%); }
+  .post--feature .post__body { position: relative; justify-content: flex-end; padding: var(--space-6); }
+  .post--feature .post__date { color: rgba(var(--cream-rgb), .7); }
+  .post--feature .post__title { font-size: var(--text-2xl); color: var(--cream); }
+  .post--feature .post__meta { margin-top: var(--space-2); color: var(--mucilage); }
+  @media (min-width: 1024px) {
+    .post--wide .post__link { flex-direction: row; }
+    .post--wide .post__media { flex: 0 0 52%; aspect-ratio: auto; min-height: 100%; }
+    .post--wide .post__body { padding: var(--space-8); justify-content: center; }
+    .post--wide .post__title { font-size: var(--text-2xl); }
+  }
+</style>

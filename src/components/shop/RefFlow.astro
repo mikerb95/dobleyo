@@ -1,0 +1,83 @@
+---
+/**
+ * Encabezado de afiliados: el recorrido de un enlace de afiliado, en tres
+ * tarjetas: su enlace, una compra hecha con él y la comisión que genera.
+ * Es un ejemplo ilustrativo (no hay montos ni porcentajes: la comisión se
+ * acuerda al aprobar a cada afiliado). El motion escribe el enlace, "toca" la
+ * compra y hace aparecer la comisión en bucle (src/scripts/shop/affiliates.ts).
+ */
+import Icon from "../Icon.astro";
+
+interface Props {
+  lang?: "es" | "en";
+}
+const { lang = "es" } = Astro.props;
+const L =
+  lang === "en"
+    ? { link: "Your link", handle: "your-name", order: "Order placed with your link", orderSub: "Specialty coffee · shipped", fee: "Commission for you", feeSub: "Settled monthly", note: "Illustrative example" }
+    : { link: "Su enlace", handle: "su-nombre", order: "Compra hecha con su enlace", orderSub: "Café de especialidad · enviado", fee: "Comisión para usted", feeSub: "Se liquida cada mes", note: "Ejemplo ilustrativo" };
+---
+
+<div class="rflow" data-rflow aria-hidden="true">
+  <div class="rflow__card rflow__card--link" data-step="0">
+    <span class="rflow__icon"><Icon name="link" size={18} /></span>
+    <div class="rflow__body">
+      <span class="rflow__label">{L.link}</span>
+      <code class="rflow__url">dobleyo.cafe/?ref=<span data-handle={L.handle}>{L.handle}</span><span class="rflow__caret"></span></code>
+    </div>
+  </div>
+
+  <svg class="rflow__wire" viewBox="0 0 20 40"><path d="M10 0 V40" /></svg>
+
+  <div class="rflow__card" data-step="1">
+    <span class="rflow__icon"><Icon name="package" size={18} /></span>
+    <div class="rflow__body">
+      <span class="rflow__title">{L.order}</span>
+      <span class="rflow__sub">{L.orderSub}</span>
+    </div>
+  </div>
+
+  <svg class="rflow__wire" viewBox="0 0 20 40"><path d="M10 0 V40" /></svg>
+
+  <div class="rflow__card rflow__card--fee" data-step="2">
+    <span class="rflow__icon"><Icon name="percent" size={18} /></span>
+    <div class="rflow__body">
+      <span class="rflow__title">{L.fee}</span>
+      <span class="rflow__sub">{L.feeSub}</span>
+    </div>
+    <span class="rflow__check"><Icon name="check" size={16} /></span>
+  </div>
+
+  <p class="rflow__note">{L.note}</p>
+</div>
+
+<style>
+  .rflow { width: min(100%, 420px); margin: 0 auto; display: grid; justify-items: center; }
+  .rflow__card {
+    position: relative;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    border-radius: var(--radius-md);
+    background: rgba(var(--cream-rgb), .06);
+    border: 1px solid rgba(var(--cream-rgb), .14);
+    color: var(--cream);
+  }
+  .rflow__card--link { background: var(--cream); color: var(--espresso); border-color: var(--cream); }
+  .rflow__card--fee { background: color-mix(in srgb, var(--mucilage) 16%, transparent); border-color: color-mix(in srgb, var(--mucilage) 45%, transparent); }
+  .rflow__icon { display: grid; place-items: center; width: 40px; height: 40px; flex-shrink: 0; border-radius: 50%; background: var(--caramel); color: var(--cream); }
+  .rflow__body { display: grid; gap: 2px; min-width: 0; }
+  .rflow__label { font-size: .68rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--caramel-deep); }
+  .rflow__url { font-size: var(--text-sm); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .rflow__url [data-handle] { color: var(--caramel-deep); }
+  .rflow__caret { display: none; width: 2px; height: 1em; margin-left: 1px; vertical-align: -2px; background: var(--caramel-deep); }
+  :global(.motion-on) .rflow__caret { display: inline-block; }
+  .rflow__title { font-family: var(--font-display); font-size: var(--text-lg); line-height: 1.2; }
+  .rflow__sub { font-size: var(--text-xs); color: rgba(var(--cream-rgb), .7); }
+  .rflow__check { margin-left: auto; display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--mucilage); color: var(--espresso); flex-shrink: 0; }
+  .rflow__wire { width: 20px; height: 34px; overflow: visible; }
+  .rflow__wire path { fill: none; stroke: var(--mucilage); stroke-width: 2; stroke-dasharray: 2 5; stroke-linecap: round; }
+  .rflow__note { margin: var(--space-4) 0 0; font-size: .68rem; letter-spacing: .12em; text-transform: uppercase; color: rgba(var(--cream-rgb), .5); }
+</style>

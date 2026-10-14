@@ -1,0 +1,132 @@
+---
+/**
+ * Línea de suministro del encabezado de partners: finca, tueste a la medida y
+ * el negocio del aliado, unidos por un camino. En motion, una bolsa recorre el
+ * camino y cada parada se enciende al pasar (src/scripts/shop/partners.ts).
+ * Sin motion: el camino trazado y las tres paradas encendidas.
+ *
+ * Las paradas repiten lo que prometen los beneficios de la página; no agregan
+ * datos nuevos.
+ */
+import Icon from "../Icon.astro";
+
+interface Stop {
+  icon: string;
+  title: string;
+  text: string;
+}
+interface Props {
+  stops: [Stop, Stop, Stop];
+}
+const { stops } = Astro.props;
+
+// Posiciones de las paradas en el viewBox 360x320 (y en % para el HTML)
+// El camino sale de cada parada hacia abajo, nunca por el lado del texto
+const POS = [
+  { x: 60, y: 46 },
+  { x: 300, y: 160 },
+  { x: 60, y: 274 },
+];
+const PATH = `M ${POS[0].x} ${POS[0].y} C 60 130, 300 70, ${POS[1].x} ${POS[1].y} S 60 190, ${POS[2].x} ${POS[2].y}`;
+---
+
+<div class="sline" data-sline aria-hidden="true">
+  <svg class="sline__svg" viewBox="0 0 360 320">
+    <path class="sline__road" d={PATH} />
+    <path class="sline__path" d={PATH} />
+  </svg>
+  <span class="sline__packet"><Icon name="package" size={18} /></span>
+  {stops.map((s, i) => (
+    <div
+      class:list={["sline__stop", { "sline__stop--right": i === 1 }]}
+      data-stop={i}
+      style={`left:${(POS[i].x / 360) * 100}%; top:${(POS[i].y / 320) * 100}%`}
+    >
+      <span class="sline__dot"><Icon name={s.icon as any} size={22} /></span>
+      <span class="sline__copy">
+        <strong>{s.title}</strong>
+        <span>{s.text}</span>
+      </span>
+    </div>
+  ))}
+</div>
+
+<style>
+  .sline {
+    position: relative;
+    width: min(100%, 500px);
+    aspect-ratio: 360 / 320;
+    margin: 0 auto;
+  }
+  .sline__svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .sline__road { fill: none; stroke: rgba(var(--cream-rgb), .12); stroke-width: 14; stroke-linecap: round; }
+  .sline__path { fill: none; stroke: var(--mucilage); stroke-width: 2; stroke-dasharray: 2 8; stroke-linecap: round; }
+
+  .sline__stop {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    gap: .7rem;
+    transform: translate(-27px, -50%);
+    width: max-content;
+    max-width: 62%;
+  }
+  .sline__stop--right { flex-direction: row-reverse; text-align: right; transform: translate(calc(-100% + 27px), -50%); }
+  .sline__dot {
+    display: grid;
+    place-items: center;
+    width: 54px;
+    height: 54px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--cream);
+    color: var(--caramel-deep);
+    box-shadow: 0 0 0 6px rgba(var(--cream-rgb), .12);
+    transition: box-shadow .4s var(--ease), background .4s var(--ease);
+  }
+  .sline__stop.is-hit .sline__dot { background: var(--mucilage); box-shadow: 0 0 0 10px color-mix(in srgb, var(--mucilage) 22%, transparent); }
+  .sline__copy { display: grid; gap: 2px; }
+  .sline__copy strong { font-family: var(--font-display); font-size: var(--text-lg); color: var(--cream); line-height: 1.15; }
+  .sline__copy span { font-size: var(--text-xs); color: rgba(var(--cream-rgb), .7); }
+
+  /* La bolsa solo existe con motion: sin JS el camino se ve completo y quieto */
+  .sline__packet {
+    position: absolute;
+    left: 0;
+    top: 0;
+    display: none;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    margin: -17px 0 0 -17px;
+    border-radius: 50%;
+    background: var(--caramel);
+    color: var(--cream);
+    box-shadow: 0 8px 18px -6px rgba(0, 0, 0, .6);
+  }
+  :global(.motion-on) .sline__packet { display: grid; }
+
+  /* Celular: lista vertical (el camino en curva no cabe sin pisar los textos).
+     Una línea punteada une las paradas; el motion las enciende por turnos. */
+  @media (max-width: 640px) {
+    .sline { aspect-ratio: auto; display: grid; gap: var(--space-5); padding-left: 2px; }
+    .sline::before {
+      content: "";
+      position: absolute;
+      left: 25px;
+      top: 27px;
+      bottom: 27px;
+      border-left: 2px dashed color-mix(in srgb, var(--mucilage) 60%, transparent);
+    }
+    .sline__svg, :global(.motion-on) .sline__packet { display: none; }
+    .sline__stop, .sline__stop--right {
+      position: relative;
+      left: auto !important;
+      top: auto !important;
+      transform: none;
+      max-width: none;
+      flex-direction: row;
+      text-align: left;
+    }
+  }
+</style>

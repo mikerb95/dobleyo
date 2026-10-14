@@ -487,6 +487,8 @@ const pageClass = `pg-${pageSlug.replace(/[^a-z0-9-]/gi, "")}`;
       .erp-table tbody tr:last-child td { border-bottom: 0; }
       .erp-table tbody tr:hover td { background: var(--hover); }
       .erp-table th.num, .erp-table td.num { text-align: right; }
+      /* IDs, fechas y cifras no se parten: si no caben, la tabla desplaza. */
+      .erp-table td.num, .erp-table td.mono, .erp-table td code { white-space: nowrap; }
       .erp-table tfoot td {
         height: 40px; padding: 0 14px;
         background: var(--subtle); font-weight: 600;

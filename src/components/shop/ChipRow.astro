@@ -1,0 +1,37 @@
+---
+/**
+ * Fila de "para quién es": píldoras con ícono. Una nota opcional al final
+ * (HTML permitido para un enlace) va en el slot.
+ */
+import Icon from "../Icon.astro";
+interface Props {
+  title: string;
+  items: { icon: string; label: string }[];
+}
+const { title, items } = Astro.props;
+---
+
+<section class="chips-row">
+  <h2 class="chips-row__title">{title}</h2>
+  <ul class="chips-row__list" data-chips>
+    {items.map((it) => (
+      <li class="chips-row__chip"><Icon name={it.icon as any} size={18} /> {it.label}</li>
+    ))}
+  </ul>
+  {Astro.slots.has("default") && <p class="chips-row__note"><slot /></p>}
+</section>
+
+<style>
+  .chips-row { max-width: 1200px; margin: 0 auto; padding: var(--space-8) 1.25rem; }
+  .chips-row__title { margin: 0 0 var(--space-5); font-family: var(--font-display); font-size: var(--text-2xl); color: var(--espresso); }
+  .chips-row__list { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--space-2); }
+  .chips-row__chip {
+    display: inline-flex; align-items: center; gap: .5rem;
+    padding: .6rem 1rem; border-radius: 999px;
+    background: var(--card); border: 1px solid var(--border);
+    font-size: var(--text-sm); font-weight: 600; color: var(--espresso);
+  }
+  .chips-row__chip :global(svg) { color: var(--caramel); }
+  .chips-row__note { margin: var(--space-5) 0 0; font-size: var(--text-sm); color: var(--ink-muted); }
+  .chips-row__note :global(a) { color: var(--caramel-deep); font-weight: 600; }
+</style>

@@ -17,17 +17,21 @@ interface Props {
   /** icon: nombre de un ícono de Icon.astro */
   facts?: { icon: string; text: string }[];
   cta?: { href: string; label: string };
+  /** Segundo botón, con borde (opcional) */
+  cta2?: { href: string; label: string };
+  lang?: "es" | "en";
 }
 
-const { crumb, title, titleEm, lead, facts = [], cta } = Astro.props;
+const { crumb, title, titleEm, lead, facts = [], cta, cta2, lang = "es" } = Astro.props;
+const home = lang === "en" ? "Home" : "Inicio";
 const hasAside = Astro.slots.has("default");
 ---
 
 <section class:list={["dh", { "dh--solo": !hasAside }]} aria-labelledby="dhTitle">
   <div class="dh__inner">
     <div class="dh__copy">
-      <nav class="dh__crumbs" aria-label="Ruta de navegación">
-        <a href="/">Inicio</a>
+      <nav class="dh__crumbs" aria-label={lang === "en" ? "Breadcrumb" : "Ruta de navegación"}>
+        <a href="/">{home}</a>
         <span aria-hidden="true">/</span>
         <span>{crumb}</span>
       </nav>
@@ -40,8 +44,11 @@ const hasAside = Astro.slots.has("default");
           ))}
         </ul>
       )}
-      {cta && (
-        <a href={cta.href} class="dh__cta">{cta.label} <Icon name="arrow-right" size={18} /></a>
+      {(cta || cta2) && (
+        <div class="dh__actions">
+          {cta && <a href={cta.href} class="dh__cta">{cta.label} <Icon name="arrow-right" size={18} /></a>}
+          {cta2 && <a href={cta2.href} class="dh__cta dh__cta--ghost">{cta2.label}</a>}
+        </div>
       )}
     </div>
     {hasAside && <div class="dh__aside"><slot /></div>}
@@ -89,11 +96,11 @@ const hasAside = Astro.slots.has("default");
   .dh__facts { list-style: none; margin: var(--space-6) 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-5); }
   .dh__facts li { display: inline-flex; align-items: center; gap: .45rem; font-size: var(--text-sm); color: rgba(var(--cream-rgb), .88); }
   .dh__facts :global(svg) { color: var(--mucilage); }
+  .dh__actions { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-8); }
   .dh__cta {
     display: inline-flex;
     align-items: center;
     gap: .5rem;
-    margin-top: var(--space-8);
     padding: .8rem 1.4rem;
     border-radius: 999px;
     background: var(--cream);
@@ -103,6 +110,8 @@ const hasAside = Astro.slots.has("default");
     transition: background var(--dur) var(--ease);
   }
   .dh__cta:hover { background: var(--mucilage); }
+  .dh__cta--ghost { background: transparent; color: var(--cream); border: 1px solid rgba(var(--cream-rgb), .35); }
+  .dh__cta--ghost:hover { background: rgba(var(--cream-rgb), .08); color: var(--cream); }
   .dh__cta:focus-visible { outline: 2px solid var(--mucilage); outline-offset: 3px; }
   .dh__aside { min-width: 0; }
 </style>

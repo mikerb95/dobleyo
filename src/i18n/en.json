@@ -268,5 +268,19 @@
             "title": "Our Farms",
             "link": "View all farms →"
         }
+    },
+    "guides": {
+        "panel": {
+            "panel_label": "Recipes by method",
+            "ratio": "Ratio",
+            "coffee": "Coffee",
+            "water": "Water",
+            "grind": "Grind",
+            "time": "Time",
+            "temp": "Temperature",
+            "fine": "Fine",
+            "coarse": "Coarse",
+            "no_weigh": "No scale"
+        }
     }
 }

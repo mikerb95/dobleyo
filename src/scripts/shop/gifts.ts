@@ -6,7 +6,7 @@
  *
  * El HTML del servidor pinta la caja abierta: aquí se parte de cerrada.
  */
-import { gsap, ScrollTrigger, SplitText, gridEntrance, cursorLight, type Piece } from '../motion/core.ts';
+import { gsap, ScrollTrigger, gridEntrance, cursorLight, type Piece } from '../motion/core.ts';
 
 // Debe coincidir con el transform de .gift__lid en GiftBox.astro
 const OPEN = { xPercent: 9, yPercent: -15, rotation: 7 };
@@ -17,17 +17,6 @@ const INSIDE = 160;
 export const gifts: Piece = (addCleanup) => {
   const page = document.querySelector<HTMLElement>('.gifts-page');
   if (!page) return;
-
-  // ── Titular ──────────────────────────────────────────────────────────────
-  const title = page.querySelector<HTMLElement>('[data-split]');
-  if (title) {
-    const split = SplitText.create(title, { type: 'words', mask: 'words' });
-    // El <em> del titular conserva su color: SplitText envuelve dentro de él
-    gsap.from(split.words, { yPercent: 110, duration: 1, ease: 'power3.out', stagger: 0.06 });
-    gsap.from(page.querySelectorAll('.dh__crumbs, .dh__lead, .dh__facts, .dh__cta'), {
-      y: 16, opacity: 0, duration: 0.7, stagger: 0.08, delay: 0.3, clearProps: 'transform,opacity',
-    });
-  }
 
   // ── Caja ─────────────────────────────────────────────────────────────────
   const root = page.querySelector<HTMLElement>('[data-gift]');

@@ -1,0 +1,76 @@
+---
+/**
+ * Pila de productos para el encabezado de /accesorios: hasta tres fotos como
+ * fichas apiladas, cada una con su nombre y precio, enlazadas al producto. En
+ * motion se reparten en abanico al entrar y se separan al apuntar
+ * (src/scripts/shop/accessories.ts). Sin motion: abanico quieto.
+ */
+interface Item {
+  id: string;
+  name: string;
+  price: number;
+  image: string;
+}
+interface Props {
+  items: Item[];
+}
+const items = Astro.props.items.slice(0, 3);
+const price = (n: number) => `$${Number(n).toLocaleString("es-CO")}`;
+// Abanico de reposo (servidor): giro y desplazamiento por posición
+const REST = [
+  { r: -7, x: -26 },
+  { r: 5, x: 24 },
+  { r: -1, x: 0 },
+];
+---
+
+{items.length > 0 && (
+  <div class="pstack" data-pstack>
+    {items.map((p, i) => (
+      <a
+        href={`/producto/${p.id}`}
+        class="pstack__card"
+        style={`--r:${REST[i].r}deg; --x:${REST[i].x}%; z-index:${i + 1}`}
+        data-rest-r={REST[i].r}
+        data-rest-x={REST[i].x}
+      >
+        <img src={p.image} alt="" loading="eager" />
+        <span class="pstack__tag">
+          <span class="pstack__name">{p.name}</span>
+          <span class="pstack__price">{price(p.price)}</span>
+        </span>
+      </a>
+    ))}
+  </div>
+)}
+
+<style>
+  .pstack {
+    position: relative;
+    display: grid;
+    width: min(100%, 360px);
+    margin: 0 auto;
+    padding: var(--space-6) 0;
+  }
+  .pstack__card {
+    grid-area: 1 / 1;
+    display: block;
+    padding: 10px 10px 0;
+    border-radius: var(--radius-md);
+    background: var(--card);
+    box-shadow: 0 24px 40px -22px rgba(0, 0, 0, .75);
+    text-decoration: none;
+    transform: translateX(var(--x)) rotate(var(--r));
+    transition: box-shadow var(--dur) var(--ease);
+  }
+  .pstack__card img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 6px; }
+  .pstack__tag { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-2); padding: var(--space-3) var(--space-2); }
+  .pstack__name { font-family: var(--font-display); font-size: var(--text-base); color: var(--espresso); }
+  .pstack__price { font-size: var(--text-sm); font-weight: 700; color: var(--caramel-deep); font-variant-numeric: tabular-nums; }
+  .pstack__card:focus-visible { outline: 2px solid var(--mucilage); outline-offset: 4px; }
+  /* En celular el abanico se cierra: abierto se sale del encabezado */
+  @media (max-width: 480px) {
+    .pstack { width: min(80%, 300px); }
+    .pstack__card { transform: translateX(calc(var(--x) * .35)) rotate(var(--r)); }
+  }
+</style>

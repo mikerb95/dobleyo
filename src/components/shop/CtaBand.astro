@@ -1,0 +1,58 @@
+---
+/**
+ * Cierre de página: tarjeta clara con titular, texto y uno o dos botones. Clara
+ * a propósito: el footer que sigue ya es oscuro.
+ */
+import Icon from "../Icon.astro";
+interface Props {
+  title: string;
+  text: string;
+  primary: { href: string; label: string };
+  secondary?: { href: string; label: string };
+}
+const { title, text, primary, secondary } = Astro.props;
+---
+
+<section class="ctab">
+  <div class="ctab__inner">
+    <div>
+      <h2 class="ctab__title">{title}</h2>
+      <p class="ctab__text">{text}</p>
+    </div>
+    <div class="ctab__actions">
+      <a href={primary.href} class="ctab__btn">{primary.label} <Icon name="arrow-right" size={18} /></a>
+      {secondary && <a href={secondary.href} class="ctab__btn ctab__btn--ghost">{secondary.label}</a>}
+    </div>
+  </div>
+</section>
+
+<style>
+  .ctab { max-width: 1200px; margin: 0 auto; padding: var(--space-8) 1.25rem var(--space-16); }
+  .ctab__inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-6);
+    align-items: center;
+    padding: var(--space-8);
+    border-radius: var(--radius-lg);
+    background:
+      radial-gradient(60% 120% at 100% 0%, rgba(var(--caramel-rgb), .14), transparent 60%),
+      var(--sand);
+    border: 1px solid var(--border);
+  }
+  @media (min-width: 768px) { .ctab__inner { grid-template-columns: minmax(0, 1fr) auto; padding: var(--space-10) var(--space-12); } }
+  .ctab__title { margin: 0; font-family: var(--font-display); font-size: var(--text-2xl); color: var(--espresso); text-wrap: balance; }
+  .ctab__text { margin: var(--space-2) 0 0; color: var(--ink-muted); max-width: 52ch; }
+  .ctab__actions { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+  .ctab__btn {
+    display: inline-flex; align-items: center; gap: .5rem;
+    padding: .8rem 1.4rem; min-height: 46px; border-radius: 999px;
+    background: var(--espresso); color: var(--cream);
+    font-weight: 700; text-decoration: none;
+    transition: background var(--dur) var(--ease);
+  }
+  .ctab__btn:hover { background: var(--caramel-deep); }
+  .ctab__btn:focus-visible { outline: 2px solid var(--caramel); outline-offset: 3px; }
+  .ctab__btn--ghost { background: transparent; color: var(--espresso); border: 1.5px solid rgba(var(--espresso-rgb), .25); }
+  .ctab__btn--ghost:hover { background: var(--card); }
+</style>

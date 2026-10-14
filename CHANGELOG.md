@@ -2,6 +2,41 @@
 
 ---
 
+## 2026-10-13: Resto del panel admin en el sistema visual del ERP (Agente: Claude)
+
+### Contexto
+Resumen, Ventas y Auditoría ya tenían el sistema visual nuevo; las otras ~40 páginas solo heredaban los tokens. Al revisarlas aparecieron fallos de fondo: el primer indicador de unas 15 páginas se pintaba en una sola línea, y en 13 páginas que pintan contenido con `innerHTML` los estilos *scoped* de Astro no llegaban a ese contenido (miniaturas de Productos a tamaño completo, filas de Usuarios descuadradas, barras de ciudades de MercadoLibre rotas, badges de Costos sin estilo).
+
+### Cambios
+- **`AdminLayout.astro`**:
+  - `.kpi-tile.brand` ya no hereda el `.brand` flex y en negrita de `styles.css`. `.kpi-row` es alias de `.kpi-grid`.
+  - Clase raíz por página en `.erp-content` (`/admin/usuarios` -> `pg-usuarios`).
+  - Utilidad nueva `.filter-bar` (`.ff`, `.ff--grow`, `.filter-bar-actions`) para las barras de filtros.
+  - Celdas `td.num`, `td.mono` y `code` de `.erp-table` sin salto de línea.
+- **Estilos que no llegaban al contenido JS**: el `<style>` de `boletin`, `costos`, `demanda`, `envios`, `etiquetas`, `inventario-valor`, `mercadolibre`, `pedidos`, `precio-fnc`, `productos`, `python`, `usuarios` y `venta` pasa a `is:global` con cada selector prefijado por `.pg-<página>`.
+- **Páginas rehechas con las piezas compartidas** (`page-header`, `kpi-grid`, `filter-bar`, `panel`, `erp-table`, `.status`):
+  - `transacciones`: sin tarjetas de degradado verde, rojo y azul, ni franjas de color por fila.
+  - `finanzas`: indicadores sin íconos, más un nuevo indicador "Por pagar" en lugar del aviso amarillo; estados con punto.
+  - `venta` (Ventas externas): sin el estilo "iOS", los emojis ni los colores por canal.
+  - `pedidos`: sin el botón verde ni el filtro diminuto.
+  - `lotes-entregados`: sin el degradado, el emoji ni los estilos inline.
+  - `InventarioApp.jsx`: encabezado común, franja de indicadores unida, y pestañas y chips con tinte en vez de relleno oscuro.
+- **Seguridad (XSS)**: se escapan los datos que entraban sin escapar a `innerHTML` en `pedidos` y `envios` (nombre, correo y ciudad del cliente vienen del checkout público), y también en `venta`, `finanzas` y `mercadolibre`.
+- **Limpieza en todo el admin**:
+  - Unos 640 em y en dashes. Las celdas vacías pasan a "-", los rangos a guion simple y los separadores a " · ".
+  - Unos 330 colores hex, ahora tokens. Se conservan los colores de la etiqueta impresa y las muestras de grado de tueste.
+  - Emojis de la interfaz.
+  - Franjas `border-left` en notas y tarjetas (`estadisticas`, `python`, `iteraciones`, `presupuesto`, `productos`, `transacciones`, `MobileLayout`).
+  - Tuteo en mensajes del sistema, ahora "usted".
+  - Terminología "Pedidos" en MercadoLibre.
+- **Arreglo**: tres declaraciones `font-family` rotas en `inventario.astro`, causadas por el reemplazo de monoespaciadas de la entrada anterior.
+
+### Pendiente
+- `lotes-entregados` (menú del caficultor) sigue mostrando tres lotes de ejemplo fijos en el código: no hay endpoint de lotes por caficultor (DEBT-016).
+- "Qué sigue" (`produccion`) conserva su saludo en serif; es el diseño propio de la bandeja de tareas.
+
+---
+
 ## 2026-10-13: Licencia propietaria a nombre de codebymike.net (Agente: Claude)
 
 ### Cambios
@@ -29,6 +64,53 @@ El footer era una rejilla crema sin jerarquía: logo de 28 px, Instagram y Faceb
   - Móvil: las columnas son acordeones (`<details>`); desde 768 px siempre abiertas.
 - **`public/assets/js/footer.js`** (antes `newsletter-footer.js`): mensajes por `data-state` en vez de colores inline, textos ES/EN según `<html lang>`, y control de los acordeones.
 - **`styles.css`**: se borran las reglas globales viejas del footer. Tokens nuevos `--footer-*` para el tema oscuro y `--sand` (el crema anterior), que pasa a usarse en las secciones que reutilizaban `--footer-bg` (`index.astro`, `en/index.astro`, `desarrollo-ia.astro`, `sena/taller-negociacion.astro`).
+
+---
+
+## 2026-10-14: Motion en guías, partners, afiliados, accesorios, blog y ficha de producto (Agente: Claude)
+
+### Contexto
+Las páginas de prioridad media de la skill motion-landing. El diagnóstico encontró, además del aspecto de plantilla:
+- En `/en/partners`, `/en/affiliates`, `/en/guides` y `/en/blog` el h1 no se veía: la regla global `h1 { color: espresso }` lo pintaba oscuro sobre el fondo oscuro. Los títulos de los cierres oscuros de guías, partners y afiliados tampoco se veían.
+- `/en/blog` decía "Coming soon" porque su consulta pedía `author_name`, una columna que no existe.
+- En la ficha `/en/product/[id]`, el botón llamaba a `Cart.add`, que no existe.
+- `/accesorios` leía el catálogo estático, no la BD.
+
+`/tostar` quedó fuera: es la herramienta interna de tueste (login y noindex), no una página de marketing.
+
+### Cambios
+- **Componentes compartidos** (`src/components/shop/`):
+  - `DarkHero` ahora acepta `lang` y un segundo botón.
+  - Nuevos `NumberedList` (pasos o consejos numerados, opcionalmente conectados), `FeatureGrid` (beneficios con ícono; con 4 tarjetas va en fila de 4), `ChipRow` (perfiles con ícono), `CtaBand` (cierre claro, porque el footer ya es oscuro) y `PostCard`.
+- **Guías ES/EN**:
+  - `BrewGuide.astro`: panel de recetas con pestañas accesibles (flechas, Inicio y Fin). Para cada método dibuja la proporción con barras de café y agua a escala, la molienda en una escala de 5, el tiempo en un anillo y la temperatura en una regla de 80 a 100 °C.
+  - Los números salen del texto de la receta con `lib/brew.ts` (nuevo, con tests). Al cambiar de método, las cifras ruedan.
+- **Partners ES/EN**:
+  - `SupplyLine.astro`: finca, tueste a su medida y su negocio. Una bolsa recorre el camino SVG real (`getPointAtLength`) y enciende cada parada. En celular es una lista vertical con paradas que se encienden por turnos.
+- **Afiliados ES/EN**:
+  - `RefFlow.astro`: el recorrido de un enlace (se escribe el enlace, aparece la compra y llega la comisión), con la etiqueta "Ejemplo ilustrativo" y sin montos.
+  - En inglés, las preguntas frecuentes pasan a `<details>`.
+- **Accesorios**:
+  - `ProductStack.astro`: los productos en abanico; al apuntar uno pasa al frente.
+  - Lee de la BD sin los kits de regalo, que también son categoría `accesorio`.
+- **Blog**:
+  - El artículo más reciente va de portada en el encabezado. La rejilla usa tarjetas anchas para no dejar filas incompletas.
+  - En inglés no se muestran los artículos, que están solo en español: hay un enlace al blog en español y otro a las guías en inglés.
+- **Ficha de producto ES/EN**:
+  - Lupa que sigue al cursor, precio con odómetro al cambiar de presentación, botón de agregar magnético y entrada suave.
+  - En inglés se corrigió el carrito y el script se monta con `astro:page-load`.
+  - En español, los textos de reseñas pasan a "usted".
+- **Motion** (`src/scripts/shop/`):
+  - `sections.ts` anima las secciones compartidas (titular del encabezado, beneficios con íconos que se trazan, números que se descifran, perfiles, cierre y blog).
+  - Piezas propias: `guides.ts`, `partners.ts`, `affiliates.ts`, `accessories.ts` y `product.ts`.
+  - `gifts.ts` y `subscription.ts` dejan el titular en manos de `sections.ts`.
+- **`motion.css`**: el odómetro conserva los espacios ("15 g").
+
+### Verificación
+- Capturas de escritorio y celular de las 11 páginas: hover, pestañas, abanico, lupa, odómetro del precio y recorridos en bucle.
+- Sin scroll horizontal. Con movimiento reducido no queda nada oculto.
+- Carrito EN probado: guarda el producto en `dbyo-cart`.
+- Tests (259), type-check y build en verde. Las piezas de motion de compra suman 4,4 KB comprimidas.
 
 ---
 

@@ -5,22 +5,16 @@
  *
  * Los campos del formulario y el pago no se animan.
  */
-import { gsap, ScrollTrigger, SplitText, liveOdometer, type Piece } from '../motion/core.ts';
+import { gsap, ScrollTrigger, liveOdometer, type Piece } from '../motion/core.ts';
 
 export const subscription: Piece = (addCleanup) => {
   const cal = document.querySelector<HTMLElement>('[data-sub-calendar]');
   if (!cal) return;
 
-  // ── Titular ──────────────────────────────────────────────────────────────
-  const title = document.querySelector<HTMLElement>('.dh [data-split]');
-  if (title) {
-    const split = SplitText.create(title, { type: 'words', mask: 'words' });
-    gsap.from(split.words, { yPercent: 110, duration: 1, ease: 'power3.out', stagger: 0.05 });
-    gsap.from('.dh__crumbs, .dh__lead, .dh__facts', { y: 14, opacity: 0, duration: 0.7, stagger: 0.1, delay: 0.25, clearProps: 'transform,opacity' });
-    // Las bolsas llegan una tras otra, de la de hoy a la más lejana
-    gsap.from('.dbag', { y: -40, opacity: 0, duration: 0.8, ease: 'bounce.out', stagger: 0.18, delay: 0.5, clearProps: 'opacity' });
-    gsap.from('.ticket', { y: 30, opacity: 0, duration: 0.9, ease: 'power3.out', delay: 0.35, clearProps: 'transform,opacity' });
-  }
+  // El encabezado lo anima sections.ts; aquí las bolsas y el resumen
+  // Las bolsas llegan una tras otra, de la de hoy a la más lejana
+  gsap.from('.dbag', { y: -40, opacity: 0, duration: 0.8, ease: 'bounce.out', stagger: 0.18, delay: 0.5, clearProps: 'opacity' });
+  gsap.from('.ticket', { y: 30, opacity: 0, duration: 0.9, ease: 'power3.out', delay: 0.35, clearProps: 'transform,opacity' });
 
   // ── Calendario: la regla se traza y los pedidos caen en su fecha ────────
   const line = cal.querySelector('.cal__line');

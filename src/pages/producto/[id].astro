@@ -286,19 +286,19 @@ const productJsonLd = {
       </div>
 
       <div class="reviews-list" id="reviewsList">
-        <p class="reviews-empty" id="reviewsEmpty" style="display:none">Sé el primero en dejar una reseña.</p>
+        <p class="reviews-empty" id="reviewsEmpty" style="display:none">Sea el primero en dejar una reseña.</p>
       </div>
 
       <div class="review-form-wrap">
         <h3 class="review-form-title">Dejar una reseña</h3>
         <form class="review-form" id="reviewForm" novalidate>
           <div class="review-field">
-            <label class="review-label" for="revName">Tu nombre <span style="color:var(--accent)">*</span></label>
+            <label class="review-label" for="revName">Su nombre <span style="color:var(--accent)">*</span></label>
             <input id="revName" type="text" class="review-input" placeholder="Juan García" required />
           </div>
           <div class="review-field">
             <label class="review-label">Calificación <span style="color:var(--accent)">*</span></label>
-            <div class="star-picker" id="starPicker" role="group" aria-label="Selecciona una calificación">
+            <div class="star-picker" id="starPicker" role="group" aria-label="Seleccione una calificación">
               {[1,2,3,4,5].map(n => (
                 <button type="button" class="star-btn" data-val={n} aria-label={`${n} estrella${n > 1 ? 's' : ''}`}>★</button>
               ))}
@@ -306,7 +306,7 @@ const productJsonLd = {
           </div>
           <div class="review-field">
             <label class="review-label" for="revComment">Comentario</label>
-            <textarea id="revComment" class="review-input" rows={3} placeholder="Cuéntanos tu experiencia…"></textarea>
+            <textarea id="revComment" class="review-input" rows={3} placeholder="Cuéntenos su experiencia…"></textarea>
           </div>
           <div id="reviewMsg" class="review-msg" style="display:none"></div>
           <button type="submit" class="review-submit" id="reviewSubmit">Enviar reseña</button>
@@ -317,6 +317,9 @@ const productJsonLd = {
 
   <!-- Acciones de producto + reseñas (externalizado por CSP estricta) -->
   <script is:inline src="/assets/js/producto.js"></script>
+  <script>
+    import "../../scripts/shop/index.ts";
+  </script>
 
   <style>
     .product-page {
@@ -421,7 +424,8 @@ const productJsonLd = {
       margin-bottom: .75rem;
     }
 
-    .price-cop {
+    .price-cop,
+    .product-price :global(.odo-live) {
       font-size: 1.75rem;
       font-weight: 700;
       color: var(--accent);

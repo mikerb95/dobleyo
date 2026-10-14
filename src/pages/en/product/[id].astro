@@ -144,10 +144,15 @@ const productJsonLd = {
 
   <script is:inline src="/assets/js/cart.js"></script>
   <script>
-    (function () {
+    import "../../../scripts/shop/index.ts";
+  </script>
+  <script>
+    // Con ClientRouter el script corre una vez: se monta en cada astro:page-load
+    function initProduct() {
       const wrap = document.getElementById("ppActions");
       const qInput = document.getElementById("qInput");
-      if (!wrap) return;
+      if (!wrap || wrap.dataset.jsInit) return;
+      wrap.dataset.jsInit = "1";
       document.getElementById("qDown")?.addEventListener("click", () => {
         qInput.value = Math.max(1, (parseInt(qInput.value, 10) || 1) - 1);
       });
@@ -155,17 +160,21 @@ const productJsonLd = {
         qInput.value = (parseInt(qInput.value, 10) || 1) + 1;
       });
       document.getElementById("ppAdd")?.addEventListener("click", () => {
-        if (!window.Cart || !wrap.dataset.price) return;
-        window.Cart.add({
+        const Cart = (window as any).Cart;
+        if (!Cart || !wrap.dataset.price) return;
+        // cart.js expone addToCart (Cart.add no existe y el botón no hacía nada)
+        Cart.addToCart({
           id: wrap.dataset.id, name: wrap.dataset.name,
           price: Number(wrap.dataset.price), image: wrap.dataset.image,
-          quantity: Math.max(1, parseInt(qInput.value, 10) || 1),
+          qty: Math.max(1, parseInt(qInput.value, 10) || 1),
         });
         const btn = document.getElementById("ppAdd");
         const orig = btn.textContent; btn.textContent = "✓ Added to cart";
         setTimeout(() => { btn.textContent = orig; }, 1800);
       });
-    })();
+    }
+    initProduct();
+    document.addEventListener("astro:page-load", initProduct);
   </script>
 
   <style>

@@ -219,6 +219,8 @@ La portada ES y EN comparten componentes (`src/components/home/`) y un solo mód
 - **Video del hero:** `hero-viaje.mp4` (4 tomas de 4 s; la etiqueta asume ese corte). Si se cambia el video, ajustar `SEGMENT` en `src/scripts/home/hero.ts`.
 - **Páginas de compra** (tienda ES/EN, suscripción, regalos) usan `src/scripts/shop/index.ts` con el mismo núcleo y componentes en `src/components/shop/`. Lo que es información o funcionalidad (filtrar al tocar una bolsa, reacomodar el calendario de pedidos, cambiar de kit) vive en el script del componente y funciona sin motion. Las piezas de motion solo animan.
 - **El catálogo avisa con `shop:render`** sobre `#shopResults` cada vez que repinta. Si se cambia el script de la tienda, conservar el evento.
+- **Secciones compartidas** (`src/components/shop/`: `DarkHero`, `FeatureGrid`, `NumberedList`, `ChipRow`, `CtaBand`) las anima `src/scripts/shop/sections.ts`; las piezas de página solo animan su pieza central. Una página nueva de compra o contenido se arma con ellas antes de crear estilos propios.
+- **Títulos sobre fondo oscuro**: la regla global `h1, h2 { color: var(--espresso) }` gana sobre un color heredado; dale color propio al título (así se perdieron los h1 de las páginas EN).
 - **Sin emojis en el sitio público.** Los íconos van con `src/components/Icon.astro` (SVG de trazo, `currentColor`); si falta uno, se agrega al set. Las ★ de calificación y los ✓ de confirmación sí se permiten.
 - **Sin trazabilidad en páginas públicas** mientras `SHOW_TRACEABILITY = false`: nada de QR, códigos de lote ni esa palabra en piezas nuevas.
 
@@ -263,6 +265,9 @@ El panel se ve como un ERP, no como una plantilla de SaaS. Tokens y utilidades v
 - **Piezas compartidas**: `.page-header` (breadcrumb, `.page-title`, `.page-meta` con periodo y zona horaria), `.panel`/`.panel-header`/`.panel-title`, `.seg` (control segmentado con `aria-pressed`), `.chip`, `.count`, `.erp-table` con `th.num`/`td.num` y `tfoot` para totales, `.btn`/`.btn-primary`/`.btn-sm`.
 - **Contenido generado con JS**: los estilos scoped de Astro no le llegan. Usar `<style is:global>` acotado a una clase raíz de la página (`.sales`, `.au`) y escapar todo dato antes de `innerHTML` (o construir nodos con `textContent`).
 - **Inputs dentro de componentes propios** necesitan una clase: `input[type="search"]:not([class])` tiene estilos globales de formulario.
+- **Contenido pintado con JS en páginas sin raíz propia**: `AdminLayout` pone en `.erp-content` la clase `pg-<slug>` (`/admin/usuarios` -> `pg-usuarios`). Esas páginas usan `<style is:global>` con todos los selectores prefijados por esa clase; un `<style>` scoped no le llega a nada creado con `innerHTML`.
+- **Barras de filtros**: `.filter-bar` con `<label class="ff"><span>Etiqueta</span><input></label>`, `.ff--grow` para la búsqueda y `.filter-bar-actions` para Limpiar/Filtrar. Los inputs llevan una clase propia (ver el punto de inputs).
+- **Sin colores hex ni em dashes en el admin**: celdas vacías con "-", rangos con guion simple, separadores con " · ". Excepciones de color: la vista previa de la etiqueta impresa y las muestras de grado de tueste.
 - **Fechas de `audit_logs`** están en UTC sin zona: usar `parseDbDate()` de `src/lib/auditLabels.js` y mostrar en `America/Bogota`. Ese módulo también da los verbos y nombres de entidad para auditoría y actividad.
 
 ## 4. SEO — Reglas Obligatorias
@@ -455,6 +460,7 @@ Para exponer la plataforma en vivo existe un seed **idempotente** que puebla tod
 | DEBT-011 | 🟠 | Sin control de inventario en el flujo de e-commerce: ni `POST /api/orders` ni el despacho verificaban o descontaban stock | ✅ Resuelto — validación en `POST /api/orders` + descuento directo al confirmarse el pago (`deductStockForOrder`)/reposición al cancelar (`replenishStockForOrder`). Sin reserva: riesgo de sobreventa entre creación y pago aceptado para este catálogo |
 | DEBT-014 | 🟡 | Integración Interrapidísimo (`server/services/interrapidisimo.js`) escrita sobre el documento B2B de 2022: validar en pruebas (stgwww3) el método del token, rutas, nombres de campos, ids de estado y cómo se fija el valor a recaudar en contraentrega antes de usar en producción | Pendiente |
 | DEBT-015 | 🟡 | `server/migrations/seed_demo.js` no corre sobre una base nueva: `caficultor_applications` en `db/schema.sql` usa `region`/`hectares`/`description` pero el seed inserta `farm_location`/`farm_size_hectares`/`motivation`, y luego falla una FK al insertar `lots`. Solo funciona sobre la base viva | Pendiente |
+| DEBT-016 | 🟡 | `src/pages/admin/lotes-entregados.astro` (menú del caficultor) muestra tres lotes de ejemplo fijos en el script (`lotesEjemplo`). No existe un endpoint que devuelva los lotes de un caficultor; hay que crearlo (con filtro por `req.user.id`) y conectar la página | Pendiente |
 
 ---
 

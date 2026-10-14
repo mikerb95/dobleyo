@@ -27,6 +27,8 @@
 .odo__sep {
   display: inline-block;
   line-height: 1.15em;
+  /* conserva el espacio de "15 g" o "240 ml" */
+  white-space: pre;
 }
 
 /* Luz que sigue al cursor: halo en el borde y tinte interior tenue.
