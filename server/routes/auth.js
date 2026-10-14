@@ -42,6 +42,14 @@ async function getApplePublicKey(kid) {
 
 export const authRouter = Router();
 
+// Las cuentas creadas desde esta fecha (UTC) deben confirmar el correo antes de
+// iniciar sesión. Las anteriores entran sin verificar para no bloquear a clientes
+// que se registraron cuando la verificación era opcional.
+export const EMAIL_VERIFICATION_REQUIRED_SINCE = '2026-10-14 00:00:00';
+
+const mustVerifyEmail = (user) =>
+  !user.is_verified && String(user.created_at ?? '') >= EMAIL_VERIFICATION_REQUIRED_SINCE;
+
 // Register
 authRouter.post('/register',
   registerLimiter,
@@ -88,7 +96,7 @@ authRouter.post('/register',
         ['REGISTER', 'user', String(newUser.id), JSON.stringify({ email: newUser.email })]
       );
 
-      res.status(201).json({ message: 'Usuario registrado. Por favor revisa tu correo para verificar la cuenta.', user: newUser });
+      res.status(201).json({ message: 'Cuenta creada. Le enviamos un correo para confirmarla; debe hacerlo antes de iniciar sesión.', user: newUser });
 
     } catch (err) {
       logger.error(err);
@@ -299,6 +307,14 @@ authRouter.post('/login',
 
       const validPass = await auth.comparePassword(password, user.password_hash);
       if (!validPass) return res.status(401).json({ error: 'Credenciales invalidas' });
+
+      // Se revisa después de la contraseña para no revelar el estado de cuentas ajenas.
+      if (mustVerifyEmail(user)) {
+        return res.status(403).json({
+          error: 'Debe confirmar su correo antes de iniciar sesión. Revise su bandeja de entrada o solicite un nuevo enlace.',
+          code: 'EMAIL_NOT_VERIFIED',
+        });
+      }
 
       // Generar tokens
       const accessToken = auth.generateToken(user);

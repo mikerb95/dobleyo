@@ -150,6 +150,7 @@ const appleClientId  = import.meta.env.PUBLIC_APPLE_CLIENT_ID  || '';
 
         <!-- Error general -->
         <div id="loginError" class="form-alert form-alert--error" aria-live="polite"></div>
+        <button type="button" id="loginResendBtn" class="resend-link" hidden>Reenviar enlace de confirmación</button>
 
         <button type="submit" id="loginBtn" class="auth-btn">
           <span>Entrar</span>
@@ -691,6 +692,8 @@ function initAuthModal() {
           body: JSON.stringify({ email, password }),
         });
         const data = await res.json();
+        const resendBtn = document.getElementById('loginResendBtn');
+        if (resendBtn) resendBtn.hidden = data.code !== 'EMAIL_NOT_VERIFIED';
         if (!res.ok) throw new Error(data.error || 'Error al iniciar sesión');
         if (data.user?.devUser === true) { window.location.href = '/admin'; return; }
         redirectAfterLogin(data.user?.role);
@@ -700,6 +703,29 @@ function initAuthModal() {
       }
     });
   }
+
+  // Reenvío del enlace de confirmación cuando el login lo exige
+  document.getElementById('loginResendBtn')?.addEventListener('click', async (e) => {
+    const btn = e.currentTarget;
+    const email = (document.getElementById('loginEmail').value || '').trim();
+    btn.disabled = true;
+    try {
+      const res = await fetch('/api/auth/resend-verification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json().catch(() => ({}));
+      showAlert('loginError', res.ok
+        ? 'Le enviamos un nuevo enlace. Revise su bandeja de entrada y la carpeta de spam.'
+        : (data.error || 'No pudimos reenviar el enlace. Intente más tarde.'));
+      if (res.ok) btn.hidden = true;
+    } catch {
+      showAlert('loginError', 'Error de conexión. Intente de nuevo.');
+    } finally {
+      btn.disabled = false;
+    }
+  });
 
   // ── Submit REGISTRO ────────────────────────────────────────────────────────────
   const registerForm = document.getElementById('registerForm');
@@ -728,8 +754,8 @@ function initAuthModal() {
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || data.message || 'Error al registrar');
-        showAlert('regSuccess', '✓ Cuenta creada. Revisa tu correo para verificar.');
-        setTimeout(() => { closeModal(); }, 2500);
+        showAlert('regSuccess', `✓ Cuenta creada. Le enviamos un correo a ${email}: confírmelo para poder iniciar sesión.`);
+        setTimeout(() => { closeModal(); }, 5000);
       } catch (err) {
         showAlert('regError', err.message);
         setLoading(btn, spinner, false);
@@ -992,6 +1018,21 @@ document.addEventListener('astro:page-load', initAuthModal);
     justify-content: space-between;
     align-items: baseline;
   }
+
+  .resend-link {
+    justify-self: start;
+    padding: 0;
+    font: inherit;
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--caramel-deep);
+    text-decoration: underline;
+    background: none;
+    border: 0;
+    cursor: pointer;
+  }
+  .resend-link[hidden] { display: none; }
+  .resend-link:disabled { opacity: .6; cursor: wait; }
 
   .forgot-link {
     font-size: 0.78rem;
