@@ -8,96 +8,159 @@ const { lang = "es" } = Astro.props;
 const year = new Date().getFullYear();
 
 const isEn = lang === "en";
+
+// Mismo número del botón flotante (Layout.astro).
+const WHATSAPP = "573204981580";
+const WHATSAPP_LABEL = "+57 320 498 1580";
+
 const tx = isEn
   ? {
-      promo: "10% off your first order", emailPh: "Your email address", subscribe: "Subscribe",
-      shop: "Shop", learn: "Learn", support: "Support", inquiries: "Inquiries",
-      coffees: "Coffees", subscription: "Subscription", accessories: "Accessories", seeAll: "See all",
-      about: "About us", blog: "Blog", guides: "Guides",
-      contact: "Contact us", shipping: "Shipping & returns", account: "Account",
-      partners: "Partner zone", affiliates: "Affiliate program", wholesale: "Wholesale", admin: "Admin Panel",
-      rights: "All rights reserved.", privacy: "Privacy Policy", terms: "Terms & Conditions", a11y: "Accessibility",
+      eyebrow: "10% off your first order",
+      title: "Freshly roasted coffee,",
+      titleEm: "straight to your inbox.",
+      lede: "New harvests, brewing guides and members-only offers. No spam.",
+      emailPh: "Your email address", subscribe: "Subscribe",
+      tagline: "Colombian specialty coffee, from the farm to your cup.",
+      madeIn: "Made in Colombia",
+      nav: "Footer",
+      rights: "All rights reserved.", privacy: "Privacy", terms: "Terms", a11y: "Accessibility",
       credit: "Design:",
     }
   : {
-      promo: "10% de descuento en tu primera compra", emailPh: "Tu correo electrónico", subscribe: "Suscribirse",
-      shop: "Tienda", learn: "Aprende", support: "Soporte", inquiries: "Consultas",
-      coffees: "Cafés", subscription: "Suscripción", accessories: "Accesorios", seeAll: "Ver todo",
-      about: "Sobre nosotros", blog: "Blog", guides: "Guías",
-      contact: "Contáctanos", shipping: "Envíos y devoluciones", account: "Cuenta",
-      partners: "Zona de partners", affiliates: "Programa de afiliados", wholesale: "Mayoristas", admin: "Admin Panel",
-      rights: "Todos los derechos reservados.", privacy: "Política de privacidad", terms: "Términos y condiciones", a11y: "Accesibilidad",
+      eyebrow: "10% de descuento en tu primera compra",
+      title: "Café recién tostado,",
+      titleEm: "directo a tu correo.",
+      lede: "Nuevas cosechas, guías de preparación y ofertas para suscriptores. Sin spam.",
+      emailPh: "Tu correo electrónico", subscribe: "Suscribirme",
+      tagline: "Café de especialidad colombiano, de la finca a su taza.",
+      madeIn: "Hecho en Colombia",
+      nav: "Pie de página",
+      rights: "Todos los derechos reservados.", privacy: "Privacidad", terms: "Términos", a11y: "Accesibilidad",
       credit: "Diseño:",
     };
 
 // Rutas por idioma (en el subdominio en. se reescriben a /en/*).
-const r = isEn
-  ? { shop: "/shop", subscription: "/wholesale", accessories: "/shop", about: "/about", blog: "/blog", guides: "/guides",
-      contact: "/contact", shipping: "/shipping", account: "/account", partners: "/partners", affiliates: "/affiliates",
-      privacy: "/privacy", terms: "/terms", a11y: "/accessibility", wholesale: "/wholesale" }
-  : { shop: "/tienda", subscription: "/suscripcion", accessories: "/accesorios", about: "/nosotros", blog: "/blog", guides: "/guias",
-      contact: "/contacto", shipping: "/envios-devoluciones", account: "/cuenta", partners: "/partners", affiliates: "/afiliados",
-      privacy: "/privacidad", terms: "/terminos", a11y: "/accesibilidad", wholesale: "/mayoristas" };
+const columns = isEn
+  ? [
+      { title: "Shop", links: [["Coffees", "/shop"], ["Wholesale", "/wholesale"]] },
+      { title: "Learn", links: [["About us", "/about"], ["Our farms", "/farms"], ["Blog", "/blog"], ["Guides", "/guides"]] },
+      { title: "Help", links: [["Contact us", "/contact"], ["Shipping & returns", "/shipping"], ["My account", "/account"]] },
+      { title: "Business", links: [["Partner zone", "/partners"], ["Affiliate program", "/affiliates"]] },
+    ]
+  : [
+      { title: "Tienda", links: [["Cafés", "/tienda"], ["Cacao", "/cacao"], ["Accesorios", "/accesorios"], ["Suscripción", "/suscripcion"]] },
+      { title: "Aprende", links: [["Sobre nosotros", "/nosotros"], ["Blog", "/blog"], ["Guías", "/guias"]] },
+      { title: "Ayuda", links: [["Contáctenos", "/contacto"], ["Envíos y devoluciones", "/envios-devoluciones"], ["Mi cuenta", "/cuenta"]] },
+      { title: "Empresas", links: [["Mayoristas", "/mayoristas"], ["Zona de partners", "/partners"], ["Programa de afiliados", "/afiliados"]] },
+    ];
+
+const legal = isEn
+  ? [[tx.privacy, "/privacy"], [tx.terms, "/terms"], [tx.a11y, "/accessibility"]]
+  : [[tx.privacy, "/privacidad"], [tx.terms, "/terminos"], [tx.a11y, "/accesibilidad"]];
+
+// Medios que procesa el checkout (Wompi + contraentrega). Solo aplican en Colombia.
+const payments = ["Visa", "Mastercard", "PSE", "Nequi", "Daviplata", "Contraentrega"];
 ---
 
 <footer class="site-footer" transition:persist={`footer-${lang}`}>
   <div class="container">
-    <div class="footer-news">
-      <div class="label">{tx.promo}</div>
-      <div class="input" id="newsletterForm">
-        <label for="newsletterEmail" class="sr-only">{tx.emailPh}</label>
-        <input
-          id="newsletterEmail"
-          type="email"
-          placeholder={tx.emailPh}
-          autocomplete="email"
-        />
-        <button class="arrow" id="newsletterBtn" aria-label={tx.subscribe}>→</button>
+    <section class="footer-news" aria-labelledby="footerNewsTitle">
+      <div class="footer-news__copy">
+        <p class="footer-news__eyebrow">{tx.eyebrow}</p>
+        <h2 class="footer-news__title" id="footerNewsTitle">
+          {tx.title} <em>{tx.titleEm}</em>
+        </h2>
+        <p class="footer-news__lede">{tx.lede}</p>
       </div>
-      <p id="newsletterMsg" style="font-size:0.85rem;margin-top:0.5rem;min-height:1.2em;"></p>
-    </div>
+      <form class="footer-news__form" id="newsletterForm" novalidate>
+        <div class="footer-news__field">
+          <label for="newsletterEmail" class="sr-only">{tx.emailPh}</label>
+          <input
+            id="newsletterEmail"
+            type="email"
+            placeholder={tx.emailPh}
+            autocomplete="email"
+            required
+          />
+          <button type="submit" id="newsletterBtn">
+            {tx.subscribe}
+            <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true">
+              <path d="M4 10h11m-4-4 4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </button>
+        </div>
+        <p id="newsletterMsg" class="footer-news__msg" role="status" aria-live="polite"></p>
+      </form>
+    </section>
+
     <div class="footer-main">
-      <div class="footer-social">
-        <Image src={logo} alt="DobleYo Café" loading="lazy" />
-        <a href="#" aria-label="Instagram">Instagram</a>
-        <a href="#" aria-label="Facebook">Facebook</a>
+      <div class="footer-brand">
+        <a href="/" class="footer-brand__seal" aria-label="DobleYo Café">
+          <Image src={logo} alt="" width={96} height={96} loading="lazy" />
+        </a>
+        <p class="footer-brand__tagline">{tx.tagline}</p>
+        <ul class="footer-contact">
+          <li>
+            <a href={`https://wa.me/${WHATSAPP}`} target="_blank" rel="noopener noreferrer">
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                <path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.7-1.4.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6a2.7 2.7 0 0 0 1.8-1.2c.2-.6.2-1.1.1-1.2l-.5-.3Z" />
+              </svg>
+              WhatsApp {WHATSAPP_LABEL}
+            </a>
+          </li>
+          <li>
+            <a href={isEn ? "mailto:hello@dobleyo.cafe" : "mailto:hola@dobleyo.cafe"}>
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                <path d="M4 6h16v12H4zM4 7l8 6 8-6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" />
+              </svg>
+              {isEn ? "hello@dobleyo.cafe" : "hola@dobleyo.cafe"}
+            </a>
+          </li>
+          <li class="footer-contact__origin">
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+              <path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21Z M12 12a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" />
+            </svg>
+            {tx.madeIn}
+          </li>
+        </ul>
       </div>
-      <div class="footer-columns">
-        <div>
-          <h4>{tx.shop}</h4>
-          <a href={r.shop}>{tx.coffees}</a>
-          <a href={r.subscription}>{tx.subscription}</a>
-          <a href={r.accessories}>{tx.accessories}</a>
-          {!isEn && <a href="/cacao">Cacao</a>}
-          <a href={r.shop}>{tx.seeAll}</a>
-        </div>
-        <div>
-          <h4>{tx.learn}</h4>
-          <a href={r.about}>{tx.about}</a>
-          <a href={r.blog}>{tx.blog}</a>
-          <a href={r.guides}>{tx.guides}</a>
-        </div>
-        <div>
-          <h4>{tx.support}</h4>
-          <a href={r.contact}>{tx.contact}</a>
-          <a href={r.shipping}>{tx.shipping}</a>
-          <a href={r.account}>{tx.account}</a>
-        </div>
-        <div>
-          <h4>{tx.inquiries}</h4>
-          <a href={r.partners}>{tx.partners}</a>
-          <a href={r.affiliates}>{tx.affiliates}</a>
-          <a href={r.wholesale}>{tx.wholesale}</a>
-          <a href="/admin">{tx.admin}</a>
-        </div>
-      </div>
+
+      <nav class="footer-columns" aria-label={tx.nav}>
+        {columns.map((col) => (
+          <details class="footer-col" open>
+            <summary>
+              <h3>{col.title}</h3>
+              <svg class="footer-col__chev" viewBox="0 0 20 20" width="16" height="16" aria-hidden="true">
+                <path d="m5 8 5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </summary>
+            <ul>
+              {col.links.map(([label, href]) => (
+                <li><a href={href}>{label}</a></li>
+              ))}
+            </ul>
+          </details>
+        ))}
+      </nav>
     </div>
 
-    <div class="footer-legal">
-      <div>
-        © <span id="year">{year}</span> DobleYo Café. {tx.rights}
+    {!isEn && (
+      <div class="footer-pay">
+        <span class="footer-pay__label">Pagos seguros con Wompi</span>
+        <ul class="footer-pay__list">
+          {payments.map((p) => <li>{p}</li>)}
+        </ul>
       </div>
-      <div class="footer-credit">
+    )}
+
+    <div class="footer-legal">
+      <p class="footer-legal__copy">© {year} DobleYo Café. {tx.rights}</p>
+      <ul class="footer-legal__links">
+        {legal.map(([label, href]) => (
+          <li><a href={href}>{label}</a></li>
+        ))}
+      </ul>
+      <p class="footer-credit">
         {tx.credit}
         <a
           class="footer-credit__link"
@@ -105,50 +168,377 @@ const r = isEn
           target="_blank"
           rel="noopener noreferrer">CodeByMike</a
         >
-      </div>
-      <div class="links" style="margin-top: 1rem;">
-        <a href={r.privacy}>{tx.privacy}</a>
-        <a href={r.terms}>{tx.terms}</a>
-        <a href={r.a11y}>{tx.a11y}</a>
-      </div>
-    </div>
-    <div class="footer-disclaimer">
-      {isEn
-        ? "Statements made on this site have not been evaluated by regulatory agencies. The products offered are not intended to diagnose, treat or cure any disease. The information provided does not replace a consultation with your health professional and should not be interpreted as individual medical advice."
-        : "Las declaraciones hechas en este sitio no son evaluadas por entidades regulatorias. Los productos ofrecidos no están destinados a diagnosticar, tratar o curar enfermedades. La información provista no reemplaza una consulta con tu profesional de salud y no debe interpretarse como consejo médico individual."}
+      </p>
     </div>
   </div>
 </footer>
 
 <style>
-  /* Crédito de autoría: discreto, al nivel del aviso de copyright. */
-  .footer-credit {
-    margin-top: var(--space-2);
+  .site-footer {
+    background: var(--footer-bg);
+    color: var(--footer-fg);
+    margin-top: var(--space-16);
+  }
+
+  .site-footer .container {
+    width: min(var(--page-width), calc(100% - var(--page-gutter)));
+    margin-inline: auto;
+  }
+
+  .site-footer a {
+    color: inherit;
+    text-decoration: none;
+    transition: color var(--dur) var(--ease);
+  }
+
+  .site-footer a:hover,
+  .site-footer a:focus-visible {
+    color: var(--footer-highlight);
+  }
+
+  .site-footer :focus-visible {
+    outline-color: var(--footer-highlight);
+  }
+
+  .site-footer ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* ── Newsletter ─────────────────────────────── */
+  .footer-news {
+    display: grid;
+    gap: var(--space-6);
+    padding: var(--space-12) 0 var(--space-10);
+    border-bottom: 1px solid var(--footer-line);
+  }
+
+  .footer-news__eyebrow {
+    margin: 0 0 var(--space-3);
+    font-size: var(--text-xs);
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--footer-highlight);
+  }
+
+  .footer-news__title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--text-3xl);
+    font-weight: 500;
+    line-height: 1.1;
+    color: var(--footer-heading);
+    text-wrap: balance;
+  }
+
+  .footer-news__title em {
+    font-style: italic;
+    color: var(--footer-highlight);
+  }
+
+  .footer-news__lede {
+    margin: var(--space-3) 0 0;
+    max-width: 44ch;
+    font-size: var(--text-sm);
+    color: var(--footer-muted);
+  }
+
+  .footer-news__form {
+    align-self: end;
+  }
+
+  .footer-news__field {
+    display: flex;
+    gap: var(--space-2);
+    padding: var(--space-1);
+    border: 1px solid var(--footer-line-strong);
+    border-radius: 999px;
+    background: var(--footer-surface);
+    transition: border-color var(--dur) var(--ease);
+  }
+
+  .footer-news__field:focus-within {
+    border-color: var(--footer-highlight);
+  }
+
+  .footer-news__field input {
+    flex: 1;
+    min-width: 0;
+    padding: var(--space-3) var(--space-4);
+    border: 0;
+    background: transparent;
+    color: var(--footer-heading);
+    font: inherit;
+    font-size: var(--text-base);
+  }
+
+  .footer-news__field input:focus-visible {
+    outline: none;
+  }
+
+  .footer-news__field input::placeholder {
+    color: var(--footer-muted);
+  }
+
+  .footer-news__field button {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-5);
+    border: 0;
+    border-radius: 999px;
+    background: var(--cream);
+    color: var(--espresso);
+    font: inherit;
+    font-size: var(--text-sm);
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+  }
+
+  .footer-news__field button:hover {
+    background: var(--footer-highlight);
+  }
+
+  .footer-news__field button svg {
+    transition: transform var(--dur) var(--ease);
+  }
+
+  .footer-news__field button:hover svg {
+    transform: translateX(3px);
+  }
+
+  .footer-news__field button:disabled {
+    opacity: 0.6;
+    cursor: wait;
+  }
+
+  .footer-news__msg {
+    min-height: 1.4em;
+    margin: var(--space-2) 0 0;
+    padding-inline: var(--space-4);
+    font-size: var(--text-sm);
+    color: var(--footer-muted);
+  }
+
+  .footer-news__msg[data-state="error"] {
+    color: var(--footer-error);
+  }
+
+  .footer-news__msg[data-state="ok"] {
+    color: var(--footer-success);
+  }
+
+  /* ── Marca + navegación ─────────────────────── */
+  .footer-main {
+    display: grid;
+    gap: var(--space-8);
+    padding: var(--space-10) 0;
+  }
+
+  .footer-brand__seal {
+    display: inline-grid;
+    place-items: center;
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;
+    background: var(--cream);
+    box-shadow: 0 0 0 6px var(--footer-surface);
+  }
+
+  .footer-brand__seal img {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+  }
+
+  .footer-brand__tagline {
+    margin: var(--space-5) 0 var(--space-5);
+    max-width: 30ch;
+    font-family: var(--font-display);
+    font-size: var(--text-lg);
+    line-height: 1.4;
+    color: var(--footer-heading);
+  }
+
+  .footer-contact {
+    display: grid;
+    gap: var(--space-3);
+    font-size: var(--text-sm);
+  }
+
+  .footer-contact a,
+  .footer-contact__origin {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .footer-contact svg {
+    flex: none;
+    color: var(--footer-highlight);
+  }
+
+  .footer-columns {
+    display: grid;
+  }
+
+  .footer-col {
+    border-bottom: 1px solid var(--footer-line);
+  }
+
+  .footer-col summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-4) 0;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .footer-col summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .footer-col h3 {
+    margin: 0;
     font-family: var(--font-body);
     font-size: var(--text-xs);
-    color: var(--footer-fg);
-    opacity: 0.75;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--footer-heading);
+  }
+
+  .footer-col__chev {
+    transition: transform var(--dur) var(--ease);
+  }
+
+  .footer-col[open] .footer-col__chev {
+    transform: rotate(180deg);
+  }
+
+  .footer-col ul {
+    display: grid;
+    gap: var(--space-3);
+    padding-bottom: var(--space-5);
+  }
+
+  .footer-col a {
+    font-size: var(--text-sm);
+  }
+
+  /* ── Pagos ──────────────────────────────────── */
+  .footer-pay {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-3) var(--space-4);
+    padding: var(--space-5) 0;
+    border-top: 1px solid var(--footer-line);
+  }
+
+  .footer-pay__label {
+    font-size: var(--text-xs);
+    color: var(--footer-muted);
+  }
+
+  .footer-pay__list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .footer-pay__list li {
+    padding: var(--space-1) var(--space-3);
+    border: 1px solid var(--footer-line-strong);
+    border-radius: var(--radius-sm);
+    font-size: var(--text-xs);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--footer-heading);
+  }
+
+  /* ── Legal ──────────────────────────────────── */
+  .footer-legal {
+    display: grid;
+    gap: var(--space-3);
+    padding: var(--space-5) 0 var(--space-8);
+    border-top: 1px solid var(--footer-line);
+    font-size: var(--text-xs);
+    color: var(--footer-muted);
+  }
+
+  .footer-legal p {
+    margin: 0;
+  }
+
+  .footer-legal__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-5);
   }
 
   .footer-credit__link {
-    color: inherit;
     font-weight: 600;
-    text-decoration: none;
     border-bottom: 1px solid currentColor;
     padding-bottom: 1px;
-    transition: opacity 0.15s ease;
   }
 
-  .footer-credit__link:hover,
-  .footer-credit__link:focus-visible {
-    opacity: 0.7;
+  @media (min-width: 768px) {
+    .footer-news {
+      grid-template-columns: 1.2fr 1fr;
+      align-items: end;
+      gap: var(--space-12);
+    }
+
+    .footer-columns {
+      grid-template-columns: repeat(2, 1fr);
+      column-gap: var(--space-8);
+    }
+
+    /* En escritorio las columnas siempre están abiertas: el summary no actúa como botón. */
+    .footer-col {
+      border-bottom: 0;
+    }
+
+    .footer-col summary {
+      padding: 0 0 var(--space-4);
+      pointer-events: none;
+    }
+
+    .footer-col__chev {
+      display: none;
+    }
+
+    .footer-legal {
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: var(--space-8);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .footer-main {
+      grid-template-columns: minmax(260px, 1fr) 2.4fr;
+      gap: var(--space-16);
+      padding: var(--space-12) 0;
+    }
+
+    .footer-columns {
+      grid-template-columns: repeat(4, 1fr);
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .footer-credit__link {
+    .site-footer *,
+    .site-footer a {
       transition: none;
     }
   }
 </style>
 
-<script is:inline src="/assets/js/newsletter-footer.js"></script>
+<script is:inline src="/assets/js/footer.js"></script>
