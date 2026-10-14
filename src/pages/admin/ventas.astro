@@ -427,7 +427,7 @@ function setDelta(id: string, cur: number, prev: number | null | undefined, good
   const diff = unit === '%' ? ((cur - prev) / prev) * 100 : cur - prev;
   const flat = Math.abs(diff) < 0.05;
   const better = good === 'up' ? diff > 0 : diff < 0;
-  el.className = `mono ${flat ? 'sales-muted' : better ? 'sales-up' : 'sales-down'}`;
+  el.className = flat ? 'mono sales-muted' : 'mono';
   el.style.color = flat ? '' : better ? 'var(--ok)' : 'var(--danger)';
   el.textContent = `${diff > 0 ? '▲ +' : diff < 0 ? '▼ -' : '= '}${PCT.format(Math.abs(diff))}${unit === '%' ? '%' : ' pp'}`;
 }
