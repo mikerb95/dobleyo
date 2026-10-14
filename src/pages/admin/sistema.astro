@@ -718,7 +718,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     resultEl.classList.remove('hidden');
 
     if (json.success) {
-      resultEl.innerHTML = `<div style="color:green">Admin creado. Contraseña temporal: <strong>${escHtml(json.data.tempPassword)}</strong> — guárdala.</div>`;
+      resultEl.innerHTML = `<div style="color:green">Admin creado. Contraseña temporal: <strong>${escHtml(json.data.tempPassword)}</strong>. Guárdela.</div>`;
       el('naEmail').value = '';
       el('naFirstName').value = '';
       el('naLastName').value = '';

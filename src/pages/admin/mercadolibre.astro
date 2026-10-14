@@ -11,7 +11,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         <div class="page-breadcrumb">
           <a href="/admin">Admin</a> / MercadoLibre
         </div>
-        <h1 class="page-title">MercadoLibre — Canal de Ventas</h1>
+        <h1 class="page-title">Canal MercadoLibre</h1>
       </div>
       <div class="page-header-actions">
         <a href="/admin/sales-map" class="btn btn-secondary">
@@ -469,7 +469,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         document.getElementById('kpiAvg')!.textContent = '$0';
         document.getElementById('kpiCities')!.textContent = '0';
       } else {
-        setConnectionStatus('ok', 'Conectado a MercadoLibre', `${ov.total_orders} órdenes — última: ${fmtDate(ov.last_order_date)}`);
+        setConnectionStatus('ok', 'Conectado a MercadoLibre', `${ov.total_orders} pedidos · último: ${fmtDate(ov.last_order_date)}`);
         document.getElementById('kpiOrders')!.textContent = ov.total_orders.toLocaleString('es-CO');
         document.getElementById('kpiOrdersRange')!.textContent = `${fmtDate(ov.first_order_date)} - ${fmtDate(ov.last_order_date)}`;
         document.getElementById('kpiRevenue')!.textContent = fmt(ov.total_revenue ?? 0);
@@ -685,7 +685,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       if (!res.ok || !json.success) {
         banner.innerHTML = `<div class="banner error">✗ Error en sincronización: ${json.error ?? json.details ?? 'desconocido'}</div>`;
       } else {
-        banner.innerHTML = `<div class="banner success">✓ Sincronización completada — ${json.processed} procesadas, ${json.saved} guardadas${json.failed ? `, ${json.failed} fallidas` : ''}</div>`;
+        banner.innerHTML = `<div class="banner success">✓ Sincronización completada: ${json.processed} procesadas, ${json.saved} guardadas${json.failed ? `, ${json.failed} fallidas` : ''}</div>`;
         await loadStats();
         await loadOrders(0);
       }
@@ -771,7 +771,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     document.getElementById('crmModalOrderId')!.textContent = orderId || `#${saleId}`;
     const sel = document.getElementById('crmAccountSelect') as HTMLSelectElement;
     if (!crmAccounts.length) {
-      sel.innerHTML = '<option value="">No hay cuentas CRM — créelas en /admin/crm</option>';
+      sel.innerHTML = '<option value="">No hay cuentas CRM. Créelas en /admin/crm</option>';
     } else {
       sel.innerHTML = '<option value="">Seleccione una cuenta…</option>' +
         crmAccounts.map((a: any) => `<option value="${a.id}">${esc(a.display_name)}</option>`).join('');

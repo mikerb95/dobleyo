@@ -955,7 +955,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         <div class="detail-grid">
           <div class="detail-item"><span class="dl">Número</span><span class="dv">${sale.sale_number}</span></div>
           <div class="detail-item"><span class="dl">Fecha</span><span class="dv">${fmtDate(sale.sale_date)}</span></div>
-          <div class="detail-item"><span class="dl">Canal</span><span class="dv">${CHANNEL_LABELS[sale.channel] || sale.channel}${sale.channel_detail ? ` — ${sale.channel_detail}` : ''}</span></div>
+          <div class="detail-item"><span class="dl">Canal</span><span class="dv">${CHANNEL_LABELS[sale.channel] || sale.channel}${sale.channel_detail ? ` · ${sale.channel_detail}` : ''}</span></div>
           <div class="detail-item"><span class="dl">Estado</span><span class="dv"><span class="badge badge-${sale.status}">${STATUS_LABELS[sale.status]}</span></span></div>
           <div class="detail-item"><span class="dl">Cliente</span><span class="dv">${sale.customer_name || '-'}</span></div>
           <div class="detail-item"><span class="dl">Contacto</span><span class="dv">${sale.customer_contact || '-'}</span></div>

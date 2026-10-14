@@ -359,7 +359,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       .join("") || `<tr><td colspan="4"><div class="empty-state">Sin datos</div></td></tr>`;
 
     el("sourceNote").innerHTML = price.sourceUrl
-      ? `Fuente: boletín diario de la Federación Nacional de Cafeteros — <a href="${price.sourceUrl}" target="_blank" rel="noopener noreferrer">precio_cafe.pdf</a>`
+      ? `Fuente: boletín diario de la Federación Nacional de Cafeteros: <a href="${price.sourceUrl}" target="_blank" rel="noopener noreferrer">precio_cafe.pdf</a>`
       : "Fuente: boletín diario de la Federación Nacional de Cafeteros";
   }
 

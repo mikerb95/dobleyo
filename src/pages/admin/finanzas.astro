@@ -307,7 +307,7 @@ const balancePositive = dashboard.month_balance >= 0;
           <label class="adm-field">
             <span>Categoría *</span>
             <select name="category" required>
-              <option value="">— Seleccionar —</option>
+              <option value="">Seleccione...</option>
               <option value="operativo">Operativo</option>
               <option value="administrativo">Administrativo</option>
               <option value="venta">Venta</option>
@@ -348,7 +348,7 @@ const balancePositive = dashboard.month_balance >= 0;
           <label class="adm-field">
             <span>Cliente *</span>
             <select name="customer_id" id="selectClient" required>
-              <option value="">— Seleccionar cliente —</option>
+              <option value="">Seleccione un cliente</option>
             </select>
           </label>
           <label class="adm-field">
@@ -421,7 +421,7 @@ const balancePositive = dashboard.month_balance >= 0;
           <label class="adm-field adm-field--full">
             <span>Socio (cliente / proveedor) *</span>
             <select name="partner_id" id="selectPartner" required>
-              <option value="">— Seleccionar persona —</option>
+              <option value="">Seleccione una persona</option>
             </select>
           </label>
           <label class="adm-field">
@@ -431,7 +431,7 @@ const balancePositive = dashboard.month_balance >= 0;
           <label class="adm-field">
             <span>Método de pago *</span>
             <select name="payment_method_id" id="selectPaymentMethod" required>
-              <option value="">— Seleccionar método —</option>
+              <option value="">Seleccione un método</option>
             </select>
           </label>
           <label class="adm-field">
@@ -467,7 +467,7 @@ const balancePositive = dashboard.month_balance >= 0;
           <label class="adm-field">
             <span>Caficultor</span>
             <select name="caficultor_id" id="selectCaficultor">
-              <option value="">— Seleccionar caficultor —</option>
+              <option value="">Seleccione un caficultor</option>
             </select>
           </label>
           <label class="adm-field">
@@ -1129,7 +1129,7 @@ document.getElementById('closeModalExpense').addEventListener('click', () => clo
 async function openPurchaseInvoice() {
   const sel = document.getElementById('selectCaficultor');
   const list = await getCaficultores();
-  fillSelect(sel, list, 'id', u => `${u.name} (${u.email})`, '— Sin asignar —');
+  fillSelect(sel, list, 'id', u => `${u.name} (${u.email})`, 'Sin asignar');
   openModal('modalPurchaseInvoice');
 }
 ['btnNewPurchaseInvoice', 'btnNewPurchaseInvoice2'].forEach(id => {
@@ -1141,7 +1141,7 @@ document.getElementById('closeModalPurchaseInvoice').addEventListener('click', (
 async function openSalesInvoice() {
   const sel = document.getElementById('selectClient');
   const list = await getClients();
-  fillSelect(sel, list, 'id', u => `${u.name} (${u.email})`, '— Seleccionar cliente —');
+  fillSelect(sel, list, 'id', u => `${u.name} (${u.email})`, 'Seleccione un cliente');
   const today = new Date().toISOString().slice(0, 10);
   document.querySelector('#formSalesInvoice [name="invoice_date"]').value = today;
   document.querySelector('#formSalesInvoice [name="due_date"]').value = today;
@@ -1157,9 +1157,9 @@ document.getElementById('closeModalSalesInvoice').addEventListener('click', () =
 document.getElementById('btnNewPayment').addEventListener('click', async () => {
   const [users, methods] = await Promise.all([getAllUsers(), getPaymentMethods()]);
   fillSelect(document.getElementById('selectPartner'), users, 'id',
-    u => `${u.name} · ${u.role} (${u.email})`, '— Seleccionar persona —');
+    u => `${u.name} · ${u.role} (${u.email})`, 'Seleccione una persona');
   fillSelect(document.getElementById('selectPaymentMethod'), methods, 'id',
-    m => `${m.name} (${m.method_type})`, '— Seleccionar método —');
+    m => `${m.name} (${m.method_type})`, 'Seleccione un método');
   const today = new Date().toISOString().slice(0, 10);
   document.querySelector('#formPayment [name="payment_date"]').value = today;
   openModal('modalPayment');
@@ -1341,7 +1341,7 @@ document.getElementById('formSalesInvoice').addEventListener('submit', async (e)
     const json = await r.json();
     if (json.success) {
       msgEl.style.color = '#065f46';
-      msgEl.textContent = `✅ Factura ${json.data.invoice_number} creada — Total: ${fmtCOP(json.data.total_amount)}`;
+      msgEl.textContent = `✅ Factura ${json.data.invoice_number} creada. Total: ${fmtCOP(json.data.total_amount)}`;
       e.target.reset();
       document.getElementById('salesLines').innerHTML = saleLineTemplate(0);
       saleLineCount = 1;
@@ -1387,7 +1387,7 @@ document.getElementById('formPayment').addEventListener('submit', async (e) => {
     if (json.success) {
       const tipo = rawData.payment_type === 'recibido' ? 'cobro' : 'pago';
       msgEl.style.color = '#065f46';
-      msgEl.textContent = `✅ ${tipo.charAt(0).toUpperCase() + tipo.slice(1)} ${json.data.payment_number} registrado — ${fmtCOP(json.data.amount)}`;
+      msgEl.textContent = `✅ ${tipo.charAt(0).toUpperCase() + tipo.slice(1)} ${json.data.payment_number} registrado por ${fmtCOP(json.data.amount)}`;
       e.target.reset();
       setTimeout(() => { closeModal('modalPayment'); msgEl.textContent = ''; loadedTabs.delete('payments'); }, 2000);
     } else {

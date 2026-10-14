@@ -79,9 +79,9 @@ import CostField from "../../components/CostField.astro";
               <label for="farmSelect">Finca <span class="required">*</span></label>
               <select id="farmSelect" name="farm" required>
                 <option value="">Seleccione una finca…</option>
-                <option value="finca-la-sierra">La Sierra — Huila (1800m)</option>
-                <option value="finca-nariño">Nariño Premium — Nariño (1900m)</option>
-                <option value="finca-cauca">Cauca Estate — Cauca (1750m)</option>
+                <option value="finca-la-sierra">La Sierra · Huila (1800m)</option>
+                <option value="finca-nariño">Nariño Premium · Nariño (1900m)</option>
+                <option value="finca-cauca">Cauca Estate · Cauca (1750m)</option>
               </select>
               <div class="form-hint">
                 La altura y la región se cargan automáticamente desde la finca.
@@ -278,7 +278,7 @@ import CostField from "../../components/CostField.astro";
 
     // Mapa de fincas: cargado dinámicamente desde la API, con fallback estático
     let farmData = {
-      "finca-la-sierra": { altitude: "1800m", altitudeRaw: 1800, region: "HUI", displayName: "La Sierra — Huila" },
+      "finca-la-sierra": { altitude: "1800m", altitudeRaw: 1800, region: "HUI", displayName: "La Sierra · Huila" },
       "finca-nariño":    { altitude: "1900m", altitudeRaw: 1900, region: "NAR", displayName: "Nariño Premium" },
       "finca-cauca":     { altitude: "1750m", altitudeRaw: 1750, region: "CAU", displayName: "Cauca Estate" },
     };
@@ -351,7 +351,7 @@ import CostField from "../../components/CostField.astro";
         while (farmSelect.options.length > 1) farmSelect.remove(1);
         farms.forEach((f) => {
           const key = f.slug || `farm-${f.id}`;
-          const label = `${f.name}${f.municipality ? " — " + f.municipality : ""}${f.altitude_min ? " (" + f.altitude_min + "m)" : ""}`;
+          const label = `${f.name}${f.municipality ? " · " + f.municipality : ""}${f.altitude_min ? " (" + f.altitude_min + "m)" : ""}`;
           farmSelect.appendChild(new Option(label, key));
         });
       } catch (_) {

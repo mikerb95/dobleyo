@@ -335,14 +335,14 @@ import CostField from "../../components/CostField.astro";
               opt.value = l.code;
               const free =
                 l.capacity_kg != null
-                  ? ` — ${numberFmt.format(Math.max(0, l.capacity_kg - l.occupied_kg))} kg libres`
+                  ? ` · ${numberFmt.format(Math.max(0, l.capacity_kg - l.occupied_kg))} kg libres`
                   : "";
               opt.textContent = `${l.name} (${l.code})${free}`;
               // Sin espacio libre no se puede almacenar: se muestra, pero
               // deshabilitada, para que el operario entienda por qué.
               if (l.capacity_kg != null && l.occupied_kg >= l.capacity_kg) {
                 opt.disabled = true;
-                opt.textContent = `${l.name} (${l.code}) — llena`;
+                opt.textContent = `${l.name} (${l.code}) · llena`;
               }
               group.appendChild(opt);
             });

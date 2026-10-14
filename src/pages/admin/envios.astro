@@ -414,7 +414,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
             </div>
             <div class="modal-body">
                 <div class="alert-box alert-warn">
-                    Esta orden no está cubierta por Mipaquete (moneda distinta a COP). Registre la guía del transportador usado manualmente — no se hace ninguna llamada a Mipaquete.
+                    Esta orden no está cubierta por Mipaquete (moneda distinta a COP). Registre la guía del transportador usado manualmente; no se hace ninguna llamada a Mipaquete.
                 </div>
                 <div id="modalManualAlert"></div>
 
@@ -878,7 +878,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
         function openManualModal(orderId: number, ref: string) {
             manualOrderId = orderId;
-            document.getElementById("modalManualTitle")!.textContent = `Despacho manual — ${ref}`;
+            document.getElementById("modalManualTitle")!.textContent = `Despacho manual · ${ref}`;
             document.getElementById("modalManualAlert")!.innerHTML = "";
             document.getElementById("manualMsg")!.textContent = "";
             (document.getElementById("mCarrier") as HTMLInputElement).value = "";
@@ -940,7 +940,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         async function openQuoteModal(orderId: number, ref: string) {
             currentOrderId = orderId;
             selectedQuote = null;
-            document.getElementById("modalTitle")!.textContent = `Cotizar envío — ${ref}`;
+            document.getElementById("modalTitle")!.textContent = `Cotizar envío · ${ref}`;
             document.getElementById("modalAlert")!.innerHTML = "";
             document.getElementById("quoteResults")!.innerHTML = "";
             document.getElementById("createMsg")!.textContent = "";
@@ -974,7 +974,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
                     ).join("");
                     alertBox.innerHTML += `<div class="alert-box alert-warn">Ciudad ambigua: seleccione la correcta antes de cotizar.</div>`;
                 } else {
-                    daneSelect.innerHTML = `<option value="">No se encontró código DANE — ingréselo manualmente</option>`;
+                    daneSelect.innerHTML = `<option value="">No se encontró código DANE. Ingréselo manualmente</option>`;
                     alertBox.innerHTML += `<div class="alert-box alert-err">No se pudo resolver la ciudad automáticamente. Contacte soporte de Mipaquete o ingrese el código DANE manualmente en el selector.</div>`;
                 }
             } catch (err: any) {

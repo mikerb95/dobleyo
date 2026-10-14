@@ -64,7 +64,7 @@ const displayDate = farm?.created_at
       <div class:list={["status-banner", farm.is_published ? "status-banner--published" : "status-banner--draft"]}>
         {farm.is_published
           ? "✅ Tu finca está publicada y visible en el catálogo."
-          : "⏳ Tu finca está en borrador — pendiente de revisión por el equipo DobleYo."}
+          : "⏳ Tu finca está en borrador, pendiente de revisión por el equipo DobleYo."}
       </div>
     )}
 
@@ -175,7 +175,7 @@ const displayDate = farm?.created_at
             <div class="form-group form-group--wide">
               <img
                 src={farm.cover_image_url}
-                alt={`Vista previa de portada — ${farm.name}`}
+                alt={`Vista previa de portada de ${farm.name}`}
                 class="cover-preview"
                 loading="lazy"
               />

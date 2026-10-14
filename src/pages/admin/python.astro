@@ -195,7 +195,7 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
             <div class="form-group">
               <label for="c-product">Producto (opcional)</label>
               <select id="c-product" class="product-select">
-                <option value="">— Sin especificar —</option>
+                <option value="">Sin especificar</option>
               </select>
             </div>
             <div class="form-group form-group--period">
@@ -361,7 +361,7 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
             <div class="form-group">
               <label for="e-product">Producto</label>
               <select id="e-product" class="product-select">
-                <option value="">— Sin especificar —</option>
+                <option value="">Sin especificar</option>
               </select>
             </div>
             <div class="form-group form-group--period">
@@ -697,7 +697,7 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
         document.getElementById("catalogProductNames")!.textContent!
       );
       document.querySelectorAll<HTMLSelectElement>(".product-select").forEach(sel => {
-        const firstText = sel.options[0]?.textContent ?? "— Sin especificar —";
+        const firstText = sel.options[0]?.textContent ?? "Sin especificar";
         sel.innerHTML = `<option value="">${firstText}</option>` +
           names.map(n => `<option value="${esc(n)}">${esc(n)}</option>`).join("");
       });

@@ -172,9 +172,9 @@ import CostField from "../../components/CostField.astro";
               </div>
               <div class="rs-capacity-bar"><span class="rs-capacity-fill" id="capacityFill"></span></div>
               <div class="rs-capacity-meta">
-                <span>Carga: <b id="capLoad">— kg</b></span>
-                <span>Capacidad: <b id="capTotal">— kg</b></span>
-                <span>Por contenedor: <b id="capPer">— kg</b></span>
+                <span>Carga: <b id="capLoad">- kg</b></span>
+                <span>Capacidad: <b id="capTotal">- kg</b></span>
+                <span>Por contenedor: <b id="capPer">- kg</b></span>
               </div>
               <div class="rs-capacity-warn" id="capacityWarn" hidden>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
@@ -607,7 +607,7 @@ import CostField from "../../components/CostField.astro";
           const o = document.createElement('option');
           o.value = l.code;
           const libre = l.capacityKg != null
-            ? ` — ${kg(Math.max(0, l.capacityKg - l.occupiedKg))} libres`
+            ? ` · ${kg(Math.max(0, l.capacityKg - l.occupiedKg))} libres`
             : '';
           o.textContent = `${l.label} (${l.code})${libre}`;
           og.appendChild(o);
