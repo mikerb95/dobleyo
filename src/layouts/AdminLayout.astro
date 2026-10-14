@@ -7,6 +7,11 @@ export interface Props {
 }
 
 const { title = "Admin — DobleYo Café", section = "" } = Astro.props;
+
+// Clase raíz por página (/admin/usuarios -> pg-usuarios). Las páginas que
+// pintan contenido con innerHTML acotan su <style is:global> a esta clase.
+const pageSlug = Astro.url.pathname.replace(/\/+$/, "").split("/").pop() || "index";
+const pageClass = `pg-${pageSlug.replace(/[^a-z0-9-]/gi, "")}`;
 ---
 
 <!doctype html>
@@ -1328,7 +1333,7 @@ const { title = "Admin — DobleYo Café", section = "" } = Astro.props;
 
     <!-- ── Main ──────────────────────────────────────────── -->
     <main class="erp-main">
-      <div class="erp-content">
+      <div class={`erp-content ${pageClass}`}>
         <slot />
       </div>
     </main>

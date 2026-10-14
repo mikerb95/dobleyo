@@ -92,22 +92,24 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   </div>
 </AdminLayout>
 
-<style>
-  .kpi-row { margin-bottom: 1.5rem; }
+<style is:global>
+  /* Global y acotado a .pg-inventario-valor (lo pone AdminLayout): parte de esta
+     página se pinta con innerHTML y los estilos scoped no le llegan. */
+  .pg-inventario-valor .kpi-row { margin-bottom: 1.5rem; }
 
 
-  .cat-cafe       { background: #fff8f1; color: #92400e; border: 1px solid #fed7aa; }
-  .cat-accesorio  { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
-  .cat-merchandising { background: #fdf4ff; color: #6b21a8; border: 1px solid #e9d5ff; }
-  .cat-cacao      { background: var(--cream); color: var(--espresso); border: 1px solid var(--border); }
+  .pg-inventario-valor .cat-cafe       { background: #fff8f1; color: #92400e; border: 1px solid #fed7aa; }
+  .pg-inventario-valor .cat-accesorio  { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
+  .pg-inventario-valor .cat-merchandising { background: #fdf4ff; color: #6b21a8; border: 1px solid #e9d5ff; }
+  .pg-inventario-valor .cat-cacao      { background: var(--cream); color: var(--espresso); border: 1px solid var(--border); }
 
-  .value-bar-wrap {
+  .pg-inventario-valor .value-bar-wrap {
     display: flex;
     align-items: center;
     gap: 0.6rem;
     justify-content: flex-end;
   }
-  .value-bar-bg {
+  .pg-inventario-valor .value-bar-bg {
     width: 60px;
     height: 5px;
     background: var(--border);
@@ -115,14 +117,14 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     overflow: hidden;
     flex-shrink: 0;
   }
-  .value-bar-fill {
+  .pg-inventario-valor .value-bar-fill {
     height: 100%;
     background: var(--brand);
     border-radius: 99px;
     transition: width 0.5s ease;
   }
 
-  .sku-text {
+  .pg-inventario-valor .sku-text {
     font-size: 11px;
     color: var(--brand-dark);
     font-weight: 500;

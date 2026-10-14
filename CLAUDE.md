@@ -71,7 +71,7 @@
 | `server/services/costService.js` | Costeo del pipeline: registro de costos, costo/kg por etapa, insumos de empaque |
 | `server/services/accountingService.js` | Asientos de partida doble (borrador) de los costos de producción |
 | `server/routes/costs.js` | API de costeo e insumos (`/api/costs`). Solo admin |
-| `server/routes/products.js` | Catálogo público: listado, detalle, `GET /search` y reseñas. `/search` va antes que `/:id` |
+| `server/routes/products.js` | Catálogo público: listado, detalle, `GET /search`, `GET /search/suggest` (facetas y más pedidos del buscador del header) y reseñas. Las rutas `/search*` van antes que `/:id` |
 | `server/utils/reviews.js` | `reviewAggregateSql(alias)`: agregados de reseñas aprobadas, compartido Express + SSR |
 
 ### Frontend — Páginas Públicas

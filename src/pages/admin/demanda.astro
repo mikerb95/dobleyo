@@ -143,28 +143,30 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     </div>
   </div>
 
-  <style>
-    .page-header {
+  <style is:global>
+  /* Global y acotado a .pg-demanda (lo pone AdminLayout): parte de esta
+     página se pinta con innerHTML y los estilos scoped no le llegan. */
+    .pg-demanda .page-header {
       padding: 1.75rem 2rem 1.25rem;
       background: var(--paper);
       border-bottom: 1px solid var(--rule);
     }
-    .page-header h1 { font-size: 1.6rem; font-weight: 700; color: var(--color-primary); margin: 0 0 .25rem; }
-    .page-header p  { margin: 0; color: var(--muted); font-size: .92rem; }
-    .page-body { padding: 1.5rem 2rem 2rem; }
+    .pg-demanda .page-header h1 { font-size: 1.6rem; font-weight: 700; color: var(--color-primary); margin: 0 0 .25rem; }
+    .pg-demanda .page-header p  { margin: 0; color: var(--muted); font-size: .92rem; }
+    .pg-demanda .page-body { padding: 1.5rem 2rem 2rem; }
     @media (max-width: 640px) {
-      .page-header { padding: 1.25rem 1rem 1rem; }
-      .page-body { padding: 1rem; }
+      .pg-demanda .page-header { padding: 1.25rem 1rem 1rem; }
+      .pg-demanda .page-body { padding: 1rem; }
     }
-    .row-actions { display: flex; gap: 6px; justify-content: flex-end; }
-    code { background: var(--hover); padding: 1px 5px; border-radius: 4px; font-size: .85em; }
-    .btn-export {
+    .pg-demanda .row-actions { display: flex; gap: 6px; justify-content: flex-end; }
+    .pg-demanda code { background: var(--hover); padding: 1px 5px; border-radius: 4px; font-size: .85em; }
+    .pg-demanda .btn-export {
       background: #2e7d5b;
       color: #fff;
       border-color: #2e7d5b;
     }
-    .btn-export:hover { background: #256649; border-color: #256649; }
-    .btn-export:disabled { opacity: .6; cursor: not-allowed; }
+    .pg-demanda .btn-export:hover { background: #256649; border-color: #256649; }
+    .pg-demanda .btn-export:disabled { opacity: .6; cursor: not-allowed; }
   </style>
 
   <script>

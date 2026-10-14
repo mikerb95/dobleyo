@@ -406,43 +406,45 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
     </div>
   </div>
 
-  <style>
-    .page-header {
+  <style is:global>
+  /* Global y acotado a .pg-python (lo pone AdminLayout): parte de esta
+     página se pinta con innerHTML y los estilos scoped no le llegan. */
+    .pg-python .page-header {
       padding: 1.75rem 2rem 1.25rem;
       background: var(--paper);
       border-bottom: 1px solid var(--rule);
     }
-    .page-header h1 { font-size: 1.6rem; font-weight: 700; color: var(--color-primary); margin: 0 0 .25rem; }
-    .page-header p  { margin: 0; color: var(--muted); font-size: .92rem; }
-    .page-body { padding: 1.5rem 2rem 2rem; }
+    .pg-python .page-header h1 { font-size: 1.6rem; font-weight: 700; color: var(--color-primary); margin: 0 0 .25rem; }
+    .pg-python .page-header p  { margin: 0; color: var(--muted); font-size: .92rem; }
+    .pg-python .page-body { padding: 1.5rem 2rem 2rem; }
     @media (max-width: 640px) {
-      .page-header { padding: 1.25rem 1rem 1rem; }
-      .page-body { padding: 1rem; }
+      .pg-python .page-header { padding: 1.25rem 1rem 1rem; }
+      .pg-python .page-body { padding: 1rem; }
     }
-    .row-actions { display: flex; gap: 6px; justify-content: flex-end; }
-    code { background: var(--hover); padding: 1px 5px; border-radius: 4px; font-size: .85em; }
+    .pg-python .row-actions { display: flex; gap: 6px; justify-content: flex-end; }
+    .pg-python code { background: var(--hover); padding: 1px 5px; border-radius: 4px; font-size: .85em; }
 
     /* ── Pronóstico (copiado del patrón de estadísticas) ── */
-    .kpi-grid {
+    .pg-python .kpi-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 1rem;
       margin-bottom: 1.5rem;
     }
-    .charts-grid {
+    .pg-python .charts-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
       gap: 1.5rem;
       margin-bottom: 1.5rem;
     }
-    .stat-card {
+    .pg-python .stat-card {
       background: #fff;
       border: 1px solid var(--border, rgba(0,0,0,.09));
       border-radius: 6px;
       box-shadow: var(--card-shadow, 0 0 0 1px rgba(0,0,0,.06), 0 2px 8px rgba(0,0,0,.05));
       padding: 1.25rem 1.5rem;
     }
-    .stat-card h3 {
+    .pg-python .stat-card h3 {
       font-size: 0.85rem;
       font-weight: 700;
       letter-spacing: 0.07em;
@@ -450,9 +452,9 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
       color: var(--text-2, #6a6d70);
       margin: 0 0 0.75rem;
     }
-    .stat-empty { color: var(--text-3, #a9b0b8); font-size: 0.88rem; text-align: center; padding: 1.5rem 0; }
+    .pg-python .stat-empty { color: var(--text-3, #a9b0b8); font-size: 0.88rem; text-align: center; padding: 1.5rem 0; }
 
-    .bar-chart {
+    .pg-python .bar-chart {
       height: 180px;
       display: flex;
       align-items: flex-end;
@@ -460,7 +462,7 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
       border-bottom: 2px solid var(--border, rgba(0,0,0,.09));
       padding-bottom: 0.4rem;
     }
-    .bar-col {
+    .pg-python .bar-col {
       flex: 1;
       display: flex;
       flex-direction: column;
@@ -469,10 +471,10 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
       height: 100%;
       justify-content: flex-end;
     }
-    .bar-fill { width: 100%; border-radius: 3px 3px 0 0; }
-    .bar-label { font-size: 0.7rem; color: var(--text-2, #6a6d70); }
+    .pg-python .bar-fill { width: 100%; border-radius: 3px 3px 0 0; }
+    .pg-python .bar-label { font-size: 0.7rem; color: var(--text-2, #6a6d70); }
 
-    .section-divider {
+    .pg-python .section-divider {
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -482,11 +484,11 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
       padding-top: 1.75rem;
       border-top: 2px solid var(--border, rgba(0,0,0,.09));
     }
-    .section-divider h2 { font-size: 1.25rem; font-weight: 700; color: #251a14; margin: 0; }
-    .section-divider p  { margin: .2rem 0 0; color: #7a6652; font-size: .85rem; }
-    .fc-meta { font-size: .78rem; color: var(--text-3, #a9b0b8); }
+    .pg-python .section-divider h2 { font-size: 1.25rem; font-weight: 700; color: #251a14; margin: 0; }
+    .pg-python .section-divider p  { margin: .2rem 0 0; color: #7a6652; font-size: .85rem; }
+    .pg-python .fc-meta { font-size: .78rem; color: var(--text-3, #a9b0b8); }
 
-    .btn-recalc {
+    .pg-python .btn-recalc {
       background: #c8a96e;
       color: #251a14;
       border: 0;
@@ -497,9 +499,9 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
       cursor: pointer;
       transition: filter .15s;
     }
-    .btn-recalc:hover:not(:disabled) { filter: brightness(.95); }
-    .btn-recalc:disabled { opacity: .6; cursor: progress; }
-    .btn-demo {
+    .pg-python .btn-recalc:hover:not(:disabled) { filter: brightness(.95); }
+    .pg-python .btn-recalc:disabled { opacity: .6; cursor: progress; }
+    .pg-python .btn-demo {
       background: #f0ebe4;
       color: #251a14;
       border: 1px solid #c8bfb4;
@@ -510,11 +512,11 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
       cursor: pointer;
       transition: background .15s;
     }
-    .btn-demo:hover:not(:disabled) { background: #e5ddd4; }
-    .btn-demo:disabled { opacity: .6; cursor: progress; }
-    .fc-status { font-size: .8rem; color: #7a6652; }
+    .pg-python .btn-demo:hover:not(:disabled) { background: #e5ddd4; }
+    .pg-python .btn-demo:disabled { opacity: .6; cursor: progress; }
+    .pg-python .fc-status { font-size: .8rem; color: #7a6652; }
 
-    .badge {
+    .pg-python .badge {
       display: inline-block;
       padding: .15rem .5rem;
       border-radius: 9999px;
@@ -522,11 +524,11 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
       font-weight: 700;
       letter-spacing: .02em;
     }
-    .badge--warn  { background: #fbe7d2; color: #8a5a00; }
-    .badge--ok    { background: #dff0e4; color: #2d6a4f; }
-    .badge--muted { background: var(--border, rgba(0,0,0,.08)); color: var(--text-2, #6a6d70); }
+    .pg-python .badge--warn  { background: #fbe7d2; color: #8a5a00; }
+    .pg-python .badge--ok    { background: #dff0e4; color: #2d6a4f; }
+    .pg-python .badge--muted { background: var(--border, rgba(0,0,0,.08)); color: var(--text-2, #6a6d70); }
 
-    .fc-note {
+    .pg-python .fc-note {
       background: #faf8f5;
       border: 1px solid var(--border, rgba(0,0,0,.09));
       border-left: 3px solid #c8a96e;
@@ -538,57 +540,57 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
     }
 
     /* ── Stepper +/- ── */
-    .stepper {
+    .pg-python .stepper {
       display: flex; align-items: stretch;
       border: 1px solid var(--rule); border-radius: var(--radius-sm, 6px);
       overflow: hidden;
     }
-    .stepper input[type="number"] {
+    .pg-python .stepper input[type="number"] {
       flex: 1; border: 0;
       border-left: 1px solid var(--rule); border-right: 1px solid var(--rule);
       border-radius: 0; text-align: center;
       font-weight: 700; font-variant-numeric: tabular-nums;
       min-width: 64px;
     }
-    .stepper input[type="number"]::-webkit-inner-spin-button,
-    .stepper input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
-    .stepper input[type="number"] { -moz-appearance: textfield; }
-    .stepper-btn {
+    .pg-python .stepper input[type="number"]::-webkit-inner-spin-button,
+    .pg-python .stepper input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
+    .pg-python .stepper input[type="number"] { -moz-appearance: textfield; }
+    .pg-python .stepper-btn {
       appearance: none; border: 0;
       background: var(--hover, #f5f0eb); color: var(--color-primary, #251a14);
       cursor: pointer; font-size: 18px; font-weight: 700; line-height: 1;
       padding: 0 14px; transition: background .12s;
     }
-    .stepper-btn:hover  { background: var(--rule,   #e5ddd4); }
-    .stepper-btn:active { background: var(--rule-2, #cec6bc); }
+    .pg-python .stepper-btn:hover  { background: var(--rule,   #e5ddd4); }
+    .pg-python .stepper-btn:active { background: var(--rule-2, #cec6bc); }
 
     /* ── Period toggle semana/mes ── */
-    .period-wrap { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-    .period-toggle {
+    .pg-python .period-wrap { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .pg-python .period-toggle {
       display: inline-flex;
       background: var(--paper, #faf8f5); border: 1px solid var(--rule, #e5ddd4);
       border-radius: 6px; padding: 2px; flex-shrink: 0;
     }
-    .period-btn {
+    .pg-python .period-btn {
       appearance: none; border: 0; background: transparent; cursor: pointer;
       font: inherit; font-size: 12px; font-weight: 500;
       color: var(--color-text, #3a2618); padding: 4px 10px; border-radius: 4px;
       transition: background .12s; white-space: nowrap;
     }
-    .period-btn:hover { background: var(--hover, #f0ebe4); }
-    .period-btn--on   { background: var(--color-primary, #251a14); color: #fff; }
-    .period-btn--on:hover { background: color-mix(in oklab, var(--color-primary, #251a14) 88%, black); }
-    .period-input { flex: 1; min-width: 140px; }
+    .pg-python .period-btn:hover { background: var(--hover, #f0ebe4); }
+    .pg-python .period-btn--on   { background: var(--color-primary, #251a14); color: #fff; }
+    .pg-python .period-btn--on:hover { background: color-mix(in oklab, var(--color-primary, #251a14) 88%, black); }
+    .pg-python .period-input { flex: 1; min-width: 140px; }
 
     /* ── Notas toggle ── */
-    .notes-toggle {
+    .pg-python .notes-toggle {
       appearance: none; width: 100%; text-align: left;
       border: 1px dashed var(--rule-2, #c8bfb4); background: transparent;
       color: var(--muted, #7a6652); cursor: pointer; font: inherit;
       font-size: 13px; padding: 7px 12px; border-radius: 6px;
       transition: border-color .12s, color .12s, background .12s;
     }
-    .notes-toggle:hover {
+    .pg-python .notes-toggle:hover {
       border-color: var(--color-primary, #251a14);
       color: var(--color-primary, #251a14);
       background: var(--hover, #f0ebe4);

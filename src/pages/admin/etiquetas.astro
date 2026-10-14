@@ -1016,23 +1016,25 @@ import { SHOW_CUPPING } from "../../lib/flags.ts";
   </script>
 </AdminLayout>
 
-<style>
+<style is:global>
+  /* Global y acotado a .pg-etiquetas (lo pone AdminLayout): parte de esta
+     página se pinta con innerHTML y los estilos scoped no le llegan. */
   /* ── Layout workbench ──────────────────────────────────────────── */
-  .labels-grid {
+  .pg-etiquetas .labels-grid {
     display: grid;
     grid-template-columns: 1fr;
     gap: 20px;
     align-items: start;
   }
   @media (min-width: 980px) {
-    .labels-grid { grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); }
-    .labels-side { position: sticky; top: 16px; }
+    .pg-etiquetas .labels-grid { grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); }
+    .pg-etiquetas .labels-side { position: sticky; top: 16px; }
   }
 
-  .card-pad { padding: 18px; }
+  .pg-etiquetas .card-pad { padding: 18px; }
 
   /* ── Segmented control (tabs) ──────────────────────────────────── */
-  .seg {
+  .pg-etiquetas .seg {
     display: flex;
     gap: 4px;
     padding: 4px;
@@ -1041,7 +1043,7 @@ import { SHOW_CUPPING } from "../../lib/flags.ts";
     border-radius: var(--radius-sm);
     margin-bottom: 20px;
   }
-  .seg-btn {
+  .pg-etiquetas .seg-btn {
     flex: 1;
     appearance: none;
     border: none;
@@ -1055,38 +1057,38 @@ import { SHOW_CUPPING } from "../../lib/flags.ts";
     cursor: pointer;
     transition: background 0.15s, color 0.15s;
   }
-  .seg-btn:hover { color: var(--color-primary); }
-  .seg-btn.is-active {
+  .pg-etiquetas .seg-btn:hover { color: var(--color-primary); }
+  .pg-etiquetas .seg-btn.is-active {
     background: var(--paper);
     color: var(--color-primary);
     box-shadow: 0 1px 3px color-mix(in oklab, var(--color-primary) 14%, transparent);
   }
 
-  .lot-info[hidden] { display: none; }
+  .pg-etiquetas .lot-info[hidden] { display: none; }
 
   /* ── Acciones de impresión ─────────────────────────────────────── */
-  .preview-actions {
+  .pg-etiquetas .preview-actions {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
     margin-bottom: 14px;
   }
-  .preview-actions .btn[hidden] { display: none; }
+  .pg-etiquetas .preview-actions .btn[hidden] { display: none; }
 
   /* ── Área de impresión ─────────────────────────────────────────── */
-  #printArea { display: none; }
+  .pg-etiquetas #printArea { display: none; }
 
-  .flow-print { margin-bottom: 22px; background: var(--active-bg); }
-  .flow-print[hidden] { display: none; }
-  .flow-print-body {
+  .pg-etiquetas .flow-print { margin-bottom: 22px; background: var(--active-bg); }
+  .pg-etiquetas .flow-print[hidden] { display: none; }
+  .pg-etiquetas .flow-print-body {
     display: flex; flex-wrap: wrap; gap: 14px;
     align-items: center; justify-content: space-between;
   }
-  .flow-print-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .pg-etiquetas .flow-print-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 
   /* ── Sliders ───────────────────────────────────────────────────── */
-  .slider-field { margin-bottom: 18px; }
-  .slider-field > label {
+  .pg-etiquetas .slider-field { margin-bottom: 18px; }
+  .pg-etiquetas .slider-field > label {
     display: flex;
     align-items: center;
     gap: 6px;
@@ -1097,7 +1099,7 @@ import { SHOW_CUPPING } from "../../lib/flags.ts";
     letter-spacing: 0.06em;
     margin-bottom: 10px;
   }
-  .slider-value {
+  .pg-etiquetas .slider-value {
     margin-left: auto;
     background: var(--active-bg);
     color: var(--color-primary);
@@ -1107,12 +1109,12 @@ import { SHOW_CUPPING } from "../../lib/flags.ts";
     letter-spacing: 0;
     font-variant-numeric: tabular-nums;
   }
-  .slider-field input[type="range"] {
+  .pg-etiquetas .slider-field input[type="range"] {
     width: 100%;
     accent-color: var(--color-accent);
     cursor: pointer;
   }
-  .slider-scale {
+  .pg-etiquetas .slider-scale {
     display: flex;
     justify-content: space-between;
     margin-top: 6px;
@@ -1121,7 +1123,7 @@ import { SHOW_CUPPING } from "../../lib/flags.ts";
   }
 
   /* ── Etiqueta (vista previa) ───────────────────────────────────── */
-  .lbl {
+  .pg-etiquetas .lbl {
     background:
       radial-gradient(120% 120% at 0% 0%, color-mix(in oklab, var(--color-primary) 88%, black), var(--color-primary));
     color: #f3e9dd;
@@ -1129,7 +1131,7 @@ import { SHOW_CUPPING } from "../../lib/flags.ts";
     padding: 20px;
     box-shadow: 0 12px 30px -16px color-mix(in oklab, var(--color-primary) 60%, transparent);
   }
-  .lbl-head {
+  .pg-etiquetas .lbl-head {
     display: flex;
     align-items: baseline;
     justify-content: space-between;
@@ -1137,29 +1139,29 @@ import { SHOW_CUPPING } from "../../lib/flags.ts";
     padding-bottom: 12px;
     border-bottom: 1px solid color-mix(in oklab, #f3e9dd 22%, transparent);
   }
-  .lbl-brand {
+  .pg-etiquetas .lbl-brand {
     font-size: 18px;
     font-weight: 800;
     letter-spacing: -0.02em;
     color: #fff;
   }
-  .lbl-brand span { color: var(--color-accent); margin-left: 4px; }
-  .lbl-origin {
+  .pg-etiquetas .lbl-brand span { color: var(--color-accent); margin-left: 4px; }
+  .pg-etiquetas .lbl-origin {
     font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 0.08em;
     color: color-mix(in oklab, #f3e9dd 75%, transparent);
     text-align: right;
   }
-  .lbl-variety {
+  .pg-etiquetas .lbl-variety {
     font-size: 22px;
     font-weight: 700;
     margin: 14px 0 10px;
     color: #fff;
     line-height: 1.15;
   }
-  .lbl-tags { display: flex; flex-wrap: wrap; gap: 6px; min-height: 4px; }
-  .lbl-tag {
+  .pg-etiquetas .lbl-tags { display: flex; flex-wrap: wrap; gap: 6px; min-height: 4px; }
+  .pg-etiquetas .lbl-tag {
     font-size: 11px;
     font-weight: 600;
     padding: 3px 10px;
@@ -1168,35 +1170,35 @@ import { SHOW_CUPPING } from "../../lib/flags.ts";
     border: 1px solid color-mix(in oklab, var(--color-accent) 45%, transparent);
     color: #fbeee0;
   }
-  .lbl-tag[hidden],
-  .lbl-profile[hidden],
-  .lbl-notes[hidden],
-  .lbl-score[hidden] { display: none; }
+  .pg-etiquetas .lbl-tag[hidden],
+  .pg-etiquetas .lbl-profile[hidden],
+  .pg-etiquetas .lbl-notes[hidden],
+  .pg-etiquetas .lbl-score[hidden] { display: none; }
 
-  .lbl-profile {
+  .pg-etiquetas .lbl-profile {
     margin: 16px 0;
     display: grid;
     gap: 8px;
   }
-  .pv-row { display: flex; align-items: center; gap: 12px; }
-  .pv-k {
+  .pg-etiquetas .pv-row { display: flex; align-items: center; gap: 12px; }
+  .pg-etiquetas .pv-k {
     width: 64px;
     font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 0.06em;
     color: color-mix(in oklab, #f3e9dd 70%, transparent);
   }
-  .pv-bars { display: flex; gap: 5px; flex: 1; }
-  .pv-bars i {
+  .pg-etiquetas .pv-bars { display: flex; gap: 5px; flex: 1; }
+  .pg-etiquetas .pv-bars i {
     flex: 1;
     height: 7px;
     border-radius: 999px;
     background: color-mix(in oklab, #f3e9dd 18%, transparent);
     transition: background 0.15s;
   }
-  .pv-bars i.is-on { background: var(--color-accent); }
+  .pg-etiquetas .pv-bars i.is-on { background: var(--color-accent); }
 
-  .lbl-notes {
+  .pg-etiquetas .lbl-notes {
     font-size: 12.5px;
     font-style: italic;
     line-height: 1.5;
@@ -1204,14 +1206,14 @@ import { SHOW_CUPPING } from "../../lib/flags.ts";
     padding: 10px 0;
     border-top: 1px solid color-mix(in oklab, #f3e9dd 22%, transparent);
   }
-  .lbl-foot {
+  .pg-etiquetas .lbl-foot {
     display: flex;
     align-items: center;
     gap: 14px;
     padding-top: 12px;
     border-top: 1px solid color-mix(in oklab, #f3e9dd 22%, transparent);
   }
-  .lbl-qr {
+  .pg-etiquetas .lbl-qr {
     flex-shrink: 0;
     background: #fff;
     padding: 4px;
@@ -1219,17 +1221,17 @@ import { SHOW_CUPPING } from "../../lib/flags.ts";
     line-height: 0;
     color: var(--color-primary);
   }
-  .lbl-qr svg { display: block; width: 56px; height: 56px; }
-  .lbl-meta { font-size: 12px; min-width: 0; }
-  .lbl-code {
+  .pg-etiquetas .lbl-qr svg { display: block; width: 56px; height: 56px; }
+  .pg-etiquetas .lbl-meta { font-size: 12px; min-width: 0; }
+  .pg-etiquetas .lbl-code {
     font-family: var(--font-mono, ui-monospace, monospace);
     font-size: 11px;
     color: color-mix(in oklab, #f3e9dd 70%, transparent);
     word-break: break-all;
   }
-  .lbl-score { margin: 3px 0; }
-  .lbl-score strong { color: var(--color-accent); }
-  .lbl-tagline {
+  .pg-etiquetas .lbl-score { margin: 3px 0; }
+  .pg-etiquetas .lbl-score strong { color: var(--color-accent); }
+  .pg-etiquetas .lbl-tagline {
     font-size: 10.5px;
     text-transform: uppercase;
     letter-spacing: 0.08em;
@@ -1237,10 +1239,10 @@ import { SHOW_CUPPING } from "../../lib/flags.ts";
   }
 
   /* ── Botón pequeño ─────────────────────────────────────────────── */
-  .btn-sm { padding: 4px 10px; font-size: 12px; }
+  .pg-etiquetas .btn-sm { padding: 4px 10px; font-size: 12px; }
 
   /* ── Toasts ────────────────────────────────────────────────────── */
-  .toast-stack {
+  .pg-etiquetas .toast-stack {
     position: fixed;
     bottom: 20px;
     right: 20px;
@@ -1249,7 +1251,7 @@ import { SHOW_CUPPING } from "../../lib/flags.ts";
     flex-direction: column;
     gap: 8px;
   }
-  .toast {
+  .pg-etiquetas .toast {
     padding: 11px 16px;
     border-radius: var(--radius-sm);
     font-size: 13px;
@@ -1262,23 +1264,23 @@ import { SHOW_CUPPING } from "../../lib/flags.ts";
     transition: opacity 0.25s, transform 0.25s;
     max-width: 320px;
   }
-  .toast.is-in { opacity: 1; transform: translateY(0); }
-  .toast--success { background: var(--ok); }
-  .toast--error { background: var(--danger); }
-  .toast--info { background: var(--color-primary); }
+  .pg-etiquetas .toast.is-in { opacity: 1; transform: translateY(0); }
+  .pg-etiquetas .toast--success { background: var(--ok); }
+  .pg-etiquetas .toast--error { background: var(--danger); }
+  .pg-etiquetas .toast--info { background: var(--color-primary); }
 
   /* ── Impresión ─────────────────────────────────────────────────── */
   @media print {
     body * { visibility: hidden; }
-    #printArea, #printArea * { visibility: visible; }
-    #printArea {
+    .pg-etiquetas #printArea, .pg-etiquetas #printArea * { visibility: visible; }
+    .pg-etiquetas #printArea {
       display: block;
       position: absolute;
       inset: 0;
       margin: 0;
       padding: 0;
     }
-    #printArea .lbl-print-item {
+    .pg-etiquetas #printArea .lbl-print-item {
       page-break-inside: avoid;
       break-inside: avoid;
       margin: 0 0 10mm;

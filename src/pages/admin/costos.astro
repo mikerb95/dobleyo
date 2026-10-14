@@ -440,143 +440,145 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   load();
 </script>
 
-<style>
-  .kpi-row { margin-bottom: 1.5rem; }
+<style is:global>
+  /* Global y acotado a .pg-costos (lo pone AdminLayout): parte de esta
+     página se pinta con innerHTML y los estilos scoped no le llegan. */
+  .pg-costos .kpi-row { margin-bottom: 1.5rem; }
 
-  .ck-filter {
+  .pg-costos .ck-filter {
     display: flex; align-items: center; gap: 6px;
     font-size: 12px; color: var(--text-2); cursor: pointer;
   }
 
-  .ck-empty {
+  .pg-costos .ck-empty {
     padding: 32px 16px; text-align: center;
     color: var(--text-3); font-size: 13px;
   }
 
-  .ck-row { cursor: pointer; }
-  .ck-row:hover { background: var(--hover); }
+  .pg-costos .ck-row { cursor: pointer; }
+  .pg-costos .ck-row:hover { background: var(--hover); }
 
-  .ck-lot {
+  .pg-costos .ck-lot {
     font-size: 11px; font-family: var(--font-mono, ui-monospace, monospace);
     color: var(--text-2);
   }
 
-  .ck-pos { color: var(--ok); font-weight: 600; }
-  .ck-neg { color: var(--danger); font-weight: 600; }
+  .pg-costos .ck-pos { color: var(--ok); font-weight: 600; }
+  .pg-costos .ck-neg { color: var(--danger); font-weight: 600; }
 
-  .ck-badge {
+  .pg-costos .ck-badge {
     display: inline-block; padding: 2px 8px; border-radius: 99px;
     font-size: 11px; font-weight: 600;
   }
-  .ck-badge--ok {
+  .pg-costos .ck-badge--ok {
     background: var(--c-success-bg); color: var(--c-success);
     border: 1px solid var(--c-success-border);
   }
-  .ck-badge--warn {
+  .pg-costos .ck-badge--warn {
     background: var(--c-warning-bg); color: var(--c-warning);
     border: 1px solid var(--c-warning-border);
   }
 
   /* ── Panel lateral ─────────────────────────────────────────────── */
-  .ck-drawer { position: fixed; inset: 0; z-index: 60; }
-  .ck-drawer-backdrop {
+  .pg-costos .ck-drawer { position: fixed; inset: 0; z-index: 60; }
+  .pg-costos .ck-drawer-backdrop {
     position: absolute; inset: 0;
     background: color-mix(in oklab, var(--color-primary) 40%, transparent);
   }
-  .ck-drawer-panel {
+  .pg-costos .ck-drawer-panel {
     position: absolute; top: 0; right: 0; bottom: 0;
     width: min(560px, 100%);
     background: var(--paper);
     box-shadow: -12px 0 40px -20px color-mix(in oklab, var(--color-primary) 60%, transparent);
     display: flex; flex-direction: column;
   }
-  .ck-drawer-head {
+  .pg-costos .ck-drawer-head {
     display: flex; align-items: flex-start; justify-content: space-between;
     gap: 12px; padding: 20px; border-bottom: 1px solid var(--rule);
   }
-  .ck-drawer-eyebrow {
+  .pg-costos .ck-drawer-eyebrow {
     font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase;
     color: var(--text-3); margin-bottom: 4px;
   }
-  .ck-drawer-head h2 {
+  .pg-costos .ck-drawer-head h2 {
     margin: 0; font-size: 15px; font-family: var(--font-mono, ui-monospace, monospace);
     color: var(--text-1); word-break: break-all;
   }
-  .ck-close {
+  .pg-costos .ck-close {
     border: 0; background: transparent; font-size: 24px; line-height: 1;
     color: var(--text-3); cursor: pointer; padding: 0 4px;
   }
-  .ck-close:hover { color: var(--text-1); }
-  .ck-drawer-body { padding: 20px; overflow-y: auto; flex: 1; }
+  .pg-costos .ck-close:hover { color: var(--text-1); }
+  .pg-costos .ck-drawer-body { padding: 20px; overflow-y: auto; flex: 1; }
 
-  .ck-metrics {
+  .pg-costos .ck-metrics {
     display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px;
     margin-bottom: 20px;
   }
-  .ck-metrics div { display: flex; justify-content: space-between; font-size: 13px; }
-  .ck-metrics span { color: var(--text-2); }
-  .ck-metrics b { color: var(--text-1); font-variant-numeric: tabular-nums; }
+  .pg-costos .ck-metrics div { display: flex; justify-content: space-between; font-size: 13px; }
+  .pg-costos .ck-metrics span { color: var(--text-2); }
+  .pg-costos .ck-metrics b { color: var(--text-1); font-variant-numeric: tabular-nums; }
 
-  .ck-totals {
+  .pg-costos .ck-totals {
     padding: 14px; margin-bottom: 20px;
     border: 1px solid var(--rule-2); border-radius: 10px;
     background: color-mix(in oklab, var(--color-accent) 4%, transparent);
     display: grid; gap: 8px;
   }
-  .ck-totals div { display: flex; justify-content: space-between; font-size: 13px; }
-  .ck-totals span { color: var(--text-2); }
-  .ck-totals b { color: var(--text-1); font-variant-numeric: tabular-nums; }
-  .ck-totals-main {
+  .pg-costos .ck-totals div { display: flex; justify-content: space-between; font-size: 13px; }
+  .pg-costos .ck-totals span { color: var(--text-2); }
+  .pg-costos .ck-totals b { color: var(--text-1); font-variant-numeric: tabular-nums; }
+  .pg-costos .ck-totals-main {
     padding-top: 8px; border-top: 1px solid var(--rule-2);
   }
-  .ck-totals-main b { font-size: 17px; }
+  .pg-costos .ck-totals-main b { font-size: 17px; }
 
-  .ck-warn {
+  .pg-costos .ck-warn {
     margin: 0 0 20px; padding: 10px 12px; border-radius: 8px;
     font-size: 12px; line-height: 1.5;
     background: var(--c-warning-bg); color: var(--c-warning);
     border: 1px solid var(--c-warning-border);
   }
 
-  .ck-stage { margin-bottom: 18px; }
-  .ck-stage-head {
+  .pg-costos .ck-stage { margin-bottom: 18px; }
+  .pg-costos .ck-stage-head {
     display: flex; align-items: center; gap: 8px;
     padding-bottom: 6px; border-bottom: 1px solid var(--rule);
   }
   /* Punto de color junto al título de la etapa. */
-  .ck-stage-dot {
+  .pg-costos .ck-stage-dot {
     width: 7px; height: 7px; border-radius: 50%;
     background: var(--color-accent); flex: none;
   }
-  .ck-stage-head h3 {
+  .pg-costos .ck-stage-head h3 {
     margin: 0; font-size: 13px; font-weight: 600; color: var(--text-1);
   }
-  .ck-stage-head b {
+  .pg-costos .ck-stage-head b {
     margin-left: auto; font-size: 13px; font-variant-numeric: tabular-nums;
   }
 
-  .ck-items { list-style: none; margin: 0; padding: 0; }
-  .ck-item {
+  .pg-costos .ck-items { list-style: none; margin: 0; padding: 0; }
+  .pg-costos .ck-item {
     display: flex; align-items: center; gap: 10px;
     padding: 8px 0; font-size: 13px;
     border-bottom: 1px solid var(--rule);
   }
-  .ck-item:last-child { border-bottom: 0; }
-  .ck-item--empty { color: var(--text-3); font-style: italic; }
-  .ck-item-label { color: var(--text-2); }
-  .ck-item-amount {
+  .pg-costos .ck-item:last-child { border-bottom: 0; }
+  .pg-costos .ck-item--empty { color: var(--text-3); font-style: italic; }
+  .pg-costos .ck-item-label { color: var(--text-2); }
+  .pg-costos .ck-item-amount {
     margin-left: auto; font-variant-numeric: tabular-nums; color: var(--text-1);
   }
 
-  .ck-edit {
+  .pg-costos .ck-edit {
     border: 1px solid var(--rule-2); background: var(--paper);
     border-radius: 6px; padding: 3px 8px;
     font-size: 11px; color: var(--text-2); cursor: pointer;
   }
-  .ck-edit:hover { border-color: var(--color-accent); color: var(--color-accent); }
+  .pg-costos .ck-edit:hover { border-color: var(--color-accent); color: var(--color-accent); }
 
-  .ck-supplies .ck-low { background: var(--c-warning-bg); }
-  .ck-supply-meta { font-size: 11px; color: var(--text-3); text-transform: capitalize; }
+  .pg-costos .ck-supplies .ck-low { background: var(--c-warning-bg); }
+  .pg-costos .ck-supply-meta { font-size: 11px; color: var(--text-3); text-transform: capitalize; }
 
   .ck-toast {
     position: fixed; bottom: 20px; right: 20px; z-index: 90;
@@ -590,6 +592,6 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   .ck-toast--error { background: var(--danger); }
 
   @media (max-width: 480px) {
-    .ck-metrics { grid-template-columns: 1fr; }
+    .pg-costos .ck-metrics { grid-template-columns: 1fr; }
   }
 </style>

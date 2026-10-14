@@ -142,17 +142,19 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   </div>
 </AdminLayout>
 
-<style>
-  .newsletter-grid {
+<style is:global>
+  /* Global y acotado a .pg-boletin (lo pone AdminLayout): parte de esta
+     página se pinta con innerHTML y los estilos scoped no le llegan. */
+  .pg-boletin .newsletter-grid {
     display: grid;
     gap: 16px;
     margin-bottom: 16px;
   }
-  .newsletter-form { padding: 16px; }
-  .newsletter-form__row { display: grid; gap: 0 12px; }
-  .newsletter-form .form-actions { display: flex; flex-wrap: wrap; gap: 8px; }
-  .newsletter-preview { display: flex; flex-direction: column; }
-  .newsletter-preview iframe {
+  .pg-boletin .newsletter-form { padding: 16px; }
+  .pg-boletin .newsletter-form__row { display: grid; gap: 0 12px; }
+  .pg-boletin .newsletter-form .form-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+  .pg-boletin .newsletter-preview { display: flex; flex-direction: column; }
+  .pg-boletin .newsletter-preview iframe {
     display: none;
     width: 100%;
     min-height: 640px;
@@ -160,14 +162,14 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     border: 0;
     border-radius: 0 0 var(--radius-sm) var(--radius-sm);
   }
-  .newsletter-preview.has-preview iframe { display: block; }
-  .newsletter-preview.has-preview .empty-state { display: none; }
+  .pg-boletin .newsletter-preview.has-preview iframe { display: block; }
+  .pg-boletin .newsletter-preview.has-preview .empty-state { display: none; }
 
   @media (min-width: 768px) {
-    .newsletter-form__row { grid-template-columns: 1fr 1fr; }
+    .pg-boletin .newsletter-form__row { grid-template-columns: 1fr 1fr; }
   }
   @media (min-width: 1024px) {
-    .newsletter-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: stretch; }
+    .pg-boletin .newsletter-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: stretch; }
   }
 </style>
 

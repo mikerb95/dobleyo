@@ -93,6 +93,20 @@ El panel seguía la plantilla genérica de SaaS: franjas de color a la izquierda
 
 ---
 
+## 2026-10-13: Buscador del header rediseñado y con más funciones (Agente: Claude)
+
+### Cambios
+- **Diseño**: el panel ocupa desde el borde del header hacia abajo con un velo sobre la página y una hoja centrada (52rem). El campo es una píldora con el ícono, el texto, un botón para borrar y "Buscar →" dentro del mismo borde. El foco es un halo caramelo, sin el contorno rectangular global. Mientras busca, la lupa se vuelve un spinner. En móvil la hoja ocupa toda la pantalla y el botón queda solo con la flecha.
+- **Antes de escribir**: búsquedas recientes (máx. 6, en `localStorage` con la clave `dy-search-recent`; se pueden quitar una a una o borrar todas), chips de orígenes, procesos y notas de cata reales del catálogo, y "Los más pedidos" con foto y precio.
+- **Mientras escribe**: atajos a orígenes, procesos y notas que coinciden sin importar tildes ("narino" sugiere Nariño), conteo de productos, término resaltado en nombre, origen, proceso y notas, notas de cata en los cafés y aviso de "Agotado". Sin resultados ofrece chips para seguir en vez de dejar un callejón sin salida.
+- **Teclado**: `/` o Ctrl/⌘+K abren el buscador desde cualquier página; las flechas recorren sugerencias y resultados; Enter abre; Esc cierra. La ayuda de teclas solo aparece en escritorio.
+- **`server/routes/products.js`**: `GET /api/products/search/suggest` devuelve orígenes, procesos y notas (ES y EN) de los cafés activos con su conteo, y los 4 más pedidos. Cache de 5 minutos.
+- **Correcciones**: el panel se posiciona con `--header-top` + `--header-height` (antes quedaba un hueco si se cerraba la barra de anuncios), se cierra al navegar con View Transitions (el header persiste y antes quedaba abierto), bloquea el scroll de la página y oculta el botón de WhatsApp, que quedaba encima.
+- **`src/components/SearchResults.astro`**: `/buscar` y `/search` usan el mismo campo píldora.
+- Placeholder más corto ("Café, origen, proceso o nota de cata") para que no se corte en móvil.
+
+---
+
 ## 2026-10-13: Botones de carrito y usuario del header rediseñados (Agente: Claude)
 
 ### Cambios

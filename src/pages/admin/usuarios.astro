@@ -601,92 +601,94 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   </script>
 </AdminLayout>
 
-<style>
+<style is:global>
+  /* Global y acotado a .pg-usuarios (lo pone AdminLayout): parte de esta
+     página se pinta con innerHTML y los estilos scoped no le llegan. */
   /* ── Filtros ───────────────────────────────────────────────────── */
-  .filters {
+  .pg-usuarios .filters {
     display: flex; flex-wrap: wrap; gap: 10px;
     padding: 14px 18px; border-bottom: 1px solid var(--rule);
   }
-  .search-field {
+  .pg-usuarios .search-field {
     position: relative; flex: 1; min-width: 220px;
     display: flex; align-items: center;
   }
-  .search-field svg { position: absolute; left: 12px; color: var(--muted); pointer-events: none; }
-  .search-field input {
+  .pg-usuarios .search-field svg { position: absolute; left: 12px; color: var(--muted); pointer-events: none; }
+  .pg-usuarios .search-field input {
     width: 100%; padding: 9px 12px 9px 34px;
     font: inherit; font-size: 14px;
     border: 1px solid var(--rule); border-radius: var(--radius-sm);
     background: var(--paper); color: var(--color-text);
   }
-  .search-field input:focus, .filter-select:focus {
+  .pg-usuarios .search-field input:focus, .pg-usuarios .filter-select:focus {
     outline: none; border-color: var(--color-accent);
     box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-accent) 18%, transparent);
   }
-  .filter-select {
+  .pg-usuarios .filter-select {
     padding: 9px 12px; font: inherit; font-size: 13px;
     border: 1px solid var(--rule); border-radius: var(--radius-sm);
     background: var(--paper); color: var(--color-text); cursor: pointer;
   }
 
   /* ── Celda de usuario ──────────────────────────────────────────── */
-  .users-table tbody td { vertical-align: middle; }
-  .user-cell { display: flex; align-items: center; gap: 12px; }
-  .user-avatar {
+  .pg-usuarios .users-table tbody td { vertical-align: middle; }
+  .pg-usuarios .user-cell { display: flex; align-items: center; gap: 12px; }
+  .pg-usuarios .user-avatar {
     width: 36px; height: 36px; flex-shrink: 0;
     border-radius: 999px; display: grid; place-items: center;
     font-size: 13px; font-weight: 700; color: var(--color-primary);
     background: var(--active-bg);
   }
-  .user-meta { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
-  .user-name { font-weight: 600; color: var(--color-primary); }
-  .user-email {
+  .pg-usuarios .user-meta { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+  .pg-usuarios .user-name { font-weight: 600; color: var(--color-primary); }
+  .pg-usuarios .user-email {
     font-size: 12px; color: var(--muted);
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 260px;
   }
 
   /* ── Botones de icono ──────────────────────────────────────────── */
-  .icon-btn {
+  .pg-usuarios .icon-btn {
     appearance: none; cursor: pointer;
     width: 30px; height: 30px; display: inline-grid; place-items: center;
     border: 1px solid var(--rule); border-radius: var(--radius-sm);
     background: var(--paper); color: var(--muted); margin-left: 4px;
     transition: background .12s, color .12s, border-color .12s;
   }
-  .icon-btn:hover { background: var(--hover); color: var(--color-primary); border-color: var(--rule-2); }
-  .icon-btn--danger:hover {
+  .pg-usuarios .icon-btn:hover { background: var(--hover); color: var(--color-primary); border-color: var(--rule-2); }
+  .pg-usuarios .icon-btn--danger:hover {
     background: color-mix(in oklab, var(--danger) 8%, white);
     color: var(--danger); border-color: color-mix(in oklab, var(--danger) 30%, white);
   }
 
   /* ── Modal ─────────────────────────────────────────────────────── */
-  .modal[hidden] { display: none; }
-  .modal-close {
+  .pg-usuarios .modal[hidden] { display: none; }
+  .pg-usuarios .modal-close {
     appearance: none; border: 0; background: transparent; cursor: pointer;
     width: 32px; height: 32px; display: grid; place-items: center;
     color: var(--muted); border-radius: 8px;
   }
-  .modal-close:hover { background: var(--hover); color: var(--color-primary); }
+  .pg-usuarios .modal-close:hover { background: var(--hover); color: var(--color-primary); }
 
   /* ── Credenciales ──────────────────────────────────────────────── */
-  .cred-row {
+  .pg-usuarios .cred-row {
     display: flex; align-items: center; justify-content: space-between;
     gap: 12px; padding: 10px 12px; margin-bottom: 8px;
     border: 1px solid var(--rule); border-radius: var(--radius-sm);
     background: color-mix(in oklab, var(--color-primary) 3%, white);
   }
-  .cred-row span { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
-  .cred-row b { font-size: 13px; color: var(--color-primary); word-break: break-all; }
-  .cred-row code {
+  .pg-usuarios .cred-row span { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  .pg-usuarios .cred-row b { font-size: 13px; color: var(--color-primary); word-break: break-all; }
+  .pg-usuarios .cred-row code {
     font-family: var(--font-mono, ui-monospace, monospace); font-size: 14px; font-weight: 600;
     color: var(--color-accent); word-break: break-all;
   }
 
   /* ── Toasts ────────────────────────────────────────────────────── */
-  .toast-stack {
+  .pg-usuarios .toast-stack {
     position: fixed; bottom: 20px; right: 20px; z-index: 60;
     display: flex; flex-direction: column; gap: 8px;
   }
-  .toast {
+  .pg-usuarios .toast {
     padding: 11px 16px; border-radius: var(--radius-sm);
     font-size: 13px; font-weight: 500; color: #fff;
     background: var(--color-primary);
@@ -695,8 +697,8 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     transition: opacity 0.25s, transform 0.25s;
     max-width: 340px;
   }
-  .toast.is-in { opacity: 1; transform: translateY(0); }
-  .toast--success { background: var(--ok); }
-  .toast--error { background: var(--danger); }
-  .toast--info { background: var(--color-primary); }
+  .pg-usuarios .toast.is-in { opacity: 1; transform: translateY(0); }
+  .pg-usuarios .toast--success { background: var(--ok); }
+  .pg-usuarios .toast--error { background: var(--danger); }
+  .pg-usuarios .toast--info { background: var(--color-primary); }
 </style>

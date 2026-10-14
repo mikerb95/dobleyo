@@ -252,27 +252,29 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
 </AdminLayout>
 
-<style>
-  .kpi-grid {
+<style is:global>
+  /* Global y acotado a .pg-mercadolibre (lo pone AdminLayout): parte de esta
+     página se pinta con innerHTML y los estilos scoped no le llegan. */
+  .pg-mercadolibre .kpi-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 1rem;
   }
 
-  .ml-main-grid {
+  .pg-mercadolibre .ml-main-grid {
     display: grid;
     grid-template-columns: 1fr 320px;
     gap: 1.5rem;
     align-items: start;
   }
   @media (max-width: 1200px) {
-    .ml-main-grid { grid-template-columns: 1fr; }
+    .pg-mercadolibre .ml-main-grid { grid-template-columns: 1fr; }
   }
 
-  .ml-sidebar { display: flex; flex-direction: column; gap: 1rem; }
+  .pg-mercadolibre .ml-sidebar { display: flex; flex-direction: column; gap: 1rem; }
 
   /* Connection banner */
-  .conn-card {
+  .pg-mercadolibre .conn-card {
     display: flex;
     align-items: center;
     gap: 12px;
@@ -282,21 +284,21 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     padding: 14px 18px;
     margin-bottom: 1.5rem;
   }
-  .conn-dot {
+  .pg-mercadolibre .conn-dot {
     width: 10px;
     height: 10px;
     border-radius: 50%;
     background: var(--text-3);
     flex-shrink: 0;
   }
-  .conn-dot.ok  { background: var(--c-success); box-shadow: 0 0 0 3px var(--c-success-bg); }
-  .conn-dot.err { background: var(--c-error);   box-shadow: 0 0 0 3px var(--c-error-bg); }
-  .conn-dot.warn{ background: var(--c-warning);  box-shadow: 0 0 0 3px var(--c-warning-bg); }
-  .conn-title { font-weight: 600; font-size: 13px; }
-  .conn-sub   { font-size: 12px; color: var(--text-2); }
+  .pg-mercadolibre .conn-dot.ok  { background: var(--c-success); box-shadow: 0 0 0 3px var(--c-success-bg); }
+  .pg-mercadolibre .conn-dot.err { background: var(--c-error);   box-shadow: 0 0 0 3px var(--c-error-bg); }
+  .pg-mercadolibre .conn-dot.warn{ background: var(--c-warning);  box-shadow: 0 0 0 3px var(--c-warning-bg); }
+  .pg-mercadolibre .conn-title { font-weight: 600; font-size: 13px; }
+  .pg-mercadolibre .conn-sub   { font-size: 12px; color: var(--text-2); }
 
   /* Filters */
-  .ml-input {
+  .pg-mercadolibre .ml-input {
     height: 32px;
     padding: 0 8px;
     border: 1px solid var(--border);
@@ -306,10 +308,10 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     color: var(--text-1);
     background: var(--card-bg);
   }
-  .ml-input:focus { outline: none; border-color: var(--brand); }
+  .pg-mercadolibre .ml-input:focus { outline: none; border-color: var(--brand); }
 
   /* Pagination */
-  .pagination-bar {
+  .pg-mercadolibre .pagination-bar {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -319,15 +321,15 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     flex-wrap: wrap;
     gap: 8px;
   }
-  .pag-info { font-size: 12px; color: var(--text-2); }
-  .pag-btn-active {
+  .pg-mercadolibre .pag-info { font-size: 12px; color: var(--text-2); }
+  .pg-mercadolibre .pag-btn-active {
     background: var(--brand) !important;
     color: #fff !important;
     border-color: var(--brand-dark) !important;
   }
 
   /* Top cities list */
-  .city-row {
+  .pg-mercadolibre .city-row {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -335,8 +337,8 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     border-bottom: 1px solid rgba(0,0,0,.04);
     font-size: 13px;
   }
-  .city-row:last-child { border-bottom: none; }
-  .city-rank {
+  .pg-mercadolibre .city-row:last-child { border-bottom: none; }
+  .pg-mercadolibre .city-rank {
     width: 20px;
     font-size: 11px;
     font-weight: 700;
@@ -344,13 +346,13 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     flex-shrink: 0;
     text-align: right;
   }
-  .city-name { flex: 1; font-weight: 500; }
-  .city-bar-wrap { width: 70px; height: 6px; background: #eee; border-radius: 3px; flex-shrink: 0; }
-  .city-bar      { height: 6px; background: var(--brand); border-radius: 3px; }
-  .city-count    { font-size: 12px; font-weight: 600; color: var(--text-2); min-width: 28px; text-align: right; flex-shrink: 0; }
+  .pg-mercadolibre .city-name { flex: 1; font-weight: 500; }
+  .pg-mercadolibre .city-bar-wrap { width: 70px; height: 6px; background: #eee; border-radius: 3px; flex-shrink: 0; }
+  .pg-mercadolibre .city-bar      { height: 6px; background: var(--brand); border-radius: 3px; }
+  .pg-mercadolibre .city-count    { font-size: 12px; font-weight: 600; color: var(--text-2); min-width: 28px; text-align: right; flex-shrink: 0; }
 
   /* Quick actions */
-  .quick-action {
+  .pg-mercadolibre .quick-action {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -367,23 +369,23 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     transition: background 0.12s;
     border-bottom: 1px solid rgba(0,0,0,.04);
   }
-  .quick-action:last-child { border-bottom: none; }
-  .quick-action:hover { background: var(--nav-hover-bg); color: var(--brand-dark); }
-  .quick-action svg { flex-shrink: 0; opacity: 0.55; }
+  .pg-mercadolibre .quick-action:last-child { border-bottom: none; }
+  .pg-mercadolibre .quick-action:hover { background: var(--nav-hover-bg); color: var(--brand-dark); }
+  .pg-mercadolibre .quick-action svg { flex-shrink: 0; opacity: 0.55; }
 
   /* Config rows */
-  .config-row {
+  .pg-mercadolibre .config-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 8px;
     margin-bottom: 8px;
   }
-  .config-row:last-child { margin-bottom: 0; }
-  .config-label { font-size: 12px; color: var(--text-2); font-family: var(--font-mono, ui-monospace, monospace); }
+  .pg-mercadolibre .config-row:last-child { margin-bottom: 0; }
+  .pg-mercadolibre .config-label { font-size: 12px; color: var(--text-2); font-family: var(--font-mono, ui-monospace, monospace); }
 
   /* Sync banner */
-  .banner {
+  .pg-mercadolibre .banner {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -393,43 +395,43 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     font-weight: 500;
     border: 1px solid transparent;
   }
-  .banner.success { background: var(--c-success-bg); color: var(--c-success); border-color: var(--c-success-border); }
-  .banner.error   { background: var(--c-error-bg);   color: var(--c-error);   border-color: var(--c-error-border); }
+  .pg-mercadolibre .banner.success { background: var(--c-success-bg); color: var(--c-success); border-color: var(--c-success-border); }
+  .pg-mercadolibre .banner.error   { background: var(--c-error-bg);   color: var(--c-error);   border-color: var(--c-error-border); }
 
   /* Spin animation for sync */
   @keyframes spin { to { transform: rotate(360deg); } }
-  .spinning { animation: spin 0.8s linear infinite; display: inline-block; }
+  .pg-mercadolibre .spinning { animation: spin 0.8s linear infinite; display: inline-block; }
 
   /* CRM cell */
-  .crm-chip {
+  .pg-mercadolibre .crm-chip {
     display: inline-flex; align-items: center; gap: 6px;
     background: var(--c-success-bg); color: var(--c-success);
     border: 1px solid var(--c-success-border);
     padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;
     max-width: 160px;
   }
-  .crm-chip-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .crm-unlink {
+  .pg-mercadolibre .crm-chip-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .pg-mercadolibre .crm-unlink {
     background: none; border: none; cursor: pointer; color: inherit;
     font-size: 11px; line-height: 1; padding: 0; opacity: .6;
   }
-  .crm-unlink:hover { opacity: 1; }
+  .pg-mercadolibre .crm-unlink:hover { opacity: 1; }
 
   /* CRM modal */
-  .crm-modal-overlay {
+  .pg-mercadolibre .crm-modal-overlay {
     position: fixed; inset: 0; background: rgba(0,0,0,.4);
     display: flex; align-items: center; justify-content: center; z-index: 1000;
     padding: 16px;
   }
-  .crm-modal {
+  .pg-mercadolibre .crm-modal {
     background: var(--card-bg); border-radius: 8px; width: 100%; max-width: 420px;
     box-shadow: 0 16px 48px -12px rgba(0,0,0,.3); border: 1px solid var(--border);
   }
-  .crm-modal-head {
+  .pg-mercadolibre .crm-modal-head {
     display: flex; align-items: center; justify-content: space-between;
     padding: 14px 16px; border-bottom: 1px solid var(--border);
   }
-  .crm-modal-close {
+  .pg-mercadolibre .crm-modal-close {
     background: none; border: none; cursor: pointer; font-size: 16px;
     color: var(--text-2); line-height: 1;
   }

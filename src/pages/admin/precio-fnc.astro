@@ -167,23 +167,25 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   </div>
 </AdminLayout>
 
-<style>
-  .kpi-row { margin-bottom: 1.5rem; }
+<style is:global>
+  /* Global y acotado a .pg-precio-fnc (lo pone AdminLayout): parte de esta
+     página se pinta con innerHTML y los estilos scoped no le llegan. */
+  .pg-precio-fnc .kpi-row { margin-bottom: 1.5rem; }
 
-  .two-col {
+  .pg-precio-fnc .two-col {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 1rem;
   }
 
   @media (max-width: 768px) {
-    .two-col { grid-template-columns: 1fr; }
+    .pg-precio-fnc .two-col { grid-template-columns: 1fr; }
   }
 
   /* Nota explicativa: punto de marca junto al título en vez de franja lateral. */
-  .note-card { margin-bottom: 1.5rem; padding: 1rem 1.15rem; }
+  .pg-precio-fnc .note-card { margin-bottom: 1.5rem; padding: 1rem 1.15rem; }
 
-  .note-head {
+  .pg-precio-fnc .note-head {
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -191,7 +193,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     margin-bottom: 0.4rem;
   }
 
-  .note-dot {
+  .pg-precio-fnc .note-dot {
     width: 8px;
     height: 8px;
     border-radius: 50%;
@@ -199,7 +201,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     flex-shrink: 0;
   }
 
-  .note-body {
+  .pg-precio-fnc .note-body {
     margin: 0;
     font-size: 12.5px;
     line-height: 1.6;
@@ -207,7 +209,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     max-width: 78ch;
   }
 
-  .fnc-alert {
+  .pg-precio-fnc .fnc-alert {
     padding: 0.7rem 0.95rem;
     border-radius: 8px;
     font-size: 12.5px;
@@ -217,14 +219,14 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     border: 1px solid var(--c-warning-border);
   }
 
-  .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .pg-precio-fnc .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
 
-  .delta-up   { color: var(--c-error); font-weight: 600; }
-  .delta-down { color: var(--c-success); font-weight: 600; }
+  .pg-precio-fnc .delta-up   { color: var(--c-error); font-weight: 600; }
+  .pg-precio-fnc .delta-down { color: var(--c-success); font-weight: 600; }
 
-  .lot-id { font-weight: 600; font-size: 12.5px; }
+  .pg-precio-fnc .lot-id { font-weight: 600; font-size: 12.5px; }
 
-  .row-note {
+  .pg-precio-fnc .row-note {
     font-size: 10.5px;
     color: var(--text-3);
     display: block;
@@ -232,10 +234,10 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   }
 
   /* Fila del factor base del boletín: tinte de marca en vez de borde lateral. */
-  .yield-base { background: color-mix(in oklab, var(--brand) 10%, transparent); }
-  .yield-base td { font-weight: 600; }
+  .pg-precio-fnc .yield-base { background: color-mix(in oklab, var(--brand) 10%, transparent); }
+  .pg-precio-fnc .yield-base td { font-weight: 600; }
 
-  .source-note {
+  .pg-precio-fnc .source-note {
     font-size: 11px;
     color: var(--text-3);
     margin-top: 1.25rem;
