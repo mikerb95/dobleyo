@@ -12,11 +12,12 @@ export const subscription: Piece = (addCleanup) => {
   if (!cal) return;
 
   // ── Titular ──────────────────────────────────────────────────────────────
-  const title = document.querySelector<HTMLElement>('.page-hero__title');
+  const title = document.querySelector<HTMLElement>('.dh [data-split]');
   if (title) {
     const split = SplitText.create(title, { type: 'words', mask: 'words' });
     gsap.from(split.words, { yPercent: 110, duration: 1, ease: 'power3.out', stagger: 0.05 });
-    gsap.from('.page-hero__eyebrow, .page-hero__sub', { y: 14, opacity: 0, duration: 0.7, stagger: 0.1, delay: 0.25 });
+    gsap.from('.dh__crumbs, .dh__lead, .dh__facts', { y: 14, opacity: 0, duration: 0.7, stagger: 0.1, delay: 0.25, clearProps: 'transform,opacity' });
+    gsap.from('.ticket', { y: 30, opacity: 0, duration: 0.9, ease: 'power3.out', delay: 0.35, clearProps: 'transform,opacity' });
   }
 
   // ── Calendario: la regla se traza y los pedidos caen en su fecha ────────

@@ -1,6 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import PageHero from "../components/PageHero.astro";
+import DarkHero from "../components/shop/DarkHero.astro";
 import Icon from "../components/Icon.astro";
 import DeliveryCalendar from "../components/shop/DeliveryCalendar.astro";
 import { getCanonicalUrl, getHreflangPair } from "../i18n/index.ts";
@@ -22,6 +22,11 @@ try {
   coffees = rows;
 } catch (_) { /* BD no disponible */ }
 
+// Mismo valor por defecto que server/routes/subscriptions.js (DEFAULT_DISCOUNT)
+const discount = parseInt(process.env.SUBSCRIPTION_DISCOUNT_PERCENT || "10", 10);
+const price = (n: number) => `$${Number(n).toLocaleString("es-CO")}`;
+const first = coffees[0];
+
 const pageTitle = "Suscripción de café · DobleYo Café";
 const pageDescription =
   "Reciba café de especialidad colombiano recién tostado en su casa cada 15 o 30 días, con descuento de suscriptor. Cancele cuando quiera.";
@@ -35,175 +40,334 @@ const pageDescription =
   hreflangEs={_hreflang?.es}
   hreflangEn={_hreflang?.en}
 >
-  <PageHero
-    eyebrow="Suscripción"
-    title="Café fresco, sin que se le acabe"
-  >
-    <p class="page-hero__sub" slot="subtitle">
-      Reciba su café de especialidad recién tostado cada 15 o 30 días, con
-      <strong>descuento de suscriptor</strong> y envío incluido. Cancele cuando quiera.
-    </p>
-  </PageHero>
+  <DarkHero
+    crumb="Suscripción"
+    title="Café fresco,"
+    titleEm="sin que se le acabe."
+    lead="Reciba su café de especialidad recién tostado cada 15 o 30 días. Usted elige el café, la frecuencia y cuántas bolsas."
+    facts={[
+      { icon: "percent", text: `${discount} % de descuento de suscriptor` },
+      { icon: "truck", text: "Envío incluido en cada entrega" },
+      { icon: "pause", text: "Pause o cancele cuando quiera" },
+    ]}
+  />
 
-  <div class="container sub-wrap">
-    {coffees.length === 0 ? (
-      <p class="sub-empty">La suscripción no está disponible por el momento. Intente más tarde.</p>
-    ) : (
-      <form id="subForm" class="sub-form" novalidate>
+  {coffees.length === 0 ? (
+    <p class="sub-empty">La suscripción no está disponible por el momento. Intente más tarde.</p>
+  ) : (
+    <form id="subForm" class="sub" novalidate>
+      <div class="sub__steps">
         <!-- 1. Café -->
-        <fieldset class="sub-step">
-          <legend><span class="sub-step__n">1</span> Elija su café</legend>
+        <fieldset class="step">
+          <legend class="step__head"><span class="step__n">1</span> Elija su café</legend>
           <div class="sub-coffees" id="subCoffees">
             {coffees.map((c, i) => (
               <label class:list={["sub-coffee", { active: i === 0 }]}>
-                <input type="radio" name="coffee" value={c.id} data-price={c.price} data-name={c.name} checked={i === 0} />
-                <img src={c.image} alt={c.name} class="sub-coffee__img" loading="lazy" />
+                <input type="radio" name="coffee" value={c.id} data-price={c.price} data-name={c.name} data-image={c.image} checked={i === 0} />
+                <span class="sub-coffee__check" aria-hidden="true"><Icon name="check" size={14} /></span>
+                <img src={c.image} alt="" class="sub-coffee__img" loading="lazy" />
                 <span class="sub-coffee__name">{c.name}</span>
                 <span class="sub-coffee__meta">{[c.origin, c.roast].filter(Boolean).join(" · ")}</span>
-                <span class="sub-coffee__price">${Number(c.price).toLocaleString("es-CO")}</span>
+                <span class="sub-coffee__price">{price(c.price)}</span>
               </label>
             ))}
           </div>
         </fieldset>
 
         <!-- 2. Frecuencia y cantidad -->
-        <fieldset class="sub-step">
-          <legend><span class="sub-step__n">2</span> Frecuencia y cantidad</legend>
+        <fieldset class="step">
+          <legend class="step__head"><span class="step__n">2</span> Frecuencia y cantidad</legend>
           <div class="sub-row">
             <div class="sub-field">
-              <label>Frecuencia</label>
-              <div class="sub-toggle" id="subFreq">
+              <span class="sub-label" id="freqLabel">Frecuencia</span>
+              <div class="sub-toggle" id="subFreq" role="group" aria-labelledby="freqLabel">
                 <button type="button" class="sub-toggle__btn active" data-freq="30">Cada 30 días</button>
                 <button type="button" class="sub-toggle__btn" data-freq="15">Cada 15 días</button>
               </div>
             </div>
             <div class="sub-field">
-              <label for="subQty">Bolsas por entrega</label>
-              <input id="subQty" name="quantity" type="number" min="1" max="10" value="1" class="sub-input" />
+              <label class="sub-label" for="subQty">Bolsas por entrega</label>
+              <div class="sub-qty">
+                <button type="button" class="sub-qty__btn" data-qty="-1" aria-label="Una bolsa menos">-</button>
+                <input id="subQty" name="quantity" type="number" min="1" max="10" value="1" class="sub-qty__input" inputmode="numeric" />
+                <button type="button" class="sub-qty__btn" data-qty="1" aria-label="Una bolsa más">+</button>
+              </div>
             </div>
           </div>
           <DeliveryCalendar />
         </fieldset>
 
         <!-- 3. Datos de envío -->
-        <fieldset class="sub-step">
-          <legend><span class="sub-step__n">3</span> Datos de envío</legend>
+        <fieldset class="step">
+          <legend class="step__head"><span class="step__n">3</span> Datos de envío</legend>
           <div class="sub-grid">
-            <div class="sub-field"><label for="cName">Nombre completo *</label><input id="cName" name="customerName" class="sub-input" required /></div>
-            <div class="sub-field"><label for="cEmail">Correo *</label><input id="cEmail" name="customerEmail" type="email" class="sub-input" required /></div>
-            <div class="sub-field"><label for="cPhone">Teléfono</label><input id="cPhone" name="customerPhone" class="sub-input" /></div>
-            <div class="sub-field sub-field--full"><label for="cAddr">Dirección *</label><input id="cAddr" name="shippingAddress" class="sub-input" required /></div>
-            <div class="sub-field"><label for="cCity">Ciudad *</label><input id="cCity" name="shippingCity" class="sub-input" required /></div>
-            <div class="sub-field"><label for="cDept">Departamento</label><input id="cDept" name="shippingDepartment" class="sub-input" /></div>
+            <div class="sub-field"><label class="sub-label" for="cName">Nombre completo *</label><input id="cName" name="customerName" class="sub-input" autocomplete="name" required /></div>
+            <div class="sub-field"><label class="sub-label" for="cEmail">Correo *</label><input id="cEmail" name="customerEmail" type="email" class="sub-input" autocomplete="email" required /></div>
+            <div class="sub-field"><label class="sub-label" for="cPhone">Teléfono</label><input id="cPhone" name="customerPhone" class="sub-input" autocomplete="tel" inputmode="tel" /></div>
+            <div class="sub-field"><label class="sub-label" for="cCity">Ciudad *</label><input id="cCity" name="shippingCity" class="sub-input" autocomplete="address-level2" required /></div>
+            <div class="sub-field sub-field--full"><label class="sub-label" for="cAddr">Dirección *</label><input id="cAddr" name="shippingAddress" class="sub-input" autocomplete="street-address" required /></div>
+            <div class="sub-field"><label class="sub-label" for="cDept">Departamento</label><input id="cDept" name="shippingDepartment" class="sub-input" autocomplete="address-level1" /></div>
           </div>
         </fieldset>
 
         <!-- 4. Pago -->
-        <fieldset class="sub-step">
-          <legend><span class="sub-step__n">4</span> Tarjeta</legend>
+        <fieldset class="step">
+          <legend class="step__head"><span class="step__n">4</span> Tarjeta</legend>
           <p class="sub-secure"><Icon name="lock" size={16} /> Procesado de forma segura por Wompi. Sus datos de tarjeta no se almacenan en nuestros servidores.</p>
           <div class="sub-grid">
-            <div class="sub-field sub-field--full"><label for="ccNum">Número de tarjeta *</label><input id="ccNum" inputmode="numeric" autocomplete="cc-number" class="sub-input" placeholder="4242 4242 4242 4242" required /></div>
-            <div class="sub-field"><label for="ccName">Titular *</label><input id="ccName" autocomplete="cc-name" class="sub-input" required /></div>
-            <div class="sub-field"><label for="ccExp">Vence (MM/AA) *</label><input id="ccExp" autocomplete="cc-exp" class="sub-input" placeholder="MM/AA" required /></div>
-            <div class="sub-field"><label for="ccCvc">CVC *</label><input id="ccCvc" inputmode="numeric" autocomplete="cc-csc" class="sub-input" placeholder="123" required /></div>
+            <div class="sub-field sub-field--full"><label class="sub-label" for="ccNum">Número de tarjeta *</label><input id="ccNum" inputmode="numeric" autocomplete="cc-number" class="sub-input" placeholder="4242 4242 4242 4242" required /></div>
+            <div class="sub-field sub-field--full"><label class="sub-label" for="ccName">Titular *</label><input id="ccName" autocomplete="cc-name" class="sub-input" required /></div>
+            <div class="sub-field"><label class="sub-label" for="ccExp">Vence (MM/AA) *</label><input id="ccExp" autocomplete="cc-exp" class="sub-input" placeholder="MM/AA" required /></div>
+            <div class="sub-field"><label class="sub-label" for="ccCvc">CVC *</label><input id="ccCvc" inputmode="numeric" autocomplete="cc-csc" class="sub-input" placeholder="123" required /></div>
           </div>
           <label class="sub-accept">
             <input type="checkbox" id="subAccept" required />
             <span>Acepto el <a href="#" id="acceptLink" target="_blank" rel="noopener">reglamento y la autorización de datos personales</a> y el cobro recurrente.</span>
           </label>
         </fieldset>
+      </div>
 
-        <!-- Resumen + acción -->
-        <div class="sub-summary">
-          <div class="sub-summary__line">
-            <span>Por entrega (<span id="sumDiscount">0</span>% dto.)</span>
-            <strong id="sumTotal">$0</strong>
+      <!-- Resumen fijo -->
+      <aside class="sub__summary" aria-labelledby="sumTitle">
+        <div class="ticket">
+          <p class="ticket__eyebrow" id="sumTitle">Su suscripción</p>
+          <div class="ticket__coffee">
+            <img src={first.image} alt="" id="sumImg" class="ticket__img" />
+            <div>
+              <p class="ticket__name" id="sumName">{first.name}</p>
+              <p class="ticket__meta"><span id="sumQty">1 bolsa</span> · <span id="sumFreq">cada 30 días</span></p>
+            </div>
           </div>
-          <p class="sub-summary__note" id="sumNote">Primer cobro hoy, luego cada 30 días. Cancele cuando quiera.</p>
+          <dl class="ticket__lines">
+            <div><dt>Descuento de suscriptor</dt><dd><span id="sumDiscount">{discount}</span> %</dd></div>
+            <div><dt>Envío</dt><dd>Incluido</dd></div>
+          </dl>
+          <div class="ticket__total">
+            <span>Por entrega</span>
+            <strong id="sumTotal">{price(Math.round((Number(first.price) * (100 - discount)) / 100))}</strong>
+          </div>
+          <p class="ticket__note" id="sumNote">Primer cobro hoy, luego cada 30 días. Cancele cuando quiera.</p>
           <div id="subMsg" class="sub-msg" style="display:none"></div>
           <button type="submit" id="subSubmit" class="sub-submit">Suscribirme</button>
+          <p class="ticket__secure"><Icon name="lock" size={14} /> Pago seguro con Wompi</p>
         </div>
-      </form>
-    )}
-
-    <!-- Beneficios -->
-    <aside class="sub-benefits">
-      <h2>¿Por qué suscribirse?</h2>
-      <ul>
-        <li><Icon name="flame" size={18} /> Café siempre fresco, tostado para usted.</li>
-        <li><Icon name="percent" size={18} /> Descuento exclusivo de suscriptor.</li>
-        <li><Icon name="truck" size={18} /> Envío incluido en cada entrega.</li>
-        <li><Icon name="pause" size={18} /> Pause o cancele cuando quiera.</li>
-      </ul>
-    </aside>
-  </div>
+      </aside>
+    </form>
+  )}
 
   <script is:inline src="/assets/js/suscripcion.js"></script>
+  <script>
+    // Resumen: café, bolsas y frecuencia elegidos. El total y el descuento los
+    // actualiza public/assets/js/suscripcion.js (#sumTotal, #sumDiscount).
+    function initSummary() {
+      const form = document.getElementById("subForm");
+      if (!form || form.dataset.sumInit) return;
+      form.dataset.sumInit = "1";
+      const $ = (id: string) => document.getElementById(id);
+      const qty = $("subQty") as HTMLInputElement;
+
+      const sync = () => {
+        const c = form.querySelector<HTMLInputElement>('input[name="coffee"]:checked');
+        if (c) {
+          $("sumName")!.textContent = c.dataset.name ?? "";
+          ($("sumImg") as HTMLImageElement).src = c.dataset.image ?? "";
+        }
+        const n = Math.max(1, parseInt(qty.value, 10) || 1);
+        $("sumQty")!.textContent = n === 1 ? "1 bolsa" : `${n} bolsas`;
+        const f = form.querySelector<HTMLElement>(".sub-toggle__btn.active")?.dataset.freq ?? "30";
+        $("sumFreq")!.textContent = `cada ${f} días`;
+      };
+
+      // Botones - y +: cambian la cantidad y avisan como si se hubiera escrito
+      form.querySelectorAll<HTMLButtonElement>("[data-qty]").forEach((b) =>
+        b.addEventListener("click", () => {
+          const next = Math.min(10, Math.max(1, (parseInt(qty.value, 10) || 1) + Number(b.dataset.qty)));
+          qty.value = String(next);
+          qty.dispatchEvent(new Event("input", { bubbles: true }));
+        })
+      );
+      form.addEventListener("change", sync);
+      form.addEventListener("input", sync);
+      $("subFreq")?.addEventListener("click", () => queueMicrotask(sync));
+      sync();
+    }
+    initSummary();
+    document.addEventListener("astro:page-load", initSummary);
+  </script>
   <script>
     import "../scripts/shop/index.ts";
   </script>
 
   <style>
-    .container { max-width: 1100px; margin: 0 auto; padding: 0 1.25rem; }
+    .sub {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: var(--space-10) 0 var(--space-16);
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--space-8);
+      align-items: start;
+    }
+    @media (min-width: 1024px) {
+      .sub { grid-template-columns: minmax(0, 1fr) 360px; padding-inline: clamp(0rem, 2vw, 1.5rem); }
+    }
+    .sub-empty { text-align: center; color: var(--ink-muted); padding: var(--space-16) 0; }
+    .sub__steps { display: flex; flex-direction: column; gap: var(--space-5); min-width: 0; }
 
+    /* ── Pasos ───────────────────────────────────────────────────────────── */
+    .step {
+      min-width: 0;
+      margin: 0;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      background: var(--card);
+      padding: var(--space-6);
+    }
+    @media (max-width: 767px) { .step { padding: var(--space-5) var(--space-4); } }
+    .step__head {
+      float: left;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      margin-bottom: var(--space-5);
+      padding: 0;
+      font-family: var(--font-display);
+      font-size: var(--text-xl);
+      color: var(--espresso);
+    }
+    .step__head + * { clear: both; }
+    .step__n {
+      display: inline-grid;
+      place-items: center;
+      width: 2rem;
+      height: 2rem;
+      border-radius: 50%;
+      background: var(--espresso);
+      color: var(--cream);
+      font-family: var(--font-body);
+      font-size: var(--text-sm);
+      font-weight: 700;
+    }
 
-    /* Sin padding lateral propio: .container ya pone el margen (antes se sumaban dos) */
-    .sub-wrap { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-8); padding: var(--space-10) 1.25rem var(--space-16); }
-    @media (max-width: 767px) { .sub-wrap { padding-inline: 0; } .sub-step { padding: var(--space-4); } }
-    @media (min-width: 1024px) { .sub-wrap { grid-template-columns: minmax(0, 1fr) 300px; align-items: start; } }
-    .sub-empty { text-align: center; color: var(--ink-muted); padding: var(--space-8) 0; }
-
-    .sub-form { display: flex; flex-direction: column; gap: var(--space-6); }
-    /* min-width: 0: un fieldset mide su contenido mínimo y en móvil empujaba la columna fuera de la pantalla */
-    .sub-step { min-width: 0; border: 1px solid var(--border); border-radius: var(--radius-md); padding: var(--space-5); margin: 0; background: var(--card); }
-    .sub-step legend { font-family: var(--font-body); font-weight: 700; color: var(--espresso); padding: 0 .5rem; display: flex; align-items: center; gap: var(--space-2); }
-    .sub-step__n { background: var(--caramel); color: #fff; width: 1.5rem; height: 1.5rem; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: var(--text-sm); }
-
-    .sub-coffees { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-3); }
-    @media (min-width: 768px) { .sub-coffees { grid-template-columns: repeat(3, 1fr); } }
-    .sub-coffee { position: relative; display: flex; flex-direction: column; align-items: center; text-align: center; border: 2px solid var(--border); border-radius: var(--radius-md); padding: var(--space-4) .5rem; cursor: pointer; transition: border-color var(--dur) var(--ease), background var(--dur) var(--ease); }
-    .sub-coffee.active { border-color: var(--caramel); background: var(--cream); }
-    .sub-coffee input { position: absolute; opacity: 0; }
-    .sub-coffee__img { width: 64px; height: 64px; object-fit: cover; border-radius: 50%; margin-bottom: var(--space-2); }
-    .sub-coffee__name { font-family: var(--font-body); font-weight: 700; color: var(--espresso); font-size: var(--text-sm); }
+    /* Cafés */
+    .sub-coffees { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: var(--space-3); }
+    .sub-coffee {
+      position: relative;
+      display: grid;
+      justify-items: center;
+      text-align: center;
+      gap: 2px;
+      padding: var(--space-5) var(--space-3) var(--space-4);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-md);
+      background: var(--card);
+      cursor: pointer;
+      transition: border-color var(--dur) var(--ease), background var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+    }
+    .sub-coffee:hover { border-color: rgba(var(--caramel-rgb), .55); }
+    .sub-coffee.active { border-color: var(--caramel); background: var(--cream); box-shadow: 0 10px 24px -18px rgba(var(--espresso-rgb), .6); }
+    .sub-coffee:has(input:focus-visible) { outline: 2px solid var(--caramel); outline-offset: 2px; }
+    .sub-coffee input { position: absolute; opacity: 0; pointer-events: none; }
+    .sub-coffee__check {
+      position: absolute; top: .6rem; right: .6rem;
+      display: grid; place-items: center;
+      width: 22px; height: 22px; border-radius: 50%;
+      background: var(--caramel); color: var(--cream);
+      opacity: 0; transform: scale(.6);
+      transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
+    }
+    .sub-coffee.active .sub-coffee__check { opacity: 1; transform: none; }
+    .sub-coffee__img { width: 76px; height: 76px; object-fit: cover; border-radius: 50%; margin-bottom: var(--space-3); box-shadow: 0 0 0 4px var(--card), 0 0 0 5px var(--border); }
+    .sub-coffee__name { font-family: var(--font-display); font-size: var(--text-lg); color: var(--espresso); }
     .sub-coffee__meta { font-size: var(--text-xs); color: var(--ink-muted); }
-    .sub-coffee__price { font-size: var(--text-sm); font-weight: 600; color: var(--caramel); margin-top: .2rem; }
+    .sub-coffee__price { margin-top: var(--space-2); font-size: var(--text-sm); font-weight: 700; color: var(--caramel-deep); font-variant-numeric: tabular-nums; }
 
-    .sub-row { display: flex; flex-wrap: wrap; gap: var(--space-5); }
-    .sub-field { display: flex; flex-direction: column; gap: .35rem; flex: 1; min-width: 140px; }
-    .sub-field label { font-size: var(--text-xs); color: var(--ink-muted); font-weight: 600; }
-    .sub-input { padding: .6rem .75rem; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-size: var(--text-base); font-family: var(--font-body); min-height: 44px; }
-    .sub-input:focus-visible { outline: 2px solid var(--caramel); outline-offset: 1px; border-color: var(--caramel); }
+    /* Campos */
+    .sub-row { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-5); }
+    @media (min-width: 640px) { .sub-row { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); } }
+    .sub-field { display: flex; flex-direction: column; gap: .4rem; min-width: 0; }
+    .sub-label { font-size: var(--text-xs); color: var(--ink-muted); font-weight: 600; }
+    .sub-input, .sub-qty__input {
+      padding: .65rem .8rem;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--card);
+      font-size: var(--text-base);
+      font-family: var(--font-body);
+      min-height: 46px;
+      width: 100%;
+      transition: border-color var(--dur) var(--ease);
+    }
+    .sub-input:hover { border-color: rgba(var(--espresso-rgb), .25); }
+    .sub-input:focus-visible, .sub-qty__input:focus-visible { outline: 2px solid var(--caramel); outline-offset: 1px; border-color: var(--caramel); }
     .sub-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); }
     @media (max-width: 480px) { .sub-grid { grid-template-columns: minmax(0, 1fr); } }
     .sub-field--full { grid-column: 1 / -1; }
 
-    .sub-toggle { display: flex; border: 1.5px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; }
-    .sub-toggle__btn { flex: 1; padding: .6rem; background: transparent; border: none; cursor: pointer; font-family: var(--font-body); font-size: var(--text-sm); font-weight: 600; color: var(--espresso); min-height: 44px; }
-    .sub-toggle__btn.active { background: var(--caramel); color: #fff; }
+    .sub-toggle { display: grid; grid-template-columns: 1fr 1fr; padding: 4px; gap: 4px; border-radius: 999px; background: var(--sand); }
+    .sub-toggle__btn {
+      padding: .55rem .5rem; border: 0; border-radius: 999px; background: transparent; cursor: pointer;
+      font-family: var(--font-body); font-size: var(--text-sm); font-weight: 600; color: var(--ink-muted); min-height: 40px;
+      transition: background var(--dur) var(--ease), color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+    }
+    .sub-toggle__btn.active { background: var(--card); color: var(--espresso); box-shadow: 0 2px 8px -4px rgba(var(--espresso-rgb), .4); }
+    .sub-toggle__btn:focus-visible { outline: 2px solid var(--caramel); outline-offset: 2px; }
 
-    .sub-secure { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-sm); color: var(--leaf); margin: 0 0 var(--space-4); }
-    .sub-accept { display: flex; gap: var(--space-2); align-items: flex-start; margin-top: var(--space-4); font-size: var(--text-sm); color: var(--ink-muted); }
-    .sub-accept a { color: var(--caramel); text-decoration: underline; }
+    .sub-qty { display: grid; grid-template-columns: 46px minmax(0, 1fr) 46px; gap: 6px; }
+    .sub-qty__btn {
+      border: 1.5px solid var(--border); border-radius: var(--radius-sm); background: var(--card); cursor: pointer;
+      font-size: var(--text-lg); font-weight: 600; color: var(--espresso); min-height: 46px;
+    }
+    .sub-qty__btn:hover { border-color: var(--caramel); color: var(--caramel-deep); }
+    .sub-qty__btn:focus-visible { outline: 2px solid var(--caramel); outline-offset: 1px; }
+    .sub-qty__input { text-align: center; font-variant-numeric: tabular-nums; -moz-appearance: textfield; }
+    .sub-qty__input::-webkit-inner-spin-button, .sub-qty__input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 
-    .sub-summary { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: var(--space-5); }
-    .sub-summary__line { display: flex; justify-content: space-between; align-items: baseline; font-size: var(--text-base); }
-    .sub-summary__line strong,
-    .sub-summary__line :global(.odo-live) { font-family: var(--font-display); font-size: var(--text-xl); color: var(--caramel); }
-    .sub-summary__note { font-size: var(--text-sm); color: var(--ink-muted); margin: var(--space-2) 0 var(--space-4); }
-    .sub-submit { width: 100%; padding: .85rem; background: var(--caramel); color: #fff; border: none; border-radius: var(--radius-sm); font-family: var(--font-body); font-size: var(--text-base); font-weight: 700; cursor: pointer; min-height: 48px; transition: background var(--dur) var(--ease); }
-    .sub-submit:hover { background: var(--caramel-deep); }
-    .sub-submit:focus-visible { outline: 2px solid var(--caramel); outline-offset: 2px; }
+    .sub-secure { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-sm); color: var(--leaf); margin: 0 0 var(--space-5); }
+    .sub-accept { display: flex; gap: var(--space-3); align-items: flex-start; margin-top: var(--space-5); font-size: var(--text-sm); color: var(--ink-muted); line-height: 1.5; }
+    .sub-accept input { width: 18px; height: 18px; margin-top: 2px; accent-color: var(--caramel); flex-shrink: 0; }
+    .sub-accept a { color: var(--caramel-deep); text-decoration: underline; }
+
+    /* ── Resumen ─────────────────────────────────────────────────────────── */
+    @media (min-width: 1024px) { .sub__summary { position: sticky; top: calc(var(--header-top, 0px) + var(--header-height, 96px) + 16px); } }
+    .ticket {
+      background: var(--espresso);
+      color: var(--cream);
+      border-radius: var(--radius-lg);
+      padding: var(--space-6);
+      box-shadow: 0 24px 48px -32px rgba(var(--espresso-rgb), .8);
+    }
+    .ticket__eyebrow { margin: 0 0 var(--space-4); font-size: var(--text-xs); font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--mucilage); }
+    .ticket__coffee { display: flex; gap: var(--space-3); align-items: center; padding-bottom: var(--space-5); border-bottom: 1px dashed rgba(var(--cream-rgb), .2); }
+    .ticket__img { width: 56px; height: 56px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+    .ticket__name { margin: 0; font-family: var(--font-display); font-size: var(--text-xl); }
+    .ticket__meta { margin: 2px 0 0; font-size: var(--text-sm); color: rgba(var(--cream-rgb), .7); }
+    .ticket__lines { margin: var(--space-4) 0 0; display: grid; gap: var(--space-2); }
+    .ticket__lines div { display: flex; justify-content: space-between; font-size: var(--text-sm); }
+    .ticket__lines dt { color: rgba(var(--cream-rgb), .7); }
+    .ticket__lines dd { margin: 0; font-weight: 600; }
+    .ticket__total {
+      display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-3);
+      margin-top: var(--space-5); padding-top: var(--space-4); border-top: 1px solid rgba(var(--cream-rgb), .15);
+    }
+    .ticket__total span { font-size: var(--text-sm); color: rgba(var(--cream-rgb), .75); }
+    .ticket__total strong,
+    .ticket__total :global(.odo-live) { font-family: var(--font-display); font-size: var(--text-3xl); color: var(--cream); font-weight: 600; }
+    .ticket__note { margin: var(--space-2) 0 var(--space-5); font-size: var(--text-xs); color: rgba(var(--cream-rgb), .65); line-height: 1.5; }
+    .sub-submit {
+      width: 100%; padding: .9rem; min-height: 52px;
+      border: 0; border-radius: 999px;
+      background: var(--cream); color: var(--espresso);
+      font-family: var(--font-body); font-size: var(--text-base); font-weight: 700;
+      cursor: pointer; transition: background var(--dur) var(--ease);
+    }
+    .sub-submit:hover { background: var(--mucilage); }
+    .sub-submit:focus-visible { outline: 2px solid var(--mucilage); outline-offset: 3px; }
     .sub-submit:disabled { opacity: .6; cursor: not-allowed; }
+    .ticket__secure { display: flex; justify-content: center; align-items: center; gap: .4rem; margin: var(--space-3) 0 0; font-size: var(--text-xs); color: rgba(var(--cream-rgb), .6); }
     .sub-msg { padding: .65rem .9rem; border-radius: var(--radius-sm); font-size: var(--text-sm); margin-bottom: var(--space-4); }
     .sub-msg.success { background: var(--leaf-bg); color: var(--leaf); }
     .sub-msg.error { background: var(--danger-bg); color: var(--danger); }
-
-    .sub-benefits { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: var(--space-6); }
-    .sub-benefits h2 { font-size: var(--text-lg); color: var(--espresso); margin: 0 0 var(--space-4); }
-    .sub-benefits ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--space-4); }
-    .sub-benefits li { display: flex; align-items: flex-start; gap: var(--space-3); font-size: var(--text-sm); color: var(--ink-muted); line-height: 1.4; }
-    .sub-benefits li :global(svg) { color: var(--caramel); flex-shrink: 0; margin-top: 1px; }
   </style>
 </Layout>
