@@ -108,15 +108,15 @@ import CostField from "../../components/CostField.astro";
               <div class="radio-group">
                 <label class="radio-item">
                   <input type="radio" name="climate" value="SECO" required />
-                  <span>🌞 Seco</span>
+                  <span>Seco</span>
                 </label>
                 <label class="radio-item">
                   <input type="radio" name="climate" value="LLUV" required />
-                  <span>🌧️ Lluvioso</span>
+                  <span>Lluvioso</span>
                 </label>
                 <label class="radio-item">
                   <input type="radio" name="climate" value="TEMP" required />
-                  <span>🌤️ Templado</span>
+                  <span>Templado</span>
                 </label>
               </div>
             </div>
@@ -141,7 +141,7 @@ import CostField from "../../components/CostField.astro";
             </div>
 
             <!-- Perfil sensorial -->
-            <div class="form-section"><h3>☕ Perfil sensorial</h3></div>
+            <div class="form-section"><h3>Perfil sensorial</h3></div>
 
             <div class="form-group">
               <label for="aroma">Aroma detectado <span class="required">*</span></label>
@@ -161,7 +161,7 @@ import CostField from "../../components/CostField.astro";
             </div>
 
             <!-- Costeo: solo visible para admin -->
-            <div class="form-section" data-roles="admin"><h3>💵 Compra al caficultor</h3></div>
+            <div class="form-section" data-roles="admin"><h3>Compra al caficultor</h3></div>
 
             <div class="form-group" data-roles="admin">
               <label for="harvestWeightKg">Kilos recibidos</label>
@@ -274,7 +274,7 @@ import CostField from "../../components/CostField.astro";
     // ── Mapas de etiquetas ──────────────────────────────────────────
     const varietyMap = { CAT: "Caturra", TIP: "Típica", BOB: "Bourbon", GER: "Geisha", PAC: "Pacamara" };
     const processMap = { NAT: "Natural (secado en cereza)", HUM: "Húmedo (lavado)", ANH: "Anaeróbico" };
-    const climateMap = { SECO: "🌞 Seco", LLUV: "🌧️ Lluvioso", TEMP: "🌤️ Templado" };
+    const climateMap = { SECO: "Seco", LLUV: "Lluvioso", TEMP: "Templado" };
 
     // Mapa de fincas: cargado dinámicamente desde la API, con fallback estático
     let farmData = {

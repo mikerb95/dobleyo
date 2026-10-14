@@ -16,10 +16,10 @@ try {
     const json = await res.json();
     farm = json.data ?? null;
   } else if (res.status !== 401) {
-    fetchError = "No se pudo cargar la información de tu finca.";
+    fetchError = "No se pudo cargar la información de su finca.";
   }
 } catch (_) {
-  fetchError = "Error de conexión. Intenta de nuevo.";
+  fetchError = "Error de conexión. Intente de nuevo.";
 }
 
 const isNew = farm === null;
@@ -37,7 +37,7 @@ const displayDate = farm?.created_at
         <h1 class="mf-header__title">Mi Finca</h1>
         <p class="mf-header__sub">
           {isNew
-            ? "Crea el perfil público de tu finca para aparecer en el catálogo de DobleYo."
+            ? "Cree el perfil público de su finca para aparecer en el catálogo de DobleYo."
             : `Finca registrada el ${displayDate}.`}
         </p>
       </div>
@@ -47,7 +47,7 @@ const displayDate = farm?.created_at
           class="mf-view-btn"
           target="_blank"
           rel="noopener noreferrer"
-          aria-label="Ver página pública de tu finca"
+          aria-label="Ver página pública de su finca"
         >
           Ver página pública ↗
         </a>
@@ -63,8 +63,8 @@ const displayDate = farm?.created_at
     {!isNew && (
       <div class:list={["status-banner", farm.is_published ? "status-banner--published" : "status-banner--draft"]}>
         {farm.is_published
-          ? "✅ Tu finca está publicada y visible en el catálogo."
-          : "⏳ Tu finca está en borrador, pendiente de revisión por el equipo DobleYo."}
+          ? "Su finca está publicada y visible en el catálogo."
+          : "Su finca está en borrador, pendiente de revisión por el equipo DobleYo."}
       </div>
     )}
 
@@ -121,7 +121,7 @@ const displayDate = farm?.created_at
             <input type="text" id="varieties" name="varieties"
               value={farm?.varieties?.join(", ") ?? ""}
               placeholder="Ej: Geisha, Bourbon, Caturra" />
-            <span class="form-hint">Escribe las variedades separadas por comas</span>
+            <span class="form-hint">Escriba las variedades separadas por comas</span>
           </div>
           <div class="form-group form-group--wide">
             <label for="processes">Procesos de beneficio (separados por coma)</label>
@@ -153,7 +153,7 @@ const displayDate = farm?.created_at
           <div class="form-group form-group--wide">
             <label for="story">Historia completa</label>
             <textarea id="story" name="story" rows="8"
-              placeholder="Cuéntanos la historia de tu finca, qué la hace especial, tu familia, las generaciones que la han trabajado...">
+              placeholder="Cuéntenos la historia de su finca, qué la hace especial, su familia, las generaciones que la han trabajado...">
               {farm?.story ?? ""}
             </textarea>
           </div>
@@ -304,7 +304,7 @@ document.getElementById('farmForm')?.addEventListener('submit', async (e) => {
     }
   } catch (err) {
     resultMsg.className = 'result-msg result-msg--error';
-    resultMsg.textContent = 'Error de conexión. Intenta de nuevo.';
+    resultMsg.textContent = 'Error de conexión. Intente de nuevo.';
     resultMsg.hidden = false;
   } finally {
     saveBtn.disabled = false;

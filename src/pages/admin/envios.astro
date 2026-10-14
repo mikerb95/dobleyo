@@ -912,14 +912,14 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
                     body: JSON.stringify({ carrierName, guideNumber, trackingUrl: trackingUrl || undefined, comments: comments || undefined }),
                 });
                 msg.style.color = "#155724";
-                msg.textContent = "✅ Despacho registrado.";
+                msg.textContent = "Despacho registrado.";
                 setTimeout(() => {
                     document.getElementById("modalManualBack")!.classList.remove("open");
                     loadPending();
                 }, 1000);
             } catch (err: any) {
                 msg.style.color = "#721c24";
-                msg.textContent = `❌ ${err.message}`;
+                msg.textContent = `${err.message}`;
             } finally {
                 btn.disabled = false;
                 btn.textContent = "Registrar despacho";
@@ -1085,15 +1085,15 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
                 msg.style.color = "#155724";
                 msg.textContent = result.mpCode
-                    ? `✅ Envío generado (mpCode ${result.mpCode}).`
-                    : `✅ Guía ${result.guideNumber} generada${requestPickup && !result.pickupRequested ? ". La recogida no se pudo programar: solicítela en el portal de Interrapidísimo" : ""}.`;
+                    ? `Envío generado (mpCode ${result.mpCode}).`
+                    : `Guía ${result.guideNumber} generada${requestPickup && !result.pickupRequested ? ". La recogida no se pudo programar: solicítela en el portal de Interrapidísimo" : ""}.`;
                 setTimeout(() => {
                     document.getElementById("modalBack")!.classList.remove("open");
                     loadPending();
                 }, 1200);
             } catch (err: any) {
                 msg.style.color = "#721c24";
-                msg.textContent = `❌ ${err.message}`;
+                msg.textContent = `${err.message}`;
             } finally {
                 btn.disabled = false;
                 btn.textContent = "Generar guía";

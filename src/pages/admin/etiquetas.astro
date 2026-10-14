@@ -80,7 +80,7 @@ import { SHOW_CUPPING } from "../../lib/flags.ts";
           <!-- Segmented control -->
           <div class="seg" role="tablist">
             <button type="button" class="seg-btn is-active" id="tabLotes" role="tab">
-              📦 Desde lote preparado
+              Desde lote preparado
             </button>
             <button type="button" class="seg-btn" id="tabCero" role="tab">
               ✏️ Crear desde cero
@@ -128,7 +128,7 @@ import { SHOW_CUPPING } from "../../lib/flags.ts";
                 </div>
 
                 <div class="info-box" style="margin-top: 16px;">
-                  <strong>☕ Perfil de taza</strong>
+                  <strong>Perfil de taza</strong>
                   <div class="detail-grid" style="margin-top: 12px;">
                     <div class="detail-item">
                       <dt>Acidez</dt><dd id="lotAcidityDisplay">-</dd>
@@ -237,7 +237,7 @@ import { SHOW_CUPPING } from "../../lib/flags.ts";
               </div>
 
               <!-- Perfil de Taza -->
-              <div class="form-section"><h3>☕ Perfil de taza</h3></div>
+              <div class="form-section"><h3>Perfil de taza</h3></div>
 
               <div class="slider-field">
                 <label for="customAcidity">
@@ -340,10 +340,10 @@ import { SHOW_CUPPING } from "../../lib/flags.ts";
           <div class="card-pad">
             <div class="preview-actions">
               <button type="button" class="btn btn-secondary btn-sm" id="printPreviewBtn">
-                🖨️ Imprimir prueba
+                Imprimir prueba
               </button>
               <button type="button" class="btn btn-save btn-sm" id="printBatchBtn" hidden>
-                🖨️ Imprimir lote generado
+                Imprimir lote generado
               </button>
             </div>
             <!-- Etiqueta -->
@@ -589,10 +589,10 @@ import { SHOW_CUPPING } from "../../lib/flags.ts";
       }
       box.hidden = false;
       document.getElementById("summaryBody").innerHTML = `
-        <div>☕ Café: <strong>${esc(data.origin) || "-"} · ${esc(data.variety)}</strong></div>
-        <div>🔥 Tueste: <strong>${esc(data.roast) || "-"}</strong></div>
-        <div>🏷️ Cantidad: <strong>${qty}</strong></div>
-        <div>🔖 Primer código: <strong>${esc(code)}</strong></div>`;
+        <div>Café: <strong>${esc(data.origin) || "-"} · ${esc(data.variety)}</strong></div>
+        <div>Tueste: <strong>${esc(data.roast) || "-"}</strong></div>
+        <div>Cantidad: <strong>${qty}</strong></div>
+        <div>Primer código: <strong>${esc(code)}</strong></div>`;
     }
 
     // ── Cargar lotes preparados ─────────────────────────────────────
@@ -664,7 +664,7 @@ import { SHOW_CUPPING } from "../../lib/flags.ts";
             </span>
           </td>
           <td style="text-align: right; white-space: nowrap;">
-            <button class="btn btn-secondary btn-sm" data-print="${esc(l.label_code)}">🖨️ Imprimir</button>
+            <button class="btn btn-secondary btn-sm" data-print="${esc(l.label_code)}">Imprimir</button>
             <button
               class="btn btn-secondary btn-sm"
               data-toggle-print="${esc(l.label_code)}"

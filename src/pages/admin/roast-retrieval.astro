@@ -25,7 +25,7 @@ import CostField from "../../components/CostField.astro";
         >Lote en Proceso de Tostión <span class="required">*</span></label
       >
       <select id="roastingLotSelect" name="roastingLot" required>
-        <option value="">Selecciona un lote...</option>
+        <option value="">Seleccione un lote...</option>
       </select>
       <div class="form-hint">Lotes que están siendo procesados</div>
     </div>
@@ -61,19 +61,19 @@ import CostField from "../../components/CostField.astro";
       <div class="radio-group">
         <label class="radio-item">
           <input type="radio" name="roastLevel" value="LIGHT" required />
-          <span>☕ Tostión Clara (Light)</span>
+          <span>Tostión Clara (Light)</span>
         </label>
         <label class="radio-item">
           <input type="radio" name="roastLevel" value="MEDIUM" required />
-          <span>☕☕ Tostión Media (Medium)</span>
+          <span>Tostión Media (Medium)</span>
         </label>
         <label class="radio-item">
           <input type="radio" name="roastLevel" value="DARK" required />
-          <span>☕☕☕ Tostión Oscura (Dark)</span>
+          <span>Tostión Oscura (Dark)</span>
         </label>
       </div>
       <div class="form-hint">
-        Selecciona según el color y aroma del café tostado
+        Seleccione según el color y aroma del café tostado
       </div>
     </div>
 
@@ -175,18 +175,18 @@ import CostField from "../../components/CostField.astro";
       <strong>Resumen del Café Tostado:</strong>
       <div style="margin-top: 0.75rem; font-size: 0.95rem; line-height: 1.6;">
         <div>
-          📦 Lote: <span id="summaryLot" style="font-weight: 600;">-</span>
+          Lote: <span id="summaryLot" style="font-weight: 600;">-</span>
         </div>
         <div>
-          ☕ Nivel: <span id="summaryLevel" style="font-weight: 600;">-</span>
+          Nivel: <span id="summaryLevel" style="font-weight: 600;">-</span>
         </div>
         <div>
-          ⚖️ Peso Tostado: <span id="summaryWeight" style="font-weight: 600;"
+          Peso Tostado: <span id="summaryWeight" style="font-weight: 600;"
             >-</span
           >
         </div>
         <div>
-          📊 Pérdida: <span id="summaryLoss" style="font-weight: 600;">-</span>
+          Pérdida: <span id="summaryLoss" style="font-weight: 600;">-</span>
         </div>
       </div>
     </div>
@@ -209,7 +209,7 @@ import CostField from "../../components/CostField.astro";
   <div class="modal" id="mermaAlertModal" style="display: none;">
     <div class="modal-content modal-alarm">
       <div class="modal-header">
-        <h2 class="modal-title">⚠️ Merma inusualmente alta</h2>
+        <h2 class="modal-title">Merma inusualmente alta</h2>
       </div>
       <div class="modal-body">
         <p>
@@ -293,7 +293,7 @@ import CostField from "../../components/CostField.astro";
         );
 
         roastingLotSelect.innerHTML =
-          '<option value="">Selecciona un lote...</option>';
+          '<option value="">Seleccione un lote...</option>';
         inProcess.forEach((record) => {
           const option = document.createElement("option");
           option.value = JSON.stringify(record);
@@ -401,7 +401,7 @@ import CostField from "../../components/CostField.astro";
       e.preventDefault();
 
       if (!currentRoastingRecord) {
-        alert("⚠️ Debes seleccionar un lote");
+        alert("Debe seleccionar un lote");
         return;
       }
 
@@ -413,17 +413,17 @@ import CostField from "../../components/CostField.astro";
       const sentKg = currentRoastingRecord.quantity_sent_kg;
       const minReasonable = parseFloat((sentKg * 0.60).toFixed(3));
       if (roastedWeight <= 0) {
-        alert("⚠️ El peso tostado debe ser mayor a 0");
+        alert("El peso tostado debe ser mayor a 0");
         return;
       }
       if (roastedWeight >= sentKg) {
-        alert(`⚠️ El peso tostado (${roastedWeight} kg) no puede ser igual o mayor al enviado (${sentKg} kg). El café siempre pierde masa durante el tueste.`);
+        alert(`El peso tostado (${roastedWeight} kg) no puede ser igual o mayor al enviado (${sentKg} kg). El café siempre pierde masa durante el tueste.`);
         return;
       }
       if (roastedWeight < minReasonable) {
         const evap = (((sentKg - roastedWeight) / sentKg) * 100).toFixed(1);
         const confirm = window.confirm(
-          `⚠️ Pérdida de peso inusualmente alta: ${evap}% (${(sentKg - roastedWeight).toFixed(2)} kg evaporados).\n\nLo normal en tostión de especialidad es 12-22%. Una pérdida >40% es poco probable.\n\n¿Deseas continuar de todas formas?`
+          `Pérdida de peso inusualmente alta: ${evap}% (${(sentKg - roastedWeight).toFixed(2)} kg evaporados).\n\nLo normal en tostión de especialidad es 12-22%. Una pérdida >40% es poco probable.\n\n¿Deseas continuar de todas formas?`
         );
         if (!confirm) return;
       }
@@ -459,7 +459,7 @@ import CostField from "../../components/CostField.astro";
         const data = await response.json();
 
         alert(
-          `✅ Tueste registrado correctamente\n${roastedWeight} kg de café ${roastLevel === "LIGHT" ? "claro" : roastLevel === "MEDIUM" ? "medio" : "oscuro"}\nPérdida: ${data.weightLossPercent}%`
+          `Tueste registrado correctamente\n${roastedWeight} kg de café ${roastLevel === "LIGHT" ? "claro" : roastLevel === "MEDIUM" ? "medio" : "oscuro"}\nPérdida: ${data.weightLossPercent}%`
         );
 
         form.reset();
@@ -472,7 +472,7 @@ import CostField from "../../components/CostField.astro";
         loadRoastingLots();
       } catch (error) {
         console.error("Error:", error);
-        alert(`❌ Error: ${error.message || "Error desconocido"}`);
+        alert(`Error: ${error.message || "Error desconocido"}`);
       } finally {
         submitBtn.disabled = false;
         submitBtn.textContent = originalText;

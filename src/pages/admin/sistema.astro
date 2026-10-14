@@ -893,7 +893,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       const res  = await fetch('/api/system/migrate', { method: 'POST', credentials: 'include' });
       const json = await res.json();
       output.textContent = json.data.map(r =>
-        `${r.ok ? '✅' : '❌'} ${r.name}${r.error ? ': ' + r.error : ''}`
+        `${r.ok ? 'OK' : 'Error'} · ${r.name}${r.error ? ': ' + r.error : ''}`
       ).join('\n');
     } catch (err) {
       output.textContent = 'Error: ' + err.message;

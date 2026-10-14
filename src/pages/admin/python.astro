@@ -618,10 +618,10 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
             : "";
           msg = `✓ Venta registrada en ${d.city ?? "-"}: ${itemList}. Ahora haga clic en "Recalcular ahora".`;
         } else {
-          msg = `⚠ Error ${r.status}: ${j?.error ?? "respuesta inesperada del servidor."}`;
+          msg = `Error ${r.status}: ${j?.error ?? "respuesta inesperada del servidor."}`;
         }
       } catch (e: any) {
-        msg = "⚠ Error de red: " + (e?.message ?? "sin detalles");
+        msg = "Error de red: " + (e?.message ?? "sin detalles");
       }
       if (status) status.textContent = msg;
       btnDemo.textContent = "+ Simular venta";

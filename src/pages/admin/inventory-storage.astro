@@ -136,10 +136,10 @@ import CostField from "../../components/CostField.astro";
       <div class="info-box summary-box" id="summaryBox" style="display: none;">
         <strong>Resumen del almacenamiento</strong>
         <dl class="summary-list">
-          <div><dt>📦 Lote</dt><dd id="summaryLot">-</dd></div>
-          <div><dt>⚖️ Peso</dt><dd id="summaryWeight">-</dd></div>
-          <div><dt>📍 Ubicación</dt><dd id="summaryLocation">-</dd></div>
-          <div><dt>📅 Fecha</dt><dd id="summaryDate">-</dd></div>
+          <div><dt>Lote</dt><dd id="summaryLot">-</dd></div>
+          <div><dt>Peso</dt><dd id="summaryWeight">-</dd></div>
+          <div><dt>Ubicación</dt><dd id="summaryLocation">-</dd></div>
+          <div><dt>Fecha</dt><dd id="summaryDate">-</dd></div>
         </dl>
       </div>
 
@@ -161,7 +161,7 @@ import CostField from "../../components/CostField.astro";
     <div class="modal" id="successModal" style="display: none;">
       <div class="modal-content modal-success">
         <div class="modal-body success-body">
-          <div class="success-icon" aria-hidden="true">✅</div>
+          <div class="success-icon" aria-hidden="true"></div>
           <h2 class="modal-title success-title">¡Lote almacenado!</h2>
           <p>
             El lote <strong id="successLotId"></strong> ha sido almacenado
@@ -482,7 +482,7 @@ import CostField from "../../components/CostField.astro";
       e.preventDefault();
 
       if (!lotSelect.value) {
-        alert("⚠️ Debe seleccionar un lote");
+        alert("Debe seleccionar un lote");
         return;
       }
 
@@ -528,7 +528,7 @@ import CostField from "../../components/CostField.astro";
         document.getElementById("successModal").style.display = "grid";
       } catch (error) {
         console.error("Error:", error);
-        alert(`❌ Error: ${error.message || "Error desconocido"}`);
+        alert(`Error: ${error.message || "Error desconocido"}`);
       } finally {
         submitBtn.disabled = false;
         submitBtn.textContent = originalText;

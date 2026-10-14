@@ -457,7 +457,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       const json = await res.json();
 
       if (!res.ok || !json.success) {
-        setConnectionStatus('err', 'Error al cargar estadísticas', json.error ?? 'Revisa los logs del servidor');
+        setConnectionStatus('err', 'Error al cargar estadísticas', json.error ?? 'Revise los logs del servidor');
         return;
       }
 
