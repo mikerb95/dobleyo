@@ -1,7 +1,10 @@
 ---
 import Layout from "../../layouts/Layout.astro";
+import ProductCard from "../../components/ProductCard.astro";
+import ShopHero from "../../components/shop/ShopHero.astro";
 import { products as staticProducts } from "../../data/products";
 import { getCanonicalUrl, getHreflangPair } from "../../i18n/index.ts";
+import { reviewAggregateSql } from "../../lib/products.server.ts";
 
 const lang = "en" as const;
 const hreflang = getHreflangPair("/tienda");
@@ -16,18 +19,19 @@ let rows: any[] = [];
 try {
     const { query } = await import("../../../server/db.js");
     const res = await query(
-        `SELECT id, name, name_en, category, origin, process, roast,
-                price, price_usd, rating,
-                is_deal AS deal, is_bestseller AS bestseller, is_new AS new, is_fast AS fast,
-                image_url AS image
-         FROM products
-         WHERE is_active = 1
-         ORDER BY is_bestseller DESC, is_new DESC, is_deal DESC, rating DESC`
+        `SELECT p.id, p.name, p.name_en, p.category, p.origin, p.process, p.roast,
+                p.price, p.price_usd, p.rating, p.tasting_notes, p.weight, p.weight_unit,
+                p.is_deal AS deal, p.is_bestseller AS bestseller, p.is_new AS new, p.is_fast AS fast,
+                p.image_url AS image, p.stock_quantity AS stock,
+                ${reviewAggregateSql("p")}
+         FROM products p
+         WHERE p.is_active = 1
+         ORDER BY p.is_bestseller DESC, p.is_new DESC, p.is_deal DESC, p.rating DESC`
     );
     rows = res.rows;
 } catch (_) { /* BD no disponible */ }
 
-const mapped = rows.length
+const products: any[] = rows.length
     ? rows.map((p: any) => ({
         id: p.id,
         name: p.name_en || p.name,
@@ -35,10 +39,16 @@ const mapped = rows.length
         origin: p.origin ?? null,
         process: p.process ? (PROC_EN[p.process] ?? p.process) : null,
         roast: p.roast ? (ROAST_EN[p.roast] ?? p.roast) : null,
-        price: p.price_usd ?? Math.round(Number(p.price) / 4000),
+        price: Number(p.price_usd ?? Math.round(Number(p.price) / 4000)),
         rating: Number(p.rating) || 0,
+        review_count: p.review_count,
+        review_avg: p.review_avg,
+        tasting_notes: p.tasting_notes,
+        weight: p.weight,
+        weight_unit: p.weight_unit,
         deal: !!p.deal, bestseller: !!p.bestseller, new: !!p.new, fast: !!p.fast,
         image: p.image,
+        stock: p.stock,
     }))
     : staticProducts.map((p) => ({
         id: p.id,
@@ -52,61 +62,36 @@ const mapped = rows.length
         deal: p.deal ?? false, bestseller: p.bestseller ?? false,
         new: p.new ?? false, fast: p.fast ?? false,
         image: p.image,
+        stock: 99,
     }));
 
+// Cafés del mostrador del hero (una bolsa por origen)
+const counterCoffees = products.filter((p) => p.category === "Coffee" && p.origin);
+
 // Escapar "<" para poder inyectar el JSON de forma segura en un <script type="application/json">
-const productsJson = JSON.stringify(mapped).replace(/</g, "\\u003c");
+const productsJson = JSON.stringify(products).replace(/</g, "\\u003c");
 ---
 
 <Layout
-    title="Shop — DobleYo Café | Colombian Specialty Coffee"
+    title="Shop · DobleYo Café | Colombian Specialty Coffee"
     description="Browse our selection of Colombian specialty coffees and accessories. Single-origin, freshly roasted, farm-to-cup."
     lang={lang}
     canonical={getCanonicalUrl("/shop", "en")}
     hreflangEs={hreflang?.es}
     hreflangEn={hreflang?.en}
 >
-    <!-- Promotional banner -->
-    <section class="promo-banner" aria-label="Promotion">
-        <div class="promo-inner">
-            <div class="promo-media" role="img" aria-label="Shop banner">
-                <img
-                    src="https://images.unsplash.com/photo-1517705008128-361805f42e86?q=80&w=1600&auto=format&fit=crop"
-                    alt="DobleYo Coffee shop"
-                    loading="lazy"
-                />
-            </div>
-            <div class="promo-overlay" aria-hidden="false">
-                <div class="promo-text">
-                    <h2 class="promo-title">Shop All</h2>
-                    <p class="promo-sub">
-                        DobleYo Café · Colombian specialty coffees and
-                        accessories. Single-origin, freshly roasted.
-                    </p>
-                </div>
-            </div>
-        </div>
-    </section>
+    <ShopHero coffees={counterCoffees} lang="en" />
 
     <!-- Filter chips + sort bar -->
     <section class="shop-topbar" aria-label="Quick filters">
-        <div
-            class="chips"
-            id="topChips"
-            role="toolbar"
-            aria-label="Quick filters"
-        >
+        <div class="chips" id="topChips" role="toolbar" aria-label="Quick filters">
             <button class="chip" data-flag="fast">Fast delivery</button>
             <button class="chip" data-flag="deal">On sale</button>
             <button class="chip" data-flag="new">New arrivals</button>
             <button class="chip" data-flag="bestseller">Best sellers</button>
         </div>
         <div class="actions">
-            <button
-                class="filters-toggle"
-                id="filtersToggle"
-                aria-expanded="false">Filters</button
-            >
+            <button class="filters-toggle" id="filtersToggle" aria-expanded="false">Filters</button>
             <label class="sort">
                 <span>Sort by:</span>
                 <select id="shopSort" aria-label="Sort results">
@@ -120,7 +105,6 @@ const productsJson = JSON.stringify(mapped).replace(/</g, "\\u003c");
     </section>
 
     <section class="shop-layout" aria-label="Shop results">
-        <!-- Sidebar filters -->
         <aside class="shop-sidebar" id="shopSidebar">
             <div class="filter-group">
                 <div class="filter-title">Categories</div>
@@ -131,279 +115,206 @@ const productsJson = JSON.stringify(mapped).replace(/</g, "\\u003c");
                 <div class="filter-list" id="originList"></div>
             </div>
             <div class="filter-group">
-                <div class="filter-title">Roast</div>
-                <div class="filter-list" id="roastList"></div>
-            </div>
-            <div class="filter-group">
                 <div class="filter-title">Process</div>
                 <div class="filter-list" id="processList"></div>
             </div>
             <div class="filter-group">
-                <div class="filter-title">Price (USD)</div>
-                <div class="filter-price">
-                    <input
-                        type="range"
-                        id="priceRange"
-                        min="0"
-                        max="100"
-                        value="100"
-                        step="5"
-                        aria-label="Max price"
-                    />
-                    <div class="price-labels">
-                        <span>$0</span>
-                        <span id="priceVal">$100</span>
-                    </div>
-                </div>
+                <div class="filter-title">Roast</div>
+                <div class="filter-list" id="roastList"></div>
             </div>
-            <button class="btn btn-outline" id="clearFilters"
-                >Clear filters</button
-            >
+            <div class="filter-group">
+                <div class="filter-title">Price (USD)</div>
+                <div class="price-inputs">
+                    <input type="number" id="priceMin" placeholder="Min" min="0" step="1" aria-label="Minimum price" />
+                    <span>-</span>
+                    <input type="number" id="priceMax" placeholder="Max" min="0" step="1" aria-label="Maximum price" />
+                </div>
+                <button class="btn small" id="applyPrice">Apply</button>
+            </div>
+            <div class="filter-actions">
+                <button class="btn outline" id="clearFilters">Clear filters</button>
+            </div>
         </aside>
 
-        <!-- Product grid -->
-        <div class="shop-main">
-            <div class="shop-results-bar">
-                <span id="resultsCount"></span>
+        <section class="shop-content">
+            <div class="applied-filters" id="appliedFilters"></div>
+            <div class="grid" id="shopResults">
+                {products.map((p) => <ProductCard product={p} lang="en" />)}
             </div>
-            <div class="product-grid" id="productGrid" role="list"></div>
-            <div id="noResults" class="no-results" style="display:none">
-                No products found for these filters.
-            </div>
-        </div>
+            <p id="noResults" class="muted" hidden>No products found for these filters.</p>
+        </section>
     </section>
-</Layout>
 
-<script type="application/json" id="shopData" set:html={productsJson}></script>
-<script>
-    /* Shop script — English version (USD) */
-    const ALL = JSON.parse(document.getElementById("shopData").textContent);
-    let activeFlags = new Set();
-    let activeCats = new Set();
-    let activeOrigins = new Set();
-    let activeRoasts = new Set();
-    let activeProcess = new Set();
-    let maxPrice = 100;
-    let sortKey = "relevance";
+    <script type="application/json" id="shopData" set:html={productsJson}></script>
 
-    const fmt = (p) =>
-        new Intl.NumberFormat("en-US", {
-            style: "currency",
-            currency: "USD",
-            maximumFractionDigits: 0,
-        }).format(p);
+    <script>
+        // Misma card que ProductCard.astro (lang="en") para que el repintado al
+        // filtrar se vea idéntico al HTML del servidor.
+        import { getRating, formatWeight } from "../../lib/products.ts";
 
-    function buildFilters() {
-        const cats = [...new Set(ALL.map((p) => p.category).filter(Boolean))];
-        const origins = [...new Set(ALL.map((p) => p.origin).filter(Boolean))];
-        const roasts = [...new Set(ALL.map((p) => p.roast).filter(Boolean))];
-        const procs = [...new Set(ALL.map((p) => p.process).filter(Boolean))];
+        type P = Record<string, any>;
+        const fmt = (n: number) => `$${Number(n).toLocaleString("en-US")}`;
+        const esc = (s: unknown) =>
+            String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
+        const ratingValue = (p: P) => getRating(p)?.value ?? 0;
 
-        const fill = (id, items, activeSet) => {
-            const el = document.getElementById(id);
-            if (!el) return;
-            el.innerHTML = items
-                .map(
-                    (v) => `
-        <label class="filter-item">
-          <input type="checkbox" value="${v}" data-set="${id}"> ${v}
-        </label>`,
-                )
-                .join("");
-            el.querySelectorAll("input").forEach((cb) => {
-                cb.addEventListener("change", (e) => {
-                    e.target.checked
-                        ? activeSet.add(e.target.value)
-                        : activeSet.delete(e.target.value);
-                    render();
+        function starsHtml(p: P) {
+            const r = getRating(p);
+            if (!r) return "";
+            const pct = (Math.max(0, Math.min(5, r.value)) / 5) * 100;
+            const shown = r.value.toFixed(1).replace(".0", "");
+            const count = r.fromReviews && r.count > 0
+                ? `<span class="stars-rating__count">(${r.count === 1 ? "1 review" : `${r.count} reviews`})</span>`
+                : "";
+            return `<div class="card-rating"><span class="stars-rating stars-rating--sm">
+                <span class="stars-rating__glyphs" role="img" aria-label="${shown} out of 5">
+                  <span class="stars-rating__bg" aria-hidden="true">★★★★★</span>
+                  <span class="stars-rating__fg" style="width:${pct}%" aria-hidden="true">★★★★★</span>
+                </span>
+                <span class="stars-rating__value">${shown}</span>${count}
+              </span></div>`;
+        }
+
+        function card(p: P) {
+            const out = typeof p.stock === "number" && p.stock === 0;
+            const low = typeof p.stock === "number" && p.stock > 0 && p.stock <= 5;
+            const weight = formatWeight(p, "en");
+            return `
+            <article class="card">
+              <a href="/product/${esc(p.id)}" class="card-link" tabindex="-1" aria-hidden="true">
+                <img src="${esc(p.image)}" alt="${esc(p.name)}" loading="lazy">
+              </a>
+              <div class="p">
+                <div class="muted" style="font-size:.85rem">${esc(p.category)}${p.origin ? " · " + esc(p.origin) : ""}</div>
+                <h3><a href="/product/${esc(p.id)}" class="card-name-link">${esc(p.name)}</a></h3>
+                <div class="muted" style="font-size:.85rem">${esc(p.process || "")}${p.process && p.roast ? " · " : ""}${esc(p.roast || "")}</div>
+                ${starsHtml(p)}
+                <div class="price-row">
+                  <span class="price">${fmt(p.price)}</span>
+                  ${weight ? `<span class="card-weight">${esc(weight)}</span>` : ""}
+                </div>
+                ${out ? `<span class="stock-badge out">Sold out</span>` : low ? `<span class="stock-badge low">Last ${p.stock}</span>` : ""}
+              </div>
+              <div class="card-actions">
+                <div style="display:flex; gap:.5rem; padding: 0 1rem 1rem;">
+                  <button class="btn small" data-add="${esc(p.id)}"${out ? " disabled" : ""}>${out ? "Sold out" : "Add"}</button>
+                  <a class="btn outline small" href="/cart">View cart</a>
+                </div>
+              </div>
+            </article>`;
+        }
+
+        function initShop() {
+            const grid = document.getElementById("shopResults");
+            if (!grid || grid.dataset.jsInit) return;
+            grid.dataset.jsInit = "1";
+
+            const ALL: P[] = JSON.parse(document.getElementById("shopData")?.textContent || "[]");
+            const $ = <T extends Element = HTMLElement>(s: string) => document.querySelector<T>(s);
+            const state = {
+                flags: new Set<string>(),
+                sets: { cat: new Set<string>(), origin: new Set<string>(), process: new Set<string>(), roast: new Set<string>() },
+                min: "", max: "", sort: "relevance",
+            };
+            const field: Record<string, string> = { cat: "category", origin: "origin", process: "process", roast: "roast" };
+
+            const uniq = (k: string) => [...new Set(ALL.map((p) => p[k]).filter(Boolean))].sort() as string[];
+            const fill = (id: string, name: string, values: string[]) => {
+                const el = document.getElementById(id);
+                if (el) el.innerHTML = values.map((v) => `<label><input type="checkbox" name="${name}" value="${esc(v)}"> ${esc(v)}</label>`).join("");
+            };
+            fill("catList", "cat", uniq("category"));
+            fill("originList", "origin", uniq("origin"));
+            fill("processList", "process", uniq("process"));
+            fill("roastList", "roast", uniq("roast"));
+
+            function list() {
+                let out = ALL.filter((p) => {
+                    for (const f of state.flags) if (!p[f]) return false;
+                    for (const [k, set] of Object.entries(state.sets)) if (set.size && !set.has(p[field[k]])) return false;
+                    if (state.min && p.price < Number(state.min)) return false;
+                    if (state.max && p.price > Number(state.max)) return false;
+                    return true;
                 });
+                if (state.sort === "price-asc") out = out.sort((a, b) => a.price - b.price);
+                else if (state.sort === "price-desc") out = out.sort((a, b) => b.price - a.price);
+                else if (state.sort === "rating-desc") out = out.sort((a, b) => ratingValue(b) - ratingValue(a));
+                return out;
+            }
+
+            function render() {
+                const items = list();
+                grid!.innerHTML = items.map(card).join("");
+                const none = document.getElementById("noResults");
+                if (none) none.hidden = items.length > 0;
+                const pills = [...state.flags].map((f) => $(`.chip[data-flag="${f}"]`)?.textContent ?? f);
+                for (const set of Object.values(state.sets)) pills.push(...set);
+                if (state.min) pills.push(`≥ ${fmt(Number(state.min))}`);
+                if (state.max) pills.push(`≤ ${fmt(Number(state.max))}`);
+                const applied = document.getElementById("appliedFilters");
+                if (applied) applied.innerHTML = pills.map((t) => `<span class="pill">${esc(t)}</span>`).join("");
+                // Avisa al motion (src/scripts/shop/catalog.ts) que hay cards nuevas
+                grid!.dispatchEvent(new CustomEvent("shop:render"));
+            }
+
+            // El HTML del servidor ya es la lista completa en orden de relevancia:
+            // solo se repinta cuando cambia un filtro.
+            grid.addEventListener("click", (e) => {
+                const btn = (e.target as HTMLElement).closest<HTMLButtonElement>("button[data-add]");
+                if (!btn || btn.disabled) return;
+                const p = ALL.find((x) => x.id === btn.dataset.add);
+                if (!p) return;
+                (window as any).Cart?.addToCart({ id: p.id, name: p.name, price: p.price, image: p.image, qty: 1 });
+                btn.textContent = "✓ Added";
+                setTimeout(() => (btn.textContent = "Add"), 1500);
             });
-        };
 
-        fill("catList", cats, activeCats);
-        fill("originList", origins, activeOrigins);
-        fill("roastList", roasts, activeRoasts);
-        fill("processList", procs, activeProcess);
-
-        const rangeEl = document.getElementById("priceRange");
-        const priceVal = document.getElementById("priceVal");
-        if (rangeEl) {
-            const allPrices = ALL.map((p) => p.price);
-            const maxP = Math.max(...allPrices);
-            rangeEl.max = maxP;
-            rangeEl.value = maxP;
-            maxPrice = maxP;
-            if (priceVal) priceVal.textContent = fmt(maxP);
-            rangeEl.addEventListener("input", (e) => {
-                maxPrice = Number(e.target.value);
-                if (priceVal) priceVal.textContent = fmt(maxPrice);
+            $("#topChips")?.addEventListener("click", (e) => {
+                const chip = (e.target as HTMLElement).closest<HTMLElement>(".chip");
+                if (!chip) return;
+                const f = chip.dataset.flag!;
+                state.flags.has(f) ? state.flags.delete(f) : state.flags.add(f);
+                chip.classList.toggle("active", state.flags.has(f));
                 render();
             });
-        }
-    }
-
-    function filtered() {
-        return ALL.filter((p) => {
-            if (activeFlags.size > 0 && ![...activeFlags].every((f) => p[f]))
-                return false;
-            if (activeCats.size > 0 && !activeCats.has(p.category))
-                return false;
-            if (activeOrigins.size > 0 && !activeOrigins.has(p.origin))
-                return false;
-            if (activeRoasts.size > 0 && !activeRoasts.has(p.roast))
-                return false;
-            if (activeProcess.size > 0 && !activeProcess.has(p.process))
-                return false;
-            if (p.price > maxPrice) return false;
-            return true;
-        });
-    }
-
-    function sorted(list) {
-        const s = [...list];
-        if (sortKey === "price-asc") return s.sort((a, b) => a.price - b.price);
-        if (sortKey === "price-desc")
-            return s.sort((a, b) => b.price - a.price);
-        if (sortKey === "rating-desc")
-            return s.sort((a, b) => b.rating - a.rating);
-        return s;
-    }
-
-    function cardHtml(p) {
-        const badges = [
-            p.bestseller &&
-                `<span class="badge-chip bestseller">Best seller</span>`,
-            p.new && `<span class="badge-chip novedad">New</span>`,
-            p.deal && `<span class="badge-chip oferta">Sale</span>`,
-            p.fast && `<span class="badge-chip rapido">Fast</span>`,
-        ]
-            .filter(Boolean)
-            .join("");
-        const stars =
-            "★".repeat(Math.round(p.rating)) +
-            "☆".repeat(5 - Math.round(p.rating));
-        return `
-      <article class="product-card" role="listitem" tabindex="0">
-        <a href="/product/${p.id}" class="card-img-link">
-          <div class="card-img-wrap">
-            <img src="${p.image}" alt="${p.name}" loading="lazy" class="card-img" />
-            <div class="card-badges">${badges}</div>
-          </div>
-        </a>
-        <div class="card-body">
-          <span class="card-category">${p.category}</span>
-          <h3 class="card-name">${p.name}</h3>
-          ${p.origin ? `<p class="card-origin">${p.origin}${p.process ? " · " + p.process : ""}</p>` : ""}
-          <div class="card-meta">
-            <span class="rating">${stars} <small>${p.rating}</small></span>
-            ${p.roast ? `<span class="roast-chip">${p.roast}</span>` : ""}
-          </div>
-          <div class="card-footer">
-            <span class="price">${fmt(p.price)}</span>
-            <button class="btn btn-sm add-to-cart"
-              data-id="${p.id}" data-name="${p.name}" data-price="${p.price}" data-image="${p.image}">
-              Add to cart
-            </button>
-          </div>
-        </div>
-      </article>`;
-    }
-
-    function render() {
-        const list = sorted(filtered());
-        const grid = document.getElementById("productGrid");
-        const noRes = document.getElementById("noResults");
-        const count = document.getElementById("resultsCount");
-        if (!grid) return;
-        grid.innerHTML = list.map(cardHtml).join("");
-        if (noRes) noRes.style.display = list.length ? "none" : "";
-        if (count)
-            count.textContent = `${list.length} product${list.length !== 1 ? "s" : ""}`;
-
-        // Add to cart
-        grid.querySelectorAll(".add-to-cart").forEach((btn) => {
-            btn.addEventListener("click", (e) => {
-                e.preventDefault();
-                const b = e.currentTarget;
-                if (window.Cart) {
-                    window.Cart.add({
-                        id: b.dataset.id,
-                        name: b.dataset.name,
-                        price: Number(b.dataset.price),
-                        image: b.dataset.image,
-                        quantity: 1,
-                    });
-                    b.textContent = "✓ Added";
-                    setTimeout(() => {
-                        b.textContent = "Add to cart";
-                    }, 1800);
-                }
+            $<HTMLSelectElement>("#shopSort")?.addEventListener("change", (e) => {
+                state.sort = (e.target as HTMLSelectElement).value;
+                render();
             });
-        });
-    }
-
-    document.addEventListener("DOMContentLoaded", () => {
-        buildFilters();
-        render();
-
-        // Chips
-        document
-            .getElementById("topChips")
-            ?.querySelectorAll(".chip")
-            .forEach((btn) => {
-                btn.addEventListener("click", () => {
-                    const f = btn.dataset.flag;
-                    btn.classList.toggle("active");
-                    activeFlags.has(f)
-                        ? activeFlags.delete(f)
-                        : activeFlags.add(f);
-                    render();
-                });
+            $("#filtersToggle")?.addEventListener("click", () => {
+                const open = $("#shopSidebar")?.classList.toggle("open");
+                $("#filtersToggle")?.setAttribute("aria-expanded", String(!!open));
             });
-
-        // Sort
-        document.getElementById("shopSort")?.addEventListener("change", (e) => {
-            sortKey = e.target.value;
-            render();
-        });
-
-        // Sidebar toggle (mobile)
-        document
-            .getElementById("filtersToggle")
-            ?.addEventListener("click", () => {
-                const s = document.getElementById("shopSidebar");
-                const open = s?.classList.toggle("open");
-                document
-                    .getElementById("filtersToggle")
-                    ?.setAttribute("aria-expanded", open ? "true" : "false");
+            $("#shopSidebar")?.addEventListener("change", (e) => {
+                const t = e.target as HTMLInputElement;
+                if (t.type !== "checkbox") return;
+                const set = state.sets[t.name as keyof typeof state.sets];
+                if (!set) return;
+                t.checked ? set.add(t.value) : set.delete(t.value);
+                render();
             });
-
-        // Clear filters
-        document
-            .getElementById("clearFilters")
-            ?.addEventListener("click", () => {
-                activeFlags.clear();
-                activeCats.clear();
-                activeOrigins.clear();
-                activeRoasts.clear();
-                activeProcess.clear();
-                document
-                    .querySelectorAll("#shopSidebar input[type=checkbox]")
-                    .forEach((cb) => (cb.checked = false));
-                document
-                    .querySelectorAll(".chip")
-                    .forEach((c) => c.classList.remove("active"));
-                const r = document.getElementById("priceRange");
-                if (r) {
-                    maxPrice = Number(r.max);
-                    r.value = r.max;
-                    document.getElementById("priceVal").textContent =
-                        fmt(maxPrice);
-                }
-                sortKey = "relevance";
-                const sort = document.getElementById("shopSort");
+            $("#applyPrice")?.addEventListener("click", () => {
+                state.min = $<HTMLInputElement>("#priceMin")?.value ?? "";
+                state.max = $<HTMLInputElement>("#priceMax")?.value ?? "";
+                render();
+            });
+            $("#clearFilters")?.addEventListener("click", () => {
+                state.flags.clear();
+                Object.values(state.sets).forEach((s) => s.clear());
+                state.min = state.max = "";
+                state.sort = "relevance";
+                document.querySelectorAll<HTMLInputElement>("#shopSidebar input").forEach((i) => (i.type === "checkbox" ? (i.checked = false) : (i.value = "")));
+                document.querySelectorAll(".chip").forEach((c) => c.classList.remove("active"));
+                const sort = $<HTMLSelectElement>("#shopSort");
                 if (sort) sort.value = "relevance";
                 render();
             });
-    });
-</script>
+        }
+
+        initShop();
+        document.addEventListener("astro:page-load", initShop);
+    </script>
+    <script>
+        import "../../scripts/shop/index.ts";
+    </script>
+</Layout>

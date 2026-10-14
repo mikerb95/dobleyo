@@ -217,6 +217,9 @@ La portada ES y EN comparten componentes (`src/components/home/`) y un solo mód
 - **Lógica pura en `src/lib` con tests** (`lot.ts`, `motion/contours.ts`, `qr.ts`). Textos de la portada en `home.*` de los diccionarios, con paridad ES/EN.
 - **Estilos de elementos creados por JS** (odómetro, halo del cursor) en `src/styles/motion.css`, no con scope de Astro.
 - **Video del hero:** `hero-viaje.mp4` (4 tomas de 4 s; la etiqueta asume ese corte). Si se cambia el video, ajustar `SEGMENT` en `src/scripts/home/hero.ts`.
+- **Páginas de compra** (tienda ES/EN, suscripción, regalos) usan `src/scripts/shop/index.ts` con el mismo núcleo y componentes en `src/components/shop/`. Lo que es información o funcionalidad (filtrar al tocar una bolsa, reacomodar el calendario de pedidos, cambiar de kit) vive en el script del componente y funciona sin motion. Las piezas de motion solo animan.
+- **El catálogo avisa con `shop:render`** sobre `#shopResults` cada vez que repinta. Si se cambia el script de la tienda, conservar el evento.
+- **Sin trazabilidad en páginas públicas** mientras `SHOW_TRACEABILITY = false`: nada de QR, códigos de lote ni esa palabra en piezas nuevas.
 
 ### 3.10 Flujo guiado de producción ("Qué sigue") — reglas no negociables
 

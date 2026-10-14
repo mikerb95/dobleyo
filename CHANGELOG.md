@@ -2,6 +2,54 @@
 
 ---
 
+## 2026-10-13: Motion en tienda, suscripción y regalos; /en/shop reparada (Agente: Claude)
+
+### Contexto
+Las tres páginas de compra se veían de plantilla: la tienda abría con una foto de Unsplash y "Shop All" en inglés, la suscripción era un formulario plano y regalos usaba emojis como íconos. `/en/shop` estaba rota: rejilla sin estilos (13 imágenes de 800 px en columna), pintada solo con JS y con un botón que llamaba a `Cart.add`, que no existe. Se aplicó la skill motion-landing con el mismo lenguaje de la portada. Nada de trazabilidad, QR ni lotes (`SHOW_TRACEABILITY = false`).
+
+### Cambios
+- **Tienda** (`tienda.astro`, `en/shop.astro`):
+  - **`components/shop/ShopHero.astro`** (nuevo): mostrador con los cafés como bolsas (color según el tueste) y una etiqueta con origen, proceso, tueste y precio de la BD.
+  - Tocar una bolsa marca la casilla de origen de la barra lateral, así el filtro aparece en las píldoras y se limpia con "Limpiar filtros".
+  - El motion de la tienda (`scripts/shop/counter.ts`, `catalog.ts`):
+    - Las bolsas se inclinan al apuntarlas y la etiqueta se descifra.
+    - En táctil se levantan por turnos.
+    - Las cards entran escalonadas al filtrar (evento `shop:render`) y tienen luz que sigue al cursor.
+- **`/en/shop`** reescrita:
+  - Se pinta en el servidor con `ProductCard` (nuevo prop `lang`: USD, `/product/:id`, textos en inglés) y usa las mismas clases y la misma barra lateral que `/tienda`.
+  - El carrito usa `Cart.addToCart` y la página monta con `astro:page-load`.
+  - Muestra las reseñas reales.
+  - Título sin raya larga.
+- **Suscripción** (`suscripcion.astro`):
+  - **`components/shop/DeliveryCalendar.astro`** (nuevo): regla de 90 días con los pedidos y sus fechas reales desde hoy (el cobro de hoy y luego cada 15 o 30 días, igual que `server/routes/subscriptions.js`). Al cambiar la frecuencia, los pedidos se reacomodan.
+  - El motion (`scripts/shop/subscription.ts`):
+    - La regla se traza y los pedidos laten al cambiar la frecuencia.
+    - El total rueda como odómetro.
+    - El café elegido da un salto.
+  - Los campos y el pago no se animan.
+- **Regalos** (`regalos.astro`):
+  - **`components/shop/GiftBox.astro`** (nuevo): caja que se abre y deja ver lo que trae cada kit, con un selector de kit. El contenido de cada kit está resumido a mano desde su descripción en `CONTENTS`.
+  - Los beneficios usan `Icon` en vez de emojis, y los íconos se trazan al entrar en pantalla.
+  - Regla de envío gratis: cada kit cae en su punto respecto a $120.000 y se indica cuáles ya lo incluyen.
+- **`lib/subscription.ts`** (nuevo, con tests): `orderDays()` y `addDays()`.
+- **`scripts/motion/core.ts`**:
+  - `cursorLight` lee las cards en cada movimiento, porque hay rejillas que se repintan.
+  - Nuevo `liveOdometer()`, que observa una cifra que cambia otro script y la muestra rodando. El original queda para lectores de pantalla (`.odo-source` en `motion.css`).
+- **CSS**:
+  - `.shop-content .grid` pasa a `auto-fill`: con un solo resultado, la card ya no se estira a toda la fila.
+  - En móvil, `.shop-topbar` ya no hereda el `top` del modo sticky (dejaba un hueco de 118 px).
+  - En la suscripción, los fieldsets y la rejilla de campos ya no desbordan la pantalla en móvil.
+  - Se eliminó el CSS de `.promo-banner`, que quedó sin uso.
+- **i18n**: claves `shop.hero.*` en ES y EN.
+
+### Verificación
+- Capturas en 1440x900 y 390x844 de las cuatro páginas, con secuencias de entrada, hover, filtro por bolsa, cambio de frecuencia, odómetro y cambio de kit.
+- Sin scroll horizontal. Con `prefers-reduced-motion` todo queda visible y quieto.
+- Tests (245), type-check de los archivos tocados y build en verde.
+- JS nuevo de las piezas: 2,2 KB comprimidos. GSAP y sus plugins van en el chunk compartido con la portada (55 KB comprimidos).
+
+---
+
 ## 2026-10-13: Panel admin con aspecto de ERP: Resumen, Ventas y Auditoría (Agente: Claude)
 
 ### Contexto

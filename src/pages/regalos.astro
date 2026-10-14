@@ -1,6 +1,8 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import ProductCard from "../components/ProductCard.astro";
+import GiftBox from "../components/shop/GiftBox.astro";
+import Icon from "../components/Icon.astro";
 import { getCanonicalUrl } from "../i18n/index.ts";
 
 let kits: any[] = [];
@@ -23,22 +25,35 @@ try {
     notes: null,
   }));
 } catch (_) { /* BD no disponible */ }
+
+// Envío gratis desde $120.000 (mismo umbral que server/routes/orders.js y CartDrawer)
+const FREE_SHIP = 120000;
+const shipMax = Math.max(FREE_SHIP, ...kits.map((k: any) => Number(k.price))) * 1.08;
+const shipPct = (n: number) => (n / shipMax) * 100;
+const freeKits = kits.filter((k: any) => Number(k.price) >= FREE_SHIP).map((k: any) => k.name);
+const freeKitsText =
+  freeKits.length === 0 ? "" :
+  freeKits.length === 1 ? `${freeKits[0]} ya incluye envío gratis.` :
+  `${freeKits.slice(0, -1).join(", ")} y ${freeKits[freeKits.length - 1]} ya incluyen envío gratis.`;
 ---
 
 <Layout
-  title="Regalos — DobleYo Café"
+  title="Regalos · DobleYo Café"
   description="Kits y sets de regalo para amantes del café. El detalle perfecto para cualquier ocasión."
   canonical={getCanonicalUrl('/regalos', 'es')}
 >
   <section class="regalos-page">
     <header class="regalos-header">
-      <nav class="breadcrumb" aria-label="Ruta de navegación">
-        <a href="/">Inicio</a>
-        <span aria-hidden="true">›</span>
-        <span>Regalos</span>
-      </nav>
-      <h1 class="regalos-title">El regalo perfecto para amantes del café</h1>
-      <p class="regalos-subtitle">Kits curados con los mejores cafés de especialidad colombiano. Empaque especial para regalo incluido.</p>
+      <div class="regalos-header__copy">
+        <nav class="breadcrumb" aria-label="Ruta de navegación">
+          <a href="/">Inicio</a>
+          <span aria-hidden="true">›</span>
+          <span>Regalos</span>
+        </nav>
+        <h1 class="regalos-title" data-split>El regalo perfecto para amantes del café</h1>
+        <p class="regalos-subtitle">Kits curados con los mejores cafés de especialidad colombiano. Empaque especial para regalo incluido.</p>
+      </div>
+      <GiftBox kits={kits.map((k: any) => ({ id: k.id, name: k.name, price: Number(k.price) }))} />
     </header>
 
     {kits.length > 0 ? (
@@ -49,24 +64,40 @@ try {
       </div>
     ) : (
       <div class="regalos-empty">
-        <p>Próximamente — estamos preparando los mejores kits de regalo.</p>
+        <p>Próximamente: estamos preparando los mejores kits de regalo.</p>
         <a href="/tienda" class="btn-back">Ver todos los productos</a>
       </div>
     )}
 
     <div class="regalos-info">
       <div class="info-card">
-        <span class="info-icon">📦</span>
+        <span class="info-icon"><Icon name="package" size={30} /></span>
         <h3>Empaque especial</h3>
         <p>Todos los kits vienen en caja de regalo lista para entregar.</p>
       </div>
       <div class="info-card">
-        <span class="info-icon">🚚</span>
+        <span class="info-icon"><Icon name="truck" size={30} /></span>
         <h3>Envío a todo el país</h3>
         <p>Gratis en pedidos mayores a $120.000 COP.</p>
+        {kits.length > 0 && (
+          <div class="ship" data-ship aria-hidden="true">
+            <div class="ship__track">
+              <span class="ship__free" style={`left:${shipPct(FREE_SHIP)}%`}></span>
+              <span class="ship__mark" style={`left:${shipPct(FREE_SHIP)}%`}>$120.000</span>
+              {kits.map((k: any) => (
+                <span
+                  class:list={["ship__kit", { "is-free": Number(k.price) >= FREE_SHIP }]}
+                  style={`left:${shipPct(Number(k.price))}%`}
+                  title={k.name}
+                ></span>
+              ))}
+            </div>
+          </div>
+        )}
+        {freeKitsText && <p class="ship__note">{freeKitsText}</p>}
       </div>
       <div class="info-card">
-        <span class="info-icon">📍</span>
+        <span class="info-icon"><Icon name="map-pin" size={30} /></span>
         <h3>De origen único</h3>
         <p>Cada café viene de una sola finca colombiana.</p>
       </div>
@@ -92,7 +123,16 @@ try {
     .breadcrumb a { color: var(--accent); text-decoration: none; }
     .breadcrumb a:hover { text-decoration: underline; }
 
-    .regalos-header { margin-bottom: 2.5rem; }
+    .regalos-header {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 2.5rem;
+      align-items: center;
+      margin-bottom: 3rem;
+    }
+    @media (min-width: 1024px) {
+      .regalos-header { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+    }
     .regalos-title { font-size: clamp(1.8rem, 4vw, 2.8rem); margin: 0 0 .75rem; }
     .regalos-subtitle { color: var(--muted-fg, #888); margin: 0; max-width: 600px; }
 
@@ -127,7 +167,17 @@ try {
       padding-top: 2.5rem;
     }
     .info-card { text-align: center; padding: 1.5rem; }
-    .info-icon { font-size: 2rem; display: block; margin-bottom: .75rem; }
+    .info-icon { display: inline-grid; place-items: center; width: 56px; height: 56px; border-radius: 50%; background: var(--cream); color: var(--caramel); margin-bottom: .75rem; }
+
+    /* Regla de envío: dónde cae cada kit respecto al umbral de envío gratis */
+    .ship { margin: 1.1rem auto 0; max-width: 260px; padding: 0 .5rem; }
+    .ship__track { position: relative; height: 6px; border-radius: 99px; background: var(--border); }
+    .ship__free { position: absolute; top: 0; bottom: 0; right: 0; border-radius: 0 99px 99px 0; background: var(--leaf-bg); }
+    .ship__mark { position: absolute; top: 12px; transform: translateX(-50%); font-size: .7rem; font-weight: 700; color: var(--leaf); white-space: nowrap; }
+    .ship__mark::before { content: ""; position: absolute; left: 50%; top: -15px; width: 2px; height: 12px; background: var(--leaf); }
+    .ship__kit { position: absolute; top: 50%; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; background: var(--caramel); box-shadow: 0 0 0 3px var(--bg); }
+    .ship__kit.is-free { background: var(--leaf); }
+    .ship__note { margin-top: 1.9rem !important; font-size: .82rem; color: var(--leaf) !important; font-weight: 600; }
     .info-card h3 { margin: 0 0 .5rem; font-size: 1rem; }
     .info-card p { margin: 0; font-size: .9rem; color: var(--muted-fg, #888); }
 
@@ -135,4 +185,7 @@ try {
       .regalos-grid { grid-template-columns: 1fr; }
     }
   </style>
+  <script>
+    import "../scripts/shop/index.ts";
+  </script>
 </Layout>

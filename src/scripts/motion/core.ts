@@ -262,3 +262,67 @@ export function odometer(el: HTMLElement, delay = 0): gsap.core.Timeline | null 
   }
   return tl;
 }
+
+/**
+ * Odómetro en vivo para una cifra que cambia (un total que se recalcula). El
+ * elemento original sigue siendo la fuente de verdad: otro script le cambia el
+ * texto y aquí se observa ese cambio. Queda oculto a la vista pero no a los
+ * lectores de pantalla; lo que se ve es una copia con columnas que ruedan del
+ * dígito anterior al nuevo.
+ */
+export function liveOdometer(source: HTMLElement, addCleanup: (fn: Cleanup) => void): void {
+  const view = document.createElement('span');
+  view.className = 'odo odo-live';
+  view.setAttribute('aria-hidden', 'true');
+  source.after(view);
+  source.classList.add('odo-source');
+  let shape = '';
+
+  const render = () => {
+    const text = (source.textContent ?? '').trim();
+    // Misma forma (dígitos y separadores en las mismas posiciones): se ruedan
+    // las columnas existentes. Si cambia, se rearma desde cero.
+    const nextShape = text.replace(/\d/g, '0');
+    if (nextShape !== shape) {
+      shape = nextShape;
+      view.textContent = '';
+      for (const ch of text) {
+        if (!/\d/.test(ch)) {
+          const s = document.createElement('span');
+          s.className = 'odo__sep';
+          s.textContent = ch;
+          view.appendChild(s);
+          continue;
+        }
+        const col = document.createElement('span');
+        col.className = 'odo__col';
+        const strip = document.createElement('span');
+        strip.className = 'odo__strip';
+        strip.textContent = '0123456789';
+        col.appendChild(strip);
+        view.appendChild(col);
+      }
+    }
+    const strips = Array.from(view.querySelectorAll<HTMLElement>('.odo__strip'));
+    const digits = text.replace(/\D/g, '');
+    strips.forEach((strip, i) => {
+      gsap.to(strip, {
+        yPercent: -(Number(digits[i]) / 10) * 100,
+        duration: 1.1,
+        ease: 'expo.out',
+        // De derecha a izquierda, como un contador mecánico
+        delay: (strips.length - 1 - i) * 0.04,
+        overwrite: true,
+      });
+    });
+  };
+
+  render();
+  const mo = new MutationObserver(render);
+  mo.observe(source, { childList: true, characterData: true, subtree: true });
+  addCleanup(() => {
+    mo.disconnect();
+    view.remove();
+    source.classList.remove('odo-source');
+  });
+}

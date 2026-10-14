@@ -1,0 +1,189 @@
+---
+/**
+ * Calendario de la suscripción: los pedidos de los próximos 90 días sobre una
+ * regla, con fechas reales calculadas desde hoy. Al cambiar la frecuencia
+ * (botones #subFreq del formulario) los pedidos se reacomodan.
+ *
+ * Es información, no decoración: el reacomodo funciona sin motion (este
+ * script) y la transición la da el CSS, que el bloque global de
+ * prefers-reduced-motion apaga. La entrada con GSAP vive en
+ * src/scripts/shop/subscription.ts.
+ */
+import { orderDays, addDays } from "../../lib/subscription.ts";
+
+const HORIZON = 90;
+const SLOTS = orderDays(15, HORIZON).length; // el máximo de pedidos posibles
+const today = new Date();
+const days = orderDays(30, HORIZON);
+const label = (d: number) =>
+  d === 0 ? "Hoy" : addDays(today, d).toLocaleDateString("es-CO", { day: "numeric", month: "short" }).replace(".", "");
+---
+
+<div class="cal" data-sub-calendar data-horizon={HORIZON}>
+  <div class="cal__head">
+    <span class="cal__title">Sus pedidos en los próximos 90 días</span>
+    <strong class="cal__count" data-cal-count>{days.length} pedidos</strong>
+  </div>
+
+  <div class="cal__ruler" aria-hidden="true">
+    <span class="cal__line"></span>
+    {orderDays(15, HORIZON).map((d) => (
+      <span class="cal__tick" style={`left:${(d / HORIZON) * 100}%`}></span>
+    ))}
+    {Array.from({ length: SLOTS }, (_, i) => {
+      const d = days[i];
+      return (
+        <span
+          class:list={["cal__dot", { "is-up": i % 2 === 0 }]}
+          data-slot={i}
+          hidden={d == null}
+          style={`left:${((d ?? HORIZON) / HORIZON) * 100}%`}
+        >
+          <span class="cal__pin"></span>
+          <span class="cal__label">
+            <span class="cal__n">Pedido {i + 1}</span>
+            <span class="cal__date" data-cal-date>{d == null ? "" : label(d)}</span>
+          </span>
+        </span>
+      );
+    })}
+  </div>
+
+  <ol class="sr-only" data-cal-list>
+    {days.map((d, i) => <li>Pedido {i + 1}: {label(d)}</li>)}
+  </ol>
+
+  <p class="cal__note">Cada fecha es un cobro y un pedido nuevo. Pause o cancele cuando quiera.</p>
+</div>
+
+<script>
+  import { orderDays, addDays } from "../../lib/subscription.ts";
+
+  function initCalendar() {
+    const cal = document.querySelector<HTMLElement>("[data-sub-calendar]");
+    const freqBox = document.getElementById("subFreq");
+    if (!cal || !freqBox || cal.dataset.jsInit) return;
+    cal.dataset.jsInit = "1";
+    const horizon = Number(cal.dataset.horizon) || 90;
+    const dots = Array.from(cal.querySelectorAll<HTMLElement>(".cal__dot"));
+    const count = cal.querySelector<HTMLElement>("[data-cal-count]");
+    const list = cal.querySelector<HTMLElement>("[data-cal-list]");
+
+    const label = (d: number) =>
+      d === 0 ? "Hoy" : addDays(new Date(), d).toLocaleDateString("es-CO", { day: "numeric", month: "short" }).replace(".", "");
+
+    const layout = (freq: number) => {
+      const days = orderDays(freq, horizon);
+      dots.forEach((dot, i) => {
+        const d = days[i];
+        // Los que sobran se quedan al final de la regla y se desvanecen
+        dot.hidden = false;
+        dot.classList.toggle("is-off", d == null);
+        dot.style.left = `${((d ?? horizon) / horizon) * 100}%`;
+        if (d != null) dot.querySelector("[data-cal-date]")!.textContent = label(d);
+      });
+      if (count) count.textContent = `${days.length} pedidos`;
+      if (list) list.innerHTML = days.map((d, i) => `<li>Pedido ${i + 1}: ${label(d)}</li>`).join("");
+      cal.dataset.freq = String(freq);
+    };
+
+    freqBox.addEventListener("click", (e) => {
+      const btn = (e.target as HTMLElement).closest<HTMLElement>("[data-freq]");
+      if (btn) layout(Number(btn.dataset.freq));
+    });
+    // Fechas con el reloj del visitante (el servidor puede estar en otro huso)
+    const active = freqBox.querySelector<HTMLElement>(".active[data-freq]");
+    layout(Number(active?.dataset.freq) || 30);
+  }
+  initCalendar();
+  document.addEventListener("astro:page-load", initCalendar);
+</script>
+
+<style>
+  .cal {
+    margin-top: var(--space-5);
+    padding-top: var(--space-4);
+    border-top: 1px dashed var(--border);
+  }
+  .cal__head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+  }
+  .cal__title { font-size: var(--text-xs); font-weight: 600; color: var(--ink-muted); }
+  .cal__count { font-family: var(--font-display); color: var(--caramel); font-size: var(--text-base); }
+
+  /* La regla: etiquetas alternadas arriba y abajo para que no choquen cada 15 días */
+  .cal__ruler {
+    position: relative;
+    height: 112px;
+    margin: var(--space-2) 1.75rem 0;
+  }
+  .cal__line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 2px;
+    background: var(--border);
+    transform-origin: 0 50%;
+  }
+  .cal__tick {
+    position: absolute;
+    top: calc(50% - 4px);
+    width: 1px;
+    height: 10px;
+    background: var(--border);
+  }
+  .cal__dot {
+    position: absolute;
+    top: 50%;
+    width: 0;
+    height: 0;
+    transition: left .7s var(--ease), opacity .35s var(--ease);
+  }
+  .cal__dot.is-off { opacity: 0; }
+  .cal__pin {
+    position: absolute;
+    left: -8px;
+    top: -8px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--caramel);
+    box-shadow: 0 0 0 4px var(--card);
+  }
+  .cal__dot[data-slot="0"] .cal__pin { background: var(--espresso); }
+  .cal__label {
+    position: absolute;
+    left: 0;
+    top: 14px;
+    transform: translateX(-50%);
+    display: grid;
+    justify-items: center;
+    white-space: nowrap;
+    line-height: 1.2;
+  }
+  .cal__dot.is-up .cal__label { top: auto; bottom: 14px; }
+  .cal__n { font-size: .68rem; color: var(--ink-muted); }
+  .cal__date { font-size: var(--text-xs); font-weight: 700; color: var(--espresso); font-variant-numeric: tabular-nums; }
+
+  @media (max-width: 480px) {
+    .cal__ruler { margin-inline: 1.4rem; }
+    .cal__n { font-size: .62rem; }
+    .cal__date { font-size: .7rem; }
+  }
+
+  .cal__note { margin: var(--space-2) 0 0; font-size: var(--text-xs); color: var(--ink-muted); }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+</style>

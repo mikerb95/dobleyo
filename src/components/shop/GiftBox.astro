@@ -1,0 +1,235 @@
+---
+/**
+ * Encabezado de regalos: una caja que se abre y deja ver lo que trae cada kit.
+ * Los botones de abajo cambian de kit: la caja se cierra y se vuelve a abrir
+ * con el contenido del nuevo.
+ *
+ * El contenido de cada kit sale de su descripción en la BD, resumido a mano
+ * (CONTENTS). Un kit nuevo sin entrada aquí muestra solo "Caja de regalo", que
+ * vale para todos según la promesa de la página.
+ *
+ * Sin JS o con movimiento reducido: la caja abierta con el primer kit, y los
+ * botones cambian el contenido sin animación (script de este componente). El
+ * motion vive en src/scripts/shop/gifts.ts.
+ */
+
+export interface GiftKit {
+  id: string;
+  name: string;
+  price: number;
+}
+
+interface Props {
+  kits: GiftKit[];
+}
+
+const { kits } = Astro.props;
+
+const CONTENTS: Record<string, string[]> = {
+  "kit-iniciacion-barista": ["Café de origen único", "Guía de preparación", "Caja de regalo"],
+  "kit-regalo-especial": ["Dos cafés de regiones distintas", "Presentación especial para regalo"],
+  "kit-trazabilidad-completa": ["Café de especialidad", "Caja de regalo"],
+};
+const contentsOf = (id: string) => CONTENTS[id] ?? ["Caja de regalo"];
+const price = (n: number) => `$${Number(n).toLocaleString("es-CO")}`;
+---
+
+{kits.length > 0 && (
+  <div class="gift" data-gift>
+    <div class="gift__stage" aria-hidden="true">
+      <div class="gift__box">
+        <div class="gift__items">
+          {kits.map((k, i) => (
+            <div class="gift__set" data-kit-set={k.id} hidden={i !== 0}>
+              {contentsOf(k.id).map((item) => (
+                <span class="gift__item">{item}</span>
+              ))}
+            </div>
+          ))}
+        </div>
+        <div class="gift__lid">
+          <svg class="gift__bow" viewBox="0 0 80 34">
+            <path d="M40 30 C 24 4, 2 4, 6 22 C 8 30, 26 30, 40 30 Z" />
+            <path d="M40 30 C 56 4, 78 4, 74 22 C 72 30, 54 30, 40 30 Z" />
+            <circle cx="40" cy="29" r="5" />
+          </svg>
+        </div>
+        <div class="gift__base"></div>
+      </div>
+    </div>
+
+    <div class="gift__picker" role="group" aria-label="Kits de regalo">
+      {kits.map((k, i) => (
+        <button type="button" class="gift__pick" data-kit={k.id} aria-pressed={i === 0 ? "true" : "false"}>
+          <span class="gift__pick-name">{k.name}</span>
+          <span class="gift__pick-price">{price(k.price)}</span>
+        </button>
+      ))}
+    </div>
+
+    <ul class="gift__list" aria-live="polite">
+      {contentsOf(kits[0].id).map((item) => <li>{item}</li>)}
+    </ul>
+  </div>
+)}
+
+<script>
+  // Cambio de kit sin motion: muestra su contenido y lo anuncia en la lista
+  // accesible. La animación de la caja la pone src/scripts/shop/gifts.ts.
+  function initGift() {
+    const root = document.querySelector<HTMLElement>("[data-gift]");
+    if (!root || root.dataset.jsInit) return;
+    root.dataset.jsInit = "1";
+    const list = root.querySelector<HTMLElement>(".gift__list");
+    root.querySelector(".gift__picker")?.addEventListener("click", (e) => {
+      const btn = (e.target as HTMLElement).closest<HTMLButtonElement>("[data-kit]");
+      if (!btn || btn.getAttribute("aria-pressed") === "true") return;
+      root.querySelectorAll<HTMLButtonElement>("[data-kit]").forEach((b) => b.setAttribute("aria-pressed", String(b === btn)));
+      let items: string[] = [];
+      root.querySelectorAll<HTMLElement>("[data-kit-set]").forEach((set) => {
+        const on = set.dataset.kitSet === btn.dataset.kit;
+        set.hidden = !on;
+        if (on) items = Array.from(set.children).map((c) => c.textContent ?? "");
+      });
+      if (list) list.innerHTML = items.map((t) => `<li>${t}</li>`).join("");
+      root.dispatchEvent(new CustomEvent("gift:switch"));
+    });
+  }
+  initGift();
+  document.addEventListener("astro:page-load", initGift);
+</script>
+
+<style>
+  .gift {
+    display: grid;
+    justify-items: center;
+    gap: var(--space-5);
+  }
+
+  /* ── Caja ─────────────────────────────────────────────────────────────── */
+  .gift__stage {
+    width: min(100%, 340px);
+    padding-top: 200px; /* aire para el contenido que sale y la tapa parada al lado */
+    perspective: 900px;
+  }
+  .gift__box {
+    position: relative;
+    height: 170px;
+  }
+  /* En celular la caja es más angosta: la tapa abierta necesita espacio al lado */
+  @media (max-width: 480px) {
+    .gift__stage { width: 230px; padding-top: 150px; }
+    .gift__box { height: 140px; }
+    /* Más vertical: inclinada como en escritorio se saldría de la pantalla */
+    .gift__lid { transform: translate(6px, 140px) rotate(91deg); }
+  }
+  .gift__base {
+    position: absolute;
+    inset: 0;
+    border-radius: 6px;
+    background:
+      linear-gradient(90deg, transparent calc(50% - 12px), var(--cream) calc(50% - 12px) calc(50% + 12px), transparent calc(50% + 12px)),
+      linear-gradient(180deg, rgba(var(--espresso-rgb), .18), transparent 30%),
+      var(--caramel-deep);
+    box-shadow: 0 22px 30px -18px rgba(var(--espresso-rgb), .45);
+    z-index: 2;
+  }
+  .gift__lid {
+    position: absolute;
+    left: -12px;
+    right: -12px;
+    top: -34px;
+    height: 38px;
+    border-radius: 6px;
+    background:
+      linear-gradient(90deg, transparent calc(50% - 12px), var(--cream) calc(50% - 12px) calc(50% + 12px), transparent calc(50% + 12px)),
+      var(--caramel);
+    /* Bisagra en la esquina trasera derecha: abierta queda parada a un lado */
+    transform-origin: 100% 100%;
+    /* Estado final (servidor): abierta y parada en el piso junto a la caja
+       (bajada el alto de la caja). Debe coincidir con open() en gifts.ts */
+    transform: translate(6px, 170px) rotate(96deg);
+    z-index: 3;
+  }
+  .gift__bow {
+    position: absolute;
+    left: 50%;
+    bottom: 100%;
+    width: 80px;
+    margin-left: -40px;
+    margin-bottom: -6px;
+    fill: var(--cream);
+    stroke: rgba(var(--espresso-rgb), .2);
+    stroke-width: 1;
+  }
+
+  /* El contenido asoma por el borde de la caja. La ventana recorta justo en el
+     borde: lo que baja "entra" en la caja en vez de salir por debajo. */
+  .gift__items {
+    position: absolute;
+    left: 6%;
+    right: 6%;
+    bottom: calc(100% - 6px);
+    height: 190px;
+    overflow: hidden;
+    z-index: 1;
+    display: grid;
+    align-items: end;
+  }
+  .gift__set {
+    grid-area: 1 / 1;
+    display: flex;
+    flex-direction: column-reverse;
+    align-items: center;
+    gap: 8px;
+  }
+  .gift__set[hidden] { display: none; }
+  .gift__item {
+    background: var(--card);
+    color: var(--espresso);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: .45rem .8rem;
+    font-size: var(--text-sm);
+    font-weight: 600;
+    box-shadow: 0 6px 14px -8px rgba(var(--espresso-rgb), .35);
+    text-align: center;
+  }
+  .gift__item:nth-child(2) { rotate: -3deg; }
+  .gift__item:nth-child(3) { rotate: 2.5deg; }
+
+  /* ── Selector de kit ──────────────────────────────────────────────────── */
+  .gift__picker {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-2);
+  }
+  .gift__pick {
+    display: grid;
+    gap: 2px;
+    padding: .55rem .9rem;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--card);
+    font-family: var(--font-body);
+    text-align: left;
+    cursor: pointer;
+    min-height: 44px;
+    transition: border-color var(--dur) var(--ease), background var(--dur) var(--ease);
+  }
+  .gift__pick:hover { border-color: var(--caramel); }
+  .gift__pick[aria-pressed="true"] { border-color: var(--caramel); background: var(--cream); }
+  .gift__pick:focus-visible { outline: 2px solid var(--caramel); outline-offset: 2px; }
+  .gift__pick-name { font-size: var(--text-sm); font-weight: 700; color: var(--espresso); }
+  .gift__pick-price { font-size: var(--text-xs); color: var(--caramel-deep); font-weight: 600; }
+
+  .gift__list {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+</style>
