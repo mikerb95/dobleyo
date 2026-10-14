@@ -158,8 +158,8 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
 
     .stat-error {
       background: #ffeaea;
-      border: 1px solid var(--c-error-border, #f5bcbc);
-      color: var(--c-error, #aa0000);
+      border: 1px solid var(--c-error-border);
+      color: var(--c-error);
       padding: 0.875rem 1.25rem;
       border-radius: 6px;
       margin-bottom: 1.5rem;
@@ -192,10 +192,10 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
       font-weight: 700;
       letter-spacing: 0.07em;
       text-transform: uppercase;
-      color: var(--text-2, #6a6d70);
+      color: var(--text-2);
       margin: 0 0 0.75rem;
     }
-    .stat-empty { color: var(--text-3, #a9b0b8); font-size: 0.88rem; text-align: center; padding: 1.5rem 0; }
+    .stat-empty { color: var(--text-3); font-size: 0.88rem; text-align: center; padding: 1.5rem 0; }
 
     .bar-chart {
       height: 180px;
@@ -216,12 +216,12 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
     }
     .bar-count { font-size: 0.7rem; font-weight: 700; color: #7a6652; }
     .bar-fill { width: 100%; border-radius: 3px 3px 0 0; }
-    .bar-label { font-size: 0.7rem; color: var(--text-2, #6a6d70); }
+    .bar-label { font-size: 0.7rem; color: var(--text-2); }
 
     .progress-row { margin-bottom: 0.75rem; }
     .progress-row__header { display: flex; justify-content: space-between; margin-bottom: 0.3rem; font-size: 0.84rem; }
-    .progress-row__label { color: var(--text-1, #32363a); }
-    .progress-row__value { color: var(--text-2, #6a6d70); font-weight: 600; }
+    .progress-row__label { color: var(--text-1); }
+    .progress-row__value { color: var(--text-2); font-weight: 600; }
     .progress-bar { background: var(--border, rgba(0,0,0,.09)); border-radius: 9999px; height: 6px; overflow: hidden; }
     .progress-fill { height: 100%; border-radius: 9999px; }
 
@@ -249,7 +249,7 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
     }
     .section-divider h2 { font-size: 1.25rem; font-weight: 700; color: #251a14; margin: 0; }
     .section-divider p  { margin: .2rem 0 0; color: #7a6652; font-size: .85rem; }
-    .fc-meta { font-size: .78rem; color: var(--text-3, #a9b0b8); }
+    .fc-meta { font-size: .78rem; color: var(--text-3); }
 
     .btn-recalc {
       background: #c8a96e;
@@ -276,7 +276,7 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
     }
     .badge--warn  { background: #fbe7d2; color: #8a5a00; }
     .badge--ok    { background: #dff0e4; color: #2d6a4f; }
-    .badge--muted { background: var(--border, rgba(0,0,0,.08)); color: var(--text-2, #6a6d70); }
+    .badge--muted { background: var(--border, rgba(0,0,0,.08)); color: var(--text-2); }
 
     .fc-note {
       background: var(--hover);
@@ -408,7 +408,7 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
     {harvests.length > 0 && (
       <div class="table-wrap" style="background:#fff; border-radius:6px; border:1px solid var(--border,rgba(0,0,0,.09)); box-shadow:var(--card-shadow); overflow-x:auto;">
         <div style="padding:1rem 1.25rem; border-bottom:1px solid var(--border,rgba(0,0,0,.09));">
-          <span style="font-size:0.85rem; font-weight:700; letter-spacing:0.07em; text-transform:uppercase; color:var(--text-2,#6a6d70);">Últimas Cosechas</span>
+          <span style="font-size:0.85rem; font-weight:700; letter-spacing:0.07em; text-transform:uppercase; color:var(--text-2);">Últimas Cosechas</span>
         </div>
         <table class="erp-table">
           <thead>

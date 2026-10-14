@@ -242,19 +242,19 @@ flowchart LR
 
   /* Pestañas (mismo patrón que /admin/finanzas) */
   .adm-tabs {
-    display: flex; gap: 0.35rem; border-bottom: 1px solid var(--rule, #e7e2da);
+    display: flex; gap: 0.35rem; border-bottom: 1px solid var(--rule);
     margin-bottom: 20px; overflow-x: auto; scrollbar-width: none;
   }
   .adm-tabs::-webkit-scrollbar { display: none; }
   .adm-tab {
     padding: 0.7rem 1.15rem; background: none; border: none; cursor: pointer;
-    font-size: 0.875rem; font-weight: 500; color: var(--muted, #7a6652);
+    font-size: 0.875rem; font-weight: 500; color: var(--muted);
     white-space: nowrap; border-bottom: 2px solid transparent; margin-bottom: -1px;
     border-radius: 8px 8px 0 0; transition: color .15s, background .15s, border-color .15s;
   }
-  .adm-tab:hover { color: var(--color-primary, #3a2618); background: var(--hover, #f7f3ed); }
+  .adm-tab:hover { color: var(--color-primary); background: var(--hover); }
   .adm-tab--active {
-    color: var(--color-primary, #3a2618); border-bottom-color: var(--color-accent, #c9893d);
+    color: var(--color-primary); border-bottom-color: var(--color-accent);
     font-weight: 600;
   }
   .adm-panel--hidden { display: none; }
