@@ -64,7 +64,11 @@ const greeting = (name) => (firstNameOf(name) ? `Hola ${esc(firstNameOf(name))},
 /** Versión de texto plano a partir del HTML (la parte text/plain del correo). */
 function htmlToText(html) {
   return html
+    .replace(/<head[\s\S]*?<\/head>/gi, '')
+    .replace(/<div data-preheader[\s\S]*?<\/div>/gi, '')
     .replace(/<style[\s\S]*?<\/style>/gi, '')
+    // Cada fila de tabla en una sola línea ("Pedido  DY-123").
+    .replace(/<tr[\s\S]*?<\/tr>/gi, (row) => row.replace(/\s*\n\s*/g, ' '))
     .replace(/<a [^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/gi, (_m, href, label) => {
       const text = label.replace(/<[^>]+>/g, '').trim();
       return text && text !== href ? `${text} (${href})` : href;
@@ -79,7 +83,9 @@ function htmlToText(html) {
     .replace(/&gt;/g, '>')
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
-    .replace(/[ \t]+\n/g, '\n')
+    .replace(/&#(\d+);/g, (_m, code) => String.fromCharCode(Number(code)))
+    .replace(/[\u034f\u00a0]/g, ' ')
+    .replace(/^[ \t]+|[ \t]+$/gm, '')
     .replace(/\n{3,}/g, '\n\n')
     .trim();
 }
@@ -145,7 +151,7 @@ function layout({ preheader = '', heading, body, footer = '' }) {
   <title>${esc(heading.replace(/<[^>]+>/g, ''))}</title>
 </head>
 <body style="margin:0;padding:0;background:${C.cream};">
-  <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">${esc(preheader)}&nbsp;&#847;&nbsp;&#847;&nbsp;&#847;&nbsp;&#847;</div>
+  <div data-preheader style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">${esc(preheader)}&nbsp;&#847;&nbsp;&#847;&nbsp;&#847;&nbsp;&#847;</div>
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${C.cream};">
     <tr><td align="center" style="padding:32px 16px;">
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;">
@@ -407,7 +413,7 @@ export const sendOrderConfirmationEmail = async (email, customerName, orderData)
         ${p('Su pedido quedó confirmado. Lo estamos preparando y le escribiremos de nuevo con el número de guía apenas salga.')}
         ${infoBox([
           ['Pedido', esc(orderData.orderId)],
-          ['Fecha', esc(new Date(orderData.date || Date.now()).toLocaleDateString('es-CO', { timeZone: 'America/Bogota', dateStyle: 'long' }))],
+          ['Fecha', esc(new Date(/^\d{4}-\d{2}-\d{2}$/.test(orderData.date || '') ? `${orderData.date}T12:00:00` : (orderData.date || Date.now())).toLocaleDateString('es-CO', { timeZone: 'America/Bogota', dateStyle: 'long' }))],
           ['Pago', isCod ? 'Contraentrega' : 'Aprobado'],
           ['Envío a', esc(orderData.shippingAddress)],
         ])}
