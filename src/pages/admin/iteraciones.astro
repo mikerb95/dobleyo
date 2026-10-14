@@ -908,13 +908,13 @@ const iterData = { PARES, COLUMNAS, ITERACIONES, COMMITS_POR_MES, REPO };
     const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': 'Gráfico de barras' });
     for (let i = 0; i <= 4; i++) {
       const v = (maxY / 4) * i, yy = y(v);
-      svg.appendChild(el('line', { x1: pad.l, y1: yy, x2: W - pad.r, y2: yy, stroke: '#e5e1da', 'stroke-width': '1' }));
-      svg.appendChild(el('text', { x: pad.l - 8, y: yy + 4, 'text-anchor': 'end', 'font-size': '10', fill: '#a09080' }, String(Math.round(v))));
+      svg.appendChild(el('line', { x1: pad.l, y1: yy, x2: W - pad.r, y2: yy, style: 'stroke: var(--rule)', 'stroke-width': '1' }));
+      svg.appendChild(el('text', { x: pad.l - 8, y: yy + 4, 'text-anchor': 'end', 'font-size': '10', style: 'fill: var(--muted)' }, String(Math.round(v))));
     }
     data.forEach((dd, i) => {
       const cx = pad.l + band * i + band / 2;
-      svg.appendChild(el('rect', { x: cx - bw / 2, y: y(dd.v), width: bw, height: pad.t + ch - y(dd.v), rx: '3', fill: color }));
-      svg.appendChild(el('text', { x: cx, y: H - 12, 'text-anchor': 'middle', 'font-size': '9.5', fill: '#a09080' }, dd.label));
+      svg.appendChild(el('rect', { x: cx - bw / 2, y: y(dd.v), width: bw, height: pad.t + ch - y(dd.v), rx: '3', style: `fill: ${color}` }));
+      svg.appendChild(el('text', { x: cx, y: H - 12, 'text-anchor': 'middle', 'font-size': '9.5', style: 'fill: var(--muted)' }, dd.label));
     });
     const box = document.getElementById(boxId);
     box.innerHTML = ''; box.appendChild(svg);
@@ -933,7 +933,7 @@ const iterData = { PARES, COLUMNAS, ITERACIONES, COMMITS_POR_MES, REPO };
   function renderVelocity() {
     const conCommits = ITERACIONES.filter(i => i.commits != null).slice().reverse();
     const data = conCommits.map(i => ({ label: i.id, v: i.commits }));
-    barChart('iterVelocity', data, '#2e7d5b', () => {
+    barChart('iterVelocity', data, 'var(--ok)', () => {
       const avg = data.length ? Math.round(data.reduce((a, d) => a + d.v, 0) / data.length) : 0;
       document.getElementById('iterVelocityAvg').innerHTML =
         `Promedio: <b>${avg} commits</b> por iteración con conteo conocido (${data.length}).`;
