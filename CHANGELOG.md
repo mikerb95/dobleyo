@@ -32,6 +32,11 @@ El panel seguía la plantilla genérica de SaaS: franjas de color a la izquierda
 - **`src/components/Header.astro`**: íconos nuevos de bolsa y usuario en trazo de 1.6 (igual que la lupa). El nombre del usuario usa la clase `.user-name` en vez de estilos en línea.
 - **`public/assets/css/styles.css`**: los `.icon-btn` del header pasan a círculos de 40 px sin borde ni fondo, con tinte caramelo en hover. El contador del carrito es una burbuja caramelo sobre el ícono y se oculta con 0. Con sesión iniciada el botón de usuario se vuelve píldora con el nombre. Todo acotado a `.site-header .actions`, así que los `.icon-btn` de otras páginas no cambian.
 - **`public/assets/js/cart.js`**: `updateCartCount()` escribe `data-count` (para ocultar la burbuja vacía) y muestra `99+` por encima de 99.
+- **Hamburguesa**: mismo círculo y trazo que los demás íconos. Con el menú abierto se convierte en una X (antes era un cuadro gris que crecía).
+- **Móvil (≤768 px)**: el selector de idioma sale del header (ya estaba dentro del menú) y el nombre del usuario también. Antes el logo quedaba aplastado a 390 px y desaparecía a 340 px. El logo ya no se encoge y pasa de 36 a 44 px en ≤1024 px.
+- **Menú móvil**: los botones de Iniciar sesión y Registrarse ya no traen el borde gris del navegador. Tienen íconos de línea (antes eran íconos rellenos y una carita para "Registrarse") y el selector de idioma quedó alineado con los enlaces. Con la sesión iniciada no había forma de salir desde el celular: se agregaron "Cerrar sesión" y, para admin, "Panel de apps".
+- **Desplegable de usuario**: fondo `--card` en vez de `white`, ítems redondeados y hover caramelo. Se quitó el emoji de "Auditoría". El rojo de hover quedó solo en "Cerrar sesión": antes se aplicaba a cualquier último ítem, así que "Registrarse" también se ponía rojo.
+- **Bug**: `#logoutBtn` tenía dos listeners y cada clic llamaba dos veces a `/api/auth/logout`. Quedó una sola función `logout()` que comparten escritorio y móvil.
 
 ---
 
