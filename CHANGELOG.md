@@ -2,6 +2,18 @@
 
 ---
 
+## 2026-10-13: Toggle de idioma igual al de codebymike.net + deploys desbloqueados (Agente: Claude)
+
+### Contexto
+El toggle con banderas no aparecía en producción: desde el 2026-10-12 todos los deploys de Vercel fallaban en ~5 s con "Node.js Version 20.x is discontinued", así que dobleyo.cafe seguía en el build de hace 19 días.
+
+### Cambios
+- **`package.json`**: `engines.node` de `20.x` a `24.x`.
+- **`src/components/LangToggle.astro`**: misma estructura que `LangSwitch` de codebymike.net. La opción activa es un `<span>` (no enlace) que muestra solo la bandera, con el código en `sr-only`; la inactiva es el enlace con bandera desaturada + código. Tipografía monoespaciada, 11px, menos aire lateral en la activa. Nueva prop `size` (`sm` header, `md` menú móvil, bandera 20x14).
+- **`src/components/Header.astro`**: el menú móvil usa `size="md"`.
+
+---
+
 ## 2026-10-12: Toggle de idioma con banderas (Agente: Claude)
 
 ### Cambios

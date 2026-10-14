@@ -3,6 +3,15 @@ import { logger } from '../logger.js';
 import { body, validationResult } from 'express-validator';
 import * as db from '../db.js';
 import * as auth from '../auth.js';
+import { sendCaficultorDecisionEmail } from '../services/email.js';
+
+// Avisa al solicitante la decisión sobre su solicitud (fire-and-forget).
+async function notifyDecision(userId, approved, reason) {
+  const u = await db.query('SELECT email, first_name FROM users WHERE id = ?', [userId]);
+  if (!u.rows.length) return;
+  const r = await sendCaficultorDecisionEmail(u.rows[0].email, u.rows[0].first_name, { approved, reason });
+  if (!r.success) logger.error({ err: r.error, userId }, '[caficultor] No se pudo enviar el correo de decisión');
+}
 
 export const caficultorRouter = Router();
 
@@ -111,6 +120,8 @@ caficultorRouter.post('/applications/:id/approve',
         'INSERT INTO audit_logs (user_id, action, entity_type, entity_id, details) VALUES (?, ?, ?, ?, ?)',
         [adminId, 'APPROVE_CAFICULTOR', 'caficultor_applications', String(appId), JSON.stringify({ approved_user_id: userId })]
       );
+
+      notifyDecision(userId, true).catch((err) => logger.error({ err }, '[caficultor] Error notificando aprobación'));
 
       res.json({ message: 'Solicitud de caficultor aprobada' });
     } catch (err) {

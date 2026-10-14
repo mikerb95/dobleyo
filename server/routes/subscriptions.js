@@ -13,6 +13,11 @@ import {
   wompiConfig,
 } from '../services/wompi.js';
 import { notifySubscriptionChargeFailed } from '../services/alerts.js';
+import {
+  sendOrderConfirmationEmail,
+  sendSubscriptionChargeFailedEmail,
+  sendSubscriptionCancelledEmail,
+} from '../services/email.js';
 
 export const subscriptionsRouter = Router();
 
@@ -98,6 +103,22 @@ async function finalizeApprovedCharge(sub, charge, tx) {
     [addDaysISO(sub.frequency_days), sub.id]
   );
 
+  // Confirmación al cliente. Si falla, refresh-all (shipping.js) la reintenta porque
+  // la orden queda 'paid' con confirmation_email_sent_at NULL.
+  sendOrderConfirmationEmail(sub.customer_email, sub.customer_name, {
+    orderId: charge.reference,
+    date: new Date().toISOString(),
+    items: [{ name: productName, quantity: sub.quantity, price: sub.unit_price_cop }],
+    subtotal: sub.amount_cop,
+    shipping: 0,
+    total: sub.amount_cop,
+    shippingAddress: `${sub.shipping_address}, ${sub.shipping_city}`,
+    paymentMethod: 'wompi_subscription',
+  }).then((r) => {
+    if (!r.success) throw r.error ?? new Error('Envío rechazado');
+    return query(`UPDATE customer_orders SET confirmation_email_sent_at = datetime('now') WHERE id = ?`, [orderId]);
+  }).catch((err) => logger.error({ err, reference: charge.reference }, '[subscriptions] Error enviando confirmación del cobro'));
+
   return orderId;
 }
 
@@ -121,6 +142,13 @@ async function markChargeFailed(sub, charge, status) {
     failedAttempts: failed,
     suspended:      newStatus === 'payment_failed',
   });
+
+  sendSubscriptionChargeFailedEmail(sub.customer_email, sub.customer_name, {
+    reference:      sub.reference,
+    amount:         sub.amount_cop,
+    failedAttempts: failed,
+    suspended:      newStatus === 'payment_failed',
+  }).catch((err) => logger.error({ err, reference: sub.reference }, '[subscriptions] Error enviando aviso de cobro fallido'));
 }
 
 // Ejecuta un cobro contra la fuente de pago y procesa el resultado.
@@ -412,6 +440,8 @@ subscriptionsRouter.post('/:reference/cancel', optionalAuth, async (req, res) =>
       [sub.id]
     );
     await logAudit(req.user?.id ?? null, 'cancel', 'subscription', sub.id, { reference });
+    sendSubscriptionCancelledEmail(sub.customer_email, sub.customer_name, { reference, productName: sub.product_name })
+      .catch((err) => logger.error({ err, reference }, '[subscriptions] Error enviando confirmación de cancelación'));
     res.json({ success: true, data: { reference, status: 'cancelled' } });
   } catch (err) {
     logger.error({ err }, '[POST /api/subscriptions/:reference/cancel]');
