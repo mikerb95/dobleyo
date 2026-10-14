@@ -2,7 +2,7 @@
 import AdminLayout from "../../layouts/AdminLayout.astro";
 ---
 
-<AdminLayout title="Usuarios — DobleYo" section="usuarios">
+<AdminLayout title="Usuarios · DobleYo" section="usuarios">
   <!-- ── Encabezado de página ──────────────────────────────────────────── -->
   <div class="page-header">
     <div class="page-header-top">
@@ -37,22 +37,22 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     <div class="kpi-grid" style="margin-bottom: 22px;">
       <div class="kpi-tile brand">
         <div class="kpi-label">Total de usuarios</div>
-        <div class="kpi-value" id="kpiTotal">—</div>
-        <div class="kpi-sub" id="kpiAdminSub">—</div>
+        <div class="kpi-value" id="kpiTotal">-</div>
+        <div class="kpi-sub" id="kpiAdminSub">-</div>
       </div>
       <div class="kpi-tile success">
         <div class="kpi-label">Verificados</div>
-        <div class="kpi-value" id="kpiVerified">—</div>
-        <div class="kpi-sub" id="kpiVerifiedSub">—</div>
+        <div class="kpi-value" id="kpiVerified">-</div>
+        <div class="kpi-sub" id="kpiVerifiedSub">-</div>
       </div>
       <div class="kpi-tile info">
         <div class="kpi-label">Caficultores</div>
-        <div class="kpi-value" id="kpiCaficultor">—</div>
+        <div class="kpi-value" id="kpiCaficultor">-</div>
         <div class="kpi-sub">Cuentas con rol caficultor</div>
       </div>
       <div class="kpi-tile warning">
         <div class="kpi-label">Solicitudes pendientes</div>
-        <div class="kpi-value" id="kpiPending">—</div>
+        <div class="kpi-value" id="kpiPending">-</div>
         <div class="kpi-sub">Caficultores por revisar</div>
       </div>
     </div>
@@ -62,7 +62,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       <div class="card-header">
         <div>
           <h3 class="card-title">Usuarios</h3>
-          <div class="card-subtitle" id="resultCount">—</div>
+          <div class="card-subtitle" id="resultCount">-</div>
         </div>
       </div>
 
@@ -212,11 +212,11 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         </p>
         <div class="cred-row">
           <span>Correo</span>
-          <b id="credEmail">—</b>
+          <b id="credEmail">-</b>
         </div>
         <div class="cred-row">
           <span>Contraseña temporal</span>
-          <code id="credPassword">—</code>
+          <code id="credPassword">-</code>
         </div>
         <button type="button" class="btn btn-secondary" id="copyCredBtn" style="margin-top: 14px; width: 100%;">
           Copiar contraseña
@@ -347,14 +347,14 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       tbody.innerHTML = users.map((u) => {
         const fullName = [u.first_name, u.last_name].filter(Boolean).join(" ") || u.name || "Sin nombre";
         const initials = fullName.split(" ").slice(0, 2).map((w: string) => w[0]).join("").toUpperCase();
-        const role = ROLE[u.role] || { label: u.role || "—", cls: "badge-neutral" };
-        const caf = CAFICULTOR[u.caficultor_status] || { label: "—", cls: "badge-neutral" };
+        const role = ROLE[u.role] || { label: u.role || "-", cls: "badge-neutral" };
+        const caf = CAFICULTOR[u.caficultor_status] || { label: "-", cls: "badge-neutral" };
         const verified = u.is_verified
           ? '<span class="badge badge-success">Verificado</span>'
           : '<span class="badge badge-error">Sin verificar</span>';
         const cafCell = u.caficultor_status && u.caficultor_status !== "none"
           ? `<span class="badge ${caf.cls}">${esc(caf.label)}</span>`
-          : '<span style="color: var(--muted-2);">—</span>';
+          : '<span style="color: var(--muted-2);">-</span>';
 
         return `
         <tr>
@@ -523,7 +523,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         if (method === "POST") {
           toast("Usuario creado correctamente", "success");
           document.getElementById("credEmail")!.textContent = email;
-          document.getElementById("credPassword")!.textContent = result.tempPassword || "—";
+          document.getElementById("credPassword")!.textContent = result.tempPassword || "-";
           document.getElementById("credModal")!.hidden = false;
         } else {
           toast("Usuario actualizado correctamente", "success");

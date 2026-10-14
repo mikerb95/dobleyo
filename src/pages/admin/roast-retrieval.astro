@@ -38,19 +38,19 @@ import CostField from "../../components/CostField.astro";
       >
         <div>
           <div style="color: #666; font-size: 0.85rem;">Lote ID</div>
-          <div style="font-weight: 600;" id="roastingLotId">—</div>
+          <div style="font-weight: 600;" id="roastingLotId">-</div>
         </div>
         <div>
           <div style="color: #666; font-size: 0.85rem;">Variedad</div>
-          <div style="font-weight: 600;" id="roastingVariety">—</div>
+          <div style="font-weight: 600;" id="roastingVariety">-</div>
         </div>
         <div>
           <div style="color: #666; font-size: 0.85rem;">Peso Enviado</div>
-          <div style="font-weight: 600;" id="roastingWeightSent">—</div>
+          <div style="font-weight: 600;" id="roastingWeightSent">-</div>
         </div>
         <div>
           <div style="color: #666; font-size: 0.85rem;">Temp. Target</div>
-          <div style="font-weight: 600;" id="roastingTargetTemp">—</div>
+          <div style="font-weight: 600;" id="roastingTargetTemp">-</div>
         </div>
       </div>
     </div>
@@ -120,10 +120,10 @@ import CostField from "../../components/CostField.astro";
             style="font-size: 1.4rem; font-weight: bold; color: #c67b4e;"
             id="weightLossPercent"
           >
-            —
+            -
           </div>
           <div style="font-size: 0.85rem; color: #666;">
-            (<span id="weightLossAmount">—</span> kg)
+            (<span id="weightLossAmount">-</span> kg)
           </div>
         </div>
       </div>
@@ -175,18 +175,18 @@ import CostField from "../../components/CostField.astro";
       <strong>Resumen del Café Tostado:</strong>
       <div style="margin-top: 0.75rem; font-size: 0.95rem; line-height: 1.6;">
         <div>
-          📦 Lote: <span id="summaryLot" style="font-weight: 600;">—</span>
+          📦 Lote: <span id="summaryLot" style="font-weight: 600;">-</span>
         </div>
         <div>
-          ☕ Nivel: <span id="summaryLevel" style="font-weight: 600;">—</span>
+          ☕ Nivel: <span id="summaryLevel" style="font-weight: 600;">-</span>
         </div>
         <div>
           ⚖️ Peso Tostado: <span id="summaryWeight" style="font-weight: 600;"
-            >—</span
+            >-</span
           >
         </div>
         <div>
-          📊 Pérdida: <span id="summaryLoss" style="font-weight: 600;">—</span>
+          📊 Pérdida: <span id="summaryLoss" style="font-weight: 600;">-</span>
         </div>
       </div>
     </div>
@@ -214,11 +214,11 @@ import CostField from "../../components/CostField.astro";
       <div class="modal-body">
         <p>
           La pérdida de peso registrada es de
-          <strong id="mermaAlertPercent">—</strong>
-          (<span id="mermaAlertAmount">—</span> kg evaporados).
+          <strong id="mermaAlertPercent">-</strong>
+          (<span id="mermaAlertAmount">-</span> kg evaporados).
         </p>
         <p class="modal-alarm-sub">
-          Lo normal en tostión de especialidad es 12–20%. Verifique el
+          Lo normal en tostión de especialidad es 12-20%. Verifique el
           indicador de alarma de la tostadora y confirme que el peso
           registrado sea correcto antes de continuar.
         </p>
@@ -319,7 +319,7 @@ import CostField from "../../components/CostField.astro";
       currentRoastingRecord = JSON.parse(roastingLotSelect.value);
       document.getElementById("roastingLotId").textContent =
         currentRoastingRecord.lot_id;
-      document.getElementById("roastingVariety").textContent = "—";
+      document.getElementById("roastingVariety").textContent = "-";
       document.getElementById("roastingWeightSent").textContent =
         `${currentRoastingRecord.quantity_sent_kg} kg`;
       document.getElementById("roastingTargetTemp").textContent =
@@ -423,7 +423,7 @@ import CostField from "../../components/CostField.astro";
       if (roastedWeight < minReasonable) {
         const evap = (((sentKg - roastedWeight) / sentKg) * 100).toFixed(1);
         const confirm = window.confirm(
-          `⚠️ Pérdida de peso inusualmente alta: ${evap}% (${(sentKg - roastedWeight).toFixed(2)} kg evaporados).\n\nLo normal en tostión de especialidad es 12–22%. Una pérdida >40% es poco probable.\n\n¿Deseas continuar de todas formas?`
+          `⚠️ Pérdida de peso inusualmente alta: ${evap}% (${(sentKg - roastedWeight).toFixed(2)} kg evaporados).\n\nLo normal en tostión de especialidad es 12-22%. Una pérdida >40% es poco probable.\n\n¿Deseas continuar de todas formas?`
         );
         if (!confirm) return;
       }

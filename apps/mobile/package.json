@@ -1,6 +1,12 @@
 {
   "name": "@dobleyo/mobile",
   "version": "1.0.0",
+  "author": {
+    "name": "Michael David Rodriguez Beltran",
+    "email": "mike95@duck.com",
+    "url": "https://codebymike.net"
+  },
+  "license": "SEE LICENSE IN LICENSE",
   "main": "expo-router/entry",
   "private": true,
   "scripts": {

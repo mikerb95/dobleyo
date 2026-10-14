@@ -2,7 +2,7 @@
 import AdminLayout from "../../layouts/AdminLayout.astro";
 ---
 
-<AdminLayout title="Precio FNC — DobleYo Admin" section="precio-fnc">
+<AdminLayout title="Precio FNC · DobleYo Admin" section="precio-fnc">
   <!-- Page Header -->
   <div class="page-header">
     <div class="page-header-top">
@@ -34,22 +34,22 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     <div class="kpi-row">
       <div class="kpi-tile brand">
         <div class="kpi-label">Carga de 125 kg de pergamino</div>
-        <div class="kpi-value" id="kpiCarga">—</div>
+        <div class="kpi-value" id="kpiCarga">-</div>
         <div class="kpi-sub" id="kpiCargaSub">Precio interno de referencia</div>
       </div>
       <div class="kpi-tile info">
         <div class="kpi-label">Referencia por kg de café verde</div>
-        <div class="kpi-value" id="kpiExcelso">—</div>
+        <div class="kpi-value" id="kpiExcelso">-</div>
         <div class="kpi-sub" id="kpiExcelsoSub">Equivalente en excelso</div>
       </div>
       <div class="kpi-tile">
         <div class="kpi-label">Cierre Nueva York</div>
-        <div class="kpi-value" id="kpiNy">—</div>
+        <div class="kpi-value" id="kpiNy">-</div>
         <div class="kpi-sub">Contrato C, centavos de dólar por libra</div>
       </div>
       <div class="kpi-tile" id="kpiDiffTile">
         <div class="kpi-label">Lo que pagamos vs. la FNC</div>
-        <div class="kpi-value" id="kpiDiff">—</div>
+        <div class="kpi-value" id="kpiDiff">-</div>
         <div class="kpi-sub" id="kpiDiffSub">Consolidado de los lotes comparables</div>
       </div>
     </div>
@@ -98,11 +98,11 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
           <tfoot id="compFoot" style="display:none">
             <tr>
               <th colspan="2">Consolidado</th>
-              <th style="text-align:right" id="footKg">—</th>
-              <th style="text-align:right" id="footPaid">—</th>
-              <th style="text-align:right" id="footPaidKg">—</th>
-              <th style="text-align:right" id="footRefKg">—</th>
-              <th style="text-align:right" id="footDiff">—</th>
+              <th style="text-align:right" id="footKg">-</th>
+              <th style="text-align:right" id="footPaid">-</th>
+              <th style="text-align:right" id="footPaidKg">-</th>
+              <th style="text-align:right" id="footRefKg">-</th>
+              <th style="text-align:right" id="footDiff">-</th>
               <th></th>
             </tr>
           </tfoot>
@@ -296,15 +296,15 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   });
 
   const formatCOP = (n: number | null | undefined) =>
-    n === null || n === undefined ? "—" : COP.format(Math.round(n));
+    n === null || n === undefined ? "-" : COP.format(Math.round(n));
 
   const formatKg = (n: number | null | undefined) =>
     n === null || n === undefined
-      ? "—"
+      ? "-"
       : `${n.toLocaleString("es-CO", { maximumFractionDigits: 1 })} kg`;
 
   const formatDate = (iso: string | null) => {
-    if (!iso) return "—";
+    if (!iso) return "-";
     const [y, m, d] = iso.slice(0, 10).split("-");
     return `${d}/${m}/${y}`;
   };
@@ -332,7 +332,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     el("kpiExcelso").textContent = formatCOP(price.excelsoCopKg);
     el("kpiExcelsoSub").textContent = `Convertido desde el valor excelso, factor ${price.baseYieldFactor}`;
     el("kpiNy").textContent =
-      price.nyCloseUscentLb === null ? "—" : `${price.nyCloseUscentLb.toFixed(2)} ¢/lb`;
+      price.nyCloseUscentLb === null ? "-" : `${price.nyCloseUscentLb.toFixed(2)} ¢/lb`;
 
     el("yieldBody").innerHTML = (price.yieldTable ?? [])
       .map(
@@ -364,7 +364,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   }
 
   function deltaCell(value: number | null, pct: number | null) {
-    if (value === null) return `<td class="num">—</td>`;
+    if (value === null) return `<td class="num">-</td>`;
     const cls = value > 0 ? "delta-up" : value < 0 ? "delta-down" : "";
     const sign = value > 0 ? "+" : "";
     const pctText = pct === null ? "" : `<span class="row-note">${sign}${pct.toFixed(2)}%</span>`;
@@ -398,7 +398,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
             <span class="row-note">${formatDate(it.purchaseDate)}</span>
           </td>
           <td>
-            ${it.farm ?? "—"}
+            ${it.farm ?? "-"}
             ${it.variety ? `<span class="row-note">${it.variety}</span>` : ""}
           </td>
           <td class="num">
@@ -424,7 +424,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
     const diff = summary.differenceCop;
     const foot = el("footDiff");
-    foot.textContent = diff === null ? "—" : `${diff > 0 ? "+" : ""}${formatCOP(diff)}`;
+    foot.textContent = diff === null ? "-" : `${diff > 0 ? "+" : ""}${formatCOP(diff)}`;
     foot.className = `num ${diff > 0 ? "delta-up" : diff < 0 ? "delta-down" : ""}`;
     el("compFoot").style.display = "";
 
@@ -432,7 +432,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     const pct = summary.differencePct;
     const kpi = el("kpiDiff");
     if (pct === null) {
-      kpi.textContent = "—";
+      kpi.textContent = "-";
       el("kpiDiffSub").textContent = "Sin lotes comparables todavía";
     } else {
       kpi.textContent = `${pct > 0 ? "+" : ""}${pct.toFixed(2)}%`;

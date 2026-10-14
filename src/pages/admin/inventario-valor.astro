@@ -2,7 +2,7 @@
 import AdminLayout from "../../layouts/AdminLayout.astro";
 ---
 
-<AdminLayout title="Valor de Inventario — DobleYo Admin" section="inventario">
+<AdminLayout title="Valor de Inventario · DobleYo Admin" section="inventario">
   <!-- Page Header -->
   <div class="page-header">
     <div class="page-header-top">
@@ -32,17 +32,17 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     <div class="kpi-row" id="kpiRow">
       <div class="kpi-tile brand">
         <div class="kpi-label">Valor total</div>
-        <div class="kpi-value" id="kpiTotal">—</div>
+        <div class="kpi-value" id="kpiTotal">-</div>
         <div class="kpi-sub">Inventario activo</div>
       </div>
       <div class="kpi-tile success">
         <div class="kpi-label">Productos activos</div>
-        <div class="kpi-value" id="kpiProducts">—</div>
+        <div class="kpi-value" id="kpiProducts">-</div>
         <div class="kpi-sub">Con stock disponible</div>
       </div>
       <div class="kpi-tile info">
         <div class="kpi-label">Unidades en stock</div>
-        <div class="kpi-value" id="kpiUnits">—</div>
+        <div class="kpi-value" id="kpiUnits">-</div>
         <div class="kpi-sub">Total de unidades</div>
       </div>
     </div>
@@ -82,7 +82,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
               <td colspan="5" style="padding:12px 16px;font-weight:700;border-top:2px solid var(--border);background:#fafafa;font-size:13px">
                 Total inventario activo (<span id="footCount">0</span> productos)
               </td>
-              <td style="text-align:right;padding:12px 16px;font-weight:700;border-top:2px solid var(--border);background:#fafafa;font-size:13px" id="footTotal">—</td>
+              <td style="text-align:right;padding:12px 16px;font-weight:700;border-top:2px solid var(--border);background:#fafafa;font-size:13px" id="footTotal">-</td>
             </tr>
           </tfoot>
         </table>

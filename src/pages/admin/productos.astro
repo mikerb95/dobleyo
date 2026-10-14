@@ -2,7 +2,7 @@
 import AdminLayout from "../../layouts/AdminLayout.astro";
 ---
 
-<AdminLayout title="Productos — DobleYo">
+<AdminLayout title="Productos · DobleYo">
   <!-- ── Encabezado de página ──────────────────────────────────────────── -->
   <div class="page-header">
     <div class="page-header-top">
@@ -37,22 +37,22 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     <div class="kpi-grid" style="margin-bottom: 22px;">
       <div class="kpi-tile brand">
         <div class="kpi-label">Productos en catálogo</div>
-        <div class="kpi-value" id="kpiTotal">—</div>
-        <div class="kpi-sub" id="kpiActiveSub">—</div>
+        <div class="kpi-value" id="kpiTotal">-</div>
+        <div class="kpi-sub" id="kpiActiveSub">-</div>
       </div>
       <div class="kpi-tile info">
         <div class="kpi-label">Valor de inventario</div>
-        <div class="kpi-value" id="kpiValue">—</div>
+        <div class="kpi-value" id="kpiValue">-</div>
         <div class="kpi-sub" id="kpiValueSub">Costo × unidades disponibles</div>
       </div>
       <div class="kpi-tile warning">
         <div class="kpi-label">Stock bajo</div>
-        <div class="kpi-value" id="kpiLow">—</div>
+        <div class="kpi-value" id="kpiLow">-</div>
         <div class="kpi-sub">Disponible en o bajo el mínimo</div>
       </div>
       <div class="kpi-tile error">
         <div class="kpi-label">Agotados</div>
-        <div class="kpi-value" id="kpiOut">—</div>
+        <div class="kpi-value" id="kpiOut">-</div>
         <div class="kpi-sub">Sin unidades disponibles</div>
       </div>
     </div>
@@ -62,7 +62,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       <div class="card-header">
         <div>
           <h3 class="card-title">Catálogo</h3>
-          <div class="card-subtitle" id="resultCount">—</div>
+          <div class="card-subtitle" id="resultCount">-</div>
         </div>
       </div>
 
@@ -114,7 +114,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
       <div class="pager" id="pager" hidden>
         <button type="button" class="btn btn-secondary" id="prevPageBtn">Anterior</button>
-        <span class="pager-info" id="pagerInfo">—</span>
+        <span class="pager-info" id="pagerInfo">-</span>
         <button type="button" class="btn btn-secondary" id="nextPageBtn">Siguiente</button>
       </div>
     </section>
@@ -265,13 +265,13 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
             <div class="readonly-box" id="editStockBox" hidden>
               <div class="readonly-row">
-                <span>Stock actual</span><strong id="roStock">—</strong>
+                <span>Stock actual</span><strong id="roStock">-</strong>
               </div>
               <div class="readonly-row">
-                <span>Reservado en pedidos</span><strong id="roReserved">—</strong>
+                <span>Reservado en pedidos</span><strong id="roReserved">-</strong>
               </div>
               <div class="readonly-row">
-                <span>Disponible</span><strong id="roAvailable">—</strong>
+                <span>Disponible</span><strong id="roAvailable">-</strong>
               </div>
               <p class="readonly-note">
                 El stock solo cambia mediante movimientos de inventario, para que quede
@@ -353,7 +353,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
               <textarea id="productImages" placeholder="https://…/img1.jpg, https://…/img2.jpg"></textarea>
             </div>
             <div class="form-group">
-              <label for="productRating">Calificación (0–5)</label>
+              <label for="productRating">Calificación (0-5)</label>
               <input type="number" id="productRating" min="0" max="5" step="0.1" value="0" />
             </div>
           </div>
@@ -407,8 +407,8 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       <div class="modal-body">
         <p class="modal-lead" id="stockProductName"></p>
         <div class="readonly-box">
-          <div class="readonly-row"><span>Stock actual</span><strong id="stockCurrent">—</strong></div>
-          <div class="readonly-row"><span>Reservado</span><strong id="stockReservedRO">—</strong></div>
+          <div class="readonly-row"><span>Stock actual</span><strong id="stockCurrent">-</strong></div>
+          <div class="readonly-row"><span>Reservado</span><strong id="stockReservedRO">-</strong></div>
         </div>
         <div class="form-grid">
           <div class="form-group">
@@ -771,11 +771,11 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       }
 
       tbody.innerHTML = products.map((p) => {
-        const cat = CATEGORY[p.category] || { label: p.category || "—", cls: "badge-neutral" };
+        const cat = CATEGORY[p.category] || { label: p.category || "-", cls: "badge-neutral" };
 
         const margin = marginOf(p);
         const marginCell = margin == null
-          ? '<span class="muted-dash">—</span>'
+          ? '<span class="muted-dash">-</span>'
           : `<span class="margin-val ${margin >= 30 ? "is-good" : margin >= 10 ? "is-mid" : "is-bad"}">${margin}%</span>`;
 
         // Con variantes, el precio de la fila products es solo referencia.
@@ -783,7 +783,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         if (hasVariants(p)) {
           const min = Number(p.variant_min_price) || 0;
           const max = Number(p.variant_max_price) || 0;
-          priceCell = min === max ? cop(min) : `${cop(min)} – ${cop(max)}`;
+          priceCell = min === max ? cop(min) : `${cop(min)} - ${cop(max)}`;
         } else {
           priceCell = cop(Number(p.price) || 0);
         }
@@ -828,7 +828,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
             <div class="prod-cell">
               ${thumb}
               <div class="prod-meta">
-                <span class="prod-name">${esc(p.name) || "—"} ${missingSlug}</span>
+                <span class="prod-name">${esc(p.name) || "-"} ${missingSlug}</span>
                 <span class="prod-sub">${esc(p.sku || p.id)}${tags.length ? " · " + tags.map(esc).join(" · ") : ""}</span>
               </div>
             </div>
@@ -884,7 +884,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         const m = Math.round(((price - cost) / price) * 100);
         hint.textContent = `Margen: ${m}% · utilidad ${cop(price - cost)}`;
       } else {
-        hint.textContent = "Margen: —";
+        hint.textContent = "Margen: -";
       }
     }
     function updateImagePreview() {
@@ -1076,11 +1076,11 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
         return `
         <tr>
-          <td>${esc(v.size_label) || "—"}</td>
-          <td>${esc(v.grind_label) || "—"}</td>
+          <td>${esc(v.size_label) || "-"}</td>
+          <td>${esc(v.grind_label) || "-"}</td>
           <td style="text-align:right;">${cop(v.price_cop)}</td>
           <td style="text-align:center;">${stockCell}</td>
-          <td>${esc(v.sku_suffix) || "—"}</td>
+          <td>${esc(v.sku_suffix) || "-"}</td>
           <td style="text-align:center;">
             ${v.is_active
               ? '<span class="badge badge-success">Sí</span>'

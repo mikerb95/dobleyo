@@ -19,27 +19,27 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       <div class="detail-grid">
         <div class="detail-item">
           <div class="detail-label">ID del Lote</div>
-          <div class="detail-value" id="detailLotId">—</div>
+          <div class="detail-value" id="detailLotId">-</div>
         </div>
         <div class="detail-item">
           <div class="detail-label">Variedad</div>
-          <div class="detail-value" id="detailVariety">—</div>
+          <div class="detail-value" id="detailVariety">-</div>
         </div>
         <div class="detail-item">
           <div class="detail-label">Clima de Cultivo</div>
-          <div class="detail-value" id="detailClimate">—</div>
+          <div class="detail-value" id="detailClimate">-</div>
         </div>
         <div class="detail-item">
           <div class="detail-label">Región Productora</div>
-          <div class="detail-value" id="detailRegion">—</div>
+          <div class="detail-value" id="detailRegion">-</div>
         </div>
         <div class="detail-item">
           <div class="detail-label">Altitud</div>
-          <div class="detail-value" id="detailAltitude">—</div>
+          <div class="detail-value" id="detailAltitude">-</div>
         </div>
         <div class="detail-item">
           <div class="detail-label">Método de Procesamiento</div>
-          <div class="detail-value" id="detailProcess">—</div>
+          <div class="detail-value" id="detailProcess">-</div>
         </div>
       </div>
     </div>
@@ -50,11 +50,11 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       <div class="detail-grid">
         <div class="detail-item">
           <div class="detail-label">Aroma</div>
-          <div class="detail-value" id="detailAroma">—</div>
+          <div class="detail-value" id="detailAroma">-</div>
         </div>
         <div class="detail-item">
           <div class="detail-label">Notas de Sabor</div>
-          <div class="detail-value" id="detailTaste">—</div>
+          <div class="detail-value" id="detailTaste">-</div>
         </div>
       </div>
     </div>
@@ -65,11 +65,11 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       <div class="detail-grid">
         <div class="detail-item">
           <div class="detail-label">Nivel de Tueste</div>
-          <div class="detail-value detail-roast" id="detailRoastLevel">—</div>
+          <div class="detail-value detail-roast" id="detailRoastLevel">-</div>
         </div>
         <div class="detail-item">
           <div class="detail-label">Peso Tostado</div>
-          <div class="detail-value" id="detailWeight">—</div>
+          <div class="detail-value" id="detailWeight">-</div>
         </div>
       </div>
     </div>
@@ -80,19 +80,19 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       <div class="detail-grid">
         <div class="detail-item">
           <div class="detail-label">Ubicación en Bodega</div>
-          <div class="detail-value" id="detailLocation">—</div>
+          <div class="detail-value" id="detailLocation">-</div>
         </div>
         <div class="detail-item">
           <div class="detail-label">Tipo de Contenedor</div>
-          <div class="detail-value" id="detailContainerType">—</div>
+          <div class="detail-value" id="detailContainerType">-</div>
         </div>
         <div class="detail-item">
           <div class="detail-label">Cantidad de Contenedores</div>
-          <div class="detail-value" id="detailContainerCount">—</div>
+          <div class="detail-value" id="detailContainerCount">-</div>
         </div>
         <div class="detail-item">
           <div class="detail-label">Fecha de Almacenamiento</div>
-          <div class="detail-value" id="detailStorageDate">—</div>
+          <div class="detail-value" id="detailStorageDate">-</div>
         </div>
       </div>
     </div>
@@ -198,22 +198,22 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       console.log("[Roasted Storage Detail] Populating with data:", data);
 
       // Información del lote
-      document.getElementById("detailLotId").textContent = data.lot_id || "—";
+      document.getElementById("detailLotId").textContent = data.lot_id || "-";
       document.getElementById("detailVariety").textContent =
-        data.variety || "—";
+        data.variety || "-";
       document.getElementById("detailClimate").textContent =
-        data.climate || "—";
-      document.getElementById("detailRegion").textContent = data.region || "—";
+        data.climate || "-";
+      document.getElementById("detailRegion").textContent = data.region || "-";
       document.getElementById("detailAltitude").textContent = data.altitude
         ? `${data.altitude} msnm`
-        : "—";
+        : "-";
       document.getElementById("detailProcess").textContent =
-        data.process || "—";
+        data.process || "-";
 
       // Perfil sensorial
-      document.getElementById("detailAroma").textContent = data.aroma || "—";
+      document.getElementById("detailAroma").textContent = data.aroma || "-";
       document.getElementById("detailTaste").textContent =
-        data.taste_notes || "—";
+        data.taste_notes || "-";
 
       // Tostión
       const roastLevels = {
@@ -222,14 +222,14 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         DARK: "Oscura",
       };
       document.getElementById("detailRoastLevel").textContent =
-        roastLevels[data.roast_level] || data.roast_level || "—";
+        roastLevels[data.roast_level] || data.roast_level || "-";
       document.getElementById("detailWeight").textContent = data.weight_kg
         ? `${data.weight_kg} kg`
-        : "—";
+        : "-";
 
       // Almacenamiento
       document.getElementById("detailLocation").textContent =
-        data.location || "—";
+        data.location || "-";
 
       const containerLabels = {
         "BAG-1KG": "Bolsas de 1 kg",
@@ -238,9 +238,9 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         "SACK-60": "Saco de 60 kg",
       };
       document.getElementById("detailContainerType").textContent =
-        containerLabels[data.container] || data.container || "—";
+        containerLabels[data.container] || data.container || "-";
       document.getElementById("detailContainerCount").textContent =
-        data.container_count || "—";
+        data.container_count || "-";
       document.getElementById("detailStorageDate").textContent =
         data.storage_date
           ? new Date(data.storage_date).toLocaleDateString("es-CO", {
@@ -248,7 +248,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
               month: "long",
               day: "numeric",
             })
-          : "—";
+          : "-";
 
       // Condiciones
       if (data.conditions && data.conditions.length > 0) {

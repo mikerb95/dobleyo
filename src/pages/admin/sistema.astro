@@ -2,7 +2,7 @@
 import AdminLayout from "../../layouts/AdminLayout.astro";
 ---
 
-<AdminLayout title="Sistema — DobleYo Café" section="sistema">
+<AdminLayout title="Sistema · DobleYo Café" section="sistema">
   <div class="page-header">
     <div class="page-header-top">
       <div>
@@ -28,24 +28,24 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       <div class="card" style="margin-bottom:1.25rem">
         <div class="card-header">
           <div class="card-title">Estado del Sistema</div>
-          <span class="badge" id="dbStatusBadge">—</span>
+          <span class="badge" id="dbStatusBadge">-</span>
         </div>
         <div class="health-grid">
           <div class="health-stat">
             <div class="health-label">Latencia DB</div>
-            <div class="health-value" id="dbLatency">—</div>
+            <div class="health-value" id="dbLatency">-</div>
           </div>
           <div class="health-stat">
             <div class="health-label">Audit logs</div>
-            <div class="health-value" id="statAuditLogs">—</div>
+            <div class="health-value" id="statAuditLogs">-</div>
           </div>
           <div class="health-stat">
             <div class="health-label">Error logs</div>
-            <div class="health-value" id="statErrorLogs">—</div>
+            <div class="health-value" id="statErrorLogs">-</div>
           </div>
           <div class="health-stat">
             <div class="health-label">Última actualización</div>
-            <div class="health-value" id="statUpdated">—</div>
+            <div class="health-value" id="statUpdated">-</div>
           </div>
         </div>
       </div>
@@ -53,19 +53,19 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       <div class="kpi-grid" style="margin-bottom:1.25rem">
         <div class="kpi-tile info">
           <div class="kpi-label">Total Usuarios</div>
-          <div class="kpi-value" id="kpiUsers">—</div>
+          <div class="kpi-value" id="kpiUsers">-</div>
         </div>
         <div class="kpi-tile brand">
           <div class="kpi-label">Admins</div>
-          <div class="kpi-value" id="kpiAdmins">—</div>
+          <div class="kpi-value" id="kpiAdmins">-</div>
         </div>
         <div class="kpi-tile success">
           <div class="kpi-label">Productos</div>
-          <div class="kpi-value" id="kpiProducts">—</div>
+          <div class="kpi-value" id="kpiProducts">-</div>
         </div>
         <div class="kpi-tile warning">
           <div class="kpi-label">Facturas</div>
-          <div class="kpi-value" id="kpiOrders">—</div>
+          <div class="kpi-value" id="kpiOrders">-</div>
         </div>
       </div>
 
@@ -97,15 +97,15 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
           <div style="padding:1rem 1.25rem;display:flex;flex-direction:column;gap:.875rem">
             <div class="metric-row">
               <span class="metric-label">Activos (30 días)</span>
-              <span class="metric-value" id="mActiveUsers">—</span>
+              <span class="metric-value" id="mActiveUsers">-</span>
             </div>
             <div class="metric-row">
               <span class="metric-label">Verificados</span>
-              <span class="metric-value" id="mVerified">—</span>
+              <span class="metric-value" id="mVerified">-</span>
             </div>
             <div class="metric-row">
               <span class="metric-label">Solicitudes caficultor pendientes</span>
-              <span class="metric-value badge badge-warning" id="mPending">—</span>
+              <span class="metric-value badge badge-warning" id="mPending">-</span>
             </div>
           </div>
           <div style="padding:0 1.25rem 1rem">
@@ -200,7 +200,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
           </table>
         </div>
         <div style="padding:.75rem 1.25rem;display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--border)">
-          <span id="errPaginationInfo" style="font-size:12px;color:var(--text-2)">—</span>
+          <span id="errPaginationInfo" style="font-size:12px;color:var(--text-2)">-</span>
           <div style="display:flex;gap:.5rem">
             <button class="btn btn-secondary btn-sm" id="btnErrPrev" disabled>Anterior</button>
             <button class="btn btn-secondary btn-sm" id="btnErrNext" disabled>Siguiente</button>
@@ -618,7 +618,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       if (!data.length) { tbody.innerHTML = '<tr><td colspan="5" class="loading-row">Sin usuarios</td></tr>'; return; }
 
       tbody.innerHTML = data.map(u => {
-        const name = escHtml([u.first_name, u.last_name].filter(Boolean).join(' ') || '—');
+        const name = escHtml([u.first_name, u.last_name].filter(Boolean).join(' ') || '-');
         const login = u.last_login_at ? new Date(u.last_login_at).toLocaleDateString('es-CO') : 'Nunca';
         const roleBadge = u.role === 'admin' ? 'badge-brand' : 'badge-neutral';
         return `<tr>
@@ -751,8 +751,8 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
           return `<tr>
             <td><span class="badge ${levelClass}">${escHtml(e.level)}</span></td>
             <td style="font-size:12px;max-width:300px" title="${escHtml(e.message)}">${escHtml(msg)}</td>
-            <td style="font-size:12px;color:var(--text-2)">${escHtml(e.source || '—')}</td>
-            <td style="font-size:12px;color:var(--text-2)">${escHtml(e.request_path || '—')}</td>
+            <td style="font-size:12px;color:var(--text-2)">${escHtml(e.source || '-')}</td>
+            <td style="font-size:12px;color:var(--text-2)">${escHtml(e.request_path || '-')}</td>
             <td style="font-size:12px;color:var(--text-2)">${escHtml(date)}</td>
           </tr>`;
         }).join('');
@@ -760,7 +760,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
       const info = el('errPaginationInfo');
       const showing = Math.min(errOffset + ERR_LIMIT, errTotal);
-      info.textContent = errTotal === 0 ? 'Sin registros' : `${errOffset + 1}–${showing} de ${errTotal}`;
+      info.textContent = errTotal === 0 ? 'Sin registros' : `${errOffset + 1}-${showing} de ${errTotal}`;
 
       el('btnErrPrev').disabled = errOffset === 0;
       el('btnErrNext').disabled = errOffset + ERR_LIMIT >= errTotal;

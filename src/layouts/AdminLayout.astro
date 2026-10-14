@@ -6,7 +6,7 @@ export interface Props {
   section?: string;
 }
 
-const { title = "Admin — DobleYo Café", section = "" } = Astro.props;
+const { title = "Admin · DobleYo Café", section = "" } = Astro.props;
 
 // Clase raíz por página (/admin/usuarios -> pg-usuarios). Las páginas que
 // pintan contenido con innerHTML acotan su <style is:global> a esta clase.
@@ -20,7 +20,7 @@ const pageClass = `pg-${pageSlug.replace(/[^a-z0-9-]/gi, "")}`;
     <Head title={title} isAdmin={true} />
     <style is:global>
       /* =================================================================
-         DobleYo Admin — sistema visual basado en Claude Design
+         DobleYo Admin - sistema visual basado en Claude Design
          3 variables base: --color-primary, --color-accent, --color-text
          Todo lo demás derivado con color-mix.
          ============================================================== */
@@ -601,7 +601,7 @@ const pageClass = `pg-${pageSlug.replace(/[^a-z0-9-]/gi, "")}`;
       .table-wrapper { width: 100%; overflow-x: auto; }
 
       /* =========================================================
-         FORMULARIOS Y UTILIDADES — Re-skin Claude Design
+         FORMULARIOS Y UTILIDADES - Re-skin Claude Design
          (heredan páginas migradas: harvest, cupping, packaging, etc.)
          ========================================================= */
 
@@ -753,7 +753,7 @@ const pageClass = `pg-${pageSlug.replace(/[^a-z0-9-]/gi, "")}`;
         padding-top: 16px; border-top: 1px solid var(--rule);
       }
 
-      /* Radio & checkbox — estilo card */
+      /* Radio & checkbox - estilo card */
       .radio-group, .checkbox-group {
         display: grid; gap: 6px;
         grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -782,7 +782,7 @@ const pageClass = `pg-${pageSlug.replace(/[^a-z0-9-]/gi, "")}`;
         font-weight: 500;
       }
 
-      /* Botones — variantes adicionales */
+      /* Botones - variantes adicionales */
       .btn-save { background: var(--color-accent); color: var(--color-primary); border-color: var(--color-accent); font-weight: 600; }
       .btn-save:hover { background: color-mix(in oklab, var(--color-accent) 90%, black); border-color: color-mix(in oklab, var(--color-accent) 90%, black); }
       .btn-preview { background: var(--paper); color: var(--color-primary); border-color: var(--color-primary); }
@@ -1010,7 +1010,7 @@ const pageClass = `pg-${pageSlug.replace(/[^a-z0-9-]/gi, "")}`;
 
         <div style="position:relative">
           <button class="shell-user-btn" id="userMenuBtn" aria-label="Menú de usuario">
-            <div class="shell-avatar" id="shellAvatar">—</div>
+            <div class="shell-avatar" id="shellAvatar">-</div>
             <span class="shell-user-name" id="shellUserName">Usuario</span>
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="opacity:.5">
               <polyline points="6 9 12 15 18 9"/>
@@ -1018,7 +1018,7 @@ const pageClass = `pg-${pageSlug.replace(/[^a-z0-9-]/gi, "")}`;
           </button>
           <div class="shell-user-dropdown" id="userDropdown">
             <div class="dropdown-user-info">
-              <div class="dropdown-user-name" id="dropdownUserName">—</div>
+              <div class="dropdown-user-name" id="dropdownUserName">-</div>
               <div class="dropdown-user-role">Administrador</div>
             </div>
             <a href="/admin/perfil" class="dropdown-item">
@@ -1389,7 +1389,7 @@ const pageClass = `pg-${pageSlug.replace(/[^a-z0-9-]/gi, "")}`;
         }
       })();
 
-      // Active nav — resalta el ítem cuya URL coincide con la ruta actual.
+      // Active nav - resalta el ítem cuya URL coincide con la ruta actual.
       // Se empareja por href (no por data-section) para cubrir TODAS las
       // páginas, incluidas las de Operación (harvest, send-roasting, etc.)
       // que no tienen data-section. Para subrutas (p. ej. /admin/lotes/123)

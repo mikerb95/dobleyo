@@ -1,7 +1,7 @@
 ---
 export const prerender = false;
 
-// Panel de Finanzas — Vista de Administrador
+// Panel de Finanzas - Vista de Administrador
 // Dashboard financiero: KPIs, facturas, gastos, pagos a caficultores
 import AdminLayout from "../../layouts/AdminLayout.astro";
 
@@ -33,7 +33,7 @@ function fmtCOP(val) {
   return new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(Number(val ?? 0));
 }
 function fmtDate(d) {
-  if (!d) return "—";
+  if (!d) return "-";
   return new Date(d).toLocaleDateString("es-CO", { day: "2-digit", month: "short", year: "numeric" });
 }
 function stateBadge(state) {
@@ -52,7 +52,7 @@ function stateBadge(state) {
 const balancePositive = dashboard.month_balance >= 0;
 ---
 
-<AdminLayout title="Finanzas — DobleYo Admin" section="finanzas">
+<AdminLayout title="Finanzas · DobleYo Admin" section="finanzas">
   <style>
     .page-header {
       padding: 1.25rem 2rem;
@@ -537,7 +537,7 @@ const balancePositive = dashboard.month_balance >= 0;
     margin-bottom: 1.5rem;
   }
 
-  /* KPIs — tarjetas limpias con chip de acento (sistema Claude Design) */
+  /* KPIs - tarjetas limpias con chip de acento (sistema Claude Design) */
   .adm-kpis {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -676,7 +676,7 @@ const balancePositive = dashboard.month_balance >= 0;
     flex-wrap: wrap;
   }
 
-  /* Tarjeta de tabla — contenedor con cabecera + tabla edge-to-edge */
+  /* Tarjeta de tabla - contenedor con cabecera + tabla edge-to-edge */
   .adm-table-card {
     background: var(--paper, #fff);
     border: 1px solid var(--rule, #e7e2da);
@@ -915,7 +915,7 @@ function switchTab(name) {
 // Formateo
 // ================================================================
 const fmtCOP = v => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(Number(v ?? 0));
-const fmtDate = d => d ? new Date(d + 'T00:00:00').toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
+const fmtDate = d => d ? new Date(d + 'T00:00:00').toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' }) : '-';
 const BADGES = {
   borrador:       ['#f3f4f6','#374151','Borrador'],
   confirmada:     ['#fef3c7','#92400e','Confirmada'],
@@ -976,7 +976,7 @@ function fillSelect(selectEl, items, valueKey, labelFn, emptyLabel) {
 }
 
 // ================================================================
-// Paneles — carga lazy
+// Paneles - carga lazy
 // ================================================================
 async function loadPanelData(name) {
   const loaders = {
@@ -1001,7 +1001,7 @@ async function loadPurchaseInvoices() {
       <thead><tr><th>Número</th><th>Caficultor</th><th>Fecha</th><th>Vence</th><th>Total</th><th>Por pagar</th><th>Estado</th><th></th></tr></thead>
       <tbody>${json.data.map(inv => `<tr>
         <td class="adm-table__mono">${inv.invoice_number}</td>
-        <td>${inv.caficultor_name ?? '—'}</td>
+        <td>${inv.caficultor_name ?? '-'}</td>
         <td>${fmtDate(inv.invoice_date)}</td>
         <td>${fmtDate(inv.due_date)}</td>
         <td class="adm-table__amount">${fmtCOP(inv.total_amount)}</td>
@@ -1028,7 +1028,7 @@ async function loadSalesInvoices() {
       <thead><tr><th>Número</th><th>Cliente</th><th>Fecha</th><th>Total</th><th>Por cobrar</th><th>Estado</th></tr></thead>
       <tbody>${json.data.map(inv => `<tr>
         <td class="adm-table__mono">${inv.invoice_number}</td>
-        <td>${inv.customer_name ?? '—'}</td>
+        <td>${inv.customer_name ?? '-'}</td>
         <td>${fmtDate(inv.invoice_date)}</td>
         <td class="adm-table__amount">${fmtCOP(inv.total_amount)}</td>
         <td class="adm-table__amount">${fmtCOP(inv.amount_due)}</td>
@@ -1079,9 +1079,9 @@ async function loadPayments() {
         <td class="adm-table__mono">${p.payment_number}</td>
         <td>${p.payment_type === 'recibido' ? '📥 Cobro' : '📤 Pago'}</td>
         <td>${fmtDate(p.payment_date)}</td>
-        <td>${p.partner_name ?? '—'}</td>
+        <td>${p.partner_name ?? '-'}</td>
         <td class="adm-table__amount">${fmtCOP(p.amount)}</td>
-        <td class="adm-table__mono">${p.reference ?? '—'}</td>
+        <td class="adm-table__mono">${p.reference ?? '-'}</td>
         <td>${badge(p.state)}</td>
       </tr>`).join('')}</tbody>
     </table></div></div>`;
@@ -1114,7 +1114,7 @@ async function approveExpense(id) {
 }
 
 // ================================================================
-// Modales — abrir / cerrar
+// Modales - abrir / cerrar
 // ================================================================
 function openModal(id) { document.getElementById(id)?.showModal(); }
 function closeModal(id) { document.getElementById(id)?.close(); }
@@ -1125,7 +1125,7 @@ function closeModal(id) { document.getElementById(id)?.close(); }
 });
 document.getElementById('closeModalExpense').addEventListener('click', () => closeModal('modalExpense'));
 
-// Factura de compra — cargar caficultores al abrir
+// Factura de compra - cargar caficultores al abrir
 async function openPurchaseInvoice() {
   const sel = document.getElementById('selectCaficultor');
   const list = await getCaficultores();
@@ -1137,7 +1137,7 @@ async function openPurchaseInvoice() {
 });
 document.getElementById('closeModalPurchaseInvoice').addEventListener('click', () => closeModal('modalPurchaseInvoice'));
 
-// Factura de venta — cargar clientes al abrir
+// Factura de venta - cargar clientes al abrir
 async function openSalesInvoice() {
   const sel = document.getElementById('selectClient');
   const list = await getClients();
@@ -1153,11 +1153,11 @@ async function openSalesInvoice() {
 });
 document.getElementById('closeModalSalesInvoice').addEventListener('click', () => closeModal('modalSalesInvoice'));
 
-// Pago — cargar usuarios y métodos al abrir
+// Pago - cargar usuarios y métodos al abrir
 document.getElementById('btnNewPayment').addEventListener('click', async () => {
   const [users, methods] = await Promise.all([getAllUsers(), getPaymentMethods()]);
   fillSelect(document.getElementById('selectPartner'), users, 'id',
-    u => `${u.name} — ${u.role} (${u.email})`, '— Seleccionar persona —');
+    u => `${u.name} · ${u.role} (${u.email})`, '— Seleccionar persona —');
   fillSelect(document.getElementById('selectPaymentMethod'), methods, 'id',
     m => `${m.name} (${m.method_type})`, '— Seleccionar método —');
   const today = new Date().toISOString().slice(0, 10);
@@ -1261,7 +1261,7 @@ function purchaseLineTemplate(n) {
 }
 
 // ================================================================
-// Formulario: Factura de venta — con cálculo automático
+// Formulario: Factura de venta - con cálculo automático
 // ================================================================
 let saleLineCount = 1;
 
@@ -1397,7 +1397,7 @@ document.getElementById('formPayment').addEventListener('submit', async (e) => {
   } catch { msgEl.style.color = '#991b1b'; msgEl.textContent = 'Error de conexión'; }
 });
 
-// ── Event delegation — reemplaza todos los onclick= inline ─────────────────
+// ── Event delegation - reemplaza todos los onclick= inline ─────────────────
 document.getElementById('salesLines')?.addEventListener('click', (e) => {
   if (e.target.closest('[data-action="remove-sale-line"]')) removeSaleLine(e.target.closest('[data-action="remove-sale-line"]'));
 });

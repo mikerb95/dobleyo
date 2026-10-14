@@ -2,7 +2,7 @@
 import AdminLayout from "../../layouts/AdminLayout.astro";
 ---
 
-<AdminLayout title="Ubicaciones de Bodega — DobleYo">
+<AdminLayout title="Ubicaciones de Bodega · DobleYo">
   <div class="page-header">
     <div class="page-header-top">
       <div>
@@ -28,22 +28,22 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     <div class="kpi-grid" style="margin-bottom: 22px;">
       <div class="kpi-tile brand">
         <div class="kpi-label">Ubicaciones activas</div>
-        <div class="kpi-value" id="kpiActive">—</div>
-        <div class="kpi-sub" id="kpiZones">—</div>
+        <div class="kpi-value" id="kpiActive">-</div>
+        <div class="kpi-sub" id="kpiZones">-</div>
       </div>
       <div class="kpi-tile">
         <div class="kpi-label">Existencias en bodega</div>
-        <div class="kpi-value" id="kpiStock">—</div>
+        <div class="kpi-value" id="kpiStock">-</div>
         <div class="kpi-sub">Suma de todas las ubicaciones</div>
       </div>
       <div class="kpi-tile">
         <div class="kpi-label">Ocupación promedio</div>
-        <div class="kpi-value" id="kpiFill">—</div>
-        <div class="kpi-sub" id="kpiNearFull">—</div>
+        <div class="kpi-value" id="kpiFill">-</div>
+        <div class="kpi-sub" id="kpiNearFull">-</div>
       </div>
       <div class="kpi-tile warning">
         <div class="kpi-label">Bloqueadas</div>
-        <div class="kpi-value" id="kpiBlocked">—</div>
+        <div class="kpi-value" id="kpiBlocked">-</div>
         <div class="kpi-sub">Mantenimiento o conteo</div>
       </div>
     </div>
@@ -75,8 +75,8 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   <aside class="ub-drawer" id="drawer" aria-hidden="true">
     <div class="ub-drawer-head">
       <div>
-        <div class="ub-drawer-code" id="drawerCode">—</div>
-        <div class="ub-drawer-zone" id="drawerZone">—</div>
+        <div class="ub-drawer-code" id="drawerCode">-</div>
+        <div class="ub-drawer-zone" id="drawerZone">-</div>
       </div>
       <button type="button" class="ub-close" id="drawerClose" aria-label="Cerrar">×</button>
     </div>
@@ -153,11 +153,11 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         <div class="ub-transfer-summary">
           <div>
             <span class="ub-transfer-label">Lote</span>
-            <span id="trLot" class="ub-transfer-value">—</span>
+            <span id="trLot" class="ub-transfer-value">-</span>
           </div>
           <div>
-            <span class="ub-transfer-label">Disponible en <span id="trFromCode">—</span></span>
-            <span id="trAvailable" class="ub-transfer-value">—</span>
+            <span class="ub-transfer-label">Disponible en <span id="trFromCode">-</span></span>
+            <span id="trAvailable" class="ub-transfer-value">-</span>
           </div>
         </div>
 
@@ -194,11 +194,11 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         <div class="ub-transfer-summary">
           <div>
             <span class="ub-transfer-label">Lote</span>
-            <span id="adjLot" class="ub-transfer-value">—</span>
+            <span id="adjLot" class="ub-transfer-value">-</span>
           </div>
           <div>
             <span class="ub-transfer-label">Cantidad en sistema</span>
-            <span id="adjCurrent" class="ub-transfer-value">—</span>
+            <span id="adjCurrent" class="ub-transfer-value">-</span>
           </div>
         </div>
 
@@ -228,7 +228,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
   <div class="ub-toast" id="toast"></div>
 
-  <!-- is:global — las tarjetas y el panel de detalle se generan con innerHTML
+  <!-- is:global - las tarjetas y el panel de detalle se generan con innerHTML
        desde el script, así que no reciben el atributo de scope que Astro añade
        a los elementos del template y el CSS scoped no las alcanzaría.
        Todas las clases van prefijadas con `ub-` para evitar colisiones. -->
@@ -503,7 +503,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       $("kpiActive").textContent = active.length;
       $("kpiZones").textContent = `En ${zones.length} zona${zones.length === 1 ? "" : "s"}`;
       $("kpiStock").textContent = kg(totalKg);
-      $("kpiFill").textContent = withCap.length ? avgFill + "%" : "—";
+      $("kpiFill").textContent = withCap.length ? avgFill + "%" : "-";
       $("kpiNearFull").textContent = nearFull
         ? `${nearFull} al 90% o más`
         : "Ninguna cerca del límite";
@@ -824,7 +824,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         l.is_active && !l.is_blocked && l.code !== loc.code && l.allowed_states.includes(quant.stock_state)
       );
       $("trTo").innerHTML = options.length
-        ? options.map((l) => `<option value="${l.code}">${l.code} — ${l.name} (${l.zone_name})</option>`).join("")
+        ? options.map((l) => `<option value="${l.code}">${l.code} · ${l.name} (${l.zone_name})</option>`).join("")
         : '<option value="">No hay ubicaciones compatibles</option>';
 
       $("trQty").value = "";

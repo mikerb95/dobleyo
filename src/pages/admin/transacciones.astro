@@ -64,7 +64,7 @@ function fmtCOP(val: number | string) {
 }
 
 function fmtDate(d: string) {
-  if (!d) return "—";
+  if (!d) return "-";
   return new Date(d + "T00:00:00").toLocaleDateString("es-CO", {
     day: "2-digit", month: "short", year: "numeric"
   });
@@ -251,8 +251,8 @@ function pageUrl(p: number) {
                       {tm.label}
                     </span>
                   </td>
-                  <td class="tx-col-party">{tx.contraparte || "—"}</td>
-                  <td class="tx-col-desc">{tx.descripcion || "—"}</td>
+                  <td class="tx-col-party">{tx.contraparte || "-"}</td>
+                  <td class="tx-col-desc">{tx.descripcion || "-"}</td>
                   <td>
                     <span class={`tx-dir ${isIngreso ? "tx-dir--in" : "tx-dir--out"}`}>
                       {isIngreso ? "↑ Ingreso" : "↓ Egreso"}

@@ -3,7 +3,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 import SalesHeatmap from "../../components/SalesHeatmap.jsx";
 ---
 
-<AdminLayout title="Mapa de Ventas — DobleYo Admin" section="sales-map">
+<AdminLayout title="Mapa de Ventas · DobleYo Admin" section="sales-map">
   <!-- ── Encabezado de página ──────────────────────────────────────────── -->
   <div class="page-header">
     <div class="page-header-top">
@@ -60,7 +60,7 @@ import SalesHeatmap from "../../components/SalesHeatmap.jsx";
 
   <style is:global>
     /* =================================================================
-       Mapa de ventas — Claude Design
+       Mapa de ventas - Claude Design
        ============================================================== */
     .sm-page { max-width: 1280px; }
 
@@ -181,7 +181,7 @@ import SalesHeatmap from "../../components/SalesHeatmap.jsx";
 
         const { pending_geocoding, total_orders } = json.data ?? {};
         if (pending_geocoding === 0) {
-          statusEl.textContent = `Todas las órdenes están geocodificadas (${total_orders ?? "—"} en total).`;
+          statusEl.textContent = `Todas las órdenes están geocodificadas (${total_orders ?? "-"} en total).`;
           iconEl.classList.add("ok");
         } else {
           statusEl.textContent = `${pending_geocoding} órdenes sin coordenadas de ${total_orders ?? "?"} totales.`;

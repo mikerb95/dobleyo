@@ -3,7 +3,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 import CostField from "../../components/CostField.astro";
 ---
 
-<AdminLayout title="Recoger Lote en Finca — DobleYo">
+<AdminLayout title="Recoger Lote en Finca · DobleYo">
   <!-- ── Encabezado de página ──────────────────────────────────────────── -->
   <div class="page-header">
     <div class="page-header-top">
@@ -33,22 +33,22 @@ import CostField from "../../components/CostField.astro";
     <div class="kpi-grid" style="margin-bottom: 22px;">
       <div class="kpi-tile brand">
         <div class="kpi-label">Cosechas registradas</div>
-        <div class="kpi-value" id="kpiHarvests">—</div>
+        <div class="kpi-value" id="kpiHarvests">-</div>
         <div class="kpi-sub">Total histórico</div>
       </div>
       <div class="kpi-tile info">
         <div class="kpi-label">Fincas activas</div>
-        <div class="kpi-value" id="kpiFarms">—</div>
+        <div class="kpi-value" id="kpiFarms">-</div>
         <div class="kpi-sub">Con lotes registrados</div>
       </div>
       <div class="kpi-tile success">
         <div class="kpi-label">Lotes este mes</div>
-        <div class="kpi-value" id="kpiMonth">—</div>
+        <div class="kpi-value" id="kpiMonth">-</div>
         <div class="kpi-sub">Recolectados en el mes en curso</div>
       </div>
       <div class="kpi-tile warning">
         <div class="kpi-label">Última cosecha</div>
-        <div class="kpi-value" id="kpiLast">—</div>
+        <div class="kpi-value" id="kpiLast">-</div>
         <div class="kpi-sub">Fecha del registro más reciente</div>
       </div>
     </div>
@@ -215,23 +215,23 @@ import CostField from "../../components/CostField.astro";
             <div id="lotBody" hidden>
               <div class="lot-id-box">
                 <span class="lot-id-label">ID de lote</span>
-                <div class="lot-id" id="lotId">—</div>
+                <div class="lot-id" id="lotId">-</div>
                 <div class="lot-id-format">País · Región · Altura · Variedad · Proceso · Nº</div>
               </div>
 
               <div class="lot-list">
-                <div class="lot-row"><span>Fecha</span><b id="pvDate">—</b></div>
-                <div class="lot-row"><span>Finca</span><b id="pvFarm">—</b></div>
-                <div class="lot-row"><span>Altura</span><b id="pvAltitude">—</b></div>
-                <div class="lot-row"><span>Variedad</span><b id="pvVariety">—</b></div>
-                <div class="lot-row"><span>Clima</span><b id="pvClimate">—</b></div>
-                <div class="lot-row"><span>Proceso</span><b id="pvProcess">—</b></div>
-                <div class="lot-row"><span>Aroma</span><b id="pvAroma">—</b></div>
+                <div class="lot-row"><span>Fecha</span><b id="pvDate">-</b></div>
+                <div class="lot-row"><span>Finca</span><b id="pvFarm">-</b></div>
+                <div class="lot-row"><span>Altura</span><b id="pvAltitude">-</b></div>
+                <div class="lot-row"><span>Variedad</span><b id="pvVariety">-</b></div>
+                <div class="lot-row"><span>Clima</span><b id="pvClimate">-</b></div>
+                <div class="lot-row"><span>Proceso</span><b id="pvProcess">-</b></div>
+                <div class="lot-row"><span>Aroma</span><b id="pvAroma">-</b></div>
               </div>
 
               <div class="lot-notes" id="pvNotesWrap" hidden>
                 <span>Notas de sabor</span>
-                <p id="pvNotes">—</p>
+                <p id="pvNotes">-</p>
               </div>
             </div>
           </div>
@@ -322,7 +322,7 @@ import CostField from "../../components/CostField.astro";
       );
     }
     function fmtDate(d) {
-      return d ? new Date(d).toLocaleDateString("es-CO", { day: "2-digit", month: "short", year: "numeric" }) : "—";
+      return d ? new Date(d).toLocaleDateString("es-CO", { day: "2-digit", month: "short", year: "numeric" }) : "-";
     }
 
     // ── Cargar fincas del usuario desde la API ──────────────────────
@@ -339,7 +339,7 @@ import CostField from "../../components/CostField.astro";
           const key = f.slug || `farm-${f.id}`;
           newFarmData[key] = {
             id: f.id,
-            altitude: f.altitude_min ? `${f.altitude_min}m` : "—",
+            altitude: f.altitude_min ? `${f.altitude_min}m` : "-",
             altitudeRaw: f.altitude_min ?? 0,
             region: f.region ?? "COL",
             displayName: f.name,
@@ -426,7 +426,7 @@ import CostField from "../../components/CostField.astro";
           return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
         }).length;
         document.getElementById("kpiMonth").textContent = thisMonth;
-        document.getElementById("kpiLast").textContent = rows[0] ? fmtDate(rows[0].created_at) : "—";
+        document.getElementById("kpiLast").textContent = rows[0] ? fmtDate(rows[0].created_at) : "-";
 
         renderRecent(rows.slice(0, 8));
       } catch (error) {
@@ -436,7 +436,7 @@ import CostField from "../../components/CostField.astro";
     }
 
     function farmLabel(slug) {
-      return farmData[slug]?.displayName || slug || "—";
+      return farmData[slug]?.displayName || slug || "-";
     }
 
     function renderRecent(rows) {
@@ -447,11 +447,11 @@ import CostField from "../../components/CostField.astro";
       }
       body.innerHTML = rows.map((r) => `
         <tr>
-          <td style="font-family: var(--font-mono, ui-monospace, monospace); font-size: 12px;">${esc(r.lot_id) || "—"}</td>
+          <td style="font-family: var(--font-mono, ui-monospace, monospace); font-size: 12px;">${esc(r.lot_id) || "-"}</td>
           <td>${esc(farmLabel(r.farm))}</td>
-          <td>${esc(varietyMap[r.variety] || r.variety) || "—"}</td>
-          <td>${esc((climateMap[r.climate] || r.climate || "—"))}</td>
-          <td>${esc(processMap[r.process]?.split(" ")[0] || r.process) || "—"}</td>
+          <td>${esc(varietyMap[r.variety] || r.variety) || "-"}</td>
+          <td>${esc((climateMap[r.climate] || r.climate || "-"))}</td>
+          <td>${esc(processMap[r.process]?.split(" ")[0] || r.process) || "-"}</td>
           <td>${esc(fmtDate(r.created_at))}</td>
         </tr>`).join("");
     }

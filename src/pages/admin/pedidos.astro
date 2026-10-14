@@ -2,7 +2,7 @@
 import AdminLayout from "../../layouts/AdminLayout.astro";
 ---
 
-<AdminLayout title="Pedidos — DobleYo Admin" section="pedidos">
+<AdminLayout title="Pedidos · DobleYo Admin" section="pedidos">
     <style is:global>
   /* Global y acotado a .pg-pedidos (lo pone AdminLayout): parte de esta
      página se pinta con innerHTML y los estilos scoped no le llegan. */
@@ -468,7 +468,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
                       hour: "2-digit",
                       minute: "2-digit",
                   })
-                : "—";
+                : "-";
         const badge = (st: string) => {
             const cls = STATUS_CLASS[st] ?? "badge-default";
             return `<span class="badge ${cls}">${STATUS_LABELS[st] ?? st}</span>`;
@@ -532,12 +532,12 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
                         .map(
                             (o) => `
             <tr>
-              <td><strong>${o.reference ?? "—"}</strong></td>
-              <td>${o.customer_name ?? "—"}</td>
-              <td style="color:#7a6652;font-size:0.82rem">${o.customer_email ?? "—"}</td>
-              <td>${o.shipping_city ?? "—"}</td>
+              <td><strong>${o.reference ?? "-"}</strong></td>
+              <td>${o.customer_name ?? "-"}</td>
+              <td style="color:#7a6652;font-size:0.82rem">${o.customer_email ?? "-"}</td>
+              <td>${o.shipping_city ?? "-"}</td>
               <td style="font-weight:600">${fmtCOP(Number(o.total_cop) || 0)}</td>
-              <td style="font-size:0.8rem;color:#7a6652">${o.payment_method ?? "—"}</td>
+              <td style="font-size:0.8rem;color:#7a6652">${o.payment_method ?? "-"}</td>
               <td>${badge(o.status)}</td>
               <td style="color:#7a6652;font-size:0.82rem">${fmtDate(o.created_at)}</td>
               <td>
@@ -619,15 +619,15 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
             const fields: [string, string][] = [
                 ["Referencia", order?.reference ?? ref],
-                ["Cliente", order?.customer_name ?? "—"],
-                ["Email", order?.customer_email ?? "—"],
+                ["Cliente", order?.customer_name ?? "-"],
+                ["Email", order?.customer_email ?? "-"],
                 [
                     "Estado",
-                    STATUS_LABELS[order?.status] ?? order?.status ?? "—",
+                    STATUS_LABELS[order?.status] ?? order?.status ?? "-",
                 ],
                 ["Total", fmtCOP(Number(order?.total_cop) || 0)],
-                ["Método de pago", order?.payment_method ?? "—"],
-                ["Ciudad", order?.shipping_city ?? "—"],
+                ["Método de pago", order?.payment_method ?? "-"],
+                ["Ciudad", order?.shipping_city ?? "-"],
                 ["Fecha", fmtDate(order?.created_at)],
             ];
 

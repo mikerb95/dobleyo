@@ -3,7 +3,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 import CostField from "../../components/CostField.astro";
 ---
 
-<AdminLayout title="Almacén de Café Tostado — DobleYo">
+<AdminLayout title="Almacén de Café Tostado · DobleYo">
   <!-- ── Encabezado de página ──────────────────────────────────────────── -->
   <div class="page-header">
     <div class="page-header-top">
@@ -32,22 +32,22 @@ import CostField from "../../components/CostField.astro";
     <div class="kpi-grid" id="rsKpis" style="margin-bottom: 22px;">
       <div class="kpi-tile warning">
         <div class="kpi-label">Pendiente por ubicar</div>
-        <div class="kpi-value" id="kpiPending">—</div>
-        <div class="kpi-sub" id="kpiPendingKg">—</div>
+        <div class="kpi-value" id="kpiPending">-</div>
+        <div class="kpi-sub" id="kpiPendingKg">-</div>
       </div>
       <div class="kpi-tile brand">
         <div class="kpi-label">Lotes en bodega</div>
-        <div class="kpi-value" id="kpiStock">—</div>
-        <div class="kpi-sub" id="kpiStockLoc">—</div>
+        <div class="kpi-value" id="kpiStock">-</div>
+        <div class="kpi-sub" id="kpiStockLoc">-</div>
       </div>
       <div class="kpi-tile info">
         <div class="kpi-label">Peso almacenado</div>
-        <div class="kpi-value" id="kpiWeight">—</div>
+        <div class="kpi-value" id="kpiWeight">-</div>
         <div class="kpi-sub">Café tostado en stock</div>
       </div>
       <div class="kpi-tile success">
         <div class="kpi-label">Ubicaciones ocupadas</div>
-        <div class="kpi-value" id="kpiLocations">—</div>
+        <div class="kpi-value" id="kpiLocations">-</div>
         <div class="kpi-sub">De 6 disponibles</div>
       </div>
     </div>
@@ -103,16 +103,16 @@ import CostField from "../../components/CostField.astro";
           <!-- Facet: mercancía seleccionada -->
           <div class="rs-facet">
             <div class="rs-facet-head">
-              <span class="rs-facet-lot" id="facetLot">—</span>
-              <span class="rs-roast-badge" id="facetRoast">—</span>
+              <span class="rs-facet-lot" id="facetLot">-</span>
+              <span class="rs-roast-badge" id="facetRoast">-</span>
             </div>
             <div class="rs-facet-grid">
-              <div><span class="rs-k">Variedad</span><span class="rs-v" id="facetVariety">—</span></div>
-              <div><span class="rs-k">Origen</span><span class="rs-v" id="facetRegion">—</span></div>
-              <div><span class="rs-k">Peso tostado</span><span class="rs-v rs-accent" id="facetWeight">—</span></div>
-              <div><span class="rs-k">Pérdida de tueste</span><span class="rs-v" id="facetLoss">—</span></div>
-              <div><span class="rs-k">Temp. final</span><span class="rs-v" id="facetTemp">—</span></div>
-              <div><span class="rs-k">Tiempo</span><span class="rs-v" id="facetTime">—</span></div>
+              <div><span class="rs-k">Variedad</span><span class="rs-v" id="facetVariety">-</span></div>
+              <div><span class="rs-k">Origen</span><span class="rs-v" id="facetRegion">-</span></div>
+              <div><span class="rs-k">Peso tostado</span><span class="rs-v rs-accent" id="facetWeight">-</span></div>
+              <div><span class="rs-k">Pérdida de tueste</span><span class="rs-v" id="facetLoss">-</span></div>
+              <div><span class="rs-k">Temp. final</span><span class="rs-v" id="facetTemp">-</span></div>
+              <div><span class="rs-k">Tiempo</span><span class="rs-v" id="facetTime">-</span></div>
             </div>
           </div>
 
@@ -168,7 +168,7 @@ import CostField from "../../components/CostField.astro";
             <div class="rs-capacity" id="capacityBox" hidden>
               <div class="rs-capacity-head">
                 <span>Ocupación de capacidad</span>
-                <span class="rs-capacity-pct" id="capacityPct">—</span>
+                <span class="rs-capacity-pct" id="capacityPct">-</span>
               </div>
               <div class="rs-capacity-bar"><span class="rs-capacity-fill" id="capacityFill"></span></div>
               <div class="rs-capacity-meta">
@@ -286,7 +286,7 @@ import CostField from "../../components/CostField.astro";
 
   <style is:global>
     /* =================================================================
-       Almacén de Café Tostado — workbench logístico (Claude Design)
+       Almacén de Café Tostado - workbench logístico (Claude Design)
        ============================================================== */
     .rs-page { max-width: 1320px; }
 
@@ -617,7 +617,7 @@ import CostField from "../../components/CostField.astro";
       if (prev && LOC_BY_CODE[prev]) sel.value = prev;
     }
 
-    const roastLabel = (r) => ({ LIGHT: 'Clara', MEDIUM: 'Media', DARK: 'Oscura' }[r] || r || '—');
+    const roastLabel = (r) => ({ LIGHT: 'Clara', MEDIUM: 'Media', DARK: 'Oscura' }[r] || r || '-');
     const roastDotClass = (r) => ({ LIGHT: 'rs-roast-light', MEDIUM: 'rs-roast-medium', DARK: 'rs-roast-dark' }[r] || 'rs-roast-medium');
     const kg = (n) => (Number(n) || 0).toLocaleString('es-CO', { maximumFractionDigits: 2 }) + ' kg';
 
@@ -726,12 +726,12 @@ import CostField from "../../components/CostField.astro";
 
       $('facetLot').textContent = current.lot_id || 'Lote';
       $('facetRoast').innerHTML = `<span class="rs-roast-dot ${roastDotClass(current.roast_level)}"></span> Tueste ${roastLabel(current.roast_level)}`;
-      $('facetVariety').textContent = current.variety || '—';
-      $('facetRegion').textContent = current.region || current.farm || '—';
+      $('facetVariety').textContent = current.variety || '-';
+      $('facetRegion').textContent = current.region || current.farm || '-';
       $('facetWeight').textContent = kg(current.weight_kg);
-      $('facetLoss').textContent = current.weight_loss_percent != null ? Number(current.weight_loss_percent).toFixed(1) + ' %' : '—';
-      $('facetTemp').textContent = current.actual_temp != null ? current.actual_temp + ' °C' : '—';
-      $('facetTime').textContent = current.roast_time_minutes != null ? current.roast_time_minutes + ' min' : '—';
+      $('facetLoss').textContent = current.weight_loss_percent != null ? Number(current.weight_loss_percent).toFixed(1) + ' %' : '-';
+      $('facetTemp').textContent = current.actual_temp != null ? current.actual_temp + ' °C' : '-';
+      $('facetTime').textContent = current.roast_time_minutes != null ? current.roast_time_minutes + ' min' : '-';
 
       renderWorklist();
       updateDistribution();
@@ -858,12 +858,12 @@ import CostField from "../../components/CostField.astro";
       const CONT_LABEL = { 'BAG-1KG': 'Bolsa 1 kg', 'BAG-5KG': 'Bolsa 5 kg', 'BUCKET-25': 'Cubeta 25 kg', 'SACK-60': 'Saco 60 kg' };
       body.innerHTML = stock.map((r) => {
         const loc = LOC_BY_CODE[r.location];
-        const cont = r.container_type ? `${CONT_LABEL[r.container_type] || r.container_type}${r.container_count ? ' × ' + r.container_count : ''}` : '—';
+        const cont = r.container_type ? `${CONT_LABEL[r.container_type] || r.container_type}${r.container_count ? ' × ' + r.container_count : ''}` : '-';
         return `
           <tr>
-            <td><span class="rs-stock-loc">${r.location || '—'}</span>${loc ? `<div class="rs-wl-sub">${loc.zone}</div>` : ''}</td>
-            <td style="font-family: var(--font-mono, ui-monospace, monospace);font-weight:600;">${r.lot_id || '—'}</td>
-            <td>${r.variety || '—'}</td>
+            <td><span class="rs-stock-loc">${r.location || '-'}</span>${loc ? `<div class="rs-wl-sub">${loc.zone}</div>` : ''}</td>
+            <td style="font-family: var(--font-mono, ui-monospace, monospace);font-weight:600;">${r.lot_id || '-'}</td>
+            <td>${r.variety || '-'}</td>
             <td><span class="rs-roast-dot ${roastDotClass(r.roast_level)}"></span> ${roastLabel(r.roast_level)}</td>
             <td>${cont}</td>
             <td class="rs-stock-weight">${kg(r.weight_kg)}</td>

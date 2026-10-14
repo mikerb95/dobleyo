@@ -31,7 +31,7 @@ const fmtCOP  = (n: number) => new Intl.NumberFormat("es-CO", { style: "currency
 const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-CO", { day: "2-digit", month: "short" });
 ---
 
-<AdminLayout title="Módulo Python — DobleYo Admin" section="python">
+<AdminLayout title="Módulo Python · DobleYo Admin" section="python">
   <script type="application/json" id="catalogProductNames" set:html={JSON.stringify(catalogProducts.map(p => p.name))} />
   <header class="page-header">
     <h1>Módulo Python</h1>
@@ -89,7 +89,7 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
             </div>
             <div class="kpi-tile success">
               <div class="kpi-label">Historia usada</div>
-              <div class="kpi-value">{fcRevenue.history_weeks ?? "—"}</div>
+              <div class="kpi-value">{fcRevenue.history_weeks ?? "-"}</div>
               <div class="kpi-sub">semanas de ventas</div>
             </div>
           </div>
@@ -103,7 +103,7 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
                 {fcRevenue.points.map((p: any) => {
                   const pct = Math.round(((p.forecast_value ?? 0) / revenueMax) * 100);
                   return (
-                    <div class="bar-col" title={`${fmtCOP(p.lower_bound)} – ${fmtCOP(p.upper_bound)}`}>
+                    <div class="bar-col" title={`${fmtCOP(p.lower_bound)} - ${fmtCOP(p.upper_bound)}`}>
                       <div class="bar-fill" style={`background:#c8a96e; height:${Math.max(pct, 2)}%;`}></div>
                       <span class="bar-label">{fmtWeek(p.period_start)}</span>
                     </div>
@@ -135,7 +135,7 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
                       <tr>
                         <td>{u.product_key}</td>
                         <td style="text-align:right; font-weight:700">{u.next_4w}</td>
-                        <td>{u.stock_quantity ?? "—"}</td>
+                        <td>{u.stock_quantity ?? "-"}</td>
                         <td>
                           {u.reorder === true ? (
                             <span class="badge badge--warn">Reordenar</span>
@@ -302,7 +302,7 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
       <div class="card-header">
         <div>
           <h2 class="card-title">Registros de demanda</h2>
-          <p class="card-subtitle" id="count-label">—</p>
+          <p class="card-subtitle" id="count-label">-</p>
         </div>
         <div style="display:flex;gap:8px;align-items:center">
           <select id="filter-category" style="max-width:220px">
@@ -617,7 +617,7 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
           const itemList = Array.isArray(d.items)
             ? d.items.map((i: any) => `${i.quantity}× ${i.title}`).join(", ")
             : "";
-          msg = `✓ Venta registrada en ${d.city ?? "—"}: ${itemList}. Ahora haga clic en "Recalcular ahora".`;
+          msg = `✓ Venta registrada en ${d.city ?? "-"}: ${itemList}. Ahora haga clic en "Recalcular ahora".`;
         } else {
           msg = `⚠ Error ${r.status}: ${j?.error ?? "respuesta inesperada del servidor."}`;
         }
@@ -671,7 +671,7 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
     }
 
     function fmtDate(s: string): string {
-      if (!s) return "—";
+      if (!s) return "-";
       const d = new Date(s.replace(" ", "T") + "Z");
       return isNaN(+d) ? s : d.toLocaleString("es-CO", { dateStyle: "short", timeStyle: "short" });
     }
@@ -788,8 +788,8 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
         <tr>
           <td>${r.id}</td>
           <td><span class="badge badge-neutral">${esc(r.category)}</span></td>
-          <td>${esc(r.product_key) || "—"}</td>
-          <td>${esc(r.period) || "—"}</td>
+          <td>${esc(r.product_key) || "-"}</td>
+          <td>${esc(r.period) || "-"}</td>
           <td style="text-align:right;font-weight:700;font-variant-numeric:tabular-nums">${esc(r.demand_value)}</td>
           <td>${esc(r.unit)}</td>
           <td style="white-space:nowrap">${fmtDate(r.updated_at)}</td>

@@ -5,7 +5,7 @@ import { PARES, COLUMNAS, ITERACIONES, COMMITS_POR_MES, REPO } from "../../data/
 const iterData = { PARES, COLUMNAS, ITERACIONES, COMMITS_POR_MES, REPO };
 ---
 
-<AdminLayout title="Iteraciones — DobleYo ERP" section="devtools">
+<AdminLayout title="Iteraciones · DobleYo ERP" section="devtools">
 
   <!-- Datos derivados del historial real de GitHub + CHANGELOG -->
   <script type="application/json" id="iterData" set:html={JSON.stringify(iterData)} />
@@ -116,12 +116,12 @@ const iterData = { PARES, COLUMNAS, ITERACIONES, COMMITS_POR_MES, REPO };
             <span class="xp-biblio__note">Obra fundacional de XP. Define iteraciones cortas, historias de usuario, pruebas de aceptación y programación en pares como prácticas centrales.</span>
           </li>
           <li>
-            Williams, L., Kessler, R. R., Cunningham, W., &amp; Jeffries, R. (2000). Strengthening the Case for Pair Programming. <em>IEEE Software, 17</em>(4), 19–25.
+            Williams, L., Kessler, R. R., Cunningham, W., &amp; Jeffries, R. (2000). Strengthening the Case for Pair Programming. <em>IEEE Software, 17</em>(4), 19-25.
             <a class="xp-biblio__link" href="https://dl.acm.org/doi/10.1109/52.854064" target="_blank" rel="noopener">doi:10.1109/52.854064</a>
             <span class="xp-biblio__note">Estudio empírico seminal: código escrito en pares aprueba el 90 % de las pruebas de aceptación vs. 75 % en programación individual.</span>
           </li>
           <li>
-            Dybå, T., &amp; Dingsøyr, T. (2008). Empirical Studies of Agile Software Development: A Systematic Review. <em>Information and Software Technology, 50</em>(9–10), 833–859.
+            Dybå, T., &amp; Dingsøyr, T. (2008). Empirical Studies of Agile Software Development: A Systematic Review. <em>Information and Software Technology, 50</em>(9-10), 833-859.
             <span class="xp-biblio__note">Revisión sistemática de 36 estudios empíricos sobre métodos ágiles, incluyendo XP. Documenta la efectividad de sus prácticas en proyectos reales.</span>
           </li>
         </ol>
@@ -578,7 +578,7 @@ const iterData = { PARES, COLUMNAS, ITERACIONES, COMMITS_POR_MES, REPO };
 <script is:inline>
 (() => {
   // ═══════════════════════════════════════════════════════════
-  // Tablero XP — DobleYo Café
+  // Tablero XP - DobleYo Café
   // Datos derivados del historial real de GitHub + CHANGELOG.
   // Inyectados desde src/data/iteraciones.ts vía <script id="iterData">.
   // ═══════════════════════════════════════════════════════════
@@ -698,7 +698,7 @@ const iterData = { PARES, COLUMNAS, ITERACIONES, COMMITS_POR_MES, REPO };
       { label: 'Historias',  value: h.length,                 sub: `${aceptadas} aceptadas`,        tone: '' },
       { label: 'DoD',        value: `${d.pass}/${d.total}`,    sub: `${d.pend} pendientes`,          tone: 'info' },
       { label: 'Completado', value: `${d.pct}%`,              sub: `${enCurso} en curso`,           tone: 'success' },
-      { label: 'Commits',    value: iterActual.commits != null ? iterActual.commits : '—', sub: iterActual.rango, tone: 'warning' },
+      { label: 'Commits',    value: iterActual.commits != null ? iterActual.commits : '-', sub: iterActual.rango, tone: 'warning' },
     ].forEach(k => {
       const tile = document.createElement('div');
       tile.className = `kpi-tile${k.tone ? ' ' + k.tone : ''}`;
@@ -830,7 +830,7 @@ const iterData = { PARES, COLUMNAS, ITERACIONES, COMMITS_POR_MES, REPO };
 
     const pair = document.createElement('span');
     pair.className = 'iter-card__pair';
-    pair.title = `${par.nombre} — ${par.rol}`;
+    pair.title = `${par.nombre} · ${par.rol}`;
     const avatar = document.createElement('span');
     avatar.className = 'iter-avatar';
     avatar.style.background = par.color;

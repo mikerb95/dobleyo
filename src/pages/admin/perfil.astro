@@ -2,7 +2,7 @@
 import AdminLayout from "../../layouts/AdminLayout.astro";
 ---
 
-<AdminLayout title="Mi Perfil — DobleYo ERP" section="perfil">
+<AdminLayout title="Mi Perfil · DobleYo ERP" section="perfil">
   <div class="page-header">
     <div class="page-header-top">
       <div>
@@ -18,22 +18,22 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     <aside class="profile-aside">
       <div class="card">
         <div class="profile-avatar-block">
-          <div class="profile-avatar" id="profileAvatar">—</div>
-          <div class="profile-fullname" id="profileFullName">—</div>
-          <div class="badge badge-neutral" id="profileRole">—</div>
+          <div class="profile-avatar" id="profileAvatar">-</div>
+          <div class="profile-fullname" id="profileFullName">-</div>
+          <div class="badge badge-neutral" id="profileRole">-</div>
         </div>
         <div class="profile-meta">
           <div class="meta-row">
             <span class="meta-label">Correo</span>
-            <span class="meta-value" id="profileEmail">—</span>
+            <span class="meta-value" id="profileEmail">-</span>
           </div>
           <div class="meta-row">
             <span class="meta-label">Último acceso</span>
-            <span class="meta-value" id="profileLastLogin">—</span>
+            <span class="meta-value" id="profileLastLogin">-</span>
           </div>
           <div class="meta-row">
             <span class="meta-label">Miembro desde</span>
-            <span class="meta-value" id="profileCreatedAt">—</span>
+            <span class="meta-value" id="profileCreatedAt">-</span>
           </div>
         </div>
       </div>
@@ -55,39 +55,39 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
           <div class="field-grid">
             <div class="field-item">
               <div class="field-label">Nombre</div>
-              <div class="field-value" id="viewFirstName">—</div>
+              <div class="field-value" id="viewFirstName">-</div>
             </div>
             <div class="field-item">
               <div class="field-label">Apellido</div>
-              <div class="field-value" id="viewLastName">—</div>
+              <div class="field-value" id="viewLastName">-</div>
             </div>
             <div class="field-item">
               <div class="field-label">Celular</div>
-              <div class="field-value" id="viewMobilePhone">—</div>
+              <div class="field-value" id="viewMobilePhone">-</div>
             </div>
             <div class="field-item">
               <div class="field-label">Teléfono fijo</div>
-              <div class="field-value" id="viewLandlinePhone">—</div>
+              <div class="field-value" id="viewLandlinePhone">-</div>
             </div>
             <div class="field-item">
               <div class="field-label">NIT / Cédula</div>
-              <div class="field-value" id="viewTaxId">—</div>
+              <div class="field-value" id="viewTaxId">-</div>
             </div>
             <div class="field-item">
               <div class="field-label">Ciudad</div>
-              <div class="field-value" id="viewCity">—</div>
+              <div class="field-value" id="viewCity">-</div>
             </div>
             <div class="field-item">
               <div class="field-label">Departamento</div>
-              <div class="field-value" id="viewStateProvince">—</div>
+              <div class="field-value" id="viewStateProvince">-</div>
             </div>
             <div class="field-item">
               <div class="field-label">País</div>
-              <div class="field-value" id="viewCountry">—</div>
+              <div class="field-value" id="viewCountry">-</div>
             </div>
             <div class="field-item field-item--full">
               <div class="field-label">Dirección</div>
-              <div class="field-value" id="viewAddress">—</div>
+              <div class="field-value" id="viewAddress">-</div>
             </div>
           </div>
         </div>
@@ -367,20 +367,20 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
     setText('profileAvatar', initials);
     setText('profileFullName', fullName);
-    setText('profileRole', u.role ?? '—');
-    setText('profileEmail', u.email ?? '—');
+    setText('profileRole', u.role ?? '-');
+    setText('profileEmail', u.email ?? '-');
     setText('profileLastLogin', formatDate(u.last_login_at));
     setText('profileCreatedAt', formatDate(u.created_at));
 
-    setText('viewFirstName', u.first_name ?? '—');
-    setText('viewLastName', u.last_name ?? '—');
-    setText('viewMobilePhone', u.mobile_phone ?? '—');
-    setText('viewLandlinePhone', u.landline_phone ?? '—');
-    setText('viewTaxId', u.tax_id ?? '—');
-    setText('viewCity', u.city ?? '—');
-    setText('viewStateProvince', u.state_province ?? '—');
-    setText('viewCountry', u.country ?? '—');
-    setText('viewAddress', u.address ?? '—');
+    setText('viewFirstName', u.first_name ?? '-');
+    setText('viewLastName', u.last_name ?? '-');
+    setText('viewMobilePhone', u.mobile_phone ?? '-');
+    setText('viewLandlinePhone', u.landline_phone ?? '-');
+    setText('viewTaxId', u.tax_id ?? '-');
+    setText('viewCity', u.city ?? '-');
+    setText('viewStateProvince', u.state_province ?? '-');
+    setText('viewCountry', u.country ?? '-');
+    setText('viewAddress', u.address ?? '-');
 
     (document.getElementById('inputFirstName') as HTMLInputElement).value = u.first_name ?? '';
     (document.getElementById('inputLastName') as HTMLInputElement).value = u.last_name ?? '';
@@ -399,7 +399,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   }
 
   function formatDate(raw: string | null) {
-    if (!raw) return '—';
+    if (!raw) return '-';
     try {
       return new Date(raw).toLocaleDateString('es-CO', { year: 'numeric', month: 'short', day: 'numeric' });
     } catch { return raw; }

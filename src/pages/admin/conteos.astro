@@ -2,7 +2,7 @@
 import AdminLayout from "../../layouts/AdminLayout.astro";
 ---
 
-<AdminLayout title="Conteo Cíclico — DobleYo">
+<AdminLayout title="Conteo Cíclico · DobleYo">
   <div class="page-header">
     <div class="page-header-top">
       <div>
@@ -58,8 +58,8 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   <aside class="cn-drawer" id="drawer" aria-hidden="true">
     <div class="cn-drawer-head">
       <div>
-        <div class="cn-drawer-code" id="drawerNumber">—</div>
-        <div class="cn-drawer-sub" id="drawerStatus">—</div>
+        <div class="cn-drawer-code" id="drawerNumber">-</div>
+        <div class="cn-drawer-sub" id="drawerStatus">-</div>
       </div>
       <button type="button" class="cn-close" id="drawerClose" aria-label="Cerrar">×</button>
     </div>
@@ -103,7 +103,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
   <div class="ub-toast" id="toast"></div>
 
-  <!-- is:global — las filas de la tabla y el panel de detalle se generan con
+  <!-- is:global - las filas de la tabla y el panel de detalle se generan con
        innerHTML desde el script, así que no reciben el atributo de scope que
        Astro añade a los elementos del template; el CSS scoped no las alcanza.
        Todas las clases van prefijadas con `cn-` para evitar colisiones. -->
@@ -327,7 +327,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
                 <span class="cn-progress-text">${c.counted_lines}/${c.line_count}</span>
               </div>
             </td>
-            <td>${c.created_by_email || "—"}</td>
+            <td>${c.created_by_email || "-"}</td>
             <td>${new Date(c.created_at).toLocaleDateString("es-CO")}</td>
             <td style="text-align:right;">
               <button type="button" class="ub-mini-btn" data-open="${c.id}">Ver</button>
@@ -518,7 +518,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         ? withStock.map((l) => `
             <label>
               <input type="checkbox" value="${l.code}" />
-              ${l.code} — ${l.name}
+              ${l.code} · ${l.name}
               <span class="cn-loc-kg">${kg(l.occupied_kg)}</span>
             </label>`).join("")
         : '<div class="empty-state" style="padding:10px 0;">No hay ubicaciones con existencias.</div>';

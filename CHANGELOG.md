@@ -2,6 +2,16 @@
 
 ---
 
+## 2026-10-13: Licencia propietaria a nombre de codebymike.net (Agente: Claude)
+
+### Cambios
+- **`LICENSE`** reescrito como licencia propietaria bilingüe (prevalece el español) a nombre de Michael David Rodriguez Beltran / codebymike.net, Bogotá D.C. Prohíbe reproducción total o parcial, uso, despliegue, obras derivadas, distribución, ingeniería inversa, elusión de protecciones, entrenamiento de IA y scraping. Incluye confidencialidad, marcas (BrewedByMike, codebymike.net; DobleYo Café no es del titular), sanciones (Ley 23 de 1982, Decisión Andina 351, Ley 1915 de 2018, arts. 270-272 del Código Penal) y jurisdicción en Bogotá.
+- Copia del `LICENSE` en `apps/mobile/` y `packages/shared/`.
+- `package.json` (raíz y workspaces): `author` con nombre, correo y `https://codebymike.net`; `license: "SEE LICENSE IN LICENSE"`.
+- `README.md`: sección "Licencia y derechos de autor".
+
+---
+
 ## 2026-10-13: Footer rediseñado, oscuro y con marca (Agente: Claude)
 
 ### Contexto

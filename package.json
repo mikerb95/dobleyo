@@ -4,8 +4,12 @@
   "type": "module",
   "version": "1.0.0",
   "description": "Sitio y backend Node.js/Express para DobleYo Café (raíz del proyecto)",
-  "author": "Michael Rodriguez",
-  "license": "UNLICENSED",
+  "author": {
+    "name": "Michael David Rodriguez Beltran",
+    "email": "mike95@duck.com",
+    "url": "https://codebymike.net"
+  },
+  "license": "SEE LICENSE IN LICENSE",
   "workspaces": [
     "packages/*",
     "apps/*"

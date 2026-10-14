@@ -2,7 +2,7 @@
 import AdminLayout from "../../layouts/AdminLayout.astro";
 ---
 
-<AdminLayout title="Preparar para Venta — DobleYo">
+<AdminLayout title="Preparar para Venta · DobleYo">
   <!-- ── Encabezado de página ──────────────────────────────────────────── -->
   <div class="page-header">
     <div class="page-header-top">
@@ -31,22 +31,22 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     <div class="kpi-grid" style="margin-bottom: 22px;">
       <div class="kpi-tile brand">
         <div class="kpi-label">Cafés tostados disponibles</div>
-        <div class="kpi-value" id="kpiRoasted">—</div>
+        <div class="kpi-value" id="kpiRoasted">-</div>
         <div class="kpi-sub">Listos para empacar</div>
       </div>
       <div class="kpi-tile info">
         <div class="kpi-label">Peso disponible</div>
-        <div class="kpi-value" id="kpiWeight">—</div>
+        <div class="kpi-value" id="kpiWeight">-</div>
         <div class="kpi-sub">Total en bodega de tostado</div>
       </div>
       <div class="kpi-tile success">
         <div class="kpi-label">Lotes preparados</div>
-        <div class="kpi-value" id="kpiPackaged">—</div>
+        <div class="kpi-value" id="kpiPackaged">-</div>
         <div class="kpi-sub">Listos para la venta</div>
       </div>
       <div class="kpi-tile warning">
         <div class="kpi-label">Unidades empacadas</div>
-        <div class="kpi-value" id="kpiUnits">—</div>
+        <div class="kpi-value" id="kpiUnits">-</div>
         <div class="kpi-sub">Acumulado</div>
       </div>
     </div>
@@ -90,27 +90,27 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
               <div class="form-section"><h3>Información del café</h3></div>
               <div class="detail-grid">
                 <div class="detail-item">
-                  <dt>Lote ID</dt><dd id="coffeeLotId">—</dd>
+                  <dt>Lote ID</dt><dd id="coffeeLotId">-</dd>
                 </div>
                 <div class="detail-item">
-                  <dt>Variedad</dt><dd id="coffeeVariety">—</dd>
+                  <dt>Variedad</dt><dd id="coffeeVariety">-</dd>
                 </div>
                 <div class="detail-item">
-                  <dt>Tueste</dt><dd id="coffeeRoastLevel">—</dd>
+                  <dt>Tueste</dt><dd id="coffeeRoastLevel">-</dd>
                 </div>
                 <div class="detail-item">
                   <dt>Peso disponible</dt>
-                  <dd style="color: var(--color-accent);" id="coffeeAvailableWeight">—</dd>
+                  <dd style="color: var(--color-accent);" id="coffeeAvailableWeight">-</dd>
                 </div>
               </div>
               <div class="info-box" id="originInfo" hidden style="margin-top: 14px;">
                 <strong>📍 Origen</strong>
                 <div class="origin-grid">
-                  <div><span>Finca</span><b id="originFarm">—</b></div>
-                  <div><span>Región</span><b id="originRegion">—</b></div>
-                  <div><span>Altura</span><b id="originAltitude">—</b></div>
-                  <div><span>Aroma</span><b id="originAroma">—</b></div>
-                  <div class="origin-wide"><span>Notas</span><b id="originNotes">—</b></div>
+                  <div><span>Finca</span><b id="originFarm">-</b></div>
+                  <div><span>Región</span><b id="originRegion">-</b></div>
+                  <div><span>Altura</span><b id="originAltitude">-</b></div>
+                  <div><span>Aroma</span><b id="originAroma">-</b></div>
+                  <div class="origin-wide"><span>Notas</span><b id="originNotes">-</b></div>
                 </div>
               </div>
             </div>
@@ -266,7 +266,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
               <div class="pk-supplies-total" id="suppliesTotal" hidden>
                 <span>Costo de empaque de este lote</span>
-                <b id="suppliesTotalValue">—</b>
+                <b id="suppliesTotalValue">-</b>
               </div>
               <p class="pk-supplies-warn" id="suppliesWarn" hidden></p>
             </div>
@@ -289,7 +289,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
               <h3 class="card-title">Plan de empaque</h3>
               <div class="card-subtitle">Resumen en tiempo real</div>
             </div>
-            <span class="badge badge-neutral" id="planScore">—</span>
+            <span class="badge badge-neutral" id="planScore">-</span>
           </div>
           <div class="card-pad">
             <!-- Estado vacío -->
@@ -304,10 +304,10 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
             <!-- Plan -->
             <div id="planBody" hidden>
               <div class="plan-facet">
-                <span class="plan-lot" id="planLot">—</span>
-                <span class="badge badge-brand" id="planRoast">—</span>
+                <span class="plan-lot" id="planLot">-</span>
+                <span class="badge badge-brand" id="planRoast">-</span>
               </div>
-              <div class="plan-sub" id="planMeta">—</div>
+              <div class="plan-sub" id="planMeta">-</div>
 
               <div class="plan-profile">
                 <div class="pv-row">
@@ -325,13 +325,13 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
               </div>
 
               <div class="plan-list">
-                <div class="plan-row"><span>Presentación</span><b id="planPresentation">—</b></div>
-                <div class="plan-row" id="planGrindRow" hidden><span>Molienda</span><b id="planGrind">—</b></div>
-                <div class="plan-row"><span>Tamaño</span><b id="planSize">—</b></div>
-                <div class="plan-row"><span>Unidades</span><b id="planUnits">—</b></div>
-                <div class="plan-row"><span>Peso a usar</span><b id="planUsed">—</b></div>
-                <div class="plan-row"><span>Peso restante</span><b id="planRemaining">—</b></div>
-                <div class="plan-row"><span>Inventario</span><b id="planInventory">—</b></div>
+                <div class="plan-row"><span>Presentación</span><b id="planPresentation">-</b></div>
+                <div class="plan-row" id="planGrindRow" hidden><span>Molienda</span><b id="planGrind">-</b></div>
+                <div class="plan-row"><span>Tamaño</span><b id="planSize">-</b></div>
+                <div class="plan-row"><span>Unidades</span><b id="planUnits">-</b></div>
+                <div class="plan-row"><span>Peso a usar</span><b id="planUsed">-</b></div>
+                <div class="plan-row"><span>Peso restante</span><b id="planRemaining">-</b></div>
+                <div class="plan-row"><span>Inventario</span><b id="planInventory">-</b></div>
               </div>
             </div>
           </div>
@@ -487,7 +487,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
           : data.packagedUnits;
       } catch (error) {
         console.error("[Packaging] Error cargando estadísticas:", error);
-        setAll("—");
+        setAll("-");
       }
     }
 
@@ -513,21 +513,21 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       body.innerHTML = rows
         .map((r) => {
           const pres = r.presentation === "GRANO" ? "Grano entero"
-            : r.presentation === "MOLIDO" ? "Molido" : (r.presentation || "—");
+            : r.presentation === "MOLIDO" ? "Molido" : (r.presentation || "-");
           const date = r.created_at
             ? new Date(r.created_at).toLocaleDateString("es-CO", { day: "2-digit", month: "short", year: "numeric" })
-            : "—";
+            : "-";
           return `
         <tr>
           <td>${esc(pres)}</td>
-          <td>${esc(r.grind_size) || "—"}</td>
-          <td>${esc(r.package_size) || "—"}</td>
+          <td>${esc(r.grind_size) || "-"}</td>
+          <td>${esc(r.package_size) || "-"}</td>
           <td style="font-variant-numeric: tabular-nums;">${
-            r.unit_count == null ? "—"
+            r.unit_count == null ? "-"
               : r.package_size === "bulk" ? `${r.unit_count} kg` : r.unit_count
           }</td>
-          <td style="font-variant-numeric: tabular-nums;">${r.score != null ? r.score + "/5" : "—"}</td>
-          <td class="cell-notes" title="${esc(r.notes)}">${esc(r.notes) || "—"}</td>
+          <td style="font-variant-numeric: tabular-nums;">${r.score != null ? r.score + "/5" : "-"}</td>
+          <td class="cell-notes" title="${esc(r.notes)}">${esc(r.notes) || "-"}</td>
           <td>${esc(date)}</td>
         </tr>`;
         })
@@ -544,8 +544,8 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       }
       currentRoasted = JSON.parse(roastedSelect.value);
 
-      document.getElementById("coffeeLotId").textContent = currentRoasted.lot_id || "—";
-      document.getElementById("coffeeVariety").textContent = currentRoasted.variety || "—";
+      document.getElementById("coffeeLotId").textContent = currentRoasted.lot_id || "-";
+      document.getElementById("coffeeVariety").textContent = currentRoasted.variety || "-";
       document.getElementById("coffeeRoastLevel").textContent = roastLabel(currentRoasted.roast_level);
 
       const weight = availWeight(currentRoasted);
@@ -558,11 +558,11 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       const aroma = (currentRoasted.aroma || "").trim();
       const notes = (currentRoasted.taste_notes || currentRoasted.notes || "").trim();
 
-      document.getElementById("originFarm").textContent = farm || "—";
-      document.getElementById("originRegion").textContent = region || "—";
-      document.getElementById("originAltitude").textContent = altitude > 0 ? `${altitude} m` : "—";
-      document.getElementById("originAroma").textContent = aroma || "—";
-      document.getElementById("originNotes").textContent = notes || "—";
+      document.getElementById("originFarm").textContent = farm || "-";
+      document.getElementById("originRegion").textContent = region || "-";
+      document.getElementById("originAltitude").textContent = altitude > 0 ? `${altitude} m` : "-";
+      document.getElementById("originAroma").textContent = aroma || "-";
+      document.getElementById("originNotes").textContent = notes || "-";
       originInfo.hidden = !(farm || region || altitude || aroma || notes);
 
       coffeeInfoCard.hidden = false;
@@ -606,7 +606,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       const input = document.getElementById("packageQuantity");
       if (!currentRoasted) {
         input.removeAttribute("max");
-        document.getElementById("quantityHint").textContent = "Máximo disponible: —";
+        document.getElementById("quantityHint").textContent = "Máximo disponible: -";
         return;
       }
       const max = unit === "g" ? maxKg * 1000 : maxKg;
@@ -753,7 +753,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       if (!currentRoasted) {
         empty.hidden = false;
         planBody.hidden = true;
-        document.getElementById("planScore").textContent = "—";
+        document.getElementById("planScore").textContent = "-";
         return;
       }
       empty.hidden = true;
@@ -764,7 +764,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       const balance = document.getElementById("balance").value;
       const score = ((+acidity + +body + +balance) / 3).toFixed(1);
 
-      document.getElementById("planLot").textContent = currentRoasted.lot_id || "—";
+      document.getElementById("planLot").textContent = currentRoasted.lot_id || "-";
       document.getElementById("planRoast").textContent = roastLabel(currentRoasted.roast_level);
       const meta = [currentRoasted.variety, currentRoasted.region].filter(Boolean).join(" · ");
       document.getElementById("planMeta").textContent =
@@ -784,15 +784,15 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
       document.getElementById("planPresentation").textContent =
         presentation === "GRANO" ? "Grano entero"
-        : presentation === "MOLIDO" ? "Molido" : "—";
+        : presentation === "MOLIDO" ? "Molido" : "-";
       const grindRow = document.getElementById("planGrindRow");
       grindRow.hidden = presentation !== "MOLIDO";
       document.getElementById("planGrind").textContent = grind || "Por especificar";
-      document.getElementById("planSize").textContent = size || "—";
+      document.getElementById("planSize").textContent = size || "-";
       document.getElementById("planUnits").textContent = units
         ? `${units} ${size === "bulk" ? "kg" : "unidades"}`
-        : "—";
-      document.getElementById("planUsed").textContent = used > 0 ? `${used} kg` : "—";
+        : "-";
+      document.getElementById("planUsed").textContent = used > 0 ? `${used} kg` : "-";
       const remaining = Math.round((availableKg - used) * 1000) / 1000;
       const remainingEl = document.getElementById("planRemaining");
       // Un restante negativo significa que la cantidad excede el lote: se avisa

@@ -2,7 +2,7 @@
 import AdminLayout from "../../layouts/AdminLayout.astro";
 ---
 
-<AdminLayout title="Costeo de Producción — DobleYo Admin" section="costos">
+<AdminLayout title="Costeo de Producción · DobleYo Admin" section="costos">
   <div class="page-header">
     <div class="page-header-top">
       <div>
@@ -25,22 +25,22 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     <div class="kpi-row">
       <div class="kpi-tile brand">
         <div class="kpi-label">Costo total registrado</div>
-        <div class="kpi-value" id="kpiTotal">—</div>
+        <div class="kpi-value" id="kpiTotal">-</div>
         <div class="kpi-sub">Suma de todos los lotes</div>
       </div>
       <div class="kpi-tile info">
         <div class="kpi-label">Costo medio por kg tostado</div>
-        <div class="kpi-value" id="kpiPerKg">—</div>
+        <div class="kpi-value" id="kpiPerKg">-</div>
         <div class="kpi-sub">Lotes que llegaron a tostión</div>
       </div>
       <div class="kpi-tile success">
         <div class="kpi-label">Margen medio</div>
-        <div class="kpi-value" id="kpiMargin">—</div>
+        <div class="kpi-value" id="kpiMargin">-</div>
         <div class="kpi-sub">Precio de venta contra costo unitario</div>
       </div>
       <div class="kpi-tile warning">
         <div class="kpi-label">Costeo incompleto</div>
-        <div class="kpi-value" id="kpiIncomplete">—</div>
+        <div class="kpi-value" id="kpiIncomplete">-</div>
         <div class="kpi-sub">Lotes con etapas sin costo</div>
       </div>
     </div>
@@ -88,7 +88,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       <header class="ck-drawer-head">
         <div>
           <div class="ck-drawer-eyebrow">Desglose de costos</div>
-          <h2 id="drawerTitle">—</h2>
+          <h2 id="drawerTitle">-</h2>
         </div>
         <button class="ck-close" id="drawerClose" aria-label="Cerrar">×</button>
       </header>
@@ -115,13 +115,13 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 <script>
   const fmtCop = (n) =>
     n == null
-      ? "—"
+      ? "-"
       : new Intl.NumberFormat("es-CO", {
           style: "currency", currency: "COP", maximumFractionDigits: 0,
         }).format(n);
 
   const fmtKg = (n) =>
-    n == null ? "—" : `${new Intl.NumberFormat("es-CO", { maximumFractionDigits: 2 }).format(n)} kg`;
+    n == null ? "-" : `${new Intl.NumberFormat("es-CO", { maximumFractionDigits: 2 }).format(n)} kg`;
 
   // El resumen viene de /api/costs; se tipa laxo porque la forma la define el
   // servicio y aquí solo se pinta.
@@ -163,12 +163,12 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     const roasted = lots.map((l) => l.cost_per_kg?.roasted).filter((v) => v != null);
     document.getElementById("kpiPerKg").textContent = roasted.length
       ? fmtCop(Math.round(roasted.reduce((a, b) => a + b, 0) / roasted.length))
-      : "—";
+      : "-";
 
     const margins = lots.map((l) => l.margin_pct).filter((v) => v != null);
     document.getElementById("kpiMargin").textContent = margins.length
       ? `${(margins.reduce((a, b) => a + b, 0) / margins.length).toFixed(1)}%`
-      : "—";
+      : "-";
 
     document.getElementById("kpiIncomplete").textContent =
       String(lots.filter((l) => !l.complete).length);
@@ -196,13 +196,13 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         return `
           <tr class="ck-row" data-lot="${l.lot_id}">
             <td><code class="ck-lot">${l.lot_id}</code></td>
-            <td>${l.farm || "—"}</td>
+            <td>${l.farm || "-"}</td>
             <td style="text-align:right"><b>${fmtCop(l.totals?.total_cop)}</b></td>
             <td style="text-align:right">${fmtCop(l.cost_per_kg?.green)}</td>
             <td style="text-align:right">${fmtCop(l.cost_per_kg?.roasted)}</td>
             <td style="text-align:right">${fmtCop(l.unit_cost_cop)}</td>
             <td style="text-align:right" class="${marginClass}">${
-              l.margin_pct == null ? "—" : `${l.margin_pct}%`
+              l.margin_pct == null ? "-" : `${l.margin_pct}%`
             }</td>
             <td style="text-align:center">${badge}</td>
           </tr>`;
@@ -274,10 +274,10 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         <div><span>Salió del tostador</span><b>${fmtKg(w.roasted_kg)}</b></div>
         <div><span>Empacado</span><b>${fmtKg(w.packaged_kg)}</b></div>
         <div><span>Merma de secado</span><b>${
-          d.shrinkage?.drying_pct == null ? "—" : `${d.shrinkage.drying_pct}%`
+          d.shrinkage?.drying_pct == null ? "-" : `${d.shrinkage.drying_pct}%`
         }</b></div>
         <div><span>Merma de tostión</span><b>${
-          d.shrinkage?.roasting_pct == null ? "—" : `${d.shrinkage.roasting_pct}%`
+          d.shrinkage?.roasting_pct == null ? "-" : `${d.shrinkage.roasting_pct}%`
         }</b></div>
       </div>
 

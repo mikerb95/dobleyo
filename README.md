@@ -136,3 +136,13 @@ El servidor estará corriendo en `https://dobleyo.cafe` (o el puerto que hayas c
 
 - **TailwindCSS**: Se está cargando vía CDN en el `<head>` de los archivos HTML. Para producción, se recomienda configurar un proceso de build para purgar estilos no utilizados.
 - **Seguridad**: El backend utiliza `helmet` para headers de seguridad. Si encuentras problemas con scripts externos, revisa la configuración de CSP en `src/index.js`.
+
+---
+
+## Licencia y derechos de autor
+
+Copyright (c) 2025-2026 Michael David Rodriguez Beltran (codebymike.net), Bogotá D.C., Colombia. **Todos los derechos reservados.**
+
+Software propietario y confidencial. Queda prohibida su reproducción total o parcial, uso, modificación, distribución, ingeniería inversa o uso para entrenar modelos de IA sin autorización previa y por escrito del titular. Ver [`LICENSE`](LICENSE) para los términos completos.
+
+Contacto: +57 310 464 1228 · mike95@duck.com

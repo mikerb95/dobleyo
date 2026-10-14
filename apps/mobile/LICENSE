@@ -1,21 +1,201 @@
-The MIT License (MIT)
+LICENCIA PROPIETARIA - TODOS LOS DERECHOS RESERVADOS
+PROPRIETARY LICENSE - ALL RIGHTS RESERVED
 
-Copyright (c) 2015-present 650 Industries, Inc. (aka Expo)
+Copyright (c) 2025-2026 Michael David Rodriguez Beltran (Michael Rodriguez)
+codebymike.net - Bogotá D.C., Colombia
+Móvil / Mobile: +57 310 464 1228
+Correo / Email: mike95@duck.com
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+======================================================================
+VERSIÓN EN ESPAÑOL (TEXTO QUE PREVALECE)
+======================================================================
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+1. TITULARIDAD
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+Este repositorio y todo su contenido, incluyendo sin limitarse a: código
+fuente y código objeto, scripts, esquemas y migraciones de base de datos,
+APIs, arquitectura, algoritmos, lógica de negocio, diseños de interfaz,
+hojas de estilo, componentes, animaciones, textos, documentación,
+configuraciones, pruebas, datos semilla y cualquier versión, fragmento o
+compilación de los mismos (en adelante, el "Software"), es obra original y
+propiedad exclusiva de Michael David Rodriguez Beltran, quien actúa bajo el
+nombre comercial codebymike.net (en adelante, el "Titular").
+
+El Software está protegido por la Ley 23 de 1982, la Decisión Andina 351 de
+1993, la Ley 1915 de 2018, la Ley 599 de 2000 (Código Penal, artículos 270,
+271 y 272), el Convenio de Berna y demás normas nacionales e internacionales
+sobre derecho de autor y propiedad intelectual.
+
+2. PROHIBICIONES
+
+Ninguna disposición de este documento otorga licencia, permiso o derecho
+alguno sobre el Software. Salvo autorización previa, expresa y por escrito
+del Titular, queda TOTALMENTE PROHIBIDO, por cualquier medio, conocido o por
+conocer, y con o sin ánimo de lucro:
+
+  a) Reproducir el Software, en forma total o parcial, incluyendo copiar,
+     descargar, clonar, imprimir, fotografiar o almacenar cualquier parte.
+  b) Usar, ejecutar, instalar, desplegar u hospedar el Software o cualquier
+     parte de él, en cualquier entorno, servidor o dispositivo.
+  c) Modificar, adaptar, traducir, transformar o crear obras derivadas a
+     partir del Software, incluso reescribiéndolo en otro lenguaje o
+     reproduciendo su estructura, secuencia, organización o diseño.
+  d) Distribuir, publicar, vender, sublicenciar, arrendar, prestar, ceder,
+     transferir o poner a disposición del público el Software.
+  e) Realizar ingeniería inversa, descompilar, desensamblar o intentar
+     obtener el código fuente, la lógica o los algoritmos del Software.
+  f) Eludir, desactivar o alterar cualquier medida tecnológica de protección,
+     así como suprimir o modificar avisos de derechos de autor, marcas o
+     información sobre la gestión de derechos.
+  g) Utilizar el Software, en todo o en parte, para entrenar, ajustar,
+     evaluar o alimentar modelos de inteligencia artificial o aprendizaje
+     automático, o someterlo a minería de textos y datos, extracción
+     automatizada (scraping) o indexación con esos fines.
+  h) Usar el Software como referencia, plantilla o base para desarrollar
+     productos o servicios similares o competidores.
+  i) Divulgar a terceros información confidencial contenida en el Software.
+
+El acceso al repositorio, por cualquier motivo, no implica autorización de
+uso. Cualquier copia que obre en poder de una persona no autorizada debe ser
+eliminada de inmediato.
+
+3. USO AUTORIZADO
+
+Cualquier uso del Software solo es válido si está amparado por un contrato o
+autorización escrita y firmada por el Titular, y únicamente dentro de los
+límites, plazos, finalidades y territorio que dicho documento establezca.
+Lo que no esté expresamente autorizado se entiende prohibido. Ninguna
+autorización implica cesión de derechos patrimoniales ni de derechos morales,
+los cuales son irrenunciables e inalienables.
+
+4. CONFIDENCIALIDAD
+
+El Software constituye información confidencial y secreto empresarial del
+Titular. Quien tenga acceso a él, a cualquier título, se obliga a guardar
+reserva absoluta sobre su contenido, incluso después de terminada la relación
+que le dio acceso.
+
+5. MARCAS
+
+"BrewedByMike" y "codebymike.net" son marcas, nombres comerciales y propiedad
+intelectual del Titular. "BrewedByMike" es la plataforma tecnológica que
+soporta la lógica del negocio: gestión de inventario, paneles de
+administración, interfaces de aplicación, cadena de suministro, control
+financiero y toda la infraestructura y algoritmos de backend asociados. Su uso
+requiere autorización expresa y por escrito.
+
+"DobleYo Café" es una marca comercial utilizada para la identidad pública de
+este proyecto y no es propiedad del Titular. Su mención en el Software no
+otorga derecho alguno sobre el Software a terceros.
+
+6. INFRACCIONES Y SANCIONES
+
+Cualquier violación de esta licencia constituye una infracción al derecho de
+autor y dará lugar a las acciones civiles, administrativas y penales que
+correspondan, incluyendo la indemnización de perjuicios, la incautación y
+destrucción de copias ilícitas, las medidas cautelares previstas en la ley y
+las penas de prisión y multa establecidas en los artículos 270 a 272 del
+Código Penal colombiano. El Titular se reserva el derecho de ejercer dichas
+acciones en Colombia y en cualquier otra jurisdicción.
+
+7. AUSENCIA DE GARANTÍA Y LIMITACIÓN DE RESPONSABILIDAD
+
+El Software se proporciona "tal cual", sin garantía de ningún tipo, expresa o
+implícita. En ningún caso el Titular será responsable por daños, reclamaciones
+o perjuicios derivados del Software o de su uso, autorizado o no.
+
+8. LEY APLICABLE Y JURISDICCIÓN
+
+Esta licencia se rige por las leyes de la República de Colombia. Cualquier
+controversia se someterá a los jueces competentes de Bogotá D.C., sin
+perjuicio de las acciones que el Titular decida ejercer en otras
+jurisdicciones. Si alguna cláusula resultare inválida, las demás conservarán
+plena vigencia.
+
+9. CONTACTO
+
+Solicitudes de licencia o autorización:
+Michael David Rodriguez Beltran - codebymike.net
+Bogotá D.C., Colombia
+Móvil: +57 310 464 1228
+Correo: mike95@duck.com
+
+======================================================================
+ENGLISH VERSION (TRANSLATION; THE SPANISH TEXT PREVAILS)
+======================================================================
+
+1. OWNERSHIP
+
+This repository and all of its contents, including but not limited to source
+and object code, scripts, database schemas and migrations, APIs,
+architecture, algorithms, business logic, interface designs, stylesheets,
+components, animations, text, documentation, configuration, tests, seed data
+and any version, fragment or compilation thereof (the "Software"), is an
+original work and the exclusive property of Michael David Rodriguez Beltran,
+doing business as codebymike.net (the "Owner"). The Software is protected by
+Colombian copyright law (Law 23 of 1982, Andean Decision 351 of 1993, Law
+1915 of 2018, Criminal Code articles 270-272), the Berne Convention and all
+applicable international treaties.
+
+2. PROHIBITIONS
+
+No license, permission or right of any kind is granted by this document.
+Without the Owner's prior, express, written authorization, it is STRICTLY
+PROHIBITED, by any means and whether or not for profit, to: (a) reproduce
+the Software in whole or in part; (b) use, run, install, deploy or host it;
+(c) modify, adapt, translate or create derivative works, including rewrites
+in another language or copies of its structure, sequence, organization or
+design; (d) distribute, publish, sell, sublicense, rent, lend, assign or
+make it available to the public; (e) reverse engineer, decompile or
+disassemble it; (f) circumvent technical protection measures or remove
+copyright, trademark or rights-management notices; (g) use it to train,
+fine-tune, evaluate or feed artificial intelligence or machine learning
+models, or subject it to text and data mining or scraping for such purposes;
+(h) use it as a reference, template or basis for similar or competing
+products or services; (i) disclose any confidential information it contains.
+
+Access to the repository does not imply permission to use it. Any copy held
+by an unauthorized person must be deleted immediately.
+
+3. AUTHORIZED USE
+
+Any use is valid only under a written agreement signed by the Owner and only
+within its stated limits. Anything not expressly authorized is prohibited.
+No authorization transfers economic or moral rights.
+
+4. CONFIDENTIALITY
+
+The Software is confidential information and a trade secret of the Owner.
+Anyone with access to it must keep its contents strictly confidential, even
+after the relationship that granted access has ended.
+
+5. TRADEMARKS
+
+"BrewedByMike" and "codebymike.net" are trademarks and intellectual property
+of the Owner. "DobleYo Café" is a commercial trademark used for this
+project's public identity and is not owned by the Owner; its mention grants
+no rights over the Software to third parties.
+
+6. INFRINGEMENT
+
+Any violation of this license constitutes copyright infringement and will
+give rise to civil, administrative and criminal actions, including damages,
+seizure and destruction of infringing copies, injunctive relief and the
+penalties set forth in articles 270 to 272 of the Colombian Criminal Code.
+
+7. NO WARRANTY; LIMITATION OF LIABILITY
+
+The Software is provided "as is", without warranty of any kind. In no event
+shall the Owner be liable for any claim or damages arising from the Software
+or its use, authorized or not.
+
+8. GOVERNING LAW
+
+This license is governed by the laws of the Republic of Colombia. Disputes
+shall be submitted to the competent courts of Bogotá D.C., Colombia. If any
+provision is held invalid, the remaining provisions remain in full force.
+
+9. CONTACT
+
+Michael David Rodriguez Beltran - codebymike.net
+Bogotá D.C., Colombia - Mobile: +57 310 464 1228 - Email: mike95@duck.com

@@ -2,7 +2,7 @@
 import AdminLayout from "../../layouts/AdminLayout.astro";
 ---
 
-<AdminLayout title="Registrar Venta Externa — DobleYo Admin" section="ventas">
+<AdminLayout title="Registrar Venta Externa · DobleYo Admin" section="ventas">
   <div class="ext-sales-page">
 
     <!-- Header -->
@@ -26,22 +26,22 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       <div class="ios-kpi-grid">
         <div class="ios-kpi-card ios-kpi-brand">
           <div class="ios-kpi-label">Total Ventas</div>
-          <div class="ios-kpi-value" id="statTotal">—</div>
+          <div class="ios-kpi-value" id="statTotal">-</div>
           <div class="ios-kpi-icon">🧾</div>
         </div>
         <div class="ios-kpi-card ios-kpi-success">
           <div class="ios-kpi-label">Ingresos</div>
-          <div class="ios-kpi-value" id="statRevenue">—</div>
+          <div class="ios-kpi-value" id="statRevenue">-</div>
           <div class="ios-kpi-icon">💰</div>
         </div>
         <div class="ios-kpi-card ios-kpi-info">
           <div class="ios-kpi-label">Este Mes</div>
-          <div class="ios-kpi-value" id="statMonth">—</div>
+          <div class="ios-kpi-value" id="statMonth">-</div>
           <div class="ios-kpi-icon">📅</div>
         </div>
         <div class="ios-kpi-card ios-kpi-warning">
           <div class="ios-kpi-label">Canal Top</div>
-          <div class="ios-kpi-value" id="statTopChannel">—</div>
+          <div class="ios-kpi-value" id="statTopChannel">-</div>
           <div class="ios-kpi-icon">📣</div>
         </div>
       </div>
@@ -600,7 +600,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     .pg-venta .ios-page-title { font-size: 1.125rem; letter-spacing: -.01em; }
     .pg-venta .ios-page-sub { font-size: .75rem; }
 
-    /* KPI tiles: flat Fiori — sin sombra, border sólido, radio 6px */
+    /* KPI tiles: flat Fiori - sin sombra, border sólido, radio 6px */
     .pg-venta .ios-kpi-section { padding: 1.5rem 2rem 0; }
     .pg-venta .ios-kpi-grid { grid-template-columns: repeat(4, 1fr); gap: 1rem; }
     .pg-venta .ios-kpi-card {
@@ -647,7 +647,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     /* Botón Ver en fila */
     .pg-venta .action-btn { border-radius: 4px; }
 
-    /* Buttons: Fiori flat — 36px, radius 4px, border explícito */
+    /* Buttons: Fiori flat - 36px, radius 4px, border explícito */
     .pg-venta .ios-btn {
       border-radius: 4px;
       height: 36px;
@@ -667,7 +667,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       border-radius: 4px !important;
     }
 
-    /* Modal: diálogo ERP — sin handle, radio 8px, sin blur */
+    /* Modal: diálogo ERP - sin handle, radio 8px, sin blur */
     .pg-venta .ios-modal-handle { display: none; }
     .pg-venta .ios-modal-overlay {
       backdrop-filter: none;
@@ -706,7 +706,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   let currentDetailId = null;
 
   const fmt = (n) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(n);
-  const fmtDate = (d) => d ? new Date(d + 'T12:00:00').toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
+  const fmtDate = (d) => d ? new Date(d + 'T12:00:00').toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' }) : '-';
 
   const CHANNEL_LABELS = {
     instagram: 'Instagram', whatsapp: 'WhatsApp', referido: 'Referido',
@@ -754,11 +754,11 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     const y = now.getFullYear(), m = String(now.getMonth() + 1).padStart(2, '0');
     fetch(`/api/external-sales?limit=1&from=${y}-${m}-01&to=${y}-${m}-31`, { credentials: 'include' })
       .then(r => r.json())
-      .then(d => { document.getElementById('statMonth').textContent = d.total ?? '—'; });
+      .then(d => { document.getElementById('statMonth').textContent = d.total ?? '-'; });
 
     document.getElementById('statTopChannel').textContent = topChannel
       ? `${CHANNEL_LABELS[topChannel.channel] || topChannel.channel} (${topChannel.total_sales})`
-      : '—';
+      : '-';
   }
 
   function renderTable(sales) {
@@ -772,9 +772,9 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         <td><strong>${s.sale_number}</strong></td>
         <td>${fmtDate(s.sale_date)}</td>
         <td><span class="badge badge-channel-${s.channel}">${CHANNEL_LABELS[s.channel] || s.channel}</span></td>
-        <td>${s.customer_name || '—'}</td>
-        <td>${s.customer_city || '—'}</td>
-        <td style="color:var(--text-2); font-size:.8rem;">${s.channel_detail || '—'}</td>
+        <td>${s.customer_name || '-'}</td>
+        <td>${s.customer_city || '-'}</td>
+        <td style="color:var(--text-2); font-size:.8rem;">${s.channel_detail || '-'}</td>
         <td class="text-right"><strong>${fmt(s.total)}</strong></td>
         <td><span class="badge badge-${s.status}">${STATUS_LABELS[s.status] || s.status}</span></td>
         <td>
@@ -957,10 +957,10 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
           <div class="detail-item"><span class="dl">Fecha</span><span class="dv">${fmtDate(sale.sale_date)}</span></div>
           <div class="detail-item"><span class="dl">Canal</span><span class="dv">${CHANNEL_LABELS[sale.channel] || sale.channel}${sale.channel_detail ? ` — ${sale.channel_detail}` : ''}</span></div>
           <div class="detail-item"><span class="dl">Estado</span><span class="dv"><span class="badge badge-${sale.status}">${STATUS_LABELS[sale.status]}</span></span></div>
-          <div class="detail-item"><span class="dl">Cliente</span><span class="dv">${sale.customer_name || '—'}</span></div>
-          <div class="detail-item"><span class="dl">Contacto</span><span class="dv">${sale.customer_contact || '—'}</span></div>
-          <div class="detail-item"><span class="dl">Ciudad</span><span class="dv">${sale.customer_city || '—'}</span></div>
-          <div class="detail-item"><span class="dl">Registrado por</span><span class="dv">${sale.registered_by_name || '—'}</span></div>
+          <div class="detail-item"><span class="dl">Cliente</span><span class="dv">${sale.customer_name || '-'}</span></div>
+          <div class="detail-item"><span class="dl">Contacto</span><span class="dv">${sale.customer_contact || '-'}</span></div>
+          <div class="detail-item"><span class="dl">Ciudad</span><span class="dv">${sale.customer_city || '-'}</span></div>
+          <div class="detail-item"><span class="dl">Registrado por</span><span class="dv">${sale.registered_by_name || '-'}</span></div>
           ${sale.notes ? `<div class="detail-item" style="grid-column:span 2"><span class="dl">Notas</span><span class="dv">${sale.notes}</span></div>` : ''}
         </div>
         <table class="detail-items-table">
@@ -969,8 +969,8 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
             ${items.map(it => `
               <tr>
                 <td>${it.product_name}</td>
-                <td style="color:var(--text-2)">${it.sku || '—'}</td>
-                <td style="color:var(--text-2)">${it.lot_code || '—'}</td>
+                <td style="color:var(--text-2)">${it.sku || '-'}</td>
+                <td style="color:var(--text-2)">${it.lot_code || '-'}</td>
                 <td style="text-align:right">${it.quantity}</td>
                 <td style="text-align:right">${fmt(it.unit_price)}</td>
                 <td style="text-align:right"><strong>${fmt(it.subtotal)}</strong></td>

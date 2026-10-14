@@ -2,7 +2,7 @@
 import AdminLayout from "../../layouts/AdminLayout.astro";
 ---
 
-<AdminLayout title="Catación SCA — DobleYo">
+<AdminLayout title="Catación SCA · DobleYo">
   <!-- ── Encabezado de página ──────────────────────────────────────────── -->
   <div class="page-header">
     <div class="page-header-top">
@@ -36,22 +36,22 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     <div class="kpi-grid" id="cupKpis" style="margin-bottom: 22px;">
       <div class="kpi-tile brand">
         <div class="kpi-label">Cataciones</div>
-        <div class="kpi-value" id="kpiCount">—</div>
+        <div class="kpi-value" id="kpiCount">-</div>
         <div class="kpi-sub">Registradas en el sistema</div>
       </div>
       <div class="kpi-tile info">
         <div class="kpi-label">Puntaje promedio</div>
-        <div class="kpi-value" id="kpiAvg">—</div>
+        <div class="kpi-value" id="kpiAvg">-</div>
         <div class="kpi-sub">Sobre 90 puntos SCA</div>
       </div>
       <div class="kpi-tile success">
         <div class="kpi-label">Tasa de aprobación</div>
-        <div class="kpi-value" id="kpiPass">—</div>
+        <div class="kpi-value" id="kpiPass">-</div>
         <div class="kpi-sub">Lotes que pasaron el control</div>
       </div>
       <div class="kpi-tile warning">
         <div class="kpi-label">Mejor puntaje</div>
-        <div class="kpi-value" id="kpiBest">—</div>
+        <div class="kpi-value" id="kpiBest">-</div>
         <div class="kpi-sub" id="kpiBestLot">Sin registros</div>
       </div>
     </div>
@@ -84,23 +84,23 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
               <div class="cup-lot-info" id="lotInfoCard" hidden>
                 <div class="cup-lot-item">
                   <span class="cup-lot-k">Lote</span>
-                  <span class="cup-lot-v" id="infoLotId">—</span>
+                  <span class="cup-lot-v" id="infoLotId">-</span>
                 </div>
                 <div class="cup-lot-item">
                   <span class="cup-lot-k">Variedad</span>
-                  <span class="cup-lot-v" id="infoVariety">—</span>
+                  <span class="cup-lot-v" id="infoVariety">-</span>
                 </div>
                 <div class="cup-lot-item">
                   <span class="cup-lot-k">Tueste</span>
-                  <span class="cup-lot-v" id="infoRoastLevel">—</span>
+                  <span class="cup-lot-v" id="infoRoastLevel">-</span>
                 </div>
                 <div class="cup-lot-item">
                   <span class="cup-lot-k">Peso</span>
-                  <span class="cup-lot-v" id="infoWeight">—</span>
+                  <span class="cup-lot-v" id="infoWeight">-</span>
                 </div>
                 <div class="cup-lot-item">
                   <span class="cup-lot-k">Origen</span>
-                  <span class="cup-lot-v" id="infoRegion">—</span>
+                  <span class="cup-lot-v" id="infoRegion">-</span>
                 </div>
               </div>
 
@@ -126,7 +126,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
             <div class="card-header">
               <div>
                 <h3 class="card-title">Atributos sensoriales</h3>
-                <div class="card-subtitle">Escala SCA 6–10 · paso 0,25</div>
+                <div class="card-subtitle">Escala SCA 6-10 · paso 0,25</div>
               </div>
               <span class="cup-step">02</span>
             </div>
@@ -198,7 +198,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
                 <div class="form-group" style="margin-bottom:0;">
                   <label for="moisturePercent">Humedad del grano (%)</label>
                   <input type="number" id="moisturePercent" name="moisturePercent" min="0" max="30" step="0.1" placeholder="Ej.: 11,5" />
-                  <div class="form-hint">Rango óptimo: 10–12 %</div>
+                  <div class="form-hint">Rango óptimo: 10-12 %</div>
                 </div>
                 <div class="form-group" style="margin-bottom:0;">
                   <label for="colorAgtron">Color Agtron</label>
@@ -236,7 +236,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
                   <span class="cup-gauge-max">/ 90</span>
                 </div>
               </div>
-              <span class="cup-class-badge" id="totalBadge">—</span>
+              <span class="cup-class-badge" id="totalBadge">-</span>
               <span class="cup-score-formula">Σ atributos − (defectos × 4)</span>
             </div>
 
@@ -305,7 +305,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
   <style is:global>
     /* =================================================================
-       Catación SCA — interfaz dedicada (Claude Design)
+       Catación SCA - interfaz dedicada (Claude Design)
        ============================================================== */
     .cup-page { max-width: 1280px; }
 
@@ -819,12 +819,12 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         lots.forEach((lot) => {
           const opt = document.createElement('option');
           opt.value = lot.id;
-          opt.textContent = `${lot.lot_id || 'Lote'} — ${lot.variety || 'Sin variedad'} (${lot.roast_level || '—'})`;
-          opt.dataset.lotId      = lot.lot_id      || '—';
-          opt.dataset.variety    = lot.variety     || '—';
-          opt.dataset.roastLevel = lot.roast_level || '—';
-          opt.dataset.weight     = lot.weight_kg   != null ? lot.weight_kg + ' kg' : '—';
-          opt.dataset.region     = lot.region      || '—';
+          opt.textContent = `${lot.lot_id || 'Lote'} · ${lot.variety || 'Sin variedad'} (${lot.roast_level || '-'})`;
+          opt.dataset.lotId      = lot.lot_id      || '-';
+          opt.dataset.variety    = lot.variety     || '-';
+          opt.dataset.roastLevel = lot.roast_level || '-';
+          opt.dataset.weight     = lot.weight_kg   != null ? lot.weight_kg + ' kg' : '-';
+          opt.dataset.region     = lot.region      || '-';
           sel.appendChild(opt);
         });
         // Llegada desde "Qué sigue" (/admin/produccion): lote ya elegido.
@@ -865,11 +865,11 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         tbody.innerHTML = data.slice(0, 12).map((c) => {
           const score = parseFloat(c.overall_score || 0);
           const cls = classify(score);
-          const date = c.check_date ? new Date(c.check_date).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
+          const date = c.check_date ? new Date(c.check_date).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' }) : '-';
           return `
             <tr>
-              <td><span class="cup-history-control">${c.check_number || '—'}</span></td>
-              <td>${TYPE_LABEL[c.check_type] || c.check_type || '—'}</td>
+              <td><span class="cup-history-control">${c.check_number || '-'}</span></td>
+              <td>${TYPE_LABEL[c.check_type] || c.check_type || '-'}</td>
               <td>${date}</td>
               <td class="cup-history-score">${fmt(score)}</td>
               <td><span class="badge" style="background:color-mix(in oklab, ${cls.color} 15%, white); color:${cls.color};">${cls.label}</span></td>
@@ -886,9 +886,9 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       const count = list.length;
       document.getElementById('kpiCount').textContent = count;
       if (!count) {
-        document.getElementById('kpiAvg').textContent = '—';
-        document.getElementById('kpiPass').textContent = '—';
-        document.getElementById('kpiBest').textContent = '—';
+        document.getElementById('kpiAvg').textContent = '-';
+        document.getElementById('kpiPass').textContent = '-';
+        document.getElementById('kpiBest').textContent = '-';
         return;
       }
       const scores = list.map((c) => parseFloat(c.overall_score || 0));

@@ -3,7 +3,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 import { SHOW_CUPPING } from "../../lib/flags.ts";
 ---
 
-<AdminLayout title="Generación de Etiquetas — DobleYo">
+<AdminLayout title="Generación de Etiquetas · DobleYo">
   <!-- ── Encabezado de página ──────────────────────────────────────────── -->
   <div class="page-header">
     <div class="page-header-top">
@@ -46,22 +46,22 @@ import { SHOW_CUPPING } from "../../lib/flags.ts";
     <div class="kpi-grid" style="margin-bottom: 22px;">
       <div class="kpi-tile brand">
         <div class="kpi-label">Etiquetas generadas</div>
-        <div class="kpi-value" id="kpiTotal">—</div>
+        <div class="kpi-value" id="kpiTotal">-</div>
         <div class="kpi-sub">Histórico acumulado</div>
       </div>
       <div class="kpi-tile info">
         <div class="kpi-label">Desde lotes</div>
-        <div class="kpi-value" id="kpiFromLots">—</div>
+        <div class="kpi-value" id="kpiFromLots">-</div>
         <div class="kpi-sub">Con trazabilidad completa</div>
       </div>
       <div class="kpi-tile success">
         <div class="kpi-label">Personalizadas</div>
-        <div class="kpi-value" id="kpiCustom">—</div>
+        <div class="kpi-value" id="kpiCustom">-</div>
         <div class="kpi-sub">Perfil creado a mano</div>
       </div>
       <div class="kpi-tile warning">
         <div class="kpi-label">Lotes disponibles</div>
-        <div class="kpi-value" id="kpiAvailable">—</div>
+        <div class="kpi-value" id="kpiAvailable">-</div>
         <div class="kpi-sub">Listos para etiquetar</div>
       </div>
     </div>
@@ -107,23 +107,23 @@ import { SHOW_CUPPING } from "../../lib/flags.ts";
                 <div class="form-section"><h3>Información del café</h3></div>
                 <div class="detail-grid">
                   <div class="detail-item">
-                    <dt>Lote ID</dt><dd id="lotIdDisplay">—</dd>
+                    <dt>Lote ID</dt><dd id="lotIdDisplay">-</dd>
                   </div>
                   <div class="detail-item">
-                    <dt>Origen</dt><dd id="lotOriginDisplay">—</dd>
+                    <dt>Origen</dt><dd id="lotOriginDisplay">-</dd>
                   </div>
                   <div class="detail-item">
-                    <dt>Variedad</dt><dd id="lotVarietyDisplay">—</dd>
+                    <dt>Variedad</dt><dd id="lotVarietyDisplay">-</dd>
                   </div>
                   <div class="detail-item">
-                    <dt>Tueste</dt><dd id="lotRoastDisplay">—</dd>
+                    <dt>Tueste</dt><dd id="lotRoastDisplay">-</dd>
                   </div>
                   <div class="detail-item">
-                    <dt>Presentación</dt><dd id="lotPresentationDisplay">—</dd>
+                    <dt>Presentación</dt><dd id="lotPresentationDisplay">-</dd>
                   </div>
                   <div class="detail-item">
                     <dt>Peso disponible</dt>
-                    <dd style="color: var(--color-accent);" id="lotWeightDisplay">—</dd>
+                    <dd style="color: var(--color-accent);" id="lotWeightDisplay">-</dd>
                   </div>
                 </div>
 
@@ -131,17 +131,17 @@ import { SHOW_CUPPING } from "../../lib/flags.ts";
                   <strong>☕ Perfil de taza</strong>
                   <div class="detail-grid" style="margin-top: 12px;">
                     <div class="detail-item">
-                      <dt>Acidez</dt><dd id="lotAcidityDisplay">—</dd>
+                      <dt>Acidez</dt><dd id="lotAcidityDisplay">-</dd>
                     </div>
                     <div class="detail-item">
-                      <dt>Cuerpo</dt><dd id="lotBodyDisplay">—</dd>
+                      <dt>Cuerpo</dt><dd id="lotBodyDisplay">-</dd>
                     </div>
                     <div class="detail-item">
-                      <dt>Balance</dt><dd id="lotBalanceDisplay">—</dd>
+                      <dt>Balance</dt><dd id="lotBalanceDisplay">-</dd>
                     </div>
                     <div class="detail-item">
                       <dt>Puntuación</dt>
-                      <dd style="color: var(--color-accent);" id="lotScoreDisplay">—</dd>
+                      <dd style="color: var(--color-accent);" id="lotScoreDisplay">-</dd>
                     </div>
                   </div>
                 </div>
@@ -387,8 +387,8 @@ import { SHOW_CUPPING } from "../../lib/flags.ts";
               <div class="lbl-foot">
                 <div class="lbl-qr" id="pvQr" aria-hidden="true"></div>
                 <div class="lbl-meta">
-                  <div class="lbl-code" id="pvCode">LBL-—-0001</div>
-                  <div class="lbl-score" hidden={!SHOW_CUPPING}>Puntaje: <strong id="pvScore">—</strong></div>
+                  <div class="lbl-code" id="pvCode">LBL-XXX-0001</div>
+                  <div class="lbl-score" hidden={!SHOW_CUPPING}>Puntaje: <strong id="pvScore">-</strong></div>
                   <div class="lbl-tagline">Café de especialidad colombiano</div>
                 </div>
               </div>
@@ -514,7 +514,7 @@ import { SHOW_CUPPING } from "../../lib/flags.ts";
     function updatePreview() {
       let data = {};
       let qty = 0;
-      let code = "LBL-—-0001";
+      let code = "LBL-XXX-0001";
       let showQr = false;
 
       if (activeTab === "lotes" && selectedLot) {
@@ -568,7 +568,7 @@ import { SHOW_CUPPING } from "../../lib/flags.ts";
       document.getElementById("pvNotes").textContent =
         data.notes || "Notas de sabor del café…";
       document.getElementById("pvCode").textContent = code;
-      document.getElementById("pvScore").textContent = data.score || "—";
+      document.getElementById("pvScore").textContent = data.score || "-";
       setBars("acidity", data.acidity);
       setBars("body", data.body);
       setBars("balance", data.balance);
@@ -589,8 +589,8 @@ import { SHOW_CUPPING } from "../../lib/flags.ts";
       }
       box.hidden = false;
       document.getElementById("summaryBody").innerHTML = `
-        <div>☕ Café: <strong>${esc(data.origin) || "—"} · ${esc(data.variety)}</strong></div>
-        <div>🔥 Tueste: <strong>${esc(data.roast) || "—"}</strong></div>
+        <div>☕ Café: <strong>${esc(data.origin) || "-"} · ${esc(data.variety)}</strong></div>
+        <div>🔥 Tueste: <strong>${esc(data.roast) || "-"}</strong></div>
         <div>🏷️ Cantidad: <strong>${qty}</strong></div>
         <div>🔖 Primer código: <strong>${esc(code)}</strong></div>`;
     }
@@ -653,11 +653,11 @@ import { SHOW_CUPPING } from "../../lib/flags.ts";
           return `
         <tr>
           <td style="font-family: var(--font-mono, ui-monospace, monospace); font-size: 12px;">${esc(l.label_code)}</td>
-          <td>${esc(l.lot_code) || "—"}</td>
-          <td>${esc(l.origin) || "—"}</td>
-          <td>${esc(l.variety) || "—"}</td>
-          <td>${esc(l.roast) || "—"}</td>
-          <td style="font-variant-numeric: tabular-nums;">${l.score ?? "—"}</td>
+          <td>${esc(l.lot_code) || "-"}</td>
+          <td>${esc(l.origin) || "-"}</td>
+          <td>${esc(l.variety) || "-"}</td>
+          <td>${esc(l.roast) || "-"}</td>
+          <td style="font-variant-numeric: tabular-nums;">${l.score ?? "-"}</td>
           <td>
             <span class="badge ${isPrinted ? "badge-success" : "badge-neutral"}">
               ${isPrinted ? "Impresa" : "Pendiente"}
@@ -687,7 +687,7 @@ import { SHOW_CUPPING } from "../../lib/flags.ts";
     // ── Impresión ───────────────────────────────────────────────────
     function normalizeLabel(item) {
       return {
-        code: item.code || item.label_code || item.id || "—",
+        code: item.code || item.label_code || item.id || "-",
         origin: item.origin,
         variety: item.variety,
         roast: item.roast,
@@ -711,7 +711,7 @@ import { SHOW_CUPPING } from "../../lib/flags.ts";
 
     function labelPrintHTML(raw) {
       const d = normalizeLabel(raw);
-      const score = d.score != null && d.score !== "" ? Number(d.score).toFixed(1) : "—";
+      const score = d.score != null && d.score !== "" ? Number(d.score).toFixed(1) : "-";
       return `
         <div class="lbl lbl-print-item">
           <div class="lbl-head">
@@ -794,17 +794,17 @@ import { SHOW_CUPPING } from "../../lib/flags.ts";
       const lot = JSON.parse(e.target.value);
       selectedLot = lot;
       document.getElementById("lotIdDisplay").textContent = lot.code;
-      document.getElementById("lotOriginDisplay").textContent = lot.origin || "—";
-      document.getElementById("lotVarietyDisplay").textContent = lot.variety || "—";
-      document.getElementById("lotRoastDisplay").textContent = lot.roast || "—";
-      document.getElementById("lotPresentationDisplay").textContent = lot.presentation || "—";
+      document.getElementById("lotOriginDisplay").textContent = lot.origin || "-";
+      document.getElementById("lotVarietyDisplay").textContent = lot.variety || "-";
+      document.getElementById("lotRoastDisplay").textContent = lot.roast || "-";
+      document.getElementById("lotPresentationDisplay").textContent = lot.presentation || "-";
       document.getElementById("lotWeightDisplay").textContent = `${lot.weight} kg`;
-      document.getElementById("lotAcidityDisplay").textContent = `${lot.acidity || "—"}/5`;
-      document.getElementById("lotBodyDisplay").textContent = `${lot.body || "—"}/5`;
-      document.getElementById("lotBalanceDisplay").textContent = `${lot.balance || "—"}/5`;
+      document.getElementById("lotAcidityDisplay").textContent = `${lot.acidity || "-"}/5`;
+      document.getElementById("lotBodyDisplay").textContent = `${lot.body || "-"}/5`;
+      document.getElementById("lotBalanceDisplay").textContent = `${lot.balance || "-"}/5`;
       document.getElementById("lotScoreDisplay").textContent = lot.score
         ? Number(lot.score).toFixed(1)
-        : "—";
+        : "-";
       document.getElementById("lotInfoCard").hidden = false;
       updatePreview();
     });

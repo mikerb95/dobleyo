@@ -2,7 +2,7 @@
 import AdminLayout from "../../layouts/AdminLayout.astro";
 ---
 
-<AdminLayout title="Blog — DobleYo Café">
+<AdminLayout title="Blog · DobleYo Café">
   <header class="page-header">
     <div class="page-header-top">
       <div>
@@ -24,15 +24,15 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     <div class="kpi-grid" style="margin-bottom: 20px;">
       <div class="kpi-tile brand">
         <div class="kpi-label">Total</div>
-        <div class="kpi-value" id="kpiTotal">—</div>
+        <div class="kpi-value" id="kpiTotal">-</div>
       </div>
       <div class="kpi-tile success">
         <div class="kpi-label">Publicados</div>
-        <div class="kpi-value" id="kpiPublished">—</div>
+        <div class="kpi-value" id="kpiPublished">-</div>
       </div>
       <div class="kpi-tile warning">
         <div class="kpi-label">Borradores</div>
-        <div class="kpi-value" id="kpiDrafts">—</div>
+        <div class="kpi-value" id="kpiDrafts">-</div>
       </div>
     </div>
 
@@ -179,12 +179,12 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     }
 
     function fmtDate(d) {
-      if (!d) return "—";
+      if (!d) return "-";
       try {
         return new Date(d).toLocaleDateString("es-CO", {
           year: "numeric", month: "short", day: "numeric",
         });
-      } catch { return "—"; }
+      } catch { return "-"; }
     }
 
     function parseTags(tags) {

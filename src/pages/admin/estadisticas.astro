@@ -36,13 +36,13 @@ try {
 const totalLotes  = harvests.length;
 const totalEmpacados = packaged.length;
 
-// Calidad: score de empaquetado (escala 1–5, promedio de acidez, cuerpo, balance)
+// Calidad: score de empaquetado (escala 1-5, promedio de acidez, cuerpo, balance)
 const scoresValidos = packaged.filter((p: any) => p.score > 0);
 const avgScore = scoresValidos.length > 0
   ? (scoresValidos.reduce((s: number, p: any) => s + Number(p.score), 0) / scoresValidos.length).toFixed(2)
   : null;
 
-// Precio promedio (placeholder — viene de sales cuando esté disponible)
+// Precio promedio (placeholder - viene de sales cuando esté disponible)
 // Por ahora calculamos kg totales de packaged (unit_count * weight por presentación)
 const PACK_WEIGHTS: Record<string, number> = { "250g": 0.25, "500g": 0.5, "1kg": 1, "1000g": 1, "100g": 0.1 };
 const totalKgEmpacado = packaged.reduce((s: number, p: any) => {
@@ -52,8 +52,8 @@ const totalKgEmpacado = packaged.reduce((s: number, p: any) => {
 
 // ─── Distribución de calidad ────────────────────────────────────────────────
 const qDist = [
-  { label: "4.5–5 (Excepcional)", color: "#2d6a4f", count: scoresValidos.filter((p: any) => p.score >= 4.5).length },
-  { label: "3.5–4.4 (Muy bueno)", color: "#8b6f47", count: scoresValidos.filter((p: any) => p.score >= 3.5 && p.score < 4.5).length },
+  { label: "4.5-5 (Excepcional)", color: "#2d6a4f", count: scoresValidos.filter((p: any) => p.score >= 4.5).length },
+  { label: "3.5-4.4 (Muy bueno)", color: "#8b6f47", count: scoresValidos.filter((p: any) => p.score >= 3.5 && p.score < 4.5).length },
   { label: "< 3.5 (Regular)",     color: "#d4a017", count: scoresValidos.filter((p: any) => p.score <  3.5 && p.score > 0).length },
 ];
 const maxQDist = Math.max(1, ...qDist.map((d) => d.count));
@@ -139,7 +139,7 @@ const fmtCOP  = (n: number) => new Intl.NumberFormat("es-CO", { style: "currency
 const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-CO", { day: "2-digit", month: "short" });
 ---
 
-<AdminLayout title="Estadísticas — DobleYo Admin">
+<AdminLayout title="Estadísticas · DobleYo Admin">
 
   <style>
     .page-header {
@@ -312,8 +312,8 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
       </div>
       <div class="kpi-tile success">
         <div class="kpi-label">Calidad Promedio</div>
-        <div class="kpi-value">{avgScore ?? "—"}</div>
-        <div class="kpi-sub">puntos (escala 1–5)</div>
+        <div class="kpi-value">{avgScore ?? "-"}</div>
+        <div class="kpi-sub">puntos (escala 1-5)</div>
       </div>
       <div class="kpi-tile info">
         <div class="kpi-label">Lotes Empacados</div>
@@ -322,7 +322,7 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
       </div>
       <div class="kpi-tile warning">
         <div class="kpi-label">Kg Empacados</div>
-        <div class="kpi-value">{totalKgEmpacado > 0 ? totalKgEmpacado.toFixed(1) : "—"}</div>
+        <div class="kpi-value">{totalKgEmpacado > 0 ? totalKgEmpacado.toFixed(1) : "-"}</div>
         <div class="kpi-sub">kg estimados</div>
       </div>
     </div>
@@ -425,11 +425,11 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
             {harvests.slice(0, 8).map((h: any) => (
               <tr>
                 <td style="font-family: var(--font-mono, ui-monospace, monospace); font-size:0.8rem;">{h.lot_id}</td>
-                <td>{VARIETY_LABEL[h.variety] ?? h.variety ?? "—"}</td>
-                <td>{h.process ?? "—"}</td>
-                <td>{h.climate ?? "—"}</td>
+                <td>{VARIETY_LABEL[h.variety] ?? h.variety ?? "-"}</td>
+                <td>{h.process ?? "-"}</td>
+                <td>{h.climate ?? "-"}</td>
                 <td>
-                  {h.created_at ? new Date(h.created_at).toLocaleDateString("es-CO", { day:"2-digit", month:"short", year:"numeric" }) : "—"}
+                  {h.created_at ? new Date(h.created_at).toLocaleDateString("es-CO", { day:"2-digit", month:"short", year:"numeric" }) : "-"}
                 </td>
               </tr>
             ))}
@@ -485,7 +485,7 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
             </div>
             <div class="kpi-tile success">
               <div class="kpi-label">Historia usada</div>
-              <div class="kpi-value">{fcRevenue.history_weeks ?? "—"}</div>
+              <div class="kpi-value">{fcRevenue.history_weeks ?? "-"}</div>
               <div class="kpi-sub">semanas de ventas</div>
             </div>
           </div>
@@ -499,7 +499,7 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
                 {fcRevenue.points.map((p: any) => {
                   const pct = Math.round(((p.forecast_value ?? 0) / revenueMax) * 100);
                   return (
-                    <div class="bar-col" title={`${fmtCOP(p.lower_bound)} – ${fmtCOP(p.upper_bound)}`}>
+                    <div class="bar-col" title={`${fmtCOP(p.lower_bound)} - ${fmtCOP(p.upper_bound)}`}>
                       <div class="bar-fill" style={`background:#c8a96e; height:${Math.max(pct, 2)}%;`}></div>
                       <span class="bar-label">{fmtWeek(p.period_start)}</span>
                     </div>
@@ -531,7 +531,7 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
                       <tr>
                         <td>{u.product_key}</td>
                         <td style="text-align:right; font-weight:700">{u.next_4w}</td>
-                        <td>{u.stock_quantity ?? "—"}</td>
+                        <td>{u.stock_quantity ?? "-"}</td>
                         <td>
                           {u.reorder === true ? (
                             <span class="badge badge--warn">Reordenar</span>

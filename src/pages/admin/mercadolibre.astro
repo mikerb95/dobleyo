@@ -2,7 +2,7 @@
 import AdminLayout from "../../layouts/AdminLayout.astro";
 ---
 
-<AdminLayout title="MercadoLibre — DobleYo ERP" section="mercadolibre">
+<AdminLayout title="MercadoLibre · DobleYo ERP" section="mercadolibre">
 
   <!-- ── Page Header ─────────────────────────────────────────── -->
   <div class="page-header">
@@ -52,7 +52,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       <div class="kpi-tile brand">
         <div class="kpi-label">Total Órdenes</div>
         <div class="kpi-value" id="kpiOrders"><span class="skeleton" style="width:60px"></span></div>
-        <div class="kpi-sub" id="kpiOrdersRange">—</div>
+        <div class="kpi-sub" id="kpiOrdersRange">-</div>
       </div>
       <div class="kpi-tile success">
         <div class="kpi-label">Ingresos Totales</div>
@@ -67,7 +67,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       <div class="kpi-tile warning">
         <div class="kpi-label">Ciudades Únicas</div>
         <div class="kpi-value" id="kpiCities"><span class="skeleton" style="width:40px"></span></div>
-        <div class="kpi-sub" id="kpiStates">—</div>
+        <div class="kpi-sub" id="kpiStates">-</div>
       </div>
     </div>
 
@@ -189,19 +189,19 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
           <div style="padding:16px">
             <div class="config-row">
               <div class="config-label">ML_ACCESS_TOKEN</div>
-              <div id="cfgToken" class="badge badge-neutral">—</div>
+              <div id="cfgToken" class="badge badge-neutral">-</div>
             </div>
             <div class="config-row">
               <div class="config-label">ML_SELLER_ID</div>
-              <div id="cfgSeller" class="badge badge-neutral">—</div>
+              <div id="cfgSeller" class="badge badge-neutral">-</div>
             </div>
             <div class="config-row" style="margin-top:8px">
               <div class="config-label">Sync automático (cron)</div>
-              <div id="cfgCron" class="badge badge-neutral">—</div>
+              <div id="cfgCron" class="badge badge-neutral">-</div>
             </div>
             <div class="config-row" style="margin-top:8px">
               <div class="config-label">Última sincronización</div>
-              <div id="cfgLastSync" class="badge badge-neutral">—</div>
+              <div id="cfgLastSync" class="badge badge-neutral">-</div>
             </div>
             <div style="height:1px;background:var(--border);margin:12px 0"></div>
             <div class="config-row">
@@ -448,7 +448,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(n);
 
   const fmtDate = (s: string) =>
-    s ? new Date(s).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
+    s ? new Date(s).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' }) : '-';
 
   // ── Load stats ─────────────────────────────────────────────
   async function loadStats() {
@@ -471,7 +471,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       } else {
         setConnectionStatus('ok', 'Conectado a MercadoLibre', `${ov.total_orders} órdenes — última: ${fmtDate(ov.last_order_date)}`);
         document.getElementById('kpiOrders')!.textContent = ov.total_orders.toLocaleString('es-CO');
-        document.getElementById('kpiOrdersRange')!.textContent = `${fmtDate(ov.first_order_date)} – ${fmtDate(ov.last_order_date)}`;
+        document.getElementById('kpiOrdersRange')!.textContent = `${fmtDate(ov.first_order_date)} - ${fmtDate(ov.last_order_date)}`;
         document.getElementById('kpiRevenue')!.textContent = fmt(ov.total_revenue ?? 0);
         document.getElementById('kpiAvg')!.textContent = fmt(ov.avg_order_value ?? 0);
         document.getElementById('kpiCities')!.textContent = (ov.unique_cities ?? 0).toString();
@@ -568,11 +568,11 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
       tbody.innerHTML = rows.map((r: any) => `
         <tr>
-          <td><code style="font-size:11px;background:#f5f5f5;padding:2px 6px;border-radius:3px">${r.ml_order_id ?? r.id ?? '—'}</code></td>
+          <td><code style="font-size:11px;background:#f5f5f5;padding:2px 6px;border-radius:3px">${r.ml_order_id ?? r.id ?? '-'}</code></td>
           <td style="white-space:nowrap">${fmtDate(r.purchase_date ?? r.created_at)}</td>
-          <td>${r.buyer_nickname ?? r.buyer_name ?? '—'}</td>
-          <td>${r.recipient_city ?? '—'}</td>
-          <td>${r.recipient_state ?? '—'}</td>
+          <td>${r.buyer_nickname ?? r.buyer_name ?? '-'}</td>
+          <td>${r.recipient_city ?? '-'}</td>
+          <td>${r.recipient_state ?? '-'}</td>
           <td style="font-weight:600;white-space:nowrap">${fmt(r.total_amount ?? 0)}</td>
           <td>${badgeStatus(r.payment_status)}</td>
           <td>${badgeShipping(r.shipping_status)}</td>
@@ -599,7 +599,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     const key = (s ?? '').toLowerCase();
     const cls = map[key] ?? 'neutral';
     const labels: Record<string, string> = { paid:'Pagado', approved:'Aprobado', pending:'Pendiente', cancelled:'Cancelado', rejected:'Rechazado' };
-    return `<span class="badge badge-${cls}">${labels[key] ?? s ?? '—'}</span>`;
+    return `<span class="badge badge-${cls}">${labels[key] ?? s ?? '-'}</span>`;
   }
 
   function badgeShipping(s: string) {
@@ -613,7 +613,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       delivered:'Entregado', handling:'Preparando', ready_to_ship:'Listo', shipped:'Enviado',
       not_delivered:'No entregado', cancelled:'Cancelado',
     };
-    return `<span class="badge badge-${cls}">${labels[key] ?? s ?? '—'}</span>`;
+    return `<span class="badge badge-${cls}">${labels[key] ?? s ?? '-'}</span>`;
   }
 
   function renderPagination(pag: any) {
@@ -626,7 +626,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
     const from = currentPage * limit + 1;
     const to = Math.min((currentPage + 1) * limit, pag.total);
-    document.getElementById('pagInfo')!.textContent = `${from}–${to} de ${pag.total}`;
+    document.getElementById('pagInfo')!.textContent = `${from}-${to} de ${pag.total}`;
 
     const prevBtn = document.getElementById('btnPrev') as HTMLButtonElement;
     const nextBtn = document.getElementById('btnNext') as HTMLButtonElement;
@@ -661,7 +661,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     el.innerHTML = cities.slice(0, 10).map((c: any, i: number) => `
       <div class="city-row">
         <div class="city-rank">${i + 1}</div>
-        <div class="city-name">${c.recipient_city ?? '—'}</div>
+        <div class="city-name">${c.recipient_city ?? '-'}</div>
         <div class="city-bar-wrap"><div class="city-bar" style="width:${Math.round((c.order_count / max) * 100)}%"></div></div>
         <div class="city-count">${c.order_count}</div>
       </div>

@@ -20,17 +20,17 @@ import CostField from "../../components/CostField.astro";
     <div class="kpi-grid is-stats">
       <div class="kpi-tile info">
         <div class="kpi-label">Lotes en bodega</div>
-        <div class="kpi-value" id="statLots">—</div>
+        <div class="kpi-value" id="statLots">-</div>
         <div class="kpi-sub">café verde almacenado</div>
       </div>
       <div class="kpi-tile brand">
         <div class="kpi-label">Peso total almacenado</div>
-        <div class="kpi-value" id="statWeight">—</div>
+        <div class="kpi-value" id="statWeight">-</div>
         <div class="kpi-sub">kilogramos</div>
       </div>
       <div class="kpi-tile success">
         <div class="kpi-label">Ubicaciones en uso</div>
-        <div class="kpi-value" id="statLocations">—</div>
+        <div class="kpi-value" id="statLocations">-</div>
         <div class="kpi-sub">posiciones de bodega</div>
       </div>
     </div>
@@ -56,19 +56,19 @@ import CostField from "../../components/CostField.astro";
           <dl class="detail-grid">
             <div class="detail-item">
               <dt>Variedad</dt>
-              <dd id="lotVariety">—</dd>
+              <dd id="lotVariety">-</dd>
             </div>
             <div class="detail-item">
               <dt>Proceso</dt>
-              <dd id="lotProcess">—</dd>
+              <dd id="lotProcess">-</dd>
             </div>
             <div class="detail-item">
               <dt>Finca</dt>
-              <dd id="lotFarm">—</dd>
+              <dd id="lotFarm">-</dd>
             </div>
             <div class="detail-item">
               <dt>Recolectado</dt>
-              <dd id="lotDate">—</dd>
+              <dd id="lotDate">-</dd>
             </div>
           </dl>
         </div>
@@ -136,10 +136,10 @@ import CostField from "../../components/CostField.astro";
       <div class="info-box summary-box" id="summaryBox" style="display: none;">
         <strong>Resumen del almacenamiento</strong>
         <dl class="summary-list">
-          <div><dt>📦 Lote</dt><dd id="summaryLot">—</dd></div>
-          <div><dt>⚖️ Peso</dt><dd id="summaryWeight">—</dd></div>
-          <div><dt>📍 Ubicación</dt><dd id="summaryLocation">—</dd></div>
-          <div><dt>📅 Fecha</dt><dd id="summaryDate">—</dd></div>
+          <div><dt>📦 Lote</dt><dd id="summaryLot">-</dd></div>
+          <div><dt>⚖️ Peso</dt><dd id="summaryWeight">-</dd></div>
+          <div><dt>📍 Ubicación</dt><dd id="summaryLocation">-</dd></div>
+          <div><dt>📅 Fecha</dt><dd id="summaryDate">-</dd></div>
         </dl>
       </div>
 
@@ -170,9 +170,9 @@ import CostField from "../../components/CostField.astro";
           <p class="success-sub">Ahora está en el inventario de café verde.</p>
 
           <dl class="summary-list success-details">
-            <div><dt>Peso</dt><dd id="detailWeight">—</dd></div>
-            <div><dt>Ubicación</dt><dd id="detailLocation">—</dd></div>
-            <div><dt>Fecha</dt><dd id="detailDate">—</dd></div>
+            <div><dt>Peso</dt><dd id="detailWeight">-</dd></div>
+            <div><dt>Ubicación</dt><dd id="detailLocation">-</dd></div>
+            <div><dt>Fecha</dt><dd id="detailDate">-</dd></div>
           </dl>
         </div>
         <div class="modal-actions">
@@ -420,7 +420,7 @@ import CostField from "../../components/CostField.astro";
       // Se fija el mediodía para que la fecha no se corra un día por zona horaria.
       return value
         ? new Date(`${value}T12:00:00`).toLocaleDateString("es-CO")
-        : "—";
+        : "-";
     }
     function resetStorageDate() {
       storageDate.max = todayISO();

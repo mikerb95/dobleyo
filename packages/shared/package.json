@@ -1,6 +1,12 @@
 {
   "name": "@dobleyo/shared",
   "version": "1.0.0",
+  "author": {
+    "name": "Michael David Rodriguez Beltran",
+    "email": "mike95@duck.com",
+    "url": "https://codebymike.net"
+  },
+  "license": "SEE LICENSE IN LICENSE",
   "private": true,
   "type": "module",
   "main": "src/index.ts",
