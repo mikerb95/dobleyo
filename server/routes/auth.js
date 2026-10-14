@@ -3,10 +3,15 @@ import { logger } from '../logger.js';
 import { body, validationResult } from 'express-validator';
 import * as db from '../db.js';
 import * as auth from '../auth.js';
-import { sendVerificationEmail } from '../services/email.js';
+import {
+  sendVerificationEmail,
+  sendWelcomeEmail,
+  sendPasswordResetEmail,
+  sendPasswordChangedEmail,
+} from '../services/email.js';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
-import { loginLimiter, registerLimiter, refreshLimiter } from '../middleware/rateLimit.js';
+import { loginLimiter, registerLimiter, refreshLimiter, accountEmailLimiter } from '../middleware/rateLimit.js';
 import { notifyCaficultorApplication } from '../services/alerts.js';
 
 // google-auth-library se carga perezosamente dentro del handler /google para
@@ -74,7 +79,9 @@ authRouter.post('/register',
       const verifyToken = auth.generateVerificationToken(newUser);
       
       // Enviar email (No bloqueante para no demorar la respuesta)
-      sendVerificationEmail(email, verifyToken).then(r => console.log('Email result:', r));
+      sendVerificationEmail(email, verifyToken, first_name).then((r) => {
+        if (!r.success) logger.error({ err: r.error, email }, '[POST /api/auth/register] No se pudo enviar el correo de verificación');
+      });
       
       // Log de auditoria
       await db.query('INSERT INTO audit_logs (action, entity_type, entity_id, details) VALUES (?, ?, ?, ?)',
@@ -103,13 +110,152 @@ authRouter.get('/verify', async (req, res) => {
       return res.status(400).json({ error: 'Token invalido o expirado' });
     }
 
-    await db.query('UPDATE users SET is_verified = 1 WHERE id = ?', [decoded.id]);
-    
+    // Solo la primera verificación dispara la bienvenida: el enlace puede abrirse
+    // más de una vez (vista previa del cliente de correo, doble clic).
+    const updated = await db.query(
+      'UPDATE users SET is_verified = 1 WHERE id = ? AND is_verified = 0 RETURNING email, first_name',
+      [decoded.id]
+    );
+    if (updated.rows.length) {
+      const { email, first_name } = updated.rows[0];
+      sendWelcomeEmail(email, first_name).catch((err) => logger.error({ err }, '[GET /api/auth/verify] Error enviando bienvenida'));
+    }
+
     res.json({ message: 'Cuenta verificada exitosamente. Ya puedes iniciar sesion.' });
   } catch (err) {
     res.status(400).json({ error: 'Token invalido o expirado' });
   }
 });
+
+// ─── Correos de cuenta ──────────────────────────────────────────────────────
+// Respuesta genérica en los tres endpoints públicos: nunca revelar si un correo
+// está registrado (evita enumerar cuentas).
+
+const RESET_TOKEN_TTL_MIN = 60;
+const hashResetToken = (token) => crypto.createHash('sha256').update(token).digest('hex');
+
+// Reenviar verificación
+authRouter.post('/resend-verification',
+  accountEmailLimiter,
+  body('email').trim().isEmail(),
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(422).json({ success: false, errors: errors.array() });
+
+    const generic = { success: true, message: 'Si el correo está registrado y aún no se ha verificado, le enviamos un nuevo enlace.' };
+    try {
+      const result = await db.query('SELECT id, email, first_name, is_verified FROM users WHERE lower(email) = lower(?)', [req.body.email]);
+      const user = result.rows[0];
+      if (user && !user.is_verified) {
+        const verifyToken = auth.generateVerificationToken(user);
+        sendVerificationEmail(user.email, verifyToken, user.first_name).then((r) => {
+          if (!r.success) logger.error({ err: r.error }, '[POST /api/auth/resend-verification] Envío fallido');
+        });
+      }
+      res.json(generic);
+    } catch (err) {
+      logger.error({ err }, '[POST /api/auth/resend-verification] Error:');
+      res.status(500).json({ success: false, error: 'Error interno del servidor' });
+    }
+  }
+);
+
+// Olvido de contraseña: genera un enlace de un solo uso válido por 1 hora
+authRouter.post('/forgot-password',
+  accountEmailLimiter,
+  body('email').trim().isEmail(),
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(422).json({ success: false, errors: errors.array() });
+
+    const generic = { success: true, message: 'Si el correo está registrado, le enviamos un enlace para restablecer la contraseña.' };
+    try {
+      const result = await db.query('SELECT id, email, first_name FROM users WHERE lower(email) = lower(?)', [req.body.email]);
+      const user = result.rows[0];
+      if (!user) return res.json(generic);
+
+      // Un solo enlace vigente por usuario: los anteriores dejan de servir.
+      await db.query(
+        `UPDATE password_reset_tokens SET used_at = datetime('now') WHERE user_id = ? AND used_at IS NULL`,
+        [user.id]
+      );
+
+      const token = crypto.randomBytes(32).toString('base64url');
+      await db.query(
+        `INSERT INTO password_reset_tokens (user_id, token_hash, expires_at, request_ip)
+         VALUES (?, ?, datetime('now', ?), ?)`,
+        [user.id, hashResetToken(token), `+${RESET_TOKEN_TTL_MIN} minutes`, req.ip ?? null]
+      );
+
+      sendPasswordResetEmail(user.email, user.first_name, token).then((r) => {
+        if (!r.success) logger.error({ err: r.error, userId: user.id }, '[POST /api/auth/forgot-password] Envío fallido');
+      });
+
+      await db.query(
+        'INSERT INTO audit_logs (user_id, action, entity_type, entity_id, details) VALUES (?, ?, ?, ?, ?)',
+        [user.id, 'REQUEST_PASSWORD_RESET', 'users', String(user.id), JSON.stringify({ ip: req.ip ?? null })]
+      );
+
+      res.json(generic);
+    } catch (err) {
+      logger.error({ err }, '[POST /api/auth/forgot-password] Error:');
+      res.status(500).json({ success: false, error: 'Error interno del servidor' });
+    }
+  }
+);
+
+// Restablecer contraseña con el token del correo
+authRouter.post('/reset-password',
+  accountEmailLimiter,
+  body('token').isString().isLength({ min: 20, max: 200 }).withMessage('Enlace inválido'),
+  body('password').isLength({ min: 8 }).withMessage('La contraseña debe tener al menos 8 caracteres'),
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(422).json({ success: false, errors: errors.array() });
+
+    const { token, password } = req.body;
+    const invalid = { success: false, error: 'El enlace no es válido o ya venció. Solicite uno nuevo.' };
+
+    try {
+      // Marcar el token como usado en la misma sentencia que lo valida: dos envíos
+      // simultáneos del formulario no pueden consumirlo dos veces.
+      const consumed = await db.query(
+        `UPDATE password_reset_tokens SET used_at = datetime('now')
+         WHERE token_hash = ? AND used_at IS NULL AND expires_at > datetime('now')
+         RETURNING user_id`,
+        [hashResetToken(token)]
+      );
+      if (!consumed.rows.length) return res.status(400).json(invalid);
+
+      const userId = consumed.rows[0].user_id;
+      const hash = await auth.hashPassword(password);
+
+      // Abrir el enlace prueba que el correo es suyo: también queda verificado.
+      const updated = await db.query(
+        `UPDATE users SET password_hash = ?, is_verified = 1, updated_at = datetime('now') WHERE id = ? RETURNING email, first_name`,
+        [hash, userId]
+      );
+      if (!updated.rows.length) return res.status(400).json(invalid);
+
+      // Cerrar todas las sesiones: si alguien más tenía acceso, lo pierde.
+      await db.query('UPDATE refresh_tokens SET revoked = 1 WHERE user_id = ? AND revoked = 0', [userId]);
+
+      await db.query(
+        'INSERT INTO audit_logs (user_id, action, entity_type, entity_id, details) VALUES (?, ?, ?, ?, ?)',
+        [userId, 'RESET_PASSWORD', 'users', String(userId), JSON.stringify({ ip: req.ip ?? null })]
+      );
+
+      const { email, first_name } = updated.rows[0];
+      sendPasswordChangedEmail(email, first_name, { sessionsRevoked: true })
+        .catch((err) => logger.error({ err }, '[POST /api/auth/reset-password] Error enviando aviso'));
+
+      res.json({ success: true, message: 'Contraseña actualizada. Ya puede iniciar sesión.' });
+    } catch (err) {
+      logger.error({ err }, '[POST /api/auth/reset-password] Error:');
+      res.status(500).json({ success: false, error: 'Error interno del servidor' });
+    }
+  }
+);
 
 // Login
 authRouter.post('/login',
@@ -584,10 +730,10 @@ authRouter.put('/password',
     const { current_password, new_password } = req.body;
 
     try {
-      const result = await db.query('SELECT password_hash FROM users WHERE id = ?', [req.user.id]);
+      const result = await db.query('SELECT email, first_name, password_hash FROM users WHERE id = ?', [req.user.id]);
       if (!result.rows.length) return res.status(404).json({ success: false, error: 'Usuario no encontrado' });
 
-      const { password_hash } = result.rows[0];
+      const { email, first_name, password_hash } = result.rows[0];
       if (!password_hash) return res.status(400).json({ success: false, error: 'Esta cuenta usa Google Sign-In y no tiene contraseña' });
 
       const valid = await auth.comparePassword(current_password, password_hash);
@@ -600,6 +746,9 @@ authRouter.put('/password',
         'INSERT INTO audit_logs (user_id, action, entity_type, entity_id, details) VALUES (?, ?, ?, ?, ?)',
         [req.user.id, 'CHANGE_PASSWORD', 'users', String(req.user.id), '{}']
       );
+
+      sendPasswordChangedEmail(email, first_name)
+        .catch((err) => logger.error({ err }, '[PUT /api/auth/password] Error enviando aviso'));
 
       res.json({ success: true, message: 'Contraseña actualizada' });
     } catch (err) {

@@ -6,7 +6,7 @@ import { logger } from '../logger.js';
 import { query } from '../db.js';
 import { authenticateToken, requireRole } from '../auth.js';
 import { logAudit, logSystemAudit } from '../services/audit.js';
-import { sendShippingNotificationEmail, sendOrderConfirmationEmail } from '../services/email.js';
+import { sendShippingNotificationEmail, sendOrderConfirmationEmail, sendOrderStatusEmail } from '../services/email.js';
 import { notifyShippingIssue } from '../services/alerts.js';
 import {
     quoteShipping,
@@ -908,6 +908,8 @@ async function refreshShipment(shipmentId, source) {
         );
         if (!delivered.rows.length) {
             logger.warn({ orderId: shipment.order_id, shipmentId }, '[Shipping] Tracking marca entregado pero la orden está cancelada/reembolsada; se ignora el cambio de estado de la orden');
+        } else {
+            notifyDelivered(shipment);
         }
     }
 
@@ -952,10 +954,11 @@ async function refreshInterShipment(shipment, source) {
     }
 
     if (newStatus === 'delivered' && shipment.status !== 'delivered') {
-        await query(
-            `UPDATE customer_orders SET status = 'delivered' WHERE id = ? AND status NOT IN ('cancelled','refunded')`,
+        const delivered = await query(
+            `UPDATE customer_orders SET status = 'delivered' WHERE id = ? AND status NOT IN ('cancelled','refunded') RETURNING id`,
             [shipment.order_id]
         );
+        if (delivered.rows.length) notifyDelivered(shipment);
     }
 
     return { shipmentId: shipment.id, guideNumber: shipment.guide_number, pickupCode: shipment.pickup_code, status: newStatus };
@@ -1029,7 +1032,7 @@ async function expireAbandonedOrders(hours = 48) {
 async function retryPendingConfirmationEmails(limit = 10) {
     const pending = await query(
         `SELECT id, reference, customer_name, customer_email, subtotal_cop, shipping_cop, total_cop,
-                shipping_address, shipping_city
+                shipping_address, shipping_city, payment_method
          FROM customer_orders
          WHERE status = 'paid' AND confirmation_email_sent_at IS NULL
            AND datetime(created_at) > datetime('now', '-48 hours')
@@ -1045,7 +1048,7 @@ async function retryPendingConfirmationEmails(limit = 10) {
                 `SELECT product_name, quantity, unit_price_cop FROM customer_order_items WHERE order_id = ?`,
                 [order.id]
             );
-            await sendOrderConfirmationEmail(order.customer_email, order.customer_name, {
+            const r = await sendOrderConfirmationEmail(order.customer_email, order.customer_name, {
                 orderId: order.reference,
                 date: new Date().toISOString(),
                 items: itemsResult.rows.map((r) => ({ name: r.product_name, quantity: r.quantity, price: r.unit_price_cop })),
@@ -1053,7 +1056,9 @@ async function retryPendingConfirmationEmails(limit = 10) {
                 shipping: order.shipping_cop,
                 total: order.total_cop,
                 shippingAddress: `${order.shipping_address}, ${order.shipping_city}`,
+                paymentMethod: order.payment_method,
             });
+            if (!r.success) throw r.error ?? new Error('Envío rechazado');
             await query(`UPDATE customer_orders SET confirmation_email_sent_at = datetime('now') WHERE id = ?`, [order.id]);
             sent++;
         } catch (err) {

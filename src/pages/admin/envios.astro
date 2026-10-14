@@ -470,6 +470,40 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
             delivered: "badge-ok", returned: "badge-warn", cancelled: "badge-default", error: "badge-err",
         };
         const badge = (st: string) => `<span class="badge ${STATUS_CLASS[st] ?? "badge-default"}">${STATUS_LABELS[st] ?? st}</span>`;
+        const esc = (v: unknown) => String(v ?? "").replace(/[&<>"']/g, (c) =>
+            ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
+        const PROVIDER_LABELS: Record<string, string> = {
+            mipaquete: "Mipaquete", interrapidisimo: "Interrapidísimo (API directa)", manual: "Manual",
+        };
+
+        // Descarga/abre un PDF de un endpoint que responde binario (api() espera JSON).
+        async function fetchPdf(path: string, opts: RequestInit = {}) {
+            const res = await fetch(`/api/shipping${path}`, {
+                credentials: "include",
+                headers: { "Content-Type": "application/json" },
+                ...opts,
+            });
+            if (!res.ok) {
+                const data = await res.json().catch(() => ({}));
+                throw new Error(data.error || data.errors?.[0]?.msg || "Error al generar el PDF");
+            }
+            return { blob: await res.blob(), headers: res.headers };
+        }
+
+        // ── Estado de conexión con proveedores ───────────────────
+        async function loadProviderStatus() {
+            let data: any = null;
+            try {
+                const res = await fetch("/api/shipping/health", { credentials: "include" });
+                data = (await res.json()).data;
+            } catch { /* se muestra como error abajo */ }
+            document.querySelectorAll<HTMLElement>(".provider-chip").forEach((chip) => {
+                const st = data?.[chip.dataset.provider!];
+                chip.classList.remove("ok", "err");
+                chip.classList.add(st?.ok ? "ok" : "err");
+                chip.title = st?.ok ? "Conectado" : `Sin conexión: ${st?.error || "no se pudo verificar"}`;
+            });
+        }
 
         async function api(path: string, opts: RequestInit = {}) {
             // Vercel's /api/:path* rewrite 404s on a bare trailing slash, so
@@ -544,27 +578,69 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         }
 
         // ── Activos ───────────────────────────────────────────────
+        const selectedInter = new Set<number>();
+
+        function updateBatchButtons() {
+            const pickupBtn = document.getElementById("btnInterPickup") as HTMLButtonElement;
+            const manifestBtn = document.getElementById("btnInterManifest") as HTMLButtonElement;
+            const boxes = [...document.querySelectorAll<HTMLInputElement>(".inter-select")];
+            const checked = boxes.filter((b) => b.checked);
+            const pickupCount = checked.filter((b) => b.dataset.status === "created").length;
+            pickupBtn.disabled = pickupCount === 0;
+            pickupBtn.textContent = pickupCount ? `Solicitar recogida (${pickupCount})` : "Solicitar recogida";
+            manifestBtn.disabled = checked.length === 0;
+            manifestBtn.textContent = checked.length ? `Planilla de despacho (${checked.length})` : "Planilla de despacho";
+            const selectAll = document.getElementById("selectAllInter") as HTMLInputElement;
+            selectAll.disabled = boxes.length === 0;
+            selectAll.checked = boxes.length > 0 && checked.length === boxes.length;
+        }
+
+        function showActiveMsg(html: string, kind: "ok" | "warn" | "err" = "ok") {
+            const cls = kind === "err" ? "alert-err" : "alert-warn";
+            const style = kind === "ok" ? ' style="background:#f1fdf6;color:#107e3e;border:1px solid #b5e8cd;"' : "";
+            document.getElementById("activeMsg")!.innerHTML = html ? `<div class="alert-box ${cls}"${style}>${html}</div>` : "";
+        }
+
         async function loadActive() {
             const body = document.getElementById("activeBody")!;
-            body.innerHTML = `<tr><td colspan="6" class="empty">Cargando...</td></tr>`;
+            body.innerHTML = `<tr><td colspan="7" class="empty">Cargando...</td></tr>`;
+            selectedInter.clear();
             try {
                 const shipments = await api("/");
                 document.getElementById("activeSummary")!.innerHTML = `<strong>${shipments.length}</strong> envíos`;
                 if (!shipments.length) {
-                    body.innerHTML = `<tr><td colspan="6" class="empty">No hay envíos registrados.</td></tr>`;
+                    body.innerHTML = `<tr><td colspan="7" class="empty">No hay envíos registrados.</td></tr>`;
+                    updateBatchButtons();
                     return;
                 }
                 body.innerHTML = shipments.map((s: any) => {
                     let pdfUrls: string[] = [];
                     try { pdfUrls = s.pdf_guide_urls ? JSON.parse(s.pdf_guide_urls) : []; } catch {}
+                    const isInter = s.provider === "interrapidisimo";
+                    const selectable = isInter && s.guide_number && (s.status === "created" || s.status === "pickup_requested");
+                    const pdfCell = isInter && s.guide_number
+                        ? `<span class="pdf-links">
+                               <a href="/api/shipping/${s.id}/guide.pdf" target="_blank" rel="noopener">Media carta</a>
+                               <a href="/api/shipping/${s.id}/guide.pdf?format=small" target="_blank" rel="noopener">Etiqueta</a>
+                           </span>`
+                        : (pdfUrls.length ? `<a href="${esc(pdfUrls[0])}" target="_blank" rel="noopener">Ver guía</a>` : "—");
+                    const statusCell = s.status === "error" && s.error_detail
+                        ? `<span title="${esc(s.error_detail)}">${badge(s.status)}</span>`
+                        : badge(s.status);
+                    const pickupNote = isInter && s.status === "created"
+                        ? `<div style="font-size:0.75rem;color:#c96800;margin-top:2px;">Sin recogida</div>` : "";
                     return `
                     <tr>
-                        <td><strong>${s.reference}</strong></td>
-                        <td>${s.delivery_company_name ?? "—"}</td>
-                        <td>${s.guide_number ?? "Pendiente"}</td>
-                        <td>${badge(s.status)}</td>
-                        <td>${pdfUrls.length ? `<a href="${pdfUrls[0]}" target="_blank" rel="noopener">Ver guía</a>` : "—"}</td>
+                        <td>${selectable
+                            ? `<input type="checkbox" class="inter-select" data-id="${s.id}" data-status="${s.status}" aria-label="Seleccionar guía ${esc(s.guide_number)}" />`
+                            : ""}</td>
+                        <td><strong>${esc(s.reference)}</strong></td>
+                        <td>${esc(s.delivery_company_name ?? "—")}</td>
+                        <td>${esc(s.guide_number ?? "Pendiente")}</td>
+                        <td>${statusCell}${pickupNote}</td>
+                        <td>${pdfCell}</td>
                         <td>
+                            <button class="btn-action" data-action="detail" data-id="${s.id}">Detalle</button>
                             ${s.delivery_company_id === 'manual'
                                 ? (s.status !== 'delivered' && s.status !== 'returned' && s.status !== 'cancelled' ? `
                                     <button class="btn-action" data-action="mark" data-status="delivered" data-id="${s.id}">Marcar entregado</button>
@@ -573,12 +649,19 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
                                 ` : '')
                                 : `
                                     <button class="btn-action" data-action="refresh" data-id="${s.id}">Refrescar</button>
-                                    ${s.status !== 'cancelled' && s.status !== 'delivered' ? `<button class="btn-action" data-action="cancel" data-id="${s.id}">Cancelar</button>` : ''}
+                                    ${s.status !== 'cancelled' && s.status !== 'delivered' && s.status !== 'error' ? `<button class="btn-action" data-action="cancel" data-id="${s.id}">Cancelar</button>` : ''}
                                 `}
                         </td>
                     </tr>
                 `;
                 }).join("");
+                body.querySelectorAll<HTMLInputElement>(".inter-select").forEach((box) => {
+                    box.addEventListener("change", updateBatchButtons);
+                });
+                body.querySelectorAll('[data-action="detail"]').forEach((btn) => {
+                    btn.addEventListener("click", () => openDetailModal(Number((btn as HTMLElement).dataset.id)));
+                });
+                updateBatchButtons();
                 body.querySelectorAll('[data-action="refresh"]').forEach((btn) => {
                     btn.addEventListener("click", async () => {
                         const id = (btn as HTMLElement).dataset.id;
@@ -612,9 +695,116 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
                     });
                 });
             } catch (err: any) {
-                body.innerHTML = `<tr><td colspan="6" class="empty">Error al cargar: ${err.message}</td></tr>`;
+                body.innerHTML = `<tr><td colspan="7" class="empty">Error al cargar: ${esc(err.message)}</td></tr>`;
+                updateBatchButtons();
             }
         }
+
+        document.getElementById("selectAllInter")?.addEventListener("change", (e) => {
+            const checked = (e.currentTarget as HTMLInputElement).checked;
+            document.querySelectorAll<HTMLInputElement>(".inter-select").forEach((b) => { b.checked = checked; });
+            updateBatchButtons();
+        });
+
+        const checkedInterIds = (onlyStatus?: string) =>
+            [...document.querySelectorAll<HTMLInputElement>(".inter-select")]
+                .filter((b) => b.checked && (!onlyStatus || b.dataset.status === onlyStatus))
+                .map((b) => Number(b.dataset.id));
+
+        document.getElementById("btnInterPickup")?.addEventListener("click", async (e) => {
+            const btn = e.currentTarget as HTMLButtonElement;
+            const shipmentIds = checkedInterIds("created");
+            if (!shipmentIds.length) return;
+            if (!confirm(`¿Solicitar a Interrapidísimo una recogida para ${shipmentIds.length} guía(s)?`)) return;
+            btn.disabled = true;
+            btn.textContent = "Solicitando...";
+            try {
+                const r = await api("/inter/pickup", { method: "POST", body: JSON.stringify({ shipmentIds }) });
+                const excluded = r.excluded?.length ? ` Inter no incluyó: ${esc(r.excluded.join(", "))}.` : "";
+                showActiveMsg(`Recogida ${esc(r.pickupCode)} solicitada para ${r.included.length} guía(s).${excluded}`, excluded ? "warn" : "ok");
+                await loadActive();
+            } catch (err: any) {
+                showActiveMsg(esc(err.message), "err");
+                updateBatchButtons();
+            }
+        });
+
+        document.getElementById("btnInterManifest")?.addEventListener("click", async (e) => {
+            const btn = e.currentTarget as HTMLButtonElement;
+            const shipmentIds = checkedInterIds();
+            if (!shipmentIds.length) return;
+            btn.disabled = true;
+            btn.textContent = "Generando...";
+            try {
+                const { blob, headers } = await fetchPdf("/inter/manifest", { method: "POST", body: JSON.stringify({ shipmentIds }) });
+                const url = URL.createObjectURL(blob);
+                window.open(url, "_blank", "noopener");
+                setTimeout(() => URL.revokeObjectURL(url), 60_000);
+                const rejected = headers.get("X-Rejected-Guides");
+                showActiveMsg(rejected
+                    ? `Planilla generada. Inter rechazó estas guías: ${esc(rejected)}.`
+                    : "Planilla generada. Imprímala para que la firme el mensajero.", rejected ? "warn" : "ok");
+            } catch (err: any) {
+                showActiveMsg(esc(err.message), "err");
+            } finally {
+                updateBatchButtons();
+            }
+        });
+
+        // ── Modal detalle ─────────────────────────────────────────
+        async function openDetailModal(id: number) {
+            const bodyEl = document.getElementById("modalDetailBody")!;
+            bodyEl.innerHTML = "Cargando...";
+            document.getElementById("modalDetailBack")!.classList.add("open");
+            try {
+                const { shipment: s, events, trackingUrl } = await api(`/${id}/detail`);
+                document.getElementById("modalDetailTitle")!.textContent = `Envío ${s.reference}`;
+                const quoted = s.quoted_shipping_cost_cop != null ? Number(s.quoted_shipping_cost_cop) : null;
+                const actual = s.actual_shipping_cost_cop != null ? Number(s.actual_shipping_cost_cop) : null;
+                let diff = "";
+                if (quoted != null && actual != null && actual !== quoted) {
+                    const d = actual - quoted;
+                    diff = ` <span class="${d > 0 ? "cost-diff-up" : "cost-diff-down"}">(${d > 0 ? "+" : "−"}${fmtCOP(Math.abs(d))})</span>`;
+                }
+                const charged = s.shipping_cop != null ? fmtCOP(Number(s.shipping_cop)) : "—";
+                bodyEl.innerHTML = `
+                    ${s.status === "error" && s.error_detail ? `<div class="alert-box alert-err"><strong>Motivo del error:</strong> ${esc(s.error_detail)}</div>` : ""}
+                    <dl class="detail-grid">
+                        <div><dt>Estado</dt><dd>${badge(s.status)}</dd></div>
+                        <div><dt>Proveedor</dt><dd>${esc(PROVIDER_LABELS[s.provider] ?? s.provider)}</dd></div>
+                        <div><dt>Transportadora</dt><dd>${esc(s.delivery_company_name ?? "—")}</dd></div>
+                        <div><dt>Guía</dt><dd>${esc(s.guide_number ?? "Pendiente")}${trackingUrl ? ` · <a href="${esc(trackingUrl)}" target="_blank" rel="noopener">Rastrear</a>` : ""}</dd></div>
+                        <div><dt>Recogida</dt><dd>${esc(s.pickup_code ?? (s.requested_pickup ? "Sin confirmar" : "No solicitada"))}</dd></div>
+                        <div><dt>Pago</dt><dd>${s.payment_mode === "cod" ? `Contraentrega · ${fmtCOP(Number(s.collection_value_cop) || 0)}` : "Prepagado"}</dd></div>
+                        <div><dt>Flete cobrado al cliente</dt><dd>${charged}</dd></div>
+                        <div><dt>Costo cotizado / real</dt><dd>${quoted != null ? fmtCOP(quoted) : "—"} / ${actual != null ? fmtCOP(actual) : "—"}${diff}</dd></div>
+                        <div><dt>Paquete</dt><dd>${s.package_weight_kg ?? "—"} kg · ${s.package_length_cm ?? "—"}×${s.package_width_cm ?? "—"}×${s.package_height_cm ?? "—"} cm</dd></div>
+                        <div><dt>Valor declarado</dt><dd>${s.declared_value_cop != null ? fmtCOP(Number(s.declared_value_cop)) : "—"}</dd></div>
+                        <div><dt>Destinatario</dt><dd>${esc(s.customer_name)}<br>${esc(s.customer_phone ?? "")}</dd></div>
+                        <div><dt>Dirección</dt><dd>${esc(s.shipping_address)}<br>${esc(s.shipping_city)}${s.shipping_department ? `, ${esc(s.shipping_department)}` : ""}</dd></div>
+                        <div><dt>Creado</dt><dd>${fmtDate(s.created_at)}</dd></div>
+                        <div><dt>Último seguimiento</dt><dd>${fmtDate(s.tracking_updated_at)}</dd></div>
+                    </dl>
+                    <h3 class="section-title">Historial</h3>
+                    ${events.length
+                        ? `<ol class="timeline">${events.map((ev: any) => `
+                            <li><div>
+                                <div class="tl-state">${esc(ev.update_state)}</div>
+                                <div class="tl-meta">${fmtDate(ev.event_date || ev.created_at)}${ev.description ? ` · ${esc(ev.description)}` : ""}</div>
+                            </div></li>`).join("")}</ol>`
+                        : `<p class="empty" style="padding:1rem;">Aún no hay eventos de seguimiento. Use "Refrescar" para consultarlos.</p>`}
+                `;
+            } catch (err: any) {
+                bodyEl.innerHTML = `<div class="alert-box alert-err">${esc(err.message)}</div>`;
+            }
+        }
+
+        document.getElementById("modalDetailClose")?.addEventListener("click", () => {
+            document.getElementById("modalDetailBack")!.classList.remove("open");
+        });
+        document.getElementById("modalDetailBack")?.addEventListener("click", (e) => {
+            if (e.target === e.currentTarget) document.getElementById("modalDetailBack")!.classList.remove("open");
+        });
 
         document.getElementById("btnRefreshAll")?.addEventListener("click", async (e) => {
             const btn = e.currentTarget as HTMLButtonElement;
@@ -757,11 +947,17 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
             (document.getElementById("btnCreateShipment") as HTMLButtonElement).disabled = true;
             document.getElementById("interDocRow")!.style.display = "none";
             (document.getElementById("fDocNumber") as HTMLInputElement).value = "";
+            (document.getElementById("fDocType") as HTMLSelectElement).value = "CC";
 
             try {
                 const suggestion = await api(`/${orderId}/suggest`);
                 (document.getElementById("fWeight") as HTMLInputElement).value = String(suggestion.weightKg || 0.5);
                 (document.getElementById("fDeclaredValue") as HTMLInputElement).value = String(suggestion.declaredValueCop || 0);
+                // Documento capturado en el checkout (pedidos anteriores no lo tienen).
+                if (suggestion.order.customer_document_number) {
+                    (document.getElementById("fDocType") as HTMLSelectElement).value = suggestion.order.customer_document_type || "CC";
+                    (document.getElementById("fDocNumber") as HTMLInputElement).value = suggestion.order.customer_document_number;
+                }
 
                 const alertBox = document.getElementById("modalAlert")!;
                 if (suggestion.missingWeights?.length) {
@@ -914,10 +1110,12 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
             if (e.key === "Escape") {
                 document.getElementById("modalBack")!.classList.remove("open");
                 document.getElementById("modalManualBack")!.classList.remove("open");
+                document.getElementById("modalDetailBack")!.classList.remove("open");
             }
         });
 
         // ── Init ──────────────────────────────────────────────────
         loadPending();
+        loadProviderStatus();
     </script>
 </AdminLayout>

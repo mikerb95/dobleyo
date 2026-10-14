@@ -7,7 +7,7 @@ import { query, withTransaction } from '../db.js';
 import { authenticateToken, requireRole, optionalAuth } from '../auth.js';
 import { checkoutLimiter } from '../middleware/rateLimit.js';
 import { logAudit, logSystemAudit } from '../services/audit.js';
-import { sendOrderConfirmationEmail } from '../services/email.js';
+import { sendOrderConfirmationEmail, sendOrderStatusEmail } from '../services/email.js';
 import { geocodeOrderAsync } from '../services/geocoding.js';
 import { trackingUrlForGuide } from '../services/interrapidisimo.js';
 import {
@@ -526,9 +526,14 @@ ordersRouter.post('/',
                     items: normalizedItems.map((i) => ({ name: i.productName, quantity: i.quantity, price: i.unitPrice })),
                     subtotal,
                     shipping,
+                    discount: discountAmount,
                     total,
                     shippingAddress: `${shippingAddress}, ${shippingCity}`,
-                }).then(() => query(`UPDATE customer_orders SET confirmation_email_sent_at = datetime('now') WHERE id = ?`, [orderId]))
+                    paymentMethod: 'cod',
+                }).then((r) => {
+                    if (!r.success) throw r.error ?? new Error('Envío rechazado');
+                    return query(`UPDATE customer_orders SET confirmation_email_sent_at = datetime('now') WHERE id = ?`, [orderId]);
+                })
                     .catch((err) => logger.error({ err }, '[POST /api/orders] Error enviando confirmación COD'));
             }
 
@@ -721,7 +726,7 @@ ordersRouter.patch('/:ref/status',
             const { ref } = req.params;
             const { status, notes } = req.body;
 
-            const before = await query(`SELECT id, status FROM customer_orders WHERE reference = ?`, [ref]);
+            const before = await query(`SELECT id, status, customer_email, customer_name, total_cop FROM customer_orders WHERE reference = ?`, [ref]);
             if (!before.rows.length) {
                 return res.status(404).json({ success: false, error: 'Orden no encontrada' });
             }
@@ -749,6 +754,14 @@ ordersRouter.patch('/:ref/status',
             }
 
             await logAudit(req.user.id, 'update', 'customer_orders', result.rows[0].id, { status, previousStatus });
+
+            // Avisar al cliente de los cambios que le importan. 'shipped' tiene su propio
+            // correo (con la guía) desde shipping.js; 'paid' lo cubre la confirmación.
+            const { customer_email, customer_name, total_cop } = before.rows[0];
+            if (status !== previousStatus && ['delivered', 'cancelled', 'refunded'].includes(status) && customer_email && req.body.notify !== false) {
+                sendOrderStatusEmail(customer_email, customer_name, { reference: ref, status, total: total_cop })
+                    .catch((err) => logger.error({ err, ref }, '[PATCH /api/orders/:ref/status] Error enviando correo de estado'));
+            }
 
             return res.json({ success: true, data: result.rows[0] });
         } catch (err) {
@@ -910,7 +923,10 @@ ordersRouter.post('/wompi/webhook', async (req, res) => {
                     total: updatedOrder.total_cop,
                     shippingAddress: `${updatedOrder.shipping_address}, ${updatedOrder.shipping_city}`
                 }
-            ).then(() => query(`UPDATE customer_orders SET confirmation_email_sent_at = datetime('now') WHERE id = ?`, [updatedOrder.id]))
+            ).then((r) => {
+                if (!r.success) throw r.error ?? new Error('Envío rechazado');
+                return query(`UPDATE customer_orders SET confirmation_email_sent_at = datetime('now') WHERE id = ?`, [updatedOrder.id]);
+            })
                 .catch((err) => logger.error({ err, reference }, '[Wompi webhook] Error enviando confirmación de pago; se reintentará por refresh-all'));
         }
 
