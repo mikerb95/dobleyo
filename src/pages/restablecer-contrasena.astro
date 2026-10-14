@@ -1,0 +1,31 @@
+---
+import Layout from "../layouts/Layout.astro";
+import AccountCard from "../components/AccountCard.astro";
+---
+
+<Layout
+  title="Nueva contraseña | DobleYo Café"
+  description="Elija una nueva contraseña para su cuenta en DobleYo Café."
+  noindex={true}
+>
+  <AccountCard title="Elija una nueva contraseña" intro="Use al menos 8 caracteres. Al guardarla, cerraremos las sesiones abiertas en sus otros dispositivos.">
+    <form id="resetForm" novalidate>
+      <label>
+        Nueva contraseña
+        <input type="password" name="password" autocomplete="new-password" minlength="8" required />
+        <span class="field-hint">Mínimo 8 caracteres.</span>
+      </label>
+      <label>
+        Confirme la contraseña
+        <input type="password" name="confirm" autocomplete="new-password" minlength="8" required />
+      </label>
+      <button type="submit">Guardar contraseña</button>
+      <p class="account-card__status" id="resetStatus" role="status" aria-live="polite"></p>
+    </form>
+    <p class="account-card__links" id="resetLinks">
+      ¿El enlace venció? <a href="/recuperar-contrasena">Solicite uno nuevo</a>
+    </p>
+  </AccountCard>
+
+  <script is:inline src="/assets/js/restablecer-contrasena.js"></script>
+</Layout>

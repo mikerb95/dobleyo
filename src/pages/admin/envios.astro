@@ -578,7 +578,6 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         }
 
         // ── Activos ───────────────────────────────────────────────
-        const selectedInter = new Set<number>();
 
         function updateBatchButtons() {
             const pickupBtn = document.getElementById("btnInterPickup") as HTMLButtonElement;
@@ -604,7 +603,6 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         async function loadActive() {
             const body = document.getElementById("activeBody")!;
             body.innerHTML = `<tr><td colspan="7" class="empty">Cargando...</td></tr>`;
-            selectedInter.clear();
             try {
                 const shipments = await api("/");
                 document.getElementById("activeSummary")!.innerHTML = `<strong>${shipments.length}</strong> envíos`;

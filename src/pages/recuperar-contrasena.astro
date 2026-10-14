@@ -1,0 +1,29 @@
+---
+import Layout from "../layouts/Layout.astro";
+import AccountCard from "../components/AccountCard.astro";
+---
+
+<Layout
+  title="Recuperar contraseña | DobleYo Café"
+  description="Solicite un enlace para restablecer la contraseña de su cuenta en DobleYo Café."
+  noindex={true}
+>
+  <AccountCard
+    title="¿Olvidó su contraseña?"
+    intro="Ingrese el correo de su cuenta y le enviaremos un enlace para elegir una nueva. El enlace vence en 1 hora."
+  >
+    <form id="forgotForm" novalidate>
+      <label>
+        Correo electrónico
+        <input type="email" name="email" autocomplete="email" required placeholder="usted@correo.com" />
+      </label>
+      <button type="submit">Enviar enlace</button>
+      <p class="account-card__status" id="forgotStatus" role="status" aria-live="polite"></p>
+    </form>
+    <p class="account-card__links">
+      ¿La recordó? <a href="/login">Iniciar sesión</a>
+    </p>
+  </AccountCard>
+
+  <script is:inline src="/assets/js/recuperar-contrasena.js"></script>
+</Layout>
