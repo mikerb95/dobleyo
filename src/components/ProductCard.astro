@@ -26,7 +26,7 @@ const priceLabel = en
   ? `$${Number(product.price).toLocaleString("en-US")}`
   : `$${product.price.toLocaleString("es-CO")}`;
 const L = en
-  ? { fav: "Add to favorites", notes: "Tasting notes", out: "Sold out", low: "Last", add: "Add", cart: "View cart", cartHref: "/en/cart" }
+  ? { fav: "Add to favorites", notes: "Tasting notes", out: "Sold out", low: "Last", add: "Add", cart: "View cart", cartHref: "/cart" }
   : { fav: "Agregar a favoritos", notes: "Notas de cata", out: "Agotado", low: "Últimas", add: "Agregar", cart: "Ver carrito", cartHref: "/cart" };
 
 const outOfStock = typeof product.stock === "number" && product.stock === 0;

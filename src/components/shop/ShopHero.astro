@@ -1,0 +1,277 @@
+---
+/**
+ * Mostrador de la tienda: los cafés como bolsas en fila, cada una con su
+ * etiqueta (origen, proceso, tueste y precio, datos reales de la BD). El color
+ * de la bolsa codifica el tueste. Tocar una bolsa filtra el catálogo por ese
+ * origen (marca la casilla real de la barra lateral, así el filtro sale en las
+ * píldoras y se limpia con "Limpiar filtros").
+ *
+ * El motion (entrada, inclinación al apuntar, descifrado de la etiqueta) vive
+ * en src/scripts/shop/counter.ts. Sin JS o con movimiento reducido se ve el
+ * mostrador completo y quieto; el filtro funciona igual porque es de la página.
+ */
+import type { Lang } from "../../i18n/index.ts";
+import { t } from "../../i18n/index.ts";
+
+export interface CounterCoffee {
+  id: string;
+  name: string;
+  origin: string | null;
+  process: string | null;
+  roast: string | null;
+  price: number;
+}
+
+interface Props {
+  coffees: CounterCoffee[];
+  lang: Lang;
+}
+
+const { coffees, lang } = Astro.props;
+const k = (key: string) => t(`shop.hero.${key}`, lang);
+
+// El tueste decide el color de la bolsa (ES y EN llegan con etiquetas distintas)
+function roastKey(roast: string | null): "light" | "medium" | "dark" {
+  const r = (roast ?? "").toLowerCase();
+  if (r.startsWith("clar") || r.startsWith("light")) return "light";
+  if (r.startsWith("oscur") || r.startsWith("dark")) return "dark";
+  return "medium";
+}
+
+const price = (n: number) =>
+  lang === "en" ? `$${Number(n).toLocaleString("en-US")}` : `$${Number(n).toLocaleString("es-CO")}`;
+
+// Como mucho cuatro bolsas: más no caben en fila en un celular
+const bags = coffees.filter((c) => c.origin).slice(0, 4);
+---
+
+<section class="shop-hero" data-shop-hero aria-labelledby="shopHeroTitle">
+  <div class="shop-hero__copy">
+    <p class="shop-hero__eyebrow">{k("eyebrow")}</p>
+    <h1 id="shopHeroTitle" class="shop-hero__title" data-split>{k("title")}</h1>
+    <p class="shop-hero__lead">{k("lead")}</p>
+  </div>
+
+  {bags.length > 0 && (
+    <div class="shop-hero__counter">
+      <ul class="bags" aria-label={k("bags_label")}>
+        {bags.map((c) => (
+          <li class="bags__item">
+            <button
+              type="button"
+              class="bag"
+              data-roast={roastKey(c.roast)}
+              data-origin-filter={c.origin}
+              aria-pressed="false"
+              aria-label={`${k("bag_filter")} ${c.origin}`}
+            >
+              <svg class="bag__body" viewBox="0 0 120 190" aria-hidden="true" focusable="false">
+                <path class="bag__shape" d="M14 22 L106 22 L112 182 Q112 188 106 188 L14 188 Q8 188 8 182 Z" />
+                <path class="bag__fold" d="M14 8 L106 8 L106 26 L14 26 Z" />
+                <path class="bag__crimp" d="M18 12 V22 M24 12 V22 M30 12 V22 M36 12 V22 M42 12 V22 M48 12 V22 M54 12 V22 M60 12 V22 M66 12 V22 M72 12 V22 M78 12 V22 M84 12 V22 M90 12 V22 M96 12 V22 M102 12 V22" />
+                <circle class="bag__valve" cx="60" cy="42" r="5" />
+              </svg>
+              <span class="bag__label" aria-hidden="true">
+                <span class="bag__brand">DobleYo</span>
+                <span class="bag__name">{c.name}</span>
+                <span class="bag__row" data-scramble>{c.process}</span>
+                <span class="bag__row" data-scramble>{c.roast}</span>
+                <span class="bag__price">{price(c.price)}</span>
+              </span>
+            </button>
+          </li>
+        ))}
+      </ul>
+      <p class="shop-hero__hint">{k("hint")}</p>
+    </div>
+  )}
+</section>
+
+<script>
+  // Filtro por origen: marca la casilla real de la barra lateral y deja que el
+  // script de la página haga el resto. Funciona sin motion.
+  function initCounter() {
+    const hero = document.querySelector<HTMLElement>("[data-shop-hero]");
+    if (!hero || hero.dataset.jsInit) return;
+    hero.dataset.jsInit = "1";
+    const bags = Array.from(hero.querySelectorAll<HTMLButtonElement>("[data-origin-filter]"));
+
+    const box = (origin: string) =>
+      Array.from(document.querySelectorAll<HTMLInputElement>('#originList input[type="checkbox"]')).find(
+        (i) => i.value === origin
+      );
+
+    const sync = () => {
+      for (const b of bags) b.setAttribute("aria-pressed", String(!!box(b.dataset.originFilter!)?.checked));
+    };
+
+    for (const b of bags) {
+      b.addEventListener("click", () => {
+        const input = box(b.dataset.originFilter!);
+        if (!input) return;
+        input.checked = !input.checked;
+        input.dispatchEvent(new Event("change", { bubbles: true }));
+        sync();
+        const results = document.getElementById("shopResults");
+        if (results && input.checked) {
+          const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+          const top = results.getBoundingClientRect().top + window.scrollY - 140;
+          window.scrollTo({ top, behavior: reduced ? "auto" : "smooth" });
+        }
+      });
+    }
+    // "Limpiar filtros" y las casillas de la barra lateral también cambian el estado
+    document.getElementById("shopSidebar")?.addEventListener("change", sync);
+    document.getElementById("clearFilters")?.addEventListener("click", () => queueMicrotask(sync));
+  }
+  initCounter();
+  document.addEventListener("astro:page-load", initCounter);
+</script>
+
+<style>
+  .shop-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-8);
+    align-items: center;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: var(--space-10) 1.25rem var(--space-6);
+  }
+  @media (min-width: 1024px) {
+    .shop-hero {
+      grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+      padding-top: var(--space-12);
+    }
+  }
+
+  .shop-hero__eyebrow {
+    font-size: var(--text-xs);
+    font-weight: 700;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--caramel);
+    margin: 0 0 var(--space-3);
+  }
+  .shop-hero__title {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 5vw, 3.4rem);
+    line-height: 1.05;
+    color: var(--espresso);
+    margin: 0 0 var(--space-4);
+    text-wrap: balance;
+  }
+  .shop-hero__lead {
+    color: var(--ink-muted);
+    max-width: 44ch;
+    margin: 0;
+  }
+
+  .shop-hero__counter {
+    display: grid;
+    justify-items: center;
+    gap: var(--space-3);
+  }
+  .bags {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+    gap: clamp(.5rem, 2vw, 1.25rem);
+    width: 100%;
+    max-width: 560px;
+    perspective: 900px;
+  }
+  .bags__item { display: grid; }
+
+  .bag {
+    position: relative;
+    display: block;
+    width: 100%;
+    aspect-ratio: 120 / 190;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    transform-style: preserve-3d;
+    /* Las variantes de color por tueste; el SVG las toma con currentColor */
+    color: var(--caramel-deep);
+    --bag-shade: rgba(var(--espresso-rgb), .25);
+    --bag-label: var(--card);
+  }
+  .bag[data-roast="light"] { color: color-mix(in srgb, var(--caramel) 45%, var(--cream)); }
+  .bag[data-roast="dark"] { color: var(--espresso); }
+  .bag:focus-visible { outline: 2px solid var(--caramel); outline-offset: 6px; border-radius: 6px; }
+
+  .bag__body { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .bag__shape { fill: currentColor; }
+  .bag__fold { fill: currentColor; filter: brightness(.82); }
+  .bag__crimp { stroke: var(--bag-shade); stroke-width: 1.2; }
+  .bag__valve { fill: var(--bag-shade); }
+  .bag::after {
+    /* sombra en el piso: se encoge cuando la bolsa se levanta */
+    content: "";
+    position: absolute;
+    left: 10%;
+    right: 10%;
+    bottom: -10px;
+    height: 10px;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(var(--espresso-rgb), .22), transparent);
+    transition: transform .4s var(--ease), opacity .4s var(--ease);
+  }
+  .bag[aria-pressed="true"]::after { transform: scaleX(.75); opacity: .6; }
+
+  .bag__label {
+    position: absolute;
+    left: 12%;
+    right: 12%;
+    top: 31%;
+    bottom: 9%;
+    display: flex;
+    flex-direction: column;
+    gap: .15em;
+    padding: .55em .5em;
+    background: var(--bag-label);
+    color: var(--espresso);
+    border-radius: 3px;
+    text-align: left;
+    font-size: clamp(.58rem, 1.6vw, .78rem);
+    line-height: 1.25;
+    overflow: hidden;
+  }
+  .bag__brand {
+    font-size: .78em;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--caramel);
+    font-weight: 700;
+  }
+  .bag__name {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 1.18em;
+    line-height: 1.1;
+    margin-bottom: .2em;
+  }
+  .bag__row {
+    color: var(--ink-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .bag__price {
+    margin-top: auto;
+    font-weight: 700;
+    color: var(--caramel-deep);
+  }
+  .bag[aria-pressed="true"] .bag__label { box-shadow: inset 0 0 0 2px var(--caramel); }
+
+  .shop-hero__hint {
+    margin: var(--space-2) 0 0;
+    font-size: var(--text-sm);
+    color: var(--ink-muted);
+  }
+</style>

@@ -57,7 +57,15 @@
         "roast_dark": "Dark",
         "process_washed": "Washed",
         "process_honey": "Honey",
-        "process_natural": "Natural"
+        "process_natural": "Natural",
+        "hero": {
+            "eyebrow": "Shop",
+            "title": "Single-origin coffee, freshly roasted",
+            "lead": "Colombian specialty coffees and accessories, direct to you.",
+            "hint": "Tap a bag to see only that origin.",
+            "bag_filter": "Show only coffee from",
+            "bags_label": "Coffee by origin"
+        }
     },
     "cart": {
         "title": "Your cart",

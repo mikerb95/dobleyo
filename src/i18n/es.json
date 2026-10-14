@@ -57,7 +57,15 @@
         "roast_dark": "Oscuro",
         "process_washed": "Lavado",
         "process_honey": "Honey",
-        "process_natural": "Natural"
+        "process_natural": "Natural",
+        "hero": {
+            "eyebrow": "Tienda",
+            "title": "Cafés de origen único, con tueste fresco",
+            "lead": "Selección de cafés y accesorios. Calidad de especialidad, directo al consumidor.",
+            "hint": "Toque una bolsa para ver solo ese origen.",
+            "bag_filter": "Ver solo cafés de",
+            "bags_label": "Cafés por origen"
+        }
     },
     "cart": {
         "title": "Tu carrito",

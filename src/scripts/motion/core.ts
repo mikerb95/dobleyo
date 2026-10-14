@@ -172,12 +172,12 @@ export function magnetic(el: HTMLElement, addCleanup: (fn: Cleanup) => void, str
  */
 export function cursorLight(grid: HTMLElement, cardSelector: string, addCleanup: (fn: Cleanup) => void): void {
   if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
-  const cards = Array.from(grid.querySelectorAll<HTMLElement>(cardSelector));
   let raf = 0;
   const move = (e: PointerEvent) => {
     cancelAnimationFrame(raf);
     raf = requestAnimationFrame(() => {
-      for (const card of cards) {
+      // Se consultan en cada movimiento: hay rejillas que se repintan al filtrar
+      for (const card of grid.querySelectorAll<HTMLElement>(cardSelector)) {
         const r = card.getBoundingClientRect();
         card.style.setProperty('--fx', `${e.clientX - r.left}px`);
         card.style.setProperty('--fy', `${e.clientY - r.top}px`);

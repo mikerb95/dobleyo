@@ -317,6 +317,10 @@ img {
   color: var(--coffee)
 }
 
+.site-header .brand {
+  flex-shrink: 0
+}
+
 /* Asegurar altura consistente del logo (escritorio por defecto) */
 .brand img {
   height: 80px;
@@ -413,27 +417,47 @@ img {
   display: none;
   background: transparent;
   border: 0;
-  padding: .5rem;
+  padding: 0;
   cursor: pointer;
-  color: var(--fg);
-  font-size: 1.5rem;
+  color: var(--coffee);
   width: 2.5rem;
   height: 2.5rem;
   align-items: center;
   justify-content: center;
-  border-radius: .375rem;
-  transition: background-color .2s ease, transform .2s ease;
+  border-radius: 999px;
+  transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease);
   position: relative;
   z-index: 100
 }
 
-.hamburger:hover {
-  background: rgba(0, 0, 0, .04)
+.hamburger:hover,
+.hamburger.active {
+  background: rgba(var(--caramel-rgb), .12);
+  color: var(--caramel-deep)
 }
 
-.hamburger.active {
-  background: rgba(0, 0, 0, .08);
-  transform: scale(1.05)
+.hamburger:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px
+}
+
+/* Las tres líneas se cruzan en una X con el menú abierto */
+.hamburger__line {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform var(--dur) var(--ease), opacity var(--dur) var(--ease)
+}
+
+.hamburger.active .hamburger__line--top {
+  transform: translateY(5px) rotate(45deg)
+}
+
+.hamburger.active .hamburger__line--mid {
+  opacity: 0
+}
+
+.hamburger.active .hamburger__line--bot {
+  transform: translateY(-5px) rotate(-45deg)
 }
 
 /* Botones del encabezado: circulares, sin caja, con tinte caramelo al hover */
@@ -590,11 +614,11 @@ img {
 }
 
 .mobile-menu>a:active {
-  background: rgba(0, 0, 0, .06)
+  background: rgba(var(--caramel-rgb), .12)
 }
 
 .mobile-menu>a:hover {
-  background: rgba(0, 0, 0, .04);
+  background: rgba(var(--caramel-rgb), .06);
   padding-left: 1.75rem
 }
 
@@ -622,11 +646,11 @@ img {
 }
 
 .mobile-menu>div>a:active {
-  background: rgba(0, 0, 0, .06)
+  background: rgba(var(--caramel-rgb), .12)
 }
 
 .mobile-menu>div>a:hover {
-  background: rgba(0, 0, 0, .04);
+  background: rgba(var(--caramel-rgb), .06);
   padding-left: 1.75rem
 }
 
@@ -634,20 +658,48 @@ img {
   border-bottom: none
 }
 
+/* Selector de idioma dentro del menú: alineado con los enlaces */
+.mobile-menu .mobile-lang {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border)
+}
+
 .mobile-menu .user-btn {
   display: flex;
   align-items: center;
   gap: .75rem;
-  padding: 1.2rem 1.5rem;
-  background: linear-gradient(135deg, rgba(0, 0, 0, .02) 0%, rgba(0, 0, 0, .01) 100%);
+  width: 100%;
+  margin: 0;
+  padding: 1.1rem 1.5rem;
+  border: 0;
   border-bottom: 1px solid var(--border);
-  font-size: 1.05rem
+  border-radius: 0;
+  background: transparent;
+  color: var(--coffee);
+  font: 600 1.05rem/1.2 var(--font-body);
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease)
+}
+
+.mobile-menu .user-btn:hover,
+.mobile-menu .user-btn:active {
+  background: rgba(var(--caramel-rgb), .06);
+  color: var(--caramel-deep)
+}
+
+.mobile-menu .user-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px
 }
 
 .mobile-menu .user-btn svg {
   width: 22px;
   height: 22px;
-  flex-shrink: 0
+  flex-shrink: 0;
+  color: var(--caramel)
 }
 
 /* Seccion hero */
@@ -1165,7 +1217,19 @@ img {
 
   /* Mantener logo balanceado en movil */
   .brand img {
-    height: 36px
+    height: 44px
+  }
+}
+
+/* En móvil el idioma vive dentro del menú: el header queda con
+   logo + buscar, carrito, cuenta y menú */
+@media (max-width: 768px) {
+  .site-header .actions .lang-toggle {
+    display: none
+  }
+
+  .site-header .actions {
+    gap: .25rem
   }
 }
 
@@ -3273,11 +3337,12 @@ body.menu-open {
 .dropdown-menu {
   display: none;
   position: fixed;
-  background: white;
+  background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  min-width: 160px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  border-radius: var(--radius-md);
+  min-width: 180px;
+  padding: .375rem;
+  box-shadow: var(--shadow-md);
   z-index: 9999;
 }
 
@@ -3295,7 +3360,7 @@ body.menu-open {
   align-items: center;
   gap: 0.5rem;
   width: 100%;
-  padding: 12px 16px;
+  padding: .6rem .75rem;
   text-align: left;
   border: none;
   background: none;
@@ -3304,23 +3369,25 @@ body.menu-open {
   cursor: pointer;
   font-size: 0.95rem;
   font-family: inherit;
-  transition: background-color 0.2s;
+  border-radius: var(--radius-sm);
+  transition: background-color 0.2s, color 0.2s;
 }
 
 .dropdown-item:hover {
-  background-color: var(--cream);
+  background-color: rgba(var(--caramel-rgb), .08);
+  color: var(--caramel-deep);
 }
 
-.dropdown-item:first-child {
-  border-radius: 8px 8px 0 0;
+.dropdown-item:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
 }
 
-.dropdown-item:last-child {
-  border-radius: 0 0 8px 8px;
-}
-
-.dropdown-item:last-child:hover {
-  color: #d32f2f;
+/* Solo "Cerrar sesión" se marca en rojo (antes era cualquier último ítem,
+   así que "Registrarse" también se volvía rojo) */
+#logoutBtn:hover {
+  background-color: var(--danger-bg);
+  color: var(--danger);
 }
 /* WhatsApp FAB */
 .whatsapp-fab {
