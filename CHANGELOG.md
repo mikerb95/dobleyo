@@ -2,6 +2,25 @@
 
 ---
 
+## 2026-10-13: Footer rediseñado, oscuro y con marca (Agente: Claude)
+
+### Contexto
+El footer era una rejilla crema sin jerarquía: logo de 28 px, Instagram y Facebook apuntando a `#`, "Admin Panel" como enlace público, enlaces duplicados ("Cafés" y "Ver todo" a `/tienda`; en EN "Subscription" iba a `/wholesale`), fila legal desalineada por un `margin-top` inline, colores hex sueltos y un aviso médico heredado de una plantilla de suplementos.
+
+### Cambios
+- **`components/Footer.astro`** reescrito con estilos propios (scoped):
+  - Fondo espresso. Newsletter con titular en Fraunces y un campo tipo píldora con botón "Suscribirme" (ahora es un `<form>` con `submit`).
+  - Columna de marca: sello del logo sobre disco crema, frase de marca, WhatsApp real (`+57 320 498 1580`, el mismo del botón flotante), correo y "Hecho en Colombia".
+  - Cuatro columnas sin duplicados: Tienda, Aprende, Ayuda, Empresas. Sin Admin ni redes sociales vacías.
+  - Medios de pago del checkout (Visa, Mastercard, PSE, Nequi, Daviplata, contraentrega), solo en ES.
+  - Fila legal en una línea: copyright, legales y crédito.
+  - Se elimina el aviso médico/regulatorio.
+  - Móvil: las columnas son acordeones (`<details>`); desde 768 px siempre abiertas.
+- **`public/assets/js/footer.js`** (antes `newsletter-footer.js`): mensajes por `data-state` en vez de colores inline, textos ES/EN según `<html lang>`, y control de los acordeones.
+- **`styles.css`**: se borran las reglas globales viejas del footer. Tokens nuevos `--footer-*` para el tema oscuro y `--sand` (el crema anterior), que pasa a usarse en las secciones que reutilizaban `--footer-bg` (`index.astro`, `en/index.astro`, `desarrollo-ia.astro`, `sena/taller-negociacion.astro`).
+
+---
+
 ## 2026-10-13: Motion en tienda, suscripción y regalos; /en/shop reparada (Agente: Claude)
 
 ### Contexto

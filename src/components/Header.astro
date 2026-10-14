@@ -40,7 +40,17 @@ const L = {
         searchAll: "Ver todos los resultados",
         searchEmpty: "No encontramos productos para esa búsqueda",
         searchHint: "Escriba al menos dos caracteres",
-        searchError: "No fue posible completar la búsqueda. Intente de nuevo." },
+        searchError: "No fue posible completar la búsqueda. Intente de nuevo.",
+        searchShortcut: "Buscar (/)",
+        search_ui: {
+          recent: "Búsquedas recientes", clearRecent: "Borrar", removeRecent: "Quitar de recientes",
+          origins: "Orígenes", processes: "Procesos", notes: "Notas de cata",
+          popular: "Los más pedidos", suggestions: "Sugerencias",
+          origin: "origen", process: "proceso", note: "nota",
+          one: "producto", many: "productos", outOfStock: "Agotado",
+          keysMove: "navegar", keysOpen: "abrir", keysClose: "cerrar",
+          clear: "Borrar texto",
+        } },
   en: { cart: "Shopping cart", cartEmpty: "Your cart is empty", profile: "Profile",
         apps: "Apps panel", products: "Products", audit: "Audit",
         logout: "Sign out", login: "Sign in", register: "Sign up",
@@ -51,7 +61,17 @@ const L = {
         searchAll: "See all results",
         searchEmpty: "No products matched that search",
         searchHint: "Type at least two characters",
-        searchError: "The search could not be completed. Please try again." },
+        searchError: "The search could not be completed. Please try again.",
+        searchShortcut: "Search (/)",
+        search_ui: {
+          recent: "Recent searches", clearRecent: "Clear", removeRecent: "Remove from recent",
+          origins: "Origins", processes: "Processes", notes: "Tasting notes",
+          popular: "Most popular", suggestions: "Suggestions",
+          origin: "origin", process: "process", note: "note",
+          one: "product", many: "products", outOfStock: "Sold out",
+          keysMove: "navigate", keysOpen: "open", keysClose: "close",
+          clear: "Clear text",
+        } },
 };
 const nav = NAV[lang] ?? NAV.es;
 const tx = L[lang] ?? L.es;
@@ -76,6 +96,8 @@ const searchHref = lang === "en" ? "/search" : "/buscar";
         class="icon-btn"
         id="searchBtn"
         aria-label={tx.searchOpen}
+        title={tx.searchShortcut}
+        aria-keyshortcuts="/ Control+K Meta+K"
         aria-expanded="false"
         aria-controls="searchPanel"
       >
@@ -161,44 +183,74 @@ const searchHref = lang === "en" ? "/search" : "/buscar";
     funciona sin JavaScript; el panel de sugerencias es una mejora progresiva.
   -->
   <div class="search-panel" id="searchPanel" hidden>
-    <form class="search-form" id="searchForm" action={searchHref} method="get" role="search">
-      <label class="sr-only" for="searchInput">{tx.searchOpen}</label>
-      <svg class="search-form__icon" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.6" />
-        <path d="M16.5 16.5L21 21" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
-      </svg>
-      <input
-        type="search"
-        id="searchInput"
-        name="q"
-        class="search-form__input"
-        placeholder={tx.searchPlaceholder}
-        autocomplete="off"
-        role="combobox"
-        aria-expanded="false"
-        aria-controls="searchResults"
-        aria-autocomplete="list"
-      />
-      <button type="submit" class="search-form__submit">{tx.search}</button>
-      <button type="button" class="search-form__close" id="searchClose" aria-label={tx.searchClose}>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-        </svg>
-      </button>
-    </form>
-    <div
-      class="search-results"
-      id="searchResults"
-      role="listbox"
-      aria-label={tx.searchOpen}
-      data-href={searchHref}
-      data-lang={lang}
-      data-all={tx.searchAll}
-      data-empty={tx.searchEmpty}
-      data-hint={tx.searchHint}
-      data-error={tx.searchError}
-      hidden
-    ></div>
+    <div class="search-sheet">
+      <form class="search-form" id="searchForm" action={searchHref} method="get" role="search">
+        <div class="search-field">
+          <label class="sr-only" for="searchInput">{tx.searchOpen}</label>
+          <span class="search-field__icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.6" />
+              <path d="M16.5 16.5L21 21" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+            </svg>
+            <span class="search-field__spinner"></span>
+          </span>
+          <input
+            type="search"
+            id="searchInput"
+            name="q"
+            class="search-field__input"
+            placeholder={tx.searchPlaceholder}
+            autocomplete="off"
+            enterkeyhint="search"
+            spellcheck="false"
+            role="combobox"
+            aria-expanded="false"
+            aria-controls="searchResults"
+            aria-autocomplete="list"
+          />
+          <button type="button" class="search-field__clear" id="searchClear" aria-label={tx.search_ui.clear} hidden>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            </svg>
+          </button>
+          <button type="submit" class="search-field__submit">
+            <span class="search-field__submit-label">{tx.search}</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </button>
+        </div>
+        <button type="button" class="search-form__close" id="searchClose" aria-label={tx.searchClose}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+          </svg>
+        </button>
+      </form>
+
+      <div class="search-body">
+        <div class="search-idle" id="searchIdle" aria-live="polite"></div>
+        <div
+          class="search-results"
+          id="searchResults"
+          role="listbox"
+          aria-label={tx.searchOpen}
+          data-href={searchHref}
+          data-lang={lang}
+          data-all={tx.searchAll}
+          data-empty={tx.searchEmpty}
+          data-hint={tx.searchHint}
+          data-error={tx.searchError}
+          hidden
+        ></div>
+      </div>
+
+      <div class="search-foot" aria-hidden="true">
+        <span><kbd>↑</kbd><kbd>↓</kbd> {tx.search_ui.keysMove}</span>
+        <span><kbd>Enter</kbd> {tx.search_ui.keysOpen}</span>
+        <span><kbd>Esc</kbd> {tx.search_ui.keysClose}</span>
+      </div>
+    </div>
+    <script is:inline type="application/json" id="searchI18n" set:html={JSON.stringify(tx.search_ui)} />
   </div>
 
   <div class="mobile-menu" id="mobileMenu" hidden>

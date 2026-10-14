@@ -142,6 +142,62 @@ productsRouter.get('/search', async (req, res) => {
   }
 });
 
+// ─── GET /api/products/search/suggest ────────────────────────────────────────
+// Lo que muestra el buscador del header antes de escribir: orígenes, procesos
+// y notas de cata de los cafés activos (con su conteo) y los productos más
+// vendidos. Sale del catálogo real, nada fijo en el front. También va antes
+// de GET /:id.
+productsRouter.get('/search/suggest', async (req, res) => {
+  try {
+    const [coffees, popular] = await Promise.all([
+      query(
+        `SELECT origin, process, tasting_notes
+         FROM products
+         WHERE is_active = 1 AND category = 'cafe'`
+      ),
+      query(
+        `SELECT p.id, p.slug, p.name, p.name_en, p.category, p.origin, p.process,
+                p.price, p.price_usd, p.image_url AS image, p.stock_quantity AS stock
+         FROM products p
+         WHERE p.is_active = 1
+         ORDER BY p.is_bestseller DESC, p.rating DESC
+         LIMIT 4`
+      ),
+    ]);
+
+    const tally = (values) => {
+      const counts = new Map();
+      for (const v of values) {
+        if (!v) continue;
+        counts.set(v, (counts.get(v) ?? 0) + 1);
+      }
+      return [...counts]
+        .map(([value, count]) => ({ value, count }))
+        .sort((a, b) => b.count - a.count || a.value.localeCompare(b.value, 'es'));
+    };
+
+    const notes = coffees.rows.map((r) => parseTastingNotes(r.tasting_notes));
+
+    res.set('Cache-Control', 'public, max-age=300');
+    res.json({
+      success: true,
+      data: {
+        origins: tally(coffees.rows.map((r) => r.origin)),
+        processes: tally(coffees.rows.map((r) => r.process)),
+        notes: tally(notes.flatMap((n) => n?.es ?? [])).slice(0, 8),
+        notesEn: tally(notes.flatMap((n) => n?.en ?? [])).slice(0, 8),
+        popular: popular.rows.map((p) => ({
+          ...p,
+          categoryLabel: CATEGORY_LABEL[p.category] ?? p.category,
+        })),
+      },
+    });
+  } catch (err) {
+    logger.error({ err }, '[GET /api/products/search/suggest] Error:');
+    res.status(500).json({ success: false, error: 'Error al cargar sugerencias' });
+  }
+});
+
 // ─── GET /api/products/:id ───────────────────────────────────────────────────
 // Detalle de un producto por id o slug. Público.
 productsRouter.get('/:id', async (req, res) => {

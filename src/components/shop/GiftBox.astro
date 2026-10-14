@@ -1,17 +1,22 @@
 ---
 /**
- * Encabezado de regalos: una caja que se abre y deja ver lo que trae cada kit.
- * Los botones de abajo cambian de kit: la caja se cierra y se vuelve a abrir
- * con el contenido del nuevo.
+ * Caja de regalo del encabezado de /regalos: papel kraft con cinta, que se abre
+ * y deja ver lo que trae cada kit. Los botones de abajo cambian de kit.
+ *
+ * Está hecha en capas que comparten el mismo viewBox (320x300), así sus
+ * coordenadas coinciden:
+ *   1. interior (la boca de la caja)
+ *   2. tapa (abierta queda apoyada detrás de la caja)
+ *   3. contenido (HTML; la ventana recorta en el borde de la caja)
+ *   4. frente y costado con la cinta
+ * Cerrada, la tapa sube por encima de todo (clase .is-closed).
  *
  * El contenido de cada kit sale de su descripción en la BD, resumido a mano
- * (CONTENTS). Un kit nuevo sin entrada aquí muestra solo "Caja de regalo", que
- * vale para todos según la promesa de la página.
- *
- * Sin JS o con movimiento reducido: la caja abierta con el primer kit, y los
- * botones cambian el contenido sin animación (script de este componente). El
- * motion vive en src/scripts/shop/gifts.ts.
+ * (lib/gifts.ts). Sin JS o con movimiento reducido: caja abierta con el primer
+ * kit, y los botones cambian el contenido sin animación. El motion vive en
+ * src/scripts/shop/gifts.ts.
  */
+import { contentsOf } from "../../lib/gifts.ts";
 
 export interface GiftKit {
   id: string;
@@ -24,38 +29,65 @@ interface Props {
 }
 
 const { kits } = Astro.props;
-
-const CONTENTS: Record<string, string[]> = {
-  "kit-iniciacion-barista": ["Café de origen único", "Guía de preparación", "Caja de regalo"],
-  "kit-regalo-especial": ["Dos cafés de regiones distintas", "Presentación especial para regalo"],
-  "kit-trazabilidad-completa": ["Café de especialidad", "Caja de regalo"],
-};
-const contentsOf = (id: string) => CONTENTS[id] ?? ["Caja de regalo"];
 const price = (n: number) => `$${Number(n).toLocaleString("es-CO")}`;
 ---
 
 {kits.length > 0 && (
   <div class="gift" data-gift>
     <div class="gift__stage" aria-hidden="true">
-      <div class="gift__box">
-        <div class="gift__items">
-          {kits.map((k, i) => (
-            <div class="gift__set" data-kit-set={k.id} hidden={i !== 0}>
-              {contentsOf(k.id).map((item) => (
-                <span class="gift__item">{item}</span>
-              ))}
-            </div>
-          ))}
-        </div>
-        <div class="gift__lid">
-          <svg class="gift__bow" viewBox="0 0 80 34">
-            <path d="M40 30 C 24 4, 2 4, 6 22 C 8 30, 26 30, 40 30 Z" />
-            <path d="M40 30 C 56 4, 78 4, 74 22 C 72 30, 54 30, 40 30 Z" />
-            <circle cx="40" cy="29" r="5" />
-          </svg>
-        </div>
-        <div class="gift__base"></div>
+      <!-- 1. Interior -->
+      <svg class="gift__layer gift__back" viewBox="0 0 320 300">
+        <ellipse class="gift__floor" cx="160" cy="284" rx="132" ry="12" />
+        <polygon class="gift__mouth" points="40,150 240,150 280,128 80,128" />
+        <polygon class="gift__mouth-shade" points="40,150 240,150 252,143 52,143" />
+      </svg>
+
+      <!-- 2. Tapa -->
+      <svg class="gift__layer gift__lid" viewBox="0 0 320 300">
+        <polygon class="kraft-top" points="32,148 248,148 290,124 74,124" />
+        <polygon class="kraft-side" points="248,148 290,124 290,140 248,166" />
+        <rect class="kraft-front" x="32" y="148" width="216" height="18" />
+        <polygon class="ribbon" points="128,148 152,148 194,124 170,124" />
+        <polygon class="ribbon" points="52,138 252,138 266,130 66,130" />
+        <rect class="ribbon" x="128" y="148" width="24" height="18" />
+        <polygon class="ribbon-dark" points="248,155 290,131 290,138 248,162" />
+        <g class="gift__bow">
+          <path class="bow" d="M161 134 C 138 108, 106 112, 118 130 C 124 140, 146 138, 161 134 Z" />
+          <path class="bow" d="M161 134 C 184 108, 216 112, 204 130 C 198 140, 176 138, 161 134 Z" />
+          <path class="bow-inner" d="M161 134 C 145 118, 126 120, 131 129" />
+          <path class="bow-inner" d="M161 134 C 177 118, 196 120, 191 129" />
+          <path class="bow" d="M156 136 L 140 160 L 148 158 L 152 166 L 160 138 Z" />
+          <path class="bow" d="M166 136 L 182 158 L 174 157 L 172 165 L 162 138 Z" />
+          <ellipse class="bow-knot" cx="161" cy="134" rx="8" ry="6" />
+        </g>
+      </svg>
+
+      <!-- 3. Contenido -->
+      <div class="gift__items">
+        {kits.map((k, i) => (
+          <div class="gift__set" data-kit-set={k.id} hidden={i !== 0}>
+            {contentsOf(k.id).map((item) => (
+              <span class="gift__item">{item}</span>
+            ))}
+          </div>
+        ))}
       </div>
+
+      <!-- 4. Frente y costado -->
+      <svg class="gift__layer gift__front" viewBox="0 0 320 300">
+        <rect class="kraft-front" x="40" y="150" width="200" height="132" rx="2" />
+        <polygon class="kraft-side" points="240,150 280,128 280,258 240,282" />
+        <rect class="ribbon" x="128" y="150" width="24" height="132" />
+        <polygon class="ribbon-dark" points="240,212 280,190 280,204 240,226" />
+        <g class="gift__tag">
+          <path class="tag-string" d="M152 168 C 170 172, 182 182, 186 196" />
+          <g transform="rotate(8 197 209)">
+            <rect class="tag" x="174" y="196" width="46" height="26" rx="3" />
+            <circle class="tag-hole" cx="180" cy="202" r="1.8" />
+            <text class="tag-text" x="200" y="213" text-anchor="middle">DobleYo</text>
+          </g>
+        </g>
+      </svg>
     </div>
 
     <div class="gift__picker" role="group" aria-label="Kits de regalo">
@@ -91,7 +123,7 @@ const price = (n: number) => `$${Number(n).toLocaleString("es-CO")}`;
         set.hidden = !on;
         if (on) items = Array.from(set.children).map((c) => c.textContent ?? "");
       });
-      if (list) list.innerHTML = items.map((t) => `<li>${t}</li>`).join("");
+      list?.replaceChildren(...items.map((t) => Object.assign(document.createElement("li"), { textContent: t })));
       root.dispatchEvent(new CustomEvent("gift:switch"));
     });
   }
@@ -103,76 +135,59 @@ const price = (n: number) => `$${Number(n).toLocaleString("es-CO")}`;
   .gift {
     display: grid;
     justify-items: center;
-    gap: var(--space-5);
+    gap: var(--space-6);
   }
 
-  /* ── Caja ─────────────────────────────────────────────────────────────── */
   .gift__stage {
-    width: min(100%, 340px);
-    padding-top: 200px; /* aire para el contenido que sale y la tapa parada al lado */
-    perspective: 900px;
-  }
-  .gift__box {
     position: relative;
-    height: 170px;
+    width: min(100%, 400px);
+    aspect-ratio: 320 / 300;
   }
-  /* En celular la caja es más angosta: la tapa abierta necesita espacio al lado */
-  @media (max-width: 480px) {
-    .gift__stage { width: 230px; padding-top: 150px; }
-    .gift__box { height: 140px; }
-    /* Más vertical: inclinada como en escritorio se saldría de la pantalla */
-    .gift__lid { transform: translate(6px, 140px) rotate(91deg); }
-  }
-  .gift__base {
+  .gift__layer {
     position: absolute;
     inset: 0;
-    border-radius: 6px;
-    background:
-      linear-gradient(90deg, transparent calc(50% - 12px), var(--cream) calc(50% - 12px) calc(50% + 12px), transparent calc(50% + 12px)),
-      linear-gradient(180deg, rgba(var(--espresso-rgb), .18), transparent 30%),
-      var(--caramel-deep);
-    box-shadow: 0 22px 30px -18px rgba(var(--espresso-rgb), .45);
-    z-index: 2;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
   }
+  .gift__back { z-index: 1; }
   .gift__lid {
-    position: absolute;
-    left: -12px;
-    right: -12px;
-    top: -34px;
-    height: 38px;
-    border-radius: 6px;
-    background:
-      linear-gradient(90deg, transparent calc(50% - 12px), var(--cream) calc(50% - 12px) calc(50% + 12px), transparent calc(50% + 12px)),
-      var(--caramel);
-    /* Bisagra en la esquina trasera derecha: abierta queda parada a un lado */
-    transform-origin: 100% 100%;
-    /* Estado final (servidor): abierta y parada en el piso junto a la caja
-       (bajada el alto de la caja). Debe coincidir con open() en gifts.ts */
-    transform: translate(6px, 170px) rotate(96deg);
-    z-index: 3;
+    z-index: 2;
+    /* Estado final (servidor): abierta, apoyada detrás de la caja.
+       Debe coincidir con OPEN en src/scripts/shop/gifts.ts */
+    transform: translate(9%, -15%) rotate(7deg);
+    transform-origin: 50% 45%;
   }
-  .gift__bow {
-    position: absolute;
-    left: 50%;
-    bottom: 100%;
-    width: 80px;
-    margin-left: -40px;
-    margin-bottom: -6px;
-    fill: var(--cream);
-    stroke: rgba(var(--espresso-rgb), .2);
-    stroke-width: 1;
-  }
+  .gift__lid.is-closed { z-index: 5; }
+  .gift__front { z-index: 4; }
 
-  /* El contenido asoma por el borde de la caja. La ventana recorta justo en el
-     borde: lo que baja "entra" en la caja en vez de salir por debajo. */
+  /* Paleta de la caja: kraft con cinta color cereza */
+  .gift__floor { fill: rgba(var(--espresso-rgb), .45); filter: blur(6px); }
+  .gift__mouth { fill: color-mix(in srgb, var(--kraft-deep) 50%, var(--espresso)); }
+  .gift__mouth-shade { fill: rgba(var(--espresso-rgb), .35); }
+  .kraft-front { fill: var(--kraft); }
+  .kraft-top { fill: color-mix(in srgb, var(--kraft) 80%, var(--cream)); }
+  .kraft-side { fill: var(--kraft-deep); }
+  .ribbon { fill: var(--cherry); }
+  .ribbon-dark { fill: color-mix(in srgb, var(--cherry) 70%, var(--espresso)); }
+  .bow { fill: var(--cherry); stroke: color-mix(in srgb, var(--cherry) 60%, var(--espresso)); stroke-width: 1; }
+  .bow-inner { fill: none; stroke: color-mix(in srgb, var(--cherry) 55%, var(--espresso)); stroke-width: 1.2; }
+  .bow-knot { fill: color-mix(in srgb, var(--cherry) 80%, var(--espresso)); }
+  .tag-string { fill: none; stroke: var(--cream); stroke-width: 1; opacity: .9; }
+  .tag { fill: var(--cream); }
+  .tag-hole { fill: var(--kraft-deep); }
+  .tag-text { font-family: var(--font-display); font-size: 9px; font-weight: 600; fill: var(--espresso); }
+
+  /* Ventana del contenido: su borde inferior es el borde de la caja (y=150),
+     lo que baja "entra" en la caja en vez de salir por debajo */
   .gift__items {
     position: absolute;
-    left: 6%;
-    right: 6%;
-    bottom: calc(100% - 6px);
-    height: 190px;
+    left: 12%;
+    right: 24%;
+    top: 0;
+    height: 50%;
+    z-index: 3;
     overflow: hidden;
-    z-index: 1;
     display: grid;
     align-items: end;
   }
@@ -181,24 +196,25 @@ const price = (n: number) => `$${Number(n).toLocaleString("es-CO")}`;
     display: flex;
     flex-direction: column-reverse;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
+    padding-bottom: 2px;
   }
   .gift__set[hidden] { display: none; }
   .gift__item {
     background: var(--card);
     color: var(--espresso);
-    border: 1px solid var(--border);
     border-radius: var(--radius-sm);
-    padding: .45rem .8rem;
-    font-size: var(--text-sm);
+    padding: .4rem .75rem;
+    font-size: clamp(.72rem, 2.6vw, .85rem);
     font-weight: 600;
-    box-shadow: 0 6px 14px -8px rgba(var(--espresso-rgb), .35);
+    box-shadow: 0 8px 18px -10px rgba(0, 0, 0, .55);
     text-align: center;
+    max-width: 100%;
   }
   .gift__item:nth-child(2) { rotate: -3deg; }
   .gift__item:nth-child(3) { rotate: 2.5deg; }
 
-  /* ── Selector de kit ──────────────────────────────────────────────────── */
+  /* Selector de kit: píldoras claras sobre el fondo oscuro del encabezado */
   .gift__picker {
     display: flex;
     flex-wrap: wrap;
@@ -207,22 +223,23 @@ const price = (n: number) => `$${Number(n).toLocaleString("es-CO")}`;
   }
   .gift__pick {
     display: grid;
-    gap: 2px;
-    padding: .55rem .9rem;
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius-sm);
-    background: var(--card);
+    gap: 1px;
+    padding: .5rem .95rem;
+    border: 1px solid rgba(var(--cream-rgb), .22);
+    border-radius: 999px;
+    background: transparent;
     font-family: var(--font-body);
-    text-align: left;
+    text-align: center;
     cursor: pointer;
     min-height: 44px;
-    transition: border-color var(--dur) var(--ease), background var(--dur) var(--ease);
+    color: var(--cream);
+    transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease), color var(--dur) var(--ease);
   }
-  .gift__pick:hover { border-color: var(--caramel); }
-  .gift__pick[aria-pressed="true"] { border-color: var(--caramel); background: var(--cream); }
-  .gift__pick:focus-visible { outline: 2px solid var(--caramel); outline-offset: 2px; }
-  .gift__pick-name { font-size: var(--text-sm); font-weight: 700; color: var(--espresso); }
-  .gift__pick-price { font-size: var(--text-xs); color: var(--caramel-deep); font-weight: 600; }
+  .gift__pick:hover { border-color: rgba(var(--cream-rgb), .5); }
+  .gift__pick[aria-pressed="true"] { background: var(--cream); color: var(--espresso); border-color: var(--cream); }
+  .gift__pick:focus-visible { outline: 2px solid var(--mucilage); outline-offset: 2px; }
+  .gift__pick-name { font-size: var(--text-xs); font-weight: 700; }
+  .gift__pick-price { font-size: .7rem; opacity: .75; font-variant-numeric: tabular-nums; }
 
   .gift__list {
     position: absolute;
