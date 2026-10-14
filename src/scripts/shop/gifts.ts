@@ -55,7 +55,7 @@ export const gifts: Piece = (addCleanup) => {
 
     // Un leve vaivén de la etiqueta mientras se ve la caja
     const tag = root.querySelector('.gift__tag');
-    if (tag) gsap.to(tag, { rotation: 4, transformOrigin: '152px 168px', duration: 2.4, ease: 'sine.inOut', yoyo: true, repeat: -1 });
+    if (tag) gsap.to(tag, { rotation: 4, svgOrigin: '152 168', duration: 2.4, ease: 'sine.inOut', yoyo: true, repeat: -1 });
 
     let current: gsap.core.Timeline | null = null;
     const onSwitch = () => {

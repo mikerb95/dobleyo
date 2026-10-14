@@ -320,25 +320,36 @@ const searchHref = lang === "en" ? "/search" : "/buscar";
   headerRoot.dataset.jsInit = "1";
 
   // ── Buscador ───────────────────────────────────────────────────────────────
-  // Sugerencias en vivo sobre /api/products/search. El formulario ya funciona
-  // sin JS: esto solo evita que el usuario tenga que cargar la página de
-  // resultados para saber si el catálogo tiene lo que busca.
+  // Sin escribir: búsquedas recientes, orígenes, procesos y notas reales del
+  // catálogo y los más pedidos (/api/products/search/suggest). Escribiendo:
+  // atajos a esas facetas (sin importar tildes) y productos en vivo de
+  // /api/products/search. El formulario sigue funcionando sin JavaScript.
   (function initSearch() {
-    const btn     = document.getElementById("searchBtn");
-    const panel   = document.getElementById("searchPanel");
-    const form    = document.getElementById("searchForm");
-    const input   = document.getElementById("searchInput");
+    const btn      = document.getElementById("searchBtn");
+    const panel    = document.getElementById("searchPanel");
+    const form     = document.getElementById("searchForm");
+    const input    = document.getElementById("searchInput");
     const closeBtn = document.getElementById("searchClose");
-    const results = document.getElementById("searchResults");
-    if (!btn || !panel || !form || !input || !results) return;
+    const clearBtn = document.getElementById("searchClear");
+    const results  = document.getElementById("searchResults");
+    const idle     = document.getElementById("searchIdle");
+    if (!btn || !panel || !form || !input || !results || !idle) return;
+
+    let ui = {};
+    try { ui = JSON.parse(document.getElementById("searchI18n")?.textContent || "{}"); } catch (_) {}
 
     const searchHref = results.dataset.href || "/buscar";
     const lang       = results.dataset.lang === "en" ? "en" : "es";
     const MIN_CHARS  = 2;
+    const SHOWN      = 6;
+    const RECENT_KEY = "dy-search-recent";
+    const RECENT_MAX = 6;
 
     let controller = null;
     let debounceId = 0;
     let activeIndex = -1;
+    let facets = null;
+    let facetsPromise = null;
 
     const money = (p) =>
       lang === "en"
@@ -350,96 +361,297 @@ const searchHref = lang === "en" ? "/search" : "/buscar";
         "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
       })[c]);
 
-    function positionPanel() {
-      const rect = headerRoot.getBoundingClientRect();
-      panel.style.top = `${rect.bottom}px`;
+    // Minúsculas y sin tildes: "narino" encuentra "Nariño".
+    const fold = (s) =>
+      String(s ?? "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+
+    // Resalta el término sin importar tildes ni mayúsculas. Solo cuando el
+    // texto conserva su longitud al quitar tildes (el caso normal en español),
+    // para que los índices coincidan con el original.
+    function highlight(text, q) {
+      const t = String(text ?? "");
+      const ft = fold(t);
+      const fq = fold(String(q ?? "").trim());
+      const i = fq && ft.length === t.length ? ft.indexOf(fq) : -1;
+      if (i < 0) return escapeHtml(t);
+      return (
+        escapeHtml(t.slice(0, i)) +
+        `<mark>${escapeHtml(t.slice(i, i + fq.length))}</mark>` +
+        escapeHtml(t.slice(i + fq.length))
+      );
+    }
+
+    const hrefFor = (term) => `${searchHref}?q=${encodeURIComponent(term)}`;
+    const productHref = (p) => `/producto/${encodeURIComponent(p.slug || p.id)}`;
+    const productName = (p) => (lang === "en" && p.name_en) || p.name;
+    const isOut = (p) => p.stock !== null && p.stock !== undefined && Number(p.stock) <= 0;
+
+    const ICON_CLOCK = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.6"/><path d="M12 8v4l2.5 2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>`;
+    const ICON_X = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`;
+    const ICON_ARROW = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+    // ── Recientes (solo en este navegador) ──
+    function readRecent() {
+      try {
+        const v = JSON.parse(localStorage.getItem(RECENT_KEY) || "[]");
+        return Array.isArray(v) ? v.filter((x) => typeof x === "string").slice(0, RECENT_MAX) : [];
+      } catch (_) {
+        return [];
+      }
+    }
+    function writeRecent(list) {
+      try { localStorage.setItem(RECENT_KEY, JSON.stringify(list.slice(0, RECENT_MAX))); } catch (_) {}
+    }
+    function remember(term) {
+      const t = String(term ?? "").trim();
+      if (t.length < MIN_CHARS) return;
+      writeRecent([t, ...readRecent().filter((x) => fold(x) !== fold(t))]);
+    }
+
+    // ── Facetas y más pedidos: se piden una vez por carga ──
+    function loadFacets() {
+      if (facetsPromise) return facetsPromise;
+      facetsPromise = fetch("/api/products/search/suggest", { headers: { Accept: "application/json" } })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((j) => (facets = j && j.success ? j.data : null))
+        .catch(() => {
+          facetsPromise = null;
+          return null;
+        });
+      return facetsPromise;
+    }
+
+    const facetNotes = () => (facets ? (lang === "en" ? facets.notesEn : facets.notes) || [] : []);
+
+    const chip = (value, kind, q = "") =>
+      `<a class="search-opt search-chip search-chip--${kind}" href="${hrefFor(value)}" data-term="${escapeHtml(value)}">` +
+      `${highlight(value, q)}${q ? `<small>${escapeHtml(ui[kind] || "")}</small>` : ""}</a>`;
+
+    function renderIdle() {
+      const recent = readRecent();
+      const sections = [];
+
+      if (recent.length) {
+        sections.push(`
+          <section class="search-sec">
+            <div class="search-sec__head">
+              <h3 class="search-sec__title">${escapeHtml(ui.recent)}</h3>
+              <button type="button" class="search-sec__action" data-clear-recent>${escapeHtml(ui.clearRecent)}</button>
+            </div>
+            <ul class="search-recent">
+              ${recent.map((r) => `
+                <li class="search-recent__item">
+                  <a class="search-opt search-recent__link" href="${hrefFor(r)}" data-term="${escapeHtml(r)}">${ICON_CLOCK}<span>${escapeHtml(r)}</span></a>
+                  <button type="button" class="search-recent__remove" data-remove-recent="${escapeHtml(r)}" aria-label="${escapeHtml(`${ui.removeRecent}: ${r}`)}">${ICON_X}</button>
+                </li>`).join("")}
+            </ul>
+          </section>`);
+      }
+
+      if (facets) {
+        const groups = [
+          [ui.origins, facets.origins, "origin"],
+          [ui.processes, facets.processes, "process"],
+          [ui.notes, facetNotes(), "note"],
+        ].filter(([, list]) => list && list.length);
+
+        if (groups.length) {
+          sections.push(`
+            <section class="search-sec search-facets">
+              ${groups.map(([title, list, kind]) => `
+                <div class="search-facet">
+                  <h3 class="search-sec__title">${escapeHtml(title)}</h3>
+                  <div class="search-chips">${list.map((x) => chip(x.value, kind)).join("")}</div>
+                </div>`).join("")}
+            </section>`);
+        }
+
+        if (facets.popular && facets.popular.length) {
+          sections.push(`
+            <section class="search-sec">
+              <h3 class="search-sec__title">${escapeHtml(ui.popular)}</h3>
+              <div class="search-popular">
+                ${facets.popular.map((p) => `
+                  <a class="search-opt search-pop" href="${productHref(p)}">
+                    <span class="search-pop__img"><img src="${escapeHtml(p.image || "/assets/logo.png")}" alt="" loading="lazy" width="160" height="160"></span>
+                    <span class="search-pop__name">${escapeHtml(productName(p))}</span>
+                    <span class="search-pop__price">${money(p)}</span>
+                  </a>`).join("")}
+              </div>
+            </section>`);
+        }
+      }
+
+      idle.innerHTML = sections.join("");
+      activeIndex = -1;
+    }
+
+    // ── Estados del panel ──
+    function showIdle() {
+      results.hidden = true;
+      results.innerHTML = "";
+      input.setAttribute("aria-expanded", "false");
+      input.removeAttribute("aria-activedescendant");
+      idle.hidden = false;
+      renderIdle();
+    }
+
+    function showResults() {
+      idle.hidden = true;
+      results.hidden = false;
+      input.setAttribute("aria-expanded", "true");
     }
 
     function setMessage(text) {
       results.innerHTML = `<p class="search-results__msg">${escapeHtml(text)}</p>`;
-      showResults(true);
+      activeIndex = -1;
+      showResults();
     }
 
-    function showResults(visible) {
-      results.hidden = !visible;
-      input.setAttribute("aria-expanded", visible ? "true" : "false");
+    function setLoading(on) {
+      form.classList.toggle("is-loading", on);
+    }
+
+    function facetMatches(q) {
+      if (!facets) return [];
+      const fq = fold(q);
+      return [
+        ...(facets.origins || []).map((x) => [x.value, "origin"]),
+        ...(facets.processes || []).map((x) => [x.value, "process"]),
+        ...facetNotes().map((x) => [x.value, "note"]),
+      ]
+        .filter(([v]) => fold(v).includes(fq) && fold(v) !== fq)
+        .slice(0, 4);
+    }
+
+    function render(items, q) {
+      const sugg = facetMatches(q);
+      let html = "";
+
+      if (sugg.length) {
+        html += `
+          <div class="search-suggest">
+            <span class="search-sec__title">${escapeHtml(ui.suggestions)}</span>
+            <div class="search-chips">${sugg.map(([v, kind]) => chip(v, kind, q)).join("")}</div>
+          </div>`;
+      }
+
+      if (!items.length) {
+        html += `<p class="search-results__msg">${escapeHtml(results.dataset.empty || "")}</p>`;
+      } else {
+        const total = items.length;
+        const label = total === 1 ? ui.one : ui.many;
+        html += `<p class="search-results__count">${total >= 24 ? "24+" : total} ${escapeHtml(label)}</p>`;
+        html += items.slice(0, SHOWN).map((p) => {
+          const meta = [lang === "es" ? p.categoryLabel : null, p.origin, p.process].filter(Boolean);
+          const notes = p.category === "cafe" ? ((lang === "en" ? p.notesEn : p.notes) || []).slice(0, 3) : [];
+          const out = isOut(p);
+          return `
+            <a class="search-opt search-hit${out ? " is-out" : ""}" href="${productHref(p)}" data-term="${escapeHtml(q)}">
+              <img class="search-hit__img" src="${escapeHtml(p.image || "/assets/logo.png")}" alt="" width="56" height="56" loading="lazy">
+              <span class="search-hit__text">
+                <span class="search-hit__name">${highlight(productName(p), q)}</span>
+                ${meta.length ? `<span class="search-hit__meta">${meta.map((m) => highlight(m, q)).join(" · ")}</span>` : ""}
+                ${notes.length ? `<span class="search-hit__notes">${notes.map((n) => `<span>${highlight(n, q)}</span>`).join("")}</span>` : ""}
+              </span>
+              <span class="search-hit__side">
+                <span class="search-hit__price">${money(p)}</span>
+                ${out ? `<span class="search-hit__stock">${escapeHtml(ui.outOfStock)}</span>` : ""}
+              </span>
+            </a>`;
+        }).join("");
+      }
+
+      html += `
+        <a class="search-opt search-results__all" href="${hrefFor(q)}" data-term="${escapeHtml(q)}">
+          <span>${escapeHtml(results.dataset.all || "")} <strong>“${escapeHtml(q)}”</strong></span>${ICON_ARROW}
+        </a>`;
+
+      results.innerHTML = html;
+      results.querySelectorAll(".search-opt").forEach((el, i) => {
+        el.id = `searchOpt${i}`;
+        el.setAttribute("role", "option");
+        el.setAttribute("aria-selected", "false");
+      });
+      activeIndex = -1;
+      input.removeAttribute("aria-activedescendant");
+      showResults();
+    }
+
+    async function runSearch(q) {
+      if (controller) controller.abort();
+      controller = new AbortController();
+      setLoading(true);
+      try {
+        const res = await fetch(
+          `/api/products/search?q=${encodeURIComponent(q)}&limit=24`,
+          { signal: controller.signal, headers: { Accept: "application/json" } }
+        );
+        const json = await res.json();
+        if (!res.ok || !json.success) throw new Error(json.error || "search failed");
+        if (input.value.trim() !== q) return;
+        render(json.data || [], q);
+        setLoading(false);
+      } catch (err) {
+        if (err.name === "AbortError") return;
+        setLoading(false);
+        setMessage(results.dataset.error || "");
+      }
+    }
+
+    // ── Teclado: flechas sobre lo que esté visible (sugerencias o resultados) ──
+    function options() {
+      return Array.from((results.hidden ? idle : results).querySelectorAll(".search-opt"));
+    }
+
+    function moveActive(delta) {
+      const opts = options();
+      if (!opts.length) return;
+      if (opts[activeIndex]) {
+        opts[activeIndex].classList.remove("is-active");
+        opts[activeIndex].setAttribute("aria-selected", "false");
+      }
+      activeIndex = (activeIndex + delta + opts.length) % opts.length;
+      const el = opts[activeIndex];
+      el.classList.add("is-active");
+      el.setAttribute("aria-selected", "true");
+      if (el.id) input.setAttribute("aria-activedescendant", el.id);
+      el.scrollIntoView({ block: "nearest" });
+    }
+
+    // ── Abrir y cerrar ──
+    function positionPanel() {
+      const rect = headerRoot.getBoundingClientRect();
+      panel.style.top = `${rect.bottom}px`;
+      panel.style.setProperty("--search-top", `${rect.bottom}px`);
     }
 
     function openPanel() {
       positionPanel();
       panel.hidden = false;
+      document.documentElement.classList.add("search-open");
       btn.setAttribute("aria-expanded", "true");
       btn.classList.add("active");
+      clearBtn && (clearBtn.hidden = !input.value);
+      if (input.value.trim().length >= MIN_CHARS) runSearch(input.value.trim());
+      else showIdle();
+      loadFacets().then(() => {
+        if (!panel.hidden && !results.hidden === false) renderIdle();
+      });
       input.focus();
       input.select();
     }
 
     function closePanel() {
       panel.hidden = true;
+      document.documentElement.classList.remove("search-open");
       btn.setAttribute("aria-expanded", "false");
       btn.classList.remove("active");
-      showResults(false);
+      input.setAttribute("aria-expanded", "false");
+      input.removeAttribute("aria-activedescendant");
       activeIndex = -1;
+      setLoading(false);
       if (controller) controller.abort();
-    }
-
-    function render(items) {
-      if (!items.length) {
-        setMessage(results.dataset.empty || "");
-        return;
-      }
-      const q = encodeURIComponent(input.value.trim());
-      const rows = items
-        .map((p, i) => {
-          const meta = [p.origin, p.process].filter(Boolean).join(" · ");
-          const href = `/producto/${p.slug || p.id}`;
-          return `
-            <a class="search-hit" role="option" id="searchHit${i}" aria-selected="false" href="${href}">
-              <img class="search-hit__img" src="${escapeHtml(p.image || "/assets/logo.png")}" alt="" width="40" height="40" loading="lazy">
-              <span class="search-hit__text">
-                <span class="search-hit__name">${escapeHtml(p.name)}</span>
-                ${meta ? `<span class="search-hit__meta">${escapeHtml(meta)}</span>` : ""}
-              </span>
-              <span class="search-hit__price">${money(p)}</span>
-            </a>`;
-        })
-        .join("");
-      results.innerHTML =
-        rows +
-        `<a class="search-results__all" href="${searchHref}?q=${q}">${escapeHtml(results.dataset.all || "")}</a>`;
-      activeIndex = -1;
-      showResults(true);
-    }
-
-    async function runSearch(q) {
-      if (controller) controller.abort();
-      controller = new AbortController();
-      try {
-        const res = await fetch(
-          `/api/products/search?q=${encodeURIComponent(q)}&limit=6`,
-          { signal: controller.signal, headers: { Accept: "application/json" } }
-        );
-        const json = await res.json();
-        if (!res.ok || !json.success) throw new Error(json.error || "search failed");
-        render(json.data || []);
-      } catch (err) {
-        if (err.name === "AbortError") return;
-        setMessage(results.dataset.error || "");
-      }
-    }
-
-    function moveActive(delta) {
-      const hits = Array.from(results.querySelectorAll(".search-hit"));
-      if (!hits.length) return;
-      if (activeIndex >= 0) {
-        hits[activeIndex].classList.remove("is-active");
-        hits[activeIndex].setAttribute("aria-selected", "false");
-      }
-      activeIndex = (activeIndex + delta + hits.length) % hits.length;
-      hits[activeIndex].classList.add("is-active");
-      hits[activeIndex].setAttribute("aria-selected", "true");
-      input.setAttribute("aria-activedescendant", hits[activeIndex].id);
-      hits[activeIndex].scrollIntoView({ block: "nearest" });
     }
 
     btn.addEventListener("click", () => {
@@ -447,44 +659,106 @@ const searchHref = lang === "en" ? "/search" : "/buscar";
       else closePanel();
     });
 
-    if (closeBtn) closeBtn.addEventListener("click", closePanel);
+    closeBtn?.addEventListener("click", () => { closePanel(); btn.focus(); });
+
+    clearBtn?.addEventListener("click", () => {
+      input.value = "";
+      input.dispatchEvent(new Event("input"));
+      input.focus();
+    });
 
     input.addEventListener("input", () => {
       const q = input.value.trim();
+      if (clearBtn) clearBtn.hidden = !input.value;
       window.clearTimeout(debounceId);
-      if (q.length < MIN_CHARS) {
-        if (q.length === 0) showResults(false);
-        else setMessage(results.dataset.hint || "");
+      if (q.length === 0) {
+        if (controller) controller.abort();
+        setLoading(false);
+        showIdle();
         return;
       }
-      debounceId = window.setTimeout(() => runSearch(q), 220);
+      if (q.length < MIN_CHARS) {
+        setMessage(results.dataset.hint || "");
+        return;
+      }
+      debounceId = window.setTimeout(() => runSearch(q), 200);
     });
 
     input.addEventListener("keydown", (ev) => {
       if (ev.key === "ArrowDown") { ev.preventDefault(); moveActive(1); }
       else if (ev.key === "ArrowUp") { ev.preventDefault(); moveActive(-1); }
       else if (ev.key === "Enter" && activeIndex >= 0) {
-        const hit = results.querySelectorAll(".search-hit")[activeIndex];
-        if (hit) { ev.preventDefault(); window.location.href = hit.getAttribute("href"); }
+        const el = options()[activeIndex];
+        if (el) { ev.preventDefault(); el.click(); }
       }
     });
 
     form.addEventListener("submit", (ev) => {
-      if (input.value.trim().length < MIN_CHARS) {
+      const q = input.value.trim();
+      if (q.length < MIN_CHARS) {
         ev.preventDefault();
         setMessage(results.dataset.hint || "");
+        return;
       }
+      remember(q);
+    });
+
+    // Clics dentro del panel: recientes (borrar/quitar) y guardar el término
+    // de lo que se abre.
+    panel.addEventListener("click", (ev) => {
+      const target = ev.target;
+      if (!(target instanceof Element)) return;
+
+      if (target.closest("[data-clear-recent]")) {
+        writeRecent([]);
+        renderIdle();
+        input.focus();
+        return;
+      }
+      const remove = target.closest("[data-remove-recent]");
+      if (remove) {
+        const term = remove.getAttribute("data-remove-recent") || "";
+        writeRecent(readRecent().filter((x) => x !== term));
+        renderIdle();
+        input.focus();
+        return;
+      }
+      const link = target.closest("a[data-term]");
+      if (link) remember(link.getAttribute("data-term"));
     });
 
     document.addEventListener("keydown", (ev) => {
-      if (ev.key === "Escape" && !panel.hidden) { closePanel(); btn.focus(); }
+      if (ev.key === "Escape" && !panel.hidden) {
+        closePanel();
+        btn.focus();
+        return;
+      }
+      // Atajos: "/" desde cualquier parte (si no se está escribiendo) y Ctrl/⌘+K.
+      const typing = ev.target instanceof Element &&
+        ev.target.closest("input, textarea, select, [contenteditable='true']");
+      if ((ev.ctrlKey || ev.metaKey) && !ev.altKey && ev.key.toLowerCase() === "k") {
+        ev.preventDefault();
+        if (panel.hidden) openPanel();
+        else input.focus();
+      } else if (ev.key === "/" && !typing && !ev.ctrlKey && !ev.metaKey && !ev.altKey) {
+        ev.preventDefault();
+        if (panel.hidden) openPanel();
+      }
     });
 
     document.addEventListener("click", (ev) => {
       if (panel.hidden) return;
-      if (panel.contains(ev.target) || btn.contains(ev.target)) return;
+      const target = ev.target;
+      // Un nodo que el propio panel acaba de re-renderizar (p. ej. quitar una
+      // reciente) ya no está en el DOM: no es un clic afuera.
+      if (!(target instanceof Node) || !target.isConnected) return;
+      if (target === panel) { closePanel(); return; }
+      if (panel.contains(target) || btn.contains(target)) return;
       closePanel();
     });
+
+    // El header persiste entre páginas (View Transitions): cerrar al navegar.
+    document.addEventListener("astro:after-swap", () => { if (!panel.hidden) closePanel(); });
 
     window.addEventListener("resize", () => { if (!panel.hidden) positionPanel(); });
     window.addEventListener("scroll", () => { if (!panel.hidden) positionPanel(); }, { passive: true });
