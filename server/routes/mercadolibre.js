@@ -281,7 +281,7 @@ mercadolibreRouter.get('/analytics', auth.requireAuth, auth.requireAdmin, async 
         ? "strftime('%Y-W%W', purchase_date)"
         : "strftime('%Y-%m-%d', purchase_date)";
 
-    const [kpisR, prevKpisR, timelineR, byStatusR, topCitiesR, allProductsR, filterOptsR] = await Promise.all([
+    const [kpisR, prevKpisR, timelineR, byStatusR, topCitiesR, allProductsR, filterOptsR, prevTimelineR] = await Promise.all([
       db.query(`SELECT
           COUNT(*) as orders,
           COALESCE(SUM(total_amount), 0) as revenue,
@@ -292,13 +292,19 @@ mercadolibreRouter.get('/analytics', auth.requireAuth, auth.requireAdmin, async 
           SUM(CASE WHEN order_status = 'cancelled' THEN 1 ELSE 0 END) as cancelled
         FROM sales_tracking ${w}`, p),
       pw
-        ? db.query(`SELECT COUNT(*) as orders, COALESCE(SUM(total_amount),0) as revenue, COALESCE(AVG(total_amount),0) as aov FROM sales_tracking ${pw}`, pp)
+        ? db.query(`SELECT COUNT(*) as orders, COALESCE(SUM(total_amount),0) as revenue, COALESCE(AVG(total_amount),0) as aov,
+                   SUM(CASE WHEN order_status = 'cancelled' THEN 1 ELSE 0 END) as cancelled
+              FROM sales_tracking ${pw}`, pp)
         : Promise.resolve({ rows: [null] }),
       db.query(`SELECT ${timeFmt} as period, COUNT(*) as orders, SUM(total_amount) as revenue FROM sales_tracking ${w} GROUP BY period ORDER BY period`, [...p]),
       db.query(`SELECT order_status as status, COUNT(*) as count, SUM(total_amount) as revenue FROM sales_tracking ${w} GROUP BY status ORDER BY count DESC`, [...p]),
       db.query(`SELECT recipient_city as city, recipient_state as state, COUNT(*) as orders, SUM(total_amount) as revenue FROM sales_tracking ${w} GROUP BY city ORDER BY orders DESC LIMIT 12`, [...p]),
       db.query(`SELECT products FROM sales_tracking ${w}`, [...p]),
       db.query(`SELECT DISTINCT recipient_city as city, recipient_state as state FROM sales_tracking WHERE recipient_city IS NOT NULL AND recipient_city != 'Unknown' ORDER BY recipient_city`, []),
+      // Serie del periodo anterior para comparar en la gráfica (se alinea por posición).
+      pw
+        ? db.query(`SELECT ${timeFmt} as period, COUNT(*) as orders, SUM(total_amount) as revenue FROM sales_tracking ${pw} GROUP BY period ORDER BY period`, pp)
+        : Promise.resolve({ rows: [] }),
     ]);
 
     // Parsear productos del JSON almacenado
@@ -323,6 +329,7 @@ mercadolibreRouter.get('/analytics', auth.requireAuth, auth.requireAdmin, async 
       kpis:         kpisR.rows[0],
       prev_kpis:    prevKpisR.rows[0] || null,
       timeline:     timelineR.rows,
+      prev_timeline: prevTimelineR.rows,
       by_status:    byStatusR.rows,
       top_cities:   topCitiesR.rows,
       top_products: topProducts,

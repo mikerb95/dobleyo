@@ -9,7 +9,7 @@ El toggle con banderas no aparecía en producción: desde el 2026-10-12 todos lo
 
 ### Cambios
 - **`package.json`**: `engines.node` de `20.x` a `24.x`.
-- **`src/components/LangToggle.astro`**: misma estructura que `LangSwitch` de codebymike.net. La opción activa es un `<span>` (no enlace) que muestra solo la bandera, con el código en `sr-only`; la inactiva es el enlace con bandera desaturada + código. Tipografía monoespaciada, 11px, menos aire lateral en la activa. Nueva prop `size` (`sm` header, `md` menú móvil, bandera 20x14).
+- **`src/components/LangToggle.astro`**: misma estructura que `LangSwitch` de codebymike.net. La opción activa es un `<span>` (no enlace) que muestra solo la bandera, con el código en `sr-only`; la inactiva es el enlace con bandera desaturada + código. Tipografía monoespaciada, 11px, menos aire lateral en la activa. La bandera de ES pasa de Colombia a España, igual que en codebymike.net. Nueva prop `size` (`sm` header, `md` menú móvil, bandera 20x14).
 - **`src/components/Header.astro`**: el menú móvil usa `size="md"`.
 
 ---

@@ -28,7 +28,10 @@ const WEBHOOK_TOLERANCE_S = 5 * 60;
 
 function verifyResendSignature(req) {
   const secret = process.env.RESEND_WEBHOOK_SECRET;
-  if (!secret || !req.rawBody) return false;
+  // Respaldo si el runtime ya consumió el stream antes de express.json: Resend envía
+  // JSON compacto, así que re-serializarlo reproduce los mismos bytes.
+  const raw = req.rawBody ? req.rawBody.toString('utf8') : JSON.stringify(req.body ?? {});
+  if (!secret) return false;
   const id = req.get('svix-id');
   const timestamp = req.get('svix-timestamp');
   const signatures = req.get('svix-signature');
@@ -40,7 +43,7 @@ function verifyResendSignature(req) {
   const key = Buffer.from(secret.replace(/^whsec_/, ''), 'base64');
   const expected = crypto
     .createHmac('sha256', key)
-    .update(`${id}.${timestamp}.${req.rawBody.toString('utf8')}`)
+    .update(`${id}.${timestamp}.${raw}`)
     .digest();
 
   // La cabecera puede traer varias firmas ("v1,<b64> v1,<b64>") durante una rotación de secreto.

@@ -78,7 +78,12 @@ app.use(helmet({
 
 // Seguridad: Cookies y Body Parsing
 app.use(cookieParser());
-app.use(express.json());
+// rawBody: el webhook de Resend firma los bytes exactos del cuerpo (ver routes/emails.js).
+app.use(express.json({
+  verify: (req, _res, buf) => {
+    if (req.originalUrl?.startsWith('/api/emails/webhook')) req.rawBody = buf;
+  },
+}));
 
 // CORS - permitir múltiples orígenes
 const allowedOrigins = [
