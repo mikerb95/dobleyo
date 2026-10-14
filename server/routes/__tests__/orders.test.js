@@ -181,7 +181,7 @@ describe('POST /api/orders', () => {
 
         expect(res.status).toBe(201);
         const orderInsertArgs = query.mock.calls[1][1];
-        expect(orderInsertArgs[9]).toBe(84000); // índice 9 = subtotal_cop (8 = shipping_zip)
+        expect(orderInsertArgs[11]).toBe(84000); // índice 11 = subtotal_cop (10 = shipping_zip)
     });
 
     it('debería retornar 422 si no hay stock suficiente', async () => {
@@ -243,10 +243,33 @@ describe('GET /api/orders/:ref', () => {
         const mockOrder = { id: 1, reference: 'DY-1234567-ABCD', status: 'pending_payment', total_cop: 96000 };
         query.mockResolvedValueOnce({ rows: [mockOrder] }); // orden
         query.mockResolvedValueOnce({ rows: [] });            // items
+        query.mockResolvedValueOnce({ rows: [] });            // envío
 
         const res = await request(app).get('/api/orders/DY-1234567-ABCD');
 
         expect(res.status).toBe(200);
         expect(res.body.data.reference).toBe('DY-1234567-ABCD');
+        expect(res.body.data.shipment).toBeNull();
+    });
+
+    it('debería incluir el seguimiento del envío con enlace de Interrapidísimo', async () => {
+        const mockOrder = { id: 1, reference: 'DY-1234567-ABCD', status: 'shipped', total_cop: 96000 };
+        query.mockResolvedValueOnce({ rows: [mockOrder] });
+        query.mockResolvedValueOnce({ rows: [] });
+        query.mockResolvedValueOnce({ rows: [{
+            id: 7, provider: 'interrapidisimo', status: 'in_transit', guide_number: '240012345678',
+            delivery_company_name: 'Interrapidísimo', tracking_updated_at: '2026-10-12 10:00:00',
+        }] });
+        query.mockResolvedValueOnce({ rows: [{ update_state: 'Tránsito nacional', description: 'BOGOTA → CALI', event_date: '2026-10-12T09:00:00' }] });
+
+        const res = await request(app).get('/api/orders/DY-1234567-ABCD');
+
+        expect(res.status).toBe(200);
+        expect(res.body.data.shipment).toMatchObject({
+            status: 'in_transit',
+            guideNumber: '240012345678',
+            trackingUrl: expect.stringContaining('240012345678'),
+        });
+        expect(res.body.data.shipment.events).toHaveLength(1);
     });
 });

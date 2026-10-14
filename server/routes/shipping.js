@@ -32,10 +32,11 @@ import {
     getInterGuidePdf,
     getInterStatuses,
     requestInterPickup,
+    generateInterManifest,
+    trackingUrlForGuide,
     interStatesToEvents,
     mapInterStatus,
     interHealthCheck,
-    INTER_TRACKING_URL,
     InterError,
     InterConfigError,
 } from '../services/interrapidisimo.js';
@@ -72,6 +73,7 @@ function handleMipaqueteError(res, err, fallbackMsg) {
 async function getOrderWithItems(orderId) {
     const orderResult = await query(
         `SELECT id, reference, status, currency, customer_name, customer_email, customer_phone,
+                customer_document_type, customer_document_number,
                 shipping_address, shipping_city, shipping_department, subtotal_cop, payment_method
          FROM customer_orders WHERE id = ?`,
         [orderId]
@@ -594,7 +596,7 @@ async function createInterShipment(req, res, { order, shipmentId, collectionValu
         reference: order.reference,
         guideNumber,
         deliveryCompanyName: 'Interrapidísimo',
-        trackingUrl: `${INTER_TRACKING_URL}${guideNumber}`,
+        trackingUrl: trackingUrlForGuide(guideNumber),
         isCod: paymentMode === 'cod',
         collectionValue: collectionValueCop,
     }).catch((err) => logger.error({ err }, '[Shipping] Error enviando email de despacho (Inter)'));
@@ -604,6 +606,144 @@ async function createInterShipment(req, res, { order, shipmentId, collectionValu
         data: { shipmentId, guideNumber, pickupCode, pickupRequested: Boolean(pickupCode), pdfUrls: [`/api/shipping/${shipmentId}/guide.pdf`] },
     });
 }
+
+// ─── GET /api/shipping/:id/detail (admin) ──────────────────────────────────
+// Ficha del envío: datos de la orden, costos (cotizado vs. real), motivo del
+// error si lo hubo e historial de estados.
+
+shippingRouter.get('/:id/detail', authenticateToken, requireRole('admin'), async (req, res) => {
+    try {
+        const result = await query(
+            `SELECT s.*, o.reference, o.customer_name, o.customer_email, o.customer_phone,
+                    o.shipping_address, o.shipping_city, o.shipping_department, o.shipping_cop
+             FROM shipments s JOIN customer_orders o ON o.id = s.order_id
+             WHERE s.id = ?`,
+            [req.params.id]
+        );
+        if (!result.rows.length) return res.status(404).json({ success: false, error: 'Envío no encontrado' });
+        const shipment = result.rows[0];
+
+        const events = await query(
+            `SELECT source, update_state, description, event_date, created_at
+             FROM shipment_events
+             WHERE shipment_id = ? AND update_state IS NOT NULL
+             ORDER BY COALESCE(event_date, created_at) DESC`,
+            [shipment.id]
+        );
+
+        const trackingUrl = shipment.provider === 'interrapidisimo' && shipment.guide_number
+            ? trackingUrlForGuide(shipment.guide_number)
+            : null;
+
+        return res.json({ success: true, data: { shipment, events: events.rows, trackingUrl } });
+    } catch (err) {
+        logger.error({ err }, '[GET /api/shipping/:id/detail] Error:');
+        return res.status(500).json({ success: false, error: 'Error al consultar el envío' });
+    }
+});
+
+// Guías de Inter elegibles para una operación en lote (recogida o planilla).
+async function loadInterGuides(shipmentIds, statuses) {
+    const idPlaceholders = shipmentIds.map(() => '?').join(', ');
+    const statusPlaceholders = statuses.map(() => '?').join(', ');
+    const result = await query(
+        `SELECT id, guide_number, status FROM shipments
+         WHERE id IN (${idPlaceholders}) AND provider = 'interrapidisimo'
+           AND guide_number IS NOT NULL AND status IN (${statusPlaceholders})`,
+        [...shipmentIds, ...statuses]
+    );
+    return result.rows;
+}
+
+const batchValidators = [
+    body('shipmentIds').isArray({ min: 1, max: 150 }).withMessage('Seleccione entre 1 y 150 envíos'),
+    body('shipmentIds.*').isInt({ min: 1 }).toInt(),
+];
+
+// ─── POST /api/shipping/inter/pickup (admin) ───────────────────────────────
+// Una sola recogida para varias guías del día, o reintento de una recogida
+// que falló al crear la guía.
+
+shippingRouter.post('/inter/pickup',
+    authenticateToken, requireRole('admin'),
+    [...batchValidators, body('pickupDate').optional().isISO8601().withMessage('Fecha de recogida inválida')],
+    async (req, res) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) return res.status(422).json({ success: false, errors: errors.array() });
+
+        try {
+            const rows = await loadInterGuides(req.body.shipmentIds, ['created']);
+            if (!rows.length) {
+                return res.status(422).json({ success: false, error: 'Ninguno de los envíos seleccionados es una guía de Interrapidísimo pendiente de recogida' });
+            }
+
+            const pickupDate = req.body.pickupDate ? new Date(req.body.pickupDate) : new Date();
+            const pickup = await requestInterPickup(rows.map((r) => r.guide_number), pickupDate);
+            const pickupCode = pickup?.IdRecogida ? String(pickup.IdRecogida) : null;
+            if (!pickupCode) {
+                throw new InterError(pickup?.mensajePreenviosAsociados || 'Interrapidísimo no confirmó la recogida', { body: pickup });
+            }
+
+            const excluded = new Set((pickup.preenviosNoIncluidos || []).map(String));
+            const included = rows.filter((r) => !excluded.has(String(r.guide_number)));
+            for (const r of included) {
+                await query(
+                    `UPDATE shipments SET pickup_code = ?, requested_pickup = 1, status = 'pickup_requested'
+                     WHERE id = ? AND status = 'created'`,
+                    [pickupCode, r.id]
+                );
+            }
+
+            await logAudit(req.user.id, 'pickup', 'shipments', pickupCode, {
+                provider: 'interrapidisimo', shipmentIds: included.map((r) => r.id), excluded: [...excluded],
+                pickupDate: pickupDate.toISOString(),
+            });
+
+            return res.json({
+                success: true,
+                data: {
+                    pickupCode,
+                    included: included.map((r) => r.guide_number),
+                    excluded: [...excluded],
+                    skipped: req.body.shipmentIds.length - rows.length,
+                },
+            });
+        } catch (err) {
+            return handleMipaqueteError(res, err, 'Error al solicitar la recogida');
+        }
+    }
+);
+
+// ─── POST /api/shipping/inter/manifest (admin) ─────────────────────────────
+// Planilla de recolección en PDF para que la firme el mensajero.
+
+shippingRouter.post('/inter/manifest',
+    authenticateToken, requireRole('admin'),
+    batchValidators,
+    async (req, res) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) return res.status(422).json({ success: false, errors: errors.array() });
+
+        try {
+            const rows = await loadInterGuides(req.body.shipmentIds, ['created', 'pickup_requested']);
+            if (!rows.length) {
+                return res.status(422).json({ success: false, error: 'Ninguno de los envíos seleccionados es una guía de Interrapidísimo por despachar' });
+            }
+
+            const manifest = await generateInterManifest(rows.map((r) => r.guide_number));
+            await logAudit(req.user.id, 'manifest', 'shipments', manifest.manifestNumber || 'sin-numero', {
+                provider: 'interrapidisimo', shipmentIds: rows.map((r) => r.id), rejected: manifest.rejected,
+            });
+
+            res.setHeader('Content-Type', 'application/pdf');
+            res.setHeader('Content-Disposition', `attachment; filename="planilla-${manifest.manifestNumber || 'inter'}.pdf"`);
+            res.setHeader('X-Rejected-Guides', manifest.rejected.join(','));
+            return res.send(manifest.pdf);
+        } catch (err) {
+            return handleMipaqueteError(res, err, 'Error al generar la planilla');
+        }
+    }
+);
 
 // ─── GET /api/shipping/:id/guide.pdf (admin) ───────────────────────────────
 // Inter entrega la guía en base64 (no como URL), así que se sirve desde aquí.

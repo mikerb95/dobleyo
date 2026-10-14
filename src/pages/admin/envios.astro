@@ -173,11 +173,59 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         .quote-row.selected { background: #f1fdf6; }
 
         .save-msg { font-size: 0.82rem; margin-top: 0.5rem; }
+
+        .header-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap; }
+        .provider-status { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .provider-chip {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 4px 10px; border-radius: 999px; font-size: 0.78rem; font-weight: 600;
+            background: #faf8f5; border: 1px solid #ede8e2; color: #4a3b2f;
+        }
+        .provider-chip .dot { width: 8px; height: 8px; border-radius: 50%; background: #bbb; }
+        .provider-chip.ok .dot { background: #107e3e; }
+        .provider-chip.err .dot { background: #aa0000; }
+
+        .toolbar-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
+        .btn-secondary-sm {
+            padding: 0.5rem 0.9rem; background: #fff; color: #4a6741;
+            border: 1px solid #4a6741; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer;
+        }
+        .btn-secondary-sm:hover { background: #f1f6ef; }
+        .btn-secondary-sm:disabled { opacity: 0.45; cursor: default; background: #fff; }
+        .pdf-links { display: flex; gap: 0.6rem; flex-wrap: wrap; font-size: 0.82rem; }
+
+        .detail-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem 1.25rem; margin-bottom: 1.25rem; }
+        .detail-grid dt { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #7a6652; }
+        .detail-grid dd { margin: 0.15rem 0 0; font-size: 0.9rem; color: #251a14; overflow-wrap: anywhere; }
+        .cost-diff-up { color: #aa0000; font-weight: 700; }
+        .cost-diff-down { color: #107e3e; font-weight: 700; }
+        .timeline { list-style: none; margin: 0; padding: 0; }
+        .timeline li { display: grid; grid-template-columns: 12px 1fr; gap: 0.75rem; padding-bottom: 0.9rem; position: relative; }
+        .timeline li::before {
+            content: ""; width: 10px; height: 10px; border-radius: 50%; background: #c9bfb3; margin-top: 4px;
+        }
+        .timeline li:first-child::before { background: #4a6741; }
+        .timeline .tl-state { font-weight: 600; font-size: 0.88rem; color: #251a14; }
+        .timeline .tl-meta { font-size: 0.78rem; color: #7a6652; }
+        .section-title { font-size: 0.78rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #7a6652; margin: 0 0 0.6rem; }
+
+        @media (max-width: 480px) {
+            .detail-grid { grid-template-columns: 1fr; }
+            .page-header, .page-body { padding-left: 1rem; padding-right: 1rem; }
+        }
     </style>
 
     <header class="page-header">
-        <h1>Envíos</h1>
-        <p>Cotización, generación de guías y seguimiento con transportadoras (Mipaquete.com)</p>
+        <div class="header-row">
+            <div>
+                <h1>Envíos</h1>
+                <p>Cotización, generación de guías y seguimiento con Mipaquete e Interrapidísimo</p>
+            </div>
+            <div class="provider-status" id="providerStatus" aria-live="polite">
+                <span class="provider-chip" data-provider="mipaquete" title="Verificando conexión..."><span class="dot"></span>Mipaquete</span>
+                <span class="provider-chip" data-provider="interrapidisimo" title="Verificando conexión..."><span class="dot"></span>Interrapidísimo</span>
+            </div>
+        </div>
     </header>
 
     <div class="page-body">
@@ -212,17 +260,23 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         <div class="tab-panel" id="panel-active">
             <div class="toolbar">
                 <span id="activeSummary" style="color:#7a6652;font-size:0.88rem;">Cargando...</span>
-                <button class="btn-primary-sm" id="btnRefreshAll">Actualizar todos</button>
+                <div class="toolbar-actions">
+                    <button class="btn-secondary-sm" id="btnInterPickup" disabled title="Seleccione guías de Interrapidísimo sin recogida">Solicitar recogida</button>
+                    <button class="btn-secondary-sm" id="btnInterManifest" disabled title="Seleccione guías de Interrapidísimo por despachar">Planilla de despacho</button>
+                    <button class="btn-primary-sm" id="btnRefreshAll">Actualizar todos</button>
+                </div>
             </div>
+            <div id="activeMsg"></div>
             <div class="table-wrap">
                 <table class="erp-table">
                     <thead>
                         <tr>
+                            <th><input type="checkbox" id="selectAllInter" aria-label="Seleccionar todas las guías de Interrapidísimo" /></th>
                             <th>Referencia</th><th>Transportadora</th><th>Guía</th><th>Estado</th><th>PDF</th><th></th>
                         </tr>
                     </thead>
                     <tbody id="activeBody">
-                        <tr><td colspan="6" class="empty">Cargando envíos...</td></tr>
+                        <tr><td colspan="7" class="empty">Cargando envíos...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -386,6 +440,17 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
                 <button class="btn-primary-sm" id="btnManualDispatch">Registrar despacho</button>
                 <div class="save-msg" id="manualMsg"></div>
             </div>
+        </div>
+    </div>
+
+    <!-- Modal detalle del envío -->
+    <div class="modal-back" id="modalDetailBack">
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalDetailTitle">
+            <div class="modal-header">
+                <h2 id="modalDetailTitle">Detalle del envío</h2>
+                <button class="modal-close" id="modalDetailClose" aria-label="Cerrar">&times;</button>
+            </div>
+            <div class="modal-body" id="modalDetailBody">Cargando...</div>
         </div>
     </div>
 

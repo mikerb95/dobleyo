@@ -212,7 +212,7 @@ const searchHref = lang === "en" ? "/search" : "/buscar";
   <div class="mobile-menu" id="mobileMenu" hidden>
     {nav.map((item) => <a href={item.href}>{item.label}</a>)}
 
-    <div class="mobile-lang" style="padding:0.75rem 0;"><LangToggle lang={lang} /></div>
+    <div class="mobile-lang" style="padding:0.75rem 0;"><LangToggle lang={lang} size="md" /></div>
 
     <!-- Opciones autenticado en móvil -->
     <div id="mobileAuthenticatedMenu" style="display: none;">

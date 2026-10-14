@@ -9,6 +9,7 @@ import { checkoutLimiter } from '../middleware/rateLimit.js';
 import { logAudit, logSystemAudit } from '../services/audit.js';
 import { sendOrderConfirmationEmail } from '../services/email.js';
 import { geocodeOrderAsync } from '../services/geocoding.js';
+import { trackingUrlForGuide } from '../services/interrapidisimo.js';
 import {
     notifySaleConfirmed, notifyStockDepleted, notifyStockBelowMinimum, notifyOversold,
 } from '../services/alerts.js';
@@ -240,6 +241,10 @@ ordersRouter.post('/',
         body('customerName').trim().notEmpty().withMessage('Nombre requerido'),
         body('customerEmail').isEmail().withMessage('Correo inválido'),
         body('customerPhone').optional().trim(),
+        // Documento del comprador: lo exige Interrapidísimo para la guía. Opcional
+        // en el API para no romper el checkout en inglés (USD) ni clientes viejos.
+        body('customerDocumentType').optional({ values: 'falsy' }).isIn(['CC', 'CE', 'NI', 'TI']).withMessage('Tipo de documento inválido'),
+        body('customerDocumentNumber').optional({ values: 'falsy' }).trim().matches(/^[0-9A-Za-z-]{4,25}$/).withMessage('Número de documento inválido'),
         body('shippingAddress').trim().notEmpty().withMessage('Dirección requerida'),
         body('shippingCity').trim().notEmpty().withMessage('Ciudad requerida'),
         body('shippingDepartment').optional().trim(),
@@ -258,6 +263,7 @@ ordersRouter.post('/',
         try {
             const {
                 customerName, customerEmail, customerPhone,
+                customerDocumentType, customerDocumentNumber,
                 shippingAddress, shippingCity, shippingDepartment, shippingZip,
                 items, notes, couponCode, currency = 'COP', paymentMethod = 'wompi'
             } = req.body;
@@ -444,12 +450,15 @@ ordersRouter.post('/',
                 const orderResult = await txq(
                     `INSERT INTO customer_orders
                (reference, status, customer_name, customer_email, customer_phone,
+                customer_document_type, customer_document_number,
                 shipping_address, shipping_city, shipping_department, shipping_zip,
                 subtotal_cop, shipping_cop, discount_amount_cop, total_cop, currency,
                 discount_code, notes, user_id, payment_method, expected_amount_cents)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
              RETURNING id, reference`,
                     [ref, initialStatus, customerName, customerEmail, customerPhone || null,
+                        customerDocumentNumber ? (customerDocumentType || 'CC') : null,
+                        customerDocumentNumber || null,
                         shippingAddress, shippingCity, shippingDepartment || null, shippingZip || null,
                         subtotal, shipping, discountAmount, total, currency,
                         appliedCode, notes || null,
@@ -609,10 +618,40 @@ ordersRouter.get('/:ref', async (req, res) => {
             [order.id]
         );
 
+        // Seguimiento del envío activo más reciente. Solo transportadora, guía,
+        // estado y eventos: la guía ya le llega al cliente por correo.
+        const shipmentResult = await query(
+            `SELECT id, provider, status, guide_number, delivery_company_name, tracking_updated_at
+             FROM shipments
+             WHERE order_id = ? AND status NOT IN ('cancelled','error')
+             ORDER BY created_at DESC LIMIT 1`,
+            [order.id]
+        );
+        let shipment = null;
+        if (shipmentResult.rows.length) {
+            const s = shipmentResult.rows[0];
+            const eventsResult = await query(
+                `SELECT update_state, description, event_date
+                 FROM shipment_events
+                 WHERE shipment_id = ? AND update_state IS NOT NULL
+                 ORDER BY COALESCE(event_date, created_at) DESC
+                 LIMIT 20`,
+                [s.id]
+            );
+            shipment = {
+                status: s.status,
+                carrier: s.delivery_company_name,
+                guideNumber: s.guide_number,
+                trackingUrl: s.provider === 'interrapidisimo' && s.guide_number ? trackingUrlForGuide(s.guide_number) : null,
+                updatedAt: s.tracking_updated_at,
+                events: eventsResult.rows,
+            };
+        }
+
         // Exponer solo datos no sensibles para el cliente
         return res.json({
             success: true,
-            data: { ...order, items: itemsResult.rows }
+            data: { ...order, items: itemsResult.rows, shipment }
         });
     } catch (err) {
         logger.error({ err }, '[GET /api/orders/:ref] Error:');

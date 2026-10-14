@@ -1302,3 +1302,41 @@ CREATE TRIGGER IF NOT EXISTS shipments_updated_at
     BEGIN
         UPDATE shipments SET updated_at = datetime('now') WHERE id = NEW.id;
     END;
+-- ── Correo (Resend) ──────────────────────────────────────────────────────────
+-- Migración: server/migrations/create_email_tables.js
+
+CREATE TABLE IF NOT EXISTS password_reset_tokens (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id     INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    token_hash  TEXT NOT NULL UNIQUE,
+    expires_at  TEXT NOT NULL,
+    used_at     TEXT,
+    request_ip  TEXT,
+    created_at  TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_password_reset_user ON password_reset_tokens(user_id);
+
+CREATE TABLE IF NOT EXISTS email_suppressions (
+    email       TEXT PRIMARY KEY,
+    reason      TEXT NOT NULL CHECK (reason IN ('bounced','complained','manual')),
+    detail      TEXT,
+    created_at  TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at  TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS newsletter_campaigns (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    subject       TEXT NOT NULL,
+    heading       TEXT NOT NULL,
+    preheader     TEXT,
+    body          TEXT NOT NULL,
+    cta_label     TEXT,
+    cta_url       TEXT,
+    status        TEXT NOT NULL DEFAULT 'sending' CHECK (status IN ('sending','sent','partial','failed')),
+    recipients    INTEGER NOT NULL DEFAULT 0,
+    sent_count    INTEGER NOT NULL DEFAULT 0,
+    failed_count  INTEGER NOT NULL DEFAULT 0,
+    created_by    INTEGER REFERENCES users(id),
+    created_at    TEXT NOT NULL DEFAULT (datetime('now')),
+    sent_at       TEXT
+);

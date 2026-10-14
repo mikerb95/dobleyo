@@ -58,6 +58,21 @@ export const apiLimiter = rateLimit({
   keyGenerator: ipKeyGenerator
 });
 
+// Limiter para correos de cuenta (olvido de contraseña, reenvío de verificación):
+// cada solicitud dispara un correo, así que se limita fuerte para que nadie use el
+// endpoint para inundar el buzón de un tercero ni quemar la cuota de Resend.
+export const accountEmailLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hora
+  max: 5,
+  message: {
+    error: 'Demasiadas solicitudes. Por favor, intente de nuevo en una hora.',
+    retryAfter: 3600
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: ipKeyGenerator
+});
+
 // Limiter para el flujo de compra: creación de órdenes y validación de cupones.
 // Evita la creación masiva de órdenes 'pending' —bloat de BD, quema de cupones y
 // disparo de geocoding externo (Nominatim)— sin estorbar un checkout normal, que

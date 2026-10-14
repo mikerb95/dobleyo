@@ -81,6 +81,8 @@ const steps = [
   { name: 'Costeo: lot_costs + insumos de empaque', run: () => runFn('create_cost_tracking.js', 'createCostTracking') },
   // Precio FNC: histórico del boletín + datos de compra al caficultor en coffee_harvests.
   { name: 'Precio FNC + compra al caficultor', run: () => runFn('create_fnc_price_tables.js', 'createFncPriceTables') },
+  // Correo (Resend): recuperación de contraseña, supresiones por rebote/queja y campañas del boletín.
+  { name: 'Email tables (reset tokens, supresiones, campañas)', run: () => runFn('create_email_tables.js', 'createEmailTables') },
 ];
 
 async function runAll() {
