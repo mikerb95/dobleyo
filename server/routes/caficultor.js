@@ -175,6 +175,11 @@ caficultorRouter.post('/applications/:id/reject',
         [adminId, 'REJECT_CAFICULTOR', 'caficultor_applications', String(appId), JSON.stringify({ rejected_user_id: userId, reason })]
       );
 
+      // El motivo se guarda como nota interna; solo llega al solicitante si el admin
+      // lo pide explícitamente con share_reason.
+      notifyDecision(userId, false, req.body.share_reason === true ? reason : null)
+        .catch((err) => logger.error({ err }, '[caficultor] Error notificando rechazo'));
+
       res.json({ message: 'Solicitud de caficultor rechazada' });
     } catch (err) {
       logger.error(err);

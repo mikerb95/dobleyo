@@ -2,7 +2,7 @@ import express from 'express';
 import { logger } from '../logger.js';
 import { body, validationResult } from 'express-validator';
 import { apiLimiter } from '../middleware/rateLimit.js';
-import { sendContactFormEmail } from '../services/email.js';
+import { sendContactFormEmail, sendContactAcknowledgementEmail } from '../services/email.js';
 import { query } from '../db.js';
 import { notifyContactMessage } from '../services/alerts.js';
 
@@ -42,8 +42,11 @@ contactRouter.post('/',
       const { name, email, phone, subject, message } = req.body;
 
       // Enviar email al admin vía Resend (BUG-008 — antes solo console.log)
-      await sendContactFormEmail({ name, email, phone, subject, message });
+      const sent = await sendContactFormEmail({ name, email, phone, subject, message, ip: req.ip });
+      if (!sent.success) logger.error({ err: sent.error }, '[POST /api/contact] No se pudo enviar el mensaje al equipo');
       notifyContactMessage({ name, email, subject, message });
+      sendContactAcknowledgementEmail(email, name, subject)
+        .catch((err) => logger.error({ err }, '[POST /api/contact] Error enviando acuse de recibo'));
 
       res.json({ success: true, message: 'Mensaje recibido correctamente' });
     } catch (error) {
@@ -131,7 +134,7 @@ contactRouter.post('/export',
         `Company: ${company}`,
         `Contact: ${name}`,
         `Email: ${email}`,
-        `Phone: ${phone || '—'}`,
+        `Phone: ${phone || '-'}`,
         `Country: ${countryLabel}`,
         `Estimated volume: ${volumeLabel}`,
         `Primary interest: ${interestLabel}`,
@@ -139,12 +142,12 @@ contactRouter.post('/export',
         `Message:`,
         message || '(none)',
       ].join('\n');
-      await sendContactFormEmail({
+      const sent = await sendContactFormEmail({
         name, email, phone,
-        subject: `Export inquiry — ${company} (${countryLabel})`,
+        subject: `Export inquiry: ${company} (${countryLabel})`,
         message: body,
       });
-      emailed = true;
+      emailed = sent.success;
     } catch (err) {
       logger.error({ err }, '[POST /api/contact/export] email');
     }
