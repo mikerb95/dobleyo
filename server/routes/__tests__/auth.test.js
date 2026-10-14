@@ -10,6 +10,10 @@ import request from 'supertest';
 const mocks = vi.hoisted(() => ({
     query: vi.fn(),
     comparePassword: vi.fn(),
+    sendVerificationEmail: vi.fn(),
+    sendWelcomeEmail: vi.fn(),
+    sendPasswordResetEmail: vi.fn(),
+    sendPasswordChangedEmail: vi.fn(),
 }));
 
 vi.mock('../../db.js', () => ({ query: mocks.query }));
@@ -31,11 +35,15 @@ vi.mock('../../middleware/rateLimit.js', () => ({
     loginLimiter: (_req, _res, next) => next(),
     registerLimiter: (_req, _res, next) => next(),
     refreshLimiter: (_req, _res, next) => next(),
+    accountEmailLimiter: (_req, _res, next) => next(),
     apiLimiter: (_req, _res, next) => next(),
 }));
 
 vi.mock('../../services/email.js', () => ({
-    sendVerificationEmail: vi.fn().mockResolvedValue({ success: true }),
+    sendVerificationEmail: mocks.sendVerificationEmail,
+    sendWelcomeEmail: mocks.sendWelcomeEmail,
+    sendPasswordResetEmail: mocks.sendPasswordResetEmail,
+    sendPasswordChangedEmail: mocks.sendPasswordChangedEmail,
     sendOrderConfirmationEmail: vi.fn().mockResolvedValue({ success: true }),
 }));
 

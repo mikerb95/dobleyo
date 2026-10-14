@@ -20,10 +20,11 @@ import Layout from "../layouts/Layout.astro";
       <div class="conf-anim conf-anim--success" aria-hidden="true">
         <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><path d="M5 14l6 6 12-12" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </div>
-      <h1 class="conf-title">¡Pedido confirmado!</h1>
-      <p class="conf-subtitle">Recibirás un correo de confirmación con los detalles de tu pedido.</p>
+      <h1 class="conf-title" id="paidTitle">¡Pedido confirmado!</h1>
+      <p class="conf-subtitle" id="paidSubtitle">Recibirás un correo de confirmación con los detalles de tu pedido.</p>
+      <section id="orderTracking" class="conf-card conf-tracking" aria-labelledby="trackingTitle" hidden></section>
       <div id="orderDetails" class="conf-card"></div>
-      <div class="conf-next-steps">
+      <div class="conf-next-steps" id="nextSteps">
         <div class="conf-step-item">
           <span class="conf-step-icon" aria-hidden="true">📬</span>
           <div>
@@ -313,5 +314,29 @@ import Layout from "../layouts/Layout.astro";
     }
     .conf-help a { color: var(--accent); text-decoration: none; }
     .conf-help a:hover { text-decoration: underline; }
+
+    /* Seguimiento del envío */
+    .conf-tracking[hidden] { display: none; }
+    .tr-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: 1rem; }
+    .tr-title { font-size: 1rem; font-weight: 700; color: var(--coffee); margin: 0 0 .2rem; }
+    .tr-carrier { font-size: .85rem; color: var(--muted-fg); margin: 0; }
+    .tr-guide {
+      display: flex; align-items: center; justify-content: space-between; gap: .75rem; flex-wrap: wrap;
+      background: #f9f6f2; border-radius: .625rem; padding: .75rem 1rem; margin-bottom: 1rem;
+    }
+    .tr-guide__label { font-size: .7rem; color: var(--muted-fg); text-transform: uppercase; letter-spacing: .05em; margin: 0 0 .15rem; }
+    .tr-guide__number { font-size: 1.05rem; font-weight: 700; color: var(--coffee); margin: 0; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+    .tr-link {
+      display: inline-flex; align-items: center; min-height: 40px; padding: 0 1rem;
+      border-radius: .5rem; background: var(--coffee); color: #fff; font-size: .85rem; font-weight: 600; text-decoration: none;
+    }
+    .tr-link:hover { opacity: .88; }
+    .tr-events { list-style: none; margin: 0; padding: 0; }
+    .tr-events li { display: grid; grid-template-columns: 14px 1fr; gap: .75rem; padding-bottom: .875rem; }
+    .tr-events li::before { content: ""; width: 10px; height: 10px; margin-top: 5px; border-radius: 50%; background: var(--border); }
+    .tr-events li:first-child::before { background: #16a34a; box-shadow: 0 0 0 4px rgba(22,163,74,.15); }
+    .tr-events__state { font-size: .875rem; font-weight: 600; color: var(--coffee); margin: 0; }
+    .tr-events__meta { font-size: .78rem; color: var(--muted-fg); margin: .1rem 0 0; }
+    .tr-empty { font-size: .85rem; color: var(--muted-fg); margin: 0; }
   </style>
 </Layout>

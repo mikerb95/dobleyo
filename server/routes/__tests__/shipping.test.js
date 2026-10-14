@@ -18,6 +18,7 @@ vi.mock('../../services/audit.js', () => ({
 vi.mock('../../services/email.js', () => ({
     sendShippingNotificationEmail: vi.fn().mockResolvedValue({ success: true }),
     sendOrderConfirmationEmail: vi.fn().mockResolvedValue({ success: true }),
+    sendOrderStatusEmail: vi.fn().mockResolvedValue({ success: true }),
 }));
 vi.mock('../../services/mipaquete.js', () => ({
     quoteShipping: vi.fn(),

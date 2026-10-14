@@ -29,6 +29,7 @@ vi.mock('../../services/audit.js', () => ({
 
 vi.mock('../../services/email.js', () => ({
     sendOrderConfirmationEmail: vi.fn().mockResolvedValue({ success: true }),
+    sendOrderStatusEmail: vi.fn().mockResolvedValue({ success: true }),
 }));
 
 vi.mock('../../services/geocoding.js', () => ({
