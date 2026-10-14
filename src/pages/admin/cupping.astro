@@ -381,14 +381,14 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     .cup-range::-webkit-slider-thumb {
       -webkit-appearance: none; appearance: none;
       width: 20px; height: 20px; border-radius: 50%;
-      background: var(--color-accent); border: 3px solid #fff;
+      background: var(--color-accent); border: 3px solid var(--paper);
       box-shadow: 0 1px 5px color-mix(in oklab, var(--color-primary) 40%, transparent);
       cursor: pointer; transition: transform .1s;
     }
     .cup-range::-webkit-slider-thumb:hover { transform: scale(1.12); }
     .cup-range::-moz-range-thumb {
       width: 20px; height: 20px; border-radius: 50%;
-      background: var(--color-accent); border: 3px solid #fff;
+      background: var(--color-accent); border: 3px solid var(--paper);
       box-shadow: 0 1px 5px color-mix(in oklab, var(--color-primary) 40%, transparent);
       cursor: pointer;
     }
@@ -560,7 +560,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     .cup-pass-thumb {
       position: absolute; top: 2px; left: 2px;
       width: 18px; height: 18px; border-radius: 50%;
-      background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.25);
+      background: var(--paper); box-shadow: 0 1px 3px rgba(0,0,0,.25);
       transition: transform .2s;
     }
     .cup-pass-toggle input:checked ~ .cup-pass-track { background: var(--ok); }
@@ -580,7 +580,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     /* ===== Toast ===== */
     .cup-toast {
       position: fixed; bottom: 24px; left: 50%; transform: translate(-50%, 20px);
-      background: var(--color-primary); color: #fff;
+      background: var(--color-primary); color: var(--paper);
       padding: 12px 20px; border-radius: 999px;
       font-size: 13.5px; font-weight: 500;
       box-shadow: 0 12px 32px -8px color-mix(in oklab, var(--color-primary) 60%, transparent);

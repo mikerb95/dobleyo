@@ -276,7 +276,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     -webkit-tap-highlight-color: transparent;
   }
   .pg-venta .ios-btn:active { transform: scale(.96); }
-  .pg-venta .ios-btn-primary { background: var(--brand); color: #fff; }
+  .pg-venta .ios-btn-primary { background: var(--brand); color: var(--paper); }
   .pg-venta .ios-btn-primary:hover { filter: brightness(1.08); }
   .pg-venta .ios-btn-secondary { background: var(--card-bg); border: 1px solid var(--border); color: var(--text-1); }
   .pg-venta .ios-btn-secondary:hover { background: var(--nav-hover-bg); }
@@ -329,7 +329,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   }
   .pg-venta .ios-modal-header h2 { font-size: 1rem; font-weight: 700; margin: 0; color: var(--text-1); letter-spacing: -.01em; }
   .pg-venta .ios-modal-close {
-    background: #f0f0f0;
+    background: var(--hover);
     border: none;
     cursor: pointer;
     color: var(--text-2);
@@ -338,7 +338,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     display: flex; align-items: center; justify-content: center;
     transition: background .12s;
   }
-  .pg-venta .ios-modal-close:hover { background: #e0e0e0; color: var(--text-1); }
+  .pg-venta .ios-modal-close:hover { background: var(--rule); color: var(--text-1); }
 
   .pg-venta .ios-modal-body { padding: 1.25rem 1.5rem; overflow-y: auto; flex: 1; }
   .pg-venta .ios-modal-footer {
@@ -346,7 +346,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     border-top: 1px solid var(--border);
     display: flex; align-items: center; justify-content: flex-end; gap: .625rem;
     flex-shrink: 0;
-    background: #fafafa;
+    background: var(--hover);
     border-radius: 0 0 20px 20px;
   }
 
@@ -421,7 +421,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
   .pg-venta .ios-form-error { color: var(--c-error); font-size: .82rem; margin-right: auto; }
 
-  .pg-venta .ios-spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,.4); border-top-color: #fff; border-radius: 50%; animation: ios-spin .6s linear infinite; }
+  .pg-venta .ios-spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,.4); border-top-color: var(--paper); border-radius: 50%; animation: ios-spin .6s linear infinite; }
   @keyframes ios-spin { to { transform: rotate(360deg); } }
 
   /* Detail content */

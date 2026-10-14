@@ -9,18 +9,18 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         .pg-envios .page-header {
             padding: 1.75rem 2rem 1.5rem;
             margin-bottom: 0;
-            background: #fff;
+            background: var(--paper);
             border-bottom: 1px solid rgba(0,0,0,.08);
         }
         .pg-envios .page-header h1 {
             font-size: 1.75rem;
             font-weight: 700;
-            color: #251a14;
+            color: var(--color-text);
             margin: 0 0 0.3rem;
         }
         .pg-envios .page-header p {
             margin: 0;
-            color: #7a6652;
+            color: var(--muted);
             font-size: 0.95rem;
         }
         .pg-envios .page-body {
@@ -30,7 +30,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
             display: flex;
             gap: 0.25rem;
             margin-bottom: 1.25rem;
-            border-bottom: 1px solid #ede8e2;
+            border-bottom: 1px solid var(--rule);
         }
         .pg-envios .tab-btn {
             padding: 0.65rem 1.1rem;
@@ -39,18 +39,18 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
             border-bottom: 2px solid transparent;
             font-size: 0.88rem;
             font-weight: 600;
-            color: #7a6652;
+            color: var(--muted);
             cursor: pointer;
         }
         .pg-envios .tab-btn.active {
-            color: #251a14;
-            border-bottom-color: #4a6741;
+            color: var(--color-text);
+            border-bottom-color: var(--color-primary);
         }
         .pg-envios .tab-panel { display: none; }
         .pg-envios .tab-panel.active { display: block; }
 
         .pg-envios .table-wrap {
-            background: #fff;
+            background: var(--paper);
             border-radius: 8px;
             border: 1px solid var(--border, rgba(0,0,0,.09));
             box-shadow: var(--card-shadow, 0 0 0 1px rgba(0,0,0,.06), 0 2px 8px rgba(0,0,0,.05));
@@ -60,7 +60,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         .pg-envios .empty {
             text-align: center;
             padding: 2.5rem;
-            color: #7a6652;
+            color: var(--muted);
             font-style: italic;
         }
         .pg-envios .badge {
@@ -75,11 +75,11 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
             border: 1px solid transparent;
             white-space: nowrap;
         }
-        .pg-envios .badge-warn { background: #fef3e2; color: #c96800; border-color: #f5c87a; }
-        .pg-envios .badge-ok { background: #f1fdf6; color: #107e3e; border-color: #b5e8cd; }
-        .pg-envios .badge-err { background: #ffeaea; color: #aa0000; border-color: #f5bcbc; }
-        .pg-envios .badge-info { background: #e8f2ff; color: #0064d9; border-color: #91c2f5; }
-        .pg-envios .badge-default { background: #f0f0f0; color: #555; border-color: #ddd; }
+        .pg-envios .badge-warn { background: var(--c-warning-bg); color: var(--c-warning); border-color: var(--c-warning-border); }
+        .pg-envios .badge-ok { background: var(--c-success-bg); color: var(--ok); border-color: var(--c-success-border); }
+        .pg-envios .badge-err { background: var(--c-error-bg); color: var(--danger); border-color: var(--c-error-border); }
+        .pg-envios .badge-info { background: var(--c-info-bg); color: var(--c-info); border-color: #91c2f5; }
+        .pg-envios .badge-default { background: var(--hover); color: var(--muted); border-color: var(--rule); }
 
         .pg-envios .btn-action {
             display: inline-flex;
@@ -97,18 +97,18 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
             color: var(--text-1);
             white-space: nowrap;
         }
-        .pg-envios .btn-action:hover { background: var(--nav-hover-bg); border-color: #bbb; }
+        .pg-envios .btn-action:hover { background: var(--nav-hover-bg); border-color: var(--rule-2); }
         .pg-envios .btn-primary-sm {
             padding: 0.5rem 1rem;
-            background: #4a6741;
-            color: #fff;
+            background: var(--color-primary);
+            color: var(--paper);
             border: none;
             border-radius: 6px;
             font-size: 0.85rem;
             font-weight: 600;
             cursor: pointer;
         }
-        .pg-envios .btn-primary-sm:hover { background: #3a5331; }
+        .pg-envios .btn-primary-sm:hover { background: color-mix(in oklab, var(--color-primary) 85%, black); }
         .pg-envios .btn-primary-sm:disabled { opacity: 0.5; cursor: default; }
 
         .pg-envios .toolbar {
@@ -131,7 +131,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         }
         .pg-envios .modal-back.open { display: flex; }
         .pg-envios .modal {
-            background: #fff;
+            background: var(--paper);
             border-radius: 12px;
             width: 100%;
             max-width: 640px;
@@ -144,20 +144,20 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
             justify-content: space-between;
             align-items: center;
             padding: 1.25rem 1.5rem;
-            border-bottom: 1px solid #ede8e2;
+            border-bottom: 1px solid var(--rule);
         }
-        .pg-envios .modal-header h2 { margin: 0; font-size: 1.1rem; color: #251a14; }
+        .pg-envios .modal-header h2 { margin: 0; font-size: 1.1rem; color: var(--color-text); }
         .pg-envios .modal-close {
             background: none; border: none; cursor: pointer;
-            color: #7a6652; font-size: 1.4rem; line-height: 1; padding: 0.2rem;
+            color: var(--muted); font-size: 1.4rem; line-height: 1; padding: 0.2rem;
         }
         .pg-envios .modal-body { padding: 1.5rem; }
         .pg-envios .form-row { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 0.9rem; }
         .pg-envios .form-field { display: flex; flex-direction: column; gap: 0.3rem; flex: 1; min-width: 120px; }
-        .pg-envios .form-field label { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #7a6652; }
+        .pg-envios .form-field label { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
         .pg-envios .form-field input, .pg-envios .form-field select {
-            padding: 0.55rem 0.7rem; border: 1px solid #ddd; border-radius: 6px;
-            font-size: 0.88rem; color: #251a14; background: #faf8f5;
+            padding: 0.55rem 0.7rem; border: 1px solid var(--rule); border-radius: 6px;
+            font-size: 0.88rem; color: var(--color-text); background: var(--hover);
         }
         .pg-envios .alert-box {
             padding: 0.7rem 0.9rem;
@@ -165,14 +165,14 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
             font-size: 0.82rem;
             margin-bottom: 0.9rem;
         }
-        .pg-envios .alert-warn { background: #fef3e2; color: #94590a; border: 1px solid #f5c87a; }
-        .pg-envios .alert-err { background: #ffeaea; color: #aa0000; border: 1px solid #f5bcbc; }
+        .pg-envios .alert-warn { background: var(--c-warning-bg); color: var(--c-warning); border: 1px solid var(--c-warning-border); }
+        .pg-envios .alert-err { background: var(--c-error-bg); color: var(--danger); border: 1px solid var(--c-error-border); }
 
         .pg-envios .quote-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 0.5rem; }
         .pg-envios .quote-table th, .pg-envios .quote-table td { padding: 0.5rem 0.6rem; text-align: left; border-bottom: 1px solid #f0ece6; }
         .pg-envios .quote-row { cursor: pointer; }
-        .pg-envios .quote-row:hover { background: #faf8f5; }
-        .pg-envios .quote-row.selected { background: #f1fdf6; }
+        .pg-envios .quote-row:hover { background: var(--hover); }
+        .pg-envios .quote-row.selected { background: var(--c-success-bg); }
 
         .pg-envios .save-msg { font-size: 0.82rem; margin-top: 0.5rem; }
 
@@ -181,35 +181,35 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         .pg-envios .provider-chip {
             display: inline-flex; align-items: center; gap: 6px;
             padding: 4px 10px; border-radius: 999px; font-size: 0.78rem; font-weight: 600;
-            background: #faf8f5; border: 1px solid #ede8e2; color: #4a3b2f;
+            background: var(--hover); border: 1px solid var(--rule); color: var(--color-text);
         }
-        .pg-envios .provider-chip .dot { width: 8px; height: 8px; border-radius: 50%; background: #bbb; }
-        .pg-envios .provider-chip.ok .dot { background: #107e3e; }
-        .pg-envios .provider-chip.err .dot { background: #aa0000; }
+        .pg-envios .provider-chip .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--rule-2); }
+        .pg-envios .provider-chip.ok .dot { background: var(--ok); }
+        .pg-envios .provider-chip.err .dot { background: var(--danger); }
 
         .pg-envios .toolbar-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
         .pg-envios .btn-secondary-sm {
-            padding: 0.5rem 0.9rem; background: #fff; color: #4a6741;
-            border: 1px solid #4a6741; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer;
+            padding: 0.5rem 0.9rem; background: var(--paper); color: var(--color-primary);
+            border: 1px solid var(--color-primary); border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer;
         }
-        .pg-envios .btn-secondary-sm:hover { background: #f1f6ef; }
-        .pg-envios .btn-secondary-sm:disabled { opacity: 0.45; cursor: default; background: #fff; }
+        .pg-envios .btn-secondary-sm:hover { background: var(--hover); }
+        .pg-envios .btn-secondary-sm:disabled { opacity: 0.45; cursor: default; background: var(--paper); }
         .pg-envios .pdf-links { display: flex; gap: 0.6rem; flex-wrap: wrap; font-size: 0.82rem; }
 
         .pg-envios .detail-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem 1.25rem; margin-bottom: 1.25rem; }
-        .pg-envios .detail-grid dt { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #7a6652; }
-        .pg-envios .detail-grid dd { margin: 0.15rem 0 0; font-size: 0.9rem; color: #251a14; overflow-wrap: anywhere; }
-        .pg-envios .cost-diff-up { color: #aa0000; font-weight: 700; }
-        .pg-envios .cost-diff-down { color: #107e3e; font-weight: 700; }
+        .pg-envios .detail-grid dt { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+        .pg-envios .detail-grid dd { margin: 0.15rem 0 0; font-size: 0.9rem; color: var(--color-text); overflow-wrap: anywhere; }
+        .pg-envios .cost-diff-up { color: var(--danger); font-weight: 700; }
+        .pg-envios .cost-diff-down { color: var(--ok); font-weight: 700; }
         .pg-envios .timeline { list-style: none; margin: 0; padding: 0; }
         .pg-envios .timeline li { display: grid; grid-template-columns: 12px 1fr; gap: 0.75rem; padding-bottom: 0.9rem; position: relative; }
         .pg-envios .timeline li::before {
-            content: ""; width: 10px; height: 10px; border-radius: 50%; background: #c9bfb3; margin-top: 4px;
+            content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--rule-2); margin-top: 4px;
         }
-        .pg-envios .timeline li:first-child::before { background: #4a6741; }
-        .pg-envios .timeline .tl-state { font-weight: 600; font-size: 0.88rem; color: #251a14; }
-        .pg-envios .timeline .tl-meta { font-size: 0.78rem; color: #7a6652; }
-        .pg-envios .section-title { font-size: 0.78rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #7a6652; margin: 0 0 0.6rem; }
+        .pg-envios .timeline li:first-child::before { background: var(--color-primary); }
+        .pg-envios .timeline .tl-state { font-weight: 600; font-size: 0.88rem; color: var(--color-text); }
+        .pg-envios .timeline .tl-meta { font-size: 0.78rem; color: var(--muted); }
+        .pg-envios .section-title { font-size: 0.78rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); margin: 0 0 0.6rem; }
 
         @media (max-width: 480px) {
             .pg-envios .detail-grid { grid-template-columns: 1fr; }
@@ -242,7 +242,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         <!-- Pendientes -->
         <div class="tab-panel active" id="panel-pending">
             <div class="toolbar">
-                <span id="pendingSummary" style="color:#7a6652;font-size:0.88rem;">Cargando...</span>
+                <span id="pendingSummary" style="color:var(--muted);font-size:0.88rem;">Cargando...</span>
             </div>
             <div class="table-wrap">
                 <table class="erp-table">
@@ -261,7 +261,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         <!-- Activos -->
         <div class="tab-panel" id="panel-active">
             <div class="toolbar">
-                <span id="activeSummary" style="color:#7a6652;font-size:0.88rem;">Cargando...</span>
+                <span id="activeSummary" style="color:var(--muted);font-size:0.88rem;">Cargando...</span>
                 <div class="toolbar-actions">
                     <button class="btn-secondary-sm" id="btnInterPickup" disabled title="Seleccione guías de Interrapidísimo sin recogida">Solicitar recogida</button>
                     <button class="btn-secondary-sm" id="btnInterManifest" disabled title="Seleccione guías de Interrapidísimo por despachar">Planilla de despacho</button>
@@ -287,7 +287,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         <!-- COD -->
         <div class="tab-panel" id="panel-cod">
             <div class="toolbar">
-                <span id="codSummary" style="color:#7a6652;font-size:0.88rem;">Cargando...</span>
+                <span id="codSummary" style="color:var(--muted);font-size:0.88rem;">Cargando...</span>
             </div>
             <div class="table-wrap">
                 <table class="erp-table">
@@ -306,7 +306,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         <!-- Estancados -->
         <div class="tab-panel" id="panel-stuck">
             <div class="toolbar">
-                <span id="stuckSummary" style="color:#7a6652;font-size:0.88rem;">Cargando...</span>
+                <span id="stuckSummary" style="color:var(--muted);font-size:0.88rem;">Cargando...</span>
             </div>
             <div class="alert-box alert-warn" style="margin-bottom:1rem;">
                 Envíos que exceden el SLA esperado por estado: 24h sin guía asignada, 48h sin recolección, o 7 días en tránsito. Puede indicar que el transportador dejó la guía sin novedad.
@@ -555,7 +555,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
                         <td>${o.shipping_city ?? "-"}</td>
                         <td>${o.payment_method === "cod" ? '<span class="badge badge-warn">Contraentrega</span>' : '<span class="badge badge-ok">Pagado</span>'}</td>
                         <td style="font-weight:600">${isCop ? fmtCOP(Number(o.total_cop) || 0) : `$${Number(o.total_cop || 0).toLocaleString("en-US")} ${o.currency}`}</td>
-                        <td style="color:#7a6652;font-size:0.82rem">${fmtDate(o.created_at)}</td>
+                        <td style="color:var(--muted);font-size:0.82rem">${fmtDate(o.created_at)}</td>
                         <td>${isCop
                             ? `<button class="btn-action" data-action="quote" data-id="${o.id}" data-ref="${o.reference}">Cotizar / Generar guía</button>`
                             : `<button class="btn-action" data-action="manual" data-id="${o.id}" data-ref="${o.reference}">Despacho manual</button>`}</td>
@@ -598,7 +598,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
         function showActiveMsg(html: string, kind: "ok" | "warn" | "err" = "ok") {
             const cls = kind === "err" ? "alert-err" : "alert-warn";
-            const style = kind === "ok" ? ' style="background:#f1fdf6;color:#107e3e;border:1px solid #b5e8cd;"' : "";
+            const style = kind === "ok" ? ' style="background:var(--c-success-bg);color:var(--ok);border:1px solid var(--c-success-border);"' : "";
             document.getElementById("activeMsg")!.innerHTML = html ? `<div class="alert-box ${cls}"${style}>${html}</div>` : "";
         }
 
@@ -628,7 +628,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
                         ? `<span title="${esc(s.error_detail)}">${badge(s.status)}</span>`
                         : badge(s.status);
                     const pickupNote = isInter && s.status === "created"
-                        ? `<div style="font-size:0.75rem;color:#c96800;margin-top:2px;">Sin recogida</div>` : "";
+                        ? `<div style="font-size:0.75rem;color:var(--c-warning);margin-top:2px;">Sin recogida</div>` : "";
                     return `
                     <tr>
                         <td>${selectable
@@ -898,7 +898,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
             const comments = (document.getElementById("mComments") as HTMLInputElement).value.trim();
 
             if (!carrierName || !guideNumber) {
-                msg.style.color = "#721c24";
+                msg.style.color = "var(--danger)";
                 msg.textContent = "Transportador y número de guía son obligatorios.";
                 return;
             }
@@ -911,14 +911,14 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
                     method: "POST",
                     body: JSON.stringify({ carrierName, guideNumber, trackingUrl: trackingUrl || undefined, comments: comments || undefined }),
                 });
-                msg.style.color = "#155724";
+                msg.style.color = "var(--ok)";
                 msg.textContent = "Despacho registrado.";
                 setTimeout(() => {
                     document.getElementById("modalManualBack")!.classList.remove("open");
                     loadPending();
                 }, 1000);
             } catch (err: any) {
-                msg.style.color = "#721c24";
+                msg.style.color = "var(--danger)";
                 msg.textContent = `${err.message}`;
             } finally {
                 btn.disabled = false;
@@ -1067,7 +1067,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
                 const receiverDocumentType = (document.getElementById("fDocType") as HTMLSelectElement).value;
                 const receiverDocumentNumber = (document.getElementById("fDocNumber") as HTMLInputElement).value.trim();
                 if (isInter && !receiverDocumentNumber) {
-                    msg.style.color = "#721c24";
+                    msg.style.color = "var(--danger)";
                     msg.textContent = "Ingrese el número de documento del destinatario.";
                     return;
                 }
@@ -1083,7 +1083,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
                     }),
                 });
 
-                msg.style.color = "#155724";
+                msg.style.color = "var(--ok)";
                 msg.textContent = result.mpCode
                     ? `Envío generado (mpCode ${result.mpCode}).`
                     : `Guía ${result.guideNumber} generada${requestPickup && !result.pickupRequested ? ". La recogida no se pudo programar: solicítela en el portal de Interrapidísimo" : ""}.`;
@@ -1092,7 +1092,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
                     loadPending();
                 }, 1200);
             } catch (err: any) {
-                msg.style.color = "#721c24";
+                msg.style.color = "var(--danger)";
                 msg.textContent = `${err.message}`;
             } finally {
                 btn.disabled = false;

@@ -37,19 +37,19 @@ import CostField from "../../components/CostField.astro";
         style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 0.95rem;"
       >
         <div>
-          <div style="color: #666; font-size: 0.85rem;">Lote ID</div>
+          <div style="color: var(--muted); font-size: 0.85rem;">Lote ID</div>
           <div style="font-weight: 600;" id="roastingLotId">-</div>
         </div>
         <div>
-          <div style="color: #666; font-size: 0.85rem;">Variedad</div>
+          <div style="color: var(--muted); font-size: 0.85rem;">Variedad</div>
           <div style="font-weight: 600;" id="roastingVariety">-</div>
         </div>
         <div>
-          <div style="color: #666; font-size: 0.85rem;">Peso Enviado</div>
+          <div style="color: var(--muted); font-size: 0.85rem;">Peso Enviado</div>
           <div style="font-weight: 600;" id="roastingWeightSent">-</div>
         </div>
         <div>
-          <div style="color: #666; font-size: 0.85rem;">Temp. Target</div>
+          <div style="color: var(--muted); font-size: 0.85rem;">Temp. Target</div>
           <div style="font-weight: 600;" id="roastingTargetTemp">-</div>
         </div>
       </div>
@@ -94,7 +94,7 @@ import CostField from "../../components/CostField.astro";
           style="flex: 1;"
         />
         <div
-          style="display: flex; align-items: center; padding: 0 0.75rem; background: #f5f5f5; border-radius: 0.375rem; border: 1px solid #e6e6e6; min-width: 60px;"
+          style="display: flex; align-items: center; padding: 0 0.75rem; background: var(--hover); border-radius: 0.375rem; border: 1px solid #e6e6e6; min-width: 60px;"
         >
           kg
         </div>
@@ -111,18 +111,18 @@ import CostField from "../../components/CostField.astro";
       >
         <div>
           <strong>Pérdida de Peso:</strong>
-          <div style="font-size: 0.9rem; color: #666; margin-top: 0.25rem;">
+          <div style="font-size: 0.9rem; color: var(--muted); margin-top: 0.25rem;">
             Humedad evaporada durante el tueste
           </div>
         </div>
         <div style="text-align: right;">
           <div
-            style="font-size: 1.4rem; font-weight: bold; color: #c67b4e;"
+            style="font-size: 1.4rem; font-weight: bold; color: var(--color-accent);"
             id="weightLossPercent"
           >
             -
           </div>
-          <div style="font-size: 0.85rem; color: #666;">
+          <div style="font-size: 0.85rem; color: var(--muted);">
             (<span id="weightLossAmount">-</span> kg)
           </div>
         </div>

@@ -179,7 +179,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
               <option value="info">Info</option>
             </select>
             <button class="btn btn-secondary btn-sm" id="btnRefreshErrors">Actualizar</button>
-            <button class="btn btn-sm" id="btnClearErrors" style="background:var(--c-error);color:#fff;border-color:var(--c-error)">Limpiar todo</button>
+            <button class="btn btn-sm" id="btnClearErrors" style="background:var(--c-error);color:var(--paper);border-color:var(--c-error)">Limpiar todo</button>
           </div>
         </div>
 
@@ -312,7 +312,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
           <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
             <input type="number" id="purgeDays" value="90" min="7" max="730" class="form-input" style="width:80px">
             <span style="color:var(--text-2);font-size:13px">días</span>
-            <button id="btnPurge" class="btn" style="background:var(--c-error);color:#fff;border-color:var(--c-error)">Purgar Logs</button>
+            <button id="btnPurge" class="btn" style="background:var(--c-error);color:var(--paper);border-color:var(--c-error)">Purgar Logs</button>
           </div>
           <div id="purgeResult" style="margin-top:.5rem;font-size:13px;width:100%"></div>
         </div>

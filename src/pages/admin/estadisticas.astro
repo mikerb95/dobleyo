@@ -52,8 +52,8 @@ const totalKgEmpacado = packaged.reduce((s: number, p: any) => {
 
 // ─── Distribución de calidad ────────────────────────────────────────────────
 const qDist = [
-  { label: "4.5-5 (Excepcional)", color: "#2d6a4f", count: scoresValidos.filter((p: any) => p.score >= 4.5).length },
-  { label: "3.5-4.4 (Muy bueno)", color: "#8b6f47", count: scoresValidos.filter((p: any) => p.score >= 3.5 && p.score < 4.5).length },
+  { label: "4.5-5 (Excepcional)", color: "var(--ok)", count: scoresValidos.filter((p: any) => p.score >= 4.5).length },
+  { label: "3.5-4.4 (Muy bueno)", color: "var(--color-accent)", count: scoresValidos.filter((p: any) => p.score >= 3.5 && p.score < 4.5).length },
   { label: "< 3.5 (Regular)",     color: "#d4a017", count: scoresValidos.filter((p: any) => p.score <  3.5 && p.score > 0).length },
 ];
 const maxQDist = Math.max(1, ...qDist.map((d) => d.count));
@@ -144,20 +144,20 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
   <style>
     .page-header {
       padding: 1.75rem 2rem 1.5rem;
-      background: #fff;
+      background: var(--paper);
       border-bottom: 1px solid rgba(0,0,0,.08);
     }
     .page-header h1 {
       font-size: 1.75rem;
       font-weight: 700;
-      color: #251a14;
+      color: var(--color-text);
       margin: 0 0 0.3rem;
     }
-    .page-header p { margin: 0; color: #7a6652; font-size: 0.95rem; }
+    .page-header p { margin: 0; color: var(--muted); font-size: 0.95rem; }
     .page-body { padding: 1.75rem 2rem 2rem; }
 
     .stat-error {
-      background: #ffeaea;
+      background: var(--c-error-bg);
       border: 1px solid var(--c-error-border);
       color: var(--c-error);
       padding: 0.875rem 1.25rem;
@@ -181,7 +181,7 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
     }
 
     .stat-card {
-      background: #fff;
+      background: var(--paper);
       border: 1px solid var(--border, rgba(0,0,0,.09));
       border-radius: 6px;
       box-shadow: var(--card-shadow, 0 0 0 1px rgba(0,0,0,.06), 0 2px 8px rgba(0,0,0,.05));
@@ -214,7 +214,7 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
       height: 100%;
       justify-content: flex-end;
     }
-    .bar-count { font-size: 0.7rem; font-weight: 700; color: #7a6652; }
+    .bar-count { font-size: 0.7rem; font-weight: 700; color: var(--muted); }
     .bar-fill { width: 100%; border-radius: 3px 3px 0 0; }
     .bar-label { font-size: 0.7rem; color: var(--text-2); }
 
@@ -230,12 +230,12 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
       justify-content: space-between;
       align-items: center;
       padding: 0.5rem 0.75rem;
-      background: #faf8f5;
+      background: var(--hover);
       border-radius: 4px;
       margin-bottom: 0.5rem;
       font-size: 0.875rem;
     }
-    .pipeline-item__count { font-weight: 700; color: #7a6652; }
+    .pipeline-item__count { font-weight: 700; color: var(--muted); }
 
     .section-divider {
       display: flex;
@@ -247,13 +247,13 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
       padding-top: 1.75rem;
       border-top: 2px solid var(--border, rgba(0,0,0,.09));
     }
-    .section-divider h2 { font-size: 1.25rem; font-weight: 700; color: #251a14; margin: 0; }
-    .section-divider p  { margin: .2rem 0 0; color: #7a6652; font-size: .85rem; }
+    .section-divider h2 { font-size: 1.25rem; font-weight: 700; color: var(--color-text); margin: 0; }
+    .section-divider p  { margin: .2rem 0 0; color: var(--muted); font-size: .85rem; }
     .fc-meta { font-size: .78rem; color: var(--text-3); }
 
     .btn-recalc {
-      background: #c8a96e;
-      color: #251a14;
+      background: var(--color-accent);
+      color: var(--color-text);
       border: 0;
       border-radius: 6px;
       padding: .55rem 1.1rem;
@@ -264,7 +264,7 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
     }
     .btn-recalc:hover:not(:disabled) { filter: brightness(.95); }
     .btn-recalc:disabled { opacity: .6; cursor: progress; }
-    .fc-status { font-size: .8rem; margin-left: .75rem; color: #7a6652; }
+    .fc-status { font-size: .8rem; margin-left: .75rem; color: var(--muted); }
 
     .badge {
       display: inline-block;
@@ -275,7 +275,7 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
       letter-spacing: .02em;
     }
     .badge--warn  { background: #fbe7d2; color: #8a5a00; }
-    .badge--ok    { background: #dff0e4; color: #2d6a4f; }
+    .badge--ok    { background: var(--c-success-bg); color: var(--ok); }
     .badge--muted { background: var(--border, rgba(0,0,0,.08)); color: var(--text-2); }
 
     .fc-note {
@@ -340,7 +340,7 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
               return (
                 <div class="bar-col">
                   {count > 0 && <span class="bar-count">{count}</span>}
-                  <div class="bar-fill" style={`background:${pct > 0 ? '#c8a96e' : 'var(--border)'}; height:${Math.max(pct, 2)}%;`}></div>
+                  <div class="bar-fill" style={`background:${pct > 0 ? 'var(--color-accent)' : 'var(--border)'}; height:${Math.max(pct, 2)}%;`}></div>
                   <span class="bar-label">{m.label}</span>
                 </div>
               );
@@ -382,7 +382,7 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
                 <span class="progress-row__value">{v.count} lotes · {v.pct}%</span>
               </div>
               <div class="progress-bar">
-                <div class="progress-fill" style={`background:#c8a96e; width:${v.pct}%;`}></div>
+                <div class="progress-fill" style={`background:var(--color-accent); width:${v.pct}%;`}></div>
               </div>
             </div>
           ))
@@ -406,7 +406,7 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
 
     <!-- Últimas cosechas -->
     {harvests.length > 0 && (
-      <div class="table-wrap" style="background:#fff; border-radius:6px; border:1px solid var(--border,rgba(0,0,0,.09)); box-shadow:var(--card-shadow); overflow-x:auto;">
+      <div class="table-wrap" style="background:var(--paper); border-radius:6px; border:1px solid var(--border,rgba(0,0,0,.09)); box-shadow:var(--card-shadow); overflow-x:auto;">
         <div style="padding:1rem 1.25rem; border-bottom:1px solid var(--border,rgba(0,0,0,.09));">
           <span style="font-size:0.85rem; font-weight:700; letter-spacing:0.07em; text-transform:uppercase; color:var(--text-2);">Últimas Cosechas</span>
         </div>
@@ -499,7 +499,7 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
                   const pct = Math.round(((p.forecast_value ?? 0) / revenueMax) * 100);
                   return (
                     <div class="bar-col" title={`${fmtCOP(p.lower_bound)} - ${fmtCOP(p.upper_bound)}`}>
-                      <div class="bar-fill" style={`background:#c8a96e; height:${Math.max(pct, 2)}%;`}></div>
+                      <div class="bar-fill" style={`background:var(--color-accent); height:${Math.max(pct, 2)}%;`}></div>
                       <span class="bar-label">{fmtWeek(p.period_start)}</span>
                     </div>
                   );

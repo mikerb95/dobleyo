@@ -291,7 +291,7 @@ const iterData = { PARES, COLUMNAS, ITERACIONES, COMMITS_POR_MES, REPO };
     transition: background .12s;
   }
   .dt-view-btn:hover { background: var(--hover); }
-  .dt-view-btn--on { background: var(--color-primary); color: #fff; }
+  .dt-view-btn--on { background: var(--color-primary); color: var(--paper); }
   .dt-view-btn--on:hover { background: color-mix(in oklab, var(--color-primary) 90%, black); }
 
   /* ── Barra de progreso ────────────────────────────────────── */
@@ -418,7 +418,7 @@ const iterData = { PARES, COLUMNAS, ITERACIONES, COMMITS_POR_MES, REPO };
     font-size: 11px; color: var(--muted);
   }
   .iter-avatar {
-    width: 22px; height: 22px; border-radius: 999px; color: #fff;
+    width: 22px; height: 22px; border-radius: 999px; color: var(--paper);
     display: grid; place-items: center; font-size: 10px; font-weight: 700;
   }
 
@@ -766,7 +766,7 @@ const iterData = { PARES, COLUMNAS, ITERACIONES, COMMITS_POR_MES, REPO };
   }
 
   function historiaCard(s) {
-    const par = PARES[s.par] || { nombre: s.par, rol: '', color: '#888' };
+    const par = PARES[s.par] || { nombre: s.par, rol: '', color: 'var(--muted)' };
     const tipoLabel = { historia: 'Historia', bug: 'Bug', tarea: 'Tarea', spike: 'Spike' };
     const valorLabel = { alto: 'Valor alto', medio: 'Valor medio', bajo: 'Valor bajo' };
     const testIcon = { pass: '✓', fail: '✗', pend: '○' };
@@ -848,7 +848,7 @@ const iterData = { PARES, COLUMNAS, ITERACIONES, COMMITS_POR_MES, REPO };
   const historiaModal = document.getElementById('historiaModal');
 
   function openHistoriaModal(s) {
-    const par = PARES[s.par] || { nombre: s.par, rol: '', color: '#888' };
+    const par = PARES[s.par] || { nombre: s.par, rol: '', color: 'var(--muted)' };
     const testIcon = { pass: '✓', fail: '✗', pend: '○' };
     const colNombre = (COLUMNAS.find(c => c.id === s.col) || {}).nombre || s.col;
 
@@ -923,7 +923,7 @@ const iterData = { PARES, COLUMNAS, ITERACIONES, COMMITS_POR_MES, REPO };
 
   function renderActividad() {
     const data = COMMITS_POR_MES.map(m => ({ label: m.mes, v: m.commits }));
-    barChart('iterActividad', data, '#c9893d', () => {
+    barChart('iterActividad', data, 'var(--color-accent)', () => {
       const total = COMMITS_POR_MES.reduce((a, m) => a + m.commits, 0);
       document.getElementById('iterActividadFoot').innerHTML =
         `Total histórico: <b>${total.toLocaleString('es-CO')} commits</b> en ${COMMITS_POR_MES.length} meses con actividad.`;
