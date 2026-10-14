@@ -1,305 +1,247 @@
-import React, { useState } from "react";
+import React from "react";
 import styles from "../Dashboard.module.css";
 
-const RANGES = [
-  { id: "30d", label: "30 días" },
-  { id: "90d", label: "90 días" },
-  { id: "12m", label: "12 meses" },
-];
-
-const fmtCOP = (n) =>
+export const fmtCOP = (n) =>
   new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(n || 0);
-const fmtCOPshort = (n) => {
+export const fmtCOPshort = (n) => {
   const v = Number(n) || 0;
-  if (v >= 1e9) return `$${(v / 1e9).toFixed(1)}B`;
-  if (v >= 1e6) return `$${(v / 1e6).toFixed(1)}M`;
-  if (v >= 1e3) return `$${Math.round(v / 1e3)}K`;
+  const f = (x) => x.toLocaleString("es-CO", { maximumFractionDigits: 1 });
+  if (v >= 1e9) return `$${f(v / 1e9)} mil M`;
+  if (v >= 1e6) return `$${f(v / 1e6)} M`;
+  if (v >= 1e3) return `$${f(v / 1e3)} mil`;
   return `$${v}`;
 };
-const fmtNum = (n) => new Intl.NumberFormat("es-CO").format(n || 0);
+export const fmtNum = (n) => new Intl.NumberFormat("es-CO").format(n || 0);
 
-export default function ExecutiveSummary({ data, loading, error, range, onRangeChange, onRetry }) {
+const STATUS = {
+  paid:             { label: "Pagado", cls: "status--paid" },
+  delivered:        { label: "Entregado", cls: "status--paid" },
+  confirmed:        { label: "Confirmado", cls: "status--confirmed" },
+  shipped:          { label: "Enviado", cls: "status--confirmed" },
+  ready_to_ship:    { label: "Listo para envío", cls: "status--confirmed" },
+  handling:         { label: "En preparación", cls: "status--confirmed" },
+  pending:          { label: "Pendiente", cls: "status--pending" },
+  payment_required: { label: "Pago requerido", cls: "status--pending" },
+  cancelled:        { label: "Cancelado", cls: "status--cancelled" },
+};
+const STATUS_VAR = {
+  "status--paid": "var(--st-paid)",
+  "status--confirmed": "var(--st-confirmed)",
+  "status--pending": "var(--st-pending)",
+  "status--cancelled": "var(--st-cancelled)",
+};
+
+export default function ExecutiveSummary({ data, loading, error, onRetry }) {
+  if (error) {
+    return (
+      <div className={styles.errorTile} role="alert">
+        <span>No se pudo cargar el resumen de ventas.</span>
+        <button type="button" className="btn btn-sm" onClick={onRetry}>Reintentar</button>
+      </div>
+    );
+  }
   return (
-    <section className={styles.exec} aria-label="Resumen ejecutivo">
-      <header className={styles.exec__head}>
-        <h2 className={styles.exec__title}>Resumen ejecutivo</h2>
-        <div className={styles.exec__ranges} role="group" aria-label="Rango de tiempo">
-          {RANGES.map((r) => (
-            <button
-              key={r.id}
-              type="button"
-              className={[styles.exec__range, range === r.id ? styles["exec__range--on"] : ""].filter(Boolean).join(" ")}
-              aria-pressed={range === r.id}
-              onClick={() => onRangeChange(r.id)}
-            >
-              {r.label}
-            </button>
-          ))}
-        </div>
-      </header>
+    <>
+      <div className={styles.cols21}>
+        <RevenuePanel series={data?.sales?.timeline} loading={loading} />
+        <StatusPanel items={data?.by_status} loading={loading} />
+      </div>
+      <div className={styles.cols11}>
+        <RankTable
+          id="dash-products"
+          title="Productos"
+          hint="por ingresos"
+          loading={loading}
+          head={["Producto", "Unid.", "Ingresos"]}
+          rows={(data?.top_products ?? []).map((p) => [p.title, fmtNum(p.units), fmtCOP(p.revenue)])}
+          empty="Sin ventas en el periodo."
+        />
+        <RankTable
+          id="dash-cities"
+          title="Ciudades"
+          hint="por ingresos"
+          action={{ href: "/admin/sales-map", label: "Abrir mapa" }}
+          loading={loading}
+          head={["Ciudad", "Pedidos", "Ingresos"]}
+          rows={(data?.top_cities ?? []).map((c) => [
+            c.state ? `${c.city}, ${c.state}` : c.city, fmtNum(c.orders), fmtCOP(c.revenue),
+          ])}
+          empty="Sin envíos en el periodo."
+        />
+      </div>
+    </>
+  );
+}
 
-      {error ? (
-        <div className={styles.errorTile} role="alert">
-          <span>No pudimos cargar el resumen ejecutivo.</span>
-          <button type="button" className={styles.errorTile__btn} onClick={onRetry}>Reintentar</button>
-        </div>
-      ) : loading || !data ? (
-        <div className={[styles.skel, styles["skel--chart"]].join(" ")} aria-busy="true" />
+/* ── Ingresos por periodo ──────────────────────────────────────────── */
+function periodLabel(p) {
+  if (!p) return "";
+  if (/^\d{4}-W\d{2}$/.test(p)) return `Sem. ${Number(p.slice(6))}`;
+  const [y, m, d] = p.split("-").map(Number);
+  const date = new Date(Date.UTC(y, (m || 1) - 1, d || 1, 12));
+  return d
+    ? date.toLocaleDateString("es-CO", { timeZone: "UTC", day: "numeric", month: "short" })
+    : date.toLocaleDateString("es-CO", { timeZone: "UTC", month: "short", year: "2-digit" });
+}
+
+function RevenuePanel({ series, loading }) {
+  const data = series ?? [];
+  return (
+    <section className="panel" aria-labelledby="dash-revenue">
+      <div className="panel-header">
+        <h2 id="dash-revenue" className="panel-title">Ingresos por periodo</h2>
+        <a className="card-action" href="/admin/ventas">Ver análisis de ventas</a>
+      </div>
+      {loading ? (
+        <div className={styles.panelMsg}><span className="skeleton" style={{ width: "100%", height: 200 }} /></div>
+      ) : data.length < 2 ? (
+        <p className="empty-state">Aún no hay suficientes ventas en el periodo para graficar.</p>
       ) : (
-        <>
-          <TrendCard sales={data.sales} range={range} />
-          <div className={styles.exec__grid}>
-            <BarList
-              title="Top productos"
-              subtitle="por ingresos"
-              items={(data.top_products ?? []).map((p) => ({ label: p.title, value: p.revenue, meta: `${fmtNum(p.units)} u.` }))}
-              format={fmtCOPshort}
-              tone="primary"
-              empty="Sin ventas en el período."
-            />
-            <BarList
-              title="Top ciudades"
-              subtitle="por ingresos"
-              items={(data.top_cities ?? []).map((c) => ({ label: c.city, value: c.revenue, meta: `${fmtNum(c.orders)} ped.` }))}
-              format={fmtCOPshort}
-              tone="accent"
-              empty="Sin envíos en el período."
-            />
-            <StatusBreakdown items={data.by_status ?? []} />
-            <Snapshots production={data.production} inventory={data.inventory} />
-            <ProductionTrend timeline={data.production?.timeline ?? []} />
-          </div>
-        </>
+        <AreaChart series={data} />
       )}
     </section>
   );
 }
 
-/* ── Tendencia de ventas ─────────────────────────────────────────── */
-function TrendCard({ sales, range }) {
-  const series = sales?.timeline ?? [];
-  const rangeLabel = RANGES.find((r) => r.id === range)?.label ?? "";
-  return (
-    <article className={styles.trend}>
-      <div className={styles.trend__stats}>
-        <div className={styles.trend__stat}>
-          <span className={styles.trend__statLabel}>Ingresos · {rangeLabel}</span>
-          <span className={styles.trend__statValue}>{fmtCOP(sales?.revenue)}</span>
-          <Delta value={sales?.delta_revenue} />
-        </div>
-        <div className={styles.trend__stat}>
-          <span className={styles.trend__statLabel}>Pedidos</span>
-          <span className={styles.trend__statValue}>{fmtNum(sales?.orders)}</span>
-          <Delta value={sales?.delta_orders} />
-        </div>
-        <div className={styles.trend__stat}>
-          <span className={styles.trend__statLabel}>Ticket promedio</span>
-          <span className={styles.trend__statValue}>{fmtCOP(sales?.aov)}</span>
-        </div>
-      </div>
-      {series.length === 0 ? (
-        <p className={styles.feed__empty}>Sin datos de ventas para graficar.</p>
-      ) : (
-        <AreaChart series={series} />
-      )}
-    </article>
-  );
+function niceMax(v) {
+  if (v <= 0) return 1;
+  const pow = 10 ** Math.floor(Math.log10(v));
+  const n = v / pow;
+  return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 2.5 ? 2.5 : n <= 5 ? 5 : 10) * pow;
 }
 
 function AreaChart({ series }) {
-  const w = 760, h = 160, padX = 4, padTop = 10, padBottom = 18;
-  const values = series.map((d) => d.revenue);
-  const max = Math.max(...values, 1);
-  const step = (w - padX * 2) / Math.max(series.length - 1, 1);
-  const x = (i) => padX + i * step;
-  const y = (v) => padTop + (1 - v / max) * (h - padTop - padBottom);
-
-  const line = series.map((d, i) => `${x(i).toFixed(1)},${y(d.revenue).toFixed(1)}`).join(" ");
-  const area = `${padX},${(h - padBottom).toFixed(1)} ${line} ${(w - padX).toFixed(1)},${(h - padBottom).toFixed(1)}`;
-  const peak = values.indexOf(max);
+  const w = 600, h = 200;
+  const max = niceMax(Math.max(...series.map((d) => d.revenue), 1));
+  const step = w / (series.length - 1);
+  const pts = series.map((d, i) => `${(i * step).toFixed(1)} ${(h - (d.revenue / max) * h).toFixed(1)}`);
+  const line = `M${pts.join(" L")}`;
+  const area = `${line} L${w} ${h} L0 ${h} Z`;
+  const ticks = [1, 0.75, 0.5, 0.25, 0];
+  const xIdx = [...new Set([0, Math.round((series.length - 1) / 2), series.length - 1])];
+  const total = series.reduce((s, d) => s + d.revenue, 0);
 
   return (
-    <svg className={styles.trend__chart} viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" role="img"
-         aria-label="Tendencia de ingresos">
-      <defs>
-        <linearGradient id="dyTrendFill" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="currentColor" stopOpacity="0.22" />
-          <stop offset="100%" stopColor="currentColor" stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      <polygon className={styles.trend__area} points={area} fill="url(#dyTrendFill)" />
-      <polyline className={styles.trend__line} points={line} fill="none" strokeWidth="2" />
-      {peak >= 0 && <circle className={styles.trend__peak} cx={x(peak)} cy={y(max)} r="3" />}
-    </svg>
-  );
-}
-
-/* ── Listas de barras (productos / ciudades) ─────────────────────── */
-function BarList({ title, subtitle, items, format, tone = "primary", empty }) {
-  const max = Math.max(...items.map((i) => i.value), 1);
-  return (
-    <article className={styles.card}>
-      <header className={styles.card__head}>
-        <h3 className={styles.card__title}>{title}</h3>
-        {subtitle && <span className={styles.card__sub}>{subtitle}</span>}
-      </header>
-      {items.length === 0 ? (
-        <p className={styles.feed__empty}>{empty}</p>
-      ) : (
-        <ul className={styles.bars}>
-          {items.map((it, i) => (
-            <li key={i} className={styles.bars__row}>
-              <div className={styles.bars__top}>
-                <span className={styles.bars__label} title={it.label}>{it.label}</span>
-                <span className={styles.bars__value}>{format(it.value)}</span>
-              </div>
-              <div className={styles.bars__track}>
-                <span className={[styles.bars__fill, styles[`bars__fill--${tone}`]].join(" ")}
-                      style={{ width: `${Math.max((it.value / max) * 100, 2)}%` }} />
-              </div>
-              {it.meta && <span className={styles.bars__meta}>{it.meta}</span>}
-            </li>
-          ))}
-        </ul>
-      )}
-    </article>
-  );
-}
-
-/* ── Desglose por estado del pedido ──────────────────────────────── */
-const STATUS_LABELS = {
-  paid: "Pagado", delivered: "Entregado", shipped: "Enviado",
-  cancelled: "Cancelado", pending: "Pendiente", confirmed: "Confirmado",
-  ready_to_ship: "Listo para envío", handling: "En preparación",
-};
-function StatusBreakdown({ items }) {
-  const total = items.reduce((s, i) => s + i.count, 0);
-  return (
-    <article className={styles.card}>
-      <header className={styles.card__head}>
-        <h3 className={styles.card__title}>Estados de pedido</h3>
-        <span className={styles.card__sub}>{fmtNum(total)} pedidos</span>
-      </header>
-      {items.length === 0 ? (
-        <p className={styles.feed__empty}>Sin pedidos en el período.</p>
-      ) : (
-        <>
-          <div className={styles.statusbar} role="img" aria-label="Distribución de estados">
-            {items.map((s, i) => (
-              <span key={s.status} className={[styles.statusbar__seg, styles[`statusbar__seg--${i % 5}`]].join(" ")}
-                    style={{ width: `${(s.count / total) * 100}%` }}
-                    title={`${STATUS_LABELS[s.status] ?? s.status}: ${s.count}`} />
-            ))}
-          </div>
-          <ul className={styles.legend}>
-            {items.map((s, i) => (
-              <li key={s.status} className={styles.legend__item}>
-                <span className={[styles.legend__dot, styles[`statusbar__seg--${i % 5}`]].join(" ")} aria-hidden="true" />
-                <span className={styles.legend__label}>{STATUS_LABELS[s.status] ?? s.status}</span>
-                <span className={styles.legend__count}>{fmtNum(s.count)}</span>
-              </li>
-            ))}
-          </ul>
-        </>
-      )}
-    </article>
-  );
-}
-
-/* ── Tendencia de producción (registrados vs. tostados) ──────────── */
-function ProductionTrend({ timeline }) {
-  const totalReg = timeline.reduce((s, p) => s + (p.registered || 0), 0);
-  const totalRoast = timeline.reduce((s, p) => s + (p.roasted || 0), 0);
-  return (
-    <article className={styles.card}>
-      <header className={styles.card__head}>
-        <h3 className={styles.card__title}>Producción de lotes</h3>
-        <span className={styles.card__sub}>por período</span>
-      </header>
-      {timeline.length === 0 ? (
-        <p className={styles.feed__empty}>Sin lotes registrados en el período.</p>
-      ) : (
-        <>
-          <GroupedBars data={timeline} />
-          <ul className={styles.legend}>
-            <li className={styles.legend__item}>
-              <span className={[styles.legend__dot, styles["statusbar__seg--0"]].join(" ")} aria-hidden="true" />
-              <span className={styles.legend__label}>Registrados</span>
-              <span className={styles.legend__count}>{fmtNum(totalReg)}</span>
-            </li>
-            <li className={styles.legend__item}>
-              <span className={[styles.legend__dot, styles["statusbar__seg--1"]].join(" ")} aria-hidden="true" />
-              <span className={styles.legend__label}>Tostados</span>
-              <span className={styles.legend__count}>{fmtNum(totalRoast)}</span>
-            </li>
-          </ul>
-        </>
-      )}
-    </article>
-  );
-}
-
-function GroupedBars({ data }) {
-  const max = Math.max(...data.flatMap((d) => [d.registered || 0, d.roasted || 0]), 1);
-  return (
-    <div className={styles.gbars} role="img" aria-label="Lotes registrados y tostados por período">
-      {data.map((d) => (
-        <div key={d.period} className={styles.gbars__col} title={`${d.period} · ${d.registered} reg. / ${d.roasted} tost.`}>
-          <div className={styles.gbars__pair}>
-            <span className={[styles.gbars__bar, styles["gbars__bar--reg"]].join(" ")}
-                  style={{ height: `${((d.registered || 0) / max) * 100}%` }} />
-            <span className={[styles.gbars__bar, styles["gbars__bar--roast"]].join(" ")}
-                  style={{ height: `${((d.roasted || 0) / max) * 100}%` }} />
-          </div>
+    <div className={styles.chart}>
+      <div className={`mono ${styles.yAxis}`} aria-hidden="true">
+        {ticks.map((t) => <span key={t}>{fmtCOPshort(max * t)}</span>)}
+      </div>
+      <div>
+        <div className={styles.plot}>
+          {ticks.map((t) => <div key={t} className={styles.grid} style={{ top: `${(1 - t) * 100}%` }} />)}
+          <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" role="img"
+               aria-label={`Ingresos por periodo, total ${fmtCOP(total)}`}>
+            <path d={area} className={styles.area} />
+            <path d={line} className={styles.line} vectorEffect="non-scaling-stroke" />
+          </svg>
         </div>
-      ))}
+        <div className={`mono ${styles.xAxis}`} aria-hidden="true">
+          {xIdx.map((i) => <span key={i}>{periodLabel(series[i].period)}</span>)}
+        </div>
+      </div>
     </div>
   );
 }
 
-/* ── Snapshots de producción e inventario ────────────────────────── */
-function Snapshots({ production, inventory }) {
+/* ── Estado de los pedidos ─────────────────────────────────────────── */
+function StatusPanel({ items, loading }) {
+  const list = items ?? [];
+  const total = list.reduce((s, i) => s + i.count, 0);
   return (
-    <article className={styles.card}>
-      <header className={styles.card__head}>
-        <h3 className={styles.card__title}>Operación</h3>
-        <span className={styles.card__sub}>producción e inventario</span>
-      </header>
-      <div className={styles.snap}>
-        <Stat label="Lotes verdes" value={fmtNum(production?.green_lots)} href="/admin/inventory-storage" />
-        <Stat label="Lotes tostados" value={fmtNum(production?.roasted_lots)} href="/admin/roasted-storage" />
-        <Stat label="Puntaje SCA prom." value={production?.avg_score || "—"} href="/admin/cupping" />
-        <Stat label="Valor inventario" value={fmtCOPshort(inventory?.inventory_value)} href="/admin/inventario-valor" />
-        <Stat label="Productos activos" value={fmtNum(inventory?.total_products)} href="/admin/productos" />
-        <Stat
-          label="Stock bajo"
-          value={fmtNum(inventory?.low_stock)}
-          tone={inventory?.low_stock > 0 ? "warn" : undefined}
-          href="/admin/inventario"
-        />
+    <section className="panel" aria-labelledby="dash-status">
+      <div className="panel-header">
+        <h2 id="dash-status" className="panel-title">Estado de los pedidos</h2>
+        {!loading && <span className="mono card-subtitle">{fmtNum(total)} pedidos</span>}
       </div>
-    </article>
+      {loading ? (
+        <div className={styles.panelMsg}><span className="skeleton" style={{ width: "100%" }} /></div>
+      ) : list.length === 0 ? (
+        <p className="empty-state">Sin pedidos en el periodo.</p>
+      ) : (
+        <div className={styles.statusBody}>
+          <div className={styles.stackBar} role="img"
+               aria-label={list.map((s) => `${STATUS[s.status]?.label ?? s.status}: ${s.count}`).join(", ")}>
+            {list.map((s) => (
+              <span key={s.status}
+                    style={{ width: `${(s.count / total) * 100}%`, background: STATUS_VAR[STATUS[s.status]?.cls] ?? "var(--st-neutral)" }} />
+            ))}
+          </div>
+          <table className="erp-table">
+            <tbody>
+              {list.map((s) => (
+                <tr key={s.status}>
+                  <td><span className={`status ${STATUS[s.status]?.cls ?? ""}`}>{STATUS[s.status]?.label ?? s.status}</span></td>
+                  <td className="num mono">{fmtNum(s.count)}</td>
+                  <td className={`num mono ${styles.muted}`}>{((s.count / total) * 100).toLocaleString("es-CO", { maximumFractionDigits: 1 })}%</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </section>
   );
 }
 
-function Stat({ label, value, href, tone }) {
-  const Tag = href ? "a" : "div";
+/* ── Tabla de ranking ──────────────────────────────────────────────── */
+function RankTable({ id, title, hint, action, loading, head, rows, empty }) {
   return (
-    <Tag href={href} className={[styles.snap__item, tone ? styles[`snap__item--${tone}`] : ""].filter(Boolean).join(" ")}>
-      <span className={styles.snap__value}>{value}</span>
-      <span className={styles.snap__label}>{label}</span>
-    </Tag>
+    <section className="panel" aria-labelledby={id}>
+      <div className="panel-header">
+        <div className={styles.titleRow}>
+          <h2 id={id} className="panel-title">{title}</h2>
+          {hint && <span className="card-subtitle">{hint}</span>}
+        </div>
+        {action && <a className="card-action" href={action.href}>{action.label}</a>}
+      </div>
+      {loading ? (
+        <div className={styles.panelMsg}><span className="skeleton" style={{ width: "80%" }} /></div>
+      ) : rows.length === 0 ? (
+        <p className="empty-state">{empty}</p>
+      ) : (
+        <div className="table-wrapper">
+          <table className="erp-table">
+            <thead>
+              <tr>{head.map((h, i) => <th key={h} className={i ? "num" : undefined}>{h}</th>)}</tr>
+            </thead>
+            <tbody>
+              {rows.map((r, i) => (
+                <tr key={i}>
+                  <td className={styles.ellipsis} title={r[0]}>{r[0]}</td>
+                  {r.slice(1).map((c, j) => <td key={j} className="num mono">{c}</td>)}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </section>
   );
 }
 
-function Delta({ value }) {
+/* ── Piezas compartidas ────────────────────────────────────────────── */
+export function Delta({ value }) {
   if (value == null) return null;
   const trend = value > 0 ? "up" : value < 0 ? "down" : "flat";
-  const arrow = trend === "up" ? "▲" : trend === "down" ? "▼" : "─";
+  const arrow = trend === "up" ? "▲" : trend === "down" ? "▼" : "=";
   return (
-    <span className={[styles.kpi__delta, styles[`kpi__delta--${trend}`]].join(" ")} title="vs. período anterior">
-      <span aria-hidden="true">{arrow}</span>
-      {Math.abs(value).toFixed(1).replace(/\.0$/, "")}%
+    <span className={`mono ${styles[`delta_${trend}`]}`}>
+      <span aria-hidden="true">{arrow} </span>
+      {trend === "down" ? "-" : trend === "up" ? "+" : ""}
+      {Math.abs(value).toLocaleString("es-CO", { maximumFractionDigits: 1 })}%
     </span>
+  );
+}
+
+export function Sparkline({ values, className }) {
+  const w = 100, h = 28;
+  const min = Math.min(...values), max = Math.max(...values);
+  const span = max - min || 1;
+  const step = w / Math.max(values.length - 1, 1);
+  const d = values.map((v, i) => `${i ? "L" : "M"}${(i * step).toFixed(1)} ${(h - 2 - ((v - min) / span) * (h - 4)).toFixed(1)}`).join(" ");
+  return (
+    <svg className={className} viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" aria-hidden="true">
+      <path d={d} fill="none" vectorEffect="non-scaling-stroke" />
+    </svg>
   );
 }

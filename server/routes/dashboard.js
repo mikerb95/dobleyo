@@ -255,7 +255,9 @@ dashboardRouter.get('/activity', async (req, res) => {
   const limit = Math.min(Number(req.query.limit ?? 10), 50);
   try {
     const logsRes = await query(
-      `SELECT al.*, u.name AS user_name, u.role AS user_role
+      `SELECT al.*,
+              COALESCE(NULLIF(TRIM(IFNULL(u.first_name, '') || ' ' || IFNULL(u.last_name, '')), ''), u.name, u.email) AS user_name,
+              u.role AS user_role
          FROM audit_logs al
     LEFT JOIN users u ON u.id = al.user_id
         ORDER BY al.created_at DESC
