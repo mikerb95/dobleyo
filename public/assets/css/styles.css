@@ -436,15 +436,77 @@ img {
   transform: scale(1.05)
 }
 
-/* Botones del encabezado */
-.site-header .icon-btn {
-  background: var(--card);
-  border-color: var(--border);
-  color: var(--fg)
+/* Botones del encabezado: circulares, sin caja, con tinte caramelo al hover */
+.site-header .actions .icon-btn {
+  position: relative;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  gap: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--coffee)
 }
 
-.site-header .icon-btn:hover {
-  background: rgba(0, 0, 0, .06)
+.site-header .actions .icon-btn:hover,
+.site-header .actions .icon-btn[aria-expanded="true"] {
+  background: rgba(var(--caramel-rgb), .12);
+  color: var(--caramel-deep)
+}
+
+.site-header .actions .icon-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px
+}
+
+.site-header .actions .icon-btn svg {
+  display: block;
+  flex-shrink: 0
+}
+
+/* Contador del carrito: burbuja sobre el ícono, oculta si está vacío */
+.site-header .icon-btn .badge {
+  position: absolute;
+  top: .15rem;
+  right: .05rem;
+  min-width: 1.05rem;
+  height: 1.05rem;
+  margin: 0;
+  padding: 0 .25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--caramel);
+  color: var(--accent-contrast);
+  font-size: .625rem;
+  font-weight: 700;
+  line-height: 1;
+  border-radius: 999px;
+  box-shadow: 0 0 0 2px var(--bg);
+  font-variant-numeric: tabular-nums;
+  transition: transform var(--dur) var(--ease)
+}
+
+.site-header .icon-btn .badge[data-count="0"] {
+  display: none
+}
+
+/* Con sesión iniciada el botón de usuario muestra el nombre: pasa a píldora */
+.site-header .actions .user-btn[data-auth="true"] {
+  width: auto;
+  padding: 0 .5rem 0 .875rem;
+  gap: .4rem
+}
+
+.site-header .user-name {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  max-width: 9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap
 }
 
 /* Capa de granos de cafe en el encabezado: ancho completo */

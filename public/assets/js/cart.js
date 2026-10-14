@@ -37,7 +37,10 @@
   function countItems(){ return getCart().reduce((n,p)=> n + (p.qty||1), 0); }
   function updateCartCount(){
     const el = document.getElementById('cartCount');
-    if (el) el.textContent = String(countItems());
+    if (!el) return;
+    const n = countItems();
+    el.textContent = n > 99 ? '99+' : String(n);
+    el.dataset.count = String(n);
   }
 
   // exponer API global

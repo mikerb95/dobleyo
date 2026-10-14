@@ -25,7 +25,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       <label class="au-search">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 21l-4.3-4.3M19 11a8 8 0 1 1-16 0 8 8 0 0 1 16 0z"/></svg>
         <span class="sr-only">Buscar</span>
-        <input type="search" id="auQ" name="q" placeholder="ID de entidad, usuario o valor" autocomplete="off" maxlength="100" />
+        <input type="search" class="au-search-input" id="auQ" name="q" placeholder="ID de entidad, usuario o valor" autocomplete="off" maxlength="100" />
       </label>
       <label class="au-field">
         <span>Rango</span>
@@ -90,8 +90,10 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     </div>
   </div>
 
-  <style>
-    .sr-only {
+  <style is:global>
+    /* Global pero acotado a .au: las filas y el detalle se arman en el
+       navegador y los estilos scoped de Astro no les llegarían. */
+    .au .sr-only {
       position: absolute; width: 1px; height: 1px; overflow: hidden;
       clip: rect(0 0 0 0); white-space: nowrap;
     }
@@ -112,7 +114,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       color: var(--muted);
     }
     .au-search:focus-within { border-color: var(--accent-ink); }
-    .au-search input {
+    .au-search .au-search-input {
       flex: 1; min-width: 0; border: 0; outline: 0;
       font: inherit; font-size: 13px; background: transparent; color: var(--color-text);
     }

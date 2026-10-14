@@ -2,6 +2,39 @@
 
 ---
 
+## 2026-10-13: Botones de carrito y usuario del header rediseñados (Agente: Claude)
+
+### Cambios
+- **`src/components/Header.astro`**: íconos nuevos de bolsa y usuario en trazo de 1.6 (igual que la lupa). El nombre del usuario usa la clase `.user-name` en vez de estilos en línea.
+- **`public/assets/css/styles.css`**: los `.icon-btn` del header pasan a círculos de 40 px sin borde ni fondo, con tinte caramelo en hover. El contador del carrito es una burbuja caramelo sobre el ícono y se oculta con 0. Con sesión iniciada el botón de usuario se vuelve píldora con el nombre. Todo acotado a `.site-header .actions`, así que los `.icon-btn` de otras páginas no cambian.
+- **`public/assets/js/cart.js`**: `updateCartCount()` escribe `data-count` (para ocultar la burbuja vacía) y muestra `99+` por encima de 99.
+
+---
+
+## 2026-10-13: Correos transaccionales completos con Resend (Agente: Claude)
+
+### Contexto
+Solo existían 6 correos sueltos, cada uno con su propio HTML. El enlace "¿Olvidaste tu contraseña?" del modal llevaba a una página que no existía. El SDK de Resend no lanza error cuando rechaza un envío (responde `{ data, error }`), así que el código daba por enviados correos que nunca salieron y marcaba `confirmation_email_sent_at` igual. El formulario de contacto insertaba en el HTML, sin escapar, el texto que escribía el usuario.
+
+### Cambios
+- **`server/services/email.js`** (reescrito): `sendEmail()` como único punto de salida (lista de supresión, texto plano automático, etiqueta `category`, `idempotencyKey`, `replyTo`). Plantilla común con tablas y estilos en línea, escape de datos de usuario y tono "usted" en transaccionales. Correos nuevos: bienvenida al verificar, restablecer contraseña, contraseña cambiada, pedido entregado/cancelado/reembolsado, decisión de caficultor, cobro de suscripción fallido, suscripción cancelada, acuse de contacto y campañas del boletín por batch (lotes de 100).
+- **`server/routes/auth.js`**: `POST /forgot-password`, `POST /reset-password` y `POST /resend-verification` con respuesta genérica. El token se guarda hasheado, dura 1 h y es de un solo uso. Restablecer revoca todas las sesiones y marca la cuenta como verificada. `GET /verify` manda la bienvenida solo la primera vez y `PUT /password` avisa del cambio.
+- **`server/routes/emails.js`**: webhook de Resend (`POST /webhook`, firma Svix verificada) que suprime rebotes permanentes y quejas; una queja también da de baja del boletín. Baja de un clic (`POST /newsletter/unsubscribe`, RFC 8058). Endpoints admin: `GET /newsletter/stats`, `POST /newsletter/preview`, `POST /newsletter/campaign` (con `testEmail` manda solo una prueba), `GET /suppressions` y `DELETE /suppressions/:email`.
+- **Pedidos y envíos**: la confirmación se marca como enviada solo si Resend la aceptó (COD, webhook de Wompi y reintento de `refresh-all`). `PATCH /api/orders/:ref/status` avisa al cliente de entregado, cancelado o reembolsado (`notify: false` lo evita). El tracking de Mipaquete e Inter y el cierre manual de envíos avisan la entrega.
+- **Suscripciones**: confirmación de cada cobro aprobado, aviso de cobro fallido o pausa, y confirmación de cancelación.
+- **Caficultores**: correo de aprobación o rechazo. El motivo del rechazo solo se envía si el admin manda `share_reason: true`.
+- **Contacto**: acuse de recibo al cliente. El formulario B2B ya no reporta "enviado" cuando Resend falla.
+- **`server/index.js` y `api/index.js`**: `express.json` guarda el cuerpo crudo de `/api/emails/webhook` para verificar la firma.
+- **`server/middleware/rateLimit.js`**: `accountEmailLimiter` (5 por hora por IP).
+- **`server/migrations/create_email_tables.js`** (nuevo, en `run_all_migrations.js` y `db/schema.sql`): `password_reset_tokens`, `email_suppressions` y `newsletter_campaigns`.
+- **Páginas nuevas**: `/recuperar-contrasena` y `/restablecer-contrasena` (componente `AccountCard.astro`, scripts en `public/assets/js/` por la CSP). `/verify-email` permite pedir un enlace nuevo.
+- **`/admin/boletin`** (nuevo, en el menú bajo CRM): redactar con vista previa, enviar prueba, enviar a todos, historial de campañas y desbloqueo de correos suprimidos.
+- **`.env.example`**: `RESEND_FROM_NAME`, `RESEND_REPLY_TO` y `RESEND_WEBHOOK_SECRET`.
+- **`AGENTS.md`**: sección 3.11 con las reglas de correo.
+- **Tests**: `server/services/__tests__/email.test.js` y `server/routes/__tests__/emails.test.js` (nuevos), casos de recuperación y verificación en `auth.test.js`.
+
+---
+
 ## 2026-10-13: Gestión de Interrapidísimo en el panel y seguimiento para el cliente (Agente: Claude)
 
 ### Contexto

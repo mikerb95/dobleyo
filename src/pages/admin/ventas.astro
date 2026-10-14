@@ -76,14 +76,14 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       <div class="kpi-sub"><span id="deltaRevenue"></span> <span id="prevRevenue"></span></div>
     </div>
     <div class="kpi-tile">
-      <div class="kpi-label">Órdenes</div>
+      <div class="kpi-label">Pedidos</div>
       <div class="kpi-value" id="kpiOrders"><span class="skeleton" style="width:40%"></span></div>
       <div class="kpi-sub"><span id="deltaOrders"></span> <span id="prevOrders"></span></div>
     </div>
     <div class="kpi-tile">
       <div class="kpi-label">Ticket promedio</div>
       <div class="kpi-value" id="kpiAov"><span class="skeleton" style="width:50%"></span></div>
-      <div class="kpi-sub"><span id="deltaAov"></span> por orden</div>
+      <div class="kpi-sub"><span id="deltaAov"></span> por pedido</div>
     </div>
     <div class="kpi-tile">
       <div class="kpi-label">Tasa de cancelación</div>
@@ -106,7 +106,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         <div class="sales-toolbar">
           <div class="seg" role="group" aria-label="Métrica" id="metricToggle">
             <button type="button" class="toggle-btn active" data-metric="revenue">Ingresos</button>
-            <button type="button" class="toggle-btn" data-metric="orders">Órdenes</button>
+            <button type="button" class="toggle-btn" data-metric="orders">Pedidos</button>
           </div>
           <div class="seg" role="group" aria-label="Agrupar por" id="granularityToggle">
             <button type="button" class="toggle-btn active" data-g="day">Día</button>
@@ -120,7 +120,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
     <section class="panel" aria-labelledby="tStatus">
       <div class="panel-header">
-        <h2 class="panel-title" id="tStatus">Estado de las órdenes</h2>
+        <h2 class="panel-title" id="tStatus">Estado de los pedidos</h2>
         <span class="mono card-subtitle" id="statusSubtitle"></span>
       </div>
       <div id="chartStatus"><div class="sales-pad"><span class="skeleton" style="width:100%"></span></div></div>
@@ -139,30 +139,30 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     <section class="panel" aria-labelledby="tCities">
       <div class="panel-header">
         <h2 class="panel-title" id="tCities">Ciudades</h2>
-        <span class="card-subtitle" id="citiesSubtitle">por órdenes</span>
+        <span class="card-subtitle" id="citiesSubtitle">por pedidos</span>
       </div>
       <div class="table-wrapper" id="chartCities"><div class="sales-pad"><span class="skeleton" style="width:80%"></span></div></div>
     </section>
   </div>
 
-  <!-- Órdenes -->
+  <!-- Pedidos -->
   <section class="panel" aria-labelledby="tOrders">
     <div class="panel-header">
       <div class="sales-title-row">
-        <h2 class="panel-title" id="tOrders">Órdenes</h2>
+        <h2 class="panel-title" id="tOrders">Pedidos</h2>
         <span class="count" id="tableSubtitle">·</span>
       </div>
       <label class="sales-search">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 21l-4.3-4.3M19 11a8 8 0 1 1-16 0 8 8 0 0 1 16 0z"/></svg>
-        <span class="sr-only">Buscar órdenes</span>
-        <input type="search" id="tableSearch" placeholder="Orden, ciudad o producto" autocomplete="off">
+        <span class="sr-only">Buscar pedidos</span>
+        <input type="search" class="sales-search-input" id="tableSearch" placeholder="Pedido, ciudad o producto" autocomplete="off">
       </label>
     </div>
     <div class="table-wrapper">
       <table class="erp-table sales-orders">
         <thead>
           <tr>
-            <th><button type="button" class="sort-col" data-col="ml_order_id">Orden</button></th>
+            <th><button type="button" class="sort-col" data-col="ml_order_id">Pedido</button></th>
             <th><button type="button" class="sort-col" data-col="purchase_date">Fecha</button></th>
             <th>Productos</th>
             <th><button type="button" class="sort-col" data-col="recipient_city">Ciudad</button></th>
@@ -173,7 +173,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
           </tr>
         </thead>
         <tbody id="ordersBody">
-          <tr><td colspan="8" class="empty-state">Cargando órdenes…</td></tr>
+          <tr><td colspan="8" class="empty-state">Cargando pedidos…</td></tr>
         </tbody>
         <tfoot id="ordersFoot" hidden>
           <tr>
@@ -269,14 +269,14 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 .sales-share .mono { width: 44px; text-align: right; font-size: 12px; color: var(--muted); }
 .sales-ellipsis { max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-/* Órdenes */
+/* Pedidos */
 .sales-search {
   display: flex; align-items: center; gap: 6px;
   height: 30px; padding: 0 10px;
   border: 1px solid var(--rule-2); border-radius: var(--radius-sm); color: var(--muted);
 }
 .sales-search:focus-within { border-color: var(--accent-ink); }
-.sales-search input { border: 0; outline: 0; background: transparent; font: inherit; font-size: 12px; width: 200px; color: var(--color-text); }
+.sales-search .sales-search-input { border: 0; outline: 0; background: transparent; font: inherit; font-size: 12px; width: 200px; color: var(--color-text); }
 .sales-orders td { white-space: nowrap; }
 .sales-orders .sort-col {
   appearance: none; border: 0; background: transparent; padding: 0;
@@ -440,7 +440,7 @@ function renderKPIs(k: any, prev: any) {
   $('kpiOrders').textContent = fmtNum(orders);
   $('kpiAov').textContent = fmtCOP(k.aov);
   $('kpiCancelRate').textContent = `${PCT.format(rate)}%`;
-  $('kpiCancelled').textContent = `${fmtNum(cancelled)} ${cancelled === 1 ? 'orden' : 'órdenes'}`;
+  $('kpiCancelled').textContent = `${fmtNum(cancelled)} ${cancelled === 1 ? 'pedido' : 'pedidos'}`;
 
   if (prev) {
     const pOrders = Number(prev.orders) || 0;
@@ -509,7 +509,7 @@ function drawTimeline(d: any) {
   const y = (v: number) => H - (v / max) * H;
   const path = (vals: number[]) => 'M' + vals.map((v, i) => `${x(i).toFixed(1)} ${y(v).toFixed(1)}`).join(' L');
   const cur = path(s.cur);
-  const ticks = [1, .75, .5, .25, 0];
+  const ticks = [1, .8, .6, .4, .2, 0];
   const xi = [...new Set([0, Math.round((N - 1) / 4), Math.round((N - 1) / 2), Math.round(3 * (N - 1) / 4), N - 1])];
 
   el.innerHTML = `
@@ -519,7 +519,7 @@ function drawTimeline(d: any) {
         <div class="sales-plot">
           ${ticks.map((t) => `<div class="sales-gridline" style="top:${(1 - t) * 100}%"></div>`).join('')}
           <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img"
-               aria-label="${S.metric === 'revenue' ? 'Ingresos' : 'Órdenes'} por periodo${s.prev ? ' frente al periodo anterior' : ''}">
+               aria-label="${S.metric === 'revenue' ? 'Ingresos' : 'Pedidos'} por periodo${s.prev ? ' frente al periodo anterior' : ''}">
             <path d="${cur} L${W} ${H} L0 ${H} Z" class="sales-area"/>
             ${s.prev ? `<path d="${path(s.prev)}" class="sales-line--prev" vector-effect="non-scaling-stroke"/>` : ''}
             <path d="${cur}" class="sales-line" vector-effect="non-scaling-stroke"/>
@@ -575,8 +575,8 @@ function drawStatus(data: any[]) {
   const el = $('chartStatus');
   const list = data || [];
   const total = list.reduce((a, d) => a + (Number(d.count) || 0), 0);
-  $('statusSubtitle').textContent = `${fmtNum(total)} órdenes`;
-  if (!total) { el.innerHTML = '<p class="sales-empty">Sin órdenes en el periodo.</p>'; return; }
+  $('statusSubtitle').textContent = `${fmtNum(total)} pedidos`;
+  if (!total) { el.innerHTML = '<p class="sales-empty">Sin pedidos en el periodo.</p>'; return; }
   el.innerHTML = `
     <div class="sales-stack" role="img" aria-label="${esc(list.map((d) => `${statusInfo(d.status)[0]}: ${d.count}`).join(', '))}">
       ${list.map((d) => `<span style="width:${(Number(d.count) / total) * 100}%;background:${statusVar(statusInfo(d.status)[1])}"></span>`).join('')}
@@ -622,7 +622,7 @@ function drawCities(items: any[]) {
   const total = (items || []).reduce((a, c) => a + (Number(c.orders) || 0), 0);
   const max = Math.max(...list.map((c) => Number(c.orders) || 0), 1);
   el.innerHTML = `<table class="erp-table">
-    <thead><tr><th>Ciudad</th><th class="num">Órdenes</th><th class="num">Ingresos</th><th>Participación</th></tr></thead>
+    <thead><tr><th>Ciudad</th><th class="num">Pedidos</th><th class="num">Ingresos</th><th>Participación</th></tr></thead>
     <tbody>${list.map((c) => `<tr>
       <td class="sales-ellipsis">${esc(c.city)}${c.state ? ` <span class="sales-muted">${esc(c.state)}</span>` : ''}</td>
       <td class="num mono">${fmtNum(c.orders)}</td>
@@ -632,7 +632,7 @@ function drawCities(items: any[]) {
 }
 
 // ══════════════════════════════════════════════════════════════
-// Tabla de órdenes
+// Tabla de pedidos
 // ══════════════════════════════════════════════════════════════
 function renderOrders(result: any) {
   const tbody = $('ordersBody');
@@ -641,7 +641,7 @@ function renderOrders(result: any) {
   const rows = result?.data || [];
 
   if (!rows.length) {
-    tbody.innerHTML = '<tr><td colspan="8" class="empty-state">No hay órdenes con estos filtros.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" class="empty-state">No hay pedidos con estos filtros.</td></tr>';
     $('tableSubtitle').textContent = '0';
     foot.hidden = true;
     pag.innerHTML = '';
@@ -729,11 +729,11 @@ async function loadAnalytics() {
 }
 
 async function loadOrders() {
-  $('ordersBody').innerHTML = '<tr><td colspan="8" class="empty-state">Cargando órdenes…</td></tr>';
+  $('ordersBody').innerHTML = '<tr><td colspan="8" class="empty-state">Cargando pedidos…</td></tr>';
   try {
     renderOrders(await fetchOrders());
   } catch {
-    $('ordersBody').innerHTML = '<tr><td colspan="8" class="empty-state">No se pudieron cargar las órdenes. Intente de nuevo.</td></tr>';
+    $('ordersBody').innerHTML = '<tr><td colspan="8" class="empty-state">No se pudieron cargar los pedidos. Intente de nuevo.</td></tr>';
   }
 }
 

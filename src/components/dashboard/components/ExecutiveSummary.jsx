@@ -117,7 +117,7 @@ function AreaChart({ series }) {
   const pts = series.map((d, i) => `${(i * step).toFixed(1)} ${(h - (d.revenue / max) * h).toFixed(1)}`);
   const line = `M${pts.join(" L")}`;
   const area = `${line} L${w} ${h} L0 ${h} Z`;
-  const ticks = [1, 0.75, 0.5, 0.25, 0];
+  const ticks = [1, 0.8, 0.6, 0.4, 0.2, 0];
   const xIdx = [...new Set([0, Math.round((series.length - 1) / 2), series.length - 1])];
   const total = series.reduce((s, d) => s + d.revenue, 0);
 

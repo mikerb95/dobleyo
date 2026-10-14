@@ -231,6 +231,20 @@ La operación de la línea (cosecha → bodega verde → maquila → bodega tost
 - **Móvil sin señal:** los pasos simples quedan en la cola persistida con `client_op_id`. Los encadenados solo encolan el primer registro; el segundo se completa desde la bandeja cuando llega al servidor. Generar etiquetas requiere señal. La app precarga la ficha de los lotes con tareas para poder abrirlos sin cobertura.
 - **Estilos del hub en `src/components/workflow/workflow.module.css`**, derivados de los tokens del admin con `color-mix`. Los títulos llevan `.hub`/`.sheet` delante porque `.erp-content h1/h2/h3` del layout les gana en especificidad.
 
+### 3.11 Correo (Resend) — reglas no negociables
+
+Todo correo sale por `server/services/email.js`. Al agregar o tocar uno:
+
+- **Un solo punto de salida: `sendEmail()`.** Nunca llamar a `resend.emails.send` directo. `sendEmail` revisa la lista de supresión, agrega la versión de texto plano, la etiqueta `category` (filtro en el panel de Resend) y la `idempotencyKey`.
+- **Revisar `success`, no esperar excepciones.** El SDK de Resend no lanza ante un rechazo (responde `{ data, error }`) y las funciones del servicio tampoco. Si un flag en BD marca "correo enviado" (p. ej. `confirmation_email_sent_at`), solo se escribe cuando `r.success` es `true`.
+- **Escapar todo dato de usuario con `esc()`** (o `escMultiline()` para texto con saltos de línea). Nombres, mensajes de contacto y direcciones llegan sin filtrar.
+- **Plantilla común `layout()`** con los bloques `p`, `small`, `note`, `infoBox`, `button` y `fallbackLink`. Tablas y estilos en línea: nada de flex, grid ni variables CSS (los clientes de correo no los soportan). Los colores de marca están en el objeto `C`, copiados de `:root`. Sin `border-left` de acento: las cajas usan fondo tintado.
+- **Tono:** "usted" en transaccionales (cuenta, pedidos, suscripción, contacto); "tú" solo en el boletín.
+- **Idempotencia para eventos que se pueden repetir** (webhooks, reintentos de cron): clave estable del tipo `order-confirmation/<ref>`. Resend descarta duplicados con la misma clave durante 24 h.
+- **El boletín lleva `List-Unsubscribe` + `List-Unsubscribe-Post`** (RFC 8058). La baja de un clic es `POST /api/emails/newsletter/unsubscribe?token=` y debe seguir siendo idempotente.
+- **Rebotes y quejas:** el webhook `POST /api/emails/webhook` (firma Svix con `RESEND_WEBHOOK_SECRET`, cuerpo crudo en `req.rawBody`) llena `email_suppressions`. Una queja también da de baja del boletín. Desbloquear se hace desde `/admin/boletin`.
+- **Respuestas genéricas** en `forgot-password` y `resend-verification`: nunca revelar si un correo tiene cuenta. Los tokens de restablecimiento se guardan hasheados (SHA-256), duran 1 h, son de un solo uso y se consumen con un `UPDATE ... RETURNING` atómico.
+
 ---
 
 ## 4. SEO — Reglas Obligatorias

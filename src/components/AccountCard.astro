@@ -10,9 +10,6 @@ const { title, intro } = Astro.props;
 
 <div class="account-page">
   <section class="account-card">
-    <a href="/" class="account-card__brand" aria-label="DobleYo Café, volver al inicio">
-      DobleYo <span>Café</span>
-    </a>
     <h1 class="account-card__title">{title}</h1>
     {intro && <p class="account-card__intro">{intro}</p>}
     <slot />
@@ -38,17 +35,6 @@ const { title, intro } = Astro.props;
     padding: var(--space-8) var(--space-5);
   }
 
-  .account-card__brand {
-    display: inline-block;
-    margin-bottom: var(--space-6);
-    font-family: var(--font-display);
-    font-size: var(--text-lg);
-    font-weight: 700;
-    color: var(--espresso);
-    text-decoration: none;
-  }
-
-  .account-card__brand span { color: var(--caramel); }
 
   .account-card__title {
     margin: 0 0 var(--space-2);
