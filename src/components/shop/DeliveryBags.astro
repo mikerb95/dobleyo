@@ -81,5 +81,9 @@ const label = (d: number) =>
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
   }
+  @media (max-width: 480px) {
+    .dbags { max-width: 280px; }
+    .dbag__date { padding: .25rem .5rem; font-size: .68rem; }
+  }
   .dbag:first-child .dbag__date { background: var(--mucilage); border-color: var(--mucilage); color: var(--espresso); }
 </style>

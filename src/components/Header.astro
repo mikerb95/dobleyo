@@ -620,14 +620,8 @@ const searchHref = lang === "en" ? "/search" : "/buscar";
     }
 
     // ── Abrir y cerrar ──
-    function positionPanel() {
-      const rect = headerRoot.getBoundingClientRect();
-      panel.style.top = `${rect.bottom}px`;
-      panel.style.setProperty("--search-top", `${rect.bottom}px`);
-    }
-
+    // La posición sale de CSS (--header-top + --header-height de layout.js).
     function openPanel() {
-      positionPanel();
       panel.hidden = false;
       document.documentElement.classList.add("search-open");
       btn.setAttribute("aria-expanded", "true");
@@ -643,7 +637,6 @@ const searchHref = lang === "en" ? "/search" : "/buscar";
     }
 
     function closePanel() {
-      console.log("CLOSEPANEL", new Error().stack);
       panel.hidden = true;
       document.documentElement.classList.remove("search-open");
       btn.setAttribute("aria-expanded", "false");
@@ -760,9 +753,6 @@ const searchHref = lang === "en" ? "/search" : "/buscar";
 
     // El header persiste entre páginas (View Transitions): cerrar al navegar.
     document.addEventListener("astro:after-swap", () => { if (!panel.hidden) closePanel(); });
-
-    window.addEventListener("resize", () => { if (!panel.hidden) positionPanel(); });
-    window.addEventListener("scroll", () => { if (!panel.hidden) positionPanel(); }, { passive: true });
   })();
 
   (function initNavBeans() {

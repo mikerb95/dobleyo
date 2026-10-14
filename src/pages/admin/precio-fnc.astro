@@ -168,12 +168,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 </AdminLayout>
 
 <style>
-  .kpi-row {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-  }
+  .kpi-row { margin-bottom: 1.5rem; }
 
   .two-col {
     display: grid;
@@ -181,14 +176,8 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     gap: 1rem;
   }
 
-  @media (max-width: 1024px) {
-    .kpi-row { grid-template-columns: 1fr 1fr; }
-  }
   @media (max-width: 768px) {
     .two-col { grid-template-columns: 1fr; }
-  }
-  @media (max-width: 480px) {
-    .kpi-row { grid-template-columns: 1fr; }
   }
 
   /* Nota explicativa: punto de marca junto al título en vez de franja lateral. */

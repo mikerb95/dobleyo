@@ -441,14 +441,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 </script>
 
 <style>
-  .kpi-row {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-  }
-  @media (max-width: 1024px) { .kpi-row { grid-template-columns: 1fr 1fr; } }
-  @media (max-width: 480px)  { .kpi-row { grid-template-columns: 1fr; } }
+  .kpi-row { margin-bottom: 1.5rem; }
 
   .ck-filter {
     display: flex; align-items: center; gap: 6px;

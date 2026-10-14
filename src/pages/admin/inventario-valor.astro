@@ -93,19 +93,8 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 </AdminLayout>
 
 <style>
-  .kpi-row {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-  }
+  .kpi-row { margin-bottom: 1.5rem; }
 
-  @media (max-width: 768px) {
-    .kpi-row { grid-template-columns: 1fr 1fr; }
-  }
-  @media (max-width: 480px) {
-    .kpi-row { grid-template-columns: 1fr; }
-  }
 
   .cat-cafe       { background: #fff8f1; color: #92400e; border: 1px solid #fed7aa; }
   .cat-accesorio  { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }

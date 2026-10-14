@@ -3190,7 +3190,10 @@ html.search-open {
 }
 
 .search-panel {
+  /* Mismas métricas que mantiene layout.js para el header y el menú móvil */
+  --search-top: calc(var(--header-top, 0px) + var(--header-height, 96px) + 1px);
   position: fixed;
+  top: var(--search-top);
   left: 0;
   right: 0;
   bottom: 0;
@@ -3281,6 +3284,7 @@ html.search-open {
   border: 0;
   outline: none;
 }
+.search-field__input:focus-visible { outline: none; }
 .search-field__input::placeholder { color: var(--muted-fg); opacity: .8; }
 .search-field__input::-webkit-search-cancel-button { display: none; }
 
