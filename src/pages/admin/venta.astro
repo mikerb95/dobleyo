@@ -3,106 +3,109 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 ---
 
 <AdminLayout title="Registrar Venta Externa · DobleYo Admin" section="ventas">
-  <div class="ext-sales-page">
-
-    <!-- Header -->
-    <section class="ios-page-header">
-      <div class="ios-header-inner">
-        <div>
-          <h1 class="ios-page-title">Ventas Externas</h1>
-          <p class="ios-page-sub">Instagram, WhatsApp, referidos y canales no integrados</p>
-        </div>
-        <button id="btnNewSale" class="ios-btn ios-btn-primary">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-          </svg>
-          Nueva Venta
-        </button>
+  <div class="page-header">
+    <div class="page-header-top">
+      <div>
+        <div class="page-breadcrumb">Ventas · Canales externos</div>
+        <h1 class="page-title">Ventas externas</h1>
+        <p class="page-subtitle">Instagram, WhatsApp, referidos y demás canales sin integración.</p>
       </div>
-    </section>
-
-    <!-- KPIs -->
-    <section class="ios-kpi-section">
-      <div class="ios-kpi-grid">
-        <div class="ios-kpi-card ios-kpi-brand">
-          <div class="ios-kpi-label">Total Ventas</div>
-          <div class="ios-kpi-value" id="statTotal">-</div>
-          <div class="ios-kpi-icon">🧾</div>
-        </div>
-        <div class="ios-kpi-card ios-kpi-success">
-          <div class="ios-kpi-label">Ingresos</div>
-          <div class="ios-kpi-value" id="statRevenue">-</div>
-          <div class="ios-kpi-icon">💰</div>
-        </div>
-        <div class="ios-kpi-card ios-kpi-info">
-          <div class="ios-kpi-label">Este Mes</div>
-          <div class="ios-kpi-value" id="statMonth">-</div>
-          <div class="ios-kpi-icon">📅</div>
-        </div>
-        <div class="ios-kpi-card ios-kpi-warning">
-          <div class="ios-kpi-label">Canal Top</div>
-          <div class="ios-kpi-value" id="statTopChannel">-</div>
-          <div class="ios-kpi-icon">📣</div>
-        </div>
+      <div class="page-header-actions">
+        <button id="btnNewSale" class="btn btn-primary" type="button">Registrar venta</button>
       </div>
-    </section>
+    </div>
+  </div>
 
-    <!-- Filtros -->
-    <section class="ios-filters-section">
-      <div class="ios-search-bar">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="ios-search-icon">
-          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-        </svg>
-        <input type="text" id="filterSearch" placeholder="Buscar por #, cliente, ciudad…" class="ios-search-input" />
+  <div class="erp-body ext">
+    <div class="kpi-grid">
+      <div class="kpi-tile">
+        <div class="kpi-label">Ventas registradas</div>
+        <div class="kpi-value" id="statTotal">-</div>
+        <div class="kpi-sub">Todos los canales</div>
       </div>
-      <div class="ios-filter-chips">
-        <select id="filterChannel" class="ios-filter-select">
-          <option value="">Todos los canales</option>
+      <div class="kpi-tile">
+        <div class="kpi-label">Ingresos</div>
+        <div class="kpi-value" id="statRevenue">-</div>
+        <div class="kpi-sub">Suma de los totales</div>
+      </div>
+      <div class="kpi-tile">
+        <div class="kpi-label">Este mes</div>
+        <div class="kpi-value" id="statMonth">-</div>
+        <div class="kpi-sub">Ventas del mes en curso</div>
+      </div>
+      <div class="kpi-tile">
+        <div class="kpi-label">Canal principal</div>
+        <div class="kpi-value" id="statTopChannel">-</div>
+        <div class="kpi-sub">Por número de ventas</div>
+      </div>
+    </div>
+
+    <div class="filter-bar" role="search" aria-label="Filtrar ventas externas">
+      <label class="ff ff--grow">
+        <span>Buscar</span>
+        <input type="search" id="filterSearch" class="ext-input" placeholder="N.º de venta, cliente o ciudad" />
+      </label>
+      <label class="ff">
+        <span>Canal</span>
+        <select id="filterChannel" class="ext-input">
+          <option value="">Todos</option>
           <option value="instagram">Instagram</option>
           <option value="whatsapp">WhatsApp</option>
           <option value="referido">Referido</option>
-          <option value="tienda_fisica">Tienda Física</option>
+          <option value="tienda_fisica">Tienda física</option>
           <option value="telefono">Teléfono</option>
           <option value="otro">Otro</option>
         </select>
-        <select id="filterStatus" class="ios-filter-select">
-          <option value="">Todos los estados</option>
+      </label>
+      <label class="ff">
+        <span>Estado</span>
+        <select id="filterStatus" class="ext-input">
+          <option value="">Todos</option>
           <option value="completada">Completada</option>
           <option value="pendiente">Pendiente</option>
           <option value="cancelada">Cancelada</option>
         </select>
-        <input type="date" id="filterFrom" class="ios-filter-select" title="Desde" />
-        <input type="date" id="filterTo" class="ios-filter-select" title="Hasta" />
-        <button id="btnApplyFilters" class="ios-btn ios-btn-secondary ios-btn-sm">Filtrar</button>
-        <button id="btnClearFilters" class="ios-btn ios-btn-ghost ios-btn-sm">Limpiar</button>
+      </label>
+      <label class="ff">
+        <span>Desde</span>
+        <input type="date" id="filterFrom" class="ext-input" />
+      </label>
+      <label class="ff">
+        <span>Hasta</span>
+        <input type="date" id="filterTo" class="ext-input" />
+      </label>
+      <div class="filter-bar-actions">
+        <button id="btnClearFilters" class="btn btn-sm btn-secondary" type="button">Limpiar</button>
+        <button id="btnApplyFilters" class="btn btn-sm btn-primary" type="button">Filtrar</button>
       </div>
-    </section>
+    </div>
 
-    <!-- Tabla -->
-    <section class="ios-table-section">
-      <div class="ios-table-card">
-        <table class="ios-table" id="salesTable">
+    <section class="panel" aria-labelledby="extTitle">
+      <div class="panel-header">
+        <h2 id="extTitle" class="panel-title">Ventas</h2>
+      </div>
+      <div class="table-wrapper">
+        <table class="erp-table ext-table" id="salesTable">
           <thead>
             <tr>
-              <th># Venta</th>
+              <th>Venta</th>
               <th>Fecha</th>
               <th>Canal</th>
               <th>Cliente</th>
               <th>Ciudad</th>
               <th>Detalle</th>
-              <th class="text-right">Total</th>
+              <th class="num">Total</th>
               <th>Estado</th>
-              <th></th>
+              <th><span class="ext-sr">Acciones</span></th>
             </tr>
           </thead>
           <tbody id="salesBody">
-            <tr><td colspan="9" class="ios-empty-row">Cargando ventas…</td></tr>
+            <tr><td colspan="9" class="ext-msg">Cargando ventas...</td></tr>
           </tbody>
         </table>
       </div>
-      <div class="ios-pagination" id="pagination"></div>
+      <div class="ext-pager" id="pagination"></div>
     </section>
-
   </div>
 
   <!-- ── Modal: Registrar venta ────────────────────────── -->
@@ -226,7 +229,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         </button>
       </div>
       <div class="ios-modal-body" id="detailBody">
-        <div class="ios-empty-row">Cargando…</div>
+        <div class="ext-msg">Cargando...</div>
       </div>
       <div class="ios-modal-footer">
         <button id="btnCancelSale" class="ios-btn ios-btn-danger" hidden>Cancelar Venta</button>
@@ -238,157 +241,23 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 <style is:global>
   /* Global y acotado a .pg-venta (lo pone AdminLayout): parte de esta
      página se pinta con innerHTML y los estilos scoped no le llegan. */
-  /* ── Layout ─────────────────────────────────────────────── */
-  .pg-venta .ext-sales-page { padding-bottom: 3rem; }
 
-  /* ── Page header ────────────────────────────────────────── */
-  .pg-venta .ios-page-header { padding: 1.5rem 1.5rem 0; }
-  .pg-venta .ios-header-inner { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
-  .pg-venta .ios-page-title { font-size: 1.5rem; font-weight: 700; color: var(--text-1); letter-spacing: -.02em; margin: 0 0 .2rem; }
-  .pg-venta .ios-page-sub { font-size: .8rem; color: var(--text-2); margin: 0; }
-
-  /* ── KPI cards ──────────────────────────────────────────── */
-  .pg-venta .ios-kpi-section { padding: 1.25rem 1.5rem 0; }
-  .pg-venta .ios-kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: .875rem; }
-
-  .pg-venta .ios-kpi-card {
-    background: var(--card-bg);
-    border-radius: 16px;
-    padding: 1.1rem 1.25rem;
-    box-shadow: 0 1px 3px rgba(0,0,0,.06), 0 4px 14px rgba(0,0,0,.06);
-    position: relative;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    gap: .2rem;
+  .pg-venta .ext { display: flex; flex-direction: column; gap: 16px; }
+  .pg-venta .ext-table { min-width: 860px; }
+  .pg-venta .ext-nowrap { white-space: nowrap; }
+  .pg-venta .ext-muted { color: var(--muted); }
+  .pg-venta .ext-msg { padding: 32px 16px; text-align: center; color: var(--muted); }
+  .pg-venta .ext-wide { grid-column: 1 / -1; }
+  .pg-venta .ext-sr {
+    position: absolute; width: 1px; height: 1px; overflow: hidden;
+    clip: rect(0 0 0 0); white-space: nowrap;
   }
-  .pg-venta .ios-kpi-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 4px;
-    border-radius: 16px 16px 0 0;
+  .pg-venta .ext-pager {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 10px 16px; border-top: 1px solid var(--rule);
+    font-size: 12px; color: var(--muted);
   }
-  .pg-venta .ios-kpi-brand::before   { background: linear-gradient(90deg, #c8a96e, #a8874a); }
-  .pg-venta .ios-kpi-success::before { background: linear-gradient(90deg, #34c759, #248a3d); }
-  .pg-venta .ios-kpi-info::before    { background: linear-gradient(90deg, #007aff, #0051a8); }
-  .pg-venta .ios-kpi-warning::before { background: linear-gradient(90deg, #ff9500, #c96800); }
-
-  .pg-venta .ios-kpi-icon {
-    position: absolute;
-    right: 1rem; top: 50%;
-    transform: translateY(-50%);
-    font-size: 2rem;
-    opacity: .12;
-    pointer-events: none;
-  }
-  .pg-venta .ios-kpi-label { font-size: .7rem; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--text-2); }
-  .pg-venta .ios-kpi-value { font-size: 1.5rem; font-weight: 700; color: var(--text-1); line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-  /* ── Filters ────────────────────────────────────────────── */
-  .pg-venta .ios-filters-section { padding: 1rem 1.5rem 0; display: flex; flex-direction: column; gap: .6rem; }
-
-  .pg-venta .ios-search-bar {
-    display: flex;
-    align-items: center;
-    gap: .6rem;
-    background: var(--card-bg);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 0 .875rem;
-    box-shadow: 0 1px 3px rgba(0,0,0,.04);
-    transition: border-color .15s, box-shadow .15s;
-  }
-  .pg-venta .ios-search-bar:focus-within {
-    border-color: var(--nav-active-border);
-    box-shadow: 0 0 0 3px rgba(200,169,110,.15);
-  }
-  .pg-venta .ios-search-icon { color: var(--text-3); flex-shrink: 0; }
-  .pg-venta .ios-search-input {
-    border: none; outline: none; background: transparent;
-    padding: .625rem 0; font-size: .875rem; width: 100%;
-    color: var(--text-1); font-family: inherit;
-  }
-
-  .pg-venta .ios-filter-chips { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; }
-  .pg-venta .ios-filter-select {
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: .45rem .75rem;
-    font-size: .8rem;
-    background: var(--card-bg);
-    color: var(--text-1);
-    font-family: inherit;
-    outline: none;
-    transition: border-color .15s;
-    cursor: pointer;
-  }
-  .pg-venta .ios-filter-select:focus { border-color: var(--nav-active-border); }
-
-  /* ── Table ──────────────────────────────────────────────── */
-  .pg-venta .ios-table-section { padding: 1rem 1.5rem 0; }
-  .pg-venta .ios-table-card {
-    background: var(--card-bg);
-    border-radius: 16px;
-    box-shadow: 0 1px 3px rgba(0,0,0,.06), 0 4px 14px rgba(0,0,0,.06);
-    overflow: hidden;
-    overflow-x: auto;
-  }
-  .pg-venta .ios-table { width: 100%; border-collapse: collapse; font-size: .875rem; }
-  .pg-venta .ios-table thead th {
-    padding: .75rem 1rem;
-    text-align: left;
-    font-size: .7rem;
-    font-weight: 700;
-    letter-spacing: .07em;
-    text-transform: uppercase;
-    color: var(--text-2);
-    background: #fafafa;
-    border-bottom: 1px solid var(--border);
-    white-space: nowrap;
-  }
-  .pg-venta .ios-table tbody td {
-    padding: .8rem 1rem;
-    border-bottom: 1px solid rgba(0,0,0,.04);
-    color: var(--text-1);
-    vertical-align: middle;
-  }
-  .pg-venta .ios-table tbody tr:last-child td { border-bottom: none; }
-  .pg-venta .ios-table tbody tr { transition: background .1s; }
-  .pg-venta .ios-table tbody tr:hover td { background: var(--nav-hover-bg); }
-  .pg-venta .text-right { text-align: right !important; }
-  .pg-venta .ios-empty-row { text-align: center; padding: 2.5rem 1rem !important; color: var(--text-2); font-size: .875rem; }
-
-  /* ── Badges ─────────────────────────────────────────────── */
-  .pg-venta .badge { display: inline-flex; align-items: center; padding: .22rem .65rem; border-radius: 999px; font-size: .7rem; font-weight: 700; letter-spacing: .03em; white-space: nowrap; }
-  .pg-venta .badge-channel-instagram  { background: #fce4ec; color: #ad1457; }
-  .pg-venta .badge-channel-whatsapp   { background: #e8f5e9; color: #2e7d32; }
-  .pg-venta .badge-channel-referido   { background: #e3f2fd; color: #1565c0; }
-  .pg-venta .badge-channel-tienda_fisica { background: #fff8e1; color: #f57f17; }
-  .pg-venta .badge-channel-telefono   { background: #ede7f6; color: #4527a0; }
-  .pg-venta .badge-channel-otro       { background: #f5f5f5; color: #424242; }
-  .pg-venta .badge-completada { background: var(--c-success-bg); color: var(--c-success); border: 1px solid var(--c-success-border); }
-  .pg-venta .badge-pendiente  { background: var(--c-warning-bg); color: var(--c-warning); border: 1px solid var(--c-warning-border); }
-  .pg-venta .badge-cancelada  { background: var(--c-error-bg);   color: var(--c-error);   border: 1px solid var(--c-error-border); }
-
-  /* ── Row action button ──────────────────────────────────── */
-  .pg-venta .action-btn {
-    padding: .3rem .7rem;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    background: var(--card-bg);
-    cursor: pointer;
-    font-size: .78rem;
-    font-weight: 500;
-    color: var(--text-2);
-    font-family: inherit;
-    transition: background .12s, transform .1s;
-  }
-  .pg-venta .action-btn:hover  { background: var(--nav-hover-bg); color: var(--text-1); }
-  .pg-venta .action-btn:active { transform: scale(.95); }
-
-  /* ── Pagination ─────────────────────────────────────────── */
-  .pg-venta .ios-pagination { padding: .75rem 1rem; display: flex; align-items: center; gap: .5rem; justify-content: flex-end; font-size: .8rem; color: var(--text-2); }
+  .pg-venta .ext-pager-btns { display: flex; align-items: center; gap: 8px; }
 
   /* ── Buttons ────────────────────────────────────────────── */
   .pg-venta .ios-btn {
@@ -407,7 +276,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     -webkit-tap-highlight-color: transparent;
   }
   .pg-venta .ios-btn:active { transform: scale(.96); }
-  .pg-venta .ios-btn-primary   { background: var(--brand); color: #fff; }
+  .pg-venta .ios-btn-primary { background: var(--brand); color: #fff; }
   .pg-venta .ios-btn-primary:hover { filter: brightness(1.08); }
   .pg-venta .ios-btn-secondary { background: var(--card-bg); border: 1px solid var(--border); color: var(--text-1); }
   .pg-venta .ios-btn-secondary:hover { background: var(--nav-hover-bg); }
@@ -486,8 +355,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   .pg-venta .ios-form-group { display: flex; flex-direction: column; gap: .3rem; }
   .pg-venta .ios-form-group--wide { grid-column: span 2; }
   .pg-venta .ios-form-group label { font-size: .75rem; font-weight: 600; color: var(--text-2); }
-  .pg-venta .ios-form-group input,
-  .pg-venta .ios-form-group select {
+  .pg-venta .ios-form-group input, .pg-venta .ios-form-group select {
     border: 1px solid var(--border);
     border-radius: 10px;
     padding: .55rem .875rem;
@@ -498,8 +366,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     font-family: inherit;
     transition: border-color .15s, box-shadow .15s;
   }
-  .pg-venta .ios-form-group input:focus,
-  .pg-venta .ios-form-group select:focus {
+  .pg-venta .ios-form-group input:focus, .pg-venta .ios-form-group select:focus {
     border-color: var(--nav-active-border);
     box-shadow: 0 0 0 3px rgba(200,169,110,.15);
   }
@@ -562,9 +429,6 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   .pg-venta .detail-item { display: flex; flex-direction: column; gap: .15rem; }
   .pg-venta .detail-item .dl { font-size: .7rem; font-weight: 700; color: var(--text-2); text-transform: uppercase; letter-spacing: .06em; }
   .pg-venta .detail-item .dv { font-size: .9rem; color: var(--text-1); font-weight: 500; }
-  .pg-venta .detail-items-table { width: 100%; border-collapse: collapse; font-size: .85rem; margin-top: .5rem; border-radius: 10px; overflow: hidden; }
-  .pg-venta .detail-items-table th, .pg-venta .detail-items-table td { padding: .55rem .75rem; border-bottom: 1px solid rgba(0,0,0,.05); text-align: left; }
-  .pg-venta .detail-items-table th { color: var(--text-2); font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; background: #fafafa; }
 
   /* ── Mobile bottom sheet ────────────────────────────────── */
   @media (max-width: 640px) {
@@ -575,78 +439,15 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       max-height: 95vh;
     }
     .pg-venta .ios-modal-footer { border-radius: 0; }
-    .pg-venta .ios-kpi-grid { grid-template-columns: 1fr 1fr; }
+
     .pg-venta .ios-form-row { grid-template-columns: 1fr; }
     .pg-venta .ios-form-group--wide { grid-column: 1; }
     .pg-venta .item-row { grid-template-columns: 1fr 1fr; }
-    .pg-venta .ios-header-inner { flex-direction: column; align-items: flex-start; }
-    .pg-venta .ios-kpi-value { font-size: 1.2rem; }
-  }
-  @media (max-width: 480px) {
-    .pg-venta .ios-kpi-grid { grid-template-columns: 1fr 1fr; gap: .6rem; }
-    .pg-venta .ios-filter-chips { gap: .4rem; }
-    .pg-venta .ios-filter-select { font-size: .75rem; padding: .4rem .6rem; }
+
   }
 
   /* ── Desktop ERP aesthetic (≥768px) ────────────────────── */
   @media (min-width: 768px) {
-    /* Page header: white bar con border bottom (Fiori Object Header) */
-    .pg-venta .ios-page-header {
-      background: var(--card-bg);
-      border-bottom: 1px solid var(--border);
-      padding: 0 2rem;
-    }
-    .pg-venta .ios-header-inner { min-height: 56px; flex-wrap: nowrap; }
-    .pg-venta .ios-page-title { font-size: 1.125rem; letter-spacing: -.01em; }
-    .pg-venta .ios-page-sub { font-size: .75rem; }
-
-    /* KPI tiles: flat Fiori - sin sombra, border sólido, radio 6px */
-    .pg-venta .ios-kpi-section { padding: 1.5rem 2rem 0; }
-    .pg-venta .ios-kpi-grid { grid-template-columns: repeat(4, 1fr); gap: 1rem; }
-    .pg-venta .ios-kpi-card {
-      border-radius: 6px;
-      box-shadow: none;
-      border: 1px solid var(--border);
-      padding: 1rem 1.25rem;
-    }
-    .pg-venta .ios-kpi-card::before { height: 3px; border-radius: 6px 6px 0 0; }
-    .pg-venta .ios-kpi-brand::before   { background: var(--brand); }
-    .pg-venta .ios-kpi-success::before { background: var(--c-success); }
-    .pg-venta .ios-kpi-info::before    { background: var(--c-info); }
-    .pg-venta .ios-kpi-warning::before { background: var(--c-warning); }
-    .pg-venta .ios-kpi-value { font-size: 1.75rem; }
-    .pg-venta .ios-kpi-label { font-size: .69rem; }
-    .pg-venta .ios-kpi-icon { opacity: .07; }
-
-    /* Filtros: toolbar compacta en una sola línea */
-    .pg-venta .ios-filters-section {
-      padding: .875rem 2rem 0;
-      flex-direction: row;
-      align-items: center;
-      gap: .625rem;
-      flex-wrap: wrap;
-    }
-    .pg-venta .ios-search-bar { border-radius: 4px; flex: 1; max-width: 300px; }
-    .pg-venta .ios-filter-chips { flex-wrap: nowrap; }
-    .pg-venta .ios-filter-select { border-radius: 4px; padding: .35rem .65rem; font-size: .8rem; }
-
-    /* Tabla: card Fiori sin sombra */
-    .pg-venta .ios-table-section { padding: 1rem 2rem 0; }
-    .pg-venta .ios-table-card {
-      border-radius: 6px;
-      box-shadow: none;
-      border: 1px solid var(--border);
-    }
-    .pg-venta .ios-table { font-size: .8125rem; }
-    .pg-venta .ios-table thead th { padding: .625rem 1rem; font-size: .6875rem; }
-    .pg-venta .ios-table tbody td { padding: .6875rem 1rem; }
-
-    /* Paginación */
-    .pg-venta .ios-pagination { padding: .625rem 1rem; }
-
-    /* Botón Ver en fila */
-    .pg-venta .action-btn { border-radius: 4px; }
-
     /* Buttons: Fiori flat - 36px, radius 4px, border explícito */
     .pg-venta .ios-btn {
       border-radius: 4px;
@@ -656,7 +457,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       border: 1px solid transparent;
     }
     .pg-venta .ios-btn:active { transform: none; }
-    .pg-venta .ios-btn-primary  { border-color: var(--brand-dark); }
+    .pg-venta .ios-btn-primary { border-color: var(--brand-dark); }
     .pg-venta .ios-btn-secondary { border-color: var(--border); }
     .pg-venta .ios-btn-ghost { border-color: transparent; }
     .pg-venta .ios-btn-danger { border-color: var(--c-error-border); }
@@ -689,10 +490,8 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     .pg-venta .ios-modal-close:hover { background: var(--nav-hover-bg); }
 
     /* Form inputs: ERP compact */
-    .pg-venta .ios-form-group input,
-    .pg-venta .ios-form-group select { border-radius: 4px; padding: .45rem .75rem; }
-    .pg-venta .item-row select,
-    .pg-venta .item-row input { border-radius: 4px; }
+    .pg-venta .ios-form-group input, .pg-venta .ios-form-group select { border-radius: 4px; padding: .45rem .75rem; }
+    .pg-venta .item-row select, .pg-venta .item-row input { border-radius: 4px; }
     .pg-venta .ios-totals-box { border-radius: 6px; }
   }
 </style>
@@ -713,6 +512,9 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     tienda_fisica: 'Tienda Física', telefono: 'Teléfono', otro: 'Otro',
   };
   const STATUS_LABELS = { completada: 'Completada', pendiente: 'Pendiente', cancelada: 'Cancelada' };
+  const STATUS_CLS = { completada: 'status--paid', pendiente: 'status--pending', cancelada: 'status--cancelled' };
+  const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const statusHtml = (st) => `<span class="status ${STATUS_CLS[st] || ''}">${esc(STATUS_LABELS[st] || st)}</span>`;
 
   // ── Cargar productos para el selector ──────────────────────
   async function loadProducts() {
@@ -737,7 +539,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       renderPagination(data.total, page);
     } catch (err) {
       document.getElementById('salesBody').innerHTML =
-        `<tr><td colspan="9" class="ios-empty-row">Error al cargar ventas: ${err.message}</td></tr>`;
+        `<tr><td colspan="9" class="ext-msg">No se pudieron cargar las ventas. ${esc(err.message)}</td></tr>`;
     }
   }
 
@@ -746,7 +548,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     const totalRevenue = stats.reduce((s, r) => s + Number(r.total_revenue), 0);
     const topChannel = stats[0];
 
-    document.getElementById('statTotal').textContent = totalSales;
+    document.getElementById('statTotal').textContent = totalSales.toLocaleString('es-CO');
     document.getElementById('statRevenue').textContent = fmt(totalRevenue);
 
     // Ventas de este mes
@@ -764,21 +566,21 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   function renderTable(sales) {
     const tbody = document.getElementById('salesBody');
     if (!sales.length) {
-      tbody.innerHTML = '<tr><td colspan="9" class="ios-empty-row">No hay ventas registradas.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="9" class="ext-msg">No hay ventas con estos filtros.</td></tr>';
       return;
     }
     tbody.innerHTML = sales.map(s => `
       <tr>
-        <td><strong>${s.sale_number}</strong></td>
-        <td>${fmtDate(s.sale_date)}</td>
-        <td><span class="badge badge-channel-${s.channel}">${CHANNEL_LABELS[s.channel] || s.channel}</span></td>
-        <td>${s.customer_name || '-'}</td>
-        <td>${s.customer_city || '-'}</td>
-        <td style="color:var(--text-2); font-size:.8rem;">${s.channel_detail || '-'}</td>
-        <td class="text-right"><strong>${fmt(s.total)}</strong></td>
-        <td><span class="badge badge-${s.status}">${STATUS_LABELS[s.status] || s.status}</span></td>
-        <td>
-          <button class="action-btn" data-action="open-detail" data-sale-id="${s.id}">Ver</button>
+        <td class="mono">${esc(s.sale_number)}</td>
+        <td class="mono ext-nowrap">${fmtDate(s.sale_date)}</td>
+        <td>${esc(CHANNEL_LABELS[s.channel] || s.channel)}</td>
+        <td>${esc(s.customer_name || '-')}</td>
+        <td>${esc(s.customer_city || '-')}</td>
+        <td class="ext-muted">${esc(s.channel_detail || '-')}</td>
+        <td class="num mono">${fmt(s.total)}</td>
+        <td>${statusHtml(s.status)}</td>
+        <td class="num">
+          <button class="btn btn-sm btn-secondary" type="button" data-action="open-detail" data-sale-id="${esc(s.id)}">Ver</button>
         </td>
       </tr>
     `).join('');
@@ -787,21 +589,22 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   function renderPagination(total, page) {
     const pages = Math.ceil(total / PAGE_SIZE);
     const el = document.getElementById('pagination');
-    if (pages <= 1) { el.innerHTML = `<span>${total} registros</span>`; return; }
+    const count = `<span class="mono">${total.toLocaleString('es-CO')} registros</span>`;
+    if (pages <= 1) { el.innerHTML = count; return; }
     el.innerHTML = `
-      <span>${total} registros</span>
-      <button class="ios-btn ios-btn-ghost ios-btn-sm" data-action="page" data-page="${page - 1}" ${page === 0 ? 'disabled' : ''}>‹ Anterior</button>
-      <span>Pág. ${page + 1} / ${pages}</span>
-      <button class="ios-btn ios-btn-ghost ios-btn-sm" data-action="page" data-page="${page + 1}" ${page >= pages - 1 ? 'disabled' : ''}>Siguiente ›</button>
+      ${count}
+      <div class="ext-pager-btns">
+        <span class="mono">Página ${page + 1} de ${pages}</span>
+        <button class="btn btn-sm btn-secondary" type="button" data-action="page" data-page="${page - 1}" ${page === 0 ? 'disabled' : ''}>Anterior</button>
+        <button class="btn btn-sm btn-secondary" type="button" data-action="page" data-page="${page + 1}" ${page >= pages - 1 ? 'disabled' : ''}>Siguiente</button>
+      </div>
     `;
   }
 
   // ── Items dinámicos en el formulario ──────────────────────
   function buildProductOptions(selectedId = '') {
-    return `<option value="">Seleccionar producto…</option>` +
-      allProducts.map(p => `<option value="${p.id}" ${p.id === selectedId ? 'selected' : ''}>
-        ${p.name} (Stock: ${p.stock_quantity ?? 0})
-      </option>`).join('');
+    return `<option value="">Seleccione un producto</option>` +
+      allProducts.map(p => `<option value="${esc(p.id)}" ${p.id === selectedId ? 'selected' : ''}>${esc(p.name)} (stock: ${esc(p.stock_quantity ?? 0)})</option>`).join('');
   }
 
   function addItemRow() {
@@ -938,7 +741,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     const modal = document.getElementById('modalDetail');
     const body = document.getElementById('detailBody');
     const btnCancel = document.getElementById('btnCancelSale');
-    body.innerHTML = '<div class="ios-empty-row">Cargando…</div>';
+    body.innerHTML = '<div class="ext-msg">Cargando...</div>';
     btnCancel.hidden = true;
     modal.hidden = false;
     document.body.style.overflow = 'hidden';
@@ -951,50 +754,54 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       const { sale, items } = data;
       document.getElementById('detailTitle').textContent = `Venta ${sale.sale_number}`;
 
+      const dItem = (label, value, wide = false) =>
+        `<div class="detail-item${wide ? ' ext-wide' : ''}"><span class="dl">${label}</span><span class="dv">${value}</span></div>`;
       body.innerHTML = `
         <div class="detail-grid">
-          <div class="detail-item"><span class="dl">Número</span><span class="dv">${sale.sale_number}</span></div>
-          <div class="detail-item"><span class="dl">Fecha</span><span class="dv">${fmtDate(sale.sale_date)}</span></div>
-          <div class="detail-item"><span class="dl">Canal</span><span class="dv">${CHANNEL_LABELS[sale.channel] || sale.channel}${sale.channel_detail ? ` · ${sale.channel_detail}` : ''}</span></div>
-          <div class="detail-item"><span class="dl">Estado</span><span class="dv"><span class="badge badge-${sale.status}">${STATUS_LABELS[sale.status]}</span></span></div>
-          <div class="detail-item"><span class="dl">Cliente</span><span class="dv">${sale.customer_name || '-'}</span></div>
-          <div class="detail-item"><span class="dl">Contacto</span><span class="dv">${sale.customer_contact || '-'}</span></div>
-          <div class="detail-item"><span class="dl">Ciudad</span><span class="dv">${sale.customer_city || '-'}</span></div>
-          <div class="detail-item"><span class="dl">Registrado por</span><span class="dv">${sale.registered_by_name || '-'}</span></div>
-          ${sale.notes ? `<div class="detail-item" style="grid-column:span 2"><span class="dl">Notas</span><span class="dv">${sale.notes}</span></div>` : ''}
+          ${dItem('Número', `<span class="mono">${esc(sale.sale_number)}</span>`)}
+          ${dItem('Fecha', `<span class="mono">${fmtDate(sale.sale_date)}</span>`)}
+          ${dItem('Canal', esc((CHANNEL_LABELS[sale.channel] || sale.channel) + (sale.channel_detail ? ` · ${sale.channel_detail}` : '')))}
+          ${dItem('Estado', statusHtml(sale.status))}
+          ${dItem('Cliente', esc(sale.customer_name || '-'))}
+          ${dItem('Contacto', esc(sale.customer_contact || '-'))}
+          ${dItem('Ciudad', esc(sale.customer_city || '-'))}
+          ${dItem('Registrado por', esc(sale.registered_by_name || '-'))}
+          ${sale.notes ? dItem('Notas', esc(sale.notes), true) : ''}
         </div>
-        <table class="detail-items-table">
-          <thead><tr><th>Producto</th><th>SKU</th><th>Lote</th><th style="text-align:right">Cant.</th><th style="text-align:right">Precio unit.</th><th style="text-align:right">Subtotal</th></tr></thead>
-          <tbody>
-            ${items.map(it => `
-              <tr>
-                <td>${it.product_name}</td>
-                <td style="color:var(--text-2)">${it.sku || '-'}</td>
-                <td style="color:var(--text-2)">${it.lot_code || '-'}</td>
-                <td style="text-align:right">${it.quantity}</td>
-                <td style="text-align:right">${fmt(it.unit_price)}</td>
-                <td style="text-align:right"><strong>${fmt(it.subtotal)}</strong></td>
-              </tr>
-            `).join('')}
-          </tbody>
-          <tfoot>
-            <tr><td colspan="5" style="text-align:right;font-weight:600;padding:.6rem .75rem;">Descuento</td><td style="text-align:right;padding:.6rem .75rem">−${fmt(sale.discount)}</td></tr>
-            <tr><td colspan="5" style="text-align:right;font-weight:700;font-size:1rem;padding:.6rem .75rem;">Total</td><td style="text-align:right;font-weight:700;font-size:1rem;padding:.6rem .75rem">${fmt(sale.total)}</td></tr>
-          </tfoot>
-        </table>
+        <div class="table-wrapper">
+          <table class="erp-table">
+            <thead><tr><th>Producto</th><th>SKU</th><th>Lote</th><th class="num">Cant.</th><th class="num">Precio unit.</th><th class="num">Subtotal</th></tr></thead>
+            <tbody>
+              ${items.map(it => `
+                <tr>
+                  <td>${esc(it.product_name)}</td>
+                  <td class="mono ext-muted">${esc(it.sku || '-')}</td>
+                  <td class="mono ext-muted">${esc(it.lot_code || '-')}</td>
+                  <td class="num mono">${esc(it.quantity)}</td>
+                  <td class="num mono">${fmt(it.unit_price)}</td>
+                  <td class="num mono">${fmt(it.subtotal)}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+            <tfoot>
+              <tr><td colspan="5">Descuento</td><td class="num mono">−${fmt(sale.discount)}</td></tr>
+              <tr><td colspan="5"><strong>Total</strong></td><td class="num mono"><strong>${fmt(sale.total)}</strong></td></tr>
+            </tfoot>
+          </table>
+        </div>
       `;
 
       if (sale.status !== 'cancelada') {
         btnCancel.hidden = false;
       }
     } catch (err) {
-      body.innerHTML = `<div class="ios-empty-row">Error: ${err.message}</div>`;
+      body.innerHTML = `<div class="ext-msg">No se pudo cargar la venta. ${esc(err.message)}</div>`;
     }
   };
 
   document.getElementById('btnCancelSale').addEventListener('click', async () => {
     if (!currentDetailId) return;
-    if (!confirm('¿Confirmas cancelar esta venta? Se revertirá el ajuste de inventario.')) return;
+    if (!confirm('¿Confirma que desea cancelar esta venta? Se revertirá el ajuste de inventario.')) return;
 
     try {
       const r = await fetch(`/api/external-sales/${currentDetailId}/cancel`, {

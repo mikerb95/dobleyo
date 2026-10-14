@@ -98,13 +98,31 @@ las penas de prisión y multa establecidas en los artículos 270 a 272 del
 Código Penal colombiano. El Titular se reserva el derecho de ejercer dichas
 acciones en Colombia y en cualquier otra jurisdicción.
 
-7. AUSENCIA DE GARANTÍA Y LIMITACIÓN DE RESPONSABILIDAD
+7. MONITOREO Y REQUERIMIENTO DE CESE
+
+El Titular mantiene un sistema de monitoreo permanente de sus proyectos,
+operado mediante un agente de inteligencia artificial basado en Claude, que
+analiza de forma continua fuentes públicas (sitios y aplicaciones
+desplegados, repositorios de código, registros de dominios, paquetes
+publicados, entre otras) para detectar copias, despliegues o usos no
+autorizados del Software, total o parcial.
+
+Cuando se detecte un despliegue o uso sin permiso, el Titular remitirá al
+responsable un requerimiento formal de cese y desistimiento (cease and
+desist), en el que se exigirá el retiro inmediato del Software y de sus
+derivados. Este requerimiento no constituye renuncia a las acciones civiles,
+administrativas y penales descritas en el numeral anterior, que podrán
+iniciarse en paralelo o si el requerimiento es desatendido. La evidencia
+recopilada por el sistema de monitoreo podrá ser utilizada en dichas
+acciones.
+
+8. AUSENCIA DE GARANTÍA Y LIMITACIÓN DE RESPONSABILIDAD
 
 El Software se proporciona "tal cual", sin garantía de ningún tipo, expresa o
 implícita. En ningún caso el Titular será responsable por daños, reclamaciones
 o perjuicios derivados del Software o de su uso, autorizado o no.
 
-8. LEY APLICABLE Y JURISDICCIÓN
+9. LEY APLICABLE Y JURISDICCIÓN
 
 Esta licencia se rige por las leyes de la República de Colombia. Cualquier
 controversia se someterá a los jueces competentes de Bogotá D.C., sin
@@ -112,7 +130,7 @@ perjuicio de las acciones que el Titular decida ejercer en otras
 jurisdicciones. Si alguna cláusula resultare inválida, las demás conservarán
 plena vigencia.
 
-9. CONTACTO
+10. CONTACTO
 
 Solicitudes de licencia o autorización:
 Michael David Rodriguez Beltran - codebymike.net
@@ -183,19 +201,33 @@ give rise to civil, administrative and criminal actions, including damages,
 seizure and destruction of infringing copies, injunctive relief and the
 penalties set forth in articles 270 to 272 of the Colombian Criminal Code.
 
-7. NO WARRANTY; LIMITATION OF LIABILITY
+7. MONITORING AND CEASE AND DESIST
+
+The Owner operates continuous monitoring of their projects through an
+artificial intelligence agent built on Claude, which analyzes public sources
+(deployed websites and applications, code repositories, domain records,
+published packages, among others) to detect unauthorized copies, deployments
+or uses of the Software, in whole or in part. Upon detecting any unauthorized
+deployment or use, the Owner will send the responsible party a formal cease
+and desist letter demanding the immediate removal of the Software and any
+derivative works. Such notice does not waive the legal actions described in
+the previous section, which may be filed concurrently or if the notice is
+ignored. Evidence collected by the monitoring system may be used in those
+actions.
+
+8. NO WARRANTY; LIMITATION OF LIABILITY
 
 The Software is provided "as is", without warranty of any kind. In no event
 shall the Owner be liable for any claim or damages arising from the Software
 or its use, authorized or not.
 
-8. GOVERNING LAW
+9. GOVERNING LAW
 
 This license is governed by the laws of the Republic of Colombia. Disputes
 shall be submitted to the competent courts of Bogotá D.C., Colombia. If any
 provision is held invalid, the remaining provisions remain in full force.
 
-9. CONTACT
+10. CONTACT
 
 Michael David Rodriguez Beltran - codebymike.net
 Bogotá D.C., Colombia - Mobile: +57 310 464 1228 - Email: mike95@duck.com

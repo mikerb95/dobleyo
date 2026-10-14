@@ -38,128 +38,74 @@ function fmtDate(d) {
 }
 function stateBadge(state) {
   const map = {
-    borrador:      { text: "Borrador",         bg: "#f3f4f6", color: "#374151" },
-    confirmada:    { text: "Confirmada",        bg: "#fef3c7", color: "#92400e" },
-    pagada_parcial:{ text: "Pago parcial",      bg: "#dbeafe", color: "#1e40af" },
-    pagada:        { text: "Pagada",            bg: "#d1fae5", color: "#065f46" },
-    cancelada:     { text: "Cancelada",         bg: "#fee2e2", color: "#991b1b" },
-    aprobado:      { text: "Aprobado",          bg: "#d1fae5", color: "#065f46" },
-    pagado:        { text: "Pagado",            bg: "#d1fae5", color: "#065f46" },
-    rechazado:     { text: "Rechazado",         bg: "#fee2e2", color: "#991b1b" },
+    borrador:       ["Borrador", ""],
+    confirmada:     ["Confirmada", "status--confirmed"],
+    pagada_parcial: ["Pago parcial", "status--pending"],
+    pagada:         ["Pagada", "status--paid"],
+    cancelada:      ["Cancelada", "status--cancelled"],
+    aprobado:       ["Aprobado", "status--paid"],
+    pagado:         ["Pagado", "status--paid"],
+    rechazado:      ["Rechazado", "status--cancelled"],
   };
-  return map[state] ?? { text: state, bg: "#f3f4f6", color: "#374151" };
+  const [text, cls] = map[state] ?? [state, ""];
+  return { text, cls };
 }
 const balancePositive = dashboard.month_balance >= 0;
 ---
 
 <AdminLayout title="Finanzas · DobleYo Admin" section="finanzas">
-  <style>
-    .page-header {
-      padding: 1.25rem 2rem;
-      background: #fff;
-      border-bottom: 1px solid rgba(0,0,0,.08);
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
-    }
-    .page-header h1 {
-      font-size: 1.75rem;
-      font-weight: 700;
-      color: #251a14;
-      margin: 0 0 0.2rem;
-    }
-    .page-header p { margin: 0; color: #7a6652; font-size: 0.95rem; }
-    .page-header-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-    .page-body { padding: 1.75rem 2rem 2rem; }
-  </style>
-
-  <header class="page-header">
-    <div>
-      <h1>Finanzas</h1>
-      <p>Dashboard financiero del mes</p>
+  <div class="page-header">
+    <div class="page-header-top">
+      <div>
+        <div class="page-breadcrumb">Finanzas</div>
+        <h1 class="page-title">Finanzas</h1>
+        <p class="page-subtitle">Ingresos, costos, gastos y cuentas por pagar del mes en curso.</p>
+      </div>
+      <div class="page-header-actions">
+        <a href="/admin/transacciones" class="btn btn-secondary">Libro de transacciones</a>
+        <button class="btn btn-secondary" id="btnNewExpense2" type="button">Registrar gasto</button>
+        <button class="btn btn-secondary" id="btnNewPurchaseInvoice2" type="button">Factura de compra</button>
+        <button class="btn btn-primary" id="btnNewSalesInvoice2" type="button">Factura de venta</button>
+      </div>
     </div>
-    <div class="page-header-actions">
-      <a href="/admin/transacciones" class="adm-btn adm-btn--outline">Libro de transacciones</a>
-      <button class="adm-btn adm-btn--outline" id="btnNewExpense2">+ Gasto</button>
-      <button class="adm-btn adm-btn--outline" id="btnNewPurchaseInvoice2">+ Factura de compra</button>
-      <button class="adm-btn adm-btn--primary" id="btnNewSalesInvoice2">+ Factura de venta</button>
-    </div>
-  </header>
+  </div>
 
-  <div class="page-body">
+  <div class="erp-body">
   <section class="adm-fin">
 
     {fetchError && (
-      <div class="adm-fin__error">
-        <strong>Error:</strong> {fetchError}
+      <div class="alert alert--error" role="alert">
+        <strong>No se pudo cargar el resumen.</strong> {fetchError}
       </div>
     )}
 
-    <!-- KPIs -->
-    <div class="adm-kpis">
-      <div class="adm-kpi adm-kpi--ok">
-        <div class="adm-kpi__head">
-          <span class="adm-kpi__icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>
-            </svg>
-          </span>
-          <span class="adm-kpi__label">Ingresos del mes</span>
-        </div>
-        <div class="adm-kpi__value">{fmtCOP(dashboard.month_revenue)}</div>
-        <div class="adm-kpi__sub">Ventas facturadas este mes</div>
+    <div class="kpi-grid">
+      <div class="kpi-tile">
+        <div class="kpi-label">Ingresos del mes</div>
+        <div class="kpi-value">{fmtCOP(dashboard.month_revenue)}</div>
+        <div class="kpi-sub">Ventas facturadas</div>
       </div>
-
-      <div class="adm-kpi adm-kpi--brand">
-        <div class="adm-kpi__head">
-          <span class="adm-kpi__icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
-            </svg>
-          </span>
-          <span class="adm-kpi__label">Costos del mes</span>
-        </div>
-        <div class="adm-kpi__value">{fmtCOP(dashboard.month_costs)}</div>
-        <div class="adm-kpi__sub">Costo de producción</div>
+      <div class="kpi-tile">
+        <div class="kpi-label">Costos del mes</div>
+        <div class="kpi-value">{fmtCOP(dashboard.month_costs)}</div>
+        <div class="kpi-sub">Costo de producción</div>
       </div>
-
-      <div class="adm-kpi adm-kpi--info">
-        <div class="adm-kpi__head">
-          <span class="adm-kpi__icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16l3-2 3 2 3-2 3 2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="14" y2="13"/>
-            </svg>
-          </span>
-          <span class="adm-kpi__label">Gastos del mes</span>
-        </div>
-        <div class="adm-kpi__value">{fmtCOP(dashboard.month_expenses)}</div>
-        <div class="adm-kpi__sub">Operación y administración</div>
+      <div class="kpi-tile">
+        <div class="kpi-label">Gastos del mes</div>
+        <div class="kpi-value">{fmtCOP(dashboard.month_expenses)}</div>
+        <div class="kpi-sub">Operación y administración</div>
       </div>
-
-      <div class={`adm-kpi ${balancePositive ? 'adm-kpi--ok' : 'adm-kpi--danger'} adm-kpi--balance`}>
-        <div class="adm-kpi__head">
-          <span class="adm-kpi__icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="12" y1="2" x2="12" y2="22"/><path d="M5 7h11a3 3 0 0 1 0 6H8a3 3 0 0 0 0 6h11"/>
-            </svg>
-          </span>
-          <span class="adm-kpi__label">Balance del mes</span>
-        </div>
-        <div class={`adm-kpi__value ${balancePositive ? 'is-pos' : 'is-neg'}`}>{fmtCOP(dashboard.month_balance)}</div>
-        <div class="adm-kpi__sub">{balancePositive ? 'Resultado positivo' : 'Ingresos menos costos y gastos'}</div>
+      <div class="kpi-tile">
+        <div class="kpi-label">Balance del mes</div>
+        <div class={`kpi-value ${balancePositive ? "" : "adm-neg"}`}>{fmtCOP(dashboard.month_balance)}</div>
+        <div class="kpi-sub">Ingresos menos costos y gastos</div>
+      </div>
+      <div class="kpi-tile">
+        <div class="kpi-label">Por pagar</div>
+        <div class="kpi-value">{fmtCOP(dashboard.pending_payables)}</div>
+        <div class="kpi-sub">{dashboard.pending_invoices_count} factura(s) de compra abiertas</div>
       </div>
     </div>
-
-    <!-- Alertas rápidas -->
-    {dashboard.pending_invoices_count > 0 && (
-      <div class="adm-alert">
-        ⚠️ Tienes <strong>{dashboard.pending_invoices_count}</strong> factura(s) de compra pendiente(s) de pago
-        por un total de <strong>{fmtCOP(dashboard.pending_payables)}</strong>.
-        <a href="#purchase-invoices" class="adm-alert__link">Ver →</a>
-      </div>
-    )}
 
     <!-- Navegación por pestañas (JS) -->
     <div class="adm-tabs" id="tabNav">
@@ -180,7 +126,7 @@ const balancePositive = dashboard.month_balance >= 0;
             ? <p class="adm-empty">Sin facturas recientes</p>
             : (
               <div class="adm-table-wrap">
-              <table class="adm-table">
+              <table class="erp-table adm-table">
                 <thead>
                   <tr>
                     <th>Número</th>
@@ -195,12 +141,12 @@ const balancePositive = dashboard.month_balance >= 0;
                     const b = stateBadge(inv.state);
                     return (
                       <tr>
-                        <td class="adm-table__mono">{inv.invoice_number}</td>
+                        <td class="mono">{inv.invoice_number}</td>
                         <td>{inv.customer_name}</td>
                         <td>{fmtDate(inv.invoice_date)}</td>
-                        <td class="adm-table__amount">{fmtCOP(inv.total_amount)}</td>
+                        <td class="num mono">{fmtCOP(inv.total_amount)}</td>
                         <td>
-                          <span class="adm-badge" style={`background:${b.bg};color:${b.color}`}>{b.text}</span>
+                          <span class={`status ${b.cls}`}>{b.text}</span>
                         </td>
                       </tr>
                     );
@@ -220,7 +166,7 @@ const balancePositive = dashboard.month_balance >= 0;
             ? <p class="adm-empty">Sin gastos recientes</p>
             : (
               <div class="adm-table-wrap">
-              <table class="adm-table">
+              <table class="erp-table adm-table">
                 <thead>
                   <tr>
                     <th>N°</th>
@@ -235,12 +181,12 @@ const balancePositive = dashboard.month_balance >= 0;
                     const b = stateBadge(exp.state);
                     return (
                       <tr>
-                        <td class="adm-table__mono">{exp.expense_number}</td>
+                        <td class="mono">{exp.expense_number}</td>
                         <td>{exp.description}</td>
                         <td class="adm-table__cat">{exp.category}</td>
-                        <td class="adm-table__amount">{fmtCOP(exp.amount)}</td>
+                        <td class="num mono">{fmtCOP(exp.amount)}</td>
                         <td>
-                          <span class="adm-badge" style={`background:${b.bg};color:${b.color}`}>{b.text}</span>
+                          <span class={`status ${b.cls}`}>{b.text}</span>
                         </td>
                       </tr>
                     );
@@ -258,7 +204,7 @@ const balancePositive = dashboard.month_balance >= 0;
     <!-- Panel: Facturas de compra (cargadas por JS) -->
     <div class="adm-panel adm-panel--hidden" id="panel-purchase-invoices">
       <div class="adm-panel-actions">
-        <button class="adm-btn adm-btn--primary" id="btnNewPurchaseInvoice">+ Nueva factura de compra</button>
+        <button class="btn btn-primary" id="btnNewPurchaseInvoice">+ Nueva factura de compra</button>
       </div>
       <div id="purchaseInvoicesTable">
         <div class="adm-loading">Cargando facturas de compra…</div>
@@ -268,7 +214,7 @@ const balancePositive = dashboard.month_balance >= 0;
     <!-- Panel: Facturas de venta (cargadas por JS) -->
     <div class="adm-panel adm-panel--hidden" id="panel-sales-invoices">
       <div class="adm-panel-actions">
-        <button class="adm-btn adm-btn--primary" id="btnNewSalesInvoice">+ Nueva factura de venta</button>
+        <button class="btn btn-primary" id="btnNewSalesInvoice">+ Nueva factura de venta</button>
       </div>
       <div id="salesInvoicesTable">
         <div class="adm-loading">Cargando facturas de venta…</div>
@@ -278,7 +224,7 @@ const balancePositive = dashboard.month_balance >= 0;
     <!-- Panel: Gastos (cargados por JS) -->
     <div class="adm-panel adm-panel--hidden" id="panel-expenses">
       <div class="adm-panel-actions">
-        <button class="adm-btn adm-btn--primary" id="btnNewExpense">+ Registrar gasto</button>
+        <button class="btn btn-primary" id="btnNewExpense">+ Registrar gasto</button>
       </div>
       <div id="expensesTable">
         <div class="adm-loading">Cargando gastos…</div>
@@ -288,7 +234,7 @@ const balancePositive = dashboard.month_balance >= 0;
     <!-- Panel: Pagos (cargados por JS) -->
     <div class="adm-panel adm-panel--hidden" id="panel-payments">
       <div class="adm-panel-actions">
-        <button class="adm-btn adm-btn--primary" id="btnNewPayment">+ Registrar pago</button>
+        <button class="btn btn-primary" id="btnNewPayment">+ Registrar pago</button>
       </div>
       <div id="paymentsTable">
         <div class="adm-loading">Cargando pagos…</div>
@@ -333,8 +279,8 @@ const balancePositive = dashboard.month_balance >= 0;
           </label>
         </div>
         <div class="adm-modal__actions">
-          <button type="button" class="adm-btn adm-btn--outline" id="closeModalExpense">Cancelar</button>
-          <button type="submit" class="adm-btn adm-btn--primary">Guardar gasto</button>
+          <button type="button" class="btn btn-secondary" id="closeModalExpense">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Guardar gasto</button>
         </div>
         <p class="adm-modal__msg" id="expenseMsg"></p>
       </form>
@@ -385,7 +331,7 @@ const balancePositive = dashboard.month_balance >= 0;
           </div>
         </div>
         <div class="adm-lines-footer">
-          <button type="button" class="adm-btn adm-btn--outline adm-btn--sm" id="addSaleLine">+ Agregar línea</button>
+          <button type="button" class="btn btn-secondary adm-btn--sm" id="addSaleLine">+ Agregar línea</button>
           <div class="adm-total-box">
             <span>Subtotal: <strong id="saleSub">$ 0</strong></span>
             <span>IVA: <strong id="saleTax">$ 0</strong></span>
@@ -395,8 +341,8 @@ const balancePositive = dashboard.month_balance >= 0;
         </div>
 
         <div class="adm-modal__actions">
-          <button type="button" class="adm-btn adm-btn--outline" id="closeModalSalesInvoice">Cancelar</button>
-          <button type="submit" class="adm-btn adm-btn--primary">Crear factura</button>
+          <button type="button" class="btn btn-secondary" id="closeModalSalesInvoice">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Crear factura</button>
         </div>
         <p class="adm-modal__msg" id="salesInvoiceMsg"></p>
       </form>
@@ -410,8 +356,8 @@ const balancePositive = dashboard.month_balance >= 0;
           <label class="adm-field">
             <span>Tipo *</span>
             <select name="payment_type" required>
-              <option value="recibido">📥 Cobro recibido (de cliente)</option>
-              <option value="realizado">📤 Pago realizado (a proveedor/caficultor)</option>
+              <option value="recibido">Cobro recibido (de cliente)</option>
+              <option value="realizado">Pago realizado (a proveedor o caficultor)</option>
             </select>
           </label>
           <label class="adm-field">
@@ -444,8 +390,8 @@ const balancePositive = dashboard.month_balance >= 0;
           </label>
         </div>
         <div class="adm-modal__actions">
-          <button type="button" class="adm-btn adm-btn--outline" id="closeModalPayment">Cancelar</button>
-          <button type="submit" class="adm-btn adm-btn--primary">Registrar pago</button>
+          <button type="button" class="btn btn-secondary" id="closeModalPayment">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Registrar pago</button>
         </div>
         <p class="adm-modal__msg" id="paymentMsg"></p>
       </form>
@@ -491,11 +437,11 @@ const balancePositive = dashboard.month_balance >= 0;
             <span class="adm-line-remove" data-action="remove-purchase-line">✕</span>
           </div>
         </div>
-        <button type="button" class="adm-btn adm-btn--outline adm-btn--sm" id="addPurchaseLine">+ Agregar línea</button>
+        <button type="button" class="btn btn-secondary adm-btn--sm" id="addPurchaseLine">+ Agregar línea</button>
 
         <div class="adm-modal__actions">
-          <button type="button" class="adm-btn adm-btn--outline" id="closeModalPurchaseInvoice">Cancelar</button>
-          <button type="submit" class="adm-btn adm-btn--primary">Crear factura</button>
+          <button type="button" class="btn btn-secondary" id="closeModalPurchaseInvoice">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Crear factura</button>
         </div>
         <p class="adm-modal__msg" id="purchaseInvoiceMsg"></p>
       </form>
@@ -723,8 +669,8 @@ const balancePositive = dashboard.month_balance >= 0;
   .adm-table tbody tr { transition: background .12s; }
   .adm-table tbody tr:hover { background: var(--hover, #f7f3ed); }
   .adm-table tbody tr:last-child td { border-bottom: none; }
-  .adm-table__mono   { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.78rem; color: var(--muted, #7a6652); }
-  .adm-table__amount { font-weight: 600; color: var(--color-primary, #3a2618); font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+  .mono   { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.78rem; color: var(--muted, #7a6652); }
+  .num mono { font-weight: 600; color: var(--color-primary, #3a2618); font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
   .adm-table__cat    { text-transform: capitalize; }
 
   .adm-badge {
@@ -917,20 +863,21 @@ function switchTab(name) {
 const fmtCOP = v => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(Number(v ?? 0));
 const fmtDate = d => d ? new Date(d + 'T00:00:00').toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' }) : '-';
 const BADGES = {
-  borrador:       ['#f3f4f6','#374151','Borrador'],
-  confirmada:     ['#fef3c7','#92400e','Confirmada'],
-  confirmado:     ['#fef3c7','#92400e','Confirmado'],
-  pagada_parcial: ['#dbeafe','#1e40af','Pago parcial'],
-  pagada:         ['#d1fae5','#065f46','Pagada'],
-  pagado:         ['#d1fae5','#065f46','Pagado'],
-  cancelada:      ['#fee2e2','#991b1b','Cancelada'],
-  aprobado:       ['#d1fae5','#065f46','Aprobado'],
-  rechazado:      ['#fee2e2','#991b1b','Rechazado'],
-  conciliado:     ['#d1fae5','#065f46','Conciliado'],
+  borrador:       ['', 'Borrador'],
+  confirmada:     ['status--confirmed', 'Confirmada'],
+  confirmado:     ['status--confirmed', 'Confirmado'],
+  pagada_parcial: ['status--pending', 'Pago parcial'],
+  pagada:         ['status--paid', 'Pagada'],
+  pagado:         ['status--paid', 'Pagado'],
+  cancelada:      ['status--cancelled', 'Cancelada'],
+  aprobado:       ['status--paid', 'Aprobado'],
+  rechazado:      ['status--cancelled', 'Rechazado'],
+  conciliado:     ['status--paid', 'Conciliado'],
 };
+const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 function badge(state) {
-  const [bg, color, text] = BADGES[state] ?? ['#f3f4f6','#374151', state];
-  return `<span class="adm-badge" style="background:${bg};color:${color}">${text}</span>`;
+  const [cls, text] = BADGES[state] ?? ['', state];
+  return `<span class="status ${cls}">${esc(text)}</span>`;
 }
 
 // ================================================================
@@ -971,8 +918,8 @@ async function getPaymentMethods() {
 }
 
 function fillSelect(selectEl, items, valueKey, labelFn, emptyLabel) {
-  selectEl.innerHTML = `<option value="">${emptyLabel}</option>` +
-    items.map(i => `<option value="${i[valueKey]}">${labelFn(i)}</option>`).join('');
+  selectEl.innerHTML = `<option value="">${esc(emptyLabel)}</option>` +
+    items.map(i => `<option value="${esc(i[valueKey])}">${esc(labelFn(i))}</option>`).join('');
 }
 
 // ================================================================
@@ -993,26 +940,26 @@ async function loadPurchaseInvoices() {
   try {
     const r = await fetch('/api/finance/purchase-invoices?limit=50', { credentials: 'include' });
     const json = await r.json();
-    if (!json.success) { el.innerHTML = `<div class="adm-table-card"><p class="adm-empty">Error: ${json.error}</p></div>`; return; }
+    if (!json.success) { el.innerHTML = `<div class="adm-table-card"><p class="adm-empty">No se pudo cargar. ${esc(json.error)}</p></div>`; return; }
     if (!json.data.length) { el.innerHTML = '<div class="adm-table-card"><p class="adm-empty">Sin facturas de compra</p></div>'; return; }
     el.innerHTML = `<div class="adm-table-card">
       <h2 class="adm-table-card__title">Facturas de compra</h2>
-      <div class="adm-table-wrap"><table class="adm-table">
+      <div class="adm-table-wrap"><table class="erp-table adm-table">
       <thead><tr><th>Número</th><th>Caficultor</th><th>Fecha</th><th>Vence</th><th>Total</th><th>Por pagar</th><th>Estado</th><th></th></tr></thead>
       <tbody>${json.data.map(inv => `<tr>
-        <td class="adm-table__mono">${inv.invoice_number}</td>
-        <td>${inv.caficultor_name ?? '-'}</td>
+        <td class="mono">${esc(inv.invoice_number)}</td>
+        <td>${esc(inv.caficultor_name ?? '-')}</td>
         <td>${fmtDate(inv.invoice_date)}</td>
         <td>${fmtDate(inv.due_date)}</td>
-        <td class="adm-table__amount">${fmtCOP(inv.total_amount)}</td>
-        <td class="adm-table__amount">${fmtCOP(inv.amount_due)}</td>
+        <td class="num mono">${fmtCOP(inv.total_amount)}</td>
+        <td class="num mono">${fmtCOP(inv.amount_due)}</td>
         <td>${badge(inv.state)}</td>
         <td>${inv.state !== 'pagada' && inv.state !== 'cancelada'
-          ? `<button class="adm-btn adm-btn--sm adm-btn--primary" data-action="mark-paid" data-inv-id="${inv.id}">Marcar pagada</button>`
+          ? `<button class="btn btn-sm btn-primary" data-action="mark-paid" data-inv-id="${inv.id}">Marcar pagada</button>`
           : ''}</td>
       </tr>`).join('')}</tbody>
     </table></div></div>`;
-  } catch { el.innerHTML = '<div class="adm-table-card"><p class="adm-empty">Error al cargar</p></div>'; }
+  } catch { el.innerHTML = '<div class="adm-table-card"><p class="adm-empty">No se pudo cargar la información.</p></div>'; }
 }
 
 async function loadSalesInvoices() {
@@ -1020,22 +967,22 @@ async function loadSalesInvoices() {
   try {
     const r = await fetch('/api/finance/sales-invoices?limit=50', { credentials: 'include' });
     const json = await r.json();
-    if (!json.success) { el.innerHTML = `<div class="adm-table-card"><p class="adm-empty">Error: ${json.error}</p></div>`; return; }
+    if (!json.success) { el.innerHTML = `<div class="adm-table-card"><p class="adm-empty">No se pudo cargar. ${esc(json.error)}</p></div>`; return; }
     if (!json.data.length) { el.innerHTML = '<div class="adm-table-card"><p class="adm-empty">Sin facturas de venta</p></div>'; return; }
     el.innerHTML = `<div class="adm-table-card">
       <h2 class="adm-table-card__title">Facturas de venta</h2>
-      <div class="adm-table-wrap"><table class="adm-table">
+      <div class="adm-table-wrap"><table class="erp-table adm-table">
       <thead><tr><th>Número</th><th>Cliente</th><th>Fecha</th><th>Total</th><th>Por cobrar</th><th>Estado</th></tr></thead>
       <tbody>${json.data.map(inv => `<tr>
-        <td class="adm-table__mono">${inv.invoice_number}</td>
-        <td>${inv.customer_name ?? '-'}</td>
+        <td class="mono">${esc(inv.invoice_number)}</td>
+        <td>${esc(inv.customer_name ?? '-')}</td>
         <td>${fmtDate(inv.invoice_date)}</td>
-        <td class="adm-table__amount">${fmtCOP(inv.total_amount)}</td>
-        <td class="adm-table__amount">${fmtCOP(inv.amount_due)}</td>
+        <td class="num mono">${fmtCOP(inv.total_amount)}</td>
+        <td class="num mono">${fmtCOP(inv.amount_due)}</td>
         <td>${badge(inv.state)}</td>
       </tr>`).join('')}</tbody>
     </table></div></div>`;
-  } catch { el.innerHTML = '<div class="adm-table-card"><p class="adm-empty">Error al cargar</p></div>'; }
+  } catch { el.innerHTML = '<div class="adm-table-card"><p class="adm-empty">No se pudo cargar la información.</p></div>'; }
 }
 
 async function loadExpenses() {
@@ -1043,25 +990,25 @@ async function loadExpenses() {
   try {
     const r = await fetch('/api/finance/expenses?limit=50', { credentials: 'include' });
     const json = await r.json();
-    if (!json.success) { el.innerHTML = `<div class="adm-table-card"><p class="adm-empty">Error: ${json.error}</p></div>`; return; }
+    if (!json.success) { el.innerHTML = `<div class="adm-table-card"><p class="adm-empty">No se pudo cargar. ${esc(json.error)}</p></div>`; return; }
     if (!json.data.length) { el.innerHTML = '<div class="adm-table-card"><p class="adm-empty">Sin gastos registrados</p></div>'; return; }
     el.innerHTML = `<div class="adm-table-card">
       <h2 class="adm-table-card__title">Gastos</h2>
-      <div class="adm-table-wrap"><table class="adm-table">
+      <div class="adm-table-wrap"><table class="erp-table adm-table">
       <thead><tr><th>Número</th><th>Fecha</th><th>Categoría</th><th>Descripción</th><th>Monto</th><th>Estado</th><th></th></tr></thead>
       <tbody>${json.data.map(exp => `<tr>
-        <td class="adm-table__mono">${exp.expense_number}</td>
+        <td class="mono">${esc(exp.expense_number)}</td>
         <td>${fmtDate(exp.expense_date)}</td>
-        <td class="adm-table__cat">${exp.category}</td>
-        <td>${exp.description}</td>
-        <td class="adm-table__amount">${fmtCOP(exp.amount)}</td>
+        <td class="adm-table__cat">${esc(exp.category)}</td>
+        <td>${esc(exp.description)}</td>
+        <td class="num mono">${fmtCOP(exp.amount)}</td>
         <td>${badge(exp.state)}</td>
         <td>${exp.state === 'borrador'
-          ? `<button class="adm-btn adm-btn--sm adm-btn--outline" data-action="approve-expense" data-exp-id="${exp.id}">Aprobar</button>`
+          ? `<button class="btn btn-sm btn-secondary" data-action="approve-expense" data-exp-id="${exp.id}">Aprobar</button>`
           : ''}</td>
       </tr>`).join('')}</tbody>
     </table></div></div>`;
-  } catch { el.innerHTML = '<div class="adm-table-card"><p class="adm-empty">Error al cargar</p></div>'; }
+  } catch { el.innerHTML = '<div class="adm-table-card"><p class="adm-empty">No se pudo cargar la información.</p></div>'; }
 }
 
 async function loadPayments() {
@@ -1069,23 +1016,23 @@ async function loadPayments() {
   try {
     const r = await fetch('/api/finance/payments?limit=50', { credentials: 'include' });
     const json = await r.json();
-    if (!json.success) { el.innerHTML = `<div class="adm-table-card"><p class="adm-empty">Error: ${json.error}</p></div>`; return; }
+    if (!json.success) { el.innerHTML = `<div class="adm-table-card"><p class="adm-empty">No se pudo cargar. ${esc(json.error)}</p></div>`; return; }
     if (!json.data.length) { el.innerHTML = '<div class="adm-table-card"><p class="adm-empty">Sin pagos registrados</p></div>'; return; }
     el.innerHTML = `<div class="adm-table-card">
       <h2 class="adm-table-card__title">Pagos</h2>
-      <div class="adm-table-wrap"><table class="adm-table">
+      <div class="adm-table-wrap"><table class="erp-table adm-table">
       <thead><tr><th>Número</th><th>Tipo</th><th>Fecha</th><th>Socio</th><th>Monto</th><th>Referencia</th><th>Estado</th></tr></thead>
       <tbody>${json.data.map(p => `<tr>
-        <td class="adm-table__mono">${p.payment_number}</td>
-        <td>${p.payment_type === 'recibido' ? '📥 Cobro' : '📤 Pago'}</td>
+        <td class="mono">${esc(p.payment_number)}</td>
+        <td>${p.payment_type === 'recibido' ? 'Cobro' : 'Pago'}</td>
         <td>${fmtDate(p.payment_date)}</td>
-        <td>${p.partner_name ?? '-'}</td>
-        <td class="adm-table__amount">${fmtCOP(p.amount)}</td>
-        <td class="adm-table__mono">${p.reference ?? '-'}</td>
+        <td>${esc(p.partner_name ?? '-')}</td>
+        <td class="num mono">${fmtCOP(p.amount)}</td>
+        <td class="mono">${esc(p.reference ?? '-')}</td>
         <td>${badge(p.state)}</td>
       </tr>`).join('')}</tbody>
     </table></div></div>`;
-  } catch { el.innerHTML = '<div class="adm-table-card"><p class="adm-empty">Error al cargar</p></div>'; }
+  } catch { el.innerHTML = '<div class="adm-table-card"><p class="adm-empty">No se pudo cargar la información.</p></div>'; }
 }
 
 // ================================================================
@@ -1182,7 +1129,7 @@ document.getElementById('formExpense').addEventListener('submit', async (e) => {
     const json = await r.json();
     if (json.success) {
       msgEl.style.color = '#065f46';
-      msgEl.textContent = `✅ Gasto ${json.data.expense_number} registrado`;
+      msgEl.textContent = `Gasto ${json.data.expense_number} registrado`;
       e.target.reset();
       setTimeout(() => { closeModal('modalExpense'); msgEl.textContent = ''; loadedTabs.delete('expenses'); }, 1800);
     } else {
@@ -1238,7 +1185,7 @@ document.getElementById('formPurchaseInvoice').addEventListener('submit', async 
     const json = await r.json();
     if (json.success) {
       msgEl.style.color = '#065f46';
-      msgEl.textContent = `✅ Factura ${json.data.invoice_number} creada`;
+      msgEl.textContent = `Factura ${json.data.invoice_number} creada`;
       e.target.reset();
       document.getElementById('purchaseLines').innerHTML = purchaseLineTemplate(0);
       purchaseLineCount = 1;
@@ -1341,7 +1288,7 @@ document.getElementById('formSalesInvoice').addEventListener('submit', async (e)
     const json = await r.json();
     if (json.success) {
       msgEl.style.color = '#065f46';
-      msgEl.textContent = `✅ Factura ${json.data.invoice_number} creada. Total: ${fmtCOP(json.data.total_amount)}`;
+      msgEl.textContent = `Factura ${json.data.invoice_number} creada. Total: ${fmtCOP(json.data.total_amount)}`;
       e.target.reset();
       document.getElementById('salesLines').innerHTML = saleLineTemplate(0);
       saleLineCount = 1;
@@ -1387,7 +1334,7 @@ document.getElementById('formPayment').addEventListener('submit', async (e) => {
     if (json.success) {
       const tipo = rawData.payment_type === 'recibido' ? 'cobro' : 'pago';
       msgEl.style.color = '#065f46';
-      msgEl.textContent = `✅ ${tipo.charAt(0).toUpperCase() + tipo.slice(1)} ${json.data.payment_number} registrado por ${fmtCOP(json.data.amount)}`;
+      msgEl.textContent = `${tipo.charAt(0).toUpperCase() + tipo.slice(1)} ${json.data.payment_number} registrado por ${fmtCOP(json.data.amount)}`;
       e.target.reset();
       setTimeout(() => { closeModal('modalPayment'); msgEl.textContent = ''; loadedTabs.delete('payments'); }, 2000);
     } else {

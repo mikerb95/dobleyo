@@ -114,7 +114,7 @@ describe('POST /api/auth/register', () => {
             .send({ email: 'nuevo@test.com', password: 'secreta123', first_name: 'Ana', last_name: 'López' });
 
         expect(res.status).toBe(201);
-        expect(res.body.message).toMatch(/registrado/i);
+        expect(res.body.message).toMatch(/cuenta creada/i);
     });
 });
 
@@ -294,5 +294,56 @@ describe('GET /api/auth/verify', () => {
         const second = await request(app).get('/api/auth/verify?token=x');
         expect(second.status).toBe(200);
         expect(mocks.sendWelcomeEmail).toHaveBeenCalledTimes(1);
+    });
+});
+
+// ── Verificación obligatoria en login (cuentas nuevas) ───────────────────────
+describe('POST /api/auth/login con correo sin verificar', () => {
+    let app;
+    const base = { id: 11, email: 'nuevo@test.com', password_hash: '$hashed$', role: 'client', first_name: 'Eva', last_name: 'Paz' };
+
+    beforeEach(() => {
+        app = buildApp();
+        vi.clearAllMocks();
+        mocks.query.mockReset();
+        mocks.comparePassword.mockResolvedValue(true);
+    });
+
+    it('bloquea cuentas creadas desde la fecha de corte sin verificar', async () => {
+        mocks.query.mockResolvedValueOnce({ rows: [{ ...base, is_verified: 0, created_at: '2026-10-20 10:00:00' }] });
+
+        const res = await request(app).post('/api/auth/login').send({ email: base.email, password: 'pass1234' });
+
+        expect(res.status).toBe(403);
+        expect(res.body.code).toBe('EMAIL_NOT_VERIFIED');
+        expect(res.headers['set-cookie']).toBeUndefined();
+    });
+
+    it('deja entrar a cuentas anteriores a la fecha de corte aunque no estén verificadas', async () => {
+        mocks.query.mockResolvedValueOnce({ rows: [{ ...base, is_verified: 0, created_at: '2026-09-01 10:00:00' }] });
+        mocks.query.mockResolvedValue({ rows: [] });
+
+        const res = await request(app).post('/api/auth/login').send({ email: base.email, password: 'pass1234' });
+
+        expect(res.status).toBe(200);
+    });
+
+    it('deja entrar a cuentas nuevas ya verificadas', async () => {
+        mocks.query.mockResolvedValueOnce({ rows: [{ ...base, is_verified: 1, created_at: '2026-10-20 10:00:00' }] });
+        mocks.query.mockResolvedValue({ rows: [] });
+
+        const res = await request(app).post('/api/auth/login').send({ email: base.email, password: 'pass1234' });
+
+        expect(res.status).toBe(200);
+    });
+
+    it('con contraseña incorrecta responde 401 sin revelar si falta verificar', async () => {
+        mocks.comparePassword.mockResolvedValue(false);
+        mocks.query.mockResolvedValueOnce({ rows: [{ ...base, is_verified: 0, created_at: '2026-10-20 10:00:00' }] });
+
+        const res = await request(app).post('/api/auth/login').send({ email: base.email, password: 'mala1234' });
+
+        expect(res.status).toBe(401);
+        expect(res.body.code).toBeUndefined();
     });
 });

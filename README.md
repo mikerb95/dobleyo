@@ -145,4 +145,6 @@ Copyright (c) 2025-2026 Michael David Rodriguez Beltran (codebymike.net), Bogot�
 
 Software propietario y confidencial. Queda prohibida su reproducción total o parcial, uso, modificación, distribución, ingeniería inversa o uso para entrenar modelos de IA sin autorización previa y por escrito del titular. Ver [`LICENSE`](LICENSE) para los términos completos.
 
+> **Aviso de monitoreo:** este proyecto está bajo monitoreo permanente mediante un agente de IA basado en Claude, que analiza fuentes públicas para detectar despliegues o usos no autorizados del código. Cualquier uso o despliegue sin permiso recibirá un requerimiento formal de cese y desistimiento (*cease and desist*), sin perjuicio de las acciones legales correspondientes.
+
 Contacto: +57 310 464 1228 · mike95@duck.com

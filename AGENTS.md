@@ -219,6 +219,7 @@ La portada ES y EN comparten componentes (`src/components/home/`) y un solo mód
 - **Video del hero:** `hero-viaje.mp4` (4 tomas de 4 s; la etiqueta asume ese corte). Si se cambia el video, ajustar `SEGMENT` en `src/scripts/home/hero.ts`.
 - **Páginas de compra** (tienda ES/EN, suscripción, regalos) usan `src/scripts/shop/index.ts` con el mismo núcleo y componentes en `src/components/shop/`. Lo que es información o funcionalidad (filtrar al tocar una bolsa, reacomodar el calendario de pedidos, cambiar de kit) vive en el script del componente y funciona sin motion. Las piezas de motion solo animan.
 - **El catálogo avisa con `shop:render`** sobre `#shopResults` cada vez que repinta. Si se cambia el script de la tienda, conservar el evento.
+- **Sin emojis en el sitio público.** Los íconos van con `src/components/Icon.astro` (SVG de trazo, `currentColor`); si falta uno, se agrega al set. Las ★ de calificación y los ✓ de confirmación sí se permiten.
 - **Sin trazabilidad en páginas públicas** mientras `SHOW_TRACEABILITY = false`: nada de QR, códigos de lote ni esa palabra en piezas nuevas.
 
 ### 3.10 Flujo guiado de producción ("Qué sigue") — reglas no negociables
@@ -246,6 +247,7 @@ Todo correo sale por `server/services/email.js`. Al agregar o tocar uno:
 - **Idempotencia para eventos que se pueden repetir** (webhooks, reintentos de cron): clave estable del tipo `order-confirmation/<ref>`. Resend descarta duplicados con la misma clave durante 24 h.
 - **El boletín lleva `List-Unsubscribe` + `List-Unsubscribe-Post`** (RFC 8058). La baja de un clic es `POST /api/emails/newsletter/unsubscribe?token=` y debe seguir siendo idempotente.
 - **Rebotes y quejas:** el webhook `POST /api/emails/webhook` (firma Svix con `RESEND_WEBHOOK_SECRET`, cuerpo crudo en `req.rawBody`) llena `email_suppressions`. Una queja también da de baja del boletín. Desbloquear se hace desde `/admin/boletin`.
+- **Verificación obligatoria solo para cuentas nuevas.** El login rechaza (403, `EMAIL_NOT_VERIFIED`) las cuentas sin verificar creadas desde `EMAIL_VERIFICATION_REQUIRED_SINCE` en `server/routes/auth.js`. No mover esa fecha hacia atrás: bloquearía a clientes que se registraron cuando era opcional. Google y Apple crean cuentas ya verificadas.
 - **Respuestas genéricas** en `forgot-password` y `resend-verification`: nunca revelar si un correo tiene cuenta. Los tokens de restablecimiento se guardan hasheados (SHA-256), duran 1 h, son de un solo uso y se consumen con un `UPDATE ... RETURNING` atómico.
 
 ---

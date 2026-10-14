@@ -6,6 +6,7 @@
 
 ### Cambios
 - **`LICENSE`** reescrito como licencia propietaria bilingüe (prevalece el español) a nombre de Michael David Rodriguez Beltran / codebymike.net, Bogotá D.C. Prohíbe reproducción total o parcial, uso, despliegue, obras derivadas, distribución, ingeniería inversa, elusión de protecciones, entrenamiento de IA y scraping. Incluye confidencialidad, marcas (BrewedByMike, codebymike.net; DobleYo Café no es del titular), sanciones (Ley 23 de 1982, Decisión Andina 351, Ley 1915 de 2018, arts. 270-272 del Código Penal) y jurisdicción en Bogotá.
+- Numeral 7 "Monitoreo y requerimiento de cese" (ES y EN): monitoreo permanente con un agente de IA basado en Claude sobre fuentes públicas; ante despliegue o uso sin permiso se remite un *cease and desist*, sin renunciar a las acciones legales. Aviso equivalente en el `README.md`.
 - Copia del `LICENSE` en `apps/mobile/` y `packages/shared/`.
 - `package.json` (raíz y workspaces): `author` con nombre, correo y `https://codebymike.net`; `license: "SEE LICENSE IN LICENSE"`.
 - `README.md`: sección "Licencia y derechos de autor".
@@ -28,6 +29,34 @@ El footer era una rejilla crema sin jerarquía: logo de 28 px, Instagram y Faceb
   - Móvil: las columnas son acordeones (`<details>`); desde 768 px siempre abiertas.
 - **`public/assets/js/footer.js`** (antes `newsletter-footer.js`): mensajes por `data-state` en vez de colores inline, textos ES/EN según `<html lang>`, y control de los acordeones.
 - **`styles.css`**: se borran las reglas globales viejas del footer. Tokens nuevos `--footer-*` para el tema oscuro y `--sand` (el crema anterior), que pasa a usarse en las secciones que reutilizaban `--footer-bg` (`index.astro`, `en/index.astro`, `desarrollo-ia.astro`, `sena/taller-negociacion.astro`).
+
+---
+
+## 2026-10-13: Regalos y suscripción rediseñadas; sin emojis en el sitio público (Agente: Claude)
+
+### Contexto
+El usuario vio regalos y suscripción "paupérrimas": caja de rectángulos planos, tarjetas de kit disparejas con fotos genéricas, un formulario largo sin jerarquía y emojis que ya no deben salir en el sitio.
+
+### Cambios
+- **`components/shop/DarkHero.astro`** (nuevo): encabezado oscuro compartido, en el lenguaje del footer (espresso, Fraunces con cursiva color mucílago y datos clave con íconos).
+- **Regalos** (`regalos.astro`):
+  - **`GiftBox.astro`** rehecha como ilustración SVG en capas: papel kraft, cinta cereza, moño y etiqueta DobleYo. La tapa se apoya detrás de la caja y el contenido sale por la boca.
+  - Tarjetas de kit parejas (foto 4:3, "Qué trae" con íconos de verificación, precio en Fraunces, sello "Envío gratis" cuando aplica).
+  - Bloque "Así llega su regalo" con la regla de envío gratis.
+- **`lib/gifts.ts`** (nuevo, con tests): contenido curado de cada kit, sin QR ni rastreo, y umbral de envío gratis.
+- **Suscripción** (`suscripcion.astro`):
+  - Encabezado oscuro con **`DeliveryBags.astro`** (nuevo): tres bolsas con las fechas reales de hoy, en 30 y en 60 días.
+  - Pasos numerados en tarjetas, cafés con marca de selección (en celular, una fila por café), frecuencia como control segmentado y cantidad con botones − y +.
+  - Resumen fijo a la derecha en escritorio, con el café, las bolsas, la frecuencia, el descuento y el total con odómetro. El descuento por defecto sale de `SUBSCRIPTION_DISCOUNT_PERCENT`, como en el backend.
+- **Sin emojis en el sitio público**: se cambiaron por `Icon` en guías (ES/EN), mayoristas, partners (ES/EN), afiliados EN, contacto, about EN, confirmación, desuscribirse, fincas (ES/EN), ficha de finca (ES/EN), ficha de producto (ES/EN), blog EN, checkout EN y el aviso de idioma (`LangSuggest`). Quedan las ★ de calificación y los ✓ de confirmación, que son signos tipográficos.
+- **`Icon.astro`**: nuevos íconos `check`, `gift`, `globe`, `arrow-right`, `calendar`, `mountain`, `sprout`, `factory`, `handshake`, `store`, `building`, `utensils`, `link`, `bar-chart`, `palette`, `smartphone`, `inbox` y los de métodos (`dripper`, `chemex`, `press`, `moka`). El SVG trae `vertical-align` para alinearse con el texto.
+- Fuera de alcance: `/t/[code]` y `public/assets/js/trazabilidad.js` siguen con emojis, pero esas rutas redirigen a la tienda mientras `SHOW_TRACEABILITY = false`. El panel admin no se tocó.
+
+### Verificación
+- Capturas de escritorio y celular de las dos páginas, apertura y cambio de kit, y resumen sincronizado (Huila, 2 bolsas, cada 15 días: $81.000).
+- Con movimiento reducido no queda nada oculto. No hay scroll horizontal.
+- HTML de 23 páginas públicas revisado sin emojis.
+- Tests (249), type-check y build en verde.
 
 ---
 
@@ -152,6 +181,7 @@ Solo existían 6 correos sueltos, cada uno con su propio HTML. El enlace "¿Olvi
 - **`.env.example`**: `RESEND_FROM_NAME`, `RESEND_REPLY_TO` y `RESEND_WEBHOOK_SECRET`.
 - **`AGENTS.md`**: sección 3.11 con las reglas de correo.
 - **Tests**: `server/services/__tests__/email.test.js` y `server/routes/__tests__/emails.test.js` (nuevos), casos de recuperación y verificación en `auth.test.js`.
+- **Verificación de correo obligatoria para cuentas nuevas**: `POST /api/auth/login` responde 403 con `code: 'EMAIL_NOT_VERIFIED'` si la cuenta se creó desde `EMAIL_VERIFICATION_REQUIRED_SINCE` (2026-10-14 00:00 UTC) y no ha confirmado el correo. Las cuentas anteriores entran igual. El chequeo va después de validar la contraseña para no revelar el estado de cuentas ajenas. El modal de login muestra el aviso con un botón "Reenviar enlace de confirmación", y el de registro avisa que hay que confirmar antes de entrar.
 
 ---
 
