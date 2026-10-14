@@ -1,4 +1,5 @@
 ---
+import Icon from "../../../components/Icon.astro";
 import Layout from "../../../layouts/Layout.astro";
 import { getCanonicalUrl, formatPrice } from "../../../i18n/index.ts";
 import { SHOW_CUPPING, SHOW_TRACEABILITY } from "../../../lib/flags.ts";
@@ -133,9 +134,9 @@ const productJsonLd = {
           <a class="pp-viewcart" href="/cart">View cart</a>
         </div>
 
-        <p class="pp-ship">🌎 Worldwide shipping · prices in USD</p>
+        <p class="pp-ship"><Icon name="globe" size={16} /> Worldwide shipping · prices in USD</p>
         {SHOW_TRACEABILITY && product.category === "cafe" && (
-          <a href="/traceability" class="pp-trace">🔍 Trace this coffee's origin</a>
+          <a href="/traceability" class="pp-trace"><Icon name="search" size={16} /> Trace this coffee's origin</a>
         )}
       </div>
     </div>

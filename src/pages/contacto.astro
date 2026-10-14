@@ -1,4 +1,5 @@
 ---
+import Icon from "../components/Icon.astro";
 import Layout from "../layouts/Layout.astro";
 import PageHero from "../components/PageHero.astro";
 import { getCanonicalUrl, getHreflangPair } from "../i18n/index.ts";
@@ -28,7 +29,7 @@ const _hreflang = getHreflangPair("/contacto");
             <h2>Información de Contacto</h2>
 
             <div class="contact-item">
-              <div class="contact-icon">📧</div>
+              <div class="contact-icon"><Icon name="mail" size={28} /></div>
               <div>
                 <h3>Email</h3>
                 <a href="mailto:hola@dobleyo.cafe">hola@dobleyo.cafe</a>
@@ -36,7 +37,7 @@ const _hreflang = getHreflangPair("/contacto");
             </div>
 
             <div class="contact-item">
-              <div class="contact-icon">📱</div>
+              <div class="contact-icon"><Icon name="smartphone" size={28} /></div>
               <div>
                 <h3>WhatsApp</h3>
                 <a href="https://wa.me/573001234567" target="_blank"
@@ -46,7 +47,7 @@ const _hreflang = getHreflangPair("/contacto");
             </div>
 
             <div class="contact-item">
-              <div class="contact-icon">📍</div>
+              <div class="contact-icon"><Icon name="map-pin" size={28} /></div>
               <div>
                 <h3>Ubicación</h3>
                 <p>Bogotá, Colombia</p>
@@ -266,8 +267,8 @@ const _hreflang = getHreflangPair("/contacto");
   }
 
   .contact-icon {
-    font-size: 2rem;
     flex-shrink: 0;
+    color: var(--caramel);
   }
 
   .contact-item h3 {

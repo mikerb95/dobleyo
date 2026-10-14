@@ -3189,6 +3189,12 @@ html.search-open {
   overflow: hidden;
 }
 
+/* El panel vive dentro del header (z-index 70), así que el botón flotante
+   de WhatsApp quedaría encima: se oculta mientras se busca. */
+html.search-open .whatsapp-fab {
+  display: none;
+}
+
 .search-panel {
   /* Mismas métricas que mantiene layout.js para el header y el menú móvil */
   --search-top: calc(var(--header-top, 0px) + var(--header-height, 96px) + 1px);
@@ -3544,6 +3550,11 @@ html.search-open {
 
 /* Resultados en vivo */
 .search-suggest { padding-top: 1rem; }
+.search-suggest--fallback {
+  padding: 0 0 .5rem;
+  text-align: center;
+}
+.search-suggest--fallback .search-chips { justify-content: center; }
 
 .search-results__count {
   margin: 1.25rem 0 .35rem;
@@ -3692,7 +3703,7 @@ html.search-open {
   .search-popular { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
 
-@media (hover: hover) and (pointer: fine) {
+@media (min-width: 769px) and (hover: hover) and (pointer: fine) {
   .search-foot { display: flex; }
 }
 

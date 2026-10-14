@@ -35,7 +35,7 @@ const L = {
         logout: "Cerrar sesión", login: "Iniciar sesión", register: "Registrarse",
         account: "Mi Cuenta", menu: "Menú de usuario",
         search: "Buscar", searchOpen: "Buscar en el catálogo",
-        searchPlaceholder: "Busque por café, origen, proceso o nota de cata",
+        searchPlaceholder: "Café, origen, proceso o nota de cata",
         searchClose: "Cerrar búsqueda",
         searchAll: "Ver todos los resultados",
         searchEmpty: "No encontramos productos para esa búsqueda",
@@ -45,7 +45,7 @@ const L = {
         search_ui: {
           recent: "Búsquedas recientes", clearRecent: "Borrar", removeRecent: "Quitar de recientes",
           origins: "Orígenes", processes: "Procesos", notes: "Notas de cata",
-          popular: "Los más pedidos", suggestions: "Sugerencias",
+          popular: "Los más pedidos", suggestions: "Sugerencias", tryWith: "Pruebe con",
           origin: "origen", process: "proceso", note: "nota",
           one: "producto", many: "productos", outOfStock: "Agotado",
           keysMove: "navegar", keysOpen: "abrir", keysClose: "cerrar",
@@ -56,7 +56,7 @@ const L = {
         logout: "Sign out", login: "Sign in", register: "Sign up",
         account: "My Account", menu: "User menu",
         search: "Search", searchOpen: "Search the catalog",
-        searchPlaceholder: "Search by coffee, origin, process or tasting note",
+        searchPlaceholder: "Coffee, origin, process or tasting note",
         searchClose: "Close search",
         searchAll: "See all results",
         searchEmpty: "No products matched that search",
@@ -66,7 +66,7 @@ const L = {
         search_ui: {
           recent: "Recent searches", clearRecent: "Clear", removeRecent: "Remove from recent",
           origins: "Origins", processes: "Processes", notes: "Tasting notes",
-          popular: "Most popular", suggestions: "Suggestions",
+          popular: "Most popular", suggestions: "Suggestions", tryWith: "Try",
           origin: "origin", process: "process", note: "note",
           one: "product", many: "products", outOfStock: "Sold out",
           keysMove: "navigate", keysOpen: "open", keysClose: "close",
@@ -425,7 +425,7 @@ const searchHref = lang === "en" ? "/search" : "/buscar";
 
     const chip = (value, kind, q = "") =>
       `<a class="search-opt search-chip search-chip--${kind}" href="${hrefFor(value)}" data-term="${escapeHtml(value)}">` +
-      `${highlight(value, q)}${q ? `<small>${escapeHtml(ui[kind] || "")}</small>` : ""}</a>`;
+      `<span>${highlight(value, q)}</span>${q ? `<small>${escapeHtml(ui[kind] || "")}</small>` : ""}</a>`;
 
     function renderIdle() {
       const recent = readRecent();
@@ -538,6 +538,17 @@ const searchHref = lang === "en" ? "/search" : "/buscar";
 
       if (!items.length) {
         html += `<p class="search-results__msg">${escapeHtml(results.dataset.empty || "")}</p>`;
+        // Sin resultados ni atajos: ofrecer por dónde seguir en vez de un callejón.
+        const fallback = facets && !sugg.length
+          ? [...(facets.origins || []).map((x) => [x.value, "origin"]), ...(facets.processes || []).map((x) => [x.value, "process"])].slice(0, 6)
+          : [];
+        if (fallback.length) {
+          html += `
+            <div class="search-suggest search-suggest--fallback">
+              <span class="search-sec__title">${escapeHtml(ui.tryWith)}</span>
+              <div class="search-chips">${fallback.map(([v, kind]) => chip(v, kind)).join("")}</div>
+            </div>`;
+        }
       } else {
         const total = items.length;
         const label = total === 1 ? ui.one : ui.many;

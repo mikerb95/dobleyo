@@ -1,4 +1,5 @@
 ---
+import Icon from "../components/Icon.astro";
 import Layout from "../layouts/Layout.astro";
 import PageHero from "../components/PageHero.astro";
 import { getCanonicalUrl, getHreflangPair } from "../i18n/index.ts";
@@ -13,22 +14,22 @@ const pageDescription =
 
 const beneficios = [
   {
-    icon: "📦",
+    icon: "package",
     titulo: "Precios por volumen",
     texto: "Escalas de precio según la cantidad, con condiciones preferenciales para pedidos recurrentes.",
   },
   {
-    icon: "🔥",
+    icon: "flame",
     titulo: "Tueste a la medida",
     texto: "Definimos el perfil de tueste y el empaque según su operación y su marca.",
   },
   {
-    icon: "🚚",
+    icon: "truck",
     titulo: "Entregas programadas",
     texto: "Coordinamos despachos frecuentes para que nunca le falte café fresco.",
   },
   {
-    icon: "📄",
+    icon: "file-text",
     titulo: "Facturación formal",
     texto: "Documentos en regla y un contacto comercial dedicado para su cuenta.",
   },
@@ -65,7 +66,7 @@ const escalas = [
       <ul class="ma-grid" role="list">
         {beneficios.map((b) => (
           <li class="ma-card">
-            <span class="ma-card__icon" aria-hidden="true">{b.icon}</span>
+            <span class="ma-card__icon" aria-hidden="true"><Icon name={b.icon as any} size={30} /></span>
             <h3 class="ma-card__title">{b.titulo}</h3>
             <p class="ma-card__text">{b.texto}</p>
           </li>
@@ -122,7 +123,7 @@ const escalas = [
     background: var(--cream); border-radius: 14px; padding: 1.5rem 1.25rem;
     box-shadow: 0 1px 5px rgba(0, 0, 0, 0.08);
   }
-  .ma-card__icon { font-size: 1.8rem; display: block; margin-bottom: 0.5rem; }
+  .ma-card__icon { display: block; margin-bottom: 0.5rem; color: var(--caramel); }
   .ma-card__title { margin: 0 0 0.4rem; font-size: 1.1rem; color: var(--coffee); }
   .ma-card__text { margin: 0; font-size: 0.9rem; line-height: 1.55; color: var(--ink, #555); }
 

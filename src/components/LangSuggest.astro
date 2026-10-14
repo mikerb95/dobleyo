@@ -1,4 +1,5 @@
 ---
+import Icon from "./Icon.astro";
 // Modal que sugiere la versión en inglés a visitantes con navegador en inglés.
 // Se incluye solo en páginas en español (ver Layout.astro). El texto está en inglés.
 ---
@@ -11,7 +12,7 @@
         <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
       </svg>
     </button>
-    <div class="lang-suggest__flag" aria-hidden="true">🌎</div>
+    <div class="lang-suggest__flag" aria-hidden="true"><Icon name="globe" size={40} /></div>
     <h2 class="lang-suggest__title" id="langSuggestTitle">Browse in English?</h2>
     <p class="lang-suggest__text">
       It looks like your browser is set to English. Would you like to visit the
@@ -82,7 +83,7 @@
     box-shadow: 0 20px 60px rgba(0,0,0,.3); animation: ls-pop .22s ease;
   }
   .lang-suggest__close { position: absolute; top: .75rem; right: .9rem; background: none; border: none; color: #aaa; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 2rem; height: 2rem; }
-  .lang-suggest__flag { font-size: 2.4rem; margin-bottom: .5rem; }
+  .lang-suggest__flag { margin-bottom: .5rem; color: var(--caramel, #b4642f); }
   .lang-suggest__title { font-family: var(--font-display, serif); color: var(--coffee, #251a14); margin: 0 0 .6rem; font-size: 1.4rem; }
   .lang-suggest__text { color: #555; line-height: 1.55; font-size: .95rem; margin: 0 0 1.5rem; }
   .lang-suggest__actions { display: flex; flex-direction: column; gap: .6rem; }

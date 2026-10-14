@@ -1,4 +1,5 @@
 ---
+import Icon from "../../components/Icon.astro";
 export const prerender = false;
 
 import Layout from "../../layouts/Layout.astro";
@@ -262,13 +263,13 @@ const productJsonLd = {
 
         <!-- Envío -->
         <p class="ship-note">
-          🚚 Envío gratis en pedidos mayores a $120.000 COP
+          <Icon name="truck" size={16} /> Envío gratis en pedidos desde $120.000 COP
         </p>
 
         <!-- Link de trazabilidad -->
         {SHOW_TRACEABILITY && product.category === "cafe" && (
           <a href="/trazabilidad" class="trace-link">
-            🔍 Rastrear el origen de este café
+            <Icon name="search" size={16} /> Rastrear el origen de este café
           </a>
         )}
       </div>

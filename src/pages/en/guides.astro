@@ -1,4 +1,5 @@
 ---
+import Icon from "../../components/Icon.astro";
 import Layout from "../../layouts/Layout.astro";
 import { getCanonicalUrl, getHreflangPair } from "../../i18n/index.ts";
 
@@ -8,7 +9,7 @@ const hreflang = getHreflangPair("/guias");
 
 const guides = [
   {
-    icon: "⚗️",
+    icon: "dripper",
     name: "V60 Pour-Over",
     summary: "A clean, filter brew that highlights the floral and citrus notes of single-origin coffees.",
     ratio: "1:16 (15 g coffee · 240 ml water)",
@@ -17,7 +18,7 @@ const guides = [
     temp: "92 – 94 °C / 198 – 201 °F",
   },
   {
-    icon: "🧪",
+    icon: "chemex",
     name: "Chemex",
     summary: "A thick filter for a crisp, light-bodied cup — ideal for sharing with friends.",
     ratio: "1:15 (40 g coffee · 600 ml water)",
@@ -26,7 +27,7 @@ const guides = [
     temp: "93 – 95 °C / 199 – 203 °F",
   },
   {
-    icon: "🫖",
+    icon: "press",
     name: "French Press",
     summary: "Full immersion for a full-bodied, rich cup with more natural oils present.",
     ratio: "1:14 (30 g coffee · 420 ml water)",
@@ -35,7 +36,7 @@ const guides = [
     temp: "93 °C / 199 °F",
   },
   {
-    icon: "☕",
+    icon: "moka",
     name: "Moka Pot",
     summary: "The stovetop classic: intense, concentrated and ready in minutes.",
     ratio: "Fill the basket without pressing",
@@ -79,7 +80,7 @@ const tips = [
       <ul class="gu-grid" role="list">
         {guides.map((g) => (
           <li class="gu-card">
-            <span class="gu-card__icon" aria-hidden="true">{g.icon}</span>
+            <span class="gu-card__icon" aria-hidden="true"><Icon name={g.icon as any} size={30} /></span>
             <h3 class="gu-card__title">{g.name}</h3>
             <p class="gu-card__summary">{g.summary}</p>
             <dl class="gu-card__specs">
@@ -136,7 +137,7 @@ const tips = [
   @media (min-width: 1024px) { .gu-grid { grid-template-columns: repeat(4, 1fr); } }
 
   .gu-card { background: var(--cream); border-radius: 14px; padding: 1.5rem 1.25rem; box-shadow: 0 1px 5px rgba(0,0,0,.08); }
-  .gu-card__icon { font-size: 1.8rem; display: block; margin-bottom: 0.5rem; }
+  .gu-card__icon { display: block; margin-bottom: 0.5rem; color: var(--caramel); }
   .gu-card__title { margin: 0 0 0.4rem; font-size: 1.15rem; color: var(--coffee); }
   .gu-card__summary { margin: 0 0 1rem; font-size: 0.9rem; line-height: 1.55; color: var(--fg, #555); }
   .gu-card__specs { margin: 0; display: grid; gap: 0.6rem; }

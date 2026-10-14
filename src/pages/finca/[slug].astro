@@ -1,4 +1,5 @@
 ---
+import Icon from "../../components/Icon.astro";
 // Landing page dinámica de finca — Fase 7
 // Ruta: /finca/[slug]
 import Layout from "../../layouts/Layout.astro";
@@ -115,7 +116,7 @@ const galleryUrls: string[] = Array.isArray(farm.gallery_urls) ? farm.gallery_ur
         <h1 class="farm-hero__title">{farm.name}</h1>
         <p class="farm-hero__caficultor">Caficultor: {farm.caficultor_name}</p>
         {(farm.altitude_min || farm.altitude_max) && (
-          <p class="farm-hero__alt">⛰ {altText}</p>
+          <p class="farm-hero__alt"><Icon name="mountain" size={16} /> {altText}</p>
         )}
       </div>
     </div>

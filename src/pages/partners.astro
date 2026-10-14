@@ -12,22 +12,22 @@ const pageDescription =
 
 const beneficios = [
   {
-    icon: "🤝",
+    icon: "handshake",
     titulo: "Comercio directo",
     texto: "Compramos a los caficultores sin intermediarios y le trasladamos esa calidad a precio de aliado.",
   },
   {
-    icon: "📍",
+    icon: "map-pin",
     titulo: "Origen con nombre propio",
     texto: "Cada lote viene de una finca y una cosecha concretas, una historia que puede contarles a sus clientes.",
   },
   {
-    icon: "🔥",
+    icon: "flame",
     titulo: "Tueste a la medida",
     texto: "Definimos el perfil de tueste según su método y volumen, con entregas frescas y programadas.",
   },
   {
-    icon: "📈",
+    icon: "trending-up",
     titulo: "Acompañamiento",
     texto: "Material de marca, capacitación de barismo y soporte para que su operación crezca con nosotros.",
   },
@@ -64,7 +64,7 @@ const perfiles = [
       <ul class="pt-grid" role="list">
         {beneficios.map((b) => (
           <li class="pt-card">
-            <span class="pt-card__icon" aria-hidden="true">{b.icon}</span>
+            <span class="pt-card__icon" aria-hidden="true"><Icon name={b.icon as any} size={30} /></span>
             <h3 class="pt-card__title">{b.titulo}</h3>
             <p class="pt-card__text">{b.texto}</p>
           </li>
@@ -116,7 +116,7 @@ const perfiles = [
     background: var(--cream); border-radius: 14px; padding: 1.5rem 1.25rem;
     box-shadow: 0 1px 5px rgba(0, 0, 0, 0.08);
   }
-  .pt-card__icon { font-size: 1.8rem; display: block; margin-bottom: 0.5rem; }
+  .pt-card__icon { display: block; margin-bottom: 0.5rem; color: var(--caramel); }
   .pt-card__title { margin: 0 0 0.4rem; font-size: 1.1rem; color: var(--coffee); }
   .pt-card__text { margin: 0; font-size: 0.9rem; line-height: 1.55; color: var(--ink, #555); }
 

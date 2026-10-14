@@ -1,4 +1,5 @@
 ---
+import Icon from "../../components/Icon.astro";
 import Layout from "../../layouts/Layout.astro";
 import { getCanonicalUrl } from "../../i18n/index.ts";
 
@@ -39,7 +40,7 @@ try {
     <div class="container">
       {posts.length === 0 ? (
         <div class="blog-empty">
-          <p class="blog-empty__icon" aria-hidden="true">☕</p>
+          <p class="blog-empty__icon" aria-hidden="true"><Icon name="coffee" size={44} /></p>
           <h2>Coming soon</h2>
           <p>We're writing our first posts. Check back soon.</p>
           <a href="/shop" class="blog-btn">Browse our coffees</a>
@@ -95,7 +96,7 @@ try {
   .blog-content { padding: 3.5rem 0 4rem; background: var(--cream, #faf7f4); }
 
   .blog-empty { text-align: center; padding: 4rem 1rem; }
-  .blog-empty__icon { font-size: 3rem; margin-bottom: 1rem; }
+  .blog-empty__icon { margin-bottom: 1rem; color: var(--caramel); }
   .blog-empty h2 { font-family: var(--font-heading, serif); font-size: 1.8rem; color: var(--coffee); margin: 0 0 0.5rem; }
   .blog-empty p { color: var(--muted-fg); margin: 0 0 1.5rem; }
   .blog-btn {

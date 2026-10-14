@@ -1,4 +1,5 @@
 ---
+import Icon from "../../components/Icon.astro";
 import Layout from "../../layouts/Layout.astro";
 import { getCanonicalUrl, getHreflangPair } from "../../i18n/index.ts";
 
@@ -30,12 +31,12 @@ const steps = [
 ];
 
 const perks = [
-  { icon: "💰", text: "Competitive commission on every referred sale" },
-  { icon: "🔗", text: "Unique, trackable affiliate link" },
-  { icon: "📊", text: "Monthly earnings report" },
-  { icon: "☕", text: "Welcome discount on your first personal order" },
-  { icon: "🎨", text: "Ready-to-use brand assets and copy" },
-  { icon: "🤝", text: "Dedicated support from our team" },
+  { icon: "percent", text: "Competitive commission on every referred sale" },
+  { icon: "link", text: "Unique, trackable affiliate link" },
+  { icon: "bar-chart", text: "Monthly earnings report" },
+  { icon: "coffee", text: "Welcome discount on your first personal order" },
+  { icon: "palette", text: "Ready-to-use brand assets and copy" },
+  { icon: "handshake", text: "Dedicated support from our team" },
 ];
 ---
 
@@ -85,7 +86,7 @@ const perks = [
       <ul class="af-perks-grid" role="list">
         {perks.map((p) => (
           <li class="af-perk">
-            <span class="af-perk__icon" aria-hidden="true">{p.icon}</span>
+            <span class="af-perk__icon" aria-hidden="true"><Icon name={p.icon as any} size={22} /></span>
             <p class="af-perk__text">{p.text}</p>
           </li>
         ))}
@@ -164,7 +165,7 @@ const perks = [
   }
   @media (min-width: 768px) { .af-perks-grid { grid-template-columns: repeat(3, 1fr); } }
   .af-perk { display: flex; align-items: flex-start; gap: 0.75rem; background: #fff; border: 1px solid var(--border); border-radius: 0.75rem; padding: 1rem 1.25rem; }
-  .af-perk__icon { font-size: 1.4rem; flex-shrink: 0; }
+  .af-perk__icon { flex-shrink: 0; color: var(--caramel); }
   .af-perk__text { font-size: 0.9rem; color: var(--fg); line-height: 1.55; margin: 0; }
 
   .af-faq { background: #fff; padding: 4rem 0; border-top: 1px solid var(--border); }

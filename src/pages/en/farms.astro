@@ -1,4 +1,5 @@
 ---
+import Icon from "../../components/Icon.astro";
 // Public farms listing (EN) — mirror of /fincas
 import Layout from "../../layouts/Layout.astro";
 import { getCanonicalUrl } from "../../i18n/index.ts";
@@ -120,7 +121,7 @@ const collectionData = {
                       />
                     ) : (
                       <div class="farm-card__img farm-card__img--placeholder" aria-hidden="true">
-                        <span>🌿</span>
+                        <span><Icon name="leaf" size={16} /></span>
                       </div>
                     )}
                   </div>

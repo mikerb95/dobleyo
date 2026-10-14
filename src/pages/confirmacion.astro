@@ -1,4 +1,5 @@
 ---
+import Icon from "../components/Icon.astro";
 import Layout from "../layouts/Layout.astro";
 ---
 
@@ -26,21 +27,21 @@ import Layout from "../layouts/Layout.astro";
       <div id="orderDetails" class="conf-card"></div>
       <div class="conf-next-steps" id="nextSteps">
         <div class="conf-step-item">
-          <span class="conf-step-icon" aria-hidden="true">📬</span>
+          <span class="conf-step-icon" aria-hidden="true"><Icon name="inbox" size={22} /></span>
           <div>
             <p class="conf-step-title">Confirmación por email</p>
             <p class="conf-step-desc">En los próximos minutos</p>
           </div>
         </div>
         <div class="conf-step-item">
-          <span class="conf-step-icon" aria-hidden="true">📦</span>
+          <span class="conf-step-icon" aria-hidden="true"><Icon name="package" size={22} /></span>
           <div>
             <p class="conf-step-title">Preparación del pedido</p>
             <p class="conf-step-desc">1–2 días hábiles</p>
           </div>
         </div>
         <div class="conf-step-item">
-          <span class="conf-step-icon" aria-hidden="true">🚚</span>
+          <span class="conf-step-icon" aria-hidden="true"><Icon name="truck" size={22} /></span>
           <div>
             <p class="conf-step-title">Envío a tu puerta</p>
             <p class="conf-step-desc">3–5 días hábiles</p>
@@ -257,7 +258,7 @@ import Layout from "../layouts/Layout.astro";
       border-bottom: 1px solid var(--border);
     }
     .conf-step-item:last-child { border-bottom: none; }
-    .conf-step-icon { font-size: 1.375rem; flex-shrink: 0; }
+    .conf-step-icon { flex-shrink: 0; color: var(--caramel); }
     .conf-step-title { font-size: .9rem; font-weight: 600; color: var(--coffee); margin: 0 0 .15rem; }
     .conf-step-desc  { font-size: .8rem; color: var(--muted-fg); margin: 0; }
 

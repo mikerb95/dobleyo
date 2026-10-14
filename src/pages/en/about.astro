@@ -1,4 +1,5 @@
 ---
+import Icon from "../../components/Icon.astro";
 import Layout from "../../layouts/Layout.astro";
 import { SHOW_TRACEABILITY } from "../../lib/flags.ts";
 import { getCanonicalUrl, getHreflangPair } from "../../i18n/index.ts";
@@ -93,28 +94,28 @@ const farmImage = (state?: string) =>
         <h2 class="nos-h2">What we believe in</h2>
         <ul class="nos-values">
           <li>
-            <span class="nos-values__icon" aria-hidden="true">📍</span>
+            <span class="nos-values__icon" aria-hidden="true"><Icon name="map-pin" size={22} /></span>
             <div>
               <h3>Origin with a name</h3>
               <p>Every lot comes from a specific farm and harvest, never an anonymous blend.</p>
             </div>
           </li>
           <li>
-            <span class="nos-values__icon" aria-hidden="true">🤝</span>
+            <span class="nos-values__icon" aria-hidden="true"><Icon name="handshake" size={22} /></span>
             <div>
               <h3>Direct trade</h3>
               <p>We buy directly from farmers with no middlemen and fair prices.</p>
             </div>
           </li>
           <li>
-            <span class="nos-values__icon" aria-hidden="true">🔥</span>
+            <span class="nos-values__icon" aria-hidden="true"><Icon name="flame" size={22} /></span>
             <div>
               <h3>Fresh roast</h3>
               <p>Small batches, roasted to order, never sitting in a warehouse.</p>
             </div>
           </li>
           <li>
-            <span class="nos-values__icon" aria-hidden="true">🌱</span>
+            <span class="nos-values__icon" aria-hidden="true"><Icon name="sprout" size={22} /></span>
             <div>
               <h3>Sustainability</h3>
               <p>Varieties and practices that care for the land and the communities.</p>
@@ -165,7 +166,7 @@ const farmImage = (state?: string) =>
                     </div>
                   </div>
                   {c.farm_name && (
-                    <p class="nos-farm-card__farm">🏡 {c.farm_name}</p>
+                    <p class="nos-farm-card__farm"><Icon name="map-pin" size={14} /> {c.farm_name}</p>
                   )}
                   {c.motivation && (
                     <p class="nos-farm-card__motivation">"{c.motivation}"</p>
@@ -273,7 +274,7 @@ const farmImage = (state?: string) =>
 
   .nos-values { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 1.25rem; }
   .nos-values li { display: flex; gap: 0.875rem; align-items: flex-start; }
-  .nos-values__icon { font-size: 1.4rem; flex-shrink: 0; margin-top: 0.1rem; }
+  .nos-values__icon { flex-shrink: 0; margin-top: 0.1rem; color: var(--caramel); }
   .nos-values h3 { font-size: 1rem; font-weight: 700; color: var(--coffee); margin: 0 0 0.2rem; }
   .nos-values p { font-size: 0.88rem; color: var(--muted-fg, #888); margin: 0; line-height: 1.5; }
 

@@ -1,4 +1,5 @@
 ---
+import Icon from "../../components/Icon.astro";
 import Layout from "../../layouts/Layout.astro";
 import { getCanonicalUrl } from "../../i18n/index.ts";
 ---
@@ -36,7 +37,7 @@ import { getCanonicalUrl } from "../../i18n/index.ts";
         </div>
 
         <h2 class="co-pay-h">Payment</h2>
-        <p class="co-secure">🔒 Secure payment by Wompi · charged in USD.</p>
+        <p class="co-secure"><Icon name="lock" size={16} /> Secure payment by Wompi · charged in USD.</p>
         <div id="coError" class="co-err" style="display:none"></div>
         <button type="submit" id="coPay" class="co-btn co-btn--full">Pay <span id="coPayTotal"></span></button>
         <p class="co-legal">By continuing you accept our terms. Prices in USD, shipping included.</p>

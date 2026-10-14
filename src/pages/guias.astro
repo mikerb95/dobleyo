@@ -1,4 +1,5 @@
 ---
+import Icon from "../components/Icon.astro";
 import Layout from "../layouts/Layout.astro";
 import PageHero from "../components/PageHero.astro";
 import { getCanonicalUrl } from "../i18n/index.ts";
@@ -11,7 +12,7 @@ const pageDescription =
 
 const guias = [
   {
-    icon: "⚗️",
+    icon: "dripper",
     titulo: "Método V60",
     resumen:
       "Un filtrado limpio que resalta las notas florales y cítricas de los cafés de origen.",
@@ -21,7 +22,7 @@ const guias = [
     temperatura: "92 – 94 °C",
   },
   {
-    icon: "🧪",
+    icon: "chemex",
     titulo: "Chemex",
     resumen:
       "Filtro grueso para una taza nítida y de cuerpo ligero, ideal para compartir.",
@@ -31,7 +32,7 @@ const guias = [
     temperatura: "93 – 95 °C",
   },
   {
-    icon: "🫖",
+    icon: "press",
     titulo: "Prensa francesa",
     resumen:
       "Inmersión total para un café con cuerpo y mayor presencia de aceites.",
@@ -41,7 +42,7 @@ const guias = [
     temperatura: "93 °C",
   },
   {
-    icon: "☕",
+    icon: "moka",
     titulo: "Moka / Greca",
     resumen:
       "El clásico de la cocina colombiana: intenso, concentrado y rápido.",
@@ -79,7 +80,7 @@ const consejos = [
       <ul class="gu-grid" role="list">
         {guias.map((g) => (
           <li class="gu-card">
-            <span class="gu-card__icon" aria-hidden="true">{g.icon}</span>
+            <span class="gu-card__icon" aria-hidden="true"><Icon name={g.icon as any} size={30} /></span>
             <h3 class="gu-card__title">{g.titulo}</h3>
             <p class="gu-card__resumen">{g.resumen}</p>
             <dl class="gu-card__specs">
@@ -139,7 +140,7 @@ const consejos = [
     padding: 1.5rem 1.25rem;
     box-shadow: 0 1px 5px rgba(0, 0, 0, 0.08);
   }
-  .gu-card__icon { font-size: 1.8rem; display: block; margin-bottom: 0.5rem; }
+  .gu-card__icon { display: block; margin-bottom: 0.5rem; color: var(--caramel); }
   .gu-card__title { margin: 0 0 0.4rem; font-size: 1.15rem; color: var(--coffee); }
   .gu-card__resumen { margin: 0 0 1rem; font-size: 0.9rem; line-height: 1.55; color: var(--ink, #555); }
   .gu-card__specs { margin: 0; display: grid; gap: 0.6rem; }

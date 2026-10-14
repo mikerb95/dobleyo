@@ -1,4 +1,5 @@
 ---
+import Icon from "../../components/Icon.astro";
 import Layout from "../../layouts/Layout.astro";
 import { getCanonicalUrl, getHreflangPair } from "../../i18n/index.ts";
 
@@ -8,44 +9,44 @@ const hreflang = getHreflangPair("/partners");
 
 const benefits = [
   {
-    icon: "🤝",
+    icon: "handshake",
     title: "Direct sourcing",
     text: "We buy from farmers with no middlemen and pass that quality on to you at partner pricing.",
   },
   {
-    icon: "📍",
+    icon: "map-pin",
     title: "Origin with a name",
     text: "Every lot comes from a specific farm and harvest, a story you can share with your customers.",
   },
   {
-    icon: "🔥",
+    icon: "flame",
     title: "Custom roast profile",
     text: "We define the roast curve based on your brewing method and volume, with fresh, scheduled deliveries.",
   },
   {
-    icon: "📈",
+    icon: "trending-up",
     title: "Commercial support",
     text: "Brand materials, barista training and ongoing support to help your operation grow with us.",
   },
   {
-    icon: "📦",
+    icon: "package",
     title: "Flexible quantities",
     text: "From small cafés to multi-location chains — we adapt our supply to your actual needs.",
   },
   {
-    icon: "🌱",
+    icon: "sprout",
     title: "Sustainable story",
     text: "Partner with a brand your customers can trust: transparent supply chain, fair trade, Colombian heritage.",
   },
 ];
 
 const types = [
-  { icon: "☕", label: "Specialty cafés" },
-  { icon: "🍽️", label: "Restaurants & hotels" },
-  { icon: "🏪", label: "Specialty retailers" },
-  { icon: "🏢", label: "Corporate offices" },
-  { icon: "🎁", label: "Gift & lifestyle brands" },
-  { icon: "🌍", label: "International importers" },
+  { icon: "coffee", label: "Specialty cafés" },
+  { icon: "utensils", label: "Restaurants & hotels" },
+  { icon: "store", label: "Specialty retailers" },
+  { icon: "building", label: "Corporate offices" },
+  { icon: "gift", label: "Gift & lifestyle brands" },
+  { icon: "globe", label: "International importers" },
 ];
 ---
 
@@ -77,7 +78,7 @@ const types = [
       <ul class="pt-types-grid" role="list">
         {types.map((t) => (
           <li class="pt-type-card">
-            <span class="pt-type-card__icon" aria-hidden="true">{t.icon}</span>
+            <span class="pt-type-card__icon" aria-hidden="true"><Icon name={t.icon as any} size={28} /></span>
             <span class="pt-type-card__label">{t.label}</span>
           </li>
         ))}
@@ -92,7 +93,7 @@ const types = [
       <ul class="pt-grid" role="list">
         {benefits.map((b) => (
           <li class="pt-card">
-            <span class="pt-card__icon" aria-hidden="true">{b.icon}</span>
+            <span class="pt-card__icon" aria-hidden="true"><Icon name={b.icon as any} size={30} /></span>
             <h3 class="pt-card__title">{b.title}</h3>
             <p class="pt-card__text">{b.text}</p>
           </li>
@@ -145,7 +146,7 @@ const types = [
     background: #fff; border: 1px solid var(--border); border-radius: 0.75rem;
     padding: 1.25rem 0.75rem; text-align: center;
   }
-  .pt-type-card__icon { font-size: 1.8rem; }
+  .pt-type-card__icon { color: var(--caramel); }
   .pt-type-card__label { font-size: 0.8rem; font-weight: 600; color: var(--coffee); }
 
   .pt-benefits { background: #fff; padding: 4rem 0; border-top: 1px solid var(--border); }
