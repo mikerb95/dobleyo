@@ -832,21 +832,26 @@ export default function InventarioApp() {
   const presetTarget = (tab === 'green' || tab === 'roast') ? 'lot' : 'product';
 
   return (
-    <main className="inv-shell">
-      <header className="inv-head">
-        <div>
-          <h1 className="inv-head__title">Inventario</h1>
-          <p className="inv-head__sub">
-            Café verde, café tostado, empaque y etiquetas · stock y movimientos
-          </p>
+    <>
+      <div className="page-header">
+        <div className="page-header-top">
+          <div>
+            <div className="page-breadcrumb">Catálogo · Inventario</div>
+            <h1 className="page-title">Inventario</h1>
+            <p className="page-subtitle">
+              Existencias y movimientos de café verde, café tostado, empaque y etiquetas.
+            </p>
+          </div>
+          <div className="page-header-actions">
+            <button type="button" className="btn btn-secondary" onClick={handleExport}
+              disabled={!filtered?.length}>Exportar CSV</button>
+            <button type="button" className="btn btn-primary"
+              onClick={() => setMovOpen(true)}>Registrar movimiento</button>
+          </div>
         </div>
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          <button type="button" className="inv-btn" onClick={handleExport}
-            disabled={!filtered?.length}>Exportar CSV</button>
-          <button type="button" className="inv-btn inv-btn--primary"
-            onClick={() => setMovOpen(true)}>+ Nuevo movimiento</button>
-        </div>
-      </header>
+      </div>
+
+      <div className="erp-body inv-shell">
 
       <Tabs value={tab} onChange={setTab} summary={summary.data} />
 
@@ -893,6 +898,7 @@ export default function InventarioApp() {
           initialLotId={presetLotId}
         />
       )}
-    </main>
+      </div>
+    </>
   );
 }

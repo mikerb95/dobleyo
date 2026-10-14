@@ -14,12 +14,7 @@ import InventarioApp from "../../components/InventarioApp.jsx";
      Variables: reutiliza las de :root definidas en AdminLayout
      ================================================================ */
 
-  .inv-shell {
-    padding: 24px;
-    max-width: 1240px;
-    margin: 0 auto;
-    min-height: 100vh;
-  }
+  .inv-shell { min-height: 60vh; }
 
   /* ── Header ──────────────────────────────────────────────────── */
   .inv-head {
@@ -66,10 +61,8 @@ import InventarioApp from "../../components/InventarioApp.jsx";
     white-space: nowrap;
   }
   .inv-tab:hover { background: var(--hover); }
-  .inv-tab--on { background: var(--color-primary); color: white; }
-  .inv-tab--on:hover {
-    background: color-mix(in oklab, var(--color-primary) 92%, black);
-  }
+  .inv-tab--on { background: var(--active-bg); color: var(--color-text); font-weight: 600; }
+  .inv-tab--on:hover { background: var(--active-bg); }
   .inv-tab__count {
     font-family: var(--font-mono);
     font-size: 11px;
@@ -77,29 +70,28 @@ import InventarioApp from "../../components/InventarioApp.jsx";
     background: color-mix(in oklab, currentColor 12%, transparent);
     opacity: 0.85;
   }
-  .inv-tab--on .inv-tab__count { background: rgba(255,255,255,0.16); }
 
   /* ── KPIs ────────────────────────────────────────────────────── */
+  /* Misma franja que .kpi-grid del layout */
   .inv-kpis {
-    display: grid; gap: 12px;
+    display: grid; gap: 0;
     grid-template-columns: repeat(2, 1fr);
     margin-bottom: 16px;
+    background: var(--paper); border: 1px solid var(--rule);
+    border-radius: var(--radius); overflow: hidden;
   }
-  @media (min-width: 760px) { .inv-kpis { grid-template-columns: repeat(4, 1fr); } }
+  @media (min-width: 768px) { .inv-kpis { grid-template-columns: repeat(4, 1fr); } }
 
   .inv-kpi {
-    background: var(--paper); border: 1px solid var(--rule);
-    border-radius: var(--radius); padding: 14px 16px;
-    display: flex; flex-direction: column; gap: 4px;
+    padding: 14px 16px 12px;
+    box-shadow: 1px 0 0 var(--rule), 0 1px 0 var(--rule);
+    display: flex; flex-direction: column; gap: 4px; min-width: 0;
   }
-  .inv-kpi__label {
-    font-size: 11px; font-weight: 600;
-    text-transform: uppercase; letter-spacing: 0.08em;
-    color: var(--muted);
-  }
+  .inv-kpi__label { font-size: 12px; color: var(--muted); }
   .inv-kpi__value {
-    font-size: 22px; font-weight: 600;
-    color: var(--color-primary);
+    font-family: var(--font-mono);
+    font-size: 22px; font-weight: 500;
+    color: var(--color-text);
     font-variant-numeric: tabular-nums; letter-spacing: -0.02em;
     margin-top: 2px;
   }
@@ -108,8 +100,8 @@ import InventarioApp from "../../components/InventarioApp.jsx";
     font-variant-numeric: tabular-nums;
   }
   .inv-kpi__sub b { font-weight: 600; color: var(--color-text); }
-  .inv-kpi--accent .inv-kpi__value { color: var(--color-accent); }
-  .inv-kpi--ok     .inv-kpi__value { color: var(--ok); }
+  .inv-kpi--accent .inv-kpi__value,
+  .inv-kpi--ok     .inv-kpi__value { color: var(--color-text); }
   .inv-kpi--warn   .inv-kpi__value { color: var(--warn); }
 
   /* ── Toolbar ─────────────────────────────────────────────────── */
@@ -137,7 +129,7 @@ import InventarioApp from "../../components/InventarioApp.jsx";
     display: inline-flex; align-items: center; gap: 5px;
   }
   .inv-chip:hover { border-color: var(--rule-2); }
-  .inv-chip--on { background: var(--color-primary); color: white; border-color: var(--color-primary); }
+  .inv-chip--on { background: var(--active-bg); color: var(--color-text); border-color: var(--rule-2); font-weight: 600; }
 
   /* ── Workspace (lista + detalle) ─────────────────────────────── */
   .inv-workspace {
