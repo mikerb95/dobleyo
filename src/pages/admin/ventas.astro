@@ -249,6 +249,12 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 .sales-line--prev { fill: none; stroke: var(--st-neutral); stroke-width: 1.5; stroke-dasharray: 4 4; }
 .sales-cursor { stroke: var(--color-text); stroke-opacity: .35; stroke-width: 1; }
 .sales-x { display: flex; justify-content: space-between; margin-top: 8px; font-size: 11px; color: var(--muted); }
+.sales-x span { white-space: nowrap; }
+@media (max-width: 767px) {
+  .sales-x span:nth-child(2), .sales-x span:nth-child(4) { display: none; }
+  .sales-sep { display: none; }
+  .sales-chart-grid { grid-template-columns: 52px minmax(0, 1fr); }
+}
 .sales-tooltip {
   position: fixed; z-index: 1000; display: none; pointer-events: none;
   padding: 7px 10px; border-radius: var(--radius-sm);

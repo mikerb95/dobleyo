@@ -400,7 +400,7 @@ const { title = "Admin — DobleYo Café", section = "" } = Astro.props;
 
       /* Control segmentado (periodo, métrica, densidad) */
       .seg {
-        display: inline-flex; overflow: hidden;
+        display: inline-flex; overflow-x: auto; max-width: 100%;
         border: 1px solid var(--rule-2); border-radius: var(--radius-sm);
         background: var(--paper);
       }
@@ -409,6 +409,7 @@ const { title = "Admin — DobleYo Café", section = "" } = Astro.props;
         background: transparent; color: var(--muted);
         font: inherit; font-size: 12px; font-weight: 500;
         height: 30px; padding: 0 11px; cursor: pointer;
+        white-space: nowrap; flex-shrink: 0;
       }
       .seg > button:last-child { border-right: 0; }
       .seg > button:hover { color: var(--color-text); background: var(--hover); }
@@ -557,7 +558,7 @@ const { title = "Admin — DobleYo Café", section = "" } = Astro.props;
          recorta en el borde, así funciona con cualquier número de celdas. */
       .kpi-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
         gap: 0;
         background: var(--paper);
         border: 1px solid var(--rule);
@@ -583,6 +584,10 @@ const { title = "Admin — DobleYo Café", section = "" } = Astro.props;
       }
       .kpi-sub {
         font-size: 12px; color: var(--muted); margin-top: 6px;
+      }
+      @media (max-width: 479px) {
+        .kpi-tile { padding: 12px; }
+        .kpi-value { font-size: 17px; }
       }
 
       /* ===== Tabla con scroll horizontal en mobile ===== */

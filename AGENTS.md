@@ -247,6 +247,19 @@ Todo correo sale por `server/services/email.js`. Al agregar o tocar uno:
 
 ---
 
+### 3.12 Sistema visual del panel admin: reglas no negociables
+
+El panel se ve como un ERP, no como una plantilla de SaaS. Tokens y utilidades viven en `src/layouts/AdminLayout.astro`; las páginas no redefinen colores ni fuentes.
+
+- **Tipografía**: IBM Plex Sans para la interfaz y IBM Plex Mono (`var(--font-mono)`, clases `.mono`/`.num`) para cifras, IDs, fechas y horas. Las cargan `Head.astro` con `isAdmin`. Nada de Inter, serif ni `ui-monospace` suelto.
+- **Sin franjas de color laterales** (`border-left`, `::before` de 3 px) en tarjetas, KPIs, avisos ni menú. El activo del menú es un tinte (`--active-bg`).
+- **Indicadores**: `.kpi-grid` + `.kpi-tile` forman una sola franja dividida por líneas. Máximo 4-5 por pantalla, y solo métricas que lleven a una decisión. El delta va como texto (`▲ +12,4%`) con color semántico, nunca en píldora.
+- **Estados**: punto + texto con `.status .status--paid|confirmed|pending|cancelled|ok|info|warn|error`. Nada de badges sólidos en colores arbitrarios.
+- **Piezas compartidas**: `.page-header` (breadcrumb, `.page-title`, `.page-meta` con periodo y zona horaria), `.panel`/`.panel-header`/`.panel-title`, `.seg` (control segmentado con `aria-pressed`), `.chip`, `.count`, `.erp-table` con `th.num`/`td.num` y `tfoot` para totales, `.btn`/`.btn-primary`/`.btn-sm`.
+- **Contenido generado con JS**: los estilos scoped de Astro no le llegan. Usar `<style is:global>` acotado a una clase raíz de la página (`.sales`, `.au`) y escapar todo dato antes de `innerHTML` (o construir nodos con `textContent`).
+- **Inputs dentro de componentes propios** necesitan una clase: `input[type="search"]:not([class])` tiene estilos globales de formulario.
+- **Fechas de `audit_logs`** están en UTC sin zona: usar `parseDbDate()` de `src/lib/auditLabels.js` y mostrar en `America/Bogota`. Ese módulo también da los verbos y nombres de entidad para auditoría y actividad.
+
 ## 4. SEO — Reglas Obligatorias
 
 Todo agente que cree o modifique páginas DEBE cumplir:
@@ -436,6 +449,7 @@ Para exponer la plataforma en vivo existe un seed **idempotente** que puebla tod
 | DEBT-013 | 🟡 | `npx expo export` falla en `apps/mobile`: `expo-router` está en `apps/mobile/node_modules` y `babel-preset-expo` en la raíz, así que el preset no activa el plugin que reemplaza `EXPO_ROUTER_APP_ROOT`. Revisar el hoisting de dependencias del workspace | Pendiente |
 | DEBT-011 | 🟠 | Sin control de inventario en el flujo de e-commerce: ni `POST /api/orders` ni el despacho verificaban o descontaban stock | ✅ Resuelto — validación en `POST /api/orders` + descuento directo al confirmarse el pago (`deductStockForOrder`)/reposición al cancelar (`replenishStockForOrder`). Sin reserva: riesgo de sobreventa entre creación y pago aceptado para este catálogo |
 | DEBT-014 | 🟡 | Integración Interrapidísimo (`server/services/interrapidisimo.js`) escrita sobre el documento B2B de 2022: validar en pruebas (stgwww3) el método del token, rutas, nombres de campos, ids de estado y cómo se fija el valor a recaudar en contraentrega antes de usar en producción | Pendiente |
+| DEBT-015 | 🟡 | `server/migrations/seed_demo.js` no corre sobre una base nueva: `caficultor_applications` en `db/schema.sql` usa `region`/`hectares`/`description` pero el seed inserta `farm_location`/`farm_size_hectares`/`motivation`, y luego falla una FK al insertar `lots`. Solo funciona sobre la base viva | Pendiente |
 
 ---
 

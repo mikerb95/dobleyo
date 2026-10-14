@@ -3,8 +3,11 @@ import type { Product } from "../data/products";
 import Stars from "./Stars.astro";
 import { getRating, getNotes, formatWeight } from "../lib/products.ts";
 import { SHOW_CUPPING } from "../lib/flags.ts";
+import type { Lang } from "../i18n/index.ts";
 
 interface Props {
+  /** Idioma de la card. En inglés el precio llega en USD y los enlaces van a /product. */
+  lang?: Lang;
   product: Product & {
     stock?: number;
     sca_score?: number | null;
@@ -16,23 +19,31 @@ interface Props {
   };
 }
 
-const { product } = Astro.props;
+const { product, lang = "es" } = Astro.props;
+const en = lang === "en";
+const href = `${en ? "/product" : "/producto"}/${product.id}`;
+const priceLabel = en
+  ? `$${Number(product.price).toLocaleString("en-US")}`
+  : `$${product.price.toLocaleString("es-CO")}`;
+const L = en
+  ? { fav: "Add to favorites", notes: "Tasting notes", out: "Sold out", low: "Last", add: "Add", cart: "View cart", cartHref: "/en/cart" }
+  : { fav: "Agregar a favoritos", notes: "Notas de cata", out: "Agotado", low: "Últimas", add: "Agregar", cart: "Ver carrito", cartHref: "/cart" };
 
 const outOfStock = typeof product.stock === "number" && product.stock === 0;
 const lowStock   = typeof product.stock === "number" && product.stock > 0 && product.stock <= 5;
 
 const rating = getRating(product);
-const notes  = SHOW_CUPPING ? getNotes(product, "es") : [];
-const weight = formatWeight(product, "es");
+const notes  = SHOW_CUPPING ? getNotes(product, lang) : [];
+const weight = formatWeight(product, lang);
 ---
 
 <article class="card">
   <button
     class="fav-toggle"
     data-fav={product.id}
-    aria-label="Agregar a favoritos"
+    aria-label={L.fav}
     aria-pressed="false"
-    title="Agregar a favoritos"
+    title={L.fav}
   >
     <svg viewBox="0 0 24 24" aria-hidden="true" width="20" height="20">
       <path
@@ -40,7 +51,7 @@ const weight = formatWeight(product, "es");
       ></path>
     </svg>
   </button>
-  <a href={`/producto/${product.id}`} class="card-link" tabindex="-1" aria-hidden="true">
+  <a href={href} class="card-link" tabindex="-1" aria-hidden="true">
     <img
       src={product.image}
       alt={product.name}
@@ -53,7 +64,7 @@ const weight = formatWeight(product, "es");
       {product.category}{product.origin ? " · " + product.origin : ""}
     </div>
     <h3>
-      <a href={`/producto/${product.id}`} class="card-name-link">{product.name}</a>
+      <a href={href} class="card-name-link">{product.name}</a>
     </h3>
     <div class="muted" style="font-size:.85rem">
       {product.process || ""}{product.process && product.roast ? " · " : ""}{product.roast || ""}
@@ -64,22 +75,22 @@ const weight = formatWeight(product, "es");
           value={rating.value}
           count={rating.count}
           fromReviews={rating.fromReviews}
-          lang="es"
+          lang={lang}
         />
       </div>
     )}
     {notes.length > 0 && (
-      <ul class="card-notes" aria-label="Notas de cata">
+      <ul class="card-notes" aria-label={L.notes}>
         {notes.map((n) => <li class="card-note">{n}</li>)}
       </ul>
     )}
     <div class="price-row">
-      <span class="price">${product.price.toLocaleString("es-CO")}</span>
+      <span class="price">{priceLabel}</span>
       {weight && <span class="card-weight">{weight}</span>}
     </div>
     {SHOW_CUPPING && product.sca_score && <span class="sca-pill">{product.sca_score} pts SCA</span>}
-    {outOfStock && <span class="stock-badge out">Agotado</span>}
-    {lowStock && <span class="stock-badge low">Últimas {product.stock}</span>}
+    {outOfStock && <span class="stock-badge out">{L.out}</span>}
+    {lowStock && <span class="stock-badge low">{L.low} {product.stock}</span>}
   </div>
   <div class="card-actions">
     <div style="display:flex; gap:.5rem; padding: 0 1rem 1rem;">
@@ -91,9 +102,9 @@ const weight = formatWeight(product, "es");
         data-image={product.image}
         disabled={outOfStock || undefined}
       >
-        {outOfStock ? "Agotado" : "Agregar"}
+        {outOfStock ? L.out : L.add}
       </button>
-      <a class="btn outline small" href="/cart">Ver carrito</a>
+      <a class="btn outline small" href={L.cartHref}>{L.cart}</a>
     </div>
   </div>
 </article>

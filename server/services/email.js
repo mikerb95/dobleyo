@@ -293,7 +293,6 @@ export const sendWelcomeEmail = async (email, name = '') =>
       body: `
         ${p(greeting(name))}
         ${p('Su correo quedó confirmado. Desde su cuenta puede seguir sus pedidos, guardar direcciones y favoritos, y administrar su suscripción de café.')}
-        ${p('Cada bolsa que vendemos tiene un código QR con la historia completa del lote: la finca, la cosecha y la tostión.')}
         ${button(`${SITE_URL}/tienda`, 'Ver los cafés')}
         ${small(`¿Preguntas? Responda este correo o escríbanos desde <a href="${SITE_URL}/contacto" style="color:${C.caramel};">la página de contacto</a>.`)}
       `,
@@ -463,7 +462,7 @@ const ORDER_STATUS_COPY = {
     tone: 'success',
     body: () => `
       ${p('La transportadora reporta su pedido como entregado. Esperamos que disfrute cada taza.')}
-      ${p('Escanee el código QR de la bolsa para conocer la finca y el proceso de su café. Y si tiene un minuto, su reseña ayuda a otros a elegir.')}
+      ${p('Si tiene un minuto, cuéntenos qué le pareció: su reseña ayuda a otros a elegir.')}
     `,
     cta: (ref) => [`${SITE_URL}/cuenta`, 'Dejar una reseña'],
   },
@@ -661,7 +660,7 @@ export const sendNewsletterWelcomeEmail = async (email, unsubscribeToken) =>
         </table>
         ${p('Aplícalo al finalizar tu compra. Es válido para tu primer pedido.')}
         ${button(`${SITE_URL}/tienda`, 'Ir a la tienda')}
-        ${small('Te escribiremos sobre nuevos lotes, recetas y lanzamientos. Nada de spam.')}
+        ${small('Te escribiremos sobre nuevos cafés, recetas y lanzamientos. Nada de spam.')}
       `,
       footer: unsubscribeFooter(unsubscribeToken),
     }),

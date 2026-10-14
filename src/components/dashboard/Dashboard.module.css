@@ -134,6 +134,7 @@
 }
 .area { fill: var(--color-accent); fill-opacity: 0.1; }
 .line { fill: none; stroke: var(--color-accent); stroke-width: 2; }
+.xAxis span { white-space: nowrap; }
 .xAxis {
   display: flex;
   justify-content: space-between;

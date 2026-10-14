@@ -2,6 +2,30 @@
 
 ---
 
+## 2026-10-13: Panel admin con aspecto de ERP: Resumen, Ventas y Auditoría (Agente: Claude)
+
+### Contexto
+El panel seguía la plantilla genérica de SaaS: franjas de color a la izquierda en KPIs y avisos, emojis como iconos, saludo personal, seis KPIs iguales, Inter en todo y colores sueltos por página. Auditoría filtraba en el navegador sobre 500 registros, el filtro iba borrando registros (filtrar dos veces sobre el resultado anterior), armaba filas con `innerHTML` sin escapar (XSS almacenado) y mostraba el detalle con `alert()`.
+
+### Cambios
+- **`src/layouts/AdminLayout.astro`**: tokens nuevos (texto secundario con contraste suficiente, `--accent-ink`, barra superior oscura, estados `--st-*`, `--font-mono`). Barra superior oscura con contexto de empresa. Menú compacto sin franja lateral. Utilidades `.panel`, `.seg`, `.chip`, `.status`, `.count`, `.mono`/`.num`, tablas más densas con `tfoot`. `.kpi-grid` pasa a franja única. `.page-header` sobre el fondo, alineado con `.erp-body`. `.info-box`/`.error-box` sin franja lateral. El menú dice "Resumen" en vez de "Dashboard".
+- **`src/components/Head.astro`**: el admin carga IBM Plex Sans y Plex Mono (antes Inter, Lora y Playfair).
+- **22 páginas y `CRM.module.css`**: las fuentes monoespaciadas sueltas pasan a `var(--font-mono)`.
+- **Resumen (`src/components/dashboard/`)**: reescrito. Encabezado con fecha, corte y periodo (sin saludo), franja de 5 indicadores con minigráfica según el periodo elegido, tabla "Requiere atención" desde `/api/dashboard/alerts`, panel de operación, ingresos por periodo con escala, estado de pedidos en barra apilada, tablas de productos y ciudades, producción de lotes, actividad con hora exacta y menú "Nuevo" en lugar de los accesos rápidos. Se eliminan `AlertsBanner.jsx`, `KPICard.jsx` y `QuickActions.jsx`.
+- **`server/routes/dashboard.js`**: KPIs sin emojis; la actividad toma el nombre de `first_name`/`last_name` con respaldo en `name` y `email`.
+- **Ventas (`src/pages/admin/ventas.astro`)**: reescrita. 4 indicadores (ingresos, pedidos, ticket promedio, tasa de cancelación en pp), gráfica con el periodo anterior punteado y tooltip, estados en barra apilada con tabla, productos y ciudades en tablas con participación, tabla de pedidos con subtotal sin canceladas, orden accesible (`aria-sort`) y datos escapados. Se dice "Pedidos" en todo el panel.
+- **`server/routes/mercadolibre.js`**: `/analytics` devuelve `prev_timeline` y las cancelaciones del periodo anterior.
+- **Auditoría (`src/pages/admin/auditoria.astro`)**: reescrita. Filtros en el servidor (búsqueda, rango, acción, entidad, ocultar sistema) guardados en la URL, resumen del rango, eventos agrupados por día, panel lateral con campos antes/después y JSON completo, exportación CSV y paginación de 50. Todo el contenido se arma con `textContent`.
+- **`server/services/audit.js` y `server/routes/audit.js`**: `buildAuditWhere()` compartido por listado y conteo, búsqueda con `LIKE ... ESCAPE`, `getAuditSummary()`, `GET /api/audit/entity-types`. Respuestas con `success`.
+- **`src/lib/auditLabels.js`** (nuevo): verbos, entidades, roles y `parseDbDate()` compartidos por Auditoría y la actividad del Resumen.
+- **Tests**: `server/routes/__tests__/audit.integration.test.js` (8 casos).
+- **`AGENTS.md`**: sección 3.12 con las reglas visuales del admin y DEBT-015 (el seed demo no corre sobre una base nueva).
+
+### Verificación
+`npx vitest run`: 228 tests pasan. Capturas a 1440 y 390 px del Resumen, Ventas y Auditoría contra una base local sembrada, sin errores de consola. El resto de páginas del admin hereda los tokens nuevos y no se revisó una por una.
+
+---
+
 ## 2026-10-13: Botones de carrito y usuario del header rediseñados (Agente: Claude)
 
 ### Cambios
