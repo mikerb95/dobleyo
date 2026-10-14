@@ -1,70 +1,86 @@
 /**
  * Regalos: la caja se abre al cargar y deja salir lo que trae el kit; al
  * cambiar de kit se cierra y se vuelve a abrir con el contenido nuevo. Abajo,
- * la regla de envío se llena hasta cada kit y los íconos se trazan.
+ * los kits entran escalonados, los íconos se trazan y la regla de envío se
+ * llena hasta cada kit.
  *
  * El HTML del servidor pinta la caja abierta: aquí se parte de cerrada.
  */
 import { gsap, ScrollTrigger, SplitText, gridEntrance, cursorLight, type Piece } from '../motion/core.ts';
 
-// Debe coincidir con el transform de .gift__lid en GiftBox.astro: la tapa
-// queda parada en el piso junto a la caja (más vertical en celular para no
-// salirse de la pantalla).
-const narrow = () => window.matchMedia('(max-width: 480px)').matches;
-const open = () => ({ x: 6, y: narrow() ? 140 : 170, rotation: narrow() ? 91 : 96 });
-const CLOSED = { x: 0, y: 0, rotation: 0 };
+// Debe coincidir con el transform de .gift__lid en GiftBox.astro
+const OPEN = { xPercent: 9, yPercent: -15, rotation: 7 };
+const CLOSED = { xPercent: 0, yPercent: 0, x: 0, y: 0, rotation: 0 };
+// Cuánto bajan los artículos para quedar dentro de la caja (px del contenedor)
+const INSIDE = 160;
 
 export const gifts: Piece = (addCleanup) => {
-  const root = document.querySelector<HTMLElement>('[data-gift]');
-  const page = document.querySelector<HTMLElement>('.regalos-page');
+  const page = document.querySelector<HTMLElement>('.gifts-page');
   if (!page) return;
 
+  // ── Titular ──────────────────────────────────────────────────────────────
   const title = page.querySelector<HTMLElement>('[data-split]');
   if (title) {
     const split = SplitText.create(title, { type: 'words', mask: 'words' });
-    gsap.from(split.words, { yPercent: 110, duration: 1, ease: 'power3.out', stagger: 0.05 });
-    gsap.from(page.querySelectorAll('.breadcrumb, .regalos-subtitle'), { y: 14, opacity: 0, duration: 0.7, stagger: 0.1, delay: 0.25 });
+    // El <em> del titular conserva su color: SplitText envuelve dentro de él
+    gsap.from(split.words, { yPercent: 110, duration: 1, ease: 'power3.out', stagger: 0.06 });
+    gsap.from(page.querySelectorAll('.gh__crumbs, .gh__lead, .gh__facts, .gh__cta'), {
+      y: 16, opacity: 0, duration: 0.7, stagger: 0.08, delay: 0.3, clearProps: 'transform,opacity',
+    });
   }
 
+  // ── Caja ─────────────────────────────────────────────────────────────────
+  const root = page.querySelector<HTMLElement>('[data-gift]');
   if (root) {
-    const lid = root.querySelector<HTMLElement>('.gift__lid')!;
+    const lid = root.querySelector<SVGElement>('.gift__lid')!;
+    const stage = root.querySelector<HTMLElement>('.gift__stage')!;
     const items = () => Array.from(root.querySelectorAll<HTMLElement>('.gift__set:not([hidden]) .gift__item'));
-    // Los artículos arrancan dentro de la caja (tapados por su frente)
-    const rise = (tl: gsap.core.Timeline, at: number) =>
-      tl.fromTo(items(), { y: 200, opacity: 1 }, { y: 0, duration: 0.8, ease: 'back.out(1.6)', stagger: 0.1 }, at);
+
+    // La tapa pasa delante del contenido solo mientras está cerrada
+    const close = (tl: gsap.core.Timeline, at: number, d = 0.35) =>
+      tl.to(lid, { ...CLOSED, duration: d, ease: 'power2.in' }, at).call(() => lid.classList.add('is-closed'), undefined, at + d * 0.5);
+    const open = (tl: gsap.core.Timeline, at: number) =>
+      tl
+        .to(lid, { yPercent: -6, duration: 0.18, ease: 'power2.out' }, at)
+        .call(() => lid.classList.remove('is-closed'), undefined, at + 0.3)
+        .to(lid, { ...OPEN, duration: 0.85, ease: 'back.out(1.5)' }, at + 0.18)
+        .fromTo(items(), { y: INSIDE }, { y: 0, duration: 0.8, ease: 'back.out(1.5)', stagger: 0.1 }, at + 0.35);
 
     gsap.set(lid, CLOSED);
-    gsap.set(items(), { y: 200 });
-    const intro = gsap.timeline({ delay: 0.5 });
-    intro
-      .fromTo(root.querySelector('.gift__box'), { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8, ease: 'power3.out' }, 0)
-      // Un pequeño salto antes de abrirse: la tapa "cede"
-      .to(lid, { y: -8, duration: 0.18, ease: 'power2.out' }, 0.75)
-      .to(lid, { ...open(), duration: 0.9, ease: 'back.out(1.4)' }, 0.93);
-    rise(intro, 1.05);
+    lid.classList.add('is-closed');
+    gsap.set(items(), { y: INSIDE });
+    const intro = gsap.timeline({ delay: 0.4 });
+    intro.from(stage, { y: 40, opacity: 0, duration: 0.9, ease: 'power3.out' }, 0);
+    open(intro, 0.9);
+
+    // Un leve vaivén de la etiqueta mientras se ve la caja
+    const tag = root.querySelector('.gift__tag');
+    if (tag) gsap.to(tag, { rotation: 4, transformOrigin: '152px 168px', duration: 2.4, ease: 'sine.inOut', yoyo: true, repeat: -1 });
 
     let current: gsap.core.Timeline | null = null;
     const onSwitch = () => {
       current?.kill();
       current = gsap.timeline();
-      current.set(items(), { y: 200 }).to(lid, { ...CLOSED, duration: 0.01 }).to(lid, { y: -8, duration: 0.15 }, 0.1).to(lid, { ...open(), duration: 0.7, ease: 'back.out(1.4)' }, 0.25);
-      rise(current, 0.35);
+      // El contenido del kit anterior ya se ocultó: el nuevo arranca dentro
+      current.set(items(), { y: INSIDE });
+      close(current, 0, 0.3);
+      open(current, 0.45);
     };
     root.addEventListener('gift:switch', onSwitch);
     addCleanup(() => root.removeEventListener('gift:switch', onSwitch));
   }
 
-  // ── Rejilla de kits ──────────────────────────────────────────────────────
-  const grid = page.querySelector<HTMLElement>('.regalos-grid');
+  // ── Kits ─────────────────────────────────────────────────────────────────
+  const grid = page.querySelector<HTMLElement>('.gk__grid');
   if (grid) {
     gridEntrance(grid);
-    cursorLight(grid, '.card', addCleanup);
+    cursorLight(grid, '.kit', addCleanup);
   }
 
-  // ── Beneficios: íconos que se trazan y la regla de envío ────────────────
-  const info = page.querySelector<HTMLElement>('.regalos-info');
+  // ── Así llega: íconos que se trazan y la regla de envío ─────────────────
+  const info = page.querySelector<HTMLElement>('.gb__grid');
   if (info) {
-    const paths = info.querySelectorAll('.info-icon svg > *');
+    const paths = info.querySelectorAll('.gb__icon svg > *');
     const ship = info.querySelector<HTMLElement>('[data-ship]');
     const kits = ship ? Array.from(ship.querySelectorAll<HTMLElement>('.ship__kit')) : [];
     gsap.set(paths, { drawSVG: '0%' });
