@@ -46,6 +46,38 @@ function initVerifyEmail() {
   }
 
   verifyEmail();
+
+  const resendForm = document.getElementById("resendForm");
+  const resendStatus = document.getElementById("resendStatus");
+  resendForm?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const input = resendForm.email;
+    const email = input.value.trim();
+    if (!email || !input.checkValidity()) {
+      resendStatus.textContent = "Ingrese un correo electrónico válido.";
+      resendStatus.dataset.tone = "error";
+      return;
+    }
+    const button = resendForm.querySelector("button");
+    button.disabled = true;
+    try {
+      const res = await fetch("/api/auth/resend-verification", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json().catch(() => ({}));
+      resendStatus.textContent = res.ok
+        ? "Si la cuenta existe y aún no está verificada, le llegará un enlace nuevo en unos minutos."
+        : data.error || "No pudimos enviar el enlace. Intente más tarde.";
+      resendStatus.dataset.tone = res.ok ? "success" : "error";
+    } catch {
+      resendStatus.textContent = "Error de conexión. Intente de nuevo.";
+      resendStatus.dataset.tone = "error";
+    } finally {
+      button.disabled = false;
+    }
+  });
 }
 
 initVerifyEmail();

@@ -66,12 +66,17 @@ import Layout from "../layouts/Layout.astro";
         <p id="errorMessage" style="margin-top:0.5rem; color:#6b7280">
           El enlace de verificación es inválido o ha expirado.
         </p>
+        <form id="resendForm" class="resend-form" novalidate>
+          <label for="resendEmail">¿El enlace venció? Le enviamos uno nuevo:</label>
+          <div class="resend-form__row">
+            <input type="email" id="resendEmail" name="email" autocomplete="email" placeholder="usted@correo.com" required />
+            <button type="submit" class="btn">Reenviar</button>
+          </div>
+          <p id="resendStatus" class="resend-form__status" role="status" aria-live="polite"></p>
+        </form>
         <div
           style="display:flex; gap:1rem; justify-content:center; margin-top:1.5rem; flex-wrap:wrap"
         >
-          <a href="/registro" class="btn" style="background:#6b7280">
-            Registrarse nuevamente
-          </a>
           <a href="/" class="btn" style="background:#c67b4e">
             Volver al inicio
           </a>
@@ -81,6 +86,23 @@ import Layout from "../layouts/Layout.astro";
   </section>
 
   <style>
+    .resend-form { margin-top: var(--space-6); text-align: left; }
+    .resend-form label { display: block; margin-bottom: var(--space-2); font-size: var(--text-sm); font-weight: 600; color: var(--espresso); }
+    .resend-form__row { display: flex; flex-direction: column; gap: var(--space-2); }
+    .resend-form input {
+      flex: 1;
+      padding: var(--space-3) var(--space-4);
+      font: inherit;
+      border: 1.5px solid rgba(var(--espresso-rgb), .18);
+      border-radius: var(--radius-sm);
+    }
+    .resend-form input:focus { outline: none; border-color: var(--caramel); }
+    .resend-form__status { margin: var(--space-2) 0 0; font-size: var(--text-sm); color: var(--ink-muted); }
+    .resend-form__status[data-tone="error"] { color: var(--danger); }
+    .resend-form__status[data-tone="success"] { color: var(--leaf); }
+    @media (min-width: 480px) {
+      .resend-form__row { flex-direction: row; }
+    }
     @keyframes spin {
       to {
         transform: rotate(360deg);
