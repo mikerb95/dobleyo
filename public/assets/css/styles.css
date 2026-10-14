@@ -2818,7 +2818,10 @@ body.menu-open {
 
 /* Tamano uniforme para cards de tienda */
 .shop-content .grid {
-  align-items: stretch
+  align-items: stretch;
+  /* auto-fill: con un solo resultado (p. ej. filtrando por un origen) la card
+     conserva su ancho en vez de estirarse a toda la fila */
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr))
 }
 
 .shop-content .card {
