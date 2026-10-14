@@ -273,6 +273,37 @@ export async function requestInterPickup(guideNumbers, pickupDate = new Date()) 
     });
 }
 
+/**
+ * Planilla de recolección: el PDF que firma el mensajero al recoger. Solo acepta
+ * pre-envíos creados por la API (prefijo 24). Devuelve el PDF y lo que Inter rechazó.
+ */
+export async function generateInterManifest(guideNumbers) {
+    const data = await interFetch(`${VENTA_URL}/api/Planilla/GenerarPlanillaRecoleccionPreenvios`, {
+        method: 'POST',
+        body: {
+            idCliente: CLIENT_ID,
+            idSucursal: BRANCH_ID,
+            listaNumPreenvios: guideNumbers.map((g) => Number(g)),
+        },
+    });
+    const base64 = data?.arregloBytesPlanilla;
+    if (!base64) {
+        throw new InterError(
+            data?.mensajePreenviosInvalidos || data?.mensajeCantidaMaximaPreenvios || 'Interrapidísimo no devolvió la planilla',
+            { body: data }
+        );
+    }
+    return {
+        manifestNumber: data.numeroPlanilla || null,
+        pdf: Buffer.from(String(base64), 'base64'),
+        rejected: [...(data.numerosPreenviosNoIncluidos || []), ...(data.numerosPreenviosInvalidos || [])].map(String),
+    };
+}
+
+export function trackingUrlForGuide(guideNumber) {
+    return `${INTER_TRACKING_URL}${encodeURIComponent(guideNumber)}`;
+}
+
 export async function interHealthCheck() {
     if (!isInterConfigured()) return { ok: false, error: 'No configurado' };
     try {
