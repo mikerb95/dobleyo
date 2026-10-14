@@ -560,13 +560,12 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   }
 
   function renderRolesBars(roles, total) {
-    const colors = { admin: 'var(--brand)', caficultor: '#16a34a', client: '#2563eb', provider: '#9333ea' };
+    const ROLE_LABELS = { admin: 'Administrador', caficultor: 'Caficultor', client: 'Cliente', provider: 'Proveedor' };
     return roles.map(r => {
       const pct = total > 0 ? Math.round((Number(r.count) / total) * 100) : 0;
-      const color = colors[r.role] || 'var(--brand)';
       return `<div class="role-row">
-        <span class="role-name">${escHtml(r.role)}</span>
-        <div class="role-bar-bg"><div class="role-bar-fill" style="width:${pct}%;background:${color}"></div></div>
+        <span class="role-name">${escHtml(ROLE_LABELS[r.role] || r.role)}</span>
+        <div class="role-bar-bg"><div class="role-bar-fill" style="width:${pct}%;background:var(--color-accent)"></div></div>
         <span class="role-count">${escHtml(r.count)}</span>
       </div>`;
     }).join('');

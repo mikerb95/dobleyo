@@ -502,9 +502,9 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
     .pg-python .btn-recalc:hover:not(:disabled) { filter: brightness(.95); }
     .pg-python .btn-recalc:disabled { opacity: .6; cursor: progress; }
     .pg-python .btn-demo {
-      background: #f0ebe4;
+      background: var(--hover);
       color: var(--color-text);
-      border: 1px solid #c8bfb4;
+      border: 1px solid var(--rule-2);
       border-radius: 6px;
       padding: .5rem 1rem;
       font-size: .82rem;
@@ -512,7 +512,7 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
       cursor: pointer;
       transition: background .15s;
     }
-    .pg-python .btn-demo:hover:not(:disabled) { background: #e5ddd4; }
+    .pg-python .btn-demo:hover:not(:disabled) { background: var(--active-bg); }
     .pg-python .btn-demo:disabled { opacity: .6; cursor: progress; }
     .pg-python .fc-status { font-size: .8rem; color: var(--muted); }
 
@@ -524,7 +524,7 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
       font-weight: 700;
       letter-spacing: .02em;
     }
-    .pg-python .badge--warn  { background: #fbe7d2; color: #8a5a00; }
+    .pg-python .badge--warn  { background: var(--c-warning-bg); color: var(--c-warning); }
     .pg-python .badge--ok    { background: var(--c-success-bg); color: var(--ok); }
     .pg-python .badge--muted { background: var(--border, rgba(0,0,0,.08)); color: var(--text-2); }
 

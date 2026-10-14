@@ -78,7 +78,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         .pg-envios .badge-warn { background: var(--c-warning-bg); color: var(--c-warning); border-color: var(--c-warning-border); }
         .pg-envios .badge-ok { background: var(--c-success-bg); color: var(--ok); border-color: var(--c-success-border); }
         .pg-envios .badge-err { background: var(--c-error-bg); color: var(--danger); border-color: var(--c-error-border); }
-        .pg-envios .badge-info { background: var(--c-info-bg); color: var(--c-info); border-color: #91c2f5; }
+        .pg-envios .badge-info { background: var(--c-info-bg); color: var(--c-info); border-color: color-mix(in oklab, var(--c-info) 35%, transparent); }
         .pg-envios .badge-default { background: var(--hover); color: var(--muted); border-color: var(--rule); }
 
         .pg-envios .btn-action {
@@ -169,7 +169,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         .pg-envios .alert-err { background: var(--c-error-bg); color: var(--danger); border: 1px solid var(--c-error-border); }
 
         .pg-envios .quote-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 0.5rem; }
-        .pg-envios .quote-table th, .pg-envios .quote-table td { padding: 0.5rem 0.6rem; text-align: left; border-bottom: 1px solid #f0ece6; }
+        .pg-envios .quote-table th, .pg-envios .quote-table td { padding: 0.5rem 0.6rem; text-align: left; border-bottom: 1px solid var(--rule); }
         .pg-envios .quote-row { cursor: pointer; }
         .pg-envios .quote-row:hover { background: var(--hover); }
         .pg-envios .quote-row.selected { background: var(--c-success-bg); }

@@ -54,7 +54,7 @@ const totalKgEmpacado = packaged.reduce((s: number, p: any) => {
 const qDist = [
   { label: "4.5-5 (Excepcional)", color: "var(--ok)", count: scoresValidos.filter((p: any) => p.score >= 4.5).length },
   { label: "3.5-4.4 (Muy bueno)", color: "var(--color-accent)", count: scoresValidos.filter((p: any) => p.score >= 3.5 && p.score < 4.5).length },
-  { label: "< 3.5 (Regular)",     color: "#d4a017", count: scoresValidos.filter((p: any) => p.score <  3.5 && p.score > 0).length },
+  { label: "< 3.5 (Regular)",     color: "var(--c-warning)", count: scoresValidos.filter((p: any) => p.score <  3.5 && p.score > 0).length },
 ];
 const maxQDist = Math.max(1, ...qDist.map((d) => d.count));
 
@@ -274,7 +274,7 @@ const fmtWeek = (s: string) => new Date(s + "T00:00:00").toLocaleDateString("es-
       font-weight: 700;
       letter-spacing: .02em;
     }
-    .badge--warn  { background: #fbe7d2; color: #8a5a00; }
+    .badge--warn  { background: var(--c-warning-bg); color: var(--c-warning); }
     .badge--ok    { background: var(--c-success-bg); color: var(--ok); }
     .badge--muted { background: var(--border, rgba(0,0,0,.08)); color: var(--text-2); }
 

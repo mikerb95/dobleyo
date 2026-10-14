@@ -161,11 +161,11 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     .pg-demanda .row-actions { display: flex; gap: 6px; justify-content: flex-end; }
     .pg-demanda code { background: var(--hover); padding: 1px 5px; border-radius: 4px; font-size: .85em; }
     .pg-demanda .btn-export {
-      background: #2e7d5b;
+      background: var(--ok);
       color: var(--paper);
-      border-color: #2e7d5b;
+      border-color: var(--ok);
     }
-    .pg-demanda .btn-export:hover { background: #256649; border-color: #256649; }
+    .pg-demanda .btn-export:hover { background: color-mix(in oklab, var(--ok) 85%, black); border-color: color-mix(in oklab, var(--ok) 85%, black); }
     .pg-demanda .btn-export:disabled { opacity: .6; cursor: not-allowed; }
   </style>
 

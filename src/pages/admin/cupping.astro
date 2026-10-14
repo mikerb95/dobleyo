@@ -461,7 +461,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     .cup-agtron-swatch {
       width: 38px; height: 38px; border-radius: 9px; flex-shrink: 0;
       border: 1px solid var(--rule);
-      background: #d8c4a8;
+      background: var(--rule-2);
       transition: background .15s;
     }
 
@@ -708,7 +708,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     document.getElementById('colorAgtron').addEventListener('input', (e) => {
       const v = parseInt(e.target.value);
       const sw = document.getElementById('agtronSwatch');
-      if (isNaN(v)) { sw.style.background = '#d8c4a8'; return; }
+      if (isNaN(v)) { sw.style.background = 'var(--rule-2)'; return; }
       // 25 (oscuro) → 95 (claro): interpolar luminosidad de un café
       const t = Math.max(0, Math.min(1, (v - 25) / 70));
       const l = 18 + t * 52; // 18%..70%
@@ -915,7 +915,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       document.getElementById('defectsFound').value = '';
       document.getElementById('moisturePercent').value = '';
       document.getElementById('colorAgtron').value = '';
-      document.getElementById('agtronSwatch').style.background = '#d8c4a8';
+      document.getElementById('agtronSwatch').style.background = 'var(--rule-2)';
       document.getElementById('observations').value = '';
       document.getElementById('correctiveActions').value = '';
       document.getElementById('passedCheck').checked = false;
