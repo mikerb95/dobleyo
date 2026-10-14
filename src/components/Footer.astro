@@ -209,6 +209,7 @@ const payments = ["Visa", "Mastercard", "PSE", "Nequi", "Daviplata", "Contraentr
   /* ── Newsletter ─────────────────────────────── */
   .footer-news {
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: var(--space-6);
     padding: var(--space-12) 0 var(--space-10);
     border-bottom: 1px solid var(--footer-line);
@@ -265,6 +266,7 @@ const payments = ["Visa", "Mastercard", "PSE", "Nequi", "Daviplata", "Contraentr
 
   .footer-news__field input {
     flex: 1;
+    width: 100%;
     min-width: 0;
     padding: var(--space-3) var(--space-4);
     border: 0;
@@ -335,6 +337,7 @@ const payments = ["Visa", "Mastercard", "PSE", "Nequi", "Daviplata", "Contraentr
   /* ── Marca + navegación ─────────────────────── */
   .footer-main {
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: var(--space-8);
     padding: var(--space-10) 0;
   }
@@ -490,7 +493,7 @@ const payments = ["Visa", "Mastercard", "PSE", "Nequi", "Daviplata", "Contraentr
 
   @media (min-width: 768px) {
     .footer-news {
-      grid-template-columns: 1.2fr 1fr;
+      grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
       align-items: end;
       gap: var(--space-12);
     }
