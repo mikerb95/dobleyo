@@ -2735,6 +2735,8 @@ body.menu-open {
 
   .shop-topbar {
     position: relative;
+    /* sin esto hereda el top del modo sticky y baja 118px dejando un hueco */
+    top: auto;
     display: block;
     padding: .5rem 0
   }
