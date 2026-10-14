@@ -1,4 +1,4 @@
-// Componente de Mapa de Calor de Ventas — Fase 8
+// Componente de Mapa de Calor de Ventas (Fase 8)
 // Combina ventas web directas + MercadoLibre con filtros de período, canal y producto
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import 'leaflet/dist/leaflet.css';
@@ -329,7 +329,7 @@ export default function SalesHeatmap() {
                   <tr key={i}>
                     <td className="hm-rank">{i + 1}</td>
                     <td style={{ fontWeight: 600 }}>{loc.city}</td>
-                    <td style={{ color: 'var(--muted)' }}>{loc.state ?? '—'}</td>
+                    <td style={{ color: 'var(--muted)' }}>{loc.state ?? '-'}</td>
                     <td style={{ textAlign: 'right', fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>{numFormat(loc.order_count)}</td>
                     <td className="hm-sales">{copFormat(loc.total_sales)}</td>
                     <td style={{ textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{loc.channels?.web ?? 0}</td>

@@ -32,7 +32,7 @@ export default function ClientList({ filters, onFiltersChange, onOpen, onNew, re
 
       {error && (
         <div className={styles.list__empty} role="alert" style={{ color: "var(--danger)" }}>
-          No pudimos cargar las cuentas —{" "}
+          No se pudieron cargar las cuentas.{" "}
           <button type="button" className={styles.btn} onClick={refetch}>Reintentar</button>
         </div>
       )}

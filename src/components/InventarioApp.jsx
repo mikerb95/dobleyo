@@ -90,14 +90,14 @@ function useApi(path, { deps = [], enabled = true } = {}) {
 
 // ── Formatters ───────────────────────────────────────────────────────────────
 const fmtN = (n, opts = {}) =>
-  n == null ? '—' : n.toLocaleString('es-CO', { maximumFractionDigits: 1, ...opts });
-const fmtKg  = (n) => n == null ? '—' : `${fmtN(n)} kg`;
-const fmtU   = (n) => n == null ? '—' : `${fmtN(n)} u`;
-const fmtDate = (iso) => !iso ? '—' : new Date(iso).toLocaleDateString('es-CO', { day: '2-digit', month: 'short' });
-const fmtTime = (iso) => !iso ? '—' : new Date(iso).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
-const fmtDateTime = (iso) => !iso ? '—' : new Date(iso).toLocaleString('es-CO', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+  n == null ? '-' : n.toLocaleString('es-CO', { maximumFractionDigits: 1, ...opts });
+const fmtKg  = (n) => n == null ? '-' : `${fmtN(n)} kg`;
+const fmtU   = (n) => n == null ? '-' : `${fmtN(n)} u`;
+const fmtDate = (iso) => !iso ? '-' : new Date(iso).toLocaleDateString('es-CO', { day: '2-digit', month: 'short' });
+const fmtTime = (iso) => !iso ? '-' : new Date(iso).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+const fmtDateTime = (iso) => !iso ? '-' : new Date(iso).toLocaleString('es-CO', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
 const ageLabel = (iso) => {
-  if (!iso) return '—';
+  if (!iso) return '-';
   const diff = Date.now() - new Date(iso).getTime();
   const min = Math.floor(diff / 60000);
   if (min < 1)  return 'ahora';
@@ -281,16 +281,16 @@ function Kpis({ tab, summary, loading }) {
     <div className="inv-kpis">
       <Kpi label="Unidades"         value={fmtN(s.total)}    sub={<><b>{s.skus}</b> SKU en catálogo</>}  variant="accent" />
       <Kpi label="Bajo mínimo"      value={s.below_min}      sub={<>requieren reposición</>}              variant={s.below_min ? 'warn' : 'ok'} />
-      <Kpi label="Proveedores"      value={s.suppliers ?? '—'} sub={<>activos</>} />
-      <Kpi label="En tránsito"      value={s.in_transit ?? '—'} sub={<>pedidos pendientes</>} />
+      <Kpi label="Proveedores"      value={s.suppliers ?? '-'} sub={<>activos</>} />
+      <Kpi label="En tránsito"      value={s.in_transit ?? '-'} sub={<>pedidos pendientes</>} />
     </div>
   );
   return (
     <div className="inv-kpis">
       <Kpi label="Etiquetas"    value={fmtN(s.total)}   sub={<><b>{s.skus}</b> plantillas</>}         variant="accent" />
       <Kpi label="Bajo mínimo"  value={s.below_min}     sub={<>requieren reimpresión</>}               variant={s.below_min ? 'warn' : 'ok'} />
-      <Kpi label="Plantilla QR" value={s.qr_version ?? '—'} sub={<>versión vigente</>} />
-      <Kpi label="Impresora"    value={s.printer ?? '—'}    sub={<>activa</>}                          variant="ok" />
+      <Kpi label="Plantilla QR" value={s.qr_version ?? '-'} sub={<>versión vigente</>} />
+      <Kpi label="Impresora"    value={s.printer ?? '-'}    sub={<>activa</>}                          variant="ok" />
     </div>
   );
 }
@@ -416,7 +416,7 @@ function buildDetailFields(tab, item) {
     { label: 'Cantidad',    value: fmtKg(item.kg) },
     { label: 'Humedad',     value: `${item.humidity_pct} %` },
     { label: 'Días almac.', value: `${item.days_in_storage} d` },
-    { label: 'Reservado',   value: item.reserved_kg ? fmtKg(item.reserved_kg) : '—' },
+    { label: 'Reservado',   value: item.reserved_kg ? fmtKg(item.reserved_kg) : '-' },
     { label: 'Disponible',  value: fmtKg((item.kg ?? 0) - (item.reserved_kg ?? 0)) },
   ];
   if (tab === 'roast') return [
@@ -425,7 +425,7 @@ function buildDetailFields(tab, item) {
     { label: 'Caficultor',   value: item.farmer },
     { label: 'Cantidad',     value: fmtKg(item.kg) },
     { label: 'Días tostión', value: `${item.days_since_roast} d` },
-    { label: 'Reservado',    value: item.reserved_kg ? fmtKg(item.reserved_kg) : '—' },
+    { label: 'Reservado',    value: item.reserved_kg ? fmtKg(item.reserved_kg) : '-' },
     { label: 'Disponible',   value: fmtKg((item.kg ?? 0) - (item.reserved_kg ?? 0)) },
     { label: 'Asignación',   value: item.reserved_for ?? 'libre' },
   ];
@@ -495,7 +495,7 @@ function DetailPanel({ tab, detail, loading, hasSelection }) {
         {fields.map((f) => (
           <div key={f.label} className="inv-detail__field">
             <dt>{f.label}</dt>
-            <dd>{f.value ?? '—'}</dd>
+            <dd>{f.value ?? '-'}</dd>
           </div>
         ))}
       </dl>
@@ -699,7 +699,7 @@ function NewMovementModal({ onClose, onDone, initialTarget, initialProductId, in
                   <option value="">{lots ? 'Seleccione un lote…' : 'Cargando…'}</option>
                   {lots?.map((l) => (
                     <option key={l.id} value={l.id}>
-                      {l.code} — {l.estado} · {fmtKg(l.kg)}
+                      {l.code} · {l.estado} · {fmtKg(l.kg)}
                     </option>
                   ))}
                 </select>
@@ -716,7 +716,7 @@ function NewMovementModal({ onClose, onDone, initialTarget, initialProductId, in
                   <option value="">{products ? 'Seleccione un producto…' : 'Cargando…'}</option>
                   {products?.map((p) => (
                     <option key={p.id} value={p.id}>
-                      {p.name} — stock {fmtN(p.stock_quantity)}
+                      {p.name} · stock {fmtN(p.stock_quantity)}
                     </option>
                   ))}
                 </select>

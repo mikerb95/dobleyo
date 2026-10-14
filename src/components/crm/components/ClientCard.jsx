@@ -63,7 +63,7 @@ export default function ClientCard({ accountId, onBack, onStageChange }) {
           <MetaItem label="Valor pipeline" value={formatCOP(account.pipeline_value)} />
           <MetaItem label="LTV"            value={formatCOP(account.lifetime_value_cents)} />
           <MetaItem label="País / NIT"     value={`${account.country}${account.tax_id ? ` · ${account.tax_id}` : ""}`} />
-          <MetaItem label="Origen"         value={account.source ?? "—"} />
+          <MetaItem label="Origen"         value={account.source ?? "-"} />
         </dl>
       </section>
 
@@ -230,7 +230,7 @@ function LinkedSales({ accountId, sales, onChange }) {
               <div>
                 <div style={{ fontWeight: 600 }}>{formatPesos(s.total_amount)}</div>
                 <div style={{ color: "var(--muted)", fontSize: 12 }}>
-                  #{s.ml_order_id} · {s.recipient_city ?? "—"} · {new Date(s.purchase_date).toLocaleDateString("es-CO")}
+                  #{s.ml_order_id} · {s.recipient_city ?? "-"} · {new Date(s.purchase_date).toLocaleDateString("es-CO")}
                 </div>
               </div>
               <button type="button" className={styles.btn} disabled={busy}
@@ -298,7 +298,7 @@ function SalePicker({ accountId, onLinked }) {
               <div>
                 <div style={{ fontWeight: 600 }}>{formatPesos(s.total_amount)}</div>
                 <div style={{ color: "var(--muted)", fontSize: 12 }}>
-                  #{s.ml_order_id} · {s.recipient_city ?? "—"} · {new Date(s.purchase_date).toLocaleDateString("es-CO")}
+                  #{s.ml_order_id} · {s.recipient_city ?? "-"} · {new Date(s.purchase_date).toLocaleDateString("es-CO")}
                 </div>
               </div>
               <button type="button" className={[styles.btn, styles["btn--primary"]].join(" ")}
@@ -316,11 +316,11 @@ function Datos({ account }) {
     <section className={styles.panel}>
       <h2 className={styles.panel__title}>Datos</h2>
       <dl style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px 12px", margin: 0, fontSize: 13 }}>
-        <MetaItem label="Ciudad"     value={account.city ?? "—"} />
-        <MetaItem label="Región"     value={account.region ?? "—"} />
+        <MetaItem label="Ciudad"     value={account.city ?? "-"} />
+        <MetaItem label="Región"     value={account.region ?? "-"} />
         <MetaItem label="País"       value={account.country} />
-        <MetaItem label="ID fiscal"  value={account.tax_id ?? "—"} />
-        <MetaItem label="Origen"     value={account.source ?? "—"} />
+        <MetaItem label="ID fiscal"  value={account.tax_id ?? "-"} />
+        <MetaItem label="Origen"     value={account.source ?? "-"} />
         <MetaItem label="Creada"     value={new Date(account.created_at).toLocaleDateString("es-CO")} />
       </dl>
       {account.notes && (

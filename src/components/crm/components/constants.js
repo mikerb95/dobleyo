@@ -38,7 +38,7 @@ export function stageIndex(id) {
 }
 
 export function formatCOP(cents) {
-  if (cents == null) return "—";
+  if (cents == null) return "-";
   const cop = Math.round(cents / 100);
   if (cop >= 1_000_000) return `$ ${(cop / 1_000_000).toFixed(1).replace(/\.0$/, "")} M`;
   if (cop >= 1_000)     return `$ ${(cop / 1_000).toFixed(0)} k`;
@@ -48,12 +48,12 @@ export function formatCOP(cents) {
 // Para valores ya en pesos (p. ej. sales_tracking.total_amount), no en centavos.
 export function formatPesos(amount) {
   const n = Number(amount);
-  if (!Number.isFinite(n)) return "—";
+  if (!Number.isFinite(n)) return "-";
   return n.toLocaleString("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 });
 }
 
 export function timeAgo(iso) {
-  if (!iso) return "—";
+  if (!iso) return "-";
   const diff = Math.max(0, Date.now() - new Date(iso).getTime());
   const s = Math.floor(diff / 1000);
   if (s < 60) return `hace ${s}s`;

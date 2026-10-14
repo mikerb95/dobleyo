@@ -550,9 +550,9 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
                     const isCop = o.currency === "COP" || !o.currency;
                     return `
                     <tr>
-                        <td><strong>${o.reference}</strong></td>
-                        <td>${o.customer_name}</td>
-                        <td>${o.shipping_city ?? "-"}</td>
+                        <td><strong>${esc(o.reference)}</strong></td>
+                        <td>${esc(o.customer_name)}</td>
+                        <td>${esc(o.shipping_city ?? "-")}</td>
                         <td>${o.payment_method === "cod" ? '<span class="badge badge-warn">Contraentrega</span>' : '<span class="badge badge-ok">Pagado</span>'}</td>
                         <td style="font-weight:600">${isCop ? fmtCOP(Number(o.total_cop) || 0) : `$${Number(o.total_cop || 0).toLocaleString("en-US")} ${o.currency}`}</td>
                         <td style="color:var(--muted);font-size:0.82rem">${fmtDate(o.created_at)}</td>
@@ -828,8 +828,8 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
                 }
                 body.innerHTML = shipments.map((s: any) => `
                     <tr>
-                        <td><strong>${s.reference}</strong></td>
-                        <td>${s.customer_name}</td>
+                        <td><strong>${esc(s.reference)}</strong></td>
+                        <td>${esc(s.customer_name)}</td>
                         <td style="font-weight:600">${fmtCOP(Number(s.collection_value_cop) || 0)}</td>
                         <td>${fmtDate(s.tracking_updated_at)}</td>
                         <td><button class="btn-action" data-id="${s.id}">Marcar conciliado</button></td>
@@ -860,11 +860,11 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
                 }
                 body.innerHTML = stuck.map((s: any) => `
                     <tr>
-                        <td><strong>${s.reference}</strong></td>
-                        <td>${s.customer_name}</td>
-                        <td>${s.shipping_city ?? "-"}</td>
+                        <td><strong>${esc(s.reference)}</strong></td>
+                        <td>${esc(s.customer_name)}</td>
+                        <td>${esc(s.shipping_city ?? "-")}</td>
                         <td>${badge(s.status)}</td>
-                        <td>${s.delivery_company_name ?? "-"}</td>
+                        <td>${esc(s.delivery_company_name ?? "-")}</td>
                         <td><span class="badge badge-err">${s.ageHours}h (SLA ${s.slaHours}h)</span></td>
                     </tr>
                 `).join("");
@@ -970,7 +970,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
                     daneSelect.innerHTML = `<option value="${suggestion.dane.code}">${suggestion.order.shipping_city} (${suggestion.dane.code})</option>`;
                 } else if (suggestion.dane?.candidates?.length) {
                     daneSelect.innerHTML = suggestion.dane.candidates.map((c: any) =>
-                        `<option value="${c.location_code}">${c.location_name} - ${c.department_name} (${c.location_code})</option>`
+                        `<option value="${esc(c.location_code)}">${esc(c.location_name)} - ${esc(c.department_name)} (${esc(c.location_code)})</option>`
                     ).join("");
                     alertBox.innerHTML += `<div class="alert-box alert-warn">Ciudad ambigua: seleccione la correcta antes de cotizar.</div>`;
                 } else {

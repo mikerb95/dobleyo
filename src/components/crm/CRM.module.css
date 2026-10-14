@@ -1,4 +1,4 @@
-/* CRM.module.css — mismas 3 variables del Dashboard */
+/* CRM.module.css: mismas 3 variables del Dashboard */
 
 .shell {
   --color-primary: #3a2618;
@@ -317,7 +317,7 @@
   .item__right { grid-column: auto; grid-row: auto; align-items: flex-start; flex-direction: row; gap: 12px; }
 }
 
-/* MODAL — Nueva cuenta */
+/* MODAL: Nueva cuenta */
 .overlay {
   position: fixed; inset: 0; z-index: 60;
   background: color-mix(in oklab, var(--color-text) 45%, transparent);
