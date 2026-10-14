@@ -2,393 +2,640 @@
 import AdminLayout from "../../layouts/AdminLayout.astro";
 ---
 
-<AdminLayout title="Auditoría — DobleYo Admin">
-  <style>
-    .page-header {
-      padding: 1.75rem 2rem 1.5rem;
-      background: #fff;
-      border-bottom: 1px solid rgba(0,0,0,.08);
-    }
-    .page-header h1 {
-      font-size: 1.75rem;
-      font-weight: 700;
-      color: #251a14;
-      margin: 0 0 0.3rem;
-    }
-    .page-header p { margin: 0; color: #7a6652; font-size: 0.95rem; }
-    .page-body { padding: 1.75rem 2rem 2rem; }
-
-    .filters-bar {
-      background: #fff;
-      border-radius: 8px;
-      border: 1px solid var(--border, rgba(0,0,0,.09));
-      box-shadow: var(--card-shadow, 0 0 0 1px rgba(0,0,0,.06), 0 2px 8px rgba(0,0,0,.05));
-      padding: 1rem 1.25rem;
-      margin-bottom: 1.5rem;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.75rem;
-      align-items: flex-end;
-    }
-    .filters-bar select,
-    .filters-bar input {
-      padding: 0.55rem 0.75rem;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      font-size: 0.88rem;
-      color: #251a14;
-      background: #faf8f5;
-      outline: none;
-      min-width: 180px;
-    }
-    .filters-bar select:focus,
-    .filters-bar input:focus { border-color: #c8a96e; }
-    .btn-filter {
-      padding: 0.55rem 1.25rem;
-      background: #4a6741;
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      font-size: 0.88rem;
-      font-weight: 600;
-      cursor: pointer;
-    }
-    .btn-filter:hover { background: #3a5331; }
-    .btn-reset {
-      padding: 0.55rem 1rem;
-      background: transparent;
-      color: #7a6652;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      font-size: 0.88rem;
-      cursor: pointer;
-    }
-    .btn-reset:hover { border-color: #bbb; color: #251a14; }
-
-    .table-wrap {
-      background: #fff;
-      border-radius: 8px;
-      border: 1px solid var(--border, rgba(0,0,0,.09));
-      box-shadow: var(--card-shadow, 0 0 0 1px rgba(0,0,0,.06), 0 2px 8px rgba(0,0,0,.05));
-      overflow-x: auto;
-      margin-bottom: 1.5rem;
-    }
-    #loading { text-align: center; padding: 2.5rem; color: #7a6652; }
-
-    .pagination {
-      display: flex;
-      gap: 0.5rem;
-      align-items: center;
-      justify-content: center;
-      flex-wrap: wrap;
-      margin-bottom: 1.5rem;
-    }
-    .page-btn {
-      padding: 0.4rem 0.8rem;
-      border: 1px solid #ddd;
-      background: #fff;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 0.85rem;
-      color: #251a14;
-    }
-    .page-btn:hover { background: #f7f3ef; border-color: #c8a96e; }
-
-    .kpi-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 1rem;
-      margin-top: 1.5rem;
-    }
-  </style>
-
-  <header class="page-header">
-    <h1>Auditoría y Logs</h1>
-    <p>Registro de todas las acciones realizadas en el sistema</p>
-  </header>
-
-  <div class="page-body">
-
-    <div class="filters-bar">
-      <select id="actionFilter">
-        <option value="">Todas las acciones</option>
-      </select>
-      <input type="text" id="entityIdFilter" placeholder="Filtrar por ID de entidad..." />
-      <input type="text" id="userFilter" placeholder="Filtrar por usuario (email)..." />
-      <button id="btnApplyFilters" class="btn-filter">Filtrar</button>
-      <button id="btnResetFilters" class="btn-reset">Limpiar</button>
-    </div>
-
-    <div id="loading">Cargando logs de auditoría...</div>
-
-    <div class="table-wrap">
-      <table class="erp-table" id="logsTable" style="display:none;">
-        <thead>
-          <tr>
-            <th>Fecha</th>
-            <th>Usuario</th>
-            <th>Acción</th>
-            <th>Tipo</th>
-            <th>ID Entidad</th>
-            <th>Detalles</th>
-          </tr>
-        </thead>
-        <tbody id="logsTableBody"></tbody>
-      </table>
-    </div>
-
-    <div class="pagination" id="pagination"></div>
-
-    <div class="kpi-grid">
-      <div class="kpi-tile info">
-        <div class="kpi-label">Total Registros</div>
-        <div class="kpi-value" id="statTotal">0</div>
+<AdminLayout title="Auditoría · DobleYo ERP" section="auditoria">
+  <div class="page-header">
+    <div class="page-header-top">
+      <div>
+        <div class="page-breadcrumb">Control / Auditoría</div>
+        <h1 class="page-title">Registro de auditoría</h1>
+        <div class="page-meta" id="auMeta">Solo lectura · Hora de Colombia</div>
       </div>
-      <div class="kpi-tile success">
-        <div class="kpi-label">Creaciones</div>
-        <div class="kpi-value" id="statCreates">0</div>
-      </div>
-      <div class="kpi-tile warning">
-        <div class="kpi-label">Actualizaciones</div>
-        <div class="kpi-value" id="statUpdates">0</div>
-      </div>
-      <div class="kpi-tile error">
-        <div class="kpi-label">Eliminaciones</div>
-        <div class="kpi-value" id="statDeletes">0</div>
+      <div class="page-header-actions">
+        <button type="button" class="btn btn-primary" id="auExport">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          Exportar CSV
+        </button>
       </div>
     </div>
-
   </div>
 
+  <div class="erp-body au">
+    <!-- Filtros: todos se aplican en el servidor -->
+    <form class="au-filters" id="auFilters" role="search" aria-label="Filtrar registro de auditoría">
+      <label class="au-search">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 21l-4.3-4.3M19 11a8 8 0 1 1-16 0 8 8 0 0 1 16 0z"/></svg>
+        <span class="sr-only">Buscar</span>
+        <input type="search" id="auQ" name="q" placeholder="ID de entidad, usuario o valor" autocomplete="off" maxlength="100" />
+      </label>
+      <label class="au-field">
+        <span>Rango</span>
+        <select id="auDays" name="days">
+          <option value="1">Últimas 24 h</option>
+          <option value="7" selected>Últimos 7 días</option>
+          <option value="30">Últimos 30 días</option>
+          <option value="90">Últimos 90 días</option>
+          <option value="0">Todo</option>
+        </select>
+      </label>
+      <label class="au-field">
+        <span>Acción</span>
+        <select id="auAction" name="action"><option value="">Todas</option></select>
+      </label>
+      <label class="au-field">
+        <span>Entidad</span>
+        <select id="auEntity" name="entity_type"><option value="">Todas</option></select>
+      </label>
+      <label class="au-check">
+        <input type="checkbox" id="auHideSystem" name="hide_system" />
+        Ocultar acciones del sistema
+      </label>
+      <button type="button" class="btn btn-sm" id="auReset">Limpiar</button>
+    </form>
+
+    <!-- Resumen del rango filtrado -->
+    <section class="kpi-grid au-strip" aria-label="Resumen del rango">
+      <div class="kpi-tile"><div class="kpi-label">Eventos</div><div class="kpi-value" id="auTotal">·</div></div>
+      <div class="kpi-tile"><div class="kpi-label"><span class="status status--ok">Creaciones</span></div><div class="kpi-value" id="auCreates">·</div></div>
+      <div class="kpi-tile"><div class="kpi-label"><span class="status status--info">Actualizaciones</span></div><div class="kpi-value" id="auUpdates">·</div></div>
+      <div class="kpi-tile"><div class="kpi-label"><span class="status status--error">Eliminaciones</span></div><div class="kpi-value" id="auDeletes">·</div></div>
+      <div class="kpi-tile"><div class="kpi-label"><span class="status">Del sistema</span></div><div class="kpi-value" id="auSystem">·</div></div>
+    </section>
+
+    <div class="au-split">
+      <section class="panel au-list" aria-label="Eventos">
+        <div class="table-wrapper">
+          <table class="erp-table au-table">
+            <thead>
+              <tr>
+                <th>Evento</th><th>Hora</th><th>Usuario</th><th>Acción</th><th>Entidad</th><th>Detalle</th>
+              </tr>
+            </thead>
+            <tbody id="auBody">
+              <tr><td colspan="6" class="empty-state">Cargando registro…</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="au-pager">
+          <span class="mono" id="auRange">·</span>
+          <div class="au-pager-btns">
+            <button type="button" class="btn btn-sm" id="auPrev" disabled>Anterior</button>
+            <button type="button" class="btn btn-sm" id="auNext" disabled>Siguiente</button>
+          </div>
+        </div>
+      </section>
+
+      <aside class="panel au-detail" id="auDetail" aria-label="Detalle del evento" aria-live="polite">
+        <p class="empty-state">Seleccione un evento para ver quién lo hizo, qué cambió y el registro completo.</p>
+      </aside>
+    </div>
+  </div>
+
+  <style>
+    .sr-only {
+      position: absolute; width: 1px; height: 1px; overflow: hidden;
+      clip: rect(0 0 0 0); white-space: nowrap;
+    }
+    .au { display: flex; flex-direction: column; gap: 16px; }
+
+    .au-filters {
+      display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px;
+      padding: 10px 12px;
+      background: var(--paper);
+      border: 1px solid var(--rule);
+      border-radius: var(--radius);
+    }
+    .au-search {
+      display: flex; align-items: center; gap: 6px;
+      flex: 1 1 240px; max-width: 360px;
+      height: 32px; padding: 0 10px;
+      border: 1px solid var(--rule-2); border-radius: var(--radius-sm);
+      color: var(--muted);
+    }
+    .au-search:focus-within { border-color: var(--accent-ink); }
+    .au-search input {
+      flex: 1; min-width: 0; border: 0; outline: 0;
+      font: inherit; font-size: 13px; background: transparent; color: var(--color-text);
+    }
+    .au-field {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 12px; color: var(--muted);
+    }
+    .au-field select {
+      height: 32px; padding: 0 8px;
+      border: 1px solid var(--rule-2); border-radius: var(--radius-sm);
+      background: var(--paper); color: var(--color-text);
+      font: inherit; font-size: 13px;
+    }
+    .au-check {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 12px; color: var(--color-text);
+    }
+
+    .au-strip .kpi-value { font-size: 18px; }
+
+    .au-split {
+      display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start;
+    }
+    .au-list { flex: 999 1 560px; min-width: 0; }
+    .au-detail { flex: 1 1 340px; min-width: 0; max-width: 100%; }
+    @media (min-width: 1024px) {
+      .au-detail { position: sticky; top: calc(var(--shell-h) + 16px); }
+    }
+
+    .au-table td { white-space: nowrap; }
+    .au-table .au-day td {
+      height: 30px;
+      background: var(--subtle);
+      font-size: 12px; font-weight: 600; color: var(--color-text);
+    }
+    .au-day .count { margin-left: 6px; font-weight: 400; }
+    .au-table tr.is-selected td { background: var(--active-bg); }
+    .au-evt {
+      appearance: none; border: 0; background: transparent; padding: 0;
+      font-family: var(--font-mono); font-size: 12px; font-weight: 500;
+      color: var(--accent-ink); cursor: pointer;
+      text-decoration: underline; text-underline-offset: 2px;
+      text-decoration-color: color-mix(in oklab, var(--color-accent) 45%, white);
+    }
+    .au-time { font-size: 12px; color: var(--muted); }
+    .au-user { display: inline-flex; align-items: center; gap: 8px; }
+    .au-avatar {
+      width: 22px; height: 22px; border-radius: 50%;
+      display: grid; place-items: center;
+      background: var(--active-bg); color: var(--color-text);
+      font-size: 10px; font-weight: 600; flex-shrink: 0;
+    }
+    .au-avatar--system { background: var(--hover); color: var(--muted); }
+    .au-entity-type { color: var(--muted); margin-right: 4px; }
+    .au-entity-id { font-size: 12px; }
+    .au-summary {
+      max-width: 300px; overflow: hidden; text-overflow: ellipsis;
+      color: var(--muted);
+    }
+
+    .au-pager {
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+      gap: 12px; padding: 10px 16px;
+      border-top: 1px solid var(--rule);
+      font-size: 12px; color: var(--muted);
+    }
+    .au-pager-btns { display: flex; gap: 6px; }
+
+    /* Panel de detalle */
+    .au-detail-head {
+      display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+      padding: 12px 16px; border-bottom: 1px solid var(--rule);
+    }
+    .au-detail-id { font-size: 12px; color: var(--muted); }
+    .au-detail-title { margin: 3px 0 0; font-size: 15px; font-weight: 600; }
+    .au-dl {
+      display: grid; grid-template-columns: 88px minmax(0, 1fr);
+      gap: 8px 12px; margin: 0; padding: 14px 16px;
+      border-bottom: 1px solid var(--rule);
+    }
+    .au-dl dt { color: var(--muted); }
+    .au-dl dd { margin: 0; overflow-wrap: anywhere; }
+    .au-section { padding: 14px 16px; border-bottom: 1px solid var(--rule); }
+    .au-section:last-child { border-bottom: 0; }
+    .au-section h3 { margin: 0 0 10px; font-size: 12px; font-weight: 600; }
+    .au-diff { display: flex; flex-direction: column; gap: 10px; }
+    .au-diff-field { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+    .au-diff-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 4px; }
+    .au-diff-row > div {
+      font-family: var(--font-mono); font-size: 12px;
+      padding: 6px 8px; border-radius: 4px; overflow-wrap: anywhere;
+    }
+    .au-before { background: var(--c-error-bg); color: var(--c-error); }
+    .au-after  { background: var(--c-success-bg); color: var(--c-success); }
+    .au-diff-legend {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 4px;
+      font-size: 11px; color: var(--muted);
+    }
+    .au-kv { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); gap: 6px 12px; margin: 0; }
+    .au-kv dt { font-family: var(--font-mono); font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
+    .au-kv dd { margin: 0; font-family: var(--font-mono); font-size: 12px; overflow-wrap: anywhere; }
+    .au-json {
+      margin: 0; max-height: 320px; overflow: auto;
+      font-family: var(--font-mono); font-size: 11.5px; line-height: 1.55;
+      background: var(--subtle); border: 1px solid var(--rule);
+      border-radius: var(--radius-sm); padding: 10px 12px;
+      white-space: pre;
+    }
+    .au-detail-actions { display: flex; gap: 8px; margin-top: 12px; }
+    .au-error { color: var(--c-error); }
+  </style>
+
   <script>
-    let allLogs = [];
-    let currentPage = 1;
-    const logsPerPage = 50;
+    type AuditLog = {
+      id: number;
+      user_id: number | null;
+      user_email: string | null;
+      first_name: string | null;
+      last_name: string | null;
+      user_role: string | null;
+      action: string;
+      entity_type: string | null;
+      entity_id: string | null;
+      details: string | null;
+      created_at: string;
+    };
+    type Summary = { total: number; creates: number; updates: number; deletes: number; system: number };
 
-    async function loadLogs() {
-      try {
-        const response = await fetch("/api/audit/logs?limit=500", {
-          credentials: "include",
-        });
+    const PAGE_SIZE = 50;
+    const TZ = 'America/Bogota';
 
-        if (!response.ok) {
-          throw new Error("Error al cargar logs");
+    // Verbo legible por acción y clase de estado del punto de color.
+    const ACTIONS: Record<string, [string, string]> = {
+      create: ['Creó', 'ok'],
+      update: ['Actualizó', 'info'],
+      delete: ['Eliminó', 'error'],
+      cancel: ['Canceló', 'error'],
+      adjust: ['Ajustó', 'info'],
+      transfer: ['Trasladó', 'info'],
+      open: ['Abrió', 'info'],
+      post: ['Contabilizó', 'ok'],
+      reconcile: ['Concilió', ''],
+      recompute: ['Recalculó', ''],
+      poll: ['Consultó', ''],
+      recover: ['Recuperó', ''],
+      recover_failed: ['Reintentó', ''],
+      run_migrations: ['Migró', ''],
+      backup_db: ['Respaldó', ''],
+      purge_old_logs: ['Depuró registros', ''],
+      clear_error_logs: ['Limpió errores', ''],
+      reset_password: ['Restableció clave', 'warn'],
+      change_role: ['Cambió rol', 'warn'],
+      create_admin: ['Creó administrador', 'warn'],
+      deactivate: ['Desactivó', 'warn'],
+      reactivate: ['Reactivó', 'info'],
+      expire: ['Venció', ''],
+      oversold: ['Sobreventa', 'error'],
+      generate_labels: ['Generó etiquetas', 'ok'],
+      generate_labels_custom: ['Generó etiquetas', 'ok'],
+      delete_label: ['Eliminó etiqueta', 'error'],
+      shipping_quoted: ['Cotizó envío', ''],
+      cod_rejected: ['Rechazó contraentrega', 'warn'],
+    };
+
+    const ENTITIES: Record<string, string> = {
+      shipments: 'Envío', product: 'Producto', products: 'Producto', product_variant: 'Variante',
+      user: 'Usuario', user_address: 'Dirección', farm: 'Finca', coffee_harvest: 'Cosecha',
+      lot_cost: 'Costo de lote', expense: 'Gasto', customer_orders: 'Pedido',
+      purchase_invoice: 'Factura de compra', sales_invoice: 'Factura de venta', payment: 'Pago',
+      storage_location: 'Ubicación', storage_zone: 'Zona', storage_movement: 'Movimiento',
+      inventory_count: 'Conteo', packaged_coffee: 'Café empacado', packaging_supply: 'Insumo',
+      external_sale: 'Venta externa', sales_tracking: 'Venta', subscription: 'Suscripción',
+      crm_account: 'Cuenta B2B', accounting_account: 'Cuenta contable', demand_forecast: 'Pronóstico',
+      label: 'Etiqueta', custom_profile: 'Perfil de etiqueta', system: 'Sistema',
+    };
+
+    const ROLES: Record<string, string> = {
+      admin: 'Administrador', caficultor: 'Caficultor', client: 'Cliente', provider: 'Proveedor',
+    };
+
+    const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
+    const els = {
+      q: $<HTMLInputElement>('auQ'),
+      days: $<HTMLSelectElement>('auDays'),
+      action: $<HTMLSelectElement>('auAction'),
+      entity: $<HTMLSelectElement>('auEntity'),
+      hideSystem: $<HTMLInputElement>('auHideSystem'),
+      body: $<HTMLTableSectionElement>('auBody'),
+      detail: $<HTMLElement>('auDetail'),
+      range: $<HTMLElement>('auRange'),
+      prev: $<HTMLButtonElement>('auPrev'),
+      next: $<HTMLButtonElement>('auNext'),
+      meta: $<HTMLElement>('auMeta'),
+    };
+
+    let logs: AuditLog[] = [];
+    let total = 0;
+    let offset = 0;
+    let selectedId: number | null = null;
+    let requestSeq = 0;
+
+    // ── Utilidades ────────────────────────────────────────────────
+    function el<K extends keyof HTMLElementTagNameMap>(
+      tag: K, attrs: Record<string, string> = {}, ...children: (Node | string | null)[]
+    ): HTMLElementTagNameMap[K] {
+      const node = document.createElement(tag);
+      for (const [k, v] of Object.entries(attrs)) {
+        if (k === 'class') node.className = v; else node.setAttribute(k, v);
+      }
+      for (const c of children) if (c != null) node.append(c);
+      return node;
+    }
+
+    // SQLite guarda CURRENT_TIMESTAMP en UTC sin zona: se marca explícitamente.
+    function parseDate(s: string): Date {
+      return new Date(/[zZ]|[+-]\d\d:?\d\d$/.test(s) ? s : s.replace(' ', 'T') + 'Z');
+    }
+    const fmtNum = (n: number) => new Intl.NumberFormat('es-CO').format(n);
+    const dayKey = (d: Date) => d.toLocaleDateString('en-CA', { timeZone: TZ });
+    const timeOf = (d: Date, seconds = false) => d.toLocaleTimeString('es-CO', {
+      timeZone: TZ, hour: '2-digit', minute: '2-digit', second: seconds ? '2-digit' : undefined, hour12: false,
+    });
+    function dayLabel(d: Date): string {
+      const today = dayKey(new Date());
+      const yesterday = dayKey(new Date(Date.now() - 86400000));
+      const k = dayKey(d);
+      const long = d.toLocaleDateString('es-CO', { timeZone: TZ, weekday: 'long', day: 'numeric', month: 'short' });
+      if (k === today) return `Hoy · ${long}`;
+      if (k === yesterday) return `Ayer · ${long}`;
+      return long.charAt(0).toUpperCase() + long.slice(1);
+    }
+
+    function actorName(l: AuditLog): string {
+      if (l.user_id == null) return 'Sistema';
+      const full = `${l.first_name ?? ''} ${l.last_name ?? ''}`.trim();
+      return full || l.user_email || `Usuario ${l.user_id}`;
+    }
+    function initials(name: string): string {
+      return name.split(/\s+/).slice(0, 2).map((w) => w[0] ?? '').join('').toUpperCase() || '?';
+    }
+    const verbOf = (a: string) => ACTIONS[a] ?? [a.replace(/_/g, ' '), ''];
+    const entityOf = (t: string | null) => (t ? ENTITIES[t] ?? t.replace(/_/g, ' ') : 'Sin entidad');
+
+    function parseDetails(raw: string | null): unknown {
+      if (!raw) return null;
+      try { return JSON.parse(raw); } catch { return raw; }
+    }
+    function show(v: unknown): string {
+      if (v === null || v === undefined || v === '') return 'vacío';
+      return typeof v === 'object' ? JSON.stringify(v) : String(v);
+    }
+
+    // Detecta cambios con forma { campo: { before, after } } (o from/to, old/new),
+    // también dentro de details.changes.
+    function extractDiff(d: unknown): { field: string; before: unknown; after: unknown }[] {
+      if (!d || typeof d !== 'object' || Array.isArray(d)) return [];
+      const src = (d as Record<string, unknown>).changes && typeof (d as any).changes === 'object'
+        ? (d as Record<string, unknown>).changes as Record<string, unknown>
+        : d as Record<string, unknown>;
+      const out: { field: string; before: unknown; after: unknown }[] = [];
+      for (const [field, v] of Object.entries(src)) {
+        if (!v || typeof v !== 'object' || Array.isArray(v)) continue;
+        const o = v as Record<string, unknown>;
+        for (const [b, a] of [['before', 'after'], ['from', 'to'], ['old', 'new']]) {
+          if (b in o || a in o) { out.push({ field, before: o[b], after: o[a] }); break; }
         }
-
-        const data = await response.json();
-        allLogs = data.logs || [];
-
-        displayLogs();
-        updateStats();
-        loadActions();
-
-        document.getElementById("loading").style.display = "none";
-        document.getElementById("logsTable").style.display = "table";
-      } catch (err) {
-        console.error("Error:", err);
-        document.getElementById("loading").textContent =
-          "Error al cargar los logs de auditoría";
       }
+      return out;
     }
 
-    async function loadActions() {
+    function summarize(l: AuditLog): string {
+      const d = parseDetails(l.details);
+      const diff = extractDiff(d);
+      if (diff.length) {
+        const first = diff[0];
+        const more = diff.length > 1 ? ` (+${diff.length - 1})` : '';
+        return `${first.field}: ${show(first.before)} → ${show(first.after)}${more}`;
+      }
+      if (d && typeof d === 'object' && !Array.isArray(d)) {
+        const entries = Object.entries(d as Record<string, unknown>).filter(([, v]) => v !== null && v !== '');
+        return entries.slice(0, 2).map(([k, v]) => `${k}: ${show(v)}`).join(' · ');
+      }
+      return typeof d === 'string' ? d : '';
+    }
+
+    // ── Estado en la URL (las vistas se pueden compartir) ─────────
+    function readUrl() {
+      const p = new URLSearchParams(location.search);
+      els.q.value = p.get('q') ?? '';
+      if (p.has('days')) els.days.value = p.get('days')!;
+      els.hideSystem.checked = p.get('hide_system') === '1';
+      offset = Math.max(Number(p.get('offset')) || 0, 0);
+      return { action: p.get('action') ?? '', entity: p.get('entity_type') ?? '' };
+    }
+    function filterParams(): URLSearchParams {
+      const p = new URLSearchParams();
+      if (els.q.value.trim()) p.set('q', els.q.value.trim());
+      p.set('days', els.days.value);
+      if (els.action.value) p.set('action', els.action.value);
+      if (els.entity.value) p.set('entity_type', els.entity.value);
+      if (els.hideSystem.checked) p.set('hide_system', '1');
+      return p;
+    }
+    function writeUrl() {
+      const p = filterParams();
+      if (offset) p.set('offset', String(offset));
+      history.replaceState(null, '', `${location.pathname}?${p}`);
+    }
+
+    // ── Carga ─────────────────────────────────────────────────────
+    async function load() {
+      const seq = ++requestSeq;
+      writeUrl();
+      const p = filterParams();
+      p.set('limit', String(PAGE_SIZE));
+      p.set('offset', String(offset));
       try {
-        const response = await fetch("/api/audit/actions", {
-          credentials: "include",
-        });
-
-        if (!response.ok) return;
-
-        const data = await response.json();
-        const select = document.getElementById("actionFilter");
-
-        data.actions.forEach((action) => {
-          const option = document.createElement("option");
-          option.value = action;
-          option.textContent = action.charAt(0).toUpperCase() + action.slice(1);
-          select.appendChild(option);
-        });
-      } catch (err) {
-        console.error("Error loading actions:", err);
+        const res = await fetch(`/api/audit/logs?${p}`, { credentials: 'include' });
+        if (!res.ok) throw new Error(String(res.status));
+        const data = await res.json();
+        if (seq !== requestSeq) return; // llegó una respuesta más nueva
+        logs = data.logs ?? [];
+        total = Number(data.total) || 0;
+        renderSummary(data.summary);
+        renderTable();
+        if (selectedId != null && !logs.some((l) => l.id === selectedId)) renderDetail(null);
+      } catch {
+        if (seq !== requestSeq) return;
+        els.body.replaceChildren(el('tr', {}, el('td', { colspan: '6', class: 'empty-state au-error' },
+          'No se pudo cargar el registro de auditoría. Intente de nuevo.')));
       }
     }
 
-    function displayLogs() {
-      const tbody = document.getElementById("logsTableBody");
-      tbody.innerHTML = "";
+    function renderSummary(s: Summary | undefined) {
+      const set = (id: string, v: number | undefined) => { $(id).textContent = fmtNum(v ?? 0); };
+      set('auTotal', s?.total); set('auCreates', s?.creates); set('auUpdates', s?.updates);
+      set('auDeletes', s?.deletes); set('auSystem', s?.system);
+      const label = els.days.options[els.days.selectedIndex]?.text ?? '';
+      els.meta.textContent = `Solo lectura · ${label} · ${fmtNum(total)} eventos · Hora de Colombia`;
+    }
 
-      if (allLogs.length === 0) {
-        tbody.innerHTML =
-          '<tr><td colspan="6" style="padding: 2rem; text-align: center; color: #666;">No hay registros de auditoría</td></tr>';
+    function renderTable() {
+      if (!logs.length) {
+        els.body.replaceChildren(el('tr', {}, el('td', { colspan: '6', class: 'empty-state' },
+          'No hay eventos con estos filtros.')));
+      } else {
+        const rows: HTMLTableRowElement[] = [];
+        const perDay = new Map<string, number>();
+        for (const l of logs) {
+          const k = dayKey(parseDate(l.created_at));
+          perDay.set(k, (perDay.get(k) ?? 0) + 1);
+        }
+        let currentDay = '';
+        for (const l of logs) {
+          const date = parseDate(l.created_at);
+          const k = dayKey(date);
+          if (k !== currentDay) {
+            currentDay = k;
+            rows.push(el('tr', { class: 'au-day' }, el('td', { colspan: '6' },
+              dayLabel(date), el('span', { class: 'count' }, `${perDay.get(k)} en esta página`))));
+          }
+          const name = actorName(l);
+          const [verb, tone] = verbOf(l.action);
+          const btn = el('button', {
+            type: 'button', class: 'au-evt', 'data-id': String(l.id),
+            'aria-pressed': String(l.id === selectedId), 'aria-label': `Ver detalle del evento ${l.id}`,
+          }, `#${l.id}`);
+          rows.push(el('tr', { 'data-id': String(l.id), class: l.id === selectedId ? 'is-selected' : '' },
+            el('td', {}, btn),
+            el('td', { class: 'mono au-time' }, timeOf(date, true)),
+            el('td', {}, el('span', { class: 'au-user' },
+              el('span', { class: l.user_id == null ? 'au-avatar au-avatar--system' : 'au-avatar', 'aria-hidden': 'true' },
+                l.user_id == null ? 'SY' : initials(name)),
+              name)),
+            el('td', {}, el('span', { class: `status${tone ? ` status--${tone}` : ''}` }, verb)),
+            el('td', {},
+              el('span', { class: 'au-entity-type' }, entityOf(l.entity_type)),
+              el('span', { class: 'mono au-entity-id' }, l.entity_id ?? '')),
+            el('td', { class: 'au-summary', title: summarize(l) }, summarize(l)),
+          ));
+        }
+        els.body.replaceChildren(...rows);
+      }
+
+      const from = total ? offset + 1 : 0;
+      const to = Math.min(offset + logs.length, total);
+      els.range.textContent = `${fmtNum(from)}-${fmtNum(to)} de ${fmtNum(total)}`;
+      els.prev.disabled = offset === 0;
+      els.next.disabled = offset + PAGE_SIZE >= total;
+    }
+
+    function renderDetail(l: AuditLog | null) {
+      selectedId = l?.id ?? null;
+      els.body.querySelectorAll('tr[data-id]').forEach((tr) => {
+        const on = Number((tr as HTMLElement).dataset.id) === selectedId;
+        tr.classList.toggle('is-selected', on);
+        tr.querySelector('.au-evt')?.setAttribute('aria-pressed', String(on));
+      });
+
+      if (!l) {
+        els.detail.replaceChildren(el('p', { class: 'empty-state' },
+          'Seleccione un evento para ver quién lo hizo, qué cambió y el registro completo.'));
         return;
       }
 
-      const start = (currentPage - 1) * logsPerPage;
-      const end = start + logsPerPage;
-      const paginatedLogs = allLogs.slice(start, end);
+      const date = parseDate(l.created_at);
+      const name = actorName(l);
+      const [verb, tone] = verbOf(l.action);
+      const details = parseDetails(l.details);
+      const diff = extractDiff(details);
+      const when = `${dayKey(date)} ${timeOf(date, true)} COT`;
+      const role = l.user_id == null ? 'Proceso automático' : ROLES[l.user_role ?? ''] ?? (l.user_role || 'Sin rol');
 
-      paginatedLogs.forEach((log) => {
-        const row = document.createElement("tr");
+      const head = el('div', { class: 'au-detail-head' },
+        el('div', {},
+          el('div', { class: 'mono au-detail-id' }, `Evento #${l.id}`),
+          el('h2', { class: 'au-detail-title' }, `${verb} ${entityOf(l.entity_type).toLowerCase()}`)),
+        el('span', { class: `status${tone ? ` status--${tone}` : ''}` }, verb));
 
-        const date = new Date(log.created_at);
-        const dateStr =
-          date.toLocaleDateString("es-ES") +
-          " " +
-          date.toLocaleTimeString("es-ES");
+      const dl = el('dl', { class: 'au-dl' },
+        el('dt', {}, 'Fecha'), el('dd', { class: 'mono' }, when),
+        el('dt', {}, 'Usuario'), el('dd', {}, name, l.user_email ? el('span', { class: 'au-entity-type' }, ` · ${l.user_email}`) : null),
+        el('dt', {}, 'Rol'), el('dd', {}, role),
+        el('dt', {}, 'Entidad'), el('dd', {}, `${entityOf(l.entity_type)} `, el('span', { class: 'mono' }, l.entity_id ?? '')),
+        el('dt', {}, 'Código'), el('dd', { class: 'mono' }, `${l.action} · ${l.entity_type ?? ''}`));
 
-        const actionColors = {
-          create: "#10b981",
-          update: "#f59e0b",
-          delete: "#ef4444",
-          harvest: "#3b82f6",
-          store: "#8b5cf6",
-          roast_send: "#ec4899",
-          roast_receive: "#06b6d4",
-        };
+      let changes: HTMLElement;
+      if (diff.length) {
+        changes = el('div', { class: 'au-section' }, el('h3', {}, 'Campos modificados'),
+          el('div', { class: 'au-diff' },
+            el('div', { class: 'au-diff-legend', 'aria-hidden': 'true' }, el('span', {}, 'Antes'), el('span', {}, 'Después')),
+            ...diff.map((x) => el('div', {},
+              el('div', { class: 'mono au-diff-field' }, x.field),
+              el('div', { class: 'au-diff-row' },
+                el('div', { class: 'au-before' }, el('span', { class: 'sr-only' }, 'Antes: '), show(x.before)),
+                el('div', { class: 'au-after' }, el('span', { class: 'sr-only' }, 'Después: '), show(x.after)))))));
+      } else if (details && typeof details === 'object' && !Array.isArray(details) && Object.keys(details).length) {
+        changes = el('div', { class: 'au-section' }, el('h3', {}, 'Datos registrados'),
+          el('dl', { class: 'au-kv' }, ...Object.entries(details as Record<string, unknown>).flatMap(([k, v]) =>
+            [el('dt', {}, k), el('dd', {}, show(v))])));
+      } else {
+        changes = el('div', { class: 'au-section' }, el('h3', {}, 'Datos registrados'),
+          el('p', { class: 'au-entity-type' }, 'El evento no registró datos adicionales.'));
+      }
 
-        const userName =
-          log.first_name || log.last_name
-            ? `${log.first_name || ""} ${log.last_name || ""}`.trim()
-            : log.user_email || "Sistema";
-
-        row.innerHTML = `
-          <td style="font-size:0.82rem; color:var(--text-2)">${dateStr}</td>
-          <td style="font-weight:500;">${userName}</td>
-          <td>
-            <span style="background:${actionColors[log.action] || "#6b7280"}; color:white; padding:2px 8px; border-radius:10px; font-size:11px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; white-space:nowrap;">
-              ${log.action}
-            </span>
-          </td>
-          <td style="font-size:0.82rem; color:var(--text-2)">${log.entity_type}</td>
-          <td style="font-size:0.82rem; color:var(--text-2)">${log.entity_id}</td>
-          <td>
-            <button class="btn-action" data-show-details data-details="${btoa(JSON.stringify(log.details))}" data-log-action="${log.action}" data-entity-type="${log.entity_type}" data-entity-id="${log.entity_id}">Ver</button>
-          </td>
-        `;
-
-        tbody.appendChild(row);
+      const json = JSON.stringify({
+        id: l.id, created_at: l.created_at, user_id: l.user_id, user_email: l.user_email,
+        action: l.action, entity_type: l.entity_type, entity_id: l.entity_id, details,
+      }, null, 2);
+      const copyBtn = el('button', { type: 'button', class: 'btn btn-sm' }, 'Copiar JSON');
+      copyBtn.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(json);
+          copyBtn.textContent = 'Copiado';
+        } catch {
+          copyBtn.textContent = 'No se pudo copiar';
+        }
+        setTimeout(() => { copyBtn.textContent = 'Copiar JSON'; }, 1600);
       });
+      const raw = el('div', { class: 'au-section' }, el('h3', {}, 'Registro completo'),
+        el('pre', { class: 'au-json' }, json),
+        el('div', { class: 'au-detail-actions' }, copyBtn));
 
-      renderPagination();
+      els.detail.replaceChildren(head, dl, changes, raw);
+      if (window.innerWidth < 1024) els.detail.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
-    function renderPagination() {
-      const container = document.getElementById("pagination");
-      container.innerHTML = "";
-
-      const totalPages = Math.ceil(allLogs.length / logsPerPage);
-
-      if (totalPages <= 1) return;
-
-      if (currentPage > 1) {
-        const prevBtn = document.createElement("button");
-        prevBtn.textContent = "← Anterior";
-        prevBtn.className = "page-btn";
-        prevBtn.onclick = () => { currentPage--; displayLogs(); window.scrollTo(0, 0); };
-        container.appendChild(prevBtn);
-      }
-
-      const pageSpan = document.createElement("span");
-      pageSpan.textContent = `Página ${currentPage} de ${totalPages}`;
-      pageSpan.style.color = "#7a6652";
-      pageSpan.style.fontSize = "0.88rem";
-      container.appendChild(pageSpan);
-
-      if (currentPage < totalPages) {
-        const nextBtn = document.createElement("button");
-        nextBtn.textContent = "Siguiente →";
-        nextBtn.className = "page-btn";
-        nextBtn.onclick = () => { currentPage++; displayLogs(); window.scrollTo(0, 0); };
-        container.appendChild(nextBtn);
-      }
-    }
-
-    function updateStats() {
-      const stats = {
-        total: allLogs.length,
-        create: allLogs.filter((l) => l.action === "create").length,
-        update: allLogs.filter((l) => l.action === "update").length,
-        delete: allLogs.filter((l) => l.action === "delete").length,
+    // ── Opciones de filtros ───────────────────────────────────────
+    async function loadOptions(initial: { action: string; entity: string }) {
+      const fill = (select: HTMLSelectElement, values: string[], label: (v: string) => string, current: string) => {
+        for (const v of values) select.append(new Option(label(v), v));
+        if (current && values.includes(current)) select.value = current;
       };
-
-      document.getElementById("statTotal").textContent = stats.total;
-      document.getElementById("statCreates").textContent = stats.create;
-      document.getElementById("statUpdates").textContent = stats.update;
-      document.getElementById("statDeletes").textContent = stats.delete;
-    }
-
-    function applyFilters() {
-      const action = document.getElementById("actionFilter").value;
-      const entityId = document
-        .getElementById("entityIdFilter")
-        .value.toLowerCase();
-      const user = document.getElementById("userFilter").value.toLowerCase();
-
-      const filtered = allLogs.filter((log) => {
-        const matchAction = !action || log.action === action;
-        const matchEntity =
-          !entityId || log.entity_id.toLowerCase().includes(entityId);
-        const matchUser =
-          !user ||
-          (log.user_email || "").toLowerCase().includes(user) ||
-          `${log.first_name || ""} ${log.last_name || ""}`
-            .toLowerCase()
-            .includes(user);
-        return matchAction && matchEntity && matchUser;
-      });
-
-      allLogs = filtered;
-      currentPage = 1;
-      displayLogs();
-      updateStats();
-    }
-
-    function resetFilters() {
-      document.getElementById("actionFilter").value = "";
-      document.getElementById("entityIdFilter").value = "";
-      document.getElementById("userFilter").value = "";
-      loadLogs();
-    }
-
-    function showDetails(encodedDetails, action, entityType, entityId) {
       try {
-        const details = JSON.parse(atob(encodedDetails));
-        const detailsStr = JSON.stringify(details, null, 2);
-        alert(
-          `Detalles de la acción:\n\nAcción: ${action}\nTipo: ${entityType}\nID: ${entityId}\n\n${detailsStr}`
-        );
-      } catch (err) {
-        alert("No hay detalles adicionales para esta acción");
+        const [a, e] = await Promise.all([
+          fetch('/api/audit/actions', { credentials: 'include' }).then((r) => (r.ok ? r.json() : { actions: [] })),
+          fetch('/api/audit/entity-types', { credentials: 'include' }).then((r) => (r.ok ? r.json() : { entityTypes: [] })),
+        ]);
+        fill(els.action, a.actions ?? [], (v) => verbOf(v)[0], initial.action);
+        fill(els.entity, e.entityTypes ?? [], entityOf, initial.entity);
+      } catch { /* los filtros quedan en "Todas" */ }
+    }
+
+    // ── CSV del rango filtrado (hasta 500 filas) ──────────────────
+    async function exportCsv() {
+      const p = filterParams();
+      p.set('limit', '500');
+      const res = await fetch(`/api/audit/logs?${p}`, { credentials: 'include' });
+      if (!res.ok) return;
+      const data = await res.json();
+      const cell = (v: unknown) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+      const lines = [['id', 'fecha_utc', 'usuario', 'email', 'accion', 'entidad', 'id_entidad', 'detalles'].join(',')];
+      for (const l of (data.logs ?? []) as AuditLog[]) {
+        lines.push([l.id, l.created_at, actorName(l), l.user_email, l.action, l.entity_type, l.entity_id, l.details].map(cell).join(','));
       }
+      const blob = new Blob(['﻿' + lines.join('\n')], { type: 'text/csv;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `auditoria-${dayKey(new Date())}.csv`;
+      a.click();
+      URL.revokeObjectURL(a.href);
     }
 
-    loadLogs();
-
-    document.getElementById("btnApplyFilters")?.addEventListener("click", applyFilters);
-    document.getElementById("btnResetFilters")?.addEventListener("click", resetFilters);
-    document.querySelector(".table-wrap")?.addEventListener("click", (e) => {
-      const btn = e.target.closest("[data-show-details]");
-      if (!btn) return;
-      showDetails(btn.dataset.details, btn.dataset.logAction, btn.dataset.entityType, btn.dataset.entityId);
+    // ── Eventos ───────────────────────────────────────────────────
+    const refilter = () => { offset = 0; load(); };
+    let debounce: ReturnType<typeof setTimeout> | undefined;
+    els.q.addEventListener('input', () => { clearTimeout(debounce); debounce = setTimeout(refilter, 300); });
+    $('auFilters').addEventListener('submit', (e) => { e.preventDefault(); refilter(); });
+    [els.days, els.action, els.entity, els.hideSystem].forEach((c) => c.addEventListener('change', refilter));
+    $('auReset').addEventListener('click', () => {
+      els.q.value = ''; els.days.value = '7'; els.action.value = ''; els.entity.value = '';
+      els.hideSystem.checked = false; refilter();
     });
-  </script>
+    els.prev.addEventListener('click', () => { offset = Math.max(offset - PAGE_SIZE, 0); load(); });
+    els.next.addEventListener('click', () => { offset += PAGE_SIZE; load(); });
+    els.body.addEventListener('click', (e) => {
+      const btn = (e.target as HTMLElement).closest<HTMLElement>('.au-evt');
+      if (!btn) return;
+      renderDetail(logs.find((l) => l.id === Number(btn.dataset.id)) ?? null);
+    });
+    $('auExport').addEventListener('click', exportCsv);
 
-  <style>
-    .btn-action {
-      display: inline-flex;
-      align-items: center;
-      padding: 0 10px;
-      height: 28px;
-      font-size: 12px;
-      font-weight: 600;
-      font-family: inherit;
-      border: 1px solid var(--border, rgba(0,0,0,.09));
-      border-radius: 4px;
-      background: var(--card-bg, #fff);
-      cursor: pointer;
-      color: var(--text-1, #32363a);
-      transition: background 0.12s, border-color 0.12s;
-    }
-    .btn-action:hover { background: var(--nav-hover-bg, #f5f6f7); border-color: #bbb; }
-  </style>
+    const initial = readUrl();
+    loadOptions(initial).then(load);
+  </script>
 </AdminLayout>
