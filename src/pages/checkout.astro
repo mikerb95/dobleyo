@@ -728,22 +728,29 @@ import Layout from "../layouts/Layout.astro";
               });
 
               checkout.open(function (result) {
-                if (result && result.transaction) {
-                  // Pago iniciado/completado — el webhook confirma el estado real.
-                  if (window.Cart.clearCart) window.Cart.clearCart();
-                  sessionStorage.removeItem('dy_coupon');
-                  window.location.href = confirmUrl;
-                } else {
+                const tx = result && result.transaction;
+                if (!tx) {
                   // El usuario cerró el modal sin completar el pago: permitir reintento.
                   resetPayBtn();
+                  return;
                 }
+                if (['DECLINED', 'ERROR', 'VOIDED'].includes(tx.status)) {
+                  // Rechazado: se queda en el checkout con su carrito para reintentar
+                  payError.textContent = 'Wompi rechazó el pago. No se realizó ningún cobro; puede intentar de nuevo o con otro medio de pago.';
+                  payError.style.display = 'block';
+                  resetPayBtn();
+                  return;
+                }
+                // Aprobado o pendiente: la confirmación espera al webhook y vacía
+                // el carrito cuando el pedido queda pagado (confirmacion.js).
+                window.location.href = confirmUrl;
               });
               return;
             }
 
             // Fallback: checkout hosted (redirección) si el widget no está disponible.
-            if (window.Cart.clearCart) window.Cart.clearCart();
-            sessionStorage.removeItem('dy_coupon');
+            // El carrito no se vacía aquí: si el cliente abandona el pago en Wompi lo
+            // conserva; la confirmación lo vacía cuando el pedido queda pagado.
             window.location.href = data.data.checkoutUrl || confirmUrl;
 
           } catch {

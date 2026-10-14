@@ -16,7 +16,7 @@ import Layout from "../layouts/Layout.astro";
         Seguir comprando
       </a>
       <h1 class="cart-title">Tu carrito</h1>
-      <span class="cart-count" id="cartCount"></span>
+      <span class="cart-count" id="cartPageCount"></span>
     </div>
 
     <!-- Carrito vacío -->
@@ -173,7 +173,7 @@ import Layout from "../layouts/Layout.astro";
         const listEl     = document.getElementById('cartList');
         const emptyEl    = document.getElementById('cartEmpty');
         const layoutEl   = document.getElementById('cartLayout');
-        const countEl    = document.getElementById('cartCount');
+        const countEl    = document.getElementById('cartPageCount');
         const subtotalEl = document.getElementById('cartSubtotal');
         const shippingEl = document.getElementById('cartShipping');
         const totalEl    = document.getElementById('cartTotal');

@@ -67,6 +67,31 @@ El footer era una rejilla crema sin jerarquía: logo de 28 px, Instagram y Faceb
 
 ---
 
+## 2026-10-14: Confirmación de pago con Wompi: espera al webhook y carrito seguro (Agente: Claude)
+
+### Contexto
+Al volver de Wompi, la confirmación consultaba el pedido una sola vez. Como el estado "pagado" lo pone el webhook, que suele llegar segundos después, el cliente se quedaba viendo "Pago en proceso" hasta recargar. Un error de red mostraba "Su pago fue rechazado", y el carrito se vaciaba aunque Wompi rechazara la tarjeta.
+
+### Cambios
+- **`public/assets/js/confirmacion.js`**:
+  - Mientras el pedido siga pendiente, vuelve a consultar cada 3 s durante un minuto. Al acabar la espera, explica que llegará un correo.
+  - Un error de red muestra el nuevo estado "No pudimos verificar su pedido", con un botón para reintentar.
+  - El carrito (y el cupón) se vacía cuando el pedido queda pagado.
+- **`src/pages/confirmacion.astro`**: nuevo estado `stateUnknown` y textos en "usted".
+- **`src/pages/checkout.astro`**:
+  - Si el widget devuelve `DECLINED`, `ERROR` o `VOIDED`, el cliente se queda en el checkout con su carrito y un aviso para reintentar.
+  - Ni el widget ni la redirección vacían el carrito antes de tiempo. Contraentrega no cambia.
+- **`src/pages/en/checkout.astro`**: no vacía el carrito antes de ir a Wompi.
+- **`src/pages/en/confirmation.astro`**:
+  - Antes decía "Thank you for your order!" con cualquier estado y mostraba `pending_payment` tal cual.
+  - Ahora tiene estados de pendiente (con reintentos), rechazado y sin verificar. Escapa los nombres de producto y se monta con `astro:page-load`.
+
+### Verificación
+- Playwright con la API de pedidos simulada (dos respuestas `pending_payment` y luego `paid`): las dos páginas pasan solas a "confirmado" y el carrito queda vacío. Con la red cortada muestran "No pudimos verificar" / "We couldn't check your order".
+- No se crearon pedidos en la BD.
+
+---
+
 ## 2026-10-14: Motion en guías, partners, afiliados, accesorios, blog y ficha de producto (Agente: Claude)
 
 ### Contexto

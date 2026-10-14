@@ -13,7 +13,7 @@ import Layout from "../layouts/Layout.astro";
     <!-- Loading -->
     <div id="stateLoading" class="conf-loading" aria-live="polite">
       <div class="conf-spinner" role="status" aria-label="Verificando pedido..."></div>
-      <p class="conf-loading__text">Verificando tu pedido…</p>
+      <p class="conf-loading__text">Verificando su pedido…</p>
     </div>
 
     <!-- Pagado / Procesando -->
@@ -22,7 +22,7 @@ import Layout from "../layouts/Layout.astro";
         <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><path d="M5 14l6 6 12-12" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </div>
       <h1 class="conf-title" id="paidTitle">¡Pedido confirmado!</h1>
-      <p class="conf-subtitle" id="paidSubtitle">Recibirás un correo de confirmación con los detalles de tu pedido.</p>
+      <p class="conf-subtitle" id="paidSubtitle">Recibirá un correo de confirmación con los detalles de su pedido.</p>
       <section id="orderTracking" class="conf-card conf-tracking" aria-labelledby="trackingTitle" hidden></section>
       <div id="orderDetails" class="conf-card"></div>
       <div class="conf-next-steps" id="nextSteps">
@@ -43,7 +43,7 @@ import Layout from "../layouts/Layout.astro";
         <div class="conf-step-item">
           <span class="conf-step-icon" aria-hidden="true"><Icon name="truck" size={22} /></span>
           <div>
-            <p class="conf-step-title">Envío a tu puerta</p>
+            <p class="conf-step-title">Envío a su puerta</p>
             <p class="conf-step-desc">3–5 días hábiles</p>
           </div>
         </div>
@@ -57,12 +57,25 @@ import Layout from "../layouts/Layout.astro";
         <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="10" stroke="#fff" stroke-width="2"/><path d="M14 9v5l3 3" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </div>
       <h1 class="conf-title">Pago en proceso</h1>
-      <p class="conf-subtitle">Tu pedido fue creado. El pago puede tomar unos minutos en confirmarse.</p>
+      <p class="conf-subtitle" id="pendingSubtitle">Su pedido fue creado. Estamos esperando la confirmación de Wompi; esta página se actualiza sola.</p>
       <div id="orderDetailsPending" class="conf-card"></div>
       <p class="conf-help">
         ¿Problemas con el pago?
-        <a href="/contacto">Contáctanos</a>
+        <a href="/contacto">Contáctenos</a>
       </p>
+    </div>
+
+    <!-- No se pudo verificar (error de red): no es lo mismo que un pago rechazado -->
+    <div id="stateUnknown" class="conf-state" style="display:none;">
+      <div class="conf-anim conf-anim--pending" aria-hidden="true">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="10" stroke="#fff" stroke-width="2"/><path d="M14 9v6M14 18.5v.5" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/></svg>
+      </div>
+      <h1 class="conf-title">No pudimos verificar su pedido</h1>
+      <p class="conf-subtitle">Hubo un problema de conexión al consultar el estado del pago. Si pagó, su pedido está registrado y le llegará un correo de confirmación.</p>
+      <div class="conf-error-actions">
+        <button type="button" class="conf-btn-primary" id="retryVerify">Volver a verificar</button>
+      </div>
+      <p class="conf-help">¿Necesita ayuda? <a href="/contacto">Contáctenos</a></p>
     </div>
 
     <!-- Error / Cancelado -->
@@ -71,12 +84,12 @@ import Layout from "../layouts/Layout.astro";
         <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><path d="M8 8l12 12M20 8L8 20" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/></svg>
       </div>
       <h1 class="conf-title conf-title--error">Pago no completado</h1>
-      <p class="conf-subtitle">Tu pago fue rechazado o cancelado. No se realizó ningún cobro.</p>
+      <p class="conf-subtitle">Su pago fue rechazado o cancelado. No se realizó ningún cobro.</p>
       <div class="conf-error-actions">
         <a href="/checkout" class="conf-btn-primary">Intentar de nuevo</a>
         <a href="/cart" class="conf-btn-secondary">Ver carrito</a>
       </div>
-      <p class="conf-help">¿Necesitas ayuda? <a href="/contacto">Contáctanos</a></p>
+      <p class="conf-help">¿Necesita ayuda? <a href="/contacto">Contáctenos</a></p>
     </div>
 
     <!-- No encontrado -->

@@ -102,7 +102,8 @@ import { getCanonicalUrl } from "../../i18n/index.ts";
             });
             const data = await res.json();
             if (!res.ok || !data.success) throw new Error(data.error || (data.errors && data.errors[0]?.msg) || "Order failed");
-            window.Cart.clearCart();
+            // El carrito se vacía en /confirmation cuando el pedido queda pagado:
+            // si el cliente abandona el pago en Wompi, conserva su carrito.
             window.location.href = data.data.checkoutUrl || ("/confirmation?ref=" + data.data.reference);
           } catch (e2) {
             err.textContent = e2.message || "Something went wrong. Please try again.";

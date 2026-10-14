@@ -42,10 +42,10 @@ function initConfirmacion() {
     const nextSteps = document.getElementById("nextSteps");
     if (sh.status === "delivered") {
       if (title) title.textContent = "¡Pedido entregado!";
-      if (subtitle) subtitle.textContent = "Esperamos que disfrutes tu café.";
+      if (subtitle) subtitle.textContent = "Esperamos que disfrute su café.";
     } else {
       if (title) title.textContent = "Tu pedido va en camino";
-      if (subtitle) subtitle.textContent = "Aquí puedes seguir el recorrido de tu envío.";
+      if (subtitle) subtitle.textContent = "Aquí puede seguir el recorrido de su envío.";
     }
     if (nextSteps) nextSteps.style.display = "none";
 
@@ -77,12 +77,12 @@ function initConfirmacion() {
       </div>
       ${events
         ? `<ol class="tr-events">${events}</ol>`
-        : `<p class="tr-empty">La transportadora aún no reporta movimientos. Vuelve a consultar en unas horas.</p>`}
+        : `<p class="tr-empty">La transportadora aún no reporta movimientos. Vuelva a consultar en unas horas.</p>`}
     `;
     el.hidden = false;
   }
 
-  const STATES = ["stateLoading", "statePaid", "statePending", "stateError", "stateNotFound"];
+  const STATES = ["stateLoading", "statePaid", "statePending", "stateError", "stateNotFound", "stateUnknown"];
   function showState(id) {
     STATES.forEach((s) => {
       const el = document.getElementById(s);
@@ -150,41 +150,85 @@ function initConfirmacion() {
     `;
   }
 
-  async function loadOrder(ref) {
+  // El estado "pagado" lo pone el webhook de Wompi, que suele llegar unos
+  // segundos DESPUÉS de que el cliente vuelve aquí. Mientras el pedido siga
+  // pendiente se vuelve a consultar cada 3 s durante un minuto.
+  const POLL_MS = 3000;
+  const POLL_MAX = 20;
+  let pollTimer = null;
+  const stopPolling = () => { clearTimeout(pollTimer); pollTimer = null; };
+  document.addEventListener("astro:before-swap", stopPolling, { once: true });
+
+  // El carrito se vacía cuando el pago queda aprobado (no antes: si Wompi
+  // rechaza la tarjeta, el cliente conserva su carrito para reintentar).
+  function clearCartOnce() {
     try {
-      const res = await fetch(`/api/orders/${encodeURIComponent(ref)}`);
-      if (res.status === 404) {
-        showState("stateNotFound");
-        return;
-      }
-      if (!res.ok) throw new Error("Network error");
+      if (window.Cart && window.Cart.clearCart) window.Cart.clearCart();
+      sessionStorage.removeItem("dy_coupon");
+    } catch (_) { /* almacenamiento no disponible */ }
+  }
 
-      const data = await res.json();
-      if (!data.success) {
-        showState("stateNotFound");
-        return;
-      }
-
-      const order = data.data;
-      const s = order.status;
-
-      if (["paid", "processing", "shipped", "delivered"].includes(s)) {
-        renderOrderCard(order, "orderDetails");
-        renderTracking(order);
-        showState("statePaid");
-      } else if (s === "pending_payment") {
-        renderOrderCard(order, "orderDetailsPending");
-        showState("statePending");
-      } else {
-        showState("stateError");
-      }
+  async function loadOrder(ref, attempt = 0) {
+    let res;
+    try {
+      res = await fetch(`/api/orders/${encodeURIComponent(ref)}`);
     } catch {
+      // Sin conexión: no sabemos el estado del pago, no decir que fue rechazado
+      if (attempt === 0) showState("stateUnknown");
+      else schedule(ref, attempt);
+      return;
+    }
+    if (res.status === 404) {
+      showState("stateNotFound");
+      return;
+    }
+    let data = null;
+    try { data = res.ok ? await res.json() : null; } catch { data = null; }
+    if (!data || !data.success) {
+      if (attempt === 0) showState("stateUnknown");
+      else schedule(ref, attempt);
+      return;
+    }
+
+    const order = data.data;
+    const s = order.status;
+
+    if (["paid", "processing", "shipped", "delivered"].includes(s)) {
+      stopPolling();
+      clearCartOnce();
+      renderOrderCard(order, "orderDetails");
+      renderTracking(order);
+      showState("statePaid");
+    } else if (s === "pending_payment") {
+      renderOrderCard(order, "orderDetailsPending");
+      showState("statePending");
+      schedule(ref, attempt);
+    } else {
+      stopPolling();
       showState("stateError");
     }
   }
 
+  function schedule(ref, attempt) {
+    if (attempt + 1 >= POLL_MAX) {
+      // Se acabó la espera: el pedido sigue registrado y el correo llegará
+      // cuando Wompi confirme. Dejamos el estado pendiente con un aviso claro.
+      const sub = document.getElementById("pendingSubtitle");
+      if (sub) sub.textContent = "Wompi aún no confirma el pago. Su pedido está registrado: le enviaremos un correo apenas se apruebe. Puede recargar esta página más tarde.";
+      showState("statePending");
+      return;
+    }
+    stopPolling();
+    pollTimer = setTimeout(() => loadOrder(ref, attempt + 1), POLL_MS);
+  }
+
   const params = new URLSearchParams(window.location.search);
   const ref = params.get("ref") || params.get("reference");
+  document.getElementById("retryVerify")?.addEventListener("click", () => {
+    if (!ref) return;
+    showState("stateLoading");
+    loadOrder(ref);
+  });
   if (!ref) showState("stateNotFound");
   else loadOrder(ref);
 }

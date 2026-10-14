@@ -5,24 +5,36 @@ import { getCanonicalUrl } from "../../i18n/index.ts";
 
 <Layout
   lang="en"
-  title="Order confirmation — DobleYo Café"
+  title="Order confirmation · DobleYo Café"
   description="Your DobleYo Café order confirmation."
   canonical={getCanonicalUrl("/confirmation", "en")}
   noindex={true}
 >
   <section class="cf">
-    <div id="cfLoading" class="cf-state">Loading your order…</div>
+    <div id="cfLoading" class="cf-state" aria-live="polite">Checking your order…</div>
 
     <div id="cfNotFound" class="cf-state" style="display:none">
       <h1>Order not found</h1>
-      <p>We couldn't find that order. If you just paid, it may take a moment.</p>
+      <p>We couldn't find an order with this reference.</p>
       <a href="/shop" class="cf-btn">Back to shop</a>
+    </div>
+
+    <div id="cfUnknown" class="cf-state" style="display:none">
+      <h1>We couldn't check your order</h1>
+      <p>There was a connection problem checking your payment. If you paid, your order is saved and you'll get a confirmation email.</p>
+      <button type="button" class="cf-btn" id="cfRetry">Check again</button>
+    </div>
+
+    <div id="cfFailed" class="cf-state" style="display:none">
+      <h1>Payment not completed</h1>
+      <p>Your payment was declined or cancelled. You were not charged.</p>
+      <a href="/cart" class="cf-btn">Back to cart</a>
     </div>
 
     <div id="cfOk" class="cf-card" style="display:none">
       <div class="cf-check" aria-hidden="true">✓</div>
-      <h1 class="cf-h">Thank you for your order!</h1>
-      <p class="cf-sub">A confirmation has been sent to your email.</p>
+      <h1 class="cf-h" id="cfTitle">Thank you for your order!</h1>
+      <p class="cf-sub" id="cfSub">A confirmation has been sent to your email.</p>
       <div class="cf-ref">Order <strong id="cfRef"></strong> · <span id="cfStatus"></span></div>
       <div id="cfItems" class="cf-items"></div>
       <div class="cf-total"><span>Total</span><strong id="cfTotal"></strong></div>
@@ -31,28 +43,70 @@ import { getCanonicalUrl } from "../../i18n/index.ts";
   </section>
 
   <script>
-    (function () {
-      const ref = new URLSearchParams(location.search).get("ref");
+    // El pago lo confirma el webhook de Wompi, que suele llegar unos segundos
+    // después de que el cliente vuelve aquí: mientras siga pendiente se vuelve
+    // a consultar cada 3 s durante un minuto. El carrito se vacía al quedar pagado.
+    function initConfirmation() {
       const loading = document.getElementById("cfLoading");
-      const notFound = document.getElementById("cfNotFound");
-      const ok = document.getElementById("cfOk");
-      if (!ref) { loading.style.display = "none"; notFound.style.display = "block"; return; }
+      if (!loading || loading.dataset.jsInit) return;
+      loading.dataset.jsInit = "1";
+      const ref = new URLSearchParams(location.search).get("ref");
+      const views = ["cfLoading", "cfNotFound", "cfUnknown", "cfFailed", "cfOk"];
+      const show = (id: string) => views.forEach((v) => { const el = document.getElementById(v); if (el) el.style.display = v === id ? "block" : "none"; });
+      const esc = (v: unknown) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
+      const LABEL: Record<string, string> = { pending_payment: "Payment pending", paid: "Paid", processing: "Processing", shipped: "Shipped", delivered: "Delivered" };
+      let timer: ReturnType<typeof setTimeout> | null = null;
+      document.addEventListener("astro:before-swap", () => timer && clearTimeout(timer), { once: true });
 
-      fetch("/api/orders/" + encodeURIComponent(ref))
-        .then((r) => r.ok ? r.json() : Promise.reject())
-        .then((j) => {
-          const d = j.data;
-          const cur = d.currency || "USD";
-          const fmt = (n) => new Intl.NumberFormat(cur === "USD" ? "en-US" : "es-CO", { style: "currency", currency: cur, maximumFractionDigits: 0 }).format(Number(n) || 0);
-          loading.style.display = "none"; ok.style.display = "block";
-          document.getElementById("cfRef").textContent = d.reference;
-          document.getElementById("cfStatus").textContent = d.status;
-          document.getElementById("cfItems").innerHTML = (d.items || []).map((it) =>
-            `<div class="cf-item"><span>${it.product_name} × ${it.quantity}</span><span>${fmt(it.subtotal_cop)}</span></div>`).join("");
-          document.getElementById("cfTotal").textContent = fmt(d.total_cop);
-        })
-        .catch(() => { loading.style.display = "none"; notFound.style.display = "block"; });
-    })();
+      const render = (d: any, pending: boolean) => {
+        const cur = d.currency || "USD";
+        const fmt = (n: unknown) => new Intl.NumberFormat(cur === "USD" ? "en-US" : "es-CO", { style: "currency", currency: cur, maximumFractionDigits: 0 }).format(Number(n) || 0);
+        // El visto bueno solo cuando el pago está aprobado
+        const check = document.querySelector<HTMLElement>(".cf-check");
+        if (check) check.style.visibility = pending ? "hidden" : "visible";
+        document.getElementById("cfTitle")!.textContent = pending ? "Payment in progress" : "Thank you for your order!";
+        document.getElementById("cfSub")!.textContent = pending
+          ? "Your order is saved. We're waiting for Wompi to confirm the payment; this page updates by itself."
+          : "A confirmation has been sent to your email.";
+        document.getElementById("cfRef")!.textContent = d.reference;
+        document.getElementById("cfStatus")!.textContent = LABEL[d.status] ?? d.status;
+        document.getElementById("cfItems")!.innerHTML = (d.items || []).map((it: any) =>
+          `<div class="cf-item"><span>${esc(it.product_name)} × ${esc(it.quantity)}</span><span>${fmt(it.subtotal_cop)}</span></div>`).join("");
+        document.getElementById("cfTotal")!.textContent = fmt(d.total_cop);
+        show("cfOk");
+      };
+
+      async function load(attempt = 0) {
+        if (!ref) return show("cfNotFound");
+        let res: Response;
+        try { res = await fetch("/api/orders/" + encodeURIComponent(ref)); }
+        catch { return attempt === 0 ? show("cfUnknown") : again(attempt); }
+        if (res.status === 404) return show("cfNotFound");
+        const j = res.ok ? await res.json().catch(() => null) : null;
+        if (!j || !j.success) return attempt === 0 ? show("cfUnknown") : again(attempt);
+        const d = j.data;
+        if (["paid", "processing", "shipped", "delivered"].includes(d.status)) {
+          try { (window as any).Cart?.clearCart?.(); } catch (_) { /* sin almacenamiento */ }
+          render(d, false);
+        } else if (d.status === "pending_payment") {
+          render(d, true);
+          again(attempt);
+        } else {
+          show("cfFailed");
+        }
+      }
+      function again(attempt: number) {
+        if (attempt + 1 >= 20) {
+          document.getElementById("cfSub")!.textContent = "Wompi hasn't confirmed the payment yet. Your order is saved and we'll email you as soon as it's approved.";
+          return;
+        }
+        timer = setTimeout(() => load(attempt + 1), 3000);
+      }
+      document.getElementById("cfRetry")?.addEventListener("click", () => { show("cfLoading"); load(); });
+      load();
+    }
+    initConfirmation();
+    document.addEventListener("astro:page-load", initConfirmation);
   </script>
 
   <style>
