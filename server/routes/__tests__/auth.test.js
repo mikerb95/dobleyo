@@ -14,6 +14,8 @@ const mocks = vi.hoisted(() => ({
     sendWelcomeEmail: vi.fn(() => Promise.resolve({ success: true })),
     sendPasswordResetEmail: vi.fn(() => Promise.resolve({ success: true })),
     sendPasswordChangedEmail: vi.fn(() => Promise.resolve({ success: true })),
+    verifyIdToken: vi.fn(),
+    sessionUser: { current: null },
 }));
 
 vi.mock('../../db.js', () => ({ query: mocks.query }));
@@ -26,7 +28,7 @@ vi.mock('../../auth.js', () => ({
     generateRefreshToken: vi.fn().mockReturnValue('mock-refresh-token'),
     hashRefreshToken: vi.fn().mockReturnValue('mock-refresh-hash'),
     verifyToken: vi.fn(),
-    authenticateToken: (req, _res, next) => { req.user = null; next(); },
+    authenticateToken: (req, _res, next) => { req.user = mocks.sessionUser.current; next(); },
     requireRole: () => (_req, _res, next) => next(),
 }));
 
@@ -45,6 +47,10 @@ vi.mock('../../services/email.js', () => ({
     sendPasswordResetEmail: mocks.sendPasswordResetEmail,
     sendPasswordChangedEmail: mocks.sendPasswordChangedEmail,
     sendOrderConfirmationEmail: vi.fn().mockResolvedValue({ success: true }),
+}));
+
+vi.mock('google-auth-library', () => ({
+    OAuth2Client: class { verifyIdToken = mocks.verifyIdToken; },
 }));
 
 // ── Importar router DESPUÉS de configurar mocks ───────────────────────────────
@@ -154,6 +160,8 @@ describe('POST /api/auth/login', () => {
         query.mockResolvedValueOnce({
             rows: [{ id: 1, email: 'user@test.com', password_hash: '$hashed$', role: 'client', first_name: 'A', last_name: 'B' }],
         });
+        query.mockResolvedValueOnce({ rows: [{ n: 0 }] }); // fallos recientes
+        query.mockResolvedValueOnce({ rows: [] });         // INSERT audit LOGIN_FAILED
 
         const res = await request(app)
             .post('/api/auth/login')
@@ -161,6 +169,25 @@ describe('POST /api/auth/login', () => {
 
         expect(res.status).toBe(401);
         expect(res.body.error).toMatch(/credenciales/i);
+        const audit = query.mock.calls.find(([sql, args]) => /INSERT INTO audit_logs/.test(sql) && args.includes('LOGIN_FAILED'));
+        expect(audit).toBeDefined();
+    });
+
+    it('bloquea la cuenta tras demasiados fallos aunque la contraseña sea correcta', async () => {
+        mocks.comparePassword.mockResolvedValue(true);
+        query.mockResolvedValueOnce({
+            rows: [{ id: 1, email: 'user@test.com', password_hash: '$hashed$', role: 'client', first_name: 'A', last_name: 'B' }],
+        });
+        query.mockResolvedValueOnce({ rows: [{ n: 10 }] });
+
+        const res = await request(app)
+            .post('/api/auth/login')
+            .send({ email: 'user@test.com', password: 'pass1234' });
+
+        expect(res.status).toBe(429);
+        expect(res.body.code).toBe('ACCOUNT_LOCKED');
+        expect(mocks.comparePassword).not.toHaveBeenCalled();
+        expect(res.headers['set-cookie']).toBeUndefined();
     });
 
     it('debería retornar 200 con token y cookies en login correcto', async () => {
@@ -173,6 +200,7 @@ describe('POST /api/auth/login', () => {
         // Vaciar cola y cargar mocks frescos con mockReset para este test
         mocks.query.mockReset();
         mocks.query.mockResolvedValueOnce({ rows: [mockUser] });  // SELECT user
+        mocks.query.mockResolvedValueOnce({ rows: [{ n: 0 }] });   // fallos recientes
         mocks.query.mockResolvedValueOnce({ rows: [] });           // INSERT refresh_tokens
         mocks.query.mockResolvedValueOnce({ rows: [] });           // UPDATE last_login
 
@@ -311,6 +339,7 @@ describe('POST /api/auth/login con correo sin verificar', () => {
 
     it('bloquea cuentas creadas desde la fecha de corte sin verificar', async () => {
         mocks.query.mockResolvedValueOnce({ rows: [{ ...base, is_verified: 0, created_at: '2026-10-20 10:00:00' }] });
+        mocks.query.mockResolvedValueOnce({ rows: [{ n: 0 }] });
 
         const res = await request(app).post('/api/auth/login').send({ email: base.email, password: 'pass1234' });
 
@@ -340,10 +369,74 @@ describe('POST /api/auth/login con correo sin verificar', () => {
     it('con contraseña incorrecta responde 401 sin revelar si falta verificar', async () => {
         mocks.comparePassword.mockResolvedValue(false);
         mocks.query.mockResolvedValueOnce({ rows: [{ ...base, is_verified: 0, created_at: '2026-10-20 10:00:00' }] });
+        mocks.query.mockResolvedValue({ rows: [{ n: 0 }] });
 
         const res = await request(app).post('/api/auth/login').send({ email: base.email, password: 'mala1234' });
 
         expect(res.status).toBe(401);
         expect(res.body.code).toBeUndefined();
+    });
+});
+
+// ── Login con Google ─────────────────────────────────────────────────────────
+describe('POST /api/auth/google', () => {
+    let app;
+    const googlePayload = (extra) => ({ getPayload: () => ({ sub: 'g-123', email: 'admin@dobleyo.cafe', given_name: 'A', family_name: 'B', ...extra }) });
+
+    beforeEach(() => {
+        app = buildApp();
+        vi.clearAllMocks();
+        mocks.query.mockReset();
+        process.env.GOOGLE_CLIENT_ID = 'test-client-id';
+    });
+
+    it('rechaza un correo de Google sin verificar y no vincula ninguna cuenta', async () => {
+        mocks.verifyIdToken.mockResolvedValue(googlePayload({ email_verified: false }));
+
+        const res = await request(app).post('/api/auth/google').send({ credential: 'id-token' });
+
+        expect(res.status).toBe(401);
+        expect(mocks.query).not.toHaveBeenCalled();
+        expect(res.headers['set-cookie']).toBeUndefined();
+    });
+
+    it('entra con correo verificado y vincula la cuenta existente', async () => {
+        mocks.verifyIdToken.mockResolvedValue(googlePayload({ email_verified: true }));
+        mocks.query.mockResolvedValueOnce({ rows: [{ id: 3, email: 'admin@dobleyo.cafe', role: 'admin', google_id: null }] });
+        mocks.query.mockResolvedValue({ rows: [] });
+
+        const res = await request(app).post('/api/auth/google').send({ credential: 'id-token' });
+
+        expect(res.status).toBe(200);
+        expect(mocks.query.mock.calls.some(([sql]) => /UPDATE users SET google_id/.test(sql))).toBe(true);
+    });
+});
+
+// ── Cambio de contraseña ─────────────────────────────────────────────────────
+describe('PUT /api/auth/password', () => {
+    let app;
+
+    beforeEach(() => {
+        app = buildApp();
+        vi.clearAllMocks();
+        mocks.query.mockReset();
+        mocks.sessionUser.current = { id: 7, role: 'client' };
+    });
+
+    it('cierra las demás sesiones y deja una nueva para este dispositivo', async () => {
+        mocks.comparePassword.mockResolvedValue(true);
+        mocks.query.mockResolvedValueOnce({ rows: [{ email: 'u@test.com', first_name: 'U', password_hash: '$hashed$' }] });
+        mocks.query.mockResolvedValue({ rows: [] });
+
+        const res = await request(app).put('/api/auth/password').send({ current_password: 'vieja1234', new_password: 'nueva12345' });
+
+        expect(res.status).toBe(200);
+        const sqls = mocks.query.mock.calls.map(([sql]) => sql);
+        const revoke = sqls.findIndex((sql) => /UPDATE refresh_tokens SET revoked = 1 WHERE user_id = \?/.test(sql));
+        const insert = sqls.findIndex((sql) => /INSERT INTO refresh_tokens/.test(sql));
+        expect(revoke).toBeGreaterThan(-1);
+        expect(insert).toBeGreaterThan(revoke);
+        expect(String(res.headers['set-cookie'])).toMatch(/refresh_token=/);
+        expect(mocks.sendPasswordChangedEmail).toHaveBeenCalledWith('u@test.com', 'U', { sessionsRevoked: true });
     });
 });
