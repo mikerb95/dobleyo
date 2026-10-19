@@ -2,6 +2,37 @@
 
 ---
 
+## 2026-10-19: Revisión OWASP Top 10:2025 y correcciones de prioridad alta y media (Agente: Claude)
+
+### Contexto
+Revisión del sitio y la API contra el OWASP Top 10:2025. Los hallazgos más graves: el login con Google vinculaba cuentas por correo sin exigir que Google lo diera por verificado (toma de cuentas, incluida la de un admin), el rol caficultor podía leer y borrar lotes de cualquier finca, y los logs de Vercel guardaban las cookies de sesión y los secretos de cron.
+
+### Cambios
+- **A07 Autenticación** (`server/routes/auth.js`):
+  - `/google` exige `email_verified` y `/apple` solo vincula por correo si viene verificado. Ambos comparan el correo sin distinguir mayúsculas.
+  - Login: bloqueo temporal por cuenta (10 fallos en 15 min, contados en `audit_logs`, válido entre instancias serverless). Cada fallo queda como `LOGIN_FAILED`, y un correo inexistente se compara contra un hash de relleno para que tarde lo mismo.
+  - Cambiar la contraseña cierra las demás sesiones y deja una nueva en el dispositivo actual.
+  - Un refresh token ya rotado que vuelve a llegar (pasado un minuto de gracia) revoca todas las sesiones del usuario y queda auditado.
+- **A01 Control de acceso**:
+  - `server/middleware/farmAuth.js`: nuevos `assertLotAccess()` y `filterRowsByLotAccess()`.
+  - `server/routes/coffee.js`: las listas solo devuelven lotes del caficultor, los POST verifican el lote, los DELETE y `packaging-stats` son solo admin.
+  - `server/routes/production/*`: solo admin (ningún frontend los usa con el rol caficultor).
+- **A09 Registro**: `server/logger.js` redacta cookies, `Authorization`, `x-cron-secret`, firmas y `?token=`/`?secret=` en la URL (`httpLoggerOptions`, usado por `api/index.js` y `server/index.js`). `run-billing` ya no acepta el secreto por query string.
+- **A05 Inyección (XSS)**: `Head.astro` escapa `<` en el JSON-LD (el nombre de la finca lo escribe el caficultor). `admin/envios.astro` escapa la ciudad del cliente y los mensajes de error.
+- **A02 Configuración**:
+  - CORS solo admite `localhost` fuera de producción.
+  - CSP: `cdn.jsdelivr.net` se acota a `jsqr@1.4.0` (público) y `mermaid@11` (admin).
+  - `/api/setup` responde 404 en producción salvo `SETUP_ENABLED=true`, compara el secreto en tiempo constante, audita cada acceso y ya no devuelve la contraseña del admin.
+- **A10 Errores**: 65 respuestas 5xx dejaron de enviar `err.message` al cliente (el detalle sigue en el log). `/api/health` ya no muestra el error de la BD. En `external-sales` el "producto no encontrado" pasa a 422.
+- **A03 Dependencias**: `astro` 5.18.2, `@astrojs/vercel` 9.0.5, `express` 4.22.3, `express-rate-limit` 8.7.1, `proxy-addr` 2.0.8, `undici`, `devalue`. Los avisos de Astro que exigen versión mayor quedan como DEBT-021.
+- **`db/schema.sql`**: índice `idx_audit_logs_user_action` para el conteo de fallos de login.
+- **Tests**: `server/middleware/__tests__/farmAuth.test.js` y casos nuevos en `auth.test.js` (Google sin verificar, bloqueo por cuenta, cambio de contraseña).
+- **`AGENTS.md`**: reglas 9 a 13 en §6 y DEBT-021 a DEBT-023.
+
+### Verificación
+- `npx vitest run`: 268 tests pasan. `npm run build` completa.
+- Prueba local de pino-http: cookies, `Authorization`, `x-cron-secret` y `?token=`/`?secret=` salen como `[redactado]`.
+
 ## 2026-10-19: Documentación al día y limpieza de auditorías viejas (Agente: Claude)
 
 ### Contexto

@@ -330,6 +330,11 @@ Todo agente que cree o modifique páginas DEBE cumplir:
 6. **Input validation**: `express-validator` en toda ruta con input del usuario.
 7. **Rate limiting**: En endpoints de auth, webhooks, y formularios públicos.
 8. **Dependencies**: `npm audit` antes de cada release. No publicar con vulnerabilidades críticas.
+9. **Login social**: solo se crea o vincula una cuenta por correo si el proveedor lo da por verificado (`email_verified`). Sin eso, buscar únicamente por `google_id` / `apple_id`.
+10. **Alcance del caficultor**: toda ruta que ese rol pueda usar filtra por dueño del lote con `assertLotAccess()` / `filterRowsByLotAccess()` (`server/middleware/farmAuth.js`). Si una ruta no filtra, va solo para admin. Borrar historia del pipeline es solo admin.
+11. **Errores 5xx**: el detalle (`err.message`, stack) va al log con `logger.error`; al cliente, un mensaje genérico. Los errores de negocio se lanzan con `status` (4xx) y ese sí se muestra.
+12. **Logs**: `server/logger.js` redacta cookies, `Authorization`, `x-cron-secret`, firmas de webhook y `?token=`/`?secret=`. Los secretos de cron van por cabecera, nunca por query string.
+13. **Datos en `<script>`**: JSON embebido con `set:html` se escapa (`.replace(/</g, "\\u003c")`) para que un `</script>` en un dato no cierre la etiqueta.
 
 ---
 
@@ -485,6 +490,9 @@ Para exponer la plataforma en vivo existe un seed **idempotente** que puebla tod
 | DEBT-018 | 🟡 | `script-src` con `'unsafe-inline'` en la CSP principal: quitarlo exige migrar los scripts en línea y los `onclick=` a `addEventListener` (o hashing de Astro) | Pendiente |
 | DEBT-019 | 🟡 | `server/routes/devtools.js` usa `SET FOREIGN_KEY_CHECKS` (MySQL); en SQLite es `PRAGMA foreign_keys`. Solo desarrollo, bloqueado en producción | Pendiente |
 | DEBT-020 | 🟢 | `public/assets/img/og-default.jpg` es un recorte de 1024×576, no una pieza OG de marca de 1200×630. Se reemplaza el archivo sin tocar código | Pendiente |
+| DEBT-021 | 🔴 | `astro` 5.x y `@astrojs/vercel` 9.x tienen avisos críticos/altos (XSS en `define:vars`, override de ruta por `x-astro-path`) que solo se corrigen en astro ≥6.1.6 y @astrojs/vercel ≥10.0.2: requiere migración de versión mayor | Pendiente |
+| DEBT-022 | 🟠 | `labels.js` y `storage.js` (`operators`) siguen abiertos al caficultor sin filtrar por lote: decidir si se filtran con `farmAuth` o pasan a solo admin | Pendiente |
+| DEBT-023 | 🟡 | Hallazgos bajos de la revisión OWASP (2026-10-19): el registro revela si el correo existe, baja del boletín por `?email=` sin token, reseñas públicas sin límite de largo, jsQR sin SRI, Markdown del blog sin sanitizar, backup de BD sin reautenticación, referencia de pedido con 16 bits aleatorios | Pendiente |
 
 ---
 
