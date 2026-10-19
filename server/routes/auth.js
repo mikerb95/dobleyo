@@ -604,7 +604,7 @@ authRouter.post('/apple', loginLimiter, async (req, res) => {
 
     // Solo se vincula por correo si Apple lo da por verificado; si no, se busca
     // únicamente por apple_id (mismo motivo que en /google).
-    let result = emailVerified && email
+    const result = emailVerified && email
       ? await db.query(
         'SELECT * FROM users WHERE apple_id = ? OR lower(email) = lower(?) ORDER BY (apple_id = ?) DESC LIMIT 1',
         [appleId, email, appleId]
