@@ -6,7 +6,7 @@ import { fileURLToPath } from 'url';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import pinoHttp from 'pino-http';
-import { logger } from './logger.js';
+import { logger, httpLoggerOptions } from './logger.js';
 import { stockRouter } from './routes/stock.js';
 import { authRouter } from './routes/auth.js';
 import { caficultorRouter } from './routes/caficultor.js';
@@ -52,7 +52,7 @@ const app = express();
 // todos los usuarios bajo la IP del proxy y se vuelve inútil o bloquea a todos.
 app.set('trust proxy', 1);
 
-app.use(pinoHttp({ logger }));
+app.use(pinoHttp(httpLoggerOptions));
 
 // Seguridad: Headers HTTP seguros con CSP habilitado (BUG-011 resuelto Fase 11)
 app.use(helmet({

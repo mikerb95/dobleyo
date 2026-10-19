@@ -4,7 +4,7 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import pinoHttp from 'pino-http';
-import { logger } from '../server/logger.js';
+import { logger, httpLoggerOptions } from '../server/logger.js';
 import { stockRouter } from '../server/routes/stock.js';
 import { authRouter } from '../server/routes/auth.js';
 import { setupRouter } from '../server/routes/setup.js';
@@ -57,7 +57,7 @@ app.set('trust proxy', 1);
 // y COMPUTO_SECRETO no hace nada.
 app.use(medidorDesdeEnv().express());
 
-app.use(pinoHttp({ logger }));
+app.use(pinoHttp(httpLoggerOptions));
 
 // Seguridad: Headers HTTP seguros con CSP habilitado (BUG-011 resuelto Fase 11)
 app.use(helmet({

@@ -47,6 +47,10 @@ export const authRouter = Router();
 // que se registraron cuando la verificación era opcional.
 export const EMAIL_VERIFICATION_REQUIRED_SINCE = '2026-10-14 00:00:00';
 
+// Hash bcrypt de una clave aleatoria: solo sirve para que el login de un correo
+// inexistente cueste lo mismo que uno real.
+const DUMMY_HASH = '$2a$10$1Ia2dbC8VShSLfTyMQ4lc.qP3YjDPZ0/Q./61lSRS4mMpWJWkcZFW';
+
 const mustVerifyEmail = (user) =>
   !user.is_verified && String(user.created_at ?? '') >= EMAIL_VERIFICATION_REQUIRED_SINCE;
 
@@ -303,10 +307,17 @@ authRouter.post('/login',
       const result = await db.query('SELECT * FROM users WHERE email = ?', [email]);
       const user = result.rows[0];
 
-      if (!user) return res.status(401).json({ error: 'Credenciales invalidas' });
-
-      const validPass = await auth.comparePassword(password, user.password_hash);
-      if (!validPass) return res.status(401).json({ error: 'Credenciales invalidas' });
+      // Sin usuario (o cuenta solo-Google) se compara igual contra un hash de
+      // relleno: la respuesta tarda lo mismo y no delata qué correos existen.
+      const validPass = await auth.comparePassword(password, user?.password_hash || DUMMY_HASH);
+      if (!user || !user.password_hash || !validPass) {
+        logger.warn({ email, ip: req.ip, userId: user?.id ?? null }, '[POST /api/auth/login] Intento fallido');
+        await db.query(
+          'INSERT INTO audit_logs (user_id, action, entity_type, entity_id, details) VALUES (?, ?, ?, ?, ?)',
+          [user?.id ?? null, 'LOGIN_FAILED', 'users', user ? String(user.id) : null, JSON.stringify({ email, ip: req.ip ?? null })]
+        ).catch((err) => logger.error({ err }, '[POST /api/auth/login] No se pudo auditar el intento fallido'));
+        return res.status(401).json({ error: 'Credenciales invalidas' });
+      }
 
       // Se revisa después de la contraseña para no revelar el estado de cuentas ajenas.
       if (mustVerifyEmail(user)) {
