@@ -3,7 +3,7 @@ import { logger } from '../logger.js';
 import { authenticateToken, requireRole } from '../auth.js';
 import { apiLimiter } from '../middleware/rateLimit.js';
 import { idempotency } from '../middleware/idempotency.js';
-import { assertFarmOwnership } from '../middleware/farmAuth.js';
+import { assertFarmOwnership, assertLotAccess, filterRowsByLotAccess } from '../middleware/farmAuth.js';
 import { logAudit } from '../services/audit.js';
 import { sendNtfyAsync } from '../services/ntfy.js';
 import {
@@ -95,6 +95,7 @@ coffeeRouter.post('/harvest', async (req, res) => {
 coffeeRouter.post('/inventory-storage', async (req, res) => {
   try {
     const { lotId, weight, weightUnit, location, storageDate, notes, recordedAt } = req.body;
+    await assertLotAccess('lot', lotId, req.user);
     const data = await storeGreenCoffee({ lotId, weight, weightUnit, location, storageDate, notes, recordedAt, cost: costFrom(req), user: req.user });
     res.status(201).json({ success: true, message: 'Café verde almacenado correctamente', ...data });
   } catch (err) {
@@ -106,6 +107,7 @@ coffeeRouter.post('/inventory-storage', async (req, res) => {
 coffeeRouter.post('/send-roasting', async (req, res) => {
   try {
     const { lotId, quantitySent, targetTemp, notes, recordedAt } = req.body;
+    await assertLotAccess('lot', lotId, req.user);
     const data = await sendToRoasting({ lotId, quantitySent, targetTemp, notes, recordedAt, cost: costFrom(req), user: req.user });
     res.status(201).json({ success: true, message: 'Lote enviado a tostión correctamente', ...data });
   } catch (err) {
@@ -117,6 +119,7 @@ coffeeRouter.post('/send-roasting', async (req, res) => {
 coffeeRouter.post('/roast-retrieval', async (req, res) => {
   try {
     const { roastingId, roastLevel, roastedWeight, actualTemp, roastTime, observations, recordedAt } = req.body;
+    await assertLotAccess('roastingBatch', roastingId, req.user);
     const data = await receiveRoasted({ roastingId, roastLevel, roastedWeight, actualTemp, roastTime, observations, recordedAt, cost: costFrom(req), user: req.user });
     res.status(201).json({ success: true, message: 'Café tostado registrado correctamente', ...data });
   } catch (err) {
@@ -128,6 +131,7 @@ coffeeRouter.post('/roast-retrieval', async (req, res) => {
 coffeeRouter.post('/roasted-storage', async (req, res) => {
   try {
     const { roastedId, location, container, containerCount, conditions, notes, recordedAt } = req.body;
+    await assertLotAccess('roasted', roastedId, req.user);
     const data = await storeRoasted({ roastedId, location, container, containerCount, conditions, notes, recordedAt, cost: costFrom(req), user: req.user });
     res.status(201).json({ success: true, message: 'Café tostado almacenado correctamente', ...data });
   } catch (err) {
@@ -138,6 +142,7 @@ coffeeRouter.post('/roasted-storage', async (req, res) => {
 // 5.1 Detalle de almacenamiento
 coffeeRouter.get('/roasted-storage/:id', async (req, res) => {
   try {
+    await assertLotAccess('roastedStorage', req.params.id, req.user);
     const data = await getRoastedStorageDetail(req.params.id);
     res.json(data);
   } catch (err) {
@@ -149,6 +154,7 @@ coffeeRouter.get('/roasted-storage/:id', async (req, res) => {
 coffeeRouter.post('/packaging', async (req, res) => {
   try {
     const { roastedStorageId, acidity, body, balance, presentation, grindSize, packageSize, unitCount, notes, addToInventory, recordedAt } = req.body;
+    await assertLotAccess('roastedStorage', roastedStorageId, req.user);
     const data = await createPackaging({
       roastedStorageId, acidity, body, balance, presentation, grindSize, packageSize,
       unitCount, notes, addToInventory, recordedAt, ...suppliesFrom(req), user: req.user,
@@ -174,16 +180,21 @@ coffeeRouter.post('/packaging', async (req, res) => {
   }
 });
 
-// GETs de lista
-coffeeRouter.get('/harvests',          async (_req, res) => { try { res.json(await getHarvests()); }          catch (err) { handleErr(res, err, 'Error en GET harvests'); } });
-coffeeRouter.get('/green-inventory',   async (_req, res) => { try { res.json(await getGreenInventory()); }    catch (err) { handleErr(res, err, 'Error en GET green-inventory'); } });
-coffeeRouter.get('/roasting-batches',  async (_req, res) => { try { res.json(await getRoastingBatches()); }   catch (err) { handleErr(res, err, 'Error en GET roasting-batches'); } });
-coffeeRouter.get('/roasted-coffee',    async (_req, res) => { try { res.json(await getRoastedCoffee()); }     catch (err) { handleErr(res, err, 'Error en GET roasted-coffee'); } });
-coffeeRouter.get('/roasted-for-storage', async (_req, res) => { try { res.json(await getRoastedForStorage()); } catch (err) { handleErr(res, err, 'Error en GET roasted-for-storage'); } });
-coffeeRouter.get('/packaged',          async (_req, res) => { try { res.json(await getPackaged()); }          catch (err) { handleErr(res, err, 'Error en GET packaged'); } });
-coffeeRouter.get('/packaging-stats',   async (_req, res) => { try { res.json({ success: true, data: await getPackagingStats() }); } catch (err) { handleErr(res, err, 'Error en GET packaging-stats'); } });
-coffeeRouter.get('/roasted-for-cupping', async (_req, res) => { try { res.json(await getRoastedForCupping()); } catch (err) { handleErr(res, err, 'Error en GET roasted-for-cupping'); } });
-coffeeRouter.get('/cupping',           async (_req, res) => { try { res.json(await getCuppings()); }          catch (err) { handleErr(res, err, 'Error en GET cupping'); } });
+// GETs de lista. El caficultor solo recibe filas de sus lotes (ver farmAuth.js).
+const listRoute = (path, load, label) => coffeeRouter.get(path, async (req, res) => {
+  try { res.json(await filterRowsByLotAccess(await load(), req.user)); }
+  catch (err) { handleErr(res, err, `Error en GET ${label}`); }
+});
+listRoute('/harvests',            getHarvests,          'harvests');
+listRoute('/green-inventory',     getGreenInventory,    'green-inventory');
+listRoute('/roasting-batches',    getRoastingBatches,   'roasting-batches');
+listRoute('/roasted-coffee',      getRoastedCoffee,     'roasted-coffee');
+listRoute('/roasted-for-storage', getRoastedForStorage, 'roasted-for-storage');
+listRoute('/packaged',            getPackaged,          'packaged');
+listRoute('/roasted-for-cupping', getRoastedForCupping, 'roasted-for-cupping');
+listRoute('/cupping',             getCuppings,          'cupping');
+// Totales agregados sin detalle por lote: solo admin.
+coffeeRouter.get('/packaging-stats', requireRole('admin'), async (_req, res) => { try { res.json({ success: true, data: await getPackagingStats() }); } catch (err) { handleErr(res, err, 'Error en GET packaging-stats'); } });
 
 // Flujo guiado: bandeja de "qué sigue" y ficha del lote.
 // Solo lectura; los pasos se siguen registrando en los POST de arriba.
@@ -210,6 +221,7 @@ coffeeRouter.get('/lots/:lotId/stage', async (req, res) => {
   try {
     const { lotId } = req.params;
     if (!lotId) return res.status(400).json({ success: false, error: 'lotId requerido' });
+    await assertLotAccess('lot', lotId, req.user);
     res.json({ success: true, ...(await getLotStage(lotId)) });
   } catch (err) {
     handleErr(res, err, '[GET /lots/:lotId/stage] Error');
@@ -217,16 +229,24 @@ coffeeRouter.get('/lots/:lotId/stage', async (req, res) => {
 });
 
 // Todos los lotes
-coffeeRouter.get('/lots', async (_req, res) => {
+coffeeRouter.get('/lots', async (req, res) => {
   try {
-    res.json(await getAllLots());
+    const all = await getAllLots();
+    if (req.user.role === 'admin') return res.json(all);
+    const lots = await filterRowsByLotAccess(all.lots, req.user);
+    const count = (status) => lots.filter((l) => l.status === status).length;
+    res.json({
+      lots,
+      total: lots.length,
+      breakdown: { verde: count('verde'), en_tostado: count('en_tostado'), tostado: count('tostado'), pendiente: count('pendiente') },
+    });
   } catch (err) {
     handleErr(res, err, '[GET /lots] Error general');
   }
 });
 
-// DELETEs
-coffeeRouter.delete('/harvest/:lotId', async (req, res) => {
+// DELETEs: solo admin. El caficultor registra pasos pero no borra historia.
+coffeeRouter.delete('/harvest/:lotId', requireRole('admin'), async (req, res) => {
   try {
     await deleteHarvest(req.params.lotId);
     res.json({ success: true, message: 'Lote eliminado correctamente' });
@@ -235,7 +255,7 @@ coffeeRouter.delete('/harvest/:lotId', async (req, res) => {
   }
 });
 
-coffeeRouter.delete('/roasted-storage/:id', async (req, res) => {
+coffeeRouter.delete('/roasted-storage/:id', requireRole('admin'), async (req, res) => {
   try {
     await deleteRoastedStorage(req.params.id);
     res.json({ success: true, message: 'Café tostado almacenado eliminado correctamente' });
@@ -244,7 +264,7 @@ coffeeRouter.delete('/roasted-storage/:id', async (req, res) => {
   }
 });
 
-coffeeRouter.delete('/roasted-coffee/:id', async (req, res) => {
+coffeeRouter.delete('/roasted-coffee/:id', requireRole('admin'), async (req, res) => {
   try {
     await deleteRoastedCoffee(req.params.id);
     res.json({ success: true, message: 'Café tostado pendiente eliminado correctamente' });
@@ -253,7 +273,7 @@ coffeeRouter.delete('/roasted-coffee/:id', async (req, res) => {
   }
 });
 
-coffeeRouter.delete('/roasting-batch/:id', async (req, res) => {
+coffeeRouter.delete('/roasting-batch/:id', requireRole('admin'), async (req, res) => {
   try {
     await deleteRoastingBatch(req.params.id);
     res.json({ success: true, message: 'Lote en proceso de tostado eliminado correctamente' });
@@ -265,6 +285,7 @@ coffeeRouter.delete('/roasting-batch/:id', async (req, res) => {
 // Cupping SCA
 coffeeRouter.post('/cupping', async (req, res) => {
   try {
+    await assertLotAccess('roasted', req.body?.roastedId, req.user);
     const data = await createCupping({ ...req.body, userId: req.user.id });
     res.status(201).json({ success: true, message: 'Cupping registrado correctamente', ...data });
   } catch (err) {
