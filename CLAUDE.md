@@ -57,7 +57,7 @@
 |---|---|
 | `server/index.js` | Express standalone (268 líneas). Monta TODOS los routers + audit/debug/health endpoints |
 | `api/index.js` | Express para Vercel serverless. ⚠️ NO monta todos los routers — VERIFICAR PARIDAD |
-| `server/routes/auth.js` | Auth completo: register, login, refresh, logout, me, verify, caficultor status |
+| `server/routes/auth.js` | Auth completo: register, login, refresh, logout, me, verify, caficultor status. Login exige correo verificado a cuentas creadas desde `EMAIL_VERIFICATION_REQUIRED_SINCE` |
 | `server/routes/coffee.js` | Pipeline de café: harvest → storage → roasting → retrieval → packaging → sale |
 | `server/routes/production.js` | Router padre que monta sub-routers de `production/` |
 | `server/routes/production/*.js` | Sub-routers de producción (ESM) |
@@ -80,13 +80,15 @@
 | `src/pages/index.astro` | Homepage con hero video, productos featured |
 | `src/pages/tienda.astro` | Catálogo con filtros. Lee de `src/data/products.ts` (migrar a BD) |
 | `src/pages/cart.astro` | Carrito (localStorage via `cart.js`) |
-| `src/pages/checkout.astro` | Checkout con Wompi (pago como usuario registrado o invitado) |
+| `src/pages/checkout.astro` | Checkout con Wompi (pago como usuario registrado o invitado). Con `DECLINED`/`ERROR`/`VOIDED` conserva el carrito |
+| `src/pages/confirmacion.astro` | Confirmación del pedido; la lógica (reintentos hasta que el webhook marque pagado, estado `stateUnknown`) está en `public/assets/js/confirmacion.js`. EN: `src/pages/en/confirmation.astro` |
 | `src/pages/trazabilidad.astro` | Scanner QR + búsqueda manual de lotes |
 | `src/pages/cacao.astro` | Línea de cacao (categoría `cacao`) + sección de maquila. Solo ES |
 | `src/pages/buscar.astro` | Resultados de búsqueda del catálogo (`noindex`). Versión EN en `src/pages/en/search.astro` |
 | `src/pages/en/index.astro` | Landing B2B en inglés (1127 líneas, página autónoma) |
 | `src/pages/contacto.astro` | Formulario de contacto |
-| `src/pages/blog.astro` | Blog (localStorage — migrar a BD) |
+| `src/pages/blog.astro` | Blog con portada del artículo más reciente. `/en/blog` no lista artículos (solo existen en español) |
+| `src/pages/guias.astro`, `partners.astro`, `afiliados.astro`, `accesorios.astro`, `regalos.astro`, `suscripcion.astro` | Páginas de compra y contenido con motion (ES/EN), armadas con `src/components/shop/` |
 
 ### Frontend — Admin
 | Archivo | Propósito |
@@ -121,7 +123,10 @@
 |---|---|---|
 | `src/components/Head.astro` | Astro | `<head>` reutilizable con SEO meta |
 | `src/components/Header.astro` | Astro | Navegación principal + coffee beans animation |
-| `src/components/Footer.astro` | Astro | Footer con newsletter, links, social |
+| `src/components/Footer.astro` | Astro | Footer oscuro con newsletter, columnas (acordeón en móvil) y medios de pago. Lógica en `public/assets/js/footer.js` |
+| `src/components/Icon.astro` | Astro | Set de íconos SVG de trazo. Único medio para íconos (sin emojis en el sitio) |
+| `src/components/home/*` | Astro | Secciones de la portada ES/EN |
+| `src/components/shop/*` | Astro | Secciones compartidas (`DarkHero`, `FeatureGrid`, `NumberedList`, `ChipRow`, `CtaBand`, `PostCard`) y piezas centrales (`BrewGuide`, `SupplyLine`, `RefFlow`, `ProductStack`, `GiftBox`, `DeliveryBags`) |
 | `src/components/ProductCard.astro` | Astro | Card de producto para grid de tienda |
 | `src/components/Stars.astro` | Astro | Calificación con estrellas fraccionarias + conteo de reseñas |
 | `src/components/SearchResults.astro` | Astro | Cuerpo de `/buscar` y `/en/search`, con sus estados vacíos |
@@ -143,6 +148,8 @@
 | `src/data/products.ts` | 5 productos (3 cafés, 2 accesorios). FUENTE ÚNICA de productos front (migrar a BD) |
 | `src/lib/products.ts` | Helpers **puros** de presentación de producto (rating, notas, gramaje, stock). Se importa desde el navegador: sin acceso a BD |
 | `src/lib/products.server.ts` | Acceso a datos de producto: `searchProducts()` y `reviewAggregateSql` |
+| `src/lib/flags.ts` | Interruptores `SHOW_CUPPING` y `SHOW_TRACEABILITY` (ambos en `false`) |
+| `src/lib/brew.ts`, `src/lib/gifts.ts` | Lógica pura con tests: cifras de recetas de las guías y contenido de los kits de regalo |
 
 ### Scripts del Cliente (Vanilla JS)
 | Archivo | Propósito |
@@ -150,7 +157,10 @@
 | `public/assets/js/cart.js` | `window.Cart` — localStorage cart API (37 líneas) |
 | `public/assets/js/auth-refresh.js` | Auto-refresh de JWT cada 12 min |
 | `public/assets/js/admin.js` | Legacy admin panel (localStorage CRUD) |
-| `public/assets/js/trazabilidad.js` | Scanner QR + lookup de lotes (datos hardcodeados ⚠️) |
+| `public/assets/js/trazabilidad.js` | Scanner QR + lookup de lotes (ruta apagada por `SHOW_TRACEABILITY`) |
+| `public/assets/js/confirmacion.js` | Confirmación de pago: consulta cada 3 s hasta 1 min y vacía el carrito solo si el pedido queda pagado |
+| `public/assets/js/footer.js` | Newsletter del footer (estados por `data-state`, textos ES/EN) y acordeones móviles |
+| `src/scripts/shop/*.ts` | Motion de páginas de compra: `sections.ts` para las secciones compartidas y una pieza por página |
 
 ---
 

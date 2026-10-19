@@ -2,71 +2,6 @@
 
 ---
 
-## 2026-10-13: Resto del panel admin en el sistema visual del ERP (Agente: Claude)
-
-### Contexto
-Resumen, Ventas y Auditoría ya tenían el sistema visual nuevo; las otras ~40 páginas solo heredaban los tokens. Al revisarlas aparecieron fallos de fondo: el primer indicador de unas 15 páginas se pintaba en una sola línea, y en 13 páginas que pintan contenido con `innerHTML` los estilos *scoped* de Astro no llegaban a ese contenido (miniaturas de Productos a tamaño completo, filas de Usuarios descuadradas, barras de ciudades de MercadoLibre rotas, badges de Costos sin estilo).
-
-### Cambios
-- **`AdminLayout.astro`**:
-  - `.kpi-tile.brand` ya no hereda el `.brand` flex y en negrita de `styles.css`. `.kpi-row` es alias de `.kpi-grid`.
-  - Clase raíz por página en `.erp-content` (`/admin/usuarios` -> `pg-usuarios`).
-  - Utilidad nueva `.filter-bar` (`.ff`, `.ff--grow`, `.filter-bar-actions`) para las barras de filtros.
-  - Celdas `td.num`, `td.mono` y `code` de `.erp-table` sin salto de línea.
-- **Estilos que no llegaban al contenido JS**: el `<style>` de `boletin`, `costos`, `demanda`, `envios`, `etiquetas`, `inventario-valor`, `mercadolibre`, `pedidos`, `precio-fnc`, `productos`, `python`, `usuarios` y `venta` pasa a `is:global` con cada selector prefijado por `.pg-<página>`.
-- **Páginas rehechas con las piezas compartidas** (`page-header`, `kpi-grid`, `filter-bar`, `panel`, `erp-table`, `.status`):
-  - `transacciones`: sin tarjetas de degradado verde, rojo y azul, ni franjas de color por fila.
-  - `finanzas`: indicadores sin íconos, más un nuevo indicador "Por pagar" en lugar del aviso amarillo; estados con punto.
-  - `venta` (Ventas externas): sin el estilo "iOS", los emojis ni los colores por canal.
-  - `pedidos`: sin el botón verde ni el filtro diminuto.
-  - `lotes-entregados`: sin el degradado, el emoji ni los estilos inline.
-  - `InventarioApp.jsx`: encabezado común, franja de indicadores unida, y pestañas y chips con tinte en vez de relleno oscuro.
-- **Seguridad (XSS)**: se escapan los datos que entraban sin escapar a `innerHTML` en `pedidos` y `envios` (nombre, correo y ciudad del cliente vienen del checkout público), y también en `venta`, `finanzas` y `mercadolibre`.
-- **Limpieza en todo el admin**:
-  - Unos 640 em y en dashes. Las celdas vacías pasan a "-", los rangos a guion simple y los separadores a " · ".
-  - Unos 330 colores hex, ahora tokens. Se conservan los colores de la etiqueta impresa y las muestras de grado de tueste.
-  - Emojis de la interfaz.
-  - Franjas `border-left` en notas y tarjetas (`estadisticas`, `python`, `iteraciones`, `presupuesto`, `productos`, `transacciones`, `MobileLayout`).
-  - Tuteo en mensajes del sistema, ahora "usted".
-  - Terminología "Pedidos" en MercadoLibre.
-- **Arreglo**: tres declaraciones `font-family` rotas en `inventario.astro`, causadas por el reemplazo de monoespaciadas de la entrada anterior.
-
-### Pendiente
-- `lotes-entregados` (menú del caficultor) sigue mostrando tres lotes de ejemplo fijos en el código: no hay endpoint de lotes por caficultor (DEBT-016).
-- "Qué sigue" (`produccion`) conserva su saludo en serif; es el diseño propio de la bandeja de tareas.
-
----
-
-## 2026-10-13: Licencia propietaria a nombre de codebymike.net (Agente: Claude)
-
-### Cambios
-- **`LICENSE`** reescrito como licencia propietaria bilingüe (prevalece el español) a nombre de Michael David Rodriguez Beltran / codebymike.net, Bogotá D.C. Prohíbe reproducción total o parcial, uso, despliegue, obras derivadas, distribución, ingeniería inversa, elusión de protecciones, entrenamiento de IA y scraping. Incluye confidencialidad, marcas (BrewedByMike, codebymike.net; DobleYo Café no es del titular), sanciones (Ley 23 de 1982, Decisión Andina 351, Ley 1915 de 2018, arts. 270-272 del Código Penal) y jurisdicción en Bogotá.
-- Numeral 7 "Monitoreo y requerimiento de cese" (ES y EN): monitoreo permanente con un agente de IA basado en Claude sobre fuentes públicas; ante despliegue o uso sin permiso se remite un *cease and desist*, sin renunciar a las acciones legales. Aviso equivalente en el `README.md`.
-- Copia del `LICENSE` en `apps/mobile/` y `packages/shared/`.
-- `package.json` (raíz y workspaces): `author` con nombre, correo y `https://codebymike.net`; `license: "SEE LICENSE IN LICENSE"`.
-- `README.md`: sección "Licencia y derechos de autor".
-
----
-
-## 2026-10-13: Footer rediseñado, oscuro y con marca (Agente: Claude)
-
-### Contexto
-El footer era una rejilla crema sin jerarquía: logo de 28 px, Instagram y Facebook apuntando a `#`, "Admin Panel" como enlace público, enlaces duplicados ("Cafés" y "Ver todo" a `/tienda`; en EN "Subscription" iba a `/wholesale`), fila legal desalineada por un `margin-top` inline, colores hex sueltos y un aviso médico heredado de una plantilla de suplementos.
-
-### Cambios
-- **`components/Footer.astro`** reescrito con estilos propios (scoped):
-  - Fondo espresso. Newsletter con titular en Fraunces y un campo tipo píldora con botón "Suscribirme" (ahora es un `<form>` con `submit`).
-  - Columna de marca: sello del logo sobre disco crema, frase de marca, WhatsApp real (`+57 320 498 1580`, el mismo del botón flotante), correo y "Hecho en Colombia".
-  - Cuatro columnas sin duplicados: Tienda, Aprende, Ayuda, Empresas. Sin Admin ni redes sociales vacías.
-  - Medios de pago del checkout (Visa, Mastercard, PSE, Nequi, Daviplata, contraentrega), solo en ES.
-  - Fila legal en una línea: copyright, legales y crédito.
-  - Se elimina el aviso médico/regulatorio.
-  - Móvil: las columnas son acordeones (`<details>`); desde 768 px siempre abiertas.
-- **`public/assets/js/footer.js`** (antes `newsletter-footer.js`): mensajes por `data-state` en vez de colores inline, textos ES/EN según `<html lang>`, y control de los acordeones.
-- **`styles.css`**: se borran las reglas globales viejas del footer. Tokens nuevos `--footer-*` para el tema oscuro y `--sand` (el crema anterior), que pasa a usarse en las secciones que reutilizaban `--footer-bg` (`index.astro`, `en/index.astro`, `desarrollo-ia.astro`, `sena/taller-negociacion.astro`).
-
----
-
 ## 2026-10-14: Confirmación de pago con Wompi: espera al webhook y carrito seguro (Agente: Claude)
 
 ### Contexto
@@ -136,6 +71,71 @@ Las páginas de prioridad media de la skill motion-landing. El diagnóstico enco
 - Sin scroll horizontal. Con movimiento reducido no queda nada oculto.
 - Carrito EN probado: guarda el producto en `dbyo-cart`.
 - Tests (259), type-check y build en verde. Las piezas de motion de compra suman 4,4 KB comprimidas.
+
+---
+
+## 2026-10-13: Resto del panel admin en el sistema visual del ERP (Agente: Claude)
+
+### Contexto
+Resumen, Ventas y Auditoría ya tenían el sistema visual nuevo; las otras ~40 páginas solo heredaban los tokens. Al revisarlas aparecieron fallos de fondo: el primer indicador de unas 15 páginas se pintaba en una sola línea, y en 13 páginas que pintan contenido con `innerHTML` los estilos *scoped* de Astro no llegaban a ese contenido (miniaturas de Productos a tamaño completo, filas de Usuarios descuadradas, barras de ciudades de MercadoLibre rotas, badges de Costos sin estilo).
+
+### Cambios
+- **`AdminLayout.astro`**:
+  - `.kpi-tile.brand` ya no hereda el `.brand` flex y en negrita de `styles.css`. `.kpi-row` es alias de `.kpi-grid`.
+  - Clase raíz por página en `.erp-content` (`/admin/usuarios` -> `pg-usuarios`).
+  - Utilidad nueva `.filter-bar` (`.ff`, `.ff--grow`, `.filter-bar-actions`) para las barras de filtros.
+  - Celdas `td.num`, `td.mono` y `code` de `.erp-table` sin salto de línea.
+- **Estilos que no llegaban al contenido JS**: el `<style>` de `boletin`, `costos`, `demanda`, `envios`, `etiquetas`, `inventario-valor`, `mercadolibre`, `pedidos`, `precio-fnc`, `productos`, `python`, `usuarios` y `venta` pasa a `is:global` con cada selector prefijado por `.pg-<página>`.
+- **Páginas rehechas con las piezas compartidas** (`page-header`, `kpi-grid`, `filter-bar`, `panel`, `erp-table`, `.status`):
+  - `transacciones`: sin tarjetas de degradado verde, rojo y azul, ni franjas de color por fila.
+  - `finanzas`: indicadores sin íconos, más un nuevo indicador "Por pagar" en lugar del aviso amarillo; estados con punto.
+  - `venta` (Ventas externas): sin el estilo "iOS", los emojis ni los colores por canal.
+  - `pedidos`: sin el botón verde ni el filtro diminuto.
+  - `lotes-entregados`: sin el degradado, el emoji ni los estilos inline.
+  - `InventarioApp.jsx`: encabezado común, franja de indicadores unida, y pestañas y chips con tinte en vez de relleno oscuro.
+- **Seguridad (XSS)**: se escapan los datos que entraban sin escapar a `innerHTML` en `pedidos` y `envios` (nombre, correo y ciudad del cliente vienen del checkout público), y también en `venta`, `finanzas` y `mercadolibre`.
+- **Limpieza en todo el admin**:
+  - Unos 640 em y en dashes. Las celdas vacías pasan a "-", los rangos a guion simple y los separadores a " · ".
+  - Unos 330 colores hex, ahora tokens. Se conservan los colores de la etiqueta impresa y las muestras de grado de tueste.
+  - Emojis de la interfaz.
+  - Franjas `border-left` en notas y tarjetas (`estadisticas`, `python`, `iteraciones`, `presupuesto`, `productos`, `transacciones`, `MobileLayout`).
+  - Tuteo en mensajes del sistema, ahora "usted".
+  - Terminología "Pedidos" en MercadoLibre.
+- **Arreglo**: tres declaraciones `font-family` rotas en `inventario.astro`, causadas por el reemplazo de monoespaciadas de la entrada anterior.
+
+### Pendiente
+- `lotes-entregados` (menú del caficultor) sigue mostrando tres lotes de ejemplo fijos en el código: no hay endpoint de lotes por caficultor (DEBT-016).
+- "Qué sigue" (`produccion`) conserva su saludo en serif; es el diseño propio de la bandeja de tareas.
+
+---
+
+## 2026-10-13: Licencia propietaria a nombre de codebymike.net (Agente: Claude)
+
+### Cambios
+- **`LICENSE`** reescrito como licencia propietaria bilingüe (prevalece el español) a nombre de Michael David Rodriguez Beltran / codebymike.net, Bogotá D.C. Prohíbe reproducción total o parcial, uso, despliegue, obras derivadas, distribución, ingeniería inversa, elusión de protecciones, entrenamiento de IA y scraping. Incluye confidencialidad, marcas (BrewedByMike, codebymike.net; DobleYo Café no es del titular), sanciones (Ley 23 de 1982, Decisión Andina 351, Ley 1915 de 2018, arts. 270-272 del Código Penal) y jurisdicción en Bogotá.
+- Numeral 7 "Monitoreo y requerimiento de cese" (ES y EN): monitoreo permanente con un agente de IA basado en Claude sobre fuentes públicas; ante despliegue o uso sin permiso se remite un *cease and desist*, sin renunciar a las acciones legales. Aviso equivalente en el `README.md`.
+- Copia del `LICENSE` en `apps/mobile/` y `packages/shared/`.
+- `package.json` (raíz y workspaces): `author` con nombre, correo y `https://codebymike.net`; `license: "SEE LICENSE IN LICENSE"`.
+- `README.md`: sección "Licencia y derechos de autor".
+
+---
+
+## 2026-10-13: Footer rediseñado, oscuro y con marca (Agente: Claude)
+
+### Contexto
+El footer era una rejilla crema sin jerarquía: logo de 28 px, Instagram y Facebook apuntando a `#`, "Admin Panel" como enlace público, enlaces duplicados ("Cafés" y "Ver todo" a `/tienda`; en EN "Subscription" iba a `/wholesale`), fila legal desalineada por un `margin-top` inline, colores hex sueltos y un aviso médico heredado de una plantilla de suplementos.
+
+### Cambios
+- **`components/Footer.astro`** reescrito con estilos propios (scoped):
+  - Fondo espresso. Newsletter con titular en Fraunces y un campo tipo píldora con botón "Suscribirme" (ahora es un `<form>` con `submit`).
+  - Columna de marca: sello del logo sobre disco crema, frase de marca, WhatsApp real (`+57 320 498 1580`, el mismo del botón flotante), correo y "Hecho en Colombia".
+  - Cuatro columnas sin duplicados: Tienda, Aprende, Ayuda, Empresas. Sin Admin ni redes sociales vacías.
+  - Medios de pago del checkout (Visa, Mastercard, PSE, Nequi, Daviplata, contraentrega), solo en ES.
+  - Fila legal en una línea: copyright, legales y crédito.
+  - Se elimina el aviso médico/regulatorio.
+  - Móvil: las columnas son acordeones (`<details>`); desde 768 px siempre abiertas.
+- **`public/assets/js/footer.js`** (antes `newsletter-footer.js`): mensajes por `data-state` en vez de colores inline, textos ES/EN según `<html lang>`, y control de los acordeones.
+- **`styles.css`**: se borran las reglas globales viejas del footer. Tokens nuevos `--footer-*` para el tema oscuro y `--sand` (el crema anterior), que pasa a usarse en las secciones que reutilizaban `--footer-bg` (`index.astro`, `en/index.astro`, `desarrollo-ia.astro`, `sena/taller-negociacion.astro`).
 
 ---
 

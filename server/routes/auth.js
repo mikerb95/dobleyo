@@ -459,12 +459,19 @@ authRouter.post('/google', loginLimiter, async (req, res) => {
       audience: process.env.GOOGLE_CLIENT_ID,
     });
     const payload = ticket.getPayload();
-    const { email, given_name, family_name, sub: googleId } = payload;
+    const { email, given_name, family_name, sub: googleId, email_verified } = payload;
+
+    // Sin correo verificado por Google no se crea ni se vincula nada: de lo
+    // contrario, una cuenta de Google con un correo ajeno sin verificar entraría
+    // como el dueño de ese correo (incluido un admin).
+    if (!email || email_verified !== true) {
+      return res.status(401).json({ error: 'Su cuenta de Google no tiene el correo verificado' });
+    }
 
     // Buscar usuario existente por google_id o email
     let result = await db.query(
-      'SELECT * FROM users WHERE google_id = ? OR email = ? LIMIT 1',
-      [googleId, email]
+      'SELECT * FROM users WHERE google_id = ? OR lower(email) = lower(?) ORDER BY (google_id = ?) DESC LIMIT 1',
+      [googleId, email, googleId]
     );
     let user = result.rows[0];
 
@@ -542,12 +549,17 @@ authRouter.post('/apple', loginLimiter, async (req, res) => {
     });
 
     const { sub: appleId, email } = payload;
+    // Apple manda email_verified como booleano o como el texto "true".
+    const emailVerified = payload.email_verified === true || payload.email_verified === 'true';
 
-    // Buscar usuario por apple_id o email
-    let result = await db.query(
-      'SELECT * FROM users WHERE apple_id = ? OR (email = ? AND email IS NOT NULL) LIMIT 1',
-      [appleId, email ?? '']
-    );
+    // Solo se vincula por correo si Apple lo da por verificado; si no, se busca
+    // únicamente por apple_id (mismo motivo que en /google).
+    let result = emailVerified && email
+      ? await db.query(
+        'SELECT * FROM users WHERE apple_id = ? OR lower(email) = lower(?) ORDER BY (apple_id = ?) DESC LIMIT 1',
+        [appleId, email, appleId]
+      )
+      : await db.query('SELECT * FROM users WHERE apple_id = ? LIMIT 1', [appleId]);
     let user = result.rows[0];
 
     if (!user) {
@@ -555,7 +567,7 @@ authRouter.post('/apple', loginLimiter, async (req, res) => {
       const insert = await db.query(
         `INSERT INTO users (email, first_name, last_name, role, is_verified, apple_id)
          VALUES (?, ?, ?, 'client', 1, ?) RETURNING *`,
-        [email ?? null, first_name || 'Usuario', last_name || '', appleId]
+        [emailVerified ? email : null, first_name || 'Usuario', last_name || '', appleId]
       );
       user = insert.rows[0];
     } else if (!user.apple_id) {
