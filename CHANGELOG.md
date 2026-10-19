@@ -2,6 +2,20 @@
 
 ---
 
+## 2026-10-19: Documentación al día y limpieza de auditorías viejas (Agente: Claude)
+
+### Contexto
+`AGENTS.md` seguía describiendo el proyecto sobre PostgreSQL y una estructura de carpetas que ya no existe. Los documentos de auditoría de la raíz reportaban como abiertos hallazgos que ya estaban corregidos en el código (acceso de prueba en producción, tokens en `localStorage`, firma del webhook de Wompi, fail-open de `farmAuth`).
+
+### Cambios
+- **`AGENTS.md`**: stack con Turso y Node 24, árbol de carpetas real, §3.2 con el dialecto SQLite (`?`, `datetime('now')`), piezas de `src/components/shop/` en §3.9, nueva §3.13 de checkout y confirmación con Wompi, y el CHANGELOG se escribe con lo más reciente primero.
+- **`CLAUDE.md`**: mapa de archivos con confirmación de pago, páginas de compra con motion, footer nuevo, `Icon.astro`, `flags.ts`, `brew.ts`, `gifts.ts` y `src/scripts/shop/`.
+- **`CHANGELOG.md`**: las entradas del 14 de octubre pasan arriba de las del 13.
+- **Auditorías**: se borran `analisis 06may2026.md`, `auditoria-may-20.md`, `hallazgos-fable.md` y `seo.md` (quedan en el historial de git). `seguridad.md` pasa a `docs/seguridad.md` como entregable del proyecto de grado; `showcase.astro` y `desarrollo-ia.astro` apuntan a la nueva ruta.
+- **Deuda técnica** (`AGENTS.md` §12): DEBT-017 a DEBT-020 con lo que seguía abierto (validar la CSP en un preview, quitar `'unsafe-inline'`, `devtools.js` con SQL de MySQL e imagen OG de marca).
+
+---
+
 ## 2026-10-14: Confirmación de pago con Wompi: espera al webhook y carrito seguro (Agente: Claude)
 
 ### Contexto

@@ -481,6 +481,10 @@ Para exponer la plataforma en vivo existe un seed **idempotente** que puebla tod
 | DEBT-014 | 🟡 | Integración Interrapidísimo (`server/services/interrapidisimo.js`) escrita sobre el documento B2B de 2022: validar en pruebas (stgwww3) el método del token, rutas, nombres de campos, ids de estado y cómo se fija el valor a recaudar en contraentrega antes de usar en producción | Pendiente |
 | DEBT-015 | 🟡 | `server/migrations/seed_demo.js` no corre sobre una base nueva: `caficultor_applications` en `db/schema.sql` usa `region`/`hectares`/`description` pero el seed inserta `farm_location`/`farm_size_hectares`/`motivation`, y luego falla una FK al insertar `lots`. Solo funciona sobre la base viva | Pendiente |
 | DEBT-016 | 🟡 | `src/pages/admin/lotes-entregados.astro` (menú del caficultor) muestra tres lotes de ejemplo fijos en el script (`lotesEjemplo`). No existe un endpoint que devuelva los lotes de un caficultor; hay que crearlo (con filtro por `req.user.id`) y conectar la página | Pendiente |
+| DEBT-017 | 🟠 | CSP de `vercel.json` sin validar en un despliegue de preview: comprobar en consola que no bloquee checkout Wompi, login con Google ni el mapa de ventas (Leaflet). Los headers solo existen desplegados | Pendiente |
+| DEBT-018 | 🟡 | `script-src` con `'unsafe-inline'` en la CSP principal: quitarlo exige migrar los scripts en línea y los `onclick=` a `addEventListener` (o hashing de Astro) | Pendiente |
+| DEBT-019 | 🟡 | `server/routes/devtools.js` usa `SET FOREIGN_KEY_CHECKS` (MySQL); en SQLite es `PRAGMA foreign_keys`. Solo desarrollo, bloqueado en producción | Pendiente |
+| DEBT-020 | 🟢 | `public/assets/img/og-default.jpg` es un recorte de 1024×576, no una pieza OG de marca de 1200×630. Se reemplaza el archivo sin tocar código | Pendiente |
 
 ---
 
