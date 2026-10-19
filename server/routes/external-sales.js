@@ -181,7 +181,7 @@ externalSalesRouter.post('/',
             args: [product_id],
           });
           if (!prodResult.rows[0]) {
-            throw new Error(`Producto no encontrado: ${product_id}`);
+            throw Object.assign(new Error(`Producto no encontrado: ${product_id}`), { status: 422 });
           }
 
           const stockBefore = prodResult.rows[0].stock_quantity || 0;
@@ -215,8 +215,9 @@ externalSalesRouter.post('/',
 
       res.status(201).json({ success: true, id: saleId });
     } catch (err) {
+      if (err.status) return res.status(err.status).json({ success: false, error: err.message });
       logger.error({ err }, '[POST /api/external-sales] Error:');
-      res.status(500).json({ success: false, error: err.message || 'Error al registrar la venta' });
+      res.status(500).json({ success: false, error: 'Error al registrar la venta' });
     }
   }
 );

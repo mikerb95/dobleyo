@@ -332,7 +332,8 @@ subscriptionsRouter.post('/run-billing', async (req, res) => {
   if (!CRON_SECRET) {
     return res.status(503).json({ success: false, error: 'Billing no configurado (falta SUBSCRIPTIONS_CRON_SECRET)' });
   }
-  const provided = req.get('x-cron-secret') || req.query.secret;
+  // Solo por cabecera: un secreto en la URL queda en logs y en el historial del proxy.
+  const provided = req.get('x-cron-secret');
   const a = Buffer.from(String(provided || ''));
   const b = Buffer.from(CRON_SECRET);
   if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) {

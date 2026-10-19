@@ -163,7 +163,7 @@ lotsRouter.post('/', authenticateToken, requireRole('admin'), async (req, res) =
     res.status(201).json(result.rows[0]);
   } catch (err) {
     logger.error(err);
-    res.status(500).json({ error: 'Error creando lote: ' + err.message });
+    res.status(500).json({ error: 'Error creando lote' });
   }
 });
 
@@ -242,7 +242,7 @@ lotsRouter.put('/:code', authenticateToken, requireRole('admin'), async (req, re
     res.json(result.rows[0]);
   } catch (err) {
     logger.error(err);
-    res.status(500).json({ error: 'Error actualizando lote: ' + err.message });
+    res.status(500).json({ error: 'Error actualizando lote' });
   }
 });
 
@@ -334,7 +334,7 @@ lotsRouter.post('/roast/:lotId', authenticateToken, requireRole('admin'), async 
     });
   } catch (err) {
     logger.error(err);
-    res.status(500).json({ error: 'Error tostando café: ' + err.message });
+    res.status(500).json({ error: 'Error tostando café' });
   }
 });
 

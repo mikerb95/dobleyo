@@ -69,7 +69,7 @@ stockRouter.post('/', authenticateToken, requireRole('admin'), async (req, res) 
     res.status(201).json(result.rows[0]);
   } catch (err) {
     logger.error(err);
-    res.status(500).json({ error: 'Error creando producto: ' + err.message });
+    res.status(500).json({ error: 'Error creando producto' });
   }
 });
 
@@ -117,7 +117,8 @@ stockRouter.post('/update', authenticateToken, requireRole('admin'), async (req,
         const updated = await updateStock(sku, quantity);
         res.json(updated);
     } catch (e) {
-        res.status(500).json({ error: e.message });
+        logger.error({ err: e }, '[POST /api/stock/update] Error:');
+        res.status(500).json({ error: 'Error interno del servidor' });
     }
 });
 

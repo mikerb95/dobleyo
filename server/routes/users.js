@@ -168,7 +168,7 @@ usersRouter.put('/:id', auth.authenticateToken, auth.requireRole('admin'), async
     res.json({ user: updated.rows[0] });
   } catch (err) {
     logger.error({ err }, '[PUT /api/users/:id] Error:');
-    res.status(500).json({ error: 'Error al actualizar usuario', details: err.message });
+    res.status(500).json({ error: 'Error al actualizar usuario' });
   }
 });
 

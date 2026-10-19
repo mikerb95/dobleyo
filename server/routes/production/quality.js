@@ -83,7 +83,7 @@ qualityRouter.get('/', async (req, res) => {
     });
   } catch (error) {
     logger.error('Error fetching quality checks:', error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });
 
@@ -126,7 +126,7 @@ qualityRouter.get('/stats/summary', async (req, res) => {
     res.json({ success: true, data: stats });
   } catch (error) {
     logger.error('Error getting quality stats:', error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });
 
@@ -160,7 +160,7 @@ qualityRouter.get('/:id', async (req, res) => {
     res.json({ success: true, data: rows[0] });
   } catch (error) {
     logger.error('Error fetching quality check:', error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });
 
@@ -207,7 +207,7 @@ qualityRouter.post('/', async (req, res) => {
     });
   } catch (error) {
     logger.error('Error creating quality check:', error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });
 
@@ -277,7 +277,7 @@ qualityRouter.post('/cupping', async (req, res) => {
     });
   } catch (error) {
     logger.error('Error recording cupping:', error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });
 
@@ -329,7 +329,7 @@ qualityRouter.put('/:id', async (req, res) => {
     res.json({ success: true, message: 'Quality check updated' });
   } catch (error) {
     logger.error('Error updating quality check:', error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });
 
@@ -355,6 +355,6 @@ qualityRouter.post('/:id/approve', async (req, res) => {
     res.json({ success: true, message: 'Quality check approved' });
   } catch (error) {
     logger.error('Error approving quality check:', error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });

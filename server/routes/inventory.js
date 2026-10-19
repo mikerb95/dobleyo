@@ -149,7 +149,7 @@ inventoryRouter.get('/products', async (req, res) => {
     });
   } catch (error) {
     logger.error('Error listing products:', error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });
 
@@ -191,7 +191,7 @@ inventoryRouter.get('/products/:id', async (req, res) => {
     });
   } catch (error) {
     logger.error('Error getting product:', error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });
 
@@ -280,7 +280,7 @@ inventoryRouter.post('/products', async (req, res) => {
     });
   } catch (error) {
     logger.error('Error creating product:', error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });
 
@@ -373,7 +373,7 @@ inventoryRouter.put('/products/:id', async (req, res) => {
     });
   } catch (error) {
     logger.error('Error updating product:', error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });
 
@@ -407,7 +407,7 @@ inventoryRouter.delete('/products/:id', async (req, res) => {
     });
   } catch (error) {
     logger.error('Error deleting product:', error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });
 
@@ -429,7 +429,7 @@ inventoryRouter.get('/products/:id/variants', async (req, res) => {
     res.json({ success: true, variants: result.rows, total: result.rows.length });
   } catch (error) {
     logger.error('Error listing variants:', error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });
 
@@ -475,7 +475,7 @@ inventoryRouter.post('/products/:id/variants', async (req, res) => {
     res.status(201).json({ success: true, variantId, message: 'Variante creada exitosamente' });
   } catch (error) {
     logger.error('Error creating variant:', error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });
 
@@ -560,7 +560,7 @@ inventoryRouter.put('/variants/:variantId', async (req, res) => {
       return res.status(400).json({ success: false, error: error.message });
     }
     logger.error('Error updating variant:', error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });
 
@@ -585,7 +585,7 @@ inventoryRouter.delete('/variants/:variantId', async (req, res) => {
     res.json({ success: true, message: 'Variante eliminada' });
   } catch (error) {
     logger.error('Error deleting variant:', error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });
 
@@ -686,7 +686,7 @@ inventoryRouter.post('/movements', async (req, res) => {
     });
   } catch (error) {
     logger.error('Error recording movement:', error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });
 
@@ -805,7 +805,7 @@ inventoryRouter.get('/movements', async (req, res) => {
     });
   } catch (error) {
     logger.error('Error listing movements:', error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });
 
@@ -975,7 +975,7 @@ inventoryRouter.get('/alerts/low-stock', async (req, res) => {
     });
   } catch (error) {
     logger.error('Error getting low stock alerts:', error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });
 
@@ -1085,7 +1085,7 @@ inventoryRouter.get('/summary', async (req, res) => {
     });
   } catch (error) {
     logger.error('[GET /inventory/summary] Error:', error);
-    res.status(500).json({ success: false, error: { code: 'summary_failed', message: error.message } });
+    res.status(500).json({ success: false, error: { code: 'summary_failed', message: 'Error interno del servidor' } });
   }
 });
 
@@ -1183,7 +1183,7 @@ inventoryRouter.get('/items', async (req, res) => {
     return res.status(400).json({ success: false, error: { code: 'bad_type', message: 'Tipo inválido' } });
   } catch (error) {
     logger.error('[GET /inventory/items] Error:', error);
-    res.status(500).json({ success: false, error: { code: 'items_failed', message: error.message } });
+    res.status(500).json({ success: false, error: { code: 'items_failed', message: 'Error interno del servidor' } });
   }
 });
 
@@ -1299,7 +1299,7 @@ inventoryRouter.get('/items/:id', async (req, res) => {
     return res.status(400).json({ success: false, error: { code: 'bad_type', message: 'Tipo inválido' } });
   } catch (error) {
     logger.error('[GET /inventory/items/:id] Error:', error);
-    res.status(500).json({ success: false, error: { code: 'detail_failed', message: error.message } });
+    res.status(500).json({ success: false, error: { code: 'detail_failed', message: 'Error interno del servidor' } });
   }
 });
 
@@ -1361,7 +1361,7 @@ inventoryRouter.get('/feed', async (req, res) => {
     res.json({ success: true, data });
   } catch (error) {
     logger.error('[GET /inventory/feed] Error:', error);
-    res.status(500).json({ success: false, error: { code: 'feed_failed', message: error.message } });
+    res.status(500).json({ success: false, error: { code: 'feed_failed', message: 'Error interno del servidor' } });
   }
 });
 
@@ -1417,7 +1417,7 @@ inventoryRouter.get('/stats/dashboard', async (req, res) => {
     });
   } catch (error) {
     logger.error('Error getting inventory stats:', error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });
 

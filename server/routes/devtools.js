@@ -47,7 +47,7 @@ devtoolsRouter.post('/clean-users', async (req, res) => {
     });
   } catch (error) {
     logger.error('Error al limpiar usuarios:', error);
-    res.status(500).json({ error: `Error al limpiar usuarios: ${error.message}` });
+    res.status(500).json({ error: 'Error al limpiar usuarios' });
   }
 });
 
@@ -97,7 +97,7 @@ devtoolsRouter.post('/clean-lots', async (req, res) => {
     logger.error('Error general al limpiar lotes:', error);
     // Asegurar que reactivamos las claves foráneas en caso de error
     await query('SET FOREIGN_KEY_CHECKS = 1;').catch(() => {});
-    res.status(500).json({ error: `Error al limpiar lotes: ${error.message}` });
+    res.status(500).json({ error: 'Error al limpiar lotes' });
   }
 });
 
@@ -142,6 +142,6 @@ devtoolsRouter.post('/clean-products', async (req, res) => {
     logger.error('Error general al limpiar productos:', error);
     // Asegurar que reactivamos las claves foráneas en caso de error
     await query('SET FOREIGN_KEY_CHECKS = 1;').catch(() => {});
-    res.status(500).json({ error: `Error al limpiar productos: ${error.message}` });
+    res.status(500).json({ error: 'Error al limpiar productos' });
   }
 });

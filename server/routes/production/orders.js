@@ -72,7 +72,7 @@ ordersRouter.get('/', async (req, res) => {
     });
   } catch (error) {
     logger.error('Error fetching production orders:', error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });
 
@@ -140,7 +140,7 @@ ordersRouter.get('/:id', async (req, res) => {
     });
   } catch (error) {
     logger.error('Error fetching production order:', error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });
 
@@ -197,7 +197,7 @@ ordersRouter.post('/', async (req, res) => {
     });
   } catch (error) {
     logger.error('Error creating production order:', error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });
 
@@ -260,7 +260,7 @@ ordersRouter.put('/:id', async (req, res) => {
     res.json({ success: true, message: 'Production order updated' });
   } catch (error) {
     logger.error('Error updating production order:', error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });
 
@@ -290,7 +290,7 @@ ordersRouter.delete('/:id', async (req, res) => {
     res.json({ success: true, message: 'Production order deleted' });
   } catch (error) {
     logger.error('Error deleting production order:', error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });
 
@@ -320,7 +320,7 @@ ordersRouter.post('/:id/confirm', async (req, res) => {
     res.json({ success: true, message: 'Order confirmed', state: 'confirmada' });
   } catch (error) {
     logger.error('Error confirming order:', error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });
 
@@ -346,7 +346,7 @@ ordersRouter.post('/:id/start', async (req, res) => {
     res.json({ success: true, message: 'Order started', state: 'en_progreso' });
   } catch (error) {
     logger.error('Error starting order:', error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });
 
@@ -372,7 +372,7 @@ ordersRouter.post('/:id/pause', async (req, res) => {
     res.json({ success: true, message: 'Order paused', state: 'pausada' });
   } catch (error) {
     logger.error('Error pausing order:', error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });
 
@@ -398,7 +398,7 @@ ordersRouter.post('/:id/resume', async (req, res) => {
     res.json({ success: true, message: 'Order resumed', state: 'en_progreso' });
   } catch (error) {
     logger.error('Error resuming order:', error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });
 
@@ -429,7 +429,7 @@ ordersRouter.post('/:id/complete', async (req, res) => {
     res.json({ success: true, message: 'Order completed', state: 'completada' });
   } catch (error) {
     logger.error('Error completing order:', error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });
 
@@ -456,6 +456,6 @@ ordersRouter.post('/:id/cancel', async (req, res) => {
     res.json({ success: true, message: 'Order cancelled', state: 'cancelada' });
   } catch (error) {
     logger.error('Error cancelling order:', error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });

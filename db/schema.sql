@@ -89,6 +89,8 @@ CREATE TABLE IF NOT EXISTS audit_logs (
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 );
+-- Bloqueo por cuenta del login: cuenta los LOGIN_FAILED recientes de un usuario.
+CREATE INDEX IF NOT EXISTS idx_audit_logs_user_action ON audit_logs(user_id, action, created_at);
 
 -- Products
 CREATE TABLE IF NOT EXISTS products (

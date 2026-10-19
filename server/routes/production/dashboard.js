@@ -184,7 +184,7 @@ dashboardRouter.get('/', async (req, res) => {
     });
   } catch (error) {
     logger.error('Error fetching production dashboard:', error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });
 
@@ -240,7 +240,7 @@ dashboardRouter.get('/efficiency', async (req, res) => {
     });
   } catch (error) {
     logger.error('Error fetching efficiency data:', error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });
 
@@ -285,7 +285,7 @@ dashboardRouter.get('/operators', async (req, res) => {
     res.json({ success: true, data: operatorsData });
   } catch (error) {
     logger.error('Error fetching operator performance:', error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });
 
@@ -361,6 +361,6 @@ dashboardRouter.get('/alerts', async (req, res) => {
     res.json({ success: true, alerts });
   } catch (error) {
     logger.error('Error fetching alerts:', error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });

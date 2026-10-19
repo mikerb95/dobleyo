@@ -51,6 +51,10 @@ export const EMAIL_VERIFICATION_REQUIRED_SINCE = '2026-10-14 00:00:00';
 // inexistente cueste lo mismo que uno real.
 const DUMMY_HASH = '$2a$10$1Ia2dbC8VShSLfTyMQ4lc.qP3YjDPZ0/Q./61lSRS4mMpWJWkcZFW';
 
+// Fallos de contraseña permitidos por cuenta antes del bloqueo temporal.
+const LOCKOUT_MAX_FAILS = 10;
+const LOCKOUT_WINDOW_MIN = 15;
+
 const mustVerifyEmail = (user) =>
   !user.is_verified && String(user.created_at ?? '') >= EMAIL_VERIFICATION_REQUIRED_SINCE;
 
@@ -306,6 +310,24 @@ authRouter.post('/login',
     try {
       const result = await db.query('SELECT * FROM users WHERE email = ?', [email]);
       const user = result.rows[0];
+
+      // Bloqueo por cuenta: el rate limit por IP vive en memoria de cada instancia
+      // serverless y un atacante puede repartir intentos entre IPs. Contar en la
+      // BD los fallos recientes del usuario sí aplica en todas las instancias.
+      if (user) {
+        const recent = await db.query(
+          `SELECT COUNT(*) AS n FROM audit_logs
+           WHERE user_id = ? AND action = 'LOGIN_FAILED' AND created_at > datetime('now', ?)`,
+          [user.id, `-${LOCKOUT_WINDOW_MIN} minutes`]
+        );
+        if (Number(recent.rows[0]?.n) >= LOCKOUT_MAX_FAILS) {
+          logger.warn({ userId: user.id, ip: req.ip }, '[POST /api/auth/login] Cuenta bloqueada temporalmente');
+          return res.status(429).json({
+            error: `Demasiados intentos fallidos. Por seguridad, intente de nuevo en ${LOCKOUT_WINDOW_MIN} minutos o restablezca su contraseña.`,
+            code: 'ACCOUNT_LOCKED',
+          });
+        }
+      }
 
       // Sin usuario (o cuenta solo-Google) se compara igual contra un hash de
       // relleno: la respuesta tarda lo mismo y no delata qué correos existen.

@@ -54,7 +54,7 @@ function suppliesFrom(req) {
 function handleErr(res, err, context) {
   if (err.status) return res.status(err.status).json({ success: false, error: err.message, ...(err.detail && { detail: err.detail }) });
   logger.error({ err }, context);
-  res.status(500).json({ success: false, error: err.message });
+  res.status(500).json({ success: false, error: 'Error interno del servidor' });
 }
 
 // 1. Cosecha

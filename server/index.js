@@ -63,7 +63,7 @@ app.use(helmet({
       objectSrc: ["'none'"],
       frameAncestors: ["'self'"], // anti-clickjacking
       formAction: ["'self'", "https://checkout.wompi.co", "https://www.mercadopago.com"],
-      scriptSrc: ["'self'", "https://checkout.wompi.co", "https://www.mercadopago.com", "https://sdk.mercadopago.com", "https://cdn.jsdelivr.net", "https://accounts.google.com", "https://www.gstatic.com"],
+      scriptSrc: ["'self'", "https://checkout.wompi.co", "https://www.mercadopago.com", "https://sdk.mercadopago.com", "https://cdn.jsdelivr.net/npm/jsqr@1.4.0/", "https://accounts.google.com", "https://www.gstatic.com"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://unpkg.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       imgSrc: ["'self'", "data:", "https:", "blob:"],
@@ -90,9 +90,13 @@ const allowedOrigins = [
   'https://dobleyo.cafe',
   'https://www.dobleyo.cafe',
   'https://dobleyo.vercel.app',
-  'http://localhost:4321',
-  'http://localhost:3000'
 ];
+// Los orígenes locales solo fuera de producción: con credentials: true, cualquier
+// servidor que corra en localhost en el equipo de un admin podría llamar la API
+// con su sesión.
+if (process.env.NODE_ENV !== 'production') {
+  allowedOrigins.push('http://localhost:4321', 'http://localhost:3000');
+}
 if (process.env.SITE_BASE_URL && !allowedOrigins.includes(process.env.SITE_BASE_URL)) {
   allowedOrigins.push(process.env.SITE_BASE_URL);
 }
@@ -165,8 +169,10 @@ app.get('/api/health', async (req, res) => {
   res.status(db.ok ? 200 : 503).json({
     status,
     time: new Date().toISOString(),
-    db: db.ok ? 'connected' : `error: ${db.error}`,
+    db: db.ok ? 'connected' : 'error',
   });
+  // El detalle (host, credenciales mal puestas) va al log, no a una URL pública.
+  if (!db.ok) logger.error({ error: db.error }, '[GET /api/health] Base de datos no disponible');
 });
 
 // MercadoPago — stub (Fase 4, pendiente)

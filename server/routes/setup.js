@@ -5,6 +5,7 @@ import * as auth from '../auth.js';
 import { createCoffeeTables } from '../migrations/create_coffee_tables.js';
 import { addOriginFieldsToCoffeeHarvests } from '../migrations/add_origin_fields_to_coffee_harvests.js';
 import crypto from 'crypto';
+import { logSystemAudit } from '../services/audit.js';
 
 export const setupRouter = express.Router();
 
@@ -12,6 +13,21 @@ export const setupRouter = express.Router();
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
 const ADMIN_PASS = process.env.ADMIN_PASSWORD;
 const SETUP_KEY = process.env.SETUP_SECRET_KEY;
+
+// El esquema en producción lo aplican las migraciones del build (vercel-build).
+// Este endpoint queda apagado allí salvo que se encienda a propósito con
+// SETUP_ENABLED=true, y siempre exige el secreto (comparado en tiempo constante).
+setupRouter.use((req, res, next) => {
+  if (process.env.NODE_ENV === 'production' && process.env.SETUP_ENABLED !== 'true') {
+    return res.status(404).json({ success: false, error: 'No encontrado' });
+  }
+  const provided = Buffer.from((req.headers['authorization'] || '').replace(/^Bearer\s+/i, ''));
+  const expected = Buffer.from(SETUP_KEY || '');
+  const ok = SETUP_KEY && provided.length === expected.length && crypto.timingSafeEqual(provided, expected);
+  logSystemAudit(ok ? 'setup_access' : 'setup_denied', 'system', 'setup', { path: req.path, ip: req.ip ?? null }).catch(() => {});
+  if (!ok) return res.status(403).json({ success: false, error: 'No autorizado' });
+  next();
+});
 
 // Embed schema directly to avoid file reading issues in Vercel
 // PostgreSQL DDL — tablas esenciales (core)
@@ -204,13 +220,6 @@ const products = [
 
 // PROTECCIÓN: Setup debe ser POST con secreto en header, nunca GET
 setupRouter.post('/', async (req, res) => {
-  // Requerir secreto en header Authorization, no en query string
-  const authHeader = req.headers['authorization'] || '';
-  const providedKey = authHeader.replace('Bearer ', '');
-
-  if (!SETUP_KEY || providedKey !== SETUP_KEY) {
-    return res.status(403).json({ error: 'Unauthorized. Set SETUP_SECRET_KEY env var and pass Authorization: Bearer <value>' });
-  }
 
   const logs = [];
   const log = (msg) => {
@@ -303,18 +312,12 @@ setupRouter.post('/', async (req, res) => {
 
   } catch (error) {
     logger.error(error);
-    res.status(500).json({ success: false, error: error.message, logs });
+    res.status(500).json({ success: false, error: 'Error interno del servidor', logs });
   }
 });
 // Nuevo endpoint completo con verificación detallada
 // PROTECCIÓN: Full setup también require secreto en header
 setupRouter.post('/full-setup', async (req, res) => {
-  const authHeader = req.headers['authorization'] || '';
-  const providedKey = authHeader.replace('Bearer ', '');
-
-  if (!SETUP_KEY || providedKey !== SETUP_KEY) {
-    return res.status(403).json({ error: 'Unauthorized. Set SETUP_SECRET_KEY env var and pass Authorization: Bearer <value>' });
-  }
   const logs = [];
   const log = (msg) => {
     console.log(msg);
@@ -503,11 +506,8 @@ setupRouter.post('/full-setup', async (req, res) => {
       success: true,
       message: 'Configuración completada exitosamente',
       logs,
-      credentials: {
-        email: ADMIN_EMAIL,
-        password: ADMIN_PASS,
-        hint: 'Cambia la contraseña después de iniciar sesión'
-      }
+      // La contraseña nunca viaja en la respuesta: ya está en ADMIN_PASSWORD.
+      admin: ADMIN_EMAIL
     });
 
   } catch (error) {
@@ -518,7 +518,7 @@ setupRouter.post('/full-setup', async (req, res) => {
 
     res.status(500).json({
       success: false,
-      error: error.message,
+      error: 'Error interno del servidor',
       logs,
       stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });

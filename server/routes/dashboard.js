@@ -10,7 +10,7 @@ dashboardRouter.use(authenticateToken, requireRole('admin'));
 const ok = (res, data) => res.json({ success: true, data });
 const fail = (res, e, tag) => {
   logger.error(tag, e);
-  res.status(500).json({ success: false, error: { code: 'db_error', message: e.message } });
+  res.status(500).json({ success: false, error: { code: 'db_error', message: 'Error interno del servidor' } });
 };
 
 const num = (v) => (v == null ? 0 : Number(v));

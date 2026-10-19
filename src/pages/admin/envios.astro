@@ -575,7 +575,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
                     ));
                 });
             } catch (err: any) {
-                body.innerHTML = `<tr><td colspan="7" class="empty">Error al cargar: ${err.message}</td></tr>`;
+                body.innerHTML = `<tr><td colspan="7" class="empty">Error al cargar: ${esc(err.message)}</td></tr>`;
             }
         }
 
@@ -843,7 +843,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
                     });
                 });
             } catch (err: any) {
-                body.innerHTML = `<tr><td colspan="5" class="empty">Error al cargar: ${err.message}</td></tr>`;
+                body.innerHTML = `<tr><td colspan="5" class="empty">Error al cargar: ${esc(err.message)}</td></tr>`;
             }
         }
 
@@ -869,7 +869,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
                     </tr>
                 `).join("");
             } catch (err: any) {
-                body.innerHTML = `<tr><td colspan="6" class="empty">Error al cargar: ${err.message}</td></tr>`;
+                body.innerHTML = `<tr><td colspan="6" class="empty">Error al cargar: ${esc(err.message)}</td></tr>`;
             }
         }
 
@@ -961,13 +961,13 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
                 const alertBox = document.getElementById("modalAlert")!;
                 if (suggestion.missingWeights?.length) {
-                    alertBox.innerHTML += `<div class="alert-box alert-warn">Productos sin peso registrado: ${suggestion.missingWeights.join(", ")}. Verifique el peso antes de cotizar.</div>`;
+                    alertBox.innerHTML += `<div class="alert-box alert-warn">Productos sin peso registrado: ${esc(suggestion.missingWeights.join(", "))}. Verifique el peso antes de cotizar.</div>`;
                 }
 
                 const daneSelect = document.getElementById("fDane") as HTMLSelectElement;
                 daneSelect.innerHTML = "";
                 if (suggestion.dane?.code) {
-                    daneSelect.innerHTML = `<option value="${suggestion.dane.code}">${suggestion.order.shipping_city} (${suggestion.dane.code})</option>`;
+                    daneSelect.innerHTML = `<option value="${esc(suggestion.dane.code)}">${esc(suggestion.order.shipping_city)} (${esc(suggestion.dane.code)})</option>`;
                 } else if (suggestion.dane?.candidates?.length) {
                     daneSelect.innerHTML = suggestion.dane.candidates.map((c: any) =>
                         `<option value="${esc(c.location_code)}">${esc(c.location_name)} - ${esc(c.department_name)} (${esc(c.location_code)})</option>`
@@ -978,7 +978,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
                     alertBox.innerHTML += `<div class="alert-box alert-err">No se pudo resolver la ciudad automáticamente. Contacte soporte de Mipaquete o ingrese el código DANE manualmente en el selector.</div>`;
                 }
             } catch (err: any) {
-                document.getElementById("modalAlert")!.innerHTML = `<div class="alert-box alert-err">Error al calcular sugerencia: ${err.message}</div>`;
+                document.getElementById("modalAlert")!.innerHTML = `<div class="alert-box alert-err">Error al calcular sugerencia: ${esc(err.message)}</div>`;
             }
 
             document.getElementById("modalBack")!.classList.add("open");
@@ -1041,7 +1041,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
                     });
                 });
             } catch (err: any) {
-                resultsEl.innerHTML = `<div class="alert-box alert-err">${err.message}</div>`;
+                resultsEl.innerHTML = `<div class="alert-box alert-err">${esc(err.message)}</div>`;
             }
         });
 

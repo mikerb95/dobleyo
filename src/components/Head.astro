@@ -32,6 +32,10 @@ export interface Props {
 // Origen canónico del sitio, tomado de `site` en astro.config.mjs (fallback por si corre sin configurar)
 const siteOrigin = (Astro.site ?? new URL("https://dobleyo.cafe/")).origin;
 
+// JSON dentro de <script>: un "</script>" en un dato (nombre de finca, producto)
+// cerraría la etiqueta. Escapar "<" lo vuelve inofensivo sin cambiar el JSON.
+const safeJson = (value: unknown) => JSON.stringify(value).replace(/</g, "\\u003c");
+
 const {
   title = "DobleYo — Café de especialidad colombiano",
   description = "Tienda de café de especialidad colombiano. Tueste fresco, origen único, estilo sereno y acogedor.",
@@ -155,7 +159,7 @@ const organizationSchema = {
   !isAdmin && (
     <script
       type="application/ld+json"
-      set:html={JSON.stringify(organizationSchema)}
+      set:html={safeJson(organizationSchema)}
     />
   )
 }
@@ -165,7 +169,7 @@ const organizationSchema = {
   jsonLd && !isAdmin && (
     <script
       type="application/ld+json"
-      set:html={JSON.stringify(Array.isArray(jsonLd) ? jsonLd : [jsonLd])}
+      set:html={safeJson(Array.isArray(jsonLd) ? jsonLd : [jsonLd])}
     />
   )
 }

@@ -84,7 +84,7 @@ batchesRouter.get('/', async (req, res) => {
     });
   } catch (error) {
     logger.error('Error fetching roast batches:', error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });
 
@@ -140,7 +140,7 @@ batchesRouter.get('/:id', async (req, res) => {
     });
   } catch (error) {
     logger.error('Error fetching roast batch:', error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });
 
@@ -186,7 +186,7 @@ batchesRouter.post('/', async (req, res) => {
     });
   } catch (error) {
     logger.error('Error creating roast batch:', error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });
 
@@ -216,7 +216,7 @@ batchesRouter.post('/:id/first-crack', async (req, res) => {
     });
   } catch (error) {
     logger.error('Error recording first crack:', error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });
 
@@ -242,7 +242,7 @@ batchesRouter.post('/:id/second-crack', async (req, res) => {
     res.json({ success: true, message: 'Second crack recorded' });
   } catch (error) {
     logger.error('Error recording second crack:', error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });
 
@@ -323,7 +323,7 @@ batchesRouter.post('/:id/complete', async (req, res) => {
     });
   } catch (error) {
     logger.error('Error completing roast batch:', error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });
 
@@ -349,7 +349,7 @@ batchesRouter.post('/:id/approve', async (req, res) => {
     res.json({ success: true, message: 'Batch approved', is_approved: true });
   } catch (error) {
     logger.error('Error approving batch:', error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });
 
@@ -375,7 +375,7 @@ batchesRouter.post('/:id/reject', async (req, res) => {
     res.json({ success: true, message: 'Batch rejected', reason });
   } catch (error) {
     logger.error('Error rejecting batch:', error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });
 
@@ -437,6 +437,6 @@ batchesRouter.get('/:id/comparison', async (req, res) => {
     res.json({ success: true, data: comparison });
   } catch (error) {
     logger.error('Error comparing batch:', error);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });

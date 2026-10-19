@@ -194,7 +194,7 @@ emailRouter.post('/account-confirmation', authenticateToken, requireRole('admin'
     return res.status(500).json({ error: 'Error al enviar email', details: result.error });
   } catch (error) {
     logger.error('Error:', error);
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
 
@@ -215,7 +215,7 @@ emailRouter.post('/order-confirmation', authenticateToken, requireRole('admin'),
     return res.status(500).json({ error: 'Error al enviar email', details: result.error });
   } catch (error) {
     logger.error('Error:', error);
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
 
@@ -231,7 +231,7 @@ emailRouter.post('/contact', async (req, res) => {
     return res.status(500).json({ error: 'Error al enviar email', details: result.error });
   } catch (error) {
     logger.error('Error:', error);
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
 
@@ -247,7 +247,7 @@ emailRouter.post('/contact-reply', authenticateToken, requireRole('admin'), asyn
     return res.status(500).json({ error: 'Error al enviar email', details: result.error });
   } catch (error) {
     logger.error('Error:', error);
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
 

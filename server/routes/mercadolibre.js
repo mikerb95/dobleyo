@@ -75,7 +75,7 @@ mercadolibreRouter.get('/cron-sync', async (req, res) => {
     res.json({ success: true, ...summary });
   } catch (error) {
     logger.error('Error in /cron-sync endpoint:', error);
-    res.status(500).json({ error: 'Synchronization failed', details: error.message });
+    res.status(500).json({ error: 'Synchronization failed' });
   }
 });
 
@@ -372,6 +372,6 @@ mercadolibreRouter.get('/status', auth.requireAuth, auth.requireAdmin, async (re
     });
   } catch (error) {
     logger.error('Error in /status endpoint:', error);
-    res.status(500).json({ error: 'Failed to retrieve status', details: error.message });
+    res.status(500).json({ error: 'Failed to retrieve status' });
   }
 });
