@@ -5,9 +5,10 @@ import { authenticateToken, requireRole } from '../../auth.js';
 
 export const lotsRouter = express.Router();
 
-// Requerir autenticación y rol admin/caficultor para todas las rutas
+// Requerir autenticación y rol admin: estos datos no se filtran por finca, así que
+// el caficultor opera solo por /api/coffee (con alcance por lote)
 lotsRouter.use(authenticateToken);
-lotsRouter.use(requireRole(['admin', 'caficultor']));
+lotsRouter.use(requireRole('admin'));
 
 // ==========================================
 // LÍNEA DE PRODUCCIÓN — TRAZABILIDAD POR LOTE

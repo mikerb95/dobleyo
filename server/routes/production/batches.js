@@ -5,9 +5,10 @@ import { authenticateToken, requireRole } from '../../auth.js';
 
 export const batchesRouter = express.Router();
 
-// Requerir autenticación y rol admin/caficultor para todas las rutas
+// Requerir autenticación y rol admin: estos datos no se filtran por finca, así que
+// el caficultor opera solo por /api/coffee (con alcance por lote)
 batchesRouter.use(authenticateToken);
-batchesRouter.use(requireRole(['admin', 'caficultor']));
+batchesRouter.use(requireRole('admin'));
 
 // ==========================================
 // BATCHES DE TOSTADO

@@ -1,7 +1,7 @@
 # AGENTS.md — Reglas y Convenciones para Agentes de IA
 
 > Este documento establece las reglas, convenciones y estándares que **todo agente de IA** debe seguir al contribuir al proyecto DobleYo Café.  
-> Última actualización: 2026-03-01
+> Última actualización: 2026-10-18
 
 ---
 
@@ -11,9 +11,9 @@
 |---|---|
 | **Nombre** | DobleYo Café |
 | **Dominio** | dobleyo.cafe / en.dobleyo.cafe |
-| **Stack** | Astro 5 (SSR) + React 19 + Express 4 + PostgreSQL + Vercel |
+| **Stack** | Astro 5 (SSR) + React 19 + Express 4 + Turso (libSQL/SQLite) + Vercel |
 | **Tipo de módulo** | ESM (`"type": "module"` en package.json) |
-| **Node.js** | >= 20 |
+| **Node.js** | 24.x (`engines` en package.json) |
 | **Lenguaje de código** | Inglés (variables, funciones, clases, nombres de archivo) |
 | **Lenguaje de comentarios** | Español Colombia (comentarios en código, commits, docs) |
 | **Lenguaje de UI** | Español Colombia (primario) + Inglés (versión internacional) |
@@ -27,38 +27,49 @@
 ```
 dobleyo/
 ├── api/                  # Vercel serverless entry points
-│   └── index.js          # Express app wrapper for Vercel
+│   └── index.js          # Express app wrapper for Vercel (paridad con server/index.js)
+├── apps/
+│   └── mobile/           # App móvil (Expo), proyecto aparte del sitio web
+├── packages/
+│   └── shared/           # Código compartido web + móvil (p. ej. textos de workflow.ts)
 ├── db/
-│   └── schema.sql        # PostgreSQL schema (fuente de verdad)
+│   └── schema.sql        # Schema Turso/libSQL (fuente de verdad)
 ├── docs/                 # Documentación técnica y funcional
 ├── public/
 │   └── assets/
 │       ├── css/styles.css  # CSS global (variables, layout, componentes)
-│       ├── js/             # Scripts vanilla del cliente (cart, auth, trazabilidad)
+│       ├── js/             # Scripts vanilla del cliente (cart, auth, footer, confirmacion...)
 │       ├── img/            # Imágenes estáticas
 │       └── data/           # JSON de datos estáticos
 ├── server/
 │   ├── index.js          # Express standalone server
-│   ├── db.js             # Pool de conexión PostgreSQL
-│   ├── store.js          # [DEPRECADO] In-memory store — reemplazar por BD
-│   ├── middleware/        # Rate limiting, auth middleware
+│   ├── db.js             # Cliente Turso/libSQL: query(), getClient(), withTransaction()
+│   ├── jobs/             # Tareas de mantenimiento (reconcileQuants.js)
+│   ├── middleware/        # Rate limiting, idempotencia, permisos de finca
+│   ├── migrations/        # Migraciones incrementales y seed de demo
 │   ├── routes/            # Routers Express por módulo
 │   │   └── production/   # Sub-routers del módulo de producción
-│   └── services/          # Lógica de negocio (email, MercadoLibre, audit)
+│   └── services/          # Lógica de negocio (email, MercadoLibre, audit, costos, envíos)
 ├── src/
 │   ├── components/        # Componentes Astro + React
+│   │   ├── home/         # Secciones de la portada (ES/EN)
+│   │   ├── shop/         # Secciones de páginas de compra y contenido
+│   │   └── workflow/     # Bandeja "Qué sigue" del admin
 │   ├── data/              # Datos estáticos TypeScript (products.ts)
 │   ├── i18n/              # Traducciones JSON (es.json, en.json)
 │   ├── layouts/           # Layouts (Layout, AdminLayout, AppLayout, MobileLayout)
+│   ├── lib/               # Lógica pura con tests (flags, products, brew, gifts, lot...) y *.server.ts con BD
+│   ├── scripts/           # Motion del cliente: motion/ (núcleo), home/, shop/
+│   ├── styles/            # motion.css (estilos de elementos creados por JS)
 │   └── pages/             # Páginas Astro (SSR/SSG)
-│       ├── admin/         # Panel de administración
-│       ├── app/           # App operativa (caficultor/admin)
+│       ├── admin/         # Panel de administración y app operativa (/admin/*)
 │       ├── en/            # Versión en inglés
 │       ├── finca/         # Landing pages de fincas [slug].astro
-│       └── t/             # Trazabilidad QR [code].astro
-├── AGENTS.md             # Este archivo — reglas para agentes IA
+│       └── t/             # Trazabilidad QR [code].astro (apagada: SHOW_TRACEABILITY)
+├── LICENSE               # Licencia propietaria (codebymike.net)
+├── AGENTS.md             # Este archivo, reglas para agentes IA
 ├── CLAUDE.md             # Instrucciones específicas para Claude
-└── package.json          # Dependencias y scripts
+└── package.json          # Dependencias y scripts (workspaces: apps/*, packages/*)
 ```
 
 ---
@@ -87,20 +98,20 @@ import { logAudit } from '../services/audit.js';
 const express = require('express');
 ```
 
-### 3.2 SQL (PostgreSQL)
+### 3.2 SQL (Turso / libSQL)
 
 - **Nombres de tabla**: `snake_case` en plural (`production_orders`, `roast_batches`)
 - **Columnas**: `snake_case` (`created_at`, `user_id`, `lot_code`)
-- **Placeholders**: `$1, $2, $3...` (PostgreSQL parameterized). Nunca interpolación de strings.
-- **Tipos preferidos**: `BIGINT GENERATED ALWAYS AS IDENTITY` para PKs, `TIMESTAMPTZ` para fechas, `JSONB` para datos flexibles, `TEXT` en lugar de `VARCHAR(n)` salvo restricción real.
-- **Migraciones**: Archivos en `server/migrations/` con formato `YYYY-MM-DD_description.js`.
+- **Placeholders**: `?` posicionales. Nunca `$1, $2` ni interpolación de strings.
+- **Dialecto SQLite**: fechas con `datetime('now')` (no `NOW()`), sin casts `::text`, `BOOLEAN` como 0/1, `INTEGER PRIMARY KEY AUTOINCREMENT` para PKs y `TEXT` para JSON. El id insertado sale de `RETURNING id` o `lastInsertRowid`.
+- **Migraciones**: Archivos en `server/migrations/` con nombre descriptivo (`add_<cambio>.js`), idempotentes.
 
 ```sql
 -- ✅ Correcto
-SELECT o.id, o.total FROM orders o WHERE o.user_id = $1 AND o.status = $2;
+SELECT o.id, o.total FROM orders o WHERE o.user_id = ? AND o.status = ?;
 
--- ❌ Incorrecto (MySQL syntax, string interpolation)
-SELECT * FROM orders WHERE user_id = ? AND status = '${status}';
+-- ❌ Incorrecto (placeholders de PostgreSQL, interpolación)
+SELECT * FROM orders WHERE user_id = $1 AND status = '${status}';
 ```
 
 ### 3.3 CSS
@@ -219,7 +230,9 @@ La portada ES y EN comparten componentes (`src/components/home/`) y un solo mód
 - **Video del hero:** `hero-viaje.mp4` (4 tomas de 4 s; la etiqueta asume ese corte). Si se cambia el video, ajustar `SEGMENT` en `src/scripts/home/hero.ts`.
 - **Páginas de compra** (tienda ES/EN, suscripción, regalos) usan `src/scripts/shop/index.ts` con el mismo núcleo y componentes en `src/components/shop/`. Lo que es información o funcionalidad (filtrar al tocar una bolsa, reacomodar el calendario de pedidos, cambiar de kit) vive en el script del componente y funciona sin motion. Las piezas de motion solo animan.
 - **El catálogo avisa con `shop:render`** sobre `#shopResults` cada vez que repinta. Si se cambia el script de la tienda, conservar el evento.
-- **Secciones compartidas** (`src/components/shop/`: `DarkHero`, `FeatureGrid`, `NumberedList`, `ChipRow`, `CtaBand`) las anima `src/scripts/shop/sections.ts`; las piezas de página solo animan su pieza central. Una página nueva de compra o contenido se arma con ellas antes de crear estilos propios.
+- **Secciones compartidas** (`src/components/shop/`: `DarkHero`, `FeatureGrid`, `NumberedList`, `ChipRow`, `CtaBand`, `PostCard`) las anima `src/scripts/shop/sections.ts`; las piezas de página solo animan su pieza central. Una página nueva de compra o contenido se arma con ellas antes de crear estilos propios.
+- **Piezas centrales por página**: `BrewGuide` (guías, cifras sacadas de la receta con `src/lib/brew.ts`), `SupplyLine` (partners), `RefFlow` (afiliados, siempre con "Ejemplo ilustrativo" y sin montos), `ProductStack` (accesorios), `GiftBox` (regalos) y `DeliveryBags`/`DeliveryCalendar` (suscripción). Cada una tiene su pieza de motion en `src/scripts/shop/<página>.ts`.
+- **Cierre de página claro** (`CtaBand`): el footer ya es oscuro (tokens `--footer-*`); no apilar dos bloques oscuros al final.
 - **Títulos sobre fondo oscuro**: la regla global `h1, h2 { color: var(--espresso) }` gana sobre un color heredado; dale color propio al título (así se perdieron los h1 de las páginas EN).
 - **Sin emojis en el sitio público.** Los íconos van con `src/components/Icon.astro` (SVG de trazo, `currentColor`); si falta uno, se agrega al set. Las ★ de calificación y los ✓ de confirmación sí se permiten.
 - **Sin trazabilidad en páginas públicas** mientras `SHOW_TRACEABILITY = false`: nada de QR, códigos de lote ni esa palabra en piezas nuevas.
@@ -270,6 +283,13 @@ El panel se ve como un ERP, no como una plantilla de SaaS. Tokens y utilidades v
 - **Sin colores hex ni em dashes en el admin**: celdas vacías con "-", rangos con guion simple, separadores con " · ". Excepciones de color: la vista previa de la etiqueta impresa y las muestras de grado de tueste.
 - **Fechas de `audit_logs`** están en UTC sin zona: usar `parseDbDate()` de `src/lib/auditLabels.js` y mostrar en `America/Bogota`. Ese módulo también da los verbos y nombres de entidad para auditoría y actividad.
 
+### 3.13 Checkout y confirmación de pago (Wompi): reglas no negociables
+
+- **El estado "pagado" lo pone el webhook de Wompi**, no la redirección del navegador. La confirmación (`public/assets/js/confirmacion.js` y `src/pages/en/confirmation.astro`) vuelve a consultar el pedido cada 3 s durante un minuto mientras siga `pending_payment`; al agotarse explica que llegará un correo.
+- **El carrito se vacía solo cuando el pedido queda pagado** (o al confirmar un contraentrega). Ni el widget ni la redirección a Wompi lo vacían antes. Si el widget devuelve `DECLINED`, `ERROR` o `VOIDED`, el cliente se queda en el checkout con su carrito.
+- **Un error de red no es un rechazo**: se muestra el estado "No pudimos verificar su pedido" (`stateUnknown`) con botón de reintentar, nunca "Su pago fue rechazado".
+- **Escapar los datos del pedido** (nombres de producto, datos del cliente) antes de pintarlos con `innerHTML`.
+
 ## 4. SEO — Reglas Obligatorias
 
 Todo agente que cree o modifique páginas DEBE cumplir:
@@ -302,7 +322,7 @@ Todo agente que cree o modifique páginas DEBE cumplir:
 
 ## 6. Seguridad — Reglas Obligatorias
 
-1. **SQL**: Siempre parameterizado (`$1, $2`). Nunca interpolación de strings en queries.
+1. **SQL**: Siempre parametrizado (`?`). Nunca interpolación de strings en queries.
 2. **XSS**: Escapar output dinámico en HTML. Astro lo hace por defecto; en scripts inline usar `escapeHtml()`.
 3. **CSRF**: Tokens CSRF en formularios de estado mutante (POST, PUT, DELETE).
 4. **Auth tokens**: Solo en HttpOnly cookies. Nunca en localStorage ni en body de respuesta JSON.
@@ -358,7 +378,7 @@ Todo texto en español visible en la UI (etiquetas, mensajes de error, placehold
 
 ### Al terminar cada tarea, el agente DEBE:
 
-1. **Actualizar `CHANGELOG.md`**: Agregar entrada con fecha, archivos creados/modificados, y descripción.
+1. **Actualizar `CHANGELOG.md`**: Agregar entrada al inicio del archivo (la más reciente primero) con fecha, contexto y cambios.
 2. **Actualizar `AGENTS.md`** (este archivo): Si la tarea introduce nuevas convenciones, patrones o estructura.
 3. **Documentar en código**: JSDoc para funciones públicas, comentarios para lógica compleja.
 4. **Registrar en `docs/`**: Si es un módulo nuevo, crear/actualizar documentación técnica relevante.

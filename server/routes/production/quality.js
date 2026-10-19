@@ -5,9 +5,10 @@ import { authenticateToken, requireRole } from '../../auth.js';
 
 export const qualityRouter = express.Router();
 
-// Requerir autenticación y rol admin/caficultor para todas las rutas
+// Requerir autenticación y rol admin: estos datos no se filtran por finca, así que
+// el caficultor opera solo por /api/coffee (con alcance por lote)
 qualityRouter.use(authenticateToken);
-qualityRouter.use(requireRole(['admin', 'caficultor']));
+qualityRouter.use(requireRole('admin'));
 
 // ==========================================
 // CONTROL DE CALIDAD

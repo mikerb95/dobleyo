@@ -5,9 +5,10 @@ import { authenticateToken, requireRole } from '../../auth.js';
 
 export const ordersRouter = express.Router();
 
-// Requerir autenticación y rol admin/caficultor para todas las rutas
+// Requerir autenticación y rol admin: estos datos no se filtran por finca, así que
+// el caficultor opera solo por /api/coffee (con alcance por lote)
 ordersRouter.use(authenticateToken);
-ordersRouter.use(requireRole(['admin', 'caficultor']));
+ordersRouter.use(requireRole('admin'));
 
 // ==========================================
 // ÓRDENES DE PRODUCCIÓN — CRUD
