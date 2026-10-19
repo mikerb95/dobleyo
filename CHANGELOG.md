@@ -33,6 +33,8 @@ Revisión del sitio y la API contra el OWASP Top 10:2025. Los hallazgos más gra
 - `npx vitest run`: 268 tests pasan. `npm run build` completa.
 - Prueba local de pino-http: cookies, `Authorization`, `x-cron-secret` y `?token=`/`?secret=` salen como `[redactado]`.
 
+---
+
 ## 2026-10-19: Documentación al día y limpieza de auditorías viejas (Agente: Claude)
 
 ### Contexto
