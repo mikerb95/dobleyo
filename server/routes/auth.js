@@ -385,7 +385,24 @@ authRouter.post('/refresh', refreshLimiter, async (req, res) => {
     );
 
     if (result.rows.length === 0) {
-      // Token invalido o reusado maliciosamente -> podriamos borrar todos los tokens del usuario por seguridad
+      // Un token ya rotado que vuelve a llegar indica que alguien más lo tiene:
+      // se cierran todas las sesiones del usuario. Se tolera el minuto siguiente
+      // a la rotación porque dos pestañas pueden refrescar a la vez.
+      const reused = await db.query(
+        `SELECT rt.user_id FROM refresh_tokens rt
+         JOIN refresh_tokens nxt ON nxt.token_hash = rt.replaced_by_token
+         WHERE rt.token_hash = ? AND rt.revoked = 1 AND nxt.created_at < datetime('now', '-60 seconds')`,
+        [hashedToken]
+      );
+      if (reused.rows.length) {
+        const userId = reused.rows[0].user_id;
+        await db.query('UPDATE refresh_tokens SET revoked = 1 WHERE user_id = ? AND revoked = 0', [userId]);
+        await db.query(
+          'INSERT INTO audit_logs (user_id, action, entity_type, entity_id, details) VALUES (?, ?, ?, ?, ?)',
+          [userId, 'REFRESH_TOKEN_REUSE', 'users', String(userId), JSON.stringify({ ip: req.ip ?? null })]
+        );
+        logger.warn({ userId, ip: req.ip }, '[POST /api/auth/refresh] Reuso de refresh token: sesiones revocadas');
+      }
       res.clearCookie('auth_token');
       res.clearCookie('refresh_token', { path: '/api/auth/refresh' });
       return res.status(403).json({ error: 'Token invalido o expirado' });
@@ -770,15 +787,31 @@ authRouter.put('/password',
       const newHash = await auth.hashPassword(new_password);
       await db.query(`UPDATE users SET password_hash=?, updated_at=datetime('now') WHERE id=?`, [newHash, req.user.id]);
 
+      // Cerrar las demás sesiones y abrir una nueva para este dispositivo: si
+      // alguien más tenía acceso, lo pierde sin sacar a quien cambió la clave.
+      await db.query('UPDATE refresh_tokens SET revoked = 1 WHERE user_id = ? AND revoked = 0', [req.user.id]);
+      const refreshToken = auth.generateRefreshToken();
+      await db.query(
+        'INSERT INTO refresh_tokens (user_id, token_hash, expires_at) VALUES (?, ?, ?)',
+        [req.user.id, auth.hashRefreshToken(refreshToken), new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)]
+      );
+      const isProd = process.env.NODE_ENV === 'production';
+      res.cookie('refresh_token', refreshToken, {
+        httpOnly: true, secure: isProd, sameSite: 'lax',
+        path: '/api/auth/refresh', maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
+
       await db.query(
         'INSERT INTO audit_logs (user_id, action, entity_type, entity_id, details) VALUES (?, ?, ?, ?, ?)',
         [req.user.id, 'CHANGE_PASSWORD', 'users', String(req.user.id), '{}']
       );
 
-      sendPasswordChangedEmail(email, first_name)
+      sendPasswordChangedEmail(email, first_name, { sessionsRevoked: true })
         .catch((err) => logger.error({ err }, '[PUT /api/auth/password] Error enviando aviso'));
 
-      res.json({ success: true, message: 'Contraseña actualizada' });
+      const payload = { success: true, message: 'Contraseña actualizada. Se cerraron las sesiones en otros dispositivos.' };
+      if (req.body.client === 'mobile') payload.refresh_token = refreshToken;
+      res.json(payload);
     } catch (err) {
       logger.error({ err }, '[PUT /api/auth/password] Error:');
       res.status(500).json({ success: false, error: 'Error interno del servidor' });
