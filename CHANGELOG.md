@@ -2,6 +2,12 @@
 
 ---
 
+## 2026-10-19: Acceso al panel desde el footer (Agente: Claude)
+
+- **`src/components/Footer.astro`**: enlace "Administración" / "Admin" en la franja legal, junto a Privacidad, Términos y Accesibilidad. Lleva a `/admin/login` (GitHub para admins, enlace a `/login` para caficultores) con `rel="nofollow"`.
+
+---
+
 ## 2026-10-19: Panel admin cerrado en el servidor y documentación pública ordenada (Agente: Claude)
 
 ### Contexto
