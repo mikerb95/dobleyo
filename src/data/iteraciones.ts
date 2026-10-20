@@ -8,7 +8,7 @@
 //
 // El "par" refleja la programación en pareja humano–IA: Mike Rodríguez conduce
 // las decisiones de diseño y un agente de IA (Claude / Claude Opus / GitHub
-// Copilot) actúa como navegador (ver bibliografía en /admin/iteraciones).
+// Copilot) actúa como navegador (ver bibliografía en /iteraciones).
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const REPO = "https://github.com/mikerb95/dobleyo";

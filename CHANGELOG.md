@@ -2,6 +2,12 @@
 
 ---
 
+## 2026-10-19: Transportadoras en la política de privacidad (Agente: Claude)
+
+- **`src/pages/privacidad.astro`**: la sección 5 ya no nombra a Servientrega, Coordinadora y Envía. Ahora dice que los envíos se gestionan con Mipaquete.com, que asigna la transportadora según destino y cobertura, y aclara que se comparten nombre, documento, dirección y teléfono para generar la guía.
+
+---
+
 ## 2026-10-19: Cafés Isnos Geisha y Pitalito Sidra en la tienda (Agente: Claude)
 
 ### Contexto

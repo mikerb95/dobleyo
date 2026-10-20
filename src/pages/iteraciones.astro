@@ -1,11 +1,11 @@
 ---
-import AdminLayout from "../../layouts/AdminLayout.astro";
-import { PARES, COLUMNAS, ITERACIONES, COMMITS_POR_MES, REPO } from "../../data/iteraciones";
+import AdminLayout from "../layouts/AdminLayout.astro";
+import { PARES, COLUMNAS, ITERACIONES, COMMITS_POR_MES, REPO } from "../data/iteraciones";
 
 const iterData = { PARES, COLUMNAS, ITERACIONES, COMMITS_POR_MES, REPO };
 ---
 
-<AdminLayout title="Iteraciones · DobleYo ERP" section="devtools">
+<AdminLayout title="Iteraciones · DobleYo" publico>
 
   <!-- Datos derivados del historial real de GitHub + CHANGELOG -->
   <script type="application/json" id="iterData" set:html={JSON.stringify(iterData)} />
@@ -14,12 +14,11 @@ const iterData = { PARES, COLUMNAS, ITERACIONES, COMMITS_POR_MES, REPO };
   <div class="page-header">
     <div class="page-header-top">
       <div>
-        <div class="page-breadcrumb">DevTools</div>
+        <div class="page-breadcrumb">Proyecto</div>
         <h1 class="page-title">Iteraciones</h1>
         <p class="page-subtitle">Tablero XP reconstruido del historial real de GitHub y el CHANGELOG: historias con su DoD, ancladas a sus commits.</p>
       </div>
       <div class="page-header-actions">
-        <a href="/admin/devtools" class="btn btn-secondary">Zona de peligro</a>
         <div class="dt-view-toggle" id="iterViewToggle" role="tablist" aria-label="Vista">
           <button class="dt-view-btn dt-view-btn--on" data-view="board" type="button">Tablero</button>
           <button class="dt-view-btn" data-view="charts" type="button">Gráficos</button>

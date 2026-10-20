@@ -4,9 +4,11 @@ import Head from "../components/Head.astro";
 export interface Props {
   title?: string;
   section?: string;
+  /** Página pública con el sistema visual del ERP (p. ej. /iteraciones): sin menú, sin usuario y sin chequeo de sesión. */
+  publico?: boolean;
 }
 
-const { title = "Admin · DobleYo Café", section = "" } = Astro.props;
+const { title = "Admin · DobleYo Café", section = "", publico = false } = Astro.props;
 
 // Clase raíz por página (/admin/usuarios -> pg-usuarios). Las páginas que
 // pintan contenido con innerHTML acotan su <style is:global> a esta clase.
@@ -341,6 +343,8 @@ const pageClass = `pg-${pageSlug.replace(/[^a-z0-9-]/gi, "")}`;
         transition: padding-left .18s ease;
       }
       body.nav-collapsed .erp-main { padding-left: var(--nav-w-sm); }
+      body.is-publico { visibility: visible; }
+      body.is-publico .erp-main { padding-left: 0; }
 
       .erp-content {
         min-height: calc(100vh - var(--shell-h));
@@ -1009,8 +1013,32 @@ const pageClass = `pg-${pageSlug.replace(/[^a-z0-9-]/gi, "")}`;
     </style>
   </head>
 
-  <body>
+  <body class:list={[{ "is-publico": publico }]}>
 
+    {publico && (
+    <header class="erp-shell">
+      <a href="/" class="shell-product">
+        <span class="shell-product-logo" aria-hidden="true">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+            <path d="M17 8h1a4 4 0 1 1 0 8h-1"/>
+            <path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8z"/>
+          </svg>
+        </span>
+        <span class="shell-product-name">DobleYo</span>
+      </a>
+      <div class="shell-spacer"></div>
+      <div class="shell-actions">
+        <a href="/" class="shell-btn" title="Ver tienda" aria-label="Ver tienda">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+            <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+          </svg>
+        </a>
+      </div>
+    </header>
+    )}
+
+    {!publico && (<Fragment>
     <!-- ── Topbar ──────────────────────────────────────────── -->
     <header class="erp-shell">
       <button class="shell-nav-toggle" id="navToggle" aria-label="Menú">
@@ -1364,6 +1392,7 @@ const pageClass = `pg-${pageSlug.replace(/[^a-z0-9-]/gi, "")}`;
         </div>
       </div>
     </nav>
+    </Fragment>)}
 
     <!-- ── Main ──────────────────────────────────────────── -->
     <main class="erp-main">
@@ -1376,6 +1405,8 @@ const pageClass = `pg-${pageSlug.replace(/[^a-z0-9-]/gi, "")}`;
     <script>
       // Auth check (admin + caficultor)
       (async () => {
+        // Página pública (layout con `publico`): no hay sesión que revisar.
+        if (document.body.classList.contains('is-publico')) return;
         const path = window.location.pathname;
         const ALLOWED_ROLES = ['admin', 'caficultor'];
         try {
@@ -1490,7 +1521,7 @@ const pageClass = `pg-${pageSlug.replace(/[^a-z0-9-]/gi, "")}`;
       // Logout
       document.getElementById('logoutBtn')?.addEventListener('click', async () => {
         await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
-        window.location.href = (window as any).__userRole === 'admin' ? '/admin/login' : '/login';
+        window.location.href = '/login';
       });
     </script>
   </body>

@@ -32,8 +32,7 @@
         stopAutoRefresh();
         if (isProtectedPage()) {
           const path = window.location.pathname;
-          const loginPage = path.startsWith('/admin') ? '/admin/login' : '/login';
-          window.location.href = loginPage + '?redirect=' + encodeURIComponent(path);
+          window.location.href = '/login?redirect=' + encodeURIComponent(path);
         }
       }
 

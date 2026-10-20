@@ -1,13 +1,69 @@
 import { rewrite, next } from '@vercel/functions';
+import { jwtVerify } from 'jose';
 
 const EN_HOST = 'en.dobleyo.cafe';
 
-// El panel admin, la API y los assets no tienen versión /en/ — deben servirse
+// El panel admin, la API y los assets no tienen versión /en/: deben servirse
 // tal cual sin importar el subdominio.
 const EXCLUDED_PREFIXES = ['/api/', '/assets/', '/_astro/', '/_image', '/admin', '/en/'];
 
-export default function middleware(request: Request) {
+// Mismos roles que deja pasar el chequeo de cliente de AdminLayout.
+const ADMIN_ROLES = ['admin', 'caficultor'];
+
+// El kanban de iteraciones es documentación pública: vive fuera de /admin.
+const MOVED = { '/admin/iteraciones': '/iteraciones' } as Record<string, string>;
+
+const isAdminPath = (pathname: string) => pathname === '/admin' || pathname.startsWith('/admin/');
+
+function readCookie(request: Request, name: string): string | null {
+  const header = request.headers.get('cookie');
+  if (!header) return null;
+  for (const part of header.split(';')) {
+    const [key, ...rest] = part.trim().split('=');
+    if (key === name) return decodeURIComponent(rest.join('='));
+  }
+  return null;
+}
+
+// Verifica el access token (HS256 con JWT_SECRET, igual que server/auth.js).
+// Rechaza tokens de verificación de correo, que llevan `type` y no `role`.
+// Sin JWT_SECRET falla cerrado: nadie entra al panel.
+async function sessionRole(request: Request): Promise<string | null> {
+  const token = readCookie(request, 'auth_token');
+  const secret = process.env.JWT_SECRET;
+  if (!token || !secret) return null;
+  try {
+    const { payload } = await jwtVerify(token, new TextEncoder().encode(secret), { algorithms: ['HS256'] });
+    if (payload.type) return null;
+    return typeof payload.role === 'string' ? payload.role : null;
+  } catch {
+    return null;
+  }
+}
+
+export default async function middleware(request: Request) {
   const url = new URL(request.url);
+  const pathname = url.pathname.replace(/\/+$/, '') || '/';
+
+  if (MOVED[pathname]) {
+    return Response.redirect(new URL(MOVED[pathname], url), 308);
+  }
+
+  // El HTML del panel (menú incluido) no sale sin una sesión válida. Sin token,
+  // al login; con un rol que no es del panel, a la tienda. El login intenta
+  // renovar la sesión en silencio antes de pedir la clave (AuthModal.astro).
+  if (isAdminPath(pathname)) {
+    const role = await sessionRole(request);
+    if (!role) {
+      const login = new URL('/login', url);
+      login.searchParams.set('redirect', url.pathname + url.search);
+      return Response.redirect(login, 302);
+    }
+    if (!ADMIN_ROLES.includes(role)) {
+      return Response.redirect(new URL('/', url), 302);
+    }
+    return next();
+  }
 
   if (request.headers.get('host') !== EN_HOST) {
     return next();
@@ -22,5 +78,5 @@ export default function middleware(request: Request) {
 }
 
 export const config = {
-  matcher: ['/((?!api/|assets/|_astro/|_image|admin).*)'],
+  matcher: ['/((?!api/|assets/|_astro/|_image).*)'],
 };
