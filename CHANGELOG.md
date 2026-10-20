@@ -2,6 +2,22 @@
 
 ---
 
+## 2026-10-19: Cafés Isnos Geisha y Pitalito Sidra en la tienda (Agente: Claude)
+
+### Contexto
+Llegaron 6 fotos del nuevo empaque (3 por café) de Finca Rengifo, Huila. Los datos del producto salen de la etiqueta: municipio, altitud, productor, variedad, lavado con fermentación anaeróbica de 40 horas, tostión media, en grano, 250 g.
+
+### Cambios
+- **`public/assets/img/cafe/`**: fotos en WebP (1024 px, ~50-65 KB). `isnos-geisha.webp` y `pitalito-sidra.webp` son las de empaque; `-cocina`, `-molino` y `-prensa` son de ambiente.
+- **`server/migrations/add_huila_microlots.js`** (en `run_all_migrations.js`): siembra `cf-isnos-geisha` (72.000 COP / USD 19) y `cf-pitalito-sidra` (65.000 COP / USD 17) con 20 unidades de stock. Las fotos de ambiente van en `images`. `ON CONFLICT DO NOTHING` para no pisar lo editado en el admin.
+- **`src/data/products.ts`**: los dos cafés en el fallback estático.
+- **`src/pages/producto/[id].astro`** + **`producto.js`**: galería de miniaturas con la columna `images` (antes se consultaba y no se mostraba). Arreglado el `0` que se pintaba bajo el título cuando el producto no tiene calificación.
+
+### Pendiente
+- Confirmar precios (son de referencia) y ajustarlos en `/admin/productos`.
+
+---
+
 ## 2026-10-19: Login de administradores con GitHub (Agente: Claude)
 
 ### Contexto

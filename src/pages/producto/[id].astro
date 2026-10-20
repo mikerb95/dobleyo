@@ -170,7 +170,7 @@ const productJsonLd = {
 
         <h1 class="product-title">{product.name}</h1>
 
-        {product.rating && (
+        {product.rating > 0 && (
           <div class="product-rating" aria-label={`Calificación: ${product.rating} de 5`}>
             {"★".repeat(Math.round(product.rating))}{"☆".repeat(5 - Math.round(product.rating))}
             <span class="rating-num">{product.rating}</span>
