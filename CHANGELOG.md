@@ -19,12 +19,31 @@
 
 ---
 
+## 2026-10-19: Envíos con Envia.com (Agente: Claude)
+
+### Contexto
+El dueño quiere despachar con Envia.com. Se integra como tercer proveedor junto a Mipaquete e Interrapidísimo, sobre la documentación pública (docs.envia.com). Queda inactivo hasta configurar `ENVIA_TOKEN`; sin `ENVIA_ENV=production` usa el sandbox.
+
+### Cambios
+- **`server/services/envia.js`**: cotización (una llamada por transportadora de `ENVIA_CARRIERS`, en paralelo), guía con PDF y URL de rastreo, recogida, tracking, anulación con devolución de saldo, registro del webhook y health check. Colombia: `city`/`postalCode` con DANE de 8 dígitos y `state` derivado del prefijo DANE.
+- **`server/routes/shipping.js`**: Envia en `/quote` (ofertas `envia:<carrier>:<servicio>`), rama `createEnviaShipment` en `/create`, refresco y sondeo, anulación real en `/:id/cancel`, `/health`, y `POST /envia/setup-webhook` + `POST /envia/webhook` (token propio, el payload solo dispara una re-consulta).
+- **`shipments.tracking_url`** (migración `add_shipment_tracking_url.js` + `schema.sql`): la URL de rastreo de Envia se usa en el correo de despacho, el panel y `/confirmacion`.
+- **`src/pages/admin/envios.astro`**: indicador de conexión de Envia.com, etiqueta en las ofertas y documento del destinatario opcional (por defecto el del pedido).
+- **`.env.example`**: variables `ENVIA_*`.
+- Tests: `server/services/__tests__/envia.test.js` y `server/routes/__tests__/shipping.envia.test.js`.
+
+### Pendiente
+- Crear la cuenta y el token, configurar `ENVIA_*` en Vercel, correr migraciones y llamar una vez `POST /api/shipping/envia/setup-webhook`.
+- Validar en sandbox lo marcado en DEBT-019.
+
+---
+
 ## 2026-10-19: Transportadoras en la política de privacidad (Agente: Claude)
 
 - **`src/pages/privacidad.astro`**: la sección 5 ya no nombra a Servientrega, Coordinadora y Envía. Ahora dice que los envíos se gestionan con Envia.com, Mipaquete.com e Interrapidísimo, con la transportadora que tenga cobertura en el destino, y aclara que se comparten nombre, documento, dirección y teléfono para generar la guía.
 
 ### Pendiente
-- El dueño quiere enviar con Envia.com, pero el backend solo integra Mipaquete (`server/services/mipaquete.js`) e Interrapidísimo (`server/services/interrapidisimo.js`). Falta la integración con Envia.com (cotización, guía, rastreo, webhook), que necesita las credenciales de la API. Cuando se retire Mipaquete, quitarlo también de la política.
+- Cuando se retire Mipaquete, quitarlo también de la política.
 
 ---
 
