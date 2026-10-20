@@ -221,9 +221,10 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         <div class="header-row">
             <div>
                 <h1>Envíos</h1>
-                <p>Cotización, generación de guías y seguimiento con Mipaquete e Interrapidísimo</p>
+                <p>Cotización, generación de guías y seguimiento con Envia.com, Mipaquete e Interrapidísimo</p>
             </div>
             <div class="provider-status" id="providerStatus" aria-live="polite">
+                <span class="provider-chip" data-provider="envia" title="Verificando conexión..."><span class="dot"></span>Envia.com</span>
                 <span class="provider-chip" data-provider="mipaquete" title="Verificando conexión..."><span class="dot"></span>Mipaquete</span>
                 <span class="provider-chip" data-provider="interrapidisimo" title="Verificando conexión..."><span class="dot"></span>Interrapidísimo</span>
             </div>
@@ -475,7 +476,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         const esc = (v: unknown) => String(v ?? "").replace(/[&<>"']/g, (c) =>
             ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
         const PROVIDER_LABELS: Record<string, string> = {
-            mipaquete: "Mipaquete", interrapidisimo: "Interrapidísimo (API directa)", manual: "Manual",
+            envia: "Envia.com", mipaquete: "Mipaquete", interrapidisimo: "Interrapidísimo (API directa)", manual: "Manual",
         };
 
         // Descarga/abre un PDF de un endpoint que responde binario (api() espera JSON).
@@ -1020,7 +1021,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
                         <tbody>
                             ${quotes.map((q: any, i: number) => `
                                 <tr class="quote-row" data-idx="${i}">
-                                    <td>${q.deliveryCompanyName} <span class="badge ${q.provider === "interrapidisimo" ? "badge-warn" : "badge-default"}">${q.provider === "interrapidisimo" ? "API directa" : "Mipaquete"}</span></td>
+                                    <td>${esc(q.deliveryCompanyName)} <span class="badge ${q.provider === "interrapidisimo" ? "badge-warn" : (q.provider === "envia" ? "badge-info" : "badge-default")}">${q.provider === "interrapidisimo" ? "API directa" : (q.provider === "envia" ? "Envia.com" : "Mipaquete")}</span></td>
                                     <td>${fmtCOP(q.shippingCost)}</td>
                                     <td>${Math.round(q.shippingTime / 60)} h</td>
                                     <td>${q.score ?? "-"}</td>
@@ -1035,8 +1036,11 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
                         resultsEl.querySelectorAll(".quote-row").forEach((r) => r.classList.remove("selected"));
                         row.classList.add("selected");
                         selectedQuote = quotes[Number((row as HTMLElement).dataset.idx)];
+                        // Inter exige el documento; en Envia es opcional (se usa el del pedido si existe).
                         document.getElementById("interDocRow")!.style.display =
-                            selectedQuote.provider === "interrapidisimo" ? "" : "none";
+                            selectedQuote.provider === "interrapidisimo" || selectedQuote.provider === "envia" ? "" : "none";
+                        (document.getElementById("fDocNumber") as HTMLInputElement).placeholder =
+                            selectedQuote.provider === "envia" ? "Opcional: se usa el del pedido" : "Requerido por Interrapidísimo";
                         (document.getElementById("btnCreateShipment") as HTMLButtonElement).disabled = false;
                     });
                 });
@@ -1064,6 +1068,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
                 const comments = (document.getElementById("fComments") as HTMLInputElement).value.trim();
                 const paymentMode = "prepaid";
                 const isInter = selectedQuote.provider === "interrapidisimo";
+                const isEnvia = selectedQuote.provider === "envia";
                 const receiverDocumentType = (document.getElementById("fDocType") as HTMLSelectElement).value;
                 const receiverDocumentNumber = (document.getElementById("fDocNumber") as HTMLInputElement).value.trim();
                 if (isInter && !receiverDocumentNumber) {
@@ -1079,14 +1084,14 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
                         declaredValueCop, paymentMode, deliveryCompanyId: selectedQuote.deliveryCompanyId,
                         deliveryCompanyName: selectedQuote.deliveryCompanyName,
                         requestPickup, comments,
-                        ...(isInter ? { receiverDocumentType, receiverDocumentNumber } : {}),
+                        ...(isInter || (isEnvia && receiverDocumentNumber) ? { receiverDocumentType, receiverDocumentNumber } : {}),
                     }),
                 });
 
                 msg.style.color = "var(--ok)";
                 msg.textContent = result.mpCode
                     ? `Envío generado (mpCode ${result.mpCode}).`
-                    : `Guía ${result.guideNumber} generada${requestPickup && !result.pickupRequested ? ". La recogida no se pudo programar: solicítela en el portal de Interrapidísimo" : ""}.`;
+                    : `Guía ${result.guideNumber} generada${requestPickup && !result.pickupRequested ? `. La recogida no se pudo programar: solicítela en el ${isEnvia ? "panel de Envia.com" : "portal de Interrapidísimo"}` : ""}.`;
                 setTimeout(() => {
                     document.getElementById("modalBack")!.classList.remove("open");
                     loadPending();

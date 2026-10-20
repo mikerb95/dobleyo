@@ -40,13 +40,30 @@ import {
     InterError,
     InterConfigError,
 } from '../services/interrapidisimo.js';
+import {
+    isEnviaConfigured,
+    quoteEnvia,
+    parseEnviaCompanyId,
+    createEnviaLabel,
+    requestEnviaPickup,
+    trackEnvia,
+    cancelEnviaLabel,
+    registerEnviaWebhook,
+    mapEnviaStatus,
+    enviaGuideToEvents,
+    enviaHealthCheck,
+    EnviaError,
+    EnviaConfigError,
+} from '../services/envia.js';
 
 export const shippingRouter = Router();
 
 const SITE_URL = process.env.SITE_BASE_URL || 'https://dobleyo.cafe';
 const ORIGIN_DANE = process.env.MIPAQUETE_ORIGIN_DANE;
 const INTER_ORIGIN_DANE = process.env.INTER_ORIGIN_DANE || ORIGIN_DANE;
+const ENVIA_ORIGIN_DANE = process.env.ENVIA_ORIGIN_DANE || ORIGIN_DANE;
 const WEBHOOK_TOKEN = process.env.MIPAQUETE_WEBHOOK_TOKEN;
+const ENVIA_WEBHOOK_TOKEN = process.env.ENVIA_WEBHOOK_TOKEN;
 
 // Rate limit propio para el webhook público (evita abuso ya que no requiere JWT)
 const webhookLimiter = rateLimit({
@@ -69,11 +86,11 @@ function notifyDelivered(shipment) {
 }
 
 function handleMipaqueteError(res, err, fallbackMsg) {
-    if (err instanceof MipaqueteConfigError || err instanceof InterConfigError) {
+    if (err instanceof MipaqueteConfigError || err instanceof InterConfigError || err instanceof EnviaConfigError) {
         logger.error({ err }, '[Shipping] Proveedor de envíos no configurado');
         return res.status(503).json({ success: false, error: 'Servicio de envíos no configurado' });
     }
-    if (err instanceof MipaqueteError || err instanceof InterError) {
+    if (err instanceof MipaqueteError || err instanceof InterError || err instanceof EnviaError) {
         logger.error({ status: err.status, body: err.body }, `[Shipping] Error ${err.name}`);
         return res.status(err.retriable ? 502 : 422).json({ success: false, error: err.message });
     }
@@ -290,12 +307,13 @@ shippingRouter.post('/quote',
 
             const useMipaquete = Boolean(process.env.MIPAQUETE_API_KEY && ORIGIN_DANE);
             const useInter = isInterConfigured() && Boolean(INTER_ORIGIN_DANE);
-            if (!useMipaquete && !useInter) {
-                return res.status(503).json({ success: false, error: 'Ningún proveedor de envíos configurado (Mipaquete o Interrapidísimo)' });
+            const useEnvia = isEnviaConfigured() && Boolean(ENVIA_ORIGIN_DANE);
+            if (!useMipaquete && !useInter && !useEnvia) {
+                return res.status(503).json({ success: false, error: 'Ningún proveedor de envíos configurado (Envia.com, Mipaquete o Interrapidísimo)' });
             }
 
-            // Se cotiza en paralelo: si un proveedor falla, las ofertas del otro siguen sirviendo.
-            const [mpResult, interResult] = await Promise.allSettled([
+            // Se cotiza en paralelo: si un proveedor falla, las ofertas de los otros siguen sirviendo.
+            const [mpResult, interResult, enviaResult] = await Promise.allSettled([
                 useMipaquete
                     ? quoteShipping({
                         originDaneCode: ORIGIN_DANE,
@@ -309,18 +327,27 @@ shippingRouter.post('/quote',
                 useInter
                     ? quoteInter({ originDaneCode: INTER_ORIGIN_DANE, destinyDaneCode, weightKg, declaredValue: declaredValueCop })
                     : [],
+                useEnvia
+                    ? quoteEnvia({
+                        originDaneCode: ENVIA_ORIGIN_DANE,
+                        destinyDaneCode,
+                        weightKg, width, length, height,
+                        declaredValue: declaredValueCop,
+                        codAmount: req.body.paymentMode === 'cod' ? declaredValueCop : 0,
+                    })
+                    : [],
             ]);
-            if (mpResult.status === 'rejected' && interResult.status === 'rejected') {
+            const settled = [mpResult, interResult, enviaResult];
+            if (settled.every((r) => r.status === 'rejected')) {
                 throw mpResult.reason;
             }
-            for (const r of [mpResult, interResult]) {
-                if (r.status === 'rejected') logger.warn({ err: r.reason }, '[Shipping] Un proveedor falló al cotizar; se usan las ofertas del otro');
+            for (const r of settled) {
+                if (r.status === 'rejected') logger.warn({ err: r.reason }, '[Shipping] Un proveedor falló al cotizar; se usan las ofertas de los otros');
             }
 
-            const list = [
-                ...(mpResult.status === 'fulfilled' ? mpResult.value : []),
-                ...(interResult.status === 'fulfilled' ? interResult.value : []),
-            ].sort((a, b) => a.shippingCost - b.shippingCost);
+            const list = settled
+                .flatMap((r) => (r.status === 'fulfilled' ? r.value : []))
+                .sort((a, b) => a.shippingCost - b.shippingCost);
 
             // Rastro de qué se cotizó (transportadoras y precios ofrecidos) para poder
             // auditar después contra la opción elegida en /create y detectar sobrecostos.
@@ -368,6 +395,8 @@ shippingRouter.post('/create',
                 quotedShippingCostCop = null,
             } = req.body;
             const isInter = String(deliveryCompanyId).startsWith('inter:');
+            const enviaTarget = parseEnviaCompanyId(deliveryCompanyId);
+            const isEnvia = Boolean(enviaTarget);
 
             const data = await getOrderWithItems(orderId);
             if (!data) return res.status(404).json({ success: false, error: 'Orden no encontrada' });
@@ -384,7 +413,10 @@ shippingRouter.post('/create',
             if (isInter && (!req.body.receiverDocumentType || !req.body.receiverDocumentNumber)) {
                 return res.status(422).json({ success: false, error: 'Interrapidísimo exige tipo y número de documento del destinatario' });
             }
-            if (!isInter && !ORIGIN_DANE) {
+            if (isEnvia && !ENVIA_ORIGIN_DANE) {
+                return res.status(503).json({ success: false, error: 'ENVIA_ORIGIN_DANE no configurado' });
+            }
+            if (!isInter && !isEnvia && !ORIGIN_DANE) {
                 return res.status(503).json({ success: false, error: 'MIPAQUETE_ORIGIN_DANE no configurado' });
             }
 
@@ -402,7 +434,7 @@ shippingRouter.post('/create',
                          destiny_dane_code, delivery_company_id, requested_pickup, created_by, status)
                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'created')
                      RETURNING id`,
-                    [orderId, isInter ? 'interrapidisimo' : 'mipaquete', paymentMode, declaredValueCop, collectionValueCop, quotedShippingCostCop,
+                    [orderId, isInter ? 'interrapidisimo' : (isEnvia ? 'envia' : 'mipaquete'), paymentMode, declaredValueCop, collectionValueCop, quotedShippingCostCop,
                         weightKg, width, length, height,
                         destinyDaneCode, deliveryCompanyId, requestPickup ? 1 : 0, req.user.id]
                 );
@@ -416,6 +448,9 @@ shippingRouter.post('/create',
 
             if (isInter) {
                 return createInterShipment(req, res, { order, shipmentId, collectionValueCop });
+            }
+            if (isEnvia) {
+                return createEnviaShipment(req, res, { order, shipmentId, collectionValueCop, ...enviaTarget });
             }
 
             // (2) Construir payload y llamar createSending
@@ -618,6 +653,93 @@ async function createInterShipment(req, res, { order, shipmentId, collectionValu
     });
 }
 
+// Rama Envia.com de POST /create. La guía, el PDF y la URL de rastreo llegan en
+// la misma respuesta; si la llamada falla, el envío queda en 'error' y se puede
+// reintentar.
+async function createEnviaShipment(req, res, { order, shipmentId, collectionValueCop, carrier, service }) {
+    const {
+        orderId, weightKg, width, length, height, destinyDaneCode, declaredValueCop, paymentMode,
+        requestPickup = true, comments, quotedShippingCostCop = null,
+    } = req.body;
+
+    let label;
+    try {
+        label = await createEnviaLabel({
+            carrier, service,
+            originDaneCode: ENVIA_ORIGIN_DANE,
+            receiver: {
+                name: order.customer_name,
+                email: order.customer_email,
+                phone: order.customer_phone,
+                street: order.shipping_address,
+                daneCode: destinyDaneCode,
+                identificationNumber: req.body.receiverDocumentNumber || order.customer_document_number,
+            },
+            weightKg, width, length, height,
+            declaredValue: declaredValueCop,
+            contents: 'Café',
+            codAmount: collectionValueCop,
+            comments: comments || `Pedido ${order.reference}`,
+        });
+    } catch (err) {
+        await query(`UPDATE shipments SET status = 'error', error_detail = ? WHERE id = ?`,
+            [String(err.message).slice(0, 500), shipmentId]);
+        return handleMipaqueteError(res, err, 'Error al crear la guía en Envia.com');
+    }
+
+    const deliveryCompanyName = req.body.deliveryCompanyName || carrier;
+
+    // La recogida es opcional y no debe tumbar la guía ya creada.
+    let pickupCode = null;
+    let status = 'created';
+    if (requestPickup) {
+        try {
+            const pickup = await requestEnviaPickup({
+                carrier: label.carrier,
+                trackingNumbers: [label.trackingNumber],
+                originDaneCode: ENVIA_ORIGIN_DANE,
+                totalWeightKg: weightKg,
+                totalPackages: 1,
+            });
+            pickupCode = pickup.confirmation;
+            if (pickupCode) status = 'pickup_requested';
+        } catch (err) {
+            logger.warn({ err, guideNumber: label.trackingNumber }, '[Shipping] Envia: guía creada pero la recogida falló; programarla desde el panel de Envia');
+        }
+    }
+
+    await query(
+        `UPDATE shipments SET guide_number = ?, pickup_code = ?, delivery_company_name = ?, actual_shipping_cost_cop = ?,
+            pdf_guide_urls = ?, tracking_url = ?, status = ?, guide_notified_at = datetime('now'), tracking_updated_at = datetime('now')
+         WHERE id = ?`,
+        [label.trackingNumber, pickupCode, deliveryCompanyName, label.totalPrice,
+            label.labelUrl ? JSON.stringify([label.labelUrl]) : null, label.trackUrl, status, shipmentId]
+    );
+    await query(`UPDATE customer_orders SET status = 'shipped' WHERE id = ? AND status NOT IN ('delivered','cancelled','refunded')`, [orderId]);
+
+    await logAudit(req.user.id, 'create', 'shipments', shipmentId, {
+        orderId, provider: 'envia', guideNumber: label.trackingNumber, carrier: label.carrier, service: label.service,
+        paymentMode, collectionValueCop, quotedShippingCostCop, actualCost: label.totalPrice, weightKg, destinyDaneCode, pickupCode,
+    });
+
+    sendShippingNotificationEmail(order.customer_email, order.customer_name, {
+        reference: order.reference,
+        guideNumber: label.trackingNumber,
+        deliveryCompanyName,
+        trackingUrl: label.trackUrl || `${SITE_URL}/confirmacion?ref=${order.reference}`,
+        isCod: paymentMode === 'cod',
+        collectionValue: collectionValueCop,
+    }).catch((err) => logger.error({ err }, '[Shipping] Error enviando email de despacho (Envia)'));
+
+    return res.status(201).json({
+        success: true,
+        data: {
+            shipmentId, guideNumber: label.trackingNumber, pickupCode, pickupRequested: Boolean(pickupCode),
+            pdfUrls: label.labelUrl ? [label.labelUrl] : [], trackingUrl: label.trackUrl,
+        },
+    });
+}
+
 // ─── GET /api/shipping/:id/detail (admin) ──────────────────────────────────
 // Ficha del envío: datos de la orden, costos (cotizado vs. real), motivo del
 // error si lo hubo e historial de estados.
@@ -642,9 +764,8 @@ shippingRouter.get('/:id/detail', authenticateToken, requireRole('admin'), async
             [shipment.id]
         );
 
-        const trackingUrl = shipment.provider === 'interrapidisimo' && shipment.guide_number
-            ? trackingUrlForGuide(shipment.guide_number)
-            : null;
+        const trackingUrl = shipment.tracking_url
+            || (shipment.provider === 'interrapidisimo' && shipment.guide_number ? trackingUrlForGuide(shipment.guide_number) : null);
 
         return res.json({ success: true, data: { shipment, events: events.rows, trackingUrl } });
     } catch (err) {
@@ -840,6 +961,7 @@ async function refreshShipment(shipmentId, source) {
     if (!shipmentResult.rows.length) return null;
     const shipment = shipmentResult.rows[0];
     if (shipment.provider === 'interrapidisimo') return refreshInterShipment(shipment, source);
+    if (shipment.provider === 'envia') return refreshEnviaShipment(shipment, source);
     if (!shipment.mp_code) return { shipment, updated: false };
 
     const [sendings, tracking] = await Promise.all([
@@ -945,6 +1067,55 @@ async function refreshInterShipment(shipment, source) {
     for (const ev of events) {
         const exists = await query(
             `SELECT 1 FROM shipment_events WHERE shipment_id = ? AND update_state = ? AND event_date = ? LIMIT 1`,
+            [shipment.id, ev.updateState || null, ev.date || null]
+        );
+        if (exists.rows.length) continue;
+        await query(
+            `INSERT INTO shipment_events (shipment_id, source, update_state, description, event_date)
+             VALUES (?, ?, ?, ?, ?)`,
+            [shipment.id, source, ev.updateState || null, ev.description || null, ev.date || null]
+        );
+        if (isShippingIssueEvent(ev)) {
+            notifyShippingIssue({
+                reference:    shipment.reference,
+                customerName: shipment.customer_name,
+                guideNumber:  shipment.guide_number,
+                state:        ev.updateState,
+                description:  ev.description,
+            });
+        }
+    }
+
+    if (newStatus === 'delivered' && shipment.status !== 'delivered') {
+        const delivered = await query(
+            `UPDATE customer_orders SET status = 'delivered' WHERE id = ? AND status NOT IN ('cancelled','refunded') RETURNING id`,
+            [shipment.order_id]
+        );
+        if (delivered.rows.length) notifyDelivered(shipment);
+    }
+
+    return { shipmentId: shipment.id, guideNumber: shipment.guide_number, pickupCode: shipment.pickup_code, status: newStatus };
+}
+
+async function refreshEnviaShipment(shipment, source) {
+    if (!shipment.guide_number) return { shipment, updated: false };
+
+    const guides = await trackEnvia([shipment.guide_number]);
+    const guide = guides.get(String(shipment.guide_number)) || null;
+    const events = enviaGuideToEvents(guide);
+    const newStatus = mapEnviaStatus(guide) || shipment.status;
+
+    await query(
+        `UPDATE shipments SET tracking_snapshot = ?, tracking_updated_at = datetime('now'),
+            status = CASE WHEN status IN ('cancelled') THEN status ELSE ? END
+         WHERE id = ?`,
+        [JSON.stringify(events), newStatus, shipment.id]
+    );
+
+    for (const ev of events) {
+        // IS en vez de =: la novedad sintética de Envia no trae fecha (NULL).
+        const exists = await query(
+            `SELECT 1 FROM shipment_events WHERE shipment_id = ? AND update_state = ? AND event_date IS ? LIMIT 1`,
             [shipment.id, ev.updateState || null, ev.date || null]
         );
         if (exists.rows.length) continue;
@@ -1093,7 +1264,7 @@ async function runShippingMaintenance() {
     const pending = await query(
         `SELECT id FROM shipments
          WHERE status IN ('created','pickup_requested','in_transit')
-           AND (mp_code IS NOT NULL OR (provider = 'interrapidisimo' AND guide_number IS NOT NULL))
+           AND (mp_code IS NOT NULL OR (provider IN ('interrapidisimo','envia') AND guide_number IS NOT NULL))
          ORDER BY COALESCE(tracking_updated_at, created_at) ASC
          LIMIT ?`,
         [MAX_ITEMS]
@@ -1238,6 +1409,11 @@ shippingRouter.put('/:id/cancel', authenticateToken, requireRole('admin'), async
         if (shipment.mp_code) {
             await cancelSending(shipment.mp_code);
         }
+        // Envia anula la guía y devuelve el saldo si la transportadora aún no la recogió.
+        if (shipment.provider === 'envia' && shipment.guide_number) {
+            const target = parseEnviaCompanyId(shipment.delivery_company_id);
+            if (target) await cancelEnviaLabel({ carrier: target.carrier, trackingNumber: shipment.guide_number });
+        }
 
         await query(`UPDATE shipments SET status = 'cancelled' WHERE id = ?`, [shipment.id]);
         await query(`UPDATE customer_orders SET status = 'processing' WHERE id = ? AND status = 'shipped'`, [shipment.order_id]);
@@ -1344,9 +1520,9 @@ shippingRouter.get('/', authenticateToken, requireRole('admin'), async (req, res
 // ─── GET /api/shipping/health (admin) ──────────────────────────────────────
 
 shippingRouter.get('/health', authenticateToken, requireRole('admin'), async (req, res) => {
-    const [mipaquete, interrapidisimo] = await Promise.all([mipaqueteHealthCheck(), interHealthCheck()]);
-    const ok = mipaquete.ok || interrapidisimo.ok;
-    return res.status(ok ? 200 : 503).json({ success: ok, data: { ok, mipaquete, interrapidisimo } });
+    const [mipaquete, interrapidisimo, envia] = await Promise.all([mipaqueteHealthCheck(), interHealthCheck(), enviaHealthCheck()]);
+    const ok = mipaquete.ok || interrapidisimo.ok || envia.ok;
+    return res.status(ok ? 200 : 503).json({ success: ok, data: { ok, mipaquete, interrapidisimo, envia } });
 });
 
 // ─── POST /api/shipping/setup-webhook (admin, one-shot) ────────────────────
@@ -1403,5 +1579,60 @@ shippingRouter.post('/webhook', webhookLimiter, async (req, res) => {
     } catch (err) {
         logger.error({ err }, '[Shipping webhook] Error:');
         return res.sendStatus(200); // acusar recibo siempre; no bloquear reintentos de Mipaquete
+    }
+});
+
+// ─── POST /api/shipping/envia/setup-webhook (admin, one-shot) ──────────────
+
+shippingRouter.post('/envia/setup-webhook', authenticateToken, requireRole('admin'), async (req, res) => {
+    try {
+        if (!ENVIA_WEBHOOK_TOKEN) {
+            return res.status(503).json({ success: false, error: 'ENVIA_WEBHOOK_TOKEN no configurado' });
+        }
+        const result = await registerEnviaWebhook(`${SITE_URL}/api/shipping/envia/webhook?token=${ENVIA_WEBHOOK_TOKEN}`);
+        return res.json({ success: true, data: result });
+    } catch (err) {
+        return handleMipaqueteError(res, err, 'Error al registrar el webhook de Envia.com');
+    }
+});
+
+// ─── POST /api/shipping/envia/webhook (público, protegido por token) ───────
+// Mismo criterio que el de Mipaquete: el payload solo dispara una re-consulta
+// autenticada a /ship/generaltrack/, nunca escribe estado por sí mismo.
+
+shippingRouter.post('/envia/webhook', webhookLimiter, async (req, res) => {
+    try {
+        if (!ENVIA_WEBHOOK_TOKEN) {
+            logger.error('[Envia webhook] ENVIA_WEBHOOK_TOKEN no configurado');
+            return res.sendStatus(500);
+        }
+        const expected = Buffer.from(ENVIA_WEBHOOK_TOKEN);
+        const given = Buffer.from(String(req.query.token || ''));
+        if (given.length !== expected.length || !crypto.timingSafeEqual(given, expected)) {
+            return res.sendStatus(401);
+        }
+
+        const payload = req.body || {};
+        const trackingNumber = payload.trackingNumber || payload.data?.trackingNumber;
+        if (trackingNumber) {
+            const shipmentResult = await query(
+                `SELECT id FROM shipments WHERE provider = 'envia' AND guide_number = ?`,
+                [String(trackingNumber)]
+            );
+            if (shipmentResult.rows.length) {
+                const shipmentId = shipmentResult.rows[0].id;
+                await query(
+                    `INSERT INTO shipment_events (shipment_id, source, raw_payload) VALUES (?, 'webhook', ?)`,
+                    [shipmentId, JSON.stringify(payload).slice(0, 8000)]
+                );
+                refreshShipment(shipmentId, 'webhook').catch((err) =>
+                    logger.error({ err, shipmentId }, '[Envia webhook] Error al re-consultar tracking'));
+            }
+        }
+
+        return res.sendStatus(200);
+    } catch (err) {
+        logger.error({ err }, '[Envia webhook] Error:');
+        return res.sendStatus(200);
     }
 });

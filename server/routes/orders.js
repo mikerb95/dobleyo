@@ -626,7 +626,7 @@ ordersRouter.get('/:ref', async (req, res) => {
         // Seguimiento del envío activo más reciente. Solo transportadora, guía,
         // estado y eventos: la guía ya le llega al cliente por correo.
         const shipmentResult = await query(
-            `SELECT id, provider, status, guide_number, delivery_company_name, tracking_updated_at
+            `SELECT id, provider, status, guide_number, delivery_company_name, tracking_url, tracking_updated_at
              FROM shipments
              WHERE order_id = ? AND status NOT IN ('cancelled','error')
              ORDER BY created_at DESC LIMIT 1`,
@@ -647,7 +647,8 @@ ordersRouter.get('/:ref', async (req, res) => {
                 status: s.status,
                 carrier: s.delivery_company_name,
                 guideNumber: s.guide_number,
-                trackingUrl: s.provider === 'interrapidisimo' && s.guide_number ? trackingUrlForGuide(s.guide_number) : null,
+                trackingUrl: s.tracking_url
+                    || (s.provider === 'interrapidisimo' && s.guide_number ? trackingUrlForGuide(s.guide_number) : null),
                 updatedAt: s.tracking_updated_at,
                 events: eventsResult.rows,
             };
