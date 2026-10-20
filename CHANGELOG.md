@@ -2,6 +2,23 @@
 
 ---
 
+## 2026-10-19: Panel admin cerrado en el servidor y documentación pública ordenada (Agente: Claude)
+
+### Contexto
+`/admin` revisaba la sesión solo en el navegador: con `curl` se descargaba el HTML del ERP con el menú completo (Finanzas, Usuarios...). `/setup-db` mostraba el formulario de instalación a cualquiera y `robots.txt` listaba esas rutas. El kanban de iteraciones y el showcase son documentación que se quiere dejar pública.
+
+### Cambios
+- **`middleware.ts`**: para `/admin/*` verifica el JWT de `auth_token` (HS256 con `JWT_SECRET`, vía `jose`). Sin sesión válida redirige a `/admin/login?redirect=...`; con un rol distinto de admin o caficultor, a `/`. `/admin/login` queda abierta. Rechaza tokens de verificación de correo y, sin `JWT_SECRET`, falla cerrado. `/admin/iteraciones` redirige (308) a `/iteraciones`.
+- **`package.json`**: `jose` como dependencia directa (ya estaba en el árbol por `@vercel/functions`).
+- **`src/pages/admin/login.astro`** y **`AuthModal.astro`**: si `/me` falla, intentan `POST /api/auth/refresh` antes de pedir credenciales, para que al vencer el access token (15 min) no se pida el ingreso otra vez. `AuthModal` solo acepta `redirect` relativos al sitio y deja pasar al caficultor a `/admin`.
+- **`src/pages/iteraciones.astro`** (antes `admin/iteraciones.astro`): kanban público con `<AdminLayout publico>`, que muestra una barra simple sin menú, sin usuario y sin chequeo de sesión. Se quitó el botón a la zona de peligro. Enlaces actualizados en `devtools` y `presupuesto`. El JSON embebido se escapa.
+- **`vercel.json`**: `/iteraciones` usa la CSP del admin (scripts inline).
+- **`src/pages/setup-db.astro`**: eliminada. La instalación sigue por `POST /api/setup` con `SETUP_SECRET_KEY`.
+- **`src/pages/showcase.astro`**: sigue pública, sin la auditoría de mantenibilidad ni "Lo que queda por hacer". Textos sin em dash.
+- **`public/robots.txt`**: ya no lista `/admin/`, `/setup-db` ni `/showcase`.
+
+---
+
 ## 2026-10-19: Transportadoras en la política de privacidad (Agente: Claude)
 
 - **`src/pages/privacidad.astro`**: la sección 5 ya no nombra a Servientrega, Coordinadora y Envía. Ahora dice que los envíos se gestionan con Envia.com, Mipaquete.com e Interrapidísimo, con la transportadora que tenga cobertura en el destino, y aclara que se comparten nombre, documento, dirección y teléfono para generar la guía.

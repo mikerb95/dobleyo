@@ -336,6 +336,7 @@ Todo agente que cree o modifique páginas DEBE cumplir:
 12. **Logs**: `server/logger.js` redacta cookies, `Authorization`, `x-cron-secret`, firmas de webhook y `?token=`/`?secret=`. Los secretos de cron van por cabecera, nunca por query string.
 13. **Datos en `<script>`**: JSON embebido con `set:html` se escapa (`.replace(/</g, "\\u003c")`) para que un `</script>` en un dato no cierre la etiqueta.
 14. **Acceso de admin**: los administradores solo entran con GitHub en `/admin/login`. Las cuentas autorizadas van por id numérico en `ADMIN_GITHUB_ACCOUNTS` (`server/routes/auth.js`); agregar o quitar un admin es cambiar esa lista. `/login`, `/google` y `/apple` rechazan el rol admin con `ADMIN_GITHUB_ONLY`. Nunca devolver sesión antes de validar el `state` de OAuth.
+15. **Panel `/admin/*` cerrado en el servidor**: `middleware.ts` (raíz, routing middleware de Vercel) verifica el JWT de la cookie `auth_token` con `JWT_SECRET` antes de entregar cualquier HTML del panel. Sin sesión va a `/admin/login`, que queda abierta, igual que la API. El chequeo de cliente de `AdminLayout` se mantiene como segunda capa. En `astro dev` el middleware no corre. Una página con el sistema visual del ERP que deba ser pública va fuera de `/admin` con `<AdminLayout publico>` (sin menú ni sesión), como `/iteraciones`, y se agrega al bloque de CSP del admin en `vercel.json` si usa scripts inline. `robots.txt` no lista rutas privadas: anunciarlas no protege nada.
 
 ---
 

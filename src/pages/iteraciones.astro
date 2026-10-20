@@ -8,7 +8,7 @@ const iterData = { PARES, COLUMNAS, ITERACIONES, COMMITS_POR_MES, REPO };
 <AdminLayout title="Iteraciones · DobleYo" publico>
 
   <!-- Datos derivados del historial real de GitHub + CHANGELOG -->
-  <script type="application/json" id="iterData" set:html={JSON.stringify(iterData)} />
+  <script type="application/json" id="iterData" set:html={JSON.stringify(iterData).replace(/</g, "\\u003c")} />
 
   <!-- ── Encabezado ──────────────────────────────────────────── -->
   <div class="page-header">
