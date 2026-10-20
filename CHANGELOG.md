@@ -4,7 +4,10 @@
 
 ## 2026-10-19: Transportadoras en la política de privacidad (Agente: Claude)
 
-- **`src/pages/privacidad.astro`**: la sección 5 ya no nombra a Servientrega, Coordinadora y Envía. Ahora dice que los envíos se gestionan con Envia.com (decisión del dueño), con la transportadora que tenga cobertura en el destino, y aclara que se comparten nombre, documento, dirección y teléfono para generar la guía.
+- **`src/pages/privacidad.astro`**: la sección 5 ya no nombra a Servientrega, Coordinadora y Envía. Ahora dice que los envíos se gestionan con Envia.com, Mipaquete.com e Interrapidísimo, con la transportadora que tenga cobertura en el destino, y aclara que se comparten nombre, documento, dirección y teléfono para generar la guía.
+
+### Pendiente
+- El dueño quiere enviar con Envia.com, pero el backend solo integra Mipaquete (`server/services/mipaquete.js`) e Interrapidísimo (`server/services/interrapidisimo.js`). Falta la integración con Envia.com (cotización, guía, rastreo, webhook), que necesita las credenciales de la API. Cuando se retire Mipaquete, quitarlo también de la política.
 
 ---
 
