@@ -2,6 +2,21 @@
 
 ---
 
+## 2026-10-19: Fuera los productos demo con fotos de stock (Agente: Claude)
+
+### Contexto
+Al crear Isnos Geisha y Pitalito Sidra quedaron activos los productos de demostración con fotos de Unsplash (el "Huila" mostraba un diente de león).
+
+### Cambios
+- **`server/migrations/retire_demo_products.js`** (en `run_all_migrations.js`): desactiva `cf-sierra`, `cf-huila`, `cf-nar`, `acc-molinillo`, `acc-chemex` y los tres kits. No los borra (pedidos y reseñas los referencian). Solo toca los que siguen con foto de `images.unsplash.com`, así que uno que reciba foto real y se reactive desde el admin no se vuelve a apagar.
+- **`src/data/products.ts`**: el fallback estático ya no trae esos cafés ni accesorios (si no, `/accesorios` y la portada los volvían a mostrar al no encontrar nada en la BD).
+- **Barra de anuncios** (`Layout.astro`, `i18n/es.json`, `i18n/en.json`): "Nuevas cosechas del Huila", sin Nariño.
+
+### Impacto
+- `/accesorios` y `/regalos` quedan con su estado vacío y la portada oculta la sección de kits hasta que haya productos reales.
+
+---
+
 ## 2026-10-19: Acceso al panel desde el footer (Agente: Claude)
 
 - **`src/components/Footer.astro`**: enlace "Administración" / "Admin" en la franja legal, junto a Privacidad, Términos y Accesibilidad. Lleva a `/admin/login` (GitHub para admins, enlace a `/login` para caficultores) con `rel="nofollow"`.
