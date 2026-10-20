@@ -85,6 +85,8 @@ const steps = [
   { name: 'Email tables (reset tokens, supresiones, campañas)', run: () => runFn('create_email_tables.js', 'createEmailTables') },
   // Login de admins con GitHub: columna github_id y revocación de sesiones de admin por contraseña.
   { name: 'GitHub admin auth (github_id)',   run: () => runFn('add_github_admin_auth.js', 'addGithubAdminAuth') },
+  // Cafés de Finca Rengifo (Huila) con fotos reales del empaque.
+  { name: 'Cafés Isnos Geisha y Pitalito Sidra', run: () => runFn('add_huila_microlots.js', 'addHuilaMicrolots') },
 ];
 
 async function runAll() {

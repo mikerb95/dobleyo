@@ -335,6 +335,7 @@ Todo agente que cree o modifique páginas DEBE cumplir:
 11. **Errores 5xx**: el detalle (`err.message`, stack) va al log con `logger.error`; al cliente, un mensaje genérico. Los errores de negocio se lanzan con `status` (4xx) y ese sí se muestra.
 12. **Logs**: `server/logger.js` redacta cookies, `Authorization`, `x-cron-secret`, firmas de webhook y `?token=`/`?secret=`. Los secretos de cron van por cabecera, nunca por query string.
 13. **Datos en `<script>`**: JSON embebido con `set:html` se escapa (`.replace(/</g, "\\u003c")`) para que un `</script>` en un dato no cierre la etiqueta.
+14. **Acceso de admin**: los administradores solo entran con GitHub en `/admin/login`. Las cuentas autorizadas van por id numérico en `ADMIN_GITHUB_ACCOUNTS` (`server/routes/auth.js`); agregar o quitar un admin es cambiar esa lista. `/login`, `/google` y `/apple` rechazan el rol admin con `ADMIN_GITHUB_ONLY`. Nunca devolver sesión antes de validar el `state` de OAuth.
 
 ---
 

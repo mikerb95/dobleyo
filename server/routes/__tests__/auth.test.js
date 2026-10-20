@@ -1,9 +1,10 @@
 // Tests de integración para server/routes/auth.js
 // Usa supertest para enviar requests HTTP al router Express
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import express from 'express';
 import request from 'supertest';
+import cookieParser from 'cookie-parser';
 
 // ── vi.hoisted() — necesario en ESM para que las fn de mock sean compartidas
 // entre el factory de vi.mock y los tests que llaman a .mockResolvedValueOnce()
@@ -62,6 +63,7 @@ const { query } = mocks;
 function buildApp() {
     const app = express();
     app.use(express.json());
+    app.use(cookieParser());
     app.use('/api/auth', authRouter);
     return app;
 }
@@ -193,7 +195,7 @@ describe('POST /api/auth/login', () => {
     it('debería retornar 200 con token y cookies en login correcto', async () => {
         const mockUser = {
             id: 5, email: 'user@test.com', password_hash: '$hashed$',
-            role: 'admin', first_name: 'Carlos', last_name: 'Ruiz',
+            role: 'caficultor', first_name: 'Carlos', last_name: 'Ruiz',
         };
 
         mocks.comparePassword.mockResolvedValue(true); // sobreescribir default
@@ -210,9 +212,26 @@ describe('POST /api/auth/login', () => {
 
         expect(res.status).toBe(200);
         expect(res.body.token).toBe('mock.access.token');
-        expect(res.body.user.role).toBe('admin');
+        expect(res.body.user.role).toBe('caficultor');
         expect(res.body.user.id).toBe(5);
         expect(res.headers['set-cookie']).toBeDefined();
+    });
+
+    it('rechaza la contraseña correcta de un admin: debe entrar con GitHub', async () => {
+        mocks.comparePassword.mockResolvedValue(true);
+        mocks.query.mockReset();
+        mocks.query.mockResolvedValueOnce({
+            rows: [{ id: 5, email: 'admin@test.com', password_hash: '$hashed$', role: 'admin', is_verified: 1 }],
+        });
+        mocks.query.mockResolvedValueOnce({ rows: [{ n: 0 }] });
+
+        const res = await request(app)
+            .post('/api/auth/login')
+            .send({ email: 'admin@test.com', password: 'pass1234' });
+
+        expect(res.status).toBe(403);
+        expect(res.body.code).toBe('ADMIN_GITHUB_ONLY');
+        expect(res.headers['set-cookie']).toBeUndefined();
     });
 });
 
@@ -402,13 +421,133 @@ describe('POST /api/auth/google', () => {
 
     it('entra con correo verificado y vincula la cuenta existente', async () => {
         mocks.verifyIdToken.mockResolvedValue(googlePayload({ email_verified: true }));
-        mocks.query.mockResolvedValueOnce({ rows: [{ id: 3, email: 'admin@dobleyo.cafe', role: 'admin', google_id: null }] });
+        mocks.query.mockResolvedValueOnce({ rows: [{ id: 3, email: 'admin@dobleyo.cafe', role: 'client', google_id: null }] });
         mocks.query.mockResolvedValue({ rows: [] });
 
         const res = await request(app).post('/api/auth/google').send({ credential: 'id-token' });
 
         expect(res.status).toBe(200);
         expect(mocks.query.mock.calls.some(([sql]) => /UPDATE users SET google_id/.test(sql))).toBe(true);
+    });
+
+    it('no deja entrar a un admin con Google', async () => {
+        mocks.verifyIdToken.mockResolvedValue(googlePayload({ email_verified: true }));
+        mocks.query.mockResolvedValueOnce({ rows: [{ id: 3, email: 'admin@dobleyo.cafe', role: 'admin', google_id: 'g-123' }] });
+
+        const res = await request(app).post('/api/auth/google').send({ credential: 'id-token' });
+
+        expect(res.status).toBe(403);
+        expect(res.body.code).toBe('ADMIN_GITHUB_ONLY');
+        expect(res.headers['set-cookie']).toBeUndefined();
+    });
+});
+
+// ── GitHub OAuth (admins) ─────────────────────────────────────────────────────
+describe('GitHub OAuth de administradores', () => {
+    let app;
+    const STATE = 'a'.repeat(48);
+    const stateCookie = (redirect = '/admin/pedidos') =>
+        `gh_oauth_state=${encodeURIComponent('j:' + JSON.stringify({ state: STATE, redirect }))}`;
+
+    // Respuestas de GitHub: token, /user y /user/emails.
+    const stubGithub = (ghUser, emails = [{ email: 'mike@dobleyo.cafe', primary: true, verified: true }]) => {
+        const fetchMock = vi.fn(async (url) => {
+            const body = url.includes('access_token') ? { access_token: 'gho_test' }
+                : url.endsWith('/user/emails') ? emails
+                : ghUser;
+            return { ok: true, status: 200, json: async () => body };
+        });
+        vi.stubGlobal('fetch', fetchMock);
+        return fetchMock;
+    };
+
+    beforeEach(() => {
+        app = buildApp();
+        vi.clearAllMocks();
+        mocks.query.mockReset();
+        mocks.query.mockResolvedValue({ rows: [] });
+        process.env.GITHUB_CLIENT_ID = 'gh-client';
+        process.env.GITHUB_CLIENT_SECRET = 'gh-secret';
+    });
+
+    afterEach(() => vi.unstubAllGlobals());
+
+    it('inicia el flujo con state en cookie y redirige a GitHub', async () => {
+        const res = await request(app).get('/api/auth/github?redirect=/admin/pedidos');
+
+        expect(res.status).toBe(302);
+        const location = new URL(res.headers.location);
+        expect(location.origin).toBe('https://github.com');
+        expect(location.searchParams.get('client_id')).toBe('gh-client');
+        const cookie = res.headers['set-cookie'].find((c) => c.startsWith('gh_oauth_state='));
+        expect(cookie).toMatch(/HttpOnly/);
+        expect(decodeURIComponent(cookie)).toContain(location.searchParams.get('state'));
+    });
+
+    it('rechaza el regreso si el state no coincide', async () => {
+        const fetchMock = stubGithub({ id: 69970540, login: 'mikerb95' });
+
+        const res = await request(app)
+            .get(`/api/auth/github/callback?code=abc&state=${'b'.repeat(48)}`)
+            .set('Cookie', stateCookie());
+
+        expect(res.headers.location).toBe('/admin/login?error=state');
+        expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    it('rechaza una cuenta de GitHub fuera de la lista', async () => {
+        stubGithub({ id: 1, login: 'mikerb95-falso' });
+
+        const res = await request(app)
+            .get(`/api/auth/github/callback?code=abc&state=${STATE}`)
+            .set('Cookie', stateCookie());
+
+        expect(res.headers.location).toBe('/admin/login?error=not_allowed');
+        expect(res.headers['set-cookie'].some((c) => c.startsWith('auth_token='))).toBe(false);
+        expect(mocks.query.mock.calls.some(([, args]) => args?.includes('LOGIN_GITHUB_DENIED'))).toBe(true);
+    });
+
+    it('vincula por correo una cuenta existente, la deja como admin y abre sesión', async () => {
+        stubGithub({ id: 69970540, login: 'mikerb95', name: 'Mike Rodríguez' });
+        mocks.query.mockResolvedValueOnce({ rows: [] }); // SELECT por github_id
+        mocks.query.mockResolvedValueOnce({ rows: [{ id: 7, email: 'mike@dobleyo.cafe', role: 'client' }] }); // por correo
+
+        const res = await request(app)
+            .get(`/api/auth/github/callback?code=abc&state=${STATE}`)
+            .set('Cookie', stateCookie());
+
+        expect(res.status).toBe(302);
+        expect(res.headers.location).toBe('/admin/pedidos');
+        expect(res.headers['set-cookie'].some((c) => c.startsWith('auth_token='))).toBe(true);
+        const sqls = mocks.query.mock.calls.map(([sql]) => sql);
+        expect(sqls.some((sql) => /UPDATE users SET github_id/.test(sql))).toBe(true);
+        expect(sqls.some((sql) => /SET role = 'admin'/.test(sql))).toBe(true);
+    });
+
+    it('crea la cuenta admin si no existe ninguna con ese correo', async () => {
+        stubGithub({ id: 264250788, login: 'nicodmarquez', name: null }, [{ email: 'nico@test.com', primary: true, verified: true }]);
+        mocks.query.mockResolvedValueOnce({ rows: [] }); // SELECT por github_id
+        mocks.query.mockResolvedValueOnce({ rows: [] }); // SELECT por correo
+        mocks.query.mockResolvedValueOnce({ rows: [{ id: 9, email: 'nico@test.com', role: 'admin' }] }); // INSERT
+
+        const res = await request(app)
+            .get(`/api/auth/github/callback?code=abc&state=${STATE}`)
+            .set('Cookie', stateCookie('https://evil.example'));
+
+        expect(res.headers.location).toBe('/admin');
+        const insert = mocks.query.mock.calls.find(([sql]) => /INSERT INTO users/.test(sql));
+        expect(insert[1]).toEqual(['nico@test.com', 'nicodmarquez', '', '264250788']);
+    });
+
+    it('no crea cuenta si GitHub no tiene correo verificado', async () => {
+        stubGithub({ id: 69970540, login: 'mikerb95' }, [{ email: 'x@test.com', primary: true, verified: false }]);
+
+        const res = await request(app)
+            .get(`/api/auth/github/callback?code=abc&state=${STATE}`)
+            .set('Cookie', stateCookie());
+
+        expect(res.headers.location).toBe('/admin/login?error=no_email');
+        expect(mocks.query.mock.calls.some(([sql]) => /INSERT INTO users/.test(sql))).toBe(false);
     });
 });
 

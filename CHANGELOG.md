@@ -2,6 +2,29 @@
 
 ---
 
+## 2026-10-19: Login de administradores con GitHub (Agente: Claude)
+
+### Contexto
+Los administradores entran al panel con una página propia, `/admin/login`, y solo con GitHub. Las cuentas autorizadas son `mikerb95` y `nicodmarquez`, fijadas por id numérico de GitHub para que un cambio de nombre de usuario no abra el acceso a otra persona. El login con correo y contraseña (y Google/Apple) queda para clientes, proveedores y caficultores.
+
+### Cambios
+- **`server/routes/auth.js`**:
+  - `GET /api/auth/github`: inicia OAuth con `state` aleatorio en cookie HttpOnly (`gh_oauth_state`, 10 min, path `/api/auth/github`).
+  - `GET /api/auth/github/callback`: valida el `state` en tiempo constante, canjea el código, exige que el id esté en `ADMIN_GITHUB_ACCOUNTS` y busca la fila por `github_id`. La primera vez vincula por el correo principal verificado de GitHub (o crea la cuenta) y deja el rol en `admin`. Audita `LOGIN_GITHUB` y `LOGIN_GITHUB_DENIED`. Después redirige solo a rutas `/admin/*`.
+  - `/login`, `/google` y `/apple` responden 403 `ADMIN_GITHUB_ONLY` a cuentas admin (en `/login`, después de validar la contraseña para no revelar qué correos son de admin).
+  - Nuevo helper `issueWebSession()` para emitir las cookies de sesión.
+- **`server/migrations/add_github_admin_auth.js`** (en `run_all_migrations.js`): columna `users.github_id` con índice único y revocación de los refresh tokens de admins sin GitHub vinculado. **`db/schema.sql`** actualizado.
+- **`src/pages/admin/login.astro`**: página de ingreso (noindex) con botón de GitHub, mensajes por código de error y enlace para caficultores a `/login`.
+- **`AdminLayout.astro`** y **`auth-refresh.js`**: sin sesión en `/admin/*` se va a `/admin/login`. Al cerrar sesión, el admin vuelve a `/admin/login`.
+- **`Icon.astro`**: ícono `github`.
+- **`.env.example`**: `GITHUB_CLIENT_ID` y `GITHUB_CLIENT_SECRET`.
+- **Tests** (`auth.test.js`): inicio del flujo, `state` inválido, cuenta no autorizada, vinculación por correo, alta nueva, correo sin verificar y bloqueo de admin en password y Google.
+- **`AGENTS.md`**: regla 14 en §6.
+
+### Pendiente fuera del código
+- Crear la OAuth App en GitHub (callback `https://dobleyo.cafe/api/auth/github/callback`) y cargar `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` en Vercel.
+- La app móvil (`apps/mobile`) solo tiene login con contraseña: los admins ya no pueden entrar por ahí hasta que tenga GitHub.
+
 ## 2026-10-19: Revisión OWASP Top 10:2025 y correcciones de prioridad alta y media (Agente: Claude)
 
 ### Contexto
