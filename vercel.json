@@ -15,7 +15,7 @@
   ],
   "headers": [
     {
-      "source": "/admin(.*)",
+      "source": "/(admin|iteraciones)(.*)",
       "headers": [
         {
           "key": "Content-Security-Policy",
@@ -44,7 +44,7 @@
       ]
     },
     {
-      "source": "/((?!api/|admin).*)",
+      "source": "/((?!api/|admin|iteraciones).*)",
       "headers": [
         {
           "key": "Content-Security-Policy",
