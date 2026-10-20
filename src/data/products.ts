@@ -24,56 +24,6 @@ export interface Product {
 }
 
 export const products: Product[] = [
-  {
-    id: "cf-sierra",
-    name: "Sierra Nevada",
-    category: "Cafés",
-    origin: "Sierra Nevada",
-    process: "Lavado",
-    roast: "Medio",
-    notes: ["Cacao", "Nuez", "Caramelo"],
-    notesEn: ["Cocoa", "Hazelnut", "Caramel"],
-    price: 42000,
-    priceUsd: 11,
-    rating: 4.6,
-    deal: true,
-    bestseller: true,
-    fast: true,
-    image:
-      "https://images.unsplash.com/photo-1512568400610-62da28bc8a13?q=80&w=800&auto=format&fit=crop",
-  },
-  {
-    id: "cf-huila",
-    name: "Huila",
-    category: "Cafés",
-    origin: "Huila",
-    process: "Honey",
-    roast: "Claro",
-    notes: ["Cítricos", "Miel", "Floral"],
-    notesEn: ["Citrus", "Honey", "Floral"],
-    price: 45000,
-    priceUsd: 12,
-    rating: 4.7,
-    new: true,
-    fast: true,
-    image:
-      "https://images.unsplash.com/photo-1509043759401-136742328bb3?q=80&w=800&auto=format&fit=crop",
-  },
-  {
-    id: "cf-nar",
-    name: "Nariño",
-    category: "Cafés",
-    origin: "Nariño",
-    process: "Natural",
-    roast: "Oscuro",
-    notes: ["Frutas Rojas", "Chocolate", "Té Negro"],
-    notesEn: ["Red Fruits", "Chocolate", "Black Tea"],
-    price: 48000,
-    priceUsd: 13,
-    rating: 4.5,
-    image:
-      "https://images.unsplash.com/photo-1494415859740-21e878dd929d?q=80&w=800&auto=format&fit=crop",
-  },
   // Cafés de Finca Rengifo. La fuente real es la BD (migración add_huila_microlots.js).
   {
     id: "cf-isnos-geisha",
@@ -104,33 +54,6 @@ export const products: Product[] = [
     weight: 250,
     weight_unit: "g",
     image: "/assets/img/cafe/pitalito-sidra.webp",
-  },
-  {
-    id: "acc-molinillo",
-    name: "Molinillo Manual",
-    nameEn: "Manual Coffee Grinder",
-    category: "Accesorios",
-    categoryEn: "Accessories",
-    price: 199900,
-    priceUsd: 52,
-    rating: 4.3,
-    deal: true,
-    fast: true,
-    image:
-      "https://images.unsplash.com/photo-1611854779393-1b2da9d400fe?q=80&w=800&auto=format&fit=crop",
-  },
-  {
-    id: "acc-chemex",
-    name: "Chemex 6 tazas",
-    nameEn: "Chemex 6-cup",
-    category: "Accesorios",
-    categoryEn: "Accessories",
-    price: 269900,
-    priceUsd: 70,
-    rating: 4.9,
-    new: true,
-    image:
-      "https://images.unsplash.com/photo-1545665225-b23b99e4d45e?q=80&w=800&auto=format&fit=crop",
   },
   // Línea de cacao. Precios y gramajes de referencia: la fuente real es la BD
   // (migración add_cacao_line.js), editable desde /admin/productos.

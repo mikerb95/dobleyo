@@ -89,6 +89,8 @@ const steps = [
   { name: 'GitHub admin auth (github_id)',   run: () => runFn('add_github_admin_auth.js', 'addGithubAdminAuth') },
   // Cafés de Finca Rengifo (Huila) con fotos reales del empaque.
   { name: 'Cafés Isnos Geisha y Pitalito Sidra', run: () => runFn('add_huila_microlots.js', 'addHuilaMicrolots') },
+  // Saca de la tienda los productos demo que siguen con fotos de Unsplash.
+  { name: 'Retiro de productos demo', run: () => runFn('retire_demo_products.js', 'retireDemoProducts') },
 ];
 
 async function runAll() {
