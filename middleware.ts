@@ -13,7 +13,11 @@ const ADMIN_ROLES = ['admin', 'caficultor'];
 // El kanban de iteraciones es documentación pública: vive fuera de /admin.
 const MOVED = { '/admin/iteraciones': '/iteraciones' } as Record<string, string>;
 
-const isAdminPath = (pathname: string) => pathname === '/admin' || pathname.startsWith('/admin/');
+// Ingreso al panel (GitHub para admins, enlace a /login para caficultores).
+const ADMIN_LOGIN = '/admin/login';
+
+const isAdminPath = (pathname: string) =>
+  (pathname === '/admin' || pathname.startsWith('/admin/')) && pathname !== ADMIN_LOGIN;
 
 function readCookie(request: Request, name: string): string | null {
   const header = request.headers.get('cookie');
@@ -50,12 +54,13 @@ export default async function middleware(request: Request) {
   }
 
   // El HTML del panel (menú incluido) no sale sin una sesión válida. Sin token,
-  // al login; con un rol que no es del panel, a la tienda. El login intenta
-  // renovar la sesión en silencio antes de pedir la clave (AuthModal.astro).
+  // a /admin/login; con un rol que no es del panel, a la tienda. Ese login (y
+  // /login para caficultores) renueva la sesión en silencio antes de pedir
+  // credenciales, porque el access token vence a los 15 minutos.
   if (isAdminPath(pathname)) {
     const role = await sessionRole(request);
     if (!role) {
-      const login = new URL('/login', url);
+      const login = new URL(ADMIN_LOGIN, url);
       login.searchParams.set('redirect', url.pathname + url.search);
       return Response.redirect(login, 302);
     }

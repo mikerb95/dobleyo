@@ -1521,7 +1521,7 @@ const pageClass = `pg-${pageSlug.replace(/[^a-z0-9-]/gi, "")}`;
       // Logout
       document.getElementById('logoutBtn')?.addEventListener('click', async () => {
         await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
-        window.location.href = '/login';
+        window.location.href = (window as any).__userRole === 'admin' ? '/admin/login' : '/login';
       });
     </script>
   </body>

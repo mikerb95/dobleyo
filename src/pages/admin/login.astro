@@ -162,9 +162,18 @@ import logo from "../../assets/logo.png";
         el.hidden = false;
       }
 
-      // Con sesión ya abierta no tiene sentido pedir el ingreso otra vez.
-      fetch("/api/auth/me", { credentials: "include" })
-        .then((res) => (res.ok ? res.json() : null))
+      // Con sesión ya abierta no tiene sentido pedir el ingreso otra vez. El
+      // middleware manda aquí también cuando solo venció el access token (15 min):
+      // si la sesión de 7 días sigue viva, se renueva y se vuelve sin GitHub.
+      const getMe = () =>
+        fetch("/api/auth/me", { credentials: "include" }).then((res) => (res.ok ? res.json() : null));
+
+      getMe()
+        .then(async (user) => {
+          if (user) return user;
+          const refreshed = await fetch("/api/auth/refresh", { method: "POST", credentials: "include" });
+          return refreshed.ok ? getMe() : null;
+        })
         .then((user) => {
           if (user && (user.role === "admin" || user.role === "caficultor")) {
             window.location.replace(redirect && redirect.startsWith("/admin") ? redirect : "/admin");
