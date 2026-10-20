@@ -235,7 +235,25 @@ function initProductReviews() {
   }
 }
 
+// ── Galería de fotos (miniaturas que cambian la foto principal) ──────────────
+function initProductGallery() {
+  const thumbs = document.getElementById("productThumbs");
+  const main = document.getElementById("productMainImage");
+  if (!thumbs || !main || thumbs.dataset.jsInit) return;
+  thumbs.dataset.jsInit = "1";
+
+  thumbs.addEventListener("click", (e) => {
+    const btn = e.target.closest(".product-thumb");
+    if (!btn || !btn.dataset.src) return;
+    main.src = btn.dataset.src;
+    thumbs.querySelectorAll(".product-thumb").forEach((t) => {
+      t.setAttribute("aria-pressed", t === btn ? "true" : "false");
+    });
+  });
+}
+
 function initProducto() {
+  initProductGallery();
   initProductActions();
   initProductReviews();
 }

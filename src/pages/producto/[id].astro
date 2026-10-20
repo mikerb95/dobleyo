@@ -69,6 +69,14 @@ if (error || !product) {
   return Astro.redirect("/tienda", 302);
 }
 
+// Galería: foto principal + fotos adicionales (columna images, JSON de URLs).
+let extraImages: string[] = [];
+try {
+  const parsed = typeof product.images === "string" ? JSON.parse(product.images) : product.images;
+  if (Array.isArray(parsed)) extraImages = parsed.filter((u) => typeof u === "string" && u);
+} catch (_) {}
+const gallery = [product.image, ...extraImages].filter(Boolean);
+
 const outOfStock = typeof product.stock === "number" && product.stock === 0;
 const lowStock   = typeof product.stock === "number" && product.stock > 0 && product.stock <= 5;
 
@@ -121,17 +129,36 @@ const productJsonLd = {
 
     <div class="product-layout">
       <!-- Imagen -->
-      <div class="product-image-wrap">
-        <img
-          src={product.image}
-          alt={product.name}
-          class="product-image"
-          loading="eager"
-          transition:name={`product-image-${product.id}`}
-        />
-        {product.deal && <span class="badge deal">Oferta</span>}
-        {product.new && <span class="badge new-badge">Nuevo</span>}
-        {product.bestseller && <span class="badge best">Más vendido</span>}
+      <div class="product-media">
+        <div class="product-image-wrap">
+          <img
+            src={product.image}
+            alt={product.name}
+            class="product-image"
+            id="productMainImage"
+            loading="eager"
+            transition:name={`product-image-${product.id}`}
+          />
+          {product.deal && <span class="badge deal">Oferta</span>}
+          {product.new && <span class="badge new-badge">Nuevo</span>}
+          {product.bestseller && <span class="badge best">Más vendido</span>}
+        </div>
+
+        {gallery.length > 1 && (
+          <div class="product-thumbs" id="productThumbs" role="group" aria-label="Fotos del producto">
+            {gallery.map((src, i) => (
+              <button
+                type="button"
+                class="product-thumb"
+                data-src={src}
+                aria-label={`Ver foto ${i + 1} de ${gallery.length}`}
+                aria-pressed={i === 0 ? "true" : "false"}
+              >
+                <img src={src} alt="" loading="lazy" width="96" height="96" />
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       <!-- Detalle -->
@@ -364,6 +391,47 @@ const productJsonLd = {
       width: 100%;
       height: 100%;
       object-fit: cover;
+    }
+
+    .product-thumbs {
+      display: flex;
+      gap: .6rem;
+      margin-top: .75rem;
+    }
+
+    .product-thumb {
+      flex: 0 0 auto;
+      width: 4.5rem;
+      aspect-ratio: 1 / 1;
+      padding: 0;
+      border: 2px solid transparent;
+      border-radius: .5rem;
+      overflow: hidden;
+      background: var(--surface, #f9f6f2);
+      cursor: pointer;
+      opacity: .7;
+      transition: opacity .2s ease, border-color .2s ease;
+    }
+
+    .product-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .product-thumb:hover,
+    .product-thumb[aria-pressed="true"] {
+      opacity: 1;
+    }
+
+    .product-thumb[aria-pressed="true"] {
+      border-color: var(--accent);
+    }
+
+    .product-thumb:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
     }
 
     .badge {
