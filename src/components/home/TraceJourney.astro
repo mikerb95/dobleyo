@@ -1,21 +1,22 @@
 ---
 /**
- * "Del grano a tu taza": el recorrido del lote destacado en cuatro escenas que
- * muestran cada afirmación con los datos reales del lote.
+ * "Del grano a tu taza": el recorrido del lote destacado en cuatro capítulos,
+ * cada uno con una fotografía real y la ficha técnica del lote en ese punto.
  *
- *   01 Cosecha   foto de la cereza en la rama con la ficha de origen del lote
- *   02 Proceso   corte de la cereza: el método pela (o no) cada capa
- *   03 Tueste    curva de referencia que termina en el dato real (°C, min)
- *   04 Tu bolsa  la etiqueta del lote (con el QR real si SHOW_TRACEABILITY)
+ *   01 Cosecha     finca, origen, altitud, fecha de cosecha
+ *   02 Beneficio   proceso y variedad
+ *   03 Tueste      nivel, temperatura, duración y fecha
+ *   04 En tu taza  código del lote
  *
- * Maqueta por defecto (sin JS, móvil, movimiento reducido): cada paso con su
- * escena al lado o debajo, todo visible. En escritorio el script activa
- * `.tj--pinned`: la sección se fija y el scroll recorre las escenas.
+ * Maqueta por defecto (sin JS, móvil, movimiento reducido): cada capítulo con
+ * su foto encima o al lado, todo visible. En escritorio el script activa
+ * `.tj--sticky`: las fotos pasan a una columna fija y cambian según el
+ * capítulo que se está leyendo.
  */
 import type { Lang } from "../../i18n/index.ts";
 import { t } from "../../i18n/index.ts";
 import type { LotView } from "../../lib/lot.ts";
-import { roastCurve, processKind } from "../../lib/lot.ts";
+import { processKind } from "../../lib/lot.ts";
 import QrCode from "./QrCode.astro";
 import { SHOW_TRACEABILITY } from "../../lib/flags.ts";
 
@@ -28,44 +29,54 @@ const { lang, lot } = Astro.props;
 const k = (key: string) => t(`home.journey.${key}`, lang);
 const kh = (key: string) => t(`home.hero.${key}`, lang);
 
-// 01 Cosecha: filas de la ficha de origen (solo las que tienen dato).
-const origin = [
-  [k("origin_farm"), lot.farm],
-  [k("origin_place"), lot.region],
-  [k("origin_altitude"), lot.altitudeLabel],
-  [k("origin_variety"), lot.variety],
-  [k("origin_harvest"), lot.harvestDate],
-].filter((row): row is [string, string] => Boolean(row[1]));
+// Solo las filas con dato: un lote sin fecha de cosecha no muestra la fila vacía.
+const rows = (pairs: [string, string | number | null | undefined][]) =>
+  pairs.filter((row): row is [string, string] => Boolean(row[1])).map(([label, value]) => [k(label), String(value)]);
 
-// 02 Proceso
-const kind = processKind(lot.process);
-const processes = [
-  { key: "washed", label: lang === "en" ? "Washed" : "Lavado" },
-  { key: "honey", label: "Honey" },
-  { key: "natural", label: "Natural" },
-];
-const processText = k(`process_${kind}`);
-
-// 03 Tueste: área de trazado 396 x 220 desplazada a (52, 30) en un lienzo 480 x 320.
-const W = 480;
-const H = 320;
-const PLOT = { x: 52, y: 30, w: 396, h: 220, tMin: 60, tMax: 240 };
-const curve =
-  lot.roastTemp && lot.roastMinutes
-    ? roastCurve(lot.roastTemp, lot.roastMinutes, { width: PLOT.w, height: PLOT.h, tempMin: PLOT.tMin, tempMax: PLOT.tMax })
-    : null;
-const tempTicks = [100, 150, 200];
-const minuteTicks = curve && lot.roastMinutes ? Array.from({ length: Math.floor(lot.roastMinutes / 2) + 1 }, (_, i) => i * 2) : [];
+const chapters = [
+  {
+    photo: "origen-cosecha",
+    position: "50% 45%",
+    data: rows([
+      ["data_farm", lot.farm],
+      ["data_place", lot.region],
+      ["data_altitude", lot.altitudeLabel],
+      ["data_harvest", lot.harvestDate],
+    ]),
+  },
+  {
+    photo: "proceso-verde",
+    position: "58% 50%",
+    desc: k(`process_${processKind(lot.process)}`),
+    data: rows([
+      ["data_process", lot.process],
+      ["data_variety", lot.variety],
+    ]),
+  },
+  {
+    photo: "tueste-enfriado",
+    position: "45% 50%",
+    data: rows([
+      ["data_level", lot.roastLevel],
+      ["data_temp", lot.roastTemp && `${lot.roastTemp} °C`],
+      ["data_time", lot.roastMinutes && `${lot.roastMinutes} min`],
+      ["data_date", lot.roastDate],
+    ]),
+  },
+  {
+    photo: "taza-filtrado",
+    position: "40% 50%",
+    data: rows([["data_lot", lot.code]]),
+  },
+].map((c, i) => ({
+  ...c,
+  num: String(i + 1).padStart(2, "0"),
+  title: k(`step_${i + 1}_title`),
+  desc: c.desc ?? k(`step_${i + 1}_desc`),
+  alt: k(`photo_${i + 1}`),
+}));
 
 const traceHref = lang === "en" ? "/en/traceability" : `/trazabilidad?lote=${encodeURIComponent(lot.code)}`;
-const facts = [
-  [lot.farm, lot.region, lot.altitudeLabel].filter(Boolean).join(" · "),
-  [lot.process, lot.variety].filter(Boolean).join(" · "),
-  [lot.roastLevel, lot.roastTemp && `${lot.roastTemp} °C`, lot.roastMinutes && `${lot.roastMinutes} min`, lot.roastDate]
-    .filter(Boolean)
-    .join(" · "),
-  lot.code,
-];
 ---
 
 <section class="tj" id="viaje" data-journey aria-labelledby="tjTitle">
@@ -74,133 +85,55 @@ const facts = [
     <h2 id="tjTitle" class="tj__title">{k("title")}</h2>
     <p class="tj__sub">{k("sub")}</p>
     <p class="tj__lot">
-      <span class="tj__dot" aria-hidden="true"></span>
-      {lot.illustrative ? kh("illustrative") : k("real_data")} · <strong>{lot.code}</strong>
+      {lot.illustrative ? kh("illustrative") : k("lot_label")} <strong>{lot.code}</strong>
     </p>
   </header>
 
   <div class="tj__body" data-journey-body>
-    <div class="tj__rail" aria-hidden="true"><span class="tj__rail-fill"></span></div>
-    <ol class="tj__steps">
-      {[1, 2, 3, 4].map((n, i) => (
-        <li class="tj__step" data-step={i}>
+    <ol class="tj__chapters">
+      {chapters.map((c, i) => (
+        <li class="tj__chapter" data-chapter={i}>
+          <figure class="tj__photo">
+            <picture>
+              <source media="(max-width: 767px)" srcset={`/assets/img/${c.photo}-sm.webp`} />
+              <img
+                src={`/assets/img/${c.photo}.webp`}
+                alt={c.alt}
+                width="1600"
+                height="900"
+                loading="lazy"
+                decoding="async"
+                style={`object-position: ${c.position}`}
+              />
+            </picture>
+          </figure>
           <div class="tj__text">
-            <span class="tj__num" aria-hidden="true">{String(n).padStart(2, "0")}</span>
-            <h3 class="tj__step-title">{k(`step_${n}_title`)}</h3>
-            <p class="tj__desc">{k(`step_${n}_desc`)}</p>
-            {facts[i] && <p class="tj__fact">{facts[i]}</p>}
-          </div>
-
-          <div class={`tj__scene tj__scene--${i}`} data-scene={i} aria-hidden="true">
-            {i === 0 && (
-              <figure class="sc-origin">
-                <picture>
-                  <source media="(max-width: 767px)" srcset="/assets/img/origen-cosecha-sm.webp" />
-                  <img
-                    class="sc-origin__photo"
-                    src="/assets/img/origen-cosecha.webp"
-                    alt={k("origin_photo")}
-                    width="1200"
-                    height="800"
-                    loading="lazy"
-                    decoding="async"
-                  />
-                </picture>
-                <figcaption class="sc-origin__card">
-                  <p class="sc-origin__title">{k("origin_title")}</p>
-                  <dl class="sc-origin__rows">
-                    {origin.map(([label, value]) => (
-                      <div class="sc-origin__row">
-                        <dt>{label}</dt>
-                        <dd>{value}</dd>
-                      </div>
-                    ))}
-                  </dl>
-                  <p class="sc-origin__code">{lot.code}</p>
-                </figcaption>
-              </figure>
-            )}
-
-            {i === 1 && (
-              <div class={`sc-process sc-process--${kind}`} data-process={kind}>
-                <svg class="sc-process__cherry" viewBox="0 0 240 240">
-                  <circle class="sc-process__skin" cx="120" cy="120" r="104" />
-                  <circle class="sc-process__mucilage" cx="120" cy="120" r="86" />
-                  <circle class="sc-process__parchment" cx="120" cy="120" r="66" />
-                  <g class="sc-process__bean">
-                    <ellipse cx="96" cy="120" rx="30" ry="46" />
-                    <ellipse cx="144" cy="120" rx="30" ry="46" />
-                    <path d="M96 80 C88 104 104 136 96 160 M144 80 C136 104 152 136 144 160" />
-                  </g>
-                </svg>
-                <ul class="sc-process__chips">
-                  {processes.map((p) => <li class:list={{ "is-lot": p.key === kind }}>{p.label}</li>)}
-                </ul>
-                <p class="sc-process__text">{processText}</p>
-              </div>
-            )}
-
-            {i === 2 && (
-              <svg class="sc-roast" viewBox={`0 0 ${W} ${H}`}>
-                <g transform={`translate(${PLOT.x} ${PLOT.y})`}>
-                  {curve && tempTicks.map((c) => (
-                    <g class="sc-grid">
-                      <line x1="0" x2={PLOT.w} y1={curve.y(c)} y2={curve.y(c)} />
-                      <text x="-8" y={curve.y(c) + 3} text-anchor="end" class="sc-tick">{c}°</text>
-                    </g>
-                  ))}
-                  {curve && minuteTicks.map((m) => (
-                    <text x={curve.x(m)} y={PLOT.h + 18} text-anchor="middle" class="sc-tick">{m}</text>
-                  ))}
-                  {curve && (
-                    <>
-                      <text x={PLOT.w} y={PLOT.h + 34} text-anchor="end" class="sc-tick">{k("minutes")}</text>
-                      <path class="sc-roast__line" d={curve.d} />
-                      <g class="sc-roast__turning" transform={`translate(${curve.turning.x} ${curve.turning.y})`}>
-                        <circle r="3.5" />
-                        <text x="8" y="16" class="sc-label">{k("curve_turning")}</text>
-                      </g>
-                      <g class="sc-roast__charge" transform={`translate(${curve.points[0][0]} ${curve.points[0][1]})`}>
-                        <text x="8" y="-8" class="sc-label">{k("curve_charge")}</text>
-                      </g>
-                      <circle class="sc-roast__head" cx={curve.end.x} cy={curve.end.y} r="5" />
-                      <g class="sc-roast__drop" transform={`translate(${curve.end.x} ${curve.end.y})`}>
-                        <circle r="9" />
-                        <text x="-12" y="-16" text-anchor="end" class="sc-label sc-label--strong">
-                          {k("curve_drop")} · {lot.roastTemp} °C · {lot.roastMinutes} min
-                        </text>
-                      </g>
-                    </>
-                  )}
-                </g>
-                <text x={PLOT.x + PLOT.w} y={PLOT.y + PLOT.h - 14} text-anchor="end" class="sc-readout" data-readout>{lot.roastTemp ?? ""}°C</text>
-                <text x={PLOT.x + PLOT.w} y={H - 4} text-anchor="end" class="sc-caption">{k("curve_caption")}</text>
-              </svg>
-            )}
-
-            {i === 3 && (
-              <div class="sc-bag">
-                <div class="sc-bag__bag">
-                  <span class="sc-bag__fold"></span>
-                  <span class="sc-bag__valve"></span>
-                  <div class="sc-bag__label">
-                    <span class="sc-bag__brand">DobleYo</span>
-                    <span class="sc-bag__meta">{[lot.region.split(", ").pop(), lot.process].filter(Boolean).join(" · ")}</span>
-                    {SHOW_TRACEABILITY && (
-                      <div class="sc-bag__qr">
-                        <QrCode text={lot.qrUrl} />
-                        <span class="sc-bag__scan"></span>
-                      </div>
-                    )}
-                    <span class="sc-bag__code">{lot.code}</span>
+            <p class="tj__num" aria-hidden="true">{c.num}</p>
+            <h3 class="tj__chapter-title">{c.title}</h3>
+            <p class="tj__desc">{c.desc}</p>
+            {c.data.length > 0 && (
+              <dl class="tj__data">
+                {c.data.map(([label, value]) => (
+                  <div>
+                    <dt>{label}</dt>
+                    <dd>{value}</dd>
                   </div>
-                </div>
-              </div>
+                ))}
+              </dl>
             )}
           </div>
         </li>
       ))}
     </ol>
+
+    <div class="tj__media" aria-hidden="true">
+      {chapters.map((c, i) => (
+        <figure class:list={["tj__frame", { "is-active": i === 0 }]} data-frame={i}>
+          <img src={`/assets/img/${c.photo}.webp`} alt="" width="1600" height="900" loading="lazy" decoding="async" style={`object-position: ${c.position}`} />
+        </figure>
+      ))}
+      <p class="tj__counter"><span data-counter>01</span> / 04</p>
+    </div>
   </div>
 
   {SHOW_TRACEABILITY && (
@@ -226,294 +159,186 @@ const facts = [
 
 <style>
   .tj {
-    padding: 5rem 0 4.5rem;
+    padding: 6rem 0 5rem;
     border-top: 1px solid var(--border);
   }
-  .tj__head { text-align: center; max-width: 720px; margin: 0 auto 3rem; }
+
+  /* ── Encabezado ─────────────────────────────────────────────────────── */
+  .tj__head { display: grid; gap: 1.25rem; margin: 0 0 4rem; }
   .tj__eyebrow {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    margin: 0;
     font-size: .7rem;
     font-weight: 600;
-    letter-spacing: .14em;
+    letter-spacing: .16em;
     text-transform: uppercase;
     color: var(--accent);
-    margin: 0 0 .75rem;
   }
+  .tj__eyebrow::before { content: ""; width: 2rem; height: 1px; background: currentColor; }
   .tj__title {
-    font-size: clamp(1.9rem, 1.2rem + 3vw, 3.2rem);
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(2.2rem, 1.4rem + 3.4vw, 3.9rem);
+    font-weight: 400;
+    line-height: 1.02;
+    letter-spacing: -.02em;
     color: var(--coffee);
-    margin: 0 0 .9rem;
-    line-height: 1.05;
   }
-  .tj__sub { color: var(--muted-fg); margin: 0 auto 1.1rem; max-width: 50ch; line-height: 1.6; }
+  .tj__sub { margin: 0; max-width: 40ch; font-size: 1.05rem; line-height: 1.65; color: var(--muted-fg); }
   .tj__lot {
-    display: inline-flex;
-    align-items: center;
-    gap: .5rem;
     margin: 0;
-    font-size: .78rem;
-    color: var(--muted-fg);
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 99px;
-    padding: .35rem .85rem;
-  }
-  .tj__lot strong { color: var(--coffee); letter-spacing: .04em; }
-  .tj__dot { width: 7px; height: 7px; border-radius: 50%; background: var(--leaf); box-shadow: 0 0 0 4px var(--leaf-bg); }
-
-  /* ── Maqueta por defecto: paso + escena ─────────────────────────────── */
-  .tj__body { position: relative; }
-  .tj__rail { display: none; }
-  .tj__steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 3rem; }
-  .tj__step { display: grid; gap: 1.25rem; align-items: center; }
-  .tj__num {
-    display: inline-block;
-    font-size: .7rem;
-    font-weight: 700;
+    font-size: .72rem;
     letter-spacing: .12em;
-    color: var(--accent);
-    margin-bottom: .5rem;
+    text-transform: uppercase;
+    color: var(--muted-fg);
   }
-  .tj__step-title { font-size: clamp(1.25rem, 1rem + 1vw, 1.6rem); color: var(--coffee); margin: 0 0 .5rem; }
-  .tj__desc { color: var(--muted-fg); margin: 0 0 .75rem; line-height: 1.6; max-width: 42ch; }
-  .tj__fact {
-    display: inline-block;
+  .tj__lot strong { margin-left: .35rem; font-weight: 600; color: var(--coffee); font-variant-numeric: tabular-nums; }
+  @media (min-width: 1024px) {
+    .tj__head {
+      grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+      grid-template-areas: "eyebrow eyebrow" "title sub" "title lot";
+      column-gap: clamp(3rem, 6vw, 6rem);
+      align-items: end;
+      margin-bottom: 5rem;
+    }
+    .tj__eyebrow { grid-area: eyebrow; }
+    .tj__title { grid-area: title; }
+    .tj__sub { grid-area: sub; }
+    .tj__lot { grid-area: lot; }
+  }
+
+  /* ── Capítulos (maqueta por defecto) ────────────────────────────────── */
+  .tj__chapters { list-style: none; margin: 0; padding: 0; display: grid; gap: 4.5rem; }
+  .tj__chapter { display: grid; gap: 1.75rem; align-items: center; }
+  .tj__photo {
     margin: 0;
-    font-size: .78rem;
-    font-weight: 600;
-    letter-spacing: .02em;
-    color: var(--coffee);
-    background: rgba(var(--caramel-rgb), .1);
-    border-radius: 6px;
-    padding: .3rem .6rem;
+    aspect-ratio: 4 / 3;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background: var(--espresso);
+  }
+  .tj__photo picture,
+  .tj__photo img { display: block; width: 100%; height: 100%; }
+  .tj__photo img { object-fit: cover; }
+  @media (min-width: 768px) {
+    .tj__chapter { grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 3rem; }
+    .tj__photo { order: 2; }
+  }
+
+  .tj__num {
+    display: flex;
+    align-items: center;
+    gap: .85rem;
+    margin: 0 0 1.1rem;
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 1.05rem;
+    color: var(--accent);
     font-variant-numeric: tabular-nums;
   }
-  @media (min-width: 768px) {
-    .tj__step { grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: 2.5rem; }
+  .tj__num::after { content: ""; width: 2.5rem; height: 1px; background: currentColor; opacity: .45; }
+  .tj__chapter-title {
+    margin: 0 0 .9rem;
+    font-family: var(--font-display);
+    font-size: clamp(1.75rem, 1.3rem + 1.4vw, 2.4rem);
+    font-weight: 400;
+    line-height: 1.1;
+    letter-spacing: -.015em;
+    color: var(--coffee);
   }
-
-  .tj__scene {
-    position: relative;
-    aspect-ratio: 3 / 2;
-    border-radius: var(--radius-lg);
-    background: var(--espresso);
-    color: var(--cream);
-    overflow: hidden;
-    box-shadow: 0 24px 50px -28px rgba(var(--espresso-rgb), .7);
-  }
-  .tj__scene > svg { display: block; width: 100%; height: 100%; }
-
-  /* ── Modo fijado (escritorio, lo activa el script) ──────────────────── */
-  :global(.tj--pinned) .tj__body {
-    display: grid;
-    grid-template-columns: 2.25rem minmax(0, .78fr) minmax(0, 1.22fr);
-    gap: 0 2.5rem;
-    align-items: center;
-    min-height: min(640px, calc(100vh - var(--pin-top, 120px) - 2rem));
-  }
-  :global(.tj--pinned) .tj__rail {
-    display: block;
-    grid-column: 1;
-    align-self: stretch;
-    justify-self: center;
-    width: 2px;
-    margin: 1.5rem 0;
-    background: var(--border);
-    border-radius: 2px;
-    overflow: hidden;
-  }
-  :global(.tj--pinned) .tj__rail-fill {
-    display: block;
-    width: 100%;
-    height: 100%;
-    background: var(--accent);
-    transform-origin: top center;
-    transform: scaleY(0);
-  }
-  :global(.tj--pinned) .tj__steps { grid-column: 2; gap: 1.6rem; }
-  :global(.tj--pinned) .tj__step { display: block; }
-  :global(.tj--pinned) .tj__text { opacity: .38; transition: opacity .4s var(--ease); }
-  :global(.tj--pinned) .tj__fact,
-  :global(.tj--pinned) .tj__desc { display: none; }
-  :global(.tj--pinned) .tj__step.is-active .tj__text { opacity: 1; }
-  :global(.tj--pinned) .tj__step.is-active .tj__desc,
-  :global(.tj--pinned) .tj__step.is-active .tj__fact { display: block; }
-  :global(.tj--pinned) .tj__step.is-active .tj__fact { display: inline-block; }
-  :global(.tj--pinned) .tj__scene {
-    position: absolute;
-    top: 50%;
-    right: 0;
-    width: calc((100% - 2.25rem - 5rem) * 1.22 / 2);
-    transform: translateY(-50%);
-    opacity: 0;
-    visibility: hidden;
-    /* Solo opacidad: el transform lo usa el centrado vertical */
-    transition: opacity .5s var(--ease), visibility .5s;
-  }
-  :global(.tj--pinned) .tj__step.is-active .tj__scene { opacity: 1; visibility: visible; }
-
-  /* ── Escenas ─────────────────────────────────────────────────────────── */
-  .sc-label { fill: var(--cream); font: 600 11px/1 var(--font-body); letter-spacing: .04em; }
-  .sc-label--strong { font-size: 13px; }
-  .sc-tick { fill: rgba(var(--cream-rgb), .5); font: 500 10px/1 var(--font-body); font-variant-numeric: tabular-nums; }
-  .sc-caption { fill: rgba(var(--cream-rgb), .55); font: 500 10.5px/1 var(--font-body); }
-
-  .sc-origin { position: absolute; inset: 0; margin: 0; }
-  .sc-origin picture { display: block; height: 100%; }
-  .sc-origin__photo { display: block; width: 100%; height: 100%; object-fit: cover; }
-  .sc-origin::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(100deg, transparent 35%, rgba(var(--espresso-rgb), .55) 100%);
-    pointer-events: none;
-  }
-  .sc-origin__card {
-    position: absolute;
-    z-index: 1;
-    right: 1.25rem;
-    bottom: 1.25rem;
-    width: min(46%, 260px);
-    background: var(--cream);
-    color: var(--espresso);
-    border-radius: 10px;
-    padding: .9rem 1rem .75rem;
-    box-shadow: 0 18px 40px -18px rgba(0, 0, 0, .65);
-  }
-  .sc-origin__title {
-    margin: 0 0 .55rem;
-    font-size: .62rem;
-    font-weight: 700;
-    letter-spacing: .14em;
-    text-transform: uppercase;
-    color: var(--accent);
-  }
-  .sc-origin__rows { margin: 0; display: grid; }
-  .sc-origin__row {
+  .tj__desc { margin: 0 0 1.75rem; max-width: 40ch; font-size: 1rem; line-height: 1.7; color: var(--muted-fg); }
+  .tj__data { margin: 0; max-width: 24rem; border-top: 1px solid var(--border); }
+  .tj__data div {
     display: flex;
     justify-content: space-between;
     align-items: baseline;
-    gap: .75rem;
-    padding: .38rem 0;
-    border-top: 1px solid rgba(var(--espresso-rgb), .1);
-    font-size: .76rem;
-    line-height: 1.3;
+    gap: 1.5rem;
+    padding: .7rem 0;
+    border-bottom: 1px solid var(--border);
   }
-  .sc-origin__row dt { color: var(--muted-fg); }
-  .sc-origin__row dd { margin: 0; font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; }
-  .sc-origin__code {
-    margin: .45rem 0 0;
-    padding-top: .5rem;
-    border-top: 1px dashed rgba(var(--espresso-rgb), .25);
-    font-size: .62rem;
-    font-weight: 700;
-    letter-spacing: .1em;
+  .tj__data dt {
+    font-size: .68rem;
+    font-weight: 600;
+    letter-spacing: .14em;
+    text-transform: uppercase;
     color: var(--muted-fg);
   }
+  .tj__data dd {
+    margin: 0;
+    font-size: .92rem;
+    font-weight: 500;
+    text-align: right;
+    color: var(--coffee);
+    font-variant-numeric: tabular-nums;
+  }
 
-  .sc-process {
-    height: 100%;
+  .tj__media { display: none; }
+
+  /* ── Columna fija (escritorio con JS, lo activa el script) ──────────── */
+  :global(.tj--sticky) .tj__body {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    grid-template-rows: 1fr auto;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+    column-gap: clamp(3rem, 6vw, 6rem);
+    align-items: start;
+  }
+  :global(.tj--sticky) .tj__chapters { gap: 0; }
+  :global(.tj--sticky) .tj__chapter {
+    display: flex;
     align-items: center;
-    gap: .75rem 1.25rem;
-    padding: 1.5rem;
+    min-height: min(78vh, 720px);
   }
-  .sc-process__cherry { grid-row: 1 / 3; width: 100%; max-height: 100%; overflow: visible; }
-  .sc-process__skin { fill: var(--cherry); }
-  .sc-process__mucilage { fill: var(--mucilage); opacity: .85; }
-  .sc-process__parchment { fill: none; stroke: var(--cream); stroke-width: 3; opacity: .7; }
-  .sc-process__bean ellipse { fill: var(--bean-green); }
-  .sc-process__bean path { fill: none; stroke: var(--espresso); stroke-width: 2.5; stroke-linecap: round; opacity: .55; }
-  .sc-process__chips { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: .4rem; align-self: end; }
-  .sc-process__chips li {
-    font-size: .72rem;
-    font-weight: 600;
-    padding: .3rem .7rem;
-    border-radius: 99px;
-    border: 1px solid rgba(var(--cream-rgb), .25);
-    color: rgba(var(--cream-rgb), .6);
-  }
-  .sc-process__chips li.is-lot { background: var(--accent); border-color: var(--accent); color: var(--accent-contrast); }
-  .sc-process__text { margin: 0; font-size: .85rem; line-height: 1.55; color: rgba(var(--cream-rgb), .82); align-self: start; }
-  /* Estado final de cada método (lo que se ve sin JS): */
-  .sc-process--washed .sc-process__skin,
-  .sc-process--washed .sc-process__mucilage { opacity: 0; }
-  .sc-process--honey .sc-process__skin { opacity: 0; }
-  .sc-process--honey .sc-process__mucilage { opacity: .55; }
-  .sc-process--natural .sc-process__skin { opacity: .92; }
+  :global(.tj--sticky) .tj__photo { display: none; }
+  :global(.tj--sticky) .tj__text { opacity: .28; transition: opacity .7s var(--ease); }
+  :global(.tj--sticky) .tj__chapter.is-active .tj__text { opacity: 1; }
 
-  .sc-grid line { stroke: rgba(var(--cream-rgb), .12); stroke-dasharray: 3 5; }
-  .sc-roast__line { fill: none; stroke: var(--accent); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
-  .sc-roast__turning circle { fill: var(--cream); }
-  .sc-roast__head { fill: var(--cream); }
-  .sc-roast__drop circle { fill: none; stroke: var(--accent); stroke-width: 2; }
-  .sc-readout { fill: var(--cream); font: 600 30px/1 var(--font-display); font-variant-numeric: tabular-nums; }
-
-  .sc-bag {
-    height: 100%;
-    display: grid;
-    place-items: center;
-    background:
-      radial-gradient(60% 70% at 50% 60%, rgba(var(--caramel-rgb), .28), transparent 70%);
+  :global(.tj--sticky) .tj__media {
+    display: block;
+    position: sticky;
+    top: var(--pin-top, 120px);
+    height: min(calc(100vh - var(--pin-top, 120px) - 2.5rem), 760px);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background: var(--espresso);
   }
-  .sc-bag__bag {
-    position: relative;
-    width: min(46%, 230px);
-    aspect-ratio: 3 / 4.1;
-    border-radius: 10px 10px 16px 16px;
-    background: linear-gradient(160deg, var(--kraft) 0%, var(--kraft-deep) 100%);
-    box-shadow: 0 30px 40px -20px rgba(0, 0, 0, .6), inset 0 -16px 30px -18px rgba(var(--espresso-rgb), .5);
-    display: grid;
-    place-items: end center;
-    padding-bottom: 9%;
-  }
-  .sc-bag__fold {
+  .tj__media::after {
+    content: "";
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 12%;
-    border-radius: 10px 10px 0 0;
-    background: rgba(var(--espresso-rgb), .18);
-    border-bottom: 2px dashed rgba(var(--espresso-rgb), .25);
+    inset: 0;
+    z-index: 2;
+    background: linear-gradient(to top, rgba(var(--espresso-rgb), .5), transparent 28%);
+    pointer-events: none;
   }
-  .sc-bag__valve {
+  .tj__frame {
     position: absolute;
-    top: 15.5%;
-    left: 50%;
-    width: 16px;
-    height: 16px;
-    margin-left: -8px;
-    border-radius: 50%;
-    background: rgba(var(--espresso-rgb), .35);
-    box-shadow: inset 0 0 0 4px rgba(var(--espresso-rgb), .25);
-  }
-  .sc-bag__label {
-    width: 74%;
-    background: var(--cream);
-    color: var(--espresso);
-    border-radius: 6px;
-    padding: .6rem .6rem .5rem;
-    display: grid;
-    justify-items: center;
-    gap: .2rem;
-    text-align: center;
-  }
-  .sc-bag__brand { font-family: var(--font-display); font-weight: 700; font-size: .95rem; line-height: 1; }
-  .sc-bag__meta { font-size: .55rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted-fg); }
-  .sc-bag__qr { position: relative; width: 58%; margin-top: .15rem; overflow: hidden; }
-  .sc-bag__scan {
-    position: absolute;
-    left: -10%;
-    right: -10%;
-    top: 0;
-    height: 2px;
-    background: var(--accent);
-    box-shadow: 0 0 10px 2px rgba(var(--caramel-rgb), .6);
+    inset: 0;
+    margin: 0;
     opacity: 0;
+    transition: opacity 1.1s var(--ease);
   }
-  .sc-bag__code { font-size: .52rem; font-weight: 700; letter-spacing: .08em; }
+  .tj__frame img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: scale(1.05);
+    transition: transform 2.6s cubic-bezier(.2, .6, .2, 1);
+  }
+  .tj__frame.is-active { z-index: 1; opacity: 1; }
+  .tj__frame.is-active img { transform: scale(1); }
+  .tj__counter {
+    position: absolute;
+    z-index: 3;
+    left: 1.5rem;
+    bottom: 1.25rem;
+    margin: 0;
+    font-size: .72rem;
+    letter-spacing: .16em;
+    color: rgba(var(--cream-rgb), .65);
+    font-variant-numeric: tabular-nums;
+  }
+  .tj__counter span { color: var(--cream); font-weight: 600; }
 
   /* ── CTA de trazabilidad ─────────────────────────────────────────────── */
   .tcta {
@@ -595,30 +420,10 @@ const facts = [
     white-space: nowrap;
   }
   @media (max-width: 767px) {
-    /* Cosecha: la ficha no cabe sobre la foto; va debajo, dentro de la escena. */
-    .tj__scene--0 { aspect-ratio: auto; }
-    .sc-origin { position: static; }
-    .sc-origin picture { aspect-ratio: 3 / 2; }
-    .sc-origin::after { display: none; }
-    .sc-origin__card {
-      position: static;
-      width: auto;
-      border-radius: 0;
-      box-shadow: none;
-      padding: .9rem 1rem .8rem;
-    }
-    /* El SVG se reduce a ~45 %: el texto sube en unidades del viewBox para
-       seguir legible (~9-10 px reales). */
-    .sc-label { font-size: 20px; }
-    .sc-label--strong { font-size: 22px; }
-    .sc-tick { font-size: 17px; }
-    .sc-caption { font-size: 16px; }
-    .sc-readout { font-size: 46px; }
-    .sc-roast__drop text { display: none; }
-    .tj { padding: 3.5rem 0 3rem; }
-    .tj__steps { gap: 2.5rem; }
-    .sc-process { padding: 1rem; gap: .5rem .9rem; }
-    .sc-process__text { font-size: .75rem; }
+    .tj { padding: 4rem 0 3.5rem; }
+    .tj__head { margin-bottom: 3rem; }
+    .tj__chapters { gap: 3.5rem; }
+    .tj__chapter { gap: 1.25rem; }
     .tcta {
       grid-template-columns: 1fr;
       text-align: center;
