@@ -23,7 +23,7 @@ const tx = isEn
       tagline: "Colombian specialty coffee, from the farm to your cup.",
       madeIn: "Made in Colombia",
       nav: "Footer",
-      rights: "All rights reserved.", privacy: "Privacy", terms: "Terms", a11y: "Accessibility",
+      rights: "All rights reserved.", privacy: "Privacy", terms: "Terms", a11y: "Accessibility", admin: "Admin",
       credit: "Design:",
     }
   : {
@@ -35,7 +35,7 @@ const tx = isEn
       tagline: "Café de especialidad colombiano, de la finca a su taza.",
       madeIn: "Hecho en Colombia",
       nav: "Pie de página",
-      rights: "Todos los derechos reservados.", privacy: "Privacidad", terms: "Términos", a11y: "Accesibilidad",
+      rights: "Todos los derechos reservados.", privacy: "Privacidad", terms: "Términos", a11y: "Accesibilidad", admin: "Administración",
       credit: "Diseño:",
     };
 
@@ -159,6 +159,7 @@ const payments = ["Visa", "Mastercard", "PSE", "Nequi", "Daviplata", "Contraentr
         {legal.map(([label, href]) => (
           <li><a href={href}>{label}</a></li>
         ))}
+        <li><a href="/admin/login" rel="nofollow">{tx.admin}</a></li>
       </ul>
       <p class="footer-credit">
         {tx.credit}
