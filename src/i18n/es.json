@@ -215,7 +215,7 @@
             "step_3_title": "Tueste",
             "step_3_desc": "Tostión en lotes pequeños, con temperatura, tiempo y fecha registrados. Despachamos en menos de 15 días desde el tueste",
             "step_4_title": "En tu taza",
-            "step_4_desc": "Empacado con el código de su lote. Lo que pruebas tiene finca, proceso y fecha de tueste",
+            "step_4_desc": "Empacado con los datos de su origen. Lo que pruebas tiene finca, proceso y fecha de tueste",
             "process_washed": "Despulpado y fermentado, lavado con agua limpia y secado al sol",
             "process_honey": "Despulpado, secado con parte del mucílago que le da dulzor",
             "process_natural": "Secado con la cereza entera, que aporta notas frutales",
@@ -227,7 +227,7 @@
             "cta_button": "Trazar mi café",
             "cta_hint": "Sin registro · Resultados al instante",
             "cta_try": "Pruebe con este lote:",
-            "lot_label": "Lote",
+            "lot_label": "Datos reales de",
             "photo_1": "Cerezas de café maduras en la rama",
             "photo_2": "Manos que revisan café verde en el patio de secado",
             "photo_3": "Café recién tostado girando en la bandeja de enfriamiento",
@@ -241,8 +241,7 @@
             "data_level": "Tueste",
             "data_temp": "Temperatura",
             "data_time": "Duración",
-            "data_date": "Fecha",
-            "data_lot": "Lote"
+            "data_date": "Fecha"
         },
         "manifesto": {
             "label": "Nuestra filosofía",

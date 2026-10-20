@@ -215,7 +215,7 @@
             "step_3_title": "Roast",
             "step_3_desc": "Roasted in small batches, with temperature, time and date on record. We ship within 15 days of roasting",
             "step_4_title": "In your cup",
-            "step_4_desc": "Packed with its lot code. What you taste has a farm, a process and a roast date",
+            "step_4_desc": "Packed with the details of its origin. What you taste has a farm, a process and a roast date",
             "process_washed": "Pulped and fermented, washed with clean water and sun-dried",
             "process_honey": "Pulped and dried with part of the mucilage, which adds sweetness",
             "process_natural": "Dried inside the whole cherry, which adds fruity notes",
@@ -227,7 +227,7 @@
             "cta_button": "Trace my coffee",
             "cta_hint": "No sign-up · Instant results",
             "cta_try": "Try this lot:",
-            "lot_label": "Lot",
+            "lot_label": "Real data from",
             "photo_1": "Ripe coffee cherries on the branch",
             "photo_2": "Hands checking green coffee on the drying patio",
             "photo_3": "Freshly roasted coffee turning in the cooling tray",
@@ -241,8 +241,7 @@
             "data_level": "Roast",
             "data_temp": "Temperature",
             "data_time": "Time",
-            "data_date": "Date",
-            "data_lot": "Lot"
+            "data_date": "Date"
         },
         "manifesto": {
             "label": "Our philosophy",

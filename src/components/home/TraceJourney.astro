@@ -6,7 +6,7 @@
  *   01 Cosecha     finca, origen, altitud, fecha de cosecha
  *   02 Beneficio   proceso y variedad
  *   03 Tueste      nivel, temperatura, duración y fecha
- *   04 En tu taza  código del lote
+ *   04 En tu taza  sin ficha: cierra con la foto
  *
  * Maqueta por defecto (sin JS, móvil, movimiento reducido): cada capítulo con
  * su foto encima o al lado, todo visible. En escritorio el script activa
@@ -66,7 +66,7 @@ const chapters = [
   {
     photo: "taza-filtrado",
     position: "40% 50%",
-    data: rows([["data_lot", lot.code]]),
+    data: [],
   },
 ].map((c, i) => ({
   ...c,
@@ -85,7 +85,7 @@ const traceHref = lang === "en" ? "/en/traceability" : `/trazabilidad?lote=${enc
     <h2 id="tjTitle" class="tj__title">{k("title")}</h2>
     <p class="tj__sub">{k("sub")}</p>
     <p class="tj__lot">
-      {lot.illustrative ? kh("illustrative") : k("lot_label")} <strong>{lot.code}</strong>
+      {lot.illustrative ? kh("illustrative") : <>{k("lot_label")} <strong>{[lot.farm, lot.region.split(", ").pop()].filter(Boolean).join(", ")}</strong></>}
     </p>
   </header>
 
