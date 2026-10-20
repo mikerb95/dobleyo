@@ -2,6 +2,19 @@
 
 ---
 
+## 2026-10-19: "Del grano a tu taza" rehecho con fotografía real (Agente: Claude)
+
+### Contexto
+La sección de la portada usaba ilustraciones planas (la cereza en círculos concéntricos, la curva de tueste, la bolsa en CSS) y animaciones de rebote. Se veía genérica, poco seria para la marca.
+
+### Cambios
+- **`src/components/home/TraceJourney.astro`**: cuatro capítulos editoriales (Cosecha, Beneficio, Tueste, En tu taza) con fotografía real y la ficha del lote como tabla con filetes. En escritorio la foto queda en una columna fija y cambia con un fundido lento; en móvil cada capítulo lleva su foto encima. Sin código de lote a la vista (regla de `SHOW_TRACEABILITY`).
+- **`src/scripts/home/journey.ts`**: sin pin con scrub ni timelines por escena. Solo el titular por palabras, fundidos suaves y el cambio de capítulo por scroll.
+- **Fotos nuevas** `public/assets/img/proceso-verde`, `tueste-enfriado` y `taza-filtrado` (`.webp` y `-sm.webp`), sacadas de `hero.mp4`.
+- **`src/i18n/es.json` / `en.json`**: textos nuevos del viaje; fuera las claves de la curva y de la ficha de origen.
+
+---
+
 ## 2026-10-19: Fuera los productos demo con fotos de stock (Agente: Claude)
 
 ### Contexto
