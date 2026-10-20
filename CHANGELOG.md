@@ -4,7 +4,7 @@
 
 ## 2026-10-19: Transportadoras en la política de privacidad (Agente: Claude)
 
-- **`src/pages/privacidad.astro`**: la sección 5 ya no nombra a Servientrega, Coordinadora y Envía. Ahora dice que los envíos se gestionan con Mipaquete.com, que asigna la transportadora según destino y cobertura, y aclara que se comparten nombre, documento, dirección y teléfono para generar la guía.
+- **`src/pages/privacidad.astro`**: la sección 5 ya no nombra a Servientrega, Coordinadora y Envía. Ahora dice que los envíos se gestionan con Envia.com (decisión del dueño), con la transportadora que tenga cobertura en el destino, y aclara que se comparten nombre, documento, dirección y teléfono para generar la guía.
 
 ---
 

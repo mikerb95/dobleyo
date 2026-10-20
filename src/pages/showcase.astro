@@ -3,25 +3,24 @@ import Layout from "../layouts/Layout.astro";
 ---
 
 <Layout
-  title="Showcase — DobleYo Café"
-  description="Resumen ejecutivo del proyecto DobleYo Café: arquitectura, stack tecnológico y mejoras de mantenibilidad ejecutadas."
+  title="Showcase · DobleYo Café"
+  description="Resumen ejecutivo del proyecto DobleYo Café: composición del sitio, arquitectura y stack tecnológico."
   lang="es"
   noindex={true}
 >
   <main class="showcase">
     <section class="showcase-hero">
       <div class="container">
-        <span class="eyebrow">Documentación interna</span>
-        <h1>DobleYo Café — Showcase del proyecto</h1>
+        <span class="eyebrow">Documentación del proyecto</span>
+        <h1>DobleYo Café: showcase del proyecto</h1>
         <p class="lead">
           Plataforma de comercio electrónico, trazabilidad y ERP para café de
-          especialidad colombiano. Resumen ejecutivo de la arquitectura y de
-          las mejoras de mantenibilidad ejecutadas en la auditoría de mayo de
-          2026.
+          especialidad colombiano. Resumen ejecutivo de la composición del
+          sitio, la arquitectura y el stack.
         </p>
         <div class="meta">
           <span>Versión: <strong>1.0</strong></span>
-          <span>Última actualización: <strong>2026-05-21</strong></span>
+          <span>Última actualización: <strong>2026-10-19</strong></span>
           <span>Dominios: <strong>dobleyo.cafe · en.dobleyo.cafe</strong></span>
         </div>
       </div>
@@ -117,7 +116,7 @@ import Layout from "../layouts/Layout.astro";
 
     <section class="showcase-section alt">
       <div class="container">
-        <h2>4. Modelo de datos — pilares</h2>
+        <h2>4. Modelo de datos: pilares</h2>
         <div class="model-grid">
           <div class="model-card">
             <h4>Core</h4>
@@ -136,122 +135,6 @@ import Layout from "../layouts/Layout.astro";
             <p><code>sales_tracking</code> con geocoordenadas para el heatmap</p>
           </div>
         </div>
-      </div>
-    </section>
-
-    <section class="showcase-section">
-      <div class="container">
-        <h2>5. Auditoría de mantenibilidad (mayo 2026)</h2>
-        <p>
-          Plan de la auditoría ejecutado y registrado en <code>CHANGELOG.md</code>. Tareas
-          autónomas completadas:
-        </p>
-
-        <div class="audit-grid">
-          <article class="audit-card">
-            <h4>4.1 — Logging estructurado</h4>
-            <ul>
-              <li>Cliente <code>pino</code> centralizado (<code>server/logger.js</code>).</li>
-              <li>Middleware <code>pino-http</code> en <code>server/index.js</code> y <code>api/index.js</code>.</li>
-              <li><strong>34 archivos</strong> migrados de <code>console.error/warn</code> a <code>logger</code> con contexto <code>{"{ err }"}</code>.</li>
-              <li>Eliminados 13 archivos <code>.bak2</code> residuales.</li>
-            </ul>
-          </article>
-
-          <article class="audit-card">
-            <h4>4.2 — Service layer</h4>
-            <ul>
-              <li>
-                <code>routes/coffee.js</code>: <strong>1.234 → 191 líneas</strong>
-                (router delgado).
-              </li>
-              <li>
-                <code>routes/finance.js</code>: <strong>763 → 416 líneas</strong>.
-              </li>
-              <li>
-                Nuevos servicios:
-                <code>services/coffeeService.js</code> (22 funciones) y
-                <code>services/financeService.js</code> (5 funciones,
-                transacciones BEGIN/COMMIT/ROLLBACK).
-              </li>
-            </ul>
-          </article>
-
-          <article class="audit-card">
-            <h4>4.3 — Limpieza CSS / legacy</h4>
-            <ul>
-              <li>14 archivos HTML pre-Astro movidos a <code>legacy/</code>.</li>
-              <li>Eliminada dependencia residual de Tailwind CDN.</li>
-              <li>Arreglado link roto en <code>404.astro</code> y guardia legacy <code>admin.html</code> en <code>AuthModal.astro</code>.</li>
-            </ul>
-          </article>
-
-          <article class="audit-card">
-            <h4>4.4 — Paginación en endpoints</h4>
-            <ul>
-              <li>
-                Rutas con respuesta estándar
-                <code>{"{ data, total, page, limit, pages }"}</code>:
-                <code>users</code>, <code>lots</code>, <code>blog</code>,
-                <code>products</code>.
-              </li>
-              <li>Filtros y bug fix de booleanos (<code>1/0</code>) para SQLite.</li>
-            </ul>
-          </article>
-
-          <article class="audit-card">
-            <h4>Seguridad y hardening</h4>
-            <ul>
-              <li>Eliminadas 4 reescrituras de debug en <code>vercel.json</code>.</li>
-              <li>Borrado <code>/api/debug-env</code> y rutas <code>setup_standalone</code>, <code>diagnose</code>, <code>minimal</code>.</li>
-              <li>
-                <code>auth-refresh.js</code> reescrito: 100% HttpOnly cookies,
-                sin <code>localStorage</code>.
-              </li>
-              <li>
-                Endpoints inline de audit con bug MySQL
-                (<code>DATE_SUB(NOW())</code>) reemplazados por router
-                correcto con <code>getAuditStats()</code>.
-              </li>
-            </ul>
-          </article>
-
-          <article class="audit-card">
-            <h4>Coherencia de entry points</h4>
-            <ul>
-              <li>
-                <code>server/index.js</code> y <code>api/index.js</code>
-                ahora montan los mismos routers (incluido
-                <code>auditRouter</code>).
-              </li>
-              <li>Eliminados <code>index_with_production.js</code> y <code>admin.js</code> legacy.</li>
-            </ul>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <section class="showcase-section alt">
-      <div class="container">
-        <h2>6. Lo que queda por hacer</h2>
-        <ul class="bullets">
-          <li>
-            <strong>4.5 — Cobertura de tests</strong>: setup de vitest +
-            supertest sobre rutas críticas (auth, coffee pipeline, finance,
-            checkout cuando se habilite).
-          </li>
-          <li>
-            <strong>1.1 — Rotación de secretos</strong>: tarea de operador
-            si se considera necesario (<code>.env</code> nunca llegó al
-            repositorio, protegido por <code>.gitignore</code> desde el
-            inicio).
-          </li>
-          <li>
-            <strong>Fases 4 → 12</strong>: pagos (Wompi / Mercado Pago),
-            trazabilidad de fincas, heatmap, i18n para USA, SEO/seguridad
-            avanzada y CI/CD.
-          </li>
-        </ul>
       </div>
     </section>
 
@@ -428,34 +311,6 @@ import Layout from "../layouts/Layout.astro";
     line-height: 1.65;
   }
 
-  .audit-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1.25rem;
-    margin-top: 1.5rem;
-  }
-
-  .audit-card {
-    background: var(--color-card, #fff);
-    border: 1px solid var(--color-border, #e6dcc8);
-    border-radius: 10px;
-    padding: 1.5rem;
-  }
-
-  .audit-card h4 {
-    margin: 0 0 0.75rem;
-    color: var(--color-primary, #8b6f47);
-    font-size: 1.05rem;
-  }
-
-  .audit-card ul {
-    margin: 0;
-    padding-left: 1.1rem;
-    line-height: 1.65;
-    font-size: 0.92rem;
-  }
-
-  .audit-card li { margin-bottom: 0.3rem; }
 
   .showcase-footer {
     padding: 2rem 0 4rem;

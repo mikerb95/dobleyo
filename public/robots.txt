@@ -1,8 +1,7 @@
 User-agent: *
 Allow: /
 
-# Área privada y administrativa — sin indexar
-Disallow: /admin/
+# Área privada: sin indexar. El panel /admin lo cierra el middleware con sesión.
 Disallow: /api/
 Disallow: /login
 Disallow: /registro
@@ -10,8 +9,6 @@ Disallow: /cuenta
 Disallow: /checkout
 Disallow: /confirmacion
 Disallow: /cart
-Disallow: /setup-db
-Disallow: /showcase
 Disallow: /sena/
 Disallow: /tostar
 Disallow: /solicitar-caficultor

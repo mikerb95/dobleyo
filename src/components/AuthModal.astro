@@ -513,12 +513,17 @@ function initAuthModal() {
   }
 
   // ── Redirect post-login ───────────────────────────────────────────────────────
+  // Solo rutas del mismo sitio: evita que ?redirect= mande a otro dominio.
+  function safeRedirect() {
+    const redirect = new URLSearchParams(window.location.search).get('redirect');
+    return redirect && redirect.startsWith('/') && !redirect.startsWith('//') ? redirect : null;
+  }
+
   function redirectAfterLogin(role) {
-    const urlParams = new URLSearchParams(window.location.search);
-    const redirect = urlParams.get('redirect');
+    const redirect = safeRedirect();
     if (redirect) {
       if (redirect.startsWith('/admin')) {
-        if (role === 'admin') {
+        if (role === 'admin' || role === 'caficultor') {
           window.location.href = redirect;
         } else {
           showAlert('loginError', 'Solo administradores pueden acceder a esa sección.');
@@ -793,7 +798,17 @@ function initAuthModal() {
   // ── Auto-abrir desde query param (?auth=login o ?auth=register) ───────────────
   const urlParams = new URLSearchParams(window.location.search);
   const authParam = urlParams.get('auth');
-  if (authParam === 'login' || authParam === 'register') {
+  const pendingRedirect = safeRedirect();
+  if (authParam === 'login' && pendingRedirect) {
+    // El middleware manda aquí al vencer el access token (15 min). Si la sesión
+    // de 7 días sigue viva, se renueva en silencio y se vuelve sin pedir la clave.
+    fetch('/api/auth/refresh', { method: 'POST', credentials: 'include' })
+      .then((res) => {
+        if (res.ok) window.location.href = pendingRedirect;
+        else openModal('login');
+      })
+      .catch(() => openModal('login'));
+  } else if (authParam === 'login' || authParam === 'register') {
     openModal(authParam);
   }
 }
