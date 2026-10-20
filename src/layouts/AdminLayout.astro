@@ -1380,7 +1380,7 @@ const pageClass = `pg-${pageSlug.replace(/[^a-z0-9-]/gi, "")}`;
         const ALLOWED_ROLES = ['admin', 'caficultor'];
         try {
           const res = await fetch('/api/auth/me', { credentials: 'include' });
-          if (!res.ok) { window.location.href = '/login?redirect=' + encodeURIComponent(path); return; }
+          if (!res.ok) { window.location.href = '/admin/login?redirect=' + encodeURIComponent(path); return; }
           const user = await res.json();
           if (!ALLOWED_ROLES.includes(user.role)) {
             alert('Acceso denegado.'); window.location.href = '/'; return;
@@ -1419,7 +1419,7 @@ const pageClass = `pg-${pageSlug.replace(/[^a-z0-9-]/gi, "")}`;
           const roleEl = document.querySelector('.dropdown-user-role');
           if (roleEl) roleEl.textContent = roleLabel;
         } catch {
-          window.location.href = '/login?redirect=' + encodeURIComponent(path);
+          window.location.href = '/admin/login?redirect=' + encodeURIComponent(path);
         }
       })();
 
@@ -1490,7 +1490,7 @@ const pageClass = `pg-${pageSlug.replace(/[^a-z0-9-]/gi, "")}`;
       // Logout
       document.getElementById('logoutBtn')?.addEventListener('click', async () => {
         await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
-        window.location.href = '/login';
+        window.location.href = (window as any).__userRole === 'admin' ? '/admin/login' : '/login';
       });
     </script>
   </body>

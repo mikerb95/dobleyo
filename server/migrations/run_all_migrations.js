@@ -83,6 +83,8 @@ const steps = [
   { name: 'Precio FNC + compra al caficultor', run: () => runFn('create_fnc_price_tables.js', 'createFncPriceTables') },
   // Correo (Resend): recuperación de contraseña, supresiones por rebote/queja y campañas del boletín.
   { name: 'Email tables (reset tokens, supresiones, campañas)', run: () => runFn('create_email_tables.js', 'createEmailTables') },
+  // Login de admins con GitHub: columna github_id y revocación de sesiones de admin por contraseña.
+  { name: 'GitHub admin auth (github_id)',   run: () => runFn('add_github_admin_auth.js', 'addGithubAdminAuth') },
 ];
 
 async function runAll() {

@@ -58,6 +58,50 @@ const LOCKOUT_WINDOW_MIN = 15;
 const mustVerifyEmail = (user) =>
   !user.is_verified && String(user.created_at ?? '') >= EMAIL_VERIFICATION_REQUIRED_SINCE;
 
+// Cuentas de GitHub autorizadas para el panel, por id numérico: el login de
+// GitHub se puede renombrar y otra persona podría quedarse con el nombre libre.
+// El nombre solo sirve de referencia en logs.
+export const ADMIN_GITHUB_ACCOUNTS = new Map([
+  [69970540, 'mikerb95'],
+  [264250788, 'nicodmarquez'],
+]);
+
+// Los administradores solo entran por GitHub (/admin/login). Password, Google y
+// Apple quedan para clientes, proveedores y caficultores.
+const ADMIN_GITHUB_ONLY = {
+  error: 'Las cuentas de administración ingresan con GitHub desde /admin/login.',
+  code: 'ADMIN_GITHUB_ONLY',
+};
+
+const GITHUB_STATE_COOKIE = 'gh_oauth_state';
+const GITHUB_COOKIE_PATH = '/api/auth/github';
+
+// Solo se vuelve a rutas internas del panel; cualquier otra cosa cae en /admin.
+const safeAdminRedirect = (value) =>
+  typeof value === 'string' && /^\/admin(\/[\w\-/]*)?$/.test(value) ? value : '/admin';
+
+// Emite access + refresh token como cookies HttpOnly (sesión web).
+async function issueWebSession(res, user) {
+  const accessToken = auth.generateToken(user);
+  const refreshToken = auth.generateRefreshToken();
+  const refreshExpires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
+  await db.query(
+    'INSERT INTO refresh_tokens (user_id, token_hash, expires_at) VALUES (?, ?, ?)',
+    [user.id, auth.hashRefreshToken(refreshToken), refreshExpires]
+  );
+  await db.query("UPDATE users SET last_login_at = datetime('now') WHERE id = ?", [user.id]);
+
+  const isProd = process.env.NODE_ENV === 'production';
+  res.cookie('auth_token', accessToken, {
+    httpOnly: true, secure: isProd, sameSite: 'lax', maxAge: 15 * 60 * 1000,
+  });
+  res.cookie('refresh_token', refreshToken, {
+    httpOnly: true, secure: isProd, sameSite: 'lax',
+    path: '/api/auth/refresh', maxAge: 7 * 24 * 60 * 60 * 1000,
+  });
+}
+
 // Register
 authRouter.post('/register',
   registerLimiter,
@@ -349,6 +393,12 @@ authRouter.post('/login',
         });
       }
 
+      // También después de la contraseña: un tercero no debe poder averiguar
+      // qué correos son de administradores.
+      if (user.role === 'admin') {
+        return res.status(403).json(ADMIN_GITHUB_ONLY);
+      }
+
       // Generar tokens
       const accessToken = auth.generateToken(user);
       const refreshToken = auth.generateRefreshToken();
@@ -525,6 +575,10 @@ authRouter.post('/google', loginLimiter, async (req, res) => {
     );
     let user = result.rows[0];
 
+    if (user?.role === 'admin') {
+      return res.status(403).json(ADMIN_GITHUB_ONLY);
+    }
+
     if (!user) {
       // Crear usuario nuevo (verificado, sin contraseña)
       const insert = await db.query(
@@ -612,6 +666,10 @@ authRouter.post('/apple', loginLimiter, async (req, res) => {
       : await db.query('SELECT * FROM users WHERE apple_id = ? LIMIT 1', [appleId]);
     let user = result.rows[0];
 
+    if (user?.role === 'admin') {
+      return res.status(403).json(ADMIN_GITHUB_ONLY);
+    }
+
     if (!user) {
       // Primera vez: crear usuario (Apple solo envía nombre en la primera autorización)
       const insert = await db.query(
@@ -653,6 +711,145 @@ authRouter.post('/apple', loginLimiter, async (req, res) => {
   } catch (err) {
     logger.error({ err }, '[POST /api/auth/apple] Error:');
     res.status(401).json({ error: 'Token de Apple inválido' });
+  }
+});
+
+// GitHub OAuth (solo administradores): inicio del flujo.
+// El navegador llega aquí desde /admin/login y se redirige a GitHub con un
+// `state` aleatorio guardado en cookie HttpOnly para validar el regreso.
+authRouter.get('/github', loginLimiter, (req, res) => {
+  if (!process.env.GITHUB_CLIENT_ID || !process.env.GITHUB_CLIENT_SECRET) {
+    return res.redirect('/admin/login?error=config');
+  }
+
+  const state = crypto.randomBytes(24).toString('hex');
+  res.cookie(GITHUB_STATE_COOKIE, { state, redirect: safeAdminRedirect(req.query.redirect) }, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax', // el regreso desde github.com es navegación de nivel superior
+    path: GITHUB_COOKIE_PATH,
+    maxAge: 10 * 60 * 1000,
+  });
+
+  const params = new URLSearchParams({
+    client_id: process.env.GITHUB_CLIENT_ID,
+    redirect_uri: githubRedirectUri(),
+    scope: 'read:user user:email',
+    state,
+    allow_signup: 'false',
+  });
+  res.redirect(`https://github.com/login/oauth/authorize?${params}`);
+});
+
+function githubRedirectUri() {
+  return `${process.env.SITE_BASE_URL || 'https://dobleyo.cafe'}/api/auth/github/callback`;
+}
+
+async function githubApi(path, token) {
+  const resp = await fetch(`https://api.github.com${path}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/vnd.github+json',
+      'User-Agent': 'dobleyo-admin',
+    },
+  });
+  if (!resp.ok) throw new Error(`GitHub ${path} respondió ${resp.status}`);
+  return resp.json();
+}
+
+// GitHub OAuth: regreso. Solo las cuentas de ADMIN_GITHUB_ACCOUNTS obtienen
+// sesión; se crea o vincula su fila en users con rol admin.
+authRouter.get('/github/callback', loginLimiter, async (req, res) => {
+  const saved = req.cookies?.[GITHUB_STATE_COOKIE];
+  res.clearCookie(GITHUB_STATE_COOKIE, { path: GITHUB_COOKIE_PATH });
+  const fail = (code) => res.redirect(`/admin/login?error=${code}`);
+
+  if (req.query.error) return fail('denied');
+
+  const { code, state } = req.query;
+  const expected = typeof saved?.state === 'string' ? saved.state : '';
+  if (
+    typeof code !== 'string' || typeof state !== 'string' || !expected ||
+    state.length !== expected.length ||
+    !crypto.timingSafeEqual(Buffer.from(state), Buffer.from(expected))
+  ) {
+    return fail('state');
+  }
+
+  if (!process.env.GITHUB_CLIENT_ID || !process.env.GITHUB_CLIENT_SECRET) {
+    return fail('config');
+  }
+
+  try {
+    const tokenResp = await fetch('https://github.com/login/oauth/access_token', {
+      method: 'POST',
+      headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        client_id: process.env.GITHUB_CLIENT_ID,
+        client_secret: process.env.GITHUB_CLIENT_SECRET,
+        code,
+        redirect_uri: githubRedirectUri(),
+      }),
+    });
+    const tokenData = await tokenResp.json();
+    if (!tokenData.access_token) {
+      logger.warn({ error: tokenData.error }, '[GET /api/auth/github/callback] GitHub no entregó access token');
+      return fail('state');
+    }
+
+    const ghUser = await githubApi('/user', tokenData.access_token);
+    const githubId = Number(ghUser.id);
+
+    if (!ADMIN_GITHUB_ACCOUNTS.has(githubId)) {
+      logger.warn({ githubId, login: ghUser.login, ip: req.ip }, '[GET /api/auth/github/callback] Cuenta no autorizada');
+      await db.query(
+        'INSERT INTO audit_logs (action, entity_type, details) VALUES (?, ?, ?)',
+        ['LOGIN_GITHUB_DENIED', 'users', JSON.stringify({ github_id: githubId, login: ghUser.login, ip: req.ip ?? null })]
+      ).catch((err) => logger.error({ err }, '[GET /api/auth/github/callback] No se pudo auditar el rechazo'));
+      return fail('not_allowed');
+    }
+
+    let result = await db.query('SELECT * FROM users WHERE github_id = ? LIMIT 1', [String(githubId)]);
+    let user = result.rows[0];
+
+    if (!user) {
+      // Primera vez: se vincula por el correo principal verificado de GitHub
+      // (conserva el historial si la persona ya tenía cuenta) o se crea la fila.
+      const emails = await githubApi('/user/emails', tokenData.access_token);
+      const primary = emails.find((e) => e.primary && e.verified) ?? emails.find((e) => e.verified);
+      if (!primary) return fail('no_email');
+
+      result = await db.query('SELECT * FROM users WHERE lower(email) = lower(?) LIMIT 1', [primary.email]);
+      user = result.rows[0];
+
+      if (user) {
+        await db.query('UPDATE users SET github_id = ? WHERE id = ?', [String(githubId), user.id]);
+      } else {
+        const [first_name, ...rest] = String(ghUser.name || ghUser.login).trim().split(/\s+/);
+        const insert = await db.query(
+          `INSERT INTO users (email, first_name, last_name, role, is_verified, github_id)
+           VALUES (?, ?, ?, 'admin', 1, ?) RETURNING *`,
+          [primary.email, first_name, rest.join(' '), String(githubId)]
+        );
+        user = insert.rows[0];
+      }
+    }
+
+    if (user.role !== 'admin') {
+      await db.query("UPDATE users SET role = 'admin', updated_at = datetime('now') WHERE id = ?", [user.id]);
+      user.role = 'admin';
+    }
+
+    await issueWebSession(res, user);
+    await db.query(
+      'INSERT INTO audit_logs (user_id, action, entity_type, entity_id, details) VALUES (?, ?, ?, ?, ?)',
+      [user.id, 'LOGIN_GITHUB', 'users', String(user.id), JSON.stringify({ login: ghUser.login, ip: req.ip ?? null })]
+    ).catch((err) => logger.error({ err }, '[GET /api/auth/github/callback] No se pudo auditar el ingreso'));
+
+    res.redirect(safeAdminRedirect(saved.redirect));
+  } catch (err) {
+    logger.error({ err }, '[GET /api/auth/github/callback] Error:');
+    fail('server');
   }
 });
 

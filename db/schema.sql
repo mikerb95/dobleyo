@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS users (
     password_hash VARCHAR(255),
     google_id VARCHAR(255) UNIQUE,
     apple_id VARCHAR(255),
+    github_id VARCHAR(255),
     first_name VARCHAR(80),
     last_name VARCHAR(80),
     name VARCHAR(120),
@@ -28,6 +29,7 @@ CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
 CREATE INDEX IF NOT EXISTS idx_users_caficultor_status ON users(caficultor_status);
 CREATE INDEX IF NOT EXISTS idx_users_google_id ON users(google_id);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_users_apple_id ON users(apple_id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_users_github_id ON users(github_id);
 
 -- Caficultor Applications
 CREATE TABLE IF NOT EXISTS caficultor_applications (

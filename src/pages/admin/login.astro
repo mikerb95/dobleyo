@@ -1,0 +1,184 @@
+---
+// Ingreso al panel para administradores: solo con GitHub. Las cuentas
+// autorizadas están en ADMIN_GITHUB_ACCOUNTS (server/routes/auth.js).
+// Caficultores siguen entrando por el login general (/login).
+import { Image } from "astro:assets";
+import Head from "../../components/Head.astro";
+import Icon from "../../components/Icon.astro";
+import logo from "../../assets/logo.png";
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <Head title="Ingreso administración · DobleYo Café" isAdmin={true} />
+    <style>
+      body {
+        margin: 0;
+        min-height: 100dvh;
+        display: grid;
+        place-items: center;
+        padding: 16px;
+        box-sizing: border-box;
+        background:
+          radial-gradient(120% 80% at 50% 0%, rgba(var(--caramel-rgb), .22), transparent 60%),
+          var(--espresso);
+        font-family: "IBM Plex Sans", var(--font-body);
+        color: var(--espresso);
+      }
+
+      .card {
+        width: 100%;
+        max-width: 380px;
+        background: var(--cream);
+        border-radius: var(--radius-lg);
+        box-shadow: 0 24px 60px rgba(0, 0, 0, .35);
+        padding: 32px 24px 24px;
+        text-align: center;
+      }
+
+      .logo {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 16px;
+        display: block;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: var(--text-xs);
+        font-weight: 600;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+        color: var(--caramel-deep);
+        margin: 0 0 8px;
+      }
+
+      h1 {
+        font-size: var(--text-xl);
+        font-weight: 600;
+        margin: 0 0 8px;
+      }
+
+      .lead {
+        font-size: var(--text-sm);
+        color: var(--ink-muted);
+        margin: 0 0 24px;
+        line-height: 1.5;
+      }
+
+      .gh-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        width: 100%;
+        box-sizing: border-box;
+        padding: 12px 16px;
+        border-radius: var(--radius-md);
+        background: var(--espresso);
+        color: var(--cream);
+        font-weight: 600;
+        font-size: var(--text-base);
+        text-decoration: none;
+        transition: background var(--dur) var(--ease), transform var(--dur) var(--ease);
+      }
+      .gh-btn:hover { background: var(--caramel-deep); }
+      .gh-btn:active { transform: translateY(1px); }
+      .gh-btn:focus-visible { outline: 2px solid var(--caramel); outline-offset: 3px; }
+      .gh-btn[aria-disabled="true"] { opacity: .6; pointer-events: none; }
+
+      .alert {
+        font-size: var(--text-sm);
+        text-align: left;
+        background: var(--danger-bg);
+        color: var(--danger);
+        border-radius: var(--radius-sm);
+        padding: 10px 12px;
+        margin: 0 0 16px;
+        line-height: 1.45;
+      }
+      .alert[hidden] { display: none; }
+
+      .foot {
+        margin: 24px 0 0;
+        padding-top: 16px;
+        border-top: 1px solid rgba(var(--espresso-rgb), .1);
+        font-size: var(--text-sm);
+        color: var(--ink-muted);
+      }
+      .foot a { color: var(--caramel-deep); font-weight: 500; }
+
+      @media (min-width: 480px) {
+        .card { padding: 40px 36px 28px; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="card">
+      <Image src={logo} alt="DobleYo" width={64} height={64} class="logo" loading="eager" />
+      <p class="eyebrow"><Icon name="lock" size={14} /> Acceso restringido</p>
+      <h1>Panel de administración</h1>
+      <p class="lead">Ingrese con su cuenta de GitHub. Solo las cuentas autorizadas pueden acceder.</p>
+
+      <p class="alert" id="loginError" role="alert" hidden></p>
+
+      <a class="gh-btn" id="githubBtn" href="/api/auth/github">
+        <Icon name="github" size={20} />
+        Continuar con GitHub
+      </a>
+
+      <p class="foot">
+        ¿Es caficultor? <a id="caficultorLink" href="/login?redirect=/admin">Ingrese con su cuenta</a>
+      </p>
+    </main>
+
+    <script>
+      const ERRORS: Record<string, string> = {
+        not_allowed: "Esta cuenta de GitHub no tiene acceso al panel.",
+        denied: "Se canceló la autorización en GitHub.",
+        state: "La solicitud de ingreso expiró o no es válida. Intente de nuevo.",
+        no_email: "Su cuenta de GitHub no tiene un correo verificado. Verifíquelo en GitHub e intente de nuevo.",
+        config: "El ingreso con GitHub no está configurado en este entorno.",
+        server: "No pudimos completar el ingreso. Intente de nuevo en unos minutos.",
+      };
+
+      const params = new URLSearchParams(window.location.search);
+      const redirect = params.get("redirect");
+      const errorCode = params.get("error");
+
+      if (redirect && redirect.startsWith("/admin")) {
+        const gh = document.getElementById("githubBtn") as HTMLAnchorElement;
+        gh.href = "/api/auth/github?redirect=" + encodeURIComponent(redirect);
+        const caf = document.getElementById("caficultorLink") as HTMLAnchorElement;
+        caf.href = "/login?redirect=" + encodeURIComponent(redirect);
+      }
+
+      if (errorCode) {
+        const el = document.getElementById("loginError")!;
+        el.textContent = ERRORS[errorCode] ?? ERRORS.server;
+        el.hidden = false;
+      }
+
+      // Con sesión ya abierta no tiene sentido pedir el ingreso otra vez.
+      fetch("/api/auth/me", { credentials: "include" })
+        .then((res) => (res.ok ? res.json() : null))
+        .then((user) => {
+          if (user && (user.role === "admin" || user.role === "caficultor")) {
+            window.location.replace(redirect && redirect.startsWith("/admin") ? redirect : "/admin");
+          }
+        })
+        .catch(() => {});
+
+      document.getElementById("githubBtn")!.addEventListener("click", (e) => {
+        (e.currentTarget as HTMLElement).setAttribute("aria-disabled", "true");
+      });
+      // Al volver con el botón atrás (bfcache) el botón debe quedar usable.
+      window.addEventListener("pageshow", () => {
+        document.getElementById("githubBtn")!.removeAttribute("aria-disabled");
+      });
+    </script>
+  </body>
+</html>

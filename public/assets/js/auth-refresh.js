@@ -31,7 +31,9 @@
       if (response.status === 401 || response.status === 403) {
         stopAutoRefresh();
         if (isProtectedPage()) {
-          window.location.href = '/login?redirect=' + encodeURIComponent(window.location.pathname);
+          const path = window.location.pathname;
+          const loginPage = path.startsWith('/admin') ? '/admin/login' : '/login';
+          window.location.href = loginPage + '?redirect=' + encodeURIComponent(path);
         }
       }
 
