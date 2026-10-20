@@ -73,6 +73,8 @@ const steps = [
   { name: 'Shipments tables (Mipaquete)',      run: () => runFn('create_shipments.js', 'createShipmentsTables') },
   { name: 'Logistics hardening columns',       run: () => runFn('add_logistics_hardening.js', 'addLogisticsHardening') },
   { name: 'Shipping provider (Mipaquete / Interrapidísimo)', run: () => runFn('add_shipping_provider.js', 'addShippingProvider') },
+  // Envia.com entrega la URL de rastreo con la guía.
+  { name: 'Shipments: URL de rastreo (Envia.com)', run: () => runFn('add_shipment_tracking_url.js', 'addShipmentTrackingUrl') },
   { name: 'Documento del comprador en customer_orders', run: () => runFn('add_customer_document.js', 'addCustomerDocument') },
   { name: 'Labels extended fields (region/climate/roast_date)', run: () => runFn('add_labels_extended_fields.js', 'addLabelsExtendedFields') },
   // Debe ir después de las tablas del pipeline de café: hace backfill del ledger a partir de ellas.
