@@ -1076,6 +1076,415 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     });
   });
 
+  // ── Centralizador de stock ─────────────────────────────────
+  type Listing = any;
+  let listingsCache: Listing[] = [];
+
+  const OAUTH_ERRORS: Record<string, string> = {
+    ML_OAUTH_NOT_CONFIGURED: 'Faltan ML_CLIENT_ID y ML_CLIENT_SECRET en las variables de entorno.',
+    ML_OAUTH_DENIED: 'La autorización fue cancelada en MercadoLibre.',
+    ML_OAUTH_STATE: 'La respuesta de MercadoLibre no coincide con la solicitud (puede haber expirado). Intente de nuevo.',
+    ML_NO_REFRESH_TOKEN: 'MercadoLibre no entregó refresh token. Active el permiso offline_access en la aplicación de ML.',
+    ML_TOKEN_SECRET_MISSING: 'Falta ML_TOKEN_SECRET (o JWT_SECRET) para cifrar los tokens.',
+    ML_OAUTH_EXCHANGE: 'MercadoLibre no aceptó el código de autorización. Revise que la URL de regreso de la app coincida.',
+  };
+
+  function showStkBanner(kind: 'success'|'error'|'info', text: string) {
+    const el = document.getElementById('stkBanner')!;
+    el.className = `stk-banner ${kind}`;
+    el.textContent = text;
+    el.hidden = false;
+    clearTimeout((el as any)._t);
+    (el as any)._t = setTimeout(() => { el.hidden = true; }, kind === 'error' ? 15000 : 8000);
+  }
+
+  function showOAuthResult() {
+    const params = new URLSearchParams(location.search);
+    if (params.get('ml') === 'connected') {
+      showStkBanner('success', 'Cuenta de MercadoLibre conectada. El token se renovará automáticamente.');
+    } else if (params.get('ml_error')) {
+      const code = params.get('ml_error')!;
+      showStkBanner('error', `No se pudo conectar MercadoLibre: ${OAUTH_ERRORS[code] ?? code}`);
+    } else {
+      return;
+    }
+    params.delete('ml');
+    params.delete('ml_error');
+    const qs = params.toString();
+    history.replaceState(null, '', `${location.pathname}${qs ? `?${qs}` : ''}`);
+  }
+
+  function listingState(l: Listing): { kind: 'ok'|'warn'|'error'|'info'|'', text: string } {
+    if (!Number(l.is_active)) return { kind: '', text: 'Pausado' };
+    if (l.is_fulfillment) return { kind: 'info', text: 'Full: stock en ML' };
+    if (l.local_available === null) return { kind: 'error', text: 'Producto borrado' };
+    if (l.last_error) return { kind: 'error', text: 'Error' };
+    if (Number(l.pending_push)) return { kind: 'warn', text: 'Pendiente' };
+    return { kind: 'ok', text: 'Sincronizado' };
+  }
+
+  const numCell = (v: any) => (v === null || v === undefined ? '-' : esc(Number(v).toLocaleString('es-CO')));
+
+  function renderListings() {
+    const tbody = document.getElementById('stkBody')!;
+    const sub = document.getElementById('stkSubtitle')!;
+    if (!listingsCache.length) {
+      tbody.innerHTML = '<tr><td colspan="9" class="empty-state">Aún no hay publicaciones vinculadas. Use "Vincular publicación" para empezar.</td></tr>';
+      return;
+    }
+    const pending = listingsCache.filter((l) => Number(l.is_active) && Number(l.pending_push)).length;
+    const errors = listingsCache.filter((l) => Number(l.is_active) && l.last_error).length;
+    sub.textContent = `${listingsCache.length} vinculada(s) · ${pending} pendiente(s) · ${errors} con error`;
+
+    tbody.innerHTML = listingsCache.map((l) => {
+      const st = listingState(l);
+      const drift = !l.is_fulfillment && l.ml_available_qty !== null && l.target_qty !== null
+        && Number(l.ml_available_qty) !== Number(l.target_qty);
+      const itemUrl = l.permalink || `https://articulo.mercadolibre.com.co/${encodeURIComponent(String(l.ml_item_id).replace(/^([A-Z]{3})/, '$1-'))}`;
+      const active = Number(l.is_active) === 1;
+      return `
+        <tr data-id="${esc(l.id)}">
+          <td>
+            <span class="stk-prod">${esc(l.product_name ?? `Producto ${l.product_id}`)}</span>
+            ${l.variant_label ? `<span class="stk-sub">${esc(l.variant_label)}</span>` : ''}
+            ${l.product_sku ? `<span class="stk-sub mono">${esc(l.product_sku)}</span>` : ''}
+          </td>
+          <td class="stk-item">
+            <a href="${esc(itemUrl)}" target="_blank" rel="noopener noreferrer" class="mono">${esc(l.ml_item_id)}</a>
+            ${l.ml_variation_id ? `<span class="stk-sub mono">Variación ${esc(l.ml_variation_id)}</span>` : ''}
+            ${l.title ? `<span class="stk-title" title="${esc(l.title)}">${esc(l.title)}</span>` : ''}
+          </td>
+          <td class="num mono">${numCell(l.local_available)}</td>
+          <td class="num">
+            <input type="number" min="0" step="1" class="ml-input stk-buffer-input js-stk-buffer" data-id="${esc(l.id)}"
+              value="${esc(l.stock_buffer ?? 0)}" aria-label="Colchón de ${esc(l.product_name ?? '')}" ${l.is_fulfillment ? 'disabled' : ''}>
+          </td>
+          <td class="num mono">${l.is_fulfillment ? '-' : numCell(l.target_qty)}</td>
+          <td class="num mono ${drift ? 'stk-drift' : ''}" ${drift ? 'title="MercadoLibre reporta un valor distinto al del sitio. Use Enviar para corregirlo."' : ''}>${numCell(l.ml_available_qty)}</td>
+          <td>
+            <span class="status${st.kind ? ` status--${st.kind}` : ''}">${esc(st.text)}</span>
+            ${l.last_error ? `<span class="stk-err">${esc(l.last_error)}</span>` : ''}
+          </td>
+          <td class="mono ml-nowrap">${esc(fmtDateTime(l.last_pushed_at))}</td>
+          <td>
+            <div class="stk-row-actions">
+              <button type="button" class="btn btn-sm btn-secondary js-stk-push" data-id="${esc(l.id)}" ${!active || l.is_fulfillment ? 'disabled' : ''}>Enviar</button>
+              <button type="button" class="btn btn-sm btn-ghost js-stk-toggle" data-id="${esc(l.id)}" data-active="${active ? 1 : 0}">${active ? 'Pausar' : 'Activar'}</button>
+              <button type="button" class="btn btn-sm btn-ghost js-stk-unlink" data-id="${esc(l.id)}" aria-label="Quitar vínculo">Quitar</button>
+            </div>
+          </td>
+        </tr>`;
+    }).join('');
+
+    tbody.querySelectorAll<HTMLButtonElement>('.js-stk-push').forEach((b) =>
+      b.addEventListener('click', () => pushOne(Number(b.dataset.id), b)));
+    tbody.querySelectorAll<HTMLButtonElement>('.js-stk-toggle').forEach((b) =>
+      b.addEventListener('click', () => patchListing(Number(b.dataset.id), { is_active: b.dataset.active !== '1' }, b)));
+    tbody.querySelectorAll<HTMLButtonElement>('.js-stk-unlink').forEach((b) =>
+      b.addEventListener('click', () => unlinkOne(Number(b.dataset.id))));
+    tbody.querySelectorAll<HTMLInputElement>('.js-stk-buffer').forEach((input) =>
+      input.addEventListener('change', () => {
+        const v = Math.max(0, Math.floor(Number(input.value) || 0));
+        input.value = String(v);
+        patchListing(Number(input.dataset.id), { stock_buffer: v }, input);
+      }));
+  }
+
+  async function loadListings() {
+    try {
+      const res = await fetch('/api/mercadolibre/stock/listings', { credentials: 'include' });
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json.error || 'No se pudieron cargar los vínculos');
+      listingsCache = json.data ?? [];
+      renderListings();
+    } catch (e: any) {
+      document.getElementById('stkBody')!.innerHTML =
+        `<tr><td colspan="9" class="empty-state">${esc(e.message)}</td></tr>`;
+    }
+  }
+
+  function describePush(r: any) {
+    switch (r?.status) {
+      case 'pushed': return `Enviado: ML ofrece ${r.quantity} unidad(es).`;
+      case 'unchanged': return `Sin cambios: ML ya ofrece ${r.quantity} unidad(es).`;
+      case 'skipped_full': return 'Publicación Full: el stock lo maneja MercadoLibre.';
+      case 'inactive': return 'El vínculo está pausado.';
+      default: return r?.error ? `Error: ${r.error}` : 'No se pudo enviar.';
+    }
+  }
+
+  async function pushOne(id: number, btn: HTMLButtonElement) {
+    btn.disabled = true;
+    try {
+      const res = await fetch(`/api/mercadolibre/stock/listings/${id}/push`, { method: 'POST', credentials: 'include' });
+      const json = await res.json();
+      showStkBanner(json.success ? 'success' : 'error', describePush(json.data ?? { error: json.error }));
+    } catch (e: any) {
+      showStkBanner('error', `Error de red: ${e.message}`);
+    } finally {
+      btn.disabled = false;
+      loadListings();
+    }
+  }
+
+  async function patchListing(id: number, payload: Record<string, unknown>, el: HTMLElement) {
+    el.setAttribute('disabled', '');
+    try {
+      const res = await fetch(`/api/mercadolibre/stock/listings/${id}`, {
+        method: 'PATCH', credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json.error || 'No se pudo actualizar');
+      showStkBanner(json.data.push?.status === 'error' ? 'error' : 'success', describePush(json.data.push));
+    } catch (e: any) {
+      showStkBanner('error', e.message);
+    } finally {
+      el.removeAttribute('disabled');
+      loadListings();
+    }
+  }
+
+  async function unlinkOne(id: number) {
+    const l = listingsCache.find((x) => Number(x.id) === id);
+    const name = l ? `${l.product_name ?? ''} ↔ ${l.ml_item_id}` : `#${id}`;
+    if (!confirm(`¿Quitar el vínculo ${name}? MercadoLibre conservará la última cantidad enviada y dejará de actualizarse.`)) return;
+    try {
+      const res = await fetch(`/api/mercadolibre/stock/listings/${id}`, { method: 'DELETE', credentials: 'include' });
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json.error || 'No se pudo quitar el vínculo');
+      showStkBanner('info', 'Vínculo quitado. Revise el stock de esa publicación directamente en MercadoLibre.');
+    } catch (e: any) {
+      showStkBanner('error', e.message);
+    } finally {
+      loadListings();
+    }
+  }
+
+  async function pushAll(all: boolean) {
+    const btn = document.getElementById(all ? 'btnStkPushAll' : 'btnStkPush') as HTMLButtonElement;
+    btn.disabled = true;
+    try {
+      const res = await fetch('/api/mercadolibre/stock/push', {
+        method: 'POST', credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ all }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json.error || 'No se pudo enviar el stock');
+      const d = json.data;
+      if (!d.total) {
+        showStkBanner('info', all ? 'No hay vínculos activos.' : 'No hay envíos pendientes.');
+      } else {
+        showStkBanner(d.errors ? 'error' : 'success',
+          `${d.pushed} enviado(s), ${d.unchanged} sin cambios${d.skipped_full ? `, ${d.skipped_full} Full` : ''}${d.errors ? `, ${d.errors} con error` : ''}.`);
+      }
+    } catch (e: any) {
+      showStkBanner('error', e.message);
+    } finally {
+      btn.disabled = false;
+      loadListings();
+    }
+  }
+
+  // ── Modal de vínculo ───────────────────────────────────────
+  let lnkProducts: any[] = [];
+  let lnkItems: any[] = [];
+
+  const lnk = {
+    modal: () => document.getElementById('lnkModal')!,
+    product: () => document.getElementById('lnkProduct') as HTMLSelectElement,
+    variant: () => document.getElementById('lnkVariant') as HTMLSelectElement,
+    variantWrap: () => document.getElementById('lnkVariantWrap')!,
+    itemId: () => document.getElementById('lnkItemId') as HTMLInputElement,
+    variation: () => document.getElementById('lnkVariation') as HTMLSelectElement,
+    variationWrap: () => document.getElementById('lnkVariationWrap')!,
+    buffer: () => document.getElementById('lnkBuffer') as HTMLInputElement,
+    error: () => document.getElementById('lnkError')!,
+    items: () => document.getElementById('lnkItems')!,
+    submit: () => document.getElementById('lnkSubmit') as HTMLButtonElement,
+  };
+
+  function lnkSetError(msg: string | null) {
+    const el = lnk.error();
+    el.hidden = !msg;
+    el.textContent = msg ?? '';
+  }
+
+  async function openLinkModal() {
+    lnkSetError(null);
+    lnk.itemId().value = '';
+    lnk.buffer().value = '0';
+    lnk.variationWrap().hidden = true;
+    lnk.modal().style.display = 'flex';
+    lnk.product().focus();
+    if (!lnkProducts.length) await loadLnkProducts();
+    if (!lnkItems.length) searchItems();
+  }
+
+  function closeLinkModal() {
+    lnk.modal().style.display = 'none';
+  }
+
+  async function loadLnkProducts() {
+    const sel = lnk.product();
+    try {
+      const res = await fetch('/api/mercadolibre/stock/products', { credentials: 'include' });
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json.error || 'No se pudieron cargar los productos');
+      lnkProducts = json.data ?? [];
+      sel.innerHTML = '<option value="">Seleccione un producto...</option>' + lnkProducts.map((p: any) =>
+        `<option value="${esc(p.id)}">${esc(p.name)}${p.sku ? ` · ${esc(p.sku)}` : ''}${p.is_active ? '' : ' (inactivo)'}</option>`).join('');
+    } catch (e: any) {
+      sel.innerHTML = `<option value="">${esc(e.message)}</option>`;
+    }
+  }
+
+  function onProductChange() {
+    const p = lnkProducts.find((x: any) => String(x.id) === lnk.product().value);
+    const variants = (p?.variants ?? []).filter((v: any) => v.is_active);
+    lnk.variantWrap().hidden = variants.length === 0;
+    lnk.variant().innerHTML = variants.length
+      ? '<option value="">Seleccione la variante...</option>' + variants.map((v: any) =>
+          `<option value="${esc(v.id)}">${esc(v.label)} · ${esc(v.stock_quantity)} u.</option>`).join('')
+      : '';
+  }
+
+  async function searchItems() {
+    const box = lnk.items();
+    box.innerHTML = '<div class="empty-state">Buscando publicaciones...</div>';
+    const q = (document.getElementById('lnkSearch') as HTMLInputElement).value.trim();
+    try {
+      const params = new URLSearchParams({ status: 'active', ...(q && { search: q }) });
+      const res = await fetch(`/api/mercadolibre/stock/items?${params}`, { credentials: 'include' });
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json.error || 'No se pudieron traer las publicaciones');
+      lnkItems = json.data.items ?? [];
+      renderItems();
+    } catch (e: any) {
+      box.innerHTML = `<div class="empty-state">${esc(e.message)} Puede pegar el ID de la publicación abajo.</div>`;
+    }
+  }
+
+  function renderItems() {
+    const box = lnk.items();
+    if (!lnkItems.length) {
+      box.innerHTML = '<div class="empty-state">No se encontraron publicaciones activas.</div>';
+      return;
+    }
+    box.innerHTML = lnkItems.map((it: any) => {
+      const allLinked = it.variations.length
+        ? it.variations.every((v: any) => v.link)
+        : Boolean(it.link);
+      const meta = [it.id, it.sku ? `SKU ${it.sku}` : '', `${it.available_quantity ?? 0} u. en ML`,
+        it.logistic_type === 'fulfillment' ? 'Full' : '', it.variations.length ? `${it.variations.length} variaciones` : '',
+        allLinked ? 'ya vinculada' : ''].filter(Boolean).join(' · ');
+      return `<button type="button" class="lnk-item js-lnk-item" role="option" data-id="${esc(it.id)}" ${allLinked ? 'disabled' : ''}>
+          ${it.thumbnail ? `<img src="${esc(it.thumbnail)}" alt="" loading="lazy">` : ''}
+          <span class="lnk-item-main">
+            <span class="lnk-item-title">${esc(it.title)}</span>
+            <span class="lnk-item-meta">${esc(meta)}</span>
+          </span>
+        </button>`;
+    }).join('');
+    box.querySelectorAll<HTMLButtonElement>('.js-lnk-item').forEach((b) =>
+      b.addEventListener('click', () => selectItem(b.dataset.id!)));
+  }
+
+  function fillVariations(variations: any[], preselect?: string) {
+    lnk.variationWrap().hidden = variations.length === 0;
+    lnk.variation().innerHTML = variations.length
+      ? '<option value="">Seleccione la variación...</option>' + variations.map((v: any) =>
+          `<option value="${esc(v.id)}" ${v.link ? 'disabled' : ''} ${preselect === v.id ? 'selected' : ''}>${esc(v.label)}${v.sku ? ` · SKU ${esc(v.sku)}` : ''} · ${esc(v.available_quantity ?? 0)} u.${v.link ? ' (ya vinculada)' : ''}</option>`).join('')
+      : '';
+  }
+
+  function selectItem(id: string) {
+    const it = lnkItems.find((x: any) => x.id === id);
+    if (!it) return;
+    lnk.items().querySelectorAll('.js-lnk-item').forEach((b) =>
+      b.setAttribute('aria-selected', (b as HTMLElement).dataset.id === id ? 'true' : 'false'));
+    lnk.itemId().value = it.id;
+    fillVariations(it.variations);
+
+    // Sugerencia por SKU: si el producto aún no está elegido, se propone el que coincide.
+    const sug = it.suggestion || it.variations.find((v: any) => v.suggestion)?.suggestion;
+    if (sug && !lnk.product().value) {
+      lnk.product().value = String(sug.product_id);
+      onProductChange();
+      if (sug.variant_id) lnk.variant().value = String(sug.variant_id);
+      const sv = it.variations.find((v: any) => v.suggestion?.product_id === sug.product_id && (v.suggestion?.variant_id ?? null) === (sug.variant_id ?? null));
+      if (sv) lnk.variation().value = sv.id;
+    }
+  }
+
+  async function submitLink(e: Event) {
+    e.preventDefault();
+    lnkSetError(null);
+    const productId = lnk.product().value;
+    const needsVariant = !lnk.variantWrap().hidden;
+    const variantId = needsVariant ? lnk.variant().value : '';
+    const itemId = lnk.itemId().value.trim();
+    const variationId = lnk.variationWrap().hidden ? '' : lnk.variation().value;
+
+    if (!productId) return lnkSetError('Seleccione el producto del sitio.');
+    if (needsVariant && !variantId) return lnkSetError('Seleccione la variante del producto.');
+    if (!itemId) return lnkSetError('Indique la publicación de MercadoLibre.');
+    if (!lnk.variationWrap().hidden && !variationId) return lnkSetError('Seleccione la variación de la publicación.');
+
+    const btn = lnk.submit();
+    btn.disabled = true;
+    btn.textContent = 'Vinculando...';
+    try {
+      const res = await fetch('/api/mercadolibre/stock/listings', {
+        method: 'POST', credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          product_id: productId,
+          variant_id: variantId ? Number(variantId) : null,
+          ml_item_id: itemId,
+          ml_variation_id: variationId || null,
+          stock_buffer: Math.max(0, Math.floor(Number(lnk.buffer().value) || 0)),
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        // La publicación tiene variaciones que el formulario aún no mostraba.
+        if (json.code === 'ML_VARIATION_REQUIRED' && Array.isArray(json.variations)) fillVariations(json.variations);
+        throw new Error(json.error || 'No se pudo vincular');
+      }
+      closeLinkModal();
+      lnkItems = [];
+      showStkBanner(json.data.push?.status === 'error' ? 'error' : 'success',
+        `Publicación vinculada. ${describePush(json.data.push)}`);
+      loadListings();
+    } catch (err: any) {
+      lnkSetError(err.message);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Vincular y enviar stock';
+    }
+  }
+
+  document.getElementById('btnStkLink')?.addEventListener('click', openLinkModal);
+  document.getElementById('btnStkPush')?.addEventListener('click', () => pushAll(false));
+  document.getElementById('btnStkPushAll')?.addEventListener('click', () => pushAll(true));
+  document.getElementById('lnkClose')?.addEventListener('click', closeLinkModal);
+  document.getElementById('lnkCancel')?.addEventListener('click', closeLinkModal);
+  document.getElementById('lnkModal')?.addEventListener('click', (e: MouseEvent) => {
+    if ((e.target as HTMLElement).id === 'lnkModal') closeLinkModal();
+  });
+  document.addEventListener('keydown', (e: KeyboardEvent) => {
+    if (e.key === 'Escape' && lnk.modal().style.display === 'flex') closeLinkModal();
+  });
+  document.getElementById('lnkProduct')?.addEventListener('change', onProductChange);
+  document.getElementById('lnkSearchBtn')?.addEventListener('click', searchItems);
+  document.getElementById('lnkSearch')?.addEventListener('keydown', (e: KeyboardEvent) => {
+    if (e.key === 'Enter') { e.preventDefault(); searchItems(); }
+  });
+  document.getElementById('lnkForm')?.addEventListener('submit', submitLink);
+
   // ── Init ───────────────────────────────────────────────────
   showOAuthResult();
   loadStats();
