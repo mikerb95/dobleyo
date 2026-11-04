@@ -110,11 +110,11 @@ async function recordPushError(listingId, message) {
  * Envía a ML el disponible de un vínculo.
  * @param {object|number} listingOrId
  * @param {{ force?: boolean }} [opts]  force: enviar aunque el valor no haya cambiado.
- * @returns {Promise<{ listing_id: number, status: 'pushed'|'unchanged'|'skipped_full'|'inactive'|'orphan'|'error', quantity?: number, error?: string }>}
+ * @returns {Promise<{ listing_id: number, status: 'pushed'|'unchanged'|'skipped_full'|'inactive'|'orphan'|'not_found'|'error', quantity?: number, error?: string }>}
  */
 export async function pushListing(listingOrId, { force = false } = {}) {
   const listing = typeof listingOrId === 'object' ? listingOrId : await getListing(listingOrId);
-  if (!listing) return { listing_id: Number(listingOrId), status: 'orphan' };
+  if (!listing) return { listing_id: Number(listingOrId), status: 'not_found' };
   const id = Number(listing.id);
 
   if (!Number(listing.is_active)) return { listing_id: id, status: 'inactive' };
@@ -125,8 +125,9 @@ export async function pushListing(listingOrId, { force = false } = {}) {
 
   const available = await computeAvailable(listing);
   if (available === null) {
-    await recordPushError(id, 'El producto o la variante vinculada ya no existe en el sitio');
-    return { listing_id: id, status: 'orphan' };
+    const error = 'El producto o la variante vinculada ya no existe en el sitio';
+    await recordPushError(id, error);
+    return { listing_id: id, status: 'orphan', error };
   }
   const quantity = quantityForMl(available, listing.stock_buffer);
 
