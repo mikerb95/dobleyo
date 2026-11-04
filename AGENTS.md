@@ -290,6 +290,18 @@ El panel se ve como un ERP, no como una plantilla de SaaS. Tokens y utilidades v
 - **Un error de red no es un rechazo**: se muestra el estado "No pudimos verificar su pedido" (`stateUnknown`) con botón de reintentar, nunca "Su pago fue rechazado".
 - **Escapar los datos del pedido** (nombres de producto, datos del cliente) antes de pintarlos con `innerHTML`.
 
+### 3.14 Canal MercadoLibre y centralizador de stock: reglas no negociables
+
+El inventario del sitio es la fuente de verdad; MercadoLibre es un canal (`server/services/mlStock.js`, panel en `/admin/mercadolibre`).
+
+- **Todo cambio de stock llama `scheduleStockSync([productId, ...])`** después de guardar (pedidos web, movimientos, entradas, variantes, ventas externas, activar/desactivar). Nunca lanza ni bloquea; si ML falla, el vínculo queda `pending_push = 1` con el error a la vista y el cron lo reintenta. Una ruta nueva que mueva stock sin llamarlo deja a ML desfasado.
+- **Antes de borrar un producto o variante**, `retireListings()` pone sus publicaciones en 0. Borrar sin eso deja a ML vendiendo algo que ya no existe.
+- **Las ventas de ML entran solo por `applyMlOrderStock()`** (webhook, sync manual y cron). Es idempotente por `ml_order_stock`; no descontar stock de ML por otro camino.
+- **Llamadas a la API de ML siempre con `mlApi()`** (`server/services/mlAuth.js`): pone el token vigente, lo renueva y reintenta. No usar `fetch` con `ML_ACCESS_TOKEN` directo: ese token vence a las 6 horas.
+- **Los tokens de ML no salen del servidor**: viven cifrados en `ml_oauth`. Cambiar `ML_TOKEN_SECRET` (o `JWT_SECRET` si no existe) obliga a reconectar.
+- **Productos con variantes activas se vinculan por variante.** Publicaciones Full (`logistic_type = 'fulfillment'`) no se envían ni descuentan.
+- **El cron es GitHub Actions** (`.github/workflows/mercadolibre-sync.yml`), no Vercel Cron. El panel no debe afirmar que algo corre si no hay evidencia (secreto configurado, último sync).
+
 ## 4. SEO — Reglas Obligatorias
 
 Todo agente que cree o modifique páginas DEBE cumplir:

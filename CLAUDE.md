@@ -62,11 +62,13 @@
 | `server/routes/production.js` | Router padre que monta sub-routers de `production/` |
 | `server/routes/production/*.js` | Sub-routers de producción (ESM) |
 | `server/routes/inventory.js` | CRUD de productos, movimientos, proveedores |
-| `server/routes/mercadolibre.js` | Sync ML, sales, heatmap data |
+| `server/routes/mercadolibre.js` | OAuth (`/oauth/*`), sync/cron/webhook de órdenes, centralizador (`/stock/*`), ventas, heatmap y `/status` real |
 | `server/routes/labels.js` | Sistema de etiquetas/QR |
-| `server/routes/stock.js` | Stock público y gestión |
+| `server/routes/stock.js` | Disponible público (variantes y reservas) y ajustes de stock con movimiento; cada ajuste se propaga a ML |
 | `server/services/email.js` | Servicio de email con Resend y templates HTML |
-| `server/services/mercadolibre.js` | Servicio ML: fetch orders, geocoding, DB persistence |
+| `server/services/mercadolibre.js` | Servicio ML: órdenes (search, detalle, envío), geocoding, persistencia en `sales_tracking`. Al sincronizar aplica las órdenes al stock |
+| `server/services/mlAuth.js` | OAuth con ML: tokens cifrados en `ml_oauth`, renovación automática y `mlApi()` (único cliente de la API de ML) |
+| `server/services/mlStock.js` | Centralizador de stock sitio ↔ ML: vínculos (`ml_listings`), envío de `available_quantity`, descuento idempotente de ventas ML (`ml_order_stock`), `scheduleStockSync()` y `retireListings()` |
 | `server/services/audit.js` | Logging de auditoría a tabla `audit_logs` |
 | `server/services/costService.js` | Costeo del pipeline: registro de costos, costo/kg por etapa, insumos de empaque |
 | `server/services/accountingService.js` | Asientos de partida doble (borrador) de los costos de producción |
