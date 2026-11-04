@@ -258,7 +258,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
             </div>
             <div class="cfg-rule"></div>
             <p class="cfg-note">
-              No hay un cron agendado en el proyecto. Para sincronizar sin intervención, programe un cron (Vercel Cron o uno externo) que llame <code>/api/mercadolibre/cron-sync</code> con la cabecera <code>Authorization: Bearer CRON_SECRET</code>: trae órdenes nuevas y reintenta los envíos de stock pendientes.
+              GitHub Actions (<code>mercadolibre-sync.yml</code>) llama <code>/api/mercadolibre/cron-sync</code> cada 30 minutos entre las 8:00 y las 23:00: trae órdenes nuevas y reintenta los envíos de stock pendientes. Solo funciona si <code>CRON_SECRET</code> está configurado en Vercel y en los secretos del repositorio con el mismo valor.
             </p>
             <p class="cfg-note">
               Para tiempo casi real, registre la URL del webhook en su aplicación de MercadoLibre con los temas <code>orders_v2</code> e <code>items</code>.

@@ -13,7 +13,7 @@ name: Sincronización MercadoLibre
 
 on:
   schedule:
-    - cron: "15,45 13-23,0-4 * * *"   # cada 30 min, 08:00–23:00 Colombia, desfasado del de envíos
+    - cron: "15,45 13-23,0-4 * * *"   # cada 30 min, 08:00 a 23:00 Colombia, desfasado del de envíos
   workflow_dispatch: {}               # permite ejecutarlo manualmente
 
 jobs:
