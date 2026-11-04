@@ -91,6 +91,8 @@ const steps = [
   { name: 'Cafés Isnos Geisha y Pitalito Sidra', run: () => runFn('add_huila_microlots.js', 'addHuilaMicrolots') },
   // Saca de la tienda los productos demo que siguen con fotos de Unsplash.
   { name: 'Retiro de productos demo', run: () => runFn('retire_demo_products.js', 'retireDemoProducts') },
+  // Centralizador de stock con MercadoLibre: OAuth, vínculos producto-publicación y descuentos por orden.
+  { name: 'MercadoLibre: centralizador de stock', run: () => runFn('create_ml_stock_sync.js', 'createMlStockSync') },
 ];
 
 async function runAll() {
