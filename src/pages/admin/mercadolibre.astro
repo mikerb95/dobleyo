@@ -454,10 +454,13 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     .pg-mercadolibre .rtable .row-actions .btn-icon .btn-label { display: inline; }
     .pg-mercadolibre .rtable .cell-title, .pg-mercadolibre .stk-err { max-width: 100%; white-space: normal; }
     .pg-mercadolibre .stk-table tbody tr { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .pg-mercadolibre .stk-table .c-full-sm { grid-column: span 2; }
+    .pg-mercadolibre .stk-table td.num { text-align: left; }
     .pg-mercadolibre .ord-table tbody tr { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   }
   @container (max-width: 420px) {
     .pg-mercadolibre .stk-table tbody tr { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .pg-mercadolibre .stk-table .c-full-sm { grid-column: 1 / -1; }
   }
   .pg-mercadolibre .btn-label { display: none; }
 
@@ -1124,11 +1127,43 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     history.replaceState(null, '', `${location.pathname}${qs ? `?${qs}` : ''}`);
   }
 
+  // Íconos de trazo (mismo estilo que el resto del panel).
+  const svg = (d: string) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+  const ICONS = {
+    send: svg('<path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/>'),
+    pause: svg('<rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/>'),
+    play: svg('<path d="M7 5v14l11-7z"/>'),
+    trash: svg('<path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/>'),
+    external: svg('<path d="M14 4h6v6"/><path d="M20 4 10 14"/><path d="M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"/>'),
+  };
+
+  /**
+   * Resume en español los errores que devuelve MercadoLibre (vienen en inglés y
+   * largos). El texto original queda en el title para quien necesite el detalle.
+   */
+  function friendlyError(raw: string | null | undefined): string {
+    const m = String(raw || '');
+    const rules: [RegExp, string][] = [
+      [/under.?review|en revisi[oó]n/i, 'La publicación está en revisión en ML y no admite cambios.'],
+      [/closed|finaliz|inactive|not.?active/i, 'La publicación está finalizada o inactiva en ML.'],
+      [/not.?found|no existe/i, 'La publicación ya no existe en ML.'],
+      [/ya no existe en el sitio/i, 'El producto vinculado ya no existe en el sitio.'],
+      [/reconect|token|conect/i, 'La conexión con ML venció. Use Reconectar.'],
+      [/fulfillment|full\b/i, 'Publicación Full: el stock lo maneja ML.'],
+      [/variation/i, 'ML no reconoce la variación vinculada.'],
+      [/available_quantity|quantity/i, 'ML no aceptó la cantidad enviada.'],
+      [/contactar|timeout|network|varios intentos/i, 'ML no respondió. Se reintentará.'],
+      [/poner en 0 al borrar/i, 'No se pudo poner en 0 al borrar el producto. Revíselo en ML.'],
+    ];
+    for (const [re, text] of rules) if (re.test(m)) return text;
+    return m.length > 90 ? `${m.slice(0, 87)}...` : m;
+  }
+
   function listingState(l: Listing): { kind: 'ok'|'warn'|'error'|'info'|'', text: string } {
     if (!Number(l.is_active)) return { kind: '', text: 'Pausado' };
     if (l.is_fulfillment) return { kind: 'info', text: 'Full: stock en ML' };
     if (l.local_available === null) return { kind: 'error', text: 'Producto borrado' };
-    if (l.last_error) return { kind: 'error', text: 'Error' };
+    if (l.last_error) return { kind: 'error', text: 'Error al enviar' };
     if (Number(l.pending_push)) return { kind: 'warn', text: 'Pendiente' };
     return { kind: 'ok', text: 'Sincronizado' };
   }
@@ -1139,48 +1174,61 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     const tbody = document.getElementById('stkBody')!;
     const sub = document.getElementById('stkSubtitle')!;
     if (!listingsCache.length) {
-      tbody.innerHTML = '<tr><td colspan="9" class="empty-state">Aún no hay publicaciones vinculadas. Use "Vincular publicación" para empezar.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="8" class="empty-state">Aún no hay publicaciones vinculadas. Use "Vincular publicación" para empezar.</td></tr>';
       return;
     }
-    const pending = listingsCache.filter((l) => Number(l.is_active) && Number(l.pending_push)).length;
-    const errors = listingsCache.filter((l) => Number(l.is_active) && l.last_error).length;
-    sub.textContent = `${listingsCache.length} vinculada(s) · ${pending} pendiente(s) · ${errors} con error`;
+    const active = listingsCache.filter((l) => Number(l.is_active));
+    const pending = active.filter((l) => Number(l.pending_push) && !l.last_error).length;
+    const errors = active.filter((l) => l.last_error).length;
+    sub.textContent = [
+      plural(listingsCache.length, 'publicación vinculada', 'publicaciones vinculadas'),
+      pending ? plural(pending, 'pendiente', 'pendientes') : '',
+      errors ? plural(errors, 'con error', 'con error') : '',
+    ].filter(Boolean).join(' · ') + (pending || errors ? '' : ' · todo al día');
 
     tbody.innerHTML = listingsCache.map((l) => {
       const st = listingState(l);
-      const drift = !l.is_fulfillment && l.ml_available_qty !== null && l.target_qty !== null
+      const drift = !l.is_fulfillment && Number(l.is_active) && l.ml_available_qty !== null && l.target_qty !== null
         && Number(l.ml_available_qty) !== Number(l.target_qty);
       const itemUrl = l.permalink || `https://articulo.mercadolibre.com.co/${encodeURIComponent(String(l.ml_item_id).replace(/^([A-Z]{3})/, '$1-'))}`;
-      const active = Number(l.is_active) === 1;
+      const isActive = Number(l.is_active) === 1;
+      const name = l.product_name ?? `Producto ${l.product_id}`;
+      const when = l.last_pushed_at ? `Enviado ${fmtDateTime(l.last_pushed_at)}` : (l.is_fulfillment ? '' : 'Sin envíos todavía');
       return `
         <tr data-id="${esc(l.id)}">
-          <td>
-            <span class="stk-prod">${esc(l.product_name ?? `Producto ${l.product_id}`)}</span>
-            ${l.variant_label ? `<span class="stk-sub">${esc(l.variant_label)}</span>` : ''}
-            ${l.product_sku ? `<span class="stk-sub mono">${esc(l.product_sku)}</span>` : ''}
+          <td data-label="Producto del sitio" class="c-full-sm">
+            <span class="cell-main">${esc(name)}</span>
+            ${l.variant_label ? `<span class="cell-sub">${esc(l.variant_label)}</span>` : ''}
+            ${l.product_sku ? `<span class="cell-sub mono">${esc(l.product_sku)}</span>` : ''}
           </td>
-          <td class="stk-item">
-            <a href="${esc(itemUrl)}" target="_blank" rel="noopener noreferrer" class="mono">${esc(l.ml_item_id)}</a>
-            ${l.ml_variation_id ? `<span class="stk-sub mono">Variación ${esc(l.ml_variation_id)}</span>` : ''}
-            ${l.title ? `<span class="stk-title" title="${esc(l.title)}">${esc(l.title)}</span>` : ''}
+          <td data-label="Publicación ML" class="c-full-sm">
+            <a href="${esc(itemUrl)}" target="_blank" rel="noopener noreferrer" class="cell-link">${esc(l.ml_item_id)}</a>
+            ${l.ml_variation_id ? `<span class="cell-sub mono">Variación ${esc(l.ml_variation_id)}</span>` : ''}
+            ${l.title ? `<span class="cell-title" title="${esc(l.title)}">${esc(l.title)}</span>` : ''}
           </td>
-          <td class="num mono">${numCell(l.local_available)}</td>
-          <td class="num">
+          <td data-label="Disponible" class="num mono">${numCell(l.local_available)}</td>
+          <td data-label="Colchón" class="num">
             <input type="number" min="0" step="1" class="ml-input stk-buffer-input js-stk-buffer" data-id="${esc(l.id)}"
-              value="${esc(l.stock_buffer ?? 0)}" aria-label="Colchón de ${esc(l.product_name ?? '')}" ${l.is_fulfillment ? 'disabled' : ''}>
+              value="${esc(l.stock_buffer ?? 0)}" aria-label="Colchón de ${esc(name)}" ${l.is_fulfillment ? 'disabled' : ''}>
           </td>
-          <td class="num mono">${l.is_fulfillment ? '-' : numCell(l.target_qty)}</td>
-          <td class="num mono ${drift ? 'stk-drift' : ''}" ${drift ? 'title="MercadoLibre reporta un valor distinto al del sitio. Use Enviar para corregirlo."' : ''}>${numCell(l.ml_available_qty)}</td>
-          <td>
+          <td data-label="Se ofrece" class="num mono">${l.is_fulfillment ? '-' : numCell(l.target_qty)}</td>
+          <td data-label="ML reporta" class="num mono ${drift ? 'stk-drift' : ''}" ${drift ? 'title="ML reporta una cantidad distinta a la del sitio. Use Enviar para corregirla."' : ''}>
+            ${numCell(l.ml_available_qty)}${drift ? '<span class="stk-drift-note">no coincide</span>' : ''}
+          </td>
+          <td data-label="Estado" class="stk-status-cell c-full">
             <span class="status${st.kind ? ` status--${st.kind}` : ''}">${esc(st.text)}</span>
-            ${l.last_error ? `<span class="stk-err">${esc(l.last_error)}</span>` : ''}
+            ${l.last_error
+              ? `<span class="stk-err" title="${esc(l.last_error)}">${esc(friendlyError(l.last_error))}</span>`
+              : (when ? `<span class="cell-sub">${esc(when)}</span>` : '')}
           </td>
-          <td class="mono ml-nowrap">${esc(fmtDateTime(l.last_pushed_at))}</td>
-          <td>
-            <div class="stk-row-actions">
-              <button type="button" class="btn btn-sm btn-secondary js-stk-push" data-id="${esc(l.id)}" ${!active || l.is_fulfillment ? 'disabled' : ''}>Enviar</button>
-              <button type="button" class="btn btn-sm btn-ghost js-stk-toggle" data-id="${esc(l.id)}" data-active="${active ? 1 : 0}">${active ? 'Pausar' : 'Activar'}</button>
-              <button type="button" class="btn btn-sm btn-ghost js-stk-unlink" data-id="${esc(l.id)}" aria-label="Quitar vínculo">Quitar</button>
+          <td class="c-full">
+            <div class="row-actions">
+              <button type="button" class="btn btn-sm btn-ghost btn-icon js-stk-push" data-id="${esc(l.id)}"
+                title="Enviar el stock ahora" aria-label="Enviar stock de ${esc(name)} a MercadoLibre" ${!isActive || l.is_fulfillment ? 'disabled' : ''}>${ICONS.send}<span class="btn-label">Enviar</span></button>
+              <button type="button" class="btn btn-sm btn-ghost btn-icon js-stk-toggle" data-id="${esc(l.id)}" data-active="${isActive ? 1 : 0}"
+                title="${isActive ? 'Pausar la sincronización' : 'Reanudar la sincronización'}" aria-label="${isActive ? 'Pausar' : 'Reanudar'} ${esc(name)}">${isActive ? ICONS.pause : ICONS.play}<span class="btn-label">${isActive ? 'Pausar' : 'Reanudar'}</span></button>
+              <button type="button" class="btn btn-sm btn-ghost-danger btn-icon js-stk-unlink" data-id="${esc(l.id)}"
+                title="Quitar el vínculo" aria-label="Quitar vínculo de ${esc(name)}">${ICONS.trash}<span class="btn-label">Quitar</span></button>
             </div>
           </td>
         </tr>`;
@@ -1209,17 +1257,17 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       renderListings();
     } catch (e: any) {
       document.getElementById('stkBody')!.innerHTML =
-        `<tr><td colspan="9" class="empty-state">${esc(e.message)}</td></tr>`;
+        `<tr><td colspan="8" class="empty-state">${esc(e.message)}</td></tr>`;
     }
   }
 
   function describePush(r: any) {
     switch (r?.status) {
-      case 'pushed': return `Enviado: ML ofrece ${r.quantity} unidad(es).`;
-      case 'unchanged': return `Sin cambios: ML ya ofrece ${r.quantity} unidad(es).`;
+      case 'pushed': return `Enviado: ML ofrece ${plural(r.quantity, 'unidad', 'unidades')}.`;
+      case 'unchanged': return `Sin cambios: ML ya ofrece ${plural(r.quantity, 'unidad', 'unidades')}.`;
       case 'skipped_full': return 'Publicación Full: el stock lo maneja MercadoLibre.';
       case 'inactive': return 'El vínculo está pausado.';
-      default: return r?.error ? `Error: ${r.error}` : 'No se pudo enviar.';
+      default: return r?.error ? friendlyError(r.error) : 'No se pudo enviar.';
     }
   }
 
@@ -1288,7 +1336,9 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         showStkBanner('info', all ? 'No hay vínculos activos.' : 'No hay envíos pendientes.');
       } else {
         showStkBanner(d.errors ? 'error' : 'success',
-          `${d.pushed} enviado(s), ${d.unchanged} sin cambios${d.skipped_full ? `, ${d.skipped_full} Full` : ''}${d.errors ? `, ${d.errors} con error` : ''}.`);
+          [plural(d.pushed, 'enviada', 'enviadas'), `${d.unchanged} sin cambios`,
+            d.skipped_full ? `${d.skipped_full} Full` : '', d.errors ? `${d.errors} con error` : '']
+            .filter(Boolean).join(', ') + '.');
       }
     } catch (e: any) {
       showStkBanner('error', e.message);
@@ -1494,6 +1544,18 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     if (e.key === 'Enter') { e.preventDefault(); searchItems(); }
   });
   document.getElementById('lnkForm')?.addEventListener('submit', submitLink);
+
+  document.getElementById('btnCopyWebhook')?.addEventListener('click', async (e) => {
+    const btn = e.currentTarget as HTMLButtonElement;
+    const text = document.getElementById('cfgWebhook')!.textContent ?? '';
+    try {
+      await navigator.clipboard.writeText(text);
+      btn.textContent = 'Copiada';
+    } catch {
+      btn.textContent = 'No se pudo copiar';
+    }
+    setTimeout(() => { btn.textContent = 'Copiar'; }, 2000);
+  });
 
   // ── Init ───────────────────────────────────────────────────
   showOAuthResult();
