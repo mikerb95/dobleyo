@@ -5,6 +5,8 @@
 
 import * as db from '../db.js';
 import { logger } from '../logger.js';
+import { mlApi, getSellerId } from './mlAuth.js';
+import { applyOrdersStockAndPush } from './mlStock.js';
 
 /**
  * Convierte una fecha a texto 'YYYY-MM-DD HH:MM:SS' (UTC), el mismo formato que
@@ -19,10 +21,10 @@ function toSqliteDatetime(value) {
 }
 
 class MercadoLibreService {
-  constructor(accessToken) {
-    this.accessToken = accessToken;
-    this.baseUrl = 'https://api.mercadolibre.com';
-  }
+  // Las llamadas a la API pasan por mlApi(), que pone el token vigente (OAuth con
+  // renovación automática, o ML_ACCESS_TOKEN de respaldo). El constructor ya no
+  // recibe token; el parámetro se ignora por compatibilidad con llamadas viejas.
+  constructor() {}
 
   /**
    * Fetch orders from MercadoLibre API
@@ -35,21 +37,10 @@ class MercadoLibreService {
       let offset = 0;
 
       for (let page = 0; page < maxPages; page++) {
-        let url = `${this.baseUrl}/orders/search?seller_id=${sellerId}&sort=date_desc&limit=${limit}&offset=${offset}`;
-        if (since) url += `&order.date_created.from=${encodeURIComponent(since)}`;
+        let path = `/orders/search?seller=${encodeURIComponent(sellerId)}&sort=date_desc&limit=${limit}&offset=${offset}`;
+        if (since) path += `&order.date_created.from=${encodeURIComponent(since)}`;
 
-        const response = await fetch(url, {
-          headers: {
-            'Authorization': `Bearer ${this.accessToken}`,
-            'Content-Type': 'application/json'
-          }
-        });
-
-        if (!response.ok) {
-          throw new Error(`MercadoLibre API error: ${response.status}`);
-        }
-
-        const data = await response.json();
+        const data = (await mlApi(path)) || {};
         const results = data.results || [];
         all.push(...results);
 
@@ -81,7 +72,8 @@ class MercadoLibreService {
    * @returns {Promise<Object>} resumen { processed, failed, saved, total_orders_fetched, since }
    */
   async syncOrders({ incremental = true } = {}) {
-    const sellerId = process.env.ML_SELLER_ID;
+    const sellerId = await getSellerId();
+    if (!sellerId) throw new Error('No hay vendedor de MercadoLibre configurado');
 
     let since = null;
     if (incremental) {
@@ -99,10 +91,11 @@ class MercadoLibreService {
 
     const orders = await this.fetchOrders(sellerId, { since });
     if (!orders.length) {
-      return { processed: 0, failed: 0, saved: 0, total_orders_fetched: 0, since };
+      return { processed: 0, failed: 0, saved: 0, total_orders_fetched: 0, since, stock: null };
     }
 
     const salesData = [];
+    const details = [];
     let processed = 0;
     let failed = 0;
 
@@ -120,6 +113,7 @@ class MercadoLibreService {
         }
 
         salesData.push(await this.transformOrderData(order, orderDetails, shipment));
+        details.push(orderDetails);
         processed++;
       } catch (orderError) {
         logger.error(`Error processing order ${order.id}:`, orderError.message);
@@ -128,7 +122,9 @@ class MercadoLibreService {
     }
 
     const insertedIds = await this.saveSalesData(salesData);
-    return { processed, failed, saved: insertedIds.length, total_orders_fetched: orders.length, since };
+    // Ventas pagadas descuentan stock local; canceladas lo reponen. Idempotente.
+    const stock = await applyOrdersStockAndPush(details);
+    return { processed, failed, saved: insertedIds.length, total_orders_fetched: orders.length, since, stock };
   }
 
   /**
@@ -138,19 +134,7 @@ class MercadoLibreService {
    */
   async fetchOrderDetails(orderId) {
     try {
-      const url = `${this.baseUrl}/orders/${orderId}`;
-      const response = await fetch(url, {
-        headers: {
-          'Authorization': `Bearer ${this.accessToken}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch order ${orderId}: ${response.status}`);
-      }
-
-      return await response.json();
+      return await mlApi(`/orders/${encodeURIComponent(orderId)}`);
     } catch (error) {
       logger.error(`Error fetching order details for ${orderId}:`, error);
       throw error;
@@ -164,19 +148,7 @@ class MercadoLibreService {
    */
   async fetchShipment(shipmentId) {
     try {
-      const url = `${this.baseUrl}/shipments/${shipmentId}`;
-      const response = await fetch(url, {
-        headers: {
-          'Authorization': `Bearer ${this.accessToken}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch shipment ${shipmentId}: ${response.status}`);
-      }
-
-      return await response.json();
+      return await mlApi(`/shipments/${encodeURIComponent(shipmentId)}`);
     } catch (error) {
       logger.error(`Error fetching shipment ${shipmentId}:`, error);
       throw error;
@@ -195,6 +167,7 @@ class MercadoLibreService {
       // Extract products information
       const products = (orderDetails.order_items || []).map(item => ({
         id: item.item.id,
+        variation_id: item.item.variation_id ?? null,
         title: item.item.title,
         quantity: item.quantity,
         unit_price: item.unit_price,
