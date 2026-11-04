@@ -310,6 +310,71 @@ CREATE TABLE IF NOT EXISTS sales_tracking (
 CREATE INDEX IF NOT EXISTS idx_sales_ml_order_id ON sales_tracking(ml_order_id);
 CREATE INDEX IF NOT EXISTS idx_sales_purchase_date ON sales_tracking(purchase_date);
 CREATE INDEX IF NOT EXISTS idx_sales_city ON sales_tracking(recipient_city);
+
+-- Centralizador de stock con MercadoLibre (migración create_ml_stock_sync.js).
+-- ml_oauth: conexión OAuth del vendedor (una fila, tokens cifrados AES-256-GCM).
+CREATE TABLE IF NOT EXISTS ml_oauth (
+    id                INTEGER PRIMARY KEY CHECK (id = 1),
+    ml_user_id        TEXT NOT NULL,
+    nickname          TEXT,
+    access_token_enc  TEXT NOT NULL,
+    refresh_token_enc TEXT NOT NULL,
+    expires_at        TEXT NOT NULL,
+    scope             TEXT,
+    connected_by      INTEGER,
+    connected_at      TEXT NOT NULL DEFAULT (datetime('now')),
+    refreshed_at      TEXT,
+    last_error        TEXT,
+    last_error_at     TEXT
+);
+
+-- ml_listings: publicación (y variación) de ML ligada a un producto o variante del sitio.
+CREATE TABLE IF NOT EXISTS ml_listings (
+    id               INTEGER PRIMARY KEY AUTOINCREMENT,
+    product_id       VARCHAR(50) NOT NULL,
+    variant_id       INTEGER,
+    ml_item_id       TEXT NOT NULL,
+    ml_variation_id  TEXT NOT NULL DEFAULT '', -- '' = publicación sin variaciones
+    title            TEXT,
+    permalink        TEXT,
+    logistic_type    TEXT,                     -- 'fulfillment' = Full: ML maneja el stock
+    stock_buffer     INTEGER NOT NULL DEFAULT 0 CHECK (stock_buffer >= 0), -- unidades que no se ofrecen en ML
+    is_active        INTEGER NOT NULL DEFAULT 1,
+    pending_push     INTEGER NOT NULL DEFAULT 1,
+    last_pushed_qty  INTEGER,
+    last_pushed_at   TEXT,
+    ml_available_qty INTEGER,
+    ml_status        TEXT,
+    ml_checked_at    TEXT,
+    last_error       TEXT,
+    last_error_at    TEXT,
+    linked_at        TEXT NOT NULL DEFAULT (datetime('now')), -- órdenes anteriores no descuentan stock
+    created_by       INTEGER,
+    updated_at       TEXT,
+    UNIQUE (ml_item_id, ml_variation_id),
+    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+    FOREIGN KEY (variant_id) REFERENCES product_variants(id) ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS idx_ml_listings_product ON ml_listings(product_id);
+CREATE INDEX IF NOT EXISTS idx_ml_listings_pending ON ml_listings(pending_push) WHERE is_active = 1;
+
+-- ml_order_stock: descuento local por ítem de orden ML (idempotencia y reposición exacta).
+CREATE TABLE IF NOT EXISTS ml_order_stock (
+    id               INTEGER PRIMARY KEY AUTOINCREMENT,
+    ml_order_id      TEXT NOT NULL,
+    listing_id       INTEGER,
+    ml_item_id       TEXT NOT NULL,
+    ml_variation_id  TEXT NOT NULL DEFAULT '',
+    product_id       VARCHAR(50) NOT NULL,
+    variant_id       INTEGER,
+    quantity         INTEGER NOT NULL,
+    deducted_qty     INTEGER NOT NULL DEFAULT 0, -- lo que de verdad se descontó (menor si hubo sobreventa)
+    oversold         INTEGER NOT NULL DEFAULT 0,
+    applied_at       TEXT NOT NULL DEFAULT (datetime('now')),
+    reverted_at      TEXT,
+    UNIQUE (ml_order_id, ml_item_id, ml_variation_id)
+);
+CREATE INDEX IF NOT EXISTS idx_ml_order_stock_order ON ml_order_stock(ml_order_id);
 CREATE INDEX IF NOT EXISTS idx_sales_state ON sales_tracking(recipient_state);
 
 -- Demand Forecasts (Pronóstico de demanda — analítica con Python)
