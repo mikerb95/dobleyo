@@ -65,10 +65,18 @@ const {
     <!-- Barra superior de anuncio -->
     <div class="topbar" id="topbar" transition:persist={`topbar-${lang}`}>
       <div class="container">
+        {/* Una sola línea siempre: en móvil va la versión corta para que la
+            barra no crezca a 2 o 3 líneas y empuje el header. */}
         {lang === "en" ? (
-          <span>New: Free worldwide shipping on orders over $50 · Fresh harvests from Huila</span>
+          <>
+            <span class="topbar__msg topbar__msg--long">New: Free worldwide shipping on orders over $50 · Fresh harvests from Huila</span>
+            <span class="topbar__msg topbar__msg--short">Free shipping on orders over $50</span>
+          </>
         ) : (
-          <span>Novedad: Envíos nacionales gratis desde $120.000 · Nuevas cosechas del Huila</span>
+          <>
+            <span class="topbar__msg topbar__msg--long">Novedad: Envíos nacionales gratis desde $120.000 · Nuevas cosechas del Huila</span>
+            <span class="topbar__msg topbar__msg--short">Envío gratis desde $120.000</span>
+          </>
         )}
         <button class="topbar-close" aria-label={lang === "en" ? "Close" : "Cerrar"} id="topbarClose">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">

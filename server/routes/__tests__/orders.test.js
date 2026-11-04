@@ -36,6 +36,12 @@ vi.mock('../../services/geocoding.js', () => ({
     geocodeOrderAsync: vi.fn().mockResolvedValue(null),
 }));
 
+// El centralizador de MercadoLibre consulta la BD en segundo plano; aquí se
+// aísla para no consumir las respuestas encadenadas del mock de `query`.
+vi.mock('../../services/mlStock.js', () => ({
+    scheduleStockSync: vi.fn(),
+}));
+
 import { ordersRouter } from '../orders.js';
 import { query } from '../../db.js';
 
