@@ -4,6 +4,7 @@ import { body, validationResult } from 'express-validator';
 import { query, withTransaction } from '../db.js';
 import { authenticateToken, requireRole } from '../auth.js';
 import { logAudit } from '../services/audit.js';
+import { scheduleStockSync } from '../services/mlStock.js';
 import { apiLimiter } from '../middleware/rateLimit.js';
 
 export const externalSalesRouter = Router();
@@ -154,19 +155,16 @@ externalSalesRouter.post('/',
         const total = Math.max(0, subtotal - Number(discount));
 
         // Insertar cabecera
-        const saleResult = await client.execute({
-          sql: `INSERT INTO external_sales
+        const saleResult = await client.query(`INSERT INTO external_sales
                   (sale_number, channel, channel_detail, customer_name, customer_contact,
                    customer_city, customer_state, sale_date, subtotal, discount, total,
                    notes, status, registered_by)
-                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
-          args: [
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`, [
             sale_number, channel, channel_detail || null, customer_name || null,
             customer_contact || null, customer_city || null, customer_state || null,
             sale_date, subtotal, Number(discount), total,
             notes || null, status, req.user.id,
-          ],
-        });
+          ]);
 
         saleId = Number(saleResult.lastInsertRowid);
 
@@ -176,10 +174,7 @@ externalSalesRouter.post('/',
           const itemSubtotal = quantity * unit_price;
 
           // Obtener stock actual
-          const prodResult = await client.execute({
-            sql: 'SELECT stock_quantity FROM products WHERE id = ?',
-            args: [product_id],
-          });
+          const prodResult = await client.query('SELECT stock_quantity FROM products WHERE id = ?', [product_id]);
           if (!prodResult.rows[0]) {
             throw Object.assign(new Error(`Producto no encontrado: ${product_id}`), { status: 422 });
           }
@@ -188,30 +183,22 @@ externalSalesRouter.post('/',
           const stockAfter = stockBefore - quantity;
 
           // Insertar ítem
-          await client.execute({
-            sql: `INSERT INTO external_sale_items (sale_id, product_id, quantity, unit_price, subtotal, lot_id)
-                  VALUES (?,?,?,?,?,?)`,
-            args: [saleId, product_id, quantity, unit_price, itemSubtotal, lot_id || null],
-          });
+          await client.query(`INSERT INTO external_sale_items (sale_id, product_id, quantity, unit_price, subtotal, lot_id)
+                  VALUES (?,?,?,?,?,?)`, [saleId, product_id, quantity, unit_price, itemSubtotal, lot_id || null]);
 
           // Solo ajustar inventario si la venta está completada
           if (status === 'completada') {
-            await client.execute({
-              sql: `UPDATE products SET stock_quantity = ?, updated_at = datetime('now') WHERE id = ?`,
-              args: [stockAfter, product_id],
-            });
+            await client.query(`UPDATE products SET stock_quantity = ?, updated_at = datetime('now') WHERE id = ?`, [stockAfter, product_id]);
 
-            await client.execute({
-              sql: `INSERT INTO inventory_movements
+            await client.query(`INSERT INTO inventory_movements
                       (product_id, movement_type, quantity, quantity_before, quantity_after, reason, reference, user_id)
-                    VALUES (?, 'salida', ?, ?, ?, 'venta_externa', ?, ?)`,
-              args: [product_id, quantity, stockBefore, stockAfter, sale_number, req.user.id],
-            });
+                    VALUES (?, 'salida', ?, ?, ?, 'venta_externa', ?, ?)`, [product_id, quantity, stockBefore, stockAfter, sale_number, req.user.id]);
           }
         }
       });
 
       await logAudit(req.user.id, 'create', 'external_sale', saleId, { channel, items: items.length, status });
+      if (status === 'completada') scheduleStockSync(items.map((i) => i.product_id));
 
       res.status(201).json({ success: true, id: saleId });
     } catch (err) {
@@ -243,34 +230,23 @@ externalSalesRouter.put('/:id/cancel', async (req, res) => {
       // Revertir inventario solo si estaba completada
       if (sale.status === 'completada') {
         for (const item of itemsResult.rows) {
-          const prodResult = await client.execute({
-            sql: 'SELECT stock_quantity FROM products WHERE id = ?',
-            args: [item.product_id],
-          });
+          const prodResult = await client.query('SELECT stock_quantity FROM products WHERE id = ?', [item.product_id]);
           const stockBefore = prodResult.rows[0]?.stock_quantity || 0;
           const stockAfter = stockBefore + item.quantity;
 
-          await client.execute({
-            sql: `UPDATE products SET stock_quantity = ?, updated_at = datetime('now') WHERE id = ?`,
-            args: [stockAfter, item.product_id],
-          });
+          await client.query(`UPDATE products SET stock_quantity = ?, updated_at = datetime('now') WHERE id = ?`, [stockAfter, item.product_id]);
 
-          await client.execute({
-            sql: `INSERT INTO inventory_movements
+          await client.query(`INSERT INTO inventory_movements
                     (product_id, movement_type, quantity, quantity_before, quantity_after, reason, reference, user_id)
-                  VALUES (?, 'devolucion', ?, ?, ?, 'cancelacion_venta_externa', ?, ?)`,
-            args: [item.product_id, item.quantity, stockBefore, stockAfter, sale.sale_number, req.user.id],
-          });
+                  VALUES (?, 'devolucion', ?, ?, ?, 'cancelacion_venta_externa', ?, ?)`, [item.product_id, item.quantity, stockBefore, stockAfter, sale.sale_number, req.user.id]);
         }
       }
 
-      await client.execute({
-        sql: `UPDATE external_sales SET status = 'cancelada', updated_at = datetime('now') WHERE id = ?`,
-        args: [id],
-      });
+      await client.query(`UPDATE external_sales SET status = 'cancelada', updated_at = datetime('now') WHERE id = ?`, [id]);
     });
 
     await logAudit(req.user.id, 'cancel', 'external_sale', id, { sale_number: sale.sale_number });
+    if (sale.status === 'completada') scheduleStockSync(itemsResult.rows.map((i) => i.product_id));
 
     res.json({ success: true });
   } catch (err) {
