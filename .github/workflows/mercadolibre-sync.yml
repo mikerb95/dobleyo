@@ -1,0 +1,29 @@
+# Red de seguridad del canal MercadoLibre (independiente del webhook de ML).
+# Scheduler externo gratuito (NO usa Vercel Cron): GitHub Actions invoca cada
+# 30 minutos el endpoint protegido /api/mercadolibre/cron-sync, que:
+#   - trae las órdenes nuevas de ML; las pagadas descuentan stock del sitio y
+#     las canceladas lo reponen (idempotente: el webhook y el cron no duplican)
+#   - reintenta los envíos de stock a ML que quedaron pendientes por un error
+#   - de paso mantiene vivo el token OAuth (se renueva antes de vencer)
+#
+# Requiere dos secretos en el repo (Settings → Secrets and variables → Actions):
+#   - SITE_BASE_URL   p.ej. https://dobleyo.cafe
+#   - CRON_SECRET     el mismo valor configurado en Vercel (server/routes/mercadolibre.js)
+name: Sincronización MercadoLibre
+
+on:
+  schedule:
+    - cron: "15,45 13-23,0-4 * * *"   # cada 30 min, 08:00–23:00 Colombia, desfasado del de envíos
+  workflow_dispatch: {}               # permite ejecutarlo manualmente
+
+jobs:
+  ml-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Disparar sincronización de órdenes y stock
+        run: |
+          code=$(curl -sS -o /tmp/out.json -w "%{http_code}" \
+            -X POST "${{ secrets.SITE_BASE_URL }}/api/mercadolibre/cron-sync" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}")
+          echo "HTTP $code"; cat /tmp/out.json
+          test "$code" = "200"
