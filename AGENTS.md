@@ -126,6 +126,7 @@ SELECT * FROM orders WHERE user_id = $1 AND status = '${status}';
 - **Enfoque**: Mobile-first. Estilos base para mobile, `@media (min-width: ...)` para desktop.
 - **Unidades**: `rem` para tipografía/espaciado, `px` para borders/shadows, `%`/`vw` para layout.
 - **Touch targets**: Mínimo `44px × 44px` para elementos interactivos en mobile.
+- **Header público**: se compacta y se oculta al hacer scroll (`layout.js`). Todo lo que se pegue debajo de él (`position: sticky`, paneles fijos) usa `top: calc(var(--nav-offset) + Xrem)` con `transition: top var(--nav-dur)`, nunca un `top` fijo ni `--header-height` (quedaría tapado o con hueco). `--header-top`/`--header-height`/`--page-offset-top` son métricas en reposo, solo para el relleno de `<main>` y el hero. No poner `transform` en `.site-header`: el buscador y la vista previa del carrito son `position: fixed` dentro de él.
 
 ```css
 /* ✅ Correcto — Mobile first */

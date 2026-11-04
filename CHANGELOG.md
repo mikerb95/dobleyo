@@ -58,6 +58,19 @@ El "centralizador" que debía decirle a MercadoLibre las existencias reales nunc
 
 ---
 
+## 2026-11-03: Header inteligente: compacto, se oculta al bajar e indicador deslizante (Agente: Claude)
+
+### Contexto
+Patrones revisados en NN/g (headers parcialmente persistentes, slide de 300-400 ms, sin "stalker menu"), Smashing y sitios de café de referencia medidos con Playwright (Coffee Collective oculta el header al bajar; Onyx y Coffee Collective dejan ir la barra de anuncio con el scroll). Además, el resumen de `/cart` y `/checkout` y la barra lateral de la cuenta se pegaban a 1.5rem del borde: quedaban debajo del header fijo.
+
+### Cambios
+- **`public/assets/js/layout.js`**: la barra de anuncio se desplaza con la página y el header la sigue hasta `top: 0`. Clases en `<html>`: `nav-scrolled` (sombra), `nav-compact` (a 80px de scroll) y `nav-hidden` (se oculta al bajar y vuelve con 8px hacia arriba). No se oculta con buscador, menú, carrito, modal o desplegable abiertos, ni con foco de teclado en el header; al abrir el buscador con `/` estando oculto, reaparece. Las transiciones de posición solo corren en los cambios de estado (`nav-anim`). Ya no mide alturas.
+- **`public/assets/css/styles.css`**: variables dinámicas `--nav-top`, `--nav-h`, `--nav-offset` separadas de las de reposo (el contenido no salta). Contenedor del header con alto explícito; en escritorio compacto pasa de 93 a 65px (logo 80 a 52px). `scroll-padding-top` para anclas. Menú móvil, buscador, `.filters` y barras de `/tienda` usan `--nav-offset`. Indicador `.nav-indicator` y marca de página actual en el menú móvil (tinte y punto caramelo).
+- **`src/components/Header.astro`**: enlace de la página actual con `aria-current="page"` (la clase `.active` existía en CSS pero nada la ponía) y línea caramelo que se desliza al enlace bajo el mouse o con foco y vuelve a la página actual; viaja al nuevo enlace al navegar. Fuera la medición de altura duplicada.
+- **`cart`, `checkout`, `cuenta`, `en/account`, `suscripcion`, `desarrollo-ia`**: sus columnas pegajosas usan `--nav-offset`, así no quedan bajo el header y suben cuando este se oculta.
+
+---
+
 ## 2026-11-03: Barra de anuncio y navbar sin solapes en ningún ancho (Agente: Claude)
 
 ### Contexto
