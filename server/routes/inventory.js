@@ -5,6 +5,7 @@ import { authenticateToken, requireRole } from '../auth.js';
 import { apiLimiter } from '../middleware/rateLimit.js';
 import { logAudit } from '../services/audit.js';
 import { notifyInventoryEntry } from '../services/alerts.js';
+import { retireListings, scheduleStockSync } from '../services/mlStock.js';
 
 export const inventoryRouter = express.Router();
 
@@ -365,6 +366,8 @@ inventoryRouter.put('/products/:id', async (req, res) => {
     if (Object.keys(changed).length > 0) {
       await logAudit(req.user?.id, 'update', 'product', id, { name: before.name, changed });
     }
+    // Activar o desactivar cambia lo que se puede vender: ML debe reflejarlo.
+    if (changed.is_active) scheduleStockSync([id]);
 
     res.json({
       success: true,
@@ -389,11 +392,14 @@ inventoryRouter.delete('/products/:id', async (req, res) => {
     }
 
     if (hard === 'true') {
+      // Antes de borrar: sus publicaciones de ML quedan en 0 y se quitan los vínculos.
+      await retireListings({ productId: id });
       // Eliminación física (arrastra variantes por ON DELETE CASCADE)
       await query('DELETE FROM products WHERE id = ?', [id]);
     } else {
       // Soft delete: el producto deja de ser visible en la tienda
       await query("UPDATE products SET is_active = 0, updated_at = datetime('now') WHERE id = ?", [id]);
+      scheduleStockSync([id]); // inactivo = 0 disponible en ML
     }
 
     await logAudit(req.user?.id, hard === 'true' ? 'delete' : 'deactivate', 'product', id, {
@@ -471,6 +477,7 @@ inventoryRouter.post('/products/:id/variants', async (req, res) => {
     await logAudit(req.user?.id, 'create', 'product_variant', variantId, {
       product_id: productId, size_label, grind_label, price_cop
     });
+    scheduleStockSync([productId]);
 
     res.status(201).json({ success: true, variantId, message: 'Variante creada exitosamente' });
   } catch (error) {
@@ -553,6 +560,9 @@ inventoryRouter.put('/variants/:variantId', async (req, res) => {
       fields: Object.keys(req.body),
       ...(hasStockUpdate && stockAfter !== stockBefore ? { stockBefore, stockAfter } : {})
     });
+    if ((hasStockUpdate && stockAfter !== stockBefore) || req.body.is_active !== undefined) {
+      scheduleStockSync([variant.product_id]);
+    }
 
     res.json({ success: true, message: 'Variante actualizada exitosamente' });
   } catch (error) {
@@ -574,7 +584,9 @@ inventoryRouter.delete('/variants/:variantId', async (req, res) => {
       return res.status(404).json({ success: false, error: 'Variante no encontrada' });
     }
 
+    await retireListings({ variantId: Number(variantId) });
     await query('DELETE FROM product_variants WHERE id = ?', [variantId]);
+    scheduleStockSync([existing.rows[0].product_id]);
 
     await logAudit(req.user?.id, 'delete', 'product_variant', variantId, {
       product_id: existing.rows[0].product_id,
@@ -677,6 +689,7 @@ inventoryRouter.post('/movements', async (req, res) => {
     await logAudit(user_id, movement_type, 'product', product_id, {
       stockBefore: currentStock, stockAfter: newStock, reason, reference
     });
+    scheduleStockSync([product_id]);
 
     res.json({
       success: true,
@@ -932,6 +945,7 @@ inventoryRouter.post('/entrada', async (req, res) => {
       newStock,
       reason,
     });
+    scheduleStockSync([product_id]);
 
     res.status(201).json({
       success: true,

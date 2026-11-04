@@ -620,7 +620,7 @@ export async function listListingsWithStock() {
     `SELECT l.*, p.name AS product_name, p.sku AS product_sku,
             TRIM(COALESCE(v.size_label, '') || ' ' || COALESCE(v.grind_label, '')) AS variant_label
        FROM ml_listings l
-       JOIN products p ON p.id = l.product_id
+  LEFT JOIN products p ON p.id = l.product_id
   LEFT JOIN product_variants v ON v.id = l.variant_id
    ORDER BY p.name, variant_label, l.id`,
   );
