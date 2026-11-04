@@ -423,11 +423,11 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   /* Tabla de stock */
   .pg-mercadolibre .stk-buffer-input { width: 56px; height: 28px; text-align: right; font-family: var(--font-mono); }
   .pg-mercadolibre .stk-drift { color: var(--c-error); font-weight: 600; }
-  .pg-mercadolibre .stk-drift-note { display: block; font-size: 10px; font-weight: 500; color: var(--c-error); font-family: inherit; }
+  .pg-mercadolibre .stk-drift-note { display: block; font-size: 11px; font-weight: 500; color: var(--c-error); font-family: var(--font-ui); }
   .pg-mercadolibre .stk-status-cell { min-width: 150px; }
   .pg-mercadolibre .stk-err {
-    display: block; font-size: 11px; color: var(--c-error); margin-top: 3px;
-    max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: help;
+    display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden;
+    font-size: 11px; line-height: 1.4; color: var(--c-error); margin-top: 3px; max-width: 240px; cursor: help;
   }
   .pg-mercadolibre .stk-th-actions { width: 1%; }
 
@@ -445,14 +445,17 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     }
     .pg-mercadolibre .rtable tbody td[data-label]::before {
       content: attr(data-label); display: block;
-      font-size: 11px; color: var(--text-3); margin-bottom: 2px; font-family: var(--font-sans, inherit); font-weight: 400;
+      font-size: 11px; color: var(--text-3); margin-bottom: 2px; font-family: var(--font-ui); font-weight: 400;
     }
     .pg-mercadolibre .rtable td.empty-state { grid-column: 1 / -1; text-align: center; }
     .pg-mercadolibre .rtable .c-full { grid-column: 1 / -1; }
     .pg-mercadolibre .rtable .row-actions { justify-content: flex-start; flex-wrap: wrap; gap: 6px; }
     .pg-mercadolibre .rtable .row-actions .btn-icon { width: auto; padding: 0 10px; }
     .pg-mercadolibre .rtable .row-actions .btn-icon .btn-label { display: inline; }
-    .pg-mercadolibre .rtable .cell-title, .pg-mercadolibre .stk-err { max-width: 100%; white-space: normal; }
+    .pg-mercadolibre .rtable .cell-title, .pg-mercadolibre .stk-err { max-width: 100%; }
+    /* En tarjeta, las acciones fantasma llevan borde para alinearse y leerse como botón. */
+    .pg-mercadolibre .rtable .btn-ghost { border-color: var(--rule-2); }
+    .pg-mercadolibre .rtable .btn-ghost-danger { border-color: var(--c-error-border); }
     .pg-mercadolibre .stk-table tbody tr { grid-template-columns: repeat(4, minmax(0, 1fr)); }
     .pg-mercadolibre .stk-table .c-full-sm { grid-column: span 2; }
     .pg-mercadolibre .stk-table td.num { text-align: left; }
@@ -842,20 +845,20 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     };
     const key = (s ?? '').toLowerCase();
     const cls = map[key] ?? 'neutral';
-    const labels: Record<string, string> = { paid:'Pagado', approved:'Aprobado', pending:'Pendiente', cancelled:'Cancelado', rejected:'Rechazado' };
+    const labels: Record<string, string> = { paid:'Pagado', approved:'Aprobado', pending:'Pendiente', in_process:'En proceso', cancelled:'Cancelado', rejected:'Rechazado', refunded:'Reembolsado' };
     return `<span class="status ${STATUS_DOT[cls] ?? ''}">${esc(labels[key] ?? s ?? '-')}</span>`;
   }
 
   function badgeShipping(s: string) {
     const map: Record<string, string> = {
       delivered: 'success', handling: 'info', ready_to_ship: 'info',
-      shipped: 'info', not_delivered: 'error', cancelled: 'error',
+      shipped: 'info', not_delivered: 'error', cancelled: 'error', pending: 'warning',
     };
     const key = (s ?? '').toLowerCase();
     const cls = map[key] ?? 'neutral';
     const labels: Record<string, string> = {
-      delivered:'Entregado', handling:'Preparando', ready_to_ship:'Listo', shipped:'Enviado',
-      not_delivered:'No entregado', cancelled:'Cancelado',
+      delivered:'Entregado', handling:'Preparando', ready_to_ship:'Listo para enviar', shipped:'Enviado',
+      not_delivered:'No entregado', cancelled:'Cancelado', pending:'Pendiente', to_be_agreed:'A convenir', not_specified:'Sin envío',
     };
     return `<span class="status ${STATUS_DOT[cls] ?? ''}">${esc(labels[key] ?? s ?? '-')}</span>`;
   }
