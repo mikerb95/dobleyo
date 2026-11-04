@@ -7,6 +7,7 @@ import { query, withTransaction } from '../db.js';
 import { authenticateToken, requireRole, optionalAuth } from '../auth.js';
 import { checkoutLimiter } from '../middleware/rateLimit.js';
 import { logAudit, logSystemAudit } from '../services/audit.js';
+import { scheduleStockSync } from '../services/mlStock.js';
 import { sendOrderConfirmationEmail, sendOrderStatusEmail } from '../services/email.js';
 import { geocodeOrderAsync } from '../services/geocoding.js';
 import { trackingUrlForGuide } from '../services/interrapidisimo.js';
@@ -172,6 +173,8 @@ async function deductStockForOrder(orderId, reference) {
     }
 
     await query(`UPDATE customer_orders SET stock_deducted_at = datetime('now') WHERE id = ?`, [orderId]);
+    // El stock cambió: MercadoLibre debe ofrecer lo mismo que queda en el sitio.
+    scheduleStockSync(items.rows.map((i) => i.product_id));
     return true;
 }
 
@@ -228,6 +231,7 @@ async function replenishStockForOrder(orderId, reference, reasonLabel) {
         }
     }
     await query(`UPDATE customer_orders SET stock_deducted_at = NULL WHERE id = ?`, [orderId]);
+    scheduleStockSync(items.rows.map((i) => i.product_id));
 }
 
 // ─── POST /api/orders ─────────────────────────────────────────────────────
