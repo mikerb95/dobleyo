@@ -603,8 +603,39 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   const fmt = (n: number) =>
     new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(n);
 
-  const fmtDate = (s: string) =>
-    s ? new Date(s).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' }) : '-';
+  // ── Fechas: un solo formato en toda la página ──────────────
+  // La BD guarda UTC sin zona ('YYYY-MM-DD HH:MM:SS'); se muestra en hora de Bogotá.
+  // Fecha: "03 nov 2026". Fecha y hora: "03 nov, 09:12".
+  const TZ = 'America/Bogota';
+  function parseDbDate(s: string | null | undefined): Date | null {
+    if (!s) return null;
+    const str = String(s);
+    const iso = /^\d{4}-\d{2}-\d{2}$/.test(str) ? `${str}T12:00:00Z`
+      : /[zZ]|[+-]\d{2}:?\d{2}$/.test(str) ? str : `${str.replace(' ', 'T')}Z`;
+    const d = new Date(iso);
+    return Number.isNaN(d.getTime()) ? null : d;
+  }
+  function dateParts(d: Date) {
+    const parts = new Intl.DateTimeFormat('es-CO', {
+      timeZone: TZ, day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
+    }).formatToParts(d);
+    const get = (t: string) => parts.find((p) => p.type === t)?.value ?? '';
+    return { day: get('day'), month: get('month').replace('.', ''), year: get('year'), time: `${get('hour')}:${get('minute')}` };
+  }
+  const fmtDate = (s: string | null | undefined) => {
+    const d = parseDbDate(s);
+    if (!d) return '-';
+    const p = dateParts(d);
+    return `${p.day} ${p.month} ${p.year}`;
+  };
+  const fmtDateTime = (s: string | null | undefined) => {
+    const d = parseDbDate(s);
+    if (!d) return '-';
+    const p = dateParts(d);
+    return `${p.day} ${p.month}, ${p.time}`;
+  };
+  /** Singular o plural según la cantidad: plural(3, 'pedido', 'pedidos') → "3 pedidos". */
+  const plural = (n: number, one: string, many: string) => `${Number(n).toLocaleString('es-CO')} ${Number(n) === 1 ? one : many}`;
 
   // ── Load stats ─────────────────────────────────────────────
   async function loadStats() {
@@ -628,7 +659,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         document.getElementById('kpiRevenue')!.textContent = fmt(ov.total_revenue ?? 0);
         document.getElementById('kpiAvg')!.textContent = fmt(ov.avg_order_value ?? 0);
         document.getElementById('kpiCities')!.textContent = (ov.unique_cities ?? 0).toString();
-        document.getElementById('kpiStates')!.textContent = `en ${ov.unique_states ?? 0} departamentos`;
+        document.getElementById('kpiStates')!.textContent = `en ${plural(ov.unique_states ?? 0, 'departamento', 'departamentos')}`;
       }
 
       renderCities(json.top_cities ?? []);
@@ -637,13 +668,6 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
   // ── Estado de la conexión ──────────────────────────────────
   // /status?check=1 llama a MercadoLibre con el token: verde solo si responde.
-  const fmtDateTime = (s: string | null) => {
-    if (!s) return '-';
-    const d = new Date(/[zZ]|[+-]\d{2}:?\d{2}$/.test(s) ? s : `${String(s).replace(' ', 'T')}Z`);
-    if (Number.isNaN(d.getTime())) return '-';
-    return d.toLocaleString('es-CO', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'America/Bogota' });
-  };
-
   function setStatusText(el: HTMLElement, kind: 'ok'|'warn'|'error'|'info'|'', text: string) {
     el.className = `status${kind ? ` status--${kind}` : ''}`;
     el.textContent = text;
@@ -691,13 +715,14 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       const { connection: conn, live, cron_secret_configured, last_sync, webhook_url, stock } = json.data;
 
       renderConnActions(conn);
-      document.getElementById('cfgAccount')!.textContent =
-        conn.nickname ? `${conn.nickname} (${conn.ml_user_id})` : (conn.ml_user_id ?? '-');
+      document.getElementById('cfgAccount')!.textContent = conn.nickname || conn.ml_user_id || '-';
+      document.getElementById('cfgAccount')!.title = conn.ml_user_id ? `ID de vendedor ${conn.ml_user_id}` : '';
       document.getElementById('cfgExpires')!.textContent =
-        conn.source === 'oauth' ? `${fmtDateTime(conn.expires_at)} (se renueva solo)` : (conn.source === 'env' ? 'Desconocido' : '-');
+        conn.source === 'oauth' ? `Se renueva solo · vence ${fmtDateTime(conn.expires_at)}`
+          : (conn.source === 'env' ? 'Fijo, sin renovación' : '-');
       document.getElementById('cfgLastSync')!.textContent = fmtDateTime(last_sync);
       if (webhook_url) document.getElementById('cfgWebhook')!.textContent = webhook_url;
-      setStatusText(cfgCron, cron_secret_configured ? 'ok' : '', cron_secret_configured ? 'Configurado' : 'No configurado');
+      setStatusText(cfgCron, cron_secret_configured ? 'ok' : 'warn', cron_secret_configured ? 'Activa' : 'Falta CRON_SECRET');
 
       if (!conn.connected) {
         setConnectionStatus('err', 'MercadoLibre no está conectado',
@@ -714,8 +739,8 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         setStatusText(cfgConn, 'warn', 'Token fijo');
       } else {
         const who = live?.nickname || conn.nickname || conn.ml_user_id;
-        const extra = stock ? ` · ${stock.linked} publicación(es) vinculada(s)` : '';
-        setConnectionStatus('ok', `Conectado a MercadoLibre como ${who}`, `Token vigente hasta ${fmtDateTime(conn.expires_at)}, se renueva solo${extra}`);
+        const extra = stock ? ` · ${plural(stock.linked, 'publicación vinculada', 'publicaciones vinculadas')}` : '';
+        setConnectionStatus('ok', `Conectado a MercadoLibre como ${who}`, `El token se renueva solo${extra}`);
         setStatusText(cfgConn, 'ok', 'OAuth');
       }
       if (conn.last_error && conn.source === 'oauth') {
@@ -738,7 +763,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   async function loadOrders(page = 0) {
     currentPage = page;
     const tbody = document.getElementById('ordersBody')!;
-    tbody.innerHTML = '<tr><td colspan="10" class="empty-state">Cargando...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9" class="empty-state">Cargando...</td></tr>';
 
     const city = (document.getElementById('filterCity') as HTMLInputElement).value.trim();
     const dateFrom = (document.getElementById('filterFrom') as HTMLInputElement).value;
@@ -759,7 +784,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       const json = await res.json();
 
       if (!res.ok || !json.success) {
-        tbody.innerHTML = `<tr><td colspan="10" class="empty-state">No se pudieron cargar los pedidos. ${esc(json.error ?? '')}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="9" class="empty-state">No se pudieron cargar los pedidos. ${esc(json.error ?? '')}</td></tr>`;
         return;
       }
 
@@ -768,28 +793,29 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       allSalesCache = rows;
       totalOrders = json.pagination?.total ?? rows.length;
 
-      document.getElementById('tableSubtitle')!.textContent =
-        `${totalOrders.toLocaleString('es-CO')} pedidos`;
+      document.getElementById('tableSubtitle')!.textContent = plural(totalOrders, 'pedido', 'pedidos');
 
       if (rows.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="10" class="empty-state">No hay pedidos con estos filtros.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="9" class="empty-state">No hay pedidos con estos filtros.</td></tr>';
         document.getElementById('paginationBar')!.style.display = 'none';
         return;
       }
 
       tbody.innerHTML = rows.map((r: any) => `
         <tr>
-          <td class="mono ml-nowrap">${esc(r.ml_order_id ?? r.id ?? '-')}</td>
-          <td class="mono ml-nowrap">${fmtDate(r.purchase_date ?? r.created_at)}</td>
-          <td>${esc(r.buyer_nickname ?? r.buyer_name ?? '-')}</td>
-          <td>${esc(r.recipient_city ?? '-')}</td>
-          <td>${esc(r.recipient_state ?? '-')}</td>
-          <td class="num mono ml-nowrap">${fmt(r.total_amount ?? 0)}</td>
-          <td>${badgeStatus(r.payment_status)}</td>
-          <td>${badgeShipping(r.shipping_status)}</td>
-          <td>${crmCell(r)}</td>
-          <td>
-            ${r.ml_order_id ? `<a href="https://www.mercadolibre.com.co/ventas/${encodeURIComponent(r.ml_order_id)}/detalle" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-secondary" title="Ver en MercadoLibre" aria-label="Ver pedido en MercadoLibre">↗</a>` : ''}
+          <td data-label="Pedido ML" class="mono ml-nowrap">${esc(r.ml_order_id ?? r.id ?? '-')}</td>
+          <td data-label="Fecha" class="ml-nowrap">${esc(fmtDate(r.purchase_date ?? r.created_at))}</td>
+          <td data-label="Comprador">${esc(r.buyer_nickname ?? r.buyer_name ?? '-')}</td>
+          <td data-label="Destino">
+            <span class="cell-main">${esc(r.recipient_city ?? '-')}</span>
+            ${r.recipient_state && r.recipient_state !== r.recipient_city ? `<span class="cell-sub">${esc(r.recipient_state)}</span>` : ''}
+          </td>
+          <td data-label="Total" class="num mono ml-nowrap">${fmt(r.total_amount ?? 0)}</td>
+          <td data-label="Pago">${badgeStatus(r.payment_status)}</td>
+          <td data-label="Envío">${badgeShipping(r.shipping_status)}</td>
+          <td data-label="Cuenta CRM">${crmCell(r)}</td>
+          <td class="c-full">
+            ${r.ml_order_id ? `<div class="row-actions"><a href="https://www.mercadolibre.com.co/ventas/${encodeURIComponent(r.ml_order_id)}/detalle" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-ghost btn-icon" title="Ver en MercadoLibre" aria-label="Ver pedido ${esc(r.ml_order_id)} en MercadoLibre">${ICONS.external}<span class="btn-label">Ver en MercadoLibre</span></a></div>` : ''}
           </td>
         </tr>
       `).join('');
@@ -797,7 +823,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       bindCrmButtons();
       renderPagination(json.pagination);
     } catch (e: any) {
-      tbody.innerHTML = `<tr><td colspan="10" class="empty-state">Error de red: ${esc(e.message)}</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="9" class="empty-state">Error de red: ${esc(e.message)}</td></tr>`;
     }
   }
 
@@ -857,8 +883,9 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
     for (let i = start; i <= end; i++) {
       const btn = document.createElement('button');
-      btn.className = `btn btn-ghost${i === currentPage ? ' pag-btn-active' : ''}`;
-      btn.style.cssText = 'height:30px;padding:0 10px;font-size:12px;min-width:32px';
+      btn.type = 'button';
+      btn.className = `btn btn-ghost btn-sm${i === currentPage ? ' pag-btn-active' : ''}`;
+      if (i === currentPage) btn.setAttribute('aria-current', 'page');
       btn.textContent = String(i + 1);
       btn.addEventListener('click', () => loadOrders(i));
       container.appendChild(btn);
@@ -869,16 +896,16 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   function renderCities(cities: any[]) {
     const el = document.getElementById('citiesList')!;
     if (!cities.length) {
-      el.innerHTML = '<div class="empty-state">Sin datos</div>';
+      el.innerHTML = '<div class="empty-state">Aún no hay pedidos.</div>';
       return;
     }
     const max = cities[0]?.order_count ?? 1;
     el.innerHTML = cities.slice(0, 10).map((c: any, i: number) => `
       <div class="city-row">
         <div class="city-rank">${i + 1}</div>
-        <div class="city-name">${c.recipient_city ?? '-'}</div>
-        <div class="city-bar-wrap"><div class="city-bar" style="width:${Math.round((c.order_count / max) * 100)}%"></div></div>
-        <div class="city-count">${c.order_count}</div>
+        <div class="city-name">${esc(c.recipient_city ?? '-')}</div>
+        <div class="city-bar-wrap" aria-hidden="true"><div class="city-bar" style="width:${Math.round((Number(c.order_count) / Number(max)) * 100)}%"></div></div>
+        <div class="city-count">${esc(c.order_count)}</div>
       </div>
     `).join('');
   }
@@ -902,9 +929,11 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       } else {
         const st = json.stock;
         const stockTxt = st && (st.applied || st.reverted)
-          ? ` Stock: ${esc(st.applied)} venta(s) descontada(s)${st.reverted ? `, ${esc(st.reverted)} cancelación(es) repuesta(s)` : ''}.`
+          ? ` Stock: ${esc(plural(st.applied, 'venta descontada', 'ventas descontadas'))}${st.reverted ? `, ${esc(plural(st.reverted, 'cancelación repuesta', 'cancelaciones repuestas'))}` : ''}.`
           : '';
-        banner.innerHTML = `<div class="banner success">Sincronización completada: ${esc(json.processed ?? 0)} procesados, ${esc(json.saved ?? 0)} guardados${json.failed ? `, ${esc(json.failed)} con error` : ''}.${stockTxt}</div>`;
+        banner.innerHTML = json.total_orders_fetched
+          ? `<div class="banner success">Sincronización completada: ${esc(plural(json.processed ?? 0, 'pedido procesado', 'pedidos procesados'))}${json.failed ? `, ${esc(json.failed)} con error` : ''}.${stockTxt}</div>`
+          : '<div class="banner success">Sincronización completada: no hay pedidos nuevos.</div>';
         await loadStats();
         await loadOrders(0);
         await loadListings();
@@ -958,11 +987,10 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     if (r.crm_account_id) {
       return `<span class="crm-chip">
         <span class="crm-chip-name" title="${esc(r.crm_account_name)}">${esc(r.crm_account_name ?? 'Cuenta')}</span>
-        <button class="crm-unlink js-crm-unlink" data-sale-id="${saleId}" title="Desvincular">✕</button>
+        <button type="button" class="crm-unlink js-crm-unlink" data-sale-id="${esc(saleId)}" title="Desvincular" aria-label="Desvincular de ${esc(r.crm_account_name ?? 'la cuenta')}">✕</button>
       </span>`;
     }
-    return `<button class="btn btn-ghost js-crm-link" data-sale-id="${saleId}" data-order-id="${esc(r.ml_order_id ?? '')}"
-      style="height:28px;padding:0 10px;font-size:11px">+ Vincular</button>`;
+    return `<button type="button" class="btn btn-ghost btn-sm js-crm-link" data-sale-id="${esc(saleId)}" data-order-id="${esc(r.ml_order_id ?? '')}">+ Vincular</button>`;
   }
 
   function bindCrmButtons() {
