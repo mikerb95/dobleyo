@@ -98,8 +98,13 @@ window.addEventListener("resize", setHeaderMetrics);
 if (document.readyState !== "loading") initHeaderChrome();
 else document.addEventListener("DOMContentLoaded", initHeaderChrome);
 document.addEventListener("astro:page-load", initHeaderChrome);
-// Recalcular al terminar el swap para evitar un frame con métricas viejas.
-document.addEventListener("astro:after-swap", setHeaderMetrics);
+// Al terminar el swap Astro copia los atributos del <html> nuevo (clases y
+// style incluidos): reponer el estado de la barra y las métricas en el mismo
+// frame para que no reaparezca ni salte el header.
+document.addEventListener("astro:after-swap", () => {
+  if (readTopbarClosed()) document.documentElement.classList.add("topbar-closed");
+  setHeaderMetrics();
+});
 
 // 3) Localización de enlaces internos en páginas EN servidas bajo /en
 //    (entorno local y previews de Vercel). En el subdominio en.dobleyo.cafe
