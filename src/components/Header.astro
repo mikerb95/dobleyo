@@ -90,6 +90,7 @@ const searchHref = lang === "en" ? "/search" : "/buscar";
     </a>
     <nav class="nav">
       {nav.map((item) => <a href={item.href}>{item.label}</a>)}
+      <span class="nav-indicator" aria-hidden="true"></span>
     </nav>
     <div class="actions">
       <button
@@ -631,7 +632,7 @@ const searchHref = lang === "en" ? "/search" : "/buscar";
     }
 
     // ── Abrir y cerrar ──
-    // La posición sale de CSS (--header-top + --header-height de layout.js).
+    // La posición sale de CSS (--nav-offset, que layout.js mantiene al día).
     function openPanel() {
       panel.hidden = false;
       document.documentElement.classList.add("search-open");
@@ -1088,27 +1089,8 @@ const searchHref = lang === "en" ? "/search" : "/buscar";
     });
   })();
 
-  // Altura real del header (con borde) para CSS. Mide lo mismo que
-  // setHeaderMetrics() de layout.js; aquí cubre los layouts que no cargan
-  // layout.js (AppLayout). La base sin JS está en styles.css.
-  (function setHeaderHeight() {
-    const header = document.querySelector(".site-header");
-    if (!header) return;
-
-    function updateHeaderHeight() {
-      const height = header.offsetHeight;
-      document.documentElement.style.setProperty(
-        "--header-height",
-        height + "px"
-      );
-    }
-
-    // Ejecutar al cargar
-    updateHeaderHeight();
-
-    // Actualizar cuando se redimensiona la ventana
-    window.addEventListener("resize", updateHeaderHeight);
-  })();
+  // La altura del header ya no se mide aquí: sale de las variables de
+  // styles.css (--header-height, --nav-h) y el contenedor tiene alto fijo.
 
   // Cart preview hover
   (function initCartPreview() {
@@ -1163,6 +1145,81 @@ const searchHref = lang === "en" ? "/search" : "/buscar";
   })();
   }
 
+  // Página actual + indicador deslizante del menú de escritorio.
+  // Corre en cada navegación: el header persiste (View Transitions), así que
+  // el enlace activo cambia sin re-render y la línea viaja hasta él.
+  function initNavIndicator() {
+    const nav = document.querySelector(".site-header .nav");
+    if (!nav) return;
+    const indicator = nav.querySelector(".nav-indicator");
+    const links = [...nav.querySelectorAll("a")];
+    const mobileLinks = [...document.querySelectorAll("#mobileMenu > a")];
+
+    // En local/preview las páginas EN llevan prefijo /en; en en.dobleyo.cafe no.
+    const norm = (path) => {
+      let p = path.replace(/^\/en(?=\/|$)/, "") || "/";
+      if (p.length > 1) p = p.replace(/\/$/, "");
+      return p;
+    };
+    const here = norm(location.pathname);
+    const isCurrent = (a) => {
+      const p = norm(new URL(a.href, location.href).pathname);
+      return p === "/" ? here === "/" : here === p || here.startsWith(p + "/");
+    };
+
+    let active = null;
+    for (const a of [...links, ...mobileLinks]) {
+      const on = isCurrent(a);
+      a.classList.toggle("active", on);
+      if (on) a.setAttribute("aria-current", "page");
+      else a.removeAttribute("aria-current");
+      if (on && nav.contains(a)) active = a;
+    }
+
+    if (!indicator) return;
+    const moveTo = (el) => {
+      if (!el || !el.offsetWidth) {
+        indicator.classList.remove("is-visible");
+        return;
+      }
+      indicator.style.setProperty("--ind-x", el.offsetLeft + "px");
+      indicator.style.setProperty("--ind-y", el.offsetTop + el.offsetHeight - 2 + "px");
+      indicator.style.setProperty("--ind-w", el.offsetWidth + "px");
+      indicator.classList.add("is-visible");
+    };
+    const rest = () => moveTo(nav.querySelector("a[aria-current='page']"));
+
+    if (!nav.dataset.indInit) {
+      nav.dataset.indInit = "1";
+      nav.classList.add("has-indicator");
+      nav.addEventListener("mouseover", (e) => {
+        const a = e.target.closest("a");
+        if (a && nav.contains(a)) moveTo(a);
+      });
+      nav.addEventListener("focusin", (e) => {
+        const a = e.target.closest("a");
+        if (a) moveTo(a);
+      });
+      nav.addEventListener("mouseleave", rest);
+      nav.addEventListener("focusout", (e) => {
+        if (!nav.contains(e.relatedTarget)) rest();
+      });
+      window.addEventListener("resize", rest, { passive: true });
+      // La fuente variable puede cambiar el ancho de los enlaces al cargar.
+      document.fonts?.ready.then(rest);
+      // Primera ubicación sin animar: que no entre volando desde la izquierda.
+      indicator.classList.add("no-anim");
+      moveTo(active);
+      requestAnimationFrame(() => requestAnimationFrame(() => indicator.classList.remove("no-anim")));
+      return;
+    }
+    moveTo(active);
+  }
+
   initHeader();
-  document.addEventListener("astro:page-load", initHeader);
+  initNavIndicator();
+  document.addEventListener("astro:page-load", () => {
+    initHeader();
+    initNavIndicator();
+  });
 </script>
