@@ -50,9 +50,9 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     <!-- ── Centralizador de stock ─────────────────────────────── -->
     <section class="card stk" aria-labelledby="stkTitle">
       <div class="card-header stk-head">
-        <div>
+        <div class="stk-head-text">
           <div class="card-title" id="stkTitle">Stock sincronizado con MercadoLibre</div>
-          <div class="card-subtitle" id="stkSubtitle">El inventario del sitio manda: cada cambio se envía a las publicaciones vinculadas y cada venta en ML descuenta aquí.</div>
+          <div class="card-subtitle" id="stkSubtitle">El inventario del sitio manda: cada cambio se envía a las publicaciones vinculadas y cada venta en ML se descuenta aquí.</div>
         </div>
         <div class="stk-actions">
           <button class="btn btn-secondary btn-sm" id="btnStkPushAll" type="button" title="Revisa todos los vínculos y reenvía los que no coincidan">Revisar todo</button>
@@ -60,9 +60,9 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
           <button class="btn btn-primary btn-sm" id="btnStkLink" type="button">Vincular publicación</button>
         </div>
       </div>
-      <div id="stkBanner" class="stk-banner" hidden></div>
-      <div class="stk-table-wrap">
-        <table class="erp-table stk-table">
+      <div id="stkBanner" class="stk-banner" role="status" hidden></div>
+      <div class="rtable-wrap">
+        <table class="erp-table rtable stk-table">
           <thead>
             <tr>
               <th>Producto del sitio</th>
@@ -72,202 +72,184 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
               <th class="num" title="Disponible menos colchón">Se ofrece</th>
               <th class="num" title="Última cantidad que ML reportó">ML reporta</th>
               <th>Estado</th>
-              <th>Último envío</th>
-              <th><span class="sr-only">Acciones</span></th>
+              <th class="stk-th-actions"><span class="sr-only">Acciones</span></th>
             </tr>
           </thead>
           <tbody id="stkBody">
-            <tr><td colspan="9" class="empty-state">Cargando vínculos...</td></tr>
+            <tr><td colspan="8" class="empty-state">Cargando vínculos...</td></tr>
           </tbody>
         </table>
       </div>
     </section>
 
     <!-- ── KPI Row ─────────────────────────────────────────────── -->
-    <div class="kpi-grid" style="margin-bottom:1.5rem">
-      <div class="kpi-tile brand">
+    <div class="kpi-grid ml-kpis">
+      <div class="kpi-tile">
         <div class="kpi-label">Pedidos</div>
         <div class="kpi-value" id="kpiOrders"><span class="skeleton" style="width:60px"></span></div>
         <div class="kpi-sub" id="kpiOrdersRange">-</div>
       </div>
-      <div class="kpi-tile success">
-        <div class="kpi-label">Ingresos Totales</div>
+      <div class="kpi-tile">
+        <div class="kpi-label">Ingresos totales</div>
         <div class="kpi-value" id="kpiRevenue"><span class="skeleton" style="width:80px"></span></div>
         <div class="kpi-sub">COP acumulado</div>
       </div>
-      <div class="kpi-tile info">
+      <div class="kpi-tile">
         <div class="kpi-label">Ticket promedio</div>
         <div class="kpi-value" id="kpiAvg"><span class="skeleton" style="width:70px"></span></div>
         <div class="kpi-sub">por pedido</div>
       </div>
-      <div class="kpi-tile warning">
-        <div class="kpi-label">Ciudades Únicas</div>
+      <div class="kpi-tile">
+        <div class="kpi-label">Ciudades</div>
         <div class="kpi-value" id="kpiCities"><span class="skeleton" style="width:40px"></span></div>
         <div class="kpi-sub" id="kpiStates">-</div>
       </div>
     </div>
 
-    <!-- ── Main grid ───────────────────────────────────────────── -->
-    <div class="ml-main-grid">
-
-      <!-- ── Orders table ─────────────────────────────────────── -->
-      <div class="card">
-        <div class="card-header">
-          <div>
-            <div class="card-title">Pedidos sincronizados</div>
-            <div class="card-subtitle" id="tableSubtitle">Cargando datos…</div>
-          </div>
-          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-            <input type="date" id="filterFrom" class="ml-input" title="Desde">
-            <input type="date" id="filterTo" class="ml-input" title="Hasta">
-            <input type="text" id="filterCity" class="ml-input" placeholder="Ciudad" style="width:120px">
+    <!-- ── Pedidos (a todo el ancho) ─────────────────────────────── -->
+    <section class="card ord" aria-labelledby="ordTitle">
+      <div class="card-header ord-head">
+        <div>
+          <div class="card-title" id="ordTitle">Pedidos sincronizados</div>
+          <div class="card-subtitle" id="tableSubtitle">Cargando datos…</div>
+        </div>
+        <div class="ord-filters">
+          <label class="ord-ff"><span>Desde</span><input type="date" id="filterFrom" class="ml-input"></label>
+          <label class="ord-ff"><span>Hasta</span><input type="date" id="filterTo" class="ml-input"></label>
+          <label class="ord-ff"><span>Ciudad</span><input type="text" id="filterCity" class="ml-input" placeholder="Todas"></label>
+          <label class="ord-ff"><span>Estado</span>
             <select id="filterStatus" class="ml-input">
-              <option value="">Todos los estados</option>
+              <option value="">Todos</option>
               <option value="paid">Pagado</option>
               <option value="pending">Pendiente</option>
               <option value="cancelled">Cancelado</option>
             </select>
-            <button class="btn btn-secondary" id="btnFilter" style="height:32px;padding:0 12px;font-size:12px">
-              Filtrar
-            </button>
+          </label>
+          <button class="btn btn-secondary btn-sm" id="btnFilter" type="button">Filtrar</button>
+        </div>
+      </div>
+      <div class="rtable-wrap">
+        <table class="erp-table rtable ord-table">
+          <thead>
+            <tr>
+              <th>Pedido ML</th>
+              <th>Fecha</th>
+              <th>Comprador</th>
+              <th>Destino</th>
+              <th class="num">Total</th>
+              <th>Pago</th>
+              <th>Envío</th>
+              <th>Cuenta CRM</th>
+              <th><span class="sr-only">Ver en MercadoLibre</span></th>
+            </tr>
+          </thead>
+          <tbody id="ordersBody">
+            <tr><td colspan="9" class="empty-state">Cargando pedidos...</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination-bar" id="paginationBar" style="display:none">
+        <span class="pag-info" id="pagInfo"></span>
+        <div class="pag-btns">
+          <button class="btn btn-ghost btn-sm" id="btnPrev" type="button" disabled>‹ Anterior</button>
+          <div id="pagPages" class="pag-btns"></div>
+          <button class="btn btn-ghost btn-sm" id="btnNext" type="button">Siguiente ›</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Fila inferior: ciudades, accesos y configuración ──────── -->
+    <div class="ml-bottom">
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Ciudades con más pedidos</div>
+            <div class="card-subtitle">Acumulado del canal</div>
           </div>
         </div>
-        <div style="overflow-x:auto">
-          <table class="erp-table">
-            <thead>
-              <tr>
-                <th>Pedido ML</th>
-                <th>Fecha</th>
-                <th>Comprador</th>
-                <th>Ciudad</th>
-                <th>Dpto.</th>
-                <th>Total</th>
-                <th>Estado pago</th>
-                <th>Estado envío</th>
-                <th>Cuenta CRM</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody id="ordersBody">
-              <tr><td colspan="10" class="empty-state">Cargando pedidos...</td></tr>
-            </tbody>
-          </table>
-        </div>
-        <!-- Pagination -->
-        <div class="pagination-bar" id="paginationBar" style="display:none">
-          <span class="pag-info" id="pagInfo"></span>
-          <div style="display:flex;gap:4px">
-            <button class="btn btn-ghost" id="btnPrev" style="height:30px;padding:0 10px;font-size:12px" disabled>‹ Anterior</button>
-            <div id="pagPages" style="display:flex;gap:2px"></div>
-            <button class="btn btn-ghost" id="btnNext" style="height:30px;padding:0 10px;font-size:12px">Siguiente ›</button>
-          </div>
+        <div id="citiesList">
+          <div class="empty-state">Cargando…</div>
         </div>
       </div>
 
-      <!-- ── Right sidebar ────────────────────────────────────── -->
-      <div class="ml-sidebar">
-
-        <!-- Top ciudades -->
-        <div class="card">
-          <div class="card-header">
-            <div>
-              <div class="card-title">Top Ciudades</div>
-              <div class="card-subtitle">Por número de pedidos</div>
-            </div>
-          </div>
-          <div style="padding:0" id="citiesList">
-            <div class="empty-state">Cargando…</div>
-          </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Acciones rápidas</div>
         </div>
-
-        <!-- Acciones rápidas -->
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title">Acciones rápidas</div>
-          </div>
-          <div style="padding:8px 0">
-            <a href="/admin/sales-map" class="quick-action">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
-                <line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/>
-              </svg>
-              Ver mapa de calor de ventas
-            </a>
-            <a href="/admin/ventas" class="quick-action">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/>
-                <line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/>
-              </svg>
-              Dashboard de ventas operativo
-            </a>
-            <button class="quick-action" id="btnExportCSV">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
-              </svg>
-              Exportar tabla a CSV
-            </button>
-            <button class="quick-action" id="btnSyncQuick">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
-                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
-              </svg>
-              Sincronizar pedidos
-            </button>
-          </div>
+        <div class="qa-list">
+          <a href="/admin/sales-map" class="quick-action">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
+              <line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/>
+            </svg>
+            Ver mapa de calor de ventas
+          </a>
+          <a href="/admin/ventas" class="quick-action">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/>
+              <line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/>
+            </svg>
+            Dashboard de ventas
+          </a>
+          <button class="quick-action" id="btnExportCSV" type="button">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            Exportar pedidos a CSV
+          </button>
+          <button class="quick-action" id="btnSyncQuick" type="button">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+            </svg>
+            Sincronizar pedidos
+          </button>
         </div>
+      </div>
 
-        <!-- Config / Webhooks -->
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title">Configuración e integración</div>
-          </div>
-          <div class="cfg">
-            <div class="config-row">
-              <div class="config-label">Conexión</div>
-              <span id="cfgConn" class="status">-</span>
-            </div>
-            <div class="config-row">
-              <div class="config-label">Cuenta</div>
-              <span id="cfgAccount" class="mono cfg-val">-</span>
-            </div>
-            <div class="config-row">
-              <div class="config-label">Token vence</div>
-              <span id="cfgExpires" class="mono cfg-val">-</span>
-            </div>
-            <div class="config-row">
-              <div class="config-label">CRON_SECRET</div>
-              <span id="cfgCron" class="status">-</span>
-            </div>
-            <div class="config-row">
-              <div class="config-label">Última sincronización</div>
-              <span id="cfgLastSync" class="mono cfg-val">-</span>
-            </div>
-            <div class="cfg-rule"></div>
-            <div class="config-row">
-              <div class="config-label">Sync manual</div>
-              <code class="cfg-code">POST /api/mercadolibre/sync</code>
-            </div>
-            <div class="config-row">
-              <div class="config-label">Cron</div>
-              <code class="cfg-code">GET /api/mercadolibre/cron-sync</code>
-            </div>
-            <div class="config-row">
-              <div class="config-label">Webhook</div>
-              <code class="cfg-code" id="cfgWebhook">POST /api/mercadolibre/webhook</code>
-            </div>
-            <div class="cfg-rule"></div>
-            <p class="cfg-note">
-              GitHub Actions (<code>mercadolibre-sync.yml</code>) llama <code>/api/mercadolibre/cron-sync</code> cada 30 minutos entre las 8:00 y las 23:00: trae órdenes nuevas y reintenta los envíos de stock pendientes. Solo funciona si <code>CRON_SECRET</code> está configurado en Vercel y en los secretos del repositorio con el mismo valor.
-            </p>
-            <p class="cfg-note">
-              Para tiempo casi real, registre la URL del webhook en su aplicación de MercadoLibre con los temas <code>orders_v2</code> e <code>items</code>.
-            </p>
-          </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Configuración</div>
         </div>
+        <dl class="cfg">
+          <div class="cfg-item">
+            <dt>Conexión</dt>
+            <dd><span id="cfgConn" class="status">-</span></dd>
+          </div>
+          <div class="cfg-item">
+            <dt>Cuenta</dt>
+            <dd id="cfgAccount">-</dd>
+          </div>
+          <div class="cfg-item">
+            <dt>Token</dt>
+            <dd id="cfgExpires">-</dd>
+          </div>
+          <div class="cfg-item">
+            <dt>Sincronización automática</dt>
+            <dd><span id="cfgCron" class="status">-</span></dd>
+          </div>
+          <div class="cfg-item">
+            <dt>Última sincronización</dt>
+            <dd id="cfgLastSync">-</dd>
+          </div>
+        </dl>
+        <details class="cfg-details">
+          <summary>Detalles técnicos</summary>
+          <div class="cfg-tech">
+            <p class="cfg-tech-label">URL del webhook</p>
+            <div class="cfg-copy">
+              <code id="cfgWebhook">https://dobleyo.cafe/api/mercadolibre/webhook</code>
+              <button type="button" class="btn btn-ghost btn-sm" id="btnCopyWebhook">Copiar</button>
+            </div>
+            <p class="cfg-note">Regístrela en la aplicación de MercadoLibre con los temas <code>orders_v2</code> e <code>items</code> para recibir ventas casi en tiempo real.</p>
+            <p class="cfg-note">GitHub Actions (<code>mercadolibre-sync.yml</code>) llama <code>/api/mercadolibre/cron-sync</code> cada 30 minutos entre las 8:00 y las 23:00. Necesita <code>CRON_SECRET</code> con el mismo valor en Vercel y en los secretos del repositorio.</p>
+          </div>
+        </details>
+      </div>
 
-      </div><!-- /.ml-sidebar -->
-    </div><!-- /.ml-main-grid -->
+    </div><!-- /.ml-bottom -->
 
     <!-- ── Modal: vincular venta a cuenta CRM ──────────────────── -->
     <div id="crmModal" class="crm-modal-overlay" style="display:none">
