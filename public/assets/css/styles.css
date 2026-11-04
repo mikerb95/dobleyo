@@ -815,6 +815,23 @@ html.topbar-closing .site-header {
   padding-left: 1.75rem
 }
 
+/* Página actual en el menú móvil: tinte de marca y punto caramelo */
+.mobile-menu>a[aria-current="page"] {
+  color: var(--caramel-deep);
+  background: rgba(var(--caramel-rgb), .06);
+  display: flex;
+  align-items: center;
+  gap: .625rem
+}
+
+.mobile-menu>a[aria-current="page"]::after {
+  content: "";
+  width: .375rem;
+  height: .375rem;
+  border-radius: 999px;
+  background: var(--caramel)
+}
+
 .mobile-menu>a:last-of-type {
   border-bottom: none
 }
