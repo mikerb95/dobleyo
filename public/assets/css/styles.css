@@ -234,48 +234,127 @@ img {
   padding-right: 1.25rem
 }
 
-/* Barra superior */
+/* Métricas del chrome fijo (barra de anuncio + header).
+   Se declaran en CSS para que la primera pintura ya sea correcta: antes el
+   header arrancaba en top:0 y la barra (z-index mayor) lo tapaba hasta que
+   layout.js medía. layout.js sigue midiendo como ajuste fino (zoom de texto). */
+:root {
+  --topbar-h: 2.25rem;
+  --header-top: 0px;
+  /* logo 44px + padding .375rem x2 + borde inferior 1px */
+  --header-height: 57px;
+  --page-offset-top: calc(var(--header-top) + var(--header-height) + 12px);
+}
+
+/* Solo hay desfase cuando la barra existe y no se ha cerrado */
+:root:has(#topbar):not(.topbar-closed) {
+  --header-top: var(--topbar-h);
+}
+
+@media (min-width: 1025px) {
+  :root {
+    /* logo 80px + padding + borde */
+    --header-height: 93px;
+  }
+}
+
+/* Barra superior de anuncio: siempre arriba del todo, una sola línea y
+   alto fijo, para que el header pueda ubicarse debajo sin medir. */
 .topbar {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   z-index: 75;
+  height: var(--topbar-h);
   background: var(--dark);
-  color: #fff;
-  font-size: .875rem;
-  opacity: 1 !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, .18)
+  color: var(--cream);
+  font-size: var(--text-sm);
+  line-height: 1.2;
+  overflow: hidden;
+  transition: transform .25s var(--ease)
 }
 
 .topbar .container {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: .75rem;
-  padding: .5rem 0;
+  height: 100%;
+  /* Aire lateral simétrico para que el texto centrado no choque con la X */
+  padding-inline: 2.5rem;
   text-align: center
 }
 
+.topbar__msg {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis
+}
+
+.topbar__msg--short {
+  display: none
+}
+
+@media (max-width: 767px) {
+  .topbar {
+    font-size: var(--text-xs)
+  }
+
+  .topbar__msg--long {
+    display: none
+  }
+
+  .topbar__msg--short {
+    display: block
+  }
+}
+
 .topbar .topbar-close {
+  position: absolute;
+  top: 50%;
+  right: .25rem;
+  transform: translateY(-50%);
   background: transparent;
   border: 0;
-  color: #fff;
-  font-size: .875rem;
+  border-radius: 999px;
+  color: inherit;
   cursor: pointer;
   padding: 0;
-  width: 1.25rem;
-  height: 1.25rem;
+  /* Área táctil de 32px aunque el ícono sea de 14px */
+  width: 2rem;
+  height: 2rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  line-height: 1
+  opacity: .75;
+  transition: opacity var(--dur) var(--ease), background-color var(--dur) var(--ease)
+}
+
+.topbar .topbar-close:hover {
+  opacity: 1;
+  background: rgba(var(--cream-rgb), .12)
+}
+
+html.topbar-closed .topbar {
+  display: none
+}
+
+/* Cierre animado: la barra sube y el header y el contenido la siguen */
+html.topbar-closing .topbar {
+  transform: translateY(-100%)
+}
+
+html.topbar-closing .site-header,
+html.topbar-closing main.container {
+  transition: top .25s var(--ease), padding-top .25s var(--ease)
 }
 
 /* Encabezado (navbar fija a tope, no flotante) */
 .site-header {
   position: fixed;
-  top: var(--header-top, 0px);
+  top: var(--header-top);
   left: 0;
   right: 0;
   z-index: 70;
@@ -347,9 +426,15 @@ img {
   transform: scale(1.02)
 }
 
+/* El espacio entre enlaces se encoge con el ancho: entre 1025 y ~1200px los
+   7 enlaces de ES quedaban a 12px del logo y de los íconos. */
 .nav {
   display: flex;
-  gap: 1.75rem
+  gap: clamp(1rem, 3vw - 0.75rem, 1.75rem)
+}
+
+.site-header .container {
+  gap: 1.5rem
 }
 
 .nav a {
