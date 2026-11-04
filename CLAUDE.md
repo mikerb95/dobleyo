@@ -124,7 +124,7 @@
 | Archivo | Tipo | Propósito |
 |---|---|---|
 | `src/components/Head.astro` | Astro | `<head>` reutilizable con SEO meta |
-| `src/components/Header.astro` | Astro | Navegación principal + coffee beans animation |
+| `src/components/Header.astro` | Astro | Navegación principal, buscador, carrito, granos animados e indicador deslizante con la página actual (`aria-current`). Compacto/oculto al hacer scroll lo maneja `layout.js` |
 | `src/components/Footer.astro` | Astro | Footer oscuro con newsletter, columnas (acordeón en móvil) y medios de pago. Lógica en `public/assets/js/footer.js` |
 | `src/components/Icon.astro` | Astro | Set de íconos SVG de trazo. Único medio para íconos (sin emojis en el sitio) |
 | `src/components/home/*` | Astro | Secciones de la portada ES/EN |
@@ -139,7 +139,7 @@
 ### Layouts
 | Archivo | Propósito |
 |---|---|
-| `src/layouts/Layout.astro` | Público: Header + Footer + cart.js + auth-refresh.js. `<html lang="es">` ⚠️ hardcoded |
+| `src/layouts/Layout.astro` | Público: barra de anuncio + Header + Footer + cart.js + auth-refresh.js + layout.js. `<html lang={lang}>` |
 | `src/layouts/AdminLayout.astro` | Admin: auth check, redirect no-admins, noindex |
 | `src/layouts/AppLayout.astro` | App: auth para admin/caficultor, timeout 10s, noindex |
 | `src/layouts/MobileLayout.astro` | Mobile: layout específico para app operativa mobile |
@@ -161,6 +161,7 @@
 | `public/assets/js/admin.js` | Legacy admin panel (localStorage CRUD) |
 | `public/assets/js/trazabilidad.js` | Scanner QR + lookup de lotes (ruta apagada por `SHOW_TRACEABILITY`) |
 | `public/assets/js/confirmacion.js` | Confirmación de pago: consulta cada 3 s hasta 1 min y vacía el carrito solo si el pedido queda pagado |
+| `public/assets/js/layout.js` | Header inteligente (barra de anuncio que se va con el scroll, `nav-compact`, `nav-hidden`), cierre de la barra, localización de enlaces `/en` |
 | `public/assets/js/footer.js` | Newsletter del footer (estados por `data-state`, textos ES/EN) y acordeones móviles |
 | `src/scripts/shop/*.ts` | Motion de páginas de compra: `sections.ts` para las secciones compartidas y una pieza por página |
 
