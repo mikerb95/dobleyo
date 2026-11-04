@@ -234,16 +234,28 @@ img {
   padding-right: 1.25rem
 }
 
-/* Métricas del chrome fijo (barra de anuncio + header).
-   Se declaran en CSS para que la primera pintura ya sea correcta: antes el
-   header arrancaba en top:0 y la barra (z-index mayor) lo tapaba hasta que
-   layout.js medía. layout.js sigue midiendo como ajuste fino (zoom de texto). */
+/* Métricas del chrome (barra de anuncio + header).
+   Dos familias de variables, a propósito:
+   - De layout, estáticas: --header-top, --header-height, --page-offset-top.
+     Las usan el relleno de <main> y el hero. No cambian al hacer scroll, así
+     el contenido nunca salta cuando el header se compacta u oculta.
+   - De posición, dinámicas: --nav-top (dónde está el header ahora),
+     --nav-h (su alto actual) y --nav-offset (su borde inferior visible). Las
+     usan el menú móvil, el buscador y todo lo que se pega debajo del header.
+     layout.js mueve --nav-top y las clases nav-compact / nav-hidden.
+   Todo tiene valor en CSS para que la primera pintura sea correcta sin JS. */
 :root {
   --topbar-h: 2.25rem;
   --header-top: 0px;
   /* logo 44px + padding .375rem x2 + borde inferior 1px */
   --header-height: 57px;
+  --header-height-compact: 57px;
   --page-offset-top: calc(var(--header-top) + var(--header-height) + 12px);
+
+  --nav-top: var(--header-top);
+  --nav-h: var(--header-height);
+  --nav-offset: calc(var(--nav-top) + var(--nav-h));
+  --nav-dur: .32s;
 }
 
 /* Solo hay desfase cuando la barra existe y no se ha cerrado */
@@ -255,13 +267,29 @@ img {
   :root {
     /* logo 80px + padding + borde */
     --header-height: 93px;
+    /* logo 52px + padding + borde */
+    --header-height-compact: 65px;
   }
 }
 
-/* Barra superior de anuncio: siempre arriba del todo, una sola línea y
-   alto fijo, para que el header pueda ubicarse debajo sin medir. */
+html.nav-compact {
+  --nav-h: var(--header-height-compact);
+}
+
+/* Oculto: nada queda pegado bajo el header, lo pegajoso sube a 0 */
+html.nav-hidden {
+  --nav-offset: 0px;
+}
+
+/* Anclas y foco con teclado nunca quedan tapados por el header */
+html {
+  scroll-padding-top: calc(var(--nav-offset) + 12px);
+}
+
+/* Barra superior de anuncio: arriba del todo, una línea y alto fijo. Se
+   desplaza con la página; el header la sigue hasta quedar en top:0. */
 .topbar {
-  position: fixed;
+  position: absolute;
   top: 0;
   left: 0;
   right: 0;
@@ -337,7 +365,7 @@ img {
   background: rgba(var(--cream-rgb), .12)
 }
 
-html.topbar-closed .topbar {
+html.topbar-closed:not(.topbar-closing) .topbar {
   display: none
 }
 
@@ -346,22 +374,42 @@ html.topbar-closing .topbar {
   transform: translateY(-100%)
 }
 
-html.topbar-closing .site-header,
 html.topbar-closing main.container {
-  transition: top .25s var(--ease), padding-top .25s var(--ease)
+  transition: padding-top .25s var(--ease)
 }
 
-/* Encabezado (navbar fija a tope, no flotante) */
+/* Encabezado fijo. Al bajar se compacta (escritorio) y se oculta; al subir
+   unos px vuelve. Nunca lleva transform en reposo: el buscador y la vista
+   previa del carrito son position:fixed dentro de él. */
 .site-header {
   position: fixed;
-  top: var(--header-top);
+  top: var(--nav-top);
   left: 0;
   right: 0;
   z-index: 70;
   background: var(--card);
   border-bottom: 1px solid var(--border);
   isolation: isolate;
-  overflow: hidden
+  overflow: hidden;
+  transition: box-shadow var(--nav-dur) var(--ease)
+}
+
+html.nav-hidden .site-header {
+  /* El alto más un margen para que tampoco asome la sombra */
+  top: calc(-1 * var(--nav-h) - 12px)
+}
+
+/* Separado del contenido solo cuando ya hay contenido debajo */
+html.nav-scrolled .site-header {
+  box-shadow: var(--shadow-md)
+}
+
+/* Las transiciones de posición solo corren en los cambios de estado. Si
+   estuvieran siempre, mientras la barra se desplaza el header iría con
+   retraso detrás del scroll (el "stalker menu" que NN/g desaconseja). */
+html.nav-anim .site-header,
+html.topbar-closing .site-header {
+  transition: top var(--nav-dur) var(--ease), box-shadow var(--nav-dur) var(--ease)
 }
 
 .site-header .container {
