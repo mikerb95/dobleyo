@@ -2,6 +2,25 @@
 
 ---
 
+## 2026-11-03: Interfaz de /admin/mercadolibre rehecha (Agente: Claude)
+
+### Contexto
+Revisión con capturas reales (1440, 1280 y 390 px): a 1440 px las acciones de la tabla de stock y las últimas columnas de pedidos quedaban escondidas en un desplazamiento lateral; en celular las tablas mostraban solo dos columnas; el hover de los botones secundarios era casi invisible; el modal mostraba listas vacías (`display: flex` anulaba `hidden`); las fechas venían en dos formatos y los errores de ML en inglés.
+
+### Cambios
+- **`src/pages/admin/mercadolibre.astro`**:
+  - Pedidos a todo el ancho; ciudades, accesos y configuración en una fila inferior de tres columnas.
+  - Las tablas pasan a tarjetas con etiqueta por dato cuando su contenedor mide menos de 960 px (container query, no media query: depende del ancho real de la tarjeta).
+  - Acciones de stock como íconos con `aria-label` y `title` ("Quitar" en rojo); en tarjeta muestran texto.
+  - Hover y foco visibles: tinte de marca, borde dorado y anillo de foco.
+  - Ciudad y departamento en una sola celda; un solo formato de fecha ("03 nov 2026", "03 nov, 09:12", hora de Bogotá).
+  - Errores de ML resumidos en español con el original en el `title`.
+  - Plurales correctos, mayúsculas solo al inicio y estados de envío traducidos.
+  - Configuración como lista con los detalles técnicos plegados y botón para copiar la URL del webhook.
+  - Nombres de ciudad escapados (antes iban sin escapar a `innerHTML`).
+
+---
+
 ## 2026-11-03: Centralizador de stock con MercadoLibre (Agente: Claude)
 
 ### Contexto
