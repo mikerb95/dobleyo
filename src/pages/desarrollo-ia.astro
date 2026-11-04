@@ -648,7 +648,7 @@ const secciones = [
     }
     .devia-toc {
       position: sticky;
-      top: calc(var(--header-height, 96px) + 1rem);
+      top: calc(var(--nav-offset, 0px) + 1rem); transition: top var(--nav-dur, .32s) ease;
     }
     .devia-cards {
       grid-template-columns: repeat(3, 1fr);

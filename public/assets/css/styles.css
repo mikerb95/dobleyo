@@ -419,6 +419,10 @@ html.topbar-closing .site-header {
   align-items: center;
   justify-content: space-between;
   padding: 0.375rem 1.25rem;
+  /* Alto explícito (el borde va en .site-header): coincide siempre con las
+     variables, sin tener que medirlo con JS */
+  height: calc(var(--nav-h) - 1px);
+  transition: height var(--nav-dur) var(--ease);
   width: min(var(--page-width), calc(100% - var(--page-gutter)));
   margin-inline: auto;
   background: transparent;
@@ -474,6 +478,17 @@ html.topbar-closing .site-header {
   transform: scale(1.02)
 }
 
+.site-header .brand img {
+  transition: opacity .2s ease, transform .2s ease, height var(--nav-dur) var(--ease)
+}
+
+/* Compacto (solo escritorio, donde el header en reposo mide 93px) */
+@media (min-width: 1025px) {
+  html.nav-compact .site-header .brand img {
+    height: 52px
+  }
+}
+
 /* El espacio entre enlaces se encoge con el ancho: entre 1025 y ~1200px los
    7 enlaces de ES quedaban a 12px del logo y de los íconos. */
 .nav {
@@ -516,6 +531,44 @@ html.topbar-closing .site-header {
   background: transparent;
   box-shadow: none;
   border-bottom-color: var(--coffee)
+}
+
+/* Indicador deslizante: una sola línea caramelo que viaja al enlace bajo el
+   mouse (o con foco) y vuelve a la página actual. Lo activa Header.astro con
+   .has-indicator; sin JS queda el subrayado por borde de arriba. */
+.site-header .nav.has-indicator a,
+.site-header .nav.has-indicator a:hover,
+.site-header .nav.has-indicator a.active {
+  border-bottom-color: transparent
+}
+
+.site-header .nav a[aria-current="page"] {
+  color: var(--espresso)
+}
+
+.nav-indicator {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: var(--ind-w, 0px);
+  height: 2px;
+  border-radius: 2px;
+  background: var(--caramel);
+  transform: translate(var(--ind-x, 0px), var(--ind-y, 0px));
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    transform .38s cubic-bezier(.2, .8, .2, 1),
+    width .38s cubic-bezier(.2, .8, .2, 1),
+    opacity .2s var(--ease)
+}
+
+.nav-indicator.is-visible {
+  opacity: 1
+}
+
+.nav-indicator.no-anim {
+  transition: none
 }
 
 .actions {
@@ -719,7 +772,7 @@ html.topbar-closing .site-header {
   margin: 0;
   position: fixed;
   z-index: 59;
-  top: calc(var(--header-top, 0px) + var(--header-height, 96px));
+  top: var(--nav-offset);
   left: 0;
   right: 0;
   bottom: 0;
@@ -1252,7 +1305,8 @@ main.container {
   gap: .5rem;
   padding: 1rem 0;
   position: sticky;
-  top: calc(var(--header-top, 0px) + var(--header-height, 96px) + 8px);
+  top: calc(var(--nav-offset) + 8px);
+  transition: top var(--nav-dur) var(--ease);
   background: var(--cream);
   z-index: 40;
   border-bottom: 1px solid #eee
@@ -2371,7 +2425,8 @@ body.menu-open {
   gap: 1rem;
   padding: .75rem 0;
   position: sticky;
-  top: calc(var(--header-top, 0px) + var(--header-height, 96px));
+  top: var(--nav-offset);
+  transition: top var(--nav-dur) var(--ease);
   background: var(--bg);
   z-index: 39;
   border-bottom: 1px solid var(--border)
@@ -2441,7 +2496,8 @@ body.menu-open {
 
 .shop-sidebar {
   position: sticky;
-  top: calc(var(--header-top, 0px) + var(--header-height, 96px) + 42px);
+  top: calc(var(--nav-offset) + 42px);
+  transition: top var(--nav-dur) var(--ease);
   align-self: start;
   display: flex;
   flex-direction: column;
@@ -2580,7 +2636,7 @@ body.menu-open {
 
   .shop-topbar {
     position: sticky;
-    top: calc(var(--header-top, 12px) + var(--header-height, 96px));
+    top: var(--nav-offset);
     z-index: 50
   }
 }
@@ -3330,7 +3386,7 @@ html.search-open .whatsapp-fab {
 
 .search-panel {
   /* Mismas métricas que mantiene layout.js para el header y el menú móvil */
-  --search-top: calc(var(--header-top, 0px) + var(--header-height, 96px) + 1px);
+  --search-top: var(--nav-offset);
   position: fixed;
   top: var(--search-top);
   left: 0;

@@ -352,7 +352,7 @@ const pageDescription =
     .sub-accept a { color: var(--caramel-deep); text-decoration: underline; }
 
     /* ── Resumen ─────────────────────────────────────────────────────────── */
-    @media (min-width: 1024px) { .sub__summary { position: sticky; top: calc(var(--header-top, 0px) + var(--header-height, 96px) + 16px); } }
+    @media (min-width: 1024px) { .sub__summary { position: sticky; top: calc(var(--nav-offset, 0px) + 16px); transition: top var(--nav-dur, .32s) ease; } }
     .ticket {
       background: var(--espresso);
       color: var(--cream);

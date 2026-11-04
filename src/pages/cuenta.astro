@@ -306,7 +306,7 @@ import { SHOW_TRACEABILITY } from "../lib/flags.ts";
   /* Sidebar */
   .account-sidebar {
     background: var(--card); border: 1px solid var(--border); border-radius: 14px;
-    padding: 1.25rem; position: sticky; top: 1.5rem;
+    padding: 1.25rem; position: sticky; top: calc(var(--nav-offset, 0px) + 1.5rem); transition: top var(--nav-dur, .32s) ease;
   }
 
   /* Ficha de identidad: tratada como una etiqueta de empaque de café. */

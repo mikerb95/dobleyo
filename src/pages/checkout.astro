@@ -1158,7 +1158,7 @@ import Layout from "../layouts/Layout.astro";
     .co-legal a:hover { text-decoration: underline; }
 
     /* Summary */
-    .co-summary-col { position: sticky; top: 1.5rem; }
+    .co-summary-col { position: sticky; top: calc(var(--nav-offset, 0px) + 1.5rem); transition: top var(--nav-dur, .32s) ease; }
     .co-summary-card {
       background: #fff;
       border: 1px solid var(--border);

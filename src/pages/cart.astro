@@ -627,7 +627,7 @@ import Layout from "../layouts/Layout.astro";
     .coupon-btn:hover { border-color: var(--coffee); background: #f9f6f2; }
 
     /* ── Resumen del pedido ── */
-    .cart-summary-col { position: sticky; top: 1.5rem; }
+    .cart-summary-col { position: sticky; top: calc(var(--nav-offset, 0px) + 1.5rem); transition: top var(--nav-dur, .32s) ease; }
 
     .summary-card {
       background: var(--cream);
