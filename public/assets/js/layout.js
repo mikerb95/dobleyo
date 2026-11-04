@@ -31,24 +31,38 @@ document.addEventListener("click", (e) => {
 //    navegación para evitar saltos de layout.
 const TOPBAR_CLOSED_KEY = "dy-topbar-closed";
 
+// Las métricas base viven en styles.css (--topbar-h, --header-height), así la
+// primera pintura ya es correcta. Esto solo afina con la medida real (zoom de
+// texto, fuentes) y mide el header COMPLETO (con su borde), igual que
+// Header.astro, para que ambos scripts no se pisen con valores distintos.
 function setHeaderMetrics() {
-  const tb = document.querySelector("#topbar");
-  const top = tb ? tb.offsetHeight : 0;
-  const headerCont = document.querySelector(".site-header .container");
-  const hh = headerCont ? headerCont.offsetHeight : 96;
-  const pageOffset = top + hh + 12;
   const root = document.documentElement;
+  const tb = document.querySelector("#topbar");
+  const topbarVisible = tb && !root.classList.contains("topbar-closed");
+  const top = topbarVisible ? tb.offsetHeight : 0;
+  const header = document.querySelector(".site-header");
+  if (!header) return;
+  const hh = header.offsetHeight;
   root.style.setProperty("--header-top", top + "px");
   root.style.setProperty("--header-height", hh + "px");
-  root.style.setProperty("--page-offset-top", pageOffset + "px");
+  root.style.setProperty("--page-offset-top", top + hh + 12 + "px");
+}
+
+function readTopbarClosed() {
+  try {
+    return !!sessionStorage.getItem(TOPBAR_CLOSED_KEY);
+  } catch {
+    return false;
+  }
 }
 
 function initHeaderChrome() {
+  const root = document.documentElement;
   const topbar = document.querySelector("#topbar");
 
-  // Si el usuario ya cerró la barra en esta sesión, retirarla sin animar.
-  if (topbar && sessionStorage.getItem(TOPBAR_CLOSED_KEY)) {
-    topbar.remove();
+  // Si el usuario ya cerró la barra en esta sesión, ocultarla sin animar.
+  if (topbar && readTopbarClosed()) {
+    root.classList.add("topbar-closed");
     setHeaderMetrics();
     return;
   }
@@ -60,16 +74,19 @@ function initHeaderChrome() {
       try {
         sessionStorage.setItem(TOPBAR_CLOSED_KEY, "1");
       } catch {}
-      topbar.style.height = topbar.offsetHeight + "px";
-      requestAnimationFrame(() => {
-        topbar.style.transition = "height .25s ease, opacity .25s ease";
-        topbar.style.height = "0px";
-        topbar.style.opacity = "0";
-        setTimeout(() => {
-          topbar.remove();
-          setHeaderMetrics();
-        }, 300);
-      });
+      // La barra sube y el header/contenido la siguen (transiciones en CSS).
+      root.classList.add("topbar-closing");
+      root.style.setProperty("--header-top", "0px");
+      const header = document.querySelector(".site-header");
+      root.style.setProperty(
+        "--page-offset-top",
+        (header ? header.offsetHeight : 0) + 12 + "px"
+      );
+      setTimeout(() => {
+        root.classList.add("topbar-closed");
+        root.classList.remove("topbar-closing");
+        setHeaderMetrics();
+      }, 260);
     });
   }
 

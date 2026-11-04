@@ -1088,7 +1088,9 @@ const searchHref = lang === "en" ? "/search" : "/buscar";
     });
   })();
 
-  // Establecer altura dinámica del header para usar en CSS
+  // Altura real del header (con borde) para CSS. Mide lo mismo que
+  // setHeaderMetrics() de layout.js; aquí cubre los layouts que no cargan
+  // layout.js (AppLayout). La base sin JS está en styles.css.
   (function setHeaderHeight() {
     const header = document.querySelector(".site-header");
     if (!header) return;
