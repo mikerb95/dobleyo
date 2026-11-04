@@ -2,6 +2,18 @@
 
 ---
 
+## 2026-11-03: Barra de anuncio y navbar sin solapes en ningún ancho (Agente: Claude)
+
+### Contexto
+El header arrancaba en `top: 0` y solo bajaba cuando `layout.js` medía la barra de anuncio. Hasta entonces (o siempre, sin JS) la barra, con z-index mayor, tapaba la parte de arriba del header y el contenido quedaba con un relleno de 108px fijo, por debajo de los 130-153px reales: salto de layout en cada carga. En móvil el anuncio ocupaba 2 líneas (375px) y 3 líneas (320px, 85px de alto). Entre 1025 y ~1200px los 7 enlaces del menú ES quedaban a 12px del logo y de los íconos. `Header.astro` y `layout.js` escribían `--header-height` con valores distintos (57 vs 56px), y el contenido pisaba 1px el borde del header.
+
+### Cambios
+- **`public/assets/css/styles.css`**: `--topbar-h`, `--header-top`, `--header-height` y `--page-offset-top` declarados en CSS (con `:has(#topbar)`), así la primera pintura ya ubica el header bajo la barra. Barra de alto fijo en una línea con elipsis y la X en posición absoluta con área táctil de 32px. Fuera el `opacity: 1 !important` que anulaba la animación de cierre. Separación del menú fluida (`clamp`) y `gap` mínimo de 1.5rem en el header.
+- **`src/layouts/Layout.astro`**: versión corta del anuncio para menos de 768px.
+- **`public/assets/js/layout.js`**: el cierre usa las clases `topbar-closing`/`topbar-closed` en `<html>` (la barra sube y el header la sigue) en vez de borrar el nodo; se repone tras el swap de View Transitions. Mide el header completo, igual que `Header.astro`.
+
+---
+
 ## 2026-10-19: "Del grano a tu taza" rehecho con fotografía real (Agente: Claude)
 
 ### Contexto
