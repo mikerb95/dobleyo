@@ -2,6 +2,43 @@
 
 ---
 
+## 2026-11-03: Centralizador de stock con MercadoLibre (Agente: Claude)
+
+### Contexto
+El "centralizador" que debía decirle a MercadoLibre las existencias reales nunca existió: `POST /api/stock/sync/mercadolibre` solo hacía un `console.log` y respondía "encolada". Además, lo que sí estaba programado (traer órdenes de ML) dependía de un `ML_ACCESS_TOKEN` fijo creado hace 190 días, cuando los tokens de ML vencen a las 6 horas y no había renovación; el panel decía "El cron de Vercel sincroniza cada 6 h" sin que hubiera cron ni `CRON_SECRET`; las ventas de ML no descontaban el stock del sitio; y el aviso "Conectado a MercadoLibre" se encendía solo con que hubiera pedidos (los de demostración bastaban).
+
+### Archivos Creados
+- `server/services/mlAuth.js`: OAuth 2.0 con ML (autorización con PKCE, canje del código, renovación automática antes del vencimiento), tokens cifrados AES-256-GCM en la BD y `mlApi()`, cliente que renueva y reintenta ante 401 y reintenta 429/5xx. `ML_ACCESS_TOKEN` queda como respaldo.
+- `server/services/mlStock.js`: el centralizador. Calcula el disponible igual que `/api/inventory` (variantes activas, `stock_reserved`, inactivos en 0), envía `available_quantity` a la publicación o variación con colchón opcional, descuenta del sitio las ventas pagadas en ML una sola vez y repone lo exacto al cancelarse, salta publicaciones Full, gestiona vínculos y sugiere producto por SKU.
+- `server/migrations/create_ml_stock_sync.js`: tablas `ml_oauth`, `ml_listings` y `ml_order_stock` (también en `db/schema.sql`).
+- `.github/workflows/mercadolibre-sync.yml`: cron gratuito (GitHub Actions, no Vercel Cron) cada 30 min de 8:00 a 23:00 que llama `/api/mercadolibre/cron-sync`.
+- Tests: `server/services/__tests__/mlAuth.test.js`, `server/services/__tests__/mlStock.integration.test.js` (SQLite real), `server/routes/__tests__/stock.integration.test.js`, `server/routes/__tests__/mercadolibre.test.js`.
+
+### Archivos Modificados
+- `server/routes/mercadolibre.js`: rutas `/oauth/start`, `/oauth/callback` (valida `state` en tiempo constante y exige sesión de admin), `/oauth/disconnect`; `/status` real (con `?check=1` llama a `/users/me`); `/stock/*` para vínculos, envíos y publicaciones del vendedor. Sync, cron y webhook usan la conexión OAuth y aplican cada orden al stock. El cron acepta `Authorization: Bearer` o `x-cron-secret` y además reintenta los envíos pendientes. El webhook tiene rate limit, descarta otras apps (`application_id`) y atiende el tema `items`.
+- `server/services/mercadolibre.js`: llamadas por `mlApi()`; búsqueda de órdenes con el parámetro correcto (`seller`, antes `seller_id`); guarda `variation_id` de cada ítem; `syncOrders()` aplica las órdenes al stock.
+- `server/routes/stock.js`: `POST /update` ya no queda tapado por `POST /:sku` (se declaraba después y Express tomaba "update" como SKU); disponible real; cada ajuste deja movimiento en `inventory_movements` y se propaga a ML; validación con express-validator y respuestas `{ success, data }` (se conserva `items` con la forma anterior).
+- `server/routes/orders.js`, `server/routes/inventory.js`, `server/routes/external-sales.js`: cada cambio de stock llama `scheduleStockSync()`. Al borrar un producto o variante vinculada, su publicación queda en 0 antes del borrado (`retireListings()`).
+- `server/routes/external-sales.js`: corregido `client.execute(...)` dentro de `withTransaction()`, que solo expone `query`. Registrar o cancelar una venta externa fallaba con 500 y no movía el stock.
+- `src/pages/admin/mercadolibre.astro`: estado de conexión real con botón Conectar/Reconectar/Desconectar, tabla "Stock sincronizado con MercadoLibre" (disponible, colchón editable, lo que se ofrece, lo que ML reporta con aviso de diferencia, estado y error), modal para vincular con buscador de publicaciones, variaciones y sugerencia por SKU. Texto del cron corregido.
+- `server/routes/__tests__/orders.test.js`: mock del centralizador.
+- `.env.example`, `.env.example.mercadolibre`: `ML_CLIENT_ID`, `ML_CLIENT_SECRET`, `ML_TOKEN_SECRET`, `ML_REDIRECT_URI`, `ML_AUTH_HOST` y el paso a paso.
+
+### Decisiones Técnicas
+- **La fuente de verdad es el sitio**: ML es un canal. Se le ofrece `disponible - colchón`. El webhook `items` no reenvía nada; solo registra lo que ML reporta, para no pisar un descuento de ML con un valor viejo mientras llega la orden.
+- **Productos con variantes se vinculan por variante**: así una venta de ML sabe exactamente qué descontar.
+- **Idempotencia por `ml_order_stock`** (clave única orden + publicación + variación) y escritura de valor absoluto dentro de `withTransaction()`; alertas y auditoría fuera de la transacción.
+- **Órdenes anteriores al vínculo no descuentan** (`linked_at`): el stock contado a mano ya las reflejaba.
+- **Sobreventa**: se descuenta hasta 0, se marca `oversold` y se alerta por ntfy; al cancelar se repone lo descontado, no lo vendido.
+- **Refresh token de un solo uso**: la renovación escribe con condición sobre el token anterior y, si otra instancia ganó, relee en vez de fallar.
+- **Envío después de responder** (`waitUntil`) con `pending_push` como respaldo: una venta del sitio nunca espera a ML ni falla por ML.
+
+### Impacto
+- El stock de las publicaciones vinculadas refleja el del sitio y las ventas de ML bajan el stock del sitio. La conexión con ML deja de morir cada 6 horas.
+- Para activarlo hace falta: crear la app en ML, configurar `ML_CLIENT_ID`, `ML_CLIENT_SECRET`, `ML_TOKEN_SECRET` y `CRON_SECRET` en Vercel, `SITE_BASE_URL` y `CRON_SECRET` en GitHub, conectar desde `/admin/mercadolibre` y vincular las publicaciones.
+
+---
+
 ## 2026-11-03: Barra de anuncio y navbar sin solapes en ningún ancho (Agente: Claude)
 
 ### Contexto
