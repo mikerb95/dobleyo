@@ -579,6 +579,41 @@ export async function unlinkListing(id) {
   return existing;
 }
 
+/**
+ * Antes de borrar un producto o una variante: deja sus publicaciones en 0 en ML
+ * y quita los vínculos, para que ML no siga vendiendo algo que ya no existe.
+ * Nunca lanza; si ML no responde, el vínculo queda con el error a la vista.
+ * @param {{ productId?: string, variantId?: number }} target
+ */
+export async function retireListings({ productId = null, variantId = null }) {
+  try {
+    const where = variantId != null ? 'variant_id = ?' : 'product_id = ?';
+    const r = await db.query(`SELECT * FROM ml_listings WHERE ${where}`, [variantId != null ? variantId : productId]);
+    for (const l of r.rows) {
+      if (Number(l.is_active) && !isFulfillment(l)) {
+        try {
+          const itemId = encodeURIComponent(l.ml_item_id);
+          const path = l.ml_variation_id
+            ? `/items/${itemId}/variations/${encodeURIComponent(l.ml_variation_id)}`
+            : `/items/${itemId}`;
+          await mlApi(path, { method: 'PUT', body: { available_quantity: 0 } });
+        } catch (err) {
+          // Se conserva el vínculo (inactivo) para que el panel muestre que ML quedó con stock.
+          await db.query(
+            `UPDATE ml_listings SET is_active = 0, last_error = ?, last_error_at = datetime('now') WHERE id = ?`,
+            [`No se pudo poner en 0 al borrar: ${String(err.message).slice(0, 400)}`, l.id],
+          );
+          logger.warn({ listingId: l.id, err: err.message }, '[mlStock] no se pudo poner en 0 la publicación al borrar');
+          continue;
+        }
+      }
+      await db.query('DELETE FROM ml_listings WHERE id = ?', [l.id]);
+    }
+  } catch (err) {
+    if (!isMissingTable(err)) logger.warn({ err: err.message }, '[mlStock] retireListings falló');
+  }
+}
+
 /** Vínculos con el disponible local calculado, para el panel. */
 export async function listListingsWithStock() {
   const r = await db.query(
