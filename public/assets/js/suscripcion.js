@@ -9,7 +9,33 @@ function initSuscripcion() {
   if (!form || form.dataset.jsInit) return;
   form.dataset.jsInit = '1';
 
-  const fmt = (n) => '$' + Number(n).toLocaleString('es-CO');
+  const en = document.documentElement.lang === 'en';
+  const fmt = (n) => en ? '$' + Number(n).toLocaleString('en-US') + ' COP' : '$' + Number(n).toLocaleString('es-CO');
+  const T = en ? {
+    note: (f) => `First charge today, then every ${f} days. Cancel whenever you like.`,
+    exp: 'Invalid expiry date (use MM/YY).',
+    card: "We couldn't validate the card: ",
+    down: 'Payments are unavailable right now. Please try again later.',
+    busy: 'Processing…',
+    fail: "We couldn't create the subscription.",
+    active: "Subscription active. Your first order is on its way and a confirmation email is coming.",
+    pending: "Subscription saved. We're confirming the first payment and will email you.",
+    submit: 'Subscribe',
+    created: 'Subscription created',
+    error: 'Something went wrong with the subscription.',
+  } : {
+    note: (f) => `Primer cobro hoy, luego cada ${f} días. Cancele cuando quiera.`,
+    exp: 'Fecha de vencimiento inválida (use MM/AA).',
+    card: 'No se pudo validar la tarjeta: ',
+    down: 'Pagos no disponibles. Intente más tarde.',
+    busy: 'Procesando…',
+    fail: 'No se pudo crear la suscripción.',
+    active: '¡Suscripción activada! Su primer pedido está en camino. Recibirá un correo de confirmación.',
+    pending: 'Suscripción registrada. Estamos confirmando el primer pago; le avisaremos por correo.',
+    submit: 'Suscribirme',
+    created: 'Suscripción creada',
+    error: 'Error al procesar la suscripción.',
+  };
 
   let wompi = null; // { public_key, api_base, acceptance_token, accept_personal_auth, permalink, discount_percent }
   let freq = 30;
@@ -39,7 +65,7 @@ function initSuscripcion() {
     const total = Math.round((price * qty * (100 - discount)) / 100);
     $('#sumDiscount').textContent = String(discount);
     $('#sumTotal').textContent = fmt(total);
-    $('#sumNote').textContent = `Primer cobro hoy, luego cada ${freq} días. Cancele cuando quiera.`;
+    $('#sumNote').textContent = T.note(freq);
   }
 
   // ─── Interacciones ─────────────────────────────────────────────────────────
@@ -70,7 +96,7 @@ function initSuscripcion() {
   async function tokenizeCard() {
     const raw = $('#ccExp').value.trim();
     const m = raw.match(/^(\d{2})\s*\/\s*(\d{2})$/);
-    if (!m) throw new Error('Fecha de vencimiento inválida (use MM/AA).');
+    if (!m) throw new Error(T.exp);
     const body = {
       number: $('#ccNum').value.replace(/\s+/g, ''),
       exp_month: m[1],
@@ -86,7 +112,7 @@ function initSuscripcion() {
     const json = await res.json();
     if (!res.ok || !json?.data?.id) {
       const reason = json?.error?.messages ? JSON.stringify(json.error.messages) : 'Tarjeta rechazada';
-      throw new Error('No se pudo validar la tarjeta: ' + reason);
+      throw new Error(T.card + reason);
     }
     return json.data.id;
   }
@@ -98,10 +124,10 @@ function initSuscripcion() {
 
     if (!$('#subAccept').checked) { showMsg('Debe aceptar el reglamento y el cobro recurrente.', 'error'); return; }
     if (!form.checkValidity()) { form.reportValidity(); return; }
-    if (!wompi) { await loadAcceptance(); if (!wompi) { showMsg('Pagos no disponibles. Intente más tarde.', 'error'); return; } }
+    if (!wompi) { await loadAcceptance(); if (!wompi) { showMsg(T.down, 'error'); return; } }
 
     submit.disabled = true;
-    submit.textContent = 'Procesando…';
+    submit.textContent = T.busy;
     try {
       const cardToken = await tokenizeCard();
 
@@ -127,26 +153,26 @@ function initSuscripcion() {
       });
       const json = await res.json();
       if (!res.ok || !json.success) {
-        throw new Error(json.error || (json.errors && json.errors[0]?.msg) || 'No se pudo crear la suscripción.');
+        throw new Error(json.error || (json.errors && json.errors[0]?.msg) || T.fail);
       }
 
       const st = json.data.charge?.status;
       if (st === 'APPROVED') {
-        showMsg('¡Suscripción activada! Su primer pedido está en camino. Recibirá un correo de confirmación.', 'success');
+        showMsg(T.active, 'success');
       } else if (st === 'PENDING') {
-        showMsg('Suscripción registrada. Estamos confirmando el primer pago; le avisaremos por correo.', 'success');
+        showMsg(T.pending, 'success');
       } else {
         showMsg('La tarjeta fue rechazada en el primer cobro. Verifique los datos e intente de nuevo.', 'error');
         submit.disabled = false;
-        submit.textContent = 'Suscribirme';
+        submit.textContent = T.submit;
         return;
       }
       form.reset();
-      submit.textContent = 'Suscripción creada';
+      submit.textContent = T.created;
     } catch (err) {
-      showMsg(err.message || 'Error al procesar la suscripción.', 'error');
+      showMsg(err.message || T.error, 'error');
       submit.disabled = false;
-      submit.textContent = 'Suscribirme';
+      submit.textContent = T.submit;
     }
   });
 

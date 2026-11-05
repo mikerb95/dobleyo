@@ -11,18 +11,22 @@
  */
 import { orderDays, addDays } from "../../lib/subscription.ts";
 
+interface Props { lang?: "es" | "en"; }
+const { lang = "es" } = Astro.props;
+const en = lang === "en";
 const HORIZON = 90;
 const SLOTS = orderDays(15, HORIZON).length; // el máximo de pedidos posibles
 const today = new Date();
 const days = orderDays(30, HORIZON);
 const label = (d: number) =>
-  d === 0 ? "Hoy" : addDays(today, d).toLocaleDateString("es-CO", { day: "numeric", month: "short" }).replace(".", "");
+  d === 0 ? (en ? "Today" : "Hoy") : addDays(today, d).toLocaleDateString(en ? "en-US" : "es-CO", { day: "numeric", month: "short" }).replace(".", "");
+const orderWord = en ? "Order" : "Pedido";
 ---
 
 <div class="cal" data-sub-calendar data-horizon={HORIZON}>
   <div class="cal__head">
-    <span class="cal__title">Sus pedidos en los próximos 90 días</span>
-    <strong class="cal__count" data-cal-count>{days.length} pedidos</strong>
+    <span class="cal__title">{en ? "Your next 90 days" : "Sus pedidos en los próximos 90 días"}</span>
+    <strong class="cal__count" data-cal-count>{days.length} {en ? "orders" : "pedidos"}</strong>
   </div>
 
   <div class="cal__ruler" aria-hidden="true">
@@ -41,7 +45,7 @@ const label = (d: number) =>
         >
           <span class="cal__pin"></span>
           <span class="cal__label">
-            <span class="cal__n">Pedido {i + 1}</span>
+            <span class="cal__n">{orderWord} {i + 1}</span>
             <span class="cal__date" data-cal-date>{d == null ? "" : label(d)}</span>
           </span>
         </span>
@@ -50,10 +54,10 @@ const label = (d: number) =>
   </div>
 
   <ol class="sr-only" data-cal-list>
-    {days.map((d, i) => <li>Pedido {i + 1}: {label(d)}</li>)}
+    {days.map((d, i) => <li>{orderWord} {i + 1}: {label(d)}</li>)}
   </ol>
 
-  <p class="cal__note">Cada fecha es un cobro y un pedido nuevo. Pause o cancele cuando quiera.</p>
+  <p class="cal__note">{en ? "Each date is one charge and one new order. Pause or cancel whenever you like." : "Cada fecha es un cobro y un pedido nuevo. Pause o cancele cuando quiera."}</p>
 </div>
 
 <script>
@@ -69,8 +73,9 @@ const label = (d: number) =>
     const count = cal.querySelector<HTMLElement>("[data-cal-count]");
     const list = cal.querySelector<HTMLElement>("[data-cal-list]");
 
+    const en = document.documentElement.lang === "en";
     const label = (d: number) =>
-      d === 0 ? "Hoy" : addDays(new Date(), d).toLocaleDateString("es-CO", { day: "numeric", month: "short" }).replace(".", "");
+      d === 0 ? (en ? "Today" : "Hoy") : addDays(new Date(), d).toLocaleDateString(en ? "en-US" : "es-CO", { day: "numeric", month: "short" }).replace(".", "");
 
     const layout = (freq: number) => {
       const days = orderDays(freq, horizon);
@@ -82,8 +87,8 @@ const label = (d: number) =>
         dot.style.left = `${((d ?? horizon) / horizon) * 100}%`;
         if (d != null) dot.querySelector("[data-cal-date]")!.textContent = label(d);
       });
-      if (count) count.textContent = `${days.length} pedidos`;
-      if (list) list.innerHTML = days.map((d, i) => `<li>Pedido ${i + 1}: ${label(d)}</li>`).join("");
+      if (count) count.textContent = `${days.length} ${en ? "orders" : "pedidos"}`;
+      if (list) list.innerHTML = days.map((d, i) => `<li>${en ? "Order" : "Pedido"} ${i + 1}: ${label(d)}</li>`).join("");
       cal.dataset.freq = String(freq);
     };
 
