@@ -5,6 +5,10 @@ import vercel from '@astrojs/vercel';
 export default defineConfig({
   site: 'https://dobleyo.cafe',
   integrations: [react()],
+  // Astro 7 cambió el valor por defecto a 'jsx', que borra el espacio entre
+  // elementos en línea escritos en líneas distintas ("Hola <a>x</a>\n<a>y</a>").
+  // El sitio está escrito a mano contando con ese espacio.
+  compressHTML: true,
   // `imageService: true` delega la optimización de imágenes al servicio de
   // Vercel en vez de resolverla dentro de la función. Sin esta opción, Astro
   // empaqueta sharp (libvips) en el bundle: 33 MB de los 48 MB que pesaba
@@ -15,6 +19,13 @@ export default defineConfig({
   // producción" le ancla la historia entera de forma permanente.
   adapter: vercel({ imageService: true }),
   vite: {
+    ssr: {
+      // Astro usa cookie 2.x (anidado en su node_modules) y Express cookie 0.7 (en
+      // la raíz). Si queda externo, el chunk en dist/ resuelve `cookie` desde la
+      // raíz, recibe la 0.7 y el build falla por `parseCookie`. Empaquetarlo hace
+      // que se resuelva desde Astro, sin depender de cómo npm ordene el árbol.
+      noExternal: ['cookie'],
+    },
     server: {
       proxy: {
         '/api': {

@@ -36,13 +36,13 @@
     "typecheck": "astro check"
   },
   "dependencies": {
-    "@astrojs/react": "^4.4.2",
-    "@astrojs/vercel": "^9.0.3",
+    "@astrojs/react": "^7.1.2",
+    "@astrojs/vercel": "^11.0.18",
     "@fontsource-variable/fraunces": "^5.2.9",
     "@fontsource-variable/inter": "^5.2.8",
     "@libsql/client": "^0.17.3",
     "@vercel/functions": "^3.7.5",
-    "astro": "^5.16.6",
+    "astro": "^7.4.5",
     "bcryptjs": "^2.4.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
@@ -69,14 +69,14 @@
     "resend": "^6.6.0"
   },
   "devDependencies": {
-    "@astrojs/check": "^0.9.6",
+    "@astrojs/check": "^0.9.12",
     "@eslint/js": "^9.39.3",
     "@playwright/test": "^1.58.2",
-    "@vitest/coverage-v8": "^4.0.18",
+    "@vitest/coverage-v8": "^4.1.12",
     "eslint": "^9.39.3",
     "globals": "^14.0.0",
     "supertest": "^7.2.2",
     "typescript": "^5.9.3",
-    "vitest": "^4.0.18"
+    "vitest": "^4.1.12"
   }
 }
