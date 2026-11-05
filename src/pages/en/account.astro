@@ -6,7 +6,7 @@ import { getCanonicalUrl } from "../../i18n/index.ts";
 
 <Layout
   lang="en"
-  title="My Account — DobleYo Café"
+  title="My Account · DobleYo Café"
   description="Manage your profile, orders, addresses, favourites and preferences at DobleYo Café."
   canonical={getCanonicalUrl("/account", "en")}
   noindex={true}
@@ -20,10 +20,10 @@ import { getCanonicalUrl } from "../../i18n/index.ts";
     <div id="accountShell" class="account-shell" hidden>
       <aside class="account-sidebar">
         <div class="account-id">
-          <div class="account-avatar" id="sideAvatar">—</div>
+          <div class="account-avatar" id="sideAvatar">-</div>
           <div class="account-id-text">
-            <div class="account-id-name" id="sideName">—</div>
-            <div class="account-id-email muted" id="sideEmail">—</div>
+            <div class="account-id-name" id="sideName">-</div>
+            <div class="account-id-email muted" id="sideEmail">-</div>
           </div>
         </div>
 
@@ -68,10 +68,10 @@ import { getCanonicalUrl } from "../../i18n/index.ts";
           <div class="account-card">
             <h2 class="card-h">Account details</h2>
             <div class="summary-meta">
-              <div class="meta-row"><span class="meta-label">Email</span><span class="meta-value" id="sumEmail">—</span></div>
-              <div class="meta-row"><span class="meta-label">Account type</span><span class="meta-value" id="sumRole">—</span></div>
-              <div class="meta-row"><span class="meta-label">Member since</span><span class="meta-value" id="sumCreated">—</span></div>
-              <div class="meta-row"><span class="meta-label">Last sign-in</span><span class="meta-value" id="sumLastLogin">—</span></div>
+              <div class="meta-row"><span class="meta-label">Email</span><span class="meta-value" id="sumEmail">-</span></div>
+              <div class="meta-row"><span class="meta-label">Account type</span><span class="meta-value" id="sumRole">-</span></div>
+              <div class="meta-row"><span class="meta-label">Member since</span><span class="meta-value" id="sumCreated">-</span></div>
+              <div class="meta-row"><span class="meta-label">Last sign-in</span><span class="meta-value" id="sumLastLogin">-</span></div>
             </div>
           </div>
 
@@ -91,14 +91,14 @@ import { getCanonicalUrl } from "../../i18n/index.ts";
               <button class="btn outline small" id="btnEditProfile">Edit</button>
             </div>
             <div id="profileView" class="field-grid">
-              <div class="field"><div class="field-label">First name</div><div class="field-value" id="vFirstName">—</div></div>
-              <div class="field"><div class="field-label">Last name</div><div class="field-value" id="vLastName">—</div></div>
-              <div class="field"><div class="field-label">Mobile</div><div class="field-value" id="vMobile">—</div></div>
-              <div class="field"><div class="field-label">Phone</div><div class="field-value" id="vLandline">—</div></div>
-              <div class="field"><div class="field-label">City</div><div class="field-value" id="vCity">—</div></div>
-              <div class="field"><div class="field-label">State / Region</div><div class="field-value" id="vState">—</div></div>
-              <div class="field"><div class="field-label">Country</div><div class="field-value" id="vCountry">—</div></div>
-              <div class="field field--full"><div class="field-label">Address</div><div class="field-value" id="vAddress">—</div></div>
+              <div class="field"><div class="field-label">First name</div><div class="field-value" id="vFirstName">-</div></div>
+              <div class="field"><div class="field-label">Last name</div><div class="field-value" id="vLastName">-</div></div>
+              <div class="field"><div class="field-label">Mobile</div><div class="field-value" id="vMobile">-</div></div>
+              <div class="field"><div class="field-label">Phone</div><div class="field-value" id="vLandline">-</div></div>
+              <div class="field"><div class="field-label">City</div><div class="field-value" id="vCity">-</div></div>
+              <div class="field"><div class="field-label">Department</div><div class="field-value" id="vState">-</div></div>
+              <div class="field"><div class="field-label">Country</div><div class="field-value" id="vCountry">-</div></div>
+              <div class="field field--full"><div class="field-label">Address</div><div class="field-value" id="vAddress">-</div></div>
             </div>
             <form id="profileForm" class="form-grid" hidden novalidate>
               <div class="form-group"><label for="fFirstName">First name <span class="req">*</span></label><input id="fFirstName" type="text" required /></div>
@@ -106,7 +106,7 @@ import { getCanonicalUrl } from "../../i18n/index.ts";
               <div class="form-group"><label for="fMobile">Mobile</label><input id="fMobile" type="tel" /></div>
               <div class="form-group"><label for="fLandline">Phone</label><input id="fLandline" type="tel" /></div>
               <div class="form-group"><label for="fCity">City</label><input id="fCity" type="text" /></div>
-              <div class="form-group"><label for="fState">State / Region</label><input id="fState" type="text" /></div>
+              <div class="form-group"><label for="fState">Department</label><input id="fState" type="text" /></div>
               <div class="form-group"><label for="fCountry">Country</label><input id="fCountry" type="text" /></div>
               <div class="form-group form-group--full"><label for="fAddress">Address</label><textarea id="fAddress" rows="2"></textarea></div>
               <div class="form-actions">
@@ -145,7 +145,7 @@ import { getCanonicalUrl } from "../../i18n/index.ts";
             <div class="form-group"><label for="aZip">ZIP / Postal code</label><input id="aZip" type="text" /></div>
             <div class="form-group form-group--full"><label for="aAddress">Street address <span class="req">*</span></label><input id="aAddress" type="text" required /></div>
             <div class="form-group"><label for="aCity">City <span class="req">*</span></label><input id="aCity" type="text" required /></div>
-            <div class="form-group"><label for="aState">State / Region</label><input id="aState" type="text" /></div>
+            <div class="form-group"><label for="aState">Department</label><input id="aState" type="text" /></div>
             <div class="form-group"><label for="aCountry">Country</label><input id="aCountry" type="text" /></div>
             <div class="form-group form-group--full checkbox-row">
               <label><input id="aDefault" type="checkbox" /> Set as default address</label>
@@ -176,7 +176,7 @@ import { getCanonicalUrl } from "../../i18n/index.ts";
               </div>
               <div class="form-group">
                 <label for="prefCurrency">Currency</label>
-                <select id="prefCurrency"><option value="COP">Colombian Peso (COP)</option><option value="USD">US Dollar (USD)</option></select>
+                <select id="prefCurrency"><option value="COP">Colombian Peso (COP)</option></select>
               </div>
             </div>
 
@@ -418,11 +418,11 @@ import { getCanonicalUrl } from "../../i18n/index.ts";
   const setText = (id: string, v: any) => { const el = $(id); if (el) el.textContent = (v === null || v === undefined || v === "") ? "—" : String(v); };
   const esc = (s: any) => String(s ?? "").replace(/[&<>"']/g, (c: string) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c] ?? c));
 
-  function fmtUSD(value: number) {
-    return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(value || 0);
+  function fmtMoney(value: number, currency = "COP") {
+    return `$${(Number(value) || 0).toLocaleString("en-US")} ${currency}`;
   }
   function fmtDate(raw: string | null) {
-    if (!raw) return "—";
+    if (!raw) return "-";
     const norm = typeof raw === "string" && raw.includes(" ") ? raw.replace(" ", "T") + "Z" : raw;
     const d = new Date(norm);
     if (isNaN(d.getTime())) return raw;
@@ -582,7 +582,7 @@ import { getCanonicalUrl } from "../../i18n/index.ts";
           <div class="order-items">${items}</div>
           <div class="order-foot">
             <span class="muted">${esc(o.shipping_city || "")}</span>
-            <span class="order-total">${fmtUSD(o.total_usd || o.total_cop / 4000)}</span>
+            <span class="order-total">${fmtMoney(o.total_cop, o.currency || "COP")}</span>
           </div>
         </div>`;
     }).join("");
@@ -608,9 +608,9 @@ import { getCanonicalUrl } from "../../i18n/index.ts";
           <a href="${href}"><img src="${esc(f.image_url || "/assets/img/placeholder.png")}" alt="${esc(f.name_en || f.name)}" loading="lazy" /></a>
           <div class="fav-body">
             <div class="fav-name"><a href="${href}">${esc(f.name_en || f.name)}</a></div>
-            <div class="fav-price">${fmtUSD(f.price_usd || f.price / 4000)}</div>
+            <div class="fav-price">${fmtMoney(f.price)}</div>
             <div class="fav-actions">
-              <button class="btn fav-add" ${soldOut ? "disabled" : ""} data-name="${esc(f.name_en || f.name)}" data-price="${f.price_usd || ""}" data-img="${esc(f.image_url || "")}">${soldOut ? "Sold out" : "Add to cart"}</button>
+              <button class="btn fav-add" ${soldOut ? "disabled" : ""} data-name="${esc(f.name_en || f.name)}" data-price="${f.price || ""}" data-img="${esc(f.image_url || "")}">${soldOut ? "Sold out" : "Add to cart"}</button>
               <button class="btn outline fav-remove" aria-label="Remove ${esc(f.name_en || f.name)} from favourites" title="Remove from favourites">
                 <svg width="14" height="14" viewBox="0 0 15 15" fill="none" aria-hidden="true"><path d="M3 3l9 9M12 3l-9 9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
               </button>
@@ -728,12 +728,12 @@ import { getCanonicalUrl } from "../../i18n/index.ts";
   async function loadPreferences() {
     loaded.preferences = true;
     const { ok, data } = await api("/account/preferences");
-    const p = ok && data && data.success ? data.data : { newsletter: 1, order_updates: 1, promotions: 1, language: "en", currency: "USD" };
+    const p = ok && data && data.success ? data.data : { newsletter: 1, order_updates: 1, promotions: 1, language: "en", currency: "COP" };
     ($("prefNewsletter") as HTMLInputElement).checked = !!p.newsletter;
     ($("prefOrders") as HTMLInputElement).checked = !!p.order_updates;
     ($("prefPromos") as HTMLInputElement).checked = !!p.promotions;
     ($("prefLang") as HTMLSelectElement).value = p.language || "en";
-    ($("prefCurrency") as HTMLSelectElement).value = p.currency || "USD";
+    ($("prefCurrency") as HTMLSelectElement).value = "COP";
   }
 
   ($("prefsForm") as HTMLFormElement).addEventListener("submit", async (e) => {

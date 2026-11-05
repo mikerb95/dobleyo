@@ -55,7 +55,7 @@ const pageDescription =
       { icon: "pause", text: "Pause or cancel anytime" },
     ]}
   >
-    <DeliveryBags />
+    <DeliveryBags lang="en" />
   </DarkHero>
 
   {coffees.length === 0 ? (
@@ -152,7 +152,7 @@ const pageDescription =
             <span>Per delivery</span>
             <strong id="sumTotal">{price(Math.round((Number(first.price) * (100 - discount)) / 100))}</strong>
           </div>
-          <p class="ticket__note" id="sumNote">Primer cobro hoy, luego every 30 days. Cancele cuando quiera.</p>
+          <p class="ticket__note" id="sumNote">First charge today, then every 30 days. Cancel whenever you like.</p>
           <div id="subMsg" class="sub-msg" style="display:none"></div>
           <button type="submit" id="subSubmit" class="sub-submit">Subscribe</button>
           <p class="ticket__secure"><Icon name="lock" size={14} /> Secure payment through Wompi</p>
@@ -378,7 +378,7 @@ const pageDescription =
     }
     .ticket__total span { font-size: var(--text-sm); color: rgba(var(--cream-rgb), .75); }
     .ticket__total strong,
-    .ticket__total :global(.odo-live) { font-family: var(--font-display); font-size: var(--text-3xl); color: var(--cream); font-weight: 600; }
+    .ticket__total :global(.odo-live) { font-family: var(--font-display); font-size: var(--text-xl); white-space: nowrap; color: var(--cream); font-weight: 600; }
     .ticket__note { margin: var(--space-2) 0 var(--space-5); font-size: var(--text-xs); color: rgba(var(--cream-rgb), .65); line-height: 1.5; }
     .sub-submit {
       width: 100%; padding: .9rem; min-height: 52px;

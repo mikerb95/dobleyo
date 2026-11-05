@@ -3,7 +3,7 @@ import Layout from "../layouts/Layout.astro";
 import PageHero from "../components/PageHero.astro";
 import ProductCard from "../components/ProductCard.astro";
 import { products as staticProducts } from "../data/products";
-import { getCanonicalUrl } from "../i18n/index.ts";
+import { getCanonicalUrl, getHreflangPair } from "../i18n/index.ts";
 import { reviewAggregateSql } from "../lib/products.server.ts";
 
 export const prerender = false;
@@ -33,6 +33,8 @@ if (!cacao.length) {
     .filter((p) => p.category === "Cacao")
     .map((p) => ({ ...p, stock: 99 }));
 }
+
+const _hreflang = getHreflangPair("/cacao");
 
 const pageTitle = "Cacao colombiano: chocolate de mesa, polvo y manteca | DobleYo Café";
 const pageDescription =
@@ -68,6 +70,8 @@ const jsonLd = {
   title={pageTitle}
   description={pageDescription}
   canonical={getCanonicalUrl("/cacao", "es")}
+  hreflangEs={_hreflang?.es}
+  hreflangEn={_hreflang?.en}
   jsonLd={jsonLd}
 >
   <PageHero

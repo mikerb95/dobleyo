@@ -1,7 +1,7 @@
 {
     "seo": {
-        "default_title": "DobleYo — Premium Colombian Specialty Coffee",
-        "default_description": "Colombian specialty coffee, farm-to-cup. Fresh roasted, single-origin lots.",
+        "default_title": "DobleYo Café | Colombian Specialty Coffee Delivered to Your Door",
+        "default_description": "Fresh specialty coffee from small Colombian farms, delivered to your door.",
         "site_name": "DobleYo Café"
     },
     "nav": {
@@ -9,7 +9,7 @@
         "shop": "Shop",
         "blog": "Blog",
         "traceability": "Traceability",
-        "shipping": "Shipping",
+        "shipping": "Delivery",
         "contact": "Contact",
         "cart": "Cart",
         "account": "Account",
@@ -21,11 +21,11 @@
         "apps": "Apps dashboard"
     },
     "topbar": {
-        "promo": "New: Free domestic shipping over $50 USD · New harvests from Huila"
+        "promo": "Free delivery on orders over $120,000 COP"
     },
     "shop": {
         "title": "Shop",
-        "subtitle": "Specialty coffees and accessories. Direct from Colombian farms to your cup.",
+        "subtitle": "Whole-bean coffee and cacao from small Colombian farms.",
         "filter_by": "Filter by",
         "sort_by": "Sort by:",
         "sort_relevance": "Relevance",
@@ -60,8 +60,8 @@
         "process_natural": "Natural",
         "hero": {
             "eyebrow": "Shop",
-            "title": "Single-origin coffee, freshly roasted",
-            "lead": "Colombian specialty coffees and accessories, direct to you.",
+            "title": "Whole-bean coffee from small Colombian farms",
+            "lead": "Roasted in small batches and delivered to your door.",
             "hint": "Tap a bag to see only that origin.",
             "bag_filter": "Show only coffee from",
             "bags_label": "Coffee by origin"
@@ -72,7 +72,7 @@
         "empty": "Your cart is empty",
         "empty_cta": "Browse shop",
         "subtotal": "Subtotal",
-        "shipping": "Shipping",
+        "shipping": "Delivery",
         "shipping_free": "Free",
         "shipping_calculated": "Calculated at checkout",
         "total": "Total",
@@ -101,7 +101,7 @@
         "message": "Message",
         "subject_order": "Inquiry about my order",
         "subject_product": "Product information",
-        "subject_wholesale": "Wholesale / B2B",
+        "subject_wholesale": "Other",
         "subject_other": "Other",
         "send": "Send message",
         "sending": "Sending...",
@@ -170,7 +170,7 @@
         "search": "Search",
         "more": "Show more",
         "less": "Show less",
-        "currency": "USD",
+        "currency": "COP",
         "locale": "en-US",
         "date_locale": "en-US"
     },
@@ -262,8 +262,8 @@
             "direct_desc": "We work directly with Colombian farms. No middlemen: better price for the producer, better quality for you.",
             "direct_farm": "Farm",
             "direct_you": "You",
-            "shipping_title": "Free shipping over $50",
-            "shipping_desc": "Worldwide shipping available. Free on orders over $50 USD.",
+            "shipping_title": "Free delivery over $120,000 COP",
+            "shipping_desc": "Delivered to your door. Free on orders over $120,000 COP.",
             "shipping_free": "Free shipping"
         },
         "farms": {

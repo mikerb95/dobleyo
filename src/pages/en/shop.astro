@@ -5,28 +5,25 @@ import ShopHero from "../../components/shop/ShopHero.astro";
 import { products as staticProducts } from "../../data/products";
 import { getCanonicalUrl, getHreflangPair } from "../../i18n/index.ts";
 import { reviewAggregateSql } from "../../lib/products.server.ts";
+import { categoryEn, processEn, roastEn } from "../../data/en-copy.ts";
 
 const lang = "en" as const;
 const hreflang = getHreflangPair("/tienda");
 
-// Traducción es→en de etiquetas almacenadas en español
-const CAT_EN: Record<string, string> = { cafe: "Coffee", accesorio: "Accessories", merchandising: "Merch", cacao: "Cacao" };
-const PROC_EN: Record<string, string> = { Lavado: "Washed", Honey: "Honey", Natural: "Natural" };
-const ROAST_EN: Record<string, string> = { Claro: "Light", Medio: "Medium", Oscuro: "Dark" };
 
-// Cargar productos desde la BD (precios en USD); fallback al catálogo estático
+// Cargar productos desde la BD; fallback al catálogo estático
 let rows: any[] = [];
 try {
     const { query } = await import("../../../server/db.js");
     const res = await query(
         `SELECT p.id, p.name, p.name_en, p.category, p.origin, p.process, p.roast,
-                p.price, p.price_usd, p.rating, p.tasting_notes, p.weight, p.weight_unit,
+                p.price, p.rating, p.tasting_notes, p.weight, p.weight_unit,
                 p.is_deal AS deal, p.is_bestseller AS bestseller, p.is_new AS new, p.is_fast AS fast,
                 p.image_url AS image, p.stock_quantity AS stock,
                 ${reviewAggregateSql("p")}
          FROM products p
          WHERE p.is_active = 1
-         ORDER BY p.is_bestseller DESC, p.is_new DESC, p.is_deal DESC, p.rating DESC`
+         ORDER BY (p.category = 'cafe') DESC, p.is_bestseller DESC, p.is_new DESC, p.is_deal DESC, p.rating DESC`
     );
     rows = res.rows;
 } catch (_) { /* BD no disponible */ }
@@ -35,11 +32,11 @@ const products: any[] = rows.length
     ? rows.map((p: any) => ({
         id: p.id,
         name: p.name_en || p.name,
-        category: CAT_EN[p.category] ?? p.category,
+        category: categoryEn(p.category),
         origin: p.origin ?? null,
-        process: p.process ? (PROC_EN[p.process] ?? p.process) : null,
-        roast: p.roast ? (ROAST_EN[p.roast] ?? p.roast) : null,
-        price: Number(p.price_usd ?? Math.round(Number(p.price) / 4000)),
+        process: processEn(p.process),
+        roast: roastEn(p.roast),
+        price: Number(p.price),
         rating: Number(p.rating) || 0,
         review_count: p.review_count,
         review_avg: p.review_avg,
@@ -57,7 +54,7 @@ const products: any[] = rows.length
         origin: p.origin ?? null,
         process: (p.processEn || p.process) ?? null,
         roast: (p.roastEn || p.roast) ?? null,
-        price: p.priceUsd ?? Math.round(p.price / 4000),
+        price: p.price,
         rating: p.rating,
         deal: p.deal ?? false, bestseller: p.bestseller ?? false,
         new: p.new ?? false, fast: p.fast ?? false,
@@ -73,8 +70,8 @@ const productsJson = JSON.stringify(products).replace(/</g, "\\u003c");
 ---
 
 <Layout
-    title="Shop · DobleYo Café | Colombian Specialty Coffee"
-    description="Browse our selection of Colombian specialty coffees and accessories. Single-origin, freshly roasted, farm-to-cup."
+    title="Shop Colombian Specialty Coffee | DobleYo Café"
+    description="Whole-bean Colombian specialty coffee and cacao, delivered to your door. Free delivery over $120,000 COP."
     lang={lang}
     canonical={getCanonicalUrl("/shop", "en")}
     hreflangEs={hreflang?.es}
@@ -123,11 +120,11 @@ const productsJson = JSON.stringify(products).replace(/</g, "\\u003c");
                 <div class="filter-list" id="roastList"></div>
             </div>
             <div class="filter-group">
-                <div class="filter-title">Price (USD)</div>
+                <div class="filter-title">Price (COP)</div>
                 <div class="price-inputs">
-                    <input type="number" id="priceMin" placeholder="Min" min="0" step="1" aria-label="Minimum price" />
+                    <input type="number" id="priceMin" placeholder="Min" min="0" step="1000" aria-label="Minimum price" />
                     <span>-</span>
-                    <input type="number" id="priceMax" placeholder="Max" min="0" step="1" aria-label="Maximum price" />
+                    <input type="number" id="priceMax" placeholder="Max" min="0" step="1000" aria-label="Maximum price" />
                 </div>
                 <button class="btn small" id="applyPrice">Apply</button>
             </div>
@@ -153,7 +150,7 @@ const productsJson = JSON.stringify(products).replace(/</g, "\\u003c");
         import { getRating, formatWeight } from "../../lib/products.ts";
 
         type P = Record<string, any>;
-        const fmt = (n: number) => `$${Number(n).toLocaleString("en-US")}`;
+        const fmt = (n: number) => `$${Number(n).toLocaleString("en-US")} COP`;
         const esc = (s: unknown) =>
             String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
         const ratingValue = (p: P) => getRating(p)?.value ?? 0;

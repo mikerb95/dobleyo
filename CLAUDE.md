@@ -8,7 +8,7 @@
 ## Contexto del Proyecto
 
 **DobleYo Café** es una plataforma de comercio electrónico de café de especialidad colombiano con módulos de:
-- **Tienda online** (B2C Colombia + B2B/B2C USA)  
+- **Tienda online** (B2C Colombia en español e inglés + mayoristas en español)  
 - **Trazabilidad** del grano: finca → cosecha → tostión → empaque → venta, con QR en empaque
 - **Producción**: gestión de órdenes de producción, lotes de tueste, control de calidad (cupping SCA)
 - **Finanzas**: contabilidad de doble partida, costeo de producción, facturación
@@ -21,7 +21,7 @@
 
 | Capa | Tecnología | Notas |
 |---|---|---|
-| **Frontend SSR** | Astro 5.16 + `@astrojs/vercel` | Genera HTML estático + SSR en rutas dinámicas |
+| **Frontend SSR** | Astro 7 + `@astrojs/vercel` | Genera HTML estático + SSR en rutas dinámicas |
 | **UI interactiva** | React 19 | Solo para componentes que necesitan estado/interactividad |
 | **Estilos** | CSS custom (`public/assets/css/styles.css`) | Variables CSS en `:root`, mobile-first |
 | **Backend API** | Express 4.19 | Montado en `server/index.js` (standalone) y `api/index.js` (Vercel) |
@@ -39,7 +39,7 @@
 ### Entrada y Configuración
 | Archivo | Propósito |
 |---|---|
-| `package.json` | Dependencias, scripts, engines (Node >=20), `"type": "module"` |
+| `package.json` | Dependencias, scripts, engines (Node 24.x), `"type": "module"` |
 | `astro.config.mjs` | Astro + React + Vercel adapter |
 | `vercel.json` | Rewrites: subdomain EN, API catch-all → `api/index.js` |
 | `.env.example` | Variables de entorno requeridas |
@@ -87,9 +87,10 @@
 | `src/pages/trazabilidad.astro` | Scanner QR + búsqueda manual de lotes |
 | `src/pages/cacao.astro` | Línea de cacao (categoría `cacao`) + sección de maquila. Solo ES |
 | `src/pages/buscar.astro` | Resultados de búsqueda del catálogo (`noindex`). Versión EN en `src/pages/en/search.astro` |
-| `src/pages/en/index.astro` | Landing B2B en inglés (1127 líneas, página autónoma) |
+| `src/pages/en/index.astro` | Portada en inglés para angloparlantes que viven en Colombia (propia, no espeja la portada en español) |
+| `src/components/commerce/` | `CartView` y `CheckoutView`: carrito y checkout compartidos ES/EN. Textos en inglés en `src/i18n/ui.ts` |
 | `src/pages/contacto.astro` | Formulario de contacto |
-| `src/pages/blog.astro` | Blog con portada del artículo más reciente. `/en/blog` no lista artículos (solo existen en español) |
+| `src/pages/blog.astro` | Blog con portada del artículo más reciente. Solo en español: en inglés `/blog` redirige a `/guides` |
 | `src/pages/guias.astro`, `partners.astro`, `afiliados.astro`, `accesorios.astro`, `regalos.astro`, `suscripcion.astro` | Páginas de compra y contenido con motion (ES/EN), armadas con `src/components/shop/` |
 
 ### Frontend — Admin

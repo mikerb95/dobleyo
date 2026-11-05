@@ -11,12 +11,12 @@
 |---|---|
 | **Nombre** | DobleYo Café |
 | **Dominio** | dobleyo.cafe / en.dobleyo.cafe |
-| **Stack** | Astro 5 (SSR) + React 19 + Express 4 + Turso (libSQL/SQLite) + Vercel |
+| **Stack** | Astro 7 (SSR) + React 19 + Express 4 + Turso (libSQL/SQLite) + Vercel |
 | **Tipo de módulo** | ESM (`"type": "module"` en package.json) |
 | **Node.js** | 24.x (`engines` en package.json) |
 | **Lenguaje de código** | Inglés (variables, funciones, clases, nombres de archivo) |
 | **Lenguaje de comentarios** | Español Colombia (comentarios en código, commits, docs) |
-| **Lenguaje de UI** | Español Colombia (primario) + Inglés (versión internacional) |
+| **Lenguaje de UI** | Español Colombia (primario) + Inglés (para angloparlantes que viven en Colombia) |
 | **Moneda primaria** | COP (Peso colombiano) |
 | **Moneda secundaria** | USD (versión USA) |
 
@@ -126,6 +126,7 @@ SELECT * FROM orders WHERE user_id = $1 AND status = '${status}';
 - **Enfoque**: Mobile-first. Estilos base para mobile, `@media (min-width: ...)` para desktop.
 - **Unidades**: `rem` para tipografía/espaciado, `px` para borders/shadows, `%`/`vw` para layout.
 - **Touch targets**: Mínimo `44px × 44px` para elementos interactivos en mobile.
+- **Espacios en plantillas Astro**: `compressHTML: true` en `astro.config.mjs` conserva el espacio entre elementos en línea escritos en líneas distintas (Astro 7 usa `'jsx'` por defecto y lo borraría). Por lo mismo, dos expresiones `{a}` y `{b}` en líneas separadas dejan un espacio entre ellas: si deben ir pegadas, escribirlas en la misma línea.
 - **Header público**: se compacta y se oculta al hacer scroll (`layout.js`). Todo lo que se pegue debajo de él (`position: sticky`, paneles fijos) usa `top: calc(var(--nav-offset) + Xrem)` con `transition: top var(--nav-dur)`, nunca un `top` fijo ni `--header-height` (quedaría tapado o con hueco). `--header-top`/`--header-height`/`--page-offset-top` son métricas en reposo, solo para el relleno de `<main>` y el hero. No poner `transform` en `.site-header`: el buscador y la vista previa del carrito son `position: fixed` dentro de él.
 
 ```css
@@ -210,7 +211,7 @@ Las cards de la home, el catálogo y los resultados de búsqueda deben mostrar e
 - **`aggregateRating` en JSON-LD solo con reseñas aprobadas reales.** Nunca emitir un `ratingCount` fijo ni un `ratingValue` de 0. Es motivo de acción manual en Google.
 - **Los agregados de reseñas se piden con `reviewAggregateSql(alias)`** (`server/utils/reviews.js`), compartido por Express y el SSR. No duplicar la subconsulta.
 - **Los estilos de cards que el cliente repinta van en `public/assets/css/styles.css`, no con scope de Astro.** Aplica a `.stars-rating*`, `.card-notes`, `.card-note`, `.price-row`, `.card-weight`, `.stock-badge` y `.sca-pill`. Un estilo con scope no alcanza el HTML generado por JS.
-- **Notas de cata, perfil de taza (acidez, cuerpo, balance) y puntaje SCA están ocultos al público por decisión de negocio (oct 2026).** Los gobierna `SHOW_CUPPING` en `src/lib/flags.ts` (cards, fichas de producto, ticket del lote en la portada, `/t/[code]`, `/en/wholesale` y etiquetas impresas) y su espejo en `public/assets/js/trazabilidad.js` y `en-traceability.js`. La operación los sigue registrando. Todo lugar nuevo que los muestre debe pasar por ese interruptor.
+- **Notas de cata, perfil de taza (acidez, cuerpo, balance) y puntaje SCA están ocultos al público por decisión de negocio (oct 2026).** Los gobierna `SHOW_CUPPING` en `src/lib/flags.ts` (cards, fichas de producto, ticket del lote en la portada, `/t/[code]`, `/mayoristas` y etiquetas impresas) y su espejo en `public/assets/js/trazabilidad.js` y `en-traceability.js`. La operación los sigue registrando. Todo lugar nuevo que los muestre debe pasar por ese interruptor.
 - **La trazabilidad pública está apagada (oct 2026).** `SHOW_TRACEABILITY` en `src/lib/flags.ts` redirige `/trazabilidad`, `/traceability` y `/t/[code]` a la tienda y oculta sus enlaces y el QR de la portada. No enlazar esas rutas ni prometer QR o trazabilidad en copy nuevo sin pasar por ese interruptor.
 - **El buscador debe funcionar sin JavaScript.** El formulario es un GET a `/buscar` (`/search` en EN); las sugerencias en vivo de `GET /api/products/search` son mejora progresiva.
 - **`GET /api/products/search` va declarado antes de `GET /:id`.** Si no, Express resuelve `search` como el id de un producto.
@@ -373,7 +374,8 @@ Todo agente que cree o modifique páginas DEBE cumplir:
 - **Función helper**: `t('key.subkey')` retorna el string localizado.
 - **URLs**: Español en raíz (`/tienda`), Inglés en `/en/` (`/en/shop`).
 - **`<html lang="...">`**: Dinámico según el idioma de la página.
-- **Moneda**: COP para español, USD para inglés. Formatear con `Intl.NumberFormat`.
+- **Moneda**: COP en los dos idiomas (`src/lib/money.ts`: `$72.000` en español, `$72,000 COP` en inglés). `products.price_usd` ya no se usa en la tienda.
+- **Sitio en inglés**: público angloparlante que vive en Colombia, sin B2B. La voz es directa y práctica, no de folleto. Solo se entrega en Colombia, pero el sitio no dice que no hay envíos al exterior: habla de entregas en Colombia y ya. Textos de carrito, checkout, drawer, login y cookies en `src/i18n/ui.ts` (la clave es el texto en español); datos de BD sin traducción en `src/data/en-copy.ts` (lo que no esté ahí no se muestra).
 - **Fechas**: `Intl.DateTimeFormat` con locale correcto.
 - **Contenido nuevo**: Siempre crear en ambos idiomas.
 
@@ -502,11 +504,11 @@ Para exponer la plataforma en vivo existe un seed **idempotente** que puebla tod
 | DEBT-019 | 🟡 | Integración Envia.com (`server/services/envia.js`) escrita sobre docs.envia.com (oct 2026). Validar en sandbox antes de producción: la forma de la respuesta de `/ship/generaltrack/` (la doc no la publica; se asume `data[]` con `statusId` y `eventHistory`), el número de confirmación de `/ship/pickup/`, los slugs de `ENVIA_CARRIERS` y el recaudo contraentrega (`cash_on_delivery`) | Pendiente |
 | DEBT-015 | 🟡 | `server/migrations/seed_demo.js` no corre sobre una base nueva: `caficultor_applications` en `db/schema.sql` usa `region`/`hectares`/`description` pero el seed inserta `farm_location`/`farm_size_hectares`/`motivation`, y luego falla una FK al insertar `lots`. Solo funciona sobre la base viva | Pendiente |
 | DEBT-016 | 🟡 | `src/pages/admin/lotes-entregados.astro` (menú del caficultor) muestra tres lotes de ejemplo fijos en el script (`lotesEjemplo`). No existe un endpoint que devuelva los lotes de un caficultor; hay que crearlo (con filtro por `req.user.id`) y conectar la página | Pendiente |
-| DEBT-017 | 🟠 | CSP de `vercel.json` sin validar en un despliegue de preview: comprobar en consola que no bloquee checkout Wompi, login con Google ni el mapa de ventas (Leaflet). Los headers solo existen desplegados | Pendiente |
+| DEBT-017 | 🟠 | CSP pública de `vercel.json` sin `'unsafe-inline'` en `script-src`: en producción (revisado 2026-11-05) bloquea los scripts en línea de las páginas públicas y la hoja `accounts.google.com/gsi/style`. Pasaba igual antes de Astro 7. Falta validar checkout Wompi y login con Google | Pendiente |
 | DEBT-018 | 🟡 | `script-src` con `'unsafe-inline'` en la CSP principal: quitarlo exige migrar los scripts en línea y los `onclick=` a `addEventListener` (o hashing de Astro) | Pendiente |
 | DEBT-019 | 🟡 | `server/routes/devtools.js` usa `SET FOREIGN_KEY_CHECKS` (MySQL); en SQLite es `PRAGMA foreign_keys`. Solo desarrollo, bloqueado en producción | Pendiente |
 | DEBT-020 | 🟢 | `public/assets/img/og-default.jpg` es un recorte de 1024×576, no una pieza OG de marca de 1200×630. Se reemplaza el archivo sin tocar código | Pendiente |
-| DEBT-021 | 🔴 | `astro` 5.x y `@astrojs/vercel` 9.x tienen avisos críticos/altos (XSS en `define:vars`, override de ruta por `x-astro-path`) que solo se corrigen en astro ≥6.1.6 y @astrojs/vercel ≥10.0.2: requiere migración de versión mayor | Pendiente |
+| DEBT-021 | 🔴 | Migración a astro 7 y @astrojs/vercel 11 (avisos críticos/altos de `define:vars` y `x-astro-path`) | ✅ Resuelto 2026-11-05 |
 | DEBT-022 | 🟠 | `labels.js` y `storage.js` (`operators`) siguen abiertos al caficultor sin filtrar por lote: decidir si se filtran con `farmAuth` o pasan a solo admin | Pendiente |
 | DEBT-023 | 🟡 | Hallazgos bajos de la revisión OWASP (2026-10-19): el registro revela si el correo existe, baja del boletín por `?email=` sin token, reseñas públicas sin límite de largo, jsQR sin SRI, Markdown del blog sin sanitizar, backup de BD sin reautenticación, referencia de pedido con 16 bits aleatorios | Pendiente |
 

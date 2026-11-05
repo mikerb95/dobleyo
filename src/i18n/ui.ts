@@ -37,6 +37,7 @@ export const UI_EN: Record<string, string> = {
   "Pago 100% seguro": "Secure payment",
   "Wompi certificado": "Paid through Wompi",
   "Eliminar {name}": "Remove {name}",
+  "unidad": "each",
   "producto": "product",
   "productos": "products",
   "Cantidad": "Quantity",

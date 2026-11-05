@@ -1,0 +1,96 @@
+---
+/**
+ * Herramienta del sitio en inglés: elija su ciudad y vea a cuántos grados hierve
+ * el agua allí y cómo servirla. Es información útil de verdad para quien prepara
+ * café en Colombia: en Bogotá el agua no llega a los 92 °C que piden las recetas.
+ *
+ * Funciona sin motion. Sin JS se ve el resultado de Bogotá, que es el de partida.
+ */
+import { boilingPointC, pourAdvice } from "../../lib/brew.ts";
+
+interface Props { compact?: boolean; }
+const { compact = false } = Astro.props;
+
+const CITIES = [
+  { name: "Bogotá", m: 2640 },
+  { name: "Manizales", m: 2160 },
+  { name: "Medellín", m: 1495 },
+  { name: "Pereira", m: 1411 },
+  { name: "Cali", m: 1018 },
+  { name: "Bucaramanga", m: 959 },
+  { name: "Cartagena", m: 2 },
+  { name: "Barranquilla", m: 18 },
+  { name: "Santa Marta", m: 6 },
+];
+const first = CITIES[0];
+const c0 = boilingPointC(first.m);
+const ADVICE = {
+  straight: "Pour as soon as it boils. It won't get hotter than this, so there's nothing to wait for. Grind a touch finer if the cup tastes thin.",
+  short: "Take it off the heat and give it about 30 seconds before you pour.",
+  wait: "Let it rest for about a minute after boiling, or the first pour will run too hot.",
+};
+---
+
+<div class:list={["alt", { "alt--compact": compact }]} data-alt-brew data-advice={JSON.stringify(ADVICE)}>
+  <label class="alt__label" for="altCity">Where's your kitchen?</label>
+  <select id="altCity" class="alt__select">
+    {CITIES.map((c) => <option value={c.m}>{c.name}</option>)}
+  </select>
+
+  <p class="alt__reading" aria-live="polite">
+    <span class="alt__temp"><span data-alt-temp>{Math.round(c0)}</span> °C</span>
+    <span class="alt__meta">Water boils here, at <span data-alt-m>{first.m.toLocaleString("en-US")}</span> m</span>
+  </p>
+  <div class="alt__scale" aria-hidden="true">
+    <span class="alt__target" title="92 to 94 °C"></span>
+    <span class="alt__mark" data-alt-mark style={`left:${((c0 - 88) / 12) * 100}%`}></span>
+  </div>
+  <p class="alt__scale-legend" aria-hidden="true"><span>88°</span><span>recipes ask for 92 to 94°</span><span>100°</span></p>
+  <p class="alt__advice" data-alt-advice>{ADVICE[pourAdvice(c0)]}</p>
+</div>
+
+<script>
+  import { boilingPointC, pourAdvice } from "../../lib/brew.ts";
+
+  function initAltitude() {
+    document.querySelectorAll<HTMLElement>("[data-alt-brew]").forEach((root) => {
+      if (root.dataset.jsInit) return;
+      root.dataset.jsInit = "1";
+      const select = root.querySelector<HTMLSelectElement>("select")!;
+      const advice = JSON.parse(root.dataset.advice ?? "{}");
+      select.addEventListener("change", () => {
+        const m = Number(select.value);
+        const c = boilingPointC(m);
+        root.querySelector("[data-alt-temp]")!.textContent = String(Math.round(c));
+        root.querySelector("[data-alt-m]")!.textContent = m.toLocaleString("en-US");
+        root.querySelector<HTMLElement>("[data-alt-mark]")!.style.left = `${((c - 88) / 12) * 100}%`;
+        root.querySelector("[data-alt-advice]")!.textContent = advice[pourAdvice(c)];
+      });
+    });
+  }
+  initAltitude();
+  document.addEventListener("astro:page-load", initAltitude);
+</script>
+
+<style>
+  .alt { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-6); }
+  .alt__label { display: block; font-weight: 600; color: var(--espresso); margin-bottom: var(--space-2); }
+  .alt__select {
+    width: 100%; min-height: 46px; padding: 0 var(--space-3); font: inherit; color: var(--espresso);
+    background: var(--cream); border: 1px solid var(--border); border-radius: var(--radius-md);
+  }
+  .alt__select:focus-visible { outline: 2px solid var(--caramel); outline-offset: 2px; }
+  .alt__reading { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-3); margin: var(--space-6) 0 var(--space-3); }
+  .alt__temp { font-family: var(--font-display); font-size: 3.25rem; line-height: 1; color: var(--espresso); }
+  .alt__meta { color: var(--ink-muted); font-size: var(--text-sm); }
+  .alt__scale { position: relative; height: 8px; background: var(--sand); border-radius: 999px; }
+  /* 92 a 94 °C sobre una regla de 88 a 100 */
+  .alt__target { position: absolute; left: 33.33%; width: 16.67%; top: 0; bottom: 0; background: var(--mucilage); }
+  .alt__mark {
+    position: absolute; top: 50%; width: 16px; height: 16px; margin-left: -8px; margin-top: -8px; border-radius: 50%;
+    background: var(--caramel); border: 3px solid var(--card); box-shadow: var(--shadow-sm);
+    transition: left var(--dur) var(--ease);
+  }
+  .alt__scale-legend { display: flex; justify-content: space-between; gap: var(--space-2); margin: var(--space-2) 0 var(--space-4); font-size: var(--text-xs); color: var(--ink-muted); }
+  .alt__advice { margin: 0; color: var(--espresso); line-height: 1.6; }
+</style>

@@ -1,0 +1,7 @@
+---
+export const prerender = false;
+// Same as /login in Spanish: back to the home page with the sign-in modal open
+const redirectParam = Astro.url.searchParams.get("redirect") ?? Astro.url.searchParams.get("next");
+const target = redirectParam ? `/?auth=login&redirect=${encodeURIComponent(redirectParam)}` : "/?auth=login";
+return Astro.redirect(target, 302);
+---

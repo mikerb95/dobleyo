@@ -11,8 +11,10 @@
 import { orderDays, addDays } from "../../lib/subscription.ts";
 
 const days = orderDays(30, 60);
+interface Props { lang?: "es" | "en"; }
+const { lang = "es" } = Astro.props;
 const label = (d: number) =>
-  d === 0 ? "Hoy" : addDays(new Date(), d).toLocaleDateString("es-CO", { day: "numeric", month: "short" }).replace(".", "");
+  d === 0 ? (lang === "en" ? "Today" : "Hoy") : addDays(new Date(), d).toLocaleDateString(lang === "en" ? "en-US" : "es-CO", { day: "numeric", month: "short" }).replace(".", "");
 ---
 
 <div class="dbags" data-dbags aria-hidden="true">
@@ -41,7 +43,7 @@ const label = (d: number) =>
       const d = Number(bag.dataset.day);
       const el = bag.querySelector("[data-dbag-date]");
       if (el && d > 0) {
-        el.textContent = addDays(new Date(), d).toLocaleDateString("es-CO", { day: "numeric", month: "short" }).replace(".", "");
+        el.textContent = addDays(new Date(), d).toLocaleDateString(document.documentElement.lang === "en" ? "en-US" : "es-CO", { day: "numeric", month: "short" }).replace(".", "");
       }
     });
   }

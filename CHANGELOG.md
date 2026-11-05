@@ -2,6 +2,43 @@
 
 ---
 
+## 2026-11-05: Sitio en inglés para angloparlantes en Colombia (Agente: Claude)
+
+### Contexto
+El sitio EN hablaba a importadores y a compradores en el exterior (USD, envíos mundiales, FOB/CIF) y se leía como un folleto. El público real son angloparlantes que viven en Colombia y solo se entrega en el país, sin decirlo como una restricción.
+
+### Cambios
+- **Eliminado**: `/en/wholesale`, `/en/partners`, `/en/blog` (y `[slug]`), `en-home.js`, `home-en.js` y `POST /api/contact/export`. `middleware.ts` redirige con 301 los enlaces viejos del subdominio.
+- **Moneda**: todo el sitio EN en COP (`src/lib/money.ts`). El pedido EN va en COP, con Wompi y contraentrega. `cart.js` vacía una vez el carrito guardado con precios en USD en `en.dobleyo.cafe`.
+- **Checkout y carrito**: `src/components/commerce/` compartido ES/EN con textos en `src/i18n/ui.ts`. EN gana documento (lo exige la transportadora), departamento y ciudad, contraentrega, cupones y widget de Wompi. `POST /api/orders` acepta `lang` para volver a `/confirmation`. El HTML en español quedó idéntico (comparado contra el anterior).
+- **En inglés por primera vez**: `CartDrawer`, `AuthModal`, `CookieBanner` y `/en/login` (antes 404).
+- **Páginas nuevas**: `/en/subscription` y `/en/cacao` (sin maquila).
+- **Reescritas**: portada, tienda, ficha, about, guías, envíos, contacto, términos y privacidad. Términos y privacidad bajo ley colombiana. Devoluciones alineadas con el sitio en español. WhatsApp real en contacto (el anterior era de ejemplo).
+- **Herramienta**: `AltitudeBrew` (a cuántos grados hierve el agua en su ciudad) con `boilingPointC` y `pourAdvice` en `src/lib/brew.ts` y sus pruebas.
+- **Datos de BD**: `src/data/en-copy.ts` con descripciones y fincas en inglés. Las fincas EN ya no muestran códigos de lote.
+
+---
+
+## 2026-11-05: Migración a Astro 7 (Agente: Claude)
+
+### Contexto
+`astro` 5.x y `@astrojs/vercel` 9.x tenían avisos críticos y altos (DEBT-021) que solo se corrigen con versión mayor.
+
+### Cambios
+- **`package.json`**: `astro` 7, `@astrojs/vercel` 11, `@astrojs/react` 7, `vitest` 4.1 y `@astrojs/check` al día. `tar` y `shell-quote` parchados en el lockfile.
+- **`astro.config.mjs`**: `compressHTML: true` para conservar los espacios entre elementos en línea (el nuevo valor por defecto, `'jsx'`, los borra). `cookie` se empaqueta en los entornos `ssr` y `prerender`: Astro usa la 2.x y Express la 0.7, y sin esto el prerender tomaba la de la raíz y el build fallaba.
+- **`.nvmrc` y `.github/workflows/ci.yml`**: Node 24. Astro 7 exige Node 22.23.4 o superior y el CI fallaba en Node 20.
+- **`src/components/home/HomeFarms.astro`**: rango de altitud en una sola línea. El compilador nuevo dejaba un espacio ("2.000 -2.200 msnm").
+
+### Verificación
+- Pruebas, lint y build pasan. HTML de las 83 páginas prerenderizadas comparado antes y después, y 11 páginas SSR comparadas entre despliegues: sin cambios visibles fuera del rango de altitud. Recorrido en producción: navegación con ClientRouter y agregar al carrito, sin errores de JS.
+- `astro check` sigue con unos 1059 errores, de tipos en scripts de cliente e imports `.ts`. No hay línea base para compararlos y el CI no se bloquea con ellos.
+
+### Pendiente
+- `npm audit --omit=dev` queda en 0 críticos y 20 altos. Siguen altos `@astrojs/vercel` por dependencias suyas (`@vercel/nft`, `path-to-regexp`) sin arreglo en su última versión, y `expo-router`, de la app móvil.
+
+---
+
 ## 2026-11-03: Interfaz de /admin/mercadolibre rehecha (Agente: Claude)
 
 ### Contexto

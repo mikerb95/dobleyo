@@ -60,8 +60,7 @@ const nf = (n: number) => Number(n).toLocaleString(lang === "en" ? "en-US" : "es
                     <strong class="home-farm-card__name">{farm.name}</strong>
                     {farm.altitude_min && (
                       <span class="home-farm-card__alt">
-                        {nf(farm.altitude_min)}
-                        {farm.altitude_max ? `-${nf(farm.altitude_max)}` : ""}{" "}{unit}
+                        {nf(farm.altitude_min)}{farm.altitude_max ? `-${nf(farm.altitude_max)}` : ""}{" "}{unit}
                       </span>
                     )}
                   </div>

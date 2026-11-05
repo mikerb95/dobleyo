@@ -33,15 +33,15 @@ try {
   // Connection errors must not break the render
 }
 
-const pageTitle = "Our Farms — DobleYo Café";
+const pageTitle = "The Farms · DobleYo Café";
 const pageDescription =
-  "Meet the coffee farms behind your specialty cup. Origin, altitude, varieties and processing for every harvest.";
+  "The Colombian coffee farms we work with: region, altitude, varieties and processing.";
 const canonicalUrl = getCanonicalUrl("/farms", "en");
 
 const collectionData = {
   "@context": "https://schema.org",
   "@type": "CollectionPage",
-  "name": "Coffee Farms — DobleYo Café",
+  "name": "Coffee Farms · DobleYo Café",
   "description": pageDescription,
   "url": canonicalUrl,
 };
@@ -57,10 +57,9 @@ const collectionData = {
   <!-- Hero -->
   <section class="fincas-hero">
     <div class="fincas-hero__inner">
-      <h1 class="fincas-hero__title">Our Farms</h1>
+      <h1 class="fincas-hero__title">The farms</h1>
       <p class="fincas-hero__sub">
-        From bean to cup — meet the growers and farms behind every sip of
-        DobleYo.
+        Where the coffee grows, how high up and who looks after it.
       </p>
     </div>
   </section>
@@ -113,7 +112,7 @@ const collectionData = {
                     {farm.cover_image_url ? (
                       <img
                         src={farm.cover_image_url}
-                        alt={`${farm.name} farm — ${farm.region}`}
+                        alt={`${farm.name} farm, ${farm.region}`}
                         loading="lazy"
                         class="farm-card__img"
                         width="400"

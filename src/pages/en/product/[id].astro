@@ -3,6 +3,7 @@ import Icon from "../../../components/Icon.astro";
 import Layout from "../../../layouts/Layout.astro";
 import { getCanonicalUrl, formatPrice } from "../../../i18n/index.ts";
 import { SHOW_CUPPING, SHOW_TRACEABILITY } from "../../../lib/flags.ts";
+import { PRODUCT_DESCRIPTION_EN, categoryEn, processEn, roastEn } from "../../../data/en-copy.ts";
 
 // Prerender estático: el subdominio en. sirve archivos estáticos vía rewrite.
 // SSR (prerender=false) da 404 bajo ese rewrite, por eso enumeramos rutas en build.
@@ -21,10 +22,9 @@ const { id } = Astro.params;
 let product: any = null;
 try {
   const { query } = await import("../../../../server/db.js");
-  const LABEL: Record<string, string> = { cafe: "Coffee", accesorio: "Accessories", merchandising: "Merch", cacao: "Cacao" };
   const { rows } = await query(
     `SELECT p.id, p.slug, p.name, p.name_en, p.category, p.origin, p.process, p.roast,
-            p.price, p.price_usd, p.rating, p.image_url AS image,
+            p.price, p.rating, p.image_url AS image,
             p.stock_quantity AS stock, p.description,
             (SELECT MAX(l.score) FROM lots l WHERE l.product_id = p.id AND l.score IS NOT NULL) AS sca_score,
             (SELECT l.variety FROM lots l WHERE l.product_id = p.id AND l.variety IS NOT NULL ORDER BY l.created_at DESC LIMIT 1) AS variety
@@ -37,9 +37,10 @@ try {
     product = {
       ...p,
       name: p.name_en || p.name,
-      categoryLabel: LABEL[p.category] ?? p.category,
-      priceUsd: p.price_usd ?? null,
-      description: p.description || null,
+      categoryLabel: categoryEn(p.category),
+      process: processEn(p.process),
+      roast: roastEn(p.roast),
+            description: PRODUCT_DESCRIPTION_EN[p.id] ?? null,
     };
   }
 } catch (_) { /* fallthrough */ }
@@ -47,7 +48,7 @@ try {
 if (!product) return Astro.redirect("/shop", 302);
 
 const outOfStock = typeof product.stock === "number" && product.stock === 0;
-const priceLabel = product.priceUsd != null ? formatPrice(Number(product.priceUsd), "en") : null;
+const priceLabel = formatPrice(Number(product.price), "en");
 
 const productJsonLd = {
   "@context": "https://schema.org",
@@ -58,8 +59,8 @@ const productJsonLd = {
   brand: { "@type": "Brand", name: "DobleYo Café" },
   offers: {
     "@type": "Offer",
-    priceCurrency: "USD",
-    price: product.priceUsd ?? undefined,
+    priceCurrency: "COP",
+    price: product.price,
     availability: outOfStock ? "https://schema.org/OutOfStock" : "https://schema.org/InStock",
     url: `https://en.dobleyo.cafe/product/${product.id}`,
   },
@@ -91,7 +92,7 @@ const productJsonLd = {
         <p class="pp-meta">{product.categoryLabel}{product.origin && <span> · {product.origin}</span>}</p>
         <h1 class="pp-title">{product.name}</h1>
 
-        {product.rating && (
+        {Number(product.rating) > 0 && (
           <div class="pp-rating" aria-label={`Rating: ${product.rating} of 5`}>
             {"★".repeat(Math.round(product.rating))}{"☆".repeat(5 - Math.round(product.rating))}
             <span class="pp-rating-num">{product.rating}</span>
@@ -120,7 +121,7 @@ const productJsonLd = {
           id="ppActions"
           data-id={product.id}
           data-name={product.name}
-          data-price={product.priceUsd ?? ""}
+          data-price={product.price}
           data-image={product.image}
         >
           <div class="pp-qty">
@@ -134,7 +135,7 @@ const productJsonLd = {
           <a class="pp-viewcart" href="/cart">View cart</a>
         </div>
 
-        <p class="pp-ship"><Icon name="globe" size={16} /> Worldwide shipping · prices in USD</p>
+        <p class="pp-ship"><Icon name="truck" size={16} /> Delivery $12,000 COP, free over $120,000 COP</p>
         {SHOW_TRACEABILITY && product.category === "cafe" && (
           <a href="/traceability" class="pp-trace"><Icon name="search" size={16} /> Trace this coffee's origin</a>
         )}

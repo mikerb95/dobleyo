@@ -3,7 +3,7 @@ import Icon from "../../../components/Icon.astro";
 // Dynamic farm landing page (EN) — mirror of /finca/[slug]
 // Route: /farm/[slug]
 import Layout from "../../../layouts/Layout.astro";
-import { SHOW_TRACEABILITY } from "../../../lib/flags.ts";
+import { FARM_STORY_EN, processEn } from "../../../data/en-copy.ts";
 import { getCanonicalUrl } from "../../../i18n/index.ts";
 
 export const prerender = false;
@@ -29,11 +29,18 @@ if (notFound || !farm) {
   return Astro.redirect("/farms", 302);
 }
 
+// La historia de la BD está en español: solo se muestra si tiene traducción.
+farm.story = FARM_STORY_EN[farm.slug] ?? null;
+farm.short_description = null;
+farm.soil_type = null;
+farm.processes = (farm.processes ?? []).map(processEn);
+farm.certifications = (farm.certifications ?? []).map((c: string) => (c === "Orgánico" ? "Organic" : c));
+
 // SEO-derived data
 const altText = [farm.altitude_min, farm.altitude_max]
   .filter(Boolean)
-  .join("–") + (farm.altitude_min ? " masl" : "");
-const pageTitle = `${farm.name} — Farm in ${farm.region} | DobleYo Café`;
+  .join(" to ") + (farm.altitude_min ? " masl" : "");
+const pageTitle = `${farm.name}, farm in ${farm.region} | DobleYo Café`;
 const pageDesc = farm.short_description
   ?? `Discover ${farm.name} in ${farm.region}${altText ? ` at ${altText}` : ""}. Single-origin Colombian specialty coffee.`;
 const canonicalUrl = getCanonicalUrl(`/farm/${slug}`, "en");
@@ -134,38 +141,6 @@ const galleryUrls: string[] = Array.isArray(farm.gallery_urls) ? farm.gallery_ur
         </section>
       )}
 
-      <!-- Recent harvests -->
-      {farm.recent_lots?.length > 0 && (
-        <section class="farm-section" aria-labelledby="farm-lots-heading">
-          <h2 id="farm-lots-heading" class="section-title">Recent Harvests</h2>
-          <ul class="lots-list" role="list">
-            {farm.recent_lots.map((lot: any) => (
-              <li class="lot-item">
-                <div class="lot-item__header">
-                  <span class="lot-item__code">{lot.lot_id}</span>
-                  {SHOW_TRACEABILITY && lot.label_code && (
-                    <a href="/traceability" class="lot-item__trace-link" aria-label={`Trace lot ${lot.lot_id}`}>
-                      View traceability →
-                    </a>
-                  )}
-                </div>
-                <dl class="lot-item__meta">
-                  {lot.variety && (
-                    <div><dt>Variety</dt><dd>{lot.variety}</dd></div>
-                  )}
-                  {lot.process && (
-                    <div><dt>Process</dt><dd>{lot.process}</dd></div>
-                  )}
-                  {lot.altitude && (
-                    <div><dt>Altitude</dt><dd>{lot.altitude} masl</dd></div>
-                  )}
-                </dl>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-
       <!-- Gallery -->
       {galleryUrls.length > 0 && (
         <section class="farm-section" aria-labelledby="farm-gallery-heading">
@@ -175,7 +150,7 @@ const galleryUrls: string[] = Array.isArray(farm.gallery_urls) ? farm.gallery_ur
               <li>
                 <img
                   src={url}
-                  alt={`${farm.name} farm — photo ${i + 1}`}
+                  alt={`${farm.name} farm, photo ${i + 1}`}
                   loading="lazy"
                   class="gallery__img"
                   width="400"
@@ -209,12 +184,6 @@ const galleryUrls: string[] = Array.isArray(farm.gallery_urls) ? farm.gallery_ur
             <div class="spec-item">
               <dt>Area</dt>
               <dd>{parseFloat(farm.hectares).toFixed(1)} ha</dd>
-            </div>
-          )}
-          {farm.soil_type && (
-            <div class="spec-item">
-              <dt>Soil type</dt>
-              <dd>{farm.soil_type}</dd>
             </div>
           )}
         </dl>
@@ -261,7 +230,6 @@ const galleryUrls: string[] = Array.isArray(farm.gallery_urls) ? farm.gallery_ur
         <h2 class="sidebar-card__title">Interested in this coffee?</h2>
         <p>Single-farm coffee, roasted in small batches.</p>
         <a href="/shop" class="btn btn--primary">Shop now</a>
-        {SHOW_TRACEABILITY && <a href="/traceability" class="btn btn--outline">Trace a lot</a>}
       </div>
 
     </aside>

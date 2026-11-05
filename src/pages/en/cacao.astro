@@ -1,0 +1,68 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import DarkHero from "../../components/shop/DarkHero.astro";
+import ProductCard from "../../components/ProductCard.astro";
+import { products as staticProducts } from "../../data/products";
+import { getCanonicalUrl, getHreflangPair } from "../../i18n/index.ts";
+import { reviewAggregateSql } from "../../lib/products.server.ts";
+
+export const prerender = false;
+
+const hreflang = getHreflangPair("/cacao");
+
+let cacao: any[] = [];
+try {
+  const { query } = await import("../../../server/db.js");
+  const { rows } = await query(
+    `SELECT p.id, COALESCE(p.name_en, p.name) AS name, p.category, p.price, p.rating,
+            p.weight, p.weight_unit, p.is_new AS new,
+            p.image_url AS image, p.stock_quantity AS stock,
+            ${reviewAggregateSql("p")}
+     FROM products p
+     WHERE p.is_active = 1 AND p.category = 'cacao'
+     ORDER BY p.is_bestseller DESC, p.price ASC`
+  );
+  cacao = rows.map((p: any) => ({ ...p, category: "Cacao" }));
+} catch (_) {}
+
+if (!cacao.length) {
+  cacao = staticProducts
+    .filter((p) => p.category === "Cacao")
+    .map((p) => ({ ...p, name: p.nameEn || p.name, category: "Cacao", stock: 99 }));
+}
+---
+
+<Layout
+  lang="en"
+  title="Colombian Cacao: Drinking Chocolate, Bars and Powder | DobleYo Café"
+  description="Colombian drinking chocolate with 70% cacao, 100% cacao bars and powder, and cold-pressed cacao butter, delivered to your door."
+  canonical={getCanonicalUrl("/cacao", "en")}
+  hreflangEs={hreflang?.es}
+  hreflangEn={hreflang?.en}
+>
+  <DarkHero
+    lang="en"
+    crumb="Cacao"
+    title="Hot chocolate,"
+    titleEm="the Colombian way."
+    lead="Colombia takes its chocolate seriously, at breakfast and with cheese in it if you're brave. Here's the good stuff for your kitchen: tablets to melt, bars, powder and butter."
+    cta={{ href: "#cacao", label: "See the cacao" }}
+  />
+
+  <section id="cacao" class="cacao">
+    <h2 class="cacao__title">What we have</h2>
+    <div class="cacao__grid">
+      {cacao.map((p) => <ProductCard product={p} lang="en" />)}
+    </div>
+  </section>
+
+  <script>
+    import "../../scripts/shop/index.ts";
+  </script>
+</Layout>
+
+<style>
+  .cacao { max-width: 1200px; margin: 0 auto; padding: var(--space-12) 0 var(--space-16); scroll-margin-top: 120px; }
+  .cacao__title { margin: 0 0 var(--space-6); font-family: var(--font-display); font-size: var(--text-3xl); color: var(--espresso); }
+  .cacao__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: var(--space-6); }
+</style>

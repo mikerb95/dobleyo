@@ -8,8 +8,8 @@ const hreflang = getHreflangPair("/contacto");
 ---
 
 <Layout
-    title="Contact Us — DobleYo Café"
-    description="Get in touch with DobleYo Café. Questions about orders, products, or wholesale? We're here to help."
+    title="Contact · DobleYo Café"
+    description="Questions about an order, a delivery or which coffee to pick? Message DobleYo Café on WhatsApp or by email."
     lang="en"
     canonical={getCanonicalUrl("/contact", "en")}
     hreflangEs={hreflang?.es}
@@ -17,8 +17,8 @@ const hreflang = getHreflangPair("/contacto");
 >
     <div class="contact-page">
         <PageHero
-            title="Contact Us"
-            subtitle="We're here to answer your questions and hear your feedback"
+            title="Talk to us"
+            subtitle="WhatsApp is the fastest way to reach us. Write in English or Spanish."
         />
 
         <section class="contact-content">
@@ -26,7 +26,7 @@ const hreflang = getHreflangPair("/contacto");
                 <div class="contact-grid">
                     <!-- Contact Information -->
                     <div class="contact-info">
-                        <h2>Contact Information</h2>
+                        <h2>Reach us</h2>
 
                         <div class="contact-item">
                             <div class="contact-icon"><Icon name="mail" size={22} /></div>
@@ -43,9 +43,9 @@ const hreflang = getHreflangPair("/contacto");
                             <div>
                                 <h3>WhatsApp</h3>
                                 <a
-                                    href="https://wa.me/573001234567"
+                                    href="https://wa.me/573204981580"
                                     target="_blank"
-                                    rel="noopener">+57 300 123 4567</a
+                                    rel="noopener">+57 320 498 1580</a
                                 >
                             </div>
                         </div>
@@ -62,26 +62,8 @@ const hreflang = getHreflangPair("/contacto");
                             <div class="contact-icon"><Icon name="clock" size={22} /></div>
                             <div>
                                 <h3>Business Hours</h3>
-                                <p>Monday to Friday: 9:00 AM – 6:00 PM (COT)</p>
-                                <p>Saturday: 10:00 AM – 2:00 PM (COT)</p>
-                            </div>
-                        </div>
-
-                        <div class="contact-item">
-                            <div class="contact-icon"><Icon name="package" size={22} /></div>
-                            <div>
-                                <h3>Wholesale &amp; Export</h3>
-                                <p>
-                                    Interested in B2B sourcing or export orders?
-                                    Reach us by email for sample requests and
-                                    pricing.
-                                </p>
-                                <a
-                                    href="mailto:export@dobleyo.cafe"
-                                    class="btn btn-primary contact-item__cta"
-                                >
-                                    Request Samples
-                                </a>
+                                <p>Monday to Friday: 9:00 AM to 6:00 PM (COT)</p>
+                                <p>Saturday: 10:00 AM to 2:00 PM (COT)</p>
                             </div>
                         </div>
 
@@ -111,7 +93,7 @@ const hreflang = getHreflangPair("/contacto");
 
                     <!-- Contact Form -->
                     <div class="contact-form-container">
-                        <h2>Send us a Message</h2>
+                        <h2>Or send a message</h2>
                         <form id="contactForm" class="contact-form">
                             <div class="form-group">
                                 <label for="name">Full name *</label>
@@ -137,16 +119,13 @@ const hreflang = getHreflangPair("/contacto");
                                 <label for="subject">Subject</label>
                                 <select id="subject" name="subject">
                                     <option value="order"
-                                        >Inquiry about my order</option
+                                        >My order</option
                                     >
                                     <option value="product"
-                                        >Product information</option
+                                        >Choosing a coffee</option
                                     >
-                                    <option value="wholesale"
-                                        >Wholesale / B2B</option
-                                    >
-                                    <option value="export"
-                                        >Export / Sourcing</option
+                                    <option value="subscription"
+                                        >My subscription</option
                                     >
                                     <option value="other">Other</option>
                                 </select>

@@ -4,6 +4,7 @@ import DarkHero from "../../components/shop/DarkHero.astro";
 import BrewGuide from "../../components/shop/BrewGuide.astro";
 import NumberedList from "../../components/shop/NumberedList.astro";
 import CtaBand from "../../components/shop/CtaBand.astro";
+import AltitudeBrew from "../../components/en/AltitudeBrew.astro";
 import { getCanonicalUrl, getHreflangPair } from "../../i18n/index.ts";
 
 export const prerender = false;
@@ -50,6 +51,17 @@ const methods = [
   },
 ];
 
+const words = [
+  { es: "Tinto", en: "A small black coffee. Often sweetened already, so ask for it sin azúcar if you take it plain." },
+  { es: "Pintadito / perico", en: "A small coffee with a splash of milk. The name changes from city to city." },
+  { es: "Café con leche", en: "Mostly hot milk with some coffee. Bigger and milder than a pintadito." },
+  { es: "Grano", en: "Whole bean. Molido means it's already ground." },
+  { es: "Tueste", en: "Roast. Claro is light, medio is medium, oscuro is dark." },
+  { es: "Lavado, honey, natural", en: "Three ways of processing the cherry. Washed tends to taste cleanest, natural the fruitiest." },
+  { es: "Fecha de tostión", en: "Roast date. Look for it on any bag. If there's only an expiry date, keep walking." },
+  { es: "Pasilla", en: "Lower-grade beans, the ones left after the export sort. Worth knowing when a supermarket bag looks like a bargain." },
+];
+
 const tips = [
   { title: "Filtered water", text: "Coffee is 98% water, so its quality shows in the cup." },
   { title: "Grind fresh", text: "Grind just before brewing to preserve volatile aromas." },
@@ -61,8 +73,8 @@ const tips = [
 
 <Layout
   lang="en"
-  title="Brewing Guides · DobleYo Café"
-  description="Step-by-step brewing guides to get the most out of your Colombian specialty coffee. V60, Chemex, French Press, Moka Pot and expert tips."
+  title="Brewing Coffee in Colombia: Recipes and Altitude | DobleYo Café"
+  description="V60, Chemex, French press and moka recipes, what altitude does to your brew in Bogotá or Medellín, and the Spanish words you'll see on a coffee bag."
   canonical={getCanonicalUrl("/guides", "en")}
   hreflangEs={hreflang?.es}
   hreflangEn={hreflang?.en}
@@ -70,26 +82,67 @@ const tips = [
   <DarkHero
     lang="en"
     crumb="Guides"
-    title="Brew a better cup"
-    titleEm="at home."
-    lead="Step-by-step recipes to unlock the full potential of our specialty coffees. Pick your method and see the recipe."
+    title="Better coffee"
+    titleEm="in your own kitchen."
+    lead="Pick your method to see the recipe. Below it: what altitude does to your water, and the Spanish you'll run into when you buy coffee here."
     facts={[
       { icon: "dripper", text: "4 methods" },
-      { icon: "clock", text: "Times and temperatures" },
+      { icon: "mountain", text: "Adjusted for altitude" },
     ]}
   >
     <BrewGuide methods={methods} lang="en" />
   </DarkHero>
 
-  <NumberedList eyebrow="Before you start" title="5 essential tips" items={tips} />
+  <section class="alt-sec" aria-labelledby="altTitle">
+    <div>
+      <h2 id="altTitle" class="g-title">Your water boils lower than the recipe thinks</h2>
+      <p>
+        Water loses about 1 °C of boiling point for every 300 m you climb. The recipes above ask for
+        92 to 94 °C, which is easy in Cartagena and impossible in Bogotá. Up high, pour straight off
+        the boil and don't let the kettle sit.
+      </p>
+    </div>
+    <AltitudeBrew />
+  </section>
+
+  <section class="words" aria-labelledby="wordsTitle">
+    <h2 id="wordsTitle" class="g-title">Coffee Spanish</h2>
+    <p class="words__sub">What you'll hear at the counter and see on the bag.</p>
+    <dl class="words__list">
+      {words.map((w) => (
+        <div>
+          <dt lang="es">{w.es}</dt>
+          <dd>{w.en}</dd>
+        </div>
+      ))}
+    </dl>
+  </section>
+
+  <NumberedList eyebrow="Before you start" title="5 things that matter most" items={tips} />
 
   <CtaBand
-    title="Put these guides into practice"
-    text="Pick a specialty coffee and start experimenting in your cup."
-    primary={{ href: "/shop", label: "Browse coffees" }}
+    title="Now you need the coffee"
+    text="Whole bean, roasted in small batches and delivered to your door."
+    primary={{ href: "/shop", label: "Shop the coffee" }}
   />
 
   <script>
     import "../../scripts/shop/index.ts";
   </script>
 </Layout>
+
+<style>
+  .g-title { margin: 0 0 var(--space-3); font-family: var(--font-display); font-size: var(--text-3xl); line-height: 1.15; color: var(--espresso); }
+  .alt-sec { max-width: 1200px; margin: 0 auto; padding: var(--space-16) 0 0; display: grid; gap: var(--space-8); align-items: center; }
+  .alt-sec p { margin: 0; max-width: 54ch; line-height: 1.7; color: var(--ink-muted); }
+  .words { max-width: 1200px; margin: 0 auto; padding: var(--space-16) 0 0; }
+  .words__sub { margin: 0 0 var(--space-5); color: var(--ink-muted); }
+  .words__list { display: grid; margin: 0; }
+  .words__list div { padding: var(--space-4) 0; border-top: 1px solid var(--border); }
+  .words__list dt { font-family: var(--font-display); font-style: italic; font-size: var(--text-xl); color: var(--espresso); }
+  .words__list dd { margin: var(--space-1) 0 0; line-height: 1.6; color: var(--ink-muted); }
+  @media (min-width: 768px) {
+    .alt-sec { grid-template-columns: 1fr minmax(0, 460px); gap: var(--space-12); }
+    .words__list { grid-template-columns: 1fr 1fr; column-gap: var(--space-10); }
+  }
+</style>

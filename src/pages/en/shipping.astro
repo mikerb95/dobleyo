@@ -4,46 +4,62 @@ import Icon from "../../components/Icon.astro";
 import { getCanonicalUrl, getHreflangPair } from "../../i18n/index.ts";
 
 const hreflang = getHreflangPair("/envios-devoluciones");
+
+const faq = [
+  { q: "Can I change my order after placing it?", a: "Yes, if you write to us within 2 hours of buying. Once it has shipped, the returns policy applies." },
+  { q: "How do I track my order?", a: "You get an email with the tracking number as soon as it ships. Use it on the courier's website." },
+  { q: "What if my package arrives damaged?", a: "Send us photos right away and don't open it more than you need to. We'll sort it out with the courier and replace your order at no cost." },
+  { q: "Who pays for a return?", a: "We do if it's our mistake or a defect. If you changed your mind, the return shipping is on you." },
+  { q: "How do refunds work?", a: "They go back to your original payment method and can take 5 to 10 business days to appear, depending on your bank." },
+  { q: "Can I return part of an order?", a: "Yes. We review each product on its own." },
+];
+
+const faqJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: faq.map((f) => ({
+    "@type": "Question",
+    name: f.q,
+    acceptedAnswer: { "@type": "Answer", text: f.a },
+  })),
+};
 ---
 
 <Layout
   lang="en"
-  title="Shipping & Returns — DobleYo Café"
-  description="Shipping times, costs and return policy for DobleYo Café international orders. Free shipping on orders over $50 USD worldwide."
+  title="Delivery & Returns · DobleYo Café"
+  description="Delivery times and costs across Colombia, and how returns work at DobleYo Café. Free delivery over $120,000 COP."
   canonical={getCanonicalUrl("/shipping", "en")}
   hreflangEs={hreflang?.es}
   hreflangEn={hreflang?.en}
+  jsonLd={faqJsonLd}
 >
   <section class="ship-page">
     <header class="ship-hero">
-      <span class="eyebrow">Customer care</span>
-      <h1>Shipping & returns</h1>
-      <p class="ship-hero__lead">
-        Coverage, delivery times and the return process for your DobleYo
-        Café orders.
-      </p>
+      <h1>Delivery &amp; returns</h1>
+      <p class="ship-hero__lead">How long it takes, what it costs and what happens if something goes wrong.</p>
     </header>
 
     <ul class="ship-stats">
       <li class="ship-stats__item">
         <Icon name="truck" size={22} />
         <div>
-          <strong>Free shipping</strong>
-          <span>On orders over $50 USD, worldwide</span>
+          <strong>Free delivery</strong>
+          <span>On orders over $120,000 COP</span>
         </div>
       </li>
       <li class="ship-stats__item">
         <Icon name="rotate-cw" size={22} />
         <div>
-          <strong>15 days</strong>
-          <span>To request a return on sealed bags</span>
+          <strong>30 days</strong>
+          <span>To ask for a return on unopened products</span>
         </div>
       </li>
       <li class="ship-stats__item">
-        <Icon name="leaf" size={22} />
+        <Icon name="clock" size={22} />
         <div>
-          <strong>Freshness guarantee</strong>
-          <span>Shipped within 15 days of roasting</span>
+          <strong>Tracking included</strong>
+          <span>From dispatch to your door</span>
         </div>
       </li>
     </ul>
@@ -52,85 +68,67 @@ const hreflang = getHreflangPair("/envios-devoluciones");
       <article class="card">
         <div class="card__head">
           <span class="card__icon"><Icon name="package" /></span>
-          <h2>International shipping</h2>
+          <h2>Delivery</h2>
         </div>
 
-        <h3>Free shipping</h3>
-        <p>Free worldwide shipping on all orders over <strong>$50 USD</strong>.</p>
-
-        <h3>Estimated delivery times</h3>
+        <h3>How long it takes</h3>
         <table class="ship-table">
           <tbody>
-            <tr>
-              <th scope="row">United States & Canada</th>
-              <td>7–12 business days</td>
-            </tr>
-            <tr>
-              <th scope="row">Europe</th>
-              <td>10–18 business days</td>
-            </tr>
-            <tr>
-              <th scope="row">Rest of the world</th>
-              <td>14–25 business days</td>
-            </tr>
+            <tr><th scope="row">Bogotá and metro area</th><td>2 to 3 business days</td></tr>
+            <tr><th scope="row">Other main cities</th><td>3 to 5 business days</td></tr>
+            <tr><th scope="row">Everywhere else</th><td>4 to 7 business days</td></tr>
           </tbody>
         </table>
 
-        <h3>Shipping costs</h3>
+        <h3>What it costs</h3>
         <ul class="ship-list">
-          <li>Orders under $50 USD: calculated at checkout based on destination</li>
-          <li>Orders $50 USD and above: <strong>free</strong></li>
+          <li>Orders under $120,000 COP: <strong>$12,000 COP</strong></li>
+          <li>Orders of $120,000 COP or more: <strong>free</strong></li>
+          <li>Subscriptions: delivery is always included</li>
         </ul>
 
-        <h3>Tracking</h3>
+        <h3>Cash on delivery</h3>
         <p>
-          Every international order includes a tracking number sent to your
-          email once it ships, so you can follow its journey in real time.
+          Choose it at checkout and the courier collects the full amount when they hand over your
+          order. You'll need a Colombian mobile number.
         </p>
 
-        <h3>Customs & import duties</h3>
+        <h3>Your ID number</h3>
         <p>
-          Import duties and taxes may apply depending on the destination
-          country and are the buyer's responsibility. We declare the
-          accurate value and contents of every shipment.
+          The courier asks for one to issue the shipping label. A cédula de extranjería works fine.
         </p>
       </article>
 
       <article class="card">
         <div class="card__head">
           <span class="card__icon"><Icon name="rotate-cw" /></span>
-          <h2>Returns & refunds</h2>
+          <h2>Returns</h2>
         </div>
 
-        <h3>Freshness guarantee</h3>
-        <p>
-          Every bag ships within 15 days of roasting. If your coffee
-          arrives stale, damaged, or not as described, we will replace it
-          or issue a full refund — no questions asked.
-        </p>
+        <h3>How long you have</h3>
+        <p>You have <strong>30 days</strong> from the date you bought to ask for a return or exchange.</p>
 
-        <h3>Return policy</h3>
-        <p>
-          We accept returns within <strong>15 calendar days</strong> of delivery
-          for sealed, unopened products. Once a bag has been opened, we
-          cannot accept returns due to the perishable nature of specialty
-          coffee.
-        </p>
+        <h3>What we need</h3>
+        <ul class="ship-list">
+          <li>The product unopened and in its original condition</li>
+          <li>All of its original packaging and accessories</li>
+          <li>Your proof of purchase</li>
+        </ul>
 
-        <h3>How to request a return</h3>
+        <h3>How it works</h3>
         <ol class="ship-steps">
-          <li>
-            Email <a href="mailto:hello@dobleyo.cafe">hello@dobleyo.cafe</a> within
-            15 days of receiving your order
-          </li>
-          <li>Include your order number and a brief description of the issue</li>
-          <li>We respond within 1–2 business days with next steps</li>
+          <li>Write to us with your order number</li>
+          <li>We send you instructions and a return label</li>
+          <li>Pack the product securely and send it back</li>
+          <li>We check it (3 to 5 business days)</li>
+          <li>We process your refund or exchange (5 to 7 business days)</li>
         </ol>
 
-        <h3>Refund timeline</h3>
+        <h3>Your right to change your mind</h3>
         <p>
-          Approved refunds are processed within 5–10 business days back to
-          your original payment method.
+          Colombian consumer law (Article 47, Law 1480 of 2011) also lets you cancel a purchase made
+          at a distance within 5 business days of delivery, without giving a reason. It doesn't cover
+          perishable products or coffee that has been opened. See our <a href="/terms">terms</a>.
         </p>
       </article>
     </div>
@@ -138,48 +136,46 @@ const hreflang = getHreflangPair("/envios-devoluciones");
     <div class="callout callout--warning">
       <Icon name="alert-triangle" size={22} />
       <div>
-        <h3>Damaged in transit?</h3>
-        <p>
-          Photograph the damage and contact us right away at
-          <a href="mailto:hello@dobleyo.cafe">hello@dobleyo.cafe</a>. We
-          will arrange a replacement at no cost to you.
-        </p>
+        <h3>What we can't take back</h3>
+        <ul class="ship-list">
+          <li><strong>Ground or whole-bean coffee</strong>, once opened</li>
+          <li><strong>Perishable products</strong>, once opened</li>
+          <li>Personalized or made-to-order accessories</li>
+          <li>Products damaged after delivery</li>
+          <li>Purchases from clearance sales</li>
+        </ul>
       </div>
     </div>
 
     <div class="card card--wide">
       <div class="card__head">
         <span class="card__icon"><Icon name="phone" /></span>
-        <h2>Need help?</h2>
+        <h2>Need a hand?</h2>
       </div>
       <div class="contact-grid">
         <div class="contact-item">
-          <Icon name="mail" size={18} />
-          <h3>Email</h3>
-          <a href="mailto:hello@dobleyo.cafe" class="contact-item__link"
-            >hello@dobleyo.cafe</a
-          >
-          <span class="contact-item__meta">We reply within one business day</span>
+          <Icon name="whatsapp" size={18} />
+          <h3>WhatsApp</h3>
+          <a href="https://wa.me/573204981580" target="_blank" rel="noopener" class="contact-item__link">+57 320 498 1580</a>
+          <span class="contact-item__meta">Monday to Friday, 9 a.m. to 6 p.m.</span>
         </div>
         <div class="contact-item">
-          <Icon name="help-circle" size={18} />
-          <h3>Contact form</h3>
-          <a href="/en/contact" class="contact-item__link"
-            >Send a message</a
-          >
-          <span class="contact-item__meta">For order or product questions</span>
+          <Icon name="mail" size={18} />
+          <h3>Email</h3>
+          <a href="mailto:hello@dobleyo.cafe" class="contact-item__link">hello@dobleyo.cafe</a>
+          <span class="contact-item__meta">We reply within 24 to 48 hours</span>
         </div>
       </div>
     </div>
 
-    <div class="ship-commitment">
-      <Icon name="shield" size={28} />
-      <h2>Your satisfaction is our priority</h2>
-      <p>
-        At DobleYo Café we're committed to a safe, reliable buying
-        experience. If you have any question or concern, reach out — we're
-        here to help.
-      </p>
+    <div class="ship-qa">
+      <h2>Common questions</h2>
+      {faq.map((f) => (
+        <details>
+          <summary>{f.q}</summary>
+          <p>{f.a}</p>
+        </details>
+      ))}
     </div>
   </section>
 
@@ -393,7 +389,6 @@ const hreflang = getHreflangPair("/envios-devoluciones");
       display: flex;
       gap: var(--space-4);
       background: var(--warning-bg);
-      border-left: 3px solid var(--warning-border);
       border-radius: var(--radius-sm);
       padding: var(--space-6);
       margin-bottom: var(--space-8);
@@ -502,5 +497,10 @@ const hreflang = getHreflangPair("/envios-devoluciones");
         padding: var(--space-6);
       }
     }
-  </style>
+    .ship-qa { margin-top: var(--space-10); }
+  .ship-qa h2 { margin: 0 0 var(--space-4); font-family: var(--font-display); font-size: var(--text-2xl); color: var(--espresso); }
+  .ship-qa details { border-top: 1px solid var(--border); padding: var(--space-3) 0; }
+  .ship-qa summary { cursor: pointer; font-weight: 600; color: var(--espresso); }
+  .ship-qa p { margin: var(--space-2) 0 0; line-height: 1.6; color: var(--ink-muted); }
+</style>
 </Layout>

@@ -59,8 +59,8 @@ import { getCanonicalUrl } from "../../i18n/index.ts";
       document.addEventListener("astro:before-swap", () => timer && clearTimeout(timer), { once: true });
 
       const render = (d: any, pending: boolean) => {
-        const cur = d.currency || "USD";
-        const fmt = (n: unknown) => new Intl.NumberFormat(cur === "USD" ? "en-US" : "es-CO", { style: "currency", currency: cur, maximumFractionDigits: 0 }).format(Number(n) || 0);
+        const cur = d.currency || "COP";
+        const fmt = (n: unknown) => `$${(Number(n) || 0).toLocaleString("en-US")} ${cur}`;
         // El visto bueno solo cuando el pago está aprobado
         const check = document.querySelector<HTMLElement>(".cf-check");
         if (check) check.style.visibility = pending ? "hidden" : "visible";
