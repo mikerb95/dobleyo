@@ -16,11 +16,11 @@ const WHATSAPP_LABEL = "+57 320 498 1580";
 const tx = isEn
   ? {
       eyebrow: "10% off your first order",
-      title: "Freshly roasted coffee,",
-      titleEm: "straight to your inbox.",
-      lede: "New harvests, brewing guides and members-only offers. No spam.",
+      title: "New coffees,",
+      titleEm: "when they land.",
+      lede: "A short email when there's a new harvest or an offer worth opening. That's it.",
       emailPh: "Your email address", subscribe: "Subscribe",
-      tagline: "Colombian specialty coffee, from the farm to your cup.",
+      tagline: "Specialty coffee from Colombia, delivered to your door.",
       madeIn: "Made in Colombia",
       nav: "Footer",
       rights: "All rights reserved.", privacy: "Privacy", terms: "Terms", a11y: "Accessibility", admin: "Admin",
@@ -42,10 +42,10 @@ const tx = isEn
 // Rutas por idioma (en el subdominio en. se reescriben a /en/*).
 const columns = isEn
   ? [
-      { title: "Shop", links: [["Coffees", "/shop"], ["Wholesale", "/wholesale"]] },
-      { title: "Learn", links: [["About us", "/about"], ["Blog", "/blog"], ["Guides", "/guides"]] },
-      { title: "Help", links: [["Contact us", "/contact"], ["Shipping & returns", "/shipping"], ["My account", "/account"]] },
-      { title: "Business", links: [["Partner zone", "/partners"], ["Affiliate program", "/affiliates"]] },
+      { title: "Shop", links: [["Coffee", "/shop"], ["Cacao", "/cacao"], ["Subscription", "/subscription"]] },
+      { title: "Learn", links: [["Brewing guides", "/guides"], ["About us", "/about"], ["The farms", "/farms"]] },
+      { title: "Help", links: [["Contact us", "/contact"], ["Delivery & returns", "/shipping"], ["My account", "/account"]] },
+      { title: "More", links: [["Affiliate program", "/affiliates"]] },
     ]
   : [
       { title: "Tienda", links: [["Cafés", "/tienda"], ["Cacao", "/cacao"], ["Accesorios", "/accesorios"], ["Suscripción", "/suscripcion"]] },
@@ -58,8 +58,8 @@ const legal = isEn
   ? [[tx.privacy, "/privacy"], [tx.terms, "/terms"], [tx.a11y, "/accessibility"]]
   : [[tx.privacy, "/privacidad"], [tx.terms, "/terminos"], [tx.a11y, "/accesibilidad"]];
 
-// Medios que procesa el checkout (Wompi + contraentrega). Solo aplican en Colombia.
-const payments = ["Visa", "Mastercard", "PSE", "Nequi", "Daviplata", "Contraentrega"];
+// Medios que procesa el checkout (Wompi + contraentrega).
+const payments = ["Visa", "Mastercard", "PSE", "Nequi", "Daviplata", isEn ? "Cash on delivery" : "Contraentrega"];
 ---
 
 <footer class="site-footer" transition:persist={`footer-${lang}`}>

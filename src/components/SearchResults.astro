@@ -6,6 +6,7 @@
  */
 import Stars from "./Stars.astro";
 import type { Lang } from "../i18n/index.ts";
+import { formatCop } from "../lib/money.ts";
 import {
   getRating,
   getNotes,
@@ -32,14 +33,14 @@ const L =
         heading: q ? `Results for “${q}”` : "Search the catalog",
         count: (n: number) =>
           n === 1 ? "1 product found" : `${n} products found`,
-        placeholder: "Search by coffee, origin, process or tasting note",
+        placeholder: "Search by coffee, origin or process",
         submit: "Search",
         emptyTitle: "No products matched that search",
         emptyBody:
-          "Try a broader term: an origin (Huila), a process (washed) or a tasting note (cocoa).",
+          "Try something broader: an origin (Huila) or a process (washed).",
         idleTitle: "What coffee are you looking for?",
         idleBody:
-          "Search by name, origin, process, roast level or tasting note.",
+          "Search by name, origin, process or roast.",
         shortTitle: `Type at least ${SEARCH_MIN_CHARS} characters`,
         shortBody: "A shorter term would return almost the whole catalog.",
         browse: "Browse the full catalog",

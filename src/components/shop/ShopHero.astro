@@ -10,6 +10,7 @@
  * en src/scripts/shop/counter.ts. Sin JS o con movimiento reducido se ve el
  * mostrador completo y quieto; el filtro funciona igual porque es de la página.
  */
+import { formatCop } from "../../lib/money.ts";
 import type { Lang } from "../../i18n/index.ts";
 import { t } from "../../i18n/index.ts";
 
@@ -38,8 +39,7 @@ function roastKey(roast: string | null): "light" | "medium" | "dark" {
   return "medium";
 }
 
-const price = (n: number) =>
-  lang === "en" ? `$${Number(n).toLocaleString("en-US")}` : `$${Number(n).toLocaleString("es-CO")}`;
+const price = (n: number) => formatCop(n, lang);
 
 // Como mucho cuatro bolsas: más no caben en fila en un celular
 const bags = coffees.filter((c) => c.origin).slice(0, 4);

@@ -23,11 +23,11 @@ interface Props {
 const { lang, lot } = Astro.props;
 const k = (key: string) => t(`home.why.${key}`, lang);
 // Umbral real de envío gratis de cada tienda (el mismo que dice el texto).
-const threshold = lang === "en" ? 50 : 120000;
+const threshold = 120000;
 const money = (n: number) =>
   new Intl.NumberFormat(lang === "en" ? "en-US" : "es-CO", {
     style: "currency",
-    currency: lang === "en" ? "USD" : "COP",
+    currency: "COP",
     maximumFractionDigits: 0,
   }).format(n);
 ---

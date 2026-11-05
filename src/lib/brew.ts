@@ -52,3 +52,23 @@ export function grindIndex(grind: string, lang: 'es' | 'en'): number | null {
   const i = GRIND[lang].indexOf(grind.trim().toLowerCase());
   return i >= 0 ? i : null;
 }
+
+/**
+ * Punto de ebullición del agua según la altitud: baja cerca de 1 °C por cada
+ * 300 m. Basta para decidir cómo servir el agua; no es una medida de laboratorio.
+ */
+export function boilingPointC(altitudeM: number): number {
+  const c = 100 - Math.max(0, altitudeM) / 300;
+  return Math.round(c * 10) / 10;
+}
+
+/**
+ * Consejo de vertido para una receta filtrada que pide 92 a 94 °C: si el agua
+ * no alcanza a llegar a esa temperatura hay que servirla apenas hierva; con
+ * margen de sobra, hay que dejarla reposar.
+ */
+export function pourAdvice(boilingC: number): 'straight' | 'short' | 'wait' {
+  if (boilingC < 94) return 'straight';
+  if (boilingC < 97) return 'short';
+  return 'wait';
+}

@@ -24,9 +24,11 @@ const NAV = {
   en: [
     { href: "/", label: "Home" },
     { href: "/shop", label: "Shop" },
-    { href: "/wholesale", label: "Wholesale" },
+    { href: "/cacao", label: "Cacao" },
+    { href: "/subscription", label: "Subscription" },
+    { href: "/guides", label: "Guides" },
     ...(SHOW_TRACEABILITY ? [{ href: "/traceability", label: "Traceability" }] : []),
-    { href: "/contact", label: "Contact" },
+    { href: "/shipping", label: "Delivery" },
   ],
 };
 const L = {
@@ -56,7 +58,7 @@ const L = {
         logout: "Sign out", login: "Sign in", register: "Sign up",
         account: "My Account", menu: "User menu",
         search: "Search", searchOpen: "Search the catalog",
-        searchPlaceholder: "Coffee, origin, process or tasting note",
+        searchPlaceholder: "Coffee, origin or process",
         searchClose: "Close search",
         searchAll: "See all results",
         searchEmpty: "No products matched that search",
@@ -310,6 +312,7 @@ const searchHref = lang === "en" ? "/search" : "/buscar";
 </header>
 
 <script>
+  import { formatCop } from "../lib/money.ts";
   // Lógica del Header (granos, menú, auth, dropdown, cart preview).
   // El <header> se persiste entre navegaciones (transition:persist), así que
   // los bindings sobreviven. Este init es idempotente y se re-ejecuta en
@@ -352,10 +355,7 @@ const searchHref = lang === "en" ? "/search" : "/buscar";
     let facets = null;
     let facetsPromise = null;
 
-    const money = (p) =>
-      lang === "en"
-        ? `US$${Number(p.price_usd ?? 0).toLocaleString("en-US")}`
-        : `$${Number(p.price ?? 0).toLocaleString("es-CO")}`;
+    const money = (p) => formatCop(p.price, lang);
 
     const escapeHtml = (s) =>
       String(s ?? "").replace(/[&<>"']/g, (c) => ({
@@ -1108,8 +1108,6 @@ const searchHref = lang === "en" ? "/search" : "/buscar";
     const headerEl = document.getElementById('siteHeader');
     const lang = headerEl?.dataset.lang === 'en' ? 'en' : 'es';
     const emptyMsg = headerEl?.dataset.cartEmpty || 'Tu carrito está vacío';
-    const locale = lang === 'en' ? 'en-US' : 'es-CO';
-    const currency = lang === 'en' ? 'USD' : 'COP';
 
     function renderPreview() {
       const cart = window.Cart ? window.Cart.getCart() : [];
@@ -1117,7 +1115,7 @@ const searchHref = lang === "en" ? "/search" : "/buscar";
         inner.innerHTML = '<p class="cart-preview-empty">' + emptyMsg + '</p>';
         return;
       }
-      const fmt = (n) => new Intl.NumberFormat(locale, { style: 'currency', currency, maximumFractionDigits: 0 }).format(Number(n));
+      const fmt = (n) => formatCop(n, lang);
       const items = cart.slice(0, 4).map(item => `
         <div class="cart-preview-item">
           <img src="${item.image || '/assets/logo.png'}" alt="" width="20" height="20" loading="lazy" style="width:20px;height:20px;min-width:20px;flex-shrink:0">
