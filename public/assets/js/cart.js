@@ -3,6 +3,15 @@
 (function(){
   const STORAGE_KEY = 'dbyo-cart';
 
+  // El sitio en ingles cobraba en USD hasta nov 2026: un carrito guardado de esa
+  // epoca tiene precios en dolares y mostraria totales falsos. Se vacia una vez.
+  try {
+    if (location.hostname === 'en.dobleyo.cafe' && !localStorage.getItem('dbyo-cart-cop')) {
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.setItem('dbyo-cart-cop', '1');
+    }
+  } catch {}
+
   function getCart(){
     try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]') || []; } catch { return []; }
   }

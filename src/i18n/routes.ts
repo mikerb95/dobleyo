@@ -20,7 +20,6 @@ const ROUTE_PAIRS: Array<[string, string]> = [
   ['/tienda', '/shop'],
   ['/contacto', '/contact'],
   ['/trazabilidad', '/traceability'],
-  ['/mayoristas', '/wholesale'],
   ['/fincas', '/farms'],
   ['/cart', '/cart'],
   ['/checkout', '/checkout'],
@@ -33,8 +32,8 @@ const ROUTE_PAIRS: Array<[string, string]> = [
   ['/terminos', '/terms'],
   ['/envios-devoluciones', '/shipping'],
   ['/accesibilidad', '/accessibility'],
-  ['/partners', '/partners'],
-  ['/blog', '/blog'],
+  ['/cacao', '/cacao'],
+  ['/suscripcion', '/subscription'],
 ];
 
 const ES_TO_EN = new Map(ROUTE_PAIRS);
@@ -47,15 +46,11 @@ function dynamicMap(path: string, dir: 'es2en' | 'en2es'): string | null {
     if (mp) return `/product/${mp[1]}`;
     const mf = path.match(/^\/finca\/(.+)$/);
     if (mf) return `/farm/${mf[1]}`;
-    const mb = path.match(/^\/blog\/(.+)$/);
-    if (mb) return `/blog/${mb[1]}`;
   } else {
     const mp = path.match(/^\/product\/(.+)$/);
     if (mp) return `/producto/${mp[1]}`;
     const mf = path.match(/^\/farm\/(.+)$/);
     if (mf) return `/finca/${mf[1]}`;
-    const mb = path.match(/^\/blog\/(.+)$/);
-    if (mb) return `/blog/${mb[1]}`;
   }
   return null;
 }

@@ -45,6 +45,14 @@ async function sessionRole(request: Request): Promise<string | null> {
   }
 }
 
+// Páginas del sitio en inglés que ya no existen. Los enlaces viejos no terminan
+// en un 404: van a lo más cercano.
+const EN_RETIRED: Record<string, string> = {
+  '/wholesale': '/shop',
+  '/partners': '/shop',
+  '/blog': '/guides',
+};
+
 export default async function middleware(request: Request) {
   const url = new URL(request.url);
   const pathname = url.pathname.replace(/\/+$/, '') || '/';
@@ -76,6 +84,11 @@ export default async function middleware(request: Request) {
 
   if (EXCLUDED_PREFIXES.some((prefix) => url.pathname.startsWith(prefix))) {
     return next();
+  }
+
+  const retired = EN_RETIRED[pathname] ?? (pathname.startsWith('/blog/') ? '/guides' : null);
+  if (retired) {
+    return Response.redirect(new URL(retired, url), 301);
   }
 
   url.pathname = `/en${url.pathname}`;

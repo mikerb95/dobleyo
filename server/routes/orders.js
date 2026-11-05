@@ -257,6 +257,7 @@ ordersRouter.post('/',
         body('items.*.quantity').isInt({ min: 1 }),
         body('currency').optional().isIn(['COP', 'USD']).withMessage('Moneda inválida'),
         body('paymentMethod').optional().isIn(['wompi', 'cod']).withMessage('Método de pago inválido'),
+        body('lang').optional().isIn(['es', 'en']),
     ],
     async (req, res) => {
         const errors = validationResult(req);
@@ -269,7 +270,7 @@ ordersRouter.post('/',
                 customerName, customerEmail, customerPhone,
                 customerDocumentType, customerDocumentNumber,
                 shippingAddress, shippingCity, shippingDepartment, shippingZip,
-                items, notes, couponCode, currency = 'COP', paymentMethod = 'wompi'
+                items, notes, couponCode, currency = 'COP', paymentMethod = 'wompi', lang
             } = req.body;
             const isUSD = currency === 'USD';
             const isCod = paymentMethod === 'cod';
@@ -484,8 +485,8 @@ ordersRouter.post('/',
                 return { orderId: id, reference: createdRef };
             });
 
-            // Generar URL de checkout Wompi (redirección a confirmación según idioma/moneda)
-            const redirectUrl = isUSD
+            // Generar URL de checkout Wompi (redirección a confirmación según idioma)
+            const redirectUrl = (lang === 'en' || isUSD)
                 ? `https://en.dobleyo.cafe/confirmation?ref=${reference}`
                 : `${SITE_URL}/confirmacion?ref=${reference}`;
             let checkoutUrl = null;

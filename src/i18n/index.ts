@@ -10,6 +10,7 @@
 
 import es from './es.json';
 import en from './en.json';
+import { formatCop } from '../lib/money.ts';
 
 export type Lang = 'es' | 'en';
 
@@ -47,23 +48,10 @@ export function getLang(url: URL): Lang {
 }
 
 /**
- * Formatea un precio según el idioma:
- * - 'es' → COP, es-CO
- * - 'en' → USD, en-US
+ * Formatea un precio en pesos: `$72.000` en español y `$72,000 COP` en inglés.
  */
 export function formatPrice(amount: number, lang: Lang = 'es'): string {
-    if (lang === 'en') {
-        return new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: 'USD',
-            maximumFractionDigits: 0,
-        }).format(amount);
-    }
-    return new Intl.NumberFormat('es-CO', {
-        style: 'currency',
-        currency: 'COP',
-        maximumFractionDigits: 0,
-    }).format(amount);
+    return formatCop(amount, lang);
 }
 
 /**
@@ -102,13 +90,12 @@ const HREFLANG_MAP: Record<string, string> = {
     '/tienda': '/shop',
     '/contacto': '/contact',
     '/trazabilidad': '/traceability',
-    '/mayoristas': '/wholesale',
     '/fincas': '/farms',
     '/nosotros': '/about',
-    '/blog': '/blog',
     '/guias': '/guides',
+    '/cacao': '/cacao',
+    '/suscripcion': '/subscription',
     '/envios-devoluciones': '/shipping',
-    '/partners': '/partners',
     '/afiliados': '/affiliates',
     '/privacidad': '/privacy',
     '/terminos': '/terms',

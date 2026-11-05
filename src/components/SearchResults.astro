@@ -64,10 +64,7 @@ const L =
       };
 
 const action = lang === "en" ? "/search" : "/buscar";
-const money = (p: any) =>
-  lang === "en"
-    ? `US$${Number(p.price_usd ?? 0).toLocaleString("en-US")}`
-    : `$${Number(p.price ?? 0).toLocaleString("es-CO")}`;
+const money = (p: any) => formatCop(p.price, lang);
 ---
 
 <section class="search-page">

@@ -4,9 +4,10 @@ import Stars from "./Stars.astro";
 import { getRating, getNotes, formatWeight } from "../lib/products.ts";
 import { SHOW_CUPPING } from "../lib/flags.ts";
 import type { Lang } from "../i18n/index.ts";
+import { formatCop } from "../lib/money.ts";
 
 interface Props {
-  /** Idioma de la card. En inglés el precio llega en USD y los enlaces van a /product. */
+  /** Idioma de la card. En inglés los enlaces van a /product. */
   lang?: Lang;
   product: Product & {
     stock?: number;
@@ -22,9 +23,7 @@ interface Props {
 const { product, lang = "es" } = Astro.props;
 const en = lang === "en";
 const href = `${en ? "/product" : "/producto"}/${product.id}`;
-const priceLabel = en
-  ? `$${Number(product.price).toLocaleString("en-US")}`
-  : `$${product.price.toLocaleString("es-CO")}`;
+const priceLabel = formatCop(product.price, lang);
 const L = en
   ? { fav: "Add to favorites", notes: "Tasting notes", out: "Sold out", low: "Last", add: "Add", cart: "View cart", cartHref: "/cart" }
   : { fav: "Agregar a favoritos", notes: "Notas de cata", out: "Agotado", low: "Últimas", add: "Agregar", cart: "Ver carrito", cartHref: "/cart" };

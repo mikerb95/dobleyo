@@ -33,13 +33,12 @@ export const GET: APIRoute = async ({ site }) => {
     const staticPairs: { es: string; en: string; priority: string; changefreq: string }[] = [
         { es: '/', en: '/', priority: '1.0', changefreq: 'weekly' },
         { es: '/tienda', en: '/shop', priority: '0.9', changefreq: 'weekly' },
-        { es: '/mayoristas', en: '/wholesale', priority: '0.7', changefreq: 'monthly' },
         ...(SHOW_TRACEABILITY ? [{ es: '/trazabilidad', en: '/traceability', priority: '0.8', changefreq: 'monthly' }] : []),
-        { es: '/blog', en: '/blog', priority: '0.7', changefreq: 'weekly' },
-        { es: '/guias', en: '/guides', priority: '0.6', changefreq: 'monthly' },
+        { es: '/guias', en: '/guides', priority: '0.7', changefreq: 'monthly' },
+        { es: '/cacao', en: '/cacao', priority: '0.7', changefreq: 'weekly' },
+        { es: '/suscripcion', en: '/subscription', priority: '0.7', changefreq: 'monthly' },
         { es: '/fincas', en: '/farms', priority: '0.7', changefreq: 'monthly' },
         { es: '/nosotros', en: '/about', priority: '0.6', changefreq: 'monthly' },
-        { es: '/partners', en: '/partners', priority: '0.5', changefreq: 'monthly' },
         { es: '/afiliados', en: '/affiliates', priority: '0.5', changefreq: 'monthly' },
         { es: '/contacto', en: '/contact', priority: '0.6', changefreq: 'yearly' },
         { es: '/envios-devoluciones', en: '/shipping', priority: '0.5', changefreq: 'yearly' },
@@ -51,9 +50,10 @@ export const GET: APIRoute = async ({ site }) => {
     // ── Páginas estáticas solo en español ───────────────────────────────────
     const staticEsOnly: { url: string; priority: string; changefreq: string }[] = [
         { url: '/accesorios', priority: '0.7', changefreq: 'weekly' },
-        { url: '/cacao', priority: '0.7', changefreq: 'weekly' },
         { url: '/regalos', priority: '0.6', changefreq: 'weekly' },
-        { url: '/suscripcion', priority: '0.5', changefreq: 'monthly' },
+        { url: '/blog', priority: '0.7', changefreq: 'weekly' },
+        { url: '/mayoristas', priority: '0.7', changefreq: 'monthly' },
+        { url: '/partners', priority: '0.5', changefreq: 'monthly' },
     ];
 
     const entries: Entry[] = [];
@@ -116,16 +116,6 @@ export const GET: APIRoute = async ({ site }) => {
                 lastmod: fmtDate(post.updated_at ?? post.published_at) ?? now,
                 changefreq: 'monthly',
                 priority: '0.6',
-                altEs: `/blog/${post.slug}`,
-                altEn: `/blog/${post.slug}`,
-            });
-            entries.push({
-                loc: `${BASE_EN}/blog/${post.slug}`,
-                lastmod: fmtDate(post.updated_at ?? post.published_at) ?? now,
-                changefreq: 'monthly',
-                priority: '0.6',
-                altEs: `/blog/${post.slug}`,
-                altEn: `/blog/${post.slug}`,
             });
         }
 

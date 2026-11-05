@@ -15,8 +15,8 @@ import Icon from "./Icon.astro";
     <div class="lang-suggest__flag" aria-hidden="true"><Icon name="globe" size={40} /></div>
     <h2 class="lang-suggest__title" id="langSuggestTitle">Browse in English?</h2>
     <p class="lang-suggest__text">
-      It looks like your browser is set to English. Would you like to visit the
-      English version of DobleYo Café, with prices in USD and worldwide shipping?
+      Your browser is set to English. Would you like to shop DobleYo Café in English?
+      Same coffee, same prices.
     </p>
     <div class="lang-suggest__actions">
       <button class="lang-suggest__btn lang-suggest__btn--primary" id="langSuggestGo">View in English</button>
@@ -48,7 +48,8 @@ import Icon from "./Icon.astro";
     // Mapear la ruta actual a su equivalente en el sitio en inglés
     const MAP = {
       "/": "/", "/tienda": "/shop", "/trazabilidad": "/traceability",
-      "/contacto": "/contact", "/nosotros": "/", "/suscripcion": "/wholesale",
+      "/contacto": "/contact", "/nosotros": "/about", "/suscripcion": "/subscription",
+      "/cacao": "/cacao", "/guias": "/guides", "/envios-devoluciones": "/shipping",
     };
     const enPath = MAP[location.pathname] || "/";
     const enUrl = "https://en.dobleyo.cafe" + enPath;
