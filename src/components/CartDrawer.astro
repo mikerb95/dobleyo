@@ -2,9 +2,15 @@
 // Drawer lateral del carrito.
 // Se abre automaticamente al agregar un producto (evento 'cart:added')
 // como feedback visual, y se mantiene sincronizado con 'cart:changed'.
+import { trUi } from "../i18n/ui.ts";
+
+interface Props { lang?: "es" | "en"; }
+const { lang = "es" } = Astro.props;
+const tr = (s: string, v?: Record<string, string | number>) => trUi(s, lang, v);
+const en = lang === "en";
 ---
 
-<div id="cartDrawer" class="cart-drawer" aria-hidden="true" transition:persist="cart-drawer">
+<div id="cartDrawer" class="cart-drawer" aria-hidden="true" transition:persist={`cart-drawer-${lang}`}>
   <div class="cart-drawer__overlay" id="cartDrawerOverlay"></div>
   <aside
     class="cart-drawer__panel"
@@ -14,12 +20,12 @@
     tabindex="-1"
   >
     <header class="cart-drawer__head">
-      <h2 id="cartDrawerTitle" class="cart-drawer__title">Tu carrito</h2>
+      <h2 id="cartDrawerTitle" class="cart-drawer__title">{tr("Tu carrito")}</h2>
       <button
         type="button"
         class="cart-drawer__close"
         id="cartDrawerClose"
-        aria-label="Cerrar carrito"
+        aria-label={tr("Cerrar carrito")}
       >
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
           <path d="M5 5l10 10M15 5L5 15" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
@@ -32,7 +38,7 @@
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
         <path d="M3 8.5l3 3 7-7" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
-      <span>Producto agregado al carrito</span>
+      <span>{tr("Producto agregado al carrito")}</span>
     </div>
 
     <div class="cart-drawer__body" id="cartDrawerBody">
@@ -42,7 +48,7 @@
     <footer class="cart-drawer__foot" id="cartDrawerFoot" hidden>
       <div class="cart-drawer__progress" id="cartDrawerProgress" hidden>
         <p class="cart-drawer__progress-text">
-          Le faltan <strong id="cartDrawerFspAmount"></strong> para envío gratis
+          {tr("Le faltan")} <strong id="cartDrawerFspAmount"></strong> {tr("para envío gratis")}
         </p>
         <div class="cart-drawer__bar-bg"><div class="cart-drawer__bar-fill" id="cartDrawerFspFill"></div></div>
       </div>
@@ -50,25 +56,29 @@
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
           <path d="M2 7l3.5 3.5L12 3.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
-        ¡Envío gratis en este pedido!
+        {tr("¡Envío gratis en este pedido!")}
       </div>
       <div class="cart-drawer__subtotal">
-        <span>Subtotal</span>
+        <span>{tr("Subtotal")}</span>
         <span id="cartDrawerSubtotal" class="cart-drawer__subtotal-amount">$0</span>
       </div>
       <a href="/checkout" class="cart-drawer__checkout" id="cartDrawerCheckout">
-        Ir a pagar
+        {tr("Ir a pagar")}
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
           <path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </a>
-      <a href="/cart" class="cart-drawer__view">Ver carrito completo</a>
+      <a href="/cart" class="cart-drawer__view">{tr("Ver carrito completo")}</a>
     </footer>
   </aside>
 </div>
 
 <script>
-  (function () {
+  import { trUi } from '../i18n/ui.ts';
+    import { formatCop } from '../lib/money.ts';
+    const tr = (s, v) => trUi(s, document.documentElement.lang === 'en' ? 'en' : 'es', v);
+    const fmtCop = (n) => formatCop(n, document.documentElement.lang === 'en' ? 'en' : 'es');
+    (function () {
     const FREE_SHIP_THRESHOLD = 120000;
 
     function ready(fn) {
@@ -94,7 +104,7 @@
       let addedTimer = null;
       let lastFocused = null;
 
-      const fmt = (n) => '$' + Number(n || 0).toLocaleString('es-CO');
+      const fmt = (n) => fmtCop(n);
       const esc = (s) => (s || '').replace(/[&<>"]+/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
       function render() {
@@ -104,9 +114,9 @@
         if (!cart.length) {
           body.innerHTML = `
             <div class="cart-drawer__empty">
-              <p class="cart-drawer__empty-title">Su carrito está vacío</p>
-              <p class="cart-drawer__empty-sub">Descubra nuestros cafés de origen único.</p>
-              <a href="/tienda" class="cart-drawer__shop">Ir a la tienda</a>
+              <p class="cart-drawer__empty-title">${tr('Su carrito está vacío')}</p>
+              <p class="cart-drawer__empty-sub">${tr('Descubra nuestros cafés de origen único.')}</p>
+              <a href="${document.documentElement.lang === 'en' ? '/shop' : '/tienda'}" class="cart-drawer__shop">${tr('Ir a la tienda')}</a>
             </div>`;
           foot.hidden = true;
           return;
@@ -119,12 +129,12 @@
               <p class="cart-drawer__item-name">${esc(p.name)}</p>
               <p class="cart-drawer__item-price">${fmt(p.price)}</p>
               <div class="cart-drawer__item-bottom">
-                <div class="cart-drawer__qty" role="group" aria-label="Cantidad">
-                  <button type="button" class="cart-drawer__step" data-id="${esc(p.id)}" data-dir="down" aria-label="Reducir cantidad">−</button>
+                <div class="cart-drawer__qty" role="group" aria-label="${tr('Cantidad')}">
+                  <button type="button" class="cart-drawer__step" data-id="${esc(p.id)}" data-dir="down" aria-label="${tr('Reducir cantidad')}">−</button>
                   <span class="cart-drawer__qty-val">${p.qty || 1}</span>
-                  <button type="button" class="cart-drawer__step" data-id="${esc(p.id)}" data-dir="up" aria-label="Aumentar cantidad">+</button>
+                  <button type="button" class="cart-drawer__step" data-id="${esc(p.id)}" data-dir="up" aria-label="${tr('Aumentar cantidad')}">+</button>
                 </div>
-                <button type="button" class="cart-drawer__remove" data-id="${esc(p.id)}" aria-label="Eliminar ${esc(p.name)}">
+                <button type="button" class="cart-drawer__remove" data-id="${esc(p.id)}" aria-label="${tr('Eliminar {name}', { name: esc(p.name) })}">
                   <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
                 </button>
               </div>

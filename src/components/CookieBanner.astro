@@ -1,20 +1,25 @@
 ---
 // Banner de consentimiento de cookies — Ley 1581/2012 + GDPR best practices
 // Se muestra solo si el usuario no ha dado su respuesta todavía
+import { trUi } from "../i18n/ui.ts";
+
+interface Props { lang?: "es" | "en"; }
+const { lang = "es" } = Astro.props;
+const tr = (s: string, v?: Record<string, string | number>) => trUi(s, lang, v);
+const en = lang === "en";
 ---
 
-<div id="cookieBanner" class="cookie-banner" role="dialog" aria-label="Consentimiento de cookies" aria-live="polite" hidden transition:persist="cookie-banner">
+<div id="cookieBanner" class="cookie-banner" role="dialog" aria-label={tr("Consentimiento de cookies")} aria-live="polite" hidden transition:persist={`cookie-banner-${lang}`}>
   <div class="cookie-inner">
     <div class="cookie-text">
       <p>
-        Usamos cookies esenciales para el funcionamiento del carrito y la sesión.
-        No rastreamos con fines publicitarios ni compartimos datos con terceros sin tu autorización.
-        <a href="/privacidad#cookies">Ver política de privacidad</a>.
+        {tr("Usamos cookies esenciales para el funcionamiento del carrito y la sesión. No rastreamos con fines publicitarios ni compartimos datos con terceros sin tu autorización.")}
+        <a href={en ? "/privacy#cookies" : "/privacidad#cookies"}>{tr("Ver política de privacidad")}</a>.
       </p>
     </div>
     <div class="cookie-actions">
-      <button id="cookieAccept" class="btn cookie-btn-accept">Aceptar</button>
-      <button id="cookieReject" class="btn outline cookie-btn-reject">Solo esenciales</button>
+      <button id="cookieAccept" class="btn cookie-btn-accept">{tr("Aceptar")}</button>
+      <button id="cookieReject" class="btn outline cookie-btn-reject">{tr("Solo esenciales")}</button>
     </div>
   </div>
 </div>
