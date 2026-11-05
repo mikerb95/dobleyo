@@ -19,12 +19,14 @@ export default defineConfig({
   // producción" le ancla la historia entera de forma permanente.
   adapter: vercel({ imageService: true }),
   vite: {
-    ssr: {
-      // Astro usa cookie 2.x (anidado en su node_modules) y Express cookie 0.7 (en
-      // la raíz). Si queda externo, el chunk en dist/ resuelve `cookie` desde la
-      // raíz, recibe la 0.7 y el build falla por `parseCookie`. Empaquetarlo hace
-      // que se resuelva desde Astro, sin depender de cómo npm ordene el árbol.
-      noExternal: ['cookie'],
+    // Astro usa cookie 2.x (anidado en su node_modules) y Express cookie 0.7 (en
+    // la raíz). Si queda externo, el chunk en dist/ resuelve `cookie` desde la
+    // raíz, recibe la 0.7 y el build falla por `parseCookie`. Empaquetarlo hace
+    // que se resuelva desde Astro, sin depender de cómo npm ordene el árbol.
+    // El prerender es un entorno propio de Vite: `ssr.noExternal` no le llega.
+    ssr: { noExternal: ['cookie'] },
+    environments: {
+      prerender: { resolve: { noExternal: ['cookie'] } },
     },
     server: {
       proxy: {
