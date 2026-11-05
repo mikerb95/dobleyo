@@ -246,8 +246,8 @@ ordersRouter.post('/',
         body('customerEmail').isEmail().withMessage('Correo inválido'),
         body('customerPhone').optional().trim(),
         // Documento del comprador: lo exige Interrapidísimo para la guía. Opcional
-        // en el API para no romper el checkout en inglés (USD) ni clientes viejos.
-        body('customerDocumentType').optional({ values: 'falsy' }).isIn(['CC', 'CE', 'NI', 'TI']).withMessage('Tipo de documento inválido'),
+        // en el API para no romper clientes viejos. PA = pasaporte.
+        body('customerDocumentType').optional({ values: 'falsy' }).isIn(['CC', 'CE', 'NI', 'TI', 'PA']).withMessage('Tipo de documento inválido'),
         body('customerDocumentNumber').optional({ values: 'falsy' }).trim().matches(/^[0-9A-Za-z-]{4,25}$/).withMessage('Número de documento inválido'),
         body('shippingAddress').trim().notEmpty().withMessage('Dirección requerida'),
         body('shippingCity').trim().notEmpty().withMessage('Ciudad requerida'),

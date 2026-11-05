@@ -381,7 +381,7 @@ shippingRouter.post('/create',
         body('comments').optional().trim(),
         body('quotedShippingCostCop').optional().isInt({ min: 0 }),
         // Interrapidísimo exige documento del destinatario; customer_orders no lo guarda.
-        body('receiverDocumentType').optional().isIn(['CC', 'CE', 'NI', 'TI']).withMessage('Tipo de documento inválido'),
+        body('receiverDocumentType').optional().isIn(['CC', 'CE', 'NI', 'TI', 'PA']).withMessage('Tipo de documento inválido'),
         body('receiverDocumentNumber').optional().trim().matches(/^[0-9A-Za-z-]{4,25}$/).withMessage('Número de documento inválido'),
     ],
     async (req, res) => {
@@ -412,6 +412,11 @@ shippingRouter.post('/create',
             }
             if (isInter && (!req.body.receiverDocumentType || !req.body.receiverDocumentNumber)) {
                 return res.status(422).json({ success: false, error: 'Interrapidísimo exige tipo y número de documento del destinatario' });
+            }
+            // El código de pasaporte de Inter está en su documento privado y sin
+            // confirmar: mejor frenar aquí que crear una guía con un tipo inválido.
+            if (isInter && req.body.receiverDocumentType === 'PA') {
+                return res.status(422).json({ success: false, error: 'Interrapidísimo no tiene confirmado el pasaporte como tipo de documento. Despache este pedido con otra transportadora.' });
             }
             if (isEnvia && !ENVIA_ORIGIN_DANE) {
                 return res.status(503).json({ success: false, error: 'ENVIA_ORIGIN_DANE no configurado' });

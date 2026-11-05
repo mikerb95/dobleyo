@@ -19,6 +19,10 @@ export default defineConfig({
   // producción" le ancla la historia entera de forma permanente.
   adapter: vercel({ imageService: true }),
   vite: {
+    // La CSP pública de vercel.json no permite scripts en línea. Con el límite en
+    // 0, Vite emite los <script> de los componentes como archivos en /_astro/ en
+    // vez de incrustar los pequeños en el HTML, donde el navegador los bloquea.
+    build: { assetsInlineLimit: 0 },
     // Astro usa cookie 2.x (anidado en su node_modules) y Express cookie 0.7 (en
     // la raíz). Si queda externo, el chunk en dist/ resuelve `cookie` desde la
     // raíz, recibe la 0.7 y el build falla por `parseCookie`. Empaquetarlo hace

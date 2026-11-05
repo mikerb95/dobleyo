@@ -73,6 +73,7 @@ const en = lang === "en";
                   <select id="fDocType" class="co-select" required>
                     <option value="CC">{tr("Cédula de ciudadanía")}</option>
                     <option value="CE" selected={en || undefined}>{tr("Cédula de extranjería")}</option>
+                    <option value="PA">{tr("Pasaporte")}</option>
                     <option value="NI">{tr("NIT")}</option>
                     <option value="TI">{tr("Tarjeta de identidad")}</option>
                   </select>
@@ -612,6 +613,17 @@ import { trUi } from '../../i18n/ui.ts';
           const hint = field && field.querySelector('.co-input-hint');
           if (hint) hint.textContent = '';
         }
+
+        // El pasaporte lleva letras: el teclado numérico del celular no serviría.
+        const fDocTypeEl = document.getElementById('fDocType');
+        const fDocNumberEl = document.getElementById('fDocNumber');
+        const syncDocInput = () => {
+          const isPassport = fDocTypeEl.value === 'PA';
+          fDocNumberEl.inputMode = isPassport ? 'text' : 'numeric';
+          fDocNumberEl.placeholder = isPassport ? 'AB1234567' : '1020304050';
+        };
+        fDocTypeEl.addEventListener('change', syncDocInput);
+        syncDocInput();
 
         ['fName', 'fEmail', 'fAddr', 'fDocNumber'].forEach(id => {
           const el = document.getElementById(id);

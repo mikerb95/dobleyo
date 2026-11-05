@@ -115,6 +115,20 @@ describe('POST /api/shipping/create (Interrapidísimo)', () => {
         expect(res.body.error).toMatch(/documento/i);
         expect(inter.createInterAdmission).not.toHaveBeenCalled();
     });
+
+    it('no crea la guía con pasaporte y pide usar otra transportadora', async () => {
+        query.mockResolvedValueOnce({ rows: [{ id: 5, reference: 'DY-1', status: 'paid', currency: 'COP' }] }); // orden
+        query.mockResolvedValueOnce({ rows: [] }); // items
+
+        const res = await request(app).post('/api/shipping/create').send({
+            ...quoteBody, deliveryCompanyId: 'inter:3',
+            receiverDocumentType: 'PA', receiverDocumentNumber: 'AB1234567',
+        });
+
+        expect(res.status).toBe(422);
+        expect(res.body.error).toMatch(/pasaporte/i);
+        expect(inter.createInterAdmission).not.toHaveBeenCalled();
+    });
 });
 
 describe('POST /api/shipping/inter/pickup', () => {

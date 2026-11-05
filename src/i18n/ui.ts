@@ -60,6 +60,7 @@ export const UI_EN: Record<string, string> = {
   "Tipo de documento": "ID type",
   "Cédula de ciudadanía": "Cédula de ciudadanía (Colombian ID)",
   "Cédula de extranjería": "Cédula de extranjería (foreign resident ID)",
+  "Pasaporte": "Passport",
   "NIT": "NIT (company)",
   "Tarjeta de identidad": "Tarjeta de identidad (under 18)",
   "Número de documento": "ID number",

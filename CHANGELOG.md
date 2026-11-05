@@ -15,6 +15,7 @@ El sitio EN hablaba a importadores y a compradores en el exterior (USD, envíos 
 - **Páginas nuevas**: `/en/subscription` y `/en/cacao` (sin maquila).
 - **Reescritas**: portada, tienda, ficha, about, guías, envíos, contacto, términos y privacidad. Términos y privacidad bajo ley colombiana. Devoluciones alineadas con el sitio en español. WhatsApp real en contacto (el anterior era de ejemplo).
 - **Herramienta**: `AltitudeBrew` (a cuántos grados hierve el agua en su ciudad) con `boilingPointC` y `pourAdvice` en `src/lib/brew.ts` y sus pruebas.
+- **Pasaporte (`PA`)**: nuevo tipo de documento en el checkout ES/EN y en `/admin/envios`. Mipaquete y Envia no envían el tipo de documento a la transportadora; Interrapidísimo sí, y su código de pasaporte está sin confirmar, así que `POST /api/shipping/create` frena esa guía con un 422.
 - **Datos de BD**: `src/data/en-copy.ts` con descripciones y fincas en inglés. Las fincas EN ya no muestran códigos de lote.
 
 ---
