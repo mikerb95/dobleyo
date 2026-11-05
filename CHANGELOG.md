@@ -2,6 +2,22 @@
 
 ---
 
+## 2026-11-05: Scripts bloqueados por la CSP pública (Agente: Claude)
+
+### Contexto
+La CSP pública no permite scripts en línea, pero Vite incrustaba en el HTML los `<script>` pequeños de los componentes. En producción el navegador los bloqueaba: selector de cantidad en fichas EN, filtro de origen de `/tienda`, `/en/cart`, `/en/confirmation`, calculadora de altitud de `/en`, modal de idioma y mapa de rutas ES/EN. Los headers solo existen desplegados, por eso en local todo funcionaba.
+
+### Cambios
+- **`astro.config.mjs`**: `vite.build.assetsInlineLimit: 0`. Los scripts salen como archivos en `/_astro/` y la CSP no se relaja.
+- **`vercel.json`**: `https://accounts.google.com/gsi/style` en `style-src` (botón de Google).
+- **`AGENTS.md`**: regla sobre lo que no puede ir en línea en páginas públicas.
+
+### Verificación
+- Salida compilada servida en local con la CSP real de `vercel.json`: 38 páginas públicas sin violaciones. Selector de cantidad, filtro tras navegar con ClientRouter, altitud, carrito EN, confirmación y modal de idioma funcionan.
+- Sin probar en un despliegue real: checkout Wompi y login con Google. El selector de `/regalos` tampoco se pudo probar: hoy no hay kits activos y no se pinta.
+
+---
+
 ## 2026-11-05: Sitio en inglés para angloparlantes en Colombia (Agente: Claude)
 
 ### Contexto
