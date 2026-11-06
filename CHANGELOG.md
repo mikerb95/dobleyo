@@ -2,6 +2,20 @@
 
 ---
 
+## 2026-11-05: Cuentas demo con rol admin bloqueadas (Agente: Claude)
+
+### Contexto
+La contraseña de los usuarios demo estaba escrita en `AGENTS.md` y `CHANGELOG.md` desde junio, en un repositorio público, y 3 cuentas demo tenían rol admin en la base que coincide con producción.
+
+### Cambios
+- **BD**: las 3 cuentas demo admin (ids 3, 4 y 5) pasan a un hash de clave aleatoria no guardada. Nunca registraron inicio de sesión ni tenían sesiones activas. La cuenta admin real no se tocó.
+- **`AGENTS.md` y este archivo**: se retiró la contraseña escrita. Sigue en el historial de git y en `server/migrations/seed_demo.js`.
+
+### Pendiente
+- 4 cuentas demo caficultor y 6 cliente conservan esa contraseña. Falta decidir si se bloquean.
+
+---
+
 ## 2026-11-05: Scripts bloqueados por la CSP pública (Agente: Claude)
 
 ### Contexto
@@ -1947,7 +1961,7 @@ Para exponer la plataforma en vivo se necesitaban datos representativos en **tod
 ### Nuevo seed (`server/migrations/seed_demo.js`)
 - Script ESM **idempotente** (re-ejecutable sin duplicar) que usa `query`/`batch` de `server/db.js`, parámetros `?`, `datetime('now')` e `INSERT OR IGNORE`/guardas por clave natural.
 - Verificado contra la BD viva (no contra `schema.sql`, que difiere en varias tablas).
-- Usuarios demo con **hash bcrypt real** → login funcional. Contraseña única: `Demo1234*` para todo usuario `@demo.dobleyo.cafe` (admins/operarios, caficultores aprobados y pendiente, clientes y cuenta B2B).
+- Usuarios demo con **hash bcrypt real** → login funcional. Contraseña única para todo usuario `@demo.dobleyo.cafe`, definida en `seed_demo.js` (admins/operarios, caficultores aprobados y pendiente, clientes y cuenta B2B).
 - Cobertura sembrada: solicitudes de caficultor, cosechas y lotes de trazabilidad; variantes de producto, reseñas aprobadas y newsletter; **55 ventas MercadoLibre** con geocoordenadas (mapa de calor) en 20 ciudades; pedidos e-commerce pagados/enviados con geocoding; ventas por canales externos; **36 registros de demanda** por categoría/período; CRM B2B (cuentas, contactos, interacciones); producción (estaciones, equipos, perfiles, BOMs, órdenes en varios estados); movimientos de inventario; y finanzas (plan de cuentas, diarios, métodos de pago, centros de costo, bancos, impuestos, proveedores, facturas de venta/compra con líneas, pagos con asignaciones y gastos).
 - Ejecutar: `node server/migrations/seed_demo.js`.
 

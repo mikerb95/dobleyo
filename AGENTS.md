@@ -446,12 +446,12 @@ Para exponer la plataforma en vivo existe un seed **idempotente** que puebla tod
 
 ### Credenciales de demo
 
-- **Contraseña única para todos los usuarios demo**: `Demo1234*`
+- **Contraseña de los usuarios demo**: definida en `DEMO_PASSWORD` de `server/migrations/seed_demo.js`. No escribirla aquí: el repositorio es público. Las 3 cuentas demo con rol admin quedaron bloqueadas en la BD (2026-11-05). Antes de correr el seed sobre producción, revisar si crearía cuentas nuevas con esa clave.
 - Todos los usuarios demo usan el dominio `@demo.dobleyo.cafe`. Ejemplos por rol:
 
 | Rol | Email | Notas |
 |---|---|---|
-| Admin / operario | `operario.tueste@demo.dobleyo.cafe` | Acceso a app operativa y admin |
+| Admin / operario | `operario.tueste@demo.dobleyo.cafe` | Bloqueada en la BD desde 2026-11-05 |
 | Caficultor (aprobado) | `caficultor.huila@demo.dobleyo.cafe` | Finca El Paraíso, Huila |
 | Caficultor (pendiente) | `caficultor.cauca@demo.dobleyo.cafe` | Muestra flujo de aprobación |
 | Cliente | `cliente.andrea@demo.dobleyo.cafe` | Pedidos e-commerce asociados |
@@ -512,6 +512,7 @@ Para exponer la plataforma en vivo existe un seed **idempotente** que puebla tod
 | DEBT-021 | 🔴 | Migración a astro 7 y @astrojs/vercel 11 (avisos críticos/altos de `define:vars` y `x-astro-path`) | ✅ Resuelto 2026-11-05 |
 | DEBT-022 | 🟠 | `labels.js` y `storage.js` (`operators`) siguen abiertos al caficultor sin filtrar por lote: decidir si se filtran con `farmAuth` o pasan a solo admin | Pendiente |
 | DEBT-023 | 🟡 | Hallazgos bajos de la revisión OWASP (2026-10-19): el registro revela si el correo existe, baja del boletín por `?email=` sin token, reseñas públicas sin límite de largo, jsQR sin SRI, Markdown del blog sin sanitizar, backup de BD sin reautenticación, referencia de pedido con 16 bits aleatorios | Pendiente |
+| DEBT-024 | 🟠 | Pasaporte (`PA`) en checkout y `/admin/envios`: (1) confirmar qué transportadoras están activas en producción, porque si solo está Interrapidísimo un pedido con pasaporte se puede pagar pero no despachar desde el panel; (2) pedir al asesor de Interrapidísimo el código de pasaporte para `tipoDocumento` y quitar el bloqueo de `POST /api/shipping/create` en `server/routes/shipping.js`; (3) probar en sandbox que Envia.com acepte letras en `identificationNumber` | Pendiente |
 
 ---
 
