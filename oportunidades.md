@@ -2,6 +2,8 @@
 
 **Corte:** 5 de noviembre de 2026. Las webs cambian: lo que se vaya a ejecutar debe volver a comprobarse.
 
+**Actualización del mismo día:** P10 quedó resuelta. En producción ya no hay scripts bloqueados por la CSP, "Add to cart" funciona en la ficha en inglés y el pasaporte aparece en el checkout. Las secciones que describen ese fallo reflejan la auditoría anterior al despliegue. Lo que sigue abierto está en `pendientes.md`.
+
 **Conclusión:** antes de crecer, DobleYo debe cumplir lo que promete. Después puede ocupar vacíos que casi nadie cubre: fecha de tueste, costo y plazo de envío claros, y tiempo de respuesta medido.
 
 ## Para qué nos sirve este documento
