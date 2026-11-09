@@ -275,6 +275,7 @@ const en = lang === "en";
     // scripts externos (window.Cart de cart.js, window.WidgetCheckout de widget.js).
 import { trUi } from '../../i18n/ui.ts';
     import { formatCop } from '../../lib/money.ts';
+    import { CO_LOCATIONS } from '../../../server/utils/coLocations.js';
     const tr = (s, v) => trUi(s, document.documentElement.lang === 'en' ? 'en' : 'es', v);
     const fmtCop = (n) => formatCop(n, document.documentElement.lang === 'en' ? 'en' : 'es');
         function initCheckoutPage() {
@@ -287,42 +288,9 @@ import { trUi } from '../../i18n/ui.ts';
       function fmt(n) { return fmtCop(n); }
       function whenCart(fn) { if (window.Cart) fn(); else setTimeout(() => whenCart(fn), 40); }
 
-      // ── Datos Colombia: departamentos y ciudades ──────────────────────────
-      const CO_DATA = {
-        'Amazonas':             ['Leticia', 'Puerto Nariño'],
-        'Antioquia':            ['Medellín', 'Bello', 'Envigado', 'Itagüí', 'Sabaneta', 'Rionegro', 'Apartadó', 'Turbo', 'Caucasia', 'Itaguí'],
-        'Arauca':               ['Arauca', 'Saravena', 'Tame', 'Fortul'],
-        'Atlántico':            ['Barranquilla', 'Soledad', 'Malambo', 'Sabanalarga', 'Galapa', 'Puerto Colombia'],
-        'Bogotá D.C.':          ['Bogotá D.C.'],
-        'Bolívar':              ['Cartagena', 'Magangué', 'El Carmen de Bolívar', 'Mompós'],
-        'Boyacá':               ['Tunja', 'Duitama', 'Sogamoso', 'Chiquinquirá', 'Paipa', 'Villa de Leyva'],
-        'Caldas':               ['Manizales', 'La Dorada', 'Chinchiná', 'Riosucio', 'Villamaría'],
-        'Caquetá':              ['Florencia', 'San Vicente del Caguán', 'Puerto Rico'],
-        'Casanare':             ['Yopal', 'Aguazul', 'Villanueva', 'Paz de Ariporo'],
-        'Cauca':                ['Popayán', 'Santander de Quilichao', 'Puerto Tejada', 'Patía'],
-        'Cesar':                ['Valledupar', 'Aguachica', 'Codazzi', 'Bosconia'],
-        'Chocó':                ['Quibdó', 'Istmina', 'Tadó', 'Riosucio'],
-        'Córdoba':              ['Montería', 'Cereté', 'Lorica', 'Sahagún', 'Montelíbano'],
-        'Cundinamarca':         ['Soacha', 'Zipaquirá', 'Facatativá', 'Chía', 'Mosquera', 'Madrid', 'Fusagasugá', 'Girardot', 'Cajicá', 'La Mesa'],
-        'Guainía':              ['Inírida'],
-        'Guaviare':             ['San José del Guaviare', 'El Retorno'],
-        'Huila':                ['Neiva', 'Pitalito', 'Garzón', 'La Plata', 'Campoalegre'],
-        'La Guajira':           ['Riohacha', 'Maicao', 'Uribia', 'Manaure'],
-        'Magdalena':            ['Santa Marta', 'Ciénaga', 'Fundación', 'Plato'],
-        'Meta':                 ['Villavicencio', 'Acacías', 'Granada', 'Puerto López'],
-        'Nariño':               ['Pasto', 'Tumaco', 'Ipiales', 'Túquerres'],
-        'Norte de Santander':   ['Cúcuta', 'Ocaña', 'Pamplona', 'Villa del Rosario', 'Los Patios'],
-        'Putumayo':             ['Mocoa', 'Puerto Asís', 'Valle del Guamuez'],
-        'Quindío':              ['Armenia', 'Calarcá', 'Montenegro', 'Quimbaya', 'La Tebaida'],
-        'Risaralda':            ['Pereira', 'Dosquebradas', 'Santa Rosa de Cabal', 'La Virginia'],
-        'San Andrés y Providencia': ['San Andrés', 'Providencia'],
-        'Santander':            ['Bucaramanga', 'Barrancabermeja', 'Floridablanca', 'Girón', 'Piedecuesta', 'Socorro'],
-        'Sucre':                ['Sincelejo', 'Corozal', 'San Marcos', 'Sampués'],
-        'Tolima':               ['Ibagué', 'Espinal', 'Melgar', 'Honda', 'Líbano'],
-        'Valle del Cauca':      ['Cali', 'Buenaventura', 'Palmira', 'Tuluá', 'Buga', 'Cartago', 'Yumbo', 'Jamundí', 'Candelaria'],
-        'Vaupés':               ['Mitú'],
-        'Vichada':              ['Puerto Carreño'],
-      };
+      // ── Datos Colombia: departamentos y municipios con su DANE (DIVIPOLA) ──
+      // El DANE viaja con el pedido: Envia.com cotiza el envío con él.
+      const CO_DATA = Object.fromEntries(CO_LOCATIONS.map(([, dept, cities]) => [dept, cities]));
 
       // ── Países con indicativo ─────────────────────────────────────────────
       const COUNTRIES = [
@@ -382,7 +350,7 @@ import { trUi } from '../../i18n/ui.ts';
           if (coMbPayText) coMbPayText.textContent = label;
         }
         document.querySelectorAll('input[name="payMethod"]').forEach((el) => {
-          el.addEventListener('change', updatePayMethodUI);
+          el.addEventListener('change', () => { updatePayMethodUI(); requestQuote(); });
         });
 
         // Cupón aplicado desde el carrito
@@ -397,12 +365,74 @@ import { trUi } from '../../i18n/ui.ts';
           return Math.min(Math.round(appliedCoupon.discountValue), sub);
         }
 
+        // ── Envío cotizado con Envia.com según la ciudad ────────────────
+        // El servidor responde el costo y un token firmado que se manda con el
+        // pedido para cobrar exactamente lo que el cliente vio. Si la cotización
+        // falla, el servidor aplica la tarifa fija.
+        let shipQuote = null;
+        let quoteLoading = false;
+        let quotePromise = null;
+
+        function selectedDane() {
+          const opt = fCityEl.selectedOptions && fCityEl.selectedOptions[0];
+          return (opt && opt.dataset.dane) || '';
+        }
+        function cartItems() {
+          return window.Cart.getCart().map(p => ({ productId: p.id, quantity: p.qty || 1 }));
+        }
+        function quoteKey() {
+          return [selectedDane(), getPaymentMethod(), JSON.stringify(cartItems())].join('|');
+        }
+        function isFreeShipping() {
+          const sub = window.Cart.subtotal();
+          return (sub - getDiscount(sub)) >= FREE_SHIP;
+        }
+        function currentQuote() {
+          return shipQuote && shipQuote.key === quoteKey() ? shipQuote : null;
+        }
+
+        function requestQuote() {
+          const dane = selectedDane();
+          if (!dane || isFreeShipping()) { quotePromise = null; quoteLoading = false; renderSummary(); return Promise.resolve(); }
+          if (currentQuote()) { renderSummary(); return Promise.resolve(); }
+          const key = quoteKey();
+          if (quotePromise && quotePromise.key === key) return quotePromise;
+
+          quoteLoading = true;
+          renderSummary();
+          const pending = fetch('/api/shipping/checkout-quote', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ daneCode: dane, paymentMethod: getPaymentMethod(), items: cartItems() }),
+          })
+            .then(r => (r.ok ? r.json() : null))
+            .then(d => { if (quotePromise === pending && d && d.success) shipQuote = { ...d.data, key }; })
+            .catch(() => {})
+            .finally(() => {
+              if (quotePromise !== pending) return;
+              // Sin respuesta: se muestra la tarifa fija, que es la que aplicará el servidor.
+              if (!currentQuote()) shipQuote = { cost: SHIP_COST, token: null, key };
+              quoteLoading = false;
+              quotePromise = null;
+              renderSummary();
+            });
+          pending.key = key;
+          quotePromise = pending;
+          return pending;
+        }
+
         function renderSummary() {
           const c        = window.Cart.getCart();
           const sub      = window.Cart.subtotal();
           const discount = getDiscount(sub);
-          const ship     = (sub - discount) >= FREE_SHIP ? 0 : SHIP_COST;
+          const free     = (sub - discount) >= FREE_SHIP;
+          const quote    = free ? null : currentQuote();
+          const ship     = free ? 0 : (quote ? quote.cost : 0);
           const tot      = (sub - discount) + ship;
+          const shipLabel = free ? tr('Gratis')
+            : quote ? fmt(quote.cost)
+            : quoteLoading ? tr('Calculando…')
+            : tr('Según la ciudad');
 
           sumList.innerHTML = c.map(p => `
             <div class="co-sum-item">
@@ -433,10 +463,11 @@ import { trUi } from '../../i18n/ui.ts';
             if (sumDiscountVal) sumDiscountVal.textContent = `-${fmt(discount)}`;
           }
 
-          sumShipping.textContent = ship === 0 ? tr('Gratis') : fmt(ship);
-          if (ship === 0) { sumShipping.style.color = '#16a34a'; sumShipping.style.fontWeight = '600'; }
+          sumShipping.textContent = shipLabel;
+          sumShipping.style.color = free ? '#16a34a' : '';
+          sumShipping.style.fontWeight = free ? '600' : '';
           sumTotal.textContent = fmt(tot);
-          shipNote.style.display = ship === 0 ? 'flex' : 'none';
+          shipNote.style.display = free ? 'flex' : 'none';
 
           const mbTotal = document.getElementById('coMbTotal');
           if (mbTotal) mbTotal.textContent = fmt(tot);
@@ -488,7 +519,7 @@ import { trUi } from '../../i18n/ui.ts';
 
         // ── Departamentos y ciudades ────────────────────────────────────
         function populateDepts() {
-          Object.keys(CO_DATA).sort().forEach(dept => {
+          Object.keys(CO_DATA).sort((a, b) => a.localeCompare(b, 'es')).forEach(dept => {
             const opt = document.createElement('option');
             opt.value = dept;
             opt.textContent = dept;
@@ -503,14 +534,15 @@ import { trUi } from '../../i18n/ui.ts';
             fCityEl.disabled = true;
             return;
           }
-          const cities = CO_DATA[dept] || [];
+          const cities = (CO_DATA[dept] || []).slice().sort((a, b) => a[1].localeCompare(b[1], 'es'));
           const placeholder = document.createElement('option');
           placeholder.value = '';
           placeholder.textContent = tr('Selecciona ciudad…');
           fCityEl.appendChild(placeholder);
-          cities.forEach(city => {
+          cities.forEach(([code, city]) => {
             const opt = document.createElement('option');
             opt.value = city;
+            opt.dataset.dane = code;
             opt.textContent = city;
             fCityEl.appendChild(opt);
           });
@@ -563,7 +595,7 @@ import { trUi } from '../../i18n/ui.ts';
                 const cityMatch = Array.from(fCityEl.options).find(
                   o => o.value.toLowerCase() === String(user.city).toLowerCase()
                 );
-                if (cityMatch) fCityEl.value = cityMatch.value;
+                if (cityMatch) { fCityEl.value = cityMatch.value; requestQuote(); }
               }
             }
           }
@@ -592,8 +624,9 @@ import { trUi } from '../../i18n/ui.ts';
           populateCities(fDeptEl.value);
           clearError(fDeptEl);
           clearError(fCityEl);
+          requestQuote();
         });
-        fCityEl.addEventListener('change', () => clearError(fCityEl));
+        fCityEl.addEventListener('change', () => { clearError(fCityEl); requestQuote(); });
 
         // ── Validación inline ────────────────────────────────────────────
         function setError(input, msg) {
@@ -674,6 +707,9 @@ import { trUi } from '../../i18n/ui.ts';
           if (coMbPayBtn) { coMbPayBtn.disabled = true; if (coMbPayText) coMbPayText.textContent = busyLabel; }
 
           try {
+            // El total que va a Wompi incluye el envío: esperar la cotización en curso.
+            await requestQuote();
+            const quote = currentQuote();
             const currentCart = window.Cart.getCart();
             const res = await fetch('/api/orders', {
               method: 'POST',
@@ -688,6 +724,8 @@ import { trUi } from '../../i18n/ui.ts';
                 shippingAddress:    fAddr,
                 shippingCity:       fCity,
                 shippingDepartment: fDept || undefined,
+                shippingDaneCode:   selectedDane() || undefined,
+                shippingQuoteToken: (quote && quote.token) || undefined,
                 couponCode:         appliedCoupon ? appliedCoupon.code : undefined,
                 paymentMethod,
                 lang:               document.documentElement.lang === 'en' ? 'en' : 'es',

@@ -188,7 +188,7 @@ describe('POST /api/orders', () => {
 
         expect(res.status).toBe(201);
         const orderInsertArgs = query.mock.calls[1][1];
-        expect(orderInsertArgs[11]).toBe(84000); // índice 11 = subtotal_cop (10 = shipping_zip)
+        expect(orderInsertArgs[12]).toBe(84000); // índice 12 = subtotal_cop (11 = shipping_dane_code)
     });
 
     it('debería retornar 422 si no hay stock suficiente', async () => {

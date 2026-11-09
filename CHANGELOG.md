@@ -2,6 +2,30 @@
 
 ---
 
+## 2026-11-09: Envío cotizado con Envia.com en el checkout (Agente: Claude)
+
+### Contexto
+El dueño decidió gestionar los envíos con Envia.com y cobrar al cliente la tarifa real de su ciudad en lugar de los $12.000 fijos. El checkout solo guardaba el nombre de la ciudad (de una lista corta escrita a mano) y Envia necesita el código DANE.
+
+### Cambios
+- **`server/utils/coLocations.js`** (nuevo): los 1.122 municipios de DIVIPOLA (datos.gov.co, dataset `gdxc-w37w`) con su DANE. Lo usan el checkout y el servidor. Cali, Cúcuta, Cartagena y Tumaco van con el nombre de uso común.
+- **`server/services/checkoutShipping.js`** (nuevo): gratis desde $120.000. Por debajo cotiza con Envia (`quoteEnvia`) la caja de 20×30×15 cm que usa `/admin/envios` y cobra la oferta más barata redondeada a 100, más la comisión de recaudo si es contraentrega. Si Envia no está configurado, falla o no tiene cobertura, cobra la tarifa fija de $12.000. Cache en memoria de 30 min. El precio viaja firmado con HMAC (`JWT_SECRET`, o `SHIPPING_QUOTE_SECRET` si existe) y vence en 30 min.
+- **`POST /api/shipping/checkout-quote`** (público, 30/min por IP): recibe DANE, ítems y método de pago y responde costo, días estimados y token.
+- **`POST /api/orders`**: acepta `shippingDaneCode` y `shippingQuoteToken`. Con DANE, ciudad y departamento se toman de la lista oficial. El envío sale de `resolveOrderShipping`: el token si coincide con destino, peso y forma de pago, y si no, una cotización nueva. Pedidos sin DANE (clientes viejos) pagan la tarifa fija.
+- **`customer_orders.shipping_dane_code`** (migración `add_order_shipping_dane.js`). `/admin/envios` lo usa en vez de resolver el DANE por nombre.
+- **Checkout ES/EN**: selectores con todos los municipios. Al elegir ciudad o cambiar el método de pago muestra "Calculando…" y luego el valor. Antes de crear el pedido espera la cotización en curso.
+- **Carrito**: el envío dice "Se calcula en el checkout" y el total ya no suma $12.000.
+- **Textos**: `/envios-devoluciones` explica que el costo depende de la ciudad. En inglés se quitaron los "$12,000 COP" de la portada, `/shipping` y la ficha de producto.
+- **Configuración**: `CRON_SECRET` y `ENVIA_WEBHOOK_TOKEN` cargados en Vercel (Production y Preview); `CRON_SECRET` y `SITE_BASE_URL` en los secretos de GitHub, así que el workflow "Mantenimiento de envíos", que fallaba cada 30 min, debería volver a pasar.
+- Tests: `server/services/__tests__/checkoutShipping.test.js`.
+
+### Pendiente
+- Cuenta de Envia.com con saldo, `ENVIA_TOKEN`, `ENVIA_ENV`, `ENVIA_ORIGIN_DANE`, `ENVIA_SENDER_*` y `ENVIA_CARRIERS` en Vercel. Mientras falten, el checkout cobra $12.000 fijos.
+- Después del deploy, `POST /api/shipping/envia/setup-webhook` una vez.
+- Revisar el peso (`products.weight`) de cada producto: sin peso se suponen 0,5 kg por unidad.
+
+---
+
 ## 2026-11-05: Cuentas demo con rol admin bloqueadas (Agente: Claude)
 
 ### Contexto

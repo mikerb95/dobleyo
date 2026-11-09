@@ -11,6 +11,8 @@ import { scheduleStockSync } from '../services/mlStock.js';
 import { sendOrderConfirmationEmail, sendOrderStatusEmail } from '../services/email.js';
 import { geocodeOrderAsync } from '../services/geocoding.js';
 import { trackingUrlForGuide } from '../services/interrapidisimo.js';
+import { resolveOrderShipping } from '../services/checkoutShipping.js';
+import { findMunicipality } from '../utils/coLocations.js';
 import {
     notifySaleConfirmed, notifyStockDepleted, notifyStockBelowMinimum, notifyOversold,
 } from '../services/alerts.js';
@@ -252,6 +254,9 @@ ordersRouter.post('/',
         body('shippingAddress').trim().notEmpty().withMessage('Dirección requerida'),
         body('shippingCity').trim().notEmpty().withMessage('Ciudad requerida'),
         body('shippingDepartment').optional().trim(),
+        // DANE de la ciudad elegida en el checkout (Envia.com cotiza con él).
+        body('shippingDaneCode').optional({ values: 'falsy' }).matches(/^\d{5}$/).withMessage('Ciudad inválida'),
+        body('shippingQuoteToken').optional({ values: 'falsy' }).isString().isLength({ max: 200 }),
         body('items').isArray({ min: 1 }).withMessage('El carrito está vacío'),
         body('items.*.productId').notEmpty(),
         body('items.*.quantity').isInt({ min: 1 }),
@@ -269,11 +274,22 @@ ordersRouter.post('/',
             const {
                 customerName, customerEmail, customerPhone,
                 customerDocumentType, customerDocumentNumber,
-                shippingAddress, shippingCity, shippingDepartment, shippingZip,
+                shippingAddress, shippingZip, shippingDaneCode, shippingQuoteToken,
                 items, notes, couponCode, currency = 'COP', paymentMethod = 'wompi', lang
             } = req.body;
             const isUSD = currency === 'USD';
             const isCod = paymentMethod === 'cod';
+
+            // Con DANE, ciudad y departamento salen de la lista oficial (no del texto del navegador).
+            let { shippingCity, shippingDepartment } = req.body;
+            const municipality = shippingDaneCode ? findMunicipality(shippingDaneCode) : null;
+            if (shippingDaneCode && !municipality) {
+                return res.status(422).json({ success: false, error: 'Ciudad no reconocida. Selecciónela de nuevo.' });
+            }
+            if (municipality) {
+                shippingCity = municipality.city;
+                shippingDepartment = municipality.department;
+            }
 
             // Contraentrega solo aplica a Colombia/COP (Mipaquete no cubre envíos internacionales).
             if (isCod && isUSD) {
@@ -303,7 +319,7 @@ ordersRouter.post('/',
 
             const placeholders = productIds.map(() => '?').join(', ');
             const productsResult = await query(
-                `SELECT id, name, price, price_usd, image_url, stock_quantity
+                `SELECT id, name, price, price_usd, image_url, stock_quantity, weight, weight_unit
          FROM products
          WHERE id IN (${placeholders}) AND is_active = 1`,
                 productIds
@@ -391,8 +407,16 @@ ordersRouter.post('/',
             }
 
             const discountedSubtotal = subtotal - discountAmount;
-            // Envío: COP cobra $12.000 bajo $120.000; USD gratis a todo el mundo (MVP).
-            const shipping = isUSD ? 0 : (discountedSubtotal >= 120000 ? 0 : 12000);
+            // Envío: USD gratis (MVP). En COP gratis desde $120.000; si no, lo cotizado
+            // con Envia.com para el DANE del destino (tarifa fija si no hay cotización).
+            const shipping = isUSD ? 0 : (await resolveOrderShipping({
+                discountedSubtotal,
+                daneCode: municipality?.code || null,
+                items: normalizedItems,
+                products: productsResult.rows,
+                isCod,
+                quoteToken: shippingQuoteToken,
+            })).shipping;
             const total = discountedSubtotal + shipping;
 
             // Mitigaciones antifraude para contraentrega: tope de monto, límite de
@@ -456,15 +480,15 @@ ordersRouter.post('/',
                     `INSERT INTO customer_orders
                (reference, status, customer_name, customer_email, customer_phone,
                 customer_document_type, customer_document_number,
-                shipping_address, shipping_city, shipping_department, shipping_zip,
+                shipping_address, shipping_city, shipping_department, shipping_zip, shipping_dane_code,
                 subtotal_cop, shipping_cop, discount_amount_cop, total_cop, currency,
                 discount_code, notes, user_id, payment_method, expected_amount_cents)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
              RETURNING id, reference`,
                     [ref, initialStatus, customerName, customerEmail, customerPhone || null,
                         customerDocumentNumber ? (customerDocumentType || 'CC') : null,
                         customerDocumentNumber || null,
-                        shippingAddress, shippingCity, shippingDepartment || null, shippingZip || null,
+                        shippingAddress, shippingCity, shippingDepartment || null, shippingZip || null, municipality?.code || null,
                         subtotal, shipping, discountAmount, total, currency,
                         appliedCode, notes || null,
                         req.user?.id || null, isCod ? 'cod' : null, expectedAmountCents]

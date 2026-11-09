@@ -9,6 +9,14 @@ import { logAudit, logSystemAudit } from '../services/audit.js';
 import { sendShippingNotificationEmail, sendOrderConfirmationEmail, sendOrderStatusEmail } from '../services/email.js';
 import { notifyShippingIssue } from '../services/alerts.js';
 import {
+    FREE_SHIPPING_FROM_COP,
+    FLAT_SHIPPING_COP,
+    packageWeightKg,
+    quoteCheckoutShipping,
+    signQuote,
+} from '../services/checkoutShipping.js';
+import { findMunicipality } from '../utils/coLocations.js';
+import {
     quoteShipping,
     createSending,
     getSendings,
@@ -102,7 +110,7 @@ async function getOrderWithItems(orderId) {
     const orderResult = await query(
         `SELECT id, reference, status, currency, customer_name, customer_email, customer_phone,
                 customer_document_type, customer_document_number,
-                shipping_address, shipping_city, shipping_department, subtotal_cop, payment_method
+                shipping_address, shipping_city, shipping_department, shipping_dane_code, subtotal_cop, payment_method
          FROM customer_orders WHERE id = ?`,
         [orderId]
     );
@@ -235,7 +243,10 @@ shippingRouter.get('/:orderId/suggest', authenticateToken, requireRole('admin'),
         const { order, items, products } = data;
 
         const { weightKg, missingWeights, declaredValueCop } = computePackageFromOrder(items, products);
-        const dane = await resolveDaneCode(order.shipping_city, order.shipping_department);
+        // Pedidos nuevos traen el DANE desde el checkout; los viejos se resuelven por nombre.
+        const dane = order.shipping_dane_code
+            ? { code: order.shipping_dane_code }
+            : await resolveDaneCode(order.shipping_city, order.shipping_department);
 
         return res.json({
             success: true,
@@ -274,6 +285,73 @@ shippingRouter.get('/locations',
             return res.json({ success: true, data: list });
         } catch (err) {
             return handleMipaqueteError(res, err, 'Error al buscar ubicaciones');
+        }
+    }
+);
+
+// ─── POST /api/shipping/checkout-quote (público) ───────────────────────────
+// Costo de envío que verá el cliente en el checkout al elegir la ciudad. Nunca
+// falla por Envia: si no hay cotización responde la tarifa fija. El token firmado
+// se manda con el pedido para cobrar exactamente este valor.
+
+const checkoutQuoteLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: 30,
+    standardHeaders: true,
+    legacyHeaders: false,
+    keyGenerator: ipKeyGenerator,
+});
+
+shippingRouter.post('/checkout-quote',
+    checkoutQuoteLimiter,
+    [
+        body('daneCode').matches(/^\d{5}$/).withMessage('Código DANE inválido'),
+        body('items').isArray({ min: 1, max: 50 }).withMessage('El carrito está vacío'),
+        body('items.*.productId').notEmpty(),
+        body('items.*.quantity').isInt({ min: 1, max: 100 }),
+        body('paymentMethod').optional().isIn(['wompi', 'cod']),
+    ],
+    async (req, res) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) return res.status(422).json({ success: false, errors: errors.array() });
+
+        try {
+            const { daneCode, items, paymentMethod } = req.body;
+            if (!findMunicipality(daneCode)) {
+                return res.status(422).json({ success: false, error: 'Ciudad no reconocida' });
+            }
+
+            const productIds = [...new Set(items.map((i) => i.productId))];
+            const placeholders = productIds.map(() => '?').join(', ');
+            const productsResult = await query(
+                `SELECT id, price, weight, weight_unit FROM products WHERE id IN (${placeholders}) AND is_active = 1`,
+                productIds
+            );
+            const products = productsResult.rows;
+            const priceById = new Map(products.map((p) => [String(p.id), Number(p.price) || 0]));
+            const subtotal = items.reduce((sum, i) => sum + (priceById.get(String(i.productId)) || 0) * Number(i.quantity), 0);
+
+            const isCod = paymentMethod === 'cod';
+            const weightKg = packageWeightKg(items, products);
+            const quote = await quoteCheckoutShipping({
+                daneCode, weightKg, isCod,
+                collectionCop: subtotal + FLAT_SHIPPING_COP,
+                declaredValueCop: subtotal,
+            });
+
+            return res.json({
+                success: true,
+                data: {
+                    cost: quote.cost,
+                    source: quote.source,
+                    etaDays: quote.etaDays,
+                    freeFrom: FREE_SHIPPING_FROM_COP,
+                    token: signQuote({ daneCode, weightKg, isCod, cost: quote.cost }),
+                },
+            });
+        } catch (err) {
+            logger.error({ err }, '[POST /api/shipping/checkout-quote] Error:');
+            return res.status(500).json({ success: false, error: 'No se pudo calcular el envío' });
         }
     }
 );

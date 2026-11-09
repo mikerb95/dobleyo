@@ -82,7 +82,7 @@
 | `src/pages/index.astro` | Homepage con hero video, productos featured |
 | `src/pages/tienda.astro` | Catálogo con filtros. Lee de `src/data/products.ts` (migrar a BD) |
 | `src/pages/cart.astro` | Carrito (localStorage via `cart.js`) |
-| `src/pages/checkout.astro` | Checkout con Wompi (pago como usuario registrado o invitado). Con `DECLINED`/`ERROR`/`VOIDED` conserva el carrito |
+| `src/pages/checkout.astro` | Checkout con Wompi (pago como usuario registrado o invitado). Con `DECLINED`/`ERROR`/`VOIDED` conserva el carrito. El envío se cotiza con Envia.com al elegir la ciudad (`POST /api/shipping/checkout-quote`, `server/services/checkoutShipping.js`); municipios y DANE en `server/utils/coLocations.js` |
 | `src/pages/confirmacion.astro` | Confirmación del pedido; la lógica (reintentos hasta que el webhook marque pagado, estado `stateUnknown`) está en `public/assets/js/confirmacion.js`. EN: `src/pages/en/confirmation.astro` |
 | `src/pages/trazabilidad.astro` | Scanner QR + búsqueda manual de lotes |
 | `src/pages/cacao.astro` | Línea de cacao (categoría `cacao`) + sección de maquila. Solo ES |

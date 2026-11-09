@@ -169,7 +169,6 @@ const en = lang === "en";
       cartLayoutGuard.dataset.jsInit = '1';
 
       const FREE_SHIP_THRESHOLD = 120000;
-      const SHIP_COST = 12000;
 
       function fmt(n) { return fmtCop(n); }
       function whenCart(fn) { if (window.Cart) fn(); else setTimeout(() => whenCart(fn), 30); }
@@ -275,8 +274,10 @@ const en = lang === "en";
           const sub      = window.Cart.subtotal();
           const discount = getDiscount(sub);
           const discountedSub = sub - discount;
-          const ship     = discountedSub >= FREE_SHIP_THRESHOLD ? 0 : SHIP_COST;
-          const tot      = discountedSub + ship;
+          // El envío se cotiza en el checkout según la ciudad (Envia.com).
+          const free     = discountedSub >= FREE_SHIP_THRESHOLD;
+          const shipLabel = free ? tr('Gratis') : tr('Se calcula en el checkout');
+          const tot      = discountedSub;
           const pct      = Math.min(100, Math.round((discountedSub / FREE_SHIP_THRESHOLD) * 100));
 
           // Toggle vacío / lleno
@@ -302,9 +303,8 @@ const en = lang === "en";
               discountLineEl.style.display = 'none';
             }
           }
-          shippingEl.textContent = ship === 0 ? tr('Gratis') : fmt(ship);
-          if (ship === 0) shippingEl.style.color = '#16a34a';
-          else shippingEl.style.color = '';
+          shippingEl.textContent = shipLabel;
+          shippingEl.style.color = free ? '#16a34a' : '';
           totalEl.textContent = fmt(tot);
 
           // Resumen inline (móvil)
@@ -328,16 +328,16 @@ const en = lang === "en";
               cisDiscountLine.style.display = 'none';
             }
           }
-          if (cisShipping) { cisShipping.textContent = ship === 0 ? tr('Gratis') : fmt(ship); cisShipping.style.color = ship === 0 ? '#16a34a' : ''; }
+          if (cisShipping) { cisShipping.textContent = shipLabel; cisShipping.style.color = free ? '#16a34a' : ''; }
           if (cisTotal) cisTotal.textContent = fmt(tot);
           if (cisFreeProgress && cisFreeBanner) {
-            if (ship === 0) { cisFreeBanner.style.display = 'flex'; cisFreeProgress.style.display = 'none'; }
+            if (free) { cisFreeBanner.style.display = 'flex'; cisFreeProgress.style.display = 'none'; }
             else { cisFreeBanner.style.display = 'none'; cisFreeProgress.style.display = 'block'; if (cisFspAmount) cisFspAmount.textContent = fmt(FREE_SHIP_THRESHOLD - discountedSub); if (cisFspFill) cisFspFill.style.width = pct + '%'; }
           }
           if (cmbTotal) cmbTotal.textContent = fmt(tot);
 
           // Envío gratis (desktop sidebar)
-          if (ship === 0) {
+          if (free) {
             freeBanner.style.display = 'flex';
             freeProgress.style.display = 'none';
           } else {
