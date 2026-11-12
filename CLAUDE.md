@@ -69,6 +69,8 @@
 | `server/services/mercadolibre.js` | Servicio ML: órdenes (search, detalle, envío), geocoding, persistencia en `sales_tracking`. Al sincronizar aplica las órdenes al stock |
 | `server/services/mlAuth.js` | OAuth con ML: tokens cifrados en `ml_oauth`, renovación automática y `mlApi()` (único cliente de la API de ML) |
 | `server/services/mlStock.js` | Centralizador de stock sitio ↔ ML: vínculos (`ml_listings`), envío de `available_quantity`, descuento idempotente de ventas ML (`ml_order_stock`), `scheduleStockSync()` y `retireListings()` |
+| `server/services/orderPayments.js` | Pago e inventario de pedidos: `applyWompiTransaction()` (webhook y conciliación), descuento/reposición de stock atómicos, correo de confirmación, `reconcilePendingPayments()` |
+| `server/utils/background.js` | `runInBackground()`: tareas posteriores a la respuesta con `waitUntil` |
 | `server/services/audit.js` | Logging de auditoría a tabla `audit_logs` |
 | `server/services/costService.js` | Costeo del pipeline: registro de costos, costo/kg por etapa, insumos de empaque |
 | `server/services/accountingService.js` | Asientos de partida doble (borrador) de los costos de producción |

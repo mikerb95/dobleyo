@@ -2,6 +2,30 @@
 
 ---
 
+## 2026-11-12: Checkout y webhook de Wompi: pagos atómicos, conciliación y total verificado (Agente: Claude)
+
+### Contexto
+Revisión del flujo de compra completo. El webhook de Wompi era la única fuente de verdad del pago y no era atómico: un fallo a mitad de camino dejaba pedidos pagados sin descontar inventario, un evento repetido podía devolver a "pagado" un pedido ya enviado y contar el cupón dos veces, y un evento perdido dejaba el pedido pendiente hasta que el cron lo cancelaba.
+
+### Cambios
+- **`server/services/orderPayments.js`** (nuevo): concentra el pago y el inventario de los pedidos. `applyWompiTransaction()` aplica cada transacción con `UPDATE` condicionales (el estado y el uso del cupón van en una misma transacción) y es reanudable: si el evento se repite completa el descuento de stock, la alerta y el correo que hayan faltado, sin tocar el estado de un pedido que ya avanzó. `deductStockForOrder()` y `replenishStockForOrder()` reclaman `stock_deducted_at` dentro de una transacción (todo o nada, una sola vez).
+- **Webhook** (`POST /api/orders/wompi/webhook`): si falla el descuento de stock responde 500 para que Wompi reintente (antes el error se tragaba). Un `APPROVED` repetido ya no reabre un pedido anulado por esa misma transacción. Un `VOIDED` del pago repone inventario aunque el pedido ya estuviera en `processing`. Dos pagos aprobados para el mismo pedido quedan en auditoría como `duplicate_payment`.
+- **Un solo webhook sirve para todo**: Wompi admite una URL de eventos por ambiente. El de pedidos le pasa a `handleSubscriptionTransaction()` lo que no sea un pedido, y el de suscripciones hace lo contrario. `verifyEventSignature()` vive ahora en `server/services/wompi.js`.
+- **Conciliación con Wompi**: `POST /api/orders/:ref/verify-payment` (público, 30 cada 5 min por IP) consulta las transacciones de la referencia y aplica la aprobada. La página de confirmación (ES y EN) lo llama mientras el pedido siga pendiente y recibe el `id` de la transacción en la URL. El mantenimiento de envíos (`cron-refresh-all`) concilia los pedidos pendientes recientes y los que están por expirar antes de cancelarlos (`paymentsRecovered` en el resumen).
+- **Total verificado**: el checkout manda `expectedTotal`. Si el servidor calcula otro valor (precio, cupón que ya no aplica, envío recotizado) responde 409 `TOTAL_CHANGED` con el desglose real y un token que fija ese envío. El checkout actualiza el resumen y pide confirmar de nuevo.
+- **Inyección de HTML en la confirmación**: `confirmacion.js` escapa referencia, productos y ciudad. `POST /api/orders` rechaza ciudad o departamento con caracteres que no sean de un nombre (pedidos sin DANE).
+- **Tareas en segundo plano**: `server/utils/background.js` (`runInBackground`, con `waitUntil`) para ntfy, geocodificación y el correo de contraentrega. El correo del pago aprobado se espera dentro del webhook.
+- **Otros**: USD apagado en `POST /api/orders` salvo `ENABLE_USD_CHECKOUT=true` (daba envío gratis). Referencia con 10 hex aleatorios en vez de 4. Tope de 50 líneas y 100 unidades por línea. El reintento de correos cubre también pedidos en `processing` (contraentrega). Llamadas a la API de Wompi con tope de 10 s y sandbox automático con llaves `pub_test_`.
+- Tests: webhook de Wompi y casos nuevos de creación en `server/routes/__tests__/orders.test.js`.
+
+### Pendiente
+- Confirmar en el panel de Wompi cuál URL de eventos está configurada (cualquiera de las dos funciona ahora).
+- La conciliación por referencia necesita `WOMPI_PRIVATE_KEY` en Vercel; sin ella solo se concilia con el `id` que llega a la página de confirmación.
+- Cada reintento de pago sigue creando un pedido nuevo (los abandonados se cancelan a las 48 h).
+- Los pedidos de suscripción no descuentan inventario.
+
+---
+
 ## 2026-11-09: Envío cotizado con Envia.com en el checkout (Agente: Claude)
 
 ### Contexto

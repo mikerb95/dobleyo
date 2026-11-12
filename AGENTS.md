@@ -288,7 +288,12 @@ El panel se ve como un ERP, no como una plantilla de SaaS. Tokens y utilidades v
 
 ### 3.13 Checkout y confirmación de pago (Wompi): reglas no negociables
 
-- **El estado "pagado" lo pone el webhook de Wompi**, no la redirección del navegador. La confirmación (`public/assets/js/confirmacion.js` y `src/pages/en/confirmation.astro`) vuelve a consultar el pedido cada 3 s durante un minuto mientras siga `pending_payment`; al agotarse explica que llegará un correo.
+- **El estado "pagado" lo pone el servidor a partir de Wompi**, nunca la redirección del navegador: por el webhook o por la conciliación (`POST /api/orders/:ref/verify-payment`, que le pregunta a Wompi). La confirmación (`public/assets/js/confirmacion.js` y `src/pages/en/confirmation.astro`) vuelve a consultar el pedido cada 3 s durante un minuto mientras siga `pending_payment` y dispara la conciliación en el camino; al agotarse explica que llegará un correo.
+- **Toda transacción de Wompi pasa por `applyWompiTransaction()`** (`server/services/orderPayments.js`). Los cambios de estado son `UPDATE` condicionales y los efectos (cupón, stock, alerta, correo) son reanudables. No escribir `status = 'paid'` por otro camino ni descontar stock fuera de `deductStockForOrder()`.
+- **El webhook responde 500 si algo falla**, para que Wompi reintente. No tragarse errores de inventario ahí.
+- **Una sola URL de eventos de Wompi**: los webhooks de pedidos y de suscripciones se delegan entre sí lo que no reconocen.
+- **El cliente paga lo que vio**: el checkout manda `expectedTotal` y el servidor responde 409 `TOTAL_CHANGED` si su cálculo difiere. No quitar esa comparación al tocar precios, cupones o envío.
+- **Trabajo posterior a la respuesta** (correo, ntfy, geocodificación): con `runInBackground()` de `server/utils/background.js`, nunca una promesa suelta.
 - **El carrito se vacía solo cuando el pedido queda pagado** (o al confirmar un contraentrega). Ni el widget ni la redirección a Wompi lo vacían antes. Si el widget devuelve `DECLINED`, `ERROR` o `VOIDED`, el cliente se queda en el checkout con su carrito.
 - **Un error de red no es un rechazo**: se muestra el estado "No pudimos verificar su pedido" (`stateUnknown`) con botón de reintentar, nunca "Su pago fue rechazado".
 - **Escapar los datos del pedido** (nombres de producto, datos del cliente) antes de pintarlos con `innerHTML`.
