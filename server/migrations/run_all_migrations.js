@@ -78,6 +78,7 @@ const steps = [
   { name: 'Documento del comprador en customer_orders', run: () => runFn('add_customer_document.js', 'addCustomerDocument') },
   // El checkout cotiza con Envia.com por el DANE del destino.
   { name: 'DANE del destino en customer_orders', run: () => runFn('add_order_shipping_dane.js', 'addOrderShippingDane') },
+  { name: 'Pasarela y datos de ePayco en subscriptions', run: () => runFn('add_subscription_payment_provider.js', 'addSubscriptionPaymentProvider') },
   { name: 'Labels extended fields (region/climate/roast_date)', run: () => runFn('add_labels_extended_fields.js', 'addLabelsExtendedFields') },
   // Debe ir después de las tablas del pipeline de café: hace backfill del ledger a partir de ellas.
   { name: 'Storage: maestro de ubicaciones + ledger', run: () => runFn('create_storage_locations.js', 'createStorageLocations') },

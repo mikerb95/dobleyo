@@ -94,7 +94,7 @@ export const checkoutLimiter = rateLimit({
 
 // Limiter global montado en todo /api — red de seguridad contra abuso/scraping.
 // Holgado para no romper navegación normal de la SPA (muchos GET por sesión).
-// Excluye webhooks server-to-server (Wompi/MercadoPago) y health checks, que no
+// Excluye webhooks server-to-server (Wompi/ePayco/MercadoPago) y health checks, que no
 // deben recibir 429: perder una confirmación de pago o un ping de salud es peor.
 export const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
@@ -109,6 +109,7 @@ export const globalLimiter = rateLimit({
   skip: (req) => {
     const url = req.originalUrl || req.url || '';
     return url.includes('/wompi/webhook') ||
+           url.includes('/epayco/confirmation') ||
            url.includes('/mp/webhook') ||
            url.endsWith('/health');
   }

@@ -69,7 +69,9 @@
 | `server/services/mercadolibre.js` | Servicio ML: órdenes (search, detalle, envío), geocoding, persistencia en `sales_tracking`. Al sincronizar aplica las órdenes al stock |
 | `server/services/mlAuth.js` | OAuth con ML: tokens cifrados en `ml_oauth`, renovación automática y `mlApi()` (único cliente de la API de ML) |
 | `server/services/mlStock.js` | Centralizador de stock sitio ↔ ML: vínculos (`ml_listings`), envío de `available_quantity`, descuento idempotente de ventas ML (`ml_order_stock`), `scheduleStockSync()` y `retireListings()` |
-| `server/services/orderPayments.js` | Pago e inventario de pedidos: `applyWompiTransaction()` (webhook y conciliación), descuento/reposición de stock atómicos, correo de confirmación, `reconcilePendingPayments()` |
+| `server/services/epayco.js` | ePayco: sesiones del Smart Checkout v2, firma y consulta de transacciones (`fetchVerifiedTransaction`), cobros con tarjeta tokenizada |
+| `server/utils/paymentProvider.js` | `activePaymentProvider()`: pasarela activa (`PAYMENT_PROVIDER=epayco\|wompi`). Lo importan servidor y frontmatter |
+| `server/services/orderPayments.js` | Pago e inventario de pedidos: `applyPaymentTransaction()` (webhooks de Wompi y ePayco, conciliación), descuento/reposición de stock atómicos, correo de confirmación, `reconcilePendingPayments()` |
 | `server/utils/background.js` | `runInBackground()`: tareas posteriores a la respuesta con `waitUntil` |
 | `server/services/audit.js` | Logging de auditoría a tabla `audit_logs` |
 | `server/services/costService.js` | Costeo del pipeline: registro de costos, costo/kg por etapa, insumos de empaque |
@@ -84,7 +86,7 @@
 | `src/pages/index.astro` | Homepage con hero video, productos featured |
 | `src/pages/tienda.astro` | Catálogo con filtros. Lee de `src/data/products.ts` (migrar a BD) |
 | `src/pages/cart.astro` | Carrito (localStorage via `cart.js`) |
-| `src/pages/checkout.astro` | Checkout con Wompi (pago como usuario registrado o invitado). Con `DECLINED`/`ERROR`/`VOIDED` conserva el carrito. El envío se cotiza con Envia.com al elegir la ciudad (`POST /api/shipping/checkout-quote`, `server/services/checkoutShipping.js`); municipios y DANE en `server/utils/coLocations.js` |
+| `src/pages/checkout.astro` | Checkout con ePayco o Wompi según `PAYMENT_PROVIDER` (pago como usuario registrado o invitado). Con `DECLINED`/`ERROR`/`VOIDED` conserva el carrito. El envío se cotiza con Envia.com al elegir la ciudad (`POST /api/shipping/checkout-quote`, `server/services/checkoutShipping.js`); municipios y DANE en `server/utils/coLocations.js` |
 | `src/pages/confirmacion.astro` | Confirmación del pedido; la lógica (reintentos hasta que el webhook marque pagado, estado `stateUnknown`) está en `public/assets/js/confirmacion.js`. EN: `src/pages/en/confirmation.astro` |
 | `src/pages/trazabilidad.astro` | Scanner QR + búsqueda manual de lotes |
 | `src/pages/cacao.astro` | Línea de cacao (categoría `cacao`) + sección de maquila. Solo ES |
@@ -280,7 +282,13 @@ SETUP_SECRET_KEY=<random string>
 ML_ACCESS_TOKEN=APP_USR-xxxx
 ML_SELLER_ID=123456
 
-# Pagos (Fase 4)
+# Pagos: pasarela activa (epayco | wompi) y sus llaves
+PAYMENT_PROVIDER=epayco
+EPAYCO_PUBLIC_KEY=xxxx
+EPAYCO_PRIVATE_KEY=xxxx
+EPAYCO_CUSTOMER_ID=xxxx
+EPAYCO_P_KEY=xxxx
+EPAYCO_TEST=false
 WOMPI_PUBLIC_KEY=pub_xxxx
 WOMPI_PRIVATE_KEY=prv_xxxx
 WOMPI_EVENTS_SECRET=events_xxxx

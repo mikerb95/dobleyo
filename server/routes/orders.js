@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import express, { Router } from 'express';
 import { logger } from '../logger.js';
 import crypto from 'crypto';
 import { body, validationResult } from 'express-validator';
@@ -14,8 +14,12 @@ import { resolveOrderShipping, packageWeightKg, signQuote } from '../services/ch
 import { findMunicipality } from '../utils/coLocations.js';
 import { verifyEventSignature } from '../services/wompi.js';
 import {
+    epaycoConfig, createCheckoutSession, verifyConfirmationSignature, fetchVerifiedTransaction,
+} from '../services/epayco.js';
+import { activePaymentProvider } from '../utils/paymentProvider.js';
+import {
     deductStockForOrder, replenishStockForOrder, notifyConfirmedSale,
-    sendConfirmationEmailForOrder, applyWompiTransaction, reconcileOrderPayment,
+    sendConfirmationEmailForOrder, applyPaymentTransaction, reconcileOrderPayment,
 } from '../services/orderPayments.js';
 import { handleSubscriptionTransaction } from './subscriptions.js';
 import { runInBackground } from '../utils/background.js';
@@ -139,7 +143,9 @@ ordersRouter.post('/',
         // aquí, no se crea la orden: se le devuelve el valor real para que confirme.
         body('expectedTotal').optional({ values: 'null' }).isInt({ min: 0 }),
         body('currency').optional().isIn(['COP', 'USD']).withMessage('Moneda inválida'),
-        body('paymentMethod').optional().isIn(['wompi', 'cod']).withMessage('Método de pago inválido'),
+        // 'wompi' es el nombre histórico de "pago en línea": la pasarela real la decide
+        // el servidor (activePaymentProvider), no el navegador.
+        body('paymentMethod').optional().isIn(['wompi', 'epayco', 'online', 'cod']).withMessage('Método de pago inválido'),
         body('lang').optional().isIn(['es', 'en']),
     ],
     async (req, res) => {
@@ -182,8 +188,12 @@ ordersRouter.post('/',
 
             // No crear una orden que después no se pueda pagar: si el checkout es por
             // Wompi y faltan las llaves, se rechaza antes de tocar la base de datos.
-            if (!isCod && (!WOMPI_PUBLIC_KEY || !WOMPI_INTEGRITY_SECRET)) {
-                logger.error('[POST /api/orders] Wompi no configurado (faltan WOMPI_PUBLIC_KEY/WOMPI_INTEGRITY_SECRET)');
+            const provider = activePaymentProvider();
+            const providerReady = provider === 'epayco'
+                ? epaycoConfig.configured
+                : Boolean(WOMPI_PUBLIC_KEY && WOMPI_INTEGRITY_SECRET);
+            if (!isCod && !providerReady) {
+                logger.error({ provider }, '[POST /api/orders] Pasarela de pagos sin configurar (faltan llaves)');
                 return res.status(503).json({ success: false, error: 'Pagos en línea no disponibles en este momento. Intente de nuevo más tarde.' });
             }
 
@@ -377,6 +387,40 @@ ordersRouter.post('/',
             // lo que permite confirmar pagos en USD correctamente.
             const expectedAmountCents = isCod ? null : total * 100;
 
+            // Página a la que vuelve el cliente después de pagar, según idioma.
+            const redirectUrl = (lang === 'en' || isUSD)
+                ? `https://en.dobleyo.cafe/confirmation?ref=${ref}`
+                : `${SITE_URL}/confirmacion?ref=${ref}`;
+
+            // ePayco: la sesión de pago se crea ANTES de guardar la orden. Si ePayco
+            // no responde no queda un pedido que no se puede pagar. Monto, referencia
+            // y URL de confirmación quedan fijados aquí; el navegador solo recibe el id.
+            let epayco = null;
+            if (!isCod && provider === 'epayco') {
+                try {
+                    const sessionId = await createCheckoutSession({
+                        reference: ref,
+                        amount: total,
+                        description: normalizedItems.map((i) => `${i.quantity} x ${i.productName}`).join(', '),
+                        lang: lang === 'en' ? 'en' : 'es',
+                        responseUrl: redirectUrl,
+                        confirmationUrl: `${SITE_URL}/api/orders/epayco/confirmation`,
+                        customer: {
+                            email: customerEmail,
+                            name: customerName,
+                            address: shippingAddress,
+                            docType: customerDocumentType,
+                            docNumber: customerDocumentNumber,
+                            phone: customerPhone,
+                        },
+                    });
+                    epayco = { sessionId, test: epaycoConfig.test };
+                } catch (err) {
+                    logger.error({ err: err.message, body: err.body }, '[POST /api/orders] ePayco no creó la sesión de pago');
+                    return res.status(502).json({ success: false, error: 'Pagos en línea no disponibles en este momento. Intente de nuevo más tarde.' });
+                }
+            }
+
             // Insertar orden + ítems en una sola transacción: evita órdenes "huérfanas"
             // sin ítems si el proceso falla a mitad de camino (rompería el cálculo de
             // peso/valor declarado del envío más adelante).
@@ -414,14 +458,11 @@ ordersRouter.post('/',
                 return { orderId: id, reference: createdRef };
             });
 
-            // Generar URL de checkout Wompi (redirección a confirmación según idioma)
-            const redirectUrl = (lang === 'en' || isUSD)
-                ? `https://en.dobleyo.cafe/confirmation?ref=${reference}`
-                : `${SITE_URL}/confirmacion?ref=${reference}`;
+            // Wompi: URL del checkout hosted y parámetros firmados del widget.
             let checkoutUrl = null;
             let wompi = null;
 
-            if (!isCod && WOMPI_PUBLIC_KEY && WOMPI_INTEGRITY_SECRET) {
+            if (!isCod && provider === 'wompi') {
                 checkoutUrl = buildWompiCheckoutUrl(reference, total, customerEmail, redirectUrl, currency);
                 wompi = buildWompiWidgetData(reference, total, customerEmail, redirectUrl, currency);
             }
@@ -438,7 +479,7 @@ ordersRouter.post('/',
                 );
             }
 
-            await logAudit(req.user?.id || null, 'create', 'customer_orders', orderId, { reference, total, discount: discountAmount, paymentMethod });
+            await logAudit(req.user?.id || null, 'create', 'customer_orders', orderId, { reference, total, discount: discountAmount, paymentMethod: isCod ? 'cod' : provider });
 
             // COD nace confirmada ('processing'): el descuento de stock ocurre aquí. Las
             // órdenes Wompi lo hacen al aprobarse el pago (ver POST /wompi/webhook). Se
@@ -460,7 +501,12 @@ ordersRouter.post('/',
 
             return res.status(201).json({
                 success: true,
-                data: { orderId, reference, subtotal, discountAmount, shipping, total, currency, paymentMethod, checkoutUrl, wompi }
+                data: {
+                    orderId, reference, subtotal, discountAmount, shipping, total, currency,
+                    paymentMethod: isCod ? 'cod' : 'online',
+                    provider: isCod ? null : provider,
+                    checkoutUrl, wompi, epayco,
+                }
             });
         } catch (err) {
             logger.error({ err }, '[POST /api/orders] Error:');
@@ -695,10 +741,10 @@ ordersRouter.patch('/:ref/status',
 
 // ─── POST /api/orders/:ref/verify-payment ────────────────────────────────
 // Público. La página de confirmación lo llama mientras el pedido siga pendiente:
-// le pregunta a Wompi por la referencia y, si hay un pago aprobado, lo aplica.
-// Cubre el caso en que el webhook no llega. No confía en nada del navegador:
-// `transactionId` solo sirve para ubicar la transacción en Wompi, y el monto y la
-// referencia se validan igual que en el webhook.
+// le pregunta a la pasarela por el pago y, si está aprobado, lo aplica. Cubre el
+// caso en que el webhook no llega. No confía en nada del navegador:
+// `transactionId` (id de Wompi o ref_payco de ePayco) solo sirve para ubicar la
+// transacción; el monto y la referencia se validan igual que en el webhook.
 
 ordersRouter.post('/:ref/verify-payment',
     verifyPaymentLimiter,
@@ -718,11 +764,11 @@ ordersRouter.post('/:ref/verify-payment',
                 try {
                     const r = await reconcileOrderPayment(ref, {
                         transactionId: req.body?.transactionId || undefined,
-                        source: 'wompi-reconcile-page',
+                        source: 'payment-reconcile-page',
                     });
                     if (r.recovered) status = (await readStatus()).rows[0]?.status ?? status;
                 } catch (err) {
-                    logger.error({ err, ref }, '[POST /api/orders/:ref/verify-payment] Error conciliando con Wompi');
+                    logger.error({ err, ref }, '[POST /api/orders/:ref/verify-payment] Error conciliando con la pasarela');
                 }
             }
 
@@ -733,6 +779,55 @@ ordersRouter.post('/:ref/verify-payment',
         }
     }
 );
+
+// Una transacción de la pasarela es de un pedido o de un cobro de suscripción:
+// si la referencia no es de un pedido, se le pasa a subscriptions.js.
+async function dispatchPaymentTransaction(tx, source) {
+    const result = await applyPaymentTransaction(tx, source);
+    if (result.outcome === 'not_found' || result.outcome === 'ignored') {
+        await handleSubscriptionTransaction(tx);
+    }
+    return result;
+}
+
+// ─── POST|GET /api/orders/epayco/confirmation ────────────────────────────
+// URL de confirmación de ePayco (servidor a servidor). Atiende pedidos y cobros
+// de suscripción.
+//
+// La firma x_signature NO cubre el estado del pago, y la consulta pública de
+// ePayco devuelve esa misma firma: con solo el cuerpo, cualquiera podría
+// reenviar una confirmación "Pendiente" cambiándola a "Aceptada". Por eso el
+// cuerpo solo sirve de aviso: el estado, el monto y la referencia se leen de
+// ePayco con fetchVerifiedTransaction(). La firma queda como filtro de abuso.
+// Cualquier error responde 500 para que ePayco reintente.
+
+async function epaycoConfirmation(req, res) {
+    try {
+        const p = { ...(req.query || {}), ...(req.body && typeof req.body === 'object' ? req.body : {}) };
+        const refPayco = p.x_ref_payco || p.ref_payco;
+        if (!refPayco) return res.sendStatus(400);
+
+        if (process.env.NODE_ENV === 'production' && !epaycoConfig.canVerifySignature) {
+            logger.error('[ePayco confirmation] EPAYCO_CUSTOMER_ID / EPAYCO_P_KEY no configurados en producción');
+            return res.sendStatus(500);
+        }
+        if (epaycoConfig.canVerifySignature && !verifyConfirmationSignature(p)) {
+            logger.warn({ refPayco }, '[ePayco confirmation] Firma inválida');
+            return res.sendStatus(401);
+        }
+
+        const tx = await fetchVerifiedTransaction(refPayco);
+        if (tx?.reference) await dispatchPaymentTransaction(tx, 'epayco-confirmation');
+
+        return res.status(200).send('OK');
+    } catch (err) {
+        logger.error({ err }, '[ePayco confirmation] Error procesando la confirmación:');
+        return res.sendStatus(500);
+    }
+}
+
+ordersRouter.post('/epayco/confirmation', express.urlencoded({ extended: false }), epaycoConfirmation);
+ordersRouter.get('/epayco/confirmation', epaycoConfirmation);
 
 // ─── POST /api/orders/wompi/webhook ──────────────────────────────────────
 // Notificación server-to-server de Wompi. Wompi admite UNA sola URL de eventos
@@ -764,10 +859,7 @@ ordersRouter.post('/wompi/webhook', async (req, res) => {
         const tx = event.data?.transaction;
         if (!tx || !tx.reference || !tx.id) return res.sendStatus(400);
 
-        const result = await applyWompiTransaction(tx, 'wompi-webhook');
-        if (result.outcome === 'not_found' || result.outcome === 'ignored') {
-            await handleSubscriptionTransaction(tx);
-        }
+        await dispatchPaymentTransaction(tx, 'wompi-webhook');
 
         return res.sendStatus(200);
     } catch (err) {

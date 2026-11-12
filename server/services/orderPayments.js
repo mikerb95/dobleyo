@@ -1,9 +1,9 @@
 // Pago e inventario de los pedidos del sitio (customer_orders).
 //
 // Aquí vive todo lo que pasa cuando un pedido cambia de estado de pago, sin
-// importar quién lo dispare: el webhook de Wompi, la conciliación (página de
-// confirmación y cron), la creación de un contraentrega o un cambio manual del
-// admin. Reglas:
+// importar quién lo dispare: el webhook de Wompi, la confirmación de ePayco, la
+// conciliación (página de confirmación y cron), la creación de un
+// contraentrega o un cambio manual del admin. Reglas:
 //
 // - Las transiciones de estado son UPDATE condicionales: dos eventos iguales o
 //   simultáneos no pueden aplicar dos veces el mismo cambio.
@@ -17,6 +17,7 @@ import { logSystemAudit } from './audit.js';
 import { scheduleStockSync } from './mlStock.js';
 import { sendOrderConfirmationEmail } from './email.js';
 import { getTransaction, findTransactionsByReference, wompiConfig } from './wompi.js';
+import { fetchVerifiedTransaction, isEpaycoRef, epaycoConfig } from './epayco.js';
 import {
     notifySaleConfirmed, notifyStockDepleted, notifyStockBelowMinimum, notifyOversold,
 } from './alerts.js';
@@ -221,7 +222,10 @@ export async function sendConfirmationEmailForOrder(orderId) {
     }
 }
 
-// ─── Transacciones de Wompi ────────────────────────────────────────────────
+// ─── Transacciones de la pasarela (Wompi o ePayco) ─────────────────────────
+// Las dos pasarelas llegan aquí con la misma forma, la de una transacción de
+// Wompi: { id, reference, status, amount_in_cents, currency, payment_method_type }.
+// ePayco se normaliza en services/epayco.js (normalizeEpaycoTransaction).
 
 // Una orden pendiente acepta cualquier transacción. Una cancelada solo revive
 // con una transacción DISTINTA a la que la canceló: un APPROVED o PENDING viejo
@@ -230,16 +234,16 @@ const OPEN_FOR_PAYMENT = `(status = 'pending_payment'
         OR (status = 'cancelled' AND (payment_transaction_id IS NULL OR payment_transaction_id <> ?)))`;
 
 /**
- * Aplica una transacción de Wompi a su pedido. La usan el webhook y la
+ * Aplica una transacción de la pasarela a su pedido. La usan los webhooks y la
  * conciliación. Idempotente y reanudable.
  *
- * Lanza si falla la BD: el webhook responde 500, Wompi reintenta y el reintento
- * completa lo que faltó.
+ * Lanza si falla la BD: el webhook responde 500, la pasarela reintenta y el
+ * reintento completa lo que faltó.
  *
  * @returns {Promise<{ outcome: string, status?: string }>} outcome:
  *   'invalid' | 'not_found' | 'ignored' | 'amount_mismatch' | 'applied' | 'resumed' | 'noop'
  */
-export async function applyWompiTransaction(tx, source = 'wompi-webhook') {
+export async function applyPaymentTransaction(tx, source = 'wompi-webhook') {
     const { reference, status: txStatus, id: txId, payment_method_type, amount_in_cents, currency } = tx || {};
     if (!reference || !txId) return { outcome: 'invalid' };
 
@@ -264,12 +268,12 @@ export async function applyWompiTransaction(tx, source = 'wompi-webhook') {
         : Number(order.total_cop) * 100;
     const expectedCurrency = order.currency || 'COP';
     if (Number(amount_in_cents) !== expectedAmount || (currency && currency !== expectedCurrency)) {
-        logger.warn({ reference, txId, expectedAmount, expectedCurrency, amount_in_cents, currency }, '[Wompi] Monto/moneda inválidos; se ignora');
+        logger.warn({ reference, txId, expectedAmount, expectedCurrency, amount_in_cents, currency }, '[Pagos] Monto/moneda inválidos; se ignora');
         return { outcome: 'amount_mismatch', status: order.status };
     }
 
     const sameTx = order.payment_transaction_id === txId;
-    const paymentCols = [payment_method_type || 'wompi', txId, JSON.stringify(tx)];
+    const paymentCols = [payment_method_type || tx.provider || 'wompi', txId, JSON.stringify(tx.raw ?? tx)];
     const audit = (to) => logSystemAudit('update', 'customer_orders', order.id, {
         reference, from: order.status, to, txId, source,
     }).catch(() => {});
@@ -301,7 +305,7 @@ export async function applyWompiTransaction(tx, source = 'wompi-webhook') {
             if (!(sameTx && CONFIRMED_STATUSES.includes(order.status))) {
                 if (CONFIRMED_STATUSES.includes(order.status) && !sameTx) {
                     // Dos pagos aprobados para el mismo pedido: hay que devolver uno.
-                    logger.warn({ reference, txId, paidWith: order.payment_transaction_id }, '[Wompi] Pedido ya pagado por otra transacción; revisar posible doble cobro');
+                    logger.warn({ reference, txId, paidWith: order.payment_transaction_id }, '[Pagos] Pedido ya pagado por otra transacción; revisar posible doble cobro');
                     logSystemAudit('duplicate_payment', 'customer_orders', order.id, {
                         reference, txId, paidWith: order.payment_transaction_id, source,
                     }).catch(() => {});
@@ -342,7 +346,7 @@ export async function applyWompiTransaction(tx, source = 'wompi-webhook') {
         // Si el pedido había descontado inventario (pago revertido), se repone.
         // Idempotente: también completa una reposición que falló en un intento previo.
         if (moved || (sameTx && order.status === 'cancelled')) {
-            await replenishStockForOrder(order.id, reference, 'Pago revertido (Wompi)');
+            await replenishStockForOrder(order.id, reference, 'Pago revertido por la pasarela');
         }
         return { outcome: moved ? 'applied' : 'noop', status: moved ? 'cancelled' : order.status };
     }
@@ -362,49 +366,69 @@ export async function applyWompiTransaction(tx, source = 'wompi-webhook') {
     return { outcome: moved ? 'applied' : 'noop', status: moved ? 'pending_payment' : order.status };
 }
 
-// ─── Conciliación con Wompi ────────────────────────────────────────────────
-// El webhook puede no llegar (caída nuestra, reintentos agotados). Para que un
-// pedido pagado no se quede pendiente, se le pregunta a Wompi directamente.
+// Nombre anterior, de cuando solo existía Wompi.
+export const applyWompiTransaction = applyPaymentTransaction;
 
-const TX_ID_RE = /^[A-Za-z0-9_-]{6,80}$/;
+// ─── Conciliación con la pasarela ──────────────────────────────────────────
+// El webhook puede no llegar (caída nuestra, reintentos agotados). Para que un
+// pedido pagado no se quede pendiente, se le pregunta a la pasarela directamente.
+
+const WOMPI_TX_ID_RE = /^\d+-\d+-\d+$/;
 
 /**
- * Consulta en Wompi las transacciones de una referencia y, si hay una
+ * Consulta en la pasarela las transacciones de un pedido y, si hay una
  * APROBADA, la aplica. Solo aplica pagos aprobados: un rechazo no se concilia
  * porque el cliente puede estar reintentando con la misma referencia.
  *
+ * - ePayco: se consulta por `ref_payco` (llega a la página de confirmación en
+ *   la URL, o queda guardado cuando la confirmación reportó el pago pendiente).
+ * - Wompi: se consulta por referencia (necesita la llave privada) y por el id
+ *   de la transacción.
+ *
  * @param {string} reference
- * @param {{ transactionId?: string, source?: string }} [opts] transactionId: el
- *   `id` que Wompi agrega a la URL de regreso. Solo se usa si pertenece a la
- *   referencia.
+ * @param {{ transactionId?: string, source?: string }} [opts] transactionId
+ *   solo sirve para ubicar la transacción; se descarta si no es de la referencia.
  * @returns {Promise<{ checked: boolean, recovered: boolean }>}
  */
-export async function reconcileOrderPayment(reference, { transactionId, source = 'wompi-reconcile' } = {}) {
-    if (!wompiConfig.canQuery) return { checked: false, recovered: false };
-
-    let txs = [];
+export async function reconcileOrderPayment(reference, { transactionId, source = 'payment-reconcile' } = {}) {
+    const txId = transactionId ? String(transactionId) : '';
+    const txs = [];
     let checked = false;
-    try {
-        txs = await findTransactionsByReference(reference);
-        checked = wompiConfig.configured; // sin llave privada no se consulta por referencia
-    } catch (err) {
-        logger.warn({ err: err.message, reference }, '[Wompi] No se pudo consultar las transacciones de la referencia');
-    }
 
-    if (transactionId && TX_ID_RE.test(String(transactionId)) && !txs.some((t) => t?.id === transactionId)) {
+    if (txId && !WOMPI_TX_ID_RE.test(txId) && isEpaycoRef(txId)) {
         try {
-            const tx = await getTransaction(transactionId);
+            const tx = await fetchVerifiedTransaction(txId);
             if (tx?.reference === reference) txs.push(tx);
             checked = true;
         } catch (err) {
-            logger.warn({ err: err.message, reference }, '[Wompi] No se pudo consultar la transacción');
+            logger.warn({ err: err.message, reference }, '[ePayco] No se pudo consultar la transacción');
+        }
+    }
+
+    if (wompiConfig.canQuery && !txs.length) {
+        try {
+            const found = await findTransactionsByReference(reference);
+            txs.push(...found);
+            if (wompiConfig.configured) checked = true; // sin llave privada no se consulta por referencia
+        } catch (err) {
+            logger.warn({ err: err.message, reference }, '[Wompi] No se pudo consultar las transacciones de la referencia');
+        }
+
+        if (WOMPI_TX_ID_RE.test(txId) && !txs.some((t) => t?.id === txId)) {
+            try {
+                const tx = await getTransaction(txId);
+                if (tx?.reference === reference) txs.push(tx);
+                checked = true;
+            } catch (err) {
+                logger.warn({ err: err.message, reference }, '[Wompi] No se pudo consultar la transacción');
+            }
         }
     }
 
     const approved = txs.find((t) => t?.status === 'APPROVED');
     if (!approved) return { checked, recovered: false };
 
-    const result = await applyWompiTransaction(approved, source);
+    const result = await applyPaymentTransaction(approved, source);
     return { checked: true, recovered: result.outcome === 'applied' };
 }
 
@@ -414,7 +438,7 @@ export async function reconcileOrderPayment(reference, { transactionId, source =
  * no cancelar un pedido pagado). Devuelve cuántos quedaron pagados.
  */
 export async function reconcilePendingPayments({ limit = 10, timeLeft = () => Infinity } = {}) {
-    if (!wompiConfig.configured) return 0;
+    if (!wompiConfig.configured && !epaycoConfig.configured) return 0;
 
     const pending = await query(
         `SELECT reference, payment_transaction_id
@@ -432,14 +456,16 @@ export async function reconcilePendingPayments({ limit = 10, timeLeft = () => In
     let recovered = 0;
     for (const row of pending?.rows ?? []) {
         if (timeLeft() < 1500) break;
+        // Sin id de transacción solo Wompi permite buscar por referencia.
+        if (!row.payment_transaction_id && !wompiConfig.configured) continue;
         try {
             const r = await reconcileOrderPayment(row.reference, {
                 transactionId: row.payment_transaction_id || undefined,
-                source: 'wompi-reconcile-cron',
+                source: 'payment-reconcile-cron',
             });
             if (r.recovered) recovered++;
         } catch (err) {
-            logger.error({ err, reference: row.reference }, '[Wompi] Error conciliando pedido pendiente');
+            logger.error({ err, reference: row.reference }, '[Pagos] Error conciliando pedido pendiente');
         }
     }
     return recovered;

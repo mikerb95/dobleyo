@@ -16,7 +16,7 @@ const money = (v, currency) => (currency === 'USD' ? `US$${Number(v ?? 0).toLoca
 // ── Ventas ──────────────────────────────────────────────────────────────────
 
 /**
- * Venta confirmada: pago aprobado en Wompi, orden contraentrega creada o pago
+ * Venta confirmada: pago aprobado en la pasarela, orden contraentrega creada o pago
  * marcado a mano por un admin. Se dispara una sola vez por orden, atada al
  * descuento de inventario (idempotente vía stock_deducted_at).
  */
@@ -24,7 +24,7 @@ export function notifySaleConfirmed({ reference, customerName, city, total, curr
   const detalle = items.length
     ? `\n${items.map((i) => `• ${i.quantity} × ${i.name}`).join('\n')}`
     : '';
-  const medio = paymentMethod === 'cod' ? 'contraentrega' : paymentMethod === 'wompi_subscription' ? 'suscripción' : 'Wompi';
+  const medio = paymentMethod === 'cod' ? 'contraentrega' : paymentMethod === 'wompi_subscription' ? 'suscripción' : 'pago en línea';
 
   sendNtfyAsync({
     title:    `Venta confirmada · ${money(total, currency)}`,

@@ -43,16 +43,23 @@ import { getCanonicalUrl } from "../../i18n/index.ts";
   </section>
 
   <script>
-    // El pago lo confirma el webhook de Wompi, que suele llegar unos segundos
+    // El pago lo confirma el webhook de la pasarela, que suele llegar unos segundos
     // después de que el cliente vuelve aquí: mientras siga pendiente se vuelve
     // a consultar cada 3 s durante un minuto. El carrito se vacía al quedar pagado.
     function initConfirmation() {
       const loading = document.getElementById("cfLoading");
       if (!loading || loading.dataset.jsInit) return;
       loading.dataset.jsInit = "1";
-      const ref = new URLSearchParams(location.search).get("ref");
-      // Wompi agrega ?id=<transacción> a la URL de regreso.
-      const txId = new URLSearchParams(location.search).get("id") || "";
+      const params = new URLSearchParams(location.search);
+      let ref = params.get("ref");
+      // La URL de regreso trae el id de la transacción (?id= en Wompi,
+      // ?ref_payco= en ePayco, a veces pegado al valor de ?ref=).
+      let txId = params.get("id") || params.get("ref_payco") || "";
+      if (ref && ref.includes("?")) {
+        const parts = ref.split("?");
+        ref = parts[0];
+        txId = txId || new URLSearchParams(parts.slice(1).join("&")).get("ref_payco") || "";
+      }
       const views = ["cfLoading", "cfNotFound", "cfUnknown", "cfFailed", "cfOk"];
       const show = (id: string) => views.forEach((v) => { const el = document.getElementById(v); if (el) el.style.display = v === id ? "block" : "none"; });
       const esc = (v: unknown) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
@@ -68,7 +75,7 @@ import { getCanonicalUrl } from "../../i18n/index.ts";
         if (check) check.style.visibility = pending ? "hidden" : "visible";
         document.getElementById("cfTitle")!.textContent = pending ? "Payment in progress" : "Thank you for your order!";
         document.getElementById("cfSub")!.textContent = pending
-          ? "Your order is saved. We're waiting for Wompi to confirm the payment; this page updates by itself."
+          ? "Your order is saved. We're waiting for the payment to be confirmed; this page updates by itself."
           : "A confirmation has been sent to your email.";
         document.getElementById("cfRef")!.textContent = d.reference;
         document.getElementById("cfStatus")!.textContent = LABEL[d.status] ?? d.status;
@@ -97,8 +104,8 @@ import { getCanonicalUrl } from "../../i18n/index.ts";
           show("cfFailed");
         }
       }
-      // Si el webhook tarda o se pierde, el servidor consulta el pago en Wompi.
-      const verifyWithWompi = () => {
+      // Si el webhook tarda o se pierde, el servidor consulta el pago en la pasarela.
+      const verifyWithGateway = () => {
         fetch(`/api/orders/${encodeURIComponent(ref!)}/verify-payment`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -106,9 +113,9 @@ import { getCanonicalUrl } from "../../i18n/index.ts";
         }).catch(() => { /* el sondeo normal sigue */ });
       };
       function again(attempt: number) {
-        if ([0, 4, 10, 18].includes(attempt)) verifyWithWompi();
+        if ([0, 4, 10, 18].includes(attempt)) verifyWithGateway();
         if (attempt + 1 >= 20) {
-          document.getElementById("cfSub")!.textContent = "Wompi hasn't confirmed the payment yet. Your order is saved and we'll email you as soon as it's approved.";
+          document.getElementById("cfSub")!.textContent = "The payment hasn't been confirmed yet. Your order is saved and we'll email you as soon as it's approved.";
           return;
         }
         timer = setTimeout(() => load(attempt + 1), 3000);

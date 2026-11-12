@@ -13,7 +13,9 @@ import {
   wompiConfig,
   verifyEventSignature,
 } from '../services/wompi.js';
-import { applyWompiTransaction } from '../services/orderPayments.js';
+import { applyPaymentTransaction } from '../services/orderPayments.js';
+import { epaycoConfig, createCardCustomer, chargeCardCustomer } from '../services/epayco.js';
+import { activePaymentProvider } from '../utils/paymentProvider.js';
 import { notifySubscriptionChargeFailed } from '../services/alerts.js';
 import {
   sendOrderConfirmationEmail,
@@ -26,6 +28,10 @@ export const subscriptionsRouter = Router();
 const DEFAULT_DISCOUNT = parseInt(process.env.SUBSCRIPTION_DISCOUNT_PERCENT || '10', 10);
 const CRON_SECRET = process.env.SUBSCRIPTIONS_CRON_SECRET || '';
 const MAX_FAILED_ATTEMPTS = 3;
+const SITE_URL = process.env.SITE_BASE_URL || 'https://dobleyo.cafe';
+
+// Pasarela de una suscripción: las anteriores al cambio (sin columna) son de Wompi.
+const providerOf = (sub) => sub.payment_provider || 'wompi';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -42,6 +48,8 @@ function addDaysISO(days) {
 async function finalizeApprovedCharge(sub, charge, tx) {
   // Idempotencia: si el cobro ya tiene pedido, no duplicar.
   if (charge.order_id) return charge.order_id;
+  // 'wompi_subscription' es el marcador histórico de "pedido de suscripción" en
+  // customer_orders.payment_method; se conserva también para los cobros de ePayco.
 
   const prodImg = await query('SELECT image_url FROM products WHERE id = ?', [sub.product_id]);
   const image = prodImg.rows[0]?.image_url ?? null;
@@ -144,12 +152,32 @@ async function runCharge(sub) {
   const charge = { id: Number(chargeRes.lastInsertRowid), reference, order_id: null, wompi_transaction_id: null };
 
   try {
-    const tx = await chargePaymentSource({
-      amountCents: sub.amount_cop * 100,
-      customerEmail: sub.customer_email,
-      reference,
-      paymentSourceId: sub.wompi_payment_source_id,
-    });
+    // Cada suscripción se cobra con la pasarela con la que registró su tarjeta.
+    // Las dos devuelven la transacción con la misma forma ({ id, status }).
+    const tx = providerOf(sub) === 'epayco'
+      ? await chargeCardCustomer({
+        tokenCard: sub.epayco_token_card,
+        customerId: sub.epayco_customer_id,
+        docType: sub.customer_document_type,
+        docNumber: sub.customer_document_number,
+        fullName: sub.customer_name,
+        email: sub.customer_email,
+        city: sub.shipping_city,
+        address: sub.shipping_address,
+        phone: sub.customer_phone,
+        reference,
+        description: `Suscripción ${sub.reference}: ${sub.quantity} x ${sub.product_name}`,
+        amountCop: sub.amount_cop,
+        ip: sub.customer_ip,
+        responseUrl: `${SITE_URL}/suscripcion`,
+        confirmationUrl: `${SITE_URL}/api/orders/epayco/confirmation`,
+      })
+      : await chargePaymentSource({
+        amountCents: sub.amount_cop * 100,
+        customerEmail: sub.customer_email,
+        reference,
+        paymentSourceId: sub.wompi_payment_source_id,
+      });
     await query(`UPDATE subscription_charges SET wompi_transaction_id=?, status=?, updated_at=datetime('now') WHERE id=?`,
       [tx.id, tx.status || 'PENDING', charge.id]);
     charge.wompi_transaction_id = tx.id;
@@ -172,8 +200,25 @@ async function runCharge(sub) {
 }
 
 // ─── GET /api/subscriptions/acceptance ──────────────────────────────────────
-// Público: tokens de aceptación + datos para el widget de tarjeta (front).
+// Público: pasarela activa y datos para tokenizar la tarjeta en el navegador.
+// Wompi además exige los tokens de aceptación de su reglamento.
 subscriptionsRouter.get('/acceptance', async (_req, res) => {
+  const provider = activePaymentProvider();
+
+  if (provider === 'epayco') {
+    if (!epaycoConfig.configured) {
+      return res.status(503).json({ success: false, error: 'Pagos no configurados' });
+    }
+    return res.json({
+      success: true,
+      data: {
+        provider,
+        public_key: epaycoConfig.publicKey,
+        discount_percent: DEFAULT_DISCOUNT,
+      },
+    });
+  }
+
   if (!wompiConfig.configured) {
     return res.status(503).json({ success: false, error: 'Pagos no configurados' });
   }
@@ -182,6 +227,7 @@ subscriptionsRouter.get('/acceptance', async (_req, res) => {
     res.json({
       success: true,
       data: {
+        provider,
         ...tokens,
         public_key: wompiConfig.publicKey,
         api_base: wompiConfig.apiBase,
@@ -207,15 +253,21 @@ subscriptionsRouter.post('/',
     body('shippingAddress').trim().notEmpty().withMessage('Dirección requerida'),
     body('shippingCity').trim().notEmpty().withMessage('Ciudad requerida'),
     body('cardToken').trim().notEmpty().withMessage('Token de tarjeta requerido'),
-    body('acceptanceToken').trim().notEmpty().withMessage('Token de aceptación requerido'),
-    body('acceptPersonalAuth').trim().notEmpty().withMessage('Autorización de datos requerida'),
+    // Solo Wompi: tokens de aceptación de su reglamento (se exigen más abajo).
+    body('acceptanceToken').optional({ values: 'falsy' }).trim(),
+    body('acceptPersonalAuth').optional({ values: 'falsy' }).trim(),
+    // Solo ePayco: documento del titular, obligatorio en cada cobro (se exige más abajo).
+    body('customerDocumentType').optional({ values: 'falsy' }).isIn(['CC', 'CE', 'NI', 'TI', 'PA']).withMessage('Tipo de documento inválido'),
+    body('customerDocumentNumber').optional({ values: 'falsy' }).trim().matches(/^[0-9A-Za-z-]{4,25}$/).withMessage('Número de documento inválido'),
   ],
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(422).json({ success: false, errors: errors.array() });
     }
-    if (!wompiConfig.configured) {
+    const provider = activePaymentProvider();
+    const isEpayco = provider === 'epayco';
+    if (isEpayco ? !epaycoConfig.configured : !wompiConfig.configured) {
       return res.status(503).json({ success: false, error: 'Pagos no configurados' });
     }
 
@@ -225,7 +277,15 @@ subscriptionsRouter.post('/',
         customerName, customerEmail, customerPhone,
         shippingAddress, shippingCity, shippingDepartment, shippingZip,
         cardToken, acceptanceToken, acceptPersonalAuth,
+        customerDocumentType, customerDocumentNumber,
       } = req.body;
+
+      if (isEpayco && !customerDocumentNumber) {
+        return res.status(422).json({ success: false, error: 'Número de documento requerido' });
+      }
+      if (!isEpayco && (!acceptanceToken || !acceptPersonalAuth)) {
+        return res.status(422).json({ success: false, error: 'Autorización de datos requerida' });
+      }
 
       const freq = parseInt(frequencyDays, 10);
       const qty = parseInt(quantity, 10);
@@ -256,13 +316,36 @@ subscriptionsRouter.post('/',
       const subtotal = unitPrice * qty;
       const amount = Math.round((subtotal * (100 - DEFAULT_DISCOUNT)) / 100);
 
-      // 1) Fuente de pago
-      const paymentSource = await createCardPaymentSource({
-        cardToken, customerEmail, acceptanceToken, acceptPersonalAuth,
-      });
-      if (!paymentSource?.id) {
-        return res.status(502).json({ success: false, error: 'No se pudo registrar la tarjeta' });
+      // 1) Tarjeta guardada en la pasarela: fuente de pago (Wompi) o cliente con
+      //    la tarjeta tokenizada (ePayco).
+      let paymentSourceId = null;
+      let epaycoCustomerId = null;
+      const customerIp = req.ip || null;
+      if (isEpayco) {
+        try {
+          epaycoCustomerId = await createCardCustomer({
+            tokenCard: cardToken,
+            fullName: customerName,
+            email: customerEmail,
+            city: shippingCity,
+            address: shippingAddress,
+            phone: customerPhone,
+            ip: customerIp,
+          });
+        } catch (err) {
+          logger.error({ err: err.message, body: err.body }, '[POST /api/subscriptions] ePayco no registró la tarjeta');
+          return res.status(502).json({ success: false, error: 'No se pudo registrar la tarjeta' });
+        }
+      } else {
+        const paymentSource = await createCardPaymentSource({
+          cardToken, customerEmail, acceptanceToken, acceptPersonalAuth,
+        });
+        if (!paymentSource?.id) {
+          return res.status(502).json({ success: false, error: 'No se pudo registrar la tarjeta' });
+        }
+        paymentSourceId = paymentSource.id;
       }
+      const docType = customerDocumentNumber ? (customerDocumentType || 'CC') : null;
 
       // 2) Guardar suscripción
       const reference = genRef('SUB');
@@ -272,13 +355,15 @@ subscriptionsRouter.post('/',
            frequency_days, unit_price_cop, discount_percent, amount_cop,
            customer_name, customer_email, customer_phone,
            shipping_address, shipping_city, shipping_department, shipping_zip,
-           wompi_payment_source_id, status, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending_auth', datetime('now'))`,
+           wompi_payment_source_id, payment_provider, epayco_customer_id, epayco_token_card,
+           customer_document_type, customer_document_number, customer_ip, status, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending_auth', datetime('now'))`,
         [reference, req.user?.id ?? null, productId, prod.rows[0].name, variantSize, variantGrind, qty,
          freq, unitPrice, DEFAULT_DISCOUNT, amount,
          customerName, customerEmail, customerPhone ?? null,
          shippingAddress, shippingCity, shippingDepartment ?? null, shippingZip ?? null,
-         paymentSource.id]
+         paymentSourceId, provider, epaycoCustomerId, isEpayco ? cardToken : null,
+         docType, customerDocumentNumber || null, customerIp]
       );
       const subId = Number(subRes.lastInsertRowid);
       const sub = {
@@ -289,7 +374,10 @@ subscriptionsRouter.post('/',
         customer_name: customerName, customer_email: customerEmail, customer_phone: customerPhone ?? null,
         shipping_address: shippingAddress, shipping_city: shippingCity,
         shipping_department: shippingDepartment ?? null, shipping_zip: shippingZip ?? null,
-        wompi_payment_source_id: paymentSource.id, status: 'pending_auth', failed_attempts: 0,
+        wompi_payment_source_id: paymentSourceId, payment_provider: provider,
+        epayco_customer_id: epaycoCustomerId, epayco_token_card: isEpayco ? cardToken : null,
+        customer_document_type: docType, customer_document_number: customerDocumentNumber || null,
+        customer_ip: customerIp, status: 'pending_auth', failed_attempts: 0,
       };
 
       // 3) Primer cobro
@@ -325,7 +413,9 @@ subscriptionsRouter.post('/run-billing', async (req, res) => {
   try {
     const { rows } = await query(
       `SELECT * FROM subscriptions
-       WHERE status = 'active' AND wompi_payment_source_id IS NOT NULL
+       WHERE status = 'active'
+         AND (wompi_payment_source_id IS NOT NULL
+              OR (payment_provider = 'epayco' AND epayco_customer_id IS NOT NULL))
          AND next_billing_date IS NOT NULL AND next_billing_date <= date('now')
        ORDER BY next_billing_date ASC
        LIMIT 100`
@@ -346,10 +436,11 @@ subscriptionsRouter.post('/run-billing', async (req, res) => {
   }
 });
 
-// Aplica una transacción de Wompi a su cobro de suscripción (PENDING →
-// APPROVED/DECLINED). Devuelve false si la transacción no es de una suscripción.
-// La llaman este webhook y el de pedidos (orders.js): Wompi admite una sola URL
-// de eventos por ambiente, así que cualquiera de las dos debe servir para todo.
+// Aplica una transacción de la pasarela (Wompi o ePayco, misma forma) a su
+// cobro de suscripción (PENDING → APPROVED/DECLINED). Devuelve false si la
+// transacción no es de una suscripción. La llaman este webhook, el de pedidos y
+// la confirmación de ePayco (orders.js): Wompi admite una sola URL de eventos
+// por ambiente, así que cualquiera debe servir para todo.
 export async function handleSubscriptionTransaction(tx) {
   if (!tx?.id) return false;
 
@@ -389,7 +480,7 @@ subscriptionsRouter.post('/wompi/webhook', async (req, res) => {
 
     const handled = await handleSubscriptionTransaction(tx);
     if (!handled && event?.event === 'transaction.updated' && tx.reference) {
-      await applyWompiTransaction(tx, 'wompi-webhook');
+      await applyPaymentTransaction(tx, 'wompi-webhook');
     }
     res.json({ success: true });
   } catch (err) {

@@ -38,7 +38,7 @@ export const UI_EN: Record<string, string> = {
   "IVA incluido": "Tax included",
   "Ir a pagar": "Check out",
   "Pago 100% seguro": "Secure payment",
-  "Wompi certificado": "Paid through Wompi",
+  "Pago con {provider}": "Paid through {provider}",
   "Eliminar {name}": "Remove {name}",
   "unidad": "each",
   "producto": "product",
@@ -104,8 +104,11 @@ export const UI_EN: Record<string, string> = {
   "Selecciona una ciudad": "Choose a city",
   "Requerido para contraentrega": "Needed for cash on delivery",
   "Error al crear la orden": "We couldn't create your order",
-  "Wompi rechazó el pago. No se realizó ningún cobro; puede intentar de nuevo o con otro medio de pago.":
-    "Wompi declined the payment and you weren't charged. Try again or use another payment method.",
+  "El pago fue rechazado. No se realizó ningún cobro; puede intentar de nuevo o con otro medio de pago.":
+    "The payment was declined and you weren't charged. Try again or use another payment method.",
+  "No se pudo abrir el pago. Revise su conexión e intente de nuevo.":
+    "We couldn't open the payment window. Check your connection and try again.",
+  "Tarjeta, PSE, Daviplata o efectivo": "Card, PSE, Daviplata or cash",
   "Error de conexión. Inténtalo de nuevo.": "Connection error. Please try again.",
   "El total de su pedido cambió a {total}. Revise el resumen y confirme de nuevo.":
     "Your order total changed to {total}. Check the summary and confirm again.",

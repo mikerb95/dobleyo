@@ -67,13 +67,13 @@ app.use(helmet({
       baseUri: ["'self'"],
       objectSrc: ["'none'"],
       frameAncestors: ["'self'"], // anti-clickjacking
-      formAction: ["'self'", "https://checkout.wompi.co", "https://www.mercadopago.com"],
-      scriptSrc: ["'self'", "https://checkout.wompi.co", "https://www.mercadopago.com", "https://sdk.mercadopago.com", "https://cdn.jsdelivr.net/npm/jsqr@1.4.0/", "https://accounts.google.com", "https://www.gstatic.com"],
+      formAction: ["'self'", "https://checkout.wompi.co", "https://*.epayco.co", "https://www.mercadopago.com"],
+      scriptSrc: ["'self'", "https://checkout.wompi.co", "https://checkout.epayco.co", "https://www.mercadopago.com", "https://sdk.mercadopago.com", "https://cdn.jsdelivr.net/npm/jsqr@1.4.0/", "https://accounts.google.com", "https://www.gstatic.com"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://unpkg.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       imgSrc: ["'self'", "data:", "https:", "blob:"],
-      connectSrc: ["'self'", "https://checkout.wompi.co", "https://nominatim.openstreetmap.org", "https://api.mercadopago.com", "https://accounts.google.com", "https://www.gstatic.com"],
-      frameSrc: ["'self'", "https://checkout.wompi.co", "https://www.mercadopago.com", "https://accounts.google.com"],
+      connectSrc: ["'self'", "https://checkout.wompi.co", "https://*.epayco.co", "https://api.secure.payco.co", "https://nominatim.openstreetmap.org", "https://api.mercadopago.com", "https://accounts.google.com", "https://www.gstatic.com"],
+      frameSrc: ["'self'", "https://checkout.wompi.co", "https://*.epayco.co", "https://www.mercadopago.com", "https://accounts.google.com"],
       mediaSrc: ["'self'", "https:", "blob:"],
       workerSrc: ["'self'", "blob:"],
     },
@@ -159,6 +159,8 @@ app.use('/api/blog', blogRouter);
 app.use('/api/products', productsRouter);
 // Webhook Wompi delegado al router de órdenes
 app.post('/api/wompi/webhook', (req, res, next) => { req.url = '/wompi/webhook'; ordersRouter(req, res, next); });
+// Confirmación de ePayco, misma delegación (ePayco la llama por POST o GET)
+app.all('/api/epayco/confirmation', (req, res, next) => { req.url = '/epayco/confirmation' + (req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : ''); ordersRouter(req, res, next); });
 app.use('/api/audit', auditRouter);
 app.use('/api/coupons', couponsRouter);
 app.use('/api/external-sales', externalSalesRouter);

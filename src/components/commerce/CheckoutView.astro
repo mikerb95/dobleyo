@@ -1,11 +1,17 @@
 ---
 // Vista compartida ES/EN. Los textos en inglés están en src/i18n/ui.ts.
 import { trUi } from "../../i18n/ui.ts";
+import { activePaymentProvider, PAYMENT_PROVIDER_LABEL } from "../../../server/utils/paymentProvider.js";
 
 interface Props { lang?: "es" | "en"; }
 const { lang = "es" } = Astro.props;
 const tr = (s: string, v?: Record<string, string | number>) => trUi(s, lang, v);
 const en = lang === "en";
+// Pasarela activa al construir la página. La respuesta de POST /api/orders manda:
+// si difiere, el script carga la que diga el servidor.
+const provider = activePaymentProvider();
+const providerLabel = PAYMENT_PROVIDER_LABEL[provider];
+const epayco = provider === "epayco";
 ---
 
   <div class="co-page">
@@ -37,7 +43,7 @@ const en = lang === "en";
     </div>
 
     <!-- Layout checkout -->
-    <div id="checkoutLayout" class="co-layout" style="display:none;">
+    <div id="checkoutLayout" class="co-layout" style="display:none;" data-provider={provider}>
 
       <!-- Columna formulario -->
       <div class="co-form-col">
@@ -161,14 +167,14 @@ const en = lang === "en";
               <div class="co-pay-option__body">
                 <div class="co-pay-option__top">
                   <div class="co-pay-option__name">
-                    <span class="co-pay-badge">Wompi</span>
-                    <span class="co-pay-desc">{tr("Tarjeta, PSE, Nequi, Daviplata")}</span>
+                    <span class="co-pay-badge">{providerLabel}</span>
+                    <span class="co-pay-desc">{epayco ? tr("Tarjeta, PSE, Daviplata o efectivo") : tr("Tarjeta, PSE, Nequi, Daviplata")}</span>
                   </div>
                   <div class="co-pay-chips">
                     <span class="co-chip">PSE</span>
                     <span class="co-chip">Visa</span>
                     <span class="co-chip">MC</span>
-                    <span class="co-chip">Nequi</span>
+                    <span class="co-chip">{epayco ? "Daviplata" : "Nequi"}</span>
                   </div>
                 </div>
               </div>
@@ -267,8 +273,9 @@ const en = lang === "en";
     </button>
   </div>
 
-  <!-- Widget Checkout de Wompi (modal embebido, no redirige fuera de la página) -->
-  <script is:inline src="https://checkout.wompi.co/widget.js"></script>
+  <!-- El script de la pasarela (ePayco Smart Checkout o widget de Wompi) lo carga
+       el script de abajo según la pasarela activa: ambos abren una ventana sobre
+       la página, sin sacar al cliente del sitio. -->
 
   <script>
     // @ts-nocheck — script vanilla del navegador; usa globales inyectados por
@@ -287,6 +294,44 @@ import { trUi } from '../../i18n/ui.ts';
       const SHIP_COST = 12000;
       function fmt(n) { return fmtCop(n); }
       function whenCart(fn) { if (window.Cart) fn(); else setTimeout(() => whenCart(fn), 40); }
+
+      // ── Script de la pasarela ─────────────────────────────────────────────
+      // Se precarga el de la pasarela con la que se construyó la página; al pagar
+      // se usa la que indique el servidor.
+      const PAYMENT_SCRIPTS = {
+        epayco: 'https://checkout.epayco.co/checkout-v2.js',
+        wompi:  'https://checkout.wompi.co/widget.js',
+      };
+      const scriptLoads = {};
+      function loadPaymentScript(provider) {
+        const src = PAYMENT_SCRIPTS[provider];
+        if (!src) return Promise.reject(new Error('Pasarela desconocida'));
+        if (!scriptLoads[provider]) {
+          scriptLoads[provider] = new Promise((resolve, reject) => {
+            const el = document.createElement('script');
+            el.src = src;
+            el.async = true;
+            el.onload = () => resolve();
+            el.onerror = () => { delete scriptLoads[provider]; el.remove(); reject(new Error('No cargó el script de pagos')); };
+            document.head.appendChild(el);
+          });
+        }
+        return scriptLoads[provider];
+      }
+      loadPaymentScript(checkoutLayoutGuard.dataset.provider || 'wompi').catch(() => {});
+
+      // Resultado que entrega el checkout de ePayco al navegador. Solo decide qué
+      // se le muestra al cliente: el estado real lo pone el servidor.
+      function epaycoResult(r) {
+        const d = (r && (r.data || r.transaction || r)) || {};
+        const text = String(d.x_response || d.response || d.estado || d.status || d.x_transaction_state || '').toLowerCase();
+        const code = Number(d.x_cod_response || d.cod_respuesta || d.x_cod_transaction_state || 0);
+        return {
+          ref: String(d.ref_payco || d.x_ref_payco || d.refPayco || (r && r.ref_payco) || ''),
+          approved: code === 1 || /acept|aprob|approved/.test(text),
+          rejected: [2, 4, 9, 10, 11].includes(code) || /rechaz|fallid|declin|cancel|abandon|expir/.test(text),
+        };
+      }
 
       // ── Datos Colombia: departamentos y municipios con su DANE (DIVIPOLA) ──
       // El DANE viaja con el pedido: Envia.com cotiza el envío con él.
@@ -810,6 +855,50 @@ import { trUi } from '../../i18n/ui.ts';
               return;
             }
 
+            const REJECTED_MSG = 'El pago fue rechazado. No se realizó ningún cobro; puede intentar de nuevo o con otro medio de pago.';
+            const provider = data.data.provider || (wompi ? 'wompi' : '');
+            await loadPaymentScript(provider).catch(() => {});
+
+            // ePayco Smart Checkout: se abre sobre la página con la sesión que creó
+            // el servidor (monto y referencia no viajan por el navegador).
+            if (provider === 'epayco' && data.data.epayco) {
+              if (!(window.ePayco && window.ePayco.checkout)) {
+                payError.textContent = tr('No se pudo abrir el pago. Revise su conexión e intente de nuevo.');
+                payError.style.display = 'block';
+                resetPayBtn();
+                return;
+              }
+              let last = null;
+              const goConfirm = () => {
+                window.location.href = last && last.ref ? `${confirmUrl}&ref_payco=${encodeURIComponent(last.ref)}` : confirmUrl;
+              };
+              const showRejected = () => {
+                payError.textContent = tr(REJECTED_MSG);
+                payError.style.display = 'block';
+                resetPayBtn();
+              };
+              const checkout = window.ePayco.checkout.configure({
+                sessionId: data.data.epayco.sessionId,
+                type: 'onpage',
+                test: Boolean(data.data.epayco.test),
+              });
+              checkout.setHooks({
+                onResponse: (response) => {
+                  last = epaycoResult(response);
+                  // Aprobado: a la confirmación. Pendiente (PSE, efectivo): el cliente
+                  // debe poder leer las instrucciones de pago; se va al cerrar.
+                  if (last.approved) goConfirm();
+                },
+                onErrors: () => { /* ePayco muestra el error dentro de su ventana */ },
+                onClosed: () => {
+                  if (!last) { resetPayBtn(); return; } // cerró sin pagar: puede reintentar
+                  if (last.rejected) showRejected(); else goConfirm();
+                },
+              });
+              checkout.open();
+              return;
+            }
+
             // Widget embebido: abre el checkout de Wompi como modal sobre la página.
             if (wompi && typeof window.WidgetCheckout === 'function') {
               const checkout = new window.WidgetCheckout({
@@ -835,7 +924,7 @@ import { trUi } from '../../i18n/ui.ts';
                 }
                 if (['DECLINED', 'ERROR', 'VOIDED'].includes(tx.status)) {
                   // Rechazado: se queda en el checkout con su carrito para reintentar
-                  payError.textContent = tr('Wompi rechazó el pago. No se realizó ningún cobro; puede intentar de nuevo o con otro medio de pago.');
+                  payError.textContent = tr(REJECTED_MSG);
                   payError.style.display = 'block';
                   resetPayBtn();
                   return;

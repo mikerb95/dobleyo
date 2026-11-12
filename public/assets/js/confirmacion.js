@@ -150,7 +150,7 @@ function initConfirmacion() {
     `;
   }
 
-  // El estado "pagado" lo pone el webhook de Wompi, que suele llegar unos
+  // El estado "pagado" lo pone el webhook de la pasarela, que suele llegar unos
   // segundos DESPUÉS de que el cliente vuelve aquí. Mientras el pedido siga
   // pendiente se vuelve a consultar cada 3 s durante un minuto.
   const POLL_MS = 3000;
@@ -159,7 +159,7 @@ function initConfirmacion() {
   const stopPolling = () => { clearTimeout(pollTimer); pollTimer = null; };
   document.addEventListener("astro:before-swap", stopPolling, { once: true });
 
-  // El carrito se vacía cuando el pago queda aprobado (no antes: si Wompi
+  // El carrito se vacía cuando el pago queda aprobado (no antes: si la pasarela
   // rechaza la tarjeta, el cliente conserva su carrito para reintentar).
   function clearCartOnce() {
     try {
@@ -210,10 +210,11 @@ function initConfirmacion() {
   }
 
   // Si el webhook tarda o se pierde, se le pide al servidor que consulte el pago
-  // directamente en Wompi. El siguiente sondeo ya ve el pedido pagado. Wompi
-  // agrega ?id=<transacción> a la URL de regreso; sirve para ubicarla más rápido.
+  // directamente en la pasarela. El siguiente sondeo ya ve el pedido pagado. La
+  // URL de regreso trae el id de la transacción (?id= en Wompi, ?ref_payco= en
+  // ePayco); sirve para ubicarla.
   const VERIFY_AT = [0, 4, 10, 18];
-  function verifyWithWompi(ref) {
+  function verifyWithGateway(ref) {
     fetch(`/api/orders/${encodeURIComponent(ref)}/verify-payment`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -222,12 +223,12 @@ function initConfirmacion() {
   }
 
   function schedule(ref, attempt) {
-    if (VERIFY_AT.includes(attempt)) verifyWithWompi(ref);
+    if (VERIFY_AT.includes(attempt)) verifyWithGateway(ref);
     if (attempt + 1 >= POLL_MAX) {
       // Se acabó la espera: el pedido sigue registrado y el correo llegará
-      // cuando Wompi confirme. Dejamos el estado pendiente con un aviso claro.
+      // cuando la pasarela confirme. Dejamos el estado pendiente con un aviso claro.
       const sub = document.getElementById("pendingSubtitle");
-      if (sub) sub.textContent = "Wompi aún no confirma el pago. Su pedido está registrado: le enviaremos un correo apenas se apruebe. Puede recargar esta página más tarde.";
+      if (sub) sub.textContent = "Aún no recibimos la confirmación del pago. Su pedido está registrado: le enviaremos un correo apenas se apruebe. Puede recargar esta página más tarde.";
       showState("statePending");
       return;
     }
@@ -236,8 +237,15 @@ function initConfirmacion() {
   }
 
   const params = new URLSearchParams(window.location.search);
-  const ref = params.get("ref") || params.get("reference");
-  const txId = params.get("id") || "";
+  let ref = params.get("ref") || params.get("reference");
+  let txId = params.get("id") || params.get("ref_payco") || "";
+  // ePayco agrega ?ref_payco= a la URL de regreso; si esta ya traía ?ref=, puede
+  // quedar pegado al valor de la referencia.
+  if (ref && ref.includes("?")) {
+    const parts = ref.split("?");
+    ref = parts[0];
+    txId = txId || new URLSearchParams(parts.slice(1).join("&")).get("ref_payco") || "";
+  }
   document.getElementById("retryVerify")?.addEventListener("click", () => {
     if (!ref) return;
     showState("stateLoading");

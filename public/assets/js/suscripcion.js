@@ -1,6 +1,7 @@
 // Suscripción de café — DobleYo Café
-// Tokeniza la tarjeta directamente contra Wompi (la tarjeta NUNCA pasa por
-// nuestro servidor) y luego crea la suscripción vía /api/subscriptions.
+// Tokeniza la tarjeta directamente contra la pasarela activa, ePayco o Wompi (la
+// tarjeta NUNCA pasa por nuestro servidor) y luego crea la suscripción vía
+// /api/subscriptions. La pasarela la informa GET /api/subscriptions/acceptance.
 function initSuscripcion() {
   'use strict';
 
@@ -37,7 +38,9 @@ function initSuscripcion() {
     error: 'Error al procesar la suscripción.',
   };
 
-  let wompi = null; // { public_key, api_base, acceptance_token, accept_personal_auth, permalink, discount_percent }
+  // Configuración de la pasarela: { provider, public_key, discount_percent } y,
+  // en Wompi, { api_base, acceptance_token, accept_personal_auth, permalink }.
+  let wompi = null;
   let freq = 30;
 
   // ─── Cargar tokens de aceptación + config de Wompi ─────────────────────────
@@ -49,6 +52,8 @@ function initSuscripcion() {
         wompi = json.data;
         const link = $('#acceptLink');
         if (link && wompi.permalink) link.href = wompi.permalink;
+        // ePayco no tiene reglamento propio que enlazar: el texto apunta a los términos del sitio.
+        else if (link && wompi.provider === 'epayco') link.href = en ? '/terms' : '/terminos';
         updateSummary();
       }
     } catch (_) { /* se reintenta al enviar */ }
@@ -92,11 +97,63 @@ function initSuscripcion() {
     el.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
-  // ─── Tokenización de tarjeta en Wompi ──────────────────────────────────────
+  // ─── Tokenización de tarjeta en ePayco ─────────────────────────────────────
+  // epayco.min.js lee los campos marcados con data-epayco de un formulario. Se
+  // arma uno suelto, fuera del documento, con los valores de la tarjeta.
+  let epaycoScript = null;
+  function loadEpaycoScript() {
+    if (window.ePayco && window.ePayco.token) return Promise.resolve();
+    if (!epaycoScript) {
+      epaycoScript = new Promise((resolve, reject) => {
+        const el = document.createElement('script');
+        el.src = 'https://checkout.epayco.co/epayco.min.js';
+        el.onload = () => resolve();
+        el.onerror = () => { epaycoScript = null; el.remove(); reject(new Error(T.down)); };
+        document.head.appendChild(el);
+      });
+    }
+    return epaycoScript;
+  }
+
+  async function tokenizeCardEpayco(m) {
+    await loadEpaycoScript();
+    window.ePayco.setPublicKey(wompi.public_key);
+    const fields = {
+      'card[name]': $('#ccName').value.trim(),
+      'card[email]': $('#cEmail').value.trim(),
+      'card[number]': $('#ccNum').value.replace(/\s+/g, ''),
+      'card[cvc]': $('#ccCvc').value.trim(),
+      'card[exp_month]': m[1],
+      'card[exp_year]': '20' + m[2],
+    };
+    const cardForm = document.createElement('form');
+    Object.keys(fields).forEach((key) => {
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.setAttribute('data-epayco', key);
+      input.value = fields[key];
+      cardForm.appendChild(input);
+    });
+    return new Promise((resolve, reject) => {
+      window.ePayco.token.create(cardForm, (error, token) => {
+        const id = token && (typeof token === 'string' ? token : token.id);
+        if (error || !id) {
+          const reason = typeof error === 'string' ? error
+            : (error && (error.description || (error.data && error.data.description))) || '';
+          reject(new Error(T.card + (reason || (en ? 'check the card details' : 'revise los datos de la tarjeta'))));
+        } else {
+          resolve(String(id));
+        }
+      });
+    });
+  }
+
+  // ─── Tokenización de tarjeta (ePayco o Wompi) ──────────────────────────────
   async function tokenizeCard() {
     const raw = $('#ccExp').value.trim();
     const m = raw.match(/^(\d{2})\s*\/\s*(\d{2})$/);
     if (!m) throw new Error(T.exp);
+    if (wompi.provider === 'epayco') return tokenizeCardEpayco(m);
     const body = {
       number: $('#ccNum').value.replace(/\s+/g, ''),
       exp_month: m[1],
@@ -141,6 +198,8 @@ function initSuscripcion() {
         shippingAddress: $('#cAddr').value.trim(),
         shippingCity: $('#cCity').value.trim(),
         shippingDepartment: $('#cDept').value.trim(),
+        customerDocumentType: $('#cDocType') ? $('#cDocType').value : undefined,
+        customerDocumentNumber: $('#cDocNumber') ? $('#cDocNumber').value.replace(/[\s.]/g, '') : undefined,
         cardToken,
         acceptanceToken: wompi.acceptance_token,
         acceptPersonalAuth: wompi.accept_personal_auth,

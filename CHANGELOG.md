@@ -2,6 +2,34 @@
 
 ---
 
+## 2026-11-12: ePayco como pasarela de pagos, con Wompi de respaldo (Agente: Claude)
+
+### Contexto
+El dueño decidió pasar los pagos a ePayco. Se pidió migrar también las suscripciones, conservar Wompi detrás de un interruptor y que el pago se abra sobre la página.
+
+### Cambios
+- **Interruptor** (`server/utils/paymentProvider.js`): `PAYMENT_PROVIDER=epayco|wompi`. Sin la variable se usa ePayco si sus llaves están cargadas y Wompi si no, para que el cambio no tumbe el checkout mientras se configuran las llaves.
+- **`server/services/epayco.js`** (nuevo): Smart Checkout v2 por sesiones (`createCheckoutSession`), firma de la confirmación, consulta de la transacción (`fetchVerifiedTransaction`) y cobros con tarjeta tokenizada (`createCardCustomer`, `chargeCardCustomer`). Las transacciones se normalizan a la misma forma que las de Wompi.
+- **`POST /api/orders`**: con ePayco crea la sesión de pago antes de guardar la orden (si ePayco no responde no queda un pedido imposible de pagar) y devuelve `provider` y `epayco: { sessionId, test }`. Monto, referencia y URL de confirmación quedan fijados en el servidor.
+- **`POST|GET /api/orders/epayco/confirmation`** (alias `/api/epayco/confirmation` en `server/index.js` y `api/index.js`): la firma `x_signature` no cubre el estado del pago y la consulta pública de ePayco devuelve esa misma firma, así que el cuerpo solo sirve de aviso. El estado, el monto y la referencia se leen de ePayco. Las transacciones de prueba se ignoran si `EPAYCO_TEST` no es `true`. Atiende pedidos y cobros de suscripción.
+- **`applyPaymentTransaction()`** (antes `applyWompiTransaction`, que queda como alias): mismo camino atómico y reanudable para las dos pasarelas. La conciliación (`verify-payment` y cron) consulta ePayco por `ref_payco` y Wompi por referencia.
+- **Checkout** (`CheckoutView.astro`): carga el script de la pasarela activa y abre el pago sobre la página. Con ePayco, un pago aprobado lleva a la confirmación; uno pendiente (PSE, efectivo) espera a que el cliente cierre la ventana para que pueda leer las instrucciones; uno rechazado lo deja en el checkout con su carrito.
+- **Confirmación** (ES y EN): acepta `?ref_payco=` además de `?id=` y textos sin el nombre de la pasarela.
+- **Suscripciones**: las nuevas se crean con la pasarela activa. Con ePayco la tarjeta se tokeniza en el navegador (`epayco.min.js`), se crea el cliente en ePayco y cada cobro va contra su tarjeta guardada. El formulario pide tipo y número de documento (ePayco lo exige en cada cobro). Las suscripciones creadas con Wompi se siguen cobrando con Wompi.
+- **Migración** `add_subscription_payment_provider.js`: `payment_provider`, `epayco_customer_id`, `epayco_token_card`, `customer_document_type`, `customer_document_number` y `customer_ip` en `subscriptions`.
+- **CSP** (`vercel.json` y helmet): `checkout.epayco.co` en scripts; `*.epayco.co` y `api.secure.payco.co` en conexiones; `*.epayco.co` en marcos y formularios.
+- **Textos**: footer, carrito, checkout y suscripción muestran el nombre de la pasarela activa.
+- Tests: `server/services/__tests__/epayco.test.js` y `server/routes/__tests__/orders.epayco.test.js`.
+
+### Pendiente
+- Cargar en Vercel `EPAYCO_PUBLIC_KEY`, `EPAYCO_PRIVATE_KEY`, `EPAYCO_CUSTOMER_ID`, `EPAYCO_P_KEY`, `EPAYCO_TEST` y, si se quiere fijar, `PAYMENT_PROVIDER`.
+- Probar con llaves de prueba: sin credenciales no se pudo verificar contra ePayco la forma exacta de las respuestas de sesión, cliente y cobro, ni lo que entrega `onResponse` al navegador.
+- Sin `ref_payco` (el cliente no volvió y la confirmación nunca llegó) un pedido de ePayco no se puede conciliar por referencia.
+- Las páginas legales (privacidad, términos, envíos) siguen nombrando a Wompi como procesador.
+- No dejar las llaves de Wompi sin cargar mientras existan suscripciones creadas con Wompi.
+
+---
+
 ## 2026-11-12: Checkout y webhook de Wompi: pagos atómicos, conciliación y total verificado (Agente: Claude)
 
 ### Contexto

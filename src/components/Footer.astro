@@ -1,4 +1,5 @@
 ---
+import { activePaymentProvider, PAYMENT_PROVIDER_LABEL } from "../../server/utils/paymentProvider.js";
 import { Image } from "astro:assets";
 import type { Lang } from "../i18n/index.ts";
 import logo from "../assets/logo.png";
@@ -58,8 +59,13 @@ const legal = isEn
   ? [[tx.privacy, "/privacy"], [tx.terms, "/terms"], [tx.a11y, "/accessibility"]]
   : [[tx.privacy, "/privacidad"], [tx.terms, "/terminos"], [tx.a11y, "/accesibilidad"]];
 
-// Medios que procesa el checkout (Wompi + contraentrega).
-const payments = ["Visa", "Mastercard", "PSE", "Nequi", "Daviplata", isEn ? "Cash on delivery" : "Contraentrega"];
+// Medios que procesa el checkout (pasarela activa + contraentrega).
+const payProvider = activePaymentProvider();
+const payments = [
+  "Visa", "Mastercard", "PSE",
+  ...(payProvider === "epayco" ? ["Daviplata", "Efecty"] : ["Nequi", "Daviplata"]),
+  isEn ? "Cash on delivery" : "Contraentrega",
+];
 ---
 
 <footer class="site-footer" transition:persist={`footer-${lang}`}>
@@ -146,7 +152,7 @@ const payments = ["Visa", "Mastercard", "PSE", "Nequi", "Daviplata", isEn ? "Cas
 
     {!isEn && (
       <div class="footer-pay">
-        <span class="footer-pay__label">Pagos seguros con Wompi</span>
+        <span class="footer-pay__label">Pagos seguros con {PAYMENT_PROVIDER_LABEL[payProvider]}</span>
         <ul class="footer-pay__list">
           {payments.map((p) => <li>{p}</li>)}
         </ul>

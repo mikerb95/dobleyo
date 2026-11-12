@@ -1,4 +1,6 @@
 ---
+import { activePaymentProviderLabel } from "../../server/utils/paymentProvider.js";
+const payLabel = activePaymentProviderLabel();
 import Layout from "../layouts/Layout.astro";
 import DarkHero from "../components/shop/DarkHero.astro";
 import DeliveryBags from "../components/shop/DeliveryBags.astro";
@@ -107,6 +109,15 @@ const pageDescription =
             <div class="sub-field"><label class="sub-label" for="cName">Nombre completo *</label><input id="cName" name="customerName" class="sub-input" autocomplete="name" required /></div>
             <div class="sub-field"><label class="sub-label" for="cEmail">Correo *</label><input id="cEmail" name="customerEmail" type="email" class="sub-input" autocomplete="email" required /></div>
             <div class="sub-field"><label class="sub-label" for="cPhone">Teléfono</label><input id="cPhone" name="customerPhone" class="sub-input" autocomplete="tel" inputmode="tel" /></div>
+            <div class="sub-field"><label class="sub-label" for="cDocType">Tipo de documento *</label>
+              <select id="cDocType" name="customerDocumentType" class="sub-input" required>
+                <option value="CC">Cédula de ciudadanía</option>
+                <option value="CE">Cédula de extranjería</option>
+                <option value="PA">Pasaporte</option>
+                <option value="NI">NIT</option>
+              </select>
+            </div>
+            <div class="sub-field"><label class="sub-label" for="cDocNumber">Número de documento *</label><input id="cDocNumber" name="customerDocumentNumber" class="sub-input" autocomplete="off" maxlength="25" pattern="[0-9A-Za-z\-]{4,25}" required /></div>
             <div class="sub-field"><label class="sub-label" for="cCity">Ciudad *</label><input id="cCity" name="shippingCity" class="sub-input" autocomplete="address-level2" required /></div>
             <div class="sub-field sub-field--full"><label class="sub-label" for="cAddr">Dirección *</label><input id="cAddr" name="shippingAddress" class="sub-input" autocomplete="street-address" required /></div>
             <div class="sub-field"><label class="sub-label" for="cDept">Departamento</label><input id="cDept" name="shippingDepartment" class="sub-input" autocomplete="address-level1" /></div>
@@ -116,7 +127,7 @@ const pageDescription =
         <!-- 4. Pago -->
         <fieldset class="step">
           <legend class="step__head"><span class="step__n">4</span> Tarjeta</legend>
-          <p class="sub-secure"><Icon name="lock" size={16} /> Procesado de forma segura por Wompi. Sus datos de tarjeta no se almacenan en nuestros servidores.</p>
+          <p class="sub-secure"><Icon name="lock" size={16} /> Procesado de forma segura por {payLabel}. Sus datos de tarjeta no se almacenan en nuestros servidores.</p>
           <div class="sub-grid">
             <div class="sub-field sub-field--full"><label class="sub-label" for="ccNum">Número de tarjeta *</label><input id="ccNum" inputmode="numeric" autocomplete="cc-number" class="sub-input" placeholder="4242 4242 4242 4242" required /></div>
             <div class="sub-field sub-field--full"><label class="sub-label" for="ccName">Titular *</label><input id="ccName" autocomplete="cc-name" class="sub-input" required /></div>
@@ -152,7 +163,7 @@ const pageDescription =
           <p class="ticket__note" id="sumNote">Primer cobro hoy, luego cada 30 días. Cancele cuando quiera.</p>
           <div id="subMsg" class="sub-msg" style="display:none"></div>
           <button type="submit" id="subSubmit" class="sub-submit">Suscribirme</button>
-          <p class="ticket__secure"><Icon name="lock" size={14} /> Pago seguro con Wompi</p>
+          <p class="ticket__secure"><Icon name="lock" size={14} /> Pago seguro con {payLabel}</p>
         </div>
       </aside>
     </form>
