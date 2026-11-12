@@ -29,6 +29,8 @@ async function wompiFetch(path, { method = 'GET', key = WOMPI_PRIVATE_KEY, body 
       'Content-Type': 'application/json',
     },
     body: body ? JSON.stringify(body) : undefined,
+    // Sin tope, una API colgada dejaría colgado el webhook o el checkout.
+    signal: AbortSignal.timeout(10000),
   });
   const json = await res.json().catch(() => ({}));
   if (!res.ok) {

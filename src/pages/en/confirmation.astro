@@ -51,6 +51,8 @@ import { getCanonicalUrl } from "../../i18n/index.ts";
       if (!loading || loading.dataset.jsInit) return;
       loading.dataset.jsInit = "1";
       const ref = new URLSearchParams(location.search).get("ref");
+      // Wompi agrega ?id=<transacción> a la URL de regreso.
+      const txId = new URLSearchParams(location.search).get("id") || "";
       const views = ["cfLoading", "cfNotFound", "cfUnknown", "cfFailed", "cfOk"];
       const show = (id: string) => views.forEach((v) => { const el = document.getElementById(v); if (el) el.style.display = v === id ? "block" : "none"; });
       const esc = (v: unknown) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
@@ -95,7 +97,16 @@ import { getCanonicalUrl } from "../../i18n/index.ts";
           show("cfFailed");
         }
       }
+      // Si el webhook tarda o se pierde, el servidor consulta el pago en Wompi.
+      const verifyWithWompi = () => {
+        fetch(`/api/orders/${encodeURIComponent(ref!)}/verify-payment`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ transactionId: txId || undefined }),
+        }).catch(() => { /* el sondeo normal sigue */ });
+      };
       function again(attempt: number) {
+        if ([0, 4, 10, 18].includes(attempt)) verifyWithWompi();
         if (attempt + 1 >= 20) {
           document.getElementById("cfSub")!.textContent = "Wompi hasn't confirmed the payment yet. Your order is saved and we'll email you as soon as it's approved.";
           return;

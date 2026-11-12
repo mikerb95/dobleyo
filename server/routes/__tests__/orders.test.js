@@ -30,6 +30,8 @@ vi.mock('../../services/audit.js', () => ({
 vi.mock('../../services/email.js', () => ({
     sendOrderConfirmationEmail: vi.fn().mockResolvedValue({ success: true }),
     sendOrderStatusEmail: vi.fn().mockResolvedValue({ success: true }),
+    sendSubscriptionChargeFailedEmail: vi.fn().mockResolvedValue({ success: true }),
+    sendSubscriptionCancelledEmail: vi.fn().mockResolvedValue({ success: true }),
 }));
 
 vi.mock('../../services/geocoding.js', () => ({
@@ -212,11 +214,10 @@ describe('POST /api/orders', () => {
         query.mockResolvedValueOnce({ rows: [{ cnt: 0 }] }); // COD antifraude: devoluciones previas
         query.mockResolvedValueOnce({ rows: [{ id: 5, reference: 'DY-COD-0001' }] }); // INSERT customer_orders
         query.mockResolvedValueOnce({ rows: [] }); // INSERT customer_order_items
-        query.mockResolvedValueOnce({ rows: [{ stock_deducted_at: null }] }); // deductStockForOrder: SELECT stock_deducted_at
+        query.mockResolvedValueOnce({ rows: [{ id: 5 }] }); // deductStockForOrder: reclama stock_deducted_at
         query.mockResolvedValueOnce({ rows: [{ product_id: 'cf-sierra', quantity: 2 }] }); // SELECT order items
         query.mockResolvedValueOnce({ rows: [{ stock_quantity: 8 }] }); // UPDATE products (descuenta)
         query.mockResolvedValueOnce({ rows: [] }); // INSERT inventory_movements
-        query.mockResolvedValueOnce({ rows: [] }); // UPDATE customer_orders SET stock_deducted_at
 
         const res = await request(app)
             .post('/api/orders')
@@ -226,6 +227,142 @@ describe('POST /api/orders', () => {
         const deductUpdateCall = query.mock.calls.find(([sql]) => sql.includes('UPDATE products SET stock_quantity = stock_quantity -'));
         expect(deductUpdateCall).toBeDefined();
         expect(deductUpdateCall[1]).toEqual([2, 'cf-sierra', 2]); // descuenta la cantidad pedida
+    });
+
+    it('debería responder 409 sin crear la orden si el total cambió frente al que vio el cliente', async () => {
+        query.mockResolvedValueOnce({
+            rows: [{ id: 'cf-sierra', name: 'Sierra Nevada', price: 42000, image_url: '/img/si.webp', stock_quantity: 10 }],
+        });
+
+        const res = await request(app)
+            .post('/api/orders')
+            .send({ ...validOrderPayload, expectedTotal: 1000 });
+
+        expect(res.status).toBe(409);
+        expect(res.body.code).toBe('TOTAL_CHANGED');
+        expect(res.body.data.total).toBe(96000); // 2 × 42.000 + 12.000 de envío fijo
+        expect(query.mock.calls.some(([sql]) => sql.includes('INSERT INTO customer_orders'))).toBe(false);
+    });
+
+    it('debería rechazar HTML en la ciudad cuando no viene el DANE', async () => {
+        const res = await request(app)
+            .post('/api/orders')
+            .send({ ...validOrderPayload, shippingCity: '<img src=x onerror=alert(1)>' });
+
+        expect(res.status).toBe(422);
+        expect(query).not.toHaveBeenCalled();
+    });
+
+    it('debería rechazar pedidos en USD (el sitio vende solo en COP)', async () => {
+        const res = await request(app)
+            .post('/api/orders')
+            .send({ ...validOrderPayload, currency: 'USD' });
+
+        expect(res.status).toBe(422);
+        expect(query).not.toHaveBeenCalled();
+    });
+});
+
+// ── POST /api/orders/wompi/webhook ────────────────────────────────────────────
+// Fuera de producción y sin WOMPI_EVENTS_SECRET la firma no se verifica: basta
+// con que el evento traiga checksum y timestamp.
+describe('POST /api/orders/wompi/webhook', () => {
+    let app;
+
+    const event = (tx) => ({
+        event: 'transaction.updated',
+        timestamp: 1700000000,
+        signature: { checksum: 'abc', properties: ['transaction.id'] },
+        data: { transaction: { reference: 'DY-1-AAAA', id: 'tx-1', status: 'APPROVED', amount_in_cents: 9600000, currency: 'COP', payment_method_type: 'CARD', ...tx } },
+    });
+    const order = (o) => ({
+        id: 7, status: 'pending_payment', total_cop: 96000, currency: 'COP', expected_amount_cents: 9600000,
+        payment_transaction_id: null, discount_code: null, payment_method: null, ...o,
+    });
+    const sqlCalls = (fragment) => query.mock.calls.filter(([sql]) => sql.includes(fragment));
+
+    beforeEach(() => {
+        app = buildApp();
+        vi.clearAllMocks();
+        query.mockReset();
+    });
+
+    it('debería marcar pagada la orden, contar el cupón y descontar stock con un APPROVED', async () => {
+        query.mockResolvedValueOnce({ rows: [order({ discount_code: 'PROMO10' })] }); // lookup
+        query.mockResolvedValueOnce({ rows: [{ id: 7 }] }); // UPDATE status = 'paid'
+        query.mockResolvedValueOnce({ rows: [] }); // UPDATE discount_codes
+        query.mockResolvedValueOnce({ rows: [{ id: 7 }] }); // reclama stock_deducted_at
+        query.mockResolvedValueOnce({ rows: [{ product_id: 'cf-sierra', quantity: 2 }] }); // ítems
+        query.mockResolvedValueOnce({ rows: [{ stock_quantity: 8 }] }); // UPDATE products
+        query.mockResolvedValueOnce({ rows: [] }); // INSERT inventory_movements
+        query.mockResolvedValue({ rows: [] }); // alerta y correo
+
+        const res = await request(app).post('/api/orders/wompi/webhook').send(event());
+
+        expect(res.status).toBe(200);
+        expect(sqlCalls("SET status = 'paid'")).toHaveLength(1);
+        expect(sqlCalls('UPDATE discount_codes')).toHaveLength(1);
+        expect(sqlCalls('UPDATE products SET stock_quantity = stock_quantity -')).toHaveLength(1);
+    });
+
+    it('no debería tocar la orden si el monto no coincide', async () => {
+        query.mockResolvedValueOnce({ rows: [order()] });
+
+        const res = await request(app).post('/api/orders/wompi/webhook').send(event({ amount_in_cents: 100 }));
+
+        expect(res.status).toBe(200);
+        expect(query).toHaveBeenCalledTimes(1);
+    });
+
+    it('no debería contar el cupón dos veces ni devolver a "paid" una orden ya enviada cuando el evento se repite', async () => {
+        query.mockResolvedValueOnce({ rows: [order({ status: 'shipped', payment_transaction_id: 'tx-1', discount_code: 'PROMO10' })] });
+        query.mockResolvedValueOnce({ rows: [] }); // UPDATE condicional: no aplica
+        query.mockResolvedValueOnce({ rows: [] }); // stock ya reclamado
+        query.mockResolvedValue({ rows: [] }); // correo ya enviado
+
+        const res = await request(app).post('/api/orders/wompi/webhook').send(event());
+
+        expect(res.status).toBe(200);
+        // El cambio de estado va condicionado a que la orden siga abierta para pago.
+        expect(sqlCalls("SET status = 'paid'")[0][0]).toContain("status = 'pending_payment'");
+        expect(sqlCalls('UPDATE discount_codes')).toHaveLength(0);
+        expect(sqlCalls('UPDATE products SET stock_quantity')).toHaveLength(0);
+    });
+
+    it('debería completar el descuento de stock en el reintento si el primer intento falló después de marcar pagada', async () => {
+        query.mockResolvedValueOnce({ rows: [order({ status: 'paid', payment_transaction_id: 'tx-1' })] });
+        query.mockResolvedValueOnce({ rows: [] }); // UPDATE condicional: ya estaba pagada
+        query.mockResolvedValueOnce({ rows: [{ id: 7 }] }); // reclama stock_deducted_at (seguía en NULL)
+        query.mockResolvedValueOnce({ rows: [{ product_id: 'cf-sierra', quantity: 2 }] });
+        query.mockResolvedValueOnce({ rows: [{ stock_quantity: 8 }] });
+        query.mockResolvedValueOnce({ rows: [] });
+        query.mockResolvedValue({ rows: [] });
+
+        const res = await request(app).post('/api/orders/wompi/webhook').send(event());
+
+        expect(res.status).toBe(200);
+        expect(sqlCalls('UPDATE products SET stock_quantity = stock_quantity -')).toHaveLength(1);
+    });
+
+    it('debería responder 500 si falla el descuento de stock, para que Wompi reintente', async () => {
+        query.mockResolvedValueOnce({ rows: [order()] });
+        query.mockResolvedValueOnce({ rows: [{ id: 7 }] }); // UPDATE status = 'paid'
+        query.mockRejectedValueOnce(new Error('BD caída')); // reclamo de stock
+
+        const res = await request(app).post('/api/orders/wompi/webhook').send(event());
+
+        expect(res.status).toBe(500);
+    });
+
+    it('no debería cancelar una orden pagada por un rechazo de otra transacción', async () => {
+        query.mockResolvedValueOnce({ rows: [order({ status: 'paid', payment_transaction_id: 'tx-1' })] });
+        query.mockResolvedValueOnce({ rows: [] }); // UPDATE condicional: no aplica
+
+        const res = await request(app).post('/api/orders/wompi/webhook').send(event({ id: 'tx-2', status: 'DECLINED' }));
+
+        expect(res.status).toBe(200);
+        expect(sqlCalls("SET status = 'cancelled'")[0][0]).toContain("status = 'pending_payment' OR payment_transaction_id = ?");
+        expect(sqlCalls('UPDATE products')).toHaveLength(0);
     });
 });
 

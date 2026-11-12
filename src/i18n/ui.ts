@@ -107,6 +107,8 @@ export const UI_EN: Record<string, string> = {
   "Wompi rechazó el pago. No se realizó ningún cobro; puede intentar de nuevo o con otro medio de pago.":
     "Wompi declined the payment and you weren't charged. Try again or use another payment method.",
   "Error de conexión. Inténtalo de nuevo.": "Connection error. Please try again.",
+  "El total de su pedido cambió a {total}. Revise el resumen y confirme de nuevo.":
+    "Your order total changed to {total}. Check the summary and confirm again.",
   // Países del selector de teléfono
   "Estados Unidos": "United States",
   "México": "Mexico",

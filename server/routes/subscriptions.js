@@ -24,7 +24,6 @@ import {
 export const subscriptionsRouter = Router();
 
 const DEFAULT_DISCOUNT = parseInt(process.env.SUBSCRIPTION_DISCOUNT_PERCENT || '10', 10);
-const WOMPI_EVENTS_SECRET = process.env.WOMPI_EVENTS_SECRET || '';
 const CRON_SECRET = process.env.SUBSCRIPTIONS_CRON_SECRET || '';
 const MAX_FAILED_ATTEMPTS = 3;
 

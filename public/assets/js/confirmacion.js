@@ -116,7 +116,7 @@ function initConfirmacion() {
       .map(
         (i) =>
           `<div class="oc-line">
-            <span class="oc-line__name">${i.quantity}× ${i.product_name}</span>
+            <span class="oc-line__name">${esc(i.quantity)}× ${esc(i.product_name)}</span>
             <span class="oc-line__price">${fmt(i.subtotal_cop)}</span>
           </div>`
       )
@@ -126,10 +126,10 @@ function initConfirmacion() {
       <div class="oc-header">
         <div>
           <p class="oc-ref-label">Número de pedido</p>
-          <p class="oc-ref">#${order.reference}</p>
+          <p class="oc-ref">#${esc(order.reference)}</p>
         </div>
         <span class="oc-status" style="background:${statusColor(order.status)}20; color:${statusColor(order.status)}">
-          ${statusLabel(order.status)}
+          ${esc(statusLabel(order.status))}
         </span>
       </div>
       <div class="oc-items">${items}</div>
@@ -145,7 +145,7 @@ function initConfirmacion() {
       </div>
       <div class="oc-delivery">
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M1.5 10.5l4-8 2.5 5 2-3 2.5 6" stroke="#4a6741" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        Entrega en <strong>${order.shipping_city}</strong>
+        Entrega en <strong>${esc(order.shipping_city)}</strong>
       </div>
     `;
   }
@@ -209,7 +209,20 @@ function initConfirmacion() {
     }
   }
 
+  // Si el webhook tarda o se pierde, se le pide al servidor que consulte el pago
+  // directamente en Wompi. El siguiente sondeo ya ve el pedido pagado. Wompi
+  // agrega ?id=<transacción> a la URL de regreso; sirve para ubicarla más rápido.
+  const VERIFY_AT = [0, 4, 10, 18];
+  function verifyWithWompi(ref) {
+    fetch(`/api/orders/${encodeURIComponent(ref)}/verify-payment`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ transactionId: txId || undefined }),
+    }).catch(() => { /* el sondeo normal sigue */ });
+  }
+
   function schedule(ref, attempt) {
+    if (VERIFY_AT.includes(attempt)) verifyWithWompi(ref);
     if (attempt + 1 >= POLL_MAX) {
       // Se acabó la espera: el pedido sigue registrado y el correo llegará
       // cuando Wompi confirme. Dejamos el estado pendiente con un aviso claro.
@@ -224,6 +237,7 @@ function initConfirmacion() {
 
   const params = new URLSearchParams(window.location.search);
   const ref = params.get("ref") || params.get("reference");
+  const txId = params.get("id") || "";
   document.getElementById("retryVerify")?.addEventListener("click", () => {
     if (!ref) return;
     showState("stateLoading");
