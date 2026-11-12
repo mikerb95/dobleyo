@@ -1,4 +1,5 @@
 import { logger } from '../logger.js';
+import { runInBackground } from '../utils/background.js';
 
 // Servicio de notificaciones push vía ntfy (https://ntfy.sh o instancia propia).
 // Configuración por entorno:
@@ -65,7 +66,7 @@ export async function sendNtfy({ title, message, priority = 3, tags = [], click,
  * esperar a ntfy.
  */
 export function sendNtfyAsync(opts) {
-  sendNtfy(opts).catch((err) => logger.error({ err }, '[ntfy] Fallo no capturado'));
+  runInBackground(sendNtfy(opts), 'la notificación ntfy');
 }
 
 // Los headers HTTP solo admiten latin-1: los títulos con tildes o emojis se

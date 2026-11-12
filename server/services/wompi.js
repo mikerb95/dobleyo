@@ -5,10 +5,13 @@
 import crypto from 'crypto';
 import { logger } from '../logger.js';
 
-const WOMPI_API_BASE = process.env.WOMPI_API_BASE || 'https://production.wompi.co';
 const WOMPI_PUBLIC_KEY = process.env.WOMPI_PUBLIC_KEY || '';
+// Con llaves de prueba (pub_test_) la API es la de sandbox, salvo que se indique otra.
+const WOMPI_API_BASE = process.env.WOMPI_API_BASE
+  || (WOMPI_PUBLIC_KEY.startsWith('pub_test_') ? 'https://sandbox.wompi.co' : 'https://production.wompi.co');
 const WOMPI_PRIVATE_KEY = process.env.WOMPI_PRIVATE_KEY || '';
 const WOMPI_INTEGRITY_SECRET = process.env.WOMPI_INTEGRITY_SECRET || '';
+const WOMPI_EVENTS_SECRET = process.env.WOMPI_EVENTS_SECRET || '';
 
 /** Firma de integridad: SHA256(reference + amountInCents + currency + integritySecret). */
 export function integrityHash(reference, amountCents, currency = 'COP') {
@@ -90,11 +93,54 @@ export async function chargePaymentSource({ amountCents, customerEmail, referenc
 
 /** Consulta el estado de una transacción. */
 export async function getTransaction(id) {
-  return wompiFetch(`/v1/transactions/${id}`, { key: WOMPI_PRIVATE_KEY });
+  return wompiFetch(`/v1/transactions/${encodeURIComponent(id)}`, { key: WOMPI_PRIVATE_KEY || WOMPI_PUBLIC_KEY });
+}
+
+/**
+ * Transacciones registradas en Wompi para una referencia de pago (requiere la
+ * llave privada). Sirve para conciliar pedidos cuyo evento nunca llegó.
+ * @returns {Promise<object[]>}
+ */
+export async function findTransactionsByReference(reference) {
+  if (!WOMPI_PRIVATE_KEY) return [];
+  const data = await wompiFetch(`/v1/transactions?reference=${encodeURIComponent(reference)}`);
+  return Array.isArray(data) ? data : [];
+}
+
+/**
+ * Verifica la firma de un evento (webhook) de Wompi.
+ * checksum = SHA256( valores_de_properties (en orden) + timestamp + eventsSecret ).
+ * `properties` son rutas relativas a `data`, p. ej. "transaction.id": la firma
+ * queda atada al contenido del evento, no solo al timestamp.
+ * https://docs.wompi.co/docs/colombia/eventos/
+ */
+export function verifyEventSignature(event) {
+  const checksum = event?.signature?.checksum;
+  const properties = event?.signature?.properties;
+  const tsStr = event?.timestamp;
+  if (!checksum || !tsStr || !Array.isArray(properties)) return false;
+
+  const concatenated = properties
+    .map((path) => String(path).split('.').reduce((obj, key) => obj?.[key], event.data))
+    .map((v) => (v == null ? '' : String(v)))
+    .join('');
+
+  const expected = crypto
+    .createHash('sha256')
+    .update(`${concatenated}${tsStr}${WOMPI_EVENTS_SECRET}`, 'utf8')
+    .digest('hex');
+
+  // Comparación en tiempo constante para evitar timing attacks.
+  const a = Buffer.from(expected, 'hex');
+  const b = Buffer.from(String(checksum), 'hex');
+  return a.length === b.length && crypto.timingSafeEqual(a, b);
 }
 
 export const wompiConfig = {
   apiBase: WOMPI_API_BASE,
   publicKey: WOMPI_PUBLIC_KEY,
   configured: Boolean(WOMPI_PRIVATE_KEY && WOMPI_PUBLIC_KEY),
+  // Consultar una transacción por id solo necesita la llave pública.
+  canQuery: Boolean(WOMPI_PRIVATE_KEY || WOMPI_PUBLIC_KEY),
+  eventsSecret: WOMPI_EVENTS_SECRET,
 };

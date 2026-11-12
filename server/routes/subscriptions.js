@@ -11,7 +11,9 @@ import {
   chargePaymentSource,
   getTransaction,
   wompiConfig,
+  verifyEventSignature,
 } from '../services/wompi.js';
+import { applyWompiTransaction } from '../services/orderPayments.js';
 import { notifySubscriptionChargeFailed } from '../services/alerts.js';
 import {
   sendOrderConfirmationEmail,
@@ -35,25 +37,6 @@ function addDaysISO(days) {
   const d = new Date();
   d.setDate(d.getDate() + days);
   return d.toISOString().slice(0, 10);
-}
-
-// Verifica la firma de un evento (webhook) de Wompi (igual que en orders.js).
-function verifyWompiEventSignature(event) {
-  const checksum = event?.signature?.checksum;
-  const properties = event?.signature?.properties;
-  const tsStr = event?.timestamp;
-  if (!checksum || !tsStr || !Array.isArray(properties)) return false;
-  const concatenated = properties
-    .map((path) => path.split('.').reduce((obj, key) => obj?.[key], event.data))
-    .map((v) => (v == null ? '' : String(v)))
-    .join('');
-  const expected = crypto
-    .createHash('sha256')
-    .update(`${concatenated}${tsStr}${WOMPI_EVENTS_SECRET}`, 'utf8')
-    .digest('hex');
-  const a = Buffer.from(expected, 'hex');
-  const b = Buffer.from(String(checksum), 'hex');
-  return a.length === b.length && crypto.timingSafeEqual(a, b);
 }
 
 // Crea el pedido (customer_orders) cuando un cobro queda APROBADO. Idempotente.
@@ -364,35 +347,50 @@ subscriptionsRouter.post('/run-billing', async (req, res) => {
   }
 });
 
+// Aplica una transacción de Wompi a su cobro de suscripción (PENDING →
+// APPROVED/DECLINED). Devuelve false si la transacción no es de una suscripción.
+// La llaman este webhook y el de pedidos (orders.js): Wompi admite una sola URL
+// de eventos por ambiente, así que cualquiera de las dos debe servir para todo.
+export async function handleSubscriptionTransaction(tx) {
+  if (!tx?.id) return false;
+
+  const { rows } = await query(
+    `SELECT c.*, s.frequency_days, s.amount_cop AS sub_amount, s.id AS sub_id
+     FROM subscription_charges c JOIN subscriptions s ON s.id = c.subscription_id
+     WHERE c.wompi_transaction_id = ? OR c.reference = ?`,
+    [tx.id, tx.reference ?? null]
+  );
+  if (!rows?.length) return false;
+  const charge = rows[0];
+  if (charge.status === 'APPROVED') return true; // idempotente
+
+  const subRows = await query('SELECT * FROM subscriptions WHERE id = ?', [charge.subscription_id]);
+  const sub = subRows.rows[0];
+  if (!sub) return true;
+
+  if (tx.status === 'APPROVED') {
+    await finalizeApprovedCharge(sub, charge, tx);
+  } else if (['DECLINED', 'ERROR', 'VOIDED'].includes(tx.status)) {
+    await markChargeFailed(sub, charge, tx.status);
+  }
+  return true;
+}
+
 // ─── POST /api/subscriptions/wompi/webhook ──────────────────────────────────
-// Reconcilia transacciones asíncronas (PENDING → APPROVED/DECLINED).
+// Misma lógica que POST /api/orders/wompi/webhook: si la transacción no es de
+// una suscripción, se trata como el pago de un pedido.
 subscriptionsRouter.post('/wompi/webhook', async (req, res) => {
   try {
     const event = req.body;
-    if (process.env.NODE_ENV === 'production' && !verifyWompiEventSignature(event)) {
+    if (process.env.NODE_ENV === 'production' && !verifyEventSignature(event)) {
       return res.status(401).json({ success: false, error: 'Firma inválida' });
     }
     const tx = event?.data?.transaction;
     if (!tx?.id) return res.json({ success: true });
 
-    const { rows } = await query(
-      `SELECT c.*, s.frequency_days, s.amount_cop AS sub_amount, s.id AS sub_id
-       FROM subscription_charges c JOIN subscriptions s ON s.id = c.subscription_id
-       WHERE c.wompi_transaction_id = ? OR c.reference = ?`,
-      [tx.id, tx.reference]
-    );
-    if (!rows.length) return res.json({ success: true });
-    const charge = rows[0];
-    if (charge.status === 'APPROVED') return res.json({ success: true }); // idempotente
-
-    const subRows = await query('SELECT * FROM subscriptions WHERE id = ?', [charge.subscription_id]);
-    const sub = subRows.rows[0];
-    if (!sub) return res.json({ success: true });
-
-    if (tx.status === 'APPROVED') {
-      await finalizeApprovedCharge(sub, charge, tx);
-    } else if (['DECLINED', 'ERROR', 'VOIDED'].includes(tx.status)) {
-      await markChargeFailed(sub, charge, tx.status);
+    const handled = await handleSubscriptionTransaction(tx);
+    if (!handled && event?.event === 'transaction.updated' && tx.reference) {
+      await applyWompiTransaction(tx, 'wompi-webhook');
     }
     res.json({ success: true });
   } catch (err) {

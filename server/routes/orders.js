@@ -7,15 +7,18 @@ import { query, withTransaction } from '../db.js';
 import { authenticateToken, requireRole, optionalAuth } from '../auth.js';
 import { checkoutLimiter } from '../middleware/rateLimit.js';
 import { logAudit, logSystemAudit } from '../services/audit.js';
-import { scheduleStockSync } from '../services/mlStock.js';
-import { sendOrderConfirmationEmail, sendOrderStatusEmail } from '../services/email.js';
+import { sendOrderStatusEmail } from '../services/email.js';
 import { geocodeOrderAsync } from '../services/geocoding.js';
 import { trackingUrlForGuide } from '../services/interrapidisimo.js';
-import { resolveOrderShipping } from '../services/checkoutShipping.js';
+import { resolveOrderShipping, packageWeightKg, signQuote } from '../services/checkoutShipping.js';
 import { findMunicipality } from '../utils/coLocations.js';
+import { verifyEventSignature } from '../services/wompi.js';
 import {
-    notifySaleConfirmed, notifyStockDepleted, notifyStockBelowMinimum, notifyOversold,
-} from '../services/alerts.js';
+    deductStockForOrder, replenishStockForOrder, notifyConfirmedSale,
+    sendConfirmationEmailForOrder, applyWompiTransaction, reconcileOrderPayment,
+} from '../services/orderPayments.js';
+import { handleSubscriptionTransaction } from './subscriptions.js';
+import { runInBackground } from '../utils/background.js';
 
 export const ordersRouter = Router();
 
@@ -87,154 +90,24 @@ function buildWompiWidgetData(reference, amountPesos, customerEmail, redirectUrl
     };
 }
 
-/**
- * Verifica la firma de un evento (webhook) de Wompi.
- * checksum = SHA256( valores_de_properties (en orden) + timestamp + eventsSecret ).
- * `properties` son rutas relativas a `data`, p.ej. "transaction.id".
- * Ata la firma al contenido del evento, no solo al timestamp.
- * https://docs.wompi.co/docs/colombia/eventos/
- */
-function verifyWompiEventSignature(event) {
-    const checksum = event?.signature?.checksum;
-    const properties = event?.signature?.properties;
-    const tsStr = event?.timestamp;
-    if (!checksum || !tsStr || !Array.isArray(properties)) return false;
+// El descuento/reposición de inventario, los avisos y la aplicación de las
+// transacciones de Wompi viven en server/services/orderPayments.js.
 
-    const concatenated = properties
-        .map((path) => path.split('.').reduce((obj, key) => obj?.[key], event.data))
-        .map((v) => (v == null ? '' : String(v)))
-        .join('');
+// La consulta de pago desde la página de confirmación llama a la API de Wompi:
+// se limita por IP para que nadie la use de martillo.
+const verifyPaymentLimiter = rateLimit({
+    windowMs: 5 * 60 * 1000,
+    max: 30,
+    message: { success: false, error: 'Demasiadas consultas. Intente de nuevo en unos minutos.' },
+    standardHeaders: true,
+    legacyHeaders: false,
+    keyGenerator: ipKeyGenerator,
+    skip: () => process.env.NODE_ENV === 'test',
+});
 
-    const expected = crypto
-        .createHash('sha256')
-        .update(`${concatenated}${tsStr}${WOMPI_EVENTS_SECRET}`, 'utf8')
-        .digest('hex');
-
-    // Comparación en tiempo constante para evitar timing attacks.
-    const a = Buffer.from(expected, 'hex');
-    const b = Buffer.from(String(checksum), 'hex');
-    return a.length === b.length && crypto.timingSafeEqual(a, b);
-}
-
-// ─── Inventario: descuento directo al confirmarse el pago ─────────────────
-// Se descuenta SOLO cuando la orden queda 'paid' (webhook Wompi) o nace COD
-// ('processing' de inmediato) — nunca en 'pending_payment'. No hay reserva de
-// stock: el riesgo de sobreventa entre creación y pago se acepta para este
-// catálogo de bajo volumen. Idempotente vía `stock_deducted_at`.
-// Devuelve true solo cuando efectivamente descontó (primera vez para la orden).
-// Los llamadores lo usan para notificar la venta exactamente una vez.
-async function deductStockForOrder(orderId, reference) {
-    const order = await query(`SELECT stock_deducted_at FROM customer_orders WHERE id = ?`, [orderId]);
-    if (!order.rows.length || order.rows[0].stock_deducted_at) return false;
-
-    const items = await query(
-        `SELECT i.product_id, i.quantity, p.name AS product_name, p.stock_min
-           FROM customer_order_items i
-      LEFT JOIN products p ON p.id = i.product_id
-          WHERE i.order_id = ?`,
-        [orderId]
-    );
-
-    for (const item of items.rows) {
-        const result = await query(
-            `UPDATE products SET stock_quantity = stock_quantity - ?
-             WHERE id = ? AND stock_quantity >= ?
-             RETURNING stock_quantity`,
-            [item.quantity, item.product_id, item.quantity]
-        );
-        if (result.rows.length) {
-            const after = result.rows[0].stock_quantity;
-            await query(
-                `INSERT INTO inventory_movements
-                    (product_id, movement_type, quantity, quantity_before, quantity_after, reason, reference)
-                 VALUES (?, 'salida', ?, ?, ?, 'Venta e-commerce', ?)`,
-                [item.product_id, item.quantity, after + item.quantity, after, reference]
-            );
-
-            // Alertas de inventario: agotado manda sobre "bajo el mínimo" para no
-            // mandar dos notificaciones del mismo producto en la misma venta.
-            const nombre = item.product_name || `Producto #${item.product_id}`;
-            const minimo = Number(item.stock_min ?? 0);
-            if (after <= 0) {
-                notifyStockDepleted({ productName: nombre, reference });
-            } else if (minimo > 0 && after <= minimo) {
-                notifyStockBelowMinimum({ productName: nombre, remaining: after, minimum: minimo });
-            }
-        } else {
-            // Sobreventa: no se pudo descontar (stock insuficiente en el momento del
-            // pago). La orden ya está pagada/confirmada, así que se deja seguir — se
-            // registra para que el admin gestione backorder/reposición.
-            logger.warn({ orderId, productId: item.product_id, quantity: item.quantity }, '[Inventory] Sobreventa detectada al descontar stock');
-            logSystemAudit('oversold', 'products', item.product_id, { orderId, reference, quantity: item.quantity }).catch(() => {});
-            notifyOversold({
-                productName: item.product_name || `Producto #${item.product_id}`,
-                quantity: item.quantity,
-                reference,
-            });
-        }
-    }
-
-    await query(`UPDATE customer_orders SET stock_deducted_at = datetime('now') WHERE id = ?`, [orderId]);
-    // El stock cambió: MercadoLibre debe ofrecer lo mismo que queda en el sitio.
-    scheduleStockSync(items.rows.map((i) => i.product_id));
-    return true;
-}
-
-// Publica la alerta de venta confirmada. Se llama solo cuando deductStockForOrder
-// devolvió true, así que no se duplica ante webhooks reintentados.
-async function notifyConfirmedSale(orderId) {
-    try {
-        const orderRes = await query(
-            `SELECT reference, customer_name, shipping_city, total_cop, currency, payment_method
-               FROM customer_orders WHERE id = ?`,
-            [orderId]
-        );
-        if (!orderRes?.rows?.length) return;
-        const o = orderRes.rows[0];
-        const itemsRes = await query(
-            `SELECT product_name, quantity FROM customer_order_items WHERE order_id = ?`,
-            [orderId]
-        );
-        notifySaleConfirmed({
-            reference:     o.reference,
-            customerName:  o.customer_name,
-            city:          o.shipping_city,
-            total:         o.total_cop,
-            currency:      o.currency,
-            paymentMethod: o.payment_method,
-            items:         (itemsRes?.rows ?? []).map((r) => ({ name: r.product_name, quantity: r.quantity })),
-        });
-    } catch (err) {
-        logger.error({ err, orderId }, '[Alerts] Error preparando la alerta de venta');
-    }
-}
-
-// Repone stock cuando una orden que YA había descontado inventario se cancela
-// o reembolsa. Si nunca se descontó (p. ej. seguía en pending_payment), no hay
-// nada que reponer.
-async function replenishStockForOrder(orderId, reference, reasonLabel) {
-    const order = await query(`SELECT stock_deducted_at FROM customer_orders WHERE id = ?`, [orderId]);
-    if (!order.rows.length || !order.rows[0].stock_deducted_at) return;
-
-    const items = await query(`SELECT product_id, quantity FROM customer_order_items WHERE order_id = ?`, [orderId]);
-    for (const item of items.rows) {
-        const result = await query(
-            `UPDATE products SET stock_quantity = stock_quantity + ? WHERE id = ? RETURNING stock_quantity`,
-            [item.quantity, item.product_id]
-        );
-        if (result.rows.length) {
-            const after = result.rows[0].stock_quantity;
-            await query(
-                `INSERT INTO inventory_movements
-                    (product_id, movement_type, quantity, quantity_before, quantity_after, reason, reference)
-                 VALUES (?, 'devolucion', ?, ?, ?, ?, ?)`,
-                [item.product_id, item.quantity, after - item.quantity, after, reasonLabel, reference]
-            );
-        }
-    }
-    await query(`UPDATE customer_orders SET stock_deducted_at = NULL WHERE id = ?`, [orderId]);
-    scheduleStockSync(items.rows.map((i) => i.product_id));
-}
+// Texto libre de ciudad/departamento (pedidos sin DANE): solo letras, números,
+// espacios y puntuación de nombres. Nada de HTML.
+const PLACE_NAME_RE = /^[\p{L}\p{M}\d .,'()\-]{2,80}$/u;
 
 // ─── POST /api/orders ─────────────────────────────────────────────────────
 // Crea una orden en estado pending_payment y devuelve la URL de pago Wompi
@@ -252,14 +125,19 @@ ordersRouter.post('/',
         body('customerDocumentType').optional({ values: 'falsy' }).isIn(['CC', 'CE', 'NI', 'TI', 'PA']).withMessage('Tipo de documento inválido'),
         body('customerDocumentNumber').optional({ values: 'falsy' }).trim().matches(/^[0-9A-Za-z-]{4,25}$/).withMessage('Número de documento inválido'),
         body('shippingAddress').trim().notEmpty().withMessage('Dirección requerida'),
-        body('shippingCity').trim().notEmpty().withMessage('Ciudad requerida'),
-        body('shippingDepartment').optional().trim(),
+        body('shippingCity').trim().notEmpty().withMessage('Ciudad requerida')
+            .matches(PLACE_NAME_RE).withMessage('Ciudad inválida'),
+        body('shippingDepartment').optional({ values: 'falsy' }).trim()
+            .matches(PLACE_NAME_RE).withMessage('Departamento inválido'),
         // DANE de la ciudad elegida en el checkout (Envia.com cotiza con él).
         body('shippingDaneCode').optional({ values: 'falsy' }).matches(/^\d{5}$/).withMessage('Ciudad inválida'),
         body('shippingQuoteToken').optional({ values: 'falsy' }).isString().isLength({ max: 200 }),
-        body('items').isArray({ min: 1 }).withMessage('El carrito está vacío'),
+        body('items').isArray({ min: 1, max: 50 }).withMessage('El carrito está vacío'),
         body('items.*.productId').notEmpty(),
-        body('items.*.quantity').isInt({ min: 1 }),
+        body('items.*.quantity').isInt({ min: 1, max: 100 }).withMessage('Cantidad inválida'),
+        // Total que el cliente vio en pantalla. Si no coincide con el calculado
+        // aquí, no se crea la orden: se le devuelve el valor real para que confirme.
+        body('expectedTotal').optional({ values: 'null' }).isInt({ min: 0 }),
         body('currency').optional().isIn(['COP', 'USD']).withMessage('Moneda inválida'),
         body('paymentMethod').optional().isIn(['wompi', 'cod']).withMessage('Método de pago inválido'),
         body('lang').optional().isIn(['es', 'en']),
@@ -275,10 +153,16 @@ ordersRouter.post('/',
                 customerName, customerEmail, customerPhone,
                 customerDocumentType, customerDocumentNumber,
                 shippingAddress, shippingZip, shippingDaneCode, shippingQuoteToken,
-                items, notes, couponCode, currency = 'COP', paymentMethod = 'wompi', lang
+                items, notes, couponCode, currency = 'COP', paymentMethod = 'wompi', lang, expectedTotal
             } = req.body;
             const isUSD = currency === 'USD';
             const isCod = paymentMethod === 'cod';
+
+            // El sitio vende solo en COP (también en inglés). La ruta en USD queda
+            // apagada salvo que se habilite a propósito: daba envío gratis.
+            if (isUSD && process.env.ENABLE_USD_CHECKOUT !== 'true') {
+                return res.status(422).json({ success: false, error: 'Moneda no disponible' });
+            }
 
             // Con DANE, ciudad y departamento salen de la lista oficial (no del texto del navegador).
             let { shippingCity, shippingDepartment } = req.body;
@@ -464,8 +348,29 @@ ordersRouter.post('/',
                 }
             }
 
-            // Referencia única: DY-timestamp-random4chars
-            const ref = `DY-${Date.now()}-${crypto.randomBytes(2).toString('hex').toUpperCase()}`;
+            // El cliente debe pagar lo que vio. Si el total cambió (precio, cupón que
+            // ya no aplica, envío recotizado), no se crea la orden: se responde el
+            // desglose real y un token que fija ese envío para el siguiente intento.
+            if (expectedTotal != null && Number(expectedTotal) !== total) {
+                const lockedQuoteToken = (!isUSD && municipality && shipping > 0)
+                    ? signQuote({
+                        daneCode: municipality.code,
+                        weightKg: packageWeightKg(normalizedItems, productsResult.rows),
+                        isCod,
+                        cost: shipping,
+                    })
+                    : null;
+                return res.status(409).json({
+                    success: false,
+                    code: 'TOTAL_CHANGED',
+                    error: 'El total del pedido cambió. Revise el resumen y confirme de nuevo.',
+                    data: { subtotal, discountAmount, shipping, total, shippingQuoteToken: lockedQuoteToken },
+                });
+            }
+
+            // Referencia única: DY-timestamp-10 hex aleatorios. La consulta pública
+            // del pedido se hace por referencia, así que no debe poder adivinarse.
+            const ref = `DY-${Date.now()}-${crypto.randomBytes(5).toString('hex').toUpperCase()}`;
             const initialStatus = isCod ? 'processing' : 'pending_payment';
             // Monto exacto que se firmará hacia Wompi (en centavos, en la moneda real
             // de la orden). El webhook valida contra este campo en vez de asumir COP,
@@ -540,30 +445,17 @@ ordersRouter.post('/',
             // espera (no fire-and-forget) para que la respuesta refleje stock consistente.
             if (isCod) {
                 const codDeducted = await deductStockForOrder(orderId, reference).catch((err) => { logger.error({ err, orderId }, '[POST /api/orders] Error descontando stock COD'); return false; });
-                if (codDeducted) notifyConfirmedSale(orderId);
+                if (codDeducted) await notifyConfirmedSale(orderId);
             }
 
             // Geocodificación asíncrona — no bloquea la respuesta HTTP
             geocodeOrderAsync(orderId, shippingCity, shippingDepartment);
 
             // COD no tiene webhook de confirmación de pago: enviar el email de
-            // confirmación de una vez (la orden ya nace 'processing').
+            // confirmación de una vez (la orden ya nace 'processing'). Si falla, lo
+            // reintenta el mantenimiento.
             if (isCod) {
-                sendOrderConfirmationEmail(customerEmail, customerName, {
-                    orderId: reference,
-                    date: new Date().toISOString(),
-                    items: normalizedItems.map((i) => ({ name: i.productName, quantity: i.quantity, price: i.unitPrice })),
-                    subtotal,
-                    shipping,
-                    discount: discountAmount,
-                    total,
-                    shippingAddress: `${shippingAddress}, ${shippingCity}`,
-                    paymentMethod: 'cod',
-                }).then((r) => {
-                    if (!r.success) throw r.error ?? new Error('Envío rechazado');
-                    return query(`UPDATE customer_orders SET confirmation_email_sent_at = datetime('now') WHERE id = ?`, [orderId]);
-                })
-                    .catch((err) => logger.error({ err }, '[POST /api/orders] Error enviando confirmación COD'));
+                runInBackground(sendConfirmationEmailForOrder(orderId), 'el correo de confirmación COD');
             }
 
             return res.status(201).json({
@@ -780,7 +672,7 @@ ordersRouter.patch('/:ref/status',
                 await replenishStockForOrder(result.rows[0].id, ref, 'Cancelación manual (admin)').catch((err) => logger.error({ err }, '[PATCH /api/orders/:ref/status] Error reponiendo stock'));
             } else if (['paid', 'processing'].includes(status) && !['paid', 'processing', 'shipped', 'delivered'].includes(previousStatus)) {
                 const statusDeducted = await deductStockForOrder(result.rows[0].id, ref).catch((err) => { logger.error({ err }, '[PATCH /api/orders/:ref/status] Error descontando stock'); return false; });
-                if (statusDeducted) notifyConfirmedSale(result.rows[0].id);
+                if (statusDeducted) await notifyConfirmedSale(result.rows[0].id);
             }
 
             await logAudit(req.user.id, 'update', 'customer_orders', result.rows[0].id, { status, previousStatus });
@@ -801,8 +693,53 @@ ordersRouter.patch('/:ref/status',
     }
 );
 
+// ─── POST /api/orders/:ref/verify-payment ────────────────────────────────
+// Público. La página de confirmación lo llama mientras el pedido siga pendiente:
+// le pregunta a Wompi por la referencia y, si hay un pago aprobado, lo aplica.
+// Cubre el caso en que el webhook no llega. No confía en nada del navegador:
+// `transactionId` solo sirve para ubicar la transacción en Wompi, y el monto y la
+// referencia se validan igual que en el webhook.
+
+ordersRouter.post('/:ref/verify-payment',
+    verifyPaymentLimiter,
+    [body('transactionId').optional({ values: 'falsy' }).isString().isLength({ max: 80 })],
+    async (req, res) => {
+        try {
+            const { ref } = req.params;
+            const readStatus = () => query(`SELECT status FROM customer_orders WHERE reference = ?`, [ref]);
+
+            const before = await readStatus();
+            if (!before.rows.length) {
+                return res.status(404).json({ success: false, error: 'Orden no encontrada' });
+            }
+            let status = before.rows[0].status;
+
+            if (validationResult(req).isEmpty() && ['pending_payment', 'cancelled'].includes(status)) {
+                try {
+                    const r = await reconcileOrderPayment(ref, {
+                        transactionId: req.body?.transactionId || undefined,
+                        source: 'wompi-reconcile-page',
+                    });
+                    if (r.recovered) status = (await readStatus()).rows[0]?.status ?? status;
+                } catch (err) {
+                    logger.error({ err, ref }, '[POST /api/orders/:ref/verify-payment] Error conciliando con Wompi');
+                }
+            }
+
+            return res.json({ success: true, data: { reference: ref, status } });
+        } catch (err) {
+            logger.error({ err }, '[POST /api/orders/:ref/verify-payment] Error:');
+            return res.status(500).json({ success: false, error: 'Error al consultar el pago' });
+        }
+    }
+);
+
 // ─── POST /api/orders/wompi/webhook ──────────────────────────────────────
-// Notificación server-to-server de Wompi al confirmar un pago
+// Notificación server-to-server de Wompi. Wompi admite UNA sola URL de eventos
+// por ambiente, así que este endpoint atiende pedidos y cobros de suscripción:
+// si la referencia no es de un pedido, se le pasa a subscriptions.js.
+// Cualquier error responde 500 para que Wompi reintente; applyWompiTransaction
+// es idempotente y completa lo que haya quedado a medias.
 
 ordersRouter.post('/wompi/webhook', async (req, res) => {
     try {
@@ -817,7 +754,7 @@ ordersRouter.post('/wompi/webhook', async (req, res) => {
         if (!checksum || !tsStr) {
             return res.sendStatus(400);
         }
-        if (WOMPI_EVENTS_SECRET && !verifyWompiEventSignature(event)) {
+        if (WOMPI_EVENTS_SECRET && !verifyEventSignature(event)) {
             logger.warn('[Wompi webhook] Firma inválida');
             return res.sendStatus(401);
         }
@@ -825,139 +762,11 @@ ordersRouter.post('/wompi/webhook', async (req, res) => {
         if (event?.event !== 'transaction.updated') return res.sendStatus(200);
 
         const tx = event.data?.transaction;
-        if (!tx) return res.sendStatus(400);
+        if (!tx || !tx.reference || !tx.id) return res.sendStatus(400);
 
-        const { reference, status: txStatus, id: txId, payment_method_type, amount_in_cents, currency } = tx;
-        if (!reference) return res.sendStatus(400);
-
-        const orderLookup = await query(
-            `SELECT id, status, total_cop, currency, expected_amount_cents, payment_transaction_id, discount_code
-       FROM customer_orders
-       WHERE reference = ?`,
-            [reference]
-        );
-
-        if (!orderLookup.rows.length) return res.sendStatus(200);
-
-        const order = orderLookup.rows[0];
-
-        // Mapear estado de Wompi → estado interno.
-        const statusMap = { APPROVED: 'paid', DECLINED: 'cancelled', VOIDED: 'cancelled', ERROR: 'pending_payment' };
-        const newStatus = statusMap[txStatus] || 'pending_payment';
-
-        // Idempotencia: el mismo evento (misma transacción y mismo estado resultante)
-        // ya fue aplicado → acusamos recibo sin reprocesar (evita reenviar el correo).
-        if (order.payment_transaction_id === txId && order.status === newStatus) {
-            return res.sendStatus(200);
-        }
-
-        // El monto y la moneda deben coincidir con la orden, en la moneda REAL de la
-        // orden (COP o USD) — expected_amount_cents se fija al crear la orden con el
-        // mismo monto firmado hacia Wompi, así que sirve tanto para COP como para USD.
-        // Órdenes creadas antes de esta columna (expected_amount_cents NULL) caen al
-        // cálculo legado en COP para no romper transacciones en vuelo.
-        const expectedAmount = order.expected_amount_cents != null
-            ? Number(order.expected_amount_cents)
-            : Number(order.total_cop) * 100;
-        const expectedCurrency = order.currency || 'COP';
-        if (Number(amount_in_cents) !== expectedAmount || (currency && currency !== expectedCurrency)) {
-            logger.warn({ reference, txId, expectedAmount, expectedCurrency, amount_in_cents, currency }, '[Wompi webhook] Monto/moneda inválidos; se ignora');
-            return res.sendStatus(200);
-        }
-
-        // Una orden ya pagada no se degrada por una transacción DISTINTA (p. ej. un
-        // segundo intento con otra tarjeta que llega tarde). Solo un evento de la MISMA
-        // transacción (un VOID/contracargo) puede cambiarla.
-        if (order.status === 'paid' && order.payment_transaction_id && order.payment_transaction_id !== txId) {
-            logger.warn({ reference, txId }, '[Wompi webhook] Orden ya pagada por otra transacción; se ignora');
-            return res.sendStatus(200);
-        }
-
-        // Un pago APROBADO gana sobre intentos previos fallidos: aunque un DECLINED
-        // anterior haya dejado la orden en 'cancelled', un APPROVED posterior (nueva
-        // transacción, misma referencia) la marca como pagada. Para estados que NO son
-        // 'paid', no pisamos una orden que ya avanzó en el fulfillment, salvo que el
-        // evento venga de la misma transacción registrada (p. ej. un VOID posterior).
-        if (newStatus !== 'paid'
-            && order.status !== 'pending_payment'
-            && order.status !== 'cancelled'
-            && order.payment_transaction_id !== txId) {
-            return res.sendStatus(200);
-        }
-
-        const orderResult = await query(
-            `UPDATE customer_orders
-       SET status = ?, payment_method = ?, payment_transaction_id = ?,
-           payment_data = ?
-       WHERE reference = ?
-       RETURNING id, customer_name, customer_email, total_cop, subtotal_cop, shipping_cop,
-                 shipping_address, shipping_city`,
-            [newStatus, payment_method_type || 'wompi', txId, JSON.stringify(tx), reference]
-        );
-
-        if (!orderResult.rows.length) return res.sendStatus(200);
-
-        const updatedOrder = orderResult.rows[0];
-
-        // El pago aprobado es el evento de negocio más importante del flujo: queda
-        // en audit_logs aunque no haya un usuario autenticado detrás (lo dispara Wompi).
-        logSystemAudit('update', 'customer_orders', updatedOrder.id, {
-            reference, from: order.status, to: newStatus, txId, source: 'wompi-webhook',
-        }).catch(() => {});
-
-        // Contabilizar el uso del cupón SOLO al aprobarse el pago. El UPDATE es atómico
-        // y tope-seguro: la condición evita superar max_uses ante webhooks concurrentes.
-        if (newStatus === 'paid' && order.discount_code) {
-            await query(
-                `UPDATE discount_codes
-           SET uses_count = uses_count + 1
-         WHERE code = ? AND (max_uses IS NULL OR uses_count < max_uses)`,
-                [order.discount_code]
-            );
-        }
-
-        // Inventario: descuento al aprobarse, reposición si un VOID/contracargo
-        // revierte un pago que ya había sido aprobado (mismo txId, ver guard arriba).
-        if (newStatus === 'paid') {
-            const paidDeducted = await deductStockForOrder(updatedOrder.id, reference).catch((err) => { logger.error({ err, orderId: updatedOrder.id }, '[Wompi webhook] Error descontando stock'); return false; });
-            if (paidDeducted) notifyConfirmedSale(updatedOrder.id);
-        } else if (order.status === 'paid') {
-            await replenishStockForOrder(updatedOrder.id, reference, 'Pago revertido (Wompi)').catch((err) => logger.error({ err, orderId: updatedOrder.id }, '[Wompi webhook] Error reponiendo stock'));
-        }
-
-        // Enviar email de confirmación solo si el pago fue aprobado. Se desacopla de la
-        // respuesta HTTP del webhook: si Resend falla aquí, NO se debe devolver 500 (eso
-        // dispararía un reintento de Wompi que la idempotencia de arriba ignoraría sin
-        // reenviar el correo). El envío queda pendiente vía confirmation_email_sent_at
-        // y refresh-all lo reintenta (ver server/routes/shipping.js).
-        if (newStatus === 'paid') {
-            const itemsResult = await query(
-                `SELECT product_name, quantity, unit_price_cop
-         FROM customer_order_items WHERE order_id = ?`,
-                [updatedOrder.id]
-            );
-
-            sendOrderConfirmationEmail(
-                updatedOrder.customer_email,
-                updatedOrder.customer_name,
-                {
-                    orderId: reference,
-                    date: new Date().toISOString(),
-                    items: itemsResult.rows.map(r => ({
-                        name: r.product_name,
-                        quantity: r.quantity,
-                        price: r.unit_price_cop
-                    })),
-                    subtotal: updatedOrder.subtotal_cop,
-                    shipping: updatedOrder.shipping_cop,
-                    total: updatedOrder.total_cop,
-                    shippingAddress: `${updatedOrder.shipping_address}, ${updatedOrder.shipping_city}`
-                }
-            ).then((r) => {
-                if (!r.success) throw r.error ?? new Error('Envío rechazado');
-                return query(`UPDATE customer_orders SET confirmation_email_sent_at = datetime('now') WHERE id = ?`, [updatedOrder.id]);
-            })
-                .catch((err) => logger.error({ err, reference }, '[Wompi webhook] Error enviando confirmación de pago; se reintentará por refresh-all'));
+        const result = await applyWompiTransaction(tx, 'wompi-webhook');
+        if (result.outcome === 'not_found' || result.outcome === 'ignored') {
+            await handleSubscriptionTransaction(tx);
         }
 
         return res.sendStatus(200);

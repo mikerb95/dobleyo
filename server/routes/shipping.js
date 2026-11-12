@@ -6,7 +6,8 @@ import { logger } from '../logger.js';
 import { query } from '../db.js';
 import { authenticateToken, requireRole } from '../auth.js';
 import { logAudit, logSystemAudit } from '../services/audit.js';
-import { sendShippingNotificationEmail, sendOrderConfirmationEmail, sendOrderStatusEmail } from '../services/email.js';
+import { sendShippingNotificationEmail, sendOrderStatusEmail } from '../services/email.js';
+import { sendConfirmationEmailForOrder, reconcilePendingPayments } from '../services/orderPayments.js';
 import { notifyShippingIssue } from '../services/alerts.js';
 import {
     FREE_SHIPPING_FROM_COP,
@@ -1291,15 +1292,14 @@ async function expireAbandonedOrders(hours = 48) {
     return result.rows.length;
 }
 
-// Reintenta el email de confirmación de pago para órdenes 'paid' que no lo
-// recibieron (Resend falló en el webhook). Ventana de 48h: pasado eso, se asume
-// que el cliente ya fue atendido por otro canal (soporte) y se deja de insistir.
+// Reintenta el email de confirmación de los pedidos confirmados que no lo
+// recibieron (Resend falló en el webhook o al crear un contraentrega). Ventana de
+// 48h: pasado eso, se asume que el cliente ya fue atendido por otro canal
+// (soporte) y se deja de insistir.
 async function retryPendingConfirmationEmails(limit = 10) {
     const pending = await query(
-        `SELECT id, reference, customer_name, customer_email, subtotal_cop, shipping_cop, total_cop,
-                shipping_address, shipping_city, payment_method
-         FROM customer_orders
-         WHERE status = 'paid' AND confirmation_email_sent_at IS NULL
+        `SELECT id FROM customer_orders
+         WHERE status IN ('paid', 'processing') AND confirmation_email_sent_at IS NULL
            AND datetime(created_at) > datetime('now', '-48 hours')
          ORDER BY created_at ASC
          LIMIT ?`,
@@ -1308,27 +1308,7 @@ async function retryPendingConfirmationEmails(limit = 10) {
 
     let sent = 0;
     for (const order of pending.rows) {
-        try {
-            const itemsResult = await query(
-                `SELECT product_name, quantity, unit_price_cop FROM customer_order_items WHERE order_id = ?`,
-                [order.id]
-            );
-            const r = await sendOrderConfirmationEmail(order.customer_email, order.customer_name, {
-                orderId: order.reference,
-                date: new Date().toISOString(),
-                items: itemsResult.rows.map((r) => ({ name: r.product_name, quantity: r.quantity, price: r.unit_price_cop })),
-                subtotal: order.subtotal_cop,
-                shipping: order.shipping_cop,
-                total: order.total_cop,
-                shippingAddress: `${order.shipping_address}, ${order.shipping_city}`,
-                paymentMethod: order.payment_method,
-            });
-            if (!r.success) throw r.error ?? new Error('Envío rechazado');
-            await query(`UPDATE customer_orders SET confirmation_email_sent_at = datetime('now') WHERE id = ?`, [order.id]);
-            sent++;
-        } catch (err) {
-            logger.error({ err, orderId: order.id }, '[Shipping refresh-all] Reintento de email de confirmación falló');
-        }
+        if (await sendConfirmationEmailForOrder(order.id)) sent++;
     }
     return sent;
 }
@@ -1336,8 +1316,9 @@ async function retryPendingConfirmationEmails(limit = 10) {
 // Lógica compartida entre el botón admin (POST /refresh-all) y el disparador
 // externo programado (POST /cron-refresh-all). Presupuesto de tiempo acotado
 // para respetar límites de funciones serverless. Además de refrescar tracking,
-// recupera envíos huérfanos, expira órdenes abandonadas y reintenta emails de
-// confirmación pendientes — todo bajo el mismo presupuesto.
+// recupera envíos huérfanos, concilia con Wompi los pagos sin confirmar, expira
+// órdenes abandonadas y reintenta emails de confirmación pendientes — todo bajo
+// el mismo presupuesto.
 async function runShippingMaintenance() {
     const startedAt = Date.now();
     const TIME_BUDGET_MS = 8000;
@@ -1367,11 +1348,19 @@ async function runShippingMaintenance() {
     let orphanResults = [];
     let expiredCount = 0;
     let emailsSent = 0;
+    let paymentsRecovered = 0;
 
     if (timeLeft() > 1000) {
         orphanResults = await recoverOrphanShipments(5).catch((err) => {
             logger.error({ err }, '[Shipping maintenance] Error recuperando envíos huérfanos');
             return [];
+        });
+    }
+    // Antes de expirar: un pedido pagado cuyo webhook se perdió no se cancela.
+    if (timeLeft() > 2000) {
+        paymentsRecovered = await reconcilePendingPayments({ limit: 10, timeLeft }).catch((err) => {
+            logger.error({ err }, '[Shipping maintenance] Error conciliando pagos pendientes');
+            return 0;
         });
     }
     if (timeLeft() > 500) {
@@ -1392,6 +1381,7 @@ async function runShippingMaintenance() {
         failed: results.filter((r) => !r.ok).length,
         orphansRecovered: orphanResults.filter((r) => r.action === 'adopted').length,
         orphansMarkedError: orphanResults.filter((r) => r.action === 'marked_error').length,
+        paymentsRecovered,
         ordersExpired: expiredCount,
         confirmationEmailsSent: emailsSent,
         durationMs: Date.now() - startedAt,

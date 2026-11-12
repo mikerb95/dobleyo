@@ -2,6 +2,7 @@
 // Convierte ciudad/departamento colombiano en coordenadas lat/lng
 import { query } from '../db.js';
 import { logger } from '../logger.js';
+import { runInBackground } from '../utils/background.js';
 
 const NOMINATIM_URL = 'https://nominatim.openstreetmap.org/search';
 const USER_AGENT = 'DobleYoCafe/1.0 (contacto@dobleyo.cafe)';
@@ -43,7 +44,9 @@ export async function geocodeCity(city, department = '') {
 }
 
 export async function geocodeOrderAsync(orderId, city, department = '') {
-    setImmediate(async () => {
+    // runInBackground: en Vercel la instancia se pausa al responder y un
+    // setImmediate suelto dejaba pedidos sin coordenadas.
+    runInBackground((async () => {
         try {
             const result = await geocodeCity(city, department);
             if (result) {
@@ -62,7 +65,7 @@ export async function geocodeOrderAsync(orderId, city, department = '') {
         } catch (err) {
             logger.error(`[geocoding] Error al guardar geocodificación para orden ${orderId}:`, err.message);
         }
-    });
+    })(), 'la geocodificación del pedido');
 }
 
 export async function backfillGeocodingBatch(limit = 50) {
