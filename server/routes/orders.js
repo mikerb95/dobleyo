@@ -107,7 +107,7 @@ const verifyPaymentLimiter = rateLimit({
 
 // Texto libre de ciudad/departamento (pedidos sin DANE): solo letras, números,
 // espacios y puntuación de nombres. Nada de HTML.
-const PLACE_NAME_RE = /^[\p{L}\p{M}\d .,'()\-]{2,80}$/u;
+const PLACE_NAME_RE = /^[\p{L}\p{M}\d .,'()-]{2,80}$/u;
 
 // ─── POST /api/orders ─────────────────────────────────────────────────────
 // Crea una orden en estado pending_payment y devuelve la URL de pago Wompi
