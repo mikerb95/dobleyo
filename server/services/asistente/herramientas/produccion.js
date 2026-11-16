@@ -11,6 +11,7 @@ import { z } from 'zod';
 import { ok, fallo, fecha, filas, kg, seguro } from './comun.js';
 import { getWorkQueue, getLotJourney } from '../../workflowService.js';
 import { getCurrentStage, STAGE_LABELS } from '../../lotStateMachine.js';
+import { query } from '../../../db.js';
 
 const ETIQUETA_TAREA = {
   store_green: 'Ingresar café verde a bodega',
@@ -26,14 +27,29 @@ const URGENCIA = { late: 'atrasada', now: 'para hoy', waiting: 'en espera', anyt
 
 const ETIQUETA_EVENTO = {
   harvest: 'Cosecha',
-  green: 'Ingreso a bodega (verde)',
-  roast_sent: 'Enviado a tostión',
-  roasted: 'Tostado recibido',
-  roasted_stored: 'Tostado almacenado',
+  green_in: 'Ingreso a bodega (verde)',
+  sent_roasting: 'Enviado a tostión',
+  roast_received: 'Tostado recibido',
+  roasted_in: 'Tostado almacenado',
   packed: 'Empacado',
   labeled: 'Etiquetado',
   cupping: 'Catación',
 };
+
+/** Datos del evento que sirven para responder, sin ubicaciones internas raras. */
+function datosEvento(e) {
+  const d = e.data ?? {};
+  const out = {};
+  if (d.kg != null) out.kilos = kg(d.kg);
+  if (d.level) out.nivel_tueste = d.level;
+  if (d.lossPct != null) out.merma_pct = d.lossPct;
+  if (d.days != null) out.dias_en_maquila = d.days;
+  if (d.score != null) out.puntaje = d.score;
+  if (d.units != null) out.unidades = d.units;
+  if (d.packageSize) out.presentacion = d.packageSize;
+  if (d.location) out.ubicacion = d.location;
+  return out;
+}
 
 const enlaceLote = (lotId) => `/admin/produccion?lote=${encodeURIComponent(lotId)}`;
 
@@ -71,7 +87,7 @@ export const consultarProduccion = {
         altitud: j.altitude,
         cosechado: fecha(j.harvestedAt),
         kilos_actuales: balance(j.balance),
-        eventos: (j.events ?? []).map((e) => ({ evento: ETIQUETA_EVENTO[e.type] ?? e.type, fecha: fecha(e.at) })),
+        eventos: (j.events ?? []).map((e) => ({ evento: ETIQUETA_EVENTO[e.kind] ?? e.kind, fecha: fecha(e.at), ...datosEvento(e) })),
         tareas: (j.tasks ?? []).map((t) => ({ tarea: ETIQUETA_TAREA[t.kind] ?? t.kind, urgencia: URGENCIA[t.urgency] ?? t.urgency })),
         tostiones: ids.filter((x) => x.tipo === 'tostion').map((x) => ({ id_tostion: Number(x.id), estado: x.status, kilos_enviados: kg(x.kilos), fecha: fecha(x.created_at) })),
         tostados: ids.filter((x) => x.tipo === 'tostado').map((x) => ({ id_tostado: Number(x.id), estado: x.status, kilos: kg(x.kilos), fecha: fecha(x.created_at) })),
@@ -129,7 +145,7 @@ export const miFinca = {
         const [verde, entregas, etapa] = await Promise.all([
           filas('SELECT COALESCE(SUM(weight_kg), 0) AS kilos, MAX(storage_date) AS ultima FROM green_coffee_inventory WHERE lot_id = ?', [c.lot_id]),
           filas('SELECT quantity_sent_kg, created_at FROM roasting_batches WHERE lot_id = ? ORDER BY created_at', [c.lot_id]),
-          getCurrentStage((sql, p) => import('../../../db.js').then((m) => m.query(sql, p)), c.lot_id).catch(() => null),
+          getCurrentStage(query, c.lot_id).catch(() => null),
         ]);
         const entregadoKg = entregas.reduce((s, e) => s + (Number(e.quantity_sent_kg) || 0), 0);
         return {
