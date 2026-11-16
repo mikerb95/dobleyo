@@ -6,6 +6,8 @@ import { defineConfig, devices } from '@playwright/test';
 export default defineConfig({
     // Directorio con los tests E2E
     testDir: './tests/e2e',
+    // El asistente tiene su propia configuración (base temporal y modelo simulado).
+    testIgnore: '**/asistente/**',
 
     // Timeout por test: 30 segundos
     timeout: 30_000,

@@ -1,8 +1,10 @@
 ---
 import AdminLayout from "../../layouts/AdminLayout.astro";
 import Dashboard from "../../components/dashboard/Dashboard.jsx";
+import AsistenteCaja from "../../components/asistente/AsistenteCaja.astro";
 ---
 
 <AdminLayout title="Resumen · DobleYo ERP" section="dashboard">
+  <AsistenteCaja />
   <Dashboard client:only="react" />
 </AdminLayout>

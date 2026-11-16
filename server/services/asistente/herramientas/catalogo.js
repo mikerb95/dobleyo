@@ -25,7 +25,7 @@ export const consultarProductos = {
     'precio, textos o stock (da los ids).',
   esquema: z.object({
     buscar: z.string().max(60).optional().describe('Nombre o id del producto, o parte de él.'),
-    categoria: z.string().max(30).optional().describe('Categoría, por ejemplo cafe, accesorios o cacao.'),
+    categoria: z.string().max(30).optional().describe('Categoría: cafe, accesorio, merchandising o cacao.'),
     incluir_inactivos: z.boolean().optional().describe('Incluir productos retirados de la tienda.'),
     limite: z.number().int().min(1).max(30).optional(),
   }),

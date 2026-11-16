@@ -35,7 +35,9 @@ export default defineConfig({
     server: {
       proxy: {
         '/api': {
-          target: 'http://localhost:4000',
+          // Las pruebas de Playwright del asistente levantan su propia API en
+          // otro puerto, con una base SQLite temporal (playwright.asistente.config.js).
+          target: process.env.API_PROXY_TARGET || 'http://localhost:4000',
           changeOrigin: true,
         },
       },

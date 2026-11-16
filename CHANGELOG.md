@@ -2,6 +2,28 @@
 
 ---
 
+## 2026-11-16: Asistente con IA en el panel (Agente: Claude)
+
+### Contexto
+Se pidió montar el asistente del panel con la receta `panel-ia`. El dueño decidió: lo usan admin y caficultor filtrados por rol, va arriba del Resumen, clave de Mike incluida en la mensualidad, Sonnet 5.5 con tope de US$3 al día para el equipo y US$1 por persona (editable), conversaciones privadas para todos, todos los datos personales ocultos (Ley 1581), trato de usted y 30 días de retención. El caficultor solo consulta su finca. Plan completo en `docs/plan-asistente.md`.
+
+### Cambios
+- **Caja "Pregunte o busque algo"** en `/admin` (`src/components/asistente/`): busca pantallas y fichas sin IA mientras se escribe; con Enter pregunta al asistente y muestra los pasos ("Revisando los pedidos"), la respuesta y, si propone un cambio, una tarjeta de antes y después con avisos en grande de lo que pasa fuera del panel. Escribir con la tarjeta abierta pide cambios. Recientes, retomar con `?c=`, atajos por rol y panel de consumo y topes para el admin. Sin clave o con el tope agotado, la caja solo busca.
+- **API** `server/routes/asistente.js` en `/api/asistente` (montada en `server/index.js` y `api/index.js`): preguntar y decidir por SSE, estado, buscador, recientes, conversación y topes.
+- **Motor** `server/services/asistente/`: bucle propio que se pausa para aprobar (la conversación queda en la base y la decisión llega en otra petición), 13 herramientas de lectura y 10 escrituras con `preparar`/`ejecutar`, permisos por rol comprobados dos veces, guardia de cifras de dinero, consumo registrado por llamada y topes que fallan cerrado.
+- **Escrituras** (solo admin, siempre con tarjeta): avanzar estado de pedido, guía manual, ajustar stock (avisa que cambia MercadoLibre), precio y textos de producto, interacción y etapa del CRM, ingreso del verde a bodega, envío a tostión, recepción y almacenamiento del tostado. Nada se borra; pagos, cancelaciones y reembolsos quedan fuera.
+- **Migración** `create_asistente_tables.js`: `asistente_conversaciones`, `asistente_consumo`, `asistente_auditoria` y `asistente_topes`. Cada decisión queda también en `audit_logs` (visible en `/admin/auditoria`).
+- **Dependencias**: `@anthropic-ai/sdk` y `zod`.
+- **`astro.config.mjs`**: el proxy de `/api` acepta `API_PROXY_TARGET` (lo usa Playwright para su propia API).
+- **Pruebas** (US$0, modelo simulado): núcleo, permisos, "lectura no escribe" y privacidad contra una base con todas las migraciones, escrituras en cadena, API completa por SSE, parser de la pantalla y Playwright (`npm run test:e2e:asistente`, base SQLite temporal, sin Turso, Resend ni MercadoLibre).
+
+### Pendiente
+- Cargar `ANTHROPIC_API_KEY` en Vercel y en el `.env` de desarrollo.
+- Correr el banco de casos con el modelo real (con permiso de Mike, contra una base de prueba).
+- Límite de gasto en la consola de Claude como segunda red.
+
+---
+
 ## 2026-11-12: ePayco como pasarela de pagos, con Wompi de respaldo (Agente: Claude)
 
 ### Contexto

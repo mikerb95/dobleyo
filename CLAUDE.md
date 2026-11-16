@@ -79,6 +79,8 @@
 | `server/routes/costs.js` | API de costeo e insumos (`/api/costs`). Solo admin |
 | `server/routes/products.js` | Catálogo público: listado, detalle, `GET /search`, `GET /search/suggest` (facetas y más pedidos del buscador del header) y reseñas. Las rutas `/search*` van antes que `/:id` |
 | `server/utils/reviews.js` | `reviewAggregateSql(alias)`: agregados de reseñas aprobadas, compartido Express + SSR |
+| `server/routes/asistente.js` | API del asistente con IA del panel (`/api/asistente`): preguntar y decidir por SSE, buscador sin IA, recientes, topes. Plan en `docs/plan-asistente.md` |
+| `server/services/asistente/` | Bucle propio que pausa para aprobar, herramientas de lectura por rol, escrituras con `preparar`/`ejecutar`, topes de gasto y auditoría |
 
 ### Frontend — Páginas Públicas
 | Archivo | Propósito |
@@ -100,6 +102,7 @@
 ### Frontend — Admin
 | Archivo | Propósito |
 |---|---|
+| `src/pages/admin/index.astro` | Resumen: caja del asistente con IA (`src/components/asistente/`) sobre el dashboard |
 | `src/pages/admin/inventario.astro` | Gestión de inventario |
 | `src/pages/admin/lotes.astro` | Gestión de lotes |
 | `src/pages/admin/sales-map.astro` | Mapa de calor de ventas (React + Leaflet) |

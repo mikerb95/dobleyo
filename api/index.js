@@ -39,6 +39,7 @@ import { dashboardRouter } from '../server/routes/dashboard.js';
 import { notificationsRouter } from '../server/routes/notifications.js';
 import { forecastRouter } from '../server/routes/forecast.js';
 import { accountRouter } from '../server/routes/account.js';
+import { asistenteRouter } from '../server/routes/asistente.js';
 import { fncRouter } from '../server/routes/fnc.js';
 import { globalLimiter } from '../server/middleware/rateLimit.js';
 import { healthCheck } from '../server/db.js';
@@ -132,6 +133,7 @@ app.use('/api', globalLimiter);
 // Routes
 app.use('/api/auth', authRouter);
 app.use('/api/account', accountRouter);
+app.use('/api/asistente', asistenteRouter);
 app.use('/api/fnc', fncRouter);
 app.use('/api/stock', stockRouter);
 app.use('/api/lots', lotsRouter);

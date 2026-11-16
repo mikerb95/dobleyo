@@ -1,0 +1,370 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e1]:
+  - banner [ref=e2]:
+    - button "Menú" [ref=e3] [cursor=pointer]:
+      - img [ref=e4]
+    - link "DobleYo ERP" [ref=e5] [cursor=pointer]:
+      - /url: /admin
+      - img [ref=e7]
+      - generic [ref=e10]: DobleYo
+      - generic [ref=e11]: ERP
+    - generic [ref=e12]:
+      - link "Ver tienda" [ref=e13] [cursor=pointer]:
+        - /url: /
+        - img [ref=e14]
+      - button "Menú de usuario" [ref=e19] [cursor=pointer]:
+        - generic [ref=e20]: AD
+        - img [ref=e21]
+  - navigation "Navegación" [ref=e23]:
+    - generic [ref=e24]:
+      - generic [ref=e25]:
+        - generic [ref=e26]: Principal
+        - link "Resumen" [ref=e27] [cursor=pointer]:
+          - /url: /admin
+          - img [ref=e28]
+          - generic [ref=e33]: Resumen
+        - link "Pedidos" [ref=e34] [cursor=pointer]:
+          - /url: /admin/pedidos
+          - img [ref=e35]
+          - generic [ref=e38]: Pedidos
+        - link "Envíos" [ref=e39] [cursor=pointer]:
+          - /url: /admin/envios
+          - img [ref=e40]
+          - generic [ref=e45]: Envíos
+        - link "CRM" [ref=e46] [cursor=pointer]:
+          - /url: /admin/crm
+          - img [ref=e47]
+          - generic [ref=e52]: CRM
+        - link "Boletín" [ref=e53] [cursor=pointer]:
+          - /url: /admin/boletin
+          - img [ref=e54]
+          - generic [ref=e57]: Boletín
+      - generic [ref=e59]:
+        - generic [ref=e60]: Operación
+        - link "Qué sigue" [ref=e61] [cursor=pointer]:
+          - /url: /admin/produccion
+          - img [ref=e62]
+          - generic [ref=e67]: Qué sigue
+        - link "Catación" [ref=e68] [cursor=pointer]:
+          - /url: /admin/cupping
+          - img [ref=e69]
+          - generic [ref=e72]: Catación
+        - link "Etiquetas" [ref=e73] [cursor=pointer]:
+          - /url: /admin/etiquetas
+          - img [ref=e74]
+          - generic [ref=e76]: Etiquetas
+      - generic [ref=e78]:
+        - generic [ref=e79]: Registros por etapa
+        - link "Cosechas" [ref=e80] [cursor=pointer]:
+          - /url: /admin/harvest
+          - img [ref=e81]
+          - generic [ref=e83]: Cosechas
+        - link "Almacén verde" [ref=e84] [cursor=pointer]:
+          - /url: /admin/inventory-storage
+          - img [ref=e85]
+          - generic [ref=e88]: Almacén verde
+        - link "Envíos a maquila" [ref=e89] [cursor=pointer]:
+          - /url: /admin/send-roasting
+          - img [ref=e90]
+          - generic [ref=e94]: Envíos a maquila
+        - link "Recepción de tostado" [ref=e95] [cursor=pointer]:
+          - /url: /admin/roast-retrieval
+          - img [ref=e96]
+          - generic [ref=e99]: Recepción de tostado
+        - link "Almacén tostado" [ref=e100] [cursor=pointer]:
+          - /url: /admin/roasted-storage
+          - img [ref=e101]
+          - generic [ref=e104]: Almacén tostado
+        - link "Empaques" [ref=e105] [cursor=pointer]:
+          - /url: /admin/packaging
+          - img [ref=e106]
+          - generic [ref=e109]: Empaques
+      - generic [ref=e111]:
+        - generic [ref=e112]: Catálogo
+        - link "Productos" [ref=e113] [cursor=pointer]:
+          - /url: /admin/productos
+          - img [ref=e114]
+          - generic [ref=e116]: Productos
+        - link "Inventario" [ref=e117] [cursor=pointer]:
+          - /url: /admin/inventario
+          - img [ref=e118]
+          - generic [ref=e120]: Inventario
+        - link "Lotes" [ref=e121] [cursor=pointer]:
+          - /url: /admin/lotes
+          - img [ref=e122]
+          - generic [ref=e126]: Lotes
+        - link "Ubicaciones" [ref=e127] [cursor=pointer]:
+          - /url: /admin/ubicaciones
+          - img [ref=e128]
+          - generic [ref=e131]: Ubicaciones
+        - link "Conteo Cíclico" [ref=e132] [cursor=pointer]:
+          - /url: /admin/conteos
+          - img [ref=e133]
+          - generic [ref=e136]: Conteo Cíclico
+        - link "Blog" [ref=e137] [cursor=pointer]:
+          - /url: /admin/blog
+          - img [ref=e138]
+          - generic [ref=e141]: Blog
+      - generic [ref=e143]:
+        - generic [ref=e144]: Analítica
+        - link "MercadoLibre" [ref=e145] [cursor=pointer]:
+          - /url: /admin/mercadolibre
+          - img [ref=e146]
+          - generic [ref=e148]: MercadoLibre
+        - link "Ventas" [ref=e149] [cursor=pointer]:
+          - /url: /admin/ventas
+          - img [ref=e150]
+          - generic [ref=e152]: Ventas
+        - link "Mapa de ventas" [ref=e153] [cursor=pointer]:
+          - /url: /admin/sales-map
+          - img [ref=e154]
+          - generic [ref=e156]: Mapa de ventas
+        - link "Finanzas" [ref=e157] [cursor=pointer]:
+          - /url: /admin/finanzas
+          - img [ref=e158]
+          - generic [ref=e160]: Finanzas
+        - link "Costeo" [ref=e161] [cursor=pointer]:
+          - /url: /admin/costos
+          - img [ref=e162]
+          - generic [ref=e164]: Costeo
+        - link "Precio FNC" [ref=e165] [cursor=pointer]:
+          - /url: /admin/precio-fnc
+          - img [ref=e166]
+          - generic [ref=e167]: Precio FNC
+        - link "Estadísticas" [ref=e168] [cursor=pointer]:
+          - /url: /admin/estadisticas
+          - img [ref=e169]
+          - generic [ref=e170]: Estadísticas
+        - link "Demanda" [ref=e171] [cursor=pointer]:
+          - /url: /admin/demanda
+          - img [ref=e172]
+          - generic [ref=e175]: Demanda
+        - link "Módulo Python" [ref=e176] [cursor=pointer]:
+          - /url: /admin/python
+          - img [ref=e177]
+          - generic [ref=e182]: Módulo Python
+        - link "Auditoría" [ref=e183] [cursor=pointer]:
+          - /url: /admin/auditoria
+          - img [ref=e184]
+          - generic [ref=e187]: Auditoría
+      - generic [ref=e189]:
+        - generic [ref=e190]: Configuración
+        - link "Usuarios" [ref=e191] [cursor=pointer]:
+          - /url: /admin/usuarios
+          - img [ref=e192]
+          - generic [ref=e195]: Usuarios
+        - link "Sistema" [ref=e196] [cursor=pointer]:
+          - /url: /admin/sistema
+          - img [ref=e197]
+          - generic [ref=e200]: Sistema
+        - link "Devtools" [ref=e201] [cursor=pointer]:
+          - /url: /admin/devtools
+          - img [ref=e202]
+          - generic [ref=e205]: Devtools
+        - link "Presupuesto" [ref=e206] [cursor=pointer]:
+          - /url: /admin/presupuesto
+          - img [ref=e207]
+          - generic [ref=e209]: Presupuesto
+    - generic [ref=e211]: DobleYo ERP · v2.0
+  - main [ref=e212]:
+    - generic [ref=e213]:
+      - region "Hola, Admin" [ref=e214]:
+        - generic [ref=e215]:
+          - heading "Hola, Admin" [level=2] [ref=e216]
+          - paragraph [ref=e217]: Pregunte por pedidos, producción, inventario o ventas. Los cambios siempre los aprueba usted.
+        - generic [ref=e218]:
+          - article [ref=e219]:
+            - generic [ref=e220]: ¿Qué pedidos hay?
+            - list "Consultas" [ref=e221]:
+              - listitem [ref=e222]: Revisando los pedidos
+            - generic [ref=e223]:
+              - paragraph [ref=e224]: Reviso.
+              - paragraph [ref=e225]: Hay 2 pedido(s) por $148.000.
+              - list [ref=e226]:
+                - listitem [ref=e227]:
+                  - strong [ref=e228]: DY-1002
+                  - text: ": Pagado, $52.000"
+                - listitem [ref=e229]:
+                  - strong [ref=e230]: DY-1001
+                  - text: ": En preparación, $96.000"
+              - paragraph [ref=e231]:
+                - link "Ver pedidos" [ref=e232] [cursor=pointer]:
+                  - /url: /admin/pedidos
+          - article [ref=e233]:
+            - generic [ref=e234]: Pase el pedido DY-1001 a preparación
+            - list "Consultas"
+            - generic [ref=e235]:
+              - paragraph [ref=e236]: Reviso.
+              - paragraph [ref=e237]: "No pude hacerlo: El pedido DY-1001 ya está en \"En preparación\"."
+        - search [ref=e238]:
+          - img [ref=e240]
+          - generic [ref=e243]: Pregunte o busque algo
+          - textbox "Pregunte o busque algo" [active] [ref=e244]
+          - button "Preguntar" [ref=e245] [cursor=pointer]
+        - generic [ref=e246]:
+          - generic [ref=e247]:
+            - heading "Recientes" [level=3] [ref=e248]
+            - list [ref=e249]:
+              - listitem [ref=e250]:
+                - link "¿Qué pedidos hay?" [ref=e251] [cursor=pointer]:
+                  - /url: /admin?c=3adaf3c3-5e53-4d35-b1de-c4c461b814fe
+                  - generic [ref=e252]: ¿Qué pedidos hay?
+              - listitem [ref=e253]:
+                - link "¿Qué pedidos hay?" [ref=e254] [cursor=pointer]:
+                  - /url: /admin?c=cafbda07-2237-46a0-b90c-ef035c22209d
+                  - generic [ref=e255]: ¿Qué pedidos hay?
+            - link "Empezar otra conversación" [ref=e256] [cursor=pointer]:
+              - /url: /admin
+          - group [ref=e257]:
+            - generic "Consumo y topes del asistente" [ref=e258] [cursor=pointer]
+      - generic [ref=e260]:
+        - generic [ref=e261]:
+          - generic [ref=e262]:
+            - generic [ref=e263]: Principal / Resumen
+            - heading "Resumen operativo" [level=1] [ref=e264]
+            - generic [ref=e265]: Lun, 16 nov 2026 · Corte 11:36 COT · Últimos 30 días vs. periodo anterior
+          - generic [ref=e266]:
+            - group "Periodo" [ref=e267]:
+              - button "30 d" [pressed] [ref=e268] [cursor=pointer]
+              - button "90 d" [ref=e269] [cursor=pointer]
+              - button "12 m" [ref=e270] [cursor=pointer]
+            - group [ref=e271]:
+              - generic "Nuevo" [ref=e272] [cursor=pointer]:
+                - img [ref=e273]
+                - text: Nuevo
+                - img [ref=e275]
+        - region "Indicadores del periodo" [ref=e277]:
+          - generic [ref=e278]:
+            - generic [ref=e280]: Ingresos
+            - generic [ref=e281]: $ 0
+          - generic [ref=e282]:
+            - generic [ref=e284]: Pedidos
+            - generic [ref=e285]: "0"
+          - generic [ref=e286]:
+            - generic [ref=e288]: Ticket promedio
+            - generic [ref=e289]: $ 0
+            - generic [ref=e290]: por pedido
+          - generic [ref=e291]:
+            - generic [ref=e293]: Valor de inventario
+            - generic [ref=e294]: $5,1 M
+            - generic [ref=e295]: 8 productos activos
+          - generic [ref=e296]:
+            - generic [ref=e298]: Stock bajo
+            - generic [ref=e299]: "0"
+            - generic [ref=e300]: sin agotados
+        - generic [ref=e301]:
+          - region "Requiere atención" [ref=e302]:
+            - generic [ref=e304]:
+              - heading "Requiere atención" [level=2] [ref=e305]
+              - generic [ref=e306]: 1 abierta
+            - table [ref=e308]:
+              - rowgroup [ref=e309]:
+                - row "Prioridad Asunto Acción" [ref=e310]:
+                  - columnheader "Prioridad" [ref=e311]
+                  - columnheader "Asunto" [ref=e312]
+                  - columnheader "Acción" [ref=e313]:
+                    - generic [ref=e314]: Acción
+              - rowgroup [ref=e315]:
+                - 'row "Baja Ingreso pendiente: lote COL-CAU-1800-Castillo-Natural-BBBB Cosecha de finca-ajena (Castillo) recogida hoy y aún sin registrar en el inventario de café verde. Registrar ingreso" [ref=e316]':
+                  - cell "Baja" [ref=e317]:
+                    - generic [ref=e318]: Baja
+                  - 'cell "Ingreso pendiente: lote COL-CAU-1800-Castillo-Natural-BBBB Cosecha de finca-ajena (Castillo) recogida hoy y aún sin registrar en el inventario de café verde." [ref=e319]':
+                    - generic [ref=e320]: "Ingreso pendiente: lote COL-CAU-1800-Castillo-Natural-BBBB"
+                    - generic [ref=e321]: Cosecha de finca-ajena (Castillo) recogida hoy y aún sin registrar en el inventario de café verde.
+                  - cell "Registrar ingreso" [ref=e322]:
+                    - link "Registrar ingreso" [ref=e323] [cursor=pointer]:
+                      - /url: /admin/inventory-storage
+          - region "Operación" [ref=e324]:
+            - generic [ref=e325]:
+              - heading "Operación" [level=2] [ref=e326]
+              - link "Abrir Qué sigue" [ref=e327] [cursor=pointer]:
+                - /url: /admin/produccion
+            - generic [ref=e328]:
+              - generic [ref=e329]:
+                - term [ref=e330]:
+                  - link "Lotes en verde" [ref=e331] [cursor=pointer]:
+                    - /url: /admin/inventory-storage
+                - definition [ref=e332]: "0"
+              - generic [ref=e333]:
+                - term [ref=e334]:
+                  - link "Lotes tostados" [ref=e335] [cursor=pointer]:
+                    - /url: /admin/roasted-storage
+                - definition [ref=e336]: "0"
+              - generic [ref=e337]:
+                - term [ref=e338]:
+                  - link "Puntaje SCA promedio" [ref=e339] [cursor=pointer]:
+                    - /url: /admin/cupping
+                - definition [ref=e340]: Sin catación
+              - generic [ref=e341]:
+                - term [ref=e342]:
+                  - link "Productos agotados" [ref=e343] [cursor=pointer]:
+                    - /url: /admin/inventario
+                - definition [ref=e344]: "0"
+        - generic [ref=e345]:
+          - region "Ingresos por periodo" [ref=e346]:
+            - generic [ref=e347]:
+              - heading "Ingresos por periodo" [level=2] [ref=e348]
+              - link "Ver análisis de ventas" [ref=e349] [cursor=pointer]:
+                - /url: /admin/ventas
+            - paragraph [ref=e350]: Aún no hay suficientes ventas en el periodo para graficar.
+          - region "Estado de los pedidos" [ref=e351]:
+            - generic [ref=e352]:
+              - heading "Estado de los pedidos" [level=2] [ref=e353]
+              - generic [ref=e354]: 0 pedidos
+            - paragraph [ref=e355]: Sin pedidos en el periodo.
+        - generic [ref=e356]:
+          - region "Productos" [ref=e357]:
+            - generic [ref=e359]:
+              - heading "Productos" [level=2] [ref=e360]
+              - generic [ref=e361]: por ingresos
+            - paragraph [ref=e362]: Sin ventas en el periodo.
+          - region "Ciudades" [ref=e363]:
+            - generic [ref=e364]:
+              - generic [ref=e365]:
+                - heading "Ciudades" [level=2] [ref=e366]
+                - generic [ref=e367]: por ingresos
+              - link "Abrir mapa" [ref=e368] [cursor=pointer]:
+                - /url: /admin/sales-map
+            - paragraph [ref=e369]: Sin envíos en el periodo.
+        - generic [ref=e370]:
+          - region "Producción de lotes" [ref=e371]:
+            - generic [ref=e372]:
+              - heading "Producción de lotes" [level=2] [ref=e373]
+              - generic [ref=e374]:
+                - generic [ref=e375]:
+                  - text: Registrados
+                  - generic [ref=e377]: "0"
+                - generic [ref=e378]:
+                  - text: Tostados
+                  - generic [ref=e380]: "0"
+            - paragraph [ref=e381]: Sin lotes registrados en el periodo.
+          - region "Actividad" [ref=e382]:
+            - generic [ref=e383]:
+              - heading "Actividad" [level=2] [ref=e384]
+              - link "Abrir auditoría" [ref=e385] [cursor=pointer]:
+                - /url: /admin/auditoria
+            - list [ref=e386]:
+              - listitem [ref=e387]:
+                - time [ref=e388]: 11:36
+                - generic [ref=e389]: Admin DY asistente aprobada asistente cafbda07-2237-46a0-b90c-ef035c22209d
+              - listitem [ref=e390]:
+                - time [ref=e391]: 11:36
+                - generic [ref=e392]: Admin DY actualizó pedido 1
+  - generic [ref=e395]:
+    - button "Menu" [ref=e396]:
+      - img [ref=e398]
+      - generic: Menu
+    - button "Inspect" [ref=e402]:
+      - img [ref=e404]
+      - generic: Inspect
+    - button "Audit" [ref=e406]:
+      - generic [ref=e407]:
+        - img [ref=e408]
+        - img [ref=e411]
+      - generic: Audit
+    - button "Settings" [ref=e414]:
+      - img [ref=e416]
+      - generic: Settings
+```

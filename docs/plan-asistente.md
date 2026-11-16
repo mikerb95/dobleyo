@@ -1,6 +1,6 @@
 # Plan: asistente del panel
 
-> Estado: borrador · Creado: 2026-11-16
+> Estado: implementado (falta la prueba con el modelo real) · Creado: 2026-11-16
 > Receta: skill `panel-ia` (original en el panel de codebymike.net).
 
 ## Qué es
@@ -87,7 +87,14 @@ Solo el admin propone y aprueba. El caficultor no tiene escrituras.
 | `editar_producto` | Precio y textos (nombre visible, descripción, notas) | SKU, categoría, crear o retirar productos, imágenes | **Se ve de inmediato en la tienda** | admin |
 | `registrar_interaccion_crm` | Nueva nota/llamada/visita en una cuenta | Contactos, datos personales | Ninguno (no le escribe a nadie) | admin |
 | `mover_etapa_crm` | Etapa del embudo de una cuenta | Crear o borrar cuentas | Ninguno | admin |
-| `registrar_paso_produccion` | Un paso del pipeline (cosecha, almacenamiento verde, envío a tostión, recibo de tostado, almacenamiento tostado, empaque), reutilizando `coffeeService` | Lotes ya empacados o vendidos, borrar pasos, costos de compra ya registrados | La cosecha avisa por ntfy, como hoy | admin |
+| `almacenar_cafe_verde` | Ingreso del verde a bodega: kilos, ubicación apta y fecha (`storeGreenCoffee`) | Costos, otros lotes | Ninguno | admin |
+| `enviar_a_tostion` | Kilos de verde que salen a maquila, sin pasar de lo que hay en bodega (`sendToRoasting`) | Costos | Ninguno | admin |
+| `recibir_tostado` | Nivel de tueste y kilos recibidos; valida la merma esperada (`receiveRoasted`) | Costos | Ninguno | admin |
+| `almacenar_tostado` | Ubicación, recipiente y cantidad del tostado (`storeRoasted`) | Costos | Ninguno | admin |
+
+La cosecha y el empaque quedaron en sus pantallas: la cosecha arma el código del lote con datos del formulario, y el empaque consume insumos y crea inventario de producto. Las cuatro acciones de producción usan la clave de la propuesta como `movementUid`, así que una aprobación repetida no duplica el movimiento del ledger.
+
+`cambiar_estado_pedido` solo avanza un paso (pagado → en preparación → enviado → entregado): desde "pagado" el stock ya se descontó, así que ningún cambio del asistente mueve inventario. El correo de "entregado" y el de despacho se mandan solo si la casilla "Avisar al cliente" queda marcada (viene marcada).
 
 En todas: la tarjeta la arma el servidor desde la base; al aprobar se vuelve
 a preparar y el `UPDATE` lleva la condición del estado esperado; cada
@@ -118,13 +125,23 @@ server/services/asistente/
   escrituras/    (una por acción + cambio.js + index.js)
   conversaciones.js consumo.js auditoria.js topes.js motor.js
 server/routes/asistente.js    montado en /api/asistente en server/index.js Y api/index.js
-src/components/asistente/     caja, hilo y tarjeta (Astro + script del cliente)
+server/migrations/create_asistente_tables.js
+src/components/asistente/     AsistenteCaja.astro + asistente-cliente.ts
+src/lib/asistente-texto.ts    mini parser de la respuesta y rutaSegura (puro, con tests)
 ```
 
 Endpoints: `POST /api/asistente` (preguntar o seguir, SSE),
-`POST /api/asistente/decision`, `GET /api/asistente/recientes`,
+`POST /api/asistente/decision`, `GET /api/asistente/estado`,
+`GET /api/asistente/recientes`, `GET /api/asistente/conversacion/:id`,
 `GET|PUT /api/asistente/topes` (solo admin, incluye gasto del mes),
-`GET /api/asistente/buscar` (buscador sin IA). Rol siempre desde el JWT.
+`GET /api/asistente/buscar` (buscador sin IA). El rol se lee de la base en
+cada petición (si a alguien le quitan el rol, deja de poder aprobar).
+Límite extra de 12 preguntas por minuto por persona.
+
+Modelo: `claude-sonnet-5-5` con thinking adaptativo, `effort: medium`,
+caché del system y de las herramientas, y `fallbacks: 'default'`
+(beta `server-side-fallback-2026-07-01`): si el modelo declina por un
+falso positivo, la API reintenta con otro modelo en la misma llamada.
 
 Dependencias nuevas: `@anthropic-ai/sdk` y `zod` (esquemas de herramientas).
 
@@ -140,17 +157,22 @@ crear una conversación se purgan las de más de 30 días.
 
 ## Fases
 
-| Fase | Qué | Gasta API |
-|---|---|---|
-| 1 | Núcleo puro con tests (bucle, costo, turnos, limpieza, guardia) | No |
-| 2 | Migración de tablas | No |
-| 3 | Herramientas de lectura + pruebas "lectura no escribe", privacidad y filtro del caficultor | No |
-| 4 | Escrituras con `preparar`/`ejecutar` + pruebas de permisos | No |
-| 5 | Motor, endpoints, topes y paridad `server/index.js` ↔ `api/index.js` | No |
-| 6 | Interfaz: caja, hilo, tarjeta, recientes, buscador sin IA, pantalla de topes | No |
-| 7 | Playwright con el modelo simulado | No |
-| 8 | Banco de casos con el modelo real (a mano, con permiso de Mike) | Sí, unos US$0,30 a US$0,60 |
-| 9 | Verificación en navegador con capturas, `CHANGELOG.md` y `AGENTS.md` | No |
+| Fase | Qué | Gasta API | Estado |
+|---|---|---|---|
+| 1 | Núcleo puro con tests (bucle, costo, turnos, limpieza, guardia) | No | Hecha |
+| 2 | Migración de tablas | No | Hecha |
+| 3 | Herramientas de lectura + pruebas "lectura no escribe", privacidad y filtro del caficultor | No | Hecha |
+| 4 | Escrituras con `preparar`/`ejecutar` + pruebas de permisos | No | Hecha |
+| 5 | Motor, endpoints, topes y paridad `server/index.js` ↔ `api/index.js` | No | Hecha |
+| 6 | Interfaz: caja, hilo, tarjeta, recientes, buscador sin IA, panel de consumo y topes | No | Hecha |
+| 7 | Playwright con el modelo simulado (`npm run test:e2e:asistente`) | No | Hecha |
+| 8 | Banco de casos con el modelo real (a mano, con permiso de Mike) | Sí, unos US$0,30 a US$0,60 | Pendiente |
+| 9 | Verificación en navegador con capturas, `CHANGELOG.md` y `AGENTS.md` | No | Hecha (con el modelo simulado) |
+
+Pruebas que cuestan US$0: `server/services/asistente/__tests__/` (núcleo, permisos,
+lecturas contra una base con todas las migraciones, escrituras en cadena),
+`server/routes/__tests__/asistente.integration.test.js` (API completa por SSE),
+`src/lib/__tests__/asistente-texto.test.ts` y Playwright.
 
 ## Banco de casos con el modelo real
 
@@ -173,5 +195,8 @@ Adversariales:
 
 ## Pendientes y preguntas abiertas
 
-- `ANTHROPIC_API_KEY` de Mike en Vercel (producción) y en el `.env` de desarrollo.
-- Confirmar en Vercel que la función de la API permite al menos 120 s (el SSE de una pregunta larga tarda 30 a 90 s).
+- `ANTHROPIC_API_KEY` de Mike en Vercel (producción) y en el `.env` de desarrollo. Sin ella la caja solo busca.
+- Correr el banco de casos con el modelo real (fase 8), con permiso de Mike en ese momento, contra una base de prueba (nunca Turso de producción, porque hay escrituras).
+- Poner también un límite de gasto en la consola de Claude como segunda red.
+- Confirmar en Vercel que la función de la API permite al menos 120 s (el SSE de una pregunta larga tarda 30 a 90 s). El límite por defecto actual es 300 s.
+- La migración corre sola en el deploy (`vercel-build` ejecuta `npm run migrate`).

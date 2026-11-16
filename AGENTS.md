@@ -313,6 +313,19 @@ El inventario del sitio es la fuente de verdad; MercadoLibre es un canal (`serve
 - **Productos con variantes activas se vinculan por variante.** Publicaciones Full (`logistic_type = 'fulfillment'`) no se envían ni descuentan.
 - **El cron es GitHub Actions** (`.github/workflows/mercadolibre-sync.yml`), no Vercel Cron. El panel no debe afirmar que algo corre si no hay evidencia (secreto configurado, último sync).
 
+### 3.15 Asistente con IA del panel: reglas no negociables
+
+Caja "Pregunte o busque algo" en `/admin` (`src/components/asistente/`), API en `server/routes/asistente.js`, lógica en `server/services/asistente/`. Plan y decisiones del dueño: `docs/plan-asistente.md`.
+
+- **Ninguna escritura se ejecuta sola.** Toda acción vive en `server/services/asistente/escrituras/` con `preparar` (arma la tarjeta leyendo la base, no escribe) y `ejecutar` (vuelve a preparar y escribe con la condición del estado en el `UPDATE`). La tarjeta la arma el servidor, nunca el modelo.
+- **El rol manda dos veces**: cada herramienta declara `roles`; el modelo solo recibe las del rol, y `validarLlamada()` lo vuelve a comprobar al ejecutar y al aprobar, con el rol leído de la base. El caficultor solo consulta sus fincas (`mi_finca`) y el buscador.
+- **Herramientas de lectura: columnas nombradas, límite de filas, dinero ya sumado** con `dinero()` (`{ valor, moneda, texto }`) y fechas en hora de Colombia. Nunca correo, teléfono, documento ni dirección: la prueba `lecturas.test.js` siembra esos datos y falla si salen. Texto escrito por clientes va dentro de `escritoPorTerceros` con `deTercero()`.
+- **Una herramienta nueva necesita** su entrada en `ARGUMENTOS` de `lecturas.test.js` (la prueba de "lectura no escribe" exige cubrirlas todas) y su etiqueta en `ETIQUETA_PASO` (`src/lib/asistente-texto.ts`).
+- **Gasto**: una fila de `asistente_consumo` por llamada al modelo, antes de seguir. Topes diarios (equipo y persona) en `asistente_topes`, editables por el admin; si no se pueden leer, el asistente no llama al modelo (falla cerrado).
+- **El historial de la conversación es solo por anexión** (bloques de thinking incluidos). Para pintar se reconstruye con `turnosDe()`; no se guarda una segunda copia.
+- **Modelo simulado** (`ASISTENTE_MODELO_FALSO=1`) para Vitest y Playwright (`npm run test:e2e:asistente`); se ignora en producción. La prueba con el modelo real se corre a mano y con permiso de Mike, nunca en CI.
+- **Pantalla solo con nodos y `textContent`**; enlaces solo si pasan `rutaSegura()`.
+
 ## 4. SEO — Reglas Obligatorias
 
 Todo agente que cree o modifique páginas DEBE cumplir:
