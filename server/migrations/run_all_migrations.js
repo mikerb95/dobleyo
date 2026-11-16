@@ -96,6 +96,8 @@ const steps = [
   { name: 'Retiro de productos demo', run: () => runFn('retire_demo_products.js', 'retireDemoProducts') },
   // Centralizador de stock con MercadoLibre: OAuth, vínculos producto-publicación y descuentos por orden.
   { name: 'MercadoLibre: centralizador de stock', run: () => runFn('create_ml_stock_sync.js', 'createMlStockSync') },
+  // Asistente con IA del panel: conversaciones, consumo, auditoría y topes (docs/plan-asistente.md).
+  { name: 'Asistente del panel', run: () => runFn('create_asistente_tables.js', 'createAsistenteTables') },
 ];
 
 async function runAll() {
