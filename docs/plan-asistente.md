@@ -176,6 +176,8 @@ lecturas contra una base con todas las migraciones, escrituras en cadena),
 
 ## Banco de casos con el modelo real
 
+Script: `node scripts/asistente-banco-real.mjs --si-gastar` (16 casos, base SQLite temporal, nunca Turso; aprueba una sola tarjeta). Gasta API: correrlo solo con permiso de Mike. Deja el detalle en un `resultados.json` y aquí se anota el resumen de cada corrida.
+
 Del negocio:
 - "¿Qué pedidos pagados faltan por despachar?"
 - "¿Cuánto vendimos este mes en el sitio y en MercadoLibre?"

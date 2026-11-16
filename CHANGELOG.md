@@ -19,7 +19,7 @@ Se pidió montar el asistente del panel con la receta `panel-ia`. El dueño deci
 
 ### Pendiente
 - Cargar `ANTHROPIC_API_KEY` en Vercel y en el `.env` de desarrollo.
-- Correr el banco de casos con el modelo real (con permiso de Mike, contra una base de prueba).
+- Correr el banco de casos con el modelo real: `node scripts/asistente-banco-real.mjs --si-gastar` (con permiso de Mike; usa una base temporal).
 - Límite de gasto en la consola de Claude como segunda red.
 
 ---
