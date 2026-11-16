@@ -131,7 +131,7 @@ export const consultarInventario = {
           WHERE is_active = 1 ORDER BY (stock_units - COALESCE(stock_min, 0)) ASC LIMIT 20`,
       );
       datos.insumos_empaque = insumos.map((i) => ({
-        insumo: [i.name, i.size_label].filter(Boolean).join(' '),
+        insumo: i.size_label && !String(i.name).includes(i.size_label) ? `${i.name} ${i.size_label}` : i.name,
         tipo: i.type,
         unidades: Number(i.stock_units) || 0,
         minimo: Number(i.stock_min) || 0,

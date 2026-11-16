@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { ok, fallo, dinero, fecha, filas, seguro, inicioDeMes, hoy, desdeUtc, hastaUtc, ESTADOS_VENDIDOS } from './comun.js';
 import { getLotCostSummary, getCostOverview } from '../../costService.js';
 import { getDashboard } from '../../financeService.js';
+import { humanizeFarm } from '../../workflowService.js';
 
 const DIA = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Use AAAA-MM-DD');
 const VENDIDOS = ESTADOS_VENDIDOS.map((e) => `'${e}'`).join(',');
@@ -35,7 +36,7 @@ export const consultarVentas = {
       filas(`SELECT COUNT(*) AS n, COALESCE(SUM(total_amount), 0) AS total FROM sales_tracking
               WHERE COALESCE(order_status, '') NOT IN ('cancelled', 'invalid')
                 AND substr(purchase_date, 1, 10) >= ? AND substr(purchase_date, 1, 10) <= ?`, [desde, hasta]),
-      filas(`SELECT COUNT(*) AS n, COALESCE(SUM(total_amount), 0) AS total FROM external_sales
+      filas(`SELECT COUNT(*) AS n, COALESCE(SUM(total), 0) AS total FROM external_sales
               WHERE substr(sale_date, 1, 10) >= ? AND substr(sale_date, 1, 10) <= ?`, [desde, hasta]),
       filas(`SELECT i.product_name, SUM(i.quantity) AS unidades, SUM(i.subtotal_cop) AS total
                FROM customer_order_items i JOIN customer_orders o ON o.id = i.order_id
@@ -90,7 +91,7 @@ export const consultarCostos = {
       lotes_con_costeo: total,
       lotes: lots.map((l) => ({
         lote: l.lot_id,
-        finca: l.farm,
+        finca: humanizeFarm(l.farm),
         variedad: l.variety,
         fecha: fecha(l.created_at),
         costo_total: dinero(l.totals?.total_cop),
