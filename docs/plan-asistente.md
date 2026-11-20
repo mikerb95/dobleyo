@@ -101,6 +101,10 @@ a preparar y el `UPDATE` lleva la condición del estado esperado; cada
 aprobación o rechazo queda en `asistente_auditoria` y en `audit_logs` (para
 que se vea en `/admin/auditoria`).
 
+## Glosario
+
+`server/services/asistente/glosario.js` (2026-11-19): términos del café para todos los roles y reglas del negocio solo para el admin, con las cifras leídas del código. Para ampliarlo, agregar solo hechos que estén en el repo o que confirme el dueño.
+
 ## Fuera de alcance
 
 - Borrar cualquier cosa.

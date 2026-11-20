@@ -19,6 +19,7 @@ import * as auditoria from './auditoria.js';
 import { textoRechazo, turnosDe } from './turnos.js';
 import { cifrasDe, extraerCifras, verificarCifras } from './guardia.js';
 import { systemPrompt } from './prompt.js';
+import { GLOSARIO_CAFE, glosarioNegocio } from './glosario.js';
 import { hoy } from './herramientas/comun.js';
 import {
   ROLES_ASISTENTE, ETIQUETA_ROL, definiciones, escriturasDe, accionesDe,
@@ -113,8 +114,14 @@ function llamadorDelModelo(usuario, conversacionId, modo) {
 
 // ---- Guardia de cifras -----------------------------------------------------
 
-function cifrasPermitidas(mensajes) {
-  const permitidas = [];
+/** Cifras que el modelo puede citar sin consultarlas: las reglas del glosario de su rol. */
+function cifrasDelGlosario(rol) {
+  const texto = rol === 'admin' ? `${GLOSARIO_CAFE}\n${glosarioNegocio()}` : GLOSARIO_CAFE;
+  return extraerCifras(texto).map((c) => c.valor);
+}
+
+export function cifrasPermitidas(mensajes, rol = 'caficultor') {
+  const permitidas = cifrasDelGlosario(rol);
   for (const m of mensajes) {
     if (m.role !== 'user') continue;
     if (typeof m.content === 'string') {
@@ -179,7 +186,7 @@ function dependencias(usuario, conversacionId, emitir, modo, extra = {}) {
     async guardar(e) {
       if (e.estado === 'terminada' && e.respuesta && !revisadas.has(e)) {
         revisadas.add(e);
-        const g = verificarCifras(e.respuesta, cifrasPermitidas(e.mensajes));
+        const g = verificarCifras(e.respuesta, cifrasPermitidas(e.mensajes, usuario.rol));
         if (!g.ok) {
           e.aviso = `Revise estas cifras: no salieron de ninguna consulta (${g.inventadas.map((c) => c.texto).join(', ')}).`;
           emitir({ tipo: 'aviso', texto: e.aviso });

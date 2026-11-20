@@ -2,6 +2,16 @@
 
 ---
 
+## 2026-11-19: Glosario de DobleYo para el asistente del panel (Agente: Claude)
+
+### Cambios
+- **`server/services/asistente/glosario.js`** (nuevo): términos del café y de la producción (carga, pergamino, excelso, factor de rendimiento, maquila, mermas, procesos, variedades, código de lote, etapas, ubicaciones) para todos los roles, y reglas del negocio solo para el admin (envío gratis y tarifa fija, pasarelas y contraentrega, estados de pedido, suscripciones, MercadoLibre, costeo, precio FNC, CRM). Va en el system prompt, que se cachea.
+- Las cifras de las reglas se leen de las constantes del código (`checkoutShipping.js`) y de las mismas variables del servidor (`SUBSCRIPTION_DISCOUNT_PERCENT`, `COD_MAX_TOTAL_COP`), así no se desactualizan.
+- **Guardia de cifras**: acepta las cifras del glosario del rol de quien pregunta (antes habría marcado como inventado el umbral de envío gratis).
+- Prueba: `server/services/asistente/__tests__/glosario.test.js`.
+
+---
+
 ## 2026-11-16: Asistente con IA en el panel (Agente: Claude)
 
 ### Contexto

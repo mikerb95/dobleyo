@@ -325,6 +325,7 @@ Caja "Pregunte o busque algo" en `/admin` (`src/components/asistente/`), API en 
 - **El historial de la conversación es solo por anexión** (bloques de thinking incluidos). Para pintar se reconstruye con `turnosDe()`; no se guarda una segunda copia.
 - **Modelo simulado** (`ASISTENTE_MODELO_FALSO=1`) para Vitest y Playwright (`npm run test:e2e:asistente`); se ignora en producción. La prueba con el modelo real se corre a mano y con permiso de Mike, nunca en CI.
 - **Pantalla solo con nodos y `textContent`**; enlaces solo si pasan `rutaSegura()`.
+- **Glosario** (`server/services/asistente/glosario.js`): términos del café para todos y reglas del negocio solo para el admin. Las cifras salen de las constantes del código (envío, suscripción, contraentrega); si cambia una regla, se revisa el glosario. Solo hechos verificables en el repo.
 
 ## 4. SEO — Reglas Obligatorias
 
